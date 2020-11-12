@@ -22,7 +22,7 @@ public class Simulation {
     public void run() {
         long stepCount = 0;
         while (true) {
-            engine.update(config.getSimulationTimeStep());
+            engine.update(config.SIMULATION_TIME_STEP);
             ++stepCount;
         }
     }

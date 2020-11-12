@@ -12,6 +12,7 @@ import java.util.TreeMap;
 public class PointSequence<E> {
     public class Builder {
         SortedMap<Double, E> data = new TreeMap<>();
+
         public void add(double position, E e) {
             data.put(position, e);
         }
@@ -70,6 +71,7 @@ public class PointSequence<E> {
     protected ArrayList<Map.Entry<Double, E>> data = new ArrayList<>();
 
     private void add(Map.Entry<Double, E> item) {
+        assert data.isEmpty() || item.getKey() >= data.get(data.size() - 1).getKey();
         data.add(item);
     }
 }
