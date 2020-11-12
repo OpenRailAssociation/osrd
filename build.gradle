@@ -24,3 +24,7 @@ application {
 test {
     useJUnitPlatform()
 }
+
+checkstyle {
+    toolVersion '8.29';
+}
