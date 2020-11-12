@@ -1,9 +1,13 @@
 package fr.sncf.osrd;
 
-public class Config {
-    private final float SIMULATION_TIME_STEP = 1;
+import fr.sncf.osrd.infra.Infra;
 
-    public float getSimulationTimeStep() {
-        return SIMULATION_TIME_STEP;
+public class Config {
+    public final double SIMULATION_TIME_STEP;
+    public final Infra INFRA;
+
+    public Config(double simulation_time_step, Infra infra) {
+        SIMULATION_TIME_STEP = simulation_time_step;
+        INFRA = infra;
     }
 }

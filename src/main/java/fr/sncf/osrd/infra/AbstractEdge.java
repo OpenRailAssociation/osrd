@@ -1,6 +1,11 @@
 package fr.sncf.osrd.infra;
 
-public interface AbstractEdge<N extends AbstractNode> {
-    N getStartNode();
-    N getEndNode();
+public abstract class AbstractEdge<N extends AbstractNode> extends Indexed {
+    public final N startNode;
+    public final N endNode;
+
+    protected AbstractEdge(N startNode, N endNode) {
+        this.startNode = startNode;
+        this.endNode = endNode;
+    }
 }

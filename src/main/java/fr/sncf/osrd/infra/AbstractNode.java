@@ -2,10 +2,9 @@ package fr.sncf.osrd.infra;
 
 import java.util.List;
 
-public interface AbstractNode<E extends AbstractEdge> {
+public abstract class AbstractNode<E extends AbstractEdge> extends Indexed {
     /**
-     * Return the list of all Edge which are reachable from a given Edge
+     * Return the list of all TopoEdge which are reachable from a given TopoEdge
      */
-    List<E> getNeighbors(E from);
-    long getIndex();
+    abstract List<E> getNeighbors(E from);
 }

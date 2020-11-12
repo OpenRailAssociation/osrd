@@ -3,20 +3,20 @@ package fr.sncf.osrd.infra;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NoOpNode extends Node {
-    private final ArrayList<Edge> neighbors;
+public class NoOpNode extends TopoNode {
+    private final ArrayList<TopoEdge> neighbors;
 
-    public NoOpNode(String id, long index) {
-        super(id, index);
+    public NoOpNode(String id) {
+        super(id);
         neighbors = new ArrayList<>();
     }
 
-    public void addEdge(Edge edge) {
+    public void addEdge(TopoEdge edge) {
         neighbors.add(edge);
     }
 
     @Override
-    public List<Edge> getNeighbors(Edge from) {
+    public List<TopoEdge> getNeighbors(TopoEdge from) {
         return neighbors;
     }
 }
