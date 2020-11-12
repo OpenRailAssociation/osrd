@@ -6,8 +6,8 @@ import java.util.List;
 public class StopBlock extends Node {
     private final ArrayList<Edge> neighbor;
 
-    public StopBlock(String id) {
-        super(id);
+    public StopBlock(String id, long index) {
+        super(id, index);
         neighbor = new ArrayList<>();
     }
 

@@ -7,4 +7,5 @@ public interface AbstractNode<E extends AbstractEdge> {
      * Return the list of all Edge which are reachable from a given Edge
      */
     List<E> getNeighbors(E from);
+    long getIndex();
 }
