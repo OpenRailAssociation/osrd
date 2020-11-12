@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'application'
-    id 'com.bmuschko.docker-java-application' version '6.6.1'
+    id 'checkstyle'
 }
 
 repositories {
@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.google.guava:guava:29.0-jre'
+    compile "com.badlogicgames.ashley:ashley:1.7.3"
 
     // Use JUnit Jupiter API for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
@@ -23,11 +23,4 @@ application {
 
 test {
     useJUnitPlatform()
-}
-
-docker {
-    javaApplication {
-        baseImage = 'amazoncorretto:11'
-        maintainer = 'OSRD Team "contact@osrd.fr"'
-    }
 }
