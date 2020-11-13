@@ -10,14 +10,12 @@ public class SectionSignalNode extends AbstractNode<BlockSection> {
         this.id = id;
     }
 
-    ArrayList<BlockSection> neighbors = new ArrayList<>();
-
-    void addNeighbor(BlockSection bs) {
-        neighbors.add(bs);
-    }
-
     @Override
     List<BlockSection> getNeighbors(BlockSection from) {
-        return neighbors;
+        if (from.startNode == this) {
+            return from.startNeighbors;
+        }
+        assert this == from.endNode;
+        return from.endNeighbors;
     }
 }
