@@ -24,22 +24,22 @@ public class Infra {
 
     public final HashMap<String, Line> lines = new HashMap<>();
 
-    public void register(TopoNode node) {
+    void register(TopoNode node) {
         node.setIndex(topoNodes.size());
         topoNodes.add(node);
     }
 
-    public void register(TopoEdge edge) {
+    void register(TopoEdge edge) {
         edge.setIndex(topoEdges.size());
         topoEdges.add(edge);
     }
 
-    public void register(SectionSignalNode node) {
+    void register(SectionSignalNode node) {
         node.setIndex(sectionSignals.size());
         sectionSignals.add(node);
     }
 
-    public void register(BlockSection edge) {
+    void register(BlockSection edge) {
         edge.setIndex(blockSections.size());
         blockSections.add(edge);
     }
