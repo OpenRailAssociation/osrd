@@ -15,6 +15,9 @@ public final class PointSequence<E> extends SortedSequence<E> {
             this.seq = seq;
         }
 
+        /**
+         * Returns the next point in the sequence.
+         */
         public Map.Entry<Double, E> next() {
             var data = this.seq.data;
             if (currentIndex >= data.size())

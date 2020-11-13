@@ -1,5 +1,8 @@
 package fr.sncf.osrd.infra;
 
+/**
+ * An edge in the topological graph.
+ */
 public class TopoEdge extends AbstractEdge<TopoNode> {
     public final Track track;
     public final String id;

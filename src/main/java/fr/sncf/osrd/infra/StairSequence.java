@@ -27,6 +27,9 @@ public final class StairSequence<E> extends SortedSequence<E> {
             return at().getValue();
         }
 
+        /**
+         * Moves the cursor forward until the given position is reached.
+         */
         public void advanceUntil(double targetPosition) {
             assert targetPosition > position();
             var data = this.seq.data;
