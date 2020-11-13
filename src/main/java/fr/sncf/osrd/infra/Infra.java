@@ -18,9 +18,9 @@ public class Infra {
         topoNodes.add(node);
     }
 
-    public void register(Line line) {
+    public void register(Line line) throws DataIntegrityException {
         var previousValue = lines.putIfAbsent(line.name, line);
         if (previousValue != null)
-            throw new RuntimeException(String.format("Duplicate line %s", line.name));
+            throw new DataIntegrityException(String.format("Duplicate line %s", line.name));
     }
 }
