@@ -11,7 +11,7 @@ public interface Indexable {
     void setIndex(int index);
 
     /**
-     * @return The unique per collection index.
+     * Returns the collection index.
      */
     int getIndex();
 }

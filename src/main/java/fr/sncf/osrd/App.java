@@ -4,6 +4,9 @@ import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.NoOpNode;
 
 public class App {
+    /**
+     * The main entry point for OSRD.
+     */
     public static void main(String[] args) {
         var infra = new Infra();
         infra.register(new NoOpNode("ok"));

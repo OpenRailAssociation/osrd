@@ -1,12 +1,14 @@
 package fr.sncf.osrd.infra;
 
 public class TopoEdge extends AbstractEdge<TopoNode> {
-    private final String id;
-    private double edgeLength;
+    public final Track track;
+    public final String id;
+    public final double length;
 
-    public TopoEdge(String id, TopoNode startNode, TopoNode endNode, double edgeLength) {
+    public TopoEdge(Track track, String id, TopoNode startNode, TopoNode endNode, double length) {
         super(startNode, endNode);
+        this.track = track;
         this.id = id;
-        this.edgeLength = edgeLength;
+        this.length = length;
     }
 }

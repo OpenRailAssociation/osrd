@@ -4,11 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NoOpNode extends TopoNode {
-    private final ArrayList<TopoEdge> neighbors;
+    private final ArrayList<TopoEdge> neighbors = new ArrayList<>();
 
     public NoOpNode(String id) {
         super(id);
-        neighbors = new ArrayList<>();
     }
 
     public void addEdge(TopoEdge edge) {
