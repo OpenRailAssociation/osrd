@@ -69,12 +69,12 @@ public class Infra {
 
     public final HashMap<String, Line> lines = new HashMap<>();
 
-    void register(TopoNode node) {
+    public void register(TopoNode node) {
         node.setIndex(topoNodes.size());
         topoNodes.add(node);
     }
 
-    void register(TopoEdge edge) {
+    public void register(TopoEdge edge) {
         edge.setIndex(topoEdges.size());
         topoEdges.add(edge);
     }
