@@ -10,6 +10,7 @@ repositories {
 
 dependencies {
     compile "com.badlogicgames.ashley:ashley:1.7.3"
+    compile group: 'org.dom4j', name: 'dom4j', version: '2.1.0'
 
     // Use JUnit Jupiter API for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
