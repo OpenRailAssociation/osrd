@@ -1,12 +1,11 @@
 package fr.sncf.osrd.infra;
 
-import java.util.ArrayList;
-
 public class Track {
+    public final Line line;
     public final String name;
-    public final ArrayList<TopoEdge> edges = new ArrayList<>();
 
-    public Track(String name) {
+    public Track(Line line, String name) {
+        this.line = line;
         this.name = name;
     }
 }
