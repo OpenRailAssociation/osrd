@@ -4,7 +4,6 @@ import fr.sncf.osrd.infra.*;
 import org.dom4j.Document;
 import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,28 +17,25 @@ public class RailMLParser {
         this.nodesMap = new HashMap<>();
     }
 
+    /** Initialises a new infrastructure from a RailML file. */
     public Infra parse() {
         var infra = new Infra();
-        try
-        {
+        try {
             SAXReader reader = new SAXReader();
             Document document = reader.read(inputPath);
             registerTopoNodes(infra, document);
             registerTopEdges(infra, document);
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         return infra;
     }
 
-    private void registerTopoNodes(Infra infra, Document document)
-    {
+    private void registerTopoNodes(Infra infra, Document document) {
         String netRelationsPath = "/railml/infrastructure/topology/netRelations/netRelation";
         List<Node> netRelations = document.selectNodes(netRelationsPath);
-        for (Node node : netRelations)
-        {
+        for (Node node : netRelations) {
             String id = node.valueOf("@id");
             var newNode = new NoOpNode(id);
             infra.register(newNode);
@@ -47,12 +43,10 @@ public class RailMLParser {
         }
     }
 
-    private void registerTopEdges(Infra infra, Document document)
-    {
+    private void registerTopEdges(Infra infra, Document document) {
         String netElementsPath = "/railml/infrastructure/topology/netElements/netElement";
         List<Node> netElements = document.selectNodes(netElementsPath);
-        for (Node node : netElements)
-        {
+        for (Node node : netElements) {
             String id = node.valueOf("@id");
             double length = Double.parseDouble(node.valueOf("@length"));
 
