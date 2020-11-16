@@ -14,7 +14,7 @@ public class Train implements Component {
 
     private Train(RollingStock rollingStock, TrainPath trainPath, double initialSpeed) {
         this.rollingStock = rollingStock;
-        tracker = new TrainPositionTracker(trainPath);
+        tracker = new TrainPositionTracker(trainPath, rollingStock.length);
         speed = initialSpeed;
     }
 
