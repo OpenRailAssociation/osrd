@@ -5,14 +5,16 @@ import fr.sncf.osrd.util.Freezable;
 
 public class Line implements Freezable {
     public final String name;
+    public final String id;
     private final CryoMap<String, Track> tracks = new CryoMap<>();
 
     /**
      * Creates a new line.
      * @param name The unique identified for the line.
      */
-    public Line(String name)  {
+    public Line(String name, String id)  {
         this.name = name;
+        this.id = id;
     }
 
     /**
