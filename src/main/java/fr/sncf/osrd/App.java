@@ -5,6 +5,7 @@ import fr.sncf.osrd.infra.parsing.RailMLParser;
 public class App {
     /**
      * The main entry point for OSRD.
+     * @param args the command line arguments
      */
     public static void main(String[] args) {
         if (args.length == 0) {

@@ -14,7 +14,8 @@ public final class PointSequence<E> extends SortedSequence<E> {
         }
 
         /**
-         * Returns the next point in the sequence.
+         * Returns the next point, and moves the iterator forward.
+         * @return the next point in the sequence
          */
         public Entry next() {
             var data = this.seq.data;

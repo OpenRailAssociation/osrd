@@ -9,6 +9,7 @@ public class Simulation {
 
     /**
      * Instantiate a simulation without starting it
+     * @param config all the required parameters for the simulation
      */
     public Simulation(Config config) {
         this.config = config;

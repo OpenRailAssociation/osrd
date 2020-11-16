@@ -20,7 +20,10 @@ public class RailMLParser {
         this.nodesMap = new HashMap<>();
     }
 
-    /** Initialises a new infrastructure from a RailML file. */
+    /**
+     * Initialises a new infrastructure from a RailML file.
+     * @return the parsed infrastructure
+     */
     public Infra parse() {
         var infra = new Infra();
         try {

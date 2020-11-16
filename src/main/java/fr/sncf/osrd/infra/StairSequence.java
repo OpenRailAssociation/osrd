@@ -27,6 +27,7 @@ public final class StairSequence<E> extends SortedSequence<E> {
 
         /**
          * Moves the cursor forward until the given position is reached.
+         * @param targetPosition the position to stop at
          */
         public void advanceUntil(double targetPosition) {
             assert targetPosition > position();
