@@ -1,29 +1,36 @@
 package fr.sncf.osrd.infra;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import fr.sncf.osrd.util.CryoMap;
+import fr.sncf.osrd.util.Freezable;
 
-public class Line {
+public class Line implements Freezable {
     public final String name;
-    public final Map<String, Track> tracks;
+    private final CryoMap<String, Track> tracks = new CryoMap<>();
 
     /**
      * Creates a new line.
      * @param name The unique identified for the line.
-     * @param tracks The list of tracks for this line.
-     * @throws DataIntegrityException if multiple tracks have the same name.
      */
-    public Line(String name, List<Track> tracks) throws DataIntegrityException {
+    public Line(String name)  {
         this.name = name;
-        var tracksMap = new HashMap<String, Track>();
-        for (var track : tracks)
-            // there should be no duplicate tracks
-            if (tracksMap.putIfAbsent(track.name, track) != null) {
-                var message = String.format("duplicate track name '%s' in line '%s'", name, track.name);
-                throw new DataIntegrityException(message);
-            }
-        this.tracks = Collections.unmodifiableMap(tracksMap);
+    }
+
+    /**
+     * Add a {@link fr.sncf.osrd.infra.Track} to the line.
+     * @throws DataIntegrityException If a track with the same name is already registered
+     */
+    void register(Track track) throws DataIntegrityException {
+        if (track.line != this)
+            throw new DataIntegrityException("registering a track to the wrong line");
+
+        if (tracks.putIfAbsent(track.name, track) != null) {
+            var message = String.format("duplicate track name '%s' in line '%s'", name, track.name);
+            throw new DataIntegrityException(message);
+        }
+    }
+
+    @Override
+    public void freeze() {
+        tracks.freeze();
     }
 }

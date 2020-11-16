@@ -100,6 +100,7 @@ public class Infra implements Freezable {
             throw new DataIntegrityException(String.format("Duplicate line %s", line.name));
     }
 
+    /** Prevent further modifications. */
     @Override
     public void freeze() {
         for (var e : topoNodes)

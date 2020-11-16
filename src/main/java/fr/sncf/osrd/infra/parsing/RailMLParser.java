@@ -59,7 +59,10 @@ public class RailMLParser {
             String secondRelationId = netRelationsRefs.get(1).valueOf("@ref");
             TopoNode secondRelationNode = nodesMap.get(firstRelationId);
 
-            infra.register(new TopoEdge(null, id, firstRelationNode, secondRelationNode, length));
+            // TODO: the edge now needs to be created with TopoEdge.link, which takes the functions
+            //       to call to add the edge to the nodes
+
+            // infra.register(new TopoEdge(null, id, firstRelationNode, secondRelationNode, length));
         }
     }
 }
