@@ -26,6 +26,10 @@ application {
     mainClassName = 'fr.sncf.osrd.App'
 }
 
+run {
+    enableAssertions = true
+}
+
 test {
     useJUnitPlatform()
 }
