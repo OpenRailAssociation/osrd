@@ -6,7 +6,6 @@ import fr.sncf.osrd.infra.TopoNode;
 import org.dom4j.Document;
 import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

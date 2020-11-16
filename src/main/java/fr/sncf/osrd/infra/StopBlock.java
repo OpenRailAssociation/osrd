@@ -1,7 +1,6 @@
 package fr.sncf.osrd.infra;
 
 import fr.sncf.osrd.util.CryoList;
-
 import java.util.List;
 
 /**
