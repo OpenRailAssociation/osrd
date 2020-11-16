@@ -1,6 +1,9 @@
 package fr.sncf.osrd.util;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.ListIterator;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 

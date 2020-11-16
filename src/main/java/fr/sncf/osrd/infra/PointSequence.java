@@ -1,7 +1,5 @@
 package fr.sncf.osrd.infra;
 
-import java.util.Map;
-
 /**
  * A sequence of points, indexed by position.
  * @param <E> The type of the point objects

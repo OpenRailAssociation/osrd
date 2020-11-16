@@ -1,7 +1,5 @@
 package fr.sncf.osrd;
 
-import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.NoOpNode;
 import fr.sncf.osrd.infra.parsing.RailMLParser;
 
 public class App {

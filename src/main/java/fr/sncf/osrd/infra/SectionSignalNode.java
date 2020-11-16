@@ -1,6 +1,5 @@
 package fr.sncf.osrd.infra;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SectionSignalNode extends AbstractNode<BlockSection> {
