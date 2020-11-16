@@ -10,6 +10,16 @@ import java.util.TreeMap;
  * @param <E> The type of the attributes
  */
 public abstract class SortedSequence<E> {
+    public class Entry {
+        public final double position;
+        public final E value;
+
+        public Entry(double position, E value) {
+            this.position = position;
+            this.value = value;
+        }
+    }
+
     public final class Builder {
         SortedMap<Double, E> data = new TreeMap<>();
 
@@ -19,14 +29,14 @@ public abstract class SortedSequence<E> {
 
         public void build(SortedSequence<E> res) {
             for (Map.Entry<Double, E> item : data.entrySet())
-                res.add(item);
+                res.add(item.getKey(), item.getValue());
         }
     }
 
-    protected ArrayList<Map.Entry<Double, E>> data = new ArrayList<>();
+    protected ArrayList<Entry> data = new ArrayList<>();
 
-    private void add(Map.Entry<Double, E> item) {
-        assert data.isEmpty() || item.getKey() >= data.get(data.size() - 1).getKey();
-        data.add(item);
+    private void add(double position, E value) {
+        assert data.isEmpty() || position >= data.get(data.size() - 1).position;
+        data.add(new Entry(position, value));
     }
 }

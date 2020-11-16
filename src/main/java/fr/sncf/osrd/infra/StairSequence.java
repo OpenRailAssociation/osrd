@@ -15,16 +15,16 @@ public final class StairSequence<E> extends SortedSequence<E> {
             this.seq = seq;
         }
 
-        public Map.Entry<Double, E> at() {
+        public Entry at() {
             return this.seq.data.get(currentIndex);
         }
 
         public double position() {
-            return at().getKey();
+            return at().position;
         }
 
         public E value() {
-            return at().getValue();
+            return at().value;
         }
 
         /**
