@@ -10,7 +10,8 @@ public class Line implements Freezable {
 
     /**
      * Creates a new line.
-     * @param name The unique identified for the line.
+     * @param name The display name for this line
+     * @param id The unique identifier for this line
      */
     public Line(String name, String id)  {
         this.name = name;
