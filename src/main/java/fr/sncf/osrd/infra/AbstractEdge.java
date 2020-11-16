@@ -11,7 +11,7 @@ public abstract class AbstractEdge<N extends AbstractNode> implements Indexable,
 
     @Override
     public void setIndex(int index) {
-        assert index == -1;
+        assert this.index == -1;
         this.index = index;
     }
 
