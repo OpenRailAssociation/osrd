@@ -44,9 +44,9 @@ import fr.sncf.osrd.util.Freezable;
  *            /
  *   a s-----=----s c
  * </code>
- * <p>Each <tt>s</tt> is a signal delimiting block sections, and the <tt>=</tt> is a switch.
- * Because of the way switches work, you can't go from <tt>b</tt> to <tt>c</tt>, not from
- * <tt>c</tt> to <tt>b</tt>, even though any other path would work.</p>
+ * <p>Each {@code s} is a signal delimiting block sections, and the {@code =} is a switch.
+ * Because of the way switches work, you can't go from {@code b} to {@code c}, nor from
+ * {@code c} to {@code b}, even though any other path would work.</p>
  *
  * <p>We decided to model it using <b>per-edge neighbours</b>: each end of the block section
  * can be connected to other block sections, even though it's also connected to a signal.</p>
