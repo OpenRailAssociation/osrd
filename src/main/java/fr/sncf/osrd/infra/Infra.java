@@ -139,11 +139,14 @@ public class Infra implements Freezable {
             Consumer<TopoEdge> startNodeRegister,
             TopoNode endNode,
             Consumer<TopoEdge> endNodeRegister,
+            double startNodePosition,
+            double endNodePosition,
             Track track,
             String id,
             double length
     ) {
-        var edge = TopoEdge.link(startNode, startNodeRegister, endNode, endNodeRegister, track, id, length);
+        var edge = TopoEdge.link(startNode, startNodeRegister, endNode, endNodeRegister, startNodePosition,
+                endNodePosition, track, id, length);
         this.register(edge);
         return edge;
     }
