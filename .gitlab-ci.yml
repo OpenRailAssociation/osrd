@@ -1,4 +1,4 @@
-image: gradle:alpine
+image: gradle:jdk11-hotspot
 
 stages:
   - build
