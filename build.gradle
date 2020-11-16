@@ -27,5 +27,11 @@ test {
 }
 
 checkstyle {
-    toolVersion '8.29';
+    toolVersion '8.37'
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.enabled true
+    }
 }
