@@ -12,7 +12,8 @@ public class Action implements Comparable<Action> {
 
     public Action(ActionType type, double force) {
         assert type == ActionType.ACCELERATE || type == ActionType.BRAKE;
-        assert (force > 0. && type == ActionType.ACCELERATE) || (force < 0. && type == ActionType.BRAKE);
+        assert force > 0. && type == ActionType.ACCELERATE;
+        assert force < 0. && type == ActionType.BRAKE;
         this.type = type;
         this.force = force;
     }
