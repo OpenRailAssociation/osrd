@@ -18,4 +18,8 @@ public class SectionSignalNode extends AbstractNode<BlockSection> {
         assert this == from.endNode;
         return from.endNeighbors;
     }
+
+    @Override
+    public void freeze() {
+    }
 }

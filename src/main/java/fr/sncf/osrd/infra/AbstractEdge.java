@@ -1,8 +1,9 @@
 package fr.sncf.osrd.infra;
 
+import fr.sncf.osrd.util.Freezable;
 import fr.sncf.osrd.util.Indexable;
 
-public abstract class AbstractEdge<N extends AbstractNode> implements Indexable {
+public abstract class AbstractEdge<N extends AbstractNode> implements Indexable, Freezable {
     public final N startNode;
     public final N endNode;
 

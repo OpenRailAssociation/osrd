@@ -15,4 +15,8 @@ public class TopoEdge extends AbstractEdge<TopoNode> {
         this.id = id;
         this.length = length;
     }
+
+    @Override
+    public void freeze() {
+    }
 }

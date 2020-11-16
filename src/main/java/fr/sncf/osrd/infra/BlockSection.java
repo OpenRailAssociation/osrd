@@ -1,6 +1,7 @@
 package fr.sncf.osrd.infra;
 
-import java.util.ArrayList;
+import fr.sncf.osrd.util.CryoList;
+
 
 /**
  * Block sections are an edge between two section signals.
@@ -14,8 +15,8 @@ public class BlockSection extends AbstractEdge<SectionSignalNode> {
      * {@link fr.sncf.osrd.infra.SectionSignalNode}, but here. SectionSignalNode looks for
      * the neighbors here. This behavior is better explained in {@link fr.sncf.osrd.infra.Infra}.
      */
-    public final ArrayList<BlockSection> startNeighbors = new ArrayList<>();
-    public final ArrayList<BlockSection> endNeighbors = new ArrayList<>();
+    public final CryoList<BlockSection> startNeighbors = new CryoList<>();
+    public final CryoList<BlockSection> endNeighbors = new CryoList<>();
 
     /** The topological edges the block section spans over. */
     public final StairSequence<TopoEdge> edges;
@@ -38,5 +39,11 @@ public class BlockSection extends AbstractEdge<SectionSignalNode> {
         this.edges = edges;
         this.id = id;
         this.length = length;
+    }
+
+    @Override
+    public void freeze() {
+        startNeighbors.freeze();
+        endNeighbors.freeze();
     }
 }

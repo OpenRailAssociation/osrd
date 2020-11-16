@@ -1,7 +1,8 @@
 package fr.sncf.osrd.infra;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import fr.sncf.osrd.util.CryoList;
+import fr.sncf.osrd.util.CryoMap;
+import fr.sncf.osrd.util.Freezable;
 
 /**
  * A data structure meant to store the immutable part of a railroad infrastructure.
@@ -50,24 +51,24 @@ import java.util.HashMap;
  * <p>We decided to model it using <b>per-edge neighbours</b>: each end of the block section
  * can be connected to other block sections, even though it's also connected to a signal.</p>
  */
-public class Infra {
+public class Infra implements Freezable {
     /**
      * The topology graph.
      * Each TopoEdge contains a reference to a Track,
      * which stores most of the data in SortedSequences.
      */
-    public final ArrayList<TopoNode> topoNodes = new ArrayList<>();
-    public final ArrayList<TopoEdge> topoEdges = new ArrayList<>();
+    public final CryoList<TopoNode> topoNodes = new CryoList<>();
+    public final CryoList<TopoEdge> topoEdges = new CryoList<>();
 
     /**
      * The block sections graph.
      * A block section may span multiple topological edges, and thus be on multiple lines.
      * Each block section has a StairSequence of the edges it spans over.
      */
-    public final ArrayList<SectionSignalNode> sectionSignals = new ArrayList<>();
-    public final ArrayList<BlockSection> blockSections = new ArrayList<>();
+    public final CryoList<SectionSignalNode> sectionSignals = new CryoList<>();
+    public final CryoList<BlockSection> blockSections = new CryoList<>();
 
-    public final HashMap<String, Line> lines = new HashMap<>();
+    public final CryoMap<String, Line> lines = new CryoMap<>();
 
     public void register(TopoNode node) {
         node.setIndex(topoNodes.size());
@@ -97,5 +98,23 @@ public class Infra {
         var previousValue = lines.putIfAbsent(line.name, line);
         if (previousValue != null)
             throw new DataIntegrityException(String.format("Duplicate line %s", line.name));
+    }
+
+    @Override
+    public void freeze() {
+        for (var e : topoNodes)
+            e.freeze();
+        for (var e : topoEdges)
+            e.freeze();
+        for (var e : sectionSignals)
+            e.freeze();
+        for (var e : blockSections)
+            e.freeze();
+
+        topoNodes.freeze();
+        topoEdges.freeze();
+        sectionSignals.freeze();
+        blockSections.freeze();
+        lines.freeze();
     }
 }

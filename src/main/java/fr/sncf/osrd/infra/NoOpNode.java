@@ -1,10 +1,10 @@
 package fr.sncf.osrd.infra;
 
-import java.util.ArrayList;
+import fr.sncf.osrd.util.CryoList;
 import java.util.List;
 
 public class NoOpNode extends TopoNode {
-    private final ArrayList<TopoEdge> neighbors = new ArrayList<>();
+    private final CryoList<TopoEdge> neighbors = new CryoList<>();
 
     public NoOpNode(String id) {
         super(id);
@@ -17,5 +17,10 @@ public class NoOpNode extends TopoNode {
     @Override
     public List<TopoEdge> getNeighbors(TopoEdge from) {
         return neighbors;
+    }
+
+    @Override
+    public void freeze() {
+        this.neighbors.freeze();
     }
 }

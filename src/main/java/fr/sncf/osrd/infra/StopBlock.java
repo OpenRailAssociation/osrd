@@ -1,6 +1,6 @@
 package fr.sncf.osrd.infra;
 
-import java.util.ArrayList;
+import fr.sncf.osrd.util.CryoList;
 import java.util.List;
 
 /**
@@ -8,16 +8,14 @@ import java.util.List;
  * https://en.wikipedia.org/wiki/Buffer_stop
  */
 public class StopBlock extends TopoNode {
-    private final ArrayList<TopoEdge> neighbor;
+    private final CryoList<TopoEdge> neighbor = new CryoList<>();
 
     public StopBlock(String id) {
         super(id);
-        neighbor = new ArrayList<>();
     }
 
     /** Sets the edge the stop block terminates. */
     void setEdge(TopoEdge edge) {
-        assert neighbor.isEmpty(); // as a stop block only has one edge
         neighbor.clear();
         neighbor.add(edge);
     }
@@ -25,5 +23,10 @@ public class StopBlock extends TopoNode {
     @Override
     public List<TopoEdge> getNeighbors(TopoEdge from) {
         return neighbor;
+    }
+
+    @Override
+    public void freeze() {
+        neighbor.freeze();
     }
 }
