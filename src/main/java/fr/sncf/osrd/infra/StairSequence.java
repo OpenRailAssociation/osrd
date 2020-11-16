@@ -1,7 +1,5 @@
 package fr.sncf.osrd.infra;
 
-import java.util.Map;
-
 /**
  * A sequence of points delimiting a continuous stair.
  * @param <E> The type of the point objects

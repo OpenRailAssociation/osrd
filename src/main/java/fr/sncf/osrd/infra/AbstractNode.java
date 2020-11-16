@@ -2,6 +2,7 @@ package fr.sncf.osrd.infra;
 
 import fr.sncf.osrd.util.Freezable;
 import fr.sncf.osrd.util.Indexable;
+
 import java.util.List;
 
 public abstract class AbstractNode<E extends AbstractEdge> implements Indexable, Freezable {
