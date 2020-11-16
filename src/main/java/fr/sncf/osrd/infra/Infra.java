@@ -104,9 +104,9 @@ public class Infra implements Freezable {
      * @throws DataIntegrityException if another line with the same name is already registered
      */
     public void register(Line line) throws DataIntegrityException {
-        var previousValue = lines.putIfAbsent(line.name, line);
+        var previousValue = lines.putIfAbsent(line.id, line);
         if (previousValue != null)
-            throw new DataIntegrityException(String.format("Duplicate line %s", line.name));
+            throw new DataIntegrityException(String.format("Duplicate line %s", line.id));
     }
 
     /** Prevent further modifications. */
