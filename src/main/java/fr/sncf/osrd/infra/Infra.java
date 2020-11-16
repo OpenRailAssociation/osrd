@@ -3,6 +3,7 @@ package fr.sncf.osrd.infra;
 import fr.sncf.osrd.util.CryoList;
 import fr.sncf.osrd.util.CryoMap;
 import fr.sncf.osrd.util.Freezable;
+import java.util.function.Consumer;
 
 /**
  * A data structure meant to store the immutable part of a railroad infrastructure.
@@ -107,6 +108,55 @@ public class Infra implements Freezable {
         var previousValue = lines.putIfAbsent(line.id, line);
         if (previousValue != null)
             throw new DataIntegrityException(String.format("Duplicate line %s", line.id));
+    }
+
+    /**
+     * Instanciates and registers a new Line
+     * @param name the display name of the line
+     * @param id the unique line identifier
+     * @return the Line object
+     * @throws DataIntegrityException if a line with the same identifier already exists
+     */
+    public Line makeLine(String name, String id) throws DataIntegrityException {
+        var line = new Line(name, id);
+        this.register(line);
+        return line;
+    }
+
+    /**
+     * Creates and registers a new topological link.
+     * @param startNode The start node of the edge
+     * @param startNodeRegister The function to call to register the edge with the start node
+     * @param endNode The end node of the edge
+     * @param endNodeRegister The function to call to register the edge with the end node
+     * @param track the track to add the edge onto
+     * @param id A unique identifier for the edge
+     * @param length The length of the edge, in meters
+     * @return A new edge
+     */
+    public TopoEdge makeTopoLink(
+            TopoNode startNode,
+            Consumer<TopoEdge> startNodeRegister,
+            TopoNode endNode,
+            Consumer<TopoEdge> endNodeRegister,
+            Track track,
+            String id,
+            double length
+    ) {
+        var edge = TopoEdge.link(startNode, startNodeRegister, endNode, endNodeRegister, track, id, length);
+        this.register(edge);
+        return edge;
+    }
+
+    /**
+     * Creates and registers a new tolopological NoOp (No Operation) node.
+     * @param id the unique node identifier
+     * @return the newly created node
+     */
+    public NoOpNode makeNoOpNode(String id) {
+        var node = new NoOpNode(id);
+        this.register(node);
+        return node;
     }
 
     /** Prevent further modifications. */
