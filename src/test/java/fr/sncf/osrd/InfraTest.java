@@ -18,6 +18,6 @@ class InfraTest {
         infra.makeTopoLink(
                 nodeA, nodeA::addEdge,
                 nodeB, nodeB::addEdge,
-                track, "e1", 42.0));
+                track, "e1", 42.0);
     }
 }
