@@ -26,10 +26,14 @@ public class Line implements Freezable {
         if (track.line != this)
             throw new InvalidInfraException("registering a track to the wrong line");
 
+        var trackIndex = tracks.size();
         if (tracks.putIfAbsent(track.name, track) != null) {
             var message = String.format("duplicate track name '%s' in line '%s'", name, track.name);
             throw new InvalidInfraException(message);
         }
+
+        // set the per-line unique track index
+        track.setIndex(trackIndex);
     }
 
     @Override

@@ -1,9 +1,10 @@
 package fr.sncf.osrd.infra;
 
 import fr.sncf.osrd.infra.blocksection.BlockSection;
+import fr.sncf.osrd.util.Indexable;
 import fr.sncf.osrd.util.StairSequence;
 
-public class Track {
+public class Track implements Indexable {
     public final Line line;
     public final String id;
     public final String name;
@@ -31,4 +32,22 @@ public class Track {
     public final StairSequence<Double> slope = new StairSequence<>();
     public final StairSequence<BlockSection> blockSections = new StairSequence<>();
     public final StairSequence<Double> speedLimit = new StairSequence<>();
+
+    /**
+     * A per-line unique track index.
+     * It doesn't reflect any special order, it's just unique per line!
+     */
+    private int index = -1;
+
+    @Override
+    public void setIndex(int index) {
+        assert this.index == -1;
+        this.index = index;
+    }
+
+    @Override
+    public int getIndex() {
+        assert index != -1;
+        return index;
+    }
 }
