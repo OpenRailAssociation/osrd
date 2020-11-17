@@ -18,6 +18,13 @@ public class Train implements Component {
         speed = initialSpeed;
     }
 
+    /**
+     * Creates a train entity
+     * @param rollingStock the train inventory item
+     * @param trainPath the path the train will follow
+     * @param initialSpeed the initial speed the train will travel at
+     * @return A new train entity
+     */
     public static Entity createTrain(RollingStock rollingStock, TrainPath trainPath, double initialSpeed) {
         Entity train = new Entity();
         train.add(new Train(rollingStock, trainPath, initialSpeed));

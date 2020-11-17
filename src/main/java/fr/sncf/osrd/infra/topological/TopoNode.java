@@ -1,4 +1,6 @@
-package fr.sncf.osrd.infra;
+package fr.sncf.osrd.infra.topological;
+
+import fr.sncf.osrd.infra.graph.AbstractNode;
 
 /**
  * A node in the topological infrastructure graph.

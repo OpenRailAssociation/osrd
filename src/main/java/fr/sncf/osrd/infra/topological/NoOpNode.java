@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra;
+package fr.sncf.osrd.infra.topological;
 
 import fr.sncf.osrd.util.CryoList;
 import java.util.List;

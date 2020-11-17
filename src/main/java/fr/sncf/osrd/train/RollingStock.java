@@ -1,6 +1,6 @@
 package fr.sncf.osrd.train;
 
-import fr.sncf.osrd.infra.StairSequence;
+import fr.sncf.osrd.util.StairSequence;
 import fr.sncf.osrd.util.Indexable;
 
 /**

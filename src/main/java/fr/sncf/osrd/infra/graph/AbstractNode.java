@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra;
+package fr.sncf.osrd.infra.graph;
 
 import fr.sncf.osrd.util.Freezable;
 import fr.sncf.osrd.util.Indexable;
@@ -8,9 +8,9 @@ public abstract class AbstractNode<E extends AbstractEdge> implements Indexable,
     private int index = -1;
 
     /**
-     * Return the list of all TopoEdge which are reachable from a given TopoEdge
+     * Return the list of all edges which are reachable from a given edge
      */
-    abstract List<E> getNeighbors(E from);
+    public abstract List<E> getNeighbors(E from);
 
     @Override
     public void setIndex(int index) {

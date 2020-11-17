@@ -1,6 +1,9 @@
-package fr.sncf.osrd.infra;
+package fr.sncf.osrd.infra.blocksection;
 
+import fr.sncf.osrd.infra.graph.AbstractEdge;
+import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.util.CryoList;
+import fr.sncf.osrd.util.StairSequence;
 
 
 /**
@@ -12,7 +15,7 @@ public class BlockSection extends AbstractEdge<SectionSignalNode> {
 
     /**
      * Because of the way switches work, the neighbors relationships aren't stored inside
-     * {@link fr.sncf.osrd.infra.SectionSignalNode}, but here. SectionSignalNode looks for
+     * {@link SectionSignalNode}, but here. SectionSignalNode looks for
      * the neighbors here. This behavior is better explained in {@link fr.sncf.osrd.infra.Infra}.
      */
     public final CryoList<BlockSection> startNeighbors = new CryoList<>();

@@ -20,15 +20,15 @@ public class Line implements Freezable {
 
     /**
      * Add a {@link fr.sncf.osrd.infra.Track} to the line.
-     * @throws DataIntegrityException If a track with the same name is already registered
+     * @throws InvalidInfraException If a track with the same name is already registered
      */
-    void register(Track track) throws DataIntegrityException {
+    void register(Track track) throws InvalidInfraException {
         if (track.line != this)
-            throw new DataIntegrityException("registering a track to the wrong line");
+            throw new InvalidInfraException("registering a track to the wrong line");
 
         if (tracks.putIfAbsent(track.name, track) != null) {
             var message = String.format("duplicate track name '%s' in line '%s'", name, track.name);
-            throw new DataIntegrityException(message);
+            throw new InvalidInfraException(message);
         }
     }
 

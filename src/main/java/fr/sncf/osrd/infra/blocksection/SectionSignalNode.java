@@ -1,4 +1,6 @@
-package fr.sncf.osrd.infra;
+package fr.sncf.osrd.infra.blocksection;
+
+import fr.sncf.osrd.infra.graph.AbstractNode;
 
 import java.util.List;
 
@@ -10,7 +12,7 @@ public class SectionSignalNode extends AbstractNode<BlockSection> {
     }
 
     @Override
-    List<BlockSection> getNeighbors(BlockSection from) {
+    public List<BlockSection> getNeighbors(BlockSection from) {
         if (from.startNode == this) {
             return from.startNeighbors;
         }
