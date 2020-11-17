@@ -1,6 +1,6 @@
 package fr.sncf.osrd.train;
 
-import fr.sncf.osrd.infra.TopoEdge;
+import fr.sncf.osrd.infra.topological.TopoEdge;
 
 import java.util.ArrayDeque;
 
@@ -40,6 +40,11 @@ public class TrainPositionTracker {
         return currentPathIndex < path.edges.size() - 1;
     }
 
+    /**
+     * Updates the position of the train on the network
+     * @param speed The current speed of the train, in meters per second
+     * @param deltaTime The elapsed time, in seconds
+     */
     public void updatePosition(double speed, double deltaTime) {
         headEdgePosition += speed * deltaTime;
 

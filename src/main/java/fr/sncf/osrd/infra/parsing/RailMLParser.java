@@ -1,8 +1,8 @@
 package fr.sncf.osrd.infra.parsing;
 
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.NoOpNode;
-import fr.sncf.osrd.infra.TopoNode;
+import fr.sncf.osrd.infra.topological.NoOpNode;
+import fr.sncf.osrd.infra.topological.TopoNode;
 import org.dom4j.Document;
 import org.dom4j.Node;
 import org.dom4j.io.SAXReader;

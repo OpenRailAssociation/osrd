@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra;
+package fr.sncf.osrd.util;
 
 /**
  * A sequence of points, indexed by position.

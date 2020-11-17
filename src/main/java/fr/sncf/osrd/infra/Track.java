@@ -1,5 +1,8 @@
 package fr.sncf.osrd.infra;
 
+import fr.sncf.osrd.infra.blocksection.BlockSection;
+import fr.sncf.osrd.util.StairSequence;
+
 public class Track {
     public final Line line;
     public final String id;
@@ -17,9 +20,9 @@ public class Track {
      * @param id the unique identified for this track
      * @param name the display name for this track
      * @return the newly created track
-     * @throws DataIntegrityException when another track with the same name is already registered.
+     * @throws InvalidInfraException when another track with the same name is already registered.
      */
-    public static Track createAndRegister(Line line, String id, String name) throws DataIntegrityException {
+    public static Track createAndRegister(Line line, String id, String name) throws InvalidInfraException {
         var track = new Track(line, id, name);
         line.register(track);
         return track;

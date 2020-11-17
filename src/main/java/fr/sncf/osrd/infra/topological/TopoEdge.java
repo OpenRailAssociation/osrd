@@ -1,4 +1,7 @@
-package fr.sncf.osrd.infra;
+package fr.sncf.osrd.infra.topological;
+
+import fr.sncf.osrd.infra.graph.AbstractEdge;
+import fr.sncf.osrd.infra.Track;
 
 import java.util.function.Consumer;
 

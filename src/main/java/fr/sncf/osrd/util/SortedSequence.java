@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra;
+package fr.sncf.osrd.util;
 
 import java.util.ArrayList;
 import java.util.Map;

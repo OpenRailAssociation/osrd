@@ -1,5 +1,10 @@
 package fr.sncf.osrd.infra;
 
+import fr.sncf.osrd.infra.blocksection.BlockSection;
+import fr.sncf.osrd.infra.blocksection.SectionSignalNode;
+import fr.sncf.osrd.infra.topological.NoOpNode;
+import fr.sncf.osrd.infra.topological.TopoEdge;
+import fr.sncf.osrd.infra.topological.TopoNode;
 import fr.sncf.osrd.util.CryoList;
 import fr.sncf.osrd.util.CryoMap;
 import fr.sncf.osrd.util.Freezable;
@@ -102,12 +107,12 @@ public class Infra implements Freezable {
     /**
      * Registers a new line into the infrastructure, throwing an exception
      * @param line the line to register
-     * @throws DataIntegrityException if another line with the same name is already registered
+     * @throws InvalidInfraException if another line with the same name is already registered
      */
-    public void register(Line line) throws DataIntegrityException {
+    public void register(Line line) throws InvalidInfraException {
         var previousValue = lines.putIfAbsent(line.id, line);
         if (previousValue != null)
-            throw new DataIntegrityException(String.format("Duplicate line %s", line.id));
+            throw new InvalidInfraException(String.format("Duplicate line %s", line.id));
     }
 
     /**
@@ -115,9 +120,9 @@ public class Infra implements Freezable {
      * @param name the display name of the line
      * @param id the unique line identifier
      * @return the Line object
-     * @throws DataIntegrityException if a line with the same identifier already exists
+     * @throws InvalidInfraException if a line with the same identifier already exists
      */
-    public Line makeLine(String name, String id) throws DataIntegrityException {
+    public Line makeLine(String name, String id) throws InvalidInfraException {
         var line = new Line(name, id);
         this.register(line);
         return line;
