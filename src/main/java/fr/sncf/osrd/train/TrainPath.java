@@ -1,10 +1,21 @@
 package fr.sncf.osrd.train;
 
+import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.util.CryoList;
 
 public class TrainPath {
-    final CryoList<TopoEdge> edges;
+    public class PathElement {
+        public final TopoEdge edge;
+        public final EdgeDirection direction;
+
+        public PathElement(TopoEdge edge, EdgeDirection direction) {
+            this.edge = edge;
+            this.direction = direction;
+        }
+    }
+
+    final CryoList<PathElement> edges;
     final CryoList<TrainStop> stops;
 
     /**
@@ -12,7 +23,7 @@ public class TrainPath {
      * @param edges the list of edges the train will travel through
      * @param stops the list of stops
      */
-    public TrainPath(CryoList<TopoEdge> edges, CryoList<TrainStop> stops) {
+    public TrainPath(CryoList<PathElement> edges, CryoList<TrainStop> stops) {
         this.edges = edges;
         this.stops = stops;
         edges.freeze();

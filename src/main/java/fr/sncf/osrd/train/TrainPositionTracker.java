@@ -33,7 +33,7 @@ public class TrainPositionTracker {
 
     private TopoEdge nextPathEdge() {
         ++currentPathIndex;
-        return path.edges.get(currentPathIndex);
+        return path.edges.get(currentPathIndex).edge;
     }
 
     private boolean hasNextPathEdge() {
