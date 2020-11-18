@@ -45,7 +45,12 @@
         <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
     </module>
 
+    <!-- Allow using @SuppressWarnings("checkstyle:LocalVariableName") -->
+    <module name="SuppressWarningsFilter"/>
     <module name="TreeWalker">
+        <!-- Allow using @SuppressWarnings("checkstyle:LocalVariableName") -->
+        <module name="SuppressWarningsHolder"/>
+
         <!-- Ensure an empty line separates methods -->
         <module name="EmptyLineSeparator">
             <property name="allowNoEmptyLineBetweenFields" value="true"/>
