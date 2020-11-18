@@ -3,6 +3,8 @@ package fr.sncf.osrd.train;
 import fr.sncf.osrd.util.StairSequence;
 import fr.sncf.osrd.util.Indexable;
 
+
+
 /**
  * The immutable characteristics of a specific train.
  * There must be a RollingStock instance per train on the network.
@@ -22,11 +24,23 @@ public class RollingStock implements Indexable {
         + B * v
         + C * v^2
     )
+
+    /!\ Be careful when importing data, convertions are needed /!\
+
+    // configurationFile ?
+    rollingResistance = cfg.getDouble("A") * mass / 100.0; // from dN/ton to N
+    mechanicalResistance = cfg.getDouble("B") * mass / 100 * 3.6D; // from dN/ton/(km/h) to N
+    aerodynamicResistance = cfg.getDouble("C") * mass / 100 * Math.pow(3.6D, 2); // from dN/ton/(km/h)2 to N
+
+    // Json case
+    rollingResistance = json.getDouble("coeffvoma") * 10; // from dN to N
+    mechanicalResistance = json.getDouble("coeffvomb") * 10 * 3.6D; // from dN/(km/h) to N/(m/s)
+    aerodynamicResistance = json.getDouble("coeffvomc") * 10 * Math.pow(3.6D, 2); // from dN/(km/h)2 to N/(m/s)2
     */
 
-    public final double rollingResistance;
-    public final double mechanicalResistance;
-    public final double aerodynamicResistance;
+    public final double rollingResistance;      // in newtons
+    public final double mechanicalResistance;   // in newtons
+    public final double aerodynamicResistance;  // in newtons
 
     /** the length of the train, in meters. */
     public final double length;
@@ -46,7 +60,7 @@ public class RollingStock implements Indexable {
     /** The maximum acceleration when the train is in its regular operating mode. */
     public final double comfortAcceleration;
 
-    /** The mass of the train, in metric tons. */
+    /** The mass of the train, in kilograms. */
     public final double mass;
 
     /**
@@ -71,15 +85,15 @@ public class RollingStock implements Indexable {
 
     /**
      * Creates a new train inventory item.
-     * @param rollingResistance a rolling resistance coefficient
-     * @param mechanicalResistance a mechanical resistance coefficient
-     * @param aerodynamicResistance an aerodynamic resistance coefficient
+     * @param rollingResistance a rolling resistance coefficient, in newtons
+     * @param mechanicalResistance a mechanical resistance coefficient, in newtons
+     * @param aerodynamicResistance an aerodynamic resistance coefficient, in newtons
      * @param length the length of the train, in meters
      * @param maxSpeed the max speed, in m/s
      * @param startUpTime the train startup time, in seconds
      * @param startUpAcceleration the maximum acceleration during startup, in m/s^2
      * @param comfortAcceleration the cruise maximum acceleration, in m/s^2
-     * @param mass the mass of the train, in metric tons
+     * @param mass the mass of the train, in kilograms
      * @param inertiaCoefficient a special inertia coefficient
      * @param isTVM300Equiped whether the train has TVM300 hardware
      * @param isTVM430Equiped whether the train has TVM430 hardware
