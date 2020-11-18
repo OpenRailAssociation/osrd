@@ -19,8 +19,10 @@ import java.util.function.Consumer;
  *  <li>The topological nodes as registered first</li>
  *  <li>The topological edges are registered with the node, and with the infrastructure</li>
  *  <li>Section signals are registered</li>
- *  <li>block sections are registered</li>
- *  <li>external track attributes are computed (elements that were nodes are added as attributes on edges)</li>
+ *  <li>Block sections are registered</li>
+ *  <li>External track attributes are computed (elements that were nodes are added as attributes on edges)</li>
+ *  <li>For all edges, a cursor inside the external track attributes is computed and registered (very important)</li>
+ *  <li>The infrastructure is frozen</li>
  * </ol>
  *
  * <h1>Building a topological graph</h1>
@@ -73,6 +75,9 @@ public class Infra implements Freezable {
      */
     public final CryoList<TopoNode> topoNodes = new CryoList<>();
     public final CryoList<TopoEdge> topoEdges = new CryoList<>();
+
+    /** A list mapping all topological edges to a cursor in TrackAttributes. */
+    public final CryoList<TrackAttributes.Slice> topoEdgeAttributes = new CryoList<>();
 
     /**
      * The block sections graph.
@@ -170,19 +175,24 @@ public class Infra implements Freezable {
     /** Prevent further modifications. */
     @Override
     public void freeze() {
+        // freeze the topological graph
         for (var e : topoNodes)
             e.freeze();
         for (var e : topoEdges)
             e.freeze();
+        topoNodes.freeze();
+        topoEdges.freeze();
+        topoEdgeAttributes.freeze();
+
+        // freeze the block sections graph
         for (var e : sectionSignals)
             e.freeze();
         for (var e : blockSections)
             e.freeze();
-
-        topoNodes.freeze();
-        topoEdges.freeze();
         sectionSignals.freeze();
         blockSections.freeze();
+
+        // miscellaneous
         lines.freeze();
     }
 }
