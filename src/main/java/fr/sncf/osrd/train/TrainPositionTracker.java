@@ -1,5 +1,6 @@
 package fr.sncf.osrd.train;
 
+import com.badlogic.ashley.signals.Signal;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 
 import java.util.ArrayDeque;
@@ -17,10 +18,20 @@ public class TrainPositionTracker {
     /** The list of edges the train currently spans over. */
     private final ArrayDeque<TopoEdge> currentEdges = new ArrayDeque<>();
 
-    /* This code only track the position of the head, as the tail's can be computed
-     from the list of edges the train currently spans over, and the position of
-     the head on the head edge. */
-    private double headEdgePosition;
+    /**
+     *  The position of the head of the train on its edge.
+     *  Its the ground truth for the position of the train.
+     */
+    private double headEdgePosition = 0.0;
+
+    /**
+     *  The position of the tail on its edge.
+     *  Its recomputed from the head edge position at each update.
+     */
+    private double tailEdgePosition = Double.NaN;
+
+    public final Signal<TopoEdge> joinedEdgeSignal = new Signal<>();
+    public final Signal<TopoEdge> leftEdgeSignal = new Signal<>();
 
     public TrainPositionTracker(TrainPath path, double trainLength) {
         this.path = path;
@@ -56,7 +67,9 @@ public class TrainPositionTracker {
                 break;
 
             // add the next edge on the path to the current edges queue
-            currentEdges.addFirst(nextPathEdge());
+            var newEdge = nextPathEdge();
+            currentEdges.addFirst(newEdge);
+            joinedEdgeSignal.dispatch(newEdge);
 
             // as the head edge changed, so does the position
             headEdgePosition -= headEdgeLength;
@@ -73,20 +86,24 @@ public class TrainPositionTracker {
         //          total edges span
         // \____________/\____________________/
         //  tail edge len    next edges span
-        //               \_____________/\_____/
+        //               \______________/\____/
         //          new available space     `head edge headroom
+        //
+        // continue while newAvailableSpace >= trainLength
 
         var headEdgeHeadroom = headEdge().length - headEdgePosition;
+        var totalEdgesSpan = currentEdges.stream().mapToDouble(edge -> edge.length).sum();
         assert headEdgeHeadroom > 0.;
         while (currentEdges.size() > 1) {
             var tailEdgeLength = currentEdges.getLast().length;
-            var totalEdgesSpan = currentEdges.stream().mapToDouble(edge -> edge.length).sum();
             var nextEdgesSpan = totalEdgesSpan - tailEdgeLength;
             var newAvailableSpace = nextEdgesSpan - headEdgeHeadroom;
             if (newAvailableSpace < trainLength)
                 break;
 
-            currentEdges.removeLast();
+            leftEdgeSignal.dispatch(currentEdges.removeLast());
+            totalEdgesSpan -= tailEdgeLength;
         }
+        tailEdgePosition = totalEdgesSpan - trainLength;
     }
 }
