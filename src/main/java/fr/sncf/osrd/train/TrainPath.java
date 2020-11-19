@@ -8,11 +8,17 @@ public class TrainPath {
     public class PathElement {
         public final TopoEdge edge;
         public final EdgeDirection direction;
+        public final double pathStartOffset;
 
-        public PathElement(TopoEdge edge, EdgeDirection direction) {
+        public PathElement(TopoEdge edge, EdgeDirection direction, double pathStartOffset) {
             this.edge = edge;
             this.direction = direction;
+            this.pathStartOffset = pathStartOffset;
         }
+    }
+
+    public final PathElement get(int index) {
+        return edges.get(index);
     }
 
     final CryoList<PathElement> edges;
