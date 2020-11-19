@@ -22,29 +22,6 @@ public final class PointSequence<E> extends SortedSequence<E> {
         }
     }
 
-    public final class Cursor {
-        private int currentIndex = 0;
-        private PointSequence<E> seq;
-
-        public Cursor(PointSequence<E> seq) {
-            this.seq = seq;
-        }
-
-        /**
-         * Returns the next point, and moves the iterator forward.
-         * @return the next point in the sequence
-         */
-        public Entry next() {
-            var data = this.seq.data;
-            if (currentIndex >= data.size())
-                return null;
-
-            var res = data.get(currentIndex);
-            currentIndex++;
-            return res;
-        }
-    }
-
     /**
      * Gets a slice of a sequence.
      * @param startPosition the included start slice bound
@@ -63,9 +40,5 @@ public final class PointSequence<E> extends SortedSequence<E> {
                 break;
 
         return new Slice(this, start, end);
-    }
-
-    public Cursor cursor() {
-        return new Cursor(this);
     }
 }
