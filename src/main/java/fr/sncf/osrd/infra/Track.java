@@ -1,8 +1,6 @@
 package fr.sncf.osrd.infra;
 
-import fr.sncf.osrd.infra.blocksection.BlockSection;
 import fr.sncf.osrd.util.Indexable;
-import fr.sncf.osrd.util.StairSequence;
 
 public class Track implements Indexable {
     public final Line line;
@@ -29,7 +27,7 @@ public class Track implements Indexable {
         return track;
     }
 
-    public final TrackAttributes attributes = new TrackAttributes();
+    public final TrackAttrs attributes = new TrackAttrs();
 
     /**
      * A per-line unique track index.

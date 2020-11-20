@@ -2,7 +2,6 @@ package fr.sncf.osrd.infra.topological;
 
 import fr.sncf.osrd.infra.graph.AbstractEdge;
 import fr.sncf.osrd.infra.Track;
-
 import java.util.function.Consumer;
 
 /**
@@ -13,8 +12,8 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
     public final String id;
     public final double length;
 
-    public final double startNodePosition;
-    public final double endNodePosition;
+    public final double startNodeTrackPosition;
+    public final double endNodeTrackPosition;
 
     /**
      * Create a new topological edge.
@@ -25,16 +24,16 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
             String id,
             TopoNode startNode,
             TopoNode endNode,
-            double startNodePosition,
-            double endNodePosition,
+            double startNodeTrackPosition,
+            double endNodeTrackPosition,
             double length
     ) {
         super(startNode, endNode);
         this.track = track;
         this.id = id;
         this.length = length;
-        this.startNodePosition = startNodePosition;
-        this.endNodePosition = endNodePosition;
+        this.startNodeTrackPosition = startNodeTrackPosition;
+        this.endNodeTrackPosition = endNodeTrackPosition;
     }
 
     /**

@@ -1,9 +1,17 @@
 package fr.sncf.osrd.train;
 
+import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.Track;
+import fr.sncf.osrd.infra.TrackAttrs;
+import fr.sncf.osrd.infra.graph.EdgeDirection;
+import fr.sncf.osrd.util.PointSequence;
+import fr.sncf.osrd.util.SortedSequence;
 import java.util.Iterator;
 import java.util.Spliterator;
-import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * A class to iterate forward on path, given a starting point element,
@@ -11,18 +19,29 @@ import java.util.function.Consumer;
  *  - iterate on path elements
  *  - apply a function to the path element, which returns an iterator of events.
  *  - these events are de-duplicated using an event-specific method, then returned
+ *
+ *  <pre>
+ *   {@code
+ *
+ *                 |    X-----------
+ *               X-+----X
+ *   X-------X     |
+ *           X-----+--X
+ *                 |
+ *
+ *   }
+ *  </pre>
  */
 public class PathAttrIterator<EventT> implements Spliterator<EventT> {
     private final TrainPath path;
     private final double pathStartPosition;
     private final double pathEndPosition;
     private final EventIteratorFactory<EventT> eventIteratorFactory;
-    private final BiPredicate<EventT, EventT> deduplicator;
 
     // mutable state
     private int pathIndex;
     private Iterator<EventT> eventIterator;
-    private EventT lastEvent;
+    private EventT stagedEvent;
 
     /**
      * Creates a new path iterator
@@ -31,26 +50,30 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
      * @param pathStartPosition the path position to start iterating at
      * @param pathEndPosition the end position to stop at
      * @param eventIteratorFactory a fonction turning path elements into event iterators
-     * @param deduplicator a deduplication function
      */
     public PathAttrIterator(
             TrainPath path,
             int pathStartIndex,
             double pathStartPosition,
             double pathEndPosition,
-            EventIteratorFactory<EventT> eventIteratorFactory,
-            BiPredicate<EventT, EventT> deduplicator
+            EventIteratorFactory<EventT> eventIteratorFactory
     ) {
         this.path = path;
         this.pathStartPosition = pathStartPosition;
         this.pathEndPosition = pathEndPosition;
         this.eventIteratorFactory = eventIteratorFactory;
-        this.deduplicator = deduplicator;
 
         // mutable state
         this.pathIndex = pathStartIndex;
         this.eventIterator = nextEventIterator();
-        this.lastEvent = nextEvent();
+    }
+
+    boolean hasContiguousTrack(Track track, int nextIndex) {
+        if (nextIndex >= path.edges.size())
+            return false;
+
+        var nextPathElem = path.edges.get(nextIndex);
+        return track == nextPathElem.edge.track;
     }
 
     private Iterator<EventT> nextEventIterator() {
@@ -68,10 +91,13 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
         var currentElemEnd = currentElemStart + currentPathElem.edge.length;
         assert currentElemEnd >= pathStartPosition;
 
-        // move to the next element;
-        pathIndex++;
+        var nextIndex = pathIndex + 1;
+        boolean contiguousNextEdge = hasContiguousTrack(currentPathElem.edge.track, nextIndex);
 
-        return eventIteratorFactory.apply(currentPathElem, pathStartPosition, pathEndPosition);
+        // move to the next element;
+        pathIndex = nextIndex;
+
+        return eventIteratorFactory.apply(currentPathElem, contiguousNextEdge);
     }
 
     /**
@@ -92,42 +118,13 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
         return eventIterator.next();
     }
 
-
-    private EventT yield(EventT curEvent) {
-        var res = lastEvent;
-        lastEvent = curEvent;
-        return res;
-    }
-
-    private EventT nextDedupedEvent() {
-        // the previousEvent cache is filled in the constructor.
-        // it can only be null when nextEvent() returned null
-        if (lastEvent == null)
-            return null;
-
-        while (true) {
-            // at this point, there's a previousEvent
-            var curEvent = nextEvent();
-            if (curEvent == null)
-                return yield(null);
-
-            // if the two events are identical, start over
-            if (deduplicator.test(lastEvent, curEvent)) {
-                lastEvent = curEvent;
-                continue;
-            }
-
-            // otherwise, yield the previous event, and set the new as previous
-            return yield(curEvent);
-        }
-    }
-
     @Override
     public boolean tryAdvance(Consumer<? super EventT> action) {
-        if (lastEvent == null)
+        var event = nextEvent();
+        if (event == null)
             return false;
 
-        action.accept(nextDedupedEvent());
+        action.accept(event);
         return true;
     }
 
@@ -145,5 +142,71 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
     @Override
     public int characteristics() {
         return ORDERED | IMMUTABLE | NONNULL;
+    }
+
+    /**
+     * Stream some PointSequence track attributes along a path.
+     * @param infra the infrastructure to work on
+     * @param path the path to follow
+     * @param iterStartPathIndex the index of the path element to start iterating from
+     * @param iterStartPathOffset the offset to start iterating at
+     * @param iterEndPathOffset the offset to end iterating at
+     * @param attrGetter a function that gets the proper attribute, given a TrackAttrs.Slice
+     * @param <ValueT> the type of the PointSequence value
+     * @return a stream of PointSequence entries
+     */
+    public static <ValueT> Stream<SortedSequence<ValueT>.Entry> stream(
+            Infra infra,
+            TrainPath path,
+            int iterStartPathIndex,
+            double iterStartPathOffset,
+            double iterEndPathOffset,
+            Function<TrackAttrs.Slice, PointSequence<ValueT>.Slice> attrGetter
+    ) {
+        EventIteratorFactory<SortedSequence<ValueT>.Entry> eventIteratorFactory = (
+                pathElement,
+                contiguousNextEdge
+        ) -> {
+            var edge = pathElement.edge;
+
+            var pathOffsetConverter = pathElement.pathOffsetToTrackOffset();
+            // convert the path based begin and end offsets to track based ones
+            var trackIterStartPos = pathOffsetConverter.applyAsDouble(iterStartPathOffset);
+            var trackIterEndPos = pathOffsetConverter.applyAsDouble(iterEndPathOffset);
+
+            var edgeAttributes = infra.getEdgeAttrs(edge);
+            var trackOffsetConverter = pathElement.trackOffsetToPathOffset();
+
+            // When the next edge is on the same track, the last possible position of this edge
+            // has to be excluded from the iteration.
+            double excludedPosition = Double.NaN;
+            if (contiguousNextEdge) {
+                if (pathElement.direction == EdgeDirection.START_TO_STOP)
+                    excludedPosition = edge.endNodeTrackPosition;
+                else
+                    excludedPosition = edge.startNodeTrackPosition;
+            }
+
+            var attribute = attrGetter.apply(edgeAttributes);
+            if (pathElement.direction == EdgeDirection.START_TO_STOP)
+                return attribute.forwardIter(
+                        trackIterStartPos,
+                        trackIterEndPos,
+                        trackOffsetConverter,
+                        excludedPosition);
+            return attribute.backwardIter(
+                    trackIterEndPos,
+                    trackIterStartPos,
+                    trackOffsetConverter,
+                    excludedPosition);
+        };
+
+        var spliterator = new PathAttrIterator<SortedSequence<ValueT>.Entry>(
+                path,
+                iterStartPathIndex,
+                iterStartPathOffset,
+                iterEndPathOffset,
+                eventIteratorFactory);
+        return StreamSupport.stream(spliterator, false);
     }
 }

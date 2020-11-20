@@ -76,8 +76,12 @@ public class Infra implements Freezable {
     public final CryoList<TopoNode> topoNodes = new CryoList<>();
     public final CryoList<TopoEdge> topoEdges = new CryoList<>();
 
-    /** A list mapping all topological edges to a cursor in TrackAttributes. */
-    public final CryoList<TrackAttributes.Slice> topoEdgeAttributes = new CryoList<>();
+    /** A list mapping all topological edges to a cursor in TrackAttrs. */
+    public final CryoList<TrackAttrs.Slice> topoEdgeAttributes = new CryoList<>();
+
+    public TrackAttrs.Slice getEdgeAttrs(TopoEdge edge) {
+        return topoEdgeAttributes.get(edge.getIndex());
+    }
 
     /**
      * The block sections graph.
