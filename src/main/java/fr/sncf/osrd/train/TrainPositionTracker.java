@@ -1,13 +1,20 @@
 package fr.sncf.osrd.train;
 
 import com.badlogic.ashley.signals.Signal;
-import fr.sncf.osrd.infra.topological.TopoEdge;
-
+import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.TrackAttrs;
+import fr.sncf.osrd.train.TrainPath.PathElement;
+import fr.sncf.osrd.util.PointSequence;
+import fr.sncf.osrd.util.SortedSequence;
 import java.util.ArrayDeque;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class TrainPositionTracker {
+    public final Infra infra;
+
     /** The planned path the train shall follow. */
-    private final TrainPath path;
+    public final TrainPath path;
 
     /** The index of the edge the head of the train currently is at. */
     private int currentPathIndex = 0;
@@ -16,7 +23,7 @@ public class TrainPositionTracker {
     private final double trainLength;
 
     /** The list of edges the train currently spans over. */
-    private final ArrayDeque<TopoEdge> currentEdges = new ArrayDeque<>();
+    private final ArrayDeque<PathElement> currentPathEdges = new ArrayDeque<>();
 
     /**
      *  The position of the head of the train on its edge.
@@ -30,21 +37,27 @@ public class TrainPositionTracker {
      */
     private double tailEdgePosition = Double.NaN;
 
-    public final Signal<TopoEdge> joinedEdgeSignal = new Signal<>();
-    public final Signal<TopoEdge> leftEdgeSignal = new Signal<>();
+    /** Gets the position of the head relative to the start of the track. */
+    public double getHeadPathPosition() {
+        return currentPathEdges.getFirst().pathStartOffset + headEdgePosition;
+    }
 
-    public TrainPositionTracker(TrainPath path, double trainLength) {
+    public final Signal<PathElement> joinedEdgeSignal = new Signal<>();
+    public final Signal<PathElement> leftEdgeSignal = new Signal<>();
+
+    public TrainPositionTracker(Infra infra, TrainPath path, double trainLength) {
+        this.infra = infra;
         this.path = path;
         this.trainLength = trainLength;
     }
 
-    private TopoEdge headEdge() {
-        return currentEdges.getFirst();
+    private PathElement headPathEdge() {
+        return currentPathEdges.getFirst();
     }
 
-    private TopoEdge nextPathEdge() {
+    private PathElement nextPathEdge() {
         ++currentPathIndex;
-        return path.edges.get(currentPathIndex).edge;
+        return path.edges.get(currentPathIndex);
     }
 
     private boolean hasNextPathEdge() {
@@ -61,14 +74,14 @@ public class TrainPositionTracker {
 
         // add edges to the current edges queue as the train moves forward
         while (hasNextPathEdge()) {
-            var headEdgeLength = headEdge().length;
+            var headEdgeLength = headPathEdge().edge.length;
             // stop adding edges when the head position lies inside the current head edge
             if (headEdgeLength < headEdgePosition)
                 break;
 
             // add the next edge on the path to the current edges queue
             var newEdge = nextPathEdge();
-            currentEdges.addFirst(newEdge);
+            currentPathEdges.addFirst(newEdge);
             joinedEdgeSignal.dispatch(newEdge);
 
             // as the head edge changed, so does the position
@@ -91,19 +104,33 @@ public class TrainPositionTracker {
         //
         // continue while newAvailableSpace >= trainLength
 
-        var headEdgeHeadroom = headEdge().length - headEdgePosition;
-        var totalEdgesSpan = currentEdges.stream().mapToDouble(edge -> edge.length).sum();
+        var headEdgeHeadroom = headPathEdge().edge.length - headEdgePosition;
+        var totalEdgesSpan = currentPathEdges.stream().mapToDouble(pathEdge -> pathEdge.edge.length).sum();
         assert headEdgeHeadroom > 0.;
-        while (currentEdges.size() > 1) {
-            var tailEdgeLength = currentEdges.getLast().length;
+        while (currentPathEdges.size() > 1) {
+            var tailEdgeLength = currentPathEdges.getLast().edge.length;
             var nextEdgesSpan = totalEdgesSpan - tailEdgeLength;
             var newAvailableSpace = nextEdgesSpan - headEdgeHeadroom;
             if (newAvailableSpace < trainLength)
                 break;
 
-            leftEdgeSignal.dispatch(currentEdges.removeLast());
+            leftEdgeSignal.dispatch(currentPathEdges.removeLast());
             totalEdgesSpan -= tailEdgeLength;
         }
         tailEdgePosition = totalEdgesSpan - trainLength;
+    }
+
+    public <ValueT> Stream<SortedSequence<ValueT>.Entry> streamAttrForward(
+            double distance,
+            Function<TrackAttrs.Slice, PointSequence<ValueT>.Slice> attrGetter
+    ) {
+        var headPathPosition = getHeadPathPosition();
+        return PathAttrIterator.stream(
+                infra,
+                path,
+                currentPathIndex,
+                headPathPosition,
+                headPathPosition + distance,
+                attrGetter);
     }
 }

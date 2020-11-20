@@ -4,21 +4,18 @@ import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.Entity;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.util.Constants;
-
 import java.util.LinkedList;
 
 public class Train implements Component {
     public final RollingStock rollingStock;
     public final LinkedList<SpeedController> controllers = new LinkedList<>();
     public final TrainPositionTracker positionTracker;
-    public final TrainMetadataTracker metadataTracker;
     public double speed;
     public TrainState state = TrainState.STARTING_UP;
 
     private Train(Infra infra, RollingStock rollingStock, TrainPath trainPath, double initialSpeed) {
         this.rollingStock = rollingStock;
-        this.positionTracker = new TrainPositionTracker(trainPath, rollingStock.length);
-        this.metadataTracker = new TrainMetadataTracker(infra, positionTracker);
+        this.positionTracker = new TrainPositionTracker(infra, trainPath, rollingStock.length);
         this.speed = initialSpeed;
     }
 
@@ -112,8 +109,12 @@ public class Train implements Component {
         return rollingStock.comfortAcceleration;
     }
 
+
+
     private double averageTrainGrade() {
-        // TODO: compure from the position tracker
+        // TODO: implement range/stair attributes streaming
+        // TODO: implement streaming attributes under the train
+        // positionTracker.streamAttrUnderStrain(42, TrackAttrs::getSlope);
         return 0;
     }
 
