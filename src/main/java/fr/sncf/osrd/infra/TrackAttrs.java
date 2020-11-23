@@ -5,7 +5,7 @@ import fr.sncf.osrd.util.PointSequence;
 import fr.sncf.osrd.util.StairSequence;
 
 public class TrackAttrs {
-    public class Slice {
+    public static class Slice {
         public final StairSequence<Double>.Slice slope;
         public final StairSequence<BlockSection>.Slice blockSections;
         public final StairSequence<Double>.Slice speedLimit;
@@ -17,12 +17,16 @@ public class TrackAttrs {
          * @param startPos the start position, indexed from the start of the track
          * @param endPos the end position, indexed from the start of the track
          */
-        public Slice(TrackAttrs attributes, double startPos, double endPos) {
+        private Slice(TrackAttrs attributes, double startPos, double endPos) {
             this.slope = attributes.slope.slice(startPos, endPos);
             this.blockSections = attributes.blockSections.slice(startPos, endPos);
             this.speedLimit = attributes.speedLimit.slice(startPos, endPos);
             this.operationalPoints = attributes.operationalPoints.slice(startPos, endPos);
         }
+    }
+
+    public Slice slice(double startPos, double endPos) {
+        return new Slice(this, startPos, endPos);
     }
 
     public final StairSequence<Double> slope = new StairSequence<>();

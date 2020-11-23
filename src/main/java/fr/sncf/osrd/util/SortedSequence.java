@@ -9,7 +9,7 @@ import java.util.function.DoubleUnaryOperator;
  */
 public abstract class SortedSequence<E> {
     /** Iterate forward on a slice, from start (included) to end (excluded). */
-    public class SliceIterator implements Iterator<Entry> {
+    public class SliceIterator implements PeekableIterator<Entry> {
         private final ArrayList<Entry> data;
         private final DoubleUnaryOperator translator;
         private final int end;
@@ -28,18 +28,22 @@ public abstract class SortedSequence<E> {
         }
 
         @Override
-        public Entry next() {
+        public Entry peek() {
             if (i >= end)
                 throw new NoSuchElementException();
 
             var res = data.get(i);
-            i++;
             return new Entry(translator.applyAsDouble(res.position), res.value);
+        }
+
+        @Override
+        public void skip() {
+            i++;
         }
     }
 
     /** Iterate backward on a slice, from end (excluded) to start (included). */
-    public class ReverseSliceIterator implements Iterator<Entry> {
+    public class ReverseSliceIterator implements PeekableIterator<Entry> {
         private final ArrayList<Entry> data;
         private final DoubleUnaryOperator translator;
         private final int start;
@@ -58,13 +62,17 @@ public abstract class SortedSequence<E> {
         }
 
         @Override
-        public Entry next() {
+        public Entry peek() {
             if (i < start)
                 throw new NoSuchElementException();
 
             var res = data.get(i);
-            i--;
             return new Entry(translator.applyAsDouble(res.position), res.value);
+        }
+
+        @Override
+        public void skip() {
+            i--;
         }
     }
 
@@ -79,16 +87,35 @@ public abstract class SortedSequence<E> {
     }
 
     public final class Builder {
-        SortedMap<Double, E> data = new TreeMap<>();
+        private final SortedSequence<E> res;
+        private final SortedMap<Double, ArrayList<E>> data = new TreeMap<>();
+
+        public Builder(SortedSequence<E> res) {
+            this.res = res;
+        }
 
         public void add(double position, E e) {
-            data.put(position, e);
+            var valueList = data.getOrDefault(position, null);
+            if (valueList == null) {
+                valueList = new ArrayList<>();
+                data.put(position, valueList);
+            }
+
+            valueList.add(e);
         }
 
-        public void build(SortedSequence<E> res) {
-            for (Map.Entry<Double, E> item : data.entrySet())
-                res.add(item.getKey(), item.getValue());
+        public void build() {
+            for (var mapEntry : data.entrySet()) {
+                var position = mapEntry.getKey();
+                for (var item : mapEntry.getValue())
+                    res.add(position, item);
+            }
+            data.clear();
         }
+    }
+
+    public Builder builder() {
+        return new Builder(this);
     }
 
     protected ArrayList<Entry> data = new ArrayList<>();

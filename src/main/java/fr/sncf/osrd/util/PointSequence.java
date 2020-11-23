@@ -1,5 +1,7 @@
 package fr.sncf.osrd.util;
 
+import fr.sncf.osrd.infra.graph.EdgeDirection;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -27,33 +29,34 @@ public final class PointSequence<E> extends SortedSequence<E> {
             this.end = end;
         }
 
-        public Iterator<Entry> forwardIter(
+        public PeekableIterator<Entry> iterate(
+                EdgeDirection direction,
                 double iterStartPos,
                 double iterEndPos,
-                DoubleUnaryOperator translator,
-                double excludedPosition
+                DoubleUnaryOperator translator
         ) {
-            var iterEnd = end;
-            while (iterEnd > start && parentSequence.data.get(iterEnd - 1).position == excludedPosition)
-                iterEnd--;
+            if (direction == EdgeDirection.START_TO_STOP)
+                return forwardIter(iterStartPos, iterEndPos, translator);
+            return backwardIter(iterEndPos, iterStartPos, translator);
+        }
 
+        public PeekableIterator<Entry> forwardIter(
+                double iterStartPos,
+                double iterEndPos,
+                DoubleUnaryOperator translator
+        ) {
             return new SliceIterator(
                     parentSequence,
-                    parentSequence.findStartIndex(start, iterEnd, iterStartPos),
-                    parentSequence.findEndIndex(start, iterEnd, iterEndPos),
+                    parentSequence.findStartIndex(start, end, iterStartPos),
+                    parentSequence.findEndIndex(start, end, iterEndPos),
                     translator);
         }
 
-        public Iterator<Entry> backwardIter(
+        public PeekableIterator<Entry> backwardIter(
                 double iterStartPos,
                 double iterEndPos,
-                DoubleUnaryOperator translator,
-                double excludedPosition
+                DoubleUnaryOperator translator
         ) {
-            var iterStart = start;
-            while (iterStart < end && parentSequence.data.get(iterStart).position == excludedPosition)
-                iterStart++;
-
             return new ReverseSliceIterator(
                     parentSequence,
                     parentSequence.findStartIndex(start, end, iterStartPos),
@@ -70,7 +73,7 @@ public final class PointSequence<E> extends SortedSequence<E> {
      */
     public Slice slice(double startPosition, double endPosition) {
         var start = findStartIndex(0, data.size(), startPosition);
-        var end = findStartIndex(0, data.size(), endPosition);
+        var end = findEndIndex(0, data.size(), endPosition);
         return new Slice(this, start, end);
     }
 }

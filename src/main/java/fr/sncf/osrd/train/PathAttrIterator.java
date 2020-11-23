@@ -4,6 +4,7 @@ import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.Track;
 import fr.sncf.osrd.infra.TrackAttrs;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
+import fr.sncf.osrd.util.PeekableIterator;
 import fr.sncf.osrd.util.PointSequence;
 import fr.sncf.osrd.util.SortedSequence;
 import java.util.Iterator;
@@ -68,14 +69,6 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
         this.eventIterator = nextEventIterator();
     }
 
-    boolean hasContiguousTrack(Track track, int nextIndex) {
-        if (nextIndex >= path.edges.size())
-            return false;
-
-        var nextPathElem = path.edges.get(nextIndex);
-        return track == nextPathElem.edge.track;
-    }
-
     private Iterator<EventT> nextEventIterator() {
         // stop if the current index doesn't point to a valid path element
         if (pathIndex >= path.edges.size())
@@ -91,13 +84,10 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
         var currentElemEnd = currentElemStart + currentPathElem.edge.length;
         assert currentElemEnd >= pathStartPosition;
 
-        var nextIndex = pathIndex + 1;
-        boolean contiguousNextEdge = hasContiguousTrack(currentPathElem.edge.track, nextIndex);
-
         // move to the next element;
-        pathIndex = nextIndex;
+        pathIndex++;
 
-        return eventIteratorFactory.apply(currentPathElem, contiguousNextEdge);
+        return eventIteratorFactory.apply(currentPathElem);
     }
 
     /**
@@ -163,9 +153,13 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
             double iterEndPathOffset,
             Function<TrackAttrs.Slice, PointSequence<ValueT>.Slice> attrGetter
     ) {
+        var iterState = new Object() {
+            Track lastEdgeTrack = null;
+            double lastEdgeFinalPos = Double.NaN;
+        };
+
         EventIteratorFactory<SortedSequence<ValueT>.Entry> eventIteratorFactory = (
-                pathElement,
-                contiguousNextEdge
+                pathElement
         ) -> {
             var edge = pathElement.edge;
 
@@ -177,28 +171,23 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
             var edgeAttributes = infra.getEdgeAttrs(edge);
             var trackOffsetConverter = pathElement.trackOffsetToPathOffset();
 
-            // When the next edge is on the same track, the last possible position of this edge
-            // has to be excluded from the iteration.
-            double excludedPosition = Double.NaN;
-            if (contiguousNextEdge) {
-                if (pathElement.direction == EdgeDirection.START_TO_STOP)
-                    excludedPosition = edge.endNodeTrackPosition;
-                else
-                    excludedPosition = edge.startNodeTrackPosition;
-            }
-
             var attribute = attrGetter.apply(edgeAttributes);
-            if (pathElement.direction == EdgeDirection.START_TO_STOP)
-                return attribute.forwardIter(
-                        trackIterStartPos,
-                        trackIterEndPos,
-                        trackOffsetConverter,
-                        excludedPosition);
-            return attribute.backwardIter(
-                    trackIterEndPos,
+            var iterator = attribute.iterate(pathElement.direction,
                     trackIterStartPos,
-                    trackOffsetConverter,
-                    excludedPosition);
+                    trackIterEndPos,
+                    trackOffsetConverter);
+
+            // When the current edge is on the same track as the previous one,
+            // the first possible position has to be excluded from this edge, as it
+            // is shared with the previous one
+            if (pathElement.edge.track == iterState.lastEdgeTrack) {
+                for (; iterator.hasNext(); iterator.skip())
+                    if (iterator.peek().position != iterState.lastEdgeFinalPos)
+                        break;
+            }
+            iterState.lastEdgeTrack = pathElement.edge.track;
+            iterState.lastEdgeFinalPos = pathElement.getEndTrackOffset();
+            return iterator;
         };
 
         var spliterator = new PathAttrIterator<SortedSequence<ValueT>.Entry>(
