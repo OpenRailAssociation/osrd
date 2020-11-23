@@ -17,6 +17,11 @@ public class Action implements Comparable<Action> {
      */
     final boolean deleteController;
 
+    /**
+     * Whether the action is empty
+     */
+    final boolean empty;
+
     public static Action accelerate(double force, boolean deleteController) {
         return new Action(force, false, deleteController);
     }
@@ -29,6 +34,10 @@ public class Action implements Comparable<Action> {
         return new Action(true, deleteController);
     }
 
+    public static Action empty(boolean deleteController) {
+        return new Action(deleteController);
+    }
+
     /**
      * Create a new force-less action.
      * @param emergencyBrake whether the action is an emergency event
@@ -38,6 +47,7 @@ public class Action implements Comparable<Action> {
         this.force = Double.NaN;
         this.emergencyBrake = emergencyBrake;
         this.deleteController = deleteController;
+        this.empty = false;
     }
 
     boolean hasForce() {
@@ -54,6 +64,18 @@ public class Action implements Comparable<Action> {
         this.force = force;
         this.emergencyBrake = emergencyBrake;
         this.deleteController = deleteController;
+        this.empty = false;
+    }
+
+    /**
+     * Create a new empty action.
+     * @param deleteController whether to delete the controller
+     */
+    private Action(boolean deleteController) {
+        this.force = Double.NaN;
+        this.emergencyBrake = false;
+        this.deleteController = deleteController;
+        this.empty = true;
     }
 
     @Override
