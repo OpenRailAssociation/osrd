@@ -10,8 +10,9 @@ public class NoOpNode extends TopoNode {
         super(id);
     }
 
-    public void addEdge(TopoEdge edge) {
+    public NoOpNode addEdge(TopoEdge edge) {
         neighbors.add(edge);
+        return this;
     }
 
     @Override

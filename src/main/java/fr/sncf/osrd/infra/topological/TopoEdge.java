@@ -3,6 +3,7 @@ package fr.sncf.osrd.infra.topological;
 import fr.sncf.osrd.infra.graph.AbstractEdge;
 import fr.sncf.osrd.infra.Track;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * An edge in the topological graph.
@@ -50,9 +51,9 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
      */
     public static TopoEdge link(
             TopoNode startNode,
-            Consumer<TopoEdge> startNodeRegister,
+            Function<TopoEdge, TopoNode> startNodeRegister,
             TopoNode endNode,
-            Consumer<TopoEdge> endNodeRegister,
+            Function<TopoEdge, TopoNode> endNodeRegister,
             double startNodePosition,
             double endNodePosition,
             Track track,
@@ -60,8 +61,10 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
             double length
     ) {
         var edge = new TopoEdge(track, id, startNode, endNode, startNodePosition, endNodePosition, length);
-        startNodeRegister.accept(edge);
-        endNodeRegister.accept(edge);
+        var startNodeReg = startNodeRegister.apply(edge);
+        var endNodeReg = endNodeRegister.apply(edge);
+        assert startNode == startNodeReg;
+        assert endNode == endNodeReg;
         return edge;
     }
 

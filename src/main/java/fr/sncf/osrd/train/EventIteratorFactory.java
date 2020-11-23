@@ -6,7 +6,6 @@ import java.util.Iterator;
 @FunctionalInterface
 public interface EventIteratorFactory<EventT> {
     Iterator<EventT> apply(
-            PathElement edge,
-            boolean contiguousNextEdge
+            PathElement edge
     );
 }

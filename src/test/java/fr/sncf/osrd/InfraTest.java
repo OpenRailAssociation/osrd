@@ -9,10 +9,8 @@ class InfraTest {
         var infra = new Infra();
         var line = infra.makeLine("test line", "1");
         var track = Track.createAndRegister(line, "1", "test track");
-
         var nodeA = infra.makeNoOpNode("A");
         var nodeB = infra.makeNoOpNode("B");
-        var nodeC = infra.makeNoOpNode("C");
         infra.makeTopoLink(
                 nodeA, nodeA::addEdge,
                 nodeB, nodeB::addEdge,

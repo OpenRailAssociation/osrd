@@ -9,6 +9,7 @@ import fr.sncf.osrd.util.CryoList;
 import fr.sncf.osrd.util.CryoMap;
 import fr.sncf.osrd.util.Freezable;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * A data structure meant to store the immutable part of a railroad infrastructure.
@@ -22,7 +23,7 @@ import java.util.function.Consumer;
  *  <li>Block sections are registered</li>
  *  <li>External track attributes are computed (elements that were nodes are added as attributes on edges)</li>
  *  <li>For all edges, a cursor inside the external track attributes is computed and registered (very important)</li>
- *  <li>The infrastructure is frozen</li>
+ *  <li>Call prepare to build caches and freeze the infrastructure</li>
  * </ol>
  *
  * <h1>Building a topological graph</h1>
@@ -67,7 +68,7 @@ import java.util.function.Consumer;
  * <p>We decided to model it using <b>per-edge neighbours</b>: each end of the block section
  * can be connected to other block sections, even though it's also connected to a signal.</p>
  */
-public class Infra implements Freezable {
+public class Infra {
     /**
      * The topology graph.
      * Each TopoEdge contains a reference to a Track,
@@ -77,7 +78,7 @@ public class Infra implements Freezable {
     public final CryoList<TopoEdge> topoEdges = new CryoList<>();
 
     /** A list mapping all topological edges to a cursor in TrackAttrs. */
-    public final CryoList<TrackAttrs.Slice> topoEdgeAttributes = new CryoList<>();
+    private final CryoList<TrackAttrs.Slice> topoEdgeAttributes = new CryoList<>();
 
     public TrackAttrs.Slice getEdgeAttrs(TopoEdge edge) {
         return topoEdgeAttributes.get(edge.getIndex());
@@ -150,9 +151,9 @@ public class Infra implements Freezable {
      */
     public TopoEdge makeTopoLink(
             TopoNode startNode,
-            Consumer<TopoEdge> startNodeRegister,
+            Function<TopoEdge, TopoNode> startNodeRegister,
             TopoNode endNode,
-            Consumer<TopoEdge> endNodeRegister,
+            Function<TopoEdge, TopoNode> endNodeRegister,
             double startNodePosition,
             double endNodePosition,
             Track track,
@@ -176,9 +177,23 @@ public class Infra implements Freezable {
         return node;
     }
 
+    /**
+     * Pre-compute metadata, and freeze the infrastructure.
+     */
+    public void prepare() {
+        assert topoEdgeAttributes.isEmpty();
+        for (var edge : topoEdges) {
+            var startPos = edge.startNodeTrackPosition;
+            var endPos = edge.endNodeTrackPosition;
+            var attrSlice = edge.track.attributes.slice(startPos, endPos);
+            topoEdgeAttributes.add(attrSlice);
+        }
+
+        freeze();
+    }
+
     /** Prevent further modifications. */
-    @Override
-    public void freeze() {
+    private void freeze() {
         // freeze the topological graph
         for (var e : topoNodes)
             e.freeze();
