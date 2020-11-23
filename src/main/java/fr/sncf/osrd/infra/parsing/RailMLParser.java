@@ -2,17 +2,15 @@ package fr.sncf.osrd.infra.parsing;
 
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.topological.NoOpNode;
-import fr.sncf.osrd.infra.topological.TopoNode;
 import org.dom4j.Document;
 import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class RailMLParser {
     private String inputPath;
-    private HashMap<String, TopoNode> nodesMap;
+    private HashMap<String, NoOpNode> nodesMap;
 
     public RailMLParser(String inputPath) {
         this.inputPath = inputPath;
@@ -38,36 +36,35 @@ public class RailMLParser {
     }
 
     private void registerTopoNodes(Infra infra, Document document) {
-        String netRelationsPath = "/railml/infrastructure/topology/netRelations/netRelation";
-        List<Node> netRelations = document.selectNodes(netRelationsPath);
-        for (Node node : netRelations) {
-            String id = node.valueOf("@id");
-            var newNode = new NoOpNode(id);
-            infra.register(newNode);
+        var netRelationsPath = "/railml/infrastructure/topology/netRelations/netRelation";
+        var netRelations = document.selectNodes(netRelationsPath);
+        for (var node : netRelations) {
+            var id = node.valueOf("@id");
+            var newNode = infra.makeNoOpNode(id);
             nodesMap.put(id, newNode);
         }
     }
 
     private void registerTopEdges(Infra infra, Document document) {
         String netElementsPath = "/railml/infrastructure/topology/netElements/netElement";
-        List<Node> netElements = document.selectNodes(netElementsPath);
-        for (Node node : netElements) {
-            String id = node.valueOf("@id");
-            double length = Double.parseDouble(node.valueOf("@length"));
+        var netElements = document.selectNodes(netElementsPath);
+        for (var node : netElements) {
+            var id = node.valueOf("@id");
+            var length = Double.parseDouble(node.valueOf("@length"));
 
-            ArrayList<String> relationRefs = new ArrayList<String>();
-            String netRelationsRefsPath = netElementsPath + "/netElement[@id=" + "'" + id + "'" + "]/relation";
-            List<Node> netRelationsRefs = document.selectNodes(netRelationsRefsPath);
+            var netRelationsRefsPath = netElementsPath + "/netElement[@id=" + "'" + id + "'" + "]/relation";
+            var netRelationsRefs = document.selectNodes(netRelationsRefsPath);
 
-            String firstRelationId = netRelationsRefs.get(0).valueOf("@ref");
-            TopoNode firstRelationNode = nodesMap.get(firstRelationId);
-            String secondRelationId = netRelationsRefs.get(1).valueOf("@ref");
-            TopoNode secondRelationNode = nodesMap.get(firstRelationId);
+            var firstRelationId = netRelationsRefs.get(0).valueOf("@ref");
+            var firstRelationNode = nodesMap.get(firstRelationId);
+            var secondRelationId = netRelationsRefs.get(1).valueOf("@ref");
+            var secondRelationNode = nodesMap.get(secondRelationId);
 
-            // TODO: the edge now needs to be created with TopoEdge.link, which takes the functions
-            //       to call to add the edge to the nodes
-
-            // infra.register(new TopoEdge(null, id, firstRelationNode, secondRelationNode, length));
+            infra.makeTopoLink(
+                    firstRelationNode, firstRelationNode::addEdge,
+                    secondRelationNode, secondRelationNode::addEdge,
+                    0, length,
+                    null, id, length);
         }
     }
 }
