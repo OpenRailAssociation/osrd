@@ -1,9 +1,13 @@
 package fr.sncf.osrd.util;
 
+import fr.sncf.osrd.infra.graph.EdgeDirection;
+
 import java.util.Iterator;
+import java.util.function.DoubleUnaryOperator;
 
 /**
  * A sequence of points encoding a continuous stair of values.
+ * It can also be described as a continuous disjoint sequence of ranges.
  *
  * <pre>
  *  {@code
@@ -17,7 +21,7 @@ import java.util.Iterator;
  * </pre>
  * @param <E> The type of the values
  */
-public final class StairSequence<E> extends SortedSequence<E> {
+public final class RangeSequence<E> extends SortedSequence<E> {
     /** Get the end position of the step at index i. */
     double getEnd(int i) {
         double nextPosition = Double.POSITIVE_INFINITY;
@@ -52,9 +56,9 @@ public final class StairSequence<E> extends SortedSequence<E> {
                 currentPoint.value);
     }
 
-    /** A slice of a StairSequence. */
-    public final class Slice {
-        public final StairSequence<E> parentSequence;
+    /** A slice of a RangeSequence. */
+    public static final class Slice<E> {
+        public final RangeSequence<E> parentSequence;
 
         /** Included start bound. */
         public final int start;
@@ -62,10 +66,18 @@ public final class StairSequence<E> extends SortedSequence<E> {
         /** Excluded end bound. */
         public final int end;
 
-        public Slice(StairSequence<E> parentSequence, int start, int end) {
+        public Slice(RangeSequence<E> parentSequence, int start, int end) {
             this.parentSequence = parentSequence;
             this.start = start;
             this.end = end;
+        }
+
+        public Iterator<ValuedRange<E>> iterate(EdgeDirection direction,
+                            double trackIterStartPos,
+                            double trackIterEndPos,
+                            DoubleUnaryOperator trackOffsetConverter
+        ) {
+            return null;
         }
     }
 
@@ -115,10 +127,10 @@ public final class StairSequence<E> extends SortedSequence<E> {
     }
 
     /**
-     * Gets a slice of a StairSequence.
+     * Gets a slice of a RangeSequence.
      * @param startPosition the included start slice bound
      * @param endPosition the included end slice bound
-     * @return a StairSequence slice
+     * @return a RangeSequence slice
      */
     public Slice slice(double startPosition, double endPosition) {
         var startIndex = findStartIndex(0, data.size(), startPosition);
