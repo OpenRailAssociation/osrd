@@ -3,10 +3,8 @@ package fr.sncf.osrd.train;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.Track;
 import fr.sncf.osrd.infra.TrackAttrs;
-import fr.sncf.osrd.infra.graph.EdgeDirection;
-import fr.sncf.osrd.util.PeekableIterator;
-import fr.sncf.osrd.util.PointSequence;
-import fr.sncf.osrd.util.SortedSequence;
+import fr.sncf.osrd.util.*;
+
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.function.Consumer;
@@ -136,29 +134,29 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
 
     /**
      * Stream some PointSequence track attributes along a path.
+     * @param <ValueT> the type of the PointSequence value
      * @param infra the infrastructure to work on
      * @param path the path to follow
      * @param iterStartPathIndex the index of the path element to start iterating from
      * @param iterStartPathOffset the offset to start iterating at
      * @param iterEndPathOffset the offset to end iterating at
      * @param attrGetter a function that gets the proper attribute, given a TrackAttrs.Slice
-     * @param <ValueT> the type of the PointSequence value
      * @return a stream of PointSequence entries
      */
-    public static <ValueT> Stream<SortedSequence<ValueT>.Entry> stream(
+    public static <ValueT> Stream<ValuedPoint<ValueT>> streamPoints(
             Infra infra,
             TrainPath path,
             int iterStartPathIndex,
             double iterStartPathOffset,
             double iterEndPathOffset,
-            Function<TrackAttrs.Slice, PointSequence<ValueT>.Slice> attrGetter
+            Function<TrackAttrs.Slice, PointSequence.Slice<ValueT>> attrGetter
     ) {
         var iterState = new Object() {
             Track lastEdgeTrack = null;
             double lastEdgeFinalPos = Double.NaN;
         };
 
-        EventIteratorFactory<SortedSequence<ValueT>.Entry> eventIteratorFactory = (
+        EventIteratorFactory<ValuedPoint<ValueT>> eventIteratorFactory = (
                 pathElement
         ) -> {
             var edge = pathElement.edge;
@@ -190,7 +188,56 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
             return iterator;
         };
 
-        var spliterator = new PathAttrIterator<SortedSequence<ValueT>.Entry>(
+        var spliterator = new PathAttrIterator<ValuedPoint<ValueT>>(
+                path,
+                iterStartPathIndex,
+                iterStartPathOffset,
+                iterEndPathOffset,
+                eventIteratorFactory);
+        return StreamSupport.stream(spliterator, false);
+    }
+
+
+    /**
+     * Stream some PointSequence track attributes along a path.
+     * @param infra the infrastructure to work on
+     * @param path the path to follow
+     * @param iterStartPathIndex the index of the path element to start iterating from
+     * @param iterStartPathOffset the offset to start iterating at
+     * @param iterEndPathOffset the offset to end iterating at
+     * @param attrGetter a function that gets the proper attribute, given a TrackAttrs.Slice
+     * @param <ValueT> the type of the PointSequence value
+     * @return a stream of PointSequence entries
+     */
+    public static <ValueT> Stream<ValuedRange<ValueT>> streamRanges(
+            Infra infra,
+            TrainPath path,
+            int iterStartPathIndex,
+            double iterStartPathOffset,
+            double iterEndPathOffset,
+            Function<TrackAttrs.Slice, RangeSequence.Slice<ValueT>> attrGetter
+    ) {
+        EventIteratorFactory<ValuedRange<ValueT>> eventIteratorFactory = (
+                pathElement
+        ) -> {
+            var edge = pathElement.edge;
+
+            var pathOffsetConverter = pathElement.pathOffsetToTrackOffset();
+            // convert the path based begin and end offsets to track based ones
+            var trackIterStartPos = pathOffsetConverter.applyAsDouble(iterStartPathOffset);
+            var trackIterEndPos = pathOffsetConverter.applyAsDouble(iterEndPathOffset);
+
+            var edgeAttributes = infra.getEdgeAttrs(edge);
+            var trackOffsetConverter = pathElement.trackOffsetToPathOffset();
+
+            var attribute = attrGetter.apply(edgeAttributes);
+            return attribute.iterate(pathElement.direction,
+                    trackIterStartPos,
+                    trackIterEndPos,
+                    trackOffsetConverter);
+        };
+
+        var spliterator = new PathAttrIterator<ValuedRange<ValueT>>(
                 path,
                 iterStartPathIndex,
                 iterStartPathOffset,

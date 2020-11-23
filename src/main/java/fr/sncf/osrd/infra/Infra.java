@@ -87,7 +87,7 @@ public class Infra {
     /**
      * The block sections graph.
      * A block section may span multiple topological edges, and thus be on multiple lines.
-     * Each block section has a StairSequence of the edges it spans over.
+     * Each block section has a RangeSequence of the edges it spans over.
      */
     public final CryoList<SectionSignalNode> sectionSignals = new CryoList<>();
     public final CryoList<BlockSection> blockSections = new CryoList<>();

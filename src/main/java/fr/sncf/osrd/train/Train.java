@@ -117,7 +117,7 @@ public class Train implements Component {
 
 
     private double averageTrainGrade() {
-        // TODO: implement range/stair attributes streaming
+        // TODO: implement range attributes streaming
         // TODO: implement streaming attributes under the train
         // positionTracker.streamAttrUnderStrain(42, TrackAttrs::getSlope);
         return 0;

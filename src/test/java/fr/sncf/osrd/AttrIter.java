@@ -50,7 +50,7 @@ class AttrIter {
         trainPath.addEdge(firstEdge, EdgeDirection.START_TO_STOP);
         trainPath.addEdge(secondEdge, EdgeDirection.START_TO_STOP);
 
-        var result = PathAttrIterator.stream(
+        var result = PathAttrIterator.streamPoints(
                 infra,
                 trainPath,
                 0,
@@ -119,7 +119,7 @@ class AttrIter {
         trainPath.addEdge(forwardEdge, EdgeDirection.START_TO_STOP);
         trainPath.addEdge(backwardEdge, EdgeDirection.STOP_TO_START);
 
-        var result = PathAttrIterator.stream(
+        var result = PathAttrIterator.streamPoints(
                 infra,
                 trainPath,
                 0,

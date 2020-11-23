@@ -3,7 +3,7 @@ package fr.sncf.osrd.infra.blocksection;
 import fr.sncf.osrd.infra.graph.AbstractEdge;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.util.CryoList;
-import fr.sncf.osrd.util.StairSequence;
+import fr.sncf.osrd.util.RangeSequence;
 
 
 /**
@@ -22,7 +22,7 @@ public class BlockSection extends AbstractEdge<SectionSignalNode> {
     public final CryoList<BlockSection> endNeighbors = new CryoList<>();
 
     /** The topological edges the block section spans over. */
-    public final StairSequence<TopoEdge> edges;
+    public final RangeSequence<TopoEdge> edges;
 
     /**
      * Creates a new BlockSection edge
@@ -34,7 +34,7 @@ public class BlockSection extends AbstractEdge<SectionSignalNode> {
      */
     public BlockSection(
             String id,
-            StairSequence<TopoEdge> edges,
+            RangeSequence<TopoEdge> edges,
             SectionSignalNode startNode,
             SectionSignalNode endNode,
             double length) {

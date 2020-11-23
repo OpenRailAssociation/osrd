@@ -6,6 +6,8 @@ import fr.sncf.osrd.infra.TrackAttrs;
 import fr.sncf.osrd.train.TrainPath.PathElement;
 import fr.sncf.osrd.util.PointSequence;
 import fr.sncf.osrd.util.SortedSequence;
+import fr.sncf.osrd.util.ValuedPoint;
+
 import java.util.ArrayDeque;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -120,12 +122,12 @@ public class TrainPositionTracker {
         tailEdgePosition = totalEdgesSpan - trainLength;
     }
 
-    public <ValueT> Stream<SortedSequence<ValueT>.Entry> streamAttrForward(
+    public <ValueT> Stream<ValuedPoint<ValueT>> streamAttrForward(
             double distance,
-            Function<TrackAttrs.Slice, PointSequence<ValueT>.Slice> attrGetter
+            Function<TrackAttrs.Slice, PointSequence.Slice<ValueT>> attrGetter
     ) {
         var headPathPosition = getHeadPathPosition();
-        return PathAttrIterator.stream(
+        return PathAttrIterator.streamPoints(
                 infra,
                 path,
                 currentPathIndex,

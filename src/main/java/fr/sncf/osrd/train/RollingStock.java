@@ -1,6 +1,6 @@
 package fr.sncf.osrd.train;
 
-import fr.sncf.osrd.util.StairSequence;
+import fr.sncf.osrd.util.RangeSequence;
 import fr.sncf.osrd.util.Indexable;
 
 
@@ -81,7 +81,7 @@ public class RollingStock implements Indexable {
      * Associates a speed to a force.
      * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves
      */
-    public final StairSequence<Double> tractiveEffortCurve;
+    public final RangeSequence<Double> tractiveEffortCurve;
 
     /**
      * Creates a new train inventory item.
@@ -118,7 +118,7 @@ public class RollingStock implements Indexable {
             boolean isETCS1Equiped,
             boolean isETCS2Equiped,
             boolean isKVBEquiped,
-            StairSequence<Double> tractiveEffortCurve
+            RangeSequence<Double> tractiveEffortCurve
     ) {
         this.rollingResistance = rollingResistance;
         this.mechanicalResistance = mechanicalResistance;

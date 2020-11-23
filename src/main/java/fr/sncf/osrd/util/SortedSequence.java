@@ -9,8 +9,8 @@ import java.util.function.DoubleUnaryOperator;
  */
 public abstract class SortedSequence<E> {
     /** Iterate forward on a slice, from start (included) to end (excluded). */
-    public class SliceIterator implements PeekableIterator<Entry> {
-        private final ArrayList<Entry> data;
+    public static class SliceIterator<E> implements PeekableIterator<ValuedPoint<E>> {
+        private final ArrayList<ValuedPoint<E>> data;
         private final DoubleUnaryOperator translator;
         private final int end;
         private int i;
@@ -28,12 +28,12 @@ public abstract class SortedSequence<E> {
         }
 
         @Override
-        public Entry peek() {
+        public ValuedPoint<E> peek() {
             if (i >= end)
                 throw new NoSuchElementException();
 
             var res = data.get(i);
-            return new Entry(translator.applyAsDouble(res.position), res.value);
+            return new ValuedPoint<E>(translator.applyAsDouble(res.position), res.value);
         }
 
         @Override
@@ -43,8 +43,8 @@ public abstract class SortedSequence<E> {
     }
 
     /** Iterate backward on a slice, from end (excluded) to start (included). */
-    public class ReverseSliceIterator implements PeekableIterator<Entry> {
-        private final ArrayList<Entry> data;
+    public static class ReverseSliceIterator<E> implements PeekableIterator<ValuedPoint<E>> {
+        private final ArrayList<ValuedPoint<E>> data;
         private final DoubleUnaryOperator translator;
         private final int start;
         private int i;
@@ -62,12 +62,12 @@ public abstract class SortedSequence<E> {
         }
 
         @Override
-        public Entry peek() {
+        public ValuedPoint<E> peek() {
             if (i < start)
                 throw new NoSuchElementException();
 
             var res = data.get(i);
-            return new Entry(translator.applyAsDouble(res.position), res.value);
+            return new ValuedPoint<E>(translator.applyAsDouble(res.position), res.value);
         }
 
         @Override
@@ -76,17 +76,7 @@ public abstract class SortedSequence<E> {
         }
     }
 
-    public class Entry {
-        public final double position;
-        public final E value;
-
-        public Entry(double position, E value) {
-            this.position = position;
-            this.value = value;
-        }
-    }
-
-    public final class Builder {
+    public static final class Builder<E> {
         private final SortedSequence<E> res;
         private final SortedMap<Double, ArrayList<E>> data = new TreeMap<>();
 
@@ -115,14 +105,14 @@ public abstract class SortedSequence<E> {
     }
 
     public Builder builder() {
-        return new Builder(this);
+        return new Builder<E>(this);
     }
 
-    protected ArrayList<Entry> data = new ArrayList<>();
+    protected ArrayList<ValuedPoint<E>> data = new ArrayList<>();
 
     private void add(double position, E value) {
         assert data.isEmpty() || position >= data.get(data.size() - 1).position;
-        data.add(new Entry(position, value));
+        data.add(new ValuedPoint<E>(position, value));
     }
 
     /**

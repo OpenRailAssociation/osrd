@@ -8,7 +8,7 @@ import fr.sncf.osrd.util.Freezable;
 import java.util.function.DoubleUnaryOperator;
 
 public class TrainPath  implements Freezable {
-    public final static class PathElement {
+    public static final class PathElement {
         public final TopoEdge edge;
         public final EdgeDirection direction;
         public final double pathStartOffset;

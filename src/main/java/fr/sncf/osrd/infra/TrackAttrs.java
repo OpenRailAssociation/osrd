@@ -2,14 +2,14 @@ package fr.sncf.osrd.infra;
 
 import fr.sncf.osrd.infra.blocksection.BlockSection;
 import fr.sncf.osrd.util.PointSequence;
-import fr.sncf.osrd.util.StairSequence;
+import fr.sncf.osrd.util.RangeSequence;
 
 public class TrackAttrs {
     public static class Slice {
-        public final StairSequence<Double>.Slice slope;
-        public final StairSequence<BlockSection>.Slice blockSections;
-        public final StairSequence<Double>.Slice speedLimit;
-        public final PointSequence<OperationalPoint>.Slice operationalPoints;
+        public final RangeSequence.Slice<Double> slope;
+        public final RangeSequence.Slice<BlockSection> blockSections;
+        public final RangeSequence.Slice<Double> speedLimit;
+        public final PointSequence.Slice<OperationalPoint> operationalPoints;
 
         /**
          * Creates a slice of an existing track attributes collection.
@@ -29,24 +29,24 @@ public class TrackAttrs {
         return new Slice(this, startPos, endPos);
     }
 
-    public final StairSequence<Double> slope = new StairSequence<>();
-    public final StairSequence<BlockSection> blockSections = new StairSequence<>();
-    public final StairSequence<Double> speedLimit = new StairSequence<>();
+    public final RangeSequence<Double> slope = new RangeSequence<>();
+    public final RangeSequence<BlockSection> blockSections = new RangeSequence<>();
+    public final RangeSequence<Double> speedLimit = new RangeSequence<>();
     public final PointSequence<OperationalPoint> operationalPoints = new PointSequence<>();
 
-    public static StairSequence<Double>.Slice getSlope(TrackAttrs.Slice slice) {
+    public static RangeSequence.Slice<Double> getSlope(TrackAttrs.Slice slice) {
         return slice.slope;
     }
 
-    public static StairSequence<BlockSection>.Slice getBlockSections(TrackAttrs.Slice slice) {
+    public static RangeSequence.Slice<BlockSection> getBlockSections(TrackAttrs.Slice slice) {
         return slice.blockSections;
     }
 
-    public static StairSequence<Double>.Slice getSpeedLimit(TrackAttrs.Slice slice) {
+    public static RangeSequence.Slice<Double> getSpeedLimit(TrackAttrs.Slice slice) {
         return slice.speedLimit;
     }
 
-    public static PointSequence<OperationalPoint>.Slice getOperationalPoints(TrackAttrs.Slice slice) {
+    public static PointSequence.Slice<OperationalPoint> getOperationalPoints(TrackAttrs.Slice slice) {
         return slice.operationalPoints;
     }
 }

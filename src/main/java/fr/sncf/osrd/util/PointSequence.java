@@ -12,9 +12,8 @@ import java.util.function.DoubleUnaryOperator;
  * @param <E> The type of the point objects
  */
 public final class PointSequence<E> extends SortedSequence<E> {
-
     /** A slice of a PointSequence. */
-    public final class Slice {
+    public static final class Slice<E> {
         public final PointSequence<E> parentSequence;
 
         /** Included start bound. */
@@ -29,7 +28,7 @@ public final class PointSequence<E> extends SortedSequence<E> {
             this.end = end;
         }
 
-        public PeekableIterator<Entry> iterate(
+        public PeekableIterator<ValuedPoint<E>> iterate(
                 EdgeDirection direction,
                 double iterStartPos,
                 double iterEndPos,
@@ -40,7 +39,7 @@ public final class PointSequence<E> extends SortedSequence<E> {
             return backwardIter(iterEndPos, iterStartPos, translator);
         }
 
-        public PeekableIterator<Entry> forwardIter(
+        public PeekableIterator<ValuedPoint<E>> forwardIter(
                 double iterStartPos,
                 double iterEndPos,
                 DoubleUnaryOperator translator
@@ -52,7 +51,7 @@ public final class PointSequence<E> extends SortedSequence<E> {
                     translator);
         }
 
-        public PeekableIterator<Entry> backwardIter(
+        public PeekableIterator<ValuedPoint<E>> backwardIter(
                 double iterStartPos,
                 double iterEndPos,
                 DoubleUnaryOperator translator
