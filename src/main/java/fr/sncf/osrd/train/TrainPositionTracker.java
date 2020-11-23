@@ -37,7 +37,7 @@ public class TrainPositionTracker {
      */
     private double tailEdgePosition = Double.NaN;
 
-    /** Gets the position of the head relative to the start of the track. */
+    /** Gets the position of the head relative to the start of the path. */
     public double getHeadPathPosition() {
         return currentPathEdges.getFirst().pathStartOffset + headEdgePosition;
     }
