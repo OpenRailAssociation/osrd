@@ -3,8 +3,13 @@ package fr.sncf.osrd.train;
 import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.Entity;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.util.Constants;
+import fr.sncf.osrd.util.Pair;
+
 import java.util.LinkedList;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class Train implements Component {
     public final RollingStock rollingStock;
@@ -119,9 +124,22 @@ public class Train implements Component {
     }
 
     private Action updateRolling(double timeDelta) {
-        return controllers.stream()
-                .map(SpeedController::getAction)
-                .min(Action::compareTo)
-                .orElse(null);
+        var actions = controllers.stream()
+                .map(sp -> new Pair<>(sp, sp.getAction(this, timeDelta)))
+                .collect(Collectors.toList());
+
+        var action = actions.stream()
+                .map(pair -> pair.second)
+                .filter(_action -> !_action.empty)
+                .min(Action::compareTo);
+        assert action.isPresent();
+
+        var toDelete = actions.stream()
+                .filter(pair -> pair.second.deleteController)
+                .map(pair -> pair.first)
+                .collect(Collectors.toList());
+        controllers.removeAll(toDelete);
+
+        return action.get();
     }
 }
