@@ -30,15 +30,15 @@ public final class RangeSequence<E> extends SortedSequence<E> {
         return nextPosition;
     }
 
-    public ValuedRange<E> get(int i) {
+    public RangeValue<E> get(int i) {
         var currentPoint = data.get(i);
-        return new ValuedRange<>(
+        return new RangeValue<>(
                 currentPoint.position,
                 getEnd(i),
                 currentPoint.value);
     }
 
-    public ValuedRange<E> getClampedTransformed(DoubleUnaryOperator transform, double minClamp, double maxClamp, int i) {
+    public RangeValue<E> getClampedTransformed(DoubleUnaryOperator transform, double minClamp, double maxClamp, int i) {
         var currentPoint = data.get(i);
 
         var startPos = currentPoint.position;
@@ -54,12 +54,12 @@ public final class RangeSequence<E> extends SortedSequence<E> {
         var trEndPos = transform.applyAsDouble(endPos);
 
         if (trStartPos < trEndPos)
-            return new ValuedRange<>(trStartPos, trEndPos, currentPoint.value);
-        return new ValuedRange<>(trEndPos, trStartPos, currentPoint.value);
+            return new RangeValue<>(trStartPos, trEndPos, currentPoint.value);
+        return new RangeValue<>(trEndPos, trStartPos, currentPoint.value);
     }
 
     /** Iterate forward on a slice, from start (included) to end (excluded). */
-    public static class SliceIterator<E> implements PeekableIterator<ValuedRange<E>> {
+    public static class SliceIterator<E> implements PeekableIterator<RangeValue<E>> {
         private final RangeSequence<E> seq;
         private final DoubleUnaryOperator transform;
         private final double minClamp;
@@ -89,7 +89,7 @@ public final class RangeSequence<E> extends SortedSequence<E> {
         }
 
         @Override
-        public ValuedRange<E> peek() {
+        public RangeValue<E> peek() {
             if (i >= end)
                 throw new NoSuchElementException();
 
@@ -103,7 +103,7 @@ public final class RangeSequence<E> extends SortedSequence<E> {
     }
 
     /** Iterate backward on a slice, from end (excluded) to start (included). */
-    public static class ReverseSliceIterator<E> implements PeekableIterator<ValuedRange<E>> {
+    public static class ReverseSliceIterator<E> implements PeekableIterator<RangeValue<E>> {
         private final RangeSequence<E> seq;
         private final DoubleUnaryOperator transform;
         private final double minClamp;
@@ -126,7 +126,7 @@ public final class RangeSequence<E> extends SortedSequence<E> {
         }
 
         @Override
-        public ValuedRange<E> peek() {
+        public RangeValue<E> peek() {
             if (i < start)
                 throw new NoSuchElementException();
 
@@ -156,10 +156,10 @@ public final class RangeSequence<E> extends SortedSequence<E> {
             this.end = end;
         }
 
-        public Iterator<ValuedRange<E>> iterate(EdgeDirection direction,
-                            double trackIterStartPos,
-                            double trackIterEndPos,
-                            DoubleUnaryOperator trackOffsetConverter
+        public Iterator<RangeValue<E>> iterate(EdgeDirection direction,
+                                               double trackIterStartPos,
+                                               double trackIterEndPos,
+                                               DoubleUnaryOperator trackOffsetConverter
         ) {
             if (direction == EdgeDirection.START_TO_STOP)
                 return forwardIter(
@@ -172,7 +172,7 @@ public final class RangeSequence<E> extends SortedSequence<E> {
                     trackOffsetConverter);
         }
 
-        public Iterator<ValuedRange<E>> forwardIter(
+        public Iterator<RangeValue<E>> forwardIter(
                 double iterStartPos,
                 double iterEndPos,
                 DoubleUnaryOperator translator
@@ -186,7 +186,7 @@ public final class RangeSequence<E> extends SortedSequence<E> {
                     iterEndPos);
         }
 
-        public PeekableIterator<ValuedRange<E>> backwardIter(
+        public PeekableIterator<RangeValue<E>> backwardIter(
                 double iterStartPos,
                 double iterEndPos,
                 DoubleUnaryOperator translator
