@@ -6,6 +6,8 @@ import fr.sncf.osrd.infra.TrackAttrs;
 import fr.sncf.osrd.train.TrainPath.PathElement;
 import fr.sncf.osrd.util.PointSequence;
 import fr.sncf.osrd.util.PointValue;
+import fr.sncf.osrd.util.RangeSequence;
+import fr.sncf.osrd.util.RangeValue;
 
 import java.util.ArrayDeque;
 import java.util.function.Function;
@@ -41,6 +43,11 @@ public class TrainPositionTracker {
     /** Gets the position of the head relative to the start of the path. */
     public double getHeadPathPosition() {
         return currentPathEdges.getFirst().pathStartOffset + headEdgePosition;
+    }
+
+    /** Gets the position of the head relative to the start of the path. */
+    public double getTailPathPosition() {
+        return currentPathEdges.getLast().pathStartOffset + tailEdgePosition;
     }
 
     public final Signal<PathElement> joinedEdgeSignal = new Signal<>();
@@ -121,7 +128,7 @@ public class TrainPositionTracker {
         tailEdgePosition = totalEdgesSpan - trainLength;
     }
 
-    public <ValueT> Stream<PointValue<ValueT>> streamAttrForward(
+    public <ValueT> Stream<PointValue<ValueT>> streamPointAttrForward(
             double distance,
             Function<TrackAttrs.Slice, PointSequence.Slice<ValueT>> attrGetter
     ) {
@@ -132,6 +139,48 @@ public class TrainPositionTracker {
                 currentPathIndex,
                 headPathPosition,
                 headPathPosition + distance,
+                attrGetter);
+    }
+
+    public <ValueT> Stream<RangeValue<ValueT>> streamRangeAttrForward(
+            double distance,
+            Function<TrackAttrs.Slice, RangeSequence.Slice<ValueT>> attrGetter
+    ) {
+        var headPathPosition = getHeadPathPosition();
+        return PathAttrIterator.streamRanges(
+                infra,
+                path,
+                currentPathIndex,
+                headPathPosition,
+                headPathPosition + distance,
+                attrGetter);
+    }
+
+    public <ValueT> Stream<PointValue<ValueT>> streamPointAttrUnderTrain(
+            Function<TrackAttrs.Slice, PointSequence.Slice<ValueT>> attrGetter
+    ) {
+        var tailPathPosition = getTailPathPosition();
+        var firstEdgeIndex = currentPathIndex - currentPathEdges.size();
+        return PathAttrIterator.streamPoints(
+                infra,
+                path,
+                firstEdgeIndex,
+                tailPathPosition,
+                tailPathPosition + trainLength,
+                attrGetter);
+    }
+
+    public <ValueT> Stream<RangeValue<ValueT>> streamRangeAttrUnderTrain(
+            Function<TrackAttrs.Slice, RangeSequence.Slice<ValueT>> attrGetter
+    ) {
+        var tailPathPosition = getTailPathPosition();
+        var firstEdgeIndex = currentPathIndex - currentPathEdges.size();
+        return PathAttrIterator.streamRanges(
+                infra,
+                path,
+                firstEdgeIndex,
+                tailPathPosition,
+                tailPathPosition + trainLength,
                 attrGetter);
     }
 }
