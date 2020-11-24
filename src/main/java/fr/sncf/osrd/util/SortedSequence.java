@@ -76,41 +76,9 @@ public abstract class SortedSequence<E> {
         }
     }
 
-    public static final class Builder<E> {
-        private final SortedSequence<E> res;
-        private final SortedMap<Double, ArrayList<E>> data = new TreeMap<>();
-
-        public Builder(SortedSequence<E> res) {
-            this.res = res;
-        }
-
-        public void add(double position, E e) {
-            var valueList = data.getOrDefault(position, null);
-            if (valueList == null) {
-                valueList = new ArrayList<>();
-                data.put(position, valueList);
-            }
-
-            valueList.add(e);
-        }
-
-        public void build() {
-            for (var mapEntry : data.entrySet()) {
-                var position = mapEntry.getKey();
-                for (var item : mapEntry.getValue())
-                    res.add(position, item);
-            }
-            data.clear();
-        }
-    }
-
-    public Builder builder() {
-        return new Builder<E>(this);
-    }
-
     protected ArrayList<ValuedPoint<E>> data = new ArrayList<>();
 
-    private void add(double position, E value) {
+    protected void add(double position, E value) {
         assert data.isEmpty() || position >= data.get(data.size() - 1).position;
         data.add(new ValuedPoint<E>(position, value));
     }
