@@ -3,12 +3,12 @@ package fr.sncf.osrd.train;
 import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.Entity;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.TrackAttrs;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.util.Constants;
 import fr.sncf.osrd.util.Pair;
 
 import java.util.LinkedList;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Train implements Component {
@@ -78,7 +78,7 @@ public class Train implements Component {
         var R = A + B * speed + C * speed * speed;
 
         // get an angle from a meter per km elevation difference
-        var angle = Math.atan(this.averageTrainGrade() / 1000.0);  // from m/km to m/m
+        var angle = Math.atan(this.maxTrainGrade() / 1000.0);  // from m/km to m/m
         var weightForce = rollingStock.mass * Constants.GRAVITY * Math.sin(angle);
 
         var dragForces = R + weightForce;
@@ -114,13 +114,11 @@ public class Train implements Component {
         return rollingStock.comfortAcceleration;
     }
 
-
-
-    private double averageTrainGrade() {
-        // TODO: implement range attributes streaming
-        // TODO: implement streaming attributes under the train
-        // positionTracker.streamAttrUnderStrain(42, TrackAttrs::getSlope);
-        return 0;
+    private double maxTrainGrade() {
+        return positionTracker.streamRangeAttrUnderTrain(TrackAttrs::getSlope)
+                .map(e -> e.value)
+                .max(Double::compareTo)
+                .orElse(0.);
     }
 
     private Action updateRolling(double timeDelta) {
