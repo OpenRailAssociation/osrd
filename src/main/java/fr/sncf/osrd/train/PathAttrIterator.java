@@ -3,6 +3,7 @@ package fr.sncf.osrd.train;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.Track;
 import fr.sncf.osrd.infra.TrackAttrs;
+import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.util.*;
 
 import java.util.Iterator;
@@ -226,6 +227,22 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
             // convert the path based begin and end offsets to track based ones
             var trackIterStartPos = pathOffsetConverter.applyAsDouble(iterStartPathOffset);
             var trackIterEndPos = pathOffsetConverter.applyAsDouble(iterEndPathOffset);
+
+            // clamp the iteration bounds to the edge's, so that the output sequence of
+            // ranges stays disjoint
+            if (pathElement.direction == EdgeDirection.START_TO_STOP) {
+                if (trackIterStartPos < edge.startNodeTrackPosition)
+                    trackIterStartPos = edge.startNodeTrackPosition;
+
+                if (trackIterEndPos > edge.endNodeTrackPosition)
+                    trackIterEndPos = edge.endNodeTrackPosition;
+            } else {
+                if (trackIterStartPos > edge.endNodeTrackPosition)
+                    trackIterStartPos = edge.endNodeTrackPosition;
+
+                if (trackIterEndPos < edge.startNodeTrackPosition)
+                    trackIterEndPos = edge.startNodeTrackPosition;
+            }
 
             var edgeAttributes = infra.getEdgeAttrs(edge);
             var trackOffsetConverter = pathElement.trackOffsetToPathOffset();

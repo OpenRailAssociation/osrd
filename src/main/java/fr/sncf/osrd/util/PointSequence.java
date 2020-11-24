@@ -2,9 +2,7 @@ package fr.sncf.osrd.util;
 
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.function.DoubleUnaryOperator;
 
 /**
@@ -70,9 +68,41 @@ public final class PointSequence<E> extends SortedSequence<E> {
      * @param endPosition the included end slice bound
      * @return a PointSequence slice
      */
-    public Slice slice(double startPosition, double endPosition) {
+    public Slice<E> slice(double startPosition, double endPosition) {
         var start = findStartIndex(0, data.size(), startPosition);
         var end = findEndIndex(0, data.size(), endPosition);
-        return new Slice(this, start, end);
+        return new Slice<E>(this, start, end);
+    }
+
+    public static final class Builder<E> {
+        private final PointSequence<E> res;
+        private final SortedMap<Double, ArrayList<E>> data = new TreeMap<>();
+
+        public Builder(PointSequence<E> res) {
+            this.res = res;
+        }
+
+        public void add(double position, E e) {
+            var valueList = data.getOrDefault(position, null);
+            if (valueList == null) {
+                valueList = new ArrayList<>();
+                data.put(position, valueList);
+            }
+
+            valueList.add(e);
+        }
+
+        public void build() {
+            for (var mapEntry : data.entrySet()) {
+                var position = mapEntry.getKey();
+                for (var item : mapEntry.getValue())
+                    res.add(position, item);
+            }
+            data.clear();
+        }
+    }
+
+    public Builder<E> builder() {
+        return new Builder<E>(this);
     }
 }

@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
-class AttrIter {
+class PointAttrIter {
     @Test
     public void simplePointAttrIter() throws InvalidInfraException {
         // build a test infrastructure
