@@ -9,8 +9,8 @@ import java.util.function.DoubleUnaryOperator;
  */
 public abstract class SortedSequence<E> {
     /** Iterate forward on a slice, from start (included) to end (excluded). */
-    public static class SliceIterator<E> implements PeekableIterator<ValuedPoint<E>> {
-        private final ArrayList<ValuedPoint<E>> data;
+    public static class SliceIterator<E> implements PeekableIterator<PointValue<E>> {
+        private final ArrayList<PointValue<E>> data;
         private final DoubleUnaryOperator translator;
         private final int end;
         private int i;
@@ -28,12 +28,12 @@ public abstract class SortedSequence<E> {
         }
 
         @Override
-        public ValuedPoint<E> peek() {
+        public PointValue<E> peek() {
             if (i >= end)
                 throw new NoSuchElementException();
 
             var res = data.get(i);
-            return new ValuedPoint<E>(translator.applyAsDouble(res.position), res.value);
+            return new PointValue<E>(translator.applyAsDouble(res.position), res.value);
         }
 
         @Override
@@ -43,8 +43,8 @@ public abstract class SortedSequence<E> {
     }
 
     /** Iterate backward on a slice, from end (excluded) to start (included). */
-    public static class ReverseSliceIterator<E> implements PeekableIterator<ValuedPoint<E>> {
-        private final ArrayList<ValuedPoint<E>> data;
+    public static class ReverseSliceIterator<E> implements PeekableIterator<PointValue<E>> {
+        private final ArrayList<PointValue<E>> data;
         private final DoubleUnaryOperator translator;
         private final int start;
         private int i;
@@ -62,12 +62,12 @@ public abstract class SortedSequence<E> {
         }
 
         @Override
-        public ValuedPoint<E> peek() {
+        public PointValue<E> peek() {
             if (i < start)
                 throw new NoSuchElementException();
 
             var res = data.get(i);
-            return new ValuedPoint<E>(translator.applyAsDouble(res.position), res.value);
+            return new PointValue<E>(translator.applyAsDouble(res.position), res.value);
         }
 
         @Override
@@ -76,11 +76,11 @@ public abstract class SortedSequence<E> {
         }
     }
 
-    protected ArrayList<ValuedPoint<E>> data = new ArrayList<>();
+    protected ArrayList<PointValue<E>> data = new ArrayList<>();
 
     protected void add(double position, E value) {
         assert data.isEmpty() || position >= data.get(data.size() - 1).position;
-        data.add(new ValuedPoint<E>(position, value));
+        data.add(new PointValue<E>(position, value));
     }
 
     /**

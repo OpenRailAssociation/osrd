@@ -4,14 +4,13 @@ import fr.sncf.osrd.infra.*;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.train.PathAttrIterator;
 import fr.sncf.osrd.train.TrainPath;
-import fr.sncf.osrd.util.ValuedRange;
+import fr.sncf.osrd.util.RangeValue;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertLinesMatch;
@@ -81,7 +80,7 @@ public class RangeAttrIter {
         trainPath.addEdge(forwardEdge, EdgeDirection.START_TO_STOP);
         trainPath.addEdge(backwardEdge, EdgeDirection.STOP_TO_START);
 
-        List<ValuedRange<Double>> result = PathAttrIterator.streamRanges(
+        List<RangeValue<Double>> result = PathAttrIterator.streamRanges(
                 infra,
                 trainPath,
                 0,
@@ -91,13 +90,13 @@ public class RangeAttrIter {
                 .collect(Collectors.toList());
 
 
-        var expected = new ArrayList<ValuedRange<Double>>();
-        expected.add(new ValuedRange<>(5., 10., 0.));
-        expected.add(new ValuedRange<>(10., 30., 1.));
-        expected.add(new ValuedRange<>(30., 42., 2.));
-        expected.add(new ValuedRange<>(42., 51., 3.));
-        expected.add(new ValuedRange<>(51., 72., 4.));
-        expected.add(new ValuedRange<>(72., 84., 5.));
+        var expected = new ArrayList<RangeValue<Double>>();
+        expected.add(new RangeValue<>(5., 10., 0.));
+        expected.add(new RangeValue<>(10., 30., 1.));
+        expected.add(new RangeValue<>(30., 42., 2.));
+        expected.add(new RangeValue<>(42., 51., 3.));
+        expected.add(new RangeValue<>(51., 72., 4.));
+        expected.add(new RangeValue<>(72., 84., 5.));
 
         assertEquals(expected.size(), result.size(), "invalid number of entries");
         for (int i = 0; i < result.size(); i++) {

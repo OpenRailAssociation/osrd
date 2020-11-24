@@ -26,7 +26,7 @@ public final class PointSequence<E> extends SortedSequence<E> {
             this.end = end;
         }
 
-        public PeekableIterator<ValuedPoint<E>> iterate(
+        public PeekableIterator<PointValue<E>> iterate(
                 EdgeDirection direction,
                 double iterStartPos,
                 double iterEndPos,
@@ -37,7 +37,7 @@ public final class PointSequence<E> extends SortedSequence<E> {
             return backwardIter(iterEndPos, iterStartPos, translator);
         }
 
-        public PeekableIterator<ValuedPoint<E>> forwardIter(
+        public PeekableIterator<PointValue<E>> forwardIter(
                 double iterStartPos,
                 double iterEndPos,
                 DoubleUnaryOperator translator
@@ -49,7 +49,7 @@ public final class PointSequence<E> extends SortedSequence<E> {
                     translator);
         }
 
-        public PeekableIterator<ValuedPoint<E>> backwardIter(
+        public PeekableIterator<PointValue<E>> backwardIter(
                 double iterStartPos,
                 double iterEndPos,
                 DoubleUnaryOperator translator

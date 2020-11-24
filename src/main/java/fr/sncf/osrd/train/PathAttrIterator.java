@@ -144,7 +144,7 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
      * @param attrGetter a function that gets the proper attribute, given a TrackAttrs.Slice
      * @return a stream of PointSequence entries
      */
-    public static <ValueT> Stream<ValuedPoint<ValueT>> streamPoints(
+    public static <ValueT> Stream<PointValue<ValueT>> streamPoints(
             Infra infra,
             TrainPath path,
             int iterStartPathIndex,
@@ -157,7 +157,7 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
             double lastEdgeFinalPos = Double.NaN;
         };
 
-        EventIteratorFactory<ValuedPoint<ValueT>> eventIteratorFactory = (
+        EventIteratorFactory<PointValue<ValueT>> eventIteratorFactory = (
                 pathElement
         ) -> {
             var edge = pathElement.edge;
@@ -189,7 +189,7 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
             return iterator;
         };
 
-        var spliterator = new PathAttrIterator<ValuedPoint<ValueT>>(
+        var spliterator = new PathAttrIterator<PointValue<ValueT>>(
                 path,
                 iterStartPathIndex,
                 iterStartPathOffset,
@@ -210,7 +210,7 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
      * @param <ValueT> the type of the PointSequence value
      * @return a stream of PointSequence entries
      */
-    public static <ValueT> Stream<ValuedRange<ValueT>> streamRanges(
+    public static <ValueT> Stream<RangeValue<ValueT>> streamRanges(
             Infra infra,
             TrainPath path,
             int iterStartPathIndex,
@@ -218,7 +218,7 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
             double iterEndPathOffset,
             Function<TrackAttrs.Slice, RangeSequence.Slice<ValueT>> attrGetter
     ) {
-        EventIteratorFactory<ValuedRange<ValueT>> eventIteratorFactory = (
+        EventIteratorFactory<RangeValue<ValueT>> eventIteratorFactory = (
                 pathElement
         ) -> {
             var edge = pathElement.edge;
@@ -254,7 +254,7 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
                     trackOffsetConverter);
         };
 
-        var spliterator = new PathAttrIterator<ValuedRange<ValueT>>(
+        var spliterator = new PathAttrIterator<RangeValue<ValueT>>(
                 path,
                 iterStartPathIndex,
                 iterStartPathOffset,
