@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'checkstyle'
+    id 'com.github.spotbugs' version '4.6.0'
 }
 
 java {
@@ -47,4 +48,26 @@ tasks.withType(Checkstyle) {
 // enable all linter warnings, and error out on warnings
 tasks.withType(JavaCompile) {
   options.compilerArgs << "-Xlint:all" << "-Werror"
+}
+
+spotbugs {
+    ignoreFailures = false
+    showStackTraces = true
+    showProgress = true
+    // can also be 'more' or 'default'
+    effort = 'max'
+    // report all diagnosed bugs
+    reportLevel = 'low'
+    maxHeapSize = '1g'
+}
+
+// Example to configure HTML report
+spotbugsMain {
+    reports {
+        html {
+            enabled = true
+            destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
+            stylesheet = 'fancy-hist.xsl'
+        }
+    }
 }
