@@ -14,6 +14,8 @@ import java.util.function.UnaryOperator;
  * @param <E> Type of the list elements
  */
 public final class CryoList<E> extends ArrayList<E> implements Freezable {
+    private static final long serialVersionUID = 2140934581223716305L;
+
     boolean frozen = false;
 
     public CryoList() {

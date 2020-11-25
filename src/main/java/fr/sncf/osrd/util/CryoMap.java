@@ -6,6 +6,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class CryoMap<K, V> extends HashMap<K, V> implements Freezable {
+    private static final long serialVersionUID = 7417733629718868505L;
+
     private boolean frozen = false;
 
     public CryoMap(int initialCapacity, float loadFactor) {

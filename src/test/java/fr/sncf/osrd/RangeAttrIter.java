@@ -1,22 +1,21 @@
 package fr.sncf.osrd;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import fr.sncf.osrd.infra.*;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.train.PathAttrIterator;
 import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.util.RangeValue;
 import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
 public class RangeAttrIter {
     @Test
+    @SuppressWarnings("VariableDeclarationUsageDistance")
     public void backwardRangeAttrIter() throws InvalidInfraException {
         // build a test infrastructure
         var infra = new Infra();
@@ -88,7 +87,6 @@ public class RangeAttrIter {
                 84.,
                 TrackAttrs::getSlope)
                 .collect(Collectors.toList());
-
 
         var expected = new ArrayList<RangeValue<Double>>();
         expected.add(new RangeValue<>(5., 10., 0.));

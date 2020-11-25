@@ -39,6 +39,11 @@ public class TrainPath  implements Freezable {
         // track start  -------+------o---+------------> track end
         //              =======>           \
         //             endNodePos
+
+        /**
+         * Creates a conversion function from path offsets to this edge's track offsets.
+         * @return the said conversion function
+         */
         public DoubleUnaryOperator pathOffsetToTrackOffset() {
             // position of the train inside the edge, without taking in account the direction
             if (direction == EdgeDirection.START_TO_STOP)
@@ -55,18 +60,32 @@ public class TrainPath  implements Freezable {
             };
         }
 
+        /**
+         * Creates a conversion function from this edge's track offsets to path offsets.
+         * @return the said conversion function
+         */
         public DoubleUnaryOperator trackOffsetToPathOffset() {
             if (direction == EdgeDirection.START_TO_STOP)
                 return (trackOffset) -> trackOffset - edge.startNodeTrackPosition + pathStartOffset;
             return (trackOffset) -> edge.endNodeTrackPosition + pathStartOffset - trackOffset;
         }
 
+        /**
+         * Gets the start track offset of this edge.
+         * The result depends on the direction of the edge.
+         * @return this edge's start track offset
+         */
         public double getStartTrackOffset() {
             if (direction == EdgeDirection.START_TO_STOP)
                 return edge.startNodeTrackPosition;
             return edge.endNodeTrackPosition;
         }
 
+        /**
+         * Gets the end track offset of this edge.
+         * The result depends on the direction of the edge.
+         * @return this edge's end track offset
+         */
         public double getEndTrackOffset() {
             if (direction == EdgeDirection.START_TO_STOP)
                 return edge.endNodeTrackPosition;
@@ -100,6 +119,11 @@ public class TrainPath  implements Freezable {
         this.stops = new CryoList<>();
     }
 
+    /**
+     * Add an edge to this TrainPath.
+     * @param edge The edge
+     * @param direction The direction this path follows this edge with.
+     */
     public void addEdge(TopoEdge edge, EdgeDirection direction) {
         double pathLength = 0.0;
         if (!edges.isEmpty()) {

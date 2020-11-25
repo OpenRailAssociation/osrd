@@ -30,6 +30,11 @@ public final class RangeSequence<E> extends SortedSequence<E> {
         return nextPosition;
     }
 
+    /**
+     * Get the range at index i
+     * @param i the index of the range
+     * @return the range at index i
+     */
     public RangeValue<E> get(int i) {
         var currentPoint = data.get(i);
         return new RangeValue<>(
@@ -38,6 +43,14 @@ public final class RangeSequence<E> extends SortedSequence<E> {
                 currentPoint.value);
     }
 
+    /**
+     * Gets the range at index i, clamped by minClamp and maxClamp, and transformed by transform
+     * @param transform the translation function to apply after clamping
+     * @param minClamp the min clamp
+     * @param maxClamp the max clamp
+     * @param i the range index
+     * @return a clamped and transformed range
+     */
     public RangeValue<E> getClampedTransformed(DoubleUnaryOperator transform, double minClamp, double maxClamp, int i) {
         var currentPoint = data.get(i);
 
@@ -67,7 +80,7 @@ public final class RangeSequence<E> extends SortedSequence<E> {
         private final int end;
         private int i;
 
-        public SliceIterator(
+        private SliceIterator(
                 RangeSequence<E> seq,
                 int start,
                 int end,
@@ -111,7 +124,14 @@ public final class RangeSequence<E> extends SortedSequence<E> {
         private final int start;
         private int i;
 
-        public ReverseSliceIterator(RangeSequence<E> seq, int start, int end, DoubleUnaryOperator transform, double minClamp, double maxClamp) {
+        private ReverseSliceIterator(
+                RangeSequence<E> seq,
+                int start,
+                int end,
+                DoubleUnaryOperator transform,
+                double minClamp,
+                double maxClamp
+        ) {
             this.seq = seq;
             this.transform = transform;
             this.start = start;
@@ -150,34 +170,44 @@ public final class RangeSequence<E> extends SortedSequence<E> {
         /** Excluded end bound. */
         public final int end;
 
-        public Slice(RangeSequence<E> parentSequence, int start, int end) {
+        private Slice(RangeSequence<E> parentSequence, int start, int end) {
             this.parentSequence = parentSequence;
             this.start = start;
             this.end = end;
         }
 
-        public Iterator<RangeValue<E>> iterate(EdgeDirection direction,
-                                               double trackIterStartPos,
-                                               double trackIterEndPos,
-                                               DoubleUnaryOperator trackOffsetConverter
+        /**
+         * Iterate on this slice from trackIterStartPos to trackIterEndPos.
+         * Translate the position of the results using the translator function.
+         * @param direction whether to iterate forward or backward on the slice.
+         * @param trackIterStartPos the included start position
+         * @param trackIterEndPos the included end position
+         * @param translator the function to use to translate the coordinates of the result
+         * @return an iterator on the slice's content
+         */
+        public Iterator<RangeValue<E>> iterate(
+                EdgeDirection direction,
+                double trackIterStartPos,
+                double trackIterEndPos,
+                DoubleUnaryOperator translator
         ) {
             if (direction == EdgeDirection.START_TO_STOP)
                 return forwardIter(
                         trackIterStartPos,
                         trackIterEndPos,
-                        trackOffsetConverter);
+                        translator);
             return backwardIter(
                     trackIterEndPos,
                     trackIterStartPos,
-                    trackOffsetConverter);
+                    translator);
         }
 
-        public Iterator<RangeValue<E>> forwardIter(
+        private Iterator<RangeValue<E>> forwardIter(
                 double iterStartPos,
                 double iterEndPos,
                 DoubleUnaryOperator translator
         ) {
-            return new SliceIterator(
+            return new SliceIterator<E>(
                     parentSequence,
                     parentSequence.findStartIndex(start, end, iterStartPos),
                     parentSequence.findEndIndex(start, end, iterEndPos),
@@ -186,12 +216,12 @@ public final class RangeSequence<E> extends SortedSequence<E> {
                     iterEndPos);
         }
 
-        public PeekableIterator<RangeValue<E>> backwardIter(
+        private PeekableIterator<RangeValue<E>> backwardIter(
                 double iterStartPos,
                 double iterEndPos,
                 DoubleUnaryOperator translator
         ) {
-            return new ReverseSliceIterator(
+            return new ReverseSliceIterator<E>(
                     parentSequence,
                     parentSequence.findStartIndex(start, end, iterStartPos),
                     parentSequence.findEndIndex(start, end, iterEndPos),
@@ -266,12 +296,21 @@ public final class RangeSequence<E> extends SortedSequence<E> {
             this.res = res;
         }
 
-        public void add(double position, E e) {
-            var previousValue = data.put(position, e);
+        /**
+         * Add a new range to the builder.
+         * There must be no other range starting at this index.
+         * @param position the location of the range.
+         * @param value the value for this range
+         */
+        public void add(double position, E value) {
+            var previousValue = data.put(position, value);
             // TODO: find a better way to signal this
             assert previousValue == null : "duplicate RangeSequence start bounds";
         }
 
+        /**
+         * Flush the content of the builder into the RangeSequence.
+         */
         public void build() {
             for (var mapEntry : data.entrySet()) {
                 var position = mapEntry.getKey();
