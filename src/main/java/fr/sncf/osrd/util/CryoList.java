@@ -34,6 +34,12 @@ public final class CryoList<E> extends ArrayList<E> implements Freezable {
         frozen = true;
     }
 
+    //
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
     static final String FROZEN_MSG = "Frozen CryoList";
 
     @Override

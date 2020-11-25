@@ -9,7 +9,7 @@ public interface PeekableIterator<E> extends Iterator<E> {
      * @return The next element in the stream
      * @throws NoSuchElementException if the iteration has no more elements
      */
-    E peek();
+    E peek() throws NoSuchElementException;
 
     /**
      * Skips the current element.

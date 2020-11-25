@@ -1,5 +1,7 @@
 package fr.sncf.osrd.train;
 
+import java.util.Objects;
+
 public class Action implements Comparable<Action> {
     /**
      * Encodes the force the driver decided to apply, in newton.
@@ -18,9 +20,9 @@ public class Action implements Comparable<Action> {
     final boolean deleteController;
 
     /**
-     * Whether the action is empty
+     * Whether the action actually does something.
      */
-    final boolean empty;
+    final boolean noAction;
 
     public static Action accelerate(double force, boolean deleteController) {
         return new Action(force, false, deleteController);
@@ -47,7 +49,7 @@ public class Action implements Comparable<Action> {
         this.force = Double.NaN;
         this.emergencyBrake = emergencyBrake;
         this.deleteController = deleteController;
-        this.empty = false;
+        this.noAction = false;
     }
 
     boolean hasForce() {
@@ -64,7 +66,7 @@ public class Action implements Comparable<Action> {
         this.force = force;
         this.emergencyBrake = emergencyBrake;
         this.deleteController = deleteController;
-        this.empty = false;
+        this.noAction = false;
     }
 
     /**
@@ -75,7 +77,7 @@ public class Action implements Comparable<Action> {
         this.force = Double.NaN;
         this.emergencyBrake = false;
         this.deleteController = deleteController;
-        this.empty = true;
+        this.noAction = true;
     }
 
     @Override
@@ -96,5 +98,17 @@ public class Action implements Comparable<Action> {
 
         // if both have a force and have same same level of emergency, compare by force
         return Double.compare(this.force, other.force);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Action))
+            return false;
+        return this.compareTo((Action)obj) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(force, emergencyBrake, deleteController, noAction);
     }
 }

@@ -128,7 +128,7 @@ public class Train implements Component {
 
         var action = actions.stream()
                 .map(pair -> pair.second)
-                .filter(curAction -> !curAction.empty)
+                .filter(curAction -> !curAction.noAction)
                 .min(Action::compareTo);
         assert action.isPresent();
 
