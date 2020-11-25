@@ -43,3 +43,8 @@ tasks.withType(Checkstyle) {
         xml.enabled true
     }
 }
+
+// enable all linter warnings, and error out on warnings
+tasks.withType(JavaCompile) {
+  options.compilerArgs << "-Xlint:all" << "-Werror"
+}

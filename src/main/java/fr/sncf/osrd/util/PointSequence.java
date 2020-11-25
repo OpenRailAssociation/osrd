@@ -20,41 +20,50 @@ public final class PointSequence<E> extends SortedSequence<E> {
         /** Excluded end bound. */
         public final int end;
 
-        public Slice(PointSequence<E> parentSequence, int start, int end) {
+        private Slice(PointSequence<E> parentSequence, int start, int end) {
             this.parentSequence = parentSequence;
             this.start = start;
             this.end = end;
         }
 
+        /**
+         * Iterate on this slice from trackIterStartPos to trackIterEndPos.
+         * Translate the position of the results using the translator function.
+         * @param direction whether to iterate forward or backward on the slice.
+         * @param trackIterStartPos the included start position
+         * @param trackIterEndPos the included end position
+         * @param translator a translation function for the coordinates of the result
+         * @return an iterator on the slice's content
+         */
         public PeekableIterator<PointValue<E>> iterate(
                 EdgeDirection direction,
-                double iterStartPos,
-                double iterEndPos,
+                double trackIterStartPos,
+                double trackIterEndPos,
                 DoubleUnaryOperator translator
         ) {
             if (direction == EdgeDirection.START_TO_STOP)
-                return forwardIter(iterStartPos, iterEndPos, translator);
-            return backwardIter(iterEndPos, iterStartPos, translator);
+                return forwardIter(trackIterStartPos, trackIterEndPos, translator);
+            return backwardIter(trackIterEndPos, trackIterStartPos, translator);
         }
 
-        public PeekableIterator<PointValue<E>> forwardIter(
+        private PeekableIterator<PointValue<E>> forwardIter(
                 double iterStartPos,
                 double iterEndPos,
                 DoubleUnaryOperator translator
         ) {
-            return new SliceIterator(
+            return new SliceIterator<E>(
                     parentSequence,
                     parentSequence.findStartIndex(start, end, iterStartPos),
                     parentSequence.findEndIndex(start, end, iterEndPos),
                     translator);
         }
 
-        public PeekableIterator<PointValue<E>> backwardIter(
+        private PeekableIterator<PointValue<E>> backwardIter(
                 double iterStartPos,
                 double iterEndPos,
                 DoubleUnaryOperator translator
         ) {
-            return new ReverseSliceIterator(
+            return new ReverseSliceIterator<E>(
                     parentSequence,
                     parentSequence.findStartIndex(start, end, iterStartPos),
                     parentSequence.findEndIndex(start, end, iterEndPos),
@@ -78,20 +87,28 @@ public final class PointSequence<E> extends SortedSequence<E> {
         private final PointSequence<E> res;
         private final SortedMap<Double, ArrayList<E>> data = new TreeMap<>();
 
-        public Builder(PointSequence<E> res) {
+        private Builder(PointSequence<E> res) {
             this.res = res;
         }
 
-        public void add(double position, E e) {
+        /**
+         * Add a new element to the builder.
+         * @param position the location of the element.
+         * @param value the value of the element
+         */
+        public void add(double position, E value) {
             var valueList = data.getOrDefault(position, null);
             if (valueList == null) {
                 valueList = new ArrayList<>();
                 data.put(position, valueList);
             }
 
-            valueList.add(e);
+            valueList.add(value);
         }
 
+        /**
+         * Flush the content of the builder into the PointSequence.
+         */
         public void build() {
             for (var mapEntry : data.entrySet()) {
                 var position = mapEntry.getKey();
@@ -103,6 +120,7 @@ public final class PointSequence<E> extends SortedSequence<E> {
     }
 
     public Builder<E> builder() {
+        assert data.isEmpty();
         return new Builder<E>(this);
     }
 }

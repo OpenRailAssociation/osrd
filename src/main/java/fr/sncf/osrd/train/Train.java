@@ -81,7 +81,7 @@ public class Train implements Component {
         var angle = Math.atan(this.maxTrainGrade() / 1000.0);  // from m/km to m/m
         var weightForce = rollingStock.mass * Constants.GRAVITY * Math.sin(angle);
 
-        var dragForces = R + weightForce;
+        final var dragForces = R + weightForce;
 
         // this is the maximum braking force
         double minActionForce = -42.; // TODO: get from the rolling stock
@@ -128,7 +128,7 @@ public class Train implements Component {
 
         var action = actions.stream()
                 .map(pair -> pair.second)
-                .filter(_action -> !_action.empty)
+                .filter(curAction -> !curAction.empty)
                 .min(Action::compareTo);
         assert action.isPresent();
 

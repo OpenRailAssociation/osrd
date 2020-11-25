@@ -15,7 +15,7 @@ public abstract class SortedSequence<E> {
         private final int end;
         private int i;
 
-        public SliceIterator(SortedSequence<E> seq, int start, int end, DoubleUnaryOperator translator) {
+        protected SliceIterator(SortedSequence<E> seq, int start, int end, DoubleUnaryOperator translator) {
             this.data = seq.data;
             this.translator = translator;
             this.end = end;
@@ -49,7 +49,7 @@ public abstract class SortedSequence<E> {
         private final int start;
         private int i;
 
-        public ReverseSliceIterator(SortedSequence<E> seq, int start, int end, DoubleUnaryOperator translator) {
+        protected ReverseSliceIterator(SortedSequence<E> seq, int start, int end, DoubleUnaryOperator translator) {
             this.data = seq.data;
             this.translator = translator;
             this.start = start;

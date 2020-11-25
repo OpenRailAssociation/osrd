@@ -53,6 +53,12 @@ public class TrainPositionTracker {
     public final Signal<PathElement> joinedEdgeSignal = new Signal<>();
     public final Signal<PathElement> leftEdgeSignal = new Signal<>();
 
+    /**
+     * Create a new position tracker on some given infrastructure and path.
+     * @param infra the infrastructure to navigate on
+     * @param path the path to follow
+     * @param trainLength the length of the train
+     */
     public TrainPositionTracker(Infra infra, TrainPath path, double trainLength) {
         this.infra = infra;
         this.path = path;
@@ -128,6 +134,13 @@ public class TrainPositionTracker {
         tailEdgePosition = totalEdgesSpan - trainLength;
     }
 
+    /**
+     * Stream point attributes ahead of the train
+     * @param distance the lookahead distance
+     * @param attrGetter a function able to get a PointSequence slice from a TrackAttrs slice
+     * @param <ValueT> the type of the attributes
+     * @return a stream on the point attributes ahead of the train
+     */
     public <ValueT> Stream<PointValue<ValueT>> streamPointAttrForward(
             double distance,
             Function<TrackAttrs.Slice, PointSequence.Slice<ValueT>> attrGetter
@@ -142,6 +155,13 @@ public class TrainPositionTracker {
                 attrGetter);
     }
 
+    /**
+     * Stream range attributes ahead of the train
+     * @param distance the lookahead distance
+     * @param attrGetter a function able to get a RangeSequence slice from a TrackAttrs slice
+     * @param <ValueT> the type of the attributes
+     * @return a stream on the range attributes ahead of the train
+     */
     public <ValueT> Stream<RangeValue<ValueT>> streamRangeAttrForward(
             double distance,
             Function<TrackAttrs.Slice, RangeSequence.Slice<ValueT>> attrGetter
@@ -156,6 +176,12 @@ public class TrainPositionTracker {
                 attrGetter);
     }
 
+    /**
+     * Stream point attributes under the train
+     * @param attrGetter a function that gets PointSequence slices from TrackAttrs slices
+     * @param <ValueT> the type of the sequence elements
+     * @return a stream on point attributes under the train
+     */
     public <ValueT> Stream<PointValue<ValueT>> streamPointAttrUnderTrain(
             Function<TrackAttrs.Slice, PointSequence.Slice<ValueT>> attrGetter
     ) {
@@ -170,6 +196,12 @@ public class TrainPositionTracker {
                 attrGetter);
     }
 
+    /**
+     * Stream range attributes under the train
+     * @param attrGetter a function that gets RangeSequence slices from TrackAttrs slices
+     * @param <ValueT> the type of the sequence elements
+     * @return a stream on range attributes under the train
+     */
     public <ValueT> Stream<RangeValue<ValueT>> streamRangeAttrUnderTrain(
             Function<TrackAttrs.Slice, RangeSequence.Slice<ValueT>> attrGetter
     ) {

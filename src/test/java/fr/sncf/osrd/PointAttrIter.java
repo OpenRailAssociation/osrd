@@ -1,19 +1,19 @@
 package fr.sncf.osrd;
 
+import static org.junit.jupiter.api.Assertions.assertLinesMatch;
+
 import fr.sncf.osrd.infra.*;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.train.PathAttrIterator;
 import fr.sncf.osrd.train.TrainPath;
 import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
-
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
 class PointAttrIter {
     @Test
+    @SuppressWarnings("VariableDeclarationUsageDistance")
     public void simplePointAttrIter() throws InvalidInfraException {
         // build a test infrastructure
         var infra = new Infra();
@@ -24,13 +24,13 @@ class PointAttrIter {
         var nodeB = infra.makeNoOpNode("B");
         var nodeC = infra.makeNoOpNode("C");
 
-        var firstEdge = infra.makeTopoLink(
+        final var firstEdge = infra.makeTopoLink(
                 nodeA, nodeA::addEdge,
                 nodeB, nodeB::addEdge,
                 0, 42,
                 testTrack, "e1", 42.0);
 
-        var secondEdge = infra.makeTopoLink(
+        final var secondEdge = infra.makeTopoLink(
                 nodeB, nodeB::addEdge,
                 nodeC, nodeC::addEdge,
                 42.0, 42 * 2,
@@ -70,6 +70,7 @@ class PointAttrIter {
     }
 
     @Test
+    @SuppressWarnings("VariableDeclarationUsageDistance")
     public void backwardPointAttrIter() throws InvalidInfraException {
         // build a test infrastructure
         var infra = new Infra();

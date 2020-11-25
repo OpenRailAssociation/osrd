@@ -3,9 +3,9 @@ package fr.sncf.osrd.infra.graph;
 import fr.sncf.osrd.util.Freezable;
 import fr.sncf.osrd.util.Indexable;
 
-public abstract class AbstractEdge<N extends AbstractNode> implements Indexable, Freezable {
-    public final N startNode;
-    public final N endNode;
+public abstract class AbstractEdge<NodeT extends AbstractNode<?>> implements Indexable, Freezable {
+    public final NodeT startNode;
+    public final NodeT endNode;
 
     private int index = -1;
 
@@ -21,7 +21,7 @@ public abstract class AbstractEdge<N extends AbstractNode> implements Indexable,
         return index;
     }
 
-    protected AbstractEdge(N startNode, N endNode) {
+    protected AbstractEdge(NodeT startNode, NodeT endNode) {
         this.startNode = startNode;
         this.endNode = endNode;
     }
