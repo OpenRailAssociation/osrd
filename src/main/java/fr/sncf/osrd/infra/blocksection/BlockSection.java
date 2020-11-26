@@ -1,5 +1,6 @@
 package fr.sncf.osrd.infra.blocksection;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.graph.AbstractEdge;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.util.CryoList;
@@ -9,6 +10,10 @@ import fr.sncf.osrd.util.RangeSequence;
 /**
  * Block sections are an edge between two section signals.
  */
+@SuppressFBWarnings(
+        value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",
+        justification = "kept for later use"
+)
 public class BlockSection extends AbstractEdge<SectionSignalNode> {
     public final String id;
     public final double length;

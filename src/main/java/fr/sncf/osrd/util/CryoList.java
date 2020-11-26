@@ -1,5 +1,7 @@
 package fr.sncf.osrd.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -13,7 +15,11 @@ import java.util.function.UnaryOperator;
  * Wraps ArrayList.
  * @param <E> Type of the list elements
  */
-public final class CryoList<E> extends ArrayList<E> implements Freezable {
+@SuppressFBWarnings(
+        value = "EQ_DOESNT_OVERRIDE_EQUALS",
+        justification = "we're ok with being the frozen status being ignored when testing list equality"
+)
+public class CryoList<E> extends ArrayList<E> implements Freezable {
     private static final long serialVersionUID = 2140934581223716305L;
 
     boolean frozen = false;
@@ -32,12 +38,6 @@ public final class CryoList<E> extends ArrayList<E> implements Freezable {
 
     public void freeze() {
         frozen = true;
-    }
-
-    //
-    @Override
-    public boolean equals(Object o) {
-        return super.equals(o);
     }
 
     static final String FROZEN_MSG = "Frozen CryoList";

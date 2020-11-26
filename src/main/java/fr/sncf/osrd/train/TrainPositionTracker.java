@@ -1,8 +1,8 @@
 package fr.sncf.osrd.train;
 
 import com.badlogic.ashley.signals.Signal;
+import fr.sncf.osrd.infra.branching.BranchAttrs;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.TrackAttrs;
 import fr.sncf.osrd.train.TrainPath.PathElement;
 import fr.sncf.osrd.util.PointSequence;
 import fr.sncf.osrd.util.PointValue;
@@ -137,13 +137,13 @@ public class TrainPositionTracker {
     /**
      * Stream point attributes ahead of the train
      * @param distance the lookahead distance
-     * @param attrGetter a function able to get a PointSequence slice from a TrackAttrs slice
+     * @param attrGetter a function able to get a PointSequence slice from a BranchAttrs slice
      * @param <ValueT> the type of the attributes
      * @return a stream on the point attributes ahead of the train
      */
     public <ValueT> Stream<PointValue<ValueT>> streamPointAttrForward(
             double distance,
-            Function<TrackAttrs.Slice, PointSequence.Slice<ValueT>> attrGetter
+            Function<BranchAttrs.Slice, PointSequence.Slice<ValueT>> attrGetter
     ) {
         var headPathPosition = getHeadPathPosition();
         return PathAttrIterator.streamPoints(
@@ -158,13 +158,13 @@ public class TrainPositionTracker {
     /**
      * Stream range attributes ahead of the train
      * @param distance the lookahead distance
-     * @param attrGetter a function able to get a RangeSequence slice from a TrackAttrs slice
+     * @param attrGetter a function able to get a RangeSequence slice from a BranchAttrs slice
      * @param <ValueT> the type of the attributes
      * @return a stream on the range attributes ahead of the train
      */
     public <ValueT> Stream<RangeValue<ValueT>> streamRangeAttrForward(
             double distance,
-            Function<TrackAttrs.Slice, RangeSequence.Slice<ValueT>> attrGetter
+            Function<BranchAttrs.Slice, RangeSequence.Slice<ValueT>> attrGetter
     ) {
         var headPathPosition = getHeadPathPosition();
         return PathAttrIterator.streamRanges(
@@ -178,12 +178,12 @@ public class TrainPositionTracker {
 
     /**
      * Stream point attributes under the train
-     * @param attrGetter a function that gets PointSequence slices from TrackAttrs slices
+     * @param attrGetter a function that gets PointSequence slices from BranchAttrs slices
      * @param <ValueT> the type of the sequence elements
      * @return a stream on point attributes under the train
      */
     public <ValueT> Stream<PointValue<ValueT>> streamPointAttrUnderTrain(
-            Function<TrackAttrs.Slice, PointSequence.Slice<ValueT>> attrGetter
+            Function<BranchAttrs.Slice, PointSequence.Slice<ValueT>> attrGetter
     ) {
         var tailPathPosition = getTailPathPosition();
         var firstEdgeIndex = currentPathIndex - currentPathEdges.size();
@@ -198,12 +198,12 @@ public class TrainPositionTracker {
 
     /**
      * Stream range attributes under the train
-     * @param attrGetter a function that gets RangeSequence slices from TrackAttrs slices
+     * @param attrGetter a function that gets RangeSequence slices from BranchAttrs slices
      * @param <ValueT> the type of the sequence elements
      * @return a stream on range attributes under the train
      */
     public <ValueT> Stream<RangeValue<ValueT>> streamRangeAttrUnderTrain(
-            Function<TrackAttrs.Slice, RangeSequence.Slice<ValueT>> attrGetter
+            Function<BranchAttrs.Slice, RangeSequence.Slice<ValueT>> attrGetter
     ) {
         var tailPathPosition = getTailPathPosition();
         var firstEdgeIndex = currentPathIndex - currentPathEdges.size();

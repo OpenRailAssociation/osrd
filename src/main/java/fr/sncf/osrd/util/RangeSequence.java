@@ -1,5 +1,6 @@
 package fr.sncf.osrd.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 
 import java.util.*;
@@ -232,6 +233,10 @@ public final class RangeSequence<E> extends SortedSequence<E> {
     }
 
     @Override
+    @SuppressFBWarnings(
+            value = "FE_FLOATING_POINT_EQUALITY",
+            justification = "we're actually testing an edge case we need to test FP equality"
+    )
     public int findStartIndex(int start, int end, double iterStartPos) {
         // we need to do a fixup, as the sorted sequence's findStartIndex looks for
         // the index of the first point with a position after or on iterStartPos.
@@ -245,7 +250,7 @@ public final class RangeSequence<E> extends SortedSequence<E> {
             return data.size() - 1;
 
         var basePoint = data.get(baseIndex);
-        // TODO: add an epsilon
+        // TODO: add an epsilon?
         // if the point starts a new range at this spot, everything is fine
         if (basePoint.position == iterStartPos)
             return baseIndex;
@@ -256,6 +261,10 @@ public final class RangeSequence<E> extends SortedSequence<E> {
      * Find the index <b>after</b> the last range containing iterEndPos.
      */
     @Override
+    @SuppressFBWarnings(
+            value = "FE_FLOATING_POINT_EQUALITY",
+            justification = "we're actually testing an edge case we need to test FP equality"
+    )
     public int findEndIndex(int start, int end, double iterEndPos) {
         // finds the index <b>after</b> the last element with a position below or on iterEndPos,
         // in terms of ranges, it means the index after the range start
@@ -269,7 +278,7 @@ public final class RangeSequence<E> extends SortedSequence<E> {
             return baseIndex;
 
         var lastItem = data.get(baseIndex - 1);
-        // TODO: add an epsilon
+        // TODO: add an epsilon?
         // remove the last range if it starts where the endPos is
         if (lastItem.position == iterEndPos)
             return baseIndex - 1;

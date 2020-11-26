@@ -27,23 +27,23 @@ public final class PointSequence<E> extends SortedSequence<E> {
         }
 
         /**
-         * Iterate on this slice from trackIterStartPos to trackIterEndPos.
+         * Iterate on this slice from branchIterStartPos to branchIterEndPos.
          * Translate the position of the results using the translator function.
          * @param direction whether to iterate forward or backward on the slice.
-         * @param trackIterStartPos the included start position
-         * @param trackIterEndPos the included end position
+         * @param branchIterStartPos the included start position
+         * @param branchIterEndPos the included end position
          * @param translator a translation function for the coordinates of the result
          * @return an iterator on the slice's content
          */
         public PeekableIterator<PointValue<E>> iterate(
                 EdgeDirection direction,
-                double trackIterStartPos,
-                double trackIterEndPos,
+                double branchIterStartPos,
+                double branchIterEndPos,
                 DoubleUnaryOperator translator
         ) {
             if (direction == EdgeDirection.START_TO_STOP)
-                return forwardIter(trackIterStartPos, trackIterEndPos, translator);
-            return backwardIter(trackIterEndPos, trackIterStartPos, translator);
+                return forwardIter(branchIterStartPos, branchIterEndPos, translator);
+            return backwardIter(branchIterEndPos, branchIterStartPos, translator);
         }
 
         private PeekableIterator<PointValue<E>> forwardIter(

@@ -3,6 +3,7 @@ package fr.sncf.osrd;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.infra.*;
+import fr.sncf.osrd.infra.branching.BranchAttrs;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.train.PathAttrIterator;
 import fr.sncf.osrd.train.TrainPath;
@@ -19,9 +20,8 @@ public class RangeAttrIter {
     public void backwardRangeAttrIter() throws InvalidInfraException {
         // build a test infrastructure
         var infra = new Infra();
-        var line = infra.makeLine("test line", "1");
-        var forwardTrack = Track.createAndRegister(line, "1", "test track");
-        var backwardTrack = Track.createAndRegister(line, "2", "backward track");
+        var forwardTrack = infra.makeBranch("1", "test branch");
+        var backwardTrack = infra.makeBranch("2", "backward branch");
 
         var nodeA = infra.makeNoOpNode("A");
         var nodeB = infra.makeNoOpNode("B");
@@ -30,20 +30,22 @@ public class RangeAttrIter {
         var forwardEdge = infra.makeTopoLink(
                 nodeA, nodeA::addEdge,
                 nodeB, nodeB::addEdge,
-                0, 42,
-                forwardTrack, "e1", 42.0);
+                "e1", 42,
+                forwardTrack, 0, 42.0
+        );
 
         var backwardEdge = infra.makeTopoLink(
                 nodeC, nodeC::addEdge,
                 nodeB, nodeB::addEdge,
-                0, 50,
-                backwardTrack, "e2", 50);
+                "e2", 50,
+                backwardTrack, 0, 50
+        );
 
         /*
                 start                                   stop
             0     5                 42                   84        92  <= path offsets
             +=======================+==============================+
-            0        10     30    42|50  41    20        8         0   <= track offsets
+            0        10     30    42|50  41    20        8         0   <= branch offsets
 
                                                ----------+ 5
                                          ------+ 4
@@ -85,7 +87,7 @@ public class RangeAttrIter {
                 0,
                 5.,
                 84.,
-                TrackAttrs::getSlope)
+                BranchAttrs::getSlope)
                 .collect(Collectors.toList());
 
         var expected = new ArrayList<RangeValue<Double>>();

@@ -4,7 +4,7 @@ import fr.sncf.osrd.util.CryoList;
 import java.util.List;
 
 /**
- * A stop block prevents trains from going past the end of a track.
+ * A stop block prevents trains from going past the end of a branch.
  * https://en.wikipedia.org/wiki/Buffer_stop
  */
 public class StopBlock extends TopoNode {

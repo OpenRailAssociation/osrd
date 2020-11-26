@@ -1,5 +1,6 @@
 package fr.sncf.osrd.infra;
 
+import fr.sncf.osrd.infra.branching.Branch;
 import fr.sncf.osrd.util.CryoMap;
 import fr.sncf.osrd.util.Freezable;
 
@@ -19,21 +20,17 @@ public class Line implements Freezable {
     }
 
     /**
-     * Add a {@link fr.sncf.osrd.infra.Track} to the line.
-     * @throws InvalidInfraException If a track with the same name is already registered
+     * Add a {@link Branch} to the line.
+     * @throws InvalidInfraException If a branch with the same name is already registered
      */
     void register(Track track) throws InvalidInfraException {
         if (track.line != this)
-            throw new InvalidInfraException("registering a track to the wrong line");
+            throw new InvalidInfraException("registering a branch to the wrong line");
 
-        var trackIndex = tracks.size();
         if (tracks.putIfAbsent(track.name, track) != null) {
-            var message = String.format("duplicate track name '%s' in line '%s'", name, track.name);
+            var message = String.format("duplicate branch name '%s' in line '%s'", name, track.name);
             throw new InvalidInfraException(message);
         }
-
-        // set the per-line unique track index
-        track.setIndex(trackIndex);
     }
 
     @Override
