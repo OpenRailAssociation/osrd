@@ -63,8 +63,7 @@ public class RailMLParser {
             infra.makeTopoLink(
                     firstRelationNode, firstRelationNode::addEdge,
                     secondRelationNode, secondRelationNode::addEdge,
-                    0, length,
-                    null, id, length);
+                    id, length, null,0, length);
         }
     }
 }

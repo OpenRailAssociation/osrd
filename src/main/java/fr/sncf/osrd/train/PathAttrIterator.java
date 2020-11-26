@@ -1,8 +1,9 @@
 package fr.sncf.osrd.train;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.branching.Branch;
+import fr.sncf.osrd.infra.branching.BranchAttrs;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.Track;
-import fr.sncf.osrd.infra.TrackAttrs;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.util.*;
 
@@ -32,6 +33,11 @@ import java.util.stream.StreamSupport;
  *   }
  *  </pre>
  */
+@SuppressFBWarnings(
+        value = "FE_FLOATING_POINT_EQUALITY",
+        justification = ("this annotation is for streamPoints. "
+                + "we're actually testing an edge case we need to test FP equality")
+)
 public class PathAttrIterator<EventT> implements Spliterator<EventT> {
     private final TrainPath path;
     private final double pathStartPosition;
@@ -134,14 +140,14 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
     }
 
     /**
-     * Stream some PointSequence track attributes along a path.
+     * Stream some PointSequence branch attributes along a path.
      * @param <ValueT> the type of the PointSequence value
      * @param infra the infrastructure to work on
      * @param path the path to follow
      * @param iterStartPathIndex the index of the path element to start iterating from
      * @param iterStartPathOffset the offset to start iterating at
      * @param iterEndPathOffset the offset to end iterating at
-     * @param attrGetter a function that gets the proper attribute, given a TrackAttrs.Slice
+     * @param attrGetter a function that gets the proper attribute, given a BranchAttrs.Slice
      * @return a stream of PointSequence entries
      */
     public static <ValueT> Stream<PointValue<ValueT>> streamPoints(
@@ -150,10 +156,10 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
             int iterStartPathIndex,
             double iterStartPathOffset,
             double iterEndPathOffset,
-            Function<TrackAttrs.Slice, PointSequence.Slice<ValueT>> attrGetter
+            Function<BranchAttrs.Slice, PointSequence.Slice<ValueT>> attrGetter
     ) {
         var iterState = new Object() {
-            Track lastEdgeTrack = null;
+            Branch lastEdgeTrack = null;
             double lastEdgeFinalPos = Double.NaN;
         };
 
@@ -162,29 +168,29 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
         ) -> {
             var edge = pathElement.edge;
 
-            var pathOffsetConverter = pathElement.pathOffsetToTrackOffset();
-            // convert the path based begin and end offsets to track based ones
-            var trackIterStartPos = pathOffsetConverter.applyAsDouble(iterStartPathOffset);
-            var trackIterEndPos = pathOffsetConverter.applyAsDouble(iterEndPathOffset);
+            var pathOffsetConverter = pathElement.pathOffsetToBranchOffset();
+            // convert the path based begin and end offsets to branch based ones
+            var branchIterStartPos = pathOffsetConverter.applyAsDouble(iterStartPathOffset);
+            var branchIterEndPos = pathOffsetConverter.applyAsDouble(iterEndPathOffset);
 
             var edgeAttributes = infra.getEdgeAttrs(edge);
             var trackOffsetConverter = pathElement.trackOffsetToPathOffset();
 
             var attribute = attrGetter.apply(edgeAttributes);
             var iterator = attribute.iterate(pathElement.direction,
-                    trackIterStartPos,
-                    trackIterEndPos,
+                    branchIterStartPos,
+                    branchIterEndPos,
                     trackOffsetConverter);
 
-            // When the current edge is on the same track as the previous one,
+            // When the current edge is on the same branch as the previous one,
             // the first possible position has to be excluded from this edge, as it
             // is shared with the previous one
-            if (pathElement.edge.track == iterState.lastEdgeTrack) {
+            if (pathElement.edge.branch == iterState.lastEdgeTrack) {
                 for (; iterator.hasNext(); iterator.skip())
                     if (iterator.peek().position != iterState.lastEdgeFinalPos)
                         break;
             }
-            iterState.lastEdgeTrack = pathElement.edge.track;
+            iterState.lastEdgeTrack = pathElement.edge.branch;
             iterState.lastEdgeFinalPos = pathElement.getEndTrackOffset();
             return iterator;
         };
@@ -200,13 +206,13 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
 
 
     /**
-     * Stream some PointSequence track attributes along a path.
+     * Stream some PointSequence branch attributes along a path.
      * @param infra the infrastructure to work on
      * @param path the path to follow
      * @param iterStartPathIndex the index of the path element to start iterating from
      * @param iterStartPathOffset the offset to start iterating at
      * @param iterEndPathOffset the offset to end iterating at
-     * @param attrGetter a function that gets the proper attribute, given a TrackAttrs.Slice
+     * @param attrGetter a function that gets the proper attribute, given a BranchAttrs.Slice
      * @param <ValueT> the type of the PointSequence value
      * @return a stream of PointSequence entries
      */
@@ -216,32 +222,32 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
             int iterStartPathIndex,
             double iterStartPathOffset,
             double iterEndPathOffset,
-            Function<TrackAttrs.Slice, RangeSequence.Slice<ValueT>> attrGetter
+            Function<BranchAttrs.Slice, RangeSequence.Slice<ValueT>> attrGetter
     ) {
         EventIteratorFactory<RangeValue<ValueT>> eventIteratorFactory = (
                 pathElement
         ) -> {
             var edge = pathElement.edge;
 
-            var pathOffsetConverter = pathElement.pathOffsetToTrackOffset();
-            // convert the path based begin and end offsets to track based ones
-            var trackIterStartPos = pathOffsetConverter.applyAsDouble(iterStartPathOffset);
-            var trackIterEndPos = pathOffsetConverter.applyAsDouble(iterEndPathOffset);
+            var pathOffsetConverter = pathElement.pathOffsetToBranchOffset();
+            // convert the path based begin and end offsets to branch based ones
+            var branchIterStartPos = pathOffsetConverter.applyAsDouble(iterStartPathOffset);
+            var branchIterEndPos = pathOffsetConverter.applyAsDouble(iterEndPathOffset);
 
             // clamp the iteration bounds to the edge's, so that the output sequence of
             // ranges stays disjoint
             if (pathElement.direction == EdgeDirection.START_TO_STOP) {
-                if (trackIterStartPos < edge.startNodeTrackPosition)
-                    trackIterStartPos = edge.startNodeTrackPosition;
+                if (branchIterStartPos < edge.startBranchPosition)
+                    branchIterStartPos = edge.startBranchPosition;
 
-                if (trackIterEndPos > edge.endNodeTrackPosition)
-                    trackIterEndPos = edge.endNodeTrackPosition;
+                if (branchIterEndPos > edge.endBranchPosition)
+                    branchIterEndPos = edge.endBranchPosition;
             } else {
-                if (trackIterStartPos > edge.endNodeTrackPosition)
-                    trackIterStartPos = edge.endNodeTrackPosition;
+                if (branchIterStartPos > edge.endBranchPosition)
+                    branchIterStartPos = edge.endBranchPosition;
 
-                if (trackIterEndPos < edge.startNodeTrackPosition)
-                    trackIterEndPos = edge.startNodeTrackPosition;
+                if (branchIterEndPos < edge.startBranchPosition)
+                    branchIterEndPos = edge.startBranchPosition;
             }
 
             var edgeAttributes = infra.getEdgeAttrs(edge);
@@ -249,8 +255,8 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
 
             var attribute = attrGetter.apply(edgeAttributes);
             return attribute.iterate(pathElement.direction,
-                    trackIterStartPos,
-                    trackIterEndPos,
+                    branchIterStartPos,
+                    branchIterEndPos,
                     trackOffsetConverter);
         };
 

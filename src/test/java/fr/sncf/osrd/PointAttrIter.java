@@ -3,6 +3,7 @@ package fr.sncf.osrd;
 import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
 import fr.sncf.osrd.infra.*;
+import fr.sncf.osrd.infra.branching.BranchAttrs;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.train.PathAttrIterator;
 import fr.sncf.osrd.train.TrainPath;
@@ -17,8 +18,7 @@ class PointAttrIter {
     public void simplePointAttrIter() throws InvalidInfraException {
         // build a test infrastructure
         var infra = new Infra();
-        var line = infra.makeLine("test line", "1");
-        var testTrack = Track.createAndRegister(line, "1", "test track");
+        var testBranch = infra.makeBranch("1", "test branch");
 
         var nodeA = infra.makeNoOpNode("A");
         var nodeB = infra.makeNoOpNode("B");
@@ -27,16 +27,18 @@ class PointAttrIter {
         final var firstEdge = infra.makeTopoLink(
                 nodeA, nodeA::addEdge,
                 nodeB, nodeB::addEdge,
-                0, 42,
-                testTrack, "e1", 42.0);
+                "e1", 42,
+                testBranch, 0, 42.0
+        );
 
         final var secondEdge = infra.makeTopoLink(
                 nodeB, nodeB::addEdge,
                 nodeC, nodeC::addEdge,
-                42.0, 42 * 2,
-                testTrack, "e2", 42.0);
+                "e2", 42.0,
+                testBranch, 42.0, 42 * 2
+        );
 
-        var builder = testTrack.attributes.operationalPoints.builder();
+        var builder = testBranch.attributes.operationalPoints.builder();
         builder.add(0, new OperationalPoint("skipped", "skipped"));
         builder.add(10, new OperationalPoint("1", "1"));
         builder.add(42.0, new OperationalPoint("2a", "2a"));
@@ -56,7 +58,7 @@ class PointAttrIter {
                 0,
                 5.,
                 84.,
-                TrackAttrs::getOperationalPoints)
+                BranchAttrs::getOperationalPoints)
                 .map(e -> e.value.name)
                 .collect(Collectors.toList());
 
@@ -74,9 +76,8 @@ class PointAttrIter {
     public void backwardPointAttrIter() throws InvalidInfraException {
         // build a test infrastructure
         var infra = new Infra();
-        var line = infra.makeLine("test line", "1");
-        var forwardTrack = Track.createAndRegister(line, "1", "test track");
-        var backwardTrack = Track.createAndRegister(line, "2", "backward track");
+        var forwardBranch = infra.makeBranch("1", "test branch");
+        var backwardBranch = infra.makeBranch("2", "backward branch");
 
         var nodeA = infra.makeNoOpNode("A");
         var nodeB = infra.makeNoOpNode("B");
@@ -85,17 +86,17 @@ class PointAttrIter {
         var forwardEdge = infra.makeTopoLink(
                 nodeA, nodeA::addEdge,
                 nodeB, nodeB::addEdge,
-                0, 42,
-                forwardTrack, "e1", 42.0);
+                "e1", 42,
+                forwardBranch, 0, 42.0);
 
         var backwardEdge = infra.makeTopoLink(
                 nodeC, nodeC::addEdge,
                 nodeB, nodeB::addEdge,
-                0, 50,
-                backwardTrack, "e2", 50);
+                "e2", 50,
+                backwardBranch, 0, 50);
 
         {
-            var builder = forwardTrack.attributes.operationalPoints.builder();
+            var builder = forwardBranch.attributes.operationalPoints.builder();
             builder.add(0, new OperationalPoint("skipped", "skipped"));
             builder.add(10, new OperationalPoint("1", "1"));
             builder.add(42.0, new OperationalPoint("2a", "2a"));
@@ -105,7 +106,7 @@ class PointAttrIter {
         }
 
         {
-            var builder = backwardTrack.attributes.operationalPoints.builder();
+            var builder = backwardBranch.attributes.operationalPoints.builder();
             builder.add(0, new OperationalPoint("oob", "oob"));
             builder.add(20, new OperationalPoint("4", "4"));
             builder.add(42.0, new OperationalPoint("3a", "3b"));
@@ -126,7 +127,7 @@ class PointAttrIter {
                 0,
                 5.,
                 84.,
-                TrackAttrs::getOperationalPoints)
+                BranchAttrs::getOperationalPoints)
                 .map(e -> e.value.name)
                 .collect(Collectors.toList());
 

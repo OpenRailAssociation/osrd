@@ -1,40 +1,40 @@
 package fr.sncf.osrd.infra.topological;
 
+import fr.sncf.osrd.infra.branching.Branch;
 import fr.sncf.osrd.infra.graph.AbstractEdge;
-import fr.sncf.osrd.infra.Track;
-import java.util.function.Consumer;
+
 import java.util.function.Function;
 
 /**
  * An edge in the topological graph.
  */
 public final class TopoEdge extends AbstractEdge<TopoNode> {
-    public final Track track;
     public final String id;
     public final double length;
 
-    public final double startNodeTrackPosition;
-    public final double endNodeTrackPosition;
+    public final Branch branch;
+    public final double startBranchPosition;
+    public final double endBranchPosition;
 
     /**
      * Create a new topological edge.
      * This constructor is private, as the edge should also be registered into the nodes.
      */
     private TopoEdge(
-            Track track,
             String id,
             TopoNode startNode,
             TopoNode endNode,
-            double startNodeTrackPosition,
-            double endNodeTrackPosition,
-            double length
+            double length,
+            Branch branch,
+            double startBranchPosition,
+            double endBranchPosition
     ) {
         super(startNode, endNode);
-        this.track = track;
         this.id = id;
         this.length = length;
-        this.startNodeTrackPosition = startNodeTrackPosition;
-        this.endNodeTrackPosition = endNodeTrackPosition;
+        this.branch = branch;
+        this.startBranchPosition = startBranchPosition;
+        this.endBranchPosition = endBranchPosition;
     }
 
     /**
@@ -44,7 +44,6 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
      * @param startNodeRegister The function to call to register the edge with the start node
      * @param endNode The end node of the edge
      * @param endNodeRegister The function to call to register the edge with the end node
-     * @param track the track to add the edge onto
      * @param id A unique identifier for the edge
      * @param length The length of the edge, in meters
      * @return A new edge
@@ -54,13 +53,13 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
             Function<TopoEdge, TopoNode> startNodeRegister,
             TopoNode endNode,
             Function<TopoEdge, TopoNode> endNodeRegister,
-            double startNodePosition,
-            double endNodePosition,
-            Track track,
             String id,
-            double length
+            double length,
+            Branch branch,
+            double startBranchPosition,
+            double endBranchPosition
     ) {
-        var edge = new TopoEdge(track, id, startNode, endNode, startNodePosition, endNodePosition, length);
+        var edge = new TopoEdge(id, startNode, endNode, length, branch, startBranchPosition, endBranchPosition);
         var startNodeReg = startNodeRegister.apply(edge);
         var endNodeReg = endNodeRegister.apply(edge);
         assert startNode == startNodeReg;

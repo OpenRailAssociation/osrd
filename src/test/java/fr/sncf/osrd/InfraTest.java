@@ -7,14 +7,13 @@ class InfraTest {
     @Test
     public void simpleInfraBuild() throws InvalidInfraException {
         var infra = new Infra();
-        var line = infra.makeLine("test line", "1");
-        var track = Track.createAndRegister(line, "1", "test track");
+        var branch = infra.makeBranch("1", "test branch");
         var nodeA = infra.makeNoOpNode("A");
         var nodeB = infra.makeNoOpNode("B");
         infra.makeTopoLink(
                 nodeA, nodeA::addEdge,
                 nodeB, nodeB::addEdge,
-                0, 42,
-                track, "e1", 42.0);
+                "e1", 42,
+                branch, 0, 42.0);
     }
 }

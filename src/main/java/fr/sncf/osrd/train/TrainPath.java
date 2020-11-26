@@ -1,5 +1,6 @@
 package fr.sncf.osrd.train;
 
+import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.util.CryoList;
@@ -26,70 +27,70 @@ public class TrainPath  implements Freezable {
         }
 
         //     FORWARD CASE
-        //                      edgePathOffset
-        //                    \ ======>
-        // track start  -------+------o---+------------> track end
-        //              =======>           \
-        //            startNodePos          '-> train path
+        //                       edgePathOffset
+        //                     \ ======>
+        // branch start  -------+------o---+------------> branch end
+        //               =======>           \
+        //             startNodePos          '-> train path
         //
         //     BACKWARD CASE
         //
-        //                  <,       edgePathOffset
-        //                    \       <====
-        // track start  -------+------o---+------------> track end
-        //              =======>           \
-        //             endNodePos
+        //                   <,       edgePathOffset
+        //                     \       <====
+        // branch start  -------+------o---+------------> branch end
+        //               =======>           \
+        //              endNodePos
 
         /**
-         * Creates a conversion function from path offsets to this edge's track offsets.
+         * Creates a conversion function from path offsets to this edge's branch offsets.
          * @return the said conversion function
          */
-        public DoubleUnaryOperator pathOffsetToTrackOffset() {
+        public DoubleUnaryOperator pathOffsetToBranchOffset() {
             // position of the train inside the edge, without taking in account the direction
             if (direction == EdgeDirection.START_TO_STOP)
                 return (pathOffset) -> {
                     // trackOffset = pathOffset - pathStartOffset + edge.startNodePosition
                     var edgePathOffset = pathOffset - pathStartOffset;
-                    return edgePathOffset + edge.startNodeTrackPosition;
+                    return edgePathOffset + edge.startBranchPosition;
                 };
 
             return (pathOffset) -> {
                 // trackOffset = edge.endNodePosition -pathOffset + pathStartOffset
                 var edgePathOffset = pathOffset - pathStartOffset;
-                return edge.endNodeTrackPosition - edgePathOffset;
+                return edge.endBranchPosition - edgePathOffset;
             };
         }
 
         /**
-         * Creates a conversion function from this edge's track offsets to path offsets.
+         * Creates a conversion function from this edge's branch offsets to path offsets.
          * @return the said conversion function
          */
         public DoubleUnaryOperator trackOffsetToPathOffset() {
             if (direction == EdgeDirection.START_TO_STOP)
-                return (trackOffset) -> trackOffset - edge.startNodeTrackPosition + pathStartOffset;
-            return (trackOffset) -> edge.endNodeTrackPosition + pathStartOffset - trackOffset;
+                return (trackOffset) -> trackOffset - edge.startBranchPosition + pathStartOffset;
+            return (trackOffset) -> edge.endBranchPosition + pathStartOffset - trackOffset;
         }
 
         /**
-         * Gets the start track offset of this edge.
+         * Gets the start branch offset of this edge.
          * The result depends on the direction of the edge.
-         * @return this edge's start track offset
+         * @return this edge's start branch offset
          */
         public double getStartTrackOffset() {
             if (direction == EdgeDirection.START_TO_STOP)
-                return edge.startNodeTrackPosition;
-            return edge.endNodeTrackPosition;
+                return edge.startBranchPosition;
+            return edge.endBranchPosition;
         }
 
         /**
-         * Gets the end track offset of this edge.
+         * Gets the end branch offset of this edge.
          * The result depends on the direction of the edge.
-         * @return this edge's end track offset
+         * @return this edge's end branch offset
          */
         public double getEndTrackOffset() {
             if (direction == EdgeDirection.START_TO_STOP)
-                return edge.endNodeTrackPosition;
-            return edge.startNodeTrackPosition;
+                return edge.endBranchPosition;
+            return edge.startBranchPosition;
         }
     }
 
