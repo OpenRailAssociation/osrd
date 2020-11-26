@@ -21,6 +21,12 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
     // Use JUnit Jupiter Engine for testing.
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
+
+    // for linter annotations
+    compileOnly 'net.jcip:jcip-annotations:1.0'
+    compileOnly 'com.github.spotbugs:spotbugs-annotations:4.1.4'
+    testCompileOnly 'net.jcip:jcip-annotations:1.0'
+    testCompileOnly 'com.github.spotbugs:spotbugs-annotations:4.1.4'
 }
 
 application {
@@ -61,13 +67,10 @@ spotbugs {
     maxHeapSize = '1g'
 }
 
-// Example to configure HTML report
-spotbugsMain {
-    reports {
-        html {
-            enabled = true
-            destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
-            stylesheet = 'fancy-hist.xsl'
-        }
-    }
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
+  reports {
+     html {
+        enabled = true
+     }
+  }
 }
