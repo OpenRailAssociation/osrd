@@ -1,11 +1,39 @@
 package fr.sncf.osrd.infra.graph;
 
+import fr.sncf.osrd.util.CryoList;
 import fr.sncf.osrd.util.Freezable;
 import fr.sncf.osrd.util.Indexable;
 
+import java.util.List;
+
 public abstract class AbstractEdge<NodeT extends AbstractNode<?>> implements Indexable, Freezable {
-    public final NodeT startNode;
-    public final NodeT endNode;
+    public final int startNode;
+    public final int endNode;
+
+    public final CryoList<AbstractEdge<NodeT>> startNeighbors = new CryoList<>();
+    public final CryoList<AbstractEdge<NodeT>> endNeighbors = new CryoList<>();
+
+    /**
+     * The list of reachable edges at the start of the course over the edge.
+     * @param dir the course direction
+     * @return the list of reachable edges at the start of the course over the edge
+     */
+    public List<AbstractEdge<NodeT>> getStartNeighbors(EdgeDirection dir) {
+        if (dir == EdgeDirection.START_TO_STOP)
+            return startNeighbors;
+        return endNeighbors;
+    }
+
+    /**
+     * The list of reachable edges at the end of the course over the edge.
+     * @param dir the course direction
+     * @return the list of reachable edges at the end of the course over the edge
+     */
+    public List<AbstractEdge<NodeT>> getEndNeighbors(EdgeDirection dir) {
+        if (dir == EdgeDirection.START_TO_STOP)
+            return endNeighbors;
+        return startNeighbors;
+    }
 
     private int index = -1;
 
@@ -21,7 +49,13 @@ public abstract class AbstractEdge<NodeT extends AbstractNode<?>> implements Ind
         return index;
     }
 
-    protected AbstractEdge(NodeT startNode, NodeT endNode) {
+    @Override
+    public void freeze() {
+        startNeighbors.freeze();
+        endNeighbors.freeze();
+    }
+
+    protected AbstractEdge(int startNode, int endNode) {
         this.startNode = startNode;
         this.endNode = endNode;
     }

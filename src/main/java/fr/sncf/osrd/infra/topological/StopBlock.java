@@ -1,32 +1,24 @@
 package fr.sncf.osrd.infra.topological;
 
-import fr.sncf.osrd.util.CryoList;
-import java.util.List;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * A stop block prevents trains from going past the end of a branch.
  * https://en.wikipedia.org/wiki/Buffer_stop
  */
+@SuppressFBWarnings(
+        value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",
+        justification = "kept for later use"
+)
 public class StopBlock extends TopoNode {
-    private final CryoList<TopoEdge> neighbor = new CryoList<>();
+    public final TopoEdge edge;
 
-    public StopBlock(String id) {
+    public StopBlock(String id, TopoEdge edge) {
         super(id);
-    }
-
-    /** Sets the edge the stop block terminates. */
-    void setEdge(TopoEdge edge) {
-        neighbor.clear();
-        neighbor.add(edge);
-    }
-
-    @Override
-    public List<TopoEdge> getNeighbors(TopoEdge from) {
-        return neighbor;
+        this.edge = edge;
     }
 
     @Override
     public void freeze() {
-        neighbor.freeze();
     }
 }

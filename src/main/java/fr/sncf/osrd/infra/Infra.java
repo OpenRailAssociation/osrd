@@ -4,6 +4,7 @@ import fr.sncf.osrd.infra.blocksection.BlockSection;
 import fr.sncf.osrd.infra.blocksection.SectionSignalNode;
 import fr.sncf.osrd.infra.branching.Branch;
 import fr.sncf.osrd.infra.branching.BranchAttrs;
+import fr.sncf.osrd.infra.graph.Graph;
 import fr.sncf.osrd.infra.topological.NoOpNode;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.infra.topological.TopoNode;
@@ -88,9 +89,7 @@ public class Infra {
      * Each TopoEdge can be mapped to a Branch,
      * which stores most of the data in SortedSequences.
      */
-    public final CryoList<TopoNode> topoNodes = new CryoList<>();
-    public final CryoList<TopoEdge> topoEdges = new CryoList<>();
-
+    public final Graph<TopoNode, TopoEdge> topoGraph = new Graph<>();
     public final CryoList<Branch> branches = new CryoList<>();
 
     /** A list mapping all topological edges to a slice of BranchAttrs. */
@@ -105,29 +104,24 @@ public class Infra {
      * A block section may span multiple topological edges, and thus be on multiple lines.
      * Each block section has a RangeSequence of the edges it spans over.
      */
-    public final CryoList<SectionSignalNode> sectionSignals = new CryoList<>();
-    public final CryoList<BlockSection> blockSections = new CryoList<>();
+    public final Graph<SectionSignalNode, BlockSection> blockSectionsGraph = new Graph<>();
 
     public final CryoMap<String, Line> lines = new CryoMap<>();
 
     public void register(TopoNode node) {
-        node.setIndex(topoNodes.size());
-        topoNodes.add(node);
+        topoGraph.register(node);
     }
 
     public void register(TopoEdge edge) {
-        edge.setIndex(topoEdges.size());
-        topoEdges.add(edge);
+        topoGraph.register(edge);
     }
 
     public void register(SectionSignalNode node) {
-        node.setIndex(sectionSignals.size());
-        sectionSignals.add(node);
+        blockSectionsGraph.register(node);
     }
 
     public void register(BlockSection edge) {
-        edge.setIndex(blockSections.size());
-        blockSections.add(edge);
+        blockSectionsGraph.register(edge);
     }
 
     public void register(Branch branch) {
@@ -209,7 +203,7 @@ public class Infra {
     }
 
     /**
-     * Creates and registers a new tolopological NoOp (No Operation) node.
+     * Creates and registers a new topological NoOp (No Operation) node.
      * @param id the unique node identifier
      * @return the newly created node
      */
@@ -224,7 +218,7 @@ public class Infra {
      */
     public void prepare() {
         assert topoEdgeAttributes.isEmpty();
-        for (var edge : topoEdges) {
+        for (var edge : topoGraph.edges) {
             var startPos = edge.startBranchPosition;
             var endPos = edge.endBranchPosition;
             var attrSlice = edge.branch.attributes.slice(startPos, endPos);
@@ -237,21 +231,11 @@ public class Infra {
     /** Prevent further modifications. */
     private void freeze() {
         // freeze the topological graph
-        for (var e : topoNodes)
-            e.freeze();
-        for (var e : topoEdges)
-            e.freeze();
-        topoNodes.freeze();
-        topoEdges.freeze();
+        topoGraph.freeze();
         topoEdgeAttributes.freeze();
 
         // freeze the block sections graph
-        for (var e : sectionSignals)
-            e.freeze();
-        for (var e : blockSections)
-            e.freeze();
-        sectionSignals.freeze();
-        blockSections.freeze();
+        blockSectionsGraph.freeze();
 
         // miscellaneous
         lines.freeze();

@@ -18,14 +18,6 @@ public class BlockSection extends AbstractEdge<SectionSignalNode> {
     public final String id;
     public final double length;
 
-    /**
-     * Because of the way switches work, the neighbors relationships aren't stored inside
-     * {@link SectionSignalNode}, but here. SectionSignalNode looks for
-     * the neighbors here. This behavior is better explained in {@link fr.sncf.osrd.infra.Infra}.
-     */
-    public final CryoList<BlockSection> startNeighbors = new CryoList<>();
-    public final CryoList<BlockSection> endNeighbors = new CryoList<>();
-
     /** The topological edges the block section spans over. */
     public final RangeSequence<TopoEdge> edges;
 
@@ -43,7 +35,7 @@ public class BlockSection extends AbstractEdge<SectionSignalNode> {
             SectionSignalNode startNode,
             SectionSignalNode endNode,
             double length) {
-        super(startNode, endNode);
+        super(startNode.getIndex(), endNode.getIndex());
         this.edges = edges;
         this.id = id;
         this.length = length;
@@ -51,7 +43,5 @@ public class BlockSection extends AbstractEdge<SectionSignalNode> {
 
     @Override
     public void freeze() {
-        startNeighbors.freeze();
-        endNeighbors.freeze();
     }
 }

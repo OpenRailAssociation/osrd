@@ -29,7 +29,7 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
             double startBranchPosition,
             double endBranchPosition
     ) {
-        super(startNode, endNode);
+        super(startNode.getIndex(), endNode.getIndex());
         this.id = id;
         this.length = length;
         this.branch = branch;
