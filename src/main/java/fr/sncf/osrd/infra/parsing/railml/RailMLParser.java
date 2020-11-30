@@ -15,11 +15,11 @@ import java.util.Map;
 
 public class RailMLParser {
     private final String inputPath;
-    private final HashMap<String, NetRelation> netRelationsMap = new HashMap<>();
+    private final Map<String, NetRelation> netRelationsMap = new HashMap<>();
+    private final Map<String, NetElement> netElementMap = new HashMap<>();
     /* a map from each end of each net element to a component */
     private final Map<Pair<String, Boolean>, Integer> neComponents = new HashMap<>();
     private final ArrayList<Integer> componentIndexes = new ArrayList<>();
-
 
     public RailMLParser(String inputPath) {
         this.inputPath = inputPath;
@@ -134,7 +134,6 @@ public class RailMLParser {
         if (index != -1)
             return componentIndexes.get(index);
         componentIndexes.add(componentIndexes.size());
-        System.out.println(netElementId + " " + (componentIndexes.size() - 1));
         return componentIndexes.size() - 1;
     }
 
@@ -150,7 +149,8 @@ public class RailMLParser {
 
             int startNodeIndex = getNodeIndex(id, true);
             int endNodeIndex = getNodeIndex(id, false);
-            infra.makeTopoLink(startNodeIndex, endNodeIndex, id, length);
+            var topoEdge = infra.makeTopoLink(startNodeIndex, endNodeIndex, id, length);
+            netElementMap.put(id, new NetElement(topoEdge, netElement));
         }
     }
 
