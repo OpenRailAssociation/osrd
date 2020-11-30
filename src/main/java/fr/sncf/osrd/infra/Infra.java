@@ -92,6 +92,9 @@ public class Infra {
     public final Graph<TopoNode, TopoEdge> topoGraph = new Graph<>();
     public final CryoList<Branch> branches = new CryoList<>();
 
+    public final CryoMap<String, TopoNode> topoNodeMap = new CryoMap<>();
+    public final CryoMap<String, TopoEdge> topoEdgeMap = new CryoMap<>();
+
     /** A list mapping all topological edges to a slice of BranchAttrs. */
     private final CryoFlatMap<TopoEdge, BranchAttrs.Slice> topoEdgeAttributes = new CryoFlatMap<>();
 
@@ -110,10 +113,12 @@ public class Infra {
 
     public void register(TopoNode node) {
         topoGraph.register(node);
+        topoNodeMap.put(node.id, node);
     }
 
     public void register(TopoEdge edge) {
         topoGraph.register(edge);
+        topoEdgeMap.put(edge.id, edge);
     }
 
     public void register(SectionSignalNode node) {
@@ -168,15 +173,15 @@ public class Infra {
 
     /**
      * Creates and registers a new topological link.
-     * @param startNode The start node of the edge
-     * @param endNode The end node of the edge
+     * @param startNodeIndex The index of the start node of the edge
+     * @param endNodeIndex The index of the end node of the edge
      * @param id A unique identifier for the edge
      * @param length The length of the edge, in meters
      * @return A new edge
      */
     public TopoEdge makeTopoLink(
-            TopoNode startNode,
-            TopoNode endNode,
+            int startNodeIndex,
+            int endNodeIndex,
             String id,
             double length,
             Branch branch,
@@ -184,8 +189,8 @@ public class Infra {
             double endBranchLocation
     ) {
         var edge = TopoEdge.link(
-                startNode,
-                endNode,
+                startNodeIndex,
+                endNodeIndex,
                 id,
                 length,
                 branch,
@@ -227,6 +232,10 @@ public class Infra {
         // freeze the topological graph
         topoGraph.freeze();
         topoEdgeAttributes.freeze();
+
+        // freeze id to node/edge map
+        topoNodeMap.freeze();
+        topoEdgeMap.freeze();
 
         // freeze the block sections graph
         blockSectionsGraph.freeze();

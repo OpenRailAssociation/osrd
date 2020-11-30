@@ -28,15 +28,15 @@ public class RangeAttrIter {
         var nodeC = infra.makeNoOpNode("C");
 
         var forwardEdge = infra.makeTopoLink(
-                nodeA,
-                nodeB,
+                nodeA.getIndex(),
+                nodeB.getIndex(),
                 "e1", 42,
                 forwardTrack, 0, 42.0
         );
 
         var backwardEdge = infra.makeTopoLink(
-                nodeC,
-                nodeB,
+                nodeC.getIndex(),
+                nodeB.getIndex(),
                 "e2", 50,
                 backwardTrack, 0, 50
         );
