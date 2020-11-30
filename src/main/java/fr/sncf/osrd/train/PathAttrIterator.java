@@ -4,6 +4,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.branching.Branch;
 import fr.sncf.osrd.infra.branching.BranchAttrs;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.branching.PointAttrGetter;
+import fr.sncf.osrd.infra.branching.RangeAttrGetter;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.util.*;
 
@@ -156,7 +158,7 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
             int iterStartPathIndex,
             double iterStartPathOffset,
             double iterEndPathOffset,
-            Function<BranchAttrs.Slice, PointSequence.Slice<ValueT>> attrGetter
+            PointAttrGetter<ValueT> attrGetter
     ) {
         var iterState = new Object() {
             Branch lastEdgeTrack = null;
@@ -167,6 +169,7 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
                 pathElement
         ) -> {
             var edge = pathElement.edge;
+            var direction = pathElement.direction;
 
             var pathOffsetConverter = pathElement.pathOffsetToBranchOffset();
             // convert the path based begin and end offsets to branch based ones
@@ -176,8 +179,8 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
             var edgeAttributes = infra.getEdgeAttrs(edge);
             var trackOffsetConverter = pathElement.trackOffsetToPathOffset();
 
-            var attribute = attrGetter.apply(edgeAttributes);
-            var iterator = attribute.iterate(pathElement.direction,
+            var attribute = attrGetter.getAttr(edgeAttributes, direction);
+            var iterator = attribute.iterate(direction,
                     branchIterStartPos,
                     branchIterEndPos,
                     trackOffsetConverter);
@@ -222,12 +225,13 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
             int iterStartPathIndex,
             double iterStartPathOffset,
             double iterEndPathOffset,
-            Function<BranchAttrs.Slice, RangeSequence.Slice<ValueT>> attrGetter
+            RangeAttrGetter<ValueT> attrGetter
     ) {
         EventIteratorFactory<RangeValue<ValueT>> eventIteratorFactory = (
                 pathElement
         ) -> {
             var edge = pathElement.edge;
+            var direction = pathElement.direction;
 
             var pathOffsetConverter = pathElement.pathOffsetToBranchOffset();
             // convert the path based begin and end offsets to branch based ones
@@ -253,8 +257,8 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
             var edgeAttributes = infra.getEdgeAttrs(edge);
             var trackOffsetConverter = pathElement.trackOffsetToPathOffset();
 
-            var attribute = attrGetter.apply(edgeAttributes);
-            return attribute.iterate(pathElement.direction,
+            var attribute = attrGetter.getAttr(edgeAttributes, direction);
+            return attribute.iterate(direction,
                     branchIterStartPos,
                     branchIterEndPos,
                     trackOffsetConverter);
