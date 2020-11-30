@@ -3,7 +3,7 @@ package fr.sncf.osrd.infra.topological;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
- * A stop block prevents trains from going past the end of a branch.
+ * A stop block prevents trains from going past the end of a track.
  * https://en.wikipedia.org/wiki/Buffer_stop
  */
 @SuppressFBWarnings(

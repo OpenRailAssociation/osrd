@@ -27,70 +27,47 @@ public class TrainPath  implements Freezable {
         }
 
         //     FORWARD CASE
-        //                       edgePathOffset
-        //                     \ ======>
-        // branch start  -------+------o---+------------> branch end
-        //               =======>           \
-        //             startNodePos          '-> train path
+        //
+        //                edgePathOffset
+        //              \ ======>
+        //   edge start  +------o---+  edge end
+        //                           \
+        //                            '-> train path
         //
         //     BACKWARD CASE
         //
-        //                   <,       edgePathOffset
-        //                     \       <====
-        // branch start  -------+------o---+------------> branch end
-        //               =======>           \
-        //              endNodePos
+        //            <,     edgePathOffset
+        //              \       <====
+        //   edge start  +------o---+  edge end
+        //                           \
 
         /**
-         * Creates a conversion function from path offsets to this edge's branch offsets.
+         * Creates a conversion function from path offsets to this edge's offsets.
          * @return the said conversion function
          */
-        public DoubleUnaryOperator pathOffsetToBranchOffset() {
+        public DoubleUnaryOperator pathOffsetToEdgeOffset() {
             // position of the train inside the edge, without taking in account the direction
             if (direction == EdgeDirection.START_TO_STOP)
                 return (pathOffset) -> {
-                    // trackOffset = pathOffset - pathStartOffset + edge.startNodePosition
-                    var edgePathOffset = pathOffset - pathStartOffset;
-                    return edgePathOffset + edge.startBranchPosition;
+                    // trackOffset = pathOffset - pathStartOffset
+                    return pathOffset - pathStartOffset;
                 };
 
             return (pathOffset) -> {
-                // trackOffset = edge.endNodePosition -pathOffset + pathStartOffset
+                // trackOffset = edge.length -pathOffset + pathStartOffset
                 var edgePathOffset = pathOffset - pathStartOffset;
-                return edge.endBranchPosition - edgePathOffset;
+                return edge.length - edgePathOffset;
             };
         }
 
         /**
-         * Creates a conversion function from this edge's branch offsets to path offsets.
+         * Creates a conversion function from this edge's offsets to path offsets.
          * @return the said conversion function
          */
-        public DoubleUnaryOperator trackOffsetToPathOffset() {
+        public DoubleUnaryOperator edgeOffsetToPathOffset() {
             if (direction == EdgeDirection.START_TO_STOP)
-                return (trackOffset) -> trackOffset - edge.startBranchPosition + pathStartOffset;
-            return (trackOffset) -> edge.endBranchPosition + pathStartOffset - trackOffset;
-        }
-
-        /**
-         * Gets the start branch offset of this edge.
-         * The result depends on the direction of the edge.
-         * @return this edge's start branch offset
-         */
-        public double getStartTrackOffset() {
-            if (direction == EdgeDirection.START_TO_STOP)
-                return edge.startBranchPosition;
-            return edge.endBranchPosition;
-        }
-
-        /**
-         * Gets the end branch offset of this edge.
-         * The result depends on the direction of the edge.
-         * @return this edge's end branch offset
-         */
-        public double getEndTrackOffset() {
-            if (direction == EdgeDirection.START_TO_STOP)
-                return edge.endBranchPosition;
-            return edge.startBranchPosition;
+                return (trackOffset) -> trackOffset + pathStartOffset;
+            return (trackOffset) -> edge.length + pathStartOffset - trackOffset;
         }
     }
 

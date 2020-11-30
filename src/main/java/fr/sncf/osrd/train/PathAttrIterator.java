@@ -1,18 +1,15 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.branching.Branch;
-import fr.sncf.osrd.infra.branching.BranchAttrs;
-import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.branching.PointAttrGetter;
-import fr.sncf.osrd.infra.branching.RangeAttrGetter;
+import fr.sncf.osrd.infra.topological.PointAttrGetter;
+import fr.sncf.osrd.infra.topological.RangeAttrGetter;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.util.*;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -142,28 +139,24 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
     }
 
     /**
-     * Stream some PointSequence branch attributes along a path.
+     * Stream some PointSequence edge attributes along a path.
      * @param <ValueT> the type of the PointSequence value
-     * @param infra the infrastructure to work on
      * @param path the path to follow
      * @param iterStartPathIndex the index of the path element to start iterating from
      * @param iterStartPathOffset the offset to start iterating at
      * @param iterEndPathOffset the offset to end iterating at
-     * @param attrGetter a function that gets the proper attribute, given a BranchAttrs.Slice
+     * @param attrGetter a function that gets the proper attribute, given a TopoEdge
      * @return a stream of PointSequence entries
      */
     public static <ValueT> Stream<PointValue<ValueT>> streamPoints(
-            Infra infra,
             TrainPath path,
             int iterStartPathIndex,
             double iterStartPathOffset,
             double iterEndPathOffset,
             PointAttrGetter<ValueT> attrGetter
     ) {
-        var iterState = new Object() {
-            Branch lastEdgeTrack = null;
-            double lastEdgeFinalPos = Double.NaN;
-        };
+        // when a point is at the very intersection of two edges, it has to be deduped.
+        final var dedupSet = new HashSet<PointValue<ValueT>>();
 
         EventIteratorFactory<PointValue<ValueT>> eventIteratorFactory = (
                 pathElement
@@ -171,30 +164,37 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
             var edge = pathElement.edge;
             var direction = pathElement.direction;
 
-            var pathOffsetConverter = pathElement.pathOffsetToBranchOffset();
-            // convert the path based begin and end offsets to branch based ones
-            var branchIterStartPos = pathOffsetConverter.applyAsDouble(iterStartPathOffset);
-            var branchIterEndPos = pathOffsetConverter.applyAsDouble(iterEndPathOffset);
+            var pathOffsetConverter = pathElement.pathOffsetToEdgeOffset();
+            var trackOffsetConverter = pathElement.edgeOffsetToPathOffset();
 
-            var edgeAttributes = infra.getEdgeAttrs(edge);
-            var trackOffsetConverter = pathElement.trackOffsetToPathOffset();
+            // convert the path based begin and end offsets to edge based ones
+            var edgeIterStartPos = pathOffsetConverter.applyAsDouble(iterStartPathOffset);
+            var edgeIterEndPos = pathOffsetConverter.applyAsDouble(iterEndPathOffset);
 
-            var attribute = attrGetter.getAttr(edgeAttributes, direction);
+            var attribute = attrGetter.getAttr(edge, direction);
             var iterator = attribute.iterate(direction,
-                    branchIterStartPos,
-                    branchIterEndPos,
+                    edgeIterStartPos,
+                    edgeIterEndPos,
                     trackOffsetConverter);
 
-            // When the current edge is on the same branch as the previous one,
-            // the first possible position has to be excluded from this edge, as it
-            // is shared with the previous one
-            if (pathElement.edge.branch == iterState.lastEdgeTrack) {
+            // check if the points on the very last position of the previous edge are
+            // on the very first position of the current edge.
+            if (!dedupSet.isEmpty()) {
                 for (; iterator.hasNext(); iterator.skip())
-                    if (iterator.peek().position != iterState.lastEdgeFinalPos)
+                    if (!dedupSet.contains(iterator.peek()))
                         break;
             }
-            iterState.lastEdgeTrack = pathElement.edge.branch;
-            iterState.lastEdgeFinalPos = pathElement.getEndTrackOffset();
+
+            // if there are points on the very last position of the edge
+            var edgeLastPos = edge.lastPosition(direction);
+            if (attribute.getLastPosition(direction) == edgeLastPos) {
+                // add these to the dedup set
+                dedupSet.clear();
+                var it = attribute.iterate(direction.opposite(), edgeLastPos, edgeLastPos, trackOffsetConverter);
+                while (it.hasNext())
+                    dedupSet.add(it.next());
+            }
+
             return iterator;
         };
 
@@ -209,18 +209,16 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
 
 
     /**
-     * Stream some PointSequence branch attributes along a path.
-     * @param infra the infrastructure to work on
+     * Stream some PointSequence edge attributes along a path.
      * @param path the path to follow
      * @param iterStartPathIndex the index of the path element to start iterating from
      * @param iterStartPathOffset the offset to start iterating at
      * @param iterEndPathOffset the offset to end iterating at
-     * @param attrGetter a function that gets the proper attribute, given a BranchAttrs.Slice
+     * @param attrGetter a function that gets the range attribute from the edge
      * @param <ValueT> the type of the PointSequence value
      * @return a stream of PointSequence entries
      */
     public static <ValueT> Stream<RangeValue<ValueT>> streamRanges(
-            Infra infra,
             TrainPath path,
             int iterStartPathIndex,
             double iterStartPathOffset,
@@ -233,34 +231,33 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
             var edge = pathElement.edge;
             var direction = pathElement.direction;
 
-            var pathOffsetConverter = pathElement.pathOffsetToBranchOffset();
-            // convert the path based begin and end offsets to branch based ones
-            var branchIterStartPos = pathOffsetConverter.applyAsDouble(iterStartPathOffset);
-            var branchIterEndPos = pathOffsetConverter.applyAsDouble(iterEndPathOffset);
+            var pathOffsetConverter = pathElement.pathOffsetToEdgeOffset();
+            // convert the path based begin and end offsets to edge based ones
+            var edgeIterStartPos = pathOffsetConverter.applyAsDouble(iterStartPathOffset);
+            var edgeIterEndPos = pathOffsetConverter.applyAsDouble(iterEndPathOffset);
 
             // clamp the iteration bounds to the edge's, so that the output sequence of
             // ranges stays disjoint
             if (pathElement.direction == EdgeDirection.START_TO_STOP) {
-                if (branchIterStartPos < edge.startBranchPosition)
-                    branchIterStartPos = edge.startBranchPosition;
+                if (edgeIterStartPos < 0.)
+                    edgeIterStartPos = 0.;
 
-                if (branchIterEndPos > edge.endBranchPosition)
-                    branchIterEndPos = edge.endBranchPosition;
+                if (edgeIterEndPos > edge.length)
+                    edgeIterEndPos = edge.length;
             } else {
-                if (branchIterStartPos > edge.endBranchPosition)
-                    branchIterStartPos = edge.endBranchPosition;
+                if (edgeIterStartPos > edge.length)
+                    edgeIterStartPos = edge.length;
 
-                if (branchIterEndPos < edge.startBranchPosition)
-                    branchIterEndPos = edge.startBranchPosition;
+                if (edgeIterEndPos < 0.)
+                    edgeIterEndPos = 0.;
             }
 
-            var edgeAttributes = infra.getEdgeAttrs(edge);
-            var trackOffsetConverter = pathElement.trackOffsetToPathOffset();
+            var trackOffsetConverter = pathElement.edgeOffsetToPathOffset();
 
-            var attribute = attrGetter.getAttr(edgeAttributes, direction);
+            var attribute = attrGetter.getAttr(edge, direction);
             return attribute.iterate(direction,
-                    branchIterStartPos,
-                    branchIterEndPos,
+                    edgeIterStartPos,
+                    edgeIterEndPos,
                     trackOffsetConverter);
         };
 

@@ -1,5 +1,8 @@
 package fr.sncf.osrd.infra.parsing.railml;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+@SuppressFBWarnings(value = "URF_UNREAD_FIELD")
 class NetRelation {
     final String id;
     final boolean atZeroOnA;
