@@ -50,21 +50,14 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
      */
     public static TopoEdge link(
             TopoNode startNode,
-            Function<TopoEdge, TopoNode> startNodeRegister,
             TopoNode endNode,
-            Function<TopoEdge, TopoNode> endNodeRegister,
             String id,
             double length,
             Branch branch,
             double startBranchPosition,
             double endBranchPosition
     ) {
-        var edge = new TopoEdge(id, startNode, endNode, length, branch, startBranchPosition, endBranchPosition);
-        var startNodeReg = startNodeRegister.apply(edge);
-        var endNodeReg = endNodeRegister.apply(edge);
-        assert startNode == startNodeReg;
-        assert endNode == endNodeReg;
-        return edge;
+        return new TopoEdge(id, startNode, endNode, length, branch, startBranchPosition, endBranchPosition);
     }
 
     @Override

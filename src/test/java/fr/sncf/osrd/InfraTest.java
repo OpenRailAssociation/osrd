@@ -11,8 +11,8 @@ class InfraTest {
         var nodeA = infra.makeNoOpNode("A");
         var nodeB = infra.makeNoOpNode("B");
         infra.makeTopoLink(
-                nodeA, nodeA::addEdge,
-                nodeB, nodeB::addEdge,
+                nodeA,
+                nodeB,
                 "e1", 42,
                 branch, 0, 42.0);
     }
