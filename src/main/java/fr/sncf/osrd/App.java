@@ -1,6 +1,7 @@
 package fr.sncf.osrd;
 
 import fr.sncf.osrd.infra.parsing.railml.RailMLParser;
+import fr.sncf.osrd.infra.viewer.InfraViewer;
 
 
 public class App {
@@ -15,8 +16,8 @@ public class App {
         }
 
         var infraRailMLPath = args[0];
-        new RailMLParser(infraRailMLPath).parse();
-        // var infra =
+        var infra = new RailMLParser(infraRailMLPath).parse();
+        new InfraViewer(infra).display();
         // Config config = new Config(1.0f, infra);
         // Simulation simulation = new Simulation(config);
         // simulation.run();

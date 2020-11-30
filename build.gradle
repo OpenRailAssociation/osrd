@@ -27,6 +27,10 @@ dependencies {
     compileOnly 'com.github.spotbugs:spotbugs-annotations:4.1.4'
     testCompileOnly 'net.jcip:jcip-annotations:1.0'
     testCompileOnly 'com.github.spotbugs:spotbugs-annotations:4.1.4'
+
+    // for debug IU
+    implementation 'org.graphstream:gs-core:2.0'
+    implementation 'org.graphstream:gs-ui-swing:2.0'
 }
 
 application {
