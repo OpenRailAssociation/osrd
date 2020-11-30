@@ -169,18 +169,14 @@ public class Infra {
     /**
      * Creates and registers a new topological link.
      * @param startNode The start node of the edge
-     * @param startNodeRegister The function to call to register the edge with the start node
      * @param endNode The end node of the edge
-     * @param endNodeRegister The function to call to register the edge with the end node
      * @param id A unique identifier for the edge
      * @param length The length of the edge, in meters
      * @return A new edge
      */
     public TopoEdge makeTopoLink(
             TopoNode startNode,
-            Function<TopoEdge, TopoNode> startNodeRegister,
             TopoNode endNode,
-            Function<TopoEdge, TopoNode> endNodeRegister,
             String id,
             double length,
             Branch branch,
@@ -189,9 +185,7 @@ public class Infra {
     ) {
         var edge = TopoEdge.link(
                 startNode,
-                startNodeRegister,
                 endNode,
-                endNodeRegister,
                 id,
                 length,
                 branch,

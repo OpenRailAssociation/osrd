@@ -61,8 +61,8 @@ public class RailMLParser {
             var secondRelationNode = nodesMap.get(secondRelationId);
 
             infra.makeTopoLink(
-                    firstRelationNode, firstRelationNode::addEdge,
-                    secondRelationNode, secondRelationNode::addEdge,
+                    firstRelationNode,
+                    secondRelationNode,
                     id, length, null,0, length);
         }
     }
