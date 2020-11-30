@@ -22,14 +22,14 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
      */
     private TopoEdge(
             String id,
-            TopoNode startNode,
-            TopoNode endNode,
+            int startNodeIndex,
+            int endNodeIndex,
             double length,
             Branch branch,
             double startBranchPosition,
             double endBranchPosition
     ) {
-        super(startNode.getIndex(), endNode.getIndex());
+        super(startNodeIndex, endNodeIndex);
         this.id = id;
         this.length = length;
         this.branch = branch;
@@ -40,24 +40,22 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
     /**
      * Link two nodes with a new edge.
      *
-     * @param startNode The start node of the edge
-     * @param startNodeRegister The function to call to register the edge with the start node
-     * @param endNode The end node of the edge
-     * @param endNodeRegister The function to call to register the edge with the end node
+     * @param startNodeIndex The index of the start node of the edge
+     * @param endNodeIndex The index of the end node of the edge
      * @param id A unique identifier for the edge
      * @param length The length of the edge, in meters
      * @return A new edge
      */
     public static TopoEdge link(
-            TopoNode startNode,
-            TopoNode endNode,
+            int startNodeIndex,
+            int endNodeIndex,
             String id,
             double length,
             Branch branch,
             double startBranchPosition,
             double endBranchPosition
     ) {
-        return new TopoEdge(id, startNode, endNode, length, branch, startBranchPosition, endBranchPosition);
+        return new TopoEdge(id, startNodeIndex, endNodeIndex, length, branch, startBranchPosition, endBranchPosition);
     }
 
     @Override

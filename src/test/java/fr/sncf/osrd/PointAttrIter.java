@@ -25,15 +25,15 @@ class PointAttrIter {
         var nodeC = infra.makeNoOpNode("C");
 
         final var firstEdge = infra.makeTopoLink(
-                nodeA,
-                nodeB,
+                nodeA.getIndex(),
+                nodeB.getIndex(),
                 "e1", 42,
                 testBranch, 0, 42.0
         );
 
         final var secondEdge = infra.makeTopoLink(
-                nodeB,
-                nodeC,
+                nodeB.getIndex(),
+                nodeC.getIndex(),
                 "e2", 42.0,
                 testBranch, 42.0, 42 * 2
         );
@@ -84,14 +84,14 @@ class PointAttrIter {
         var nodeC = infra.makeNoOpNode("C");
 
         var forwardEdge = infra.makeTopoLink(
-                nodeA,
-                nodeB,
+                nodeA.getIndex(),
+                nodeB.getIndex(),
                 "e1", 42,
                 forwardBranch, 0, 42.0);
 
         var backwardEdge = infra.makeTopoLink(
-                nodeC,
-                nodeB,
+                nodeC.getIndex(),
+                nodeB.getIndex(),
                 "e2", 50,
                 backwardBranch, 0, 50);
 

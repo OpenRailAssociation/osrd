@@ -21,7 +21,7 @@ public final class Pair<U, V>  {
         if (this.getClass() != obj.getClass())
             return false;
 
-        var o = (Pair<U, V>)obj;
+        var o = (Pair) obj;
         return first.equals(o.first) && second.equals(o.second);
     }
 }

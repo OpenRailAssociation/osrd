@@ -1,6 +1,6 @@
 package fr.sncf.osrd;
 
-import fr.sncf.osrd.infra.parsing.RailMLParser;
+import fr.sncf.osrd.infra.parsing.railml.RailMLParser;
 
 public class App {
     /**
@@ -16,7 +16,7 @@ public class App {
         var infraRailMLPath = args[0];
         var infra = new RailMLParser(infraRailMLPath).parse();
         Config config = new Config(1.0f, infra);
-        Simulation simulation = new Simulation(config);
-        simulation.run();
+        // Simulation simulation = new Simulation(config);
+        // simulation.run();
     }
 }
