@@ -16,11 +16,6 @@ public class NoOpNode extends TopoNode {
     }
 
     @Override
-    public List<TopoEdge> getNeighbors(TopoEdge from) {
-        return neighbors;
-    }
-
-    @Override
     public void freeze() {
         this.neighbors.freeze();
     }
