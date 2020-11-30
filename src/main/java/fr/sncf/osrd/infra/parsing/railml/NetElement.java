@@ -31,10 +31,10 @@ class NetElement {
                 lrsMap.get(positioningSystemRef).second = measure;
         }
 
-        for (var lrsName : lrsMap.keySet()) {
-            var range = lrsMap.get(lrsName);
+        for (var entry : lrsMap.entrySet()) {
+            var range = entry.getValue();
             assert FloatCompare.eq(range.second - range.first, topoEdge.length);
-            lrsDeltas.put(lrsName, range.first);
+            lrsDeltas.put(entry.getKey(), range.first);
         }
     }
 }
