@@ -45,6 +45,7 @@ public class RailMLParser {
         var infra = new Infra();
         parseNetElements(document, infra);
         parseBufferStops(document, infra);
+        parseOperationalPoint(document);
         return infra;
     }
 
@@ -140,13 +141,16 @@ public class RailMLParser {
     private void parseNetElements(Document document, Infra infra) {
         var xpath = "/railML/infrastructure/topology/netElements/netElement";
         for (var netElement : document.selectNodes(xpath)) {
-            var lengthStr = netElement.valueOf("@length");
-            if (lengthStr.isEmpty())
-                continue;
-
-            double length = Double.parseDouble(lengthStr);
             var id = netElement.valueOf("@id");
 
+            var lengthStr = netElement.valueOf("@length");
+            if (lengthStr.isEmpty()) {
+                // TODO parse layer by layer, some relation could be define later
+                netElementMap.put(id, new NetElement(netElement, netElementMap));
+                continue;
+            }
+
+            double length = Double.parseDouble(lengthStr);
             int startNodeIndex = getNodeIndex(id, true);
             int endNodeIndex = getNodeIndex(id, false);
             var topoEdge = infra.makeTopoLink(startNodeIndex, endNodeIndex, id, length);
@@ -169,6 +173,21 @@ public class RailMLParser {
                 stopBlock.setIndex(topoEdge.startNode);
             else
                 stopBlock.setIndex(topoEdge.endNode);
+        }
+    }
+
+    private void parseOperationalPoint(Document document) {
+        var xpath = "/railML/infrastructure/functionalInfrastructure/operationalPoints/operationalPoint";
+        for (var operationalPoint : document.selectNodes(xpath)) {
+            var id = operationalPoint.valueOf("@id");
+            var netElementRef = operationalPoint.valueOf("spotLocation/@netElementRef");
+            var lrsId = operationalPoint.valueOf("spotLocation/linearCoordinate/@positioningSystemRef");
+            var measure = Double.valueOf(operationalPoint.valueOf("spotLocation/linearCoordinate/@measure"));
+            System.out.println(id + ", " + netElementRef + ", " + lrsId + ", " + measure);
+            for (var place : netElementMap.get(netElementRef).placeOn(lrsId, measure)) {
+                System.out.println(place.first.id + " => " + place.second);
+            }
+            System.out.println("\n");
         }
     }
 }
