@@ -1,16 +1,14 @@
 package fr.sncf.osrd.train;
 
 import com.badlogic.ashley.signals.Signal;
-import fr.sncf.osrd.infra.branching.BranchAttrs;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.branching.PointAttrGetter;
+import fr.sncf.osrd.infra.branching.RangeAttrGetter;
 import fr.sncf.osrd.train.TrainPath.PathElement;
-import fr.sncf.osrd.util.PointSequence;
 import fr.sncf.osrd.util.PointValue;
-import fr.sncf.osrd.util.RangeSequence;
 import fr.sncf.osrd.util.RangeValue;
 
 import java.util.ArrayDeque;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class TrainPositionTracker {
@@ -143,7 +141,7 @@ public class TrainPositionTracker {
      */
     public <ValueT> Stream<PointValue<ValueT>> streamPointAttrForward(
             double distance,
-            Function<BranchAttrs.Slice, PointSequence.Slice<ValueT>> attrGetter
+            PointAttrGetter<ValueT> attrGetter
     ) {
         var headPathPosition = getHeadPathPosition();
         return PathAttrIterator.streamPoints(
@@ -164,7 +162,7 @@ public class TrainPositionTracker {
      */
     public <ValueT> Stream<RangeValue<ValueT>> streamRangeAttrForward(
             double distance,
-            Function<BranchAttrs.Slice, RangeSequence.Slice<ValueT>> attrGetter
+            RangeAttrGetter<ValueT> attrGetter
     ) {
         var headPathPosition = getHeadPathPosition();
         return PathAttrIterator.streamRanges(
@@ -182,9 +180,7 @@ public class TrainPositionTracker {
      * @param <ValueT> the type of the sequence elements
      * @return a stream on point attributes under the train
      */
-    public <ValueT> Stream<PointValue<ValueT>> streamPointAttrUnderTrain(
-            Function<BranchAttrs.Slice, PointSequence.Slice<ValueT>> attrGetter
-    ) {
+    public <ValueT> Stream<PointValue<ValueT>> streamPointAttrUnderTrain(PointAttrGetter<ValueT> attrGetter) {
         var tailPathPosition = getTailPathPosition();
         var firstEdgeIndex = currentPathIndex - currentPathEdges.size();
         return PathAttrIterator.streamPoints(
@@ -202,9 +198,7 @@ public class TrainPositionTracker {
      * @param <ValueT> the type of the sequence elements
      * @return a stream on range attributes under the train
      */
-    public <ValueT> Stream<RangeValue<ValueT>> streamRangeAttrUnderTrain(
-            Function<BranchAttrs.Slice, RangeSequence.Slice<ValueT>> attrGetter
-    ) {
+    public <ValueT> Stream<RangeValue<ValueT>> streamRangeAttrUnderTrain(RangeAttrGetter<ValueT> attrGetter) {
         var tailPathPosition = getTailPathPosition();
         var firstEdgeIndex = currentPathIndex - currentPathEdges.size();
         return PathAttrIterator.streamRanges(

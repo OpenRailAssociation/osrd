@@ -2,6 +2,7 @@ package fr.sncf.osrd.infra.branching;
 
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.blocksection.BlockSection;
+import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.util.PointSequence;
 import fr.sncf.osrd.util.RangeSequence;
 
@@ -9,7 +10,8 @@ public class BranchAttrs {
     public static class Slice {
         public final RangeSequence.Slice<Double> slope;
         public final RangeSequence.Slice<BlockSection> blockSections;
-        public final RangeSequence.Slice<Double> speedLimit;
+        public final RangeSequence.Slice<Double> speedLimitsForward;
+        public final RangeSequence.Slice<Double> speedLimitsBackward;
         public final PointSequence.Slice<OperationalPoint> operationalPoints;
 
         /**
@@ -21,7 +23,8 @@ public class BranchAttrs {
         private Slice(BranchAttrs attributes, double startPos, double endPos) {
             this.slope = attributes.slope.slice(startPos, endPos);
             this.blockSections = attributes.blockSections.slice(startPos, endPos);
-            this.speedLimit = attributes.speedLimit.slice(startPos, endPos);
+            this.speedLimitsForward = attributes.speedLimitsForward.slice(startPos, endPos);
+            this.speedLimitsBackward = attributes.speedLimitsBackward.slice(startPos, endPos);
             this.operationalPoints = attributes.operationalPoints.slice(startPos, endPos);
         }
     }
@@ -32,22 +35,39 @@ public class BranchAttrs {
 
     public final RangeSequence<Double> slope = new RangeSequence<>();
     public final RangeSequence<BlockSection> blockSections = new RangeSequence<>();
-    public final RangeSequence<Double> speedLimit = new RangeSequence<>();
+    public final RangeSequence<Double> speedLimitsForward = new RangeSequence<>();
+    public final RangeSequence<Double> speedLimitsBackward = new RangeSequence<>();
     public final PointSequence<OperationalPoint> operationalPoints = new PointSequence<>();
 
-    public static RangeSequence.Slice<Double> getSlope(BranchAttrs.Slice slice) {
+    /*
+    * All the functions below are attributes getters, meant to implement either RangeAttrGetter or PointAttrGetter.
+    * These can be passed around to build generic algorithms on attributes.
+    */
+
+    public static RangeSequence.Slice<Double> getSlope(BranchAttrs.Slice slice, EdgeDirection direction) {
         return slice.slope;
     }
 
-    public static RangeSequence.Slice<BlockSection> getBlockSections(BranchAttrs.Slice slice) {
+    public static RangeSequence.Slice<BlockSection> getBlockSections(BranchAttrs.Slice slice, EdgeDirection direction) {
         return slice.blockSections;
     }
 
-    public static RangeSequence.Slice<Double> getSpeedLimit(BranchAttrs.Slice slice) {
-        return slice.speedLimit;
+    /**
+     * Gets the speed limit on a given section of track, along a given direction.
+     * @param slice the section of track
+     * @param direction the direction
+     * @return the speed limits
+     */
+    public static RangeSequence.Slice<Double> getSpeedLimit(BranchAttrs.Slice slice, EdgeDirection direction) {
+        if (direction == EdgeDirection.START_TO_STOP)
+            return slice.speedLimitsForward;
+        return slice.speedLimitsBackward;
     }
 
-    public static PointSequence.Slice<OperationalPoint> getOperationalPoints(BranchAttrs.Slice slice) {
+    public static PointSequence.Slice<OperationalPoint> getOperationalPoints(
+            BranchAttrs.Slice slice,
+            EdgeDirection direction
+    ) {
         return slice.operationalPoints;
     }
 }
