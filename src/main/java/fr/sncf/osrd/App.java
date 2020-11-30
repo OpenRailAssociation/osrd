@@ -16,8 +16,10 @@ public class App {
         }
 
         var infraRailMLPath = args[0];
+
         var infra = new RailMLParser(infraRailMLPath).parse();
         new InfraViewer(infra).display();
+
         // Config config = new Config(1.0f, infra);
         // Simulation simulation = new Simulation(config);
         // simulation.run();
