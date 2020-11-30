@@ -10,4 +10,14 @@ public enum EdgeDirection {
     EdgeDirection(int delta) {
         this.delta = delta;
     }
+
+    /**
+     * Gets the opposite of this direction
+     * @return this opposite of this direction
+     */
+    public EdgeDirection opposite() {
+        if (this == START_TO_STOP)
+            return STOP_TO_START;
+        return START_TO_STOP;
+    }
 }

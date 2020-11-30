@@ -160,76 +160,88 @@ public final class RangeSequence<E> extends SortedSequence<E> {
         }
     }
 
+    /**
+     * Iterate on this sequence from trackIterStartPos to trackIterEndPos.
+     * Translate the position of the results using the translator function.
+     * @param direction whether to iterate forward or backward on the slice.
+     * @param trackIterStartPos the included start position
+     * @param trackIterEndPos the included end position
+     * @param translator the function to use to translate the coordinates of the result
+     * @return an iterator on the slice's content
+     */
+    public Iterator<RangeValue<E>> iterate(
+            EdgeDirection direction,
+            double trackIterStartPos,
+            double trackIterEndPos,
+            DoubleUnaryOperator translator
+    ) {
+        return iterate(direction, 0, data.size(), trackIterStartPos, trackIterEndPos, translator);
+    }
 
-    /** A slice of a RangeSequence. */
-    public static final class Slice<E> {
-        public final RangeSequence<E> parentSequence;
-
-        /** Included start bound. */
-        public final int start;
-
-        /** Excluded end bound. */
-        public final int end;
-
-        private Slice(RangeSequence<E> parentSequence, int start, int end) {
-            this.parentSequence = parentSequence;
-            this.start = start;
-            this.end = end;
-        }
-
-        /**
-         * Iterate on this slice from trackIterStartPos to trackIterEndPos.
-         * Translate the position of the results using the translator function.
-         * @param direction whether to iterate forward or backward on the slice.
-         * @param trackIterStartPos the included start position
-         * @param trackIterEndPos the included end position
-         * @param translator the function to use to translate the coordinates of the result
-         * @return an iterator on the slice's content
-         */
-        public Iterator<RangeValue<E>> iterate(
-                EdgeDirection direction,
-                double trackIterStartPos,
-                double trackIterEndPos,
-                DoubleUnaryOperator translator
-        ) {
-            if (direction == EdgeDirection.START_TO_STOP)
-                return forwardIter(
-                        trackIterStartPos,
-                        trackIterEndPos,
-                        translator);
-            return backwardIter(
-                    trackIterEndPos,
+    /**
+     * Iterate on a slice from indexes start to end, from position edgeIterStartPos to edgeIterEndPos.
+     * Translate the position of the results using the translator function.
+     * @param direction whether to iterate forward or backward on the slice.
+     * @param start the included start index
+     * @param end the excluded end index
+     * @param trackIterStartPos the included start position
+     * @param trackIterEndPos the included end position
+     * @param translator the function to use to translate the coordinates of the result
+     * @return an iterator on the slice's content
+     */
+    public Iterator<RangeValue<E>> iterate(
+            EdgeDirection direction,
+            int start,
+            int end,
+            double trackIterStartPos,
+            double trackIterEndPos,
+            DoubleUnaryOperator translator
+    ) {
+        if (direction == EdgeDirection.START_TO_STOP)
+            return forwardIter(
+                    start,
+                    end,
                     trackIterStartPos,
+                    trackIterEndPos,
                     translator);
-        }
+        return backwardIter(
+                start,
+                end,
+                trackIterEndPos,
+                trackIterStartPos,
+                translator);
+    }
 
-        private Iterator<RangeValue<E>> forwardIter(
-                double iterStartPos,
-                double iterEndPos,
-                DoubleUnaryOperator translator
-        ) {
-            return new SliceIterator<E>(
-                    parentSequence,
-                    parentSequence.findStartIndex(start, end, iterStartPos),
-                    parentSequence.findEndIndex(start, end, iterEndPos),
-                    translator,
-                    iterStartPos,
-                    iterEndPos);
-        }
+    private Iterator<RangeValue<E>> forwardIter(
+            int start,
+            int end,
+            double iterStartPos,
+            double iterEndPos,
+            DoubleUnaryOperator translator
+    ) {
+        return new SliceIterator<E>(
+                this,
+                findStartIndex(start, end, iterStartPos),
+                findEndIndex(start, end, iterEndPos),
+                translator,
+                iterStartPos,
+                iterEndPos);
+    }
 
-        private PeekableIterator<RangeValue<E>> backwardIter(
-                double iterStartPos,
-                double iterEndPos,
-                DoubleUnaryOperator translator
-        ) {
-            return new ReverseSliceIterator<E>(
-                    parentSequence,
-                    parentSequence.findStartIndex(start, end, iterStartPos),
-                    parentSequence.findEndIndex(start, end, iterEndPos),
-                    translator,
-                    iterStartPos,
-                    iterEndPos);
-        }
+    private PeekableIterator<RangeValue<E>> backwardIter(
+            int start,
+            int end,
+            double iterStartPos,
+            double iterEndPos,
+            DoubleUnaryOperator translator
+    ) {
+        return new ReverseSliceIterator<E>(
+                this,
+                findStartIndex(start, end, iterStartPos),
+                findEndIndex(start, end, iterEndPos),
+                translator,
+                iterStartPos,
+                iterEndPos);
     }
 
     @Override
@@ -283,18 +295,6 @@ public final class RangeSequence<E> extends SortedSequence<E> {
         if (lastItem.position == iterEndPos)
             return baseIndex - 1;
         return baseIndex;
-    }
-
-    /**
-     * Gets a slice of a RangeSequence.
-     * @param startPosition the included start slice bound
-     * @param endPosition the included end slice bound
-     * @return a RangeSequence slice
-     */
-    public Slice<E> slice(double startPosition, double endPosition) {
-        var startIndex = findStartIndex(0, data.size(), startPosition);
-        var endIndex = findEndIndex(0, data.size(), endPosition);
-        return new Slice<E>(this, startIndex, endIndex);
     }
 
     public static final class Builder<E> {

@@ -2,8 +2,8 @@ package fr.sncf.osrd.train;
 
 import com.badlogic.ashley.signals.Signal;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.branching.PointAttrGetter;
-import fr.sncf.osrd.infra.branching.RangeAttrGetter;
+import fr.sncf.osrd.infra.topological.PointAttrGetter;
+import fr.sncf.osrd.infra.topological.RangeAttrGetter;
 import fr.sncf.osrd.train.TrainPath.PathElement;
 import fr.sncf.osrd.util.PointValue;
 import fr.sncf.osrd.util.RangeValue;
@@ -135,7 +135,7 @@ public class TrainPositionTracker {
     /**
      * Stream point attributes ahead of the train
      * @param distance the lookahead distance
-     * @param attrGetter a function able to get a PointSequence slice from a BranchAttrs slice
+     * @param attrGetter a function that gets a PointSequence from an edge
      * @param <ValueT> the type of the attributes
      * @return a stream on the point attributes ahead of the train
      */
@@ -145,7 +145,6 @@ public class TrainPositionTracker {
     ) {
         var headPathPosition = getHeadPathPosition();
         return PathAttrIterator.streamPoints(
-                infra,
                 path,
                 currentPathIndex,
                 headPathPosition,
@@ -156,7 +155,7 @@ public class TrainPositionTracker {
     /**
      * Stream range attributes ahead of the train
      * @param distance the lookahead distance
-     * @param attrGetter a function able to get a RangeSequence slice from a BranchAttrs slice
+     * @param attrGetter a function that gets a RangeSequence from an edge
      * @param <ValueT> the type of the attributes
      * @return a stream on the range attributes ahead of the train
      */
@@ -166,7 +165,6 @@ public class TrainPositionTracker {
     ) {
         var headPathPosition = getHeadPathPosition();
         return PathAttrIterator.streamRanges(
-                infra,
                 path,
                 currentPathIndex,
                 headPathPosition,
@@ -176,7 +174,7 @@ public class TrainPositionTracker {
 
     /**
      * Stream point attributes under the train
-     * @param attrGetter a function that gets PointSequence slices from BranchAttrs slices
+     * @param attrGetter a function that gets a PointSequence from an edge
      * @param <ValueT> the type of the sequence elements
      * @return a stream on point attributes under the train
      */
@@ -184,7 +182,6 @@ public class TrainPositionTracker {
         var tailPathPosition = getTailPathPosition();
         var firstEdgeIndex = currentPathIndex - currentPathEdges.size();
         return PathAttrIterator.streamPoints(
-                infra,
                 path,
                 firstEdgeIndex,
                 tailPathPosition,
@@ -194,7 +191,7 @@ public class TrainPositionTracker {
 
     /**
      * Stream range attributes under the train
-     * @param attrGetter a function that gets RangeSequence slices from BranchAttrs slices
+     * @param attrGetter a function that gets a RangeSequence from an edge
      * @param <ValueT> the type of the sequence elements
      * @return a stream on range attributes under the train
      */
@@ -202,7 +199,6 @@ public class TrainPositionTracker {
         var tailPathPosition = getTailPathPosition();
         var firstEdgeIndex = currentPathIndex - currentPathEdges.size();
         return PathAttrIterator.streamRanges(
-                infra,
                 path,
                 firstEdgeIndex,
                 tailPathPosition,

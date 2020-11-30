@@ -1,5 +1,7 @@
 package fr.sncf.osrd.util;
 
+import fr.sncf.osrd.infra.graph.EdgeDirection;
+
 import java.util.*;
 import java.util.function.DoubleUnaryOperator;
 
@@ -8,6 +10,49 @@ import java.util.function.DoubleUnaryOperator;
  * @param <E> The type of the attributes
  */
 public abstract class SortedSequence<E> {
+    /**
+     * Gets the index of the first element of this sequence, or NaN
+     * @return the index of the first element of this sequence, or NaN
+     */
+    public double getFirstPosition() {
+        if (data.size() == 0)
+            return Double.NaN;
+        return data.get(0).position;
+    }
+
+    /**
+     * Gets the index of the first element of this sequence along dir, or NaN
+     * @param dir the reference direction
+     * @return the index of the first element of this sequence, or NaN
+     */
+    public double getFirstPosition(EdgeDirection dir) {
+        if (dir == EdgeDirection.START_TO_STOP)
+            return getFirstPosition();
+        return getLastPosition();
+    }
+
+    /**
+     * Gets the index of the last element of this sequence, or NaN
+     * @return the index of the last element of this sequence, or NaN
+     */
+    public double getLastPosition() {
+        var size = data.size();
+        if (size == 0)
+            return Double.NaN;
+        return data.get(size - 1).position;
+    }
+
+    /**
+     * Gets the index of the last element of this sequence along dir, or NaN
+     * @param dir the reference direction
+     * @return the index of the last element of this sequence, or NaN
+     */
+    public double getLastPosition(EdgeDirection dir) {
+        if (dir == EdgeDirection.START_TO_STOP)
+            return getLastPosition();
+        return getFirstPosition();
+    }
+
     /** Iterate forward on a slice, from start (included) to end (excluded). */
     public static class SliceIterator<E> implements PeekableIterator<PointValue<E>> {
         private final ArrayList<PointValue<E>> data;

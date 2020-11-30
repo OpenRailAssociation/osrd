@@ -3,8 +3,8 @@ package fr.sncf.osrd;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.infra.*;
-import fr.sncf.osrd.infra.branching.BranchAttrs;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
+import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.train.PathAttrIterator;
 import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.util.RangeValue;
@@ -20,8 +20,6 @@ public class RangeAttrIter {
     public void backwardRangeAttrIter() throws InvalidInfraException {
         // build a test infrastructure
         var infra = new Infra();
-        var forwardTrack = infra.makeBranch("1", "test branch");
-        var backwardTrack = infra.makeBranch("2", "backward branch");
 
         var nodeA = infra.makeNoOpNode("A");
         var nodeB = infra.makeNoOpNode("B");
@@ -30,22 +28,20 @@ public class RangeAttrIter {
         var forwardEdge = infra.makeTopoLink(
                 nodeA.getIndex(),
                 nodeB.getIndex(),
-                "e1", 42,
-                forwardTrack, 0, 42.0
+                "e1", 42
         );
 
         var backwardEdge = infra.makeTopoLink(
                 nodeC.getIndex(),
                 nodeB.getIndex(),
-                "e2", 50,
-                backwardTrack, 0, 50
+                "e2", 50
         );
 
         /*
                 start                                   stop
             0     5                 42                   84        92  <= path offsets
             +=======================+==============================+
-            0        10     30    42|50  41    20        8         0   <= branch offsets
+            0        10     30    42|50  41    20        8         0   <= edge offsets
 
                                                ----------+ 5
                                          ------+ 4
@@ -56,22 +52,24 @@ public class RangeAttrIter {
          */
 
         {
-            var builder = forwardTrack.attributes.slope.builder();
+            var builder = forwardEdge.slope.builder();
             builder.add(0, 0.);
             builder.add(10, 1.);
             builder.add(30., 2.);
-            builder.add(42.0, -3.);
-            builder.add(60.0, -4.);
+            // // this fails at infra prepare() time
+            // builder.add(42.0, -3.);
+            // builder.add(60.0, -4.);
             builder.build();
         }
 
         {
-            var builder = backwardTrack.attributes.slope.builder();
+            var builder = backwardEdge.slope.builder();
             builder.add(0., -6.);
             builder.add(8., 5.);
             builder.add(20, 4.);
             builder.add(41.0, 3.);
-            builder.add(51.0, -5.);
+            // // this fails at infra prepare() time
+            // builder.add(51.0, -5.);
             builder.build();
         }
 
@@ -82,12 +80,11 @@ public class RangeAttrIter {
         trainPath.addEdge(backwardEdge, EdgeDirection.STOP_TO_START);
 
         List<RangeValue<Double>> result = PathAttrIterator.streamRanges(
-                infra,
                 trainPath,
                 0,
                 5.,
                 84.,
-                BranchAttrs::getSlope)
+                TopoEdge::getSlope)
                 .collect(Collectors.toList());
 
         var expected = new ArrayList<RangeValue<Double>>();

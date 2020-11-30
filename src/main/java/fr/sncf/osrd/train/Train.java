@@ -2,8 +2,8 @@ package fr.sncf.osrd.train;
 
 import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.Entity;
-import fr.sncf.osrd.infra.branching.BranchAttrs;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.util.Constants;
 import fr.sncf.osrd.util.Pair;
@@ -115,7 +115,7 @@ public class Train implements Component {
     }
 
     private double maxTrainGrade() {
-        return positionTracker.streamRangeAttrUnderTrain(BranchAttrs::getSlope)
+        return positionTracker.streamRangeAttrUnderTrain(TopoEdge::getSlope)
                 .map(e -> e.value)
                 .max(Double::compareTo)
                 .orElse(0.);
