@@ -1,5 +1,6 @@
 package fr.sncf.osrd;
 
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.parsing.railml.RailMLParser;
 import fr.sncf.osrd.infra.viewer.InfraViewer;
 
@@ -9,7 +10,7 @@ public class App {
      * The main entry point for OSRD.
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InvalidInfraException {
         if (args.length == 0) {
             System.err.println("Usage: osrd infra.railml");
             System.exit(1);
@@ -18,6 +19,7 @@ public class App {
         var infraRailMLPath = args[0];
 
         var infra = new RailMLParser(infraRailMLPath).parse();
+        infra.prepare();
         new InfraViewer(infra).display();
 
         // Config config = new Config(1.0f, infra);
