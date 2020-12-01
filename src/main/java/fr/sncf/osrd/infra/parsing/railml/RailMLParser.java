@@ -15,7 +15,6 @@ import org.dom4j.io.SAXReader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class RailMLParser {
@@ -51,7 +50,7 @@ public class RailMLParser {
         detectNodes();
 
         var infra = new Infra();
-        infra.topoGraph.initNodes(numberOfComponents);
+        infra.topoGraph.resizeNodes(numberOfComponents);
 
         parseNetElements(document, infra);
 
@@ -161,7 +160,7 @@ public class RailMLParser {
             return componentIndexes.get(index);
         componentIndexes.add(numberOfComponents);
         ++numberOfComponents;
-        infra.topoGraph.initNodes(numberOfComponents);
+        infra.topoGraph.resizeNodes(numberOfComponents);
         return componentIndexes.size() - 1;
     }
 
