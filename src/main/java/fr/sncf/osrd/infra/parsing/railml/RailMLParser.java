@@ -2,6 +2,7 @@ package fr.sncf.osrd.infra.parsing.railml;
 
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.OperationalPoint;
+import fr.sncf.osrd.infra.topological.NoOpNode;
 import fr.sncf.osrd.infra.topological.StopBlock;
 import fr.sncf.osrd.infra.topological.Switch;
 import fr.sncf.osrd.util.FloatCompare;
@@ -14,6 +15,7 @@ import org.dom4j.io.SAXReader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class RailMLParser {
@@ -22,7 +24,9 @@ public class RailMLParser {
     private final Map<String, NetElement> netElementMap = new HashMap<>();
     /* a map from each end of each net element to a component */
     private final Map<Pair<String, Boolean>, Integer> neComponents = new HashMap<>();
+    private int numberOfComponents = 0;
     private final ArrayList<Integer> componentIndexes = new ArrayList<>();
+    private final Map<String, DescriptionLevel> levels = new HashMap<>();
 
     public RailMLParser(String inputPath) {
         this.inputPath = inputPath;
@@ -42,15 +46,30 @@ public class RailMLParser {
         }
         document.accept(new XmlNamespaceCleaner());
 
+        parseNetworks(document);
         parseNetRelations(document);
         detectNodes();
 
         var infra = new Infra();
+        infra.topoGraph.initNodes(numberOfComponents);
+
         parseNetElements(document, infra);
+
         parseBufferStops(document, infra);
         parseSwitchIS(document, infra);
+        fillWithNoOpNode(infra);
+
         parseOperationalPoint(document);
         return infra;
+    }
+
+    private void parseNetworks(Document document) {
+        for (var level : document.selectNodes("/railML/infrastructure/topology/networks/network/level")) {
+            var descriptionLevel = DescriptionLevel.getValue(level.valueOf("@descriptionLevel"));
+            for (var networkResource : level.selectNodes("networkResource")) {
+                levels.put(networkResource.valueOf("@ref"), descriptionLevel);
+            }
+        }
     }
 
     private void detectNodes() {
@@ -87,8 +106,8 @@ public class RailMLParser {
             tmpComponents.set(i, rootComponent);
         }
 
+        numberOfComponents = 0;
         // assign unique identifier to connected components
-        int numberOfComponents = 0;
         for (int i = 0; i < tmpComponents.size(); i++) {
             // if the component is a root, assign a number
             if (tmpComponents.get(i) == i) {
@@ -102,7 +121,7 @@ public class RailMLParser {
         // link the intermediate components to their root component
         for (int i = 0; i < tmpComponents.size(); i++) {
             var rootIndex = tmpComponents.get(i);
-            if (rootIndex == -1)
+            if (rootIndex == i)
                 continue;
             var newRootIndex = componentIndexes.get(rootIndex);
             componentIndexes.set(i, newRootIndex);
@@ -121,6 +140,8 @@ public class RailMLParser {
                 continue;
 
             var id = netRelation.valueOf("@id");
+            if (levels.get(id) != DescriptionLevel.MICRO)
+                continue;
 
             var positionOnA = netRelation.valueOf("@positionOnA");
             assert positionOnA.equals("0") || positionOnA.equals("1");
@@ -134,31 +155,44 @@ public class RailMLParser {
         }
     }
 
-    private int getNodeIndex(String netElementId, boolean atZero) {
+    private int getNodeIndex(String netElementId, boolean atZero, Infra infra) {
         int index = neComponents.getOrDefault(new Pair<>(netElementId, atZero), -1);
         if (index != -1)
             return componentIndexes.get(index);
-        componentIndexes.add(componentIndexes.size());
+        componentIndexes.add(numberOfComponents);
+        ++numberOfComponents;
+        infra.topoGraph.initNodes(numberOfComponents);
         return componentIndexes.size() - 1;
     }
 
     private void parseNetElements(Document document, Infra infra) {
         var xpath = "/railML/infrastructure/topology/netElements/netElement";
-        for (var netElement : document.selectNodes(xpath)) {
+        var netElements = document.selectNodes(xpath);
+        for (var netElement : netElements) {
             var id = netElement.valueOf("@id");
+            if (levels.get(id) != DescriptionLevel.MICRO)
+                continue;
 
             var lengthStr = netElement.valueOf("@length");
-            if (lengthStr.isEmpty()) {
-                // TODO parse layer by layer, some relation could be define later
-                netElementMap.put(id, new NetElement(netElement, netElementMap));
-                continue;
-            }
-
             double length = Double.parseDouble(lengthStr);
-            int startNodeIndex = getNodeIndex(id, true);
-            int endNodeIndex = getNodeIndex(id, false);
+            int startNodeIndex = getNodeIndex(id, true, infra);
+            int endNodeIndex = getNodeIndex(id, false, infra);
             var topoEdge = infra.makeTopoLink(startNodeIndex, endNodeIndex, id, length);
             netElementMap.put(id, new NetElement(topoEdge, netElement));
+        }
+
+        for (var netElement : netElements) {
+            var id = netElement.valueOf("@id");
+            if (levels.get(id) != DescriptionLevel.MESO)
+                continue;
+            netElementMap.put(id, new NetElement(netElement, netElementMap));
+        }
+
+        for (var netElement : netElements) {
+            var id = netElement.valueOf("@id");
+            if (levels.get(id) != DescriptionLevel.MACRO)
+                continue;
+            netElementMap.put(id, new NetElement(netElement, netElementMap));
         }
     }
 
@@ -174,9 +208,9 @@ public class RailMLParser {
 
             StopBlock stopBlock = new StopBlock(id, topoEdge);
             if (FloatCompare.eq(pos, 0.0))
-                stopBlock.setIndex(topoEdge.startNode);
+                infra.topoGraph.replaceNode(topoEdge.startNode, stopBlock);
             else
-                stopBlock.setIndex(topoEdge.endNode);
+                infra.topoGraph.replaceNode(topoEdge.endNode, stopBlock);
         }
     }
 
@@ -191,11 +225,26 @@ public class RailMLParser {
 
             Switch switchObj = new Switch(id);
             if (FloatCompare.eq(pos, 0.0))
-                switchObj.setIndex(topoEdge.startNode);
+                infra.topoGraph.replaceNode(topoEdge.startNode, switchObj);
             else
-                switchObj.setIndex(topoEdge.endNode);
+                infra.topoGraph.replaceNode(topoEdge.endNode, switchObj);
         }
     }
+
+    private void fillWithNoOpNode(Infra infra) {
+        var graph = infra.topoGraph;
+        for (var edge : graph.edges) {
+            if (graph.nodes.get(edge.startNode) == null) {
+                var noOp = new NoOpNode(String.valueOf(edge.startNode));
+                infra.topoGraph.replaceNode(edge.startNode, noOp);
+            }
+            if (graph.nodes.get(edge.endNode) == null) {
+                var noOp = new NoOpNode(String.valueOf(edge.endNode));
+                infra.topoGraph.replaceNode(edge.endNode, noOp);
+            }
+        }
+    }
+
 
     private void parseOperationalPoint(Document document) {
         var xpath = "/railML/infrastructure/functionalInfrastructure/operationalPoints/operationalPoint";
