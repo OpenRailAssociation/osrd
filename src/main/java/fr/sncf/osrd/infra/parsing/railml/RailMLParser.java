@@ -260,7 +260,8 @@ public class RailMLParser {
 
             OperationalPoint opObj = new OperationalPoint(id, name);
             for (var place : netElement.placeOn(lrsId, measure)) {
-                var builder = builders.getOrDefault(place.first.id, place.first.operationalPoints.builder());
+                builders.putIfAbsent(place.first.id, place.first.operationalPoints.builder());
+                var builder = builders.get(place.first.id);
                 builder.add(place.second, opObj);
             }
         }

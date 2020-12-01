@@ -9,7 +9,7 @@ import java.util.function.DoubleUnaryOperator;
  * A sequence of points, indexed by position.
  * @param <E> The type of the point objects
  */
-public final class PointSequence<E> extends SortedSequence<E> {
+public final class PointSequence<E> extends SortedSequence<E> implements Iterable<PointValue<E>> {
     /**
      * Iterate on this sequence from edgeIterStartPos to edgeIterEndPos.
      * Translate the position of the results using the translator function.
@@ -78,6 +78,11 @@ public final class PointSequence<E> extends SortedSequence<E> {
                 findStartIndex(start, end, iterStartPos),
                 findEndIndex(start, end, iterEndPos),
                 translator);
+    }
+
+    @Override
+    public Iterator<PointValue<E>> iterator() {
+        return data.iterator();
     }
 
     public static final class Builder<E> {
