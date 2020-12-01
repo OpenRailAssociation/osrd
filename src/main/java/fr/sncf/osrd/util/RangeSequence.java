@@ -13,12 +13,22 @@ import java.util.function.DoubleUnaryOperator;
  *
  * <pre>
  *  {@code
+ *  The following ranges:
+ *
+ *  from 0 to 6, the value is 0
+ *  from 6 to +inf, the value is 1
+ *
+ *  will be encoded using two pairs:
+ *   (0, 0)
+ *   (6, 1)
+ *
  *   value
  *     |
- *     |          X-------
+ *    1|          X-------
  *     |
- *     |  X--------
+ *    0|X----------
  *     +----------------------- position
+ *      0 1 2 3 4 5 6 ...
  *  }
  * </pre>
  * @param <E> The type of the values
