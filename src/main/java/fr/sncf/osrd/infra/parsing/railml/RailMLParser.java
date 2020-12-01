@@ -90,6 +90,14 @@ public class RailMLParser {
             } else if (componentB == -1) {
                 neComponents.put(keyB, componentA);
             } else {
+                // go up the parenthood chain for both components
+                while (tmpComponents.get(componentA) != -1)
+                    componentA = tmpComponents.get(componentA);
+
+                while (tmpComponents.get(componentB) != -1)
+                    componentB = tmpComponents.get(componentB);
+
+                // merge the root components
                 if (componentB < componentA)
                     tmpComponents.set(componentA, componentB);
                 else
