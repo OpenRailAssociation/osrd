@@ -1,9 +1,7 @@
 package fr.sncf.osrd.infra.parsing.railml;
 
 import fr.sncf.osrd.infra.topological.TopoEdge;
-import fr.sncf.osrd.util.FloatCompare;
-import fr.sncf.osrd.util.MutPair;
-import fr.sncf.osrd.util.Pair;
+import fr.sncf.osrd.util.*;
 import org.dom4j.Node;
 
 import java.util.ArrayList;
@@ -62,8 +60,8 @@ class NetElement {
         }
     }
 
-    public ArrayList<Pair<TopoEdge, Double>> placeOn(String lrsId, double measure) {
-        var list = new ArrayList<Pair<TopoEdge, Double>>();
+    public ArrayList<PointValue<TopoEdge>> placeOn(String lrsId, double measure) {
+        var list = new ArrayList<PointValue<TopoEdge>>();
         if (topoEdge == null) {
             for (var child : children) {
                 list.addAll(child.placeOn(lrsId, measure));
@@ -76,7 +74,30 @@ class NetElement {
         double position = measure - lrsDeltas.get(lrsId);
         if (position < 0 || position > topoEdge.length)
             return list;
-        list.add(new Pair<>(topoEdge, position));
+        list.add(new PointValue<>(position, topoEdge));
+        return list;
+    }
+
+    public ArrayList<RangeValue<TopoEdge>> placeOn(String lrsId, double begin, double end) {
+        var list = new ArrayList<RangeValue<TopoEdge>>();
+        if (topoEdge == null) {
+            for (var child : children) {
+                list.addAll(child.placeOn(lrsId, begin, end));
+            }
+            return list;
+        }
+
+        if (!lrsDeltas.containsKey(lrsId))
+            return list;
+        double positionBegin = begin - lrsDeltas.get(lrsId);
+        double positionEnd = end - lrsDeltas.get(lrsId);
+        if (positionBegin > topoEdge.length || positionEnd < 0)
+            return list;
+        if (positionBegin < 0)
+            positionBegin = 0;
+        if (positionEnd > topoEdge.length)
+            positionEnd = topoEdge.length;
+        list.add(new RangeValue<>(positionBegin, positionEnd, topoEdge));
         return list;
     }
 }

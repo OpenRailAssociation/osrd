@@ -39,7 +39,14 @@ public abstract class SortedSequence<E> {
         var size = data.size();
         if (size == 0)
             return Double.NaN;
-        return data.get(size - 1).position;
+        var lastItem = data.get(size - 1);
+        // null encode the absence of information, thus we need to skip it
+        if (lastItem.value != null)
+            return lastItem.position;
+        // ensure that there is a value (except null)
+        if (size == 1)
+            return Double.NaN;
+        return data.get(size - 2).position;
     }
 
     /**

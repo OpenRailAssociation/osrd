@@ -36,7 +36,6 @@ public class InfraViewer {
 
             for (var operationalPoint : edge.operationalPoints) {
                 double pos = operationalPoint.position / edge.length;
-                System.out.println(pos);
                 var sprite = spriteManager.addSprite(operationalPoint.value.id + "@" + edge.id);
                 sprite.attachToEdge(edge.id);
                 sprite.setPosition(pos);

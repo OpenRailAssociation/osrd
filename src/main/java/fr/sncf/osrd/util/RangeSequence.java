@@ -1,6 +1,7 @@
 package fr.sncf.osrd.util;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 
 import java.util.*;
@@ -299,7 +300,7 @@ public final class RangeSequence<E> extends SortedSequence<E> {
 
     public static final class Builder<E> {
         private final RangeSequence<E> res;
-        private final SortedMap<Double, E> data = new TreeMap<>();
+        private final SortedMap<Range, E> data = new TreeMap<>();
 
         public Builder(RangeSequence<E> res) {
             this.res = res;
@@ -308,11 +309,12 @@ public final class RangeSequence<E> extends SortedSequence<E> {
         /**
          * Add a new range to the builder.
          * There must be no other range starting at this index.
-         * @param position the location of the range.
+         * @param begin the start position of the range.
+         * @param end the end position of the range.
          * @param value the value for this range
          */
-        public void add(double position, E value) {
-            var previousValue = data.put(position, value);
+        public void add(double begin, double end, E value) {
+            var previousValue = data.put(new Range(begin, end), value);
             // TODO: find a better way to signal this
             assert previousValue == null : "duplicate RangeSequence start bounds";
         }
@@ -320,11 +322,21 @@ public final class RangeSequence<E> extends SortedSequence<E> {
         /**
          * Flush the content of the builder into the RangeSequence.
          */
-        public void build() {
+        public void build() throws InvalidInfraException {
+            double previousRightBound = 0;
             for (var mapEntry : data.entrySet()) {
-                var position = mapEntry.getKey();
-                res.add(position, mapEntry.getValue());
+                var range = mapEntry.getKey();
+                if (FloatCompare.eq(range.begin, previousRightBound)) {
+                    res.add(range.begin, mapEntry.getValue());
+                } else if (range.begin < previousRightBound) {
+                    throw new InvalidInfraException("overlapping ranges");
+                } else {
+                    res.add(previousRightBound, null);
+                    res.add(range.begin, mapEntry.getValue());
+                }
+                previousRightBound = range.end;
             }
+            res.add(previousRightBound, null);
             data.clear();
         }
     }

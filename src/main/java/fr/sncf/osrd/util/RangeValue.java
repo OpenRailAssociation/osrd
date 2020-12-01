@@ -8,18 +8,18 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
         justification = "kept for later use"
 )
 public final class RangeValue<E> {
-    public final double start;
+    public final double begin;
     public final double end;
     public final E value;
 
     /**
      * Create a new range with an associated value
-     * @param start the included start position
+     * @param begin the included start position
      * @param end the included end position
      * @param value the value on this range
      */
-    public RangeValue(double start, double end, E value) {
-        this.start = start;
+    public RangeValue(double begin, double end, E value) {
+        this.begin = begin;
         this.end = end;
         this.value = value;
     }
