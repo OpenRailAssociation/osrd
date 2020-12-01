@@ -1,9 +1,12 @@
 package fr.sncf.osrd.infra.parsing.railml;
 
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.topological.StopBlock;
+import fr.sncf.osrd.infra.topological.Switch;
 import fr.sncf.osrd.util.FloatCompare;
 import fr.sncf.osrd.util.Pair;
+import fr.sncf.osrd.util.PointSequence;
 import fr.sncf.osrd.util.XmlNamespaceCleaner;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -30,7 +33,7 @@ public class RailMLParser {
      * @return the parsed infrastructure
      */
     public Infra parse() {
-        Document document = null;
+        Document document;
         try {
             document = new SAXReader().read(inputPath);
         } catch (DocumentException e) {
@@ -45,6 +48,7 @@ public class RailMLParser {
         var infra = new Infra();
         parseNetElements(document, infra);
         parseBufferStops(document, infra);
+        parseSwitchIS(document, infra);
         parseOperationalPoint(document);
         return infra;
     }
@@ -176,18 +180,45 @@ public class RailMLParser {
         }
     }
 
+    private void parseSwitchIS(Document document, Infra infra) {
+        var xpath = "/railML/infrastructure/functionalInfrastructure/switchesIS/switchIS";
+        for (var switchIS :  document.selectNodes(xpath)) {
+            var id = switchIS.valueOf("@id");
+            var pos = Double.valueOf(switchIS.valueOf("spotLocation/@pos"));
+            var netElementRef = switchIS.valueOf("spotLocation/@netElementRef");
+            var topoEdge = infra.topoEdgeMap.get(netElementRef);
+            assert FloatCompare.eq(pos, 0.0) || FloatCompare.eq(pos, topoEdge.length);
+
+            Switch switchObj = new Switch(id);
+            if (FloatCompare.eq(pos, 0.0))
+                switchObj.setIndex(topoEdge.startNode);
+            else
+                switchObj.setIndex(topoEdge.endNode);
+        }
+    }
+
     private void parseOperationalPoint(Document document) {
         var xpath = "/railML/infrastructure/functionalInfrastructure/operationalPoints/operationalPoint";
+
+        Map<String, PointSequence.Builder<OperationalPoint>> builders = new HashMap<>();
+
         for (var operationalPoint : document.selectNodes(xpath)) {
             var id = operationalPoint.valueOf("@id");
+            var name = operationalPoint.valueOf("name/@name");
             var netElementRef = operationalPoint.valueOf("spotLocation/@netElementRef");
+            var netElement = netElementMap.get(netElementRef);
             var lrsId = operationalPoint.valueOf("spotLocation/linearCoordinate/@positioningSystemRef");
             var measure = Double.valueOf(operationalPoint.valueOf("spotLocation/linearCoordinate/@measure"));
-            System.out.println(id + ", " + netElementRef + ", " + lrsId + ", " + measure);
-            for (var place : netElementMap.get(netElementRef).placeOn(lrsId, measure)) {
-                System.out.println(place.first.id + " => " + place.second);
+
+            OperationalPoint opObj = new OperationalPoint(id, name);
+            for (var place : netElement.placeOn(lrsId, measure)) {
+                var builder = builders.getOrDefault(place.first.id, place.first.operationalPoints.builder());
+                builder.add(place.second, opObj);
             }
-            System.out.println("\n");
+        }
+
+        for (var builder : builders.values()) {
+            builder.build();
         }
     }
 }
