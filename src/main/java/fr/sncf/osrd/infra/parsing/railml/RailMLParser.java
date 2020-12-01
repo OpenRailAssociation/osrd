@@ -1,14 +1,12 @@
 package fr.sncf.osrd.infra.parsing.railml;
 
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.topological.NoOpNode;
 import fr.sncf.osrd.infra.topological.StopBlock;
 import fr.sncf.osrd.infra.topological.Switch;
-import fr.sncf.osrd.util.FloatCompare;
-import fr.sncf.osrd.util.Pair;
-import fr.sncf.osrd.util.PointSequence;
-import fr.sncf.osrd.util.XmlNamespaceCleaner;
+import fr.sncf.osrd.util.*;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
@@ -35,7 +33,7 @@ public class RailMLParser {
      * Initialises a new infrastructure from a RailML file.
      * @return the parsed infrastructure
      */
-    public Infra parse() {
+    public Infra parse() throws InvalidInfraException {
         Document document;
         try {
             document = new SAXReader().read(inputPath);
@@ -59,6 +57,8 @@ public class RailMLParser {
         fillWithNoOpNode(infra);
 
         parseOperationalPoint(document);
+        parseSpeedSection(document);
+
         return infra;
     }
 
@@ -260,9 +260,42 @@ public class RailMLParser {
 
             OperationalPoint opObj = new OperationalPoint(id, name);
             for (var place : netElement.placeOn(lrsId, measure)) {
-                builders.putIfAbsent(place.first.id, place.first.operationalPoints.builder());
-                var builder = builders.get(place.first.id);
-                builder.add(place.second, opObj);
+                builders.putIfAbsent(place.value.id, place.value.operationalPoints.builder());
+                var builder = builders.get(place.value.id);
+                builder.add(place.position, opObj);
+            }
+        }
+
+        for (var builder : builders.values()) {
+            builder.build();
+        }
+    }
+
+    private void parseSpeedSection(Document document) throws InvalidInfraException {
+        Map<Pair<String, Boolean>, RangeSequence.Builder<Double>> builders = new HashMap<>();
+
+        var xpath = "/railML/infrastructure/functionalInfrastructure/speed/speedSection";
+        for (var speedSection : document.selectNodes(xpath)) {
+            var speed = Double.valueOf(speedSection.valueOf("@maxSpeed"));
+            for (var associatedNetElement : speedSection.selectNodes("linearLocation/associatedNetElement")) {
+                var netElementRef = associatedNetElement.valueOf("@netElementRef");
+                var measureBegin = Double.valueOf(associatedNetElement.valueOf("linearCoordinateBegin/@measure"));
+                var lrsBegin = associatedNetElement.valueOf("linearCoordinateBegin/@positioningSystemRef");
+                var measureEnd = Double.valueOf(associatedNetElement.valueOf("linearCoordinateEnd/@measure"));
+                var lrsEnd = associatedNetElement.valueOf("linearCoordinateEnd/@positioningSystemRef");
+
+                assert lrsBegin.equals(lrsEnd);
+
+                var netElement = netElementMap.get(netElementRef);
+                for (var place : netElement.placeOn(lrsBegin, measureBegin, measureEnd)) {
+                    var forward = new Pair<>(place.value.id, true);
+                    builders.putIfAbsent(forward, netElement.topoEdge.speedLimitsForward.builder());
+                    builders.get(forward).add(place.begin, place.end, speed);
+
+                    var backward = new Pair<>(place.value.id, false);
+                    builders.putIfAbsent(backward, netElement.topoEdge.speedLimitsBackward.builder());
+                    builders.get(backward).add(place.begin, place.end, speed);
+                }
             }
         }
 

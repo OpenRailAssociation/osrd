@@ -22,8 +22,8 @@ public class App {
         infra.prepare();
         new InfraViewer(infra).display();
 
-        // Config config = new Config(1.0f, infra);
-        // Simulation simulation = new Simulation(config);
-        // simulation.run();
+        Config config = new Config(1.0f, infra);
+        Simulation simulation = new Simulation(config);
+        simulation.run();
     }
 }

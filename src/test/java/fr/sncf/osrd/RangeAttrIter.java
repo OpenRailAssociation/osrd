@@ -53,9 +53,9 @@ public class RangeAttrIter {
 
         {
             var builder = forwardEdge.slope.builder();
-            builder.add(0, 0.);
-            builder.add(10, 1.);
-            builder.add(30., 2.);
+            builder.add(0, 10, 0.);
+            builder.add(10, 30, 1.);
+            builder.add(30., 42, 2.);
             // // this fails at infra prepare() time
             // builder.add(42.0, -3.);
             // builder.add(60.0, -4.);
@@ -64,10 +64,10 @@ public class RangeAttrIter {
 
         {
             var builder = backwardEdge.slope.builder();
-            builder.add(0., -6.);
-            builder.add(8., 5.);
-            builder.add(20, 4.);
-            builder.add(41.0, 3.);
+            builder.add(0., 8, -6.);
+            builder.add(8., 20, 5.);
+            builder.add(20, 41, 4.);
+            builder.add(41.0, 50, 3.);
             // // this fails at infra prepare() time
             // builder.add(51.0, -5.);
             builder.build();
@@ -105,7 +105,7 @@ public class RangeAttrIter {
             );
 
             assertEquals(
-                    expectedRange.start, resultRange.start, 0.0001f,
+                    expectedRange.begin, resultRange.begin, 0.0001f,
                     String.format("range start differs at index %d", i)
             );
 
