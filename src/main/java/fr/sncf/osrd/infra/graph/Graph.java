@@ -30,6 +30,12 @@ public class Graph<NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>>
      */
     public final CryoFlatMap<NodeT, List<EdgeT>> neighbors = new CryoFlatMap<>();
 
+    public void initNodes(int capacity) {
+        while (nodes.size() < capacity) {
+            nodes.add(null);
+        }
+    }
+
     public void register(NodeT node) {
         node.setIndex(nodes.size());
         nodes.add(node);

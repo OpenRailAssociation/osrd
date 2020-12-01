@@ -113,6 +113,7 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
      */
 
     public static RangeSequence<Double> getSlope(TopoEdge edge, EdgeDirection direction) {
+        // TODO multiply by -1 if direction is reversed
         return edge.slope;
     }
 
