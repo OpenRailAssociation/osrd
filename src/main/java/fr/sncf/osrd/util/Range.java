@@ -1,5 +1,7 @@
 package fr.sncf.osrd.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.util.Objects;
 
 public class Range implements Comparable<Range> {
@@ -16,6 +18,10 @@ public class Range implements Comparable<Range> {
         return Objects.hash(begin, end);
     }
 
+    @SuppressFBWarnings(
+            value = "FE_FLOATING_POINT_EQUALITY",
+            justification = "we need strict equality if we want to work with hash tables"
+    )
     @Override
     public boolean equals(Object obj) {
         if (obj == null)
