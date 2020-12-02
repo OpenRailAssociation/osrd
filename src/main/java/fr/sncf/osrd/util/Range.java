@@ -5,12 +5,34 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Objects;
 
 public class Range implements Comparable<Range> {
+    public static final Range INFINITE_RANGE = new Range(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+
     public final double begin;
     public final double end;
 
+
+    /**
+     * Creates a range
+     * @param begin the start bound
+     * @param end the end bound
+     */
     public Range(double begin, double end) {
+        assert begin <= end;
         this.begin = begin;
         this.end = end;
+    }
+
+    /**
+     * Restricts (clamps) a value to this range
+     * @param value the value to restrict to this range
+     * @return the clamped value
+     */
+    public double clamp(double value) {
+        if (value < begin)
+            value = begin;
+        if (value > end)
+            value = end;
+        return value;
     }
 
     @Override

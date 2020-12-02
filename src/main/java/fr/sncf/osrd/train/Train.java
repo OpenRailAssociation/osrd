@@ -2,11 +2,13 @@ package fr.sncf.osrd.train;
 
 import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.Entity;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.util.Constants;
 import fr.sncf.osrd.util.Pair;
+import fr.sncf.osrd.util.Range;
 
 import java.util.LinkedList;
 import java.util.stream.Collectors;
@@ -69,45 +71,28 @@ public class Train implements Component {
      * The TrainUpdateSystem iterates on all trains and calls this method with the current timeDelta
      * @param timeDelta the elapsed time since the last tick
      */
-    @SuppressWarnings("checkstyle:LocalVariableName")
     public void update(double timeDelta) {
-        // compute all the drag forces
-        var A = rollingStock.rollingResistance;
-        var B = rollingStock.mechanicalResistance;
-        var C = rollingStock.aerodynamicResistance;
-        var R = A + B * speed + C * speed * speed;
+        // TODO: use the max acceleration
+        // TODO: find out the actual max braking / acceleration force
 
-        // get an angle from a meter per km elevation difference
-        var angle = Math.atan(this.maxTrainGrade() / 1000.0);  // from m/km to m/m
-        var weightForce = rollingStock.mass * Constants.GRAVITY * Math.sin(angle);
-
-        final var dragForces = R + weightForce;
-
-        // this is the maximum braking force
-        double minActionForce = -42.; // TODO: get from the rolling stock
-        double maxActionForce = 42.; // TODO: compute from the tractive effort curve
+        var simulator = TrainPhysicsSimulator.make(
+                timeDelta,
+                rollingStock,
+                speed,
+                maxTrainGrade());
 
         Action action = getAction(timeDelta);
+        if (action == null) {
+            speed = simulator.computeNewSpeed(0.0, 0.0);
+            return;
+        }
 
-        double actionForce = 0.0;
-        if (action.hasForce())
-            actionForce = action.force;
-
-        if (actionForce > maxActionForce)
-            actionForce = maxActionForce;
-        if (actionForce < minActionForce)
-            actionForce = minActionForce;
-
-        var inertia = rollingStock.mass * rollingStock.inertiaCoefficient;
-        var acceleration = (actionForce - dragForces) / inertia;
-
-        var maxAcceleration = getMaxAcceleration();
-        if (!action.emergencyBrake && acceleration > maxAcceleration)
-            acceleration = maxAcceleration;
-
-        speed += acceleration * timeDelta;
+        speed = simulator.computeNewSpeed(action.tractionForce(), action.brakingForce());
+        if (action.type == Action.ActionType.EMERGENCY_BRAKING)
+            state = TrainState.EMERGENCY_BRAKING;
     }
 
+    @SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD")
     private double getMaxAcceleration() {
         if (state == TrainState.STARTING_UP)
             return rollingStock.startUpAcceleration;
@@ -128,7 +113,7 @@ public class Train implements Component {
 
         var action = actions.stream()
                 .map(pair -> pair.second)
-                .filter(curAction -> !curAction.noAction)
+                .filter(curAction -> curAction.type != Action.ActionType.NO_ACTION)
                 .min(Action::compareTo);
         assert action.isPresent();
 
