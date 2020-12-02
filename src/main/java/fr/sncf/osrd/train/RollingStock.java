@@ -1,5 +1,6 @@
 package fr.sncf.osrd.train;
 
+import fr.sncf.osrd.util.PointSequence;
 import fr.sncf.osrd.util.RangeSequence;
 import fr.sncf.osrd.util.Indexable;
 
@@ -38,9 +39,26 @@ public class RollingStock implements Indexable {
     aerodynamicResistance = json.getDouble("coeffvomc") * 10 * Math.pow(3.6D, 2); // from dN/(km/h)2 to N/(m/s)2
     */
 
-    public final double rollingResistance;      // in newtons
-    public final double mechanicalResistance;   // in newtons
-    public final double aerodynamicResistance;  // in newtons
+    private final double rollingResistance;      // in newtons
+    private final double mechanicalResistance;   // in newtons
+    private final double aerodynamicResistance;  // in newtons
+
+    /**
+     * Gets the rolling resistance at a given speed, which is a force that always goes
+     * opposite to the train's movement
+     * @param speed the speed to compute the rolling resistance for
+     * @return the rolling resistance force, in newtons
+     */
+    @SuppressWarnings("checkstyle:LocalVariableName")
+    public double rollingResistance(double speed) {
+        speed = Math.abs(speed);
+        var A = rollingResistance;
+        var B = mechanicalResistance;
+        var C = aerodynamicResistance;
+        // this formula is called the Davis equation.
+        // it's completely empirical, and models the drag and friction forces
+        return A + B * speed + C * speed * speed;
+    }
 
     /** the length of the train, in meters. */
     public final double length;
@@ -81,7 +99,7 @@ public class RollingStock implements Indexable {
      * Associates a speed to a force.
      * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves
      */
-    public final RangeSequence<Double> tractiveEffortCurve;
+    public final PointSequence<Double> tractiveEffortCurve;
 
     /**
      * Creates a new train inventory item.
@@ -118,7 +136,7 @@ public class RollingStock implements Indexable {
             boolean isETCS1Equiped,
             boolean isETCS2Equiped,
             boolean isKVBEquiped,
-            RangeSequence<Double> tractiveEffortCurve
+            PointSequence<Double> tractiveEffortCurve
     ) {
         this.rollingResistance = rollingResistance;
         this.mechanicalResistance = mechanicalResistance;
