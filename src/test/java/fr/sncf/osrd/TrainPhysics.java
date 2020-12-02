@@ -82,14 +82,11 @@ public class TrainPhysics {
             assertTrue(speed < prevSpeed && speed > 0.);
         }
 
-        // 5 minutes later
-        for (int i = 0; i < 5 * 60; i++) {
+        // 2 minutes later
+        for (int i = 0; i < 120; i++) {
             simulator = TrainPhysicsSimulator.make(1.0, rollingStock, speed, 0.0);
             speed = simulator.computeNewSpeed(0.0, 0.0);
         }
-
-        simulator = TrainPhysicsSimulator.make(1.0, rollingStock, speed, 0.0);
-        speed = simulator.computeNewSpeed(0.0, 0.0);
 
         // it should be stopped
         assertTrue(speed == 0.0);
