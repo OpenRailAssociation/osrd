@@ -1,5 +1,6 @@
 package fr.sncf.osrd.train;
 
+import com.squareup.moshi.Json;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.util.PointSequence;
 import fr.sncf.osrd.util.RangeSequence;
@@ -140,6 +141,30 @@ public class RollingStock implements Indexable {
             boolean isKVBEquiped,
             PointSequence<Double> tractiveEffortCurve
     ) throws InvalidInfraException {
+        this.rollingResistance = rollingResistance;
+        this.mechanicalResistance = mechanicalResistance;
+        this.aerodynamicResistance = aerodynamicResistance;
+        this.length = length;
+        this.maxSpeed = maxSpeed;
+        this.startUpTime = startUpTime;
+        this.startUpAcceleration = startUpAcceleration;
+        this.comfortAcceleration = comfortAcceleration;
+        this.mass = mass;
+        this.inertiaCoefficient = inertiaCoefficient;
+        this.isTVM300Equiped = isTVM300Equiped;
+        this.isTVM430Equiped = isTVM430Equiped;
+        this.isETCS1Equiped = isETCS1Equiped;
+        this.isETCS2Equiped = isETCS2Equiped;
+        this.isKVBEquiped = isKVBEquiped;
+        this.tractiveEffortCurve = tractiveEffortCurve;
+        validate();
+    }
+
+    /**
+     * Validates the properties of the rolling stock
+     * @throws InvalidInfraException if some property is invalid
+     */
+    public void validate() throws InvalidInfraException {
         if (rollingResistance < 0)
             throw new InvalidInfraException("Invalid rolling stock rollingResistance");
 
@@ -157,23 +182,6 @@ public class RollingStock implements Indexable {
 
         if (inertiaCoefficient <= 0)
             throw new InvalidInfraException("Invalid rolling stock inertia coefficient");
-
-        this.rollingResistance = rollingResistance;
-        this.mechanicalResistance = mechanicalResistance;
-        this.aerodynamicResistance = aerodynamicResistance;
-        this.length = length;
-        this.maxSpeed = maxSpeed;
-        this.startUpTime = startUpTime;
-        this.startUpAcceleration = startUpAcceleration;
-        this.comfortAcceleration = comfortAcceleration;
-        this.mass = mass;
-        this.inertiaCoefficient = inertiaCoefficient;
-        this.isTVM300Equiped = isTVM300Equiped;
-        this.isTVM430Equiped = isTVM430Equiped;
-        this.isETCS1Equiped = isETCS1Equiped;
-        this.isETCS2Equiped = isETCS2Equiped;
-        this.isKVBEquiped = isKVBEquiped;
-        this.tractiveEffortCurve = tractiveEffortCurve;
     }
 
     private int index = -1;

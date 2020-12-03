@@ -1,6 +1,7 @@
 package fr.sncf.osrd.config;
 
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.timetable.Schedule;
 
 public class Config {
@@ -14,7 +15,7 @@ public class Config {
      * Create a config from a json mapped object
      * @param jsonConfig the json mapped object
      */
-    public Config(JsonConfig jsonConfig) {
+    public Config(JsonConfig jsonConfig) throws InvalidInfraException {
         simulationTimeStep = jsonConfig.simulationTimeStep;
         infra = ConfigManager.getInfra(jsonConfig.infraPath);
         schedule = ConfigManager.getSchedule(jsonConfig.schedulePath, infra);
