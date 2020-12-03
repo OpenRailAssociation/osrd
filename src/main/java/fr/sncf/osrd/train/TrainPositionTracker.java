@@ -105,8 +105,15 @@ public class TrainPositionTracker {
         assert headEdgePosition >= 0.0;
 
         // add edges to the current edges queue as the train moves forward
-        while (hasNextPathEdge()) {
+        while (true) {
             var headEdgeLength = headPathEdge().edge.length;
+            // if there are no edges after the current head edge, stop
+            if (!hasNextPathEdge()) {
+                // disallow going out of the path
+                if (headEdgePosition > headEdgeLength)
+                    headEdgePosition = headEdgeLength;
+                break;
+            }
             // stop adding edges when the head position lies inside the current head edge
             if (headEdgePosition < headEdgeLength)
                 break;
