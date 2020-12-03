@@ -1,5 +1,6 @@
 package fr.sncf.osrd.train;
 
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.util.PointSequence;
 import fr.sncf.osrd.util.RangeSequence;
 import fr.sncf.osrd.util.Indexable;
@@ -138,7 +139,25 @@ public class RollingStock implements Indexable {
             boolean isETCS2Equiped,
             boolean isKVBEquiped,
             PointSequence<Double> tractiveEffortCurve
-    ) {
+    ) throws InvalidInfraException {
+        if (rollingResistance < 0)
+            throw new InvalidInfraException("Invalid rolling stock rollingResistance");
+
+        if (mechanicalResistance < 0)
+            throw new InvalidInfraException("Invalid rolling stock mechanicalResistance");
+
+        if (aerodynamicResistance < 0)
+            throw new InvalidInfraException("Invalid rolling stock aerodynamicResistance");
+
+        if (length <= 0)
+            throw new InvalidInfraException("invalid rolling stock length");
+
+        if (mass <= 0)
+            throw new InvalidInfraException("invalid rolling stock mass");
+
+        if (inertiaCoefficient <= 0)
+            throw new InvalidInfraException("Invalid rolling stock inertia coefficient");
+
         this.rollingResistance = rollingResistance;
         this.mechanicalResistance = mechanicalResistance;
         this.aerodynamicResistance = aerodynamicResistance;

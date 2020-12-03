@@ -2,13 +2,14 @@ package fr.sncf.osrd;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrainPhysicsSimulator;
 import fr.sncf.osrd.util.PointSequence;
 import org.junit.jupiter.api.Test;
 
 public class TrainPhysics {
-    private RollingStock makeFastTrain() {
+    private RollingStock makeFastTrain() throws InvalidInfraException {
         double trainMass = 900000; // in kilos
         int maxSpeed = 320;
         var tractiveEffortCurve = new PointSequence<Double>();
@@ -46,7 +47,7 @@ public class TrainPhysics {
     }
 
     @Test
-    public void testSteepSlope() {
+    public void testSteepSlope() throws InvalidInfraException {
         var rollingStock = makeFastTrain();
 
         double speed = 0.0;
@@ -63,7 +64,7 @@ public class TrainPhysics {
     }
 
     @Test
-    public void testAccelerateAndCoast() {
+    public void testAccelerateAndCoast() throws InvalidInfraException {
         var rollingStock = makeFastTrain();
 
         double speed = 0.0;
