@@ -7,10 +7,14 @@ import fr.sncf.osrd.SystemOrdering;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.util.CryoList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalTime;
 
 public class Scheduler extends EntitySystem {
+    static final Logger logger = LoggerFactory.getLogger(Scheduler.class);
+
     private final Schedule schedule;
     private int scheduleIndex = 0;
 
@@ -45,7 +49,10 @@ public class Scheduler extends EntitySystem {
     public void update(float deltaTime) {
         while (scheduleIndex < schedule.timetables.size() && shouldCreateTrain()) {
             Timetable timetable = schedule.timetables.first();
-            Entity train = Train.createTrain(timetable.name,
+
+            var trainName = timetable.name;
+            logger.info("starting train {}", trainName);
+            Entity train = Train.createTrain(trainName,
                     simulation.config.infra,
                     timetable.rollingStock,
                     new TrainPath(simulation.config.infra, timetable),
