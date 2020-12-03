@@ -9,4 +9,9 @@ public class Switch extends TopoNode {
     public void freeze() {
 
     }
+
+    @Override
+    public boolean isFrozen() {
+        return true;
+    }
 }

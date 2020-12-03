@@ -21,4 +21,9 @@ public class StopBlock extends TopoNode {
     @Override
     public void freeze() {
     }
+
+    @Override
+    public boolean isFrozen() {
+        return true;
+    }
 }

@@ -60,8 +60,8 @@ class NetElement {
         }
     }
 
-    public ArrayList<PointValue<TopoEdge>> placeOn(String lrsId, double measure) {
-        var list = new ArrayList<PointValue<TopoEdge>>();
+    public ArrayList<TopoLocation> placeOn(String lrsId, double measure) {
+        var list = new ArrayList<TopoLocation>();
         if (topoEdge == null) {
             for (var child : children) {
                 list.addAll(child.placeOn(lrsId, measure));
@@ -74,7 +74,7 @@ class NetElement {
         double position = measure - lrsDeltas.get(lrsId);
         if (position < 0 || position > topoEdge.length)
             return list;
-        list.add(new PointValue<>(position, topoEdge));
+        list.add(new TopoLocation(topoEdge, position));
         return list;
     }
 

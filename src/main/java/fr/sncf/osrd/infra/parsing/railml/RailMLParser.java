@@ -56,7 +56,7 @@ public class RailMLParser {
         parseSwitchIS(document, infra);
         fillWithNoOpNode(infra);
 
-        parseOperationalPoint(document);
+        parseOperationalPoint(document, infra);
         parseSpeedSection(document);
 
         return infra;
@@ -253,7 +253,7 @@ public class RailMLParser {
     }
 
 
-    private void parseOperationalPoint(Document document) {
+    private void parseOperationalPoint(Document document, Infra infra) {
         var xpath = "/railML/infrastructure/functionalInfrastructure/operationalPoints/operationalPoint";
 
         Map<String, PointSequence.Builder<OperationalPoint>> builders = new HashMap<>();
@@ -266,11 +266,13 @@ public class RailMLParser {
             var lrsId = operationalPoint.valueOf("spotLocation/linearCoordinate/@positioningSystemRef");
             var measure = Double.valueOf(operationalPoint.valueOf("spotLocation/linearCoordinate/@measure"));
 
+            var locations = netElement.placeOn(lrsId, measure);
             OperationalPoint opObj = new OperationalPoint(id, name);
-            for (var place : netElement.placeOn(lrsId, measure)) {
-                builders.putIfAbsent(place.value.id, place.value.operationalPoints.builder());
-                var builder = builders.get(place.value.id);
-                builder.add(place.position, opObj);
+            infra.register(opObj);
+            for (var location : locations) {
+                builders.putIfAbsent(location.edge.id, location.edge.operationalPoints.builder());
+                var builder = builders.get(location.edge.id);
+                builder.add(location.position, opObj);
             }
         }
 

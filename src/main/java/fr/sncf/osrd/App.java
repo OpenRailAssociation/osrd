@@ -1,8 +1,11 @@
 package fr.sncf.osrd;
 
-import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.parsing.railml.RailMLParser;
-import fr.sncf.osrd.infra.viewer.InfraViewer;
+import fr.sncf.osrd.config.Config;
+import fr.sncf.osrd.config.ConfigManager;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 
 public class App {
@@ -10,19 +13,13 @@ public class App {
      * The main entry point for OSRD.
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws InvalidInfraException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         if (args.length == 0) {
-            System.err.println("Usage: osrd infra.railml");
+            System.err.println("Usage: osrd config.json:");
             System.exit(1);
         }
 
-        var infraRailMLPath = args[0];
-
-        var infra = new RailMLParser(infraRailMLPath).parse();
-        infra.prepare();
-        new InfraViewer(infra).display();
-
-        Config config = new Config(1.0f, infra);
+        Config config = ConfigManager.getConfig(Files.readString(Paths.get(args[0])));
         Simulation simulation = new Simulation(config);
         simulation.run();
     }

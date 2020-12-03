@@ -22,7 +22,7 @@ import java.util.function.UnaryOperator;
 public class CryoList<E> extends ArrayList<E> implements Freezable {
     private static final long serialVersionUID = 2140934581223716305L;
 
-    boolean frozen = false;
+    private boolean frozen = false;
 
     public CryoList() {
         super();
@@ -38,6 +38,10 @@ public class CryoList<E> extends ArrayList<E> implements Freezable {
 
     public void freeze() {
         frozen = true;
+    }
+
+    public boolean isFrozen() {
+        return frozen;
     }
 
     static final String FROZEN_MSG = "Frozen CryoList";
@@ -145,5 +149,13 @@ public class CryoList<E> extends ArrayList<E> implements Freezable {
         if (frozen)
             throw new UnsupportedOperationException(FROZEN_MSG);
         return super.listIterator();
+    }
+
+    public E first() {
+        return get(0);
+    }
+
+    public E last() {
+        return get(size() - 1);
     }
 }

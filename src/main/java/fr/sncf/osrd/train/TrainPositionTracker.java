@@ -2,11 +2,13 @@ package fr.sncf.osrd.train;
 
 import com.badlogic.ashley.signals.Signal;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.topological.PointAttrGetter;
 import fr.sncf.osrd.infra.topological.RangeAttrGetter;
 import fr.sncf.osrd.train.TrainPath.PathElement;
 import fr.sncf.osrd.util.PointValue;
 import fr.sncf.osrd.util.RangeValue;
+import fr.sncf.osrd.util.TopoLocation;
 
 import java.util.ArrayDeque;
 import java.util.stream.Stream;
@@ -30,7 +32,7 @@ public class TrainPositionTracker {
      *  The position of the head of the train on its edge.
      *  Its the ground truth for the position of the train.
      */
-    private double headEdgePosition = 0.0;
+    private double headEdgePosition;
 
     /**
      *  The position of the tail on its edge.
@@ -41,6 +43,14 @@ public class TrainPositionTracker {
     /** Gets the position of the head relative to the start of the path. */
     public double getHeadPathPosition() {
         return currentPathEdges.getFirst().pathStartOffset + headEdgePosition;
+    }
+
+    /** Return the head location of the graph */
+    public TopoLocation getHeadTopoLocation() {
+        var headPathElement = currentPathEdges.getFirst();
+        if (headPathElement.direction == EdgeDirection.START_TO_STOP)
+            return new TopoLocation(headPathElement.edge, headEdgePosition);
+        return new TopoLocation(headPathElement.edge, headPathElement.edge.length - headEdgePosition);
     }
 
     /** Gets the position of the head relative to the start of the path. */
@@ -61,6 +71,12 @@ public class TrainPositionTracker {
         this.infra = infra;
         this.path = path;
         this.trainLength = trainLength;
+        assert path.startingPoint.edge == path.edges.first().edge;
+        currentPathEdges.add(path.edges.first());
+        if (path.edges.first().direction == EdgeDirection.START_TO_STOP)
+            headEdgePosition = path.startingPoint.position;
+        else
+            headEdgePosition = path.edges.first().edge.length - path.startingPoint.position;
     }
 
     private PathElement headPathEdge() {

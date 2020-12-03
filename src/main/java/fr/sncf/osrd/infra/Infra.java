@@ -7,6 +7,7 @@ import fr.sncf.osrd.infra.topological.NoOpNode;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.infra.topological.TopoNode;
 import fr.sncf.osrd.util.CryoMap;
+import fr.sncf.osrd.util.Freezable;
 
 /**
  * <p>A data structure meant to store the immutable part of a railroad infrastructure.</p>
@@ -75,7 +76,7 @@ import fr.sncf.osrd.util.CryoMap;
  * <p>We decided to model it using <b>per-edge neighbours</b>: each end of the block section
  * can be connected to other block sections, even though it's also connected to a signal.</p>
  */
-public class Infra {
+public class Infra implements Freezable {
     /**
      * The topology graph.
      */
@@ -83,6 +84,7 @@ public class Infra {
 
     public final CryoMap<String, TopoNode> topoNodeMap = new CryoMap<>();
     public final CryoMap<String, TopoEdge> topoEdgeMap = new CryoMap<>();
+    public final CryoMap<String, OperationalPoint> operationalPointMap = new CryoMap<>();
 
     /**
      * The block sections graph.
@@ -93,6 +95,8 @@ public class Infra {
 
     public final CryoMap<String, Line> lines = new CryoMap<>();
 
+    private boolean frozen = false;
+
     public void register(TopoNode node) {
         topoGraph.register(node);
         topoNodeMap.put(node.id, node);
@@ -101,6 +105,10 @@ public class Infra {
     public void register(TopoEdge edge) {
         topoGraph.register(edge);
         topoEdgeMap.put(edge.id, edge);
+    }
+
+    public void register(OperationalPoint operationalPoint) {
+        operationalPointMap.put(operationalPoint.id, operationalPoint);
     }
 
     public void register(SectionSignalNode node) {
@@ -174,6 +182,8 @@ public class Infra {
      * Pre-compute metadata, validate and freeze the infrastructure.
      */
     public void prepare() throws InvalidInfraException {
+        topoGraph.prepare();
+
         for (var edge : topoGraph.edges)
             edge.validate();
 
@@ -181,18 +191,26 @@ public class Infra {
     }
 
     /** Prevent further modifications. */
-    private void freeze() {
-        // freeze the topological graph
-        topoGraph.freeze();
+    @Override
+    public void freeze() {
+        assert !frozen;
 
-        // freeze id to node/edge map
+        // freeze id to node,edge and op map
         topoNodeMap.freeze();
         topoEdgeMap.freeze();
+        operationalPointMap.freeze();
 
         // freeze the block sections graph
         blockSectionsGraph.freeze();
 
         // miscellaneous
         lines.freeze();
+
+        frozen = true;
+    }
+
+    @Override
+    public boolean isFrozen() {
+        return frozen;
     }
 }

@@ -14,7 +14,6 @@ import fr.sncf.osrd.util.SortedSequence;
  */
 public final class TopoEdge extends AbstractEdge<TopoNode> {
     public final String id;
-    public final double length;
 
     /**
      * Create a new topological edge.
@@ -26,9 +25,8 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
             int endNodeIndex,
             double length
     ) {
-        super(startNodeIndex, endNodeIndex);
+        super(startNodeIndex, endNodeIndex, length);
         this.id = id;
-        this.length = length;
     }
 
     /**

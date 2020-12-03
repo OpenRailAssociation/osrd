@@ -7,6 +7,7 @@ import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.train.PathAttrIterator;
 import fr.sncf.osrd.train.TrainPath;
+import fr.sncf.osrd.util.TopoLocation;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -59,7 +60,7 @@ class PointAttrIter {
         }
         infra.prepare();
 
-        var trainPath = new TrainPath();
+        var trainPath = new TrainPath(new TopoLocation(firstEdge, 0));
         trainPath.addEdge(firstEdge, EdgeDirection.START_TO_STOP);
         trainPath.addEdge(secondEdge, EdgeDirection.START_TO_STOP);
 
@@ -124,7 +125,7 @@ class PointAttrIter {
 
         infra.prepare();
 
-        var trainPath = new TrainPath();
+        var trainPath = new TrainPath(new TopoLocation(forwardEdge, 0));
         trainPath.addEdge(forwardEdge, EdgeDirection.START_TO_STOP);
         trainPath.addEdge(backwardEdge, EdgeDirection.STOP_TO_START);
 

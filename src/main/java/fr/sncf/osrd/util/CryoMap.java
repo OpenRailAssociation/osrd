@@ -28,7 +28,13 @@ public class CryoMap<K, V> extends HashMap<K, V> implements Freezable {
 
     @Override
     public void freeze() {
+        assert !frozen;
         frozen = true;
+    }
+
+    @Override
+    public boolean isFrozen() {
+        return frozen;
     }
 
     static final String FROZEN_MSG = "Frozen CryoMap";
