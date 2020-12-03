@@ -84,12 +84,13 @@ public class Train implements Component {
         Action action = getAction(timeDelta);
         if (action == null) {
             speed = simulator.computeNewSpeed(0.0, 0.0);
-            return;
+        } else {
+            speed = simulator.computeNewSpeed(action.tractionForce(), action.brakingForce());
+            if (action.type == Action.ActionType.EMERGENCY_BRAKING)
+                state = TrainState.EMERGENCY_BRAKING;
         }
 
-        speed = simulator.computeNewSpeed(action.tractionForce(), action.brakingForce());
-        if (action.type == Action.ActionType.EMERGENCY_BRAKING)
-            state = TrainState.EMERGENCY_BRAKING;
+        positionTracker.updatePosition(speed, timeDelta);
     }
 
     @SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD")
