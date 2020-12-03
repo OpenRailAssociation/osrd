@@ -84,7 +84,8 @@ public class Train implements Component {
     }
 
     private Action updateStartingUp(double timeDelta) {
-        return null;
+        // TODO: implement startup procedures
+        return updateRolling(timeDelta);
     }
 
     /**
