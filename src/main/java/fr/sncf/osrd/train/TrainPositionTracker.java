@@ -69,12 +69,14 @@ public class TrainPositionTracker {
         this.infra = infra;
         this.path = path;
         this.trainLength = trainLength;
-        assert path.startingPoint.edge == path.edges.first().edge;
-        currentPathEdges.add(path.edges.first());
-        if (path.edges.first().direction == EdgeDirection.START_TO_STOP)
+        var firstSection = path.edges.first();
+        assert path.startingPoint.edge == firstSection.edge;
+        currentPathEdges.add(firstSection);
+        if (firstSection.direction == EdgeDirection.START_TO_STOP)
             headEdgePosition = path.startingPoint.position;
         else
-            headEdgePosition = path.edges.first().edge.length - path.startingPoint.position;
+            headEdgePosition = firstSection.edge.length - path.startingPoint.position;
+        assert headEdgePosition >= 0.0;
         updatePosition(0, 0);
     }
 
@@ -97,7 +99,10 @@ public class TrainPositionTracker {
      * @param deltaTime The elapsed time, in seconds
      */
     public void updatePosition(double speed, double deltaTime) {
+        assert !Double.isNaN(speed) && deltaTime >= 0.0;
+
         headEdgePosition += speed * deltaTime;
+        assert headEdgePosition >= 0.0;
 
         // add edges to the current edges queue as the train moves forward
         while (hasNextPathEdge()) {
@@ -113,6 +118,7 @@ public class TrainPositionTracker {
 
             // as the head edge changed, so does the position
             headEdgePosition -= headEdgeLength;
+            assert headEdgePosition >= 0.0;
         }
 
         // remove edges off the tail as the train leaves those
