@@ -30,7 +30,7 @@ public class InfraViewer extends IteratingSystem {
      * @param infra the infra to display
      */
     public InfraViewer(Infra infra) {
-        super(Family.all(Train.class).get(), SystemOrdering.VIEWER.getPriority());
+        super(Family.all(Train.class).get(), SystemOrdering.VIEWER.priority);
 
         System.setProperty("org.graphstream.ui", "swing");
         graph = new SingleGraph("OSRD");

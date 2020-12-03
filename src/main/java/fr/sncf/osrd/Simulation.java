@@ -4,6 +4,7 @@ import com.badlogic.ashley.core.Engine;
 import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.infra.viewer.InfraViewer;
 import fr.sncf.osrd.timetable.Scheduler;
+import fr.sncf.osrd.train.TrainUpdateSystem;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
@@ -42,6 +43,8 @@ public class Simulation {
                 .subtract(new BigDecimal(simulationTimeStepSec))
                 .multiply(new BigDecimal(1000000000))
                 .longValueExact();
+
+        engine.addSystem(new TrainUpdateSystem());
     }
 
     /**
