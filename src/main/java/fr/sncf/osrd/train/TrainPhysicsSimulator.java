@@ -23,7 +23,7 @@ public class TrainPhysicsSimulator {
         this.timeStep = timeStep;
         this.currentSpeed = currentSpeed;
         this.weightForce = weightForce;
-        assert precomputedRollingResistance > 0.;
+        assert precomputedRollingResistance >= 0.;
         this.precomputedRollingResistance = precomputedRollingResistance;
         this.inertia = inertia;
     }
@@ -123,6 +123,8 @@ public class TrainPhysicsSimulator {
         var fullStepAcceleration = computeAcceleration(effectiveRollingResistance, actionTractionForce);
         var newSpeed = currentSpeed + fullStepAcceleration * timeStep;
 
+        assert !Double.isNaN(newSpeed);
+
         // when the train changes direction, the rolling resistance doesn't apply
         // in the same direction for all the integration step.
 
@@ -138,6 +140,8 @@ public class TrainPhysicsSimulator {
         // we have to recompute the effective rolling resistance for a 0 speed
         effectiveRollingResistance = computeEffectiveRollingResistance(
                 0.0, rollingResistance, actionTractionForce);
-        return 0.0 + computeAcceleration(-effectiveRollingResistance, actionTractionForce) * remainingStep;
+        newSpeed = 0.0 + computeAcceleration(-effectiveRollingResistance, actionTractionForce) * remainingStep;
+        assert !Double.isNaN(newSpeed);
+        return newSpeed;
     }
 }
