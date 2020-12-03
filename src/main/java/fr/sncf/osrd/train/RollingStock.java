@@ -99,7 +99,8 @@ public class RollingStock implements Indexable {
      * Associates a speed to a force.
      * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves
      */
-    public final PointSequence<Double> tractiveEffortCurve;
+    // TODO remove transient and parse it
+    public final transient PointSequence<Double> tractiveEffortCurve;
 
     /**
      * Creates a new train inventory item.

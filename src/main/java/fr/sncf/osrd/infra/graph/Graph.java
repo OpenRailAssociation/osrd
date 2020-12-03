@@ -4,6 +4,7 @@ import fr.sncf.osrd.util.CryoFlatMap;
 import fr.sncf.osrd.util.CryoList;
 import fr.sncf.osrd.util.Freezable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,6 +30,8 @@ public class Graph<NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>>
      * to store the graph of links between nodes and edges.
      */
     public final CryoFlatMap<NodeT, List<EdgeT>> neighbors = new CryoFlatMap<>();
+
+    private boolean frozen = false;
 
     /**
      * Resize nodes list and fill with nulls
@@ -59,13 +62,34 @@ public class Graph<NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>>
         return neighbors.get(node.getIndex());
     }
 
+    /**
+     * Compute neighbors for each nodes
+     */
+    public void prepare() {
+        for (var node : nodes)
+            neighbors.put(node, new ArrayList<>());
+        for (var edge : edges) {
+            neighbors.get(edge.startNode).add(edge);
+            neighbors.get(edge.endNode).add(edge);
+        }
+
+        freeze();
+    }
+
     @Override
     public void freeze() {
+        assert !frozen;
         for (var edge : edges)
             edge.freeze();
         for (var node : nodes)
             node.freeze();
         edges.freeze();
         nodes.freeze();
+        frozen = true;
+    }
+
+    @Override
+    public boolean isFrozen() {
+        return frozen;
     }
 }

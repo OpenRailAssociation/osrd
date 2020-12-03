@@ -9,9 +9,12 @@ import java.util.List;
 public abstract class AbstractEdge<NodeT extends AbstractNode<?>> implements Indexable, Freezable {
     public final int startNode;
     public final int endNode;
+    public final double length;
 
     public final CryoList<AbstractEdge<NodeT>> startNeighbors = new CryoList<>();
     public final CryoList<AbstractEdge<NodeT>> endNeighbors = new CryoList<>();
+
+    private boolean frozen = false;
 
     /**
      * The list of reachable edges at the start of the course over the edge.
@@ -51,12 +54,20 @@ public abstract class AbstractEdge<NodeT extends AbstractNode<?>> implements Ind
 
     @Override
     public void freeze() {
+        assert !frozen;
         startNeighbors.freeze();
         endNeighbors.freeze();
+        frozen = true;
     }
 
-    protected AbstractEdge(int startNode, int endNode) {
+    @Override
+    public boolean isFrozen() {
+        return frozen;
+    }
+
+    protected AbstractEdge(int startNode, int endNode, double length) {
         this.startNode = startNode;
         this.endNode = endNode;
+        this.length = length;
     }
 }

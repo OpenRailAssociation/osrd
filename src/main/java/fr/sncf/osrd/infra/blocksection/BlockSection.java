@@ -16,7 +16,6 @@ import fr.sncf.osrd.util.RangeSequence;
 )
 public class BlockSection extends AbstractEdge<SectionSignalNode> {
     public final String id;
-    public final double length;
 
     /** The topological edges the block section spans over. */
     public final RangeSequence<TopoEdge> edges;
@@ -35,10 +34,9 @@ public class BlockSection extends AbstractEdge<SectionSignalNode> {
             SectionSignalNode startNode,
             SectionSignalNode endNode,
             double length) {
-        super(startNode.getIndex(), endNode.getIndex());
+        super(startNode.getIndex(), endNode.getIndex(), length);
         this.edges = edges;
         this.id = id;
-        this.length = length;
     }
 
     @Override

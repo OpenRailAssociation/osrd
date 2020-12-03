@@ -1,7 +1,8 @@
 package fr.sncf.osrd;
 
 public enum SystemOrdering {
-    TIMETABLE(0);
+    TIMETABLE(0),
+    VIEWER(-1);
 
     private int priority;
 

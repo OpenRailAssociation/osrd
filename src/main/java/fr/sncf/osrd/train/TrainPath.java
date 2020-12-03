@@ -3,10 +3,15 @@ package fr.sncf.osrd.train;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.topological.TopoEdge;
+import fr.sncf.osrd.pathfinding.CostFunction;
+import fr.sncf.osrd.pathfinding.Dijkstra;
+import fr.sncf.osrd.timetable.Timetable;
 import fr.sncf.osrd.util.CryoList;
 import fr.sncf.osrd.util.Freezable;
+import fr.sncf.osrd.util.TopoLocation;
 
 import java.util.function.DoubleUnaryOperator;
+import java.util.stream.StreamSupport;
 
 public class TrainPath  implements Freezable {
     public static final class PathElement {
@@ -75,26 +80,45 @@ public class TrainPath  implements Freezable {
         return edges.get(index);
     }
 
-    final CryoList<PathElement> edges;
-    final CryoList<TrainStop> stops;
+    final CryoList<PathElement> edges = new CryoList<>();
+    final CryoList<TrainStop> stops = new CryoList<>();
+    final TopoLocation startingPoint;
+
+    private boolean frozen = false;
 
     /**
      * Creates a container to hold the path some train will follow
-     * @param edges the list of edges the train will travel through
-     * @param stops the list of stops
      */
-    public TrainPath(CryoList<PathElement> edges, CryoList<TrainStop> stops) {
-        this.edges = edges;
-        this.stops = stops;
-        freeze();
+    public TrainPath(TopoLocation startingPoint) {
+        this.startingPoint = startingPoint;
     }
 
+
     /**
-     * Creates a container to hold the path some train will follow
+     * Creates and store the path some train will follow
+     * @param infra the infra in which the path should be searched
+     * @param timetable the timetable containing the list of waypoint
      */
-    public TrainPath() {
-        this.edges = new CryoList<>();
-        this.stops = new CryoList<>();
+    public TrainPath(Infra infra, Timetable timetable) {
+        CostFunction<TopoEdge> costFunc = (edge, begin, end) -> Math.abs(end - begin);
+        var start = timetable.entries.first();
+        var startPosition = StreamSupport.stream(start.edge.operationalPoints.spliterator(), false)
+                .filter(pointValue -> pointValue.value.id == start.operationalPoint.id)
+                .findFirst();
+        assert startPosition.isPresent();
+        var goal = timetable.entries.last();
+        var goalPosition = StreamSupport.stream(goal.edge.operationalPoints.spliterator(), false)
+                .filter(pointValue -> pointValue.value.id == goal.operationalPoint.id)
+                .findFirst();
+        assert goalPosition.isPresent();
+
+        Dijkstra.findPath(infra.topoGraph,
+                start.edge, startPosition.get().position,
+                goal.edge, goalPosition.get().position,
+                costFunc,
+                this::addEdge);
+        startingPoint = new TopoLocation(start.edge, startPosition.get().position);
+        freeze();
     }
 
     /**
@@ -113,7 +137,13 @@ public class TrainPath  implements Freezable {
 
     @Override
     public void freeze() {
+        assert !frozen;
         edges.freeze();
         stops.freeze();
+    }
+
+    @Override
+    public boolean isFrozen() {
+        return frozen;
     }
 }

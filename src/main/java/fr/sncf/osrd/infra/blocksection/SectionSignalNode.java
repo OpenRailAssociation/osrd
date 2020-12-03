@@ -18,4 +18,9 @@ public class SectionSignalNode extends AbstractNode<BlockSection> {
     @Override
     public void freeze() {
     }
+
+    @Override
+    public boolean isFrozen() {
+        return true;
+    }
 }

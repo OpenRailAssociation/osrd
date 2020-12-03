@@ -14,13 +14,15 @@ import java.util.LinkedList;
 import java.util.stream.Collectors;
 
 public class Train implements Component {
+    public final String name;
     public final RollingStock rollingStock;
     public final LinkedList<SpeedController> controllers = new LinkedList<>();
     public final TrainPositionTracker positionTracker;
     public double speed;
     public TrainState state = TrainState.STARTING_UP;
 
-    private Train(Infra infra, RollingStock rollingStock, TrainPath trainPath, double initialSpeed) {
+    private Train(String name, Infra infra, RollingStock rollingStock, TrainPath trainPath, double initialSpeed) {
+        this.name = name;
         this.rollingStock = rollingStock;
         this.positionTracker = new TrainPositionTracker(infra, trainPath, rollingStock.length);
         this.speed = initialSpeed;
@@ -28,14 +30,19 @@ public class Train implements Component {
 
     /**
      * Creates a train entity
+     * @param name the train's name
      * @param rollingStock the train inventory item
      * @param trainPath the path the train will follow
      * @param initialSpeed the initial speed the train will travel at
      * @return A new train entity
      */
-    public static Entity createTrain(Infra infra, RollingStock rollingStock, TrainPath trainPath, double initialSpeed) {
+    public static Entity createTrain(String name,
+                                     Infra infra,
+                                     RollingStock rollingStock,
+                                     TrainPath trainPath,
+                                     double initialSpeed) {
         Entity train = new Entity();
-        train.add(new Train(infra, rollingStock, trainPath, initialSpeed));
+        train.add(new Train(name, infra, rollingStock, trainPath, initialSpeed));
         return train;
     }
 

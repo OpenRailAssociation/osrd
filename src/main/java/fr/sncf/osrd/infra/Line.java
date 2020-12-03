@@ -8,6 +8,8 @@ public class Line implements Freezable {
     public final String id;
     private final CryoMap<String, Track> tracks = new CryoMap<>();
 
+    private boolean frozen = false;
+
     /**
      * Creates a new line.
      * @param name The display name for this line
@@ -34,6 +36,12 @@ public class Line implements Freezable {
 
     @Override
     public void freeze() {
+        assert !frozen;
         tracks.freeze();
+    }
+
+    @Override
+    public boolean isFrozen() {
+        return frozen;
     }
 }

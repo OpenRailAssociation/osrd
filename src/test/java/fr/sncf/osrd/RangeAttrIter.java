@@ -8,6 +8,7 @@ import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.train.PathAttrIterator;
 import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.util.RangeValue;
+import fr.sncf.osrd.util.TopoLocation;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +76,7 @@ public class RangeAttrIter {
 
         infra.prepare();
 
-        var trainPath = new TrainPath();
+        var trainPath = new TrainPath(new TopoLocation(forwardEdge, 0));
         trainPath.addEdge(forwardEdge, EdgeDirection.START_TO_STOP);
         trainPath.addEdge(backwardEdge, EdgeDirection.STOP_TO_START);
 
