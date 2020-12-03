@@ -77,6 +77,7 @@ public class TrainPositionTracker {
             headEdgePosition = path.startingPoint.position;
         else
             headEdgePosition = path.edges.first().edge.length - path.startingPoint.position;
+        updatePosition(0, 0);
     }
 
     private PathElement headPathEdge() {
@@ -213,7 +214,7 @@ public class TrainPositionTracker {
      */
     public <ValueT> Stream<RangeValue<ValueT>> streamRangeAttrUnderTrain(RangeAttrGetter<ValueT> attrGetter) {
         var tailPathPosition = getTailPathPosition();
-        var firstEdgeIndex = currentPathIndex - currentPathEdges.size();
+        var firstEdgeIndex = currentPathIndex - currentPathEdges.size() + 1;
         return PathAttrIterator.streamRanges(
                 path,
                 firstEdgeIndex,
