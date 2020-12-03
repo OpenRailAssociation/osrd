@@ -2,7 +2,10 @@ package fr.sncf.osrd.util;
 
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.function.DoubleUnaryOperator;
 
 /**

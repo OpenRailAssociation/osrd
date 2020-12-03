@@ -1,12 +1,12 @@
 package fr.sncf.osrd;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrainPhysicsSimulator;
 import fr.sncf.osrd.util.PointSequence;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TrainPhysics {
     private RollingStock makeFastTrain() throws InvalidInfraException {

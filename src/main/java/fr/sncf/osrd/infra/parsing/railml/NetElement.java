@@ -1,7 +1,10 @@
 package fr.sncf.osrd.infra.parsing.railml;
 
 import fr.sncf.osrd.infra.topological.TopoEdge;
-import fr.sncf.osrd.util.*;
+import fr.sncf.osrd.util.FloatCompare;
+import fr.sncf.osrd.util.MutPair;
+import fr.sncf.osrd.util.RangeValue;
+import fr.sncf.osrd.util.TopoLocation;
 import org.dom4j.Node;
 
 import java.util.ArrayList;

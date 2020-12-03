@@ -7,7 +7,6 @@ import fr.sncf.osrd.infra.graph.AbstractEdge;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.util.PointSequence;
 import fr.sncf.osrd.util.RangeSequence;
-import fr.sncf.osrd.util.SortedSequence;
 
 /**
  * An edge in the topological graph.

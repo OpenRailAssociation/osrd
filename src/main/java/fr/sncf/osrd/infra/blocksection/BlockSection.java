@@ -3,7 +3,6 @@ package fr.sncf.osrd.infra.blocksection;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.graph.AbstractEdge;
 import fr.sncf.osrd.infra.topological.TopoEdge;
-import fr.sncf.osrd.util.CryoList;
 import fr.sncf.osrd.util.RangeSequence;
 
 

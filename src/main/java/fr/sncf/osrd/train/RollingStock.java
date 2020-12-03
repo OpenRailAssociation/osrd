@@ -1,10 +1,8 @@
 package fr.sncf.osrd.train;
 
-import com.squareup.moshi.Json;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.util.PointSequence;
-import fr.sncf.osrd.util.RangeSequence;
 import fr.sncf.osrd.util.Indexable;
+import fr.sncf.osrd.util.PointSequence;
 
 
 

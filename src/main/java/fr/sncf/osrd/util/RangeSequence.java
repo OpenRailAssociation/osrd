@@ -4,7 +4,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.function.DoubleUnaryOperator;
 
 /**

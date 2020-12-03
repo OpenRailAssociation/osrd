@@ -2,7 +2,6 @@ package fr.sncf.osrd.infra.blocksection;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.graph.AbstractNode;
-import java.util.List;
 
 @SuppressFBWarnings(
         value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",
