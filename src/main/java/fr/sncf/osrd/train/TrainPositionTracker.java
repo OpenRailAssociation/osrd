@@ -45,12 +45,10 @@ public class TrainPositionTracker {
         return currentPathEdges.getFirst().pathStartOffset + headEdgePosition;
     }
 
-    /** Return the head location of the graph */
+    /** Return the head's location on the graph */
     public TopoLocation getHeadTopoLocation() {
         var headPathElement = currentPathEdges.getFirst();
-        if (headPathElement.direction == EdgeDirection.START_TO_STOP)
-            return new TopoLocation(headPathElement.edge, headEdgePosition);
-        return new TopoLocation(headPathElement.edge, headPathElement.edge.length - headEdgePosition);
+        return new TopoLocation(headPathElement.edge, headEdgePosition);
     }
 
     /** Gets the position of the head relative to the start of the path. */
