@@ -150,7 +150,7 @@ public class TrainPositionTracker {
             leftEdgeSignal.dispatch(currentPathEdges.removeLast());
             totalEdgesSpan -= tailEdgeLength;
         }
-        tailEdgePosition = totalEdgesSpan - trainLength;
+        tailEdgePosition = totalEdgesSpan - (trainLength + headEdgeHeadroom);
     }
 
     /**
