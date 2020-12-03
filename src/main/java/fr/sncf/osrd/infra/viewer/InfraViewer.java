@@ -78,6 +78,11 @@ public class InfraViewer extends IteratingSystem {
         var headTopoLocation = train.positionTracker.getHeadTopoLocation();
         if (!sprite.attached() || sprite.getAttachment().getId().equals(headTopoLocation.edge.id))
             sprite.attachToEdge(headTopoLocation.edge.id);
-        sprite.setPosition(headTopoLocation.position / headTopoLocation.edge.length);
+
+        var edgePosition = headTopoLocation.position / headTopoLocation.edge.length;
+        // this assert is very, very important, as a failure results in
+        // a very nasty crash inside graphstream
+        assert edgePosition >= 0 && edgePosition <= 1 && !Double.isNaN(edgePosition);
+        sprite.setPosition(edgePosition);
     }
 }
