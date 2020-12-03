@@ -33,6 +33,11 @@ dependencies {
     // for debug IU
     implementation 'org.graphstream:gs-core:2.0'
     implementation 'org.graphstream:gs-ui-swing:2.0'
+
+    // the logging API stub
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'
+    // the logging API implementation
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.+'
 }
 
 application {

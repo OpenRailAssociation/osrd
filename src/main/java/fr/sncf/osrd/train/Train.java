@@ -9,11 +9,15 @@ import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.util.Constants;
 import fr.sncf.osrd.util.Pair;
 import fr.sncf.osrd.util.Range;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.stream.Collectors;
 
 public class Train implements Component {
+    static final Logger logger = LoggerFactory.getLogger(Train.class);
+
     public final String name;
     public final RollingStock rollingStock;
     public final LinkedList<SpeedController> controllers = new LinkedList<>();
@@ -89,6 +93,7 @@ public class Train implements Component {
                 maxTrainGrade());
 
         Action action = getAction(timeDelta);
+        logger.debug("train took action {}", action);
         if (action == null) {
             speed = simulator.computeNewSpeed(0.0, 0.0);
         } else {
@@ -97,6 +102,7 @@ public class Train implements Component {
                 state = TrainState.EMERGENCY_BRAKING;
         }
 
+        logger.debug("new speed {}", speed);
         positionTracker.updatePosition(speed, timeDelta);
     }
 
