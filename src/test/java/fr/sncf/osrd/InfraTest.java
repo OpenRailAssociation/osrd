@@ -1,6 +1,7 @@
 package fr.sncf.osrd;
 
-import fr.sncf.osrd.infra.*;
+import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.InvalidInfraException;
 import org.junit.jupiter.api.Test;
 
 class InfraTest {

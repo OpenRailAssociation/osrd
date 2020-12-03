@@ -1,10 +1,11 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.topological.PointAttrGetter;
 import fr.sncf.osrd.infra.topological.RangeAttrGetter;
-import fr.sncf.osrd.infra.graph.EdgeDirection;
-import fr.sncf.osrd.util.*;
+import fr.sncf.osrd.util.PointValue;
+import fr.sncf.osrd.util.RangeValue;
 
 import java.util.HashSet;
 import java.util.Iterator;

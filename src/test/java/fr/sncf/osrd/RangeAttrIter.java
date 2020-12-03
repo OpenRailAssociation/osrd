@@ -1,8 +1,7 @@
 package fr.sncf.osrd;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import fr.sncf.osrd.infra.*;
+import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.train.PathAttrIterator;
@@ -10,9 +9,12 @@ import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.util.RangeValue;
 import fr.sncf.osrd.util.TopoLocation;
 import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class RangeAttrIter {

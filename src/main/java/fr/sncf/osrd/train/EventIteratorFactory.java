@@ -1,6 +1,7 @@
 package fr.sncf.osrd.train;
 
 import fr.sncf.osrd.train.TrainPath.PathElement;
+
 import java.util.Iterator;
 
 @FunctionalInterface

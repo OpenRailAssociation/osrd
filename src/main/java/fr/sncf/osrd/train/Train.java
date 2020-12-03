@@ -6,9 +6,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.util.Constants;
 import fr.sncf.osrd.util.Pair;
-import fr.sncf.osrd.util.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
