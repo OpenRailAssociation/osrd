@@ -74,16 +74,16 @@ public class TrainPhysics {
 
         assertTrue(speed > 0.5);
 
-        // the train should be able to coast for 20 seconds without stopping
-        for (int i = 0; i < 20; i++) {
+        // the train should be able to coast for a minute without stopping
+        for (int i = 0; i < 60; i++) {
             simulator = TrainPhysicsSimulator.make(1.0, rollingStock, speed, 0.0);
             double prevSpeed = speed;
             speed = simulator.computeNewSpeed(0.0, 0.0);
             assertTrue(speed < prevSpeed && speed > 0.);
         }
 
-        // 2 minutes later
-        for (int i = 0; i < 120; i++) {
+        // another minute minutes later
+        for (int i = 0; i < 60; i++) {
             simulator = TrainPhysicsSimulator.make(1.0, rollingStock, speed, 0.0);
             speed = simulator.computeNewSpeed(0.0, 0.0);
         }
