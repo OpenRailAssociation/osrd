@@ -2,6 +2,7 @@ package fr.sncf.osrd.timetable;
 
 import fr.sncf.osrd.config.ConfigManager;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.util.CryoList;
 
@@ -18,7 +19,7 @@ public class Timetable {
      * @param json the json mapped object
      * @param infra a reference to the infra
      */
-    public Timetable(JsonTimetable json, Infra infra) {
+    public Timetable(JsonTimetable json, Infra infra) throws InvalidInfraException {
         name = json.name;
         rollingStock = ConfigManager.getRollingStock(json.rollingStockPath);
         assert json.entries != null;

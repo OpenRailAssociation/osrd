@@ -27,7 +27,7 @@ public class ConfigManager {
             .build()
             .adapter(RollingStock.class);
 
-    public static Config getConfig(String json) throws IOException {
+    public static Config getConfig(String json) throws IOException, InvalidInfraException {
         return new Config(configAdapter.fromJson(json));
     }
 
@@ -45,7 +45,7 @@ public class ConfigManager {
         return infra;
     }
 
-    static Schedule getSchedule(String path, Infra infra) {
+    static Schedule getSchedule(String path, Infra infra) throws InvalidInfraException {
         if (schedules.containsKey(path))
             return schedules.get(path);
         Schedule schedule = null;
@@ -63,12 +63,13 @@ public class ConfigManager {
      * @param path the path to the rolling stock file
      * @return a RollingStock instance
      */
-    public static RollingStock getRollingStock(String path) {
+    public static RollingStock getRollingStock(String path) throws InvalidInfraException {
         if (rollingStocks.containsKey(path))
             return rollingStocks.get(path);
         RollingStock rollingStock = null;
         try {
             rollingStock = rollingStockAdapter.fromJson(Files.readString(Paths.get(path)));
+            rollingStock.validate();
         } catch (IOException e) {
             e.printStackTrace();
         }

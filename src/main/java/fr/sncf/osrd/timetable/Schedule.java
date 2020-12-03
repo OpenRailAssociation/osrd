@@ -3,6 +3,7 @@ package fr.sncf.osrd.timetable;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.util.CryoList;
 import fr.sncf.osrd.util.Freezable;
 
@@ -24,7 +25,7 @@ public class Schedule implements Freezable {
      * @param path the path to the schedule file
      * @param infra a reference to the infra
      */
-    public Schedule(String path, Infra infra) throws IOException {
+    public Schedule(String path, Infra infra) throws IOException, InvalidInfraException {
         assert infra.isFrozen();
         JsonSchedule json = scheduleAdapter.fromJson(Files.readString(Paths.get(path)));
         timetables = new CryoList<>();
