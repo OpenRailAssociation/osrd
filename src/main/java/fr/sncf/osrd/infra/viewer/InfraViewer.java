@@ -76,7 +76,8 @@ public class InfraViewer extends IteratingSystem {
 
         var sprite = trainSprites.get(train);
         var headTopoLocation = train.positionTracker.getHeadTopoLocation();
-        if (!sprite.attached() || sprite.getAttachment().getId().equals(headTopoLocation.edge.id))
+
+        if (!sprite.attached() || !sprite.getAttachment().getId().equals(headTopoLocation.edge.id))
             sprite.attachToEdge(headTopoLocation.edge.id);
 
         var edgePosition = headTopoLocation.position / headTopoLocation.edge.length;
