@@ -2,7 +2,6 @@ package fr.sncf.osrd.infra.viewer;
 
 import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Entity;
-import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
 import fr.sncf.osrd.SystemOrdering;
@@ -74,9 +73,10 @@ public class InfraViewer extends IteratingSystem {
             sprite.setAttribute("ui.label", train.name);
             trainSprites.put(train, sprite);
         }
+
         var sprite = trainSprites.get(train);
         var headTopoLocation = train.positionTracker.getHeadTopoLocation();
-        if (!sprite.attached() || sprite.getAttachment().getId() != headTopoLocation.edge.id)
+        if (!sprite.attached() || sprite.getAttachment().getId().equals(headTopoLocation.edge.id))
             sprite.attachToEdge(headTopoLocation.edge.id);
         sprite.setPosition(headTopoLocation.position / headTopoLocation.edge.length);
     }
