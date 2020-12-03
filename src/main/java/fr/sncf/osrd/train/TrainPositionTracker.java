@@ -146,7 +146,7 @@ public class TrainPositionTracker {
 
         var headEdgeHeadroom = headPathEdge().edge.length - headEdgePosition;
         var totalEdgesSpan = currentPathEdges.stream().mapToDouble(pathEdge -> pathEdge.edge.length).sum();
-        assert headEdgeHeadroom > 0.;
+        assert headEdgeHeadroom >= 0.;
         while (currentPathEdges.size() > 1) {
             var tailEdgeLength = currentPathEdges.getLast().edge.length;
             var nextEdgesSpan = totalEdgesSpan - tailEdgeLength;
