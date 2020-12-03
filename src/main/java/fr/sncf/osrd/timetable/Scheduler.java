@@ -18,10 +18,11 @@ public class Scheduler extends EntitySystem {
 
     /**
      * Create a system which will spawn new train at the right time
+     *
      * @param schedule the source schedule
      */
     public Scheduler(Schedule schedule, Simulation simulation) {
-        super(SystemOrdering.TIMETABLE.getPriority());
+        super(SystemOrdering.TIMETABLE.priority);
         assert schedule.isFrozen();
         this.schedule = schedule;
         this.simulation = simulation;
