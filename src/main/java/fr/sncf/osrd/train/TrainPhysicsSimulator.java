@@ -82,7 +82,11 @@ public class TrainPhysicsSimulator {
      * @param actionTractionForce the action traction force
      * @return the effective rolling resistance
      */
-    private double computeEffectiveRollingResistance(double speed, double rollingResistance, double actionTractionForce) {
+    private double computeEffectiveRollingResistance(
+            double speed,
+            double rollingResistance,
+            double actionTractionForce
+    ) {
         // the rolling resistance is going opposite the current direction in the general case.
         // is the speed is 0, then is all depends on what way the train is going without it
         if (speed != 0.0)
