@@ -45,9 +45,18 @@ public class Train implements Component {
                                      RollingStock rollingStock,
                                      TrainPath trainPath,
                                      double initialSpeed) {
-        Entity train = new Entity();
-        train.add(new Train(name, infra, rollingStock, trainPath, initialSpeed));
-        return train;
+        Entity trainEntity = new Entity();
+        var train = new Train(name, infra, rollingStock, trainPath, initialSpeed);
+        train.controllers.add(new SpeedController() {
+            @Override
+            public Action getAction(Train train, double timeDelta) {
+                return Action.accelerate(
+                        train.rollingStock.mass / 2,
+                        false);
+            }
+        });
+        trainEntity.add(train);
+        return trainEntity;
     }
 
     private Action getAction(double timeDelta) {
