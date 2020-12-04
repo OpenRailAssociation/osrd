@@ -31,20 +31,22 @@ public class TrainPath  implements Freezable {
             this.pathStartOffset = pathStartOffset;
         }
 
-        //     FORWARD CASE
-        //
-        //                edgePathOffset
-        //              \ ======>
-        //   edge start  +------o---+  edge end
-        //                           \
-        //                            '-> train path
-        //
-        //     BACKWARD CASE
-        //
-        //            <,     edgePathOffset
-        //              \       <====
-        //   edge start  +------o---+  edge end
-        //                           \
+        /*
+         *     FORWARD CASE
+         *
+         *                edgePathOffset
+         *              \ ======>
+         *   edge start  +------o---+  edge end
+         *                           \
+         *                            '-> train path
+         *
+         *     BACKWARD CASE
+         *
+         *            <,     edgePathOffset
+         *              \       <====
+         *   edge start  +------o---+  edge end
+         *                           \
+         */
 
         /**
          * Creates a conversion function from path offsets to this edge's offsets.
@@ -54,12 +56,12 @@ public class TrainPath  implements Freezable {
             // position of the train inside the edge, without taking in account the direction
             if (direction == EdgeDirection.START_TO_STOP)
                 return (pathOffset) -> {
-                    // trackOffset = pathOffset - pathStartOffset
+                    // trackOffset = pathOffset - pathStartOffset <= TODO is this dead code ?
                     return pathOffset - pathStartOffset;
                 };
 
             return (pathOffset) -> {
-                // trackOffset = edge.length -pathOffset + pathStartOffset
+                // trackOffset = edge.length -pathOffset + pathStartOffset <= TODO is this dead code ?
                 var edgePathOffset = pathOffset - pathStartOffset;
                 return edge.length - edgePathOffset;
             };
@@ -129,7 +131,7 @@ public class TrainPath  implements Freezable {
     public void addEdge(TopoEdge edge, EdgeDirection direction) {
         double pathLength = 0.0;
         if (!edges.isEmpty()) {
-            var lastEdge = edges.get(edges.size() - 1);
+            var lastEdge = edges.last();
             pathLength = lastEdge.pathStartOffset + lastEdge.edge.length;
         }
         edges.add(new PathElement(edge, direction, pathLength));
@@ -140,6 +142,7 @@ public class TrainPath  implements Freezable {
         assert !frozen;
         edges.freeze();
         stops.freeze();
+        frozen = true;
     }
 
     @Override

@@ -16,7 +16,7 @@ class NetElement {
     final ArrayList<NetElement> children;
     final Map<String, Double> lrsDeltas;
 
-    /* constructor for netElement which contains elementCollectionUnordered */
+    /** constructor for netElement which contains elementCollectionUnordered */
     NetElement(Node netElement, Map<String, NetElement> netElementMap) {
         topoEdge = null;
         children = new ArrayList<>();
@@ -24,7 +24,7 @@ class NetElement {
         parseChildren(netElement, netElementMap);
     }
 
-    /* constructor for netElement which have a length but no elementCollectionUnordered */
+    /** constructor for netElement which have a length but no elementCollectionUnordered */
     NetElement(TopoEdge topoEdge, Node netElement) {
         this.topoEdge = topoEdge;
         children = null;

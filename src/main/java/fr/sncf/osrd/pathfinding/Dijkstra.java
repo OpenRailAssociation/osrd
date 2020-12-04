@@ -21,14 +21,15 @@ public class Dijkstra {
      * @param costFunction the cost function
      * @param pathConsumer the callback to consume the path
      */
-    public static <NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>>
-        void findPath(Graph<NodeT, EdgeT> graph,
-                      EdgeT start,
-                      double startPosition,
-                      EdgeT goal,
-                      double goalPosition,
-                      CostFunction<EdgeT> costFunction,
-                      BiConsumer<EdgeT, EdgeDirection> pathConsumer) {
+    public static <NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>> void findPath(
+            Graph<NodeT, EdgeT> graph,
+            EdgeT start,
+            double startPosition,
+            EdgeT goal,
+            double goalPosition,
+            CostFunction<EdgeT> costFunction,
+            BiConsumer<EdgeT, EdgeDirection> pathConsumer
+    ) {
         assert startPosition >= 0 && startPosition <= start.length;
         assert goalPosition >= 0 && goalPosition <= goal.length;
 
@@ -85,13 +86,14 @@ public class Dijkstra {
         throw new RuntimeException("couldn't find a path");
     }
 
-    private static <NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>>
-            void deducePath(Graph<NodeT, EdgeT> graph,
-                            HashMap<Integer, Tuple<Integer, Integer, EdgeDirection>> previousNode,
-                            EdgeT start,
-                            EdgeT goal,
-                            int goalNodeIndex,
-                            BiConsumer<EdgeT, EdgeDirection> pathConsumer) {
+    private static <NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>> void deducePath(
+            Graph<NodeT, EdgeT> graph,
+            HashMap<Integer, Tuple<Integer, Integer, EdgeDirection>> previousNode,
+            EdgeT start,
+            EdgeT goal,
+            int goalNodeIndex,
+            BiConsumer<EdgeT, EdgeDirection> pathConsumer
+    ) {
         var edges = new ArrayList<Pair<Integer, EdgeDirection>>();
         EdgeDirection goalDirection = EdgeDirection.START_TO_STOP;
         if (goal.endNode == goalNodeIndex)

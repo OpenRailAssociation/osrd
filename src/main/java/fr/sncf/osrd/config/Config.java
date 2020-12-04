@@ -22,5 +22,4 @@ public class Config {
         showViewer = jsonConfig.showViewer;
         simulationStepPause = jsonConfig.simulationStepPause;
     }
-
 }

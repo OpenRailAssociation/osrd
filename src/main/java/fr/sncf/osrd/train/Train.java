@@ -38,21 +38,16 @@ public class Train implements Component {
      * @param initialSpeed the initial speed the train will travel at
      * @return A new train entity
      */
-    public static Entity createTrain(String name,
-                                     Infra infra,
-                                     RollingStock rollingStock,
-                                     TrainPath trainPath,
-                                     double initialSpeed) {
+    public static Entity createTrain(
+            String name,
+            Infra infra,
+            RollingStock rollingStock,
+            TrainPath trainPath,
+            double initialSpeed
+    ) {
         Entity trainEntity = new Entity();
         var train = new Train(name, infra, rollingStock, trainPath, initialSpeed);
-        train.controllers.add(new SpeedController() {
-            @Override
-            public Action getAction(Train train, double timeDelta) {
-                return Action.accelerate(
-                        train.rollingStock.mass / 2,
-                        false);
-            }
-        });
+        train.controllers.add((_train, timeDelta) -> Action.accelerate(_train.rollingStock.mass / 2, false));
         trainEntity.add(train);
         return trainEntity;
     }
@@ -69,8 +64,9 @@ public class Train implements Component {
                 return updateEmergencyBreaking(timeDelta);
             case REACHED_DESTINATION:
                 return null;
+            default:
+                throw new RuntimeException("Invalid train state");
         }
-        throw new RuntimeException("Invalid train state");
     }
 
     private Action updateEmergencyBreaking(double timeDelta) {
@@ -103,6 +99,7 @@ public class Train implements Component {
         Action action = getAction(timeDelta);
         logger.debug("train took action {}", action);
         if (action == null) {
+            // TODO assert action != null
             speed = simulator.computeNewSpeed(0.0, 0.0);
         } else {
             speed = simulator.computeNewSpeed(action.tractionForce(), action.brakingForce());

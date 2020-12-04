@@ -1,16 +1,13 @@
 package fr.sncf.osrd.train;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.util.Indexable;
 import fr.sncf.osrd.util.PointSequence;
-
-
 
 /**
  * The immutable characteristics of a specific train.
  * There must be a RollingStock instance per train on the network.
  */
-public class RollingStock implements Indexable {
+public class RollingStock {
     /*
     These three coefficients are required for the train's physical simulation.
 
@@ -180,19 +177,5 @@ public class RollingStock implements Indexable {
 
         if (inertiaCoefficient <= 0)
             throw new InvalidInfraException("Invalid rolling stock inertia coefficient");
-    }
-
-    private int index = -1;
-
-    @Override
-    public void setIndex(int index) {
-        assert this.index == -1;
-        this.index = index;
-    }
-
-    @Override
-    public int getIndex() {
-        assert index != -1;
-        return index;
     }
 }
