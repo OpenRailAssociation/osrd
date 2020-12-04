@@ -56,7 +56,7 @@ public class TrainPhysics {
         // 40m / km slope?
         for (int i = 0; i < 10; i++) {
             var simulator = TrainPhysicsSimulator.make(1.0, rollingStock, speed,40);
-            speed = simulator.computeNewSpeed(0.0, 0.0);
+            speed = simulator.computeUpdate(0.0, 0.0).speed;
         }
 
         // we expect about -4m/s (the train goes backward)
@@ -71,7 +71,7 @@ public class TrainPhysics {
 
         // make a huge traction effort
         var simulator = TrainPhysicsSimulator.make(1.0, rollingStock, speed, 0.0);
-        speed = simulator.computeNewSpeed(500000.0, 0.0);
+        speed = simulator.computeUpdate(500000.0, 0.0).speed;
 
         assertTrue(speed > 0.5);
 
@@ -79,14 +79,14 @@ public class TrainPhysics {
         for (int i = 0; i < 60; i++) {
             simulator = TrainPhysicsSimulator.make(1.0, rollingStock, speed, 0.0);
             double prevSpeed = speed;
-            speed = simulator.computeNewSpeed(0.0, 0.0);
+            speed = simulator.computeUpdate(0.0, 0.0).speed;
             assertTrue(speed < prevSpeed && speed > 0.);
         }
 
         // another minute minutes later
         for (int i = 0; i < 60; i++) {
             simulator = TrainPhysicsSimulator.make(1.0, rollingStock, speed, 0.0);
-            speed = simulator.computeNewSpeed(0.0, 0.0);
+            speed = simulator.computeUpdate(0.0, 0.0).speed;
         }
 
         // it should be stopped
