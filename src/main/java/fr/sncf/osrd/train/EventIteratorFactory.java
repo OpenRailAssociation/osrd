@@ -6,7 +6,5 @@ import java.util.Iterator;
 
 @FunctionalInterface
 public interface EventIteratorFactory<EventT> {
-    Iterator<EventT> apply(
-            PathElement edge
-    );
+    Iterator<EventT> apply(PathElement edge);
 }

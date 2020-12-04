@@ -5,7 +5,6 @@ import fr.sncf.osrd.infra.graph.AbstractEdge;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.util.RangeSequence;
 
-
 /**
  * Block sections are an edge between two section signals.
  */

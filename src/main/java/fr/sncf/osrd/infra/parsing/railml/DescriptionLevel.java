@@ -1,7 +1,9 @@
 package fr.sncf.osrd.infra.parsing.railml;
 
 public enum DescriptionLevel {
-    MICRO, MESO, MACRO;
+    MICRO,
+    MESO,
+    MACRO;
 
     /**
      * Create a new DescriptionLevel from a RailML string enum

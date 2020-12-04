@@ -11,7 +11,7 @@ public class Action implements Comparable<Action> {
 
         public final int priority;
 
-        private ActionType(int priority) {
+        ActionType(int priority) {
             this.priority = priority;
         }
 

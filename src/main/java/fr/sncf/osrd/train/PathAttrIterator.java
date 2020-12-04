@@ -199,7 +199,7 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
             return iterator;
         };
 
-        var spliterator = new PathAttrIterator<PointValue<ValueT>>(
+        var spliterator = new PathAttrIterator<>(
                 path,
                 iterStartPathIndex,
                 iterStartPathOffset,

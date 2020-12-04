@@ -128,21 +128,23 @@ public class TrainPositionTracker {
             assert headEdgePosition >= 0.0;
         }
 
-        // remove edges off the tail as the train leaves those
-        //
-        //   removable           train
-        //                   ===========>
-        // +------------+-----------+---------+
-        //                   ^          ^
-        //                  tail        head
-        // \__________________________________/
-        //          total edges span
-        // \____________/\____________________/
-        //  tail edge len    next edges span
-        //               \______________/\____/
-        //          new available space     `head edge headroom
-        //
-        // continue while newAvailableSpace >= trainLength
+        /*
+         * remove edges off the tail as the train leaves those
+         *
+         *   removable           train
+         *                   ===========>
+         * +------------+-----------+---------+
+         *                   ^          ^
+         *                  tail        head
+         * \__________________________________/
+         *          total edges span
+         * \____________/\____________________/
+         *  tail edge len    next edges span
+         *               \______________/\____/
+         *          new available space     `head edge headroom
+         *
+         * continue while newAvailableSpace >= trainLength
+         */
 
         var headEdgeHeadroom = headPathEdge().edge.length - headEdgePosition;
         var totalEdgesSpan = currentPathEdges.stream().mapToDouble(pathEdge -> pathEdge.edge.length).sum();
