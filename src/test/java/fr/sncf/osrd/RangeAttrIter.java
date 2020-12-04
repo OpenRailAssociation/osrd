@@ -1,5 +1,7 @@
 package fr.sncf.osrd;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
@@ -13,8 +15,6 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class RangeAttrIter {
