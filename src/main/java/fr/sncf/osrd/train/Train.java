@@ -98,17 +98,20 @@ public class Train implements Component {
 
         Action action = getAction(timeDelta);
         logger.debug("train took action {}", action);
+        TrainPhysicsSimulator.PositionUpdate update;
         if (action == null) {
             // TODO assert action != null
-            speed = simulator.computeNewSpeed(0.0, 0.0);
+            update = simulator.computeUpdate(0.0, 0.0);
         } else {
-            speed = simulator.computeNewSpeed(action.tractionForce(), action.brakingForce());
+            update = simulator.computeUpdate(action.tractionForce(), action.brakingForce());
             if (action.type == Action.ActionType.EMERGENCY_BRAKING)
                 state = TrainState.EMERGENCY_BRAKING;
         }
 
-        logger.debug("new speed {}", speed);
-        positionTracker.updatePosition(speed, timeDelta);
+        logger.debug("speed changed from {} to {}", speed, update.speed);
+        speed = update.speed;
+
+        positionTracker.updatePosition(update.positionDelta);
     }
 
     @SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD")

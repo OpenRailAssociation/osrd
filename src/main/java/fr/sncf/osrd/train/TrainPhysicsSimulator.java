@@ -73,34 +73,19 @@ public class TrainPhysicsSimulator {
         return computeTotalForce(rollingResistance, actionTractionForce) / inertia;
     }
 
-    /**
-     * As the rolling resistance always goes against movement, it may not always entirely apply.
-     * This function computes what rolling resistance to use.
-     * @param speed the current speed
-     * @param rollingResistance the maximum rolling resistance
-     * @param actionTractionForce the action traction force
-     * @return the effective rolling resistance
-     */
-    private double computeEffectiveRollingResistance(
-            double speed,
-            double rollingResistance,
-            double actionTractionForce
-    ) {
-        // the rolling resistance is going opposite the current direction in the general case.
-        // is the speed is 0, then is all depends on what way the train is going without it
-        if (speed != 0.0)
-            return Math.copySign(rollingResistance, -speed);
+    public static class PositionUpdate {
+        public final double positionDelta;
+        public final double speed;
 
-        // compute the sum of forces acting on the train, without rolling resistance
-        var totalForce = computeTotalForce(0.0, actionTractionForce);
+        PositionUpdate(double positionDelta, double speed) {
+            this.positionDelta = positionDelta;
+            this.speed = speed;
+        }
+    }
 
-        // if the rolling resistance overcomes the sum of other forces, it perfectly balances
-        var totalForceAmplitude = Math.abs(totalForce);
-        if (rollingResistance > totalForceAmplitude)
-            rollingResistance = totalForceAmplitude;
-
-        // the rolling resistance goes against the other forces
-        return Math.copySign(rollingResistance, -totalForce);
+    private static double computePositionDelta(double currentSpeed, double acceleration, double timeStep) {
+        // dx = currentSpeed * dt + 1/2 * acceleration * dt * dt
+        return currentSpeed * timeStep * 0.5 * acceleration * timeStep * timeStep;
     }
 
     /**
@@ -109,20 +94,33 @@ public class TrainPhysicsSimulator {
      * @param actionBrakingForce the braking force indirectly applied by the driver
      * @return the new speed of the train
      */
-    public double computeNewSpeed(double actionTractionForce, double actionBrakingForce) {
+    public PositionUpdate computeUpdate(double actionTractionForce, double actionBrakingForce) {
         // the rolling resistance is the sum of forces that always go the direction
         // opposite to the train's movement
         assert actionBrakingForce >= 0.;
         var rollingResistance = precomputedRollingResistance + actionBrakingForce;
 
-        double effectiveRollingResistance = computeEffectiveRollingResistance(
-                currentSpeed, rollingResistance, actionTractionForce);
+        // as the rolling resistance is a reaction force, it needs to be adjusted to be opposed to the other forces
+        double effectiveRollingResistance;
+        if (currentSpeed == 0.0) {
+            var totalOtherForce = computeTotalForce(0.0, actionTractionForce);
+            // if the train is stopped and the rolling resistance is greater in amplitude than the other forces,
+            // the train won't move
+            if (Math.abs(totalOtherForce) < rollingResistance)
+                return new PositionUpdate(0.0, 0.0);
+            // if the sum of other forces isn't sufficient to keep the train still, the rolling resistance
+            // will be opposed to the movement direction (which is the direction of the other forces)
+            effectiveRollingResistance = Math.copySign(rollingResistance, -totalOtherForce);
+        } else {
+            // if the train is moving, the rolling resistance if opposed to the movement
+            effectiveRollingResistance = Math.copySign(rollingResistance, -currentSpeed);
+        }
 
         // general case: compute the acceleration and new position
+        // compute the acceleration on all the integration step. the variable is named this way because be
+        // compute the acceleration on only a part of the integration step below
         var fullStepAcceleration = computeAcceleration(effectiveRollingResistance, actionTractionForce);
         var newSpeed = currentSpeed + fullStepAcceleration * timeStep;
-
-        assert !Double.isNaN(newSpeed);
 
         // when the train changes direction, the rolling resistance doesn't apply
         // in the same direction for all the integration step.
@@ -130,17 +128,27 @@ public class TrainPhysicsSimulator {
         // general case: if the speed doesn't change sign, there's no need to
         // fixup the integration of the rolling resistance
         if (Math.signum(newSpeed) == Math.signum(currentSpeed))
-            return newSpeed;
+            return new PositionUpdate(computePositionDelta(currentSpeed, fullStepAcceleration, timeStep), newSpeed);
 
         // compute the integration step at which the speed is zero
-        double zeroStep = -currentSpeed / fullStepAcceleration;
+        // currentSpeed + signChangeTimeStep * fullStepAcceleration = 0
+        // or
+        // finalSpeed - currentSpeed = signChangeTimeStep * fullStepAcceleration, where finalSpeed = 0
+        double signChangeTimeStep = -currentSpeed / fullStepAcceleration;
 
-        var remainingStep = timeStep - zeroStep;
-        // we have to recompute the effective rolling resistance for a 0 speed
-        effectiveRollingResistance = computeEffectiveRollingResistance(
-                0.0, rollingResistance, actionTractionForce);
-        newSpeed = 0.0 + computeAcceleration(-effectiveRollingResistance, actionTractionForce) * remainingStep;
-        assert !Double.isNaN(newSpeed);
-        return newSpeed;
+        var remainingStep = timeStep - signChangeTimeStep;
+
+        // the integral of the speed up to the sign change
+        var signChangePositionDelta = computePositionDelta(currentSpeed, fullStepAcceleration, signChangeTimeStep);
+
+        var totalOtherForce = computeTotalForce(0.0, actionTractionForce);
+        if (Math.abs(totalOtherForce) <= rollingResistance)
+            return new PositionUpdate(signChangePositionDelta, 0.0);
+
+        effectiveRollingResistance = Math.copySign(rollingResistance, -totalOtherForce);
+        var remainingStepAcceleration = computeAcceleration(effectiveRollingResistance, actionTractionForce);
+        var remainingPositionDelta = computePositionDelta(0.0, remainingStepAcceleration, remainingStep);
+        newSpeed = 0.0 + remainingStepAcceleration * remainingStep;
+        return new PositionUpdate(signChangePositionDelta + remainingPositionDelta, newSpeed);
     }
 }

@@ -77,7 +77,7 @@ public class TrainPositionTracker {
         else
             headEdgePosition = firstSection.edge.length - path.startingPoint.position;
         assert headEdgePosition >= 0.0;
-        updatePosition(0, 0);
+        updatePosition(0);
     }
 
     private PathElement headPathEdge() {
@@ -95,13 +95,10 @@ public class TrainPositionTracker {
 
     /**
      * Updates the position of the train on the network
-     * @param speed The current speed of the train, in meters per second
-     * @param deltaTime The elapsed time, in seconds
+     * @param positionDelta How much the train moves by
      */
-    public void updatePosition(double speed, double deltaTime) {
-        assert !Double.isNaN(speed) && deltaTime >= 0.0;
-
-        headEdgePosition += speed * deltaTime;
+    public void updatePosition(double positionDelta) {
+        headEdgePosition += positionDelta;
         assert headEdgePosition >= 0.0;
 
         // add edges to the current edges queue as the train moves forward
