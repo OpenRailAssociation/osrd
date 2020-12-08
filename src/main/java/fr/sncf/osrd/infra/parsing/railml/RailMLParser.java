@@ -19,10 +19,11 @@ public class RailMLParser {
     private final String inputPath;
     private final Map<String, NetRelation> netRelationsMap = new HashMap<>();
     private final Map<String, NetElement> netElementMap = new HashMap<>();
-    /* a map from each end of each net element to a component */
-    private final Map<Pair<String, Boolean>, Integer> neComponents = new HashMap<>();
-    private int numberOfComponents = 0;
-    private final ArrayList<Integer> componentIndexes = new ArrayList<>();
+    /* a map from each end of each net element to a per edge end unique identifier */
+    private final Map<Pair<String, Boolean>, Integer> edgeEndpointIDs = new HashMap<>();
+    private int numberOfNodes = 0;
+    /* a map from edge endpoints ID to node ID*/
+    private final ArrayList<Integer> edgeEndpointToNode = new ArrayList<>();
     private final Map<String, DescriptionLevel> levels = new HashMap<>();
 
     public RailMLParser(String inputPath) {
@@ -44,12 +45,15 @@ public class RailMLParser {
         document.accept(new XmlNamespaceCleaner());
 
         parseNetworks(document);
+        // parse all net relations in the document
         parseNetRelations(document);
+        // deduce the nodes from net relations
         detectNodes();
 
         var infra = new Infra();
-        infra.topoGraph.resizeNodes(numberOfComponents);
+        infra.topoGraph.resizeNodes(numberOfNodes);
 
+        // create edges
         parseNetElements(document, infra);
 
         parseBufferStops(document, infra);
@@ -73,66 +77,28 @@ public class RailMLParser {
 
     private void detectNodes() {
         /* a parenthood map of connected components */
-        ArrayList<Integer> tmpComponents = new ArrayList<>();
+        var uf = new UnionFind();
         for (var netRelation : netRelationsMap.values()) {
             var keyA = new Pair<>(netRelation.elementA, netRelation.atZeroOnA);
             var keyB = new Pair<>(netRelation.elementB, netRelation.atZeroOnB);
-            int componentA = neComponents.getOrDefault(keyA, -1);
-            int componentB = neComponents.getOrDefault(keyB, -1);
-            if (componentA == -1 && componentB == -1) {
-                var newComponent = tmpComponents.size();
-                // -1 means no parent
-                tmpComponents.add(-1);
-                neComponents.put(keyA, newComponent);
-                neComponents.put(keyB, newComponent);
-            } else if (componentA == -1) {
-                neComponents.put(keyA, componentB);
-            } else if (componentB == -1) {
-                neComponents.put(keyB, componentA);
-            } else {
-                // go up the parenthood chain for both components
-                while (tmpComponents.get(componentA) != -1)
-                    componentA = tmpComponents.get(componentA);
-
-                while (tmpComponents.get(componentB) != -1)
-                    componentB = tmpComponents.get(componentB);
-
-                // merge the root components
-                if (componentB < componentA)
-                    tmpComponents.set(componentA, componentB);
-                else
-                    tmpComponents.set(componentB, componentA);
+            // get the group ID, or create one if none is found
+            int groupA = edgeEndpointIDs.getOrDefault(keyA, -1);
+            if (groupA == -1) {
+                groupA = uf.newGroup();
+                edgeEndpointIDs.put(keyA, groupA);
             }
-        }
 
-        // resolve the chain of merged components
-        for (int i = 0; i < tmpComponents.size(); i++) {
-            int rootComponent = i;
-            while (tmpComponents.get(rootComponent) != -1)
-                rootComponent = tmpComponents.get(rootComponent);
-            tmpComponents.set(i, rootComponent);
-        }
-
-        numberOfComponents = 0;
-        // assign unique identifier to connected components
-        for (int i = 0; i < tmpComponents.size(); i++) {
-            // if the component is a root, assign a number
-            if (tmpComponents.get(i) == i) {
-                componentIndexes.add(numberOfComponents);
-                numberOfComponents++;
-            } else {
-                componentIndexes.add(-1);
+            int groupB = edgeEndpointIDs.getOrDefault(keyB, -1);
+            if (groupB == -1) {
+                groupB = uf.newGroup();
+                edgeEndpointIDs.put(keyB, groupB);
             }
+
+            uf.union(groupA, groupB);
         }
 
-        // link the intermediate components to their root component
-        for (int i = 0; i < tmpComponents.size(); i++) {
-            var rootIndex = tmpComponents.get(i);
-            if (rootIndex == i)
-                continue;
-            var newRootIndex = componentIndexes.get(rootIndex);
-            componentIndexes.set(i, newRootIndex);
-        }
+        edgeEndpointToNode.clear();
+        numberOfNodes = uf.minimize(edgeEndpointToNode);
 
         // at this point:
         //  - numberOfComponents contains the number of connected components
@@ -163,15 +129,23 @@ public class RailMLParser {
     }
 
     private int getNodeIndex(String netElementId, boolean atZero, Infra infra) {
-        int index = neComponents.getOrDefault(new Pair<>(netElementId, atZero), -1);
+        var key = new Pair<>(netElementId, atZero);
+        int index = edgeEndpointIDs.getOrDefault(key, -1);
         if (index != -1)
-            return componentIndexes.get(index);
-        componentIndexes.add(numberOfComponents);
-        ++numberOfComponents;
-        infra.topoGraph.resizeNodes(numberOfComponents);
-        return componentIndexes.size() - 1;
+            return edgeEndpointToNode.get(index);
+
+        var newNodeId = numberOfNodes;
+        edgeEndpointIDs.put(key, edgeEndpointToNode.size());
+        edgeEndpointToNode.add(newNodeId);
+        ++numberOfNodes;
+        infra.topoGraph.resizeNodes(numberOfNodes);
+        return newNodeId;
     }
 
+    /**
+     * Parse pieces of tracks, linking those to nodes.
+     * Nodes were detected using a connected component algorithm.
+     */
     private void parseNetElements(Document document, Infra infra) {
         var xpath = "/railML/infrastructure/topology/netElements/netElement";
         var netElements = document.selectNodes(xpath);
