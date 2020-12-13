@@ -1,14 +1,13 @@
 package fr.sncf.osrd.simulation;
 
-import static fr.sncf.osrd.simulation.Event.State.*;
-import static fr.sncf.osrd.simulation.AbstractProcess.State.*;
+import static fr.sncf.osrd.simulation.AbstractEvent.EventState;
+import static fr.sncf.osrd.simulation.AbstractProcess.ProcessState;
 
 import fr.sncf.osrd.App;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * <h1>A Discrete Event Simulation.</h1>
@@ -43,7 +42,7 @@ import java.util.function.Consumer;
  *
  * <b>An event can only be safely waited on once</b>
  */
-public class Simulation<EventValueT> {
+public class Simulation<BaseT> {
     static final Logger logger = LoggerFactory.getLogger(App.class);
 
     public Simulation(double time) {
@@ -62,27 +61,24 @@ public class Simulation<EventValueT> {
     long revision = 0;
 
     // the list of events pending execution
-    private final SortedSet<Event<EventValueT>> scheduledEvents = new TreeSet<>();
+    private final SortedSet<AbstractEvent<? extends BaseT, BaseT>> scheduledEvents = new TreeSet<>();
 
     // the list of all processes that are ready to execute
-    private final ArrayDeque<Process<EventValueT>> pendingProcesses = new ArrayDeque<>();
+    private final ArrayDeque<Process<BaseT>> pendingProcesses = new ArrayDeque<>();
 
-    // a pool of unused events that can be recycled
-    private final ArrayDeque<Event<EventValueT>> recycledEvents = new ArrayDeque<>();
-
-    private void executePendingProcesses() throws SimulationError {
+    private void executePendingProcesses(AbstractEvent<? extends BaseT, BaseT> event) throws SimulationError {
         while (!pendingProcesses.isEmpty()) {
             var process = pendingProcesses.removeFirst();
 
-            if (process.state != EXECUTION_PENDING)
+            if (process.state != ProcessState.EXECUTION_PENDING)
                 throw new SimulationError("A process in the pending queue has an invalid state");
 
-            process.state = EXECUTING;
+            process.state = ProcessState.EXECUTING;
             do
-                process.state = process.react(this);
-            while (process.state == EXECUTING);
+                process.state = process.react(this, event);
+            while (process.state == ProcessState.EXECUTING);
 
-            if (process.state == EXECUTION_PENDING)
+            if (process.state == ProcessState.EXECUTION_PENDING)
                 pendingProcesses.addLast(process);
         }
     }
@@ -94,51 +90,21 @@ public class Simulation<EventValueT> {
     }
 
     /**
-     * Plans an event to be scheduled at a given time, with a given value.
+     * registers an event for scheduling.
      * @param event the event to schedule on the timeline
-     * @param scheduledTime the time to schedule the event at
-     * @param value the value associated with the event
      * @throws SimulationError If a logic error occurs
      */
-    public void schedule(Event<EventValueT> event, double scheduledTime, EventValueT value) throws SimulationError {
-        switch (event.state) {
-            case HAPPENED:
-            case HAPPENING:
-                throw new SimulationError("an event can only be scheduled if it is unplanned");
-            case SCHEDULED:
-                scheduledEvents.remove(event);
-                break;
-            case UNPLANNED:
-                break;
-        }
-        event.schedule(scheduledTime, nextRevision());
+    public <T extends BaseT> void registerEvent(AbstractEvent<T, BaseT> event) throws SimulationError {
+        if (event.state != EventState.UNINITIALIZED)
+            throw new SimulationError("only uninitialized events can be scheduled");
+
         scheduledEvents.add(event);
-        event.state = SCHEDULED;
-        if (value != null)
-            event.value = value;
-
-        if (event.value == null)
-            throw new SimulationError("scheduled an event without a value");
+        event.state = EventState.SCHEDULED;
     }
 
-    public void scheduleNow(Event<EventValueT> event, EventValueT value) throws SimulationError {
-        schedule(event, this.time, value);
-    }
-
-    public void scheduleTimeout(Event<EventValueT> event, double timeDelta, EventValueT value) throws SimulationError {
-        schedule(event, this.time + timeDelta, value);
-    }
-
-    /**
-     * Creates an event that will happen at the current simulation time + timeDelta
-     * @param timeDelta the time to wait for
-     * @return the requested timer
-     * @throws SimulationError when a logic error occurs
-     */
-    public Event<EventValueT> timer(double timeDelta, EventValueT value) throws SimulationError {
-        var timeoutEvent = newSingleUseEvent();
-        scheduleTimeout(timeoutEvent, timeDelta, value);
-        return timeoutEvent;
+    public <T extends BaseT> void event(EventSource<T, BaseT> source, double scheduledTime, T value) throws SimulationError {
+        var event = new Event<>(scheduledTime, nextRevision(), value, source);
+        registerEvent(event);
     }
 
     /**
@@ -147,31 +113,11 @@ public class Simulation<EventValueT> {
      * @param event the event to cancel
      * @throws SimulationError when the event isn't scheduled
      */
-    public void cancel(Event<EventValueT> event) throws SimulationError {
-        if (event.state != SCHEDULED)
+    public void cancel(Event<? extends BaseT, BaseT> event) throws SimulationError {
+        if (event.state != EventState.SCHEDULED)
             throw new SimulationError("only scheduled events can be cancelled");
         scheduledEvents.remove(event);
-        signalEventStateChange(CANCELLED, event);
-        recycle(event);
-    }
-
-    /**
-     * Creates a new single use event
-     * @return a new single use event
-     */
-    public Event<EventValueT> newSingleUseEvent() {
-        if (recycledEvents.isEmpty())
-            return new Event<>(Event.EventType.SINGLE_USE, nextRevision());
-
-        return recycledEvents.removeFirst();
-    }
-
-    /**
-     * Creates a new multi use event
-     * @return a new multi use event
-     */
-    public Event<EventValueT> newMultiUseEvent() {
-        return new Event<>(Event.EventType.MULTI_USE, nextRevision());
+        signalEventStateChange(EventState.CANCELLED, event);
     }
 
     public boolean isSimulationOver() {
@@ -184,7 +130,7 @@ public class Simulation<EventValueT> {
      * @return the initialized process
      * @throws SimulationError when a logic error occurs
      */
-    public Process<EventValueT> registerProcess(Process<EventValueT> process) throws SimulationError {
+    public Process<BaseT> registerProcess(Process<BaseT> process) throws SimulationError {
         // for now, there is no explicit list of all processes in the simulation, simply because it's not needed.
         // however, the API makes it mandatory for processes to register themselves, to allow changing the internals
         // later on.
@@ -198,12 +144,12 @@ public class Simulation<EventValueT> {
      * @param event the event that changed state
      * @throws SimulationError when a logic error occurs
      */
-    private void signalEventStateChange(Event.State newEventState, Event<EventValueT> event) throws SimulationError {
+    private void signalEventStateChange(EventState newEventState, AbstractEvent<? extends BaseT, BaseT> event) throws SimulationError {
         event.state = newEventState;
 
         // send a signal to all the processes waiting for the event, and clear the waiting list
-        for (var process : event.waitingProcesses) {
-            assert process.state == WAITING;
+        for (var process : event.getDependantProcesses()) {
+            assert process.state == ProcessState.WAITING;
 
             // tell the process one of its dependencies has changed state
             var processDecision = process.eventStateChange(event, newEventState);
@@ -214,38 +160,21 @@ public class Simulation<EventValueT> {
                     break;
                 case SCHEDULE_PROCESS:
                     pendingProcesses.addLast(process);
-                    assert process.state == WAITING;
-                    process.state = EXECUTION_PENDING;
+                    assert process.state == ProcessState.WAITING;
+                    process.state = ProcessState.EXECUTION_PENDING;
                     break;
             }
         }
 
-        event.waitingProcesses.clear();
-
         // if some processes were woken up by the event, execute these
-        executePendingProcesses();
-    }
-
-    private void recycle(Event<EventValueT> event) {
-        // single use events can be repurposed after completion,
-        // whereas multi use events can trigger again
-        switch (event.type) {
-            case SINGLE_USE:
-                event.recycle();
-                recycledEvents.addFirst(event);
-                break;
-            case MULTI_USE:
-                event.state = UNPLANNED;
-                break;
-        }
+        executePendingProcesses(event);
     }
 
     /**
      * Runs the simulation until nothing moves
      * @throws SimulationError when something isn't quite right about the simulation logic
      */
-    public EventValueT step() throws SimulationError {
-        executePendingProcesses();
+    public BaseT step() throws SimulationError {
         // get the next event in the timeline
         var event = scheduledEvents.first();
         scheduledEvents.remove(event);
@@ -258,11 +187,10 @@ public class Simulation<EventValueT> {
 
         final var eventValue = event.value;
         // signal the processes waiting on the event
-        assert event.state == SCHEDULED;
-        signalEventStateChange(HAPPENING, event);
+        assert event.state == EventState.SCHEDULED;
+        signalEventStateChange(EventState.HAPPENING, event);
 
-        event.state = HAPPENED;
-        recycle(event);
+        event.state = EventState.HAPPENED;
         return eventValue;
     }
 }
