@@ -1,14 +1,14 @@
-package fr.sncf.osrd.simulation;
+package fr.sncf.osrd.simulation.core;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Objects;
 
 public abstract class AbstractEvent<T extends BaseT, BaseT> implements Comparable<AbstractEvent<?, ?>> {
-    abstract void updateState(Simulation<BaseT> sim, EventState state) throws SimulationError;
+    public abstract void updateState(Simulation<BaseT> sim, EventState state) throws SimulationError;
 
     public enum EventState {
         // the event wasn't registered with the simulation
-        UNINITIALIZED(0),
+        UNREGISTERED(0),
 
         // the event hasn't happened yet, as its planned time is behind the simulation clock
         SCHEDULED(1),
@@ -20,7 +20,7 @@ public abstract class AbstractEvent<T extends BaseT, BaseT> implements Comparabl
         ;
 
         static {
-            UNINITIALIZED.validTransitions = new EventState[]{ EventState.SCHEDULED };
+            UNREGISTERED.validTransitions = new EventState[]{ EventState.SCHEDULED };
             SCHEDULED.validTransitions = new EventState[]{ EventState.CANCELLED, EventState.HAPPENED };
             CANCELLED.validTransitions = new EventState[]{ };
             HAPPENED.validTransitions = new EventState[]{ };
@@ -29,19 +29,24 @@ public abstract class AbstractEvent<T extends BaseT, BaseT> implements Comparabl
         public final int id;
         private EventState[] validTransitions;
 
-        private EventState(int id) {
+        EventState(int id) {
             this.id = id;
             this.validTransitions = null;
         }
 
-        boolean hasTransitionTo(EventState newState) {
+        /**
+         * Checks whether a state transition is valid.
+         * @param newState the target state
+         * @return whether the transition is valid
+         */
+        public boolean hasTransitionTo(EventState newState) {
             for (EventState validTransition : validTransitions)
                 if (validTransition == newState)
                     return true;
             return false;
         }
 
-        boolean isFinalState() {
+        public boolean isFinalState() {
             return validTransitions.length == 0;
         }
     }
@@ -62,11 +67,19 @@ public abstract class AbstractEvent<T extends BaseT, BaseT> implements Comparabl
     // this is needed to enforce an absolute event order
     final long revision;
 
-    AbstractEvent(double scheduledTime, long revision, T value) {
-        this.state = EventState.UNINITIALIZED;
+    /**
+     * Creates a new event
+     * @param sim the simulation the event belongs to
+     * @param scheduledTime the time at will the event is planned to happen
+     * @param value the value associated with the event
+     * @throws SimulationError if a logic error occurs
+     */
+    public AbstractEvent(Simulation<BaseT> sim, double scheduledTime, T value) throws SimulationError {
+        this.state = EventState.UNREGISTERED;
         this.scheduledTime = scheduledTime;
-        this.revision = revision;
+        this.revision = sim.nextRevision();
         this.value = value;
+        sim.registerEvent(this);
     }
 
     @Override

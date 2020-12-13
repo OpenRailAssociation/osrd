@@ -1,8 +1,7 @@
-package fr.sncf.osrd.simulation;
+package fr.sncf.osrd.simulation.core;
 
-import static fr.sncf.osrd.simulation.AbstractEvent.EventState;
+import static fr.sncf.osrd.simulation.core.AbstractEvent.EventState;
 
-import fr.sncf.osrd.App;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,36 +12,24 @@ import java.util.*;
  *
  * <p>Life cycle of an event:</p>
  * <ol>
- *   <li>starts out as SCHEDULED or UNPLANNED</li>
- *   <li>if the event is UNPLANNED, nothing happens until it switches to SCHEDULED by
- *       getting a planned execution time</li>
- *   <li>once its time comes, it switches to happening</li>
- *   <li>processes waiting on this event are signaled <b>and</b>
- *      the list of processes waiting for this event is wiped clean</li>
- *   <li>the event can be recycled to PENDING, with a new time and list of waiting processes</li>
+ *   <li>starts out as UNREGISTERED</li>
+ *   <li>switches to SCHEDULED when it's registered with the simulation</li>
+ *   <li>the event may be CANCELED at this point</li>
+ *   <li>once its time comes, it switches to HAPPENED</li>
  * </ol>
  *
- * <p>Life cycle of a process:</p>
- * <ol>
- *   <li>starts out in either the WAITING or EXECUTION_PENDING state</li>
- *   <li>if the process is WAITING for events to terminate, nothing happens until is switches to
- *       the EXECUTION_PENDING state by getting signaled by all required events</li>
- *   <li>the process is executed, and changes state to either WAITING, EXECUTION_PENDING, or FINISHED</li>
- *   <li>when the process if FINISHED, its completion event is scheduled for the current time</li>
- * </ol>
+ * <p>State changes are the responsibility of the event. When an event changes state, it will probably
+ * notify some listeners.</p>
  *
  * <p>Life cycle of the simulation:</p>
  * <ol>
- *   <li>while there are processes in the EXECUTION_PENDING state, execute those</li>
- *   <li>if there are no more EXECUTION_PENDING processes nor SCHEDULED events, the simulation is over</li>
+ *   <li>If there are no more SCHEDULED events, the simulation is over</li>
  *   <li>execute the next event in the schedule, moving the simulation time forward to the time of the event</li>
  *   <li>loop</li>
  * </ol>
- *
- * <b>An event can only be safely waited on once</b>
  */
 public class Simulation<BaseT> {
-    static final Logger logger = LoggerFactory.getLogger(App.class);
+    static final Logger logger = LoggerFactory.getLogger(Simulation.class);
 
     public Simulation(double time) {
         this.time = time;
@@ -62,7 +49,7 @@ public class Simulation<BaseT> {
     // the number of event that were scheduled. it is used to associate a unique number to events
     long revision = 0;
 
-    private long nextRevision() {
+    long nextRevision() {
         var res = revision;
         revision++;
         return res;
@@ -74,21 +61,13 @@ public class Simulation<BaseT> {
      * @throws SimulationError If a logic error occurs
      */
     public <T extends BaseT> void registerEvent(AbstractEvent<T, BaseT> event) throws SimulationError {
-        if (event.state != EventState.UNINITIALIZED)
+        if (event.state != EventState.UNREGISTERED)
             throw new SimulationError("only uninitialized events can be scheduled");
 
         event.updateState(this, EventState.SCHEDULED);
         scheduledEvents.add(event);
     }
 
-    public <T extends BaseT> void event(
-            EventSource<T, BaseT> source,
-            double scheduledTime,
-            T value
-    ) throws SimulationError {
-        var event = new Event<>(scheduledTime, nextRevision(), value, source);
-        registerEvent(event);
-    }
 
     /**
      * Remove a planned event from the timeline.

@@ -4,7 +4,9 @@ import static fr.sncf.osrd.SignalSimulationTest.Signal.Aspect.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.simulation.*;
-import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.core.AbstractEvent;
+import fr.sncf.osrd.simulation.core.Simulation;
+import fr.sncf.osrd.simulation.core.SimulationError;
 import org.junit.jupiter.api.Test;
 
 import java.util.Objects;
@@ -70,7 +72,7 @@ public class SignalSimulationTest {
         public void setAspect(Simulation<SignalSimulationEvent> sim, Aspect newAspect) throws SimulationError {
             if (newAspect == aspect)
                 return;
-            sim.event(aspectChanged, sim.getTime(), new SignalChangeEvent(this, newAspect));
+            aspectChanged.event(sim, sim.getTime(), new SignalChangeEvent(this, newAspect));
         }
 
         private void masterAspectChanged(

@@ -1,4 +1,4 @@
-package fr.sncf.osrd.simulation;
+package fr.sncf.osrd.simulation.core;
 
 
 public class SimulationError extends Exception {
