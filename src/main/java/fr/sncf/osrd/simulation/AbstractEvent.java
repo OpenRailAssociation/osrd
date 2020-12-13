@@ -5,6 +5,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Objects;
 
 public abstract class AbstractEvent<T extends BaseT, BaseT> implements Comparable<AbstractEvent<?, ?>> {
+    public abstract void updateState(Simulation<BaseT> sim, EventState state) throws SimulationError;
+
     public enum EventState {
         // the event wasn't registered with the simulation
         UNINITIALIZED,
@@ -25,12 +27,10 @@ public abstract class AbstractEvent<T extends BaseT, BaseT> implements Comparabl
         }
     }
 
-    abstract Iterable<Process<BaseT>> getDependantProcesses();
-
     EventState state;
 
     // some value associated with the event
-    final T value;
+    public final T value;
 
     // the simulation time the event is planned to execute at
     final double scheduledTime;

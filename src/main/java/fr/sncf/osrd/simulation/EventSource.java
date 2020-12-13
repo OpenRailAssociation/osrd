@@ -1,13 +1,12 @@
 package fr.sncf.osrd.simulation;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 
 public class EventSource<T extends BaseT, BaseT> {
-    ArrayList<Process<BaseT>> waitingProcesses = new ArrayList<>();
+    ArrayList<EventSink<T, BaseT>> subscribers = new ArrayList<>();
 
-    public void subscribe(Process<BaseT> proc) {
-        assert !waitingProcesses.contains(proc);
-        waitingProcesses.add(proc);
+    public void subscribe(EventSink<T, BaseT> sink) {
+        assert !subscribers.contains(sink);
+        subscribers.add(sink);
     }
 }

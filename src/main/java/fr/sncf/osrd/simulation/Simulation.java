@@ -1,7 +1,6 @@
 package fr.sncf.osrd.simulation;
 
 import static fr.sncf.osrd.simulation.AbstractEvent.EventState;
-import static fr.sncf.osrd.simulation.AbstractProcess.ProcessState;
 
 import fr.sncf.osrd.App;
 import org.slf4j.Logger;
@@ -63,26 +62,6 @@ public class Simulation<BaseT> {
     // the list of events pending execution
     private final SortedSet<AbstractEvent<? extends BaseT, BaseT>> scheduledEvents = new TreeSet<>();
 
-    // the list of all processes that are ready to execute
-    private final ArrayDeque<Process<BaseT>> pendingProcesses = new ArrayDeque<>();
-
-    private void executePendingProcesses(AbstractEvent<? extends BaseT, BaseT> event) throws SimulationError {
-        while (!pendingProcesses.isEmpty()) {
-            var process = pendingProcesses.removeFirst();
-
-            if (process.state != ProcessState.EXECUTION_PENDING)
-                throw new SimulationError("A process in the pending queue has an invalid state");
-
-            process.state = ProcessState.EXECUTING;
-            do
-                process.state = process.react(this, event);
-            while (process.state == ProcessState.EXECUTING);
-
-            if (process.state == ProcessState.EXECUTION_PENDING)
-                pendingProcesses.addLast(process);
-        }
-    }
-
     private long nextRevision() {
         var res = revision;
         revision++;
@@ -98,11 +77,15 @@ public class Simulation<BaseT> {
         if (event.state != EventState.UNINITIALIZED)
             throw new SimulationError("only uninitialized events can be scheduled");
 
-        scheduledEvents.add(event);
         event.state = EventState.SCHEDULED;
+        scheduledEvents.add(event);
     }
 
-    public <T extends BaseT> void event(EventSource<T, BaseT> source, double scheduledTime, T value) throws SimulationError {
+    public <T extends BaseT> void event(
+            EventSource<T, BaseT> source,
+            double scheduledTime,
+            T value
+    ) throws SimulationError {
         var event = new Event<>(scheduledTime, nextRevision(), value, source);
         registerEvent(event);
     }
@@ -121,21 +104,7 @@ public class Simulation<BaseT> {
     }
 
     public boolean isSimulationOver() {
-        return pendingProcesses.isEmpty() && scheduledEvents.isEmpty();
-    }
-
-    /**
-     * Registers and initializes a process with the simulation.
-     * @param process the process to initialize
-     * @return the initialized process
-     * @throws SimulationError when a logic error occurs
-     */
-    public Process<BaseT> registerProcess(Process<BaseT> process) throws SimulationError {
-        // for now, there is no explicit list of all processes in the simulation, simply because it's not needed.
-        // however, the API makes it mandatory for processes to register themselves, to allow changing the internals
-        // later on.
-        process.state = process.init(this);
-        return process;
+        return scheduledEvents.isEmpty();
     }
 
     /**
@@ -144,30 +113,12 @@ public class Simulation<BaseT> {
      * @param event the event that changed state
      * @throws SimulationError when a logic error occurs
      */
-    private void signalEventStateChange(EventState newEventState, AbstractEvent<? extends BaseT, BaseT> event) throws SimulationError {
-        event.state = newEventState;
-
-        // send a signal to all the processes waiting for the event, and clear the waiting list
-        for (var process : event.getDependantProcesses()) {
-            assert process.state == ProcessState.WAITING;
-
-            // tell the process one of its dependencies has changed state
-            var processDecision = process.eventStateChange(event, newEventState);
-
-            // if the process asked to get scheduled, add it to the wait list
-            switch (processDecision) {
-                case KEEP_WAITING:
-                    break;
-                case SCHEDULE_PROCESS:
-                    pendingProcesses.addLast(process);
-                    assert process.state == ProcessState.WAITING;
-                    process.state = ProcessState.EXECUTION_PENDING;
-                    break;
-            }
-        }
-
-        // if some processes were woken up by the event, execute these
-        executePendingProcesses(event);
+    private void signalEventStateChange(
+            EventState newEventState,
+            AbstractEvent<? extends BaseT, BaseT> event
+    ) throws SimulationError {
+        event.updateState(this, newEventState);
+        assert event.state == newEventState;
     }
 
     /**
