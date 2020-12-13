@@ -1,9 +1,12 @@
 package fr.sncf.osrd;
 
+import static fr.sncf.osrd.SignalSimulationTest.Signal.Aspect.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.simulation.core.AbstractEvent;
 import fr.sncf.osrd.simulation.core.Simulation;
 import fr.sncf.osrd.simulation.core.SimulationError;
 import org.junit.jupiter.api.Test;
@@ -52,5 +55,25 @@ public class SimulationTest {
         assertEquals("d_response", sim.step());
         assertEquals(sim.getTime(), 4.5, 0.0);
         assertTrue(sim.isSimulationOver());
+    }
+
+    public static class SinkClass {
+        public void testSink(
+                Simulation<Object> sim,
+                Event<String, Object> event,
+                AbstractEvent.EventState state
+        ) {
+        }
+    }
+
+    @Test
+    public void testMethodSourceUnregister() throws SimulationError {
+        var source = new EventSource<String, Object>();
+        var sinkClass = new SinkClass();
+        EventSink<String, Object> sink = sinkClass::testSink;
+        source.subscribe(sink);
+        assertEquals(1, source.subscribers.size());
+        source.unsubscribe(sink);
+        assertEquals(0, source.subscribers.size());
     }
 }

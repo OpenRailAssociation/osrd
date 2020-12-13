@@ -56,11 +56,13 @@ public class SignalSimulationTest {
         }
 
         EventSource<SignalChangeEvent, SignalSimulationEvent> aspectChanged = new EventSource<>();
+        EventSink<SignalChangeEvent, SignalSimulationEvent> masterAspectChangedSink;
 
         Signal(Aspect aspect, Signal master) {
             this.aspect = aspect;
+            masterAspectChangedSink = this::masterAspectChanged;
             if (master != null)
-                master.aspectChanged.subscribe(this::masterAspectChanged);
+                master.aspectChanged.subscribe(masterAspectChangedSink);
         }
 
         /**
@@ -101,6 +103,12 @@ public class SignalSimulationTest {
         assertFalse(sim.isSimulationOver());
         assertEquals(new SignalChangeEvent(masterSignal, RED), sim.step());
         assertEquals(new SignalChangeEvent(slaveSignal, YELLOW), sim.step());
+        assertTrue(sim.isSimulationOver());
+
+        // we must be able to unsubscribe sinks
+        masterSignal.aspectChanged.unsubscribe(slaveSignal.masterAspectChangedSink);
+        masterSignal.setAspect(sim, YELLOW);
+        assertEquals(new SignalChangeEvent(masterSignal, YELLOW), sim.step());
         assertTrue(sim.isSimulationOver());
     }
 }

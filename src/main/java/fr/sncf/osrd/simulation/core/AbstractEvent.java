@@ -3,6 +3,11 @@ package fr.sncf.osrd.simulation.core;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Objects;
 
+/**
+ * A base event type. Derived types implement updateState to notify some other components about changes.
+ * @param <T> the type of the value
+ * @param <BaseT> the base type for all values in the simulation
+ */
 public abstract class AbstractEvent<T extends BaseT, BaseT> implements Comparable<AbstractEvent<?, ?>> {
     public abstract void updateState(Simulation<BaseT> sim, EventState state) throws SimulationError;
 
@@ -72,7 +77,7 @@ public abstract class AbstractEvent<T extends BaseT, BaseT> implements Comparabl
      * @param sim the simulation the event belongs to
      * @param scheduledTime the time at will the event is planned to happen
      * @param value the value associated with the event
-     * @throws SimulationError if a logic error occurs
+     * @throws SimulationError {@inheritDoc}
      */
     public AbstractEvent(Simulation<BaseT> sim, double scheduledTime, T value) throws SimulationError {
         this.state = EventState.UNREGISTERED;
