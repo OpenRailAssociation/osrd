@@ -10,7 +10,10 @@ public final class Event<T extends BaseT, BaseT> extends AbstractEvent<T, BaseT>
     }
 
     @Override
-    Iterable<Process<BaseT>> getDependantProcesses() {
-        return source.waitingProcesses;
+    public void updateState(Simulation<BaseT> sim, EventState state) throws SimulationError {
+        this.state = state;
+        for (var sink : source.subscribers) {
+            sink.feed(sim, this, state);
+        }
     }
 }
