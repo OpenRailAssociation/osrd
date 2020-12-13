@@ -56,11 +56,11 @@ public class Simulation<BaseT> {
         return time;
     }
 
-    // the generation is the number of event that were scheduled
-    long revision = 0;
-
     // the list of events pending execution
     private final SortedSet<AbstractEvent<? extends BaseT, BaseT>> scheduledEvents = new TreeSet<>();
+
+    // the number of event that were scheduled. it is used to associate a unique number to events
+    long revision = 0;
 
     private long nextRevision() {
         var res = revision;
@@ -96,29 +96,15 @@ public class Simulation<BaseT> {
      * @param event the event to cancel
      * @throws SimulationError when the event isn't scheduled
      */
-    public void cancel(Event<? extends BaseT, BaseT> event) throws SimulationError {
+    public void cancel(AbstractEvent<? extends BaseT, BaseT> event) throws SimulationError {
         if (event.state != EventState.SCHEDULED)
             throw new SimulationError("only scheduled events can be cancelled");
         scheduledEvents.remove(event);
-        eventUpdateState(EventState.CANCELLED, event);
+        event.updateState(this, EventState.CANCELLED);
     }
 
     public boolean isSimulationOver() {
         return scheduledEvents.isEmpty();
-    }
-
-    /**
-     * Sends a signal to processes waiting on an event, and clears the list of processes waiting on the event.
-     * @param newEventState the new state of the event
-     * @param event the event that changed state
-     * @throws SimulationError when a logic error occurs
-     */
-    private void eventUpdateState(
-            EventState newEventState,
-            AbstractEvent<? extends BaseT, BaseT> event
-    ) throws SimulationError {
-        event.updateState(this, newEventState);
-        assert event.state == newEventState;
     }
 
     /**
@@ -137,7 +123,7 @@ public class Simulation<BaseT> {
         time = event.scheduledTime;
 
         final var eventValue = event.value;
-        eventUpdateState(EventState.HAPPENED, event);
+        event.updateState(this, EventState.HAPPENED);
         return eventValue;
     }
 }
