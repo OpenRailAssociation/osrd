@@ -47,7 +47,7 @@ public class SignalSimulationTest {
             GREEN,
         }
 
-        private Aspect aspect = GREEN;
+        private Aspect aspect;
 
         public Aspect getAspect() {
             return aspect;
@@ -55,7 +55,8 @@ public class SignalSimulationTest {
 
         EventSource<SignalChangeEvent, SignalSimulationEvent> aspectChanged = new EventSource<>();
 
-        Signal(Signal master) {
+        Signal(Aspect aspect, Signal master) {
+            this.aspect = aspect;
             if (master != null)
                 master.aspectChanged.subscribe(this::masterAspectChanged);
         }
@@ -91,8 +92,8 @@ public class SignalSimulationTest {
     @Test
     public void testSignaling() throws SimulationError {
         var sim = new Simulation<SignalSimulationEvent>(0.0);
-        final var masterSignal = new Signal(null);
-        final var slaveSignal = new Signal(masterSignal);
+        final var masterSignal = new Signal(GREEN, null);
+        final var slaveSignal = new Signal(GREEN, masterSignal);
         masterSignal.setAspect(sim, RED);
 
         assertFalse(sim.isSimulationOver());
