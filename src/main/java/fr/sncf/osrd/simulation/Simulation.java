@@ -77,7 +77,7 @@ public class Simulation<BaseT> {
         if (event.state != EventState.UNINITIALIZED)
             throw new SimulationError("only uninitialized events can be scheduled");
 
-        event.state = EventState.SCHEDULED;
+        event.updateState(this, EventState.SCHEDULED);
         scheduledEvents.add(event);
     }
 
@@ -100,7 +100,7 @@ public class Simulation<BaseT> {
         if (event.state != EventState.SCHEDULED)
             throw new SimulationError("only scheduled events can be cancelled");
         scheduledEvents.remove(event);
-        signalEventStateChange(EventState.CANCELLED, event);
+        eventUpdateState(EventState.CANCELLED, event);
     }
 
     public boolean isSimulationOver() {
@@ -113,7 +113,7 @@ public class Simulation<BaseT> {
      * @param event the event that changed state
      * @throws SimulationError when a logic error occurs
      */
-    private void signalEventStateChange(
+    private void eventUpdateState(
             EventState newEventState,
             AbstractEvent<? extends BaseT, BaseT> event
     ) throws SimulationError {
@@ -137,11 +137,7 @@ public class Simulation<BaseT> {
         time = event.scheduledTime;
 
         final var eventValue = event.value;
-        // signal the processes waiting on the event
-        assert event.state == EventState.SCHEDULED;
-        signalEventStateChange(EventState.HAPPENING, event);
-
-        event.state = EventState.HAPPENED;
+        eventUpdateState(EventState.HAPPENED, event);
         return eventValue;
     }
 }

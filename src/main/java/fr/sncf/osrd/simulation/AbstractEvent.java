@@ -1,33 +1,56 @@
 package fr.sncf.osrd.simulation;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import java.util.Objects;
 
 public abstract class AbstractEvent<T extends BaseT, BaseT> implements Comparable<AbstractEvent<?, ?>> {
-    public abstract void updateState(Simulation<BaseT> sim, EventState state) throws SimulationError;
+    abstract void updateState(Simulation<BaseT> sim, EventState state) throws SimulationError;
 
     public enum EventState {
         // the event wasn't registered with the simulation
-        UNINITIALIZED,
+        UNINITIALIZED(0),
 
         // the event hasn't happened yet, as its planned time is behind the simulation clock
-        SCHEDULED,
-        // the event is currently happening
-        HAPPENING,
+        SCHEDULED(1),
 
         // the event got cancelled before it happened
-        CANCELLED,
-        // the event has happened, and can be recycled
-        HAPPENED,
+        CANCELLED(2),
+        // the event has happened
+        HAPPENED(3),
         ;
 
-        boolean completed() {
-            return this == CANCELLED || this == HAPPENED;
+        static {
+            UNINITIALIZED.validTransitions = new EventState[]{ EventState.SCHEDULED };
+            SCHEDULED.validTransitions = new EventState[]{ EventState.CANCELLED, EventState.HAPPENED };
+            CANCELLED.validTransitions = new EventState[]{ };
+            HAPPENED.validTransitions = new EventState[]{ };
+        }
+
+        public final int id;
+        private EventState[] validTransitions;
+
+        private EventState(int id) {
+            this.id = id;
+            this.validTransitions = null;
+        }
+
+        boolean hasTransitionTo(EventState newState) {
+            for (EventState validTransition : validTransitions)
+                if (validTransition == newState)
+                    return true;
+            return false;
+        }
+
+        boolean isFinalState() {
+            return validTransitions.length == 0;
         }
     }
 
-    EventState state;
+    protected EventState state;
+
+    public EventState getState() {
+        return state;
+    }
 
     // some value associated with the event
     public final T value;
