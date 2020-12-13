@@ -1,6 +1,9 @@
 package fr.sncf.osrd.simulation.core;
 
 
+/**
+ * A logic error in the simulation.
+ */
 public class SimulationError extends Exception {
     private static final long serialVersionUID = -7577756566664988508L;
 
