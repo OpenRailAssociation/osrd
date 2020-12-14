@@ -5,6 +5,7 @@ import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.blocksection.BlockSection;
 import fr.sncf.osrd.infra.graph.AbstractEdge;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
+import fr.sncf.osrd.util.DoubleOrientedRangeSequence;
 import fr.sncf.osrd.util.PointSequence;
 import fr.sncf.osrd.util.RangeSequence;
 
@@ -98,7 +99,8 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
     public void freeze() {
     }
 
-    public final RangeSequence<Double> slope = new RangeSequence<>();
+    // the data structure used for the slope automatically negates it when iterated on backwards
+    public final DoubleOrientedRangeSequence slope = new DoubleOrientedRangeSequence();
     public final RangeSequence<BlockSection> blockSections = new RangeSequence<>();
     public final RangeSequence<Double> speedLimitsForward = new RangeSequence<>();
     public final RangeSequence<Double> speedLimitsBackward = new RangeSequence<>();
@@ -110,7 +112,6 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
      */
 
     public static RangeSequence<Double> getSlope(TopoEdge edge, EdgeDirection direction) {
-        // TODO multiply by -1 if direction is reversed
         return edge.slope;
     }
 
