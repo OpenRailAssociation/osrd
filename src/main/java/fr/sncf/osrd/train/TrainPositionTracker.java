@@ -1,6 +1,5 @@
 package fr.sncf.osrd.train;
 
-import com.badlogic.ashley.signals.Signal;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.topological.PointAttrGetter;
@@ -55,9 +54,6 @@ public class TrainPositionTracker {
     public double getTailPathPosition() {
         return currentPathEdges.getLast().pathStartOffset + tailEdgePosition;
     }
-
-    public final Signal<PathElement> joinedEdgeSignal = new Signal<>();
-    public final Signal<PathElement> leftEdgeSignal = new Signal<>();
 
     /**
      * Create a new position tracker on some given infrastructure and path.
@@ -118,7 +114,9 @@ public class TrainPositionTracker {
             // add the next edge on the path to the current edges queue
             var newEdge = nextPathEdge();
             currentPathEdges.addFirst(newEdge);
-            joinedEdgeSignal.dispatch(newEdge);
+
+            // TODO: re-introduce events on edge changes?
+            // joinedEdgeSignal.dispatch(newEdge);
 
             // as the head edge changed, so does the position
             headEdgePosition -= headEdgeLength;
@@ -153,7 +151,8 @@ public class TrainPositionTracker {
             if (newAvailableSpace < trainLength)
                 break;
 
-            leftEdgeSignal.dispatch(currentPathEdges.removeLast());
+            // TODO: re-introduce events on edge changes?
+            // leftEdgeSignal.dispatch(currentPathEdges.removeLast());
             totalEdgesSpan -= tailEdgeLength;
         }
         tailEdgePosition = totalEdgesSpan - (trainLength + headEdgeHeadroom);

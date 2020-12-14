@@ -31,7 +31,7 @@ public class Timetable {
         initialSpeed = json.initialSpeed;
     }
 
-    public LocalTime getDepartureTime() {
-        return entries.first().time;
+    public double getDepartureTime() {
+        return entries.first().timeSeconds();
     }
 }

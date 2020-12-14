@@ -3,19 +3,22 @@ package fr.sncf.osrd;
 import static fr.sncf.osrd.SignalSimulationTest.Signal.Aspect.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import fr.sncf.osrd.simulation.*;
-import fr.sncf.osrd.simulation.core.AbstractEvent;
-import fr.sncf.osrd.simulation.core.Simulation;
-import fr.sncf.osrd.simulation.core.SimulationError;
+import fr.sncf.osrd.util.simulation.*;
+import fr.sncf.osrd.util.simulation.core.AbstractEvent;
+import fr.sncf.osrd.util.simulation.core.Simulation;
+import fr.sncf.osrd.util.simulation.core.SimulationError;
 import org.junit.jupiter.api.Test;
 
 import java.util.Objects;
 
 public class SignalSimulationTest {
-    public static class SignalSimulationEvent {
+    public static class World {
     }
 
-    public static final class SignalChangeEvent extends SignalSimulationEvent {
+    public static class BaseEvent {
+    }
+
+    public static final class SignalChangeEvent extends BaseEvent {
         public final Signal signal;
         public final Signal.Aspect aspect;
 
@@ -55,8 +58,8 @@ public class SignalSimulationTest {
             return aspect;
         }
 
-        EventSource<SignalChangeEvent, SignalSimulationEvent> aspectChanged = new EventSource<>();
-        EventSink<SignalChangeEvent, SignalSimulationEvent> masterAspectChangedSink;
+        EventSource<SignalChangeEvent, World, BaseEvent> aspectChanged = new EventSource<>();
+        EventSink<SignalChangeEvent, World, BaseEvent> masterAspectChangedSink;
 
         Signal(Aspect aspect, Signal master) {
             this.aspect = aspect;
@@ -71,15 +74,15 @@ public class SignalSimulationTest {
          * @param newAspect the new aspect of the signal
          * @throws SimulationError if there's a logic error
          */
-        public void setAspect(Simulation<SignalSimulationEvent> sim, Aspect newAspect) throws SimulationError {
+        public void setAspect(Simulation<World, BaseEvent> sim, Aspect newAspect) throws SimulationError {
             if (newAspect == aspect)
                 return;
             aspectChanged.event(sim, sim.getTime(), new SignalChangeEvent(this, newAspect));
         }
 
         private void masterAspectChanged(
-                Simulation<SignalSimulationEvent> sim,
-                Event<SignalChangeEvent, SignalSimulationEvent> event,
+                Simulation<World, BaseEvent> sim,
+                Event<SignalChangeEvent, World, BaseEvent> event,
                 AbstractEvent.EventState state
         ) throws SimulationError {
             var newAspect = aspect;
@@ -95,7 +98,7 @@ public class SignalSimulationTest {
 
     @Test
     public void testSignaling() throws SimulationError {
-        var sim = new Simulation<SignalSimulationEvent>(0.0);
+        var sim = new Simulation<World, BaseEvent>(null, 0.0);
         final var masterSignal = new Signal(GREEN, null);
         final var slaveSignal = new Signal(GREEN, masterSignal);
         masterSignal.setAspect(sim, RED);

@@ -1,19 +1,23 @@
-package fr.sncf.osrd.simulation;
+package fr.sncf.osrd.util.simulation;
 
-import fr.sncf.osrd.simulation.core.AbstractEvent;
-import fr.sncf.osrd.simulation.core.Simulation;
-import fr.sncf.osrd.simulation.core.SimulationError;
+import fr.sncf.osrd.util.simulation.core.AbstractEvent;
+import fr.sncf.osrd.util.simulation.core.Simulation;
+import fr.sncf.osrd.util.simulation.core.SimulationError;
 
-public final class Event<T extends BaseT, BaseT> extends AbstractEvent<T, BaseT> {
-    final EventSource<T, BaseT> source;
+public final class Event<T extends BaseT, WorldT, BaseT> extends AbstractEvent<T, WorldT, BaseT> {
+    final EventSource<T, WorldT, BaseT> source;
 
-    Event(Simulation<BaseT> sim, double scheduledTime, T value, EventSource<T, BaseT> source) throws SimulationError {
+    Event(
+            Simulation<WorldT, BaseT> sim,
+            double scheduledTime, T value,
+            EventSource<T, WorldT, BaseT> source
+    ) throws SimulationError {
         super(sim, scheduledTime, value);
         this.source = source;
     }
 
     @Override
-    public void updateState(Simulation<BaseT> sim, EventState newState) throws SimulationError {
+    public void updateState(Simulation<WorldT, BaseT> sim, EventState newState) throws SimulationError {
         assert this.state.hasTransitionTo(newState);
         this.state = newState;
 

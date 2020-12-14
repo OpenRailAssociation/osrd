@@ -1,4 +1,4 @@
-package fr.sncf.osrd.simulation.core;
+package fr.sncf.osrd.util.simulation.core;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Objects;
@@ -8,8 +8,8 @@ import java.util.Objects;
  * @param <T> the type of the value
  * @param <BaseT> the base type for all values in the simulation
  */
-public abstract class AbstractEvent<T extends BaseT, BaseT> implements Comparable<AbstractEvent<?, ?>> {
-    public abstract void updateState(Simulation<BaseT> sim, EventState state) throws SimulationError;
+public abstract class AbstractEvent<T extends BaseT, WorldT, BaseT> implements Comparable<AbstractEvent<?, ?, ?>> {
+    public abstract void updateState(Simulation<WorldT, BaseT> sim, EventState state) throws SimulationError;
 
     public enum EventState {
         // the event wasn't registered with the simulation
@@ -79,7 +79,7 @@ public abstract class AbstractEvent<T extends BaseT, BaseT> implements Comparabl
      * @param value the value associated with the event
      * @throws SimulationError {@inheritDoc}
      */
-    public AbstractEvent(Simulation<BaseT> sim, double scheduledTime, T value) throws SimulationError {
+    public AbstractEvent(Simulation<WorldT, BaseT> sim, double scheduledTime, T value) throws SimulationError {
         this.state = EventState.UNREGISTERED;
         this.scheduledTime = scheduledTime;
         this.revision = sim.nextRevision();
@@ -102,12 +102,12 @@ public abstract class AbstractEvent<T extends BaseT, BaseT> implements Comparabl
             return false;
 
         // because of type erasure, we can't cast to the exact type
-        AbstractEvent<?, ?> o = (AbstractEvent<?, ?>) obj;
+        AbstractEvent<?, ?, ?> o = (AbstractEvent<?, ?, ?>) obj;
         return scheduledTime == o.scheduledTime && revision == o.revision;
     }
 
     @Override
-    public int compareTo(AbstractEvent<?, ?> o) {
+    public int compareTo(AbstractEvent<?, ?, ?> o) {
         assert this.state == EventState.SCHEDULED;
         assert o.state == EventState.SCHEDULED;
 

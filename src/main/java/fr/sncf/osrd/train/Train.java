@@ -1,19 +1,19 @@
 package fr.sncf.osrd.train;
 
-import com.badlogic.ashley.core.Component;
-import com.badlogic.ashley.core.Entity;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.util.Pair;
+import fr.sncf.osrd.util.TopoLocation;
+import jdk.jshell.spi.ExecutionControl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.stream.Collectors;
 
-public class Train implements Component {
+public class Train {
     static final Logger logger = LoggerFactory.getLogger(Train.class);
 
     public final String name;
@@ -38,18 +38,16 @@ public class Train implements Component {
      * @param initialSpeed the initial speed the train will travel at
      * @return A new train entity
      */
-    public static Entity createTrain(
+    public static Train createTrain(
             String name,
             Infra infra,
             RollingStock rollingStock,
             TrainPath trainPath,
             double initialSpeed
     ) {
-        Entity trainEntity = new Entity();
         var train = new Train(name, infra, rollingStock, trainPath, initialSpeed);
         train.controllers.add((_train, timeDelta) -> Action.accelerate(_train.rollingStock.mass / 2, false));
-        trainEntity.add(train);
-        return trainEntity;
+        return train;
     }
 
     private Action getAction(double timeDelta) {
@@ -83,7 +81,7 @@ public class Train implements Component {
     }
 
     /**
-     * The TrainUpdateSystem iterates on all trains and calls this method with the current timeDelta
+     * Discrete update of the position of the train.
      * @param timeDelta the elapsed time since the last tick
      */
     public void update(double timeDelta) {
@@ -146,5 +144,18 @@ public class Train implements Component {
         controllers.removeAll(toDelete);
 
         return action.get();
+    }
+
+    /**
+     * Returns the position of the train's head, interpolated for the given time.
+     * This is meant to be used for data visualization.
+     * @param time the simulation time to compute the position for
+     * @return the position of the head at the given time
+     */
+    public TopoLocation getInterpolatedHeadLocation(double time) {
+        // TODO: this method is used by the viewer to display the position of the train during the simulation
+        //  we should compute the expected position of the train at the requested time (which can't be after the next
+        //  train move event
+        throw new UnsupportedOperationException("not implemented yet");
     }
 }

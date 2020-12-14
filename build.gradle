@@ -14,7 +14,6 @@ repositories {
 }
 
 dependencies {
-    compile "com.badlogicgames.ashley:ashley:1.7.3"
     compile group: 'org.dom4j', name: 'dom4j', version: '2.1.0'
 
     implementation 'com.squareup.moshi:moshi:1.11.0'

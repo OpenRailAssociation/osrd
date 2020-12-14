@@ -1,11 +1,7 @@
 package fr.sncf.osrd.infra.viewer;
 
-import com.badlogic.ashley.core.ComponentMapper;
-import com.badlogic.ashley.core.Entity;
-import com.badlogic.ashley.core.Family;
-import com.badlogic.ashley.systems.IteratingSystem;
-import fr.sncf.osrd.SystemOrdering;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.simulation.World;
 import fr.sncf.osrd.train.Train;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
@@ -17,20 +13,16 @@ import org.graphstream.ui.spriteManager.SpriteManager;
 import java.util.HashMap;
 import java.util.Map;
 
-public class InfraViewer extends IteratingSystem {
-    private ComponentMapper<Train> trainMapper = ComponentMapper.getFor(Train.class);
-
+public class InfraViewer {
     private final Graph graph;
     private final SpriteManager spriteManager;
     private final Map<Train, Sprite> trainSprites = new HashMap<>();
 
     /**
      * Create a viewer for debug purposes
-     * @param infra the infra to display
+     * @param infra the infrastructure display
      */
     public InfraViewer(Infra infra) {
-        super(Family.all(Train.class).get(), SystemOrdering.VIEWER.priority);
-
         System.setProperty("org.graphstream.ui", "swing");
         graph = new SingleGraph("OSRD");
         graph.setAttribute("ui.quality");
@@ -64,9 +56,12 @@ public class InfraViewer extends IteratingSystem {
         graph.display();
     }
 
-    @Override
-    protected void processEntity(Entity entity, float deltaTime) {
-        Train train = trainMapper.get(entity);
+    public void update(World world, double currentTime) {
+        for (var train : world.trains)
+            displayTrain(train, currentTime);
+    }
+
+    private void displayTrain(Train train, double currentTime) {
         if (!trainSprites.containsKey(train)) {
             var sprite = spriteManager.addSprite(String.valueOf(trainSprites.size()));
             sprite.setAttribute("ui.style", "text-alignment: under; shape: circle; size: 20px; fill-color: #ffaf01;");
@@ -75,7 +70,7 @@ public class InfraViewer extends IteratingSystem {
         }
 
         var sprite = trainSprites.get(train);
-        var headTopoLocation = train.positionTracker.getHeadTopoLocation();
+        var headTopoLocation = train.getInterpolatedHeadLocation(currentTime);
 
         if (!sprite.attached() || !sprite.getAttachment().getId().equals(headTopoLocation.edge.id))
             sprite.attachToEdge(headTopoLocation.edge.id);
