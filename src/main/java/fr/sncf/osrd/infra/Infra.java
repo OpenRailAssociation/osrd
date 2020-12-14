@@ -3,6 +3,7 @@ package fr.sncf.osrd.infra;
 import fr.sncf.osrd.infra.blocksection.BlockSection;
 import fr.sncf.osrd.infra.blocksection.SectionSignalNode;
 import fr.sncf.osrd.infra.graph.Graph;
+import fr.sncf.osrd.infra.state.InfraState;
 import fr.sncf.osrd.infra.topological.NoOpNode;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.infra.topological.TopoNode;
@@ -212,5 +213,12 @@ public class Infra implements Freezable {
     @Override
     public boolean isFrozen() {
         return frozen;
+    }
+
+    InfraState newState() {
+        var state = new InfraState(this);
+        // TODO: add stateful objects
+        // state.initialize(object);
+        return state;
     }
 }
