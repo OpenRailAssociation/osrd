@@ -8,6 +8,7 @@ import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.train.PathAttrIterator;
 import fr.sncf.osrd.train.TrainPath;
+import fr.sncf.osrd.util.DoubleOrientedRangeSequence;
 import fr.sncf.osrd.util.RangeValue;
 import fr.sncf.osrd.util.TopoLocation;
 import org.junit.jupiter.api.Test;
@@ -67,10 +68,10 @@ public class RangeAttrIter {
 
         {
             var builder = backwardEdge.slope.builder();
-            builder.add(0., 8, -6.);
-            builder.add(8., 20, 5.);
-            builder.add(20, 41, 4.);
-            builder.add(41.0, 50, 3.);
+            builder.add(0., 8, 6.);
+            builder.add(8., 20, -5.);
+            builder.add(20, 41, -4.);
+            builder.add(41.0, 50, -3.);
             // // this fails at infra prepare() time
             // builder.add(51.0, -5.);
             builder.build();
@@ -102,20 +103,53 @@ public class RangeAttrIter {
         for (int i = 0; i < result.size(); i++) {
             var expectedRange = expected.get(i);
             var resultRange = result.get(i);
-            assertEquals(
-                    expectedRange.value, resultRange.value,
-                    String.format("range value differs at index %d", i)
-            );
-
-            assertEquals(
-                    expectedRange.begin, resultRange.begin, 0.0001f,
-                    String.format("range start differs at index %d", i)
-            );
-
-            assertEquals(
-                    expectedRange.end, resultRange.end, 0.0001f,
-                    String.format("range end differs at index %d", i)
-            );
+            assertEquals(expectedRange, resultRange);
         }
+    }
+
+    @Test
+    public void doubleOrientedRangeSeqForwardIteration() throws InvalidInfraException {
+        var seq = new DoubleOrientedRangeSequence();
+        {
+            var builder = seq.builder();
+            builder.add(1, 10, 42.0);
+            builder.add(10, 20, 84.0);
+            builder.build();
+        }
+
+        var forwardRes = new ArrayList<RangeValue<Double>>();
+        seq.iterate(
+                EdgeDirection.START_TO_STOP,
+                2.0,
+                18.0,
+                v -> v + 100
+        ).forEachRemaining(forwardRes::add);
+
+        assertEquals(2, forwardRes.size());
+        assertEquals(new RangeValue<>(102.0, 110.0, 42.0), forwardRes.get(0));
+        assertEquals(new RangeValue<>(110.0, 118.0, 84.0), forwardRes.get(1));
+    }
+
+    @Test
+    public void doubleOrientedRangeSeqBackwardIteration() throws InvalidInfraException {
+        var seq = new DoubleOrientedRangeSequence();
+        {
+            var builder = seq.builder();
+            builder.add(1, 10, 42.0);
+            builder.add(10, 20, 84.0);
+            builder.build();
+        }
+
+        var forwardRes = new ArrayList<RangeValue<Double>>();
+        seq.iterate(
+                EdgeDirection.STOP_TO_START,
+                18.0,
+                2.0,
+                v -> v + 100
+        ).forEachRemaining(forwardRes::add);
+
+        assertEquals(2, forwardRes.size());
+        assertEquals(new RangeValue<>(118.0, 110.0, -84.0), forwardRes.get(0));
+        assertEquals(new RangeValue<>(110.0, 102.0, -42.0), forwardRes.get(1));
     }
 }

@@ -36,7 +36,7 @@ import java.util.function.DoubleUnaryOperator;
  * </pre>
  * @param <E> The type of the values
  */
-public final class RangeSequence<E> extends SortedSequence<E> {
+public class RangeSequence<E> extends SortedSequence<E> {
     /** Get the end position of the step at index i. */
     double getEnd(int i) {
         double nextPosition = Double.POSITIVE_INFINITY;
@@ -66,7 +66,14 @@ public final class RangeSequence<E> extends SortedSequence<E> {
      * @param i the range index
      * @return a clamped and transformed range
      */
-    public RangeValue<E> getClampedTransformed(DoubleUnaryOperator transform, double minClamp, double maxClamp, int i) {
+    public RangeValue<E> getClampedTransformed(
+            EdgeDirection direction,
+            DoubleUnaryOperator transform,
+            double minClamp,
+            double maxClamp,
+            int i
+    ) {
+        // TODO: /!\ must be kind of kept in sync with DoubleOrientedRangeSequence.getClampedTransformed /!\
         var currentPoint = data.get(i);
 
         var startPos = currentPoint.position;
@@ -81,7 +88,7 @@ public final class RangeSequence<E> extends SortedSequence<E> {
         var trStartPos = transform.applyAsDouble(startPos);
         var trEndPos = transform.applyAsDouble(endPos);
 
-        if (trStartPos < trEndPos)
+        if (direction == EdgeDirection.START_TO_STOP)
             return new RangeValue<>(trStartPos, trEndPos, currentPoint.value);
         return new RangeValue<>(trEndPos, trStartPos, currentPoint.value);
     }
@@ -121,7 +128,7 @@ public final class RangeSequence<E> extends SortedSequence<E> {
             if (i >= end)
                 throw new NoSuchElementException();
 
-            return seq.getClampedTransformed(transform, minClamp, maxClamp, i);
+            return seq.getClampedTransformed(EdgeDirection.START_TO_STOP, transform, minClamp, maxClamp, i);
         }
 
         @Override
@@ -165,7 +172,7 @@ public final class RangeSequence<E> extends SortedSequence<E> {
             if (i < start)
                 throw new NoSuchElementException();
 
-            return seq.getClampedTransformed(transform, minClamp, maxClamp, i);
+            return seq.getClampedTransformed(EdgeDirection.STOP_TO_START, transform, minClamp, maxClamp, i);
         }
 
         @Override
@@ -189,37 +196,16 @@ public final class RangeSequence<E> extends SortedSequence<E> {
             double trackIterEndPos,
             DoubleUnaryOperator translator
     ) {
-        return iterate(direction, 0, data.size(), trackIterStartPos, trackIterEndPos, translator);
-    }
-
-    /**
-     * Iterate on a slice from indexes start to end, from position edgeIterStartPos to edgeIterEndPos.
-     * Translate the position of the results using the translator function.
-     * @param direction whether to iterate forward or backward on the slice.
-     * @param start the included start index
-     * @param end the excluded end index
-     * @param trackIterStartPos the included start position
-     * @param trackIterEndPos the included end position
-     * @param translator the function to use to translate the coordinates of the result
-     * @return an iterator on the slice's content
-     */
-    public Iterator<RangeValue<E>> iterate(
-            EdgeDirection direction,
-            int start,
-            int end,
-            double trackIterStartPos,
-            double trackIterEndPos,
-            DoubleUnaryOperator translator
-    ) {
+        int end = data.size();
         if (direction == EdgeDirection.START_TO_STOP)
             return forwardIter(
-                    start,
+                    0,
                     end,
                     trackIterStartPos,
                     trackIterEndPos,
                     translator);
         return backwardIter(
-                start,
+                0,
                 end,
                 trackIterEndPos,
                 trackIterStartPos,

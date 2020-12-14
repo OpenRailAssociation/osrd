@@ -30,7 +30,7 @@ public final class PointValue<E> {
         if (this.getClass() != obj.getClass())
             return false;
 
-        var o = (PointValue)obj;
+        var o = (PointValue<?>) obj;
         return position == o.position && value == o.value;
     }
 }
