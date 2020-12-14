@@ -3,7 +3,7 @@ package fr.sncf.osrd.infra.state;
 public abstract class StatefulInfraObject<T> {
     /**
      * Creates a new state for this object.
-     * @return
+     * @return a fresh state for this infrastructure object
      */
     abstract T newState();
 
