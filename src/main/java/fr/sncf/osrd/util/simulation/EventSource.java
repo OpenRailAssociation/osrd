@@ -1,14 +1,14 @@
-package fr.sncf.osrd.simulation;
+package fr.sncf.osrd.util.simulation;
 
-import fr.sncf.osrd.simulation.core.Simulation;
-import fr.sncf.osrd.simulation.core.SimulationError;
+import fr.sncf.osrd.util.simulation.core.Simulation;
+import fr.sncf.osrd.util.simulation.core.SimulationError;
 
 import java.util.ArrayList;
 
-public class EventSource<T extends BaseT, BaseT> {
-    public final ArrayList<EventSink<T, BaseT>> subscribers = new ArrayList<>();
+public class EventSource<T extends BaseT, WorldT, BaseT> {
+    public final ArrayList<EventSink<T, WorldT, BaseT>> subscribers = new ArrayList<>();
 
-    public void subscribe(EventSink<T, BaseT> sink) {
+    public void subscribe(EventSink<T, WorldT, BaseT> sink) {
         assert !subscribers.contains(sink);
         subscribers.add(sink);
     }
@@ -21,7 +21,7 @@ public class EventSource<T extends BaseT, BaseT> {
      *
      * @param sink the sink to unsubscribe
      */
-    public void unsubscribe(EventSink<T, BaseT> sink) throws SimulationError {
+    public void unsubscribe(EventSink<T, WorldT, BaseT> sink) throws SimulationError {
         assert subscribers.contains(sink);
         if (!subscribers.remove(sink))
             throw new SimulationError(
@@ -37,7 +37,10 @@ public class EventSource<T extends BaseT, BaseT> {
      * @return a new event
      * @throws SimulationError {@inheritDoc}
      */
-    public Event<T, BaseT> event(Simulation<BaseT> sim, double scheduledTime, T value) throws SimulationError {
+    public Event<T, WorldT, BaseT> event(
+            Simulation<WorldT, BaseT> sim,
+            double scheduledTime, T value
+    ) throws SimulationError {
         return new Event<>(sim, scheduledTime, value, this);
     }
 }

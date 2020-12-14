@@ -1,8 +1,8 @@
-package fr.sncf.osrd.simulation;
+package fr.sncf.osrd.util.simulation;
 
-import fr.sncf.osrd.simulation.core.AbstractEvent;
-import fr.sncf.osrd.simulation.core.Simulation;
-import fr.sncf.osrd.simulation.core.SimulationError;
+import fr.sncf.osrd.util.simulation.core.AbstractEvent;
+import fr.sncf.osrd.util.simulation.core.Simulation;
+import fr.sncf.osrd.util.simulation.core.SimulationError;
 
 /**
  * Regular event sources don't keep a reference to the events they send, which makes it hard to cancel events.
@@ -12,12 +12,12 @@ import fr.sncf.osrd.simulation.core.SimulationError;
  * @param <T> the type of the event's value
  * @param <BaseT> the base type for all values
  */
-public class CancellableEventSource<T extends BaseT, BaseT> extends EventSource<T, BaseT> {
-    private final EventProducer<T, BaseT> eventProducer;
+public class CancellableEventSource<T extends BaseT, WorldT, BaseT> extends EventSource<T, WorldT, BaseT> {
+    private final EventProducer<T, WorldT, BaseT> eventProducer;
 
-    private AbstractEvent<T, BaseT> currentEvent = null;
+    private AbstractEvent<T, WorldT, BaseT> currentEvent = null;
 
-    public AbstractEvent<T, BaseT> getCurrentEvent() {
+    public AbstractEvent<T, WorldT, BaseT> getCurrentEvent() {
         return currentEvent;
     }
 
@@ -25,12 +25,12 @@ public class CancellableEventSource<T extends BaseT, BaseT> extends EventSource<
      * Creates an event source that makes it easier to cancel events
      * @param eventProducer a function that produces the events
      */
-    public CancellableEventSource(EventProducer<T, BaseT> eventProducer) {
+    public CancellableEventSource(EventProducer<T, WorldT, BaseT> eventProducer) {
         this.eventProducer = eventProducer;
         subscribe(this::reactToUpdate);
     }
 
-    private void nextEvent(Simulation<BaseT> sim) throws SimulationError {
+    private void nextEvent(Simulation<WorldT, BaseT> sim) throws SimulationError {
         currentEvent = eventProducer.nextEvent(sim);
     }
 
@@ -40,14 +40,14 @@ public class CancellableEventSource<T extends BaseT, BaseT> extends EventSource<
      * @param sim the simulation
      * @throws SimulationError {@inheritDoc}
      */
-    public void init(Simulation<BaseT> sim) throws SimulationError {
+    public void init(Simulation<WorldT, BaseT> sim) throws SimulationError {
         assert currentEvent == null;
         nextEvent(sim);
     }
 
     private void reactToUpdate(
-            Simulation<BaseT> sim,
-            Event<T, BaseT> event,
+            Simulation<WorldT, BaseT> sim,
+            Event<T, WorldT, BaseT> event,
             AbstractEvent.EventState state
     ) throws SimulationError {
         assert currentEvent.getState().isFinalState();

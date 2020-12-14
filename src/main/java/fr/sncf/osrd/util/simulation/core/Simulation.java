@@ -1,6 +1,6 @@
-package fr.sncf.osrd.simulation.core;
+package fr.sncf.osrd.util.simulation.core;
 
-import static fr.sncf.osrd.simulation.core.AbstractEvent.EventState;
+import static fr.sncf.osrd.util.simulation.core.AbstractEvent.EventState;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 /**
- * <h1>A Discrete Event Simulation.</h1>
+ * <h1>A Discrete Event SimulationManager.</h1>
  *
  * <h2>Life cycle of an event</h2>
  * <ol>
@@ -28,14 +28,18 @@ import java.util.*;
  *   <li>loop</li>
  * </ol>
  */
-public class Simulation<BaseT> {
+public class Simulation<WorldT, BaseT> {
     static final Logger logger = LoggerFactory.getLogger(Simulation.class);
 
+    public final WorldT world;
+
     /**
-     * Creates a new Discrete Event Simulation
+     * Creates a new Discrete Event SimulationManager
+     * @param world the external state of the simulation
      * @param time the initial time of the simulation
      */
-    public Simulation(double time) {
+    public Simulation(WorldT world, double time) {
+        this.world = world;
         this.time = time;
     }
 
@@ -48,7 +52,7 @@ public class Simulation<BaseT> {
     }
 
     // the list of events pending execution
-    private final SortedSet<AbstractEvent<? extends BaseT, BaseT>> scheduledEvents = new TreeSet<>();
+    private final SortedSet<AbstractEvent<? extends BaseT, WorldT, BaseT>> scheduledEvents = new TreeSet<>();
 
     // the number of event that were scheduled. it is used to associate a unique number to events
     long revision = 0;
@@ -64,7 +68,7 @@ public class Simulation<BaseT> {
      * @param event the event to schedule on the timeline
      * @throws SimulationError {@inheritDoc}
      */
-    public <T extends BaseT> void registerEvent(AbstractEvent<T, BaseT> event) throws SimulationError {
+    public <T extends BaseT> void registerEvent(AbstractEvent<T, WorldT, BaseT> event) throws SimulationError {
         if (event.state != EventState.UNREGISTERED)
             throw new SimulationError("only uninitialized events can be scheduled");
 
@@ -82,7 +86,7 @@ public class Simulation<BaseT> {
      * @param event the event to cancel
      * @throws SimulationError {@inheritDoc}
      */
-    public void cancel(AbstractEvent<? extends BaseT, BaseT> event) throws SimulationError {
+    public void cancel(AbstractEvent<? extends BaseT, WorldT, BaseT> event) throws SimulationError {
         if (event.state != EventState.SCHEDULED)
             throw new SimulationError("only scheduled events can be cancelled");
         scheduledEvents.remove(event);
@@ -107,8 +111,7 @@ public class Simulation<BaseT> {
         assert event.scheduledTime >= time;
         time = event.scheduledTime;
 
-        final var eventValue = event.value;
         event.updateState(this, EventState.HAPPENED);
-        return eventValue;
+        return event.value;
     }
 }

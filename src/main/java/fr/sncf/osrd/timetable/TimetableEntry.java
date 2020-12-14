@@ -11,6 +11,8 @@ import java.util.stream.StreamSupport;
 public class TimetableEntry {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss");
 
+    // TODO: LocalTime doesn't include a day. it's thus impossible to run simulations
+    //       spanning over multiple days or countries.
     public final LocalTime time;
     public final int stopTime;
     public final boolean isStop;
@@ -29,8 +31,13 @@ public class TimetableEntry {
         assert stopTime == 0 || isStop;
         operationalPoint = infra.operationalPointMap.get(json.operationalPointId);
         edge = infra.topoEdgeMap.get(json.edgeId);
+        assert edge.operationalPoints != null;
         assert StreamSupport.stream(edge.operationalPoints.spliterator(), false)
                 .map(pointValue -> pointValue.value)
                 .anyMatch(operationalPoint::equals);
+    }
+
+    public double timeSeconds() {
+        return time.toSecondOfDay();
     }
 }
