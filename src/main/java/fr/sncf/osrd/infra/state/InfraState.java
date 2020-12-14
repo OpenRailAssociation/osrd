@@ -1,10 +1,12 @@
 package fr.sncf.osrd.infra.state;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 
 import java.util.HashMap;
 
+@SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
 public class InfraState {
     public final Infra infra;
 
