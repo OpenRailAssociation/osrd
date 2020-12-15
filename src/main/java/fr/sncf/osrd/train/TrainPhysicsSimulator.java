@@ -74,10 +74,12 @@ public class TrainPhysicsSimulator {
     }
 
     public static class PositionUpdate {
+        public final double timeDelta;
         public final double positionDelta;
         public final double speed;
 
-        PositionUpdate(double positionDelta, double speed) {
+        PositionUpdate(double timeDelta, double positionDelta, double speed) {
+            this.timeDelta = timeDelta;
             this.positionDelta = positionDelta;
             this.speed = speed;
         }
@@ -107,7 +109,7 @@ public class TrainPhysicsSimulator {
             // if the train is stopped and the rolling resistance is greater in amplitude than the other forces,
             // the train won't move
             if (Math.abs(totalOtherForce) < rollingResistance)
-                return new PositionUpdate(0.0, 0.0);
+                return new PositionUpdate(timeStep, 0.0, 0.0);
             // if the sum of other forces isn't sufficient to keep the train still, the rolling resistance
             // will be opposed to the movement direction (which is the direction of the other forces)
             effectiveRollingResistance = Math.copySign(rollingResistance, -totalOtherForce);
@@ -128,7 +130,10 @@ public class TrainPhysicsSimulator {
         // general case: if the speed doesn't change sign, there's no need to
         // fixup the integration of the rolling resistance
         if (Math.signum(newSpeed) == Math.signum(currentSpeed))
-            return new PositionUpdate(computePositionDelta(currentSpeed, fullStepAcceleration, timeStep), newSpeed);
+            return new PositionUpdate(
+                    timeStep,
+                    computePositionDelta(currentSpeed, fullStepAcceleration, timeStep),
+                    newSpeed);
 
         // compute the integration step at which the speed is zero
         // currentSpeed + signChangeTimeStep * fullStepAcceleration = 0
@@ -143,12 +148,12 @@ public class TrainPhysicsSimulator {
 
         var totalOtherForce = computeTotalForce(0.0, actionTractionForce);
         if (Math.abs(totalOtherForce) <= rollingResistance)
-            return new PositionUpdate(signChangePositionDelta, 0.0);
+            return new PositionUpdate(signChangeTimeStep, signChangePositionDelta, 0.0);
 
         effectiveRollingResistance = Math.copySign(rollingResistance, -totalOtherForce);
         var remainingStepAcceleration = computeAcceleration(effectiveRollingResistance, actionTractionForce);
         var remainingPositionDelta = computePositionDelta(0.0, remainingStepAcceleration, remainingStep);
         newSpeed = 0.0 + remainingStepAcceleration * remainingStep;
-        return new PositionUpdate(signChangePositionDelta + remainingPositionDelta, newSpeed);
+        return new PositionUpdate(timeStep, signChangePositionDelta + remainingPositionDelta, newSpeed);
     }
 }

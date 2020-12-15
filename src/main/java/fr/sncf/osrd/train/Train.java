@@ -3,31 +3,62 @@ package fr.sncf.osrd.train;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.topological.TopoEdge;
+import fr.sncf.osrd.simulation.BaseChange;
+import fr.sncf.osrd.simulation.TrainLocationChange;
+import fr.sncf.osrd.simulation.World;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.train.TrainPhysicsSimulator.PositionUpdate;
 import fr.sncf.osrd.util.Pair;
 import fr.sncf.osrd.util.TopoLocation;
-import jdk.jshell.spi.ExecutionControl;
+import fr.sncf.osrd.util.simulation.Event;
+import fr.sncf.osrd.util.simulation.EventSource;
+import fr.sncf.osrd.util.simulation.core.AbstractEvent.EventState;
+import fr.sncf.osrd.util.simulation.core.Simulation;
+import fr.sncf.osrd.util.simulation.core.SimulationError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.stream.Collectors;
 
 public class Train {
     static final Logger logger = LoggerFactory.getLogger(Train.class);
 
+    // how far the driver of the train can see
+    public final double driverSightDistance;
+
     public final String name;
     public final RollingStock rollingStock;
     public final LinkedList<SpeedController> controllers = new LinkedList<>();
-    public final TrainPositionTracker positionTracker;
+
+    // this field MUST be kept private, as it is not the position of the train at the current simulation time,
+    // but rather the position of the train at the last event. it's fine and expected, but SpeedControllers need
+    // the simulated location
+    private TrainPositionTracker location;
+
     public double speed;
     public TrainState state = TrainState.STARTING_UP;
 
-    private Train(String name, Infra infra, RollingStock rollingStock, TrainPath trainPath, double initialSpeed) {
+    public final EventSource<TrainLocationChange, World, BaseChange> trainMoveEvents;
+
+
+    private Train(
+            double driverSightDistance,
+            String name,
+            Simulation<World, BaseChange> sim,
+            RollingStock rollingStock,
+            TrainPath trainPath,
+            double initialSpeed
+    ) {
+        this.lastEventTime = sim.getTime();
+        this.driverSightDistance = driverSightDistance;
         this.name = name;
         this.rollingStock = rollingStock;
-        this.positionTracker = new TrainPositionTracker(infra, trainPath, rollingStock.length);
+        this.location = new TrainPositionTracker(sim.world.infra, trainPath, rollingStock.length);
         this.speed = initialSpeed;
+        this.trainMoveEvents = new EventSource<>();
+        trainMoveEvents.subscribe(this::trainMoveReact);
     }
 
     /**
@@ -39,27 +70,113 @@ public class Train {
      * @return A new train entity
      */
     public static Train createTrain(
+            Simulation<World, BaseChange> sim,
             String name,
-            Infra infra,
             RollingStock rollingStock,
             TrainPath trainPath,
-            double initialSpeed
-    ) {
-        var train = new Train(name, infra, rollingStock, trainPath, initialSpeed);
-        train.controllers.add((_train, timeDelta) -> Action.accelerate(_train.rollingStock.mass / 2, false));
+            double initialSpeed,
+            double sightDistance
+    ) throws SimulationError {
+        var train = new Train(sightDistance, name, sim, rollingStock, trainPath, initialSpeed);
+        train.controllers.add((_train, _location, timeDelta) -> Action.accelerate(_train.rollingStock.mass / 2, false));
+        train.planNextMove(sim);
         return train;
     }
 
-    private Action getAction(double timeDelta) {
+    void trainMoveReact(
+            Simulation<World, BaseChange> sim,
+            Event<TrainLocationChange, World, BaseChange> change,
+            EventState newState) throws SimulationError {
+        if (newState == EventState.CANCELLED) {
+            planNextMove(sim);
+        } else if (newState == EventState.HAPPENED) {
+            applyLocationChange(sim, nextMoveEvent.value);
+            planNextMove(sim);
+        } else
+            throw new SimulationError("invalid state change");
+    }
+
+    private void applyLocationChange(Simulation<World, BaseChange> sim, TrainLocationChange value) {
+        this.speed = value.newSpeed;
+        this.location = value.newLocation;
+        this.lastEventTime = sim.getTime();
+    }
+
+    private double lastEventTime;
+    private Event<TrainLocationChange, World, BaseChange> nextMoveEvent = null;
+
+    private void planNextMove(Simulation<World, BaseChange> sim) throws SimulationError {
+        // 1) find the next event position
+
+        // look for objects in the range [train_position, +inf)
+        // TODO: optimize, we don't need to iterate on all the path
+        var nextTrackObjectVisibilityChange = location
+                .streamPointAttrForward(Double.POSITIVE_INFINITY, TopoEdge::getVisibleTrackObjects)
+                .map(pointValue -> {
+                    // the position of track object relative to path of the train
+                    // (the distance to the train's starting point)
+                    var pathObjectPosition = pointValue.position;
+                    var sightDistance = Math.min(driverSightDistance, pointValue.value.getSightDistance());
+                    // return the path position at which the object becomes visible
+                    return pathObjectPosition - sightDistance;
+                })
+                .min(Double::compareTo)
+                // TODO: that's pretty meh
+                .orElse(Double.POSITIVE_INFINITY);
+
+        // for now, we only handle visible track objects
+        var nextEventTrackPosition = nextTrackObjectVisibilityChange;
+
+        // 2) simulate up to nextEventTrackPosition
+        var nextEventLocation = location.clone();
+        double eventArrivalTime = sim.getTime();
+        double newSpeed = speed;
+        var positionUpdates = new ArrayList<PositionUpdate>();
+        int i = 0;
+        while (nextEventLocation.getHeadPathPosition() < nextEventTrackPosition) {
+            // TODO: stop at the end of the path.
+            // TODO: find out the actual max braking / acceleration force
+
+            // TODO: don't hardcode this integration step
+            var integrationTimeStep = 1.0;
+            var simulator = TrainPhysicsSimulator.make(
+                    integrationTimeStep,
+                    rollingStock,
+                    speed,
+                    nextEventLocation.maxTrainGrade());
+
+            Action action = getAction(nextEventLocation, simulator);
+            logger.debug("train took action {}", action);
+
+            assert action != null;
+
+            var update = simulator.computeUpdate(action.tractionForce(), action.brakingForce());
+            // TODO: handle emergency braking
+
+            logger.debug("speed changed from {} to {}", speed, update.speed);
+            newSpeed = update.speed;
+            eventArrivalTime += integrationTimeStep;
+            nextEventLocation.updatePosition(update.positionDelta);
+            positionUpdates.add(update);
+            i++;
+            if (i >= 1000)
+                throw new SimulationError("simulation did not end");
+        }
+
+        // 3) create an event with simulation data up to this point
+        nextMoveEvent = trainMoveEvents.event(
+                sim,
+                eventArrivalTime,
+                new TrainLocationChange(newSpeed, positionUpdates, nextEventLocation));
+    }
+
+    private Action getAction(TrainPositionTracker location, TrainPhysicsSimulator trainPhysics) {
         switch (state) {
             case STARTING_UP:
-                return updateStartingUp(timeDelta);
             case STOP:
-                return updateStop(timeDelta);
             case ROLLING:
-                return updateRolling(timeDelta);
+                return updateRolling(location, trainPhysics);
             case EMERGENCY_BRAKING:
-                return updateEmergencyBreaking(timeDelta);
             case REACHED_DESTINATION:
                 return null;
             default:
@@ -67,50 +184,6 @@ public class Train {
         }
     }
 
-    private Action updateEmergencyBreaking(double timeDelta) {
-        return null;
-    }
-
-    private Action updateStop(double timeDelta) {
-        return null;
-    }
-
-    private Action updateStartingUp(double timeDelta) {
-        // TODO: implement startup procedures
-        return updateRolling(timeDelta);
-    }
-
-    /**
-     * Discrete update of the position of the train.
-     * @param timeDelta the elapsed time since the last tick
-     */
-    public void update(double timeDelta) {
-        // TODO: use the max acceleration
-        // TODO: find out the actual max braking / acceleration force
-
-        var simulator = TrainPhysicsSimulator.make(
-                timeDelta,
-                rollingStock,
-                speed,
-                maxTrainGrade());
-
-        Action action = getAction(timeDelta);
-        logger.debug("train took action {}", action);
-        TrainPhysicsSimulator.PositionUpdate update;
-        if (action == null) {
-            // TODO assert action != null
-            update = simulator.computeUpdate(0.0, 0.0);
-        } else {
-            update = simulator.computeUpdate(action.tractionForce(), action.brakingForce());
-            if (action.type == Action.ActionType.EMERGENCY_BRAKING)
-                state = TrainState.EMERGENCY_BRAKING;
-        }
-
-        logger.debug("speed changed from {} to {}", speed, update.speed);
-        speed = update.speed;
-
-        positionTracker.updatePosition(update.positionDelta);
-    }
 
     @SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD")
     private double getMaxAcceleration() {
@@ -119,16 +192,9 @@ public class Train {
         return rollingStock.comfortAcceleration;
     }
 
-    private double maxTrainGrade() {
-        return positionTracker.streamRangeAttrUnderTrain(TopoEdge::getSlope)
-                .map(e -> e.value)
-                .max(Double::compareTo)
-                .orElse(0.);
-    }
-
-    private Action updateRolling(double timeDelta) {
+    private Action updateRolling(TrainPositionTracker position, TrainPhysicsSimulator trainPhysics) {
         var actions = controllers.stream()
-                .map(sp -> new Pair<>(sp, sp.getAction(this, timeDelta)))
+                .map(sp -> new Pair<>(sp, sp.getAction(this, position, trainPhysics)))
                 .collect(Collectors.toList());
 
         var action = actions.stream()
@@ -153,9 +219,18 @@ public class Train {
      * @return the position of the head at the given time
      */
     public TopoLocation getInterpolatedHeadLocation(double time) {
-        // TODO: this method is used by the viewer to display the position of the train during the simulation
-        //  we should compute the expected position of the train at the requested time (which can't be after the next
-        //  train move event
-        throw new UnsupportedOperationException("not implemented yet");
+        // this method is used by the viewer to display the position of the train during the simulation
+        // we should compute the expected position of the train at the requested time (which can't be after the next
+        // train move event
+        var curTime = lastEventTime;
+        var res = location.clone();
+        for (var update : nextMoveEvent.value.positionUpdates) {
+            if (curTime >= time)
+                break;
+
+            res.updatePosition(update.positionDelta);
+            curTime += update.timeDelta;
+        }
+        return res.getHeadTopoLocation();
     }
 }

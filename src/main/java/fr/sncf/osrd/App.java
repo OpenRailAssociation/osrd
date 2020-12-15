@@ -3,6 +3,8 @@ package fr.sncf.osrd;
 import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.config.ConfigManager;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.simulation.SimulationManager;
+import fr.sncf.osrd.util.simulation.core.SimulationError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,10 +29,14 @@ public class App {
         logger.info("parsing the configuration file");
         Config config = ConfigManager.getConfig(Files.readString(Paths.get(args[0])));
 
-        logger.info("creating the simulation");
-        Simulation simulation = new Simulation(config);
+        try {
+            logger.info("creating the simulation");
+            var simulation = new SimulationManager(config);
 
-        logger.info("starting the simulation");
-        simulation.run();
+            logger.info("starting the simulation");
+            simulation.run();
+        } catch (SimulationError simulationError) {
+            logger.error("an logic error prevented the simulation from completing", simulationError);
+        }
     }
 }

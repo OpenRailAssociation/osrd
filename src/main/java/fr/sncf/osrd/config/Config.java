@@ -1,9 +1,11 @@
 package fr.sncf.osrd.config;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.timetable.Schedule;
 
+@SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
 public class Config {
     public final float simulationTimeStep;
     public final Infra infra;

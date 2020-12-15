@@ -15,14 +15,14 @@ public class SignalSimulationTest {
     public static class World {
     }
 
-    public static class BaseEvent {
+    public static class BaseChange {
     }
 
-    public static final class SignalChangeEvent extends BaseEvent {
+    public static final class SignalChange extends BaseChange {
         public final Signal signal;
         public final Signal.Aspect aspect;
 
-        public SignalChangeEvent(Signal signal, Signal.Aspect aspect) {
+        public SignalChange(Signal signal, Signal.Aspect aspect) {
             this.signal = signal;
             this.aspect = aspect;
         }
@@ -35,7 +35,7 @@ public class SignalSimulationTest {
             if (this.getClass() != obj.getClass())
                 return false;
 
-            var o = (SignalChangeEvent) obj;
+            var o = (SignalChange) obj;
             return this.signal == o.signal && this.aspect == o.aspect;
         }
 
@@ -58,8 +58,8 @@ public class SignalSimulationTest {
             return aspect;
         }
 
-        EventSource<SignalChangeEvent, World, BaseEvent> aspectChanged = new EventSource<>();
-        EventSink<SignalChangeEvent, World, BaseEvent> masterAspectChangedSink;
+        EventSource<SignalChange, World, BaseChange> aspectChanged = new EventSource<>();
+        EventSink<SignalChange, World, BaseChange> masterAspectChangedSink;
 
         Signal(Aspect aspect, Signal master) {
             this.aspect = aspect;
@@ -74,15 +74,16 @@ public class SignalSimulationTest {
          * @param newAspect the new aspect of the signal
          * @throws SimulationError if there's a logic error
          */
-        public void setAspect(Simulation<World, BaseEvent> sim, Aspect newAspect) throws SimulationError {
+        public void setAspect(Simulation<World, BaseChange> sim, Aspect newAspect) throws SimulationError {
             if (newAspect == aspect)
                 return;
-            aspectChanged.event(sim, sim.getTime(), new SignalChangeEvent(this, newAspect));
+            aspectChanged.event(sim, sim.getTime(), new SignalChange(this, newAspect));
+            this.aspect = newAspect;
         }
 
         private void masterAspectChanged(
-                Simulation<World, BaseEvent> sim,
-                Event<SignalChangeEvent, World, BaseEvent> event,
+                Simulation<World, BaseChange> sim,
+                Event<SignalChange, World, BaseChange> event,
                 AbstractEvent.EventState state
         ) throws SimulationError {
             var newAspect = aspect;
@@ -98,20 +99,20 @@ public class SignalSimulationTest {
 
     @Test
     public void testSignaling() throws SimulationError {
-        var sim = new Simulation<World, BaseEvent>(null, 0.0);
+        var sim = new Simulation<World, BaseChange>(null, 0.0);
         final var masterSignal = new Signal(GREEN, null);
         final var slaveSignal = new Signal(GREEN, masterSignal);
         masterSignal.setAspect(sim, RED);
 
         assertFalse(sim.isSimulationOver());
-        assertEquals(new SignalChangeEvent(masterSignal, RED), sim.step());
-        assertEquals(new SignalChangeEvent(slaveSignal, YELLOW), sim.step());
+        assertEquals(new SignalChange(masterSignal, RED), sim.step());
+        assertEquals(new SignalChange(slaveSignal, YELLOW), sim.step());
         assertTrue(sim.isSimulationOver());
 
         // we must be able to unsubscribe sinks
         masterSignal.aspectChanged.unsubscribe(slaveSignal.masterAspectChangedSink);
         masterSignal.setAspect(sim, YELLOW);
-        assertEquals(new SignalChangeEvent(masterSignal, YELLOW), sim.step());
+        assertEquals(new SignalChange(masterSignal, YELLOW), sim.step());
         assertTrue(sim.isSimulationOver());
     }
 }
