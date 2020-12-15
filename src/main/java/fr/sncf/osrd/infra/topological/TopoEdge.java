@@ -5,6 +5,8 @@ import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.blocksection.BlockSection;
 import fr.sncf.osrd.infra.graph.AbstractEdge;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
+import fr.sncf.osrd.infra.interlocking.TrackSensor;
+import fr.sncf.osrd.infra.interlocking.VisibleTrackObject;
 import fr.sncf.osrd.util.DoubleOrientedRangeSequence;
 import fr.sncf.osrd.util.PointSequence;
 import fr.sncf.osrd.util.RangeSequence;
@@ -105,6 +107,10 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
     public final RangeSequence<Double> speedLimitsForward = new RangeSequence<>();
     public final RangeSequence<Double> speedLimitsBackward = new RangeSequence<>();
     public final PointSequence<OperationalPoint> operationalPoints = new PointSequence<>();
+    public final PointSequence<TrackSensor> trackSensorsForward = new PointSequence<>();
+    public final PointSequence<TrackSensor> trackSensorsBackward = new PointSequence<>();
+    public final PointSequence<VisibleTrackObject> visibleTrackObjectsForward = new PointSequence<>();
+    public final PointSequence<VisibleTrackObject> visibleTrackObjectsBackward = new PointSequence<>();
 
     /*
      * All the functions below are attributes getters, meant to implement either RangeAttrGetter or PointAttrGetter.
@@ -133,5 +139,29 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
 
     public static PointSequence<OperationalPoint> getOperationalPoints(TopoEdge edge, EdgeDirection direction) {
         return edge.operationalPoints;
+    }
+
+    /**
+     * Gets the track sensors on a given section of track, along a given direction.
+     * @param edge the section of track
+     * @param direction the direction
+     * @return track sensors
+     */
+    public static PointSequence<TrackSensor> getTrackSensors(TopoEdge edge, EdgeDirection direction) {
+        if (direction == EdgeDirection.START_TO_STOP)
+            return edge.trackSensorsForward;
+        return edge.trackSensorsBackward;
+    }
+
+    /**
+     * Gets visible track objects on a given section of track, along a given direction.
+     * @param edge the section of track
+     * @param direction the direction
+     * @return visible track objects
+     */
+    public static PointSequence<VisibleTrackObject> getVisibleTrackObjects(TopoEdge edge, EdgeDirection direction) {
+        if (direction == EdgeDirection.START_TO_STOP)
+            return edge.visibleTrackObjectsForward;
+        return edge.visibleTrackObjectsBackward;
     }
 }

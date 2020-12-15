@@ -4,6 +4,7 @@ import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.topological.PointAttrGetter;
 import fr.sncf.osrd.infra.topological.RangeAttrGetter;
+import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.train.TrainPath.PathElement;
 import fr.sncf.osrd.util.PointValue;
 import fr.sncf.osrd.util.RangeValue;
@@ -12,7 +13,7 @@ import fr.sncf.osrd.util.TopoLocation;
 import java.util.ArrayDeque;
 import java.util.stream.Stream;
 
-public class TrainPositionTracker {
+public final class TrainPositionTracker implements Cloneable {
     public final Infra infra;
 
     /** The planned path the train shall follow. */
@@ -25,7 +26,7 @@ public class TrainPositionTracker {
     private final double trainLength;
 
     /** The list of edges the train currently spans over. */
-    private final ArrayDeque<PathElement> currentPathEdges = new ArrayDeque<>();
+    private final ArrayDeque<PathElement> currentPathEdges;
 
     /**
      *  The position of the head of the train on its edge.
@@ -38,6 +39,15 @@ public class TrainPositionTracker {
      *  Its recomputed from the head edge position at each update.
      */
     private double tailEdgePosition = Double.NaN;
+
+    /**
+     * Makes a copy of the position tracker.
+     * @return a copy of the position tracker.
+     */
+    @Override
+    public TrainPositionTracker clone() {
+        return new TrainPositionTracker(this);
+    }
 
     /** Gets the position of the head relative to the start of the path. */
     public double getHeadPathPosition() {
@@ -65,6 +75,7 @@ public class TrainPositionTracker {
         this.infra = infra;
         this.path = path;
         this.trainLength = trainLength;
+        this.currentPathEdges = new ArrayDeque<>();
         var firstSection = path.edges.first();
         assert path.startingPoint.edge == firstSection.edge;
         currentPathEdges.add(firstSection);
@@ -74,6 +85,16 @@ public class TrainPositionTracker {
             headEdgePosition = firstSection.edge.length - path.startingPoint.position;
         assert headEdgePosition >= 0.0;
         updatePosition(0);
+    }
+
+    private TrainPositionTracker(TrainPositionTracker tracker) {
+        this.infra = tracker.infra;
+        this.path = tracker.path;
+        this.trainLength = tracker.trainLength;
+        this.currentPathIndex = tracker.currentPathIndex;
+        this.currentPathEdges = tracker.currentPathEdges.clone();
+        this.headEdgePosition = tracker.headEdgePosition;
+        this.tailEdgePosition = tracker.tailEdgePosition;
     }
 
     private PathElement headPathEdge() {
@@ -230,5 +251,16 @@ public class TrainPositionTracker {
                 tailPathPosition,
                 tailPathPosition + trainLength,
                 attrGetter);
+    }
+
+    /**
+     * Computes the maximum grade (slope) under the train.
+     * @return the maximum grade (slope) under the train.
+     */
+    public double maxTrainGrade() {
+        return this.streamRangeAttrUnderTrain(TopoEdge::getSlope)
+                .map(e -> e.value)
+                .max(Double::compareTo)
+                .orElse(0.);
     }
 }

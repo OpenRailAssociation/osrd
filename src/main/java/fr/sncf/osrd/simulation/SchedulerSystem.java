@@ -1,38 +1,31 @@
 package fr.sncf.osrd.simulation;
 
 import fr.sncf.osrd.timetable.Schedule;
-import fr.sncf.osrd.timetable.Timetable;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.util.simulation.Event;
 import fr.sncf.osrd.util.simulation.EventSource;
-import fr.sncf.osrd.util.simulation.core.AbstractEvent;
 import fr.sncf.osrd.util.simulation.core.AbstractEvent.EventState;
 import fr.sncf.osrd.util.simulation.core.Simulation;
 import fr.sncf.osrd.util.simulation.core.SimulationError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.ZoneOffset;
-
 public class SchedulerSystem {
     static final Logger logger = LoggerFactory.getLogger(SchedulerSystem.class);
 
-    private final Schedule schedule;
-    public final EventSource<NewTrainEvent, World, BaseEvent> newTrainsSource;
+    public final EventSource<NewTrainChange, World, BaseChange> newTrainsSource;
 
-    private SchedulerSystem(Schedule schedule, EventSource<NewTrainEvent, World, BaseEvent> newTrainsSource) {
-        assert schedule.isFrozen();
-        this.schedule = schedule;
+    private SchedulerSystem(EventSource<NewTrainChange, World, BaseChange> newTrainsSource) {
         this.newTrainsSource = newTrainsSource;
         newTrainsSource.subscribe(this::createNewTrain);
     }
 
     private void createNewTrain(
-            Simulation<World, BaseEvent> sim,
-            Event<NewTrainEvent, World, BaseEvent> event,
+            Simulation<World, BaseChange> sim,
+            Event<NewTrainChange, World, BaseChange> event,
             EventState state
-    ) {
+    ) throws SimulationError {
         // we don't support train creation events for now
         assert state == EventState.HAPPENED;
 
@@ -41,11 +34,13 @@ public class SchedulerSystem {
         var timetable = event.value.timetable;
         var trainName = timetable.name;
         logger.info("starting train {}", trainName);
-        var train = Train.createTrain(trainName,
-                infra,
+        var train = Train.createTrain(
+                sim,
+                trainName,
                 timetable.rollingStock,
                 new TrainPath(infra, timetable),
-                timetable.initialSpeed);
+                timetable.initialSpeed,
+                400);
         world.trains.add(train);
     }
 
@@ -55,14 +50,15 @@ public class SchedulerSystem {
      * @param schedule the source schedule
      */
     public static SchedulerSystem fromSchedule(
-            Simulation<World, BaseEvent> sim,
+            Simulation<World, BaseChange> sim,
             Schedule schedule
     ) throws SimulationError {
-        var newTrainsSource = new EventSource<NewTrainEvent, World, BaseEvent>();
+        assert schedule.isFrozen();
+        var newTrainsSource = new EventSource<NewTrainChange, World, BaseChange>();
         for (var timetable : schedule.timetables) {
             var startTime = timetable.getDepartureTime();
-            newTrainsSource.event(sim, startTime, new NewTrainEvent(timetable));
+            newTrainsSource.event(sim, startTime, new NewTrainChange(timetable));
         }
-        return new SchedulerSystem(schedule, newTrainsSource);
+        return new SchedulerSystem(newTrainsSource);
     }
 }
