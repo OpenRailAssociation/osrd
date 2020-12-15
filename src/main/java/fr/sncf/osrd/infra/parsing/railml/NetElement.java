@@ -58,7 +58,6 @@ class NetElement {
 
         for (var entry : lrsMap.entrySet()) {
             var range = entry.getValue();
-            assert FloatCompare.eq(range.second - range.first, topoEdge.length);
             lrsDeltas.put(entry.getKey(), range.first);
         }
     }
