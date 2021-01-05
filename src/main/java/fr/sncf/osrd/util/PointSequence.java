@@ -7,12 +7,18 @@ import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.DoubleUnaryOperator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * A sequence of points, indexed by position.
  * @param <E> The type of the point objects
  */
 public final class PointSequence<E> extends SortedSequence<E> implements Iterable<PointValue<E>> {
+    public PointValue<E> get(int i) {
+        return data.get(i);
+    }
+
     /**
      * Iterate on this sequence from edgeIterStartPos to edgeIterEndPos.
      * Translate the position of the results using the translator function.
@@ -127,5 +133,9 @@ public final class PointSequence<E> extends SortedSequence<E> implements Iterabl
     public Builder<E> builder() {
         assert data.isEmpty();
         return new Builder<E>(this);
+    }
+
+    public Stream<PointValue<E>> stream() {
+        return StreamSupport.stream(spliterator(), false);
     }
 }

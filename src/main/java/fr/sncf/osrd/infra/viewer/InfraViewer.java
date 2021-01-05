@@ -70,8 +70,10 @@ public class InfraViewer {
         }
 
         var sprite = trainSprites.get(train);
-        var headTopoLocation = train.getInterpolatedHeadLocation(currentTime);
+        var trainPhysics = train.getInterpolatedHeadLocationAndSpeed(currentTime);
+        sprite.setAttribute("ui.label", String.format("%s (%f m/s)", train.name, trainPhysics.speed));
 
+        var headTopoLocation = trainPhysics.location;
         if (!sprite.attached() || !sprite.getAttachment().getId().equals(headTopoLocation.edge.id))
             sprite.attachToEdge(headTopoLocation.edge.id);
 

@@ -62,7 +62,7 @@ class PointAttrIter {
         }
         infra.prepare();
 
-        var trainPath = new TrainPath(new TopoLocation(firstEdge, 0));
+        var trainPath = new TrainPath(0.0, secondEdge.length);
         trainPath.addEdge(firstEdge, EdgeDirection.START_TO_STOP);
         trainPath.addEdge(secondEdge, EdgeDirection.START_TO_STOP);
 
@@ -127,7 +127,7 @@ class PointAttrIter {
 
         infra.prepare();
 
-        var trainPath = new TrainPath(new TopoLocation(forwardEdge, 0));
+        var trainPath = new TrainPath(0.0, backwardEdge.length);
         trainPath.addEdge(forwardEdge, EdgeDirection.START_TO_STOP);
         trainPath.addEdge(backwardEdge, EdgeDirection.STOP_TO_START);
 

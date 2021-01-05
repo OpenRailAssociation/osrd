@@ -1,14 +1,17 @@
-package fr.sncf.osrd.util.simulation;
-
-import fr.sncf.osrd.util.simulation.core.Simulation;
-import fr.sncf.osrd.util.simulation.core.SimulationError;
+package fr.sncf.osrd.simulation.utils;
 
 import java.util.ArrayList;
 
-public class EventSource<T extends BaseT, WorldT, BaseT> {
-    public final ArrayList<EventSink<T, WorldT, BaseT>> subscribers = new ArrayList<>();
+public abstract class Entity {
+    protected abstract void timelineEventUpdate(
+            Simulation sim,
+            TimelineEvent<?> event,
+            TimelineEvent.State state
+    ) throws SimulationError;
 
-    public void subscribe(EventSink<T, WorldT, BaseT> sink) {
+    public final ArrayList<Entity> subscribers = new ArrayList<>();
+
+    public void addSubscriber(Entity sink) {
         assert !subscribers.contains(sink);
         subscribers.add(sink);
     }
@@ -21,12 +24,12 @@ public class EventSource<T extends BaseT, WorldT, BaseT> {
      *
      * @param sink the sink to unsubscribe
      */
-    public void unsubscribe(EventSink<T, WorldT, BaseT> sink) throws SimulationError {
+    public void removeSubscriber(Entity sink) throws SimulationError {
         assert subscribers.contains(sink);
         if (!subscribers.remove(sink))
             throw new SimulationError(
                     "can't unsubscribe a sink that's not in the subscribers list."
-                    + " try storing your lambda or method reference in a field of your class");
+                            + " try storing your lambda or method reference in a field of your class");
     }
 
     /**
@@ -37,10 +40,10 @@ public class EventSource<T extends BaseT, WorldT, BaseT> {
      * @return a new event
      * @throws SimulationError {@inheritDoc}
      */
-    public Event<T, WorldT, BaseT> event(
-            Simulation<WorldT, BaseT> sim,
+    public <T extends BaseChange> TimelineEvent<T> event(
+            Simulation sim,
             double scheduledTime, T value
     ) throws SimulationError {
-        return new Event<>(sim, scheduledTime, value, this);
+        return new TimelineEvent<T>(this, sim, scheduledTime, value);
     }
 }

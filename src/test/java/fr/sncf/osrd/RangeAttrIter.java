@@ -79,7 +79,7 @@ public class RangeAttrIter {
 
         infra.prepare();
 
-        var trainPath = new TrainPath(new TopoLocation(forwardEdge, 0));
+        var trainPath = new TrainPath(0.0, backwardEdge.length);
         trainPath.addEdge(forwardEdge, EdgeDirection.START_TO_STOP);
         trainPath.addEdge(backwardEdge, EdgeDirection.STOP_TO_START);
 

@@ -2,15 +2,14 @@ package fr.sncf.osrd.simulation;
 
 import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.infra.viewer.InfraViewer;
-import fr.sncf.osrd.util.simulation.core.Simulation;
-import fr.sncf.osrd.util.simulation.core.SimulationError;
-
-import java.util.ArrayList;
-import java.util.function.BiConsumer;
+import fr.sncf.osrd.simulation.utils.TimelineEvent;
+import fr.sncf.osrd.simulation.utils.BaseChange;
+import fr.sncf.osrd.simulation.utils.Simulation;
+import fr.sncf.osrd.simulation.utils.SimulationError;
 
 public class SimulationManager {
-    public final Simulation<World, BaseChange> simulation;
-    private ArrayList<BiConsumer<Simulation<World, BaseChange>, BaseChange>> eventCallbacks = new ArrayList<>();
+    public final Simulation simulation;
+    private final World world;
 
     /**
      * Instantiate a simulation without starting it
@@ -19,30 +18,58 @@ public class SimulationManager {
     public SimulationManager(Config config) throws SimulationError {
         // create the discrete event simulation
         var world = new World(config);
-        var sim = new Simulation<World, BaseChange>(world, 0.0);
+        var sim = new Simulation(world, 0.0);
 
         // create systems
         world.scheduler = SchedulerSystem.fromSchedule(sim, config.schedule);
 
-        if (config.showViewer) {
-            var viewer = new InfraViewer(config.infra);
-            viewer.display();
-            eventCallbacks.add((_sim, event) -> {
-                viewer.update(_sim.world, _sim.getTime());
-            });
-        }
-
         this.simulation = sim;
+        this.world = world;
+    }
+
+    InfraViewer viewer = null;
+
+    private void initViewer() {
+        viewer = new InfraViewer(world.infra);
+        viewer.display();
+    }
+
+    private void updateViewer(
+            TimelineEvent<? extends BaseChange> nextEvent
+    ) throws InterruptedException {
+        if (world.trains.isEmpty())
+            return;
+
+        // if we have trains running, move the time forward by time increments
+        // to help the viewer see something
+        double interpolatedTime = simulation.getTime();
+        double nextEventTime = nextEvent.scheduledTime;
+
+        double interpolationStep = 1.0;
+        while (simulation.getTime() < nextEventTime) {
+            interpolatedTime += interpolationStep;
+            if (interpolatedTime > nextEventTime)
+                interpolatedTime = nextEventTime;
+
+            Thread.sleep((long)(interpolationStep * 1000));
+            viewer.update(world, interpolatedTime);
+        }
     }
 
     /**
      * Run the simulation
      */
-    public void run() throws SimulationError {
+    public void run() throws SimulationError, InterruptedException {
+        if (world.config.showViewer)
+            initViewer();
+
         while (!simulation.isSimulationOver()) {
-            var event = simulation.step();
-            for (var callback : eventCallbacks)
-                callback.accept(simulation, event);
+            var event = simulation.nextEvent();
+
+            if (viewer != null)
+                updateViewer(event);
+
+            simulation.step(event);
         }
     }
 }

@@ -1,9 +1,6 @@
 package fr.sncf.osrd.speedcontroller;
 
-import fr.sncf.osrd.train.Action;
-import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.TrainPhysicsSimulator;
-import fr.sncf.osrd.train.TrainPositionTracker;
+import fr.sncf.osrd.train.*;
 
 public abstract class RangeSpeedController implements SpeedController {
     private final double startPosition;
@@ -14,10 +11,14 @@ public abstract class RangeSpeedController implements SpeedController {
         this.endPosition = endPosition;
     }
 
-    abstract Action getActionOnRange(Train train, TrainPositionTracker location, TrainPhysicsSimulator trainPhysics);
+    abstract Action getActionOnRange(
+            TrainState train,
+            TrainPositionTracker location,
+            TrainPhysicsSimulator trainPhysics
+    );
 
     @Override
-    public Action getAction(Train train, TrainPositionTracker location, TrainPhysicsSimulator trainPhysics) {
+    public Action getAction(TrainState train, TrainPositionTracker location, TrainPhysicsSimulator trainPhysics) {
         if (location.getHeadPathPosition() < startPosition)
             // don't do anything, but don't delete the controller
             return Action.empty(false);

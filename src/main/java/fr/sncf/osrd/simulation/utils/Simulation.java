@@ -1,14 +1,15 @@
-package fr.sncf.osrd.util.simulation.core;
+package fr.sncf.osrd.simulation.utils;
 
-import static fr.sncf.osrd.util.simulation.core.AbstractEvent.EventState;
+import static fr.sncf.osrd.simulation.utils.TimelineEvent.State;
 
+import fr.sncf.osrd.simulation.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 /**
- * <h1>A Discrete Event SimulationManager.</h1>
+ * <h1>A Discrete TimelineEvent SimulationManager.</h1>
  *
  * <h2>Life cycle of an event</h2>
  * <ol>
@@ -28,17 +29,17 @@ import java.util.*;
  *   <li>loop</li>
  * </ol>
  */
-public class Simulation<WorldT, BaseT> {
+public class Simulation {
     static final Logger logger = LoggerFactory.getLogger(Simulation.class);
 
-    public final WorldT world;
+    public final World world;
 
     /**
-     * Creates a new Discrete Event SimulationManager
+     * Creates a new Discrete TimelineEvent SimulationManager
      * @param world the external state of the simulation
      * @param time the initial time of the simulation
      */
-    public Simulation(WorldT world, double time) {
+    public Simulation(World world, double time) {
         this.world = world;
         this.time = time;
     }
@@ -52,7 +53,7 @@ public class Simulation<WorldT, BaseT> {
     }
 
     // the list of events pending execution
-    private final SortedSet<AbstractEvent<? extends BaseT, WorldT, BaseT>> scheduledEvents = new TreeSet<>();
+    private final SortedSet<TimelineEvent<? extends BaseChange>> scheduledEvents = new TreeSet<>();
 
     // the number of event that were scheduled. it is used to associate a unique number to events
     long revision = 0;
@@ -68,14 +69,14 @@ public class Simulation<WorldT, BaseT> {
      * @param event the event to schedule on the timeline
      * @throws SimulationError {@inheritDoc}
      */
-    public <T extends BaseT> void registerEvent(AbstractEvent<T, WorldT, BaseT> event) throws SimulationError {
-        if (event.state != EventState.UNREGISTERED)
+    public <T extends BaseChange> void registerEvent(TimelineEvent<T> event) throws SimulationError {
+        if (event.state != State.UNREGISTERED)
             throw new SimulationError("only uninitialized events can be scheduled");
 
         if (event.scheduledTime < time)
             throw new SimulationError("an event was scheduled before the current simulation time");
 
-        event.updateState(this, EventState.SCHEDULED);
+        event.updateState(this, State.SCHEDULED);
         scheduledEvents.add(event);
     }
 
@@ -86,11 +87,11 @@ public class Simulation<WorldT, BaseT> {
      * @param event the event to cancel
      * @throws SimulationError {@inheritDoc}
      */
-    public void cancel(AbstractEvent<? extends BaseT, WorldT, BaseT> event) throws SimulationError {
-        if (event.state != EventState.SCHEDULED)
+    public void cancel(TimelineEvent<? extends BaseChange> event) throws SimulationError {
+        if (event.state != State.SCHEDULED)
             throw new SimulationError("only scheduled events can be cancelled");
         scheduledEvents.remove(event);
-        event.updateState(this, EventState.CANCELLED);
+        event.updateState(this, State.CANCELLED);
     }
 
     public boolean isSimulationOver() {
@@ -98,20 +99,32 @@ public class Simulation<WorldT, BaseT> {
     }
 
     /**
-     * Executes the next event in the simulation.
-     * @throws SimulationError {@inheritDoc}
+     * Removes and returns the next event from the timeline.
+     * @return the next event in the timeline
      */
-    public BaseT step() throws SimulationError {
+    public TimelineEvent<? extends BaseChange> nextEvent() {
         // get the next event in the timeline
         var event = scheduledEvents.first();
         scheduledEvents.remove(event);
+        return event;
+    }
 
+    /**
+     * Executes the next event in the simulation.
+     * @throws SimulationError {@inheritDoc}
+     */
+    public BaseChange step(TimelineEvent<? extends BaseChange> event) throws SimulationError {
         // step the simulation time forward
         logger.debug("stepping the simulation from {} to {}", time, event.scheduledTime);
         assert event.scheduledTime >= time;
         time = event.scheduledTime;
 
-        event.updateState(this, EventState.HAPPENED);
+        event.updateState(this, State.HAPPENED);
         return event.value;
+    }
+
+    public BaseChange step() throws SimulationError {
+        var event = nextEvent();
+        return step(event);
     }
 }

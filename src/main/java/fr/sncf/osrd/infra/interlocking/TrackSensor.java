@@ -1,9 +1,9 @@
 package fr.sncf.osrd.infra.interlocking;
 
-import fr.sncf.osrd.simulation.BaseChange;
+import fr.sncf.osrd.simulation.utils.BaseChange;
 import fr.sncf.osrd.simulation.World;
 import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.util.simulation.core.Simulation;
+import fr.sncf.osrd.simulation.utils.Simulation;
 
 public interface TrackSensor {
     /**
@@ -11,12 +11,12 @@ public interface TrackSensor {
      * @param sim the simulation
      * @param train the train arriving on the sensor
      */
-    void onTrainArrival(Simulation<World, BaseChange> sim, Train train);
+    void onTrainArrival(Simulation sim, Train train);
 
     /**
      * A method called by a train when its tail leaves this sensor.
      * @param sim the simulation
      * @param train the train leaving on the sensor
      */
-    void onTrainDeparture(Simulation<World, BaseChange> sim, Train train);
+    void onTrainDeparture(Simulation sim, Train train);
 }

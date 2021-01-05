@@ -49,6 +49,16 @@ public final class TrainPositionTracker implements Cloneable {
         return new TrainPositionTracker(this);
     }
 
+    /** Checks whether we reached the end of the path. */
+    public boolean hasReachedGoal() {
+        // we haven't reached our goal if we aren't on the last edge
+        if (currentPathIndex < path.edges.size() - 1)
+            return false;
+
+        // we must also have reached the correct point on the last edge
+        return headEdgePosition >= path.endOffset;
+    }
+
     /** Gets the position of the head relative to the start of the path. */
     public double getHeadPathPosition() {
         return currentPathEdges.getFirst().pathStartOffset + headEdgePosition;
@@ -77,12 +87,11 @@ public final class TrainPositionTracker implements Cloneable {
         this.trainLength = trainLength;
         this.currentPathEdges = new ArrayDeque<>();
         var firstSection = path.edges.first();
-        assert path.startingPoint.edge == firstSection.edge;
         currentPathEdges.add(firstSection);
         if (firstSection.direction == EdgeDirection.START_TO_STOP)
-            headEdgePosition = path.startingPoint.position;
+            headEdgePosition = path.startOffset;
         else
-            headEdgePosition = firstSection.edge.length - path.startingPoint.position;
+            headEdgePosition = firstSection.edge.length - path.startOffset;
         assert headEdgePosition >= 0.0;
         updatePosition(0);
     }
