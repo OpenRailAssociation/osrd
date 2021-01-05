@@ -1,4 +1,4 @@
-package fr.sncf.osrd.util.simulation.core;
+package fr.sncf.osrd.simulation.utils;
 
 
 /**

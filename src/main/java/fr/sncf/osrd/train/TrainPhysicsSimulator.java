@@ -87,7 +87,7 @@ public class TrainPhysicsSimulator {
 
     private static double computePositionDelta(double currentSpeed, double acceleration, double timeStep) {
         // dx = currentSpeed * dt + 1/2 * acceleration * dt * dt
-        return currentSpeed * timeStep * 0.5 * acceleration * timeStep * timeStep;
+        return currentSpeed * timeStep + 0.5 * acceleration * timeStep * timeStep;
     }
 
     /**
@@ -129,7 +129,7 @@ public class TrainPhysicsSimulator {
 
         // general case: if the speed doesn't change sign, there's no need to
         // fixup the integration of the rolling resistance
-        if (Math.signum(newSpeed) == Math.signum(currentSpeed))
+        if (currentSpeed == 0.0 || Math.signum(newSpeed) == Math.signum(currentSpeed))
             return new PositionUpdate(
                     timeStep,
                     computePositionDelta(currentSpeed, fullStepAcceleration, timeStep),

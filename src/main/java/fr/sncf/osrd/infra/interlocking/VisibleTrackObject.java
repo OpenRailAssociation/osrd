@@ -1,9 +1,9 @@
 package fr.sncf.osrd.infra.interlocking;
 
-import fr.sncf.osrd.simulation.BaseChange;
+import fr.sncf.osrd.simulation.utils.BaseChange;
 import fr.sncf.osrd.simulation.World;
 import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.util.simulation.core.Simulation;
+import fr.sncf.osrd.simulation.utils.Simulation;
 
 public interface VisibleTrackObject {
     /**
@@ -17,5 +17,5 @@ public interface VisibleTrackObject {
      * @param sim the simulation
      * @param train the train seeing the object
      */
-    void onSight(Simulation<World, BaseChange> sim, Train train);
+    void onSight(Simulation sim, Train train);
 }

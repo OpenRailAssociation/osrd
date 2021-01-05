@@ -8,10 +8,8 @@ import fr.sncf.osrd.pathfinding.Dijkstra;
 import fr.sncf.osrd.timetable.Timetable;
 import fr.sncf.osrd.util.CryoList;
 import fr.sncf.osrd.util.Freezable;
-import fr.sncf.osrd.util.TopoLocation;
 
 import java.util.function.DoubleUnaryOperator;
-import java.util.stream.StreamSupport;
 
 public class TrainPath  implements Freezable {
     public static final class PathElement {
@@ -84,15 +82,19 @@ public class TrainPath  implements Freezable {
 
     final CryoList<PathElement> edges = new CryoList<>();
     final CryoList<TrainStop> stops = new CryoList<>();
-    final TopoLocation startingPoint;
+
+    // the offset in the start
+    final double startOffset;
+    final double endOffset;
 
     private boolean frozen = false;
 
     /**
      * Creates a container to hold the path some train will follow
      */
-    public TrainPath(TopoLocation startingPoint) {
-        this.startingPoint = startingPoint;
+    public TrainPath(double startOffset, double endOffset) {
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
     }
 
 
@@ -102,24 +104,30 @@ public class TrainPath  implements Freezable {
      * @param timetable the timetable containing the list of waypoint
      */
     public TrainPath(Infra infra, Timetable timetable) {
-        CostFunction<TopoEdge> costFunc = (edge, begin, end) -> Math.abs(end - begin);
+        // find the start position
         var start = timetable.entries.first();
-        var startPosition = StreamSupport.stream(start.edge.operationalPoints.spliterator(), false)
-                .filter(pointValue -> pointValue.value.id == start.operationalPoint.id)
-                .findFirst();
-        assert startPosition.isPresent();
-        var goal = timetable.entries.last();
-        var goalPosition = StreamSupport.stream(goal.edge.operationalPoints.spliterator(), false)
-                .filter(pointValue -> pointValue.value.id == goal.operationalPoint.id)
-                .findFirst();
-        assert goalPosition.isPresent();
+        var startPosition = start.edge.operationalPoints.stream()
+                .filter(pointValue -> pointValue.value.id.equals(start.operationalPoint.id))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("couldn't find the starting point operational point"));
 
+        // find the stop position
+        var goal = timetable.entries.last();
+        var goalPosition = goal.edge.operationalPoints.stream()
+                .filter(pointValue -> pointValue.value.id.equals(goal.operationalPoint.id))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("couldn't find the goal point operational point"));
+
+        // compute the shortest path from start to stop
+        CostFunction<TopoEdge> costFunc = (edge, begin, end) -> Math.abs(end - begin);
         Dijkstra.findPath(infra.topoGraph,
-                start.edge, startPosition.get().position,
-                goal.edge, goalPosition.get().position,
+                start.edge, startPosition.position,
+                goal.edge, goalPosition.position,
                 costFunc,
                 this::addEdge);
-        startingPoint = new TopoLocation(start.edge, startPosition.get().position);
+
+        this.startOffset = startPosition.position;
+        this.endOffset = goalPosition.position;
         freeze();
     }
 

@@ -23,7 +23,7 @@ public class RollingStock {
         + C * v^2
     )
 
-    /!\ Be careful when importing data, convertions are needed /!\
+    /!\ Be careful when importing data, conversions are needed /!\
 
     // configurationFile ?
     rollingResistance = cfg.getDouble("A") * mass / 100.0; // from dN/ton to N
@@ -37,8 +37,8 @@ public class RollingStock {
     */
 
     private final double rollingResistance;      // in newtons
-    private final double mechanicalResistance;   // in newtons
-    private final double aerodynamicResistance;  // in newtons
+    private final double mechanicalResistance;   // in newtons / (m/s)
+    private final double aerodynamicResistance;  // in newtons / (m/s^2)
 
     /**
      * Gets the rolling resistance at a given speed, which is a force that always goes
@@ -98,6 +98,21 @@ public class RollingStock {
      */
     // TODO remove transient and parse it
     public final transient PointSequence<Double> tractiveEffortCurve;
+
+    /**
+     * Returns the max tractive effort at a given speed.
+     * @param speed the speed to compute the max tractive effort for
+     * @return the max tractive effort
+     */
+    public double getMaxEffort(double speed) {
+        double maxEffort = 0.0;
+        for (var dataPoint : tractiveEffortCurve) {
+            if (dataPoint.position > speed)
+                break;
+            maxEffort = dataPoint.value;
+        }
+        return maxEffort;
+    }
 
     /**
      * Creates a new train inventory item.
