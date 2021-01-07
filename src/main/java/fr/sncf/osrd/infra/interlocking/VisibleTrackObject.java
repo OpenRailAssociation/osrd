@@ -1,7 +1,5 @@
 package fr.sncf.osrd.infra.interlocking;
 
-import fr.sncf.osrd.simulation.utils.BaseChange;
-import fr.sncf.osrd.simulation.World;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.simulation.utils.Simulation;
 

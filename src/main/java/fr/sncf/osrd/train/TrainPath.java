@@ -1,5 +1,6 @@
 package fr.sncf.osrd.train;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.topological.TopoEdge;
@@ -9,13 +10,38 @@ import fr.sncf.osrd.timetable.Timetable;
 import fr.sncf.osrd.util.CryoList;
 import fr.sncf.osrd.util.Freezable;
 
+import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
 
-public class TrainPath  implements Freezable {
+public final class TrainPath implements Freezable {
     public static final class PathElement {
         public final TopoEdge edge;
         public final EdgeDirection direction;
         public final double pathStartOffset;
+
+        @Override
+        @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
+        public boolean equals(Object obj) {
+            if (obj == null)
+                return false;
+
+            if (obj.getClass() != PathElement.class)
+                return false;
+
+            var other = (PathElement)obj;
+            if (!edge.id.equals(other.edge.id))
+                return false;
+
+            if (direction != other.direction)
+                return false;
+
+            return pathStartOffset == other.pathStartOffset;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(edge.id, direction, pathStartOffset);
+        }
 
         /**
          * Creates a new path element

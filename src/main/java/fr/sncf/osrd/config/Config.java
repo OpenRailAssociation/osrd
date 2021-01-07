@@ -12,6 +12,8 @@ public class Config {
     public final Schedule schedule;
     public final double simulationStepPause;
     public final boolean showViewer;
+    public final boolean realTimeViewer;
+    public final boolean changeReplayCheck;
 
     /**
      * Create a config from a json mapped object
@@ -22,6 +24,8 @@ public class Config {
         infra = ConfigManager.getInfra(jsonConfig.infraPath);
         schedule = ConfigManager.getSchedule(jsonConfig.schedulePath, infra);
         showViewer = jsonConfig.showViewer;
+        realTimeViewer = jsonConfig.realTimeViewer;
         simulationStepPause = jsonConfig.simulationStepPause;
+        changeReplayCheck = jsonConfig.changeReplayCheck;
     }
 }

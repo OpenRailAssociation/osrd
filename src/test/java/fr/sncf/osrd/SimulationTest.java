@@ -15,6 +15,10 @@ public class SimulationTest {
      */
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static class MockEntity extends Entity {
+        public MockEntity(String id) {
+            super(id);
+        }
+
         public static class EventUpdate {
             public final TimelineEvent<?> event;
             public final TimelineEvent.State state;
@@ -37,43 +41,31 @@ public class SimulationTest {
         }
     }
 
-    public static class TestChange extends BaseChange {
-        public final String str;
-
-        public TestChange(String str) {
-            this.str = str;
-        }
-
-        @Override
-        public String toString() {
-            return str;
-        }
-    }
 
     @Test
     public void timerTest() throws SimulationError {
-        var sim = new Simulation(null, 1.0);
-        var timer = new MockEntity();
-        timer.event(sim, sim.getTime() + 42, new TestChange("time's up"));
+        var sim = new Simulation(null, 1.0, null, null);
+        var timer = new MockEntity("test");
+        timer.event(sim, sim.getTime() + 42, "time's up");
         var stepEvent = sim.step();
-        assertEquals(stepEvent.toString(), "time's up");
+        assertEquals(stepEvent, "time's up");
         assertEquals(sim.getTime(), 1.0 + 42.0, 0.00001);
     }
 
     @Test
     @SuppressFBWarnings(value = {"SIC_INNER_SHOULD_BE_STATIC_ANON", "DLS_DEAD_LOCAL_STORE"})
     public void testEventOrder() throws SimulationError {
-        var sim = new Simulation(null, 0.0);
-        var timer = new MockEntity();
-        timer.event(sim, 1.0, new TestChange("a"));
-        timer.event(sim, 2.0, new TestChange("b"));
-        timer.event(sim, 3.0, new TestChange("c"));
-        timer.event(sim, 4.0, new TestChange("d"));
+        var sim = new Simulation(null, 0.0, null, null);
+        var timer = new MockEntity("test");
+        timer.event(sim, 1.0, "a");
+        timer.event(sim, 2.0, "b");
+        timer.event(sim, 3.0, "c");
+        timer.event(sim, 4.0, "d");
 
-        var timerResponse = new MockEntity();
-        var otherChannel = new MockEntity();
+        var timerResponse = new MockEntity("timer");
+        var otherChannel = new MockEntity("other");
         // sinks can be functions or methods, as its a functional interface
-        timer.addSubscriber(new Entity() {
+        timer.addSubscriber(new Entity("subscriber") {
             @Override
             protected void timelineEventUpdate(
                     Simulation sim,
@@ -81,31 +73,31 @@ public class SimulationTest {
                     TimelineEvent.State state
             ) throws SimulationError {
                 String msg = event.value.toString();
-                timerResponse.event(sim, sim.getTime() + 0.5, new TestChange(msg + "_response"));
+                timerResponse.event(sim, sim.getTime() + 0.5, msg + "_response");
                 if (sim.getTime() > 2.7)
-                    otherChannel.event(sim, sim.getTime(), new TestChange(msg + " simultaneous event"));
+                    otherChannel.event(sim, sim.getTime(), msg + " simultaneous event");
             }
         });
 
         assertFalse(sim.isSimulationOver());
-        assertEquals("a", sim.step().toString());
-        assertEquals("a_response", sim.step().toString());
-        assertEquals("b", sim.step().toString());
-        assertEquals("b_response", sim.step().toString());
-        assertEquals("c", sim.step().toString());
-        assertEquals("c simultaneous event", sim.step().toString());
-        assertEquals("c_response", sim.step().toString());
-        assertEquals("d", sim.step().toString());
-        assertEquals("d simultaneous event", sim.step().toString());
-        assertEquals("d_response", sim.step().toString());
+        assertEquals("a", sim.step());
+        assertEquals("a_response", sim.step());
+        assertEquals("b", sim.step());
+        assertEquals("b_response", sim.step());
+        assertEquals("c", sim.step());
+        assertEquals("c simultaneous event", sim.step());
+        assertEquals("c_response", sim.step());
+        assertEquals("d", sim.step());
+        assertEquals("d simultaneous event", sim.step());
+        assertEquals("d_response", sim.step());
         assertEquals(sim.getTime(), 4.5, 0.0);
         assertTrue(sim.isSimulationOver());
     }
 
     @Test
     public void testMethodSourceUnregister() throws SimulationError {
-        var source = new MockEntity();
-        var sinkClass = new MockEntity();
+        var source = new MockEntity("source");
+        var sinkClass = new MockEntity("sink");
         source.addSubscriber(sinkClass);
         assertEquals(1, source.subscribers.size());
         source.removeSubscriber(sinkClass);

@@ -9,11 +9,12 @@ import fr.sncf.osrd.simulation.utils.TimelineEvent.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SchedulerSystem extends Entity {
+public final class SchedulerSystem extends Entity {
     static final Logger logger = LoggerFactory.getLogger(SchedulerSystem.class);
 
     private SchedulerSystem() {
         // the train must react to its own train creation events
+        super("scheduler");
         this.addSubscriber(this);
     }
 
@@ -25,26 +26,17 @@ public class SchedulerSystem extends Entity {
             State state
     ) throws SimulationError {
         // we don't support train creation events for now
-        assert state == State.HAPPENED;
-
-        var world = sim.world;
-        var infra = world.infra;
-
-        if (event.value.getClass() != NewTrainChange.class)
+        if (state != State.HAPPENED) {
+            logger.info("train creation cancelled");
             return;
-        var value = (NewTrainChange)event.value;
+        }
 
-        var timetable = value.timetable;
-        var trainName = timetable.name;
-        logger.info("starting train {}", trainName);
-        var train = Train.createTrain(
-                sim,
-                trainName,
-                timetable.rollingStock,
-                new TrainPath(infra, timetable),
-                timetable.initialSpeed,
-                400);
-        world.trains.add(train);
+        if (event.value.getClass() != Train.TrainCreatedChange.class)
+            return;
+        var newTrainChange = (Train.TrainCreatedChange)event.value;
+
+        logger.info("starting train {}", newTrainChange.timetable.name);
+        Train.createTrain(sim, newTrainChange);
     }
 
     /**
@@ -59,8 +51,10 @@ public class SchedulerSystem extends Entity {
         assert schedule.isFrozen();
         var scheduler = new SchedulerSystem();
         for (var timetable : schedule.timetables) {
+            // the path is computed at the beginning of the simulation, as it is (for now) part of the event
+            var trainPath = new TrainPath(sim.world.infra, timetable);
             var startTime = timetable.getDepartureTime();
-            scheduler.event(sim, startTime, new NewTrainChange(timetable));
+            scheduler.event(sim, startTime, new Train.TrainCreatedChange(sim, timetable, trainPath));
         }
         return scheduler;
     }
