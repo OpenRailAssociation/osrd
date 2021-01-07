@@ -7,7 +7,11 @@ import java.util.Objects;
  * A base event type. Derived types implement updateState to notify some other components about changes.
  * @param <T> the type of the value
  */
-public class TimelineEvent<T extends BaseChange> implements Comparable<TimelineEvent<?>> {
+// even though this warning is ignored, it is sort of correct:
+// timeline events are equal when their identifier is.
+// **it does not check for the exact content of the timeline event**
+@SuppressFBWarnings({"EQ_DOESNT_OVERRIDE_EQUALS"})
+public class TimelineEvent<T> extends TimelineEventId {
     public final Entity source;
 
     void updateState(Simulation sim, State newState) throws SimulationError {
@@ -86,60 +90,18 @@ public class TimelineEvent<T extends BaseChange> implements Comparable<TimelineE
     // some value associated with the event
     public final T value;
 
-    // the simulation time the event is planned to execute at
-    public final double scheduledTime;
-
-    // the revision of the simulation the event was created at
-    // this is needed to enforce an absolute event order
-    final long revision;
-
     /**
      * Creates a new event
      *
      * @param source the entity the event was generated from
-     * @param sim the simulation the event belongs to
+     * @param revision the revision of the event
      * @param scheduledTime the time at will the event is planned to happen
      * @param value the value associated with the event
-     * @throws SimulationError {@inheritDoc}
      */
-    public TimelineEvent(Entity source, Simulation sim, double scheduledTime, T value) throws SimulationError {
+    TimelineEvent(Entity source, long revision, double scheduledTime, T value) {
+        super(scheduledTime, revision);
         this.source = source;
         this.state = State.UNREGISTERED;
-        this.scheduledTime = scheduledTime;
-        this.revision = sim.nextRevision();
         this.value = value;
-        sim.registerEvent(this);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(scheduledTime, revision);
-    }
-
-    @Override
-    @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY")
-    public boolean equals(Object obj) {
-        if (obj == null)
-            return false;
-
-        if (getClass() != obj.getClass())
-            return false;
-
-        // because of type erasure, we can't cast to the exact type
-        TimelineEvent<?> o = (TimelineEvent<?>) obj;
-        return scheduledTime == o.scheduledTime && revision == o.revision;
-    }
-
-    @Override
-    public int compareTo(TimelineEvent<?> o) {
-        assert this.state == State.SCHEDULED;
-        assert o.state == State.SCHEDULED;
-
-        // events are compared by planned time first, then revision
-        int cmpRes = Double.compare(scheduledTime, o.scheduledTime);
-        if (cmpRes != 0)
-            return cmpRes;
-
-        return Long.compare(revision, o.revision);
     }
 }

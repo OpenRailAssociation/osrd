@@ -2,12 +2,13 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.utils.*;
-import fr.sncf.osrd.simulation.TrainLocationChange;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.timetable.Timetable;
 import fr.sncf.osrd.util.TopoLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class Train extends Entity {
@@ -21,11 +22,14 @@ public class Train extends Entity {
 
     private TrainState lastState;
 
-    // the candidate next state
+    // the candidate next state, which corresponds to the state of the train when
+    // it goes through the next point of interest, such as a signal getting in sight range
     private TrainState nextState = null;
-    private TimelineEvent<TrainLocationChange> nextMoveEvent = null;
 
-    private Train(
+    // the timeline event for the train's arrival at the next point of interest
+    private TimelineEvent<LocationChange> nextMoveEvent = null;
+
+    Train(
             double driverSightDistance,
             String name,
             Simulation sim,
@@ -34,6 +38,7 @@ public class Train extends Entity {
             double initialSpeed,
             LinkedList<SpeedController> controllers
     ) {
+        super(String.format("train/%s", name));
         this.driverSightDistance = driverSightDistance;
         this.name = name;
         this.rollingStock = rollingStock;
@@ -52,44 +57,94 @@ public class Train extends Entity {
 
     /**
      * Creates a train entity
-     * @param name the train's name
-     * @param rollingStock the train inventory item
-     * @param trainPath the path the train will follow
-     * @param initialSpeed the initial speed the train will travel at
+     * @param sim the simulation
+     * @param trainCreatedChange the change modeling the train's creation
      * @return A new train entity
      */
     public static Train createTrain(
             Simulation sim,
-            String name,
-            RollingStock rollingStock,
-            TrainPath trainPath,
-            double initialSpeed,
-            double sightDistance
+            TrainCreatedChange trainCreatedChange
     ) throws SimulationError {
-        var controllers = new LinkedList<SpeedController>();
-        controllers.add((trainState, _location, timeDelta) ->
-                Action.accelerate(trainState.train.rollingStock.mass / 2, false));
-
-        var train = new Train(sightDistance, name, sim, rollingStock, trainPath, initialSpeed, controllers);
+        var train = trainCreatedChange.apply(sim);
+        sim.publishChange(trainCreatedChange);
         train.planNextMove(sim);
         return train;
     }
 
+    public static class LocationChange extends EntityChange<Train, Void> {
+        public final TrainState newState;
+        public final ArrayList<TrainPhysicsSimulator.PositionUpdate> positionUpdates;
+
+        /**
+         * Creates a change corresponding to the movement of a train
+         *
+         * @param newState        the state of the train after the change
+         * @param positionUpdates the speed / position curve
+         */
+        public LocationChange(
+                Simulation sim,
+                Train train,
+                TrainState newState,
+                ArrayList<TrainPhysicsSimulator.PositionUpdate> positionUpdates
+        ) {
+            super(sim,  train);
+            this.newState = newState;
+            this.positionUpdates = positionUpdates;
+        }
+
+        @Override
+        public final Void apply(Simulation sim, Train train) {
+            train.lastState = this.newState;
+            train.nextState = null;
+            train.nextMoveEvent = null;
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "Train.LocationChange { speed=%.2f, pathPosition=%.2f }",
+                    newState.speed,
+                    newState.location.getHeadPathPosition()
+            );
+        }
+    }
+
+    public static final class TrainPlannedMoveChange extends EntityEventChange<Train, LocationChange, Void> {
+        public TrainPlannedMoveChange(Simulation sim, Train entity, TimelineEvent<LocationChange> timelineEvent) {
+            super(sim, entity, timelineEvent);
+        }
+
+        @Override
+        public Void apply(Simulation sim, Train train, TimelineEvent<LocationChange> event) {
+            train.nextMoveEvent = event;
+            return null;
+        }
+    }
+
     void planNextMove(Simulation sim) throws SimulationError {
-        nextMoveEvent = lastState.simulateUntilEvent(sim);
+        if (lastState.status == TrainStatus.REACHED_DESTINATION) {
+            logger.info("train {} reached destination, aborting planning", name);
+            return;
+        }
+
+        logger.info("planning the next move for train {}", name);
+        var moveEvent = lastState.simulateUntilEvent(sim);
+        var change = new TrainPlannedMoveChange(sim, this, moveEvent);
+        change.apply(sim, this, moveEvent);
+        sim.publishChange(change);
     }
 
     void trainMoveReact(
             Simulation sim,
-            TrainLocationChange change,
-            TimelineEvent.State newState) throws SimulationError {
+            LocationChange locationChange,
+            TimelineEvent.State newState
+    ) throws SimulationError {
         if (newState == TimelineEvent.State.CANCELLED) {
             planNextMove(sim);
         } else if (newState == TimelineEvent.State.HAPPENED) {
-            assert change.newState == nextState;
-            this.lastState = this.nextState;
-            this.nextState = null;
-            this.nextMoveEvent = null;
+            locationChange.apply(sim, this);
+            sim.publishChange(locationChange);
             planNextMove(sim);
         } else
             throw new SimulationError("invalid state change");
@@ -102,8 +157,8 @@ public class Train extends Entity {
             TimelineEvent<?> event,
             TimelineEvent.State state
     ) throws SimulationError {
-        if (event.value.getClass() == TrainLocationChange.class)
-            trainMoveReact(sim, (TrainLocationChange)event.value, state);
+        if (event.value.getClass() == LocationChange.class)
+            trainMoveReact(sim, (LocationChange)event.value, state);
     }
 
 
@@ -140,5 +195,49 @@ public class Train extends Entity {
             interpolatedSpeed = update.speed;
         }
         return new InterpolatedTrainSpeedAndLocation(interpolatedSpeed, res.getHeadTopoLocation());
+    }
+
+    public static final class TrainCreatedChange extends SimChange<Train> {
+        public final Timetable timetable;
+        public final TrainPath trainPath;
+
+        /**
+         * A change corresponding to a train's creation.
+         * @param sim the simulation
+         * @param timetable the train's timetable
+         * @param trainPath the path the train shall follow
+         */
+        public TrainCreatedChange(Simulation sim, Timetable timetable, TrainPath trainPath) {
+            super(sim);
+            this.timetable = timetable;
+            this.trainPath = trainPath;
+        }
+
+        @Override
+        public Train apply(Simulation sim) {
+            var trainName = timetable.name;
+
+            var controllers = new LinkedList<SpeedController>();
+            controllers.add((trainState, _location, timeDelta) ->
+                    Action.accelerate(trainState.train.rollingStock.mass / 2, false));
+
+            var train = new Train(
+                    400,
+                    trainName,
+                    sim,
+                    timetable.rollingStock,
+                    trainPath,
+                    timetable.initialSpeed,
+                    controllers
+            );
+            sim.registerEntity(train);
+            sim.world.trains.add(train);
+            return train;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("TrainCreatedChange { name=%s }", timetable.name);
+        }
     }
 }

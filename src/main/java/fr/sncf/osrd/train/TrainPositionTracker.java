@@ -1,5 +1,6 @@
 package fr.sncf.osrd.train;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.topological.PointAttrGetter;
@@ -11,6 +12,7 @@ import fr.sncf.osrd.util.RangeValue;
 import fr.sncf.osrd.util.TopoLocation;
 
 import java.util.ArrayDeque;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public final class TrainPositionTracker implements Cloneable {
@@ -39,6 +41,39 @@ public final class TrainPositionTracker implements Cloneable {
      *  Its recomputed from the head edge position at each update.
      */
     private double tailEdgePosition = Double.NaN;
+
+    @Override
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+
+        if (obj.getClass() != TrainPositionTracker.class)
+            return false;
+
+        var other = (TrainPositionTracker)obj;
+        if (!path.equals(other.path))
+            return false;
+
+        if (currentPathIndex != other.currentPathIndex)
+            return false;
+
+        if (trainLength != other.trainLength)
+            return false;
+
+        if (!currentPathEdges.equals(other.currentPathEdges))
+            return false;
+
+        if (headEdgePosition != other.headEdgePosition)
+            return false;
+
+        return tailEdgePosition == other.tailEdgePosition;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(path, currentPathIndex, trainLength, currentPathEdges, headEdgePosition, tailEdgePosition);
+    }
 
     /**
      * Makes a copy of the position tracker.

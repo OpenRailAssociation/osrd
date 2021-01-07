@@ -10,13 +10,20 @@ import org.junit.jupiter.api.Test;
 import java.util.Objects;
 
 public class SignalSimulationTest {
-    public static final class SignalChange extends BaseChange {
+    public static final class SignalAspectChange extends EntityChange<Signal, Void> {
         public final Signal signal;
-        public final Signal.Aspect aspect;
+        public final Signal.Aspect newAspect;
 
-        public SignalChange(Signal signal, Signal.Aspect aspect) {
+        /**
+         * Creates a change of signal aspect
+         * @param sim the simulation
+         * @param signal the signal for which the aspect changed
+         * @param newAspect the new aspect of the signal
+         */
+        public SignalAspectChange(Simulation sim, Signal signal, Signal.Aspect newAspect) {
+            super(sim, signal);
             this.signal = signal;
-            this.aspect = aspect;
+            this.newAspect = newAspect;
         }
 
         @Override
@@ -27,13 +34,19 @@ public class SignalSimulationTest {
             if (this.getClass() != obj.getClass())
                 return false;
 
-            var o = (SignalChange) obj;
-            return this.signal == o.signal && this.aspect == o.aspect;
+            var o = (SignalAspectChange) obj;
+            return this.signal == o.signal && this.newAspect == o.newAspect;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(signal, aspect);
+            return Objects.hash(signal, newAspect);
+        }
+
+        @Override
+        public Void apply(Simulation sim, Signal signal) {
+            signal.aspect = newAspect;
+            return null;
         }
     }
 
@@ -50,7 +63,8 @@ public class SignalSimulationTest {
             return aspect;
         }
 
-        Signal(Aspect aspect, Signal master) {
+        Signal(String name, Aspect aspect, Signal master) {
+            super(String.format("signal/%s", name));
             this.aspect = aspect;
             if (master != null)
                 master.addSubscriber(this);
@@ -65,8 +79,9 @@ public class SignalSimulationTest {
         public void setAspect(Simulation sim, Aspect newAspect) throws SimulationError {
             if (newAspect == aspect)
                 return;
-            this.event(sim, sim.getTime(), new SignalChange(this, newAspect));
-            this.aspect = newAspect;
+            var change = new SignalAspectChange(sim, this, newAspect);
+            this.event(sim, sim.getTime(), change);
+            change.apply(sim, this);
         }
 
         @Override
@@ -76,17 +91,17 @@ public class SignalSimulationTest {
                 TimelineEvent<?> event,
                 TimelineEvent.State state
         ) throws SimulationError {
-            if (event.value.getClass() == SignalChange.class)
-                masterAspectChanged(sim, (SignalChange)event.value, state);
+            if (event.value.getClass() == SignalAspectChange.class)
+                masterAspectChanged(sim, (SignalAspectChange)event.value, state);
         }
 
         private void masterAspectChanged(
                 Simulation sim,
-                SignalChange event,
+                SignalAspectChange event,
                 TimelineEvent.State state
         ) throws SimulationError {
             var newAspect = aspect;
-            if (event.aspect == RED) {
+            if (event.newAspect == RED) {
                 newAspect = YELLOW;
             } else {
                 newAspect = GREEN;
@@ -98,20 +113,20 @@ public class SignalSimulationTest {
 
     @Test
     public void testSignaling() throws SimulationError {
-        var sim = new Simulation(null, 0.0);
-        final var masterSignal = new Signal(GREEN, null);
-        final var slaveSignal = new Signal(GREEN, masterSignal);
+        var sim = new Simulation(null, 0.0, null, null);
+        final var masterSignal = new Signal("master", GREEN, null);
+        final var slaveSignal = new Signal("slave", GREEN, masterSignal);
         masterSignal.setAspect(sim, RED);
 
         assertFalse(sim.isSimulationOver());
-        assertEquals(new SignalChange(masterSignal, RED), sim.step());
-        assertEquals(new SignalChange(slaveSignal, YELLOW), sim.step());
+        assertEquals(new SignalAspectChange(sim, masterSignal, RED), sim.step());
+        assertEquals(new SignalAspectChange(sim, slaveSignal, YELLOW), sim.step());
         assertTrue(sim.isSimulationOver());
 
         // we must be able to unsubscribe sinks
         masterSignal.removeSubscriber(slaveSignal);
         masterSignal.setAspect(sim, YELLOW);
-        assertEquals(new SignalChange(masterSignal, YELLOW), sim.step());
+        assertEquals(new SignalAspectChange(sim, masterSignal, YELLOW), sim.step());
         assertTrue(sim.isSimulationOver());
     }
 }

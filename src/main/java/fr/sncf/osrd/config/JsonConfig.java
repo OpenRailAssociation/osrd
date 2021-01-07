@@ -5,5 +5,7 @@ class JsonConfig {
     String infraPath;
     String schedulePath;
     boolean showViewer;
+    boolean realTimeViewer = false;
+    boolean changeReplayCheck;
     double simulationStepPause = 0;
 }

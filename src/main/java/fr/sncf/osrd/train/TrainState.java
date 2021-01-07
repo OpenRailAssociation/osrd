@@ -2,7 +2,6 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.topological.TopoEdge;
-import fr.sncf.osrd.simulation.TrainLocationChange;
 import fr.sncf.osrd.simulation.utils.Simulation;
 import fr.sncf.osrd.simulation.utils.SimulationError;
 import fr.sncf.osrd.simulation.utils.TimelineEvent;
@@ -13,24 +12,59 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class TrainState {
+public final class TrainState {
     static final Logger logger = LoggerFactory.getLogger(TrainState.class);
 
     // the time for which this state is relevant
     public double time;
+
+    // the current speed of the train
+    public double speed;
+
+    // what state the train is in: reached destination, rolling, emergency, ...
+    public TrainStatus status;
+
+    // the train this is the state of
+    public final Train train;
 
     // this field MUST be kept private, as it is not the position of the train at the current simulation time,
     // but rather the position of the train at the last event. it's fine and expected, but SpeedControllers need
     // the simulated location
     public TrainPositionTracker location;
 
-    public double speed;
-    public TrainStatus status;
     public LinkedList<SpeedController> controllers;
 
-    public final Train train;
+
+    @Override
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+
+        if (obj.getClass() != TrainState.class)
+            return false;
+
+        var otherState = (TrainState)obj;
+        if (this.time != otherState.time)
+            return false;
+        if (this.speed != otherState.speed)
+            return false;
+        if (this.status != otherState.status)
+            return false;
+        if (!this.train.entityId.equals(otherState.train.entityId))
+            return false;
+        if (!this.location.equals(otherState.location))
+            return false;
+        return this.controllers.equals(otherState.controllers);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(time, speed, status, train.entityId, location, controllers);
+    }
 
     TrainState(
             double time,
@@ -81,25 +115,27 @@ public class TrainState {
         return update;
     }
 
-    private TrainLocationChange computeSpeedCurve(
+    private Train.LocationChange computeSpeedCurve(
+            Simulation sim,
             double goalTrackPosition
     ) throws SimulationError {
         var nextState = this.clone();
         var positionUpdates = new ArrayList<TrainPhysicsSimulator.PositionUpdate>();
 
-        int i = 0;
-        while (nextState.location.getHeadPathPosition() < goalTrackPosition) {
-            if (nextState.location.hasReachedGoal())
+        for (int i = 0; nextState.location.getHeadPathPosition() < goalTrackPosition; i++) {
+            if (i >= 10000)
+                throw new SimulationError("train physics numerical integration doesn't seem to stop");
+
+            if (nextState.location.hasReachedGoal()) {
+                nextState.status = TrainStatus.REACHED_DESTINATION;
                 break;
+            }
 
             var update = nextState.step(1.0);
             positionUpdates.add(update);
-            i++;
-            if (i >= 10000)
-                throw new SimulationError("simulation did not end");
         }
 
-        return new TrainLocationChange(nextState, positionUpdates);
+        return new Train.LocationChange(sim, train, nextState, positionUpdates);
     }
 
     private Action getAction(TrainPositionTracker location, TrainPhysicsSimulator trainPhysics) {
@@ -137,7 +173,7 @@ public class TrainState {
     }
 
 
-    TimelineEvent<TrainLocationChange> simulateUntilEvent(Simulation sim) throws SimulationError {
+    TimelineEvent<Train.LocationChange> simulateUntilEvent(Simulation sim) throws SimulationError {
         // 1) find the next event position
 
         // look for objects in the range [train_position, +inf)
@@ -160,7 +196,7 @@ public class TrainState {
         var nextEventTrackPosition = nextTrackObjectVisibilityChange;
 
         // 2) simulate up to nextEventTrackPosition
-        var simulationResult = computeSpeedCurve(nextEventTrackPosition);
+        var simulationResult = computeSpeedCurve(sim, nextEventTrackPosition);
         var simulationElapsedTime = simulationResult.positionUpdates.stream()
                 .map(update -> update.timeDelta)
                 .reduce(Double::sum)

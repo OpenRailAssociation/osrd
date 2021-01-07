@@ -1,15 +1,61 @@
 package fr.sncf.osrd.simulation.utils;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public abstract class Entity {
+    public final String entityId;
+    public final ArrayList<Entity> subscribers = new ArrayList<>();
+
+    protected Entity(String entityId) {
+        this.entityId = entityId;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+
+        if (this.getClass() != obj.getClass())
+            return false;
+
+        var other = (Entity)obj;
+        if (!this.entityId.equals(other.entityId))
+            return false;
+
+        // equal entities have the same number of subscribers
+        if (this.subscribers.size() != other.subscribers.size())
+            return false;
+
+        // compare the IDs of the list of subscribers
+        for (int i = 0; i < subscribers.size(); i++) {
+            var ourSub = subscribers.get(i);
+            var theirSub = other.subscribers.get(i);
+
+            if (!ourSub.entityId.equals(theirSub.entityId))
+                return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        // we can't just do that, as two mutually subscribed entities wouldn't
+        // be able to compute their hash without running into infinite recursion
+        // return Objects.hash(entityId, subscribers);
+
+        var hash = entityId.hashCode();
+        for (var sub : subscribers)
+            hash = Objects.hash(hash, sub.entityId);
+        return hash;
+    }
+
     protected abstract void timelineEventUpdate(
             Simulation sim,
             TimelineEvent<?> event,
             TimelineEvent.State state
     ) throws SimulationError;
-
-    public final ArrayList<Entity> subscribers = new ArrayList<>();
 
     public void addSubscriber(Entity sink) {
         assert !subscribers.contains(sink);
@@ -40,10 +86,10 @@ public abstract class Entity {
      * @return a new event
      * @throws SimulationError {@inheritDoc}
      */
-    public <T extends BaseChange> TimelineEvent<T> event(
+    public <T> TimelineEvent<T> event(
             Simulation sim,
             double scheduledTime, T value
     ) throws SimulationError {
-        return new TimelineEvent<T>(this, sim, scheduledTime, value);
+        return sim.event(this, scheduledTime, value);
     }
 }
