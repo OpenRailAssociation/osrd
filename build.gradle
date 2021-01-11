@@ -14,7 +14,7 @@ repositories {
 }
 
 dependencies {
-    compile group: 'org.dom4j', name: 'dom4j', version: '2.1.0'
+    implementation group: 'org.dom4j', name: 'dom4j', version: '2.1.0'
 
     implementation 'com.squareup.moshi:moshi:1.11.0'
 
@@ -34,9 +34,9 @@ dependencies {
     implementation 'org.graphstream:gs-ui-swing:2.0'
 
     // the logging API stub
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'
     // the logging API implementation
-    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.+'
+    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.+'
 }
 
 application {
