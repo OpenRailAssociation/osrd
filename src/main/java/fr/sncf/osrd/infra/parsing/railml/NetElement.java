@@ -1,5 +1,6 @@
 package fr.sncf.osrd.infra.parsing.railml;
 
+import fr.sncf.osrd.infra.parsing.railml.NetRelation.Position;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.util.FloatCompare;
 import fr.sncf.osrd.util.MutPair;
@@ -14,6 +15,8 @@ import java.util.Map;
 class NetElement {
     final TopoEdge topoEdge;
     final ArrayList<NetElement> children;
+
+    /** The start position of the netElement given the name of a linear reference system. */
     final Map<String, Double> lrsDeltas;
 
     /** constructor for netElement which contains elementCollectionUnordered */
@@ -43,14 +46,13 @@ class NetElement {
         var lrsMap = new HashMap<String, MutPair<Double, Double>>();
 
         for (var intrinsicCoordinate: netElement.selectNodes("associatedPositioningSystem/intrinsicCoordinate")) {
-            var intrinsicCoord = Double.valueOf(intrinsicCoordinate.valueOf("@intrinsicCoord"));
-            assert FloatCompare.eq(intrinsicCoord, 0) || FloatCompare.eq(intrinsicCoord, 1);
+            var intrinsicCoord = Position.coordParse(intrinsicCoordinate.valueOf("@intrinsicCoord"));
             var positioningSystemRef = intrinsicCoordinate.valueOf("linearCoordinate/@positioningSystemRef");
             if (positioningSystemRef.isEmpty())
                 continue;
             var measure = Double.valueOf(intrinsicCoordinate.valueOf("linearCoordinate/@measure"));
             lrsMap.putIfAbsent(positioningSystemRef, new MutPair<>(Double.NaN, Double.NaN));
-            if (FloatCompare.eq(intrinsicCoord, 0))
+            if (intrinsicCoord == Position.START)
                 lrsMap.get(positioningSystemRef).first = measure;
             else
                 lrsMap.get(positioningSystemRef).second = measure;
