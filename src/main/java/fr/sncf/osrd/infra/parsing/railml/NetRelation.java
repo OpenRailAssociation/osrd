@@ -4,17 +4,30 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings(value = "URF_UNREAD_FIELD")
 class NetRelation {
+    public enum Position {
+        START,
+        END,
+        ;
+
+        static Position coordParse(String intrinsicCoord) {
+            assert intrinsicCoord.equals("0") || intrinsicCoord.equals("1");
+            if (intrinsicCoord.equals("0"))
+                return START;
+            return END;
+        }
+    }
+
     final String id;
-    final boolean atZeroOnA;
+    final Position positionOnA;
     final String elementA;
-    final boolean atZeroOnB;
+    final Position positionOnB;
     final String elementB;
 
     NetRelation(String id, String positionOnA, String elementA, String positionOnB, String elementB) {
         this.id = id;
-        this.atZeroOnA = positionOnA.equals("0");
+        this.positionOnA = Position.coordParse(positionOnA);
         this.elementA = elementA;
-        this.atZeroOnB = positionOnB.equals("0");
+        this.positionOnB = Position.coordParse(positionOnB);
         this.elementB = elementB;
     }
 }

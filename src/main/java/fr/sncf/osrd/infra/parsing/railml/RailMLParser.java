@@ -3,6 +3,7 @@ package fr.sncf.osrd.infra.parsing.railml;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
+import fr.sncf.osrd.infra.parsing.railml.NetRelation.Position;
 import fr.sncf.osrd.infra.topological.NoOpNode;
 import fr.sncf.osrd.infra.topological.StopBlock;
 import fr.sncf.osrd.infra.topological.Switch;
@@ -10,17 +11,21 @@ import fr.sncf.osrd.util.*;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class RailMLParser {
+    static final Logger logger = LoggerFactory.getLogger(RailMLParser.class);
+
     private final String inputPath;
     private final Map<String, NetRelation> netRelationsMap = new HashMap<>();
     private final Map<String, NetElement> netElementMap = new HashMap<>();
     /* a map from each end of each net element to a per edge end unique identifier */
-    private final Map<Pair<String, Boolean>, Integer> edgeEndpointIDs = new HashMap<>();
+    private final Map<Pair<String, Position>, Integer> edgeEndpointIDs = new HashMap<>();
     private int numberOfNodes = 0;
     /* a map from edge endpoints ID to node ID*/
     private final ArrayList<Integer> edgeEndpointToNode = new ArrayList<>();
@@ -79,8 +84,8 @@ public class RailMLParser {
         /* a parenthood map of connected components */
         var uf = new UnionFind();
         for (var netRelation : netRelationsMap.values()) {
-            var keyA = new Pair<>(netRelation.elementA, netRelation.atZeroOnA);
-            var keyB = new Pair<>(netRelation.elementB, netRelation.atZeroOnB);
+            var keyA = new Pair<>(netRelation.elementA, netRelation.positionOnA);
+            var keyB = new Pair<>(netRelation.elementB, netRelation.positionOnB);
             // get the group ID, or create one if none is found
             int groupA = edgeEndpointIDs.getOrDefault(keyA, -1);
             if (groupA == -1) {
@@ -128,8 +133,8 @@ public class RailMLParser {
         }
     }
 
-    private int getNodeIndex(String netElementId, boolean atZero, Infra infra) {
-        var key = new Pair<>(netElementId, atZero);
+    private int getNodeIndex(String netElementId, Position position, Infra infra) {
+        var key = new Pair<>(netElementId, position);
         int index = edgeEndpointIDs.getOrDefault(key, -1);
         if (index != -1)
             return edgeEndpointToNode.get(index);
@@ -156,8 +161,8 @@ public class RailMLParser {
 
             var lengthStr = netElement.valueOf("@length");
             double length = Double.parseDouble(lengthStr);
-            int startNodeIndex = getNodeIndex(id, true, infra);
-            int endNodeIndex = getNodeIndex(id, false, infra);
+            int startNodeIndex = getNodeIndex(id, Position.START, infra);
+            int endNodeIndex = getNodeIndex(id, Position.END, infra);
             var topoEdge = infra.makeTopoLink(startNodeIndex, endNodeIndex, id, length);
             netElementMap.put(id, new NetElement(topoEdge, netElement));
         }
@@ -256,28 +261,31 @@ public class RailMLParser {
     }
 
     private void parseSpeedSection(Document document) throws InvalidInfraException {
-        Map<Pair<String, Boolean>, RangeSequence.Builder<Double>> builders = new HashMap<>();
+        Map<Pair<String, NetRelation.Position>, RangeSequence.Builder<Double>> builders = new HashMap<>();
 
+        // iterate over all the speed section, which is a continuous set of tracks with a speed limit
         var xpath = "/railML/infrastructure/functionalInfrastructure/speed/speedSection";
         for (var speedSection : document.selectNodes(xpath)) {
             var speed = Double.valueOf(speedSection.valueOf("@maxSpeed"));
+            // each speed section applies to a number of micro netElements
             for (var associatedNetElement : speedSection.selectNodes("linearLocation/associatedNetElement")) {
                 var netElementRef = associatedNetElement.valueOf("@netElementRef");
-                var measureBegin = Double.valueOf(associatedNetElement.valueOf("linearCoordinateBegin/@measure"));
+                double measureBegin = Double.parseDouble(associatedNetElement.valueOf("linearCoordinateBegin/@measure"));
+                double measureEnd = Double.parseDouble(associatedNetElement.valueOf("linearCoordinateEnd/@measure"));
                 var lrsBegin = associatedNetElement.valueOf("linearCoordinateBegin/@positioningSystemRef");
-                var measureEnd = Double.valueOf(associatedNetElement.valueOf("linearCoordinateEnd/@measure"));
                 var lrsEnd = associatedNetElement.valueOf("linearCoordinateEnd/@positioningSystemRef");
 
                 assert lrsBegin.equals(lrsEnd);
 
                 var netElement = netElementMap.get(netElementRef);
+                var edge = netElement.topoEdge;
                 for (var place : netElement.placeOn(lrsBegin, measureBegin, measureEnd)) {
-                    var forward = new Pair<>(place.value.id, true);
-                    builders.putIfAbsent(forward, netElement.topoEdge.speedLimitsForward.builder());
+                    var forward = new Pair<>(place.value.id, Position.START);
+                    builders.putIfAbsent(forward, edge.speedLimitsForward.builder());
                     builders.get(forward).add(place.begin, place.end, speed);
 
-                    var backward = new Pair<>(place.value.id, false);
-                    builders.putIfAbsent(backward, netElement.topoEdge.speedLimitsBackward.builder());
+                    var backward = new Pair<>(place.value.id, Position.END);
+                    builders.putIfAbsent(backward, edge.speedLimitsBackward.builder());
                     builders.get(backward).add(place.begin, place.end, speed);
                 }
             }
