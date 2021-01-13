@@ -3,7 +3,7 @@ package fr.sncf.osrd.train;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.utils.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.timetable.Timetable;
+import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.util.TopoLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -198,7 +198,7 @@ public class Train extends Entity {
     }
 
     public static final class TrainCreatedChange extends SimChange<Train> {
-        public final Timetable timetable;
+        public final TrainSchedule timetable;
         public final TrainPath trainPath;
 
         /**
@@ -207,7 +207,7 @@ public class Train extends Entity {
          * @param timetable the train's timetable
          * @param trainPath the path the train shall follow
          */
-        public TrainCreatedChange(Simulation sim, Timetable timetable, TrainPath trainPath) {
+        public TrainCreatedChange(Simulation sim, TrainSchedule timetable, TrainPath trainPath) {
             super(sim);
             this.timetable = timetable;
             this.trainPath = trainPath;
