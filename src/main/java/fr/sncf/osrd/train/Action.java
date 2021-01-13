@@ -121,7 +121,7 @@ public class Action implements Comparable<Action> {
     public boolean equals(Object obj) {
         if (!(obj instanceof Action))
             return false;
-        return this.compareTo((Action)obj) == 0;
+        return this.compareTo((Action) obj) == 0;
     }
 
     @Override

@@ -20,8 +20,8 @@ public abstract class EntityEventChange<EntityT extends Entity, EventValueT, Res
         // in a simulation run, "foobar" could be a train, and could be a
         // signal in another.
         // This won't happen because we pick our identifiers to be unique.
-        var entity = (EntityT)sim.getEntity(entityId);
-        var event = (TimelineEvent<EventValueT>)sim.getTimelineEvent(timelineEventId);
+        var entity = (EntityT) sim.getEntity(entityId);
+        var event = (TimelineEvent<EventValueT>) sim.getTimelineEvent(timelineEventId);
         this.apply(sim, entity, event);
     }
 }

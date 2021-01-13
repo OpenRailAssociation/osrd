@@ -17,7 +17,7 @@ public class TestTrains {
         var maxEffort = 450000.0;
         var minEffort = 180000.0;
         for (int speed = 0; speed < maxSpeed; speed += 1) {
-            double coeff = (double)speed / maxSpeed;
+            double coeff = (double) speed / maxSpeed;
             double effort = maxEffort + (minEffort - maxEffort) * coeff;
             tractiveEffortCurve.add(new RollingStock.TractiveEffortPoint(speed, effort));
         }

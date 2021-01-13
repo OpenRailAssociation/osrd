@@ -37,7 +37,7 @@ public final class World {
         if (obj.getClass() != World.class)
             return false;
 
-        var other = (World)obj;
+        var other = (World) obj;
         if (this.infra != other.infra)
             return false;
 

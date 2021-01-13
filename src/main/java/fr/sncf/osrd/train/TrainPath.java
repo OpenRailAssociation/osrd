@@ -28,7 +28,7 @@ public final class TrainPath implements Freezable {
             if (obj.getClass() != PathElement.class)
                 return false;
 
-            var other = (PathElement)obj;
+            var other = (PathElement) obj;
             if (!edge.id.equals(other.edge.id))
                 return false;
 

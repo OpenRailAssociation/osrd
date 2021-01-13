@@ -343,7 +343,7 @@ public final class Simulation {
         if (obj.getClass() != Simulation.class)
             return false;
 
-        var otherSim = (Simulation)obj;
+        var otherSim = (Simulation) obj;
 
         // two simulations must have the same time to be equal
         if (this.time != otherSim.time)

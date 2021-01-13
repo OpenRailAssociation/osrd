@@ -92,7 +92,7 @@ public class SignalSimulationTest {
                 TimelineEvent.State state
         ) throws SimulationError {
             if (event.value.getClass() == SignalAspectChange.class)
-                masterAspectChanged(sim, (SignalAspectChange)event.value, state);
+                masterAspectChanged(sim, (SignalAspectChange) event.value, state);
         }
 
         private void masterAspectChanged(

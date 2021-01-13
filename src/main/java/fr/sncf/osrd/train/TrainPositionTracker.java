@@ -51,7 +51,7 @@ public final class TrainPositionTracker implements Cloneable {
         if (obj.getClass() != TrainPositionTracker.class)
             return false;
 
-        var other = (TrainPositionTracker)obj;
+        var other = (TrainPositionTracker) obj;
         if (!path.equals(other.path))
             return false;
 

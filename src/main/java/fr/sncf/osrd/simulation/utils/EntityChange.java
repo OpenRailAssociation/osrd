@@ -25,6 +25,6 @@ public abstract class EntityChange<EntityT extends Entity, ResultT> extends Chan
         // signal in another.
         // This won't happen because we pick our identifiers to be unique
         // to entities, so this cast is fine.
-        this.apply(sim, (EntityT)sim.getEntity(entityId));
+        this.apply(sim, (EntityT) sim.getEntity(entityId));
     }
 }
