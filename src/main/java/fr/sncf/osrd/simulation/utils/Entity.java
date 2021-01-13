@@ -21,7 +21,7 @@ public abstract class Entity {
         if (this.getClass() != obj.getClass())
             return false;
 
-        var other = (Entity)obj;
+        var other = (Entity) obj;
         if (!this.entityId.equals(other.entityId))
             return false;
 

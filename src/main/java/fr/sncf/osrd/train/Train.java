@@ -110,7 +110,7 @@ public class Train extends Entity {
             TimelineEvent.State state
     ) throws SimulationError {
         if (event.value.getClass() == LocationChange.class)
-            trainMoveReact(sim, (LocationChange)event.value, state);
+            trainMoveReact(sim, (LocationChange) event.value, state);
     }
 
     // endregion

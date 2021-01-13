@@ -24,7 +24,7 @@ public final class MutPair<U, V>  {
         if (this.getClass() != obj.getClass())
             return false;
 
-        var o = (MutPair) obj;
+        var o = (MutPair<?, ?>) obj;
         return first.equals(o.first) && second.equals(o.second);
     }
 }

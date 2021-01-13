@@ -31,7 +31,8 @@ public class BlockSection extends AbstractEdge<SectionSignalNode> {
             RangeSequence<TopoEdge> edges,
             SectionSignalNode startNode,
             SectionSignalNode endNode,
-            double length) {
+            double length
+    ) {
         super(startNode.getIndex(), endNode.getIndex(), length);
         this.edges = edges;
         this.id = id;

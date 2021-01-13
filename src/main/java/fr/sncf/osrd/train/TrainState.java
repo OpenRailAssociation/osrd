@@ -46,7 +46,7 @@ public final class TrainState {
         if (obj.getClass() != TrainState.class)
             return false;
 
-        var otherState = (TrainState)obj;
+        var otherState = (TrainState) obj;
         if (this.time != otherState.time)
             return false;
         if (this.speed != otherState.speed)

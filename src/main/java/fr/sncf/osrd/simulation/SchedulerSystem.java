@@ -33,7 +33,7 @@ public final class SchedulerSystem extends Entity {
 
         if (event.value.getClass() != Train.TrainCreatedChange.class)
             return;
-        var newTrainChange = (Train.TrainCreatedChange)event.value;
+        var newTrainChange = (Train.TrainCreatedChange) event.value;
 
         logger.info("starting train {}", newTrainChange.timetable.name);
         Train.createTrain(sim, newTrainChange);

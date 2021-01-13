@@ -76,7 +76,7 @@ public class StaticSpeedLimitTest {
         // get location changes and ensure these is only one
         var locationChanges = changelog.changes.stream()
                 .filter(change -> change.getClass() == Train.LocationChange.class)
-                .map(change -> (Train.LocationChange)change)
+                .map(change -> (Train.LocationChange) change)
                 .collect(Collectors.toList());
         assertEquals(locationChanges.size(), 1);
         var locationChange = locationChanges.get(0);
@@ -103,12 +103,12 @@ public class StaticSpeedLimitTest {
         //    /                               \________/
         //  INCR          CONST             DECR CONST INCR       CONST
         var expectedProfileChanges = new SignAnalyzer.SignProfile[] {
-            SignAnalyzer.SignProfile.INCREASING,
-            SignAnalyzer.SignProfile.CONSTANT,
-            SignAnalyzer.SignProfile.DECREASING,
-            SignAnalyzer.SignProfile.CONSTANT,
-            SignAnalyzer.SignProfile.INCREASING,
-            SignAnalyzer.SignProfile.CONSTANT
+                SignAnalyzer.SignProfile.INCREASING,
+                SignAnalyzer.SignProfile.CONSTANT,
+                SignAnalyzer.SignProfile.DECREASING,
+                SignAnalyzer.SignProfile.CONSTANT,
+                SignAnalyzer.SignProfile.INCREASING,
+                SignAnalyzer.SignProfile.CONSTANT
         };
 
         assertArrayEquals(expectedProfileChanges, profile.toArray());

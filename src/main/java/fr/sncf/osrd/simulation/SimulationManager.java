@@ -39,7 +39,7 @@ public final class SimulationManager {
         // if the user doesn't want realtime visualization, update the viewer once per timeline event
         if (!config.realTimeViewer) {
             viewer.update(sim.world, sim.getTime());
-            Thread.sleep((long)(interpolationStep * 1000));
+            Thread.sleep((long) (interpolationStep * 1000));
             return;
         }
 
@@ -53,7 +53,7 @@ public final class SimulationManager {
             if (interpolatedTime > nextEventTime)
                 interpolatedTime = nextEventTime;
 
-            Thread.sleep((long)(interpolationStep * 1000));
+            Thread.sleep((long) (interpolationStep * 1000));
             viewer.update(sim.world, interpolatedTime);
         }
     }

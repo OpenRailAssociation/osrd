@@ -401,7 +401,7 @@ public class RangeSequence<E> extends SortedSequence<E> {
                     return false;
                 if (obj.getClass() != BuilderIterEvent.class)
                     return false;
-                return compareTo((BuilderIterEvent<?>)obj) == 0;
+                return compareTo((BuilderIterEvent<?>) obj) == 0;
             }
 
             @Override
