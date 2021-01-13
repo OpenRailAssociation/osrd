@@ -113,7 +113,7 @@ public class SignalSimulationTest {
 
     @Test
     public void testSignaling() throws SimulationError {
-        var sim = new Simulation(null, 0.0, null, null);
+        var sim = new Simulation(null, 0.0, null);
         final var masterSignal = new Signal("master", GREEN, null);
         final var slaveSignal = new Signal("slave", GREEN, masterSignal);
         masterSignal.setAspect(sim, RED);

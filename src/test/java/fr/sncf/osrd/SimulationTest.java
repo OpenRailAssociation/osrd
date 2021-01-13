@@ -44,7 +44,7 @@ public class SimulationTest {
 
     @Test
     public void timerTest() throws SimulationError {
-        var sim = new Simulation(null, 1.0, null, null);
+        var sim = new Simulation(null, 1.0, null);
         var timer = new MockEntity("test");
         timer.event(sim, sim.getTime() + 42, "time's up");
         var stepEvent = sim.step();
@@ -55,7 +55,7 @@ public class SimulationTest {
     @Test
     @SuppressFBWarnings(value = {"SIC_INNER_SHOULD_BE_STATIC_ANON", "DLS_DEAD_LOCAL_STORE"})
     public void testEventOrder() throws SimulationError {
-        var sim = new Simulation(null, 0.0, null, null);
+        var sim = new Simulation(null, 0.0, null);
         var timer = new MockEntity("test");
         timer.event(sim, 1.0, "a");
         timer.event(sim, 2.0, "b");

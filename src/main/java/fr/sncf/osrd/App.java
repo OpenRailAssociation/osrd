@@ -31,7 +31,7 @@ public class App {
 
         try {
             logger.info("creating the simulation");
-            var simulation = new SimulationManager(config);
+            var simulation = SimulationManager.fromConfig(config);
 
             logger.info("starting the simulation");
             simulation.run();
