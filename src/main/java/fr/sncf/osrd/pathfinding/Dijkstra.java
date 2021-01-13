@@ -11,6 +11,18 @@ import java.util.*;
 import java.util.function.BiConsumer;
 
 public class Dijkstra {
+    public static class CandidatePath {
+        public final double cost;
+        public final int nodeIndex;
+        public final boolean reachesGoal;
+
+        CandidatePath(double cost, int nodeIndex, boolean reachesGoal) {
+            this.cost = cost;
+            this.nodeIndex = nodeIndex;
+            this.reachesGoal = reachesGoal;
+        }
+    }
+
     /**
      * Compute the shortest path from start to goal
      * @param graph the graph in which to compute the path
@@ -33,20 +45,20 @@ public class Dijkstra {
         assert startPosition >= 0 && startPosition <= start.length;
         assert goalPosition >= 0 && goalPosition <= goal.length;
 
-        var queue = new PriorityQueue<Tuple<Double, Integer, Boolean>>(Comparator.comparing(pair -> pair.first));
+        var queue = new PriorityQueue<CandidatePath>(Comparator.comparing(pair -> pair.cost));
 
         double costToStartNode = costFunction.apply(start, startPosition, 0);
-        queue.add(new Tuple<>(costToStartNode, start.startNode, false));
+        queue.add(new CandidatePath(costToStartNode, start.startNode, false));
         double costToEndNode = costFunction.apply(start, startPosition, start.length);
-        queue.add(new Tuple<>(costToEndNode, start.endNode, false));
+        queue.add(new CandidatePath(costToEndNode, start.endNode, false));
 
         var explored = new HashSet<Integer>();
         var previousNode = new HashMap<Integer, Tuple<Integer, Integer, EdgeDirection>>();
         while (!queue.isEmpty()) {
             var costAndNodeIndex = queue.poll();
-            double cost = costAndNodeIndex.first;
-            int nodeIndex = costAndNodeIndex.second;
-            if (costAndNodeIndex.third) {
+            double cost = costAndNodeIndex.cost;
+            int nodeIndex = costAndNodeIndex.nodeIndex;
+            if (costAndNodeIndex.reachesGoal) {
                 deducePath(graph, previousNode, start, goal, nodeIndex, pathConsumer);
                 return; // we found the goal
             }
@@ -73,13 +85,13 @@ public class Dijkstra {
                 }
 
                 if (edge == goal) {
-                    queue.add(new Tuple<>(newCost, nodeIndex, true));
+                    queue.add(new CandidatePath(newCost, nodeIndex, true));
                     continue;
                 }
 
                 if (explored.contains(nextNodeIndex))
                     continue;
-                queue.add(new Tuple<>(newCost, nextNodeIndex, false));
+                queue.add(new CandidatePath(newCost, nextNodeIndex, false));
                 previousNode.put(nextNodeIndex, new Tuple<>(nodeIndex, edge.getIndex(), direction));
             }
         }
@@ -104,10 +116,15 @@ public class Dijkstra {
             current = previousNode.get(current.first);
         }
         edges.add(new Pair<>(current.second, current.third));
-        EdgeDirection startDirection = EdgeDirection.START_TO_STOP;
-        if (start.endNode == current.first)
-            startDirection = EdgeDirection.STOP_TO_START;
-        edges.add(new Pair<>(start.getIndex(), startDirection));
+
+        // TODO: find a better algorithm, which does not require this hacky condition
+        if (start != goal) {
+            // add the start node
+            EdgeDirection startDirection = EdgeDirection.START_TO_STOP;
+            if (start.endNode == current.first)
+                startDirection = EdgeDirection.STOP_TO_START;
+            edges.add(new Pair<>(start.getIndex(), startDirection));
+        }
 
         var iterator = edges.listIterator(edges.size());
         while (iterator.hasPrevious()) {
