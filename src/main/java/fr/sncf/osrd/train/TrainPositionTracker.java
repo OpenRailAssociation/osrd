@@ -178,6 +178,7 @@ public final class TrainPositionTracker implements Cloneable {
 
             // add the next edge on the path to the current edges queue
             var newEdge = nextPathEdge();
+            assert !currentPathEdges.contains(newEdge);
             currentPathEdges.addFirst(newEdge);
 
             // TODO: re-introduce events on edge changes?

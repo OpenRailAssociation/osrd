@@ -42,7 +42,6 @@ public class Action implements Comparable<Action> {
 
     final ActionType type;
 
-
     /**
      * Encodes the force the driver decided to apply, in newton.
      * It can be nan in case the action does not involve any force.
@@ -55,11 +54,11 @@ public class Action implements Comparable<Action> {
     final boolean deleteController;
 
     public static Action accelerate(double force, boolean deleteController) {
-        assert force > 0.;
         return new Action(ActionType.TRACTION, force, deleteController);
     }
 
     public static Action brake(double force, boolean deleteController) {
+        assert force > 0.;
         return new Action(ActionType.BRAKING, force, deleteController);
     }
 
@@ -96,6 +95,8 @@ public class Action implements Comparable<Action> {
         this.deleteController = deleteController;
     }
 
+    // region STD_OVERRIDES
+
     @Override
     public int compareTo(Action other) {
         // compare the level of emergency first.
@@ -127,4 +128,12 @@ public class Action implements Comparable<Action> {
     public int hashCode() {
         return Objects.hash(type, force, deleteController);
     }
+
+    @Override
+    public String toString() {
+        return String.format("Action { type=%s, force=%f, deleteController=%s }",
+                type.toString(), force, deleteController ? "True" : "False");
+    }
+
+    // endregion
 }
