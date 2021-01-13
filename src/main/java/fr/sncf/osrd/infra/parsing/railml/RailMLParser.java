@@ -3,6 +3,7 @@ package fr.sncf.osrd.infra.parsing.railml;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
+import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.parsing.railml.NetRelation.Position;
 import fr.sncf.osrd.infra.topological.NoOpNode;
 import fr.sncf.osrd.infra.topological.StopBlock;
@@ -10,6 +11,7 @@ import fr.sncf.osrd.infra.topological.Switch;
 import fr.sncf.osrd.util.*;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
+import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -245,7 +247,7 @@ public class RailMLParser {
             var lrsId = operationalPoint.valueOf("spotLocation/linearCoordinate/@positioningSystemRef");
             var measure = Double.valueOf(operationalPoint.valueOf("spotLocation/linearCoordinate/@measure"));
 
-            var locations = netElement.placeOn(lrsId, measure);
+            var locations = netElement.mapToTopo(lrsId, measure);
             OperationalPoint opObj = new OperationalPoint(id, name);
             infra.register(opObj);
             for (var location : locations) {
@@ -261,38 +263,84 @@ public class RailMLParser {
     }
 
     private void parseSpeedSection(Document document) throws InvalidInfraException {
-        Map<Pair<String, NetRelation.Position>, RangeSequence.Builder<Double>> builders = new HashMap<>();
+        // each (edge, direction) has a speed limit range sequence
+        Map<Pair<String, EdgeDirection>, RangeSequence.MinLimitBuilder<Double>> builders = new HashMap<>();
 
         // iterate over all the speed section, which is a continuous set of tracks with a speed limit
-        var xpath = "/railML/infrastructure/functionalInfrastructure/speed/speedSection";
+        var xpath = "/railML/infrastructure/functionalInfrastructure/speeds/speedSection";
         for (var speedSection : document.selectNodes(xpath)) {
-            var speed = Double.valueOf(speedSection.valueOf("@maxSpeed"));
-            // each speed section applies to a number of micro netElements
-            for (var associatedNetElement : speedSection.selectNodes("linearLocation/associatedNetElement")) {
-                var netElementRef = associatedNetElement.valueOf("@netElementRef");
-                double measureBegin = Double.parseDouble(associatedNetElement.valueOf("linearCoordinateBegin/@measure"));
-                double measureEnd = Double.parseDouble(associatedNetElement.valueOf("linearCoordinateEnd/@measure"));
-                var lrsBegin = associatedNetElement.valueOf("linearCoordinateBegin/@positioningSystemRef");
-                var lrsEnd = associatedNetElement.valueOf("linearCoordinateEnd/@positioningSystemRef");
+            double speed = Double.parseDouble(speedSection.valueOf("@maxSpeed"));
 
-                assert lrsBegin.equals(lrsEnd);
+            var linearLocation = speedSection.selectSingleNode("linearLocation");
 
-                var netElement = netElementMap.get(netElementRef);
-                var edge = netElement.topoEdge;
-                for (var place : netElement.placeOn(lrsBegin, measureBegin, measureEnd)) {
-                    var forward = new Pair<>(place.value.id, Position.START);
-                    builders.putIfAbsent(forward, edge.speedLimitsForward.builder());
-                    builders.get(forward).add(place.begin, place.end, speed);
+            // parse the direction of the speed limit
+            var directionString = linearLocation.valueOf("@applicationDirection");
+            EdgeDirection direction;
+            if (directionString.equals("normal")) {
+                direction = EdgeDirection.START_TO_STOP;
+            } else if (directionString.equals("reverse")) {
+                direction = EdgeDirection.STOP_TO_START;
+            } else
+                throw new InvalidInfraException("invalid applicationDirection");
 
-                    var backward = new Pair<>(place.value.id, Position.END);
-                    builders.putIfAbsent(backward, edge.speedLimitsBackward.builder());
-                    builders.get(backward).add(place.begin, place.end, speed);
-                }
+            // find the elements the speed limit applies to
+            for (var associatedNetElement : linearLocation.selectNodes("associatedNetElement"))
+                parseSpeedSectionNetElement(builders, direction, speed, associatedNetElement);
+        }
+
+        // build all speed limits
+        for (var builder : builders.values())
+            builder.build(Double::compare);
+    }
+
+    void parseSpeedSectionNetElement(
+            Map<Pair<String, EdgeDirection>, RangeSequence.MinLimitBuilder<Double>> builders,
+            EdgeDirection direction,
+            double speed,
+            Node netElementNode) throws InvalidInfraException {
+        // parse the LRS
+        var lrsBegin = netElementNode.valueOf("linearCoordinateBegin/@positioningSystemRef");
+        var lrsEnd = netElementNode.valueOf("linearCoordinateEnd/@positioningSystemRef");
+        if (!lrsBegin.equals(lrsEnd))
+            throw new InvalidInfraException("linearCoordinateBegin and linearCoordinateEnd aren't in the same LRS");
+
+        // depending on the direction of the speed limit, the low and high lrs range values aren't the same
+        double minMeasure;
+        double maxMeasure;
+        {
+            double measureBegin = Double.parseDouble(netElementNode.valueOf("linearCoordinateBegin/@measure"));
+            double measureEnd = Double.parseDouble(netElementNode.valueOf("linearCoordinateEnd/@measure"));
+            if (direction == EdgeDirection.START_TO_STOP) {
+                minMeasure = measureBegin;
+                maxMeasure = measureEnd;
+            } else {
+                minMeasure = measureEnd;
+                maxMeasure = measureBegin;
             }
         }
 
-        for (var builder : builders.values()) {
-            builder.build();
+        var netElementRef = netElementNode.valueOf("@netElementRef");
+        logger.trace("adding speed limit on netElement {}", netElementRef);
+        var netElement = netElementMap.get(netElementRef);
+
+        // find the TopoEdges the netElement spans over, and add the speed limit
+        for (var place : netElement.mapToTopo(lrsBegin, minMeasure, maxMeasure)) {
+            var edgeSideId = new Pair<>(place.value.id, direction);
+            logger.trace("added speed limit on ({}, {}) from {} to {}: {}",
+                    place.value.id, direction, minMeasure, maxMeasure, speed);
+
+            // get or create the rangesequence builder
+            var limitsBuilder = builders.get(edgeSideId);
+            if (limitsBuilder == null) {
+                if (direction == EdgeDirection.START_TO_STOP)
+                    limitsBuilder = place.value.speedLimitsForward.minLimitBuilder();
+                else
+                    limitsBuilder = place.value.speedLimitsBackward.minLimitBuilder();
+                builders.put(edgeSideId, limitsBuilder);
+            }
+
+            // add the limit
+            limitsBuilder.add(place.begin, place.end, speed);
         }
     }
 }
