@@ -1,7 +1,7 @@
 package fr.sncf.osrd.train;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.util.PointSequence;
+
 
 /**
  * The immutable characteristics of a specific train.
@@ -46,7 +46,7 @@ public class RollingStock {
      * @param speed the speed to compute the rolling resistance for
      * @return the rolling resistance force, in newtons
      */
-    @SuppressWarnings("checkstyle:LocalVariableName")
+    @SuppressWarnings({"checkstyle:LocalVariableName", "UnnecessaryLocalVariable"})
     public double rollingResistance(double speed) {
         speed = Math.abs(speed);
         var A = rollingResistance;
@@ -96,8 +96,17 @@ public class RollingStock {
      * Associates a speed to a force.
      * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves
      */
-    // TODO remove transient and parse it
-    public final transient PointSequence<Double> tractiveEffortCurve;
+    public final TractiveEffortPoint[] tractiveEffortCurve;
+
+    public static final class TractiveEffortPoint {
+        public final double speed;
+        public final double maxEffort;
+
+        public TractiveEffortPoint(double speed, double maxEffort) {
+            this.speed = speed;
+            this.maxEffort = maxEffort;
+        }
+    }
 
     /**
      * Returns the max tractive effort at a given speed.
@@ -107,9 +116,9 @@ public class RollingStock {
     public double getMaxEffort(double speed) {
         double maxEffort = 0.0;
         for (var dataPoint : tractiveEffortCurve) {
-            if (dataPoint.position > speed)
+            if (dataPoint.speed > speed)
                 break;
-            maxEffort = dataPoint.value;
+            maxEffort = dataPoint.maxEffort;
         }
         return maxEffort;
     }
@@ -149,7 +158,7 @@ public class RollingStock {
             boolean isETCS1Equiped,
             boolean isETCS2Equiped,
             boolean isKVBEquiped,
-            PointSequence<Double> tractiveEffortCurve
+            TractiveEffortPoint[] tractiveEffortCurve
     ) throws InvalidInfraException {
         this.rollingResistance = rollingResistance;
         this.mechanicalResistance = mechanicalResistance;
