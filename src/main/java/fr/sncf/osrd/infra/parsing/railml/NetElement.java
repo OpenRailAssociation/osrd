@@ -2,7 +2,6 @@ package fr.sncf.osrd.infra.parsing.railml;
 
 import fr.sncf.osrd.infra.parsing.railml.NetRelation.Position;
 import fr.sncf.osrd.infra.topological.TopoEdge;
-import fr.sncf.osrd.util.FloatCompare;
 import fr.sncf.osrd.util.MutPair;
 import fr.sncf.osrd.util.RangeValue;
 import fr.sncf.osrd.util.TopoLocation;
@@ -12,18 +11,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-class NetElement {
+final class NetElement {
     final TopoEdge topoEdge;
     final ArrayList<NetElement> children;
 
-    /** The start position of the netElement given the name of a linear reference system. */
-    final Map<String, Double> lrsDeltas;
+    /** The start position of the netElement in a set of linear reference systems. */
+    final Map<String, Double> lrsStartOffsets;
 
     /** constructor for netElement which contains elementCollectionUnordered */
     NetElement(Node netElement, Map<String, NetElement> netElementMap) {
         topoEdge = null;
         children = new ArrayList<>();
-        lrsDeltas = null;
+        lrsStartOffsets = null;
         parseChildren(netElement, netElementMap);
     }
 
@@ -31,7 +30,7 @@ class NetElement {
     NetElement(TopoEdge topoEdge, Node netElement) {
         this.topoEdge = topoEdge;
         children = null;
-        lrsDeltas = new HashMap<>();
+        lrsStartOffsets = new HashMap<>();
         parseLrs(netElement);
     }
 
@@ -60,47 +59,79 @@ class NetElement {
 
         for (var entry : lrsMap.entrySet()) {
             var range = entry.getValue();
-            lrsDeltas.put(entry.getKey(), range.first);
+            lrsStartOffsets.put(entry.getKey(), range.first);
         }
     }
 
-    public ArrayList<TopoLocation> placeOn(String lrsId, double measure) {
+    /**
+     * Given a location in a linear positioning system, yields a locations on TopoEdges this maps to.
+     * @param lrsId identifier of the linear positioning system
+     * @param measure position in the lrs / lps
+     * @return a list of positions in TopoEdge (TopoLocation) under this netElement.
+     */
+    public ArrayList<TopoLocation> mapToTopo(String lrsId, double measure) {
         var list = new ArrayList<TopoLocation>();
+
+        // if it's a macro / meso netElement, get the children's TopoEdges
         if (topoEdge == null) {
-            for (var child : children) {
-                list.addAll(child.placeOn(lrsId, measure));
-            }
+            for (var child : children)
+                list.addAll(child.mapToTopo(lrsId, measure));
             return list;
         }
 
-        if (!lrsDeltas.containsKey(lrsId))
+        // if this netElement isn't positioned in this LRS, return an empty list
+        var lrsStartOffset = lrsStartOffsets.get(lrsId);
+        if (lrsStartOffset == null)
             return list;
-        double position = measure - lrsDeltas.get(lrsId);
+
+        // compute the given position in the edge
+        double position = measure - lrsStartOffset;
+
+        // return if the given lrs location isn't on the edge
         if (position < 0 || position > topoEdge.length)
             return list;
+
+        // return the location on the edge if it is valid
         list.add(new TopoLocation(topoEdge, position));
         return list;
     }
 
-    public ArrayList<RangeValue<TopoEdge>> placeOn(String lrsId, double begin, double end) {
+    /**
+     * Given a linear positioning system and a range, yields a list of edges TopoEdge this spans on.
+     * @param lrsId identifier of the linear positioning system
+     * @param begin the range start
+     * @param end the range end
+     * @return a list of range on edges this lrs range spans on under this netElement.
+     */
+    public ArrayList<RangeValue<TopoEdge>> mapToTopo(String lrsId, double begin, double end) {
+        assert begin <= end;
         var list = new ArrayList<RangeValue<TopoEdge>>();
+        // if it's a macro / meso netElement, get the TopoEdges the child netElements span onto
         if (topoEdge == null) {
-            for (var child : children) {
-                list.addAll(child.placeOn(lrsId, begin, end));
-            }
+            for (var child : children)
+                list.addAll(child.mapToTopo(lrsId, begin, end));
             return list;
         }
 
-        if (!lrsDeltas.containsKey(lrsId))
+        // if its a micro netElement, check if there is an overlapping lrs range
+
+        // no TopoEdges span this netElement if it's not referenced in this lrs
+        var lrsStartOffset = lrsStartOffsets.get(lrsId);
+        if (lrsStartOffset == null)
             return list;
-        double positionBegin = begin - lrsDeltas.get(lrsId);
-        double positionEnd = end - lrsDeltas.get(lrsId);
+
+        // check if the netElement is in the given range
+        double positionBegin = begin - lrsStartOffset;
+        double positionEnd = end - lrsStartOffset;
         if (positionBegin > topoEdge.length || positionEnd < 0)
             return list;
+
+        // clamp
         if (positionBegin < 0)
             positionBegin = 0;
         if (positionEnd > topoEdge.length)
             positionEnd = topoEdge.length;
+
         list.add(new RangeValue<>(positionBegin, positionEnd, topoEdge));
         return list;
     }
