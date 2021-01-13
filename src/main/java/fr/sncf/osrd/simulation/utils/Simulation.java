@@ -3,12 +3,14 @@ package fr.sncf.osrd.simulation.utils;
 import static fr.sncf.osrd.simulation.utils.TimelineEvent.State;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.simulation.SchedulerSystem;
 import fr.sncf.osrd.simulation.World;
+import fr.sncf.osrd.timetable.Schedule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * <h1>A Discrete TimelineEvent SimulationManager.</h1>
@@ -34,8 +36,73 @@ import java.util.function.Consumer;
 public final class Simulation {
     static final Logger logger = LoggerFactory.getLogger(Simulation.class);
 
-    // a map from entity identifiers to entities
+    /** A map from entity identifiers to entities. */
     private final HashMap<String, Entity> entities = new HashMap<>();
+
+    public final World world;
+
+    // changes may need to be logged to enable replays
+    // it's basically a pointer to the event sourcing
+    // event store insertion function
+    public final ChangeLog changelog;
+
+    /**
+     * The current time of the simulation.
+     * when an event is executed, the simulation time is changed to the event's time.
+     */
+    private double time;
+
+    public double getTime() {
+        return time;
+    }
+
+    /** The time at which the simulation started. */
+    public final double startTime;
+
+    /** The list of events pending execution. */
+    private final SortedMap<TimelineEventId, TimelineEvent<?>> timeline = new TreeMap<>();
+
+    /** The number of event that were scheduled. it is used to associate a unique number to events. */
+    long revision = 0;
+
+    /**
+     * Creates a new Discrete TimelineEvent SimulationManager
+     * @param world the external state of the simulation
+     * @param time the initial time of the simulation
+     */
+    public Simulation(
+            World world,
+            double time,
+            ChangeLog changelog
+    ) {
+        this.changelog = changelog;
+        this.world = world;
+        this.startTime = time;
+        this.time = time;
+    }
+
+    /**
+     * Creates a simulation, including the required entities to make it work.
+     * @param infra the infrastructure to work on
+     * @param simStartTime the start time of the simulation
+     * @param schedule the schedule according to which trains should be started
+     * @param changelog where to log changes
+     * @return A new simulation
+     * @throws SimulationError {@inheritDoc}
+     */
+    public static Simulation create(
+            Infra infra,
+            double simStartTime,
+            Schedule schedule,
+            ChangeLog changelog
+    ) throws SimulationError {
+        var world = new World(infra);
+        var sim = new Simulation(world, simStartTime, changelog);
+        world.scheduler = SchedulerSystem.fromSchedule(sim, schedule);
+        return sim;
+    }
+
+    // region ENTITES
 
     // TODO: document
     public Entity getEntity(String entityId) {
@@ -50,21 +117,13 @@ public final class Simulation {
         entities.remove(entity.entityId);
     }
 
-    public final World world;
+    // endregion
 
-    // changes may need to be logged to enable replays
-    // it's basically a pointer to the event sourcing
-    // event store insertion function
-    public final Consumer<Change> changeInsertCallback;
-
-    // changes may need to be logged to enable replays
-    // it's basically a pointer to the event sourcing
-    // event store insertion function
-    public final Consumer<Change> changeCreationCallback;
+    // region EVENT_SOURCING
 
     void onChangeCreated(Change change) {
-        if (changeCreationCallback != null)
-            changeCreationCallback.accept(change);
+        if (changelog != null)
+            changelog.changeCreationCallback(change);
         change.state = Change.State.REGISTERED;
     }
 
@@ -73,41 +132,14 @@ public final class Simulation {
      * @param change the change to publish
      */
     public void publishChange(Change change) {
-        if (changeInsertCallback != null)
-            changeInsertCallback.accept(change);
+        if (changelog != null)
+            changelog.changePublishedCallback(change);
         change.state = Change.State.PUBLISHED;
     }
 
-    /**
-     * Creates a new Discrete TimelineEvent SimulationManager
-     * @param world the external state of the simulation
-     * @param time the initial time of the simulation
-     */
-    public Simulation(
-            World world,
-            double time,
-            Consumer<Change> changeCreationCallback,
-            Consumer<Change> changeInsertCallback
-    ) {
-        this.changeInsertCallback = changeInsertCallback;
-        this.changeCreationCallback = changeCreationCallback;
-        this.world = world;
-        this.time = time;
-    }
+    // endregion
 
-    // the current time of the simulation.
-    // when an event is executed, the simulation time is changed to the event's time
-    private double time;
-
-    public double getTime() {
-        return time;
-    }
-
-    // the list of events pending execution
-    private final SortedMap<TimelineEventId, TimelineEvent<?>> timeline = new TreeMap<>();
-
-    // the number of event that were scheduled. it is used to associate a unique number to events
-    long revision = 0;
+    // region DISCRETE_EVENT_SIMULATION
 
     /**
      * Remove a planned event from the timeline.
@@ -128,6 +160,7 @@ public final class Simulation {
         event.updateState(this, State.CANCELLED);
     }
 
+    /** Checks if the simulation is over (nextEvent() would throw an exception). */
     public boolean isSimulationOver() {
         return timeline.isEmpty();
     }
@@ -189,6 +222,10 @@ public final class Simulation {
     public TimelineEvent<?> getTimelineEvent(TimelineEventId timelineEventId) {
         return timeline.get(timelineEventId);
     }
+
+    // endregion
+
+    // region CHANGES
 
     public static final class TimelineEventCreated<T> extends EntityChange<Entity, TimelineEvent<T>> {
         private final long revision;
@@ -292,6 +329,10 @@ public final class Simulation {
         }
     }
 
+    // endregion
+
+    // region STD_OVERRIDES
+
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     public boolean equals(Object obj) {
@@ -345,4 +386,6 @@ public final class Simulation {
     public int hashCode() {
         return Objects.hash(time, revision, entities, timeline);
     }
+
+    // endregion
 }

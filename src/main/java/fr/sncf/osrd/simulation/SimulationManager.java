@@ -2,137 +2,83 @@ package fr.sncf.osrd.simulation;
 
 import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.infra.viewer.InfraViewer;
-import fr.sncf.osrd.simulation.utils.Change;
-import fr.sncf.osrd.simulation.utils.TimelineEvent;
-import fr.sncf.osrd.simulation.utils.Simulation;
-import fr.sncf.osrd.simulation.utils.SimulationError;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import fr.sncf.osrd.simulation.utils.*;
 
-import java.util.ArrayList;
-import java.util.function.Consumer;
+public final class SimulationManager {
+    private final ArrayChangeLog changelog;
 
-public class SimulationManager {
-    static final Logger logger = LoggerFactory.getLogger(SimulationManager.class);
+    private final Simulation sim;
+    private final Config config;
 
-    public final Simulation simulation;
-    private final World world;
-
-    private final double simStartTime = 0.0;
-
-
-    ArrayList<Change> allChanges = new ArrayList<>();
-    long publishedChanges = 0;
+    private SimulationManager(Config config, ArrayChangeLog changelog) throws SimulationError {
+        this.sim = Simulation.create(config.infra, 0, config.schedule, changelog);
+        this.changelog = changelog;
+        this.config = config;
+    }
 
     /**
      * Instantiate a simulation without starting it
      * @param config all the required parameters for the simulation
      */
-    public SimulationManager(Config config) throws SimulationError {
+    public static SimulationManager fromConfig(Config config) throws SimulationError {
+        ArrayChangeLog changelog = null;
+        if (config.changeReplayCheck)
+            changelog = new ArrayChangeLog();
+
         // create a logger for event sourcing changes
-        Consumer<Change> changeLogger = (change) -> {
-            logger.info("new change: {}", change);
-            publishedChanges++;
-        };
-
-        // create the discrete event simulation
-        var world = new World(config);
-
-        // the replay check mode needs to log all events
-        Consumer<Change> onChangeCreated = null;
-        Consumer<Change> onChangeSubmitted = null;
-        if (config.changeReplayCheck) {
-            onChangeCreated = allChanges::add;
-            onChangeSubmitted = changeLogger;
-        }
-
-        var sim = new Simulation(world, simStartTime, onChangeCreated, onChangeSubmitted);
-
-        // create systems
-        world.scheduler = SchedulerSystem.fromSchedule(sim, config.schedule);
-
-        this.simulation = sim;
-        this.world = world;
-    }
-
-    InfraViewer viewer = null;
-
-    private void initViewer() {
-        viewer = new InfraViewer(world.infra);
-        viewer.display();
+        return new SimulationManager(config, changelog);
     }
 
     private void updateViewer(
+            InfraViewer viewer,
             TimelineEvent<?> nextEvent
     ) throws InterruptedException {
-        // if the user doesn't want realtime visualization, update the viewer once
-        if (!world.config.realTimeViewer) {
-            viewer.update(world, simulation.getTime());
+        // the time to wait between simulation steps
+        double interpolationStep = 1.0;
+
+        // if the user doesn't want realtime visualization, update the viewer once per timeline event
+        if (!config.realTimeViewer) {
+            viewer.update(sim.world, sim.getTime());
+            Thread.sleep((long)(interpolationStep * 1000));
             return;
         }
 
         // move the time forward by time increments
         // to help the viewer see something
-        double interpolatedTime = simulation.getTime();
+        double interpolatedTime = sim.getTime();
         double nextEventTime = nextEvent.scheduledTime;
 
-        double interpolationStep = 1.0;
-        while (simulation.getTime() < nextEventTime) {
+        while (sim.getTime() < nextEventTime) {
             interpolatedTime += interpolationStep;
             if (interpolatedTime > nextEventTime)
                 interpolatedTime = nextEventTime;
 
             Thread.sleep((long)(interpolationStep * 1000));
-            viewer.update(world, interpolatedTime);
+            viewer.update(sim.world, interpolatedTime);
         }
-    }
-
-    private void checkChangeStates() {
-        if (allChanges.size() == publishedChanges)
-            return;
-
-        logger.error(
-                "some Changes were not logged: {} created, {} published",
-                allChanges.size(),
-                publishedChanges);
-
-        for (var change : allChanges) {
-            if (change.state == Change.State.PUBLISHED)
-                continue;
-            logger.error("this change wasn't published: {}", change);
-        }
-    }
-
-    private void replayCheck() {
-        checkChangeStates();
-
-        var replaySim = new Simulation(world, simStartTime, null, null);
-        for (var change : allChanges)
-            change.replay(replaySim);
-
-        if (this.simulation.equals(replaySim))
-            logger.info("replay check succeeded");
-        else
-            logger.error("replay check failed");
     }
 
     /**
      * Run the simulation
      */
     public void run() throws SimulationError, InterruptedException {
-        if (world.config.showViewer)
-            initViewer();
+        InfraViewer viewer = null;
 
-        while (!simulation.isSimulationOver()) {
-            var event = simulation.nextEvent();
-
-            if (viewer != null)
-                updateViewer(event);
-
-            simulation.step(event);
+        if (config.showViewer) {
+            viewer = new InfraViewer(config.infra);
+            viewer.display();
         }
 
-        if (world.config.changeReplayCheck)
-            replayCheck();
+        while (!sim.isSimulationOver()) {
+            var event = sim.nextEvent();
+
+            if (viewer != null)
+                updateViewer(viewer, event);
+
+            sim.step(event);
+        }
+
+        if (config.changeReplayCheck)
+            SimulationChecker.check(sim, changelog);
     }
 }

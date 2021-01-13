@@ -16,19 +16,18 @@ import java.util.Objects;
 @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
 public final class World {
     public final Infra infra;
-    public final Config config;
     public SchedulerSystem scheduler = null;
     public final HashSet<Train> trains = new HashSet<>();
 
     /**
      * Create the world from a configuration
-     * @param config the configuration of the simulation
+     * @param infra the infrastructure the simulation runs on
      */
-    public World(Config config) {
-        // it's redundant but useful
-        this.infra = config.infra;
-        this.config = config;
+    public World(Infra infra) {
+        this.infra = infra;
     }
+
+    // region STD_OVERRIDES
 
     @Override
     public boolean equals(Object obj) {
@@ -40,9 +39,6 @@ public final class World {
 
         var other = (World)obj;
         if (this.infra != other.infra)
-            return false;
-
-        if (this.config != other.config)
             return false;
 
         return this.trains.equals(other.trains);
@@ -61,6 +57,8 @@ public final class World {
 
         // a != b
         // System.identityHashCode(a) != System.identityHashCode(b)
-        return Objects.hash(System.identityHashCode(infra), System.identityHashCode(config), trains);
+        return Objects.hash(System.identityHashCode(infra), trains);
     }
+
+    // endregion
 }

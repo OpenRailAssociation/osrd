@@ -11,6 +11,8 @@ public abstract class Entity {
         this.entityId = entityId;
     }
 
+    // region STD_OVERRIDES
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null)
@@ -50,6 +52,8 @@ public abstract class Entity {
             hash = Objects.hash(hash, sub.entityId);
         return hash;
     }
+
+    // endregion
 
     protected abstract void timelineEventUpdate(
             Simulation sim,
