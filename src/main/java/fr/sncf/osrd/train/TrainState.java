@@ -37,7 +37,6 @@ public final class TrainState {
 
     public LinkedList<SpeedController> controllers;
 
-
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     public boolean equals(Object obj) {
@@ -92,24 +91,34 @@ public final class TrainState {
                 train);
     }
 
-    private TrainPhysicsSimulator.PositionUpdate step(double timeStep) {
+    private TrainPhysicsIntegrator.PositionUpdate step(double timeStep) {
         // TODO: find out the actual max braking / acceleration force
 
-        var simulator = TrainPhysicsSimulator.make(
+        var rollingStock = train.rollingStock;
+        var simulator = TrainPhysicsIntegrator.make(
                 timeStep,
-                train.rollingStock,
+                rollingStock,
                 speed,
                 location.maxTrainGrade());
 
         Action action = getAction(location, simulator);
-        logger.debug("train took action {}", action);
+        logger.trace("train took action {}", action);
 
         assert action != null;
 
-        var update = simulator.computeUpdate(action.tractionForce(), action.brakingForce());
+        // compute and limit the traction force
+        var maxTraction = rollingStock.getMaxEffort(speed);
+        var traction = action.tractionForce();
+        if (traction > maxTraction)
+            traction = maxTraction;
+
+        // compute and limit the braking force
+        var brakingForce = action.brakingForce();
+
+        var update = simulator.computeUpdate(traction, brakingForce);
         // TODO: handle emergency braking
 
-        logger.debug("speed changed from {} to {}", speed, update.speed);
+        logger.trace("speed changed from {} to {}", speed, update.speed);
         speed = update.speed;
         location.updatePosition(update.positionDelta);
         return update;
@@ -120,7 +129,7 @@ public final class TrainState {
             double goalTrackPosition
     ) throws SimulationError {
         var nextState = this.clone();
-        var positionUpdates = new ArrayList<TrainPhysicsSimulator.PositionUpdate>();
+        var positionUpdates = new ArrayList<TrainPhysicsIntegrator.PositionUpdate>();
 
         for (int i = 0; nextState.location.getHeadPathPosition() < goalTrackPosition; i++) {
             if (i >= 10000)
@@ -138,7 +147,7 @@ public final class TrainState {
         return new Train.LocationChange(sim, train, nextState, positionUpdates);
     }
 
-    private Action getAction(TrainPositionTracker location, TrainPhysicsSimulator trainPhysics) {
+    private Action getAction(TrainPositionTracker location, TrainPhysicsIntegrator trainPhysics) {
         switch (status) {
             case STARTING_UP:
             case STOP:
@@ -152,9 +161,9 @@ public final class TrainState {
         }
     }
 
-    private Action updateRolling(TrainPositionTracker position, TrainPhysicsSimulator trainPhysics) {
+    private Action updateRolling(TrainPositionTracker position, TrainPhysicsIntegrator trainPhysics) {
         var actions = controllers.stream()
-                .map(sp -> new Pair<>(sp, sp.getAction(this, position, trainPhysics)))
+                .map(sp -> new Pair<>(sp, sp.getAction(this, trainPhysics)))
                 .collect(Collectors.toList());
 
         var action = actions.stream()
@@ -207,7 +216,7 @@ public final class TrainState {
         return train.event(sim, simulationTime, simulationResult);
     }
 
-    @SuppressFBWarnings(value = "UPM_UNCALLED_PRIVATE_METHOD")
+    @SuppressFBWarnings({"UPM_UNCALLED_PRIVATE_METHOD"})
     private double getMaxAcceleration() {
         if (status == TrainStatus.STARTING_UP)
             return train.rollingStock.startUpAcceleration;

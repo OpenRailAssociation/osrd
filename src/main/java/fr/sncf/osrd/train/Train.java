@@ -3,6 +3,7 @@ package fr.sncf.osrd.train;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.utils.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.speedcontroller.StaticSpeedLimitController;
 import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.util.TopoLocation;
 import org.slf4j.Logger;
@@ -39,8 +40,8 @@ public class Train extends Entity {
             LinkedList<SpeedController> controllers
     ) {
         super(String.format("train/%s", name));
-        this.driverSightDistance = driverSightDistance;
         this.name = name;
+        this.driverSightDistance = driverSightDistance;
         this.rollingStock = rollingStock;
         var location = new TrainPositionTracker(sim.world.infra, trainPath, rollingStock.length);
         this.lastState = new TrainState(
@@ -71,56 +72,7 @@ public class Train extends Entity {
         return train;
     }
 
-    public static class LocationChange extends EntityChange<Train, Void> {
-        public final TrainState newState;
-        public final ArrayList<TrainPhysicsSimulator.PositionUpdate> positionUpdates;
-
-        /**
-         * Creates a change corresponding to the movement of a train
-         *
-         * @param newState        the state of the train after the change
-         * @param positionUpdates the speed / position curve
-         */
-        public LocationChange(
-                Simulation sim,
-                Train train,
-                TrainState newState,
-                ArrayList<TrainPhysicsSimulator.PositionUpdate> positionUpdates
-        ) {
-            super(sim,  train);
-            this.newState = newState;
-            this.positionUpdates = positionUpdates;
-        }
-
-        @Override
-        public final Void apply(Simulation sim, Train train) {
-            train.lastState = this.newState;
-            train.nextState = null;
-            train.nextMoveEvent = null;
-            return null;
-        }
-
-        @Override
-        public String toString() {
-            return String.format(
-                    "Train.LocationChange { speed=%.2f, pathPosition=%.2f }",
-                    newState.speed,
-                    newState.location.getHeadPathPosition()
-            );
-        }
-    }
-
-    public static final class TrainPlannedMoveChange extends EntityEventChange<Train, LocationChange, Void> {
-        public TrainPlannedMoveChange(Simulation sim, Train entity, TimelineEvent<LocationChange> timelineEvent) {
-            super(sim, entity, timelineEvent);
-        }
-
-        @Override
-        public Void apply(Simulation sim, Train train, TimelineEvent<LocationChange> event) {
-            train.nextMoveEvent = event;
-            return null;
-        }
-    }
+    // region ENTITY_REACTOR
 
     void planNextMove(Simulation sim) throws SimulationError {
         if (lastState.status == TrainStatus.REACHED_DESTINATION) {
@@ -161,6 +113,9 @@ public class Train extends Entity {
             trainMoveReact(sim, (LocationChange)event.value, state);
     }
 
+    // endregion
+
+    // region VIEWER_INTERPOLATION
 
     public static class InterpolatedTrainSpeedAndLocation {
         public final double speed;
@@ -197,6 +152,10 @@ public class Train extends Entity {
         return new InterpolatedTrainSpeedAndLocation(interpolatedSpeed, res.getHeadTopoLocation());
     }
 
+    // endregion
+
+    // region CHANGES
+
     public static final class TrainCreatedChange extends SimChange<Train> {
         public final TrainSchedule timetable;
         public final TrainPath trainPath;
@@ -218,8 +177,8 @@ public class Train extends Entity {
             var trainName = timetable.name;
 
             var controllers = new LinkedList<SpeedController>();
-            controllers.add((trainState, _location, timeDelta) ->
-                    Action.accelerate(trainState.train.rollingStock.mass / 2, false));
+
+            controllers.add(new StaticSpeedLimitController());
 
             var train = new Train(
                     400,
@@ -240,4 +199,62 @@ public class Train extends Entity {
             return String.format("TrainCreatedChange { name=%s }", timetable.name);
         }
     }
+
+    public static class LocationChange extends EntityChange<Train, Void> {
+        public final TrainState newState;
+        public final ArrayList<TrainPhysicsIntegrator.PositionUpdate> positionUpdates;
+
+        /**
+         * Creates a change corresponding to the movement of a train
+         *
+         * @param newState        the state of the train after the change
+         * @param positionUpdates the speed / position curve
+         */
+        public LocationChange(
+                Simulation sim,
+                Train train,
+                TrainState newState,
+                ArrayList<TrainPhysicsIntegrator.PositionUpdate> positionUpdates
+        ) {
+            super(sim,  train);
+            this.newState = newState;
+            this.positionUpdates = positionUpdates;
+        }
+
+        @Override
+        public final Void apply(Simulation sim, Train train) {
+            train.lastState = this.newState;
+            train.nextState = null;
+            train.nextMoveEvent = null;
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "Train.LocationChange { speed=%.2f, pathPosition=%.2f }",
+                    newState.speed,
+                    newState.location.getHeadPathPosition()
+            );
+        }
+    }
+
+    public static final class TrainPlannedMoveChange extends EntityEventChange<Train, LocationChange, Void> {
+        public TrainPlannedMoveChange(Simulation sim, Train entity, TimelineEvent<LocationChange> timelineEvent) {
+            super(sim, entity, timelineEvent);
+        }
+
+        @Override
+        public Void apply(Simulation sim, Train train, TimelineEvent<LocationChange> event) {
+            train.nextMoveEvent = event;
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("TrainPlannedMoveChange { nextMoveEvent=%s }", timelineEventId.toString());
+        }
+    }
+
+    // endregion
 }

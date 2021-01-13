@@ -4,7 +4,7 @@ import static fr.sncf.osrd.TestTrains.REALISTIC_FAST_TRAIN;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.train.TrainPhysicsSimulator;
+import fr.sncf.osrd.train.TrainPhysicsIntegrator;
 import org.junit.jupiter.api.Test;
 
 
@@ -16,7 +16,7 @@ public class TrainPhysics {
         // how fast would a train go after 10 steps of 1 sec, coasting on a
         // 40m / km slope?
         for (int i = 0; i < 10; i++) {
-            var simulator = TrainPhysicsSimulator.make(1.0, REALISTIC_FAST_TRAIN, speed,40);
+            var simulator = TrainPhysicsIntegrator.make(1.0, REALISTIC_FAST_TRAIN, speed,40);
             speed = simulator.computeUpdate(0.0, 0.0).speed;
         }
 
@@ -33,7 +33,7 @@ public class TrainPhysics {
         double maxTraction = rollingStock.tractiveEffortCurve[0].maxEffort;
         // how fast would a train go after 10 steps of 1 sec, full throttle on a 45deg slope?
         for (int i = 0; i < 10; i++) {
-            var simulator = TrainPhysicsSimulator.make(1.0, rollingStock, speed,1000);
+            var simulator = TrainPhysicsIntegrator.make(1.0, rollingStock, speed,1000);
             speed = simulator.computeUpdate(maxTraction, 0.0).speed;
         }
 
@@ -50,7 +50,7 @@ public class TrainPhysics {
         // go to full speed by cruising for 20 minutes
         for (int i = 0; i < 20 * 60; i++) {
             double maxTraction = rollingStock.getMaxEffort(speed);
-            var simulator = TrainPhysicsSimulator.make(1.0, rollingStock, speed,0.0);
+            var simulator = TrainPhysicsIntegrator.make(1.0, rollingStock, speed,0.0);
             var update = simulator.computeUpdate(maxTraction, 0.0);
             speed = update.speed;
         }
@@ -62,7 +62,7 @@ public class TrainPhysics {
         // continue the simulation, but with some slope
         for (int i = 0; i < 20 * 60; i++) {
             double maxTraction = rollingStock.getMaxEffort(speed);
-            var simulator = TrainPhysicsSimulator.make(1.0, rollingStock, speed,35.0);
+            var simulator = TrainPhysicsIntegrator.make(1.0, rollingStock, speed,35.0);
             var update = simulator.computeUpdate(maxTraction, 0.0);
             speed = update.speed;
         }
@@ -79,14 +79,14 @@ public class TrainPhysics {
         double speed = 0.0;
 
         // make a huge traction effort
-        var simulator = TrainPhysicsSimulator.make(1.0, rollingStock, speed, 0.0);
+        var simulator = TrainPhysicsIntegrator.make(1.0, rollingStock, speed, 0.0);
         speed = simulator.computeUpdate(500000.0, 0.0).speed;
 
         assertTrue(speed > 0.5);
 
         // the train should be able to coast for a minute without stopping
         for (int i = 0; i < 60; i++) {
-            simulator = TrainPhysicsSimulator.make(1.0, rollingStock, speed, 0.0);
+            simulator = TrainPhysicsIntegrator.make(1.0, rollingStock, speed, 0.0);
             double prevSpeed = speed;
             speed = simulator.computeUpdate(0.0, 0.0).speed;
             assertTrue(speed < prevSpeed && speed > 0.);
@@ -94,7 +94,7 @@ public class TrainPhysics {
 
         // another minute later
         for (int i = 0; i < 60; i++) {
-            simulator = TrainPhysicsSimulator.make(1.0, rollingStock, speed, 0.0);
+            simulator = TrainPhysicsIntegrator.make(1.0, rollingStock, speed, 0.0);
             speed = simulator.computeUpdate(0.0, 0.0).speed;
         }
 

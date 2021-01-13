@@ -12,19 +12,18 @@ public abstract class RangeSpeedController implements SpeedController {
     }
 
     abstract Action getActionOnRange(
-            TrainState train,
-            TrainPositionTracker location,
-            TrainPhysicsSimulator trainPhysics
+            TrainState state,
+            TrainPhysicsIntegrator trainPhysics
     );
 
     @Override
-    public Action getAction(TrainState train, TrainPositionTracker location, TrainPhysicsSimulator trainPhysics) {
-        if (location.getHeadPathPosition() < startPosition)
+    public Action getAction(TrainState state, TrainPhysicsIntegrator trainPhysics) {
+        if (state.location.getHeadPathPosition() < startPosition)
             // don't do anything, but don't delete the controller
             return Action.empty(false);
-        if (location.getHeadPathPosition() > endPosition)
+        if (state.location.getHeadPathPosition() > endPosition)
             // don't do anything and ditch the controller
             return Action.empty(true);
-        return getActionOnRange(train, location, trainPhysics);
+        return getActionOnRange(state, trainPhysics);
     }
 }

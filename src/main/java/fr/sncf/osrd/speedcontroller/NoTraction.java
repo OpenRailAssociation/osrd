@@ -8,7 +8,7 @@ public class NoTraction extends RangeSpeedController {
     }
 
     @Override
-    Action getActionOnRange(TrainState train, TrainPositionTracker location, TrainPhysicsSimulator trainPhysics) {
+    Action getActionOnRange(TrainState train, TrainPhysicsIntegrator trainPhysics) {
         return Action.accelerate(0, false);
     }
 }

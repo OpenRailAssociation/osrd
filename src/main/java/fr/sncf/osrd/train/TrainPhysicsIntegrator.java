@@ -4,15 +4,18 @@ import fr.sncf.osrd.util.Constants;
 
 /**
  * An utility class to help simulate the train, using forward numerical integration.
+ * It's used when simulating the train, and passed to speed controllers so they can take decisions
+ * about what action to make. Once speed controllers took a decision, this same class is used to compute
+ * the next position and speed of the train.
  */
-public class TrainPhysicsSimulator {
+public class TrainPhysicsIntegrator {
     private final double timeStep;
     private final double currentSpeed;
     private final double weightForce;
     private final double precomputedRollingResistance;
     private final double inertia;
 
-    private TrainPhysicsSimulator(
+    private TrainPhysicsIntegrator(
             double timeStep,
             double currentSpeed,
             double weightForce,
@@ -34,7 +37,7 @@ public class TrainPhysicsSimulator {
      * @param maxTrainGrade the maximum slope under the train
      * @return a new train physics simulator
      */
-    public static TrainPhysicsSimulator make(
+    public static TrainPhysicsIntegrator make(
             double timeStep,
             RollingStock rollingStock,
             double currentSpeed,
@@ -45,7 +48,7 @@ public class TrainPhysicsSimulator {
         var weightForce = rollingStock.mass * Constants.GRAVITY * -Math.sin(angle);
 
         var inertia = rollingStock.mass * rollingStock.inertiaCoefficient;
-        return new TrainPhysicsSimulator(
+        return new TrainPhysicsIntegrator(
                 timeStep,
                 currentSpeed,
                 weightForce,
@@ -71,6 +74,28 @@ public class TrainPhysicsSimulator {
      */
     private double computeAcceleration(double rollingResistance, double actionTractionForce) {
         return computeTotalForce(rollingResistance, actionTractionForce) / inertia;
+    }
+
+    /**
+     * Computes the force required to keep some speed.
+     * @param maxSpeed the maximum speed, which we'd like to achieve
+     * @return the traction force
+     */
+    public Action actionToTargetSpeed(Double maxSpeed, boolean deleteSpeedController) {
+        // the total force we'd like to apply
+        var targetForce = (maxSpeed - currentSpeed) / timeStep * inertia;
+
+        var otherForces = computeTotalForce(0, 0);
+
+        var targetForceSign = Math.signum(targetForce);
+        var currentSpeedSign = Math.signum(currentSpeed);
+
+        // if the force goes in the same direction as the current speed
+        if (targetForceSign == currentSpeedSign || targetForceSign == 0 || currentSpeedSign == 0)
+            return Action.accelerate(targetForce - otherForces, deleteSpeedController);
+
+        // if the force is opposite to movement
+        return Action.brake(Math.abs(targetForce - otherForces), deleteSpeedController);
     }
 
     public static class PositionUpdate {
@@ -100,6 +125,10 @@ public class TrainPhysicsSimulator {
         // the rolling resistance is the sum of forces that always go the direction
         // opposite to the train's movement
         assert actionBrakingForce >= 0.;
+        
+        // the absolute value of forces opposite to the direction of movement
+        // the active rolling resistance is the train's braking force
+        // the passive rolling resistance is the sum of other friction parameters, which apply no matter what
         var rollingResistance = precomputedRollingResistance + actionBrakingForce;
 
         // as the rolling resistance is a reaction force, it needs to be adjusted to be opposed to the other forces

@@ -22,10 +22,7 @@ public class TimelineEventId implements Comparable<TimelineEventId> {
         this.revision = o.revision;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(scheduledTime, revision);
-    }
+    // region STD_OVERRIDES
 
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY", "BC_UNCONFIRMED_CAST"})
@@ -42,6 +39,18 @@ public class TimelineEventId implements Comparable<TimelineEventId> {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(scheduledTime, revision);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("TimelineEventId { scheduledTime=%f, revision=%d }", scheduledTime, revision);
+    }
+
+    // endregion
+
+    @Override
     public int compareTo(TimelineEventId o) {
         // events are compared by planned time first, then revision
         int cmpRes = Double.compare(scheduledTime, o.scheduledTime);
@@ -49,10 +58,5 @@ public class TimelineEventId implements Comparable<TimelineEventId> {
             return cmpRes;
 
         return Long.compare(revision, o.revision);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("TimelineEventId { scheduledTime=%f, revision=%d }", scheduledTime, revision);
     }
 }
