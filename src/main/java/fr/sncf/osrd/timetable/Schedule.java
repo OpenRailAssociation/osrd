@@ -18,21 +18,27 @@ public class Schedule implements Freezable {
             .build()
             .adapter(JsonSchedule.class);
 
-    public final CryoList<Timetable> timetables;
+    public final CryoList<TrainSchedule> timetables;
+
+    public Schedule(CryoList<TrainSchedule> timetables) {
+        this.timetables = timetables;
+    }
 
     /**
-     * Parse a schedule from file
+     * Parse a JSON schedule from file
      * @param path the path to the schedule file
      * @param infra a reference to the infra
      */
-    public Schedule(String path, Infra infra) throws IOException, InvalidInfraException {
+    public static Schedule fromJSONFile(String path, Infra infra) throws IOException, InvalidInfraException {
         assert infra.isFrozen();
         JsonSchedule json = scheduleAdapter.fromJson(Files.readString(Paths.get(path)));
-        timetables = new CryoList<>();
-        for (var jsonTimetable : json.timetables)
-            timetables.add(new Timetable(jsonTimetable, infra));
-        timetables.sort(Comparator.comparing(Timetable::getDepartureTime));
+        var timetables = new CryoList<TrainSchedule>();
+        assert json != null;
+        for (var jsonTimetable : json.trainSchedules)
+            timetables.add(TrainSchedule.fromJson(jsonTimetable, infra));
+        timetables.sort(Comparator.comparing(TrainSchedule::getDepartureTime));
         timetables.freeze();
+        return new Schedule(timetables);
     }
 
     @Override

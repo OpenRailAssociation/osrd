@@ -50,7 +50,7 @@ public class ConfigManager {
             return schedules.get(path);
         Schedule schedule = null;
         try {
-            schedule = new Schedule(path, infra);
+            schedule = Schedule.fromJSONFile(path, infra);
         } catch (IOException e) {
             e.printStackTrace();
         }

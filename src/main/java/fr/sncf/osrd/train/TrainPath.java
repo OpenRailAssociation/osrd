@@ -6,7 +6,7 @@ import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.pathfinding.CostFunction;
 import fr.sncf.osrd.pathfinding.Dijkstra;
-import fr.sncf.osrd.timetable.Timetable;
+import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.util.CryoList;
 import fr.sncf.osrd.util.Freezable;
 
@@ -129,16 +129,16 @@ public final class TrainPath implements Freezable {
      * @param infra the infra in which the path should be searched
      * @param timetable the timetable containing the list of waypoint
      */
-    public TrainPath(Infra infra, Timetable timetable) {
+    public TrainPath(Infra infra, TrainSchedule timetable) {
         // find the start position
-        var start = timetable.entries.first();
+        var start = timetable.waypoints.first();
         var startPosition = start.edge.operationalPoints.stream()
                 .filter(pointValue -> pointValue.value.id.equals(start.operationalPoint.id))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("couldn't find the starting point operational point"));
 
         // find the stop position
-        var goal = timetable.entries.last();
+        var goal = timetable.waypoints.last();
         var goalPosition = goal.edge.operationalPoints.stream()
                 .filter(pointValue -> pointValue.value.id.equals(goal.operationalPoint.id))
                 .findFirst()
