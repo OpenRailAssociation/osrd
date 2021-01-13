@@ -1,63 +1,22 @@
 package fr.sncf.osrd;
 
+import static fr.sncf.osrd.TestTrains.REALISTIC_FAST_TRAIN;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrainPhysicsSimulator;
-import fr.sncf.osrd.util.PointSequence;
 import org.junit.jupiter.api.Test;
 
 
 public class TrainPhysics {
-    private RollingStock makeFastTrain() throws InvalidInfraException {
-        double trainMass = 850000; // in kilos
-        double maxSpeed = 300 / 3.6;
-        var tractiveEffortCurve = new PointSequence<Double>();
-
-        {
-            var builder = tractiveEffortCurve.builder();
-            var maxEffort = 450000;
-            var minEffort = 180000;
-            for (int speed = 0; speed < maxSpeed; speed += 1) {
-                double coeff = (double)speed / maxSpeed;
-                double effort = maxEffort + (minEffort - maxEffort) * coeff;
-                builder.add(speed, effort);
-            }
-            builder.add(maxSpeed, (double)minEffort);
-            builder.build();
-        }
-
-        return new RollingStock(
-                (0.65 * trainMass) / 100,
-                ((0.008 * trainMass) / 100) * 3.6,
-                (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
-                400,
-                maxSpeed,
-                30,
-                0.05,
-                0.25,
-                trainMass,
-                1.05,
-                true,
-                true,
-                true,
-                true,
-                true,
-                tractiveEffortCurve
-        );
-    }
-
     @Test
     public void testSlopeNoTraction() throws InvalidInfraException {
-        var rollingStock = makeFastTrain();
-
         double speed = 0.0;
 
         // how fast would a train go after 10 steps of 1 sec, coasting on a
         // 40m / km slope?
         for (int i = 0; i < 10; i++) {
-            var simulator = TrainPhysicsSimulator.make(1.0, rollingStock, speed,40);
+            var simulator = TrainPhysicsSimulator.make(1.0, REALISTIC_FAST_TRAIN, speed,40);
             speed = simulator.computeUpdate(0.0, 0.0).speed;
         }
 
@@ -67,11 +26,11 @@ public class TrainPhysics {
 
     @Test
     public void testSteepSlopeTraction() throws InvalidInfraException {
-        var rollingStock = makeFastTrain();
+        var rollingStock = REALISTIC_FAST_TRAIN;
 
         double speed = 0.0;
 
-        double maxTraction = rollingStock.tractiveEffortCurve.get(0).value;
+        double maxTraction = rollingStock.tractiveEffortCurve[0].maxEffort;
         // how fast would a train go after 10 steps of 1 sec, full throttle on a 45deg slope?
         for (int i = 0; i < 10; i++) {
             var simulator = TrainPhysicsSimulator.make(1.0, rollingStock, speed,1000);
@@ -84,7 +43,7 @@ public class TrainPhysics {
 
     @Test
     public void testSlopeChangeVMax() throws InvalidInfraException {
-        var rollingStock = makeFastTrain();
+        var rollingStock = REALISTIC_FAST_TRAIN;
 
         double speed = 0.0;
 
@@ -115,7 +74,7 @@ public class TrainPhysics {
 
     @Test
     public void testAccelerateAndCoast() throws InvalidInfraException {
-        var rollingStock = makeFastTrain();
+        var rollingStock = REALISTIC_FAST_TRAIN;
 
         double speed = 0.0;
 
