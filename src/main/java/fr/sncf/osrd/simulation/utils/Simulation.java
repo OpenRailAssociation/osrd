@@ -132,6 +132,7 @@ public final class Simulation {
      * @param change the change to publish
      */
     public void publishChange(Change change) {
+        logger.info("change published {}", change);
         if (changelog != null)
             changelog.changePublishedCallback(change);
         change.state = Change.State.PUBLISHED;
