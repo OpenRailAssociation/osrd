@@ -19,7 +19,7 @@ public final class TrainState {
     static final Logger logger = LoggerFactory.getLogger(TrainState.class);
 
     // the time for which this state is relevant
-    public double time;
+    public final double time;
 
     // the current speed of the train
     public double speed;
@@ -33,9 +33,9 @@ public final class TrainState {
     // this field MUST be kept private, as it is not the position of the train at the current simulation time,
     // but rather the position of the train at the last event. it's fine and expected, but SpeedControllers need
     // the simulated location
-    public TrainPositionTracker location;
+    public final TrainPositionTracker location;
 
-    public LinkedList<SpeedController> controllers;
+    public final LinkedList<SpeedController> controllers;
 
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
@@ -91,7 +91,7 @@ public final class TrainState {
                 train);
     }
 
-    private TrainPhysicsIntegrator.PositionUpdate step(double timeStep) {
+    private TrainPhysicsIntegrator.PositionUpdate step(@SuppressWarnings("SameParameterValue") double timeStep) {
         // TODO: find out the actual max braking / acceleration force
 
         var rollingStock = train.rollingStock;
@@ -182,6 +182,7 @@ public final class TrainState {
     }
 
 
+    @SuppressWarnings("UnnecessaryLocalVariable")
     TimelineEvent<Train.LocationChange> simulateUntilEvent(Simulation sim) throws SimulationError {
         // 1) find the next event position
 

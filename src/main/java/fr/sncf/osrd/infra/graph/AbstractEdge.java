@@ -21,6 +21,7 @@ public abstract class AbstractEdge<NodeT extends AbstractNode<?>> implements Ind
      * @param dir the course direction
      * @return the list of reachable edges at the start of the course over the edge
      */
+    @SuppressWarnings("unused")
     public List<AbstractEdge<NodeT>> getStartNeighbors(EdgeDirection dir) {
         if (dir == EdgeDirection.START_TO_STOP)
             return startNeighbors;
@@ -43,6 +44,7 @@ public abstract class AbstractEdge<NodeT extends AbstractNode<?>> implements Ind
      * @param dir the course direction
      * @return The node at the start of the course over the edge.
      */
+    @SuppressWarnings("unused")
     public int getStartNode(EdgeDirection dir) {
         if (dir == EdgeDirection.START_TO_STOP)
             return startNode;

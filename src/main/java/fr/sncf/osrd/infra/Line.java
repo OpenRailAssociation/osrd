@@ -8,6 +8,7 @@ public class Line implements Freezable {
     public final String id;
     private final CryoMap<String, Track> tracks = new CryoMap<>();
 
+    @SuppressWarnings("CanBeFinal")
     private boolean frozen = false;
 
     /**
@@ -38,6 +39,7 @@ public class Line implements Freezable {
     public void freeze() {
         assert !frozen;
         tracks.freeze();
+        frozen = true;
     }
 
     @Override

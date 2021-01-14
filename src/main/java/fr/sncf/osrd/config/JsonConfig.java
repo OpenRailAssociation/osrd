@@ -1,5 +1,6 @@
 package fr.sncf.osrd.config;
 
+@SuppressWarnings("CanBeFinal")
 class JsonConfig {
     float simulationTimeStep;
     String infraPath;

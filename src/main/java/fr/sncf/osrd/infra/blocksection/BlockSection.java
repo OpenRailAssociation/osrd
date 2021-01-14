@@ -13,7 +13,7 @@ import fr.sncf.osrd.util.RangeSequence;
         justification = "kept for later use"
 )
 public class BlockSection extends AbstractEdge<SectionSignalNode> {
-    public final String id;
+    public final String  id;
 
     /** The topological edges the block section spans over. */
     public final RangeSequence<TopoEdge> edges;

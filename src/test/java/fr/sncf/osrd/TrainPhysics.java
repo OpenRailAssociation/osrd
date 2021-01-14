@@ -1,6 +1,7 @@
 package fr.sncf.osrd;
 
 import static fr.sncf.osrd.TestTrains.REALISTIC_FAST_TRAIN;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
@@ -10,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 public class TrainPhysics {
     @Test
-    public void testSlopeNoTraction() throws InvalidInfraException {
+    public void testSlopeNoTraction() {
         double speed = 0.0;
 
         // how fast would a train go after 10 steps of 1 sec, coasting on a
@@ -25,7 +26,7 @@ public class TrainPhysics {
     }
 
     @Test
-    public void testSteepSlopeTraction() throws InvalidInfraException {
+    public void testSteepSlopeTraction() {
         var rollingStock = REALISTIC_FAST_TRAIN;
 
         double speed = 0.0;
@@ -42,7 +43,7 @@ public class TrainPhysics {
     }
 
     @Test
-    public void testSlopeChangeVMax() throws InvalidInfraException {
+    public void testSlopeChangeVMax() {
         var rollingStock = REALISTIC_FAST_TRAIN;
 
         double speed = 0.0;
@@ -73,7 +74,7 @@ public class TrainPhysics {
     }
 
     @Test
-    public void testAccelerateAndCoast() throws InvalidInfraException {
+    public void testAccelerateAndCoast() {
         var rollingStock = REALISTIC_FAST_TRAIN;
 
         double speed = 0.0;
@@ -99,6 +100,6 @@ public class TrainPhysics {
         }
 
         // it should be stopped
-        assertTrue(speed == 0.0);
+        assertEquals(speed, 0.0);
     }
 }

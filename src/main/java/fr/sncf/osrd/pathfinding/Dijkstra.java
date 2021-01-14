@@ -110,9 +110,10 @@ public class Dijkstra {
 
         // we don't see the same neighbors depending on the direction we're coming from,
         // so we need two bitsets to track it we visited an edge
+        var edgeCount = graph.edges.size();
         var explored = new BitSet[] {
-                new BitSet(), // START_TO_STOP
-                new BitSet()  // STOP_TO_START
+                new BitSet(edgeCount), // START_TO_STOP
+                new BitSet(edgeCount)  // STOP_TO_START
         };
 
         while (!queue.isEmpty()) {
@@ -133,7 +134,6 @@ public class Dijkstra {
             explored[currentDirection.id].set(currentEdge.getIndex());
 
             // explore all the neighbors of the current candidate
-            final double cost = currentPath.cost;
             for (var abstractNeighborEdge : currentEdge.getEndNeighbors(currentDirection)) {
                 // this cast is fine, as all edges are required to have the same type in a graph.
                 // as of 2020, this can't be improved on due to the lack of SelfT compiler support
@@ -177,7 +177,7 @@ public class Dijkstra {
         throw new RuntimeException("couldn't find a path");
     }
 
-    private static <NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>> void rebuildPath(
+    private static <EdgeT extends AbstractEdge<?>> void rebuildPath(
             Path<EdgeT> path,
             BiConsumer<EdgeT, EdgeDirection> pathConsumer
     ) {

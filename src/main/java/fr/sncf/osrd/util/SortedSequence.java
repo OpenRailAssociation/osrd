@@ -129,7 +129,7 @@ public abstract class SortedSequence<E> {
         }
     }
 
-    protected ArrayList<PointValue<E>> data = new ArrayList<>();
+    protected final ArrayList<PointValue<E>> data = new ArrayList<>();
 
     protected void add(double position, E value) {
         assert data.isEmpty() || position >= data.get(data.size() - 1).position;

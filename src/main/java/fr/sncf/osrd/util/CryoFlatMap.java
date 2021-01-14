@@ -13,6 +13,7 @@ public class CryoFlatMap<K extends Indexable, V> extends CryoList<V> {
      * @param key the key object
      * @param value the value
      */
+    @SuppressWarnings("UnusedReturnValue")
     public V put(K key, V value) {
         var index = key.getIndex();
         if (index >= size()) {
