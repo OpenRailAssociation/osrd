@@ -3,7 +3,7 @@ package fr.sncf.osrd.util;
 import java.util.ArrayList;
 
 public class UnionFind {
-    private ArrayList<Integer> parents = new ArrayList<>();
+    private final ArrayList<Integer> parents = new ArrayList<>();
 
     /**
      * Creates a new group.

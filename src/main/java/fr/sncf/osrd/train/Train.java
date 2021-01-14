@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+@SuppressWarnings("ALL")
 public class Train extends Entity {
     static final Logger logger = LoggerFactory.getLogger(Train.class);
 
@@ -31,7 +32,7 @@ public class Train extends Entity {
     private TimelineEvent<LocationChange> nextMoveEvent = null;
 
     Train(
-            double driverSightDistance,
+            @SuppressWarnings("SameParameterValue") double driverSightDistance,
             String name,
             Simulation sim,
             RollingStock rollingStock,

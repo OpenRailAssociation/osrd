@@ -1,5 +1,6 @@
 package fr.sncf.osrd.simulation.utils;
 
+@SuppressWarnings("UnusedReturnValue")
 public abstract class EntityEventChange<EntityT extends Entity, EventValueT, ResultT> extends Change {
     public final TimelineEventId timelineEventId;
     public final String entityId;
@@ -10,6 +11,7 @@ public abstract class EntityEventChange<EntityT extends Entity, EventValueT, Res
         this.timelineEventId = new TimelineEventId(timelineEvent);
     }
 
+    @SuppressWarnings("SameReturnValue")
     public abstract ResultT apply(Simulation sim, EntityT entity, TimelineEvent<EventValueT> event);
 
     @Override

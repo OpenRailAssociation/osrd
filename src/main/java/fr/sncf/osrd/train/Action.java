@@ -62,6 +62,7 @@ public class Action implements Comparable<Action> {
         return new Action(ActionType.BRAKING, force, deleteController);
     }
 
+    @SuppressWarnings("unused")
     public static Action emergencyBrake(boolean deleteController) {
         return new Action(ActionType.EMERGENCY_BRAKING, deleteController);
     }

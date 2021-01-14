@@ -36,7 +36,7 @@ public class SimulationTest {
                 Simulation sim,
                 TimelineEvent<?> event,
                 TimelineEvent.State state
-        ) throws SimulationError {
+        ) {
             events.add(new EventUpdate(event, state));
         }
     }

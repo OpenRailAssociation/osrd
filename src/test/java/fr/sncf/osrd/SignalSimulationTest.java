@@ -63,6 +63,7 @@ public class SignalSimulationTest {
             return aspect;
         }
 
+        @SuppressWarnings("SameParameterValue")
         Signal(String name, Aspect aspect, Signal master) {
             super(String.format("signal/%s", name));
             this.aspect = aspect;

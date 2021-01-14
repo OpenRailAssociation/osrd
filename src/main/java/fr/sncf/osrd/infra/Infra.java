@@ -216,9 +216,8 @@ public class Infra implements Freezable {
     }
 
     InfraState newState() {
-        var state = new InfraState(this);
         // TODO: add stateful objects
         // state.initialize(object);
-        return state;
+        return new InfraState(this);
     }
 }

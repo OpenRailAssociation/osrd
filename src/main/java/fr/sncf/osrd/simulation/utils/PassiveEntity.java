@@ -13,6 +13,6 @@ public class PassiveEntity extends Entity {
             Simulation sim,
             TimelineEvent<?> event,
             TimelineEvent.State state
-    ) throws SimulationError {
+    ) {
     }
 }
