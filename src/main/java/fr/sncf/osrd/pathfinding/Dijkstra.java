@@ -1,135 +1,192 @@
 package fr.sncf.osrd.pathfinding;
 
+import static fr.sncf.osrd.infra.graph.EdgeDirection.*;
+
 import fr.sncf.osrd.infra.graph.AbstractEdge;
 import fr.sncf.osrd.infra.graph.AbstractNode;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.graph.Graph;
-import fr.sncf.osrd.util.Pair;
-import fr.sncf.osrd.util.Tuple;
 
 import java.util.*;
 import java.util.function.BiConsumer;
 
 public class Dijkstra {
-    public static class CandidatePath {
+    /**
+     * A linked list of edges inside a graph.
+     * Edges are added at the head of the list.
+     * @param <EdgeT> the type of edges
+     */
+    private static class Path<EdgeT extends AbstractEdge<?>> {
         public final double cost;
-        public final int nodeIndex;
-        public final boolean reachesGoal;
+        public final EdgeT edge;
+        public final EdgeDirection direction;
+        public final Path<EdgeT> previous;
 
-        CandidatePath(double cost, int nodeIndex, boolean reachesGoal) {
+        Path(
+                double cost,
+                EdgeT edge,
+                EdgeDirection direction,
+                Path<EdgeT> previous
+        ) {
             this.cost = cost;
-            this.nodeIndex = nodeIndex;
-            this.reachesGoal = reachesGoal;
+            this.edge = edge;
+            this.direction = direction;
+            this.previous = previous;
+        }
+
+        /**
+         * Creates a new path.
+         * @param cost the cost of this path embryo
+         * @param startingEdge the first edge of the path
+         * @param direction the direction the path is headed to
+         * @param <EdgeT> the type of the path's edges
+         * @return a new path
+         */
+        static <EdgeT extends AbstractEdge<?>> Path<EdgeT> init(
+                double cost,
+                EdgeT startingEdge,
+                EdgeDirection direction
+        ) {
+            return new Path<>(cost, startingEdge, direction, null);
+        }
+
+        /**
+         * Creates a new component at the end of an existing path.
+         * @param addedCost the cost added by this path component
+         * @param newEdge the edge of the path component
+         * @param direction the direction the path is headed to
+         * @return a new path
+         */
+        Path<EdgeT> chain(
+                double addedCost,
+                EdgeT newEdge,
+                EdgeDirection direction
+        ) {
+            assert addedCost >= 0.;
+            return new Path<>(cost + addedCost, newEdge, direction, this);
         }
     }
 
     /**
      * Compute the shortest path from start to goal
      * @param graph the graph in which to compute the path
-     * @param start the starting edge
+     * @param startEdge the starting edge
      * @param startPosition the position on the starting edge
-     * @param goal the goal edge
+     * @param goalEdge the goal edge
      * @param goalPosition the position on the goal edge
      * @param costFunction the cost function
      * @param pathConsumer the callback to consume the path
      */
+    @SuppressWarnings("unchecked")
     public static <NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>> void findPath(
             Graph<NodeT, EdgeT> graph,
-            EdgeT start,
+            EdgeT startEdge,
             double startPosition,
-            EdgeT goal,
+            EdgeT goalEdge,
             double goalPosition,
             CostFunction<EdgeT> costFunction,
             BiConsumer<EdgeT, EdgeDirection> pathConsumer
     ) {
-        assert startPosition >= 0 && startPosition <= start.length;
-        assert goalPosition >= 0 && goalPosition <= goal.length;
+        assert startPosition >= 0 && startPosition <= startEdge.length;
+        assert goalPosition >= 0 && goalPosition <= goalEdge.length;
 
-        var queue = new PriorityQueue<CandidatePath>(Comparator.comparing(pair -> pair.cost));
+        // checking this early enables the rest of algorithm
+        // to assume the goal was found once the target edge was
+        if (startEdge == goalEdge) {
+            var direction = START_TO_STOP;
+            if (goalPosition < startPosition)
+                direction = STOP_TO_START;
+            pathConsumer.accept(startEdge, direction);
+            return;
+        }
 
-        double costToStartNode = costFunction.apply(start, startPosition, 0);
-        queue.add(new CandidatePath(costToStartNode, start.startNode, false));
-        double costToEndNode = costFunction.apply(start, startPosition, start.length);
-        queue.add(new CandidatePath(costToEndNode, start.endNode, false));
+        var queue = new PriorityQueue<Path<EdgeT>>(Comparator.comparing(path -> path.cost));
 
-        var explored = new HashSet<Integer>();
-        var previousNode = new HashMap<Integer, Tuple<Integer, Integer, EdgeDirection>>();
+        // add to the queue the two initial options: either go one way, or the other
+        double costToStartNode = costFunction.apply(startEdge, startPosition, 0);
+        queue.add(Path.init(costToStartNode, startEdge, STOP_TO_START));
+        double costToEndNode = costFunction.apply(startEdge, startPosition, startEdge.length);
+        queue.add(Path.init(costToEndNode, startEdge, START_TO_STOP));
+
+        // we don't see the same neighbors depending on the direction we're coming from,
+        // so we need two bitsets to track it we visited an edge
+        var explored = new BitSet[] {
+                new BitSet(), // START_TO_STOP
+                new BitSet()  // STOP_TO_START
+        };
+
         while (!queue.isEmpty()) {
-            var costAndNodeIndex = queue.poll();
-            double cost = costAndNodeIndex.cost;
-            int nodeIndex = costAndNodeIndex.nodeIndex;
-            if (costAndNodeIndex.reachesGoal) {
-                deducePath(graph, previousNode, start, goal, nodeIndex, pathConsumer);
-                return; // we found the goal
+            // pop the next candidate off the queue
+            var currentPath = queue.poll();
+
+            // if the best candidate reaches the goal, stop searching
+            if (currentPath.edge == goalEdge) {
+                rebuildPath(currentPath, pathConsumer);
+                return;
             }
-            explored.add(nodeIndex);
 
-            for (var edge : graph.neighbors.get(graph.nodes.get(nodeIndex))) {
-                int nextNodeIndex;
-                double newCost;
-                double length = edge.length;
+            var currentEdge = currentPath.edge;
+            var currentDirection = currentPath.direction;
+            var currentEndNode = currentEdge.getEndNode(currentDirection);
+
+            // mark the node as explored
+            explored[currentDirection.id].set(currentEdge.getIndex());
+
+            // explore all the neighbors of the current candidate
+            final double cost = currentPath.cost;
+            for (var abstractNeighborEdge : currentEdge.getEndNeighbors(currentDirection)) {
+                // this cast is fine, as all edges are required to have the same type in a graph.
+                // as of 2020, this can't be improved on due to the lack of SelfT compiler support
+                var neighborEdge = (EdgeT) abstractNeighborEdge;
+
+                // find which direction we're approching the neighbor edge from
                 EdgeDirection direction;
+                if (neighborEdge.startNode == currentEndNode)
+                    direction = START_TO_STOP;
+                else {
+                    assert neighborEdge.endNode == currentEndNode;
+                    direction = STOP_TO_START;
+                }
 
-                if (edge == goal)
-                    length = goalPosition;
+                // if the neighbor was already explored from this direction, skip it
+                if (explored[direction.id].get(neighborEdge.getIndex()))
+                    continue;
 
-                if (edge.startNode == nodeIndex) {
-                    nextNodeIndex = edge.endNode;
-                    newCost = cost + costFunction.apply(edge, 0, length);
-                    direction = EdgeDirection.START_TO_STOP;
+                // compute the begin and end position of the portion of the neighbor edge the path covers
+                // (it's needed to compute the cost)
+                double neighborBeginPos;
+                double neighborEndPos;
+                if (direction == START_TO_STOP) {
+                    neighborBeginPos = 0.;
+                    neighborEndPos = neighborEdge.length;
                 } else {
-                    assert edge.endNode == nodeIndex;
-                    nextNodeIndex = edge.startNode;
-                    newCost = cost + costFunction.apply(edge, length, 0);
-                    direction = EdgeDirection.STOP_TO_START;
+                    neighborBeginPos = neighborEdge.length;
+                    neighborEndPos = 0.;
                 }
 
-                if (edge == goal) {
-                    queue.add(new CandidatePath(newCost, nodeIndex, true));
-                    continue;
-                }
+                // if the neighbor is the goal, the path ends early.
+                // we should only take in account the cost between our end of the edge and the goal
+                if (neighborEdge == goalEdge)
+                    neighborEndPos = goalPosition;
 
-                if (explored.contains(nextNodeIndex))
-                    continue;
-                queue.add(new CandidatePath(newCost, nextNodeIndex, false));
-                previousNode.put(nextNodeIndex, new Tuple<>(nodeIndex, edge.getIndex(), direction));
+                // compute the added cost of this edge
+                var addedCost = costFunction.apply(neighborEdge, neighborBeginPos, neighborEndPos);
+                queue.add(currentPath.chain(addedCost, neighborEdge, direction));
             }
         }
         throw new RuntimeException("couldn't find a path");
     }
 
-    private static <NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>> void deducePath(
-            Graph<NodeT, EdgeT> graph,
-            HashMap<Integer, Tuple<Integer, Integer, EdgeDirection>> previousNode,
-            EdgeT start,
-            EdgeT goal,
-            int goalNodeIndex,
+    private static <NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>> void rebuildPath(
+            Path<EdgeT> path,
             BiConsumer<EdgeT, EdgeDirection> pathConsumer
     ) {
-        var edges = new ArrayList<Pair<Integer, EdgeDirection>>();
-        EdgeDirection goalDirection = EdgeDirection.START_TO_STOP;
-        if (goal.endNode == goalNodeIndex)
-            goalDirection = EdgeDirection.STOP_TO_START;
-        var current = new Tuple<>(goalNodeIndex, goal.getIndex(), goalDirection);
-        while (current.first != start.startNode && current.first != start.endNode) {
-            edges.add(new Pair<>(current.second, current.third));
-            current = previousNode.get(current.first);
-        }
-        edges.add(new Pair<>(current.second, current.third));
+        // convert the goal to start path linked list to an array, reversing the order in the process
+        var pathElements = new ArrayDeque<Path<EdgeT>>();
+        for (var cur = path; cur != null; cur = cur.previous)
+            pathElements.addFirst(cur);
 
-        // TODO: find a better algorithm, which does not require this hacky condition
-        if (start != goal) {
-            // add the start node
-            EdgeDirection startDirection = EdgeDirection.START_TO_STOP;
-            if (start.endNode == current.first)
-                startDirection = EdgeDirection.STOP_TO_START;
-            edges.add(new Pair<>(start.getIndex(), startDirection));
-        }
-
-        var iterator = edges.listIterator(edges.size());
-        while (iterator.hasPrevious()) {
-            var pathElem = iterator.previous();
-            pathConsumer.accept(graph.edges.get(pathElem.first), pathElem.second);
-        }
+        for (var pathElement : pathElements)
+            pathConsumer.accept(pathElement.edge, pathElement.direction);
     }
 }
