@@ -2,13 +2,13 @@ package fr.sncf.osrd.infra.graph;
 
 /** Encodes a direction along an edge. */
 public enum EdgeDirection {
-    START_TO_STOP(1),
-    STOP_TO_START(-1);
+    START_TO_STOP(0),
+    STOP_TO_START(1);
 
-    public final int delta;
+    public final int id;
 
-    EdgeDirection(int delta) {
-        this.delta = delta;
+    EdgeDirection(int id) {
+        this.id = id;
     }
 
     /**

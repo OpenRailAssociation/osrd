@@ -28,6 +28,28 @@ public abstract class AbstractEdge<NodeT extends AbstractNode<?>> implements Ind
     }
 
     /**
+     * The node at the end of the course over the edge.
+     * @param dir the course direction
+     * @return The node at the end of the course over the edge.
+     */
+    public int getEndNode(EdgeDirection dir) {
+        if (dir == EdgeDirection.START_TO_STOP)
+            return endNode;
+        return startNode;
+    }
+
+    /**
+     * The node at the start of the course over the edge.
+     * @param dir the course direction
+     * @return The node at the start of the course over the edge.
+     */
+    public int getStartNode(EdgeDirection dir) {
+        if (dir == EdgeDirection.START_TO_STOP)
+            return startNode;
+        return endNode;
+    }
+
+    /**
      * The list of reachable edges at the end of the course over the edge.
      * @param dir the course direction
      * @return the list of reachable edges at the end of the course over the edge
