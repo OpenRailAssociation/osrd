@@ -1,6 +1,6 @@
 package fr.sncf.osrd.infra.parsing.railml;
 
-import fr.sncf.osrd.infra.parsing.railml.NetRelation.Position;
+import fr.sncf.osrd.infra.graph.EdgeEndpoint;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.util.MutPair;
 import fr.sncf.osrd.util.RangeValue;
@@ -18,49 +18,58 @@ final class NetElement {
     /** The start position of the netElement in a set of linear reference systems. */
     final Map<String, Double> lrsStartOffsets;
 
-    /** constructor for netElement which contains elementCollectionUnordered */
-    NetElement(Node netElement, Map<String, NetElement> netElementMap) {
-        topoEdge = null;
-        children = new ArrayList<>();
-        lrsStartOffsets = null;
-        parseChildren(netElement, netElementMap);
+    NetElement(ArrayList<NetElement> children) {
+        this.topoEdge = null;
+        this.lrsStartOffsets = null;
+        this.children = children;
     }
 
-    /** constructor for netElement which have a length but no elementCollectionUnordered */
-    NetElement(TopoEdge topoEdge, Node netElement) {
-        this.topoEdge = topoEdge;
-        children = null;
-        lrsStartOffsets = new HashMap<>();
-        parseLrs(netElement);
+    NetElement(TopoEdge edge, Map<String, Double> lrsStartOffsets) {
+        this.topoEdge = edge;
+        this.lrsStartOffsets = lrsStartOffsets;
+        this.children = null;
     }
 
-    private void parseChildren(Node netElement, Map<String, NetElement> netElementMap) {
+    public static NetElement parseMacroOrMeso(Node netElement, Map<String, NetElement> netElementMap) {
+        return new NetElement(parseChildren(netElement, netElementMap));
+    }
+
+    public static NetElement parseMicro(Node netElement, TopoEdge topoEdge) {
+        var lrsStartOffsets = parseLrs(netElement);
+        return new NetElement(topoEdge, lrsStartOffsets);
+    }
+
+    private static ArrayList<NetElement> parseChildren(Node netElement, Map<String, NetElement> netElementMap) {
+        var children = new ArrayList<NetElement>();
         for (var elementPart : netElement.selectNodes("elementCollectionUnordered/elementPart")) {
             var ref = elementPart.valueOf("@ref");
             children.add(netElementMap.get(ref));
         }
+        return children;
     }
 
-    private void parseLrs(Node netElement) {
+    private static Map<String, Double> parseLrs(Node netElement) {
         var lrsMap = new HashMap<String, MutPair<Double, Double>>();
 
         for (var intrinsicCoordinate: netElement.selectNodes("associatedPositioningSystem/intrinsicCoordinate")) {
-            var intrinsicCoord = Position.coordParse(intrinsicCoordinate.valueOf("@intrinsicCoord"));
+            var intrinsicCoord = NetRelation.coordParse(intrinsicCoordinate.valueOf("@intrinsicCoord"));
             var positioningSystemRef = intrinsicCoordinate.valueOf("linearCoordinate/@positioningSystemRef");
             if (positioningSystemRef.isEmpty())
                 continue;
             var measure = Double.valueOf(intrinsicCoordinate.valueOf("linearCoordinate/@measure"));
             lrsMap.putIfAbsent(positioningSystemRef, new MutPair<>(Double.NaN, Double.NaN));
-            if (intrinsicCoord == Position.START)
+            if (intrinsicCoord == EdgeEndpoint.START)
                 lrsMap.get(positioningSystemRef).first = measure;
             else
                 lrsMap.get(positioningSystemRef).second = measure;
         }
 
+        var lrsStartOffsets = new HashMap<String, Double>();
         for (var entry : lrsMap.entrySet()) {
             var range = entry.getValue();
             lrsStartOffsets.put(entry.getKey(), range.first);
         }
+        return lrsStartOffsets;
     }
 
     /**

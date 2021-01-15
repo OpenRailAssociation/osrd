@@ -1,33 +1,30 @@
 package fr.sncf.osrd.infra.parsing.railml;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import static fr.sncf.osrd.infra.graph.EdgeEndpoint.*;
 
-@SuppressFBWarnings(value = "URF_UNREAD_FIELD")
-class NetRelation {
-    public enum Position {
-        START,
-        END,
-        ;
+import fr.sncf.osrd.infra.graph.EdgeEndpoint;
 
-        static Position coordParse(String intrinsicCoord) {
-            assert intrinsicCoord.equals("0") || intrinsicCoord.equals("1");
-            if (intrinsicCoord.equals("0"))
-                return START;
-            return END;
-        }
+final class NetRelation {
+    public static EdgeEndpoint coordParse(String intrinsicCoord) {
+        assert intrinsicCoord.equals("0") || intrinsicCoord.equals("1");
+        if (intrinsicCoord.equals("0"))
+            return START;
+        return END;
     }
 
     final String id;
-    final Position positionOnA;
+    final EdgeEndpoint positionOnA;
+    /** id of the start netElement */
     final String elementA;
-    final Position positionOnB;
+    final EdgeEndpoint positionOnB;
+    /** id of the end netElement */
     final String elementB;
 
     NetRelation(String id, String positionOnA, String elementA, String positionOnB, String elementB) {
         this.id = id;
-        this.positionOnA = Position.coordParse(positionOnA);
+        this.positionOnA = coordParse(positionOnA);
         this.elementA = elementA;
-        this.positionOnB = Position.coordParse(positionOnB);
+        this.positionOnB = coordParse(positionOnB);
         this.elementB = elementB;
     }
 }

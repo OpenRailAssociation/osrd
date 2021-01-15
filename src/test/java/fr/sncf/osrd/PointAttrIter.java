@@ -9,7 +9,6 @@ import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.train.PathAttrIterator;
 import fr.sncf.osrd.train.TrainPath;
-import fr.sncf.osrd.util.TopoLocation;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -26,13 +25,13 @@ class PointAttrIter {
         var nodeB = infra.makeNoOpNode("B");
         var nodeC = infra.makeNoOpNode("C");
 
-        final var firstEdge = infra.makeTopoLink(
+        final var firstEdge = infra.makeTopoEdge(
                 nodeA.getIndex(),
                 nodeB.getIndex(),
                 "e1", 42
         );
 
-        final var secondEdge = infra.makeTopoLink(
+        final var secondEdge = infra.makeTopoEdge(
                 nodeB.getIndex(),
                 nodeC.getIndex(),
                 "e2", 42
@@ -97,12 +96,12 @@ class PointAttrIter {
         var nodeB = infra.makeNoOpNode("B");
         var nodeC = infra.makeNoOpNode("C");
 
-        var forwardEdge = infra.makeTopoLink(
+        var forwardEdge = infra.makeTopoEdge(
                 nodeA.getIndex(),
                 nodeB.getIndex(),
                 "e1", 42);
 
-        var backwardEdge = infra.makeTopoLink(
+        var backwardEdge = infra.makeTopoEdge(
                 nodeC.getIndex(),
                 nodeB.getIndex(),
                 "e2", 50);

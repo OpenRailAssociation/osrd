@@ -5,6 +5,7 @@ import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.blocksection.BlockSection;
 import fr.sncf.osrd.infra.graph.AbstractEdge;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
+import fr.sncf.osrd.infra.graph.EdgeEndpoint;
 import fr.sncf.osrd.infra.interlocking.TrackSensor;
 import fr.sncf.osrd.infra.interlocking.VisibleTrackObject;
 import fr.sncf.osrd.util.DoubleOrientedRangeSequence;
@@ -16,6 +17,11 @@ import fr.sncf.osrd.util.RangeSequence;
  */
 public final class TopoEdge extends AbstractEdge<TopoNode> {
     public final String id;
+
+    @Override
+    public String toString() {
+        return String.format("TopoEdge { id=%s }", id);
+    }
 
     /**
      * Create a new topological edge.
@@ -40,7 +46,7 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
      * @param length The length of the edge, in meters
      * @return A new edge
      */
-    public static TopoEdge link(
+    public static TopoEdge linkNodes(
             int startNodeIndex,
             int endNodeIndex,
             String id,
@@ -48,6 +54,12 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
     ) {
         return new TopoEdge(id, startNodeIndex, endNodeIndex, length);
     }
+
+    public static void linkEdges(TopoEdge edgeA, EdgeEndpoint positionOnA, TopoEdge edgeB, EdgeEndpoint positionOnB) {
+        edgeA.getNeighbors(positionOnA).add(edgeB);
+        edgeB.getNeighbors(positionOnB).add(edgeA);
+    }
+
 
     /**
      * Gets the last valid edge position along a direction

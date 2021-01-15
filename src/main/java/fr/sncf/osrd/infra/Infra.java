@@ -152,13 +152,13 @@ public class Infra implements Freezable {
      * @param length The length of the edge, in meters
      * @return A new edge
      */
-    public TopoEdge makeTopoLink(
+    public TopoEdge makeTopoEdge(
             int startNodeIndex,
             int endNodeIndex,
             String id,
             double length
     ) {
-        var edge = TopoEdge.link(
+        var edge = TopoEdge.linkNodes(
                 startNodeIndex,
                 endNodeIndex,
                 id,

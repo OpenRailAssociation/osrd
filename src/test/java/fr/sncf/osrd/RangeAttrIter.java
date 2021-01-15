@@ -10,7 +10,6 @@ import fr.sncf.osrd.train.PathAttrIterator;
 import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.util.DoubleOrientedRangeSequence;
 import fr.sncf.osrd.util.RangeValue;
-import fr.sncf.osrd.util.TopoLocation;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -29,13 +28,13 @@ public class RangeAttrIter {
         var nodeB = infra.makeNoOpNode("B");
         var nodeC = infra.makeNoOpNode("C");
 
-        var forwardEdge = infra.makeTopoLink(
+        var forwardEdge = infra.makeTopoEdge(
                 nodeA.getIndex(),
                 nodeB.getIndex(),
                 "e1", 42
         );
 
-        var backwardEdge = infra.makeTopoLink(
+        var backwardEdge = infra.makeTopoEdge(
                 nodeC.getIndex(),
                 nodeB.getIndex(),
                 "e2", 50
