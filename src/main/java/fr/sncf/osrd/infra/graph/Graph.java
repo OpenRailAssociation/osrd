@@ -27,9 +27,10 @@ public class Graph<NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>>
 
     /**
      * Even though edges store the graph of relations between edges, we still need
-     * to store the graph of links between nodes and edges.
+     * to store the graph of links between nodes and edges. This is private, as it can be built
+     * from the edges (which have the index of their start and end nodes) in {@see Infra#prepare}.
      */
-    public final CryoFlatMap<NodeT, List<EdgeT>> neighbors = new CryoFlatMap<>();
+    private final CryoFlatMap<NodeT, List<EdgeT>> neighbors = new CryoFlatMap<>();
 
     private boolean frozen = false;
 
@@ -68,6 +69,7 @@ public class Graph<NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>>
     public void prepare() {
         for (var node : nodes)
             neighbors.put(node, new ArrayList<>());
+
         for (var edge : edges) {
             neighbors.get(edge.startNode).add(edge);
             neighbors.get(edge.endNode).add(edge);

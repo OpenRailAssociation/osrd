@@ -6,11 +6,15 @@ import fr.sncf.osrd.infra.graph.AbstractEdge;
 import fr.sncf.osrd.infra.graph.AbstractNode;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.graph.Graph;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.BiConsumer;
 
 public class Dijkstra {
+    static final Logger logger = LoggerFactory.getLogger(Dijkstra.class);
+
     /**
      * A linked list of edges inside a graph.
      * Edges are added at the head of the list.
@@ -87,12 +91,15 @@ public class Dijkstra {
             CostFunction<EdgeT> costFunction,
             BiConsumer<EdgeT, EdgeDirection> pathConsumer
     ) {
+        logger.trace("pathfinding from {}:{} to {}:{}", startEdge, startPosition, goalEdge, goalPosition);
+
         assert startPosition >= 0 && startPosition <= startEdge.length;
         assert goalPosition >= 0 && goalPosition <= goalEdge.length;
 
         // checking this early enables the rest of algorithm
         // to assume the goal was found once the target edge was
         if (startEdge == goalEdge) {
+            logger.trace("start and goal are on the same edge");
             var direction = START_TO_STOP;
             if (goalPosition < startPosition)
                 direction = STOP_TO_START;
@@ -120,8 +127,11 @@ public class Dijkstra {
             // pop the next candidate off the queue
             var currentPath = queue.poll();
 
+            logger.trace("considering path ending at {} with cost {}", currentPath.edge, currentPath.cost);
+
             // if the best candidate reaches the goal, stop searching
             if (currentPath.edge == goalEdge) {
+                logger.trace("found goal");
                 rebuildPath(currentPath, pathConsumer);
                 return;
             }
@@ -139,7 +149,7 @@ public class Dijkstra {
                 // as of 2020, this can't be improved on due to the lack of SelfT compiler support
                 var neighborEdge = (EdgeT) abstractNeighborEdge;
 
-                // find which direction we're approching the neighbor edge from
+                // find which direction we're approaching the neighbor edge from
                 EdgeDirection direction;
                 if (neighborEdge.startNode == currentEndNode)
                     direction = START_TO_STOP;

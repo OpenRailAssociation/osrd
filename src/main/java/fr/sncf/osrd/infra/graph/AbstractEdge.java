@@ -17,6 +17,17 @@ public abstract class AbstractEdge<NodeT extends AbstractNode<?>> implements Ind
     private boolean frozen = false;
 
     /**
+     * Given a side of the edge, return the list of neighbors
+     * @param endpoint the end of the edge to consider
+     * @return the list of neighbors at this end
+     */
+    public List<AbstractEdge<NodeT>> getNeighbors(EdgeEndpoint endpoint) {
+        if (endpoint == EdgeEndpoint.START)
+            return startNeighbors;
+        return endNeighbors;
+    }
+
+    /**
      * The list of reachable edges at the start of the course over the edge.
      * @param dir the course direction
      * @return the list of reachable edges at the start of the course over the edge

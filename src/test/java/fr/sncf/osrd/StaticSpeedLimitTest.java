@@ -29,7 +29,7 @@ public class StaticSpeedLimitTest {
         var nodeA = infra.makeNoOpNode("A");
         var nodeB = infra.makeNoOpNode("B");
         var edgeLength = 10000.0;
-        var edge = infra.makeTopoLink(nodeA.getIndex(), nodeB.getIndex(), "e1", edgeLength);
+        var edge = infra.makeTopoEdge(nodeA.getIndex(), nodeB.getIndex(), "e1", edgeLength);
 
         // create operational points for the trip
         var opStart = new OperationalPoint("start id", "start");

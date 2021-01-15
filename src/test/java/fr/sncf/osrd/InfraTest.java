@@ -10,7 +10,7 @@ class InfraTest {
         var infra = new Infra();
         var nodeA = infra.makeNoOpNode("A");
         var nodeB = infra.makeNoOpNode("B");
-        infra.makeTopoLink(nodeA.getIndex(), nodeB.getIndex(), "e1", 42);
+        infra.makeTopoEdge(nodeA.getIndex(), nodeB.getIndex(), "e1", 42);
         infra.prepare();
     }
 }
