@@ -2,7 +2,7 @@ package fr.sncf.osrd.speedcontroller;
 
 import fr.sncf.osrd.train.*;
 
-public abstract class RangeSpeedController implements SpeedController {
+public abstract class RangeSpeedController extends SpeedController {
     private final double startPosition;
     private final double endPosition;
 
@@ -11,19 +11,9 @@ public abstract class RangeSpeedController implements SpeedController {
         this.endPosition = endPosition;
     }
 
-    abstract Action getActionOnRange(
-            TrainState state,
-            TrainPhysicsIntegrator trainPhysics
-    );
-
     @Override
-    public Action getAction(TrainState state, TrainPhysicsIntegrator trainPhysics) {
-        if (state.location.getHeadPathPosition() < startPosition)
-            // don't do anything, but don't delete the controller
-            return Action.empty(false);
-        if (state.location.getHeadPathPosition() > endPosition)
-            // don't do anything and ditch the controller
-            return Action.empty(true);
-        return getActionOnRange(state, trainPhysics);
+    public boolean isActive(TrainState state) {
+        var position = state.location.getHeadPathPosition();
+        return (position >= startPosition && position < endPosition);
     }
 }

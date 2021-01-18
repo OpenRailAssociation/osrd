@@ -6,7 +6,6 @@ import fr.sncf.osrd.simulation.utils.Simulation;
 import fr.sncf.osrd.simulation.utils.SimulationError;
 import fr.sncf.osrd.simulation.utils.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -162,23 +161,18 @@ public final class TrainState {
     }
 
     private Action updateRolling(TrainPositionTracker position, TrainPhysicsIntegrator trainPhysics) {
+        // compute the actions for all speed controllers
         var actions = controllers.stream()
-                .map(sp -> new Pair<>(sp, sp.getAction(this, trainPhysics)))
+                .map(sp -> sp.getAction(this, trainPhysics))
                 .collect(Collectors.toList());
 
-        var action = actions.stream()
-                .map(pair -> pair.second)
-                .filter(curAction -> curAction.type != Action.ActionType.NO_ACTION)
+        var mostConstrainingAction = actions.stream()
                 .min(Action::compareTo);
-        assert action.isPresent();
 
-        var toDelete = actions.stream()
-                .filter(pair -> pair.second.deleteController)
-                .map(pair -> pair.first)
-                .collect(Collectors.toList());
-        controllers.removeAll(toDelete);
+        controllers.removeIf(sp -> !sp.isActive(this));
 
-        return action.get();
+        assert mostConstrainingAction.isPresent();
+        return mostConstrainingAction.get();
     }
 
 
