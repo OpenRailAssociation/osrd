@@ -126,7 +126,7 @@ public final class RailMLParser {
         numberOfNodes = uf.minimize(edgeEndpointToNode);
 
         // at this point:
-        //  - numberOfComponents contains the number of connected components
+        //  - numberOfNodes contains the number of connected components
         //  - componentIndexes.get(neComponents.get(...)) gets the component index for some network element endpoint
     }
 

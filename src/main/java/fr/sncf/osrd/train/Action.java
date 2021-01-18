@@ -48,37 +48,31 @@ public class Action implements Comparable<Action> {
      */
     final double force;
 
-    /**
-     * Whether to delete the speed controller.
-     */
-    final boolean deleteController;
-
-    public static Action accelerate(double force, boolean deleteController) {
-        return new Action(ActionType.TRACTION, force, deleteController);
+    public static Action accelerate(double force) {
+        return new Action(ActionType.TRACTION, force);
     }
 
-    public static Action brake(double force, boolean deleteController) {
+    public static Action brake(double force) {
         assert force > 0.;
-        return new Action(ActionType.BRAKING, force, deleteController);
+        return new Action(ActionType.BRAKING, force);
     }
 
     @SuppressWarnings("unused")
-    public static Action emergencyBrake(boolean deleteController) {
-        return new Action(ActionType.EMERGENCY_BRAKING, deleteController);
+    public static Action emergencyBrake() {
+        return new Action(ActionType.EMERGENCY_BRAKING);
     }
 
-    public static Action empty(boolean deleteController) {
-        return new Action(ActionType.NO_ACTION, deleteController);
+    public static Action coast() {
+        return new Action(ActionType.NO_ACTION);
     }
 
     /**
      * Create a new force-less action.
-     * @param deleteController whether to delete the controller
+     * @param type the kind of action
      */
-    private Action(ActionType type, boolean deleteController) {
+    private Action(ActionType type) {
         this.type = type;
         this.force = Double.NaN;
-        this.deleteController = deleteController;
     }
 
     boolean hasForce() {
@@ -87,13 +81,12 @@ public class Action implements Comparable<Action> {
 
     /**
      * Create a new force action.
-     * @param force the force to apply
-     * @param deleteController whether to delete the controller
+     * @param type the force to apply
+     * @param force the force associated with the action
      */
-    private Action(ActionType type, double force, boolean deleteController) {
+    private Action(ActionType type, double force) {
         this.type = type;
         this.force = force;
-        this.deleteController = deleteController;
     }
 
     // region STD_OVERRIDES
@@ -127,13 +120,13 @@ public class Action implements Comparable<Action> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, force, deleteController);
+        return Objects.hash(type, force);
     }
 
     @Override
     public String toString() {
-        return String.format("Action { type=%s, force=%f, deleteController=%s }",
-                type.toString(), force, deleteController ? "True" : "False");
+        return String.format("Action { type=%s, force=%f }",
+                type.toString(), force);
     }
 
     // endregion

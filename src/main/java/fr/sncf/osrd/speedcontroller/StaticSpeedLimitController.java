@@ -5,7 +5,7 @@ import fr.sncf.osrd.train.Action;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator;
 import fr.sncf.osrd.train.TrainState;
 
-public final class StaticSpeedLimitController implements SpeedController {
+public final class StaticSpeedLimitController extends SpeedController {
     @Override
     public Action getAction(
             TrainState state, TrainPhysicsIntegrator trainPhysics
@@ -29,6 +29,6 @@ public final class StaticSpeedLimitController implements SpeedController {
                 .orElse(Double.POSITIVE_INFINITY);
 
         // compute the action to apply in order to maintain some speed
-        return trainPhysics.actionToTargetSpeed(maxSpeed, false);
+        return trainPhysics.actionToTargetSpeed(maxSpeed);
     }
 }
