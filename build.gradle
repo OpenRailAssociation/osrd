@@ -77,6 +77,10 @@ spotbugs {
     maxHeapSize = '1g'
 }
 
+task printSettings(type: DefaultTask) {
+    println "java.home " + System.getProperty('java.home')
+}
+
 tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
   reports {
      html {
