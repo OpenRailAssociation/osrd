@@ -1,7 +1,7 @@
 package fr.sncf.osrd.infra.interlocking;
 
-import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.simulation.utils.Simulation;
+import fr.sncf.osrd.train.TrainState;
 
 public interface VisibleTrackObject {
     /**
@@ -13,7 +13,8 @@ public interface VisibleTrackObject {
     /**
      * A function called by a train when it first sees this object.
      * @param sim the simulation
-     * @param train the train seeing the object
+     * @param trainState the train seeing the object
+     * @param trainObjectDistance the distance between the train and the object
      */
-    void onSight(Simulation sim, Train train);
+    void onSight(Simulation sim, TrainState trainState, double trainObjectDistance);
 }

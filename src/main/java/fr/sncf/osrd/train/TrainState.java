@@ -5,14 +5,14 @@ import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.simulation.utils.Simulation;
 import fr.sncf.osrd.simulation.utils.SimulationError;
 import fr.sncf.osrd.simulation.utils.TimelineEvent;
+import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public final class TrainState {
     static final Logger logger = LoggerFactory.getLogger(TrainState.class);
@@ -34,7 +34,7 @@ public final class TrainState {
     // the simulated location
     public final TrainPositionTracker location;
 
-    public final LinkedList<SpeedController> controllers;
+    public final List<SpeedController> speedControllers;
 
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
@@ -56,12 +56,12 @@ public final class TrainState {
             return false;
         if (!this.location.equals(otherState.location))
             return false;
-        return this.controllers.equals(otherState.controllers);
+        return this.speedControllers.equals(otherState.speedControllers);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(time, speed, status, train.entityId, location, controllers);
+        return Objects.hash(time, speed, status, train.entityId, location, speedControllers);
     }
 
     TrainState(
@@ -69,14 +69,14 @@ public final class TrainState {
             TrainPositionTracker location,
             double speed,
             TrainStatus status,
-            LinkedList<SpeedController> controllers,
+            List<SpeedController> speedControllers,
             Train train
     ) {
         this.time = time;
         this.location = location;
         this.speed = speed;
         this.status = status;
-        this.controllers = controllers;
+        this.speedControllers = speedControllers;
         this.train = train;
     }
 
@@ -86,7 +86,7 @@ public final class TrainState {
                 location.clone(),
                 speed,
                 status,
-                new LinkedList<>(controllers),
+                new ArrayList<>(speedControllers),
                 train);
     }
 
@@ -161,16 +161,11 @@ public final class TrainState {
     }
 
     private Action updateRolling(TrainPositionTracker position, TrainPhysicsIntegrator trainPhysics) {
-        // compute the actions for all speed controllers
-        var actions = controllers.stream()
+        speedControllers.removeIf(sp -> !sp.isActive(this));
+
+        var mostConstrainingAction = speedControllers.stream()
                 .map(sp -> sp.getAction(this, trainPhysics))
-                .collect(Collectors.toList());
-
-        var mostConstrainingAction = actions.stream()
                 .min(Action::compareTo);
-
-        controllers.removeIf(sp -> !sp.isActive(this));
-
         assert mostConstrainingAction.isPresent();
         return mostConstrainingAction.get();
     }
@@ -216,5 +211,14 @@ public final class TrainState {
         if (status == TrainStatus.STARTING_UP)
             return train.rollingStock.startUpAcceleration;
         return train.rollingStock.comfortAcceleration;
+    }
+
+    public void onLimitAnnounce(double distanceToAnnounce, double distanceToExecution, double speedLimit) {
+        var currentPos = location.getHeadPathPosition();
+        speedControllers.add(new LimitAnnounceSpeedController(
+                speedLimit,
+                currentPos + distanceToAnnounce,
+                currentPos + distanceToExecution
+        ));
     }
 }

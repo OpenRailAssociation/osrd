@@ -330,7 +330,8 @@ public final class RailMLParser {
             Map<Pair<String, EdgeDirection>, RangeSequence.MinLimitBuilder<Double>> builders,
             EdgeDirection direction,
             double speed,
-            Node netElementNode) throws InvalidInfraException {
+            Node netElementNode
+    ) throws InvalidInfraException {
         // parse the LRS
         var lrsBegin = netElementNode.valueOf("linearCoordinateBegin/@positioningSystemRef");
         var lrsEnd = netElementNode.valueOf("linearCoordinateEnd/@positioningSystemRef");

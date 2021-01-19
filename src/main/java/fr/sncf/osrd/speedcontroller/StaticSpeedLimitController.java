@@ -4,8 +4,12 @@ import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.train.Action;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator;
 import fr.sncf.osrd.train.TrainState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class StaticSpeedLimitController extends SpeedController {
+    static final Logger logger = LoggerFactory.getLogger(StaticSpeedLimitController.class);
+
     @Override
     public Action getAction(
             TrainState state, TrainPhysicsIntegrator trainPhysics
@@ -28,7 +32,11 @@ public final class StaticSpeedLimitController extends SpeedController {
                 // if no speed limit was found, it's +infinity
                 .orElse(Double.POSITIVE_INFINITY);
 
-        // compute the action to apply in order to maintain some speed
-        return trainPhysics.actionToTargetSpeed(maxSpeed);
+        if (state.speed > maxSpeed) {
+            logger.warn("train {} exceeded hard speed limit {}", state.train.name, maxSpeed);
+            return Action.emergencyBrake();
+        }
+
+        return Action.coast();
     }
 }
