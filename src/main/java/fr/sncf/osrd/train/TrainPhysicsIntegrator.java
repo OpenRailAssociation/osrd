@@ -81,8 +81,8 @@ public class TrainPhysicsIntegrator {
      * @param maxSpeed the maximum speed, which we'd like to achieve
      * @return the traction force
      */
-    public Action actionToTargetSpeed(Double maxSpeed) {
-        // the total force we'd like to apply
+    public Action actionToTargetSpeed(Double maxSpeed, double maxDeleration) {
+        // the force we'd need to apply to reach the target speed at the next step
         var targetForce = (maxSpeed - currentSpeed) / timeStep * inertia;
 
         var otherForces = computeTotalForce(0, 0);
@@ -90,12 +90,19 @@ public class TrainPhysicsIntegrator {
         var targetForceSign = Math.signum(targetForce);
         var currentSpeedSign = Math.signum(currentSpeed);
 
+        var force = targetForce - otherForces;
+
         // if the force goes in the same direction as the current speed
         if (targetForceSign == currentSpeedSign || targetForceSign == 0 || currentSpeedSign == 0)
-            return Action.accelerate(targetForce - otherForces);
+            return Action.accelerate(force);
+
+        // we can't realistically accelerate and brake with infinite forces, so limit it to some given value
+        var maxBrakingForce = -maxDeleration * inertia;
+        if (force < maxBrakingForce)
+            force = maxBrakingForce;
 
         // if the force is opposite to movement
-        return Action.brake(Math.abs(targetForce - otherForces));
+        return Action.brake(Math.abs(force));
     }
 
     public static class PositionUpdate {

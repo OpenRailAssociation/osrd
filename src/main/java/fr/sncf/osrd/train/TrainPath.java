@@ -101,11 +101,7 @@ public final class TrainPath implements Freezable {
             return (trackOffset) -> edge.length + pathStartOffset - trackOffset;
         }
     }
-
-    public final PathElement get(int index) {
-        return edges.get(index);
-    }
-
+    
     final CryoList<PathElement> edges = new CryoList<>();
     final CryoList<TrainStop> stops = new CryoList<>();
 

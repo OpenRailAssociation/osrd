@@ -3,6 +3,14 @@ package fr.sncf.osrd.train;
 import java.util.Objects;
 
 public class Action implements Comparable<Action> {
+    private static final Action COAST;
+    private static final Action EMERGENCY_BRAKING;
+
+    static {
+        COAST = new Action(ActionType.NO_ACTION);
+        EMERGENCY_BRAKING = new Action(ActionType.EMERGENCY_BRAKING);
+    }
+
     public enum ActionType {
         NO_ACTION(0),
         TRACTION(1),
@@ -59,11 +67,11 @@ public class Action implements Comparable<Action> {
 
     @SuppressWarnings("unused")
     public static Action emergencyBrake() {
-        return new Action(ActionType.EMERGENCY_BRAKING);
+        return EMERGENCY_BRAKING;
     }
 
     public static Action coast() {
-        return new Action(ActionType.NO_ACTION);
+        return COAST;
     }
 
     /**
