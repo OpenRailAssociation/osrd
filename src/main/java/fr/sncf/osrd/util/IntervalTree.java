@@ -9,6 +9,10 @@ public class IntervalTree<T> {
         this.root = null;
     }
 
+    /**
+     * Insert a new node in the tree
+     * @param node the node that will be inserted into the tree
+     */
     public void insert(IntervalNode<T> node) {
         root = insert(root, node);
     }
@@ -18,6 +22,7 @@ public class IntervalTree<T> {
         if (tree == null)
             return node;
 
+        // insert like in a BST
         if (tree.begin > node.begin)
             tree.leftChild = insert(tree.leftChild, node);
         else
@@ -26,6 +31,7 @@ public class IntervalTree<T> {
         tree.height = Math.max(height(tree.leftChild), height(tree.rightChild)) + 1;
         tree.maxEnd = findMax(tree);
 
+        // balance the tree
         if (heightDiff(tree) < -1) {
             if (heightDiff(tree.rightChild) > 0)
                 tree.rightChild = rightRotate(tree.rightChild);
@@ -61,7 +67,7 @@ public class IntervalTree<T> {
         return left;
     }
 
-    public int height(IntervalNode<T> node) {
+    private int height(IntervalNode<T> node) {
         return node == null ? 0 : node.height;
     }
 
@@ -70,25 +76,34 @@ public class IntervalTree<T> {
     }
 
     private double findMax(IntervalNode<T> node) {
-        if (node.leftChild == null && node.rightChild == null)
-            return node.end;
+        var maxEnd = node.end;
 
-        if (node.leftChild == null)
-            return Math.max(node.rightChild.maxEnd, node.end);
+        if (node.leftChild != null)
+            maxEnd = Math.max(maxEnd, node.leftChild.maxEnd);
 
-        if (node.rightChild == null)
-            return Math.max(node.leftChild.maxEnd, node.end);
+        if (node.rightChild != null)
+            maxEnd = Math.max(maxEnd, node.rightChild.maxEnd);
 
-        double max = Math.max(node.rightChild.maxEnd, node.leftChild.maxEnd);
-
-        return Math.max(node.end, max);
+        return maxEnd;
     }
 
+    /**
+     * Confirm whether the node's interval overlaps with a given interval
+     * @param consumer the consumer that will accept nodes whose interval overlap with the search interval
+     * @param begin the lower bound of the search interval
+     * @param end the lower bound of the search interval
+     */
     public void findOverlappingIntervals(Consumer<IntervalNode<T>> consumer, double begin, double end) {
         findOverlappingIntervals(this.root, consumer, begin, end, Double.NEGATIVE_INFINITY);
     }
 
-    static private <T> void findOverlappingIntervals(final IntervalNode<T> node, Consumer<IntervalNode<T>> consumer, double begin, double end, double minBegin) {
+    static <T> void findOverlappingIntervals(
+            IntervalNode<T> node,
+            Consumer<IntervalNode<T>> consumer,
+            double begin,
+            double end,
+            double minBegin
+    ) {
         if (node == null)
             return;
 
@@ -109,7 +124,7 @@ public class IntervalTree<T> {
         findOverlappingIntervals(node.rightChild, consumer, begin, end, node.begin);
     }
 
-    static private <T> void getAllChildren(IntervalNode<T> node, Consumer<IntervalNode<T>> consumer) {
+    static <T> void getAllChildren(IntervalNode<T> node, Consumer<IntervalNode<T>> consumer) {
         if (node == null)
             return;
 
