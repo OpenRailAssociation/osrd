@@ -34,4 +34,12 @@ public class IntervalNode<T> {
     boolean overlapsWith(double otherBegin, double otherEnd) {
         return begin <= otherEnd && end >= otherBegin;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        IntervalNode<?> node = (IntervalNode<?>) obj;
+        return node.begin == begin
+                && node.end == end
+                && node.value == value;
+    }
 }
