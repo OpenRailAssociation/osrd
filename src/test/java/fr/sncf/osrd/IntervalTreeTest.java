@@ -1,12 +1,14 @@
 package fr.sncf.osrd;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import fr.sncf.osrd.util.IntervalNode;
 import fr.sncf.osrd.util.IntervalTree;
 
 import java.util.ArrayList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 
 public class IntervalTreeTest {
@@ -15,6 +17,9 @@ public class IntervalTreeTest {
     private ArrayList<IntervalNode<Integer>> results;
     private ArrayList<IntervalNode<Integer>> expected;
 
+    /**
+     * Fill tree with intervals and initialize results and expected arrays
+     */
     @BeforeEach
     public void setUp() {
         tree = new IntervalTree<>();
@@ -34,7 +39,7 @@ public class IntervalTreeTest {
     }
 
     @Test
-    public void TestSingleOverlap() {
+    public void singleOverlap() {
         tree.findOverlappingIntervals(results::add, 1, 2);
         expected.add(new IntervalNode<>(0, 3, 42));
 
@@ -44,7 +49,7 @@ public class IntervalTreeTest {
     }
 
     @Test
-    public void TestEasyOverlap1() {
+    public void easyOverlap1() {
         tree.findOverlappingIntervals(results::add, 6, 7);
         expected.add(new IntervalNode<>(5, 8, 42));
         expected.add(new IntervalNode<>(6, 10, 42));
@@ -55,7 +60,7 @@ public class IntervalTreeTest {
     }
 
     @Test
-    public void TestEasyOverlap2() {
+    public void easyOverlap2() {
         tree.findOverlappingIntervals(results::add, 26, 26);
         expected.add(new IntervalNode<>(26, 26, 42));
         expected.add(new IntervalNode<>(25, 30, 42));
@@ -66,7 +71,7 @@ public class IntervalTreeTest {
     }
 
     @Test
-    public void TestManyOverlap() {
+    public void manyOverlap() {
         tree.findOverlappingIntervals(results::add, 19, 20);
         expected.add(new IntervalNode<>(19, 20, 42));
         expected.add(new IntervalNode<>(17, 19, 42));
@@ -79,7 +84,7 @@ public class IntervalTreeTest {
     }
 
     @Test
-    public void TestNoOverlapMiddle() {
+    public void noOverlapMiddle() {
         tree.findOverlappingIntervals(results::add, 11, 12);
 
         assertTrue(expected.size() == results.size()
@@ -88,7 +93,7 @@ public class IntervalTreeTest {
     }
 
     @Test
-    public void TestNoOverlapExtremeLeft() {
+    public void noOverlapExtremeLeft() {
         tree.findOverlappingIntervals(results::add, -2, -1);
 
         assertTrue(expected.size() == results.size()
@@ -97,15 +102,16 @@ public class IntervalTreeTest {
     }
 
     @Test
-    public void TestNoOverlapExtremeRight() {
+    public void noOverlapExtremeRight() {
         tree.findOverlappingIntervals(results::add, 40, 41);
 
         assertTrue(expected.size() == results.size()
                 && expected.containsAll(results)
                 && results.containsAll(expected));
     }
+
     @Test
-    public void TestLeftOverlap() {
+    public void leftOverlap() {
         tree.findOverlappingIntervals(results::add, 3, 4);
         expected.add(new IntervalNode<>(0, 3, 42));
 
@@ -115,7 +121,7 @@ public class IntervalTreeTest {
     }
 
     @Test
-    public void TestRightOverlap() {
+    public void rightOverlap() {
         tree.findOverlappingIntervals(results::add, -3, 1);
         expected.add(new IntervalNode<>(0, 3, 42));
 
