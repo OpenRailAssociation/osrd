@@ -42,4 +42,9 @@ public class IntervalNode<T> {
                 && node.end == end
                 && node.value == value;
     }
+
+    @Override
+    public int hashCode() {
+        return (int) begin + (int) end + value.hashCode();
+    }
 }
