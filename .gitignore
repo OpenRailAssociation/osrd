@@ -4,3 +4,4 @@ gradle
 build
 gradlew*
 *.iml
+*.jar
