@@ -3,9 +3,11 @@ package fr.sncf.osrd;
 import static fr.sncf.osrd.TestTrains.FAST_NO_FRICTION_TRAIN;
 import static org.junit.jupiter.api.Assertions.*;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
+import fr.sncf.osrd.infra.SpeedSection;
 import fr.sncf.osrd.simulation.utils.ArrayChangeLog;
 import fr.sncf.osrd.simulation.utils.Simulation;
 import fr.sncf.osrd.simulation.utils.SimulationError;
@@ -14,6 +16,7 @@ import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.timetable.TrainScheduleWaypoint;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.util.CryoList;
+import fr.sncf.osrd.util.RangeValue;
 import fr.sncf.osrd.util.SignAnalyzer;
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +26,20 @@ import java.util.stream.Collectors;
 
 
 public class StaticSpeedLimitTest {
+    // kept for debugging
+    @SuppressFBWarnings({"URF_UNREAD_FIELD"})
+    static class ProfileData {
+        final SignAnalyzer.SignProfile profile;
+        final int index;
+        final double position;
+
+        ProfileData(SignAnalyzer.SignProfile profile, int index, double position) {
+            this.profile = profile;
+            this.index = index;
+            this.position = position;
+        }
+    }
+
     @Test
     public void simpleSpeedLimitTest() throws InvalidInfraException, SimulationError {
         var infra = new Infra();
@@ -44,12 +61,9 @@ public class StaticSpeedLimitTest {
         }
 
         // add the speed limits
-        {
-            var builder = edge.speedLimitsForward.minLimitBuilder();
-            builder.add(0, 10000, 30.0);
-            builder.add(5000, 6000, 25.0);
-            builder.build(Double::compare);
-        }
+        var limits = edge.speedSectionsForward;
+        limits.add(new RangeValue<>(0, 10000, new SpeedSection(false, 30.0)));
+        limits.add(new RangeValue<>(5000, 6000, new SpeedSection(false, 25.0)));
 
         infra.prepare();
 
@@ -82,13 +96,14 @@ public class StaticSpeedLimitTest {
         var locationChange = locationChanges.get(0);
 
         // create the list of all speed derivative sign changes
-        var profile = new ArrayList<SignAnalyzer.SignProfile>();
+        var profile = new ArrayList<ProfileData>();
         var profiler = new SignAnalyzer();
         var position = 0.0;
-        for (var posUpdate : locationChange.positionUpdates) {
+        for (int i = 0; i < locationChange.positionUpdates.size(); i++) {
+            var posUpdate = locationChange.positionUpdates.get(i);
             var profileChange = profiler.feed(posUpdate.speed);
             if (profileChange != null)
-                profile.add(profileChange);
+                profile.add(new ProfileData(profileChange, i, position));
             position += posUpdate.positionDelta;
         }
 
@@ -111,6 +126,6 @@ public class StaticSpeedLimitTest {
                 SignAnalyzer.SignProfile.CONSTANT
         };
 
-        assertArrayEquals(expectedProfileChanges, profile.toArray());
+        assertArrayEquals(expectedProfileChanges, profile.stream().map(p -> p.profile).toArray());
     }
 }

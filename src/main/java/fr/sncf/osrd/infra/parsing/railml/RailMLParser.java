@@ -3,6 +3,7 @@ package fr.sncf.osrd.infra.parsing.railml;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
+import fr.sncf.osrd.infra.SpeedSection;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.graph.EdgeEndpoint;
 import fr.sncf.osrd.infra.topological.NoOpNode;
@@ -295,15 +296,15 @@ public final class RailMLParser {
             Map<String, NetElement> netElementMap,
             Document document
     ) throws InvalidInfraException {
-        // each (edge, direction) has a speed limit range sequence
-        Map<Pair<String, EdgeDirection>, RangeSequence.MinLimitBuilder<Double>> builders = new HashMap<>();
-
         // iterate over all the speed section, which is a continuous set of tracks with a speed limit
         var xpath = "/railML/infrastructure/functionalInfrastructure/speeds/speedSection";
-        for (var speedSection : document.selectNodes(xpath)) {
-            double speed = Double.parseDouble(speedSection.valueOf("@maxSpeed"));
+        for (var speedSectionNode : document.selectNodes(xpath)) {
+            double speed = Double.parseDouble(speedSectionNode.valueOf("@maxSpeed"));
 
-            var linearLocation = speedSection.selectSingleNode("linearLocation");
+            // convert to from km/h to m/s
+            speed /= 3.6;
+
+            var linearLocation = speedSectionNode.selectSingleNode("linearLocation");
 
             // parse the direction of the speed limit
             var directionString = linearLocation.valueOf("@applicationDirection");
@@ -315,21 +316,22 @@ public final class RailMLParser {
             } else
                 throw new InvalidInfraException("invalid applicationDirection");
 
+            // whether there are static signals warning about this limit
+            var isSignalized = Boolean.parseBoolean(speedSectionNode.valueOf("@isSignalized"));
+
+            logger.trace("created a speed section with speed {}", speed);
+            var speedSection = new SpeedSection(isSignalized, speed);
+
             // find the elements the speed limit applies to
             for (var associatedNetElement : linearLocation.selectNodes("associatedNetElement"))
-                parseSpeedSectionNetElement(netElementMap, builders, direction, speed, associatedNetElement);
+                parseSpeedSectionNetElement(netElementMap, direction, speedSection, associatedNetElement);
         }
-
-        // build all speed limits
-        for (var builder : builders.values())
-            builder.build(Double::compare);
     }
 
     void parseSpeedSectionNetElement(
             Map<String, NetElement> netElementMap,
-            Map<Pair<String, EdgeDirection>, RangeSequence.MinLimitBuilder<Double>> builders,
             EdgeDirection direction,
-            double speed,
+            SpeedSection speedSection,
             Node netElementNode
     ) throws InvalidInfraException {
         // parse the LRS
@@ -359,22 +361,12 @@ public final class RailMLParser {
 
         // find the TopoEdges the netElement spans over, and add the speed limit
         for (var place : netElement.mapToTopo(lrsBegin, minMeasure, maxMeasure)) {
-            var edgeSideId = new Pair<>(place.value.id, direction);
-            logger.trace("added speed limit on ({}, {}) from {} to {}: {}",
-                    place.value.id, direction, minMeasure, maxMeasure, speed);
-
-            // get or create the rangesequence builder
-            var limitsBuilder = builders.get(edgeSideId);
-            if (limitsBuilder == null) {
-                if (direction == EdgeDirection.START_TO_STOP)
-                    limitsBuilder = place.value.speedLimitsForward.minLimitBuilder();
-                else
-                    limitsBuilder = place.value.speedLimitsBackward.minLimitBuilder();
-                builders.put(edgeSideId, limitsBuilder);
-            }
+            logger.trace("added speedSection on ({}, {}) from {} to {}",
+                    place.value.id, direction, minMeasure, maxMeasure);
 
             // add the limit
-            limitsBuilder.add(place.begin, place.end, speed);
+            var rangeLimit = new RangeValue<>(place.begin, place.end, speedSection);
+            TopoEdge.getSpeedSections(place.value, direction).add(rangeLimit);
         }
     }
 }

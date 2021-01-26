@@ -6,7 +6,6 @@ import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.topological.PointAttrGetter;
 import fr.sncf.osrd.infra.topological.RangeAttrGetter;
 import fr.sncf.osrd.infra.topological.TopoEdge;
-import fr.sncf.osrd.train.TrainPath.PathElement;
 import fr.sncf.osrd.util.PointValue;
 import fr.sncf.osrd.util.RangeValue;
 import fr.sncf.osrd.util.TopoLocation;
@@ -28,7 +27,7 @@ public final class TrainPositionTracker implements Cloneable {
     private final double trainLength;
 
     /** The list of edges the train currently spans over. */
-    private final ArrayDeque<PathElement> currentPathEdges;
+    private final ArrayDeque<PathSection> currentPathEdges;
 
     /**
      *  The position of the head of the train on its edge.
@@ -87,11 +86,15 @@ public final class TrainPositionTracker implements Cloneable {
     /** Checks whether we reached the end of the path. */
     public boolean hasReachedGoal() {
         // we haven't reached our goal if we aren't on the last edge
-        if (currentPathIndex < path.edges.size() - 1)
+        if (currentPathIndex < path.sections.size() - 1)
             return false;
 
+        // if we don't have any and somehow don't have any more
+        if (currentPathEdges.isEmpty())
+            return true;
+
         // we must also have reached the correct point on the last edge
-        return headEdgePosition >= path.endOffset;
+        return headEdgePosition >= currentPathEdges.getFirst().endOffset;
     }
 
     /** Gets the position of the head relative to the start of the path. */
@@ -121,12 +124,12 @@ public final class TrainPositionTracker implements Cloneable {
         this.path = path;
         this.trainLength = trainLength;
         this.currentPathEdges = new ArrayDeque<>();
-        var firstSection = path.edges.first();
+        var firstSection = path.sections.first();
         currentPathEdges.add(firstSection);
         if (firstSection.direction == EdgeDirection.START_TO_STOP)
-            headEdgePosition = path.startOffset;
+            headEdgePosition = firstSection.beginOffset;
         else
-            headEdgePosition = firstSection.edge.length - path.startOffset;
+            headEdgePosition = firstSection.edge.length - firstSection.beginOffset;
         assert headEdgePosition >= 0.0;
         updatePosition(0);
     }
@@ -141,17 +144,17 @@ public final class TrainPositionTracker implements Cloneable {
         this.tailEdgePosition = tracker.tailEdgePosition;
     }
 
-    private PathElement headPathEdge() {
+    private PathSection headPathEdge() {
         return currentPathEdges.getFirst();
     }
 
-    private PathElement nextPathEdge() {
+    private PathSection nextPathEdge() {
         ++currentPathIndex;
-        return path.edges.get(currentPathIndex);
+        return path.sections.get(currentPathIndex);
     }
 
     private boolean hasNextPathEdge() {
-        return currentPathIndex < path.edges.size() - 1;
+        return currentPathIndex < path.sections.size() - 1;
     }
 
     /**

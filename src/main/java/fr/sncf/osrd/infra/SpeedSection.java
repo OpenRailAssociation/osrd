@@ -1,18 +1,19 @@
 package fr.sncf.osrd.infra;
 
+import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.train.RollingStock;
 
-public abstract class SpeedSection {
+public class SpeedSection {
     /**
      * Whether there are signals on the track telling the driver about this speed limit.
      * If there aren't, the driver must make sure the speed limit is taken care of anyway.
      */
-    public final boolean isSignaled;
+    public final boolean isSignalized;
 
     public final double speedLimit;
 
-    public SpeedSection(boolean isSignaled, double speedLimit) {
-        this.isSignaled = isSignaled;
+    public SpeedSection(boolean isSignalized, double speedLimit) {
+        this.isSignalized = isSignalized;
         this.speedLimit = speedLimit;
     }
 
@@ -21,5 +22,7 @@ public abstract class SpeedSection {
      * @param rollingStock the train
      * @return whether this speed section applies
      */
-    abstract boolean isValidFor(RollingStock rollingStock);
+    public boolean isValidFor(RollingStock rollingStock) {
+        return true;
+    }
 }

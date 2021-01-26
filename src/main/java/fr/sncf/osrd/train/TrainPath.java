@@ -1,6 +1,5 @@
 package fr.sncf.osrd.train;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.topological.TopoEdge;
@@ -10,113 +9,16 @@ import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.util.CryoList;
 import fr.sncf.osrd.util.Freezable;
 
-import java.util.Objects;
-import java.util.function.DoubleUnaryOperator;
-
 public final class TrainPath implements Freezable {
-    public static final class PathElement {
-        public final TopoEdge edge;
-        public final EdgeDirection direction;
-        public final double pathStartOffset;
-
-        @Override
-        @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
-        public boolean equals(Object obj) {
-            if (obj == null)
-                return false;
-
-            if (obj.getClass() != PathElement.class)
-                return false;
-
-            var other = (PathElement) obj;
-            if (!edge.id.equals(other.edge.id))
-                return false;
-
-            if (direction != other.direction)
-                return false;
-
-            return pathStartOffset == other.pathStartOffset;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(edge.id, direction, pathStartOffset);
-        }
-
-        /**
-         * Creates a new path element
-         * @param edge the edge
-         * @param direction the direction to use when iterating on the edge
-         * @param pathStartOffset the offset from the start on the path
-         */
-        public PathElement(TopoEdge edge, EdgeDirection direction, double pathStartOffset) {
-            this.edge = edge;
-            this.direction = direction;
-            this.pathStartOffset = pathStartOffset;
-        }
-
-        /*
-         *     FORWARD CASE
-         *
-         *                edgePathOffset
-         *              \ ======>
-         *   edge start  +------o---+  edge end
-         *                           \
-         *                            '-> train path
-         *
-         *     BACKWARD CASE
-         *
-         *            <,     edgePathOffset
-         *              \       <====
-         *   edge start  +------o---+  edge end
-         *                           \
-         */
-
-        /**
-         * Creates a conversion function from path offsets to this edge's offsets.
-         * @return the said conversion function
-         */
-        public DoubleUnaryOperator pathOffsetToEdgeOffset() {
-            // position of the train inside the edge, without taking in account the direction
-            if (direction == EdgeDirection.START_TO_STOP)
-                return (pathOffset) -> {
-                    // trackOffset = pathOffset - pathStartOffset <= TODO is this dead code ?
-                    return pathOffset - pathStartOffset;
-                };
-
-            return (pathOffset) -> {
-                // trackOffset = edge.length -pathOffset + pathStartOffset <= TODO is this dead code ?
-                var edgePathOffset = pathOffset - pathStartOffset;
-                return edge.length - edgePathOffset;
-            };
-        }
-
-        /**
-         * Creates a conversion function from this edge's offsets to path offsets.
-         * @return the said conversion function
-         */
-        public DoubleUnaryOperator edgeOffsetToPathOffset() {
-            if (direction == EdgeDirection.START_TO_STOP)
-                return (trackOffset) -> trackOffset + pathStartOffset;
-            return (trackOffset) -> edge.length + pathStartOffset - trackOffset;
-        }
-    }
-    
-    final CryoList<PathElement> edges = new CryoList<>();
-    final CryoList<TrainStop> stops = new CryoList<>();
-
-    // the offset in the start
-    final double startOffset;
-    final double endOffset;
+    public final CryoList<PathSection> sections = new CryoList<>();
+    public final CryoList<TrainStop> stops = new CryoList<>();
 
     private boolean frozen = false;
 
     /**
      * Creates a container to hold the path some train will follow
      */
-    public TrainPath(double startOffset, double endOffset) {
-        this.startOffset = startOffset;
-        this.endOffset = endOffset;
+    public TrainPath() {
     }
 
 
@@ -146,10 +48,19 @@ public final class TrainPath implements Freezable {
                 start.edge, startPosition.position,
                 goal.edge, goalPosition.position,
                 costFunc,
-                this::addEdge);
+                (edge, direction) -> {
+                    // find the offset at which the path starts inside the edge
+                    double beginOffset = Double.NEGATIVE_INFINITY;
+                    if (edge == start.edge)
+                        beginOffset = startPosition.position;
 
-        this.startOffset = startPosition.position;
-        this.endOffset = goalPosition.position;
+                    // find the offset at which the path stops inside the edge
+                    double endOffset = Double.POSITIVE_INFINITY;
+                    if (edge == goal.edge)
+                        endOffset = goalPosition.position;
+                    this.addEdge(edge, direction, beginOffset, endOffset);
+                });
+
         freeze();
     }
 
@@ -158,19 +69,19 @@ public final class TrainPath implements Freezable {
      * @param edge The edge
      * @param direction The direction this path follows this edge with.
      */
-    public void addEdge(TopoEdge edge, EdgeDirection direction) {
+    public void addEdge(TopoEdge edge, EdgeDirection direction, double beginOffset, double endOffset) {
         double pathLength = 0.0;
-        if (!edges.isEmpty()) {
-            var lastEdge = edges.last();
+        if (!sections.isEmpty()) {
+            var lastEdge = sections.last();
             pathLength = lastEdge.pathStartOffset + lastEdge.edge.length;
         }
-        edges.add(new PathElement(edge, direction, pathLength));
+        sections.add(new PathSection(edge, direction, pathLength, beginOffset, endOffset));
     }
 
     @Override
     public void freeze() {
         assert !frozen;
-        edges.freeze();
+        sections.freeze();
         stops.freeze();
         frozen = true;
     }

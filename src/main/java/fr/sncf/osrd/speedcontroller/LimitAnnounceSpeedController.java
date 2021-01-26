@@ -1,24 +1,41 @@
 package fr.sncf.osrd.speedcontroller;
 
-import fr.sncf.osrd.train.Action;
-import fr.sncf.osrd.train.TrainPhysicsIntegrator;
-import fr.sncf.osrd.train.TrainState;
-
 /**
  * The speed controller used to slow down the train from the announce of a speed limit up to its enforcement signal.
  */
-public final class LimitAnnounceSpeedController extends RangeSpeedController {
+public final class LimitAnnounceSpeedController extends SpeedController {
     public final double targetSpeedLimit;
+    public final double gamma;
 
-    public LimitAnnounceSpeedController(double targetSpeedLimit, double startPosition, double endPosition) {
+    /**
+     * Creates a speed controller meant to slow down the train before a speed limit.
+     */
+    public LimitAnnounceSpeedController(
+            double targetSpeedLimit,
+            double startPosition,
+            double endPosition,
+            double gamma
+    ) {
         super(startPosition, endPosition);
         this.targetSpeedLimit = targetSpeedLimit;
+        this.gamma = gamma;
     }
 
     @Override
-    public Action getAction(
-            TrainState state, TrainPhysicsIntegrator trainPhysics
+    public SpeedDirective getDirective(
+            double headPosition
     ) {
-        return trainPhysics.actionToTargetSpeed(targetSpeedLimit, 0.5);
+        var distance = endPosition - headPosition;
+        assert distance >= 0;
+        var currentLimit = Math.sqrt(targetSpeedLimit * targetSpeedLimit + 2 * distance * gamma);
+        return SpeedDirective.allowedOnly(currentLimit);
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "LimitAnnounceSpeedController { targetSpeed=%.3f, begin=%.3f, end=%.3f, gamma=%.3f }",
+                targetSpeedLimit, beginPosition, endPosition, gamma
+        );
     }
 }

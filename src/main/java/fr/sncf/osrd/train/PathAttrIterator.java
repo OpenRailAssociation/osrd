@@ -76,11 +76,11 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
 
     private Iterator<EventT> nextEventIterator() {
         // stop if the current index doesn't point to a valid path element
-        if (pathIndex >= path.edges.size())
+        if (pathIndex >= path.sections.size())
             return null;
 
         // stop if the current element starts out of the current range
-        var currentPathElem = path.edges.get(pathIndex);
+        var currentPathElem = path.sections.get(pathIndex);
         var currentElemStart = currentPathElem.pathStartOffset;
         if (currentElemStart > pathEndPosition)
             return null;

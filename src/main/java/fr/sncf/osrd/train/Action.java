@@ -12,15 +12,17 @@ public class Action implements Comparable<Action> {
     }
 
     public enum ActionType {
-        NO_ACTION(0),
-        TRACTION(1),
-        BRAKING(2),
-        EMERGENCY_BRAKING(3);
+        TRACTION(0, false),
+        NO_ACTION(1, false),
+        BRAKING(2, true),
+        EMERGENCY_BRAKING(3, true);
 
         public final int priority;
+        public final boolean deceleration;
 
-        ActionType(int priority) {
+        ActionType(int priority, boolean deceleration) {
             this.priority = priority;
+            this.deceleration = deceleration;
         }
 
         public boolean isBreaking() {
@@ -93,6 +95,7 @@ public class Action implements Comparable<Action> {
      * @param force the force associated with the action
      */
     private Action(ActionType type, double force) {
+        assert !Double.isNaN(force);
         this.type = type;
         this.force = force;
     }
@@ -116,7 +119,11 @@ public class Action implements Comparable<Action> {
             return 0;
 
         // if both have a force and have same same level of emergency, compare by force
-        return Double.compare(this.force, other.force);
+        // Accelerate 10 > Accelerate 20
+        // Decelerate 20 > Decelerate 10
+        if (type.deceleration)
+            return Double.compare(this.force, other.force);
+        return Double.compare(other.force, this.force);
     }
 
     @Override
