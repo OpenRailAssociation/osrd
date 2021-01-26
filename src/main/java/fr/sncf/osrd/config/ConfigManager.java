@@ -10,13 +10,14 @@ import fr.sncf.osrd.train.RollingStock;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 
 public class ConfigManager {
     private static final HashMap<String, Infra> infras = new HashMap<>();
-    private static final HashMap<String, Schedule> schedules = new HashMap<>();
-    private static final HashMap<String, RollingStock> rollingStocks = new HashMap<>();
+    private static final HashMap<Path, Schedule> schedules = new HashMap<>();
+    private static final HashMap<Path, RollingStock> rollingStocks = new HashMap<>();
 
     private static final JsonAdapter<JsonConfig> configAdapter = new Moshi
             .Builder()
@@ -27,8 +28,24 @@ public class ConfigManager {
             .build()
             .adapter(RollingStock.class);
 
-    public static Config getConfig(String json) throws IOException, InvalidInfraException {
-        return new Config(configAdapter.fromJson(json));
+    public static Config readConfigFile(String path) throws IOException, InvalidInfraException {
+        var mainConfigPath = Paths.get(path);
+        var baseDirPath = mainConfigPath.getParent();
+        var jsonConfig = configAdapter.fromJson(Files.readString(mainConfigPath));
+
+        var infraPath = baseDirPath.resolve(jsonConfig.infraPath);
+        var infra = ConfigManager.getInfra(infraPath.toString());
+        var schedulePath = baseDirPath.resolve(jsonConfig.schedulePath);
+        var schedule = ConfigManager.getSchedule(schedulePath, infra);
+        return new Config(
+                jsonConfig.simulationTimeStep,
+                infra,
+                schedule,
+                jsonConfig.simulationStepPause,
+                jsonConfig.showViewer,
+                jsonConfig.realTimeViewer,
+                jsonConfig.changeReplayCheck
+        );
     }
 
     static Infra getInfra(String path) {
@@ -45,7 +62,7 @@ public class ConfigManager {
         return infra;
     }
 
-    static Schedule getSchedule(String path, Infra infra) throws InvalidInfraException {
+    static Schedule getSchedule(Path path, Infra infra) throws InvalidInfraException {
         if (schedules.containsKey(path))
             return schedules.get(path);
         Schedule schedule = null;
@@ -63,12 +80,12 @@ public class ConfigManager {
      * @param path the path to the rolling stock file
      * @return a RollingStock instance
      */
-    public static RollingStock getRollingStock(String path) throws InvalidInfraException {
+    public static RollingStock getRollingStock(Path path) throws InvalidInfraException {
         if (rollingStocks.containsKey(path))
             return rollingStocks.get(path);
         RollingStock rollingStock = null;
         try {
-            rollingStock = rollingStockAdapter.fromJson(Files.readString(Paths.get(path)));
+            rollingStock = rollingStockAdapter.fromJson(Files.readString(path));
             rollingStock.validate();
         } catch (IOException e) {
             e.printStackTrace();

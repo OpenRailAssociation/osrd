@@ -9,8 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 
 public class App {
@@ -27,7 +25,7 @@ public class App {
         }
 
         logger.info("parsing the configuration file");
-        Config config = ConfigManager.getConfig(Files.readString(Paths.get(args[0])));
+        Config config = ConfigManager.readConfigFile(args[0]);
 
         try {
             logger.info("creating the simulation");

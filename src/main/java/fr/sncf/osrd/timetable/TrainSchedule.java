@@ -6,6 +6,8 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.util.CryoList;
 
+import java.nio.file.Path;
+
 public final class TrainSchedule {
     public final String name;
     public final CryoList<TrainScheduleWaypoint> waypoints;
@@ -39,7 +41,7 @@ public final class TrainSchedule {
      * @param json the json mapped object
      * @param infra a reference to the infra
      */
-    public static TrainSchedule fromJson(JsonTrainSchedule json, Infra infra) throws InvalidInfraException {
+    public static TrainSchedule fromJson(Path base, JsonTrainSchedule json, Infra infra) throws InvalidInfraException {
         assert json.waypoints != null;
 
         // generate waypoints
@@ -48,7 +50,7 @@ public final class TrainSchedule {
             waypoints.add(TrainScheduleWaypoint.fromJson(jsonEntry, infra));
         waypoints.freeze();
 
-        var rollingStock = ConfigManager.getRollingStock(json.rollingStockPath);
+        var rollingStock = ConfigManager.getRollingStock(base.resolve(json.rollingStockPath));
         return new TrainSchedule(json.name, waypoints, rollingStock, json.initialSpeed);
     }
 
