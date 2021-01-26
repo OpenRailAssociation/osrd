@@ -97,7 +97,7 @@ public class IntervalTree<T> {
         findOverlappingIntervals(this.root, consumer, begin, end, Double.NEGATIVE_INFINITY);
     }
 
-    static <T> void findOverlappingIntervals(
+    private static <T> void findOverlappingIntervals(
             IntervalNode<T> node,
             Consumer<IntervalNode<T>> consumer,
             double begin,
@@ -124,7 +124,7 @@ public class IntervalTree<T> {
         findOverlappingIntervals(node.rightChild, consumer, begin, end, node.begin);
     }
 
-    static <T> void getAllChildren(IntervalNode<T> node, Consumer<IntervalNode<T>> consumer) {
+    private static <T> void getAllChildren(IntervalNode<T> node, Consumer<IntervalNode<T>> consumer) {
         if (node == null)
             return;
 

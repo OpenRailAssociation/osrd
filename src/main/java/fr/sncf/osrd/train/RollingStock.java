@@ -75,6 +75,9 @@ public class RollingStock {
     /** The maximum acceleration when the train is in its regular operating mode. */
     public final double comfortAcceleration;
 
+    /** The naive braking deceleration coefficient for timetabling. */
+    public final double timetableGamma;
+
     /** The mass of the train, in kilograms. */
     public final double mass;
 
@@ -151,6 +154,7 @@ public class RollingStock {
             double startUpTime,
             double startUpAcceleration,
             double comfortAcceleration,
+            double timetableGamma,
             double mass,
             double inertiaCoefficient,
             boolean isTVM300Equiped,
@@ -168,6 +172,7 @@ public class RollingStock {
         this.startUpTime = startUpTime;
         this.startUpAcceleration = startUpAcceleration;
         this.comfortAcceleration = comfortAcceleration;
+        this.timetableGamma = timetableGamma;
         this.mass = mass;
         this.inertiaCoefficient = inertiaCoefficient;
         this.isTVM300Equiped = isTVM300Equiped;
@@ -201,5 +206,8 @@ public class RollingStock {
 
         if (inertiaCoefficient <= 0)
             throw new InvalidInfraException("Invalid rolling stock inertia coefficient");
+
+        if (timetableGamma <= 0)
+            throw new InvalidInfraException("Invalid timetableGamma");
     }
 }

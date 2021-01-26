@@ -7,6 +7,7 @@ import fr.sncf.osrd.simulation.utils.SimulationError;
 import fr.sncf.osrd.simulation.utils.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,16 +95,20 @@ public final class TrainState {
         // TODO: find out the actual max braking / acceleration force
 
         var rollingStock = train.rollingStock;
-        var simulator = TrainPhysicsIntegrator.make(
-                timeStep,
+        var integrator = TrainPhysicsIntegrator.make(
+                1.0,
                 rollingStock,
                 speed,
                 location.maxTrainGrade());
 
-        Action action = getAction(location, simulator);
+        var headPosition = location.getHeadPathPosition();
+        var speedDirective = getSpeedDirective(headPosition);
+        Action action = driverDecision(speedDirective, integrator);
         logger.trace("train took action {}", action);
 
         assert action != null;
+        // TODO: handle emergency braking
+        assert action.type != Action.ActionType.EMERGENCY_BRAKING;
 
         // compute and limit the traction force
         var maxTraction = rollingStock.getMaxEffort(speed);
@@ -114,8 +119,7 @@ public final class TrainState {
         // compute and limit the braking force
         var brakingForce = action.brakingForce();
 
-        var update = simulator.computeUpdate(traction, brakingForce);
-        // TODO: handle emergency braking
+        var update = integrator.computeUpdate(traction, brakingForce);
 
         logger.trace("speed changed from {} to {}", speed, update.speed);
         speed = update.speed;
@@ -146,30 +150,21 @@ public final class TrainState {
         return new Train.LocationChange(sim, train, nextState, positionUpdates);
     }
 
-    private Action getAction(TrainPositionTracker location, TrainPhysicsIntegrator trainPhysics) {
-        switch (status) {
-            case STARTING_UP:
-            case STOP:
-            case ROLLING:
-                return updateRolling(location, trainPhysics);
-            case EMERGENCY_BRAKING:
-            case REACHED_DESTINATION:
-                return null;
-            default:
-                throw new RuntimeException("Invalid train state");
+    private SpeedDirective getSpeedDirective(double pathPosition) {
+        var profile = SpeedDirective.maxLimits();
+        for (var controller : speedControllers) {
+            if (!controller.isActive(this))
+                continue;
+
+            profile.mergeWith(controller.getDirective(pathPosition));
         }
+        return profile;
     }
 
-    private Action updateRolling(TrainPositionTracker position, TrainPhysicsIntegrator trainPhysics) {
-        speedControllers.removeIf(sp -> !sp.isActive(this));
-
-        var mostConstrainingAction = speedControllers.stream()
-                .map(sp -> sp.getAction(this, trainPhysics))
-                .min(Action::compareTo);
-        assert mostConstrainingAction.isPresent();
-        return mostConstrainingAction.get();
+    private Action driverDecision(SpeedDirective directive, TrainPhysicsIntegrator integrator) {
+        var rollingStock = train.rollingStock;
+        return integrator.actionToTargetSpeed(directive.allowedSpeed, rollingStock.timetableGamma);
     }
-
 
     @SuppressWarnings("UnnecessaryLocalVariable")
     TimelineEvent<Train.LocationChange> simulateUntilEvent(Simulation sim) throws SimulationError {
@@ -213,12 +208,19 @@ public final class TrainState {
         return train.rollingStock.comfortAcceleration;
     }
 
+    /**
+     * A function called by signals when a new limit is announced
+     * @param distanceToAnnounce distance to the place the announce starts
+     * @param distanceToExecution distance to the place the limit must be enforced
+     * @param speedLimit the limit
+     */
     public void onLimitAnnounce(double distanceToAnnounce, double distanceToExecution, double speedLimit) {
         var currentPos = location.getHeadPathPosition();
         speedControllers.add(new LimitAnnounceSpeedController(
                 speedLimit,
                 currentPos + distanceToAnnounce,
-                currentPos + distanceToExecution
+                currentPos + distanceToExecution,
+                train.rollingStock.timetableGamma
         ));
     }
 }

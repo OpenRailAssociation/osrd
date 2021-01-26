@@ -2,6 +2,7 @@ package fr.sncf.osrd.infra.topological;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
+import fr.sncf.osrd.infra.SpeedSection;
 import fr.sncf.osrd.infra.blocksection.BlockSection;
 import fr.sncf.osrd.infra.graph.AbstractEdge;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
@@ -11,6 +12,9 @@ import fr.sncf.osrd.infra.interlocking.VisibleTrackObject;
 import fr.sncf.osrd.util.DoubleOrientedRangeSequence;
 import fr.sncf.osrd.util.PointSequence;
 import fr.sncf.osrd.util.RangeSequence;
+import fr.sncf.osrd.util.RangeValue;
+
+import java.util.ArrayList;
 
 /**
  * An edge in the topological graph.
@@ -104,9 +108,8 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
     public void validate() throws InvalidInfraException {
         validateRanges(slope);
         validateRanges(blockSections);
-        validateRanges(speedLimitsForward);
-        validateRanges(speedLimitsBackward);
         validatePoints(operationalPoints);
+        // TODO: validate speed limits
     }
 
     @Override
@@ -116,8 +119,8 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
     // the data structure used for the slope automatically negates it when iterated on backwards
     public final DoubleOrientedRangeSequence slope = new DoubleOrientedRangeSequence();
     public final RangeSequence<BlockSection> blockSections = new RangeSequence<>();
-    public final RangeSequence<Double> speedLimitsForward = new RangeSequence<>();
-    public final RangeSequence<Double> speedLimitsBackward = new RangeSequence<>();
+    public final ArrayList<RangeValue<SpeedSection>> speedSectionsForward = new ArrayList<>();
+    public final ArrayList<RangeValue<SpeedSection>> speedSectionsBackward = new ArrayList<>();
     public final PointSequence<OperationalPoint> operationalPoints = new PointSequence<>();
     public final PointSequence<TrackSensor> trackSensorsForward = new PointSequence<>();
     public final PointSequence<TrackSensor> trackSensorsBackward = new PointSequence<>();
@@ -143,10 +146,10 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
      * @param direction the direction
      * @return the speed limits
      */
-    public static RangeSequence<Double> getSpeedLimit(TopoEdge edge, EdgeDirection direction) {
+    public static ArrayList<RangeValue<SpeedSection>> getSpeedSections(TopoEdge edge, EdgeDirection direction) {
         if (direction == EdgeDirection.START_TO_STOP)
-            return edge.speedLimitsForward;
-        return edge.speedLimitsBackward;
+            return edge.speedSectionsForward;
+        return edge.speedSectionsBackward;
     }
 
     public static PointSequence<OperationalPoint> getOperationalPoints(TopoEdge edge, EdgeDirection direction) {

@@ -61,9 +61,9 @@ class PointAttrIter {
         }
         infra.prepare();
 
-        var trainPath = new TrainPath(0.0, secondEdge.length);
-        trainPath.addEdge(firstEdge, EdgeDirection.START_TO_STOP);
-        trainPath.addEdge(secondEdge, EdgeDirection.START_TO_STOP);
+        var trainPath = new TrainPath();
+        trainPath.addEdge(firstEdge, EdgeDirection.START_TO_STOP, 0, Double.POSITIVE_INFINITY);
+        trainPath.addEdge(secondEdge, EdgeDirection.START_TO_STOP, Double.NEGATIVE_INFINITY, secondEdge.length);
 
         var fullResult = PathAttrIterator.streamPoints(
                 trainPath,
@@ -126,9 +126,9 @@ class PointAttrIter {
 
         infra.prepare();
 
-        var trainPath = new TrainPath(0.0, backwardEdge.length);
-        trainPath.addEdge(forwardEdge, EdgeDirection.START_TO_STOP);
-        trainPath.addEdge(backwardEdge, EdgeDirection.STOP_TO_START);
+        var trainPath = new TrainPath();
+        trainPath.addEdge(forwardEdge, EdgeDirection.START_TO_STOP, 0, Double.POSITIVE_INFINITY);
+        trainPath.addEdge(backwardEdge, EdgeDirection.STOP_TO_START, Double.NEGATIVE_INFINITY, backwardEdge.length);
 
         var result = PathAttrIterator.streamPoints(
                 trainPath,

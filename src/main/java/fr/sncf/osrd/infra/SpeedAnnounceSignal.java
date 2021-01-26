@@ -14,6 +14,10 @@ public class SpeedAnnounceSignal extends StaticSignal {
 
     @Override
     public void onSight(Simulation sim, TrainState trainState, double trainSignalDistance) {
-        trainState.onLimitAnnounce(trainSignalDistance, trainSignalDistance + distanceToExecution, executionSignal.speedSection.speedLimit);
+        trainState.onLimitAnnounce(
+                trainSignalDistance,
+                trainSignalDistance + distanceToExecution,
+                executionSignal.speedSection.speedLimit
+        );
     }
 }

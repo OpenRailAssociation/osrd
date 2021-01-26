@@ -1,5 +1,8 @@
 package fr.sncf.osrd.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class IntervalNode<T> {
     public double begin;
     public double end;
@@ -10,10 +13,10 @@ public class IntervalNode<T> {
     public T value;
 
     /**
-     * Create an IntervalNode
-     * @param begin the lower bound of the interval
-     * @param end the upper bound of the interval
-     * @param value the value stored in the node
+     * Creates a new interval tree node
+     * @param begin the start of the interval
+     * @param end the end of the interval
+     * @param value the value associated with the range
      */
     public IntervalNode(double begin, double end, T value) {
         this.begin = begin;

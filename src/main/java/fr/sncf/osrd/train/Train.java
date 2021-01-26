@@ -3,16 +3,15 @@ package fr.sncf.osrd.train;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.utils.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.speedcontroller.StaticSpeedLimitController;
 import fr.sncf.osrd.timetable.TrainSchedule;
+import fr.sncf.osrd.util.CryoList;
 import fr.sncf.osrd.util.TopoLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.List;
 
-@SuppressWarnings("ALL")
 public class Train extends Entity {
     static final Logger logger = LoggerFactory.getLogger(Train.class);
 
@@ -38,7 +37,7 @@ public class Train extends Entity {
             RollingStock rollingStock,
             TrainPath trainPath,
             double initialSpeed,
-            LinkedList<SpeedController> controllers
+            List<SpeedController> controllers
     ) {
         super(String.format("train/%s", name));
         this.name = name;
@@ -160,6 +159,7 @@ public class Train extends Entity {
     public static final class TrainCreatedChange extends SimChange<Train> {
         public final TrainSchedule timetable;
         public final TrainPath trainPath;
+        public final CryoList<SpeedController> initialControllers;
 
         /**
          * A change corresponding to a train's creation.
@@ -167,19 +167,25 @@ public class Train extends Entity {
          * @param timetable the train's timetable
          * @param trainPath the path the train shall follow
          */
-        public TrainCreatedChange(Simulation sim, TrainSchedule timetable, TrainPath trainPath) {
+        public TrainCreatedChange(
+                Simulation sim,
+                TrainSchedule timetable,
+                TrainPath trainPath,
+                CryoList<SpeedController> initialControllers
+        ) {
             super(sim);
             this.timetable = timetable;
             this.trainPath = trainPath;
+            this.initialControllers = initialControllers;
         }
 
         @Override
         public Train apply(Simulation sim) {
             var trainName = timetable.name;
 
-            var controllers = new LinkedList<SpeedController>();
-
-            controllers.add(new StaticSpeedLimitController());
+            var controllers = new ArrayList<SpeedController>();
+            for (var controller : initialControllers)
+                controllers.add(controller);
 
             var train = new Train(
                     400,
