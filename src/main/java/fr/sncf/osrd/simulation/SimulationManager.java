@@ -33,20 +33,25 @@ public final class SimulationManager {
             InfraViewer viewer,
             TimelineEvent<?> nextEvent
     ) throws InterruptedException {
+        double nextEventTime = nextEvent.scheduledTime;
+
         // the time to wait between simulation steps
         double interpolationStep = 1.0;
 
         // if the user doesn't want realtime visualization, update the viewer once per timeline event
         if (!config.realTimeViewer) {
-            viewer.update(sim.world, sim.getTime());
+            viewer.update(sim.world, nextEventTime);
             Thread.sleep((long) (interpolationStep * 1000));
             return;
         }
 
+        // skip updates when there are no trains
+        if (sim.world.trains.isEmpty())
+            return;
+
         // move the time forward by time increments
         // to help the viewer see something
         double interpolatedTime = sim.getTime();
-        double nextEventTime = nextEvent.scheduledTime;
 
         while (sim.getTime() < nextEventTime) {
             interpolatedTime += interpolationStep;
