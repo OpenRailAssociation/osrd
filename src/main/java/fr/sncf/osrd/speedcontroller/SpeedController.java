@@ -1,9 +1,13 @@
 package fr.sncf.osrd.speedcontroller;
 
+import fr.sncf.osrd.simulation.utils.ChangeSerializer.SerializableDouble;
 import fr.sncf.osrd.train.*;
 
 public abstract class SpeedController {
+    @SerializableDouble
     public final double beginPosition;
+
+    @SerializableDouble
     public final double endPosition;
 
     public SpeedController(double beginPosition, double endPosition) {

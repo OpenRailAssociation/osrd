@@ -209,7 +209,7 @@ public class Train extends Entity {
 
     public static class LocationChange extends EntityChange<Train, Void> {
         public final TrainState newState;
-        public final ArrayList<TrainPhysicsIntegrator.PositionUpdate> positionUpdates;
+        public final List<TrainPhysicsIntegrator.PositionUpdate> positionUpdates;
 
         /**
          * Creates a change corresponding to the movement of a train
@@ -221,7 +221,7 @@ public class Train extends Entity {
                 Simulation sim,
                 Train train,
                 TrainState newState,
-                ArrayList<TrainPhysicsIntegrator.PositionUpdate> positionUpdates
+                List<TrainPhysicsIntegrator.PositionUpdate> positionUpdates
         ) {
             super(sim,  train);
             this.newState = newState;

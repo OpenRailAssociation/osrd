@@ -231,7 +231,7 @@ public final class Simulation {
     public static final class TimelineEventCreated<T> extends EntityChange<Entity, TimelineEvent<T>> {
         private final long revision;
         private final double scheduledTime;
-        private final T value;
+        private final transient T value;
 
         TimelineEventCreated(Simulation sim, Entity producer, long revision, double scheduledTime, T value) {
             super(sim, producer);

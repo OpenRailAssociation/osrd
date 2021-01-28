@@ -3,9 +3,13 @@ package fr.sncf.osrd.simulation;
 import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.infra.viewer.InfraViewer;
 import fr.sncf.osrd.simulation.utils.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class SimulationManager {
-    private final ArrayChangeLog changelog;
+    static final Logger logger = LoggerFactory.getLogger(SimulationManager.class);
+
+    public final ArrayChangeLog changelog;
 
     private final Simulation sim;
     private final Config config;
@@ -20,9 +24,9 @@ public final class SimulationManager {
      * Instantiate a simulation without starting it
      * @param config all the required parameters for the simulation
      */
-    public static SimulationManager fromConfig(Config config) throws SimulationError {
+    public static SimulationManager fromConfig(Config config, boolean needsChangeLog) throws SimulationError {
         ArrayChangeLog changelog = null;
-        if (config.changeReplayCheck)
+        if (needsChangeLog || config.changeReplayCheck)
             changelog = new ArrayChangeLog();
 
         // create a logger for event sourcing changes

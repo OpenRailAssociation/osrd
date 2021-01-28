@@ -28,14 +28,14 @@ public final class TrainState {
     public TrainStatus status;
 
     // the train this is the state of
-    public final Train train;
+    public final transient Train train;
 
     // this field MUST be kept private, as it is not the position of the train at the current simulation time,
     // but rather the position of the train at the last event. it's fine and expected, but SpeedControllers need
     // the simulated location
     public final TrainPositionTracker location;
 
-    public final List<SpeedController> speedControllers;
+    public final transient List<SpeedController> speedControllers;
 
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
