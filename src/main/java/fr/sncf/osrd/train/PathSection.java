@@ -3,6 +3,8 @@ package fr.sncf.osrd.train;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.topological.TopoEdge;
+import fr.sncf.osrd.simulation.utils.ChangeSerializer;
+import fr.sncf.osrd.simulation.utils.ChangeSerializer.SerializableDouble;
 
 import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
@@ -12,7 +14,10 @@ public final class PathSection {
     public final EdgeDirection direction;
     public final double pathStartOffset;
 
+    @SerializableDouble
     public final double beginOffset;
+
+    @SerializableDouble
     public final double endOffset;
 
     @Override

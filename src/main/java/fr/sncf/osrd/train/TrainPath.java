@@ -13,7 +13,7 @@ public final class TrainPath implements Freezable {
     public final CryoList<PathSection> sections = new CryoList<>();
     public final CryoList<TrainStop> stops = new CryoList<>();
 
-    private boolean frozen = false;
+    private transient boolean frozen = false;
 
     /**
      * Creates a container to hold the path some train will follow

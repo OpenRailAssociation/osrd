@@ -5,7 +5,7 @@ import java.util.Objects;
 
 public abstract class Entity {
     public final String entityId;
-    public final ArrayList<Entity> subscribers = new ArrayList<>();
+    public final transient ArrayList<Entity> subscribers = new ArrayList<>();
 
     protected Entity(String entityId) {
         this.entityId = entityId;

@@ -15,10 +15,10 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 public final class TrainPositionTracker implements Cloneable {
-    public final Infra infra;
+    public final transient Infra infra;
 
     /** The planned path the train shall follow. */
-    public final TrainPath path;
+    public final transient TrainPath path;
 
     /** The index of the edge the head of the train currently is at. */
     private int currentPathIndex = 0;

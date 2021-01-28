@@ -10,7 +10,8 @@ public abstract class Change {
         PUBLISHED,
     }
 
-    public State state = State.UNREGISTERED;
+    // this state is only for debug, serializing it makes no sense at all
+    public transient State state = State.UNREGISTERED;
 
     protected Change(Simulation sim) {
         sim.onChangeCreated(this);

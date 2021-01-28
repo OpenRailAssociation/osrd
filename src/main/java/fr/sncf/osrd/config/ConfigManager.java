@@ -7,6 +7,7 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.parsing.railml.RailMLParser;
 import fr.sncf.osrd.timetable.Schedule;
 import fr.sncf.osrd.train.RollingStock;
+import fr.sncf.osrd.util.PathUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,14 +29,21 @@ public class ConfigManager {
             .build()
             .adapter(RollingStock.class);
 
+    /**
+     * Reads a config file given a filesystem path
+     * @param path the path to the configuration file
+     * @return a configuration
+     * @throws IOException {@inheritDoc}
+     * @throws InvalidInfraException {@inheritDoc}
+     */
     public static Config readConfigFile(String path) throws IOException, InvalidInfraException {
         var mainConfigPath = Paths.get(path);
         var baseDirPath = mainConfigPath.getParent();
         var jsonConfig = configAdapter.fromJson(Files.readString(mainConfigPath));
 
-        var infraPath = baseDirPath.resolve(jsonConfig.infraPath);
+        var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
         var infra = ConfigManager.getInfra(infraPath.toString());
-        var schedulePath = baseDirPath.resolve(jsonConfig.schedulePath);
+        var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.schedulePath);
         var schedule = ConfigManager.getSchedule(schedulePath, infra);
         return new Config(
                 jsonConfig.simulationTimeStep,
