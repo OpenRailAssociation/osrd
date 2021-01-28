@@ -2,6 +2,8 @@ package fr.sncf.osrd.util;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+import java.util.Objects;
+
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class IntervalNode<T> {
     public double begin;
@@ -39,7 +41,17 @@ public class IntervalNode<T> {
     }
 
     @Override
+    @SuppressFBWarnings(
+            value = "FE_FLOATING_POINT_EQUALITY",
+            justification = "we don't believe tolerance is needed here"
+    )
     public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+
+        if (obj.getClass() != getClass())
+            return false;
+
         IntervalNode<?> node = (IntervalNode<?>) obj;
         return node.begin == begin
                 && node.end == end
@@ -48,6 +60,6 @@ public class IntervalNode<T> {
 
     @Override
     public int hashCode() {
-        return (int) begin + (int) end + value.hashCode();
+        return Objects.hash(begin, end, value);
     }
 }
