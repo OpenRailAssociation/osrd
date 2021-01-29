@@ -41,6 +41,8 @@ public final class TrainPositionTracker implements Cloneable {
      */
     private double tailEdgePosition = Double.NaN;
 
+    // region STD_OVERRIDES
+
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     public boolean equals(Object obj) {
@@ -73,6 +75,8 @@ public final class TrainPositionTracker implements Cloneable {
     public int hashCode() {
         return Objects.hash(path, currentPathIndex, trainLength, currentPathEdges, headEdgePosition, tailEdgePosition);
     }
+
+    // endregion
 
     /**
      * Makes a copy of the position tracker.
