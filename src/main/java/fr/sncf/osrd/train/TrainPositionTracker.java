@@ -223,6 +223,7 @@ public final class TrainPositionTracker implements Cloneable {
             // TODO: re-introduce events on edge changes?
             // leftEdgeSignal.dispatch(currentPathEdges.removeLast());
             totalEdgesSpan -= tailEdgeLength;
+            currentPathEdges.removeLast();
         }
         tailEdgePosition = totalEdgesSpan - (trainLength + headEdgeHeadroom);
     }
