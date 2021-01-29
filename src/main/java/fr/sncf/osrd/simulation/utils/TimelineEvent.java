@@ -11,7 +11,7 @@ import java.util.Objects;
 // timeline events are equal when their identifier is.
 // **it does not check for the exact content of the timeline event**
 @SuppressFBWarnings({"EQ_DOESNT_OVERRIDE_EQUALS"})
-public class TimelineEvent<T> extends TimelineEventId {
+public class TimelineEvent<T extends TimelineEventValue> extends TimelineEventId {
     public final Entity source;
 
     void updateState(Simulation sim, State newState) throws SimulationError {

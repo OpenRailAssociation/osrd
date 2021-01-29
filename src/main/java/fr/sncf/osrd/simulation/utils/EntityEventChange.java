@@ -1,7 +1,11 @@
 package fr.sncf.osrd.simulation.utils;
 
 @SuppressWarnings("UnusedReturnValue")
-public abstract class EntityEventChange<EntityT extends Entity, EventValueT, ResultT> extends Change {
+public abstract class EntityEventChange<
+        EntityT extends Entity,
+        EventValueT extends TimelineEventValue,
+        ResultT
+        > extends Change {
     public final TimelineEventId timelineEventId;
     public final String entityId;
 

@@ -1,6 +1,6 @@
 package fr.sncf.osrd.simulation.utils;
 
-public abstract class Change {
+public abstract class Change extends TimelineEventValue {
     public enum State {
         // the simulation doesn't yet know about this change
         UNREGISTERED,
