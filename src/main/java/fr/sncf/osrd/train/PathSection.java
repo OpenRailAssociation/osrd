@@ -20,6 +20,8 @@ public final class PathSection {
     @SerializableDouble
     public final double endOffset;
 
+    // region STD_OVERRIDES
+
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     public boolean equals(Object obj) {
@@ -49,6 +51,8 @@ public final class PathSection {
     public int hashCode() {
         return Objects.hash(edge.id, direction, pathStartOffset, beginOffset, endOffset);
     }
+
+    // endregion
 
     /**
      * Creates a new path element
