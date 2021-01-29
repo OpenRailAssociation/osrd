@@ -4,6 +4,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import com.squareup.moshi.*;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.speedcontroller.*;
@@ -20,7 +21,9 @@ import java.lang.annotation.Retention;
 import java.lang.reflect.Type;
 import java.time.LocalTime;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.function.Supplier;
 
 public class ChangeSerializer {
@@ -28,30 +31,80 @@ public class ChangeSerializer {
 
     public static final JsonAdapter<Change> changeAdapter;
 
+    /**
+     * A collection of types and names.
+     * It's just a convenient collection to store what names to associate with types.
+     * @param <T> the base type
+     */
+    private static class SubtypeCollection<T> implements Iterable<SubtypeCollection.Subtype<T>> {
+        static class Subtype<T> {
+            public final Class<? extends T> type;
+            public final String label;
+
+            private Subtype(Class<? extends T> type, String label) {
+                this.type = type;
+                this.label = label;
+            }
+        }
+
+        @Override
+        @NonNull
+        public Iterator<Subtype<T>> iterator() {
+            return adapters.iterator();
+        }
+
+        private final ArrayList<Subtype<T>> adapters = new ArrayList<>();
+
+        public SubtypeCollection<T> add(Class<? extends T> type, String label) {
+            adapters.add(new Subtype<T>(type, label));
+            return this;
+        }
+
+        // TODO: implement and replace below
+        // public static <T> SubtypeCollection<T> fromClass(Class<T> baseClass) {
+        // }
+    }
+
     static {
-        //noinspection unchecked
-        moshi = new Moshi.Builder()
+        var builder = (
+                new Moshi.Builder()
                 .add(new EntityAdapter())
                 .add(new CurrentPathEdgesAdapter())
                 .add(new TopoEdgeAdapter())
                 .add(new LocalTimeAdapter())
-                .add(PolymorphicJsonAdapterFactory.of(Change.class, "changeType")
-                        .withSubtype(Simulation.TimelineEventCancelled.class, "Simulation.TimelineEventCancelled")
-                        .withSubtype(Simulation.TimelineEventOccurred.class, "Simulation.TimelineEventOccurred")
-                        .withSubtype(Simulation.TimelineEventCreated.class, "Simulation.TimelineEventCreated")
-                        .withSubtype(Train.TrainCreatedChange.class, "Train.TrainCreatedChange")
-                        .withSubtype(Train.TrainPlannedMoveChange.class, "Train.TrainPlannedMoveChange")
-                        .withSubtype(Train.LocationChange.class, "Train.LocationChange")
-                )
-                .add(PolymorphicJsonAdapterFactory.of(SpeedController.class, "controllerType")
-                        .withSubtype(LimitAnnounceSpeedController.class, "LimitAnnounceSpeedController")
-                        .withSubtype(MaxSpeedController.class, "MaxSpeedController")
-                        .withSubtype(NoTraction.class, "NoTraction")
-                )
                 .add(CollectionJsonAdapter.of(CryoList.class, CryoList::new))
                 .add(new SerializableDoubleAdapter())
-                .build();
+        );
 
+        // enumerate the names we give to all changes
+        var changeSubtypes = new SubtypeCollection<Change>()
+                .add(Simulation.TimelineEventCancelled.class, "Simulation.TimelineEventCancelled")
+                .add(Simulation.TimelineEventOccurred.class, "Simulation.TimelineEventOccurred")
+                .add(Simulation.TimelineEventCreated.class, "Simulation.TimelineEventCreated")
+                .add(Train.TrainCreatedChange.class, "Train.TrainCreatedChange")
+                .add(Train.TrainPlannedMoveChange.class, "Train.TrainPlannedMoveChange")
+                .add(Train.LocationChange.class, "Train.LocationChange");
+
+        // tell moshi how to serialize Changes
+        var changeAdapterFactory = PolymorphicJsonAdapterFactory.of(Change.class, "changeType");
+        for (var subtype : changeSubtypes)
+            changeAdapterFactory = changeAdapterFactory.withSubtype(subtype.type, subtype.label);
+        builder.add(changeAdapterFactory);
+
+        // tell moshi how to serialize TimelineEventValues
+        var eventValueAdapterFactory = PolymorphicJsonAdapterFactory.of(TimelineEventValue.class, "valueType");
+        for (var subtype : changeSubtypes)
+            eventValueAdapterFactory = eventValueAdapterFactory.withSubtype(subtype.type, subtype.label);
+        builder.add(eventValueAdapterFactory);
+
+        // tell moshi how to serialize SpeedControllers
+        builder.add(PolymorphicJsonAdapterFactory.of(SpeedController.class, "controllerType")
+                .withSubtype(LimitAnnounceSpeedController.class, "LimitAnnounceSpeedController")
+                .withSubtype(MaxSpeedController.class, "MaxSpeedController")
+                .withSubtype(NoTraction.class, "NoTraction")
+        );
+
+        moshi = builder.build();
         changeAdapter = moshi.adapter(Change.class);
     }
 

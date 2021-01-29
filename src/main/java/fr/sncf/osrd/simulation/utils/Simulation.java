@@ -205,7 +205,11 @@ public final class Simulation {
      * @return a timeline event
      * @throws SimulationError {@inheritDoc}
      */
-    public <T> TimelineEvent<T> event(Entity entity, double scheduledTime, T value) throws SimulationError {
+    public <T extends TimelineEventValue> TimelineEvent<T> event(
+            Entity entity,
+            double scheduledTime,
+            T value
+    ) throws SimulationError {
         // sanity checks
         if (scheduledTime < time)
             throw new SimulationError("an event was scheduled before the current simulation time");
@@ -228,10 +232,13 @@ public final class Simulation {
 
     // region CHANGES
 
-    public static final class TimelineEventCreated<T> extends EntityChange<Entity, TimelineEvent<T>> {
+    public static final class TimelineEventCreated<T extends TimelineEventValue>
+            extends EntityChange<Entity, TimelineEvent<T>> {
         private final long revision;
         private final double scheduledTime;
-        private final transient T value;
+        // this should really be T, but isn't as we need moshi (our serialization framework)
+        // to understand this need to be treated as a polymorphic field
+        private final TimelineEventValue value;
 
         TimelineEventCreated(Simulation sim, Entity producer, long revision, double scheduledTime, T value) {
             super(sim, producer);
@@ -242,7 +249,9 @@ public final class Simulation {
 
         @Override
         public final TimelineEvent<T> apply(Simulation sim, Entity entity) {
-            var event = new TimelineEvent<>(entity, this.revision, this.scheduledTime, this.value);
+            // this cast is there to restore the static type parameter, because of the hack above
+            @SuppressWarnings("unchecked")
+            var event = new TimelineEvent<T>(entity, this.revision, this.scheduledTime, (T) this.value);
 
             // ensure the simulation has the correct revision number
             assert this.revision == sim.revision;
