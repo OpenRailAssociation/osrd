@@ -83,7 +83,7 @@ public class ChangeSerializer {
                 .add(Simulation.TimelineEventCreated.class, "Simulation.TimelineEventCreated")
                 .add(Train.TrainCreatedChange.class, "Train.TrainCreatedChange")
                 .add(Train.TrainPlannedMoveChange.class, "Train.TrainPlannedMoveChange")
-                .add(Train.LocationChange.class, "Train.LocationChange");
+                .add(Train.TrainLocationChange.class, "Train.TrainLocationChange");
 
         // tell moshi how to serialize Changes
         var changeAdapterFactory = PolymorphicJsonAdapterFactory.of(Change.class, "changeType");
