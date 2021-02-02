@@ -8,12 +8,31 @@ import fr.sncf.osrd.pathfinding.Dijkstra;
 import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.util.CryoList;
 import fr.sncf.osrd.util.Freezable;
+import fr.sncf.osrd.util.TopoLocation;
 
 public final class TrainPath implements Freezable {
     public final CryoList<PathSection> sections = new CryoList<>();
     public final CryoList<TrainStop> stops = new CryoList<>();
 
     private transient boolean frozen = false;
+
+    /**
+     * Given a path offset, returns a TopoLocationn
+     * @param pathPosition the offset relative to the start of the path
+     * @return the location
+     */
+    public TopoLocation findLocation(double pathPosition) {
+        PathSection section = null;
+        for (var pathSection : sections) {
+            if (pathSection.pathStartOffset > pathPosition)
+                break;
+            section = pathSection;
+        }
+
+        assert section != null;
+        double offset = pathPosition - section.pathStartOffset;
+        return TopoLocation.fromDirection(section.edge, section.direction, offset);
+    }
 
     /**
      * Creates a container to hold the path some train will follow

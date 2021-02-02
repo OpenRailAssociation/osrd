@@ -19,7 +19,7 @@ public final class TrainState {
     static final Logger logger = LoggerFactory.getLogger(TrainState.class);
 
     // the time for which this state is relevant
-    public final double time;
+    public double time;
 
     // the current speed of the train
     public double speed;
@@ -91,7 +91,11 @@ public final class TrainState {
                 train);
     }
 
-    private TrainPhysicsIntegrator.PositionUpdate step(@SuppressWarnings("SameParameterValue") double timeStep) {
+    private void step(
+            Train.TrainLocationChange locationChange,
+            @SuppressWarnings("SameParameterValue") double timeStep
+    ) {
+
         // TODO: find out the actual max braking / acceleration force
 
         var rollingStock = train.rollingStock;
@@ -101,13 +105,12 @@ public final class TrainState {
                 speed,
                 location.maxTrainGrade());
 
+        // compute the driver action
         var headPosition = location.getHeadPathPosition();
         var speedDirective = getSpeedDirective(headPosition);
         Action action = driverDecision(speedDirective, integrator);
         logger.trace("train took action {}", action);
-
         assert action != null;
-        // TODO: handle emergency braking
         assert action.type != Action.ActionType.EMERGENCY_BRAKING;
 
         // compute and limit the traction force
@@ -119,20 +122,28 @@ public final class TrainState {
         // compute and limit the braking force
         var brakingForce = action.brakingForce();
 
+        // run the physics sim
         var update = integrator.computeUpdate(traction, brakingForce);
 
+        // update speed
         logger.trace("speed changed from {} to {}", speed, update.speed);
         speed = update.speed;
+
+        // update location
         location.updatePosition(update.positionDelta);
-        return update;
+        locationChange.positionUpdates.addSpeedUpdate(location.getHeadPathPosition(), time, speed);
+
+        // update time
+        this.time += update.timeDelta;
     }
 
-    private Train.LocationChange computeSpeedCurve(
+    private Train.TrainLocationChange computeSpeedCurve(
             Simulation sim,
             double goalTrackPosition
     ) throws SimulationError {
         var nextState = this.clone();
-        var positionUpdates = new ArrayList<TrainPhysicsIntegrator.PositionUpdate>();
+
+        var locationChange = new Train.TrainLocationChange(sim, train, nextState);
 
         for (int i = 0; nextState.location.getHeadPathPosition() < goalTrackPosition; i++) {
             if (i >= 10000)
@@ -143,11 +154,10 @@ public final class TrainState {
                 break;
             }
 
-            var update = nextState.step(1.0);
-            positionUpdates.add(update);
+            nextState.step(locationChange, 1.0);
         }
 
-        return new Train.LocationChange(sim, train, nextState, positionUpdates);
+        return locationChange;
     }
 
     private SpeedDirective getSpeedDirective(double pathPosition) {
@@ -167,7 +177,7 @@ public final class TrainState {
     }
 
     @SuppressWarnings("UnnecessaryLocalVariable")
-    TimelineEvent<Train.LocationChange> simulateUntilEvent(Simulation sim) throws SimulationError {
+    TimelineEvent<Train.TrainLocationChange> simulateUntilEvent(Simulation sim) throws SimulationError {
         // 1) find the next event position
 
         // look for objects in the range [train_position, +inf)
@@ -191,14 +201,11 @@ public final class TrainState {
 
         // 2) simulate up to nextEventTrackPosition
         var simulationResult = computeSpeedCurve(sim, nextEventTrackPosition);
-        var simulationElapsedTime = simulationResult.positionUpdates.stream()
-                .map(update -> update.timeDelta)
-                .reduce(Double::sum)
-                .orElse(0.0);
-        var simulationTime = sim.getTime() + simulationElapsedTime;
 
         // 3) create an event with simulation data up to this point
-        return train.event(sim, simulationTime, simulationResult);
+        var eventTime = simulationResult.newState.time;
+        assert eventTime > sim.getTime();
+        return train.event(sim, eventTime, simulationResult);
     }
 
     @SuppressFBWarnings({"UPM_UNCALLED_PRIVATE_METHOD"})
