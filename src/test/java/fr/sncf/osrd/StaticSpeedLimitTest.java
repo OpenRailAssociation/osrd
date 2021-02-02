@@ -88,7 +88,7 @@ public class StaticSpeedLimitTest {
             sim.step();
 
         // get location changes and ensure these is only one
-        var locationChanges = changelog.changes.stream()
+        var locationChanges = changelog.publishedChanges.stream()
                 .filter(change -> change.getClass() == Train.TrainLocationChange.class)
                 .map(change -> (Train.TrainLocationChange) change)
                 .collect(Collectors.toList());

@@ -24,4 +24,10 @@ public abstract class ChangeLog implements Iterable<Change> {
      * @return the size of the changelog (the number of changes)
      */
     public abstract int size();
+
+    /**
+     * Returns an iterable over all created changes
+     * @return the iterable, or null
+     */
+    public abstract Iterable<Change> getCreatedChanges();
 }
