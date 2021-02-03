@@ -15,7 +15,6 @@ import fr.sncf.osrd.util.CryoList;
 import okio.BufferedSink;
 import okio.Okio;
 import okio.Sink;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -80,7 +79,7 @@ public class ChangeSerializer {
                 var results = new SubtypeCollection<T>();
 
                 // iterate over the subclasses
-                for(var subclassInfo: subclassesInfos){
+                for (var subclassInfo: subclassesInfos) {
                     // load the java class using the classInfo descriptor
                     var subclass = subclassInfo.loadClass(baseClass);
                     String changeLabel = subclassInfo.getName();
@@ -89,6 +88,13 @@ public class ChangeSerializer {
                 return results;
             }
         }
+    }
+
+    private static <T> PolymorphicJsonAdapterFactory<T> adaptPolymorphicType(Class<T> baseClass, String labelKey) {
+        var adapterFactory = PolymorphicJsonAdapterFactory.of(baseClass, labelKey);
+        for (var subtype : SubtypeCollection.fromClass(baseClass))
+            adapterFactory = adapterFactory.withSubtype(subtype.type, subtype.label);
+        return adapterFactory;
     }
 
     static {
@@ -105,28 +111,10 @@ public class ChangeSerializer {
                         TrainLocationChange.SpeedUpdates.class,
                         TrainLocationChange.SpeedUpdates::new))
                 .add(new SerializableDoubleAdapter())
+                .add(adaptPolymorphicType(Change.class, "changeType"))
+                .add(adaptPolymorphicType(TimelineEventValue.class, "valueType"))
+                .add(adaptPolymorphicType(SpeedController.class, "controllerType"))
                 ;
-
-        var changeSubtypes = SubtypeCollection.fromClass(Change.class);
-
-        // tell moshi how to serialize Changes
-        var changeAdapterFactory = PolymorphicJsonAdapterFactory.of(Change.class, "changeType");
-        for (var subtype : changeSubtypes)
-            changeAdapterFactory = changeAdapterFactory.withSubtype(subtype.type, subtype.label);
-        builder.add(changeAdapterFactory);
-
-        // tell moshi how to serialize TimelineEventValues
-        var eventValueAdapterFactory = PolymorphicJsonAdapterFactory.of(TimelineEventValue.class, "valueType");
-        for (var subtype : changeSubtypes)
-            eventValueAdapterFactory = eventValueAdapterFactory.withSubtype(subtype.type, subtype.label);
-        builder.add(eventValueAdapterFactory);
-
-        // tell moshi how to serialize SpeedControllers
-        builder.add(PolymorphicJsonAdapterFactory.of(SpeedController.class, "controllerType")
-                .withSubtype(LimitAnnounceSpeedController.class, "LimitAnnounceSpeedController")
-                .withSubtype(MaxSpeedController.class, "MaxSpeedController")
-                .withSubtype(NoTraction.class, "NoTraction")
-        );
 
         moshi = builder.build();
         changeAdapter = moshi.adapter(Change.class);
