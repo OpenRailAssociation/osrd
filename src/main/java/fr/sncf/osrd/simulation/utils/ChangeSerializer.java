@@ -80,6 +80,10 @@ public class ChangeSerializer {
 
                 // iterate over the subclasses
                 for (var subclassInfo: subclassesInfos) {
+                    // skip abstract classes
+                    if (subclassInfo.isAbstract())
+                        continue;
+
                     // load the java class using the classInfo descriptor
                     var subclass = subclassInfo.loadClass(baseClass);
                     String changeLabel = subclassInfo.getName();
