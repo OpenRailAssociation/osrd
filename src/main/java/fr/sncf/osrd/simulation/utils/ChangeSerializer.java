@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.function.Supplier;
+import io.github.classgraph.*;
 
 public class ChangeSerializer {
     private static final Moshi moshi;
@@ -60,9 +61,33 @@ public class ChangeSerializer {
             return this;
         }
 
-        // TODO: implement and replace below
-        // public static <T> SubtypeCollection<T> fromClass(Class<T> baseClass) {
-        // }
+        /**
+         * Create the list of subclasses of a class
+         * @param baseClass the descriptor of the class of the base type T
+         * @param <T> the base type
+         * @return  the list of subclasses of the base type T
+         */
+        private static <T> SubtypeCollection<T> fromClass(Class<T> baseClass) {
+            // Create a list of all classes of the package
+            try (ScanResult scanResult = new ClassGraph().enableAllInfo().acceptPackages("fr.sncf.osrd")
+                    .scan()) {
+
+                // select the subclasses of baseClass
+                ClassInfoList subclassesInfos = scanResult.getSubclasses(baseClass.getCanonicalName());
+
+                // create result list
+                var results = new SubtypeCollection<T>();
+
+                // iterate over the subclasses
+                for(var subclassInfo: subclassesInfos){
+                    // load the java class using the classInfo descriptor
+                    var subclass = subclassInfo.loadClass(baseClass);
+                    String changeLabel = subclassInfo.getName();
+                    results.add(subclass, changeLabel);
+                }
+                return results;
+            }
+        }
     }
 
     static {
@@ -76,14 +101,7 @@ public class ChangeSerializer {
                 .add(new SerializableDoubleAdapter())
         );
 
-        // enumerate the names we give to all changes
-        var changeSubtypes = new SubtypeCollection<Change>()
-                .add(Simulation.TimelineEventCancelled.class, "Simulation.TimelineEventCancelled")
-                .add(Simulation.TimelineEventOccurred.class, "Simulation.TimelineEventOccurred")
-                .add(Simulation.TimelineEventCreated.class, "Simulation.TimelineEventCreated")
-                .add(Train.TrainCreatedChange.class, "Train.TrainCreatedChange")
-                .add(Train.TrainPlannedMoveChange.class, "Train.TrainPlannedMoveChange")
-                .add(Train.LocationChange.class, "Train.LocationChange");
+        var changeSubtypes = SubtypeCollection.fromClass(Change.class);
 
         // tell moshi how to serialize Changes
         var changeAdapterFactory = PolymorphicJsonAdapterFactory.of(Change.class, "changeType");

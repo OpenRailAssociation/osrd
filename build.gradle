@@ -38,6 +38,10 @@ dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'
     // the logging API implementation
     implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.+'
+
+    // ClassGraph (FastClasspathScanner)
+    // https://mvnrepository.com/artifact/io.github.classgraph/classgraph
+    implementation group: 'io.github.classgraph', name: 'classgraph', version: '4.8.102'
 }
 
 application {
