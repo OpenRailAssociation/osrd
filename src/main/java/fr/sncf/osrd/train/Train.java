@@ -332,7 +332,7 @@ public class Train extends Entity {
         @Override
         public String toString() {
             return String.format(
-                    "Train.TrainLocationChange { speed=%.2f, newState.headPathPosition=%.2f }",
+                    "TrainLocationChange { speed=%.2f, newState.headPathPosition=%.2f }",
                     newState.speed,
                     newState.location.getHeadPathPosition()
             );
