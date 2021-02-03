@@ -10,6 +10,7 @@ import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.speedcontroller.*;
 import fr.sncf.osrd.train.PathSection;
 import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.Train.*;
 import fr.sncf.osrd.util.CryoList;
 import okio.BufferedSink;
 import okio.Okio;
@@ -66,15 +67,20 @@ public class ChangeSerializer {
     }
 
     static {
-        var builder = (
-                new Moshi.Builder()
+        var builder = new Moshi.Builder()
                 .add(new EntityAdapter())
                 .add(new CurrentPathEdgesAdapter())
                 .add(new TopoEdgeAdapter())
                 .add(new LocalTimeAdapter())
                 .add(CollectionJsonAdapter.of(CryoList.class, CryoList::new))
+                .add(CollectionJsonAdapter.of(
+                        TrainLocationChange.PathUpdates.class,
+                        TrainLocationChange.PathUpdates::new))
+                .add(CollectionJsonAdapter.of(
+                        TrainLocationChange.SpeedUpdates.class,
+                        TrainLocationChange.SpeedUpdates::new))
                 .add(new SerializableDoubleAdapter())
-        );
+                ;
 
         // enumerate the names we give to all changes
         var changeSubtypes = new SubtypeCollection<Change>()
@@ -83,7 +89,7 @@ public class ChangeSerializer {
                 .add(Simulation.TimelineEventCreated.class, "Simulation.TimelineEventCreated")
                 .add(Train.TrainCreatedChange.class, "Train.TrainCreatedChange")
                 .add(Train.TrainPlannedMoveChange.class, "Train.TrainPlannedMoveChange")
-                .add(Train.TrainLocationChange.class, "Train.TrainLocationChange");
+                .add(TrainLocationChange.class, "Train.TrainLocationChange");
 
         // tell moshi how to serialize Changes
         var changeAdapterFactory = PolymorphicJsonAdapterFactory.of(Change.class, "changeType");
@@ -198,7 +204,7 @@ public class ChangeSerializer {
                 if (rawType != collectionType)
                     return null;
 
-                Type elementType = Types.collectionElementType(type, Collection.class);
+                Type elementType = Types.collectionElementType(type, rawType);
                 JsonAdapter<T> elementAdapter = moshi.adapter(elementType);
                 return new CollectionJsonAdapter<>(elementAdapter) {
                     @Override
