@@ -12,7 +12,7 @@ public class SimulationChecker {
 
     private static void checkChangeStates(Simulation sim, ChangeLog changelog) throws SimulationError {
         int count = 0;
-        for (var change : changelog) {
+        for (var change : changelog.getCreatedChanges()) {
             if (change.state == Change.State.PUBLISHED)
                 continue;
             logger.error("this change wasn't published: {}", change);

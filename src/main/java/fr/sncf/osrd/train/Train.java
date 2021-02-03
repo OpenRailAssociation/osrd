@@ -3,6 +3,7 @@ package fr.sncf.osrd.train;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.utils.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.util.CryoList;
 import fr.sncf.osrd.util.TopoLocation;
@@ -20,6 +21,7 @@ public class Train extends Entity {
 
     public final String name;
     public final RollingStock rollingStock;
+    public final TrainPath path;
 
     private TrainState lastState;
 
@@ -28,7 +30,7 @@ public class Train extends Entity {
     private TrainState nextState = null;
 
     // the timeline event for the train's arrival at the next point of interest
-    private TimelineEvent<LocationChange> nextMoveEvent = null;
+    private TimelineEvent<TrainLocationChange> nextMoveEvent = null;
 
     Train(
             @SuppressWarnings("SameParameterValue") double driverSightDistance,
@@ -43,6 +45,7 @@ public class Train extends Entity {
         this.name = name;
         this.driverSightDistance = driverSightDistance;
         this.rollingStock = rollingStock;
+        this.path = trainPath;
         var location = new TrainPositionTracker(sim.world.infra, trainPath, rollingStock.length);
         this.lastState = new TrainState(
                 sim.getTime(),
@@ -89,7 +92,7 @@ public class Train extends Entity {
 
     void trainMoveReact(
             Simulation sim,
-            LocationChange locationChange,
+            TrainLocationChange locationChange,
             TimelineEvent.State newState
     ) throws SimulationError {
         if (newState == TimelineEvent.State.CANCELLED) {
@@ -109,8 +112,8 @@ public class Train extends Entity {
             TimelineEvent<?> event,
             TimelineEvent.State state
     ) throws SimulationError {
-        if (event.value.getClass() == LocationChange.class)
-            trainMoveReact(sim, (LocationChange) event.value, state);
+        if (event.value.getClass() == TrainLocationChange.class)
+            trainMoveReact(sim, (TrainLocationChange) event.value, state);
     }
 
     // endregion
@@ -133,23 +136,14 @@ public class Train extends Entity {
      * @param time the simulation time to compute the position for
      * @return the position of the head at the given time
      */
-    @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST")
     public InterpolatedTrainSpeedAndLocation getInterpolatedHeadLocationAndSpeed(double time) {
         // this method is used by the viewer to display the position of the train during the simulation
         // we should compute the expected position of the train at the requested time (which can't be after the next
         // train move event
-        var curTime = lastState.time;
-        var res = lastState.location.clone();
-        double interpolatedSpeed = lastState.speed;
-        for (var update : nextMoveEvent.value.positionUpdates) {
-            if (curTime >= time)
-                break;
-
-            res.updatePosition(update.positionDelta);
-            curTime += update.timeDelta;
-            interpolatedSpeed = update.speed;
-        }
-        return new InterpolatedTrainSpeedAndLocation(interpolatedSpeed, res.getHeadTopoLocation());
+        var lastUpdate = nextMoveEvent.value.findLastSpeedUpdate(time);
+        var position = lastUpdate.interpolatePosition(time);
+        var location = path.findLocation(position);
+        return new InterpolatedTrainSpeedAndLocation(lastUpdate.speed, location);
     }
 
     // endregion
@@ -207,25 +201,124 @@ public class Train extends Entity {
         }
     }
 
-    public static class LocationChange extends EntityChange<Train, Void> {
+    public static class TrainLocationChange extends EntityChange<Train, Void> {
         public final TrainState newState;
-        public final List<TrainPhysicsIntegrator.PositionUpdate> positionUpdates;
+
+        @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
+        public static final class PathValue<T> {
+            public final double pathPosition;
+            public final T value;
+
+            public PathValue(double pathPosition, T value) {
+                this.pathPosition = pathPosition;
+                this.value = value;
+            }
+        }
+
+        public static final class SpeedUpdate {
+            public double pathPosition;
+            public double time;
+            public double speed;
+
+            /**
+             * A speed update
+             * @param pathPosition the current position
+             * @param time the current time
+             * @param speed the current speed
+             */
+            public SpeedUpdate(double pathPosition, double time, double speed) {
+                this.pathPosition = pathPosition;
+                this.time = time;
+                this.speed = speed;
+            }
+
+            public double interpolatePosition(double nextTime) {
+                double delta = time - nextTime;
+                return pathPosition + delta * speed;
+            }
+        }
+
+        public static final class PathUpdates<T> extends CryoList<PathValue<T>> {
+            private static final long serialVersionUID = -398512329955860429L;
+
+            /**
+             * Add an update, avoiding duplicates
+             * @param pathPosition the position on the path
+             * @param value the value at the given position
+             */
+            public void dedupAdd(double pathPosition, T value) {
+                if (isEmpty()) {
+                    add(new PathValue<>(pathPosition, value));
+                    return;
+                }
+
+                var last = get(size() - 1);
+
+                // only add the new value if it differs from the last one
+                if (!last.value.equals(value))
+                    add(new PathValue<>(pathPosition, value));
+            }
+        }
+
+        public static final class SpeedUpdates extends CryoList<SpeedUpdate> {
+            private static final long serialVersionUID = 1186037080779235871L;
+
+            /**
+             * Adds a speed update, avoiding duplicates
+             * @param pathPosition the new position on the path
+             * @param time the current time
+             * @param speed the current speed
+             */
+            @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
+            public void addSpeedUpdate(double pathPosition, double time, double speed) {
+                if (isEmpty()) {
+                    add(new SpeedUpdate(pathPosition, time, speed));
+                    return;
+                }
+
+                var last = get(size() - 1);
+                if (last.speed == speed)
+                    return;
+
+                add(new SpeedUpdate(pathPosition, time, speed));
+            }
+        }
+
+        public final SpeedUpdates positionUpdates = new SpeedUpdates();
+        public final PathUpdates<SpeedController[]> speedControllersUpdates = new PathUpdates<>();
+        public final PathUpdates<SpeedDirective> speedDirectivesUpdates = new PathUpdates<>();
+
+        /**
+         * Finds the last speed update at a given time
+         * @param time the reference time
+         * @return the last speed update at a given time
+         */
+        public SpeedUpdate findLastSpeedUpdate(double time) {
+            SpeedUpdate lastUpdate = null;
+
+            for (var update : positionUpdates) {
+                if (update.time > time)
+                    break;
+                lastUpdate = update;
+            }
+            assert lastUpdate != null;
+            return lastUpdate;
+        }
 
         /**
          * Creates a change corresponding to the movement of a train
          *
-         * @param newState        the state of the train after the change
-         * @param positionUpdates the speed / position curve
+         * @param sim the simulation
+         * @param train the train this movement is about
+         * @param newState the state of the train after the change
          */
-        public LocationChange(
+        public TrainLocationChange(
                 Simulation sim,
                 Train train,
-                TrainState newState,
-                List<TrainPhysicsIntegrator.PositionUpdate> positionUpdates
+                TrainState newState
         ) {
             super(sim,  train);
             this.newState = newState;
-            this.positionUpdates = positionUpdates;
         }
 
         @Override
@@ -239,20 +332,20 @@ public class Train extends Entity {
         @Override
         public String toString() {
             return String.format(
-                    "Train.LocationChange { speed=%.2f, pathPosition=%.2f }",
+                    "Train.TrainLocationChange { speed=%.2f, newState.headPathPosition=%.2f }",
                     newState.speed,
                     newState.location.getHeadPathPosition()
             );
         }
     }
 
-    public static final class TrainPlannedMoveChange extends EntityEventChange<Train, LocationChange, Void> {
-        public TrainPlannedMoveChange(Simulation sim, Train entity, TimelineEvent<LocationChange> timelineEvent) {
+    public static final class TrainPlannedMoveChange extends EntityEventChange<Train, TrainLocationChange, Void> {
+        public TrainPlannedMoveChange(Simulation sim, Train entity, TimelineEvent<TrainLocationChange> timelineEvent) {
             super(sim, entity, timelineEvent);
         }
 
         @Override
-        public Void apply(Simulation sim, Train train, TimelineEvent<LocationChange> event) {
+        public Void apply(Simulation sim, Train train, TimelineEvent<TrainLocationChange> event) {
             train.nextMoveEvent = event;
             return null;
         }
