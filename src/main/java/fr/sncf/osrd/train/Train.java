@@ -3,6 +3,7 @@ package fr.sncf.osrd.train;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.utils.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.util.CryoList;
 import fr.sncf.osrd.util.TopoLocation;
@@ -284,8 +285,8 @@ public class Train extends Entity {
         }
 
         public final SpeedUpdates positionUpdates = new SpeedUpdates();
-        public final PathUpdates<String[]> tivUpdates = new PathUpdates<>();
         public final PathUpdates<SpeedController[]> speedControllersUpdates = new PathUpdates<>();
+        public final PathUpdates<SpeedDirective> speedDirectivesUpdates = new PathUpdates<>();
 
         /**
          * Finds the last speed update at a given time
