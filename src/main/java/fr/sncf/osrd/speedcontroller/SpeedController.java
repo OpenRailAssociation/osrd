@@ -27,4 +27,17 @@ public abstract class SpeedController {
      * @return the speed limits at this point
      */
     public abstract SpeedDirective getDirective(double trackPosition);
+
+    /**
+     * Get and merge the speed directives of a given list of speed controllers.
+     * @param controllers a list of speed controllers
+     * @param pathPosition a position on the train's path
+     * @return the merged speed directive
+     */
+    public static SpeedDirective getDirective(SpeedController[] controllers, double pathPosition) {
+        var profile = SpeedDirective.maxLimits();
+        for (var controller : controllers)
+            profile.mergeWith(controller.getDirective(pathPosition));
+        return profile;
+    }
 }

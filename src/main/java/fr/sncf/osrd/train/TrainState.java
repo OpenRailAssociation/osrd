@@ -105,10 +105,19 @@ public final class TrainState {
                 speed,
                 location.maxTrainGrade());
 
-        // compute the driver action
-        var headPosition = location.getHeadPathPosition();
-        var speedDirective = getSpeedDirective(headPosition);
+        var prevLocation = location.getHeadPathPosition();
+
+        // get the list of active speed controllers
+        var activeSpeedControllers = getActiveSpeedControllers();
+        locationChange.speedControllersUpdates.dedupAdd(prevLocation, activeSpeedControllers);
+
+        // get the current speed directives mandated by the speed controllers
+        var speedDirective = SpeedController.getDirective(activeSpeedControllers, prevLocation);
+        locationChange.speedDirectivesUpdates.dedupAdd(prevLocation, speedDirective);
+
+        // get the action the driver
         Action action = driverDecision(speedDirective, integrator);
+
         logger.trace("train took action {}", action);
         assert action != null;
         assert action.type != Action.ActionType.EMERGENCY_BRAKING;
@@ -125,16 +134,14 @@ public final class TrainState {
         // run the physics sim
         var update = integrator.computeUpdate(traction, brakingForce);
 
-        // update speed
-        logger.trace("speed changed from {} to {}", speed, update.speed);
-        speed = update.speed;
-
         // update location
         location.updatePosition(update.positionDelta);
-        locationChange.positionUpdates.addSpeedUpdate(location.getHeadPathPosition(), time, speed);
-
-        // update time
         this.time += update.timeDelta;
+        var newLocation = location.getHeadPathPosition();
+
+        logger.trace("speed changed from {} to {}", speed, update.speed);
+        locationChange.positionUpdates.addSpeedUpdate(newLocation, time, update.speed);
+        speed = update.speed;
     }
 
     private Train.TrainLocationChange computeSpeedCurve(
@@ -160,15 +167,15 @@ public final class TrainState {
         return locationChange;
     }
 
-    private SpeedDirective getSpeedDirective(double pathPosition) {
-        var profile = SpeedDirective.maxLimits();
+    private SpeedController[] getActiveSpeedControllers() {
+        var activeControllers = new ArrayList<SpeedController>();
         for (var controller : speedControllers) {
             if (!controller.isActive(this))
                 continue;
 
-            profile.mergeWith(controller.getDirective(pathPosition));
+            activeControllers.add(controller);
         }
-        return profile;
+        return activeControllers.toArray(new SpeedController[activeControllers.size()]);
     }
 
     private Action driverDecision(SpeedDirective directive, TrainPhysicsIntegrator integrator) {
