@@ -69,7 +69,9 @@ public class ChangeSerializer {
          */
         private static <T> SubtypeCollection<T> fromClass(Class<T> baseClass) {
             // Create a list of all classes of the package
-            try (ScanResult scanResult = new ClassGraph().enableAllInfo().acceptPackages("fr.sncf.osrd")
+            try (ScanResult scanResult = new ClassGraph()
+                    .enableClassInfo()
+                    .acceptPackages("fr.sncf.osrd")
                     .scan()) {
 
                 // select the subclasses of baseClass
