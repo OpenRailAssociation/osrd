@@ -67,7 +67,8 @@ public class ChangeSerializer {
          * @param <T> the base type
          * @return  the list of subclasses of the base type T
          */
-        private static <T> SubtypeCollection<T> fromClass(Class<T> baseClass) {
+        @SuppressFBWarnings({"RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"})
+        static <T> SubtypeCollection<T> fromClass(Class<T> baseClass) {
             // Create a list of all classes of the package
             try (ScanResult scanResult = new ClassGraph()
                     .enableClassInfo()
