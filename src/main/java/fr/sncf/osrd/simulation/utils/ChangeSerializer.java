@@ -88,7 +88,7 @@ public class ChangeSerializer {
 
                     // load the java class using the classInfo descriptor
                     var subclass = subclassInfo.loadClass(baseClass);
-                    String changeLabel = subclassInfo.getName();
+                    String changeLabel = subclassInfo.getSimpleName();
                     results.add(subclass, changeLabel);
                 }
                 return results;
