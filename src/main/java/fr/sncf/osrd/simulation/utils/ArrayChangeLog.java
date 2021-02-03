@@ -4,27 +4,33 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public final class ArrayChangeLog extends ChangeLog {
-    /** The list of all changes that occured so far in the simulation. */
-    public final ArrayList<Change> changes = new ArrayList<>();
+    /** The list of all changes that were created so far in the simulation. */
+    public final ArrayList<Change> createdChanges = new ArrayList<>();
 
-    public long publishedChanges = 0;
+    /** The list of all changes that occured so far in the simulation. */
+    public final ArrayList<Change> publishedChanges = new ArrayList<>();
 
     @Override
     public void changeCreationCallback(Change change) {
-        changes.add(change);
+        createdChanges.add(change);
     }
 
     @Override
     public void changePublishedCallback(Change change) {
-        publishedChanges++;
+        publishedChanges.add(change);
     }
 
     public int size() {
-        return changes.size();
+        return publishedChanges.size();
     }
 
     @Override
     public Iterator<Change> iterator() {
-        return changes.iterator();
+        return publishedChanges.iterator();
+    }
+
+    @Override
+    public Iterable<Change> getCreatedChanges() {
+        return createdChanges;
     }
 }
