@@ -17,7 +17,6 @@ import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -82,7 +81,7 @@ public final class RailMLParser {
 
         parseBufferStops(document, infra);
         parseSwitchIS(document, infra);
-        fillWithNoOpNode(infra);
+        fillWithPlaceholderNodes(infra);
 
         parseOperationalPoint(netElementMap, document, infra);
         parseSpeedSection(netElementMap, document);
@@ -250,7 +249,7 @@ public final class RailMLParser {
         }
     }
 
-    private void fillWithNoOpNode(Infra infra) {
+    private void fillWithPlaceholderNodes(Infra infra) {
         var graph = infra.topoGraph;
         for (var edge : graph.edges) {
             if (graph.nodes.get(edge.startNode) == null) {
