@@ -1,0 +1,23 @@
+{
+  "trainSchedules": [
+    {
+      "name": "Test.",
+      "rollingStockPath": "fast_rolling_stock.json",
+      "initialSpeed": 0,
+      "waypoints": [
+        {
+          "time": "08:00:00",
+          "stopDuration": 0,
+          "operationalPointId": "op.station_foo",
+          "edgeId": "ne.micro.foo_a"
+        },
+        {
+          "time": "08:05:00",
+          "stopDuration": 30,
+          "operationalPointId": "op.station_bar",
+          "edgeId": "ne.micro.bar_a"
+        }
+      ]
+    }
+  ]
+}

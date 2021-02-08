@@ -1,0 +1,9 @@
+{
+  "simulationTimeStep": 1,
+  "infraPath": "tiny_infra.xml",
+  "schedulePath": "schedule.json",
+  "showViewer": true,
+  "realTimeViewer": true,
+  "changeReplayCheck": true,
+  "simulationStepPause": 0.2
+}
