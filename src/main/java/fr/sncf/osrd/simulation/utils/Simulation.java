@@ -181,7 +181,7 @@ public final class Simulation {
      */
     public Object step(TimelineEvent<?> event) throws SimulationError {
         // step the simulation time forward
-        logger.debug("stepping the simulation from {} to {}", time, event.scheduledTime);
+        logger.debug("changing the simulation clock from {} to {}", time, event.scheduledTime);
 
         var change = new TimelineEventOccurred(this, event);
         change.apply(this);

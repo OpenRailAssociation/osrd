@@ -81,7 +81,7 @@ public class SignalSimulationTest {
             if (newAspect == aspect)
                 return;
             var change = new SignalAspectChange(sim, this, newAspect);
-            this.event(sim, sim.getTime(), change);
+            this.createEvent(sim, sim.getTime(), change);
             change.apply(sim, this);
         }
 

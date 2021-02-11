@@ -58,7 +58,7 @@ public class SimulationTest {
     public void timerTest() throws SimulationError {
         var sim = new Simulation(null, 1.0, null);
         var timer = new MockEntity("test");
-        timer.event(sim, sim.getTime() + 42, new TEValue<>("time's up"));
+        timer.createEvent(sim, sim.getTime() + 42, new TEValue<>("time's up"));
         var stepEvent = sim.step();
         assertEquals(stepEvent.toString(), "time's up");
         assertEquals(sim.getTime(), 1.0 + 42.0, 0.00001);
@@ -69,10 +69,10 @@ public class SimulationTest {
     public void testEventOrder() throws SimulationError {
         var sim = new Simulation(null, 0.0, null);
         var timer = new MockEntity("test");
-        timer.event(sim, 1.0, new TEValue<>("a"));
-        timer.event(sim, 2.0, new TEValue<>("b"));
-        timer.event(sim, 3.0, new TEValue<>("c"));
-        timer.event(sim, 4.0, new TEValue<>("d"));
+        timer.createEvent(sim, 1.0, new TEValue<>("a"));
+        timer.createEvent(sim, 2.0, new TEValue<>("b"));
+        timer.createEvent(sim, 3.0, new TEValue<>("c"));
+        timer.createEvent(sim, 4.0, new TEValue<>("d"));
 
         var timerResponse = new MockEntity("timer");
         var otherChannel = new MockEntity("other");
@@ -85,9 +85,9 @@ public class SimulationTest {
                     TimelineEvent.State state
             ) throws SimulationError {
                 String msg = event.value.toString();
-                timerResponse.event(sim, sim.getTime() + 0.5, new TEValue<>(msg + "_response"));
+                timerResponse.createEvent(sim, sim.getTime() + 0.5, new TEValue<>(msg + "_response"));
                 if (sim.getTime() > 2.7)
-                    otherChannel.event(sim, sim.getTime(), new TEValue<>(msg + " simultaneous event"));
+                    otherChannel.createEvent(sim, sim.getTime(), new TEValue<>(msg + " simultaneous event"));
             }
         });
 

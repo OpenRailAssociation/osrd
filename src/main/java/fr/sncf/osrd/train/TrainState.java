@@ -212,7 +212,7 @@ public final class TrainState {
         // 3) create an event with simulation data up to this point
         var eventTime = simulationResult.newState.time;
         assert eventTime > sim.getTime();
-        return train.event(sim, eventTime, simulationResult);
+        return train.createEvent(sim, eventTime, simulationResult);
     }
 
     @SuppressFBWarnings({"UPM_UNCALLED_PRIVATE_METHOD"})

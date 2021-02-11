@@ -1,7 +1,6 @@
 package fr.sncf.osrd.simulation;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.SpeedSection;
 import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.simulation.utils.*;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
@@ -12,11 +11,8 @@ import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.simulation.utils.TimelineEvent.State;
 import fr.sncf.osrd.util.CryoList;
-import fr.sncf.osrd.util.RangeValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayDeque;
 
 public final class SchedulerSystem extends Entity {
     static final Logger logger = LoggerFactory.getLogger(SchedulerSystem.class);
@@ -121,7 +117,7 @@ public final class SchedulerSystem extends Entity {
                 logger.trace("{}", controller);
 
             var startTime = timetable.getDepartureTime();
-            scheduler.event(sim, startTime, new Train.TrainCreatedChange(sim, timetable, trainPath, controllers));
+            scheduler.createEvent(sim, startTime, new Train.TrainCreatedChange(sim, timetable, trainPath, controllers));
         }
         return scheduler;
     }
