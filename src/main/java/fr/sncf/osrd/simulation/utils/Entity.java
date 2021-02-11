@@ -90,7 +90,7 @@ public abstract class Entity {
      * @return a new event
      * @throws SimulationError {@inheritDoc}
      */
-    public <T extends TimelineEventValue> TimelineEvent<T> event(
+    public <T extends TimelineEventValue> TimelineEvent<T> createEvent(
             Simulation sim,
             double scheduledTime, T value
     ) throws SimulationError {
