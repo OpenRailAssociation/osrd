@@ -46,9 +46,16 @@
 
     <!-- Allow using @SuppressWarnings("checkstyle:LocalVariableName") -->
     <module name="SuppressWarningsFilter"/>
+
     <module name="TreeWalker">
         <!-- Allow using @SuppressWarnings("checkstyle:LocalVariableName") -->
         <module name="SuppressWarningsHolder"/>
+
+        <module name="SuppressionCommentFilter">
+            <property name="offCommentFormat" value="CHECKSTYLE.OFF: ([\w\|]+)"/>
+            <property name="onCommentFormat" value="CHECKSTYLE.ON: ([\w\|]+)"/>
+            <property name="checkFormat" value="$1"/>
+        </module>
 
         <!-- Ensure an empty line separates methods -->
         <module name="EmptyLineSeparator">
