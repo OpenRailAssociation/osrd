@@ -48,11 +48,8 @@ You'll need:
  - Java 11
  - gradle 6
 
-We unfortunately don't have any example infrastructure for you to try and simulate on,
-but you can get one by creating an account on railml.org
-
 ```sh
-gradle run --args 'test_config.json out.json'
+gradle run --args 'examples/simple/config.json sim_changelog_output.json'
 ```
 
 ## Contributing
