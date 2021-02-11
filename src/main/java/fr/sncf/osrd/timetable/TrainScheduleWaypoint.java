@@ -1,13 +1,15 @@
 package fr.sncf.osrd.timetable;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.topological.TopoEdge;
-import fr.sncf.osrd.train.Train;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
+// TODO: use stopDuration
+@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class TrainScheduleWaypoint {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss");
 
@@ -21,6 +23,13 @@ public class TrainScheduleWaypoint {
     public final OperationalPoint operationalPoint;
     public final TopoEdge edge;
 
+    private TrainScheduleWaypoint(LocalTime time, int stopDuration, OperationalPoint operationalPoint, TopoEdge edge) {
+        this.time = time;
+        this.stopDuration = stopDuration;
+        this.operationalPoint = operationalPoint;
+        this.edge = edge;
+    }
+
     /**
      * Creates a new train schedule waypoint
      * @param time the expected stop time
@@ -28,27 +37,37 @@ public class TrainScheduleWaypoint {
      * @param operationalPoint the place to stop at
      * @param edge the edge to stop at on the graph
      */
-    public TrainScheduleWaypoint(LocalTime time, int stopDuration, OperationalPoint operationalPoint, TopoEdge edge) {
-        this.time = time;
-        this.stopDuration = stopDuration;
-        this.operationalPoint = operationalPoint;
-        this.edge = edge;
-
-        assert edge.operationalPoints != null;
-        assert edge.operationalPoints.stream()
+    public static TrainScheduleWaypoint from(
+            LocalTime time,
+            int stopDuration,
+            OperationalPoint operationalPoint,
+            TopoEdge edge
+    ) throws InvalidTimetableException {
+        if (edge.operationalPoints.stream()
                 .map(pointValue -> pointValue.value)
-                .anyMatch(operationalPoint::equals);
+                .noneMatch(operationalPoint::equals))
+            throw new InvalidTimetableException(String.format(
+                    "edge %s has no operational point %s", edge.id, operationalPoint.id));
+        return new TrainScheduleWaypoint(time, stopDuration, operationalPoint, edge);
     }
 
     /**
      * Create a new entry for a timetable from a mapped json object
      * @param json the mapped json input
      */
-    public static TrainScheduleWaypoint fromJson(JsonTimetableEntry json, Infra infra) {
+    public static TrainScheduleWaypoint fromJson(
+            JsonTimetableEntry json,
+            Infra infra
+    ) throws InvalidTimetableException {
         var time = LocalTime.parse(json.time, TIME_FORMAT);
         var operationalPoint = infra.operationalPointMap.get(json.operationalPointId);
+        if (operationalPoint == null)
+            throw new InvalidTimetableException(String.format("unknown operational point %s", json.operationalPointId));
+
         var edge = infra.topoEdgeMap.get(json.edgeId);
-        return new TrainScheduleWaypoint(time, json.stopDuration, operationalPoint, edge);
+        if (edge == null)
+            throw new InvalidTimetableException(String.format("unknown edge %s", json.edgeId));
+        return TrainScheduleWaypoint.from(time, json.stopDuration, operationalPoint, edge);
     }
 
     public double timeSeconds() {
