@@ -18,6 +18,11 @@ public class InfraViewer {
     private final SpriteManager spriteManager;
     private final Map<Train, Sprite> trainSprites = new HashMap<>();
 
+    private static String encodeSpriteId(String id) {
+        // sprite identifiers can't contain dots for some reason
+        return id.replace('.', '·');
+    }
+
     /**
      * Create a viewer for debug purposes
      * @param infra the infrastructure display
@@ -43,7 +48,7 @@ public class InfraViewer {
 
             for (var operationalPoint : edge.operationalPoints) {
                 double pos = operationalPoint.position / edge.length;
-                var sprite = spriteManager.addSprite(operationalPoint.value.id + "@" + edge.id);
+                var sprite = spriteManager.addSprite(encodeSpriteId(operationalPoint.value.id + "@" + edge.id));
                 sprite.attachToEdge(edge.id);
                 sprite.setPosition(pos);
                 sprite.setAttribute("ui.style", "text-alignment: under; shape: box; size: 15px; fill-color: red;");
@@ -63,7 +68,7 @@ public class InfraViewer {
 
     private void displayTrain(Train train, double currentTime) {
         if (!trainSprites.containsKey(train)) {
-            var sprite = spriteManager.addSprite(String.valueOf(trainSprites.size()));
+            var sprite = spriteManager.addSprite(encodeSpriteId(String.valueOf(trainSprites.size())));
             sprite.setAttribute("ui.style", "text-alignment: under; shape: circle; size: 20px; fill-color: #ffaf01;");
             sprite.setAttribute("ui.label", train.name);
             trainSprites.put(train, sprite);

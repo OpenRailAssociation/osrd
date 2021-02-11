@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 /**
- * <h1>A Discrete TimelineEvent SimulationManager.</h1>
+ * <h1>A Discrete TimelineEvent Simulation.</h1>
  *
  * <h2>Life cycle of an event</h2>
  * <ol>
@@ -170,7 +170,7 @@ public final class Simulation {
      * Returns the next event from the timeline.
      * @return the next event in the timeline
      */
-    public TimelineEvent<?> nextEvent() {
+    public TimelineEvent<?> getNextEvent() {
         // get the next event in the timeline
         return timeline.get(timeline.firstKey());
     }
@@ -192,7 +192,7 @@ public final class Simulation {
     }
 
     public Object step() throws SimulationError {
-        var event = nextEvent();
+        var event = getNextEvent();
         return step(event);
     }
 
@@ -205,7 +205,7 @@ public final class Simulation {
      * @return a timeline event
      * @throws SimulationError {@inheritDoc}
      */
-    public <T extends TimelineEventValue> TimelineEvent<T> event(
+    public <T extends TimelineEventValue> TimelineEvent<T> createEvent(
             Entity entity,
             double scheduledTime,
             T value

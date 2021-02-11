@@ -79,7 +79,7 @@ public final class SimulationManager {
         }
 
         while (!sim.isSimulationOver()) {
-            var event = sim.nextEvent();
+            var event = sim.getNextEvent();
 
             if (viewer != null)
                 updateViewer(viewer, event);

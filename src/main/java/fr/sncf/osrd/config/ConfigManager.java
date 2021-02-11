@@ -5,6 +5,7 @@ import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.parsing.railml.RailMLParser;
+import fr.sncf.osrd.timetable.InvalidTimetableException;
 import fr.sncf.osrd.timetable.Schedule;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.util.PathUtils;
@@ -36,7 +37,9 @@ public class ConfigManager {
      * @throws IOException {@inheritDoc}
      * @throws InvalidInfraException {@inheritDoc}
      */
-    public static Config readConfigFile(String path) throws IOException, InvalidInfraException {
+    public static Config readConfigFile(
+            String path
+    ) throws IOException, InvalidInfraException, InvalidTimetableException {
         var mainConfigPath = Paths.get(path);
         var baseDirPath = mainConfigPath.getParent();
         var jsonConfig = configAdapter.fromJson(Files.readString(mainConfigPath));
@@ -59,18 +62,19 @@ public class ConfigManager {
     static Infra getInfra(String path) {
         if (infras.containsKey(path))
             return infras.get(path);
-        Infra infra = null;
+
         try {
-            infra = new RailMLParser(path).parse();
+            var infra = new RailMLParser(path).parse();
             infra.prepare();
+            infras.put(path, infra);
+            return infra;
         } catch (InvalidInfraException e) {
             e.printStackTrace();
+            return null;
         }
-        infras.put(path, infra);
-        return infra;
     }
 
-    static Schedule getSchedule(Path path, Infra infra) throws InvalidInfraException {
+    static Schedule getSchedule(Path path, Infra infra) throws InvalidInfraException, InvalidTimetableException {
         if (schedules.containsKey(path))
             return schedules.get(path);
         Schedule schedule = null;

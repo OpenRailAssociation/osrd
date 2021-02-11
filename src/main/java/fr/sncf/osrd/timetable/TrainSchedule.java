@@ -41,7 +41,11 @@ public final class TrainSchedule {
      * @param json the json mapped object
      * @param infra a reference to the infra
      */
-    public static TrainSchedule fromJson(Path base, JsonTrainSchedule json, Infra infra) throws InvalidInfraException {
+    public static TrainSchedule fromJson(
+            Path base,
+            JsonTrainSchedule json,
+            Infra infra
+    ) throws InvalidInfraException, InvalidTimetableException {
         assert json.waypoints != null;
 
         // generate waypoints

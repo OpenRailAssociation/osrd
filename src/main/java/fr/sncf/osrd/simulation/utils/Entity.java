@@ -94,6 +94,6 @@ public abstract class Entity {
             Simulation sim,
             double scheduledTime, T value
     ) throws SimulationError {
-        return sim.event(this, scheduledTime, value);
+        return sim.createEvent(this, scheduledTime, value);
     }
 }

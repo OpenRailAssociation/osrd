@@ -44,8 +44,7 @@ public final class RailMLParser {
         try {
             document = new SAXReader().read(inputPath);
         } catch (DocumentException e) {
-            e.printStackTrace();
-            return null;
+            throw new InvalidInfraException("invalid XML", e);
         }
         document.accept(new XmlNamespaceCleaner());
 
@@ -214,7 +213,7 @@ public final class RailMLParser {
         return netElementMap;
     }
 
-    private void parseBufferStops(Document document, Infra infra) {
+    private void parseBufferStops(Document document, Infra infra) throws InvalidInfraException {
         var xpath = "/railML/infrastructure/functionalInfrastructure/bufferStops/bufferStop";
         for (var bufferStop : document.selectNodes(xpath)) {
             var id = bufferStop.valueOf("@id");
@@ -222,6 +221,9 @@ public final class RailMLParser {
             double pos = Double.parseDouble(bufferStop.valueOf("spotLocation/@pos"));
 
             var topoEdge = infra.topoEdgeMap.get(netElementId);
+            if (topoEdge == null)
+                throw new InvalidInfraException(String.format("railml netElement not found: %s", netElementId));
+
             assert FloatCompare.eq(pos, 0.0) || FloatCompare.eq(pos, topoEdge.length);
 
             StopBlock stopBlock = new StopBlock(id, topoEdge);
@@ -307,13 +309,7 @@ public final class RailMLParser {
 
             // parse the direction of the speed limit
             var directionString = linearLocation.valueOf("@applicationDirection");
-            EdgeDirection direction;
-            if (directionString.equals("normal")) {
-                direction = EdgeDirection.START_TO_STOP;
-            } else if (directionString.equals("reverse")) {
-                direction = EdgeDirection.STOP_TO_START;
-            } else
-                throw new InvalidInfraException("invalid applicationDirection");
+            var edgeDirections = ApplicationDirection.parse(directionString);
 
             // whether there are static signals warning about this limit
             var isSignalized = Boolean.parseBoolean(speedSectionNode.valueOf("@isSignalized"));
@@ -323,13 +319,13 @@ public final class RailMLParser {
 
             // find the elements the speed limit applies to
             for (var associatedNetElement : linearLocation.selectNodes("associatedNetElement"))
-                parseSpeedSectionNetElement(netElementMap, direction, speedSection, associatedNetElement);
+                parseSpeedSectionNetElement(netElementMap, edgeDirections, speedSection, associatedNetElement);
         }
     }
 
     void parseSpeedSectionNetElement(
             Map<String, NetElement> netElementMap,
-            EdgeDirection direction,
+            ApplicationDirection applicationDirection,
             SpeedSection speedSection,
             Node netElementNode
     ) throws InvalidInfraException {
@@ -345,7 +341,7 @@ public final class RailMLParser {
         {
             double measureBegin = Double.parseDouble(netElementNode.valueOf("linearCoordinateBegin/@measure"));
             double measureEnd = Double.parseDouble(netElementNode.valueOf("linearCoordinateEnd/@measure"));
-            if (direction == EdgeDirection.START_TO_STOP) {
+            if (measureBegin < measureEnd) {
                 minMeasure = measureBegin;
                 maxMeasure = measureEnd;
             } else {
@@ -361,11 +357,12 @@ public final class RailMLParser {
         // find the TopoEdges the netElement spans over, and add the speed limit
         for (var place : netElement.mapToTopo(lrsBegin, minMeasure, maxMeasure)) {
             logger.trace("added speedSection on ({}, {}) from {} to {}",
-                    place.value.id, direction, minMeasure, maxMeasure);
+                    place.value.id, applicationDirection, minMeasure, maxMeasure);
 
             // add the limit
             var rangeLimit = new RangeValue<>(place.begin, place.end, speedSection);
-            TopoEdge.getSpeedSections(place.value, direction).add(rangeLimit);
+            for (var direction : applicationDirection.directionSet)
+                TopoEdge.getSpeedSections(place.value, direction).add(rangeLimit);
         }
     }
 }

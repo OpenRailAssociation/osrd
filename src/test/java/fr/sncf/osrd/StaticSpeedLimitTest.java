@@ -11,6 +11,7 @@ import fr.sncf.osrd.infra.SpeedSection;
 import fr.sncf.osrd.simulation.utils.ArrayChangeLog;
 import fr.sncf.osrd.simulation.utils.Simulation;
 import fr.sncf.osrd.simulation.utils.SimulationError;
+import fr.sncf.osrd.timetable.InvalidTimetableException;
 import fr.sncf.osrd.timetable.Schedule;
 import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.timetable.TrainScheduleWaypoint;
@@ -41,7 +42,7 @@ public class StaticSpeedLimitTest {
     }
 
     @Test
-    public void simpleSpeedLimitTest() throws InvalidInfraException, SimulationError {
+    public void simpleSpeedLimitTest() throws InvalidInfraException, SimulationError, InvalidTimetableException {
         var infra = new Infra();
         var nodeA = infra.makeNoOpNode("A");
         var nodeB = infra.makeNoOpNode("B");
@@ -69,8 +70,8 @@ public class StaticSpeedLimitTest {
 
         // create the waypoints the train should go through
         var waypoints = new CryoList<TrainScheduleWaypoint>();
-        waypoints.add(new TrainScheduleWaypoint(LocalTime.ofSecondOfDay(0), 0, opStart, edge));
-        waypoints.add(new TrainScheduleWaypoint(LocalTime.ofSecondOfDay(10), 0, opEnd, edge));
+        waypoints.add(TrainScheduleWaypoint.from(LocalTime.ofSecondOfDay(0), 0, opStart, edge));
+        waypoints.add(TrainScheduleWaypoint.from(LocalTime.ofSecondOfDay(10), 0, opEnd, edge));
 
         // create the schedule and timetable
         var timetable = new TrainSchedule("test train", waypoints, FAST_NO_FRICTION_TRAIN, 0);

@@ -6,6 +6,7 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.simulation.SimulationManager;
 import fr.sncf.osrd.simulation.utils.ChangeSerializer;
 import fr.sncf.osrd.simulation.utils.SimulationError;
+import fr.sncf.osrd.timetable.InvalidTimetableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +21,8 @@ public class App {
      * The main entry point for OSRD.
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws IOException, InterruptedException, InvalidInfraException {
+    public static void main(String[] args)
+            throws IOException, InterruptedException, InvalidInfraException, InvalidTimetableException {
         if (args.length != 2) {
             System.err.println("Usage: osrd config.json sim_changelog.json");
             System.exit(1);
