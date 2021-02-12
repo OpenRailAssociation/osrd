@@ -5,7 +5,7 @@ import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.topological.PointAttrGetter;
 import fr.sncf.osrd.infra.topological.RangeAttrGetter;
-import fr.sncf.osrd.infra.topological.TopoEdge;
+import fr.sncf.osrd.infra.topological.TrackSection;
 import fr.sncf.osrd.util.PointValue;
 import fr.sncf.osrd.util.RangeValue;
 import fr.sncf.osrd.util.TopoLocation;
@@ -311,7 +311,7 @@ public final class TrainPositionTracker implements Cloneable {
      * @return the maximum grade (slope) under the train.
      */
     public double maxTrainGrade() {
-        return this.streamRangeAttrUnderTrain(TopoEdge::getSlope)
+        return this.streamRangeAttrUnderTrain(TrackSection::getSlope)
                 .map(e -> e.value)
                 .max(Double::compareTo)
                 .orElse(0.);

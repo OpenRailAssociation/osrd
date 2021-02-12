@@ -1,13 +1,13 @@
 package fr.sncf.osrd.util;
 
 import fr.sncf.osrd.infra.graph.EdgeDirection;
-import fr.sncf.osrd.infra.topological.TopoEdge;
+import fr.sncf.osrd.infra.topological.TrackSection;
 
 public class TopoLocation {
-    public final TopoEdge edge;
+    public final TrackSection edge;
     public final double position;
 
-    public TopoLocation(TopoEdge edge, double position) {
+    public TopoLocation(TrackSection edge, double position) {
         this.edge = edge;
         this.position = position;
     }
@@ -19,7 +19,7 @@ public class TopoLocation {
      * @param offset the offset along the direction
      * @return a location on the edge
      */
-    public static TopoLocation fromDirection(TopoEdge edge, EdgeDirection dir, double offset) {
+    public static TopoLocation fromDirection(TrackSection edge, EdgeDirection dir, double offset) {
         if (dir == EdgeDirection.START_TO_STOP)
             return new TopoLocation(edge, offset);
         return new TopoLocation(edge, edge.length - offset);

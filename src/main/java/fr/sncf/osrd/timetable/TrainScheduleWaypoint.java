@@ -3,7 +3,7 @@ package fr.sncf.osrd.timetable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.OperationalPoint;
-import fr.sncf.osrd.infra.topological.TopoEdge;
+import fr.sncf.osrd.infra.topological.TrackSection;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -21,9 +21,14 @@ public class TrainScheduleWaypoint {
     public final int stopDuration;
 
     public final OperationalPoint operationalPoint;
-    public final TopoEdge edge;
+    public final TrackSection edge;
 
-    private TrainScheduleWaypoint(LocalTime time, int stopDuration, OperationalPoint operationalPoint, TopoEdge edge) {
+    private TrainScheduleWaypoint(
+            LocalTime time,
+            int stopDuration,
+            OperationalPoint operationalPoint,
+            TrackSection edge
+    ) {
         this.time = time;
         this.stopDuration = stopDuration;
         this.operationalPoint = operationalPoint;
@@ -41,7 +46,7 @@ public class TrainScheduleWaypoint {
             LocalTime time,
             int stopDuration,
             OperationalPoint operationalPoint,
-            TopoEdge edge
+            TrackSection edge
     ) throws InvalidTimetableException {
         if (edge.operationalPoints.stream()
                 .map(pointValue -> pointValue.value)

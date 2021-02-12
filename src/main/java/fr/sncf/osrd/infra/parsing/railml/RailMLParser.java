@@ -4,12 +4,11 @@ import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.SpeedSection;
-import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.graph.EdgeEndpoint;
-import fr.sncf.osrd.infra.topological.NoOpNode;
-import fr.sncf.osrd.infra.topological.StopBlock;
+import fr.sncf.osrd.infra.topological.PlaceholderNode;
+import fr.sncf.osrd.infra.topological.BufferStop;
 import fr.sncf.osrd.infra.topological.Switch;
-import fr.sncf.osrd.infra.topological.TopoEdge;
+import fr.sncf.osrd.infra.topological.TrackSection;
 import fr.sncf.osrd.util.*;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -69,13 +68,13 @@ public final class RailMLParser {
         for (var netRelation : netRelations.values()) {
             var netElementA = netElementMap.get(netRelation.elementA);
             var netElementB = netElementMap.get(netRelation.elementB);
-            var edgeA = netElementA.topoEdge;
-            var edgeB = netElementB.topoEdge;
+            var edgeA = netElementA.trackSection;
+            var edgeB = netElementB.trackSection;
             // both netElements must be micro
             if (edgeA == null || edgeB == null)
                 continue;
 
-            TopoEdge.linkEdges(edgeA, netRelation.positionOnA, edgeB, netRelation.positionOnB);
+            TrackSection.linkEdges(edgeA, netRelation.positionOnA, edgeB, netRelation.positionOnB);
         }
 
         parseBufferStops(document, infra);
@@ -226,11 +225,11 @@ public final class RailMLParser {
 
             assert FloatCompare.eq(pos, 0.0) || FloatCompare.eq(pos, topoEdge.length);
 
-            StopBlock stopBlock = new StopBlock(id, topoEdge);
+            BufferStop infraBufferStop = new BufferStop(id, topoEdge);
             if (FloatCompare.eq(pos, 0.0))
-                infra.topoGraph.replaceNode(topoEdge.startNode, stopBlock);
+                infra.topoGraph.replaceNode(topoEdge.startNode, infraBufferStop);
             else
-                infra.topoGraph.replaceNode(topoEdge.endNode, stopBlock);
+                infra.topoGraph.replaceNode(topoEdge.endNode, infraBufferStop);
         }
     }
 
@@ -255,11 +254,11 @@ public final class RailMLParser {
         var graph = infra.topoGraph;
         for (var edge : graph.edges) {
             if (graph.nodes.get(edge.startNode) == null) {
-                var noOp = new NoOpNode(String.valueOf(edge.startNode));
+                var noOp = new PlaceholderNode(String.valueOf(edge.startNode));
                 infra.topoGraph.replaceNode(edge.startNode, noOp);
             }
             if (graph.nodes.get(edge.endNode) == null) {
-                var noOp = new NoOpNode(String.valueOf(edge.endNode));
+                var noOp = new PlaceholderNode(String.valueOf(edge.endNode));
                 infra.topoGraph.replaceNode(edge.endNode, noOp);
             }
         }
@@ -362,7 +361,7 @@ public final class RailMLParser {
             // add the limit
             var rangeLimit = new RangeValue<>(place.begin, place.end, speedSection);
             for (var direction : applicationDirection.directionSet)
-                TopoEdge.getSpeedSections(place.value, direction).add(rangeLimit);
+                TrackSection.getSpeedSections(place.value, direction).add(rangeLimit);
         }
     }
 }

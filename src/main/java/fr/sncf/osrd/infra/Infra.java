@@ -4,9 +4,9 @@ import fr.sncf.osrd.infra.blocksection.BlockSection;
 import fr.sncf.osrd.infra.blocksection.SectionSignalNode;
 import fr.sncf.osrd.infra.graph.Graph;
 import fr.sncf.osrd.infra.state.InfraState;
-import fr.sncf.osrd.infra.topological.NoOpNode;
-import fr.sncf.osrd.infra.topological.TopoEdge;
-import fr.sncf.osrd.infra.topological.TopoNode;
+import fr.sncf.osrd.infra.topological.PlaceholderNode;
+import fr.sncf.osrd.infra.topological.TrackSection;
+import fr.sncf.osrd.infra.topological.TrackNode;
 import fr.sncf.osrd.util.CryoMap;
 import fr.sncf.osrd.util.Freezable;
 
@@ -81,10 +81,10 @@ public class Infra implements Freezable {
     /**
      * The topology graph.
      */
-    public final Graph<TopoNode, TopoEdge> topoGraph = new Graph<>();
+    public final Graph<TrackNode, TrackSection> topoGraph = new Graph<>();
 
-    public final CryoMap<String, TopoNode> topoNodeMap = new CryoMap<>();
-    public final CryoMap<String, TopoEdge> topoEdgeMap = new CryoMap<>();
+    public final CryoMap<String, TrackNode> topoNodeMap = new CryoMap<>();
+    public final CryoMap<String, TrackSection> topoEdgeMap = new CryoMap<>();
     public final CryoMap<String, OperationalPoint> operationalPointMap = new CryoMap<>();
 
     /**
@@ -98,12 +98,12 @@ public class Infra implements Freezable {
 
     private boolean frozen = false;
 
-    public void register(TopoNode node) {
+    public void register(TrackNode node) {
         topoGraph.register(node);
         topoNodeMap.put(node.id, node);
     }
 
-    public void register(TopoEdge edge) {
+    public void register(TrackSection edge) {
         topoGraph.register(edge);
         topoEdgeMap.put(edge.id, edge);
     }
@@ -152,13 +152,13 @@ public class Infra implements Freezable {
      * @param length The length of the edge, in meters
      * @return A new edge
      */
-    public TopoEdge makeTopoEdge(
+    public TrackSection makeTopoEdge(
             int startNodeIndex,
             int endNodeIndex,
             String id,
             double length
     ) {
-        var edge = TopoEdge.linkNodes(
+        var edge = TrackSection.linkNodes(
                 startNodeIndex,
                 endNodeIndex,
                 id,
@@ -173,8 +173,8 @@ public class Infra implements Freezable {
      * @param id the unique node identifier
      * @return the newly created node
      */
-    public NoOpNode makeNoOpNode(String id) {
-        var node = new NoOpNode(id);
+    public PlaceholderNode makeNoOpNode(String id) {
+        var node = new PlaceholderNode(id);
         this.register(node);
         return node;
     }

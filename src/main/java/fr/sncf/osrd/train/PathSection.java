@@ -2,15 +2,14 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
-import fr.sncf.osrd.infra.topological.TopoEdge;
-import fr.sncf.osrd.simulation.utils.ChangeSerializer;
+import fr.sncf.osrd.infra.topological.TrackSection;
 import fr.sncf.osrd.simulation.utils.ChangeSerializer.SerializableDouble;
 
 import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
 
 public final class PathSection {
-    public final TopoEdge edge;
+    public final TrackSection edge;
     public final EdgeDirection direction;
     public final double pathStartOffset;
 
@@ -63,7 +62,7 @@ public final class PathSection {
      * @param endOffset the offset inside the edge at which the path ends, or +infinity
      */
     public PathSection(
-            TopoEdge edge,
+            TrackSection edge,
             EdgeDirection direction,
             double pathStartOffset,
             double beginOffset,
@@ -77,7 +76,7 @@ public final class PathSection {
     }
 
     public static PathSection makeFirst(
-            TopoEdge edge,
+            TrackSection edge,
             EdgeDirection direction,
             double pathStartOffset,
             double endOffset
@@ -86,7 +85,7 @@ public final class PathSection {
     }
 
     public static PathSection makeIntermediate(
-            TopoEdge edge,
+            TrackSection edge,
             EdgeDirection direction,
             double pathStartOffset
     ) {

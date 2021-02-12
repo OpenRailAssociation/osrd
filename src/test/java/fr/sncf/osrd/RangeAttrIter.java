@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
-import fr.sncf.osrd.infra.topological.TopoEdge;
+import fr.sncf.osrd.infra.topological.TrackSection;
 import fr.sncf.osrd.train.PathAttrIterator;
 import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.util.DoubleOrientedRangeSequence;
@@ -87,7 +87,7 @@ public class RangeAttrIter {
                 0,
                 5.,
                 84.,
-                TopoEdge::getSlope)
+                TrackSection::getSlope)
                 .collect(Collectors.toList());
 
         var expected = new ArrayList<RangeValue<Double>>();

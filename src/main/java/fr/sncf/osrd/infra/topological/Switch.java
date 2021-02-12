@@ -1,6 +1,6 @@
 package fr.sncf.osrd.infra.topological;
 
-public class Switch extends TopoNode {
+public class Switch extends TrackNode {
     public Switch(String id) {
         super(id);
     }

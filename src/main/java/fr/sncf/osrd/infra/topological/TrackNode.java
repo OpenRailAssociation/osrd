@@ -5,16 +5,15 @@ import fr.sncf.osrd.infra.graph.AbstractNode;
 
 /**
  * A node in the topological infrastructure graph.
- * Node types must inherit from TopoNode and add their
  */
 @SuppressFBWarnings(
         value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",
         justification = "kept for later use"
 )
-public abstract class TopoNode extends AbstractNode<TopoEdge> {
+public abstract class TrackNode extends AbstractNode<TrackSection> {
     public final String id;
 
-    public TopoNode(String id) {
+    public TrackNode(String id) {
         this.id = id;
     }
 }

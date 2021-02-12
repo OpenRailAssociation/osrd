@@ -2,7 +2,7 @@ package fr.sncf.osrd.train;
 
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
-import fr.sncf.osrd.infra.topological.TopoEdge;
+import fr.sncf.osrd.infra.topological.TrackSection;
 import fr.sncf.osrd.pathfinding.CostFunction;
 import fr.sncf.osrd.pathfinding.Dijkstra;
 import fr.sncf.osrd.timetable.TrainSchedule;
@@ -62,7 +62,7 @@ public final class TrainPath implements Freezable {
                 .orElseThrow(() -> new RuntimeException("couldn't find the goal point operational point"));
 
         // compute the shortest path from start to stop
-        CostFunction<TopoEdge> costFunc = (edge, begin, end) -> Math.abs(end - begin);
+        CostFunction<TrackSection> costFunc = (edge, begin, end) -> Math.abs(end - begin);
         Dijkstra.findPath(infra.topoGraph,
                 start.edge, startPosition.position,
                 goal.edge, goalPosition.position,
@@ -88,7 +88,7 @@ public final class TrainPath implements Freezable {
      * @param edge The edge
      * @param direction The direction this path follows this edge with.
      */
-    public void addEdge(TopoEdge edge, EdgeDirection direction, double beginOffset, double endOffset) {
+    public void addEdge(TrackSection edge, EdgeDirection direction, double beginOffset, double endOffset) {
         double pathLength = 0.0;
         if (!sections.isEmpty()) {
             var lastEdge = sections.last();
