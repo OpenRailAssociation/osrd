@@ -6,7 +6,7 @@ import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
-import fr.sncf.osrd.infra.topological.TrackSection;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.train.PathAttrIterator;
 import fr.sncf.osrd.train.TrainPath;
 import org.junit.jupiter.api.Test;

@@ -2,7 +2,7 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
-import fr.sncf.osrd.infra.topological.TrackSection;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.simulation.utils.ChangeSerializer.SerializableDouble;
 
 import java.util.Objects;

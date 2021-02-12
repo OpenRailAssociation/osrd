@@ -1,7 +1,7 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.topological.TrackSection;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.simulation.utils.Simulation;
 import fr.sncf.osrd.simulation.utils.SimulationError;
 import fr.sncf.osrd.simulation.utils.TimelineEvent;

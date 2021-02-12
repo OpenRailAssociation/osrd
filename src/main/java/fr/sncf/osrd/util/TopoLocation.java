@@ -1,7 +1,7 @@
 package fr.sncf.osrd.util;
 
 import fr.sncf.osrd.infra.graph.EdgeDirection;
-import fr.sncf.osrd.infra.topological.TrackSection;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 
 public class TopoLocation {
     public final TrackSection edge;

@@ -4,9 +4,9 @@ import fr.sncf.osrd.infra.blocksection.BlockSection;
 import fr.sncf.osrd.infra.blocksection.SectionSignalNode;
 import fr.sncf.osrd.infra.graph.Graph;
 import fr.sncf.osrd.infra.state.InfraState;
-import fr.sncf.osrd.infra.topological.PlaceholderNode;
-import fr.sncf.osrd.infra.topological.TrackSection;
-import fr.sncf.osrd.infra.topological.TrackNode;
+import fr.sncf.osrd.infra.trackgraph.PlaceholderNode;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.infra.trackgraph.TrackNode;
 import fr.sncf.osrd.util.CryoMap;
 import fr.sncf.osrd.util.Freezable;
 

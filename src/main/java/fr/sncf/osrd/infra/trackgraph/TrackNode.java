@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra.topological;
+package fr.sncf.osrd.infra.trackgraph;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.graph.AbstractNode;

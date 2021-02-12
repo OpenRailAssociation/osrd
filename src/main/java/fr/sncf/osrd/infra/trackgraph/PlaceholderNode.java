@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra.topological;
+package fr.sncf.osrd.infra.trackgraph;
 
 /**
  * A placeholder node type, without any special purpose.

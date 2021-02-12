@@ -1,7 +1,7 @@
 package fr.sncf.osrd.simulation;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.topological.TrackSection;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.simulation.utils.*;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;

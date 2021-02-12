@@ -3,7 +3,7 @@ package fr.sncf.osrd.timetable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.OperationalPoint;
-import fr.sncf.osrd.infra.topological.TrackSection;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
