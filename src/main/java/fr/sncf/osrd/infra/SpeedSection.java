@@ -1,6 +1,5 @@
 package fr.sncf.osrd.infra;
 
-import fr.sncf.osrd.infra.topological.TopoEdge;
 import fr.sncf.osrd.train.RollingStock;
 
 public class SpeedSection {

@@ -2,7 +2,7 @@ package fr.sncf.osrd.infra.blocksection;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.graph.AbstractEdge;
-import fr.sncf.osrd.infra.topological.TopoEdge;
+import fr.sncf.osrd.infra.topological.TrackSection;
 import fr.sncf.osrd.util.RangeSequence;
 
 /**
@@ -16,7 +16,7 @@ public class BlockSection extends AbstractEdge<SectionSignalNode> {
     public final String  id;
 
     /** The topological edges the block section spans over. */
-    public final RangeSequence<TopoEdge> edges;
+    public final RangeSequence<TrackSection> edges;
 
     /**
      * Creates a new BlockSection edge
@@ -28,7 +28,7 @@ public class BlockSection extends AbstractEdge<SectionSignalNode> {
      */
     public BlockSection(
             String id,
-            RangeSequence<TopoEdge> edges,
+            RangeSequence<TrackSection> edges,
             SectionSignalNode startNode,
             SectionSignalNode endNode,
             double length

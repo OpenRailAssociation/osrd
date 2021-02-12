@@ -19,19 +19,19 @@ import java.util.ArrayList;
 /**
  * An edge in the topological graph.
  */
-public final class TopoEdge extends AbstractEdge<TopoNode> {
+public final class TrackSection extends AbstractEdge<TrackNode> {
     public final String id;
 
     @Override
     public String toString() {
-        return String.format("TopoEdge { id=%s }", id);
+        return String.format("TrackSection { id=%s }", id);
     }
 
     /**
      * Create a new topological edge.
      * This constructor is private, as the edge should also be registered into the nodes.
      */
-    private TopoEdge(
+    private TrackSection(
             String id,
             int startNodeIndex,
             int endNodeIndex,
@@ -50,16 +50,21 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
      * @param length The length of the edge, in meters
      * @return A new edge
      */
-    public static TopoEdge linkNodes(
+    public static TrackSection linkNodes(
             int startNodeIndex,
             int endNodeIndex,
             String id,
             double length
     ) {
-        return new TopoEdge(id, startNodeIndex, endNodeIndex, length);
+        return new TrackSection(id, startNodeIndex, endNodeIndex, length);
     }
 
-    public static void linkEdges(TopoEdge edgeA, EdgeEndpoint positionOnA, TopoEdge edgeB, EdgeEndpoint positionOnB) {
+    public static void linkEdges(
+            TrackSection edgeA,
+            EdgeEndpoint positionOnA,
+            TrackSection edgeB,
+            EdgeEndpoint positionOnB
+    ) {
         edgeA.getNeighbors(positionOnA).add(edgeB);
         edgeB.getNeighbors(positionOnB).add(edgeA);
     }
@@ -132,11 +137,11 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
      * These can be passed around to build generic algorithms on attributes.
      */
 
-    public static RangeSequence<Double> getSlope(TopoEdge edge, EdgeDirection direction) {
+    public static RangeSequence<Double> getSlope(TrackSection edge, EdgeDirection direction) {
         return edge.slope;
     }
 
-    public static RangeSequence<BlockSection> getBlockSections(TopoEdge edge, EdgeDirection direction) {
+    public static RangeSequence<BlockSection> getBlockSections(TrackSection edge, EdgeDirection direction) {
         return edge.blockSections;
     }
 
@@ -146,13 +151,13 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
      * @param direction the direction
      * @return the speed limits
      */
-    public static ArrayList<RangeValue<SpeedSection>> getSpeedSections(TopoEdge edge, EdgeDirection direction) {
+    public static ArrayList<RangeValue<SpeedSection>> getSpeedSections(TrackSection edge, EdgeDirection direction) {
         if (direction == EdgeDirection.START_TO_STOP)
             return edge.speedSectionsForward;
         return edge.speedSectionsBackward;
     }
 
-    public static PointSequence<OperationalPoint> getOperationalPoints(TopoEdge edge, EdgeDirection direction) {
+    public static PointSequence<OperationalPoint> getOperationalPoints(TrackSection edge, EdgeDirection direction) {
         return edge.operationalPoints;
     }
 
@@ -162,7 +167,7 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
      * @param direction the direction
      * @return track sensors
      */
-    public static PointSequence<TrackSensor> getTrackSensors(TopoEdge edge, EdgeDirection direction) {
+    public static PointSequence<TrackSensor> getTrackSensors(TrackSection edge, EdgeDirection direction) {
         if (direction == EdgeDirection.START_TO_STOP)
             return edge.trackSensorsForward;
         return edge.trackSensorsBackward;
@@ -174,7 +179,7 @@ public final class TopoEdge extends AbstractEdge<TopoNode> {
      * @param direction the direction
      * @return visible track objects
      */
-    public static PointSequence<VisibleTrackObject> getVisibleTrackObjects(TopoEdge edge, EdgeDirection direction) {
+    public static PointSequence<VisibleTrackObject> getVisibleTrackObjects(TrackSection edge, EdgeDirection direction) {
         if (direction == EdgeDirection.START_TO_STOP)
             return edge.visibleTrackObjectsForward;
         return edge.visibleTrackObjectsBackward;

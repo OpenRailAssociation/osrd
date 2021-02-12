@@ -21,11 +21,11 @@
  *
  * <pre>
  * {@code
- * TRACE Dijkstra - pathfinding from TopoEdge { id=ne.micro.foo_a }:100.0 to TopoEdge { id=ne.micro.bar_a }:100.0
- * TRACE Dijkstra - considering path ending at TopoEdge { id=ne.micro.foo_a } with cost 100.0
- * TRACE Dijkstra - considering path ending at TopoEdge { id=ne.micro.foo_a } with cost 100.0
- * TRACE Dijkstra - considering path ending at TopoEdge { id=ne.micro.foo_to_bar } with cost 10100.0
- * TRACE Dijkstra - considering path ending at TopoEdge { id=ne.micro.bar_a } with cost 10200.0
+ * TRACE Dijkstra - pathfinding from TrackSection { id=ne.micro.foo_a }:100.0 to TrackSection { id=ne.micro.bar_a }:100.0
+ * TRACE Dijkstra - considering path ending at TrackSection { id=ne.micro.foo_a } with cost 100.0
+ * TRACE Dijkstra - considering path ending at TrackSection { id=ne.micro.foo_a } with cost 100.0
+ * TRACE Dijkstra - considering path ending at TrackSection { id=ne.micro.foo_to_bar } with cost 10100.0
+ * TRACE Dijkstra - considering path ending at TrackSection { id=ne.micro.bar_a } with cost 10200.0
  * TRACE Dijkstra - found goal
  * }
  * </pre>

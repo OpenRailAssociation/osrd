@@ -5,5 +5,5 @@ import fr.sncf.osrd.util.PointSequence;
 
 @FunctionalInterface
 public interface PointAttrGetter<ValueT> {
-    PointSequence<ValueT> getAttr(TopoEdge edge, EdgeDirection dir);
+    PointSequence<ValueT> getAttr(TrackSection edge, EdgeDirection dir);
 }

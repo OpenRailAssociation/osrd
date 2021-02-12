@@ -6,7 +6,7 @@ import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
-import fr.sncf.osrd.infra.topological.TopoEdge;
+import fr.sncf.osrd.infra.topological.TrackSection;
 import fr.sncf.osrd.train.PathAttrIterator;
 import fr.sncf.osrd.train.TrainPath;
 import org.junit.jupiter.api.Test;
@@ -70,7 +70,7 @@ class PointAttrIter {
                 0,
                 5.,
                 84.,
-                TopoEdge::getOperationalPoints)
+                TrackSection::getOperationalPoints)
                 .collect(Collectors.toList());
 
         var result = fullResult.stream()
@@ -135,7 +135,7 @@ class PointAttrIter {
                 0,
                 5.,
                 84.,
-                TopoEdge::getOperationalPoints)
+                TrackSection::getOperationalPoints)
                 .map(e -> e.value.name)
                 .collect(Collectors.toList());
 

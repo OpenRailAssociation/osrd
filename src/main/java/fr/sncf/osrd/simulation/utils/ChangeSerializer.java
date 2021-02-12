@@ -6,10 +6,9 @@ import com.squareup.moshi.*;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.topological.TopoEdge;
+import fr.sncf.osrd.infra.topological.TrackSection;
 import fr.sncf.osrd.speedcontroller.*;
 import fr.sncf.osrd.train.PathSection;
-import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.Train.*;
 import fr.sncf.osrd.util.CryoList;
 import okio.BufferedSink;
@@ -141,12 +140,12 @@ public class ChangeSerializer {
 
     private static class TopoEdgeAdapter {
         @ToJson
-        String toJson(TopoEdge edge) {
+        String toJson(TrackSection edge) {
             return edge.id;
         }
 
         @FromJson
-        TopoEdge fromJson(String edgeId) {
+        TrackSection fromJson(String edgeId) {
             throw new RuntimeException("not implemented");
         }
     }

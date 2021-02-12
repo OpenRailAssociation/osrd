@@ -146,7 +146,7 @@ public class PathAttrIterator<EventT> implements Spliterator<EventT> {
      * @param iterStartPathIndex the index of the path element to start iterating from
      * @param iterStartPathOffset the offset to start iterating at
      * @param iterEndPathOffset the offset to end iterating at
-     * @param attrGetter a function that gets the proper attribute, given a TopoEdge
+     * @param attrGetter a function that gets the proper attribute, given a TrackSection
      * @return a stream of PointSequence entries
      */
     public static <ValueT> Stream<PointValue<ValueT>> streamPoints(

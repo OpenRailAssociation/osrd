@@ -10,10 +10,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
         value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",
         justification = "kept for later use"
 )
-public class StopBlock extends TopoNode {
-    public final TopoEdge edge;
+public class BufferStop extends TrackNode {
+    public final TrackSection edge;
 
-    public StopBlock(String id, TopoEdge edge) {
+    public BufferStop(String id, TrackSection edge) {
         super(id);
         this.edge = edge;
     }

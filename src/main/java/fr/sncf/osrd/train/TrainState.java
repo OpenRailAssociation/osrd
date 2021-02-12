@@ -1,7 +1,7 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.topological.TopoEdge;
+import fr.sncf.osrd.infra.topological.TrackSection;
 import fr.sncf.osrd.simulation.utils.Simulation;
 import fr.sncf.osrd.simulation.utils.SimulationError;
 import fr.sncf.osrd.simulation.utils.TimelineEvent;
@@ -190,7 +190,7 @@ public final class TrainState {
         // look for objects in the range [train_position, +inf)
         // TODO: optimize, we don't need to iterate on all the path
         var nextTrackObjectVisibilityChange = location
-                .streamPointAttrForward(Double.POSITIVE_INFINITY, TopoEdge::getVisibleTrackObjects)
+                .streamPointAttrForward(Double.POSITIVE_INFINITY, TrackSection::getVisibleTrackObjects)
                 .map(pointValue -> {
                     // the position of track object relative to path of the train
                     // (the distance to the train's starting point)
