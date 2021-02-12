@@ -1,7 +1,7 @@
 package fr.sncf.osrd.infra.parsing.railml;
 
 import fr.sncf.osrd.infra.graph.EdgeEndpoint;
-import fr.sncf.osrd.infra.topological.TrackSection;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.util.MutPair;
 import fr.sncf.osrd.util.RangeValue;
 import fr.sncf.osrd.util.TopoLocation;

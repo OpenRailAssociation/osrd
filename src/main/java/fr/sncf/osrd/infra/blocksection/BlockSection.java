@@ -2,7 +2,7 @@ package fr.sncf.osrd.infra.blocksection;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.graph.AbstractEdge;
-import fr.sncf.osrd.infra.topological.TrackSection;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.util.RangeSequence;
 
 /**

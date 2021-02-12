@@ -2,7 +2,7 @@ package fr.sncf.osrd.train;
 
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
-import fr.sncf.osrd.infra.topological.TrackSection;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.pathfinding.CostFunction;
 import fr.sncf.osrd.pathfinding.Dijkstra;
 import fr.sncf.osrd.timetable.TrainSchedule;
