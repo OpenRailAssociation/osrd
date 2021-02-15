@@ -8,9 +8,9 @@ class InfraTest {
     @Test
     public void simpleInfraBuild() throws InvalidInfraException {
         var infra = new Infra();
-        var nodeA = infra.makeNoOpNode("A");
-        var nodeB = infra.makeNoOpNode("B");
-        infra.makeTopoEdge(nodeA.getIndex(), nodeB.getIndex(), "e1", 42);
+        var nodeA = infra.makePlaceholderNode("A");
+        var nodeB = infra.makePlaceholderNode("B");
+        infra.makeTrackSection(nodeA.getIndex(), nodeB.getIndex(), "e1", 42);
         infra.prepare();
     }
 }

@@ -24,17 +24,17 @@ public class RangeAttrIter {
         // build a test infrastructure
         var infra = new Infra();
 
-        var nodeA = infra.makeNoOpNode("A");
-        var nodeB = infra.makeNoOpNode("B");
-        var nodeC = infra.makeNoOpNode("C");
+        var nodeA = infra.makePlaceholderNode("A");
+        var nodeB = infra.makePlaceholderNode("B");
+        var nodeC = infra.makePlaceholderNode("C");
 
-        var forwardEdge = infra.makeTopoEdge(
+        var forwardEdge = infra.makeTrackSection(
                 nodeA.getIndex(),
                 nodeB.getIndex(),
                 "e1", 42
         );
 
-        var backwardEdge = infra.makeTopoEdge(
+        var backwardEdge = infra.makeTrackSection(
                 nodeC.getIndex(),
                 nodeB.getIndex(),
                 "e2", 50

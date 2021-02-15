@@ -81,7 +81,7 @@ public class Infra implements Freezable {
     /**
      * The topology graph.
      */
-    public final Graph<TrackNode, TrackSection> topoGraph = new Graph<>();
+    public final Graph<TrackNode, TrackSection> trackGraph = new Graph<>();
 
     public final CryoMap<String, TrackNode> topoNodeMap = new CryoMap<>();
     public final CryoMap<String, TrackSection> topoEdgeMap = new CryoMap<>();
@@ -99,12 +99,12 @@ public class Infra implements Freezable {
     private boolean frozen = false;
 
     public void register(TrackNode node) {
-        topoGraph.register(node);
+        trackGraph.register(node);
         topoNodeMap.put(node.id, node);
     }
 
     public void register(TrackSection edge) {
-        topoGraph.register(edge);
+        trackGraph.register(edge);
         topoEdgeMap.put(edge.id, edge);
     }
 
@@ -145,14 +145,14 @@ public class Infra implements Freezable {
     }
 
     /**
-     * Creates and registers a new topological link.
+     * Creates and registers a new track section.
      * @param startNodeIndex The index of the start node of the edge
      * @param endNodeIndex The index of the end node of the edge
      * @param id A unique identifier for the edge
      * @param length The length of the edge, in meters
      * @return A new edge
      */
-    public TrackSection makeTopoEdge(
+    public TrackSection makeTrackSection(
             int startNodeIndex,
             int endNodeIndex,
             String id,
@@ -169,11 +169,11 @@ public class Infra implements Freezable {
     }
 
     /**
-     * Creates and registers a new topological NoOp (No Operation) node.
+     * Creates and registers a new topological placeholder node.
      * @param id the unique node identifier
      * @return the newly created node
      */
-    public PlaceholderNode makeNoOpNode(String id) {
+    public PlaceholderNode makePlaceholderNode(String id) {
         var node = new PlaceholderNode(id);
         this.register(node);
         return node;
@@ -183,9 +183,9 @@ public class Infra implements Freezable {
      * Pre-compute metadata, validate and freeze the infrastructure.
      */
     public void prepare() throws InvalidInfraException {
-        topoGraph.prepare();
+        trackGraph.prepare();
 
-        for (var edge : topoGraph.edges)
+        for (var edge : trackGraph.edges)
             edge.validate();
 
         freeze();

@@ -2,7 +2,7 @@ package fr.sncf.osrd.infra.graph;
 
 /** Encodes an end, an endpoint, the tip of an edge. */
 public enum EdgeEndpoint {
-    START(0),
+    BEGIN(0),
     END(1);
 
     public final int id;
