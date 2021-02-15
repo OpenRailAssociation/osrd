@@ -33,7 +33,6 @@ public class Schedule implements Freezable {
             Path path,
             Infra infra
     ) throws IOException, InvalidInfraException, InvalidTimetableException {
-        assert infra.isFrozen();
         JsonSchedule json = scheduleAdapter.fromJson(Files.readString(path));
         var timetables = new CryoList<TrainSchedule>();
         assert json != null;

@@ -1,5 +1,6 @@
 package fr.sncf.osrd.util;
 
+import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 
 import java.util.ArrayList;
