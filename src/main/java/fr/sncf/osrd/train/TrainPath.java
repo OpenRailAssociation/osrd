@@ -63,7 +63,7 @@ public final class TrainPath implements Freezable {
 
         // compute the shortest path from start to stop
         CostFunction<TrackSection> costFunc = (edge, begin, end) -> Math.abs(end - begin);
-        Dijkstra.findPath(infra.topoGraph,
+        Dijkstra.findPath(infra.trackGraph,
                 start.edge, startPosition.position,
                 goal.edge, goalPosition.position,
                 costFunc,

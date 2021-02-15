@@ -22,7 +22,7 @@ public abstract class AbstractEdge<NodeT extends AbstractNode<?>> implements Ind
      * @return the list of neighbors at this end
      */
     public List<AbstractEdge<NodeT>> getNeighbors(EdgeEndpoint endpoint) {
-        if (endpoint == EdgeEndpoint.START)
+        if (endpoint == EdgeEndpoint.BEGIN)
             return startNeighbors;
         return endNeighbors;
     }

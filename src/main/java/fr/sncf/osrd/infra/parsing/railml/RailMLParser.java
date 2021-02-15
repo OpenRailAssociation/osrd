@@ -58,7 +58,7 @@ public final class RailMLParser {
         detectNodes(netRelations);
 
         var infra = new Infra();
-        infra.topoGraph.resizeNodes(numberOfNodes);
+        infra.trackGraph.resizeNodes(numberOfNodes);
 
         // parse pieces of track
         final var netElementMap = parseNetElements(descLevels, document, infra);
@@ -162,7 +162,7 @@ public final class RailMLParser {
         edgeEndpointIDs.put(key, edgeEndpointToNode.size());
         edgeEndpointToNode.add(newNodeId);
         ++numberOfNodes;
-        infra.topoGraph.resizeNodes(numberOfNodes);
+        infra.trackGraph.resizeNodes(numberOfNodes);
         return newNodeId;
     }
 
@@ -187,9 +187,9 @@ public final class RailMLParser {
             // create the edge corresponding to the track section
             var lengthStr = netElement.valueOf("@length");
             double length = Double.parseDouble(lengthStr);
-            int startNodeIndex = getNodeIndex(id, EdgeEndpoint.START, infra);
+            int startNodeIndex = getNodeIndex(id, EdgeEndpoint.BEGIN, infra);
             int endNodeIndex = getNodeIndex(id, EdgeEndpoint.END, infra);
-            var topoEdge = infra.makeTopoEdge(startNodeIndex, endNodeIndex, id, length);
+            var topoEdge = infra.makeTrackSection(startNodeIndex, endNodeIndex, id, length);
 
             netElementMap.put(id, NetElement.parseMicro(netElement, topoEdge));
         }
@@ -227,9 +227,9 @@ public final class RailMLParser {
 
             BufferStop infraBufferStop = new BufferStop(id, topoEdge);
             if (FloatCompare.eq(pos, 0.0))
-                infra.topoGraph.replaceNode(topoEdge.startNode, infraBufferStop);
+                infra.trackGraph.replaceNode(topoEdge.startNode, infraBufferStop);
             else
-                infra.topoGraph.replaceNode(topoEdge.endNode, infraBufferStop);
+                infra.trackGraph.replaceNode(topoEdge.endNode, infraBufferStop);
         }
     }
 
@@ -244,22 +244,22 @@ public final class RailMLParser {
 
             Switch switchObj = new Switch(id);
             if (FloatCompare.eq(pos, 0.0))
-                infra.topoGraph.replaceNode(topoEdge.startNode, switchObj);
+                infra.trackGraph.replaceNode(topoEdge.startNode, switchObj);
             else
-                infra.topoGraph.replaceNode(topoEdge.endNode, switchObj);
+                infra.trackGraph.replaceNode(topoEdge.endNode, switchObj);
         }
     }
 
     private void fillWithPlaceholderNodes(Infra infra) {
-        var graph = infra.topoGraph;
+        var graph = infra.trackGraph;
         for (var edge : graph.edges) {
             if (graph.nodes.get(edge.startNode) == null) {
                 var noOp = new PlaceholderNode(String.valueOf(edge.startNode));
-                infra.topoGraph.replaceNode(edge.startNode, noOp);
+                infra.trackGraph.replaceNode(edge.startNode, noOp);
             }
             if (graph.nodes.get(edge.endNode) == null) {
                 var noOp = new PlaceholderNode(String.valueOf(edge.endNode));
-                infra.topoGraph.replaceNode(edge.endNode, noOp);
+                infra.trackGraph.replaceNode(edge.endNode, noOp);
             }
         }
     }

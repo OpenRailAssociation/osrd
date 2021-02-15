@@ -58,7 +58,7 @@ final class NetElement {
                 continue;
             var measure = Double.valueOf(intrinsicCoordinate.valueOf("linearCoordinate/@measure"));
             lrsMap.putIfAbsent(positioningSystemRef, new MutPair<>(Double.NaN, Double.NaN));
-            if (intrinsicCoord == EdgeEndpoint.START)
+            if (intrinsicCoord == EdgeEndpoint.BEGIN)
                 lrsMap.get(positioningSystemRef).first = measure;
             else
                 lrsMap.get(positioningSystemRef).second = measure;

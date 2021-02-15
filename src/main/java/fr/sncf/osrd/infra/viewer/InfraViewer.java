@@ -34,13 +34,13 @@ public class InfraViewer {
         graph.setAttribute("ui.antialias");
         spriteManager = new SpriteManager(graph);
 
-        for (var node : infra.topoGraph.nodes) {
+        for (var node : infra.trackGraph.nodes) {
             Node graphNode = graph.addNode(String.valueOf(node.getIndex()));
             graphNode.setAttribute("ui.label", node.id + "(index = " + node.getIndex() + ")");
             graphNode.setAttribute("ui.style", "text-alignment: under;");
         }
 
-        for (var edge : infra.topoGraph.edges) {
+        for (var edge : infra.trackGraph.edges) {
             String startId = String.valueOf(edge.startNode);
             String endId = String.valueOf(edge.endNode);
             Edge graphEdge = graph.addEdge(edge.id, startId, endId);
