@@ -8,7 +8,7 @@ final class NetRelation {
     public static EdgeEndpoint coordParse(String intrinsicCoord) {
         assert intrinsicCoord.equals("0") || intrinsicCoord.equals("1");
         if (intrinsicCoord.equals("0"))
-            return START;
+            return BEGIN;
         return END;
     }
 
