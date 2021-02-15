@@ -2,6 +2,7 @@ package fr.sncf.osrd;
 
 import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
@@ -17,21 +18,22 @@ import java.util.stream.Collectors;
 class PointAttrIter {
     @Test
     @SuppressWarnings("VariableDeclarationUsageDistance")
+    @SuppressFBWarnings({"DLS_DEAD_LOCAL_STORE"})
     public void simplePointAttrIter() throws InvalidInfraException {
         // build a test infrastructure
-        var infra = new Infra();
+        var infraBuilder = new Infra.Builder();
 
-        var nodeA = infra.makePlaceholderNode("A");
-        var nodeB = infra.makePlaceholderNode("B");
-        var nodeC = infra.makePlaceholderNode("C");
+        var nodeA = infraBuilder.makePlaceholderNode("A");
+        var nodeB = infraBuilder.makePlaceholderNode("B");
+        var nodeC = infraBuilder.makePlaceholderNode("C");
 
-        final var firstEdge = infra.makeTrackSection(
+        final var firstEdge = infraBuilder.makeTrackSection(
                 nodeA.getIndex(),
                 nodeB.getIndex(),
                 "e1", 42
         );
 
-        final var secondEdge = infra.makeTrackSection(
+        final var secondEdge = infraBuilder.makeTrackSection(
                 nodeB.getIndex(),
                 nodeC.getIndex(),
                 "e2", 42
@@ -59,7 +61,8 @@ class PointAttrIter {
             builder.add(60.0 - 42.0, new OperationalPoint("3", "3"));
             builder.build();
         }
-        infra.prepare();
+
+        final var infra = infraBuilder.build();
 
         var trainPath = new TrainPath();
         trainPath.addEdge(firstEdge, EdgeDirection.START_TO_STOP, 0, Double.POSITIVE_INFINITY);
@@ -88,43 +91,44 @@ class PointAttrIter {
 
     @Test
     @SuppressWarnings("VariableDeclarationUsageDistance")
+    @SuppressFBWarnings({"DLS_DEAD_LOCAL_STORE"})
     public void backwardPointAttrIter() throws InvalidInfraException {
         // build a test infrastructure
-        var infra = new Infra();
+        var infraBuilder = new Infra.Builder();
 
-        var nodeA = infra.makePlaceholderNode("A");
-        var nodeB = infra.makePlaceholderNode("B");
-        var nodeC = infra.makePlaceholderNode("C");
+        var nodeA = infraBuilder.makePlaceholderNode("A");
+        var nodeB = infraBuilder.makePlaceholderNode("B");
+        var nodeC = infraBuilder.makePlaceholderNode("C");
 
-        var forwardEdge = infra.makeTrackSection(
+        var forwardEdge = infraBuilder.makeTrackSection(
                 nodeA.getIndex(),
                 nodeB.getIndex(),
                 "e1", 42);
 
-        var backwardEdge = infra.makeTrackSection(
+        var backwardEdge = infraBuilder.makeTrackSection(
                 nodeC.getIndex(),
                 nodeB.getIndex(),
                 "e2", 50);
 
         {
             var builder = forwardEdge.operationalPoints.builder();
-            builder.add(0, new OperationalPoint("skipped", "skipped"));
-            builder.add(10, new OperationalPoint("1", "1"));
-            builder.add(42.0, new OperationalPoint("2a", "2a"));
-            builder.add(42.0, new OperationalPoint("2b", "2b"));
+            builder.add(0, infraBuilder.makeOperationalPoint("skipped", "skipped"));
+            builder.add(10, infraBuilder.makeOperationalPoint("1", "1"));
+            builder.add(42.0, infraBuilder.makeOperationalPoint("2a", "2a"));
+            builder.add(42.0, infraBuilder.makeOperationalPoint("2b", "2b"));
             builder.build();
         }
 
         {
             var builder = backwardEdge.operationalPoints.builder();
-            builder.add(0, new OperationalPoint("oob", "oob"));
-            builder.add(20, new OperationalPoint("4", "4"));
-            builder.add(42.0, new OperationalPoint("3a", "3b"));
-            builder.add(42.0, new OperationalPoint("3a", "3a"));
+            builder.add(0, infraBuilder.makeOperationalPoint("oob", "oob"));
+            builder.add(20, infraBuilder.makeOperationalPoint("4", "4"));
+            builder.add(42.0, infraBuilder.makeOperationalPoint("3a", "3b"));
+            builder.add(42.0, infraBuilder.makeOperationalPoint("3a", "3a"));
             builder.build();
         }
 
-        infra.prepare();
+        final var infra = infraBuilder.build();
 
         var trainPath = new TrainPath();
         trainPath.addEdge(forwardEdge, EdgeDirection.START_TO_STOP, 0, Double.POSITIVE_INFINITY);

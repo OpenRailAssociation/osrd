@@ -57,7 +57,7 @@ public final class RailMLParser {
         // TODO: move away from class attributes
         detectNodes(netRelations);
 
-        var infra = new Infra();
+        var infra = new Infra.Builder();
         infra.trackGraph.resizeNodes(numberOfNodes);
 
         // parse pieces of track
@@ -84,7 +84,7 @@ public final class RailMLParser {
         parseOperationalPoint(netElementMap, document, infra);
         parseSpeedSection(netElementMap, document);
 
-        return infra;
+        return infra.build();
     }
 
     private Map<String, DescriptionLevel> parseNetworks(Document document) {
@@ -152,7 +152,7 @@ public final class RailMLParser {
         return netRelations;
     }
 
-    private int getNodeIndex(String netElementId, EdgeEndpoint position, Infra infra) {
+    private int getNodeIndex(String netElementId, EdgeEndpoint position, Infra.Builder infra) {
         var key = new Pair<>(netElementId, position);
         int index = edgeEndpointIDs.getOrDefault(key, -1);
         if (index != -1)
@@ -173,7 +173,7 @@ public final class RailMLParser {
     private Map<String, NetElement> parseNetElements(
             Map<String, DescriptionLevel> descLevels,
             Document document,
-            Infra infra
+            Infra.Builder infra
     ) {
         var netElementMap = new HashMap<String, NetElement>();
         var xpath = "/railML/infrastructure/topology/netElements/netElement";
@@ -212,14 +212,14 @@ public final class RailMLParser {
         return netElementMap;
     }
 
-    private void parseBufferStops(Document document, Infra infra) throws InvalidInfraException {
+    private void parseBufferStops(Document document, Infra.Builder infra) throws InvalidInfraException {
         var xpath = "/railML/infrastructure/functionalInfrastructure/bufferStops/bufferStop";
         for (var bufferStop : document.selectNodes(xpath)) {
             var id = bufferStop.valueOf("@id");
             var netElementId = bufferStop.valueOf("spotLocation/@netElementRef");
             double pos = Double.parseDouble(bufferStop.valueOf("spotLocation/@pos"));
 
-            var topoEdge = infra.topoEdgeMap.get(netElementId);
+            var topoEdge = infra.trackSectionMap.get(netElementId);
             if (topoEdge == null)
                 throw new InvalidInfraException(String.format("railml netElement not found: %s", netElementId));
 
@@ -227,44 +227,44 @@ public final class RailMLParser {
 
             BufferStop infraBufferStop = new BufferStop(id, topoEdge);
             if (FloatCompare.eq(pos, 0.0))
-                infra.trackGraph.replaceNode(topoEdge.startNode, infraBufferStop);
+                infra.trackGraph.setNode(topoEdge.startNode, infraBufferStop);
             else
-                infra.trackGraph.replaceNode(topoEdge.endNode, infraBufferStop);
+                infra.trackGraph.setNode(topoEdge.endNode, infraBufferStop);
         }
     }
 
-    private void parseSwitchIS(Document document, Infra infra) {
+    private void parseSwitchIS(Document document, Infra.Builder infra) {
         var xpath = "/railML/infrastructure/functionalInfrastructure/switchesIS/switchIS";
         for (var switchIS :  document.selectNodes(xpath)) {
             var id = switchIS.valueOf("@id");
             double pos = Double.parseDouble(switchIS.valueOf("spotLocation/@pos"));
             var netElementRef = switchIS.valueOf("spotLocation/@netElementRef");
-            var topoEdge = infra.topoEdgeMap.get(netElementRef);
+            var topoEdge = infra.trackSectionMap.get(netElementRef);
             assert FloatCompare.eq(pos, 0.0) || FloatCompare.eq(pos, topoEdge.length);
 
             Switch switchObj = new Switch(id);
             if (FloatCompare.eq(pos, 0.0))
-                infra.trackGraph.replaceNode(topoEdge.startNode, switchObj);
+                infra.trackGraph.setNode(topoEdge.startNode, switchObj);
             else
-                infra.trackGraph.replaceNode(topoEdge.endNode, switchObj);
+                infra.trackGraph.setNode(topoEdge.endNode, switchObj);
         }
     }
 
-    private void fillWithPlaceholderNodes(Infra infra) {
+    private void fillWithPlaceholderNodes(Infra.Builder infra) {
         var graph = infra.trackGraph;
         for (var edge : graph.edges) {
-            if (graph.nodes.get(edge.startNode) == null) {
-                var noOp = new PlaceholderNode(String.valueOf(edge.startNode));
-                infra.trackGraph.replaceNode(edge.startNode, noOp);
+            if (graph.getNode(edge.startNode) == null) {
+                var placeholder = new PlaceholderNode(String.valueOf(edge.startNode));
+                graph.setNode(edge.startNode, placeholder);
             }
-            if (graph.nodes.get(edge.endNode) == null) {
-                var noOp = new PlaceholderNode(String.valueOf(edge.endNode));
-                infra.trackGraph.replaceNode(edge.endNode, noOp);
+            if (graph.getNode(edge.endNode) == null) {
+                var placeholder = new PlaceholderNode(String.valueOf(edge.endNode));
+                graph.setNode(edge.endNode, placeholder);
             }
         }
     }
 
-    private void parseOperationalPoint(Map<String, NetElement> netElementMap, Document document, Infra infra) {
+    private void parseOperationalPoint(Map<String, NetElement> netElementMap, Document document, Infra.Builder infra) {
         var xpath = "/railML/infrastructure/functionalInfrastructure/operationalPoints/operationalPoint";
 
         Map<String, PointSequence.Builder<OperationalPoint>> builders = new HashMap<>();
@@ -278,8 +278,7 @@ public final class RailMLParser {
             double measure = Double.parseDouble(operationalPoint.valueOf("spotLocation/linearCoordinate/@measure"));
 
             var locations = netElement.mapToTopo(lrsId, measure);
-            OperationalPoint opObj = new OperationalPoint(id, name);
-            infra.register(opObj);
+            var opObj = infra.makeOperationalPoint(id, name);
             for (var location : locations) {
                 builders.putIfAbsent(location.edge.id, location.edge.operationalPoints.builder());
                 var builder = builders.get(location.edge.id);
