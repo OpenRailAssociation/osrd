@@ -28,6 +28,7 @@ public class App {
             System.exit(1);
         }
 
+        // test
         var configPath = args[0];
         var simLogPath = args[1];
 
