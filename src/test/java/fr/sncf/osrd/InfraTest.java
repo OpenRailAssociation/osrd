@@ -7,10 +7,10 @@ import org.junit.jupiter.api.Test;
 class InfraTest {
     @Test
     public void simpleInfraBuild() throws InvalidInfraException {
-        var infra = new Infra();
-        var nodeA = infra.makePlaceholderNode("A");
-        var nodeB = infra.makePlaceholderNode("B");
-        infra.makeTrackSection(nodeA.getIndex(), nodeB.getIndex(), "e1", 42);
-        infra.prepare();
+        var infraBuilder = new Infra.Builder();
+        var nodeA = infraBuilder.makePlaceholderNode("A");
+        var nodeB = infraBuilder.makePlaceholderNode("B");
+        infraBuilder.makeTrackSection(nodeA.getIndex(), nodeB.getIndex(), "e1", 42);
+        infraBuilder.build();
     }
 }

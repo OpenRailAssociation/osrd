@@ -21,27 +21,27 @@ import java.util.List;
  * @param <NodeT> The types of the nodes
  * @param <EdgeT> The type of the edges
  */
-public class Graph<NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>> implements Freezable {
-    public final CryoList<NodeT> nodes = new CryoList<>();
-    public final CryoList<EdgeT> edges = new CryoList<>();
+public class Graph<NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>> {
+    public final CryoList<NodeT> nodes;
+    public final CryoList<EdgeT> edges;
 
-    /**
-     * Even though edges store the graph of relations between edges, we still need
-     * to store the graph of links between nodes and edges. This is private, as it can be built
-     * from the edges (which have the index of their start and end nodes) in {@see Infra#prepare}.
-     */
-    private final CryoFlatMap<NodeT, List<EdgeT>> neighbors = new CryoFlatMap<>();
+    public Graph(CryoList<NodeT> nodes, CryoList<EdgeT> edges) {
+        this.nodes = nodes;
+        this.edges = edges;
+    }
 
-    private boolean frozen = false;
+    public Graph() {
+        this.nodes = new CryoList<>();
+        this.edges = new CryoList<>();
+    }
 
-    /**
-     * Resize nodes list and fill with nulls
-     * @param capacity the new capacity
-     */
-    public void resizeNodes(int capacity) {
-        while (nodes.size() < capacity) {
-            nodes.add(null);
-        }
+    public NodeT getNode(int index) {
+        return nodes.get(index);
+    }
+
+    public void setNode(int index, NodeT node) {
+        node.setIndex(index);
+        nodes.set(index, node);
     }
 
     public void register(NodeT node) {
@@ -54,44 +54,9 @@ public class Graph<NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>>
         edges.add(edge);
     }
 
-    public void replaceNode(int nodeId, NodeT newNode) {
-        newNode.setIndex(nodeId);
-        nodes.set(nodeId, newNode);
-    }
-
-    public List<EdgeT> getNeighbors(NodeT node) {
-        return neighbors.get(node.getIndex());
-    }
-
-    /**
-     * Compute neighbors for each nodes
-     */
-    public void prepare() {
-        for (var node : nodes)
-            neighbors.put(node, new ArrayList<>());
-
-        for (var edge : edges) {
-            neighbors.get(edge.startNode).add(edge);
-            neighbors.get(edge.endNode).add(edge);
-        }
-
-        freeze();
-    }
-
-    @Override
-    public void freeze() {
-        assert !frozen;
-        for (var edge : edges)
-            edge.freeze();
-        for (var node : nodes)
-            node.freeze();
-        edges.freeze();
-        nodes.freeze();
-        frozen = true;
-    }
-
-    @Override
-    public boolean isFrozen() {
-        return frozen;
+    // TODO: deprecate, it's only use in the railML parser and shouldn't
+    public void resizeNodes(int numberOfNodes) {
+        while (nodes.size() < numberOfNodes)
+            nodes.add(null);
     }
 }

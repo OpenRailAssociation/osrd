@@ -43,11 +43,11 @@ public class StaticSpeedLimitTest {
 
     @Test
     public void simpleSpeedLimitTest() throws InvalidInfraException, SimulationError, InvalidTimetableException {
-        var infra = new Infra();
-        var nodeA = infra.makePlaceholderNode("A");
-        var nodeB = infra.makePlaceholderNode("B");
+        var infraBuilder = new Infra.Builder();
+        var nodeA = infraBuilder.makePlaceholderNode("A");
+        var nodeB = infraBuilder.makePlaceholderNode("B");
         var edgeLength = 10000.0;
-        var edge = infra.makeTrackSection(nodeA.getIndex(), nodeB.getIndex(), "e1", edgeLength);
+        var edge = infraBuilder.makeTrackSection(nodeA.getIndex(), nodeB.getIndex(), "e1", edgeLength);
 
         // create operational points for the trip
         var opStart = new OperationalPoint("start id", "start");
@@ -66,7 +66,7 @@ public class StaticSpeedLimitTest {
         limits.add(new RangeValue<>(0, 10000, new SpeedSection(false, 30.0)));
         limits.add(new RangeValue<>(5000, 6000, new SpeedSection(false, 25.0)));
 
-        infra.prepare();
+        final var infra = infraBuilder.build();
 
         // create the waypoints the train should go through
         var waypoints = new CryoList<TrainScheduleWaypoint>();

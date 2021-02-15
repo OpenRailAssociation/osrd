@@ -65,7 +65,6 @@ public class ConfigManager {
 
         try {
             var infra = new RailMLParser(path).parse();
-            infra.prepare();
             infras.put(path, infra);
             return infra;
         } catch (InvalidInfraException e) {

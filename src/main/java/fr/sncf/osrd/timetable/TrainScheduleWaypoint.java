@@ -69,7 +69,7 @@ public class TrainScheduleWaypoint {
         if (operationalPoint == null)
             throw new InvalidTimetableException(String.format("unknown operational point %s", json.operationalPointId));
 
-        var edge = infra.topoEdgeMap.get(json.edgeId);
+        var edge = infra.trackSectionMap.get(json.edgeId);
         if (edge == null)
             throw new InvalidTimetableException(String.format("unknown edge %s", json.edgeId));
         return TrainScheduleWaypoint.from(time, json.stopDuration, operationalPoint, edge);

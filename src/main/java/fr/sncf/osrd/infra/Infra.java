@@ -1,14 +1,11 @@
 package fr.sncf.osrd.infra;
 
-import fr.sncf.osrd.infra.blocksection.BlockSection;
-import fr.sncf.osrd.infra.blocksection.SectionSignalNode;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.graph.Graph;
-import fr.sncf.osrd.infra.state.InfraState;
 import fr.sncf.osrd.infra.trackgraph.PlaceholderNode;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.TrackNode;
 import fr.sncf.osrd.util.CryoMap;
-import fr.sncf.osrd.util.Freezable;
 
 /**
  * <p>A data structure meant to store the immutable part of a railroad infrastructure.</p>
@@ -77,147 +74,106 @@ import fr.sncf.osrd.util.Freezable;
  * <p>We decided to model it using <b>per-edge neighbours</b>: each end of the block section
  * can be connected to other block sections, even though it's also connected to a signal.</p>
  */
-public class Infra implements Freezable {
-    /**
-     * The topology graph.
-     */
-    public final Graph<TrackNode, TrackSection> trackGraph = new Graph<>();
+@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
+public final class Infra {
+    public final Graph<TrackNode, TrackSection> trackGraph;
 
-    public final CryoMap<String, TrackNode> topoNodeMap = new CryoMap<>();
-    public final CryoMap<String, TrackSection> topoEdgeMap = new CryoMap<>();
-    public final CryoMap<String, OperationalPoint> operationalPointMap = new CryoMap<>();
+    public final CryoMap<String, TrackNode> trackNodeMap;
+    public final CryoMap<String, TrackSection> trackSectionMap;
+    public final CryoMap<String, OperationalPoint> operationalPointMap;
 
     /**
-     * The block sections graph.
-     * A block section may span multiple topological edges, and thus be on multiple lines.
-     * Each block section has a RangeSequence of the edges it spans over.
+     * Create an OSRD Infra
+     * @param trackGraph the track graph
+     * @param trackNodeMap a map from node IDs to nodes
+     * @param trackSectionMap a map to track section IDs to track sections
+     * @param operationalPoints a map from operational point IDs to operational points
+     * @throws InvalidInfraException {@inheritDoc}
      */
-    public final Graph<SectionSignalNode, BlockSection> blockSectionsGraph = new Graph<>();
+    public Infra(
+            Graph<TrackNode, TrackSection> trackGraph,
+            CryoMap<String, TrackNode> trackNodeMap,
+            CryoMap<String, TrackSection> trackSectionMap,
+            CryoMap<String, OperationalPoint> operationalPoints
+    ) throws InvalidInfraException {
+        this.trackGraph = trackGraph;
 
-    public final CryoMap<String, Line> lines = new CryoMap<>();
+        for (var node : trackGraph.nodes)
+            node.freeze();
+        trackNodeMap.freeze();
+        this.trackNodeMap = trackNodeMap;
 
-    private boolean frozen = false;
-
-    public void register(TrackNode node) {
-        trackGraph.register(node);
-        topoNodeMap.put(node.id, node);
-    }
-
-    public void register(TrackSection edge) {
-        trackGraph.register(edge);
-        topoEdgeMap.put(edge.id, edge);
-    }
-
-    public void register(OperationalPoint operationalPoint) {
-        operationalPointMap.put(operationalPoint.id, operationalPoint);
-    }
-
-    public void register(SectionSignalNode node) {
-        blockSectionsGraph.register(node);
-    }
-
-    public void register(BlockSection edge) {
-        blockSectionsGraph.register(edge);
-    }
-
-    /**
-     * Registers a new line into the infrastructure, throwing an exception
-     * @param line the line to register
-     * @throws InvalidInfraException if another line with the same name is already registered
-     */
-    public void register(Line line) throws InvalidInfraException {
-        var previousValue = lines.putIfAbsent(line.id, line);
-        if (previousValue != null)
-            throw new InvalidInfraException(String.format("Duplicate line %s", line.id));
-    }
-
-    /**
-     * Instanciates and registers a new Line
-     * @param name the display name of the line
-     * @param id the unique line identifier
-     * @return the Line object
-     * @throws InvalidInfraException if a line with the same identifier already exists
-     */
-    public Line makeLine(String name, String id) throws InvalidInfraException {
-        var line = new Line(name, id);
-        this.register(line);
-        return line;
-    }
-
-    /**
-     * Creates and registers a new track section.
-     * @param startNodeIndex The index of the start node of the edge
-     * @param endNodeIndex The index of the end node of the edge
-     * @param id A unique identifier for the edge
-     * @param length The length of the edge, in meters
-     * @return A new edge
-     */
-    public TrackSection makeTrackSection(
-            int startNodeIndex,
-            int endNodeIndex,
-            String id,
-            double length
-    ) {
-        var edge = TrackSection.linkNodes(
-                startNodeIndex,
-                endNodeIndex,
-                id,
-                length
-        );
-        this.register(edge);
-        return edge;
-    }
-
-    /**
-     * Creates and registers a new topological placeholder node.
-     * @param id the unique node identifier
-     * @return the newly created node
-     */
-    public PlaceholderNode makePlaceholderNode(String id) {
-        var node = new PlaceholderNode(id);
-        this.register(node);
-        return node;
-    }
-
-    /**
-     * Pre-compute metadata, validate and freeze the infrastructure.
-     */
-    public void prepare() throws InvalidInfraException {
-        trackGraph.prepare();
-
-        for (var edge : trackGraph.edges)
+        for (var edge : trackGraph.edges) {
             edge.validate();
+            edge.freeze();
+        }
+        trackSectionMap.freeze();
+        this.trackSectionMap = trackSectionMap;
 
-        freeze();
+        operationalPoints.freeze();
+        this.operationalPointMap = operationalPoints;
     }
 
-    /** Prevent further modifications. */
-    @Override
-    public void freeze() {
-        assert !frozen;
+    /**
+     * A helper to help build Infra instances.
+     */
+    public static class Builder {
+        public final Graph<TrackNode, TrackSection> trackGraph = new Graph<>();
+        public final CryoMap<String, OperationalPoint> operationalPoints = new CryoMap<>();
+        public final CryoMap<String, TrackNode> trackNodeMap = new CryoMap<>();
+        public final CryoMap<String, TrackSection> trackSectionMap = new CryoMap<>();
 
-        // freeze id to node,edge and op map
-        topoNodeMap.freeze();
-        topoEdgeMap.freeze();
-        operationalPointMap.freeze();
+        /**
+         * Create a placeholder node
+         * @param id the placeholder node ID
+         * @return the placeholder node
+         */
+        public PlaceholderNode makePlaceholderNode(String id) {
+            var node = new PlaceholderNode(id);
+            trackGraph.register(node);
+            trackNodeMap.put(node.id, node);
+            return node;
+        }
 
-        // freeze the block sections graph
-        blockSectionsGraph.freeze();
+        /**
+         * Make a new track section
+         * @param startNodeIndex the start node of the track
+         * @param endNodeIndex end end node of the track
+         * @param id the track section ID
+         * @param length the length of the track
+         * @return the new track section
+         */
+        public TrackSection makeTrackSection(
+                int startNodeIndex,
+                int endNodeIndex,
+                String id,
+                double length
+        ) {
+            var edge = TrackSection.linkNodes(
+                    startNodeIndex,
+                    endNodeIndex,
+                    id,
+                    length
+            );
+            trackGraph.register(edge);
+            trackSectionMap.put(edge.id, edge);
+            return edge;
+        }
 
-        // miscellaneous
-        lines.freeze();
+        /**
+         * Makes a new operational point
+         * @param id the operational point identifier
+         * @param name the name of the identifier
+         * @return the new operational point
+         */
+        public OperationalPoint makeOperationalPoint(String id, String name) {
+            var op = new OperationalPoint(id, name);
+            operationalPoints.put(id, op);
+            return op;
+        }
 
-        frozen = true;
-    }
-
-    @Override
-    public boolean isFrozen() {
-        return frozen;
-    }
-
-    InfraState newState() {
-        // TODO: add stateful objects
-        // state.initialize(object);
-        return new InfraState(this);
+        public Infra build() throws InvalidInfraException {
+            return new Infra(trackGraph, trackNodeMap, trackSectionMap, operationalPoints);
+        }
     }
 }
