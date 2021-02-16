@@ -2,7 +2,7 @@ package fr.sncf.osrd.infra.parsing.railjson.schema.trackobjects;
 
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.parsing.railjson.schema.Navigability;
+import fr.sncf.osrd.infra.parsing.railjson.schema.ApplicableDirections;
 import fr.sncf.osrd.infra.parsing.railjson.schema.ID;
 import fr.sncf.osrd.infra.parsing.railjson.schema.RJSTVDSection;
 
@@ -18,8 +18,8 @@ public class RJSTrainDetector extends DirectionalRJSTrackObject {
     @Json(name = "backward_TVD")
     ID<RJSTVDSection> backwardTVD;
 
-    RJSTrainDetector(String id, Navigability navigability, double position) {
-        super(navigability, position);
+    RJSTrainDetector(String id, ApplicableDirections applicableDirections, double position) {
+        super(applicableDirections, position);
         this.id = id;
     }
 }

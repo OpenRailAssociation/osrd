@@ -9,7 +9,7 @@ public class RJSOperationalPointPart extends BiDirectionalRJSTrackRange {
     /** The identifier of the operational point this belongs to. */
     public final ID<RJSOperationalPoint> ref;
 
-    RJSOperationalPointPart(ID<RJSOperationalPoint> ref, double start, double end) {
+    public RJSOperationalPointPart(ID<RJSOperationalPoint> ref, double start, double end) {
         super(start, end);
         this.ref = ref;
     }

@@ -2,92 +2,70 @@ package fr.sncf.osrd.infra.parsing.railml;
 
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.OperationalPoint;
-import fr.sncf.osrd.infra.SpeedSection;
-import fr.sncf.osrd.infra.graph.EdgeEndpoint;
-import fr.sncf.osrd.infra.trackgraph.PlaceholderNode;
-import fr.sncf.osrd.infra.trackgraph.BufferStop;
-import fr.sncf.osrd.infra.trackgraph.Switch;
-import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.util.*;
+
+import fr.sncf.osrd.infra.parsing.railjson.RailJSONParser;
+import fr.sncf.osrd.infra.parsing.railjson.schema.*;
+import fr.sncf.osrd.util.XmlNamespaceCleaner;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
-import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+
+import java.util.*;
 
 public final class RailMLParser {
-    static final Logger logger = LoggerFactory.getLogger(RailMLParser.class);
-
-    private final String inputPath;
-    /* a map from each end of each net element to a per edge end unique identifier */
-    private final Map<Pair<String, EdgeEndpoint>, Integer> edgeEndpointIDs = new HashMap<>();
-    private int numberOfNodes = 0;
-    /* a map from edge endpoints ID to node ID*/
-    private final ArrayList<Integer> edgeEndpointToNode = new ArrayList<>();
-
-    public RailMLParser(String inputPath) {
-        this.inputPath = inputPath;
-    }
-
     /**
      * Initialises a new infrastructure from a RailML file.
      * @return the parsed infrastructure
      */
-    public Infra parse() throws InvalidInfraException {
+    public static RJSRoot parse(String inputPath) throws InvalidInfraException {
         Document document;
         try {
             document = new SAXReader().read(inputPath);
         } catch (DocumentException e) {
             throw new InvalidInfraException("invalid XML", e);
         }
+
+        // remove xml namespace tags, as these prevent using xpath
         document.accept(new XmlNamespaceCleaner());
 
         // parse the description level of netElements
-        var descLevels = parseNetworks(document);
+        var descLevels = parseDescriptionLevels(document);
 
         // parse all net relations in the document (relations between pieces of track)
-        var netRelations = parseNetRelations(descLevels, document);
+        var netRelations = NetRelation.parse(descLevels, document);
 
-        // deduce the nodes from net relations
-        // TODO: move away from class attributes
-        detectNodes(netRelations);
+        // parse pieces of track, and add those to the json document
+        var netElements = NetElement.parse(descLevels, document);
 
-        var infra = new Infra.Builder();
-        infra.trackGraph.resizeNodes(numberOfNodes);
-
-        // parse pieces of track
-        final var netElementMap = parseNetElements(descLevels, document, infra);
-
-        // we need to connect the TopoEdges as instructed by the netRelations, otherwise pathfinding wont work
-        // (we would have pieces of track connecting nodes, but no way to move from track to track)
-        for (var netRelation : netRelations.values()) {
-            var netElementA = netElementMap.get(netRelation.elementA);
-            var netElementB = netElementMap.get(netRelation.elementB);
-            var edgeA = netElementA.trackSection;
-            var edgeB = netElementB.trackSection;
-            // both netElements must be micro
-            if (edgeA == null || edgeB == null)
+        // create RailJSON track sections for all micro netElements
+        var rjsTrackSections = new HashMap<String, RJSTrackSection>();
+        for (var netElement : netElements.values()) {
+            // skip groups of netElements (macro or meso)
+            if (netElement.getClass() != TrackNetElement.class)
                 continue;
-
-            TrackSection.linkEdges(edgeA, netRelation.positionOnA, edgeB, netRelation.positionOnB);
+            var trackNetElement = (TrackNetElement) netElement;
+            var rjsTrackSection = new RJSTrackSection(trackNetElement.id, trackNetElement.length);
+            rjsTrackSections.put(rjsTrackSection.id, rjsTrackSection);
         }
 
-        parseBufferStops(document, infra);
-        parseSwitchIS(document, infra);
-        fillWithPlaceholderNodes(infra);
+        // create and fill the root RailJSON structure
+        BufferStop.parse(netElements, document, rjsTrackSections);
+        var rjsOperationalPoints = OperationalPoint.parse(netElements, document, rjsTrackSections);
+        var rjsSpeedSections = SpeedSection.parse(netElements, document, rjsTrackSections);
+        var rjsTvdSections = TVDSection.parse(netElements, document, rjsTrackSections);
+        var rjsSwitches = SwitchIS.parse(netElements, netRelations, document);
 
-        parseOperationalPoint(netElementMap, document, infra);
-        parseSpeedSection(netElementMap, document);
-
-        return infra.build();
+        return new RJSRoot(
+                rjsTrackSections.values(),
+                netRelations.values(),
+                rjsSwitches,
+                rjsOperationalPoints,
+                rjsTvdSections,
+                rjsSpeedSections
+        );
     }
 
-    private Map<String, DescriptionLevel> parseNetworks(Document document) {
+    private static Map<String, DescriptionLevel> parseDescriptionLevels(Document document) {
         var descLevels = new HashMap<String, DescriptionLevel>();
         for (var level : document.selectNodes("/railML/infrastructure/topology/networks/network/level")) {
             var descriptionLevel = DescriptionLevel.getValue(level.valueOf("@descriptionLevel"));
@@ -96,271 +74,5 @@ public final class RailMLParser {
             }
         }
         return descLevels;
-    }
-
-    private void detectNodes(Map<String, NetRelation> netRelations) {
-        /* a parenthood map of connected components */
-        var uf = new UnionFind();
-        for (var netRelation : netRelations.values()) {
-            var keyA = new Pair<>(netRelation.elementA, netRelation.positionOnA);
-            var keyB = new Pair<>(netRelation.elementB, netRelation.positionOnB);
-            // get the group ID, or create one if none is found
-            int groupA = edgeEndpointIDs.getOrDefault(keyA, -1);
-            if (groupA == -1) {
-                groupA = uf.newGroup();
-                edgeEndpointIDs.put(keyA, groupA);
-            }
-
-            int groupB = edgeEndpointIDs.getOrDefault(keyB, -1);
-            if (groupB == -1) {
-                groupB = uf.newGroup();
-                edgeEndpointIDs.put(keyB, groupB);
-            }
-
-            uf.union(groupA, groupB);
-        }
-
-        edgeEndpointToNode.clear();
-        numberOfNodes = uf.minimize(edgeEndpointToNode);
-
-        // at this point:
-        //  - numberOfNodes contains the number of connected components
-        //  - componentIndexes.get(neComponents.get(...)) gets the component index for some network element endpoint
-    }
-
-    private Map<String, NetRelation> parseNetRelations(Map<String, DescriptionLevel> descLevels, Document document) {
-        var netRelations = new HashMap<String, NetRelation>();
-
-        for (var netRelation : document.selectNodes("/railML/infrastructure/topology/netRelations/netRelation")) {
-            var navigability = netRelation.valueOf("@navigability");
-            assert navigability.equals("None") || navigability.equals("Both");
-            if (navigability.equals("None"))
-                continue;
-
-            var id = netRelation.valueOf("@id");
-            if (descLevels.get(id) != DescriptionLevel.MICRO)
-                continue;
-
-            var positionOnA = netRelation.valueOf("@positionOnA");
-            var elementA = netRelation.valueOf("elementA/@ref");
-
-            var positionOnB = netRelation.valueOf("@positionOnB");
-            var elementB = netRelation.valueOf("elementB/@ref");
-
-            netRelations.put(id, new NetRelation(id, positionOnA, elementA, positionOnB, elementB));
-        }
-        return netRelations;
-    }
-
-    private int getNodeIndex(String netElementId, EdgeEndpoint position, Infra.Builder infra) {
-        var key = new Pair<>(netElementId, position);
-        int index = edgeEndpointIDs.getOrDefault(key, -1);
-        if (index != -1)
-            return edgeEndpointToNode.get(index);
-
-        var newNodeId = numberOfNodes;
-        edgeEndpointIDs.put(key, edgeEndpointToNode.size());
-        edgeEndpointToNode.add(newNodeId);
-        ++numberOfNodes;
-        infra.trackGraph.resizeNodes(numberOfNodes);
-        return newNodeId;
-    }
-
-    /**
-     * Parse pieces of tracks, linking those to nodes.
-     * Nodes were detected using a connected component algorithm.
-     */
-    private Map<String, NetElement> parseNetElements(
-            Map<String, DescriptionLevel> descLevels,
-            Document document,
-            Infra.Builder infra
-    ) {
-        var netElementMap = new HashMap<String, NetElement>();
-        var xpath = "/railML/infrastructure/topology/netElements/netElement";
-        var netElements = document.selectNodes(xpath);
-
-        for (var netElement : netElements) {
-            var id = netElement.valueOf("@id");
-            if (descLevels.get(id) != DescriptionLevel.MICRO)
-                continue;
-
-            // create the edge corresponding to the track section
-            var lengthStr = netElement.valueOf("@length");
-            double length = Double.parseDouble(lengthStr);
-            int startNodeIndex = getNodeIndex(id, EdgeEndpoint.BEGIN, infra);
-            int endNodeIndex = getNodeIndex(id, EdgeEndpoint.END, infra);
-            var topoEdge = infra.makeTrackSection(startNodeIndex, endNodeIndex, id, length);
-
-            netElementMap.put(id, NetElement.parseMicro(netElement, topoEdge));
-        }
-
-        // we need to create meso elements after creating micro elements, so those already are registered
-        for (var netElement : netElements) {
-            var id = netElement.valueOf("@id");
-            if (descLevels.get(id) != DescriptionLevel.MESO)
-                continue;
-            netElementMap.put(id, NetElement.parseMacroOrMeso(netElement, netElementMap));
-        }
-
-        // we need to create macro elements after creating meso elements, so those already are registered
-        for (var netElement : netElements) {
-            var id = netElement.valueOf("@id");
-            if (descLevels.get(id) != DescriptionLevel.MACRO)
-                continue;
-            netElementMap.put(id, NetElement.parseMacroOrMeso(netElement, netElementMap));
-        }
-        return netElementMap;
-    }
-
-    private void parseBufferStops(Document document, Infra.Builder infra) throws InvalidInfraException {
-        var xpath = "/railML/infrastructure/functionalInfrastructure/bufferStops/bufferStop";
-        for (var bufferStop : document.selectNodes(xpath)) {
-            var id = bufferStop.valueOf("@id");
-            var netElementId = bufferStop.valueOf("spotLocation/@netElementRef");
-            double pos = Double.parseDouble(bufferStop.valueOf("spotLocation/@pos"));
-
-            var topoEdge = infra.trackSectionMap.get(netElementId);
-            if (topoEdge == null)
-                throw new InvalidInfraException(String.format("railml netElement not found: %s", netElementId));
-
-            assert FloatCompare.eq(pos, 0.0) || FloatCompare.eq(pos, topoEdge.length);
-
-            BufferStop infraBufferStop = new BufferStop(id, topoEdge);
-            if (FloatCompare.eq(pos, 0.0))
-                infra.trackGraph.setNode(topoEdge.startNode, infraBufferStop);
-            else
-                infra.trackGraph.setNode(topoEdge.endNode, infraBufferStop);
-        }
-    }
-
-    private void parseSwitchIS(Document document, Infra.Builder infra) {
-        var xpath = "/railML/infrastructure/functionalInfrastructure/switchesIS/switchIS";
-        for (var switchIS :  document.selectNodes(xpath)) {
-            var id = switchIS.valueOf("@id");
-            double pos = Double.parseDouble(switchIS.valueOf("spotLocation/@pos"));
-            var netElementRef = switchIS.valueOf("spotLocation/@netElementRef");
-            var topoEdge = infra.trackSectionMap.get(netElementRef);
-            assert FloatCompare.eq(pos, 0.0) || FloatCompare.eq(pos, topoEdge.length);
-
-            Switch switchObj = new Switch(id);
-            if (FloatCompare.eq(pos, 0.0))
-                infra.trackGraph.setNode(topoEdge.startNode, switchObj);
-            else
-                infra.trackGraph.setNode(topoEdge.endNode, switchObj);
-        }
-    }
-
-    private void fillWithPlaceholderNodes(Infra.Builder infra) {
-        var graph = infra.trackGraph;
-        for (var edge : graph.edges) {
-            if (graph.getNode(edge.startNode) == null) {
-                var placeholder = new PlaceholderNode(String.valueOf(edge.startNode));
-                graph.setNode(edge.startNode, placeholder);
-            }
-            if (graph.getNode(edge.endNode) == null) {
-                var placeholder = new PlaceholderNode(String.valueOf(edge.endNode));
-                graph.setNode(edge.endNode, placeholder);
-            }
-        }
-    }
-
-    private void parseOperationalPoint(Map<String, NetElement> netElementMap, Document document, Infra.Builder infra) {
-        var xpath = "/railML/infrastructure/functionalInfrastructure/operationalPoints/operationalPoint";
-
-        Map<String, PointSequence.Builder<OperationalPoint>> builders = new HashMap<>();
-
-        for (var operationalPoint : document.selectNodes(xpath)) {
-            var id = operationalPoint.valueOf("@id");
-            var name = operationalPoint.valueOf("name/@name");
-            var netElementRef = operationalPoint.valueOf("spotLocation/@netElementRef");
-            var netElement = netElementMap.get(netElementRef);
-            var lrsId = operationalPoint.valueOf("spotLocation/linearCoordinate/@positioningSystemRef");
-            double measure = Double.parseDouble(operationalPoint.valueOf("spotLocation/linearCoordinate/@measure"));
-
-            var locations = netElement.mapToTopo(lrsId, measure);
-            var opObj = infra.makeOperationalPoint(id, name);
-            for (var location : locations) {
-                builders.putIfAbsent(location.edge.id, location.edge.operationalPoints.builder());
-                var builder = builders.get(location.edge.id);
-                builder.add(location.position, opObj);
-            }
-        }
-
-        for (var builder : builders.values()) {
-            builder.build();
-        }
-    }
-
-    private void parseSpeedSection(
-            Map<String, NetElement> netElementMap,
-            Document document
-    ) throws InvalidInfraException {
-        // iterate over all the speed section, which is a continuous set of tracks with a speed limit
-        var xpath = "/railML/infrastructure/functionalInfrastructure/speeds/speedSection";
-        for (var speedSectionNode : document.selectNodes(xpath)) {
-            double speed = Double.parseDouble(speedSectionNode.valueOf("@maxSpeed"));
-
-            // convert to from km/h to m/s
-            speed /= 3.6;
-
-            var linearLocation = speedSectionNode.selectSingleNode("linearLocation");
-
-            // parse the direction of the speed limit
-            var directionString = linearLocation.valueOf("@applicationDirection");
-            var edgeDirections = ApplicationDirection.parse(directionString);
-
-            // whether there are static signals warning about this limit
-            var isSignalized = Boolean.parseBoolean(speedSectionNode.valueOf("@isSignalized"));
-
-            logger.trace("created a speed section with speed {}", speed);
-            var speedSection = new SpeedSection(isSignalized, speed);
-
-            // find the elements the speed limit applies to
-            for (var associatedNetElement : linearLocation.selectNodes("associatedNetElement"))
-                parseSpeedSectionNetElement(netElementMap, edgeDirections, speedSection, associatedNetElement);
-        }
-    }
-
-    void parseSpeedSectionNetElement(
-            Map<String, NetElement> netElementMap,
-            ApplicationDirection applicationDirection,
-            SpeedSection speedSection,
-            Node netElementNode
-    ) throws InvalidInfraException {
-        // parse the LRS
-        var lrsBegin = netElementNode.valueOf("linearCoordinateBegin/@positioningSystemRef");
-        var lrsEnd = netElementNode.valueOf("linearCoordinateEnd/@positioningSystemRef");
-        if (!lrsBegin.equals(lrsEnd))
-            throw new InvalidInfraException("linearCoordinateBegin and linearCoordinateEnd aren't in the same LRS");
-
-        // depending on the direction of the speed limit, the low and high lrs range values aren't the same
-        double minMeasure;
-        double maxMeasure;
-        {
-            double measureBegin = Double.parseDouble(netElementNode.valueOf("linearCoordinateBegin/@measure"));
-            double measureEnd = Double.parseDouble(netElementNode.valueOf("linearCoordinateEnd/@measure"));
-            if (measureBegin < measureEnd) {
-                minMeasure = measureBegin;
-                maxMeasure = measureEnd;
-            } else {
-                minMeasure = measureEnd;
-                maxMeasure = measureBegin;
-            }
-        }
-
-        var netElementRef = netElementNode.valueOf("@netElementRef");
-        logger.trace("adding speed limit on netElement {}", netElementRef);
-        var netElement = netElementMap.get(netElementRef);
-
-        // find the TopoEdges the netElement spans over, and add the speed limit
-        for (var place : netElement.mapToTopo(lrsBegin, minMeasure, maxMeasure)) {
-            logger.trace("added speedSection on ({}, {}) from {} to {}",
-                    place.value.id, applicationDirection, minMeasure, maxMeasure);
-
-            // add the limit
-            var rangeLimit = new RangeValue<>(place.begin, place.end, speedSection);
-            for (var direction : applicationDirection.directionSet)
-                TrackSection.getSpeedSections(place.value, direction).add(rangeLimit);
-        }
     }
 }
