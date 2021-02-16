@@ -4,36 +4,37 @@ import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSRoot {
     /** A simple graph of track sections. */
     @Json(name = "track_sections")
-    public final List<RJSTrackSection> trackSections;
+    public final Collection<RJSTrackSection> trackSections;
 
     @Json(name = "track_section_links")
-    public final List<RJSTrackSectionLink> trackSectionLinks;
+    public final Collection<RJSTrackSectionLink> trackSectionLinks;
 
     /** Switches are at the ends of track sections, and link those together. */
-    public final List<RJSSwitch> switches;
+    public final Collection<RJSSwitch> switches;
 
     /**
      * The list of all operational points.
      * Finding reverse dependencies is up to the user.
      */
     @Json(name = "operational_points")
-    public final List<RJSOperationalPoint> operationalPoints;
+    public final Collection<RJSOperationalPoint> operationalPoints;
 
     /**
      * Track vacancy detection sections
      * Finding reverse dependencies is up to the user.
      */
     @Json(name = "tvd_sections")
-    public final List<RJSTVDSection> tvdSections;
+    public final Collection<RJSTVDSection> tvdSections;
 
     @Json(name = "speed_sections")
-    public final List<RJSSpeedSection> speedSections;
+    public final Collection<RJSSpeedSection> speedSections;
 
     /**
      * Create a new serialized RailJSON file
@@ -45,12 +46,12 @@ public class RJSRoot {
      * @param speedSections the list of speed sections
      */
     public RJSRoot(
-            List<RJSTrackSection> trackSections,
-            List<RJSTrackSectionLink> trackSectionLinks,
-            List<RJSSwitch> switches,
-            List<RJSOperationalPoint> operationalPoints,
-            List<RJSTVDSection> tvdSections,
-            List<RJSSpeedSection> speedSections
+            Collection<RJSTrackSection> trackSections,
+            Collection<RJSTrackSectionLink> trackSectionLinks,
+            Collection<RJSSwitch> switches,
+            Collection<RJSOperationalPoint> operationalPoints,
+            Collection<RJSTVDSection> tvdSections,
+            Collection<RJSSpeedSection> speedSections
     ) {
         this.trackSections = trackSections;
         this.trackSectionLinks = trackSectionLinks;

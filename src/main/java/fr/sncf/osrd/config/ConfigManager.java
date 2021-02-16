@@ -4,6 +4,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.parsing.railjson.RailJSONParser;
 import fr.sncf.osrd.infra.parsing.railml.RailMLParser;
 import fr.sncf.osrd.timetable.InvalidTimetableException;
 import fr.sncf.osrd.timetable.Schedule;
@@ -64,7 +65,8 @@ public class ConfigManager {
             return infras.get(path);
 
         try {
-            var infra = new RailMLParser(path).parse();
+            var rjsRoot = RailMLParser.parse(path);
+            var infra = RailJSONParser.parse(rjsRoot);
             infras.put(path, infra);
             return infra;
         } catch (InvalidInfraException e) {
@@ -73,15 +75,14 @@ public class ConfigManager {
         }
     }
 
-    static Schedule getSchedule(Path path, Infra infra) throws InvalidInfraException, InvalidTimetableException {
+    static Schedule getSchedule(
+            Path path,
+            Infra infra
+    ) throws InvalidInfraException, InvalidTimetableException, IOException {
         if (schedules.containsKey(path))
             return schedules.get(path);
-        Schedule schedule = null;
-        try {
-            schedule = Schedule.fromJSONFile(path, infra);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        var schedule = Schedule.fromJSONFile(path, infra);
         schedules.put(path, schedule);
         return schedule;
     }
@@ -94,14 +95,17 @@ public class ConfigManager {
     public static RollingStock getRollingStock(Path path) throws InvalidInfraException {
         if (rollingStocks.containsKey(path))
             return rollingStocks.get(path);
-        RollingStock rollingStock = null;
+
         try {
-            rollingStock = rollingStockAdapter.fromJson(Files.readString(path));
+            var rollingStock = rollingStockAdapter.fromJson(Files.readString(path));
+            if (rollingStock == null)
+                throw new InvalidInfraException("empty rolling stock");
+
             rollingStock.validate();
+            rollingStocks.put(path, rollingStock);
+            return rollingStock;
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new InvalidInfraException("failed to read the rolling stock", e);
         }
-        rollingStocks.put(path, rollingStock);
-        return rollingStock;
     }
 }

@@ -5,6 +5,7 @@ import fr.sncf.osrd.infra.graph.EdgeEndpoint;
 import fr.sncf.osrd.infra.parsing.railjson.schema.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.infra.parsing.railjson.schema.trackranges.RJSOperationalPointPart;
 import fr.sncf.osrd.infra.parsing.railjson.schema.trackobjects.RJSTrainDetector;
+import fr.sncf.osrd.infra.parsing.railjson.schema.trackranges.RJSSpeedSectionPart;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ public class RJSTrackSection implements Identified {
 
     /** Track ranges */
     public final List<RJSOperationalPointPart> operationalPoints;
+    public final List<RJSSpeedSectionPart> speedSections;
 
     /** Creates a new track section */
     public RJSTrackSection(
@@ -28,20 +30,22 @@ public class RJSTrackSection implements Identified {
             double length,
             List<RJSTrainDetector> trainDetectors,
             List<RJSBufferStop> bufferStops,
-            List<RJSOperationalPointPart> operationalPoints
+            List<RJSOperationalPointPart> operationalPoints,
+            List<RJSSpeedSectionPart> speedSections
     ) {
         this.id = id;
         this.length = length;
         this.trainDetectors = trainDetectors;
         this.bufferStops = bufferStops;
         this.operationalPoints = operationalPoints;
+        this.speedSections = speedSections;
     }
 
     public RJSTrackSection(
             String id,
             double length
     ) {
-        this(id, length, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        this(id, length, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
     }
 
     @Override
