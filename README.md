@@ -50,7 +50,10 @@ You'll need:
 
 ```sh
 gradle shadowJar
-java -jar build/libs/osrd-all.jar examples/simple/config.json sim_changelog_output.json
+java -jar build/libs/osrd-all.jar \
+    simulate \
+    --config examples/simple/config.json \
+    -o sim_changelog_output.json
 ```
 
 ## Contributing

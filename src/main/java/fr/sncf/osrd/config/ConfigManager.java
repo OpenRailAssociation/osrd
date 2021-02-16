@@ -11,6 +11,7 @@ import fr.sncf.osrd.timetable.Schedule;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.util.PathUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,15 +34,14 @@ public class ConfigManager {
 
     /**
      * Reads a config file given a filesystem path
-     * @param path the path to the configuration file
+     * @param mainConfigPath the path to the main JSON configuration file
      * @return a configuration
      * @throws IOException {@inheritDoc}
      * @throws InvalidInfraException {@inheritDoc}
      */
     public static Config readConfigFile(
-            String path
+            Path mainConfigPath
     ) throws IOException, InvalidInfraException, InvalidTimetableException {
-        var mainConfigPath = Paths.get(path);
         var baseDirPath = mainConfigPath.getParent();
         var jsonConfig = configAdapter.fromJson(Files.readString(mainConfigPath));
 

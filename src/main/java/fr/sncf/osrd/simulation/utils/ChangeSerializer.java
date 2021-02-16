@@ -14,10 +14,10 @@ import fr.sncf.osrd.util.CryoList;
 import okio.BufferedSink;
 import okio.Okio;
 import okio.Sink;
-import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.reflect.Type;
+import java.nio.file.Path;
 import java.time.LocalTime;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -294,7 +294,7 @@ public class ChangeSerializer {
             value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
             justification = "that's a spotbugs bug :)"
     )
-    public static void serializeChangeLog(ChangeLog changeLog, File file) throws IOException {
+    public static void serializeChangeLog(ChangeLog changeLog, Path file) throws IOException {
         try (
                 Sink fileSink = Okio.sink(file);
                 var bufferedSink = Okio.buffer(fileSink)
