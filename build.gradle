@@ -3,6 +3,7 @@ plugins {
     id 'application'
     id 'checkstyle'
     id 'com.github.spotbugs' version '4.6.0'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 java {
@@ -46,6 +47,10 @@ dependencies {
 
 application {
     mainClassName = 'fr.sncf.osrd.App'
+}
+
+shadowJar {
+    archiveBaseName = 'osrd'
 }
 
 run {
