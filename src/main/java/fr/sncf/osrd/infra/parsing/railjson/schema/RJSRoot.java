@@ -1,14 +1,21 @@
 package fr.sncf.osrd.infra.parsing.railjson.schema;
 
 import com.squareup.moshi.Json;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSRoot {
+    public static final JsonAdapter<RJSRoot> adapter = new Moshi
+            .Builder()
+            .add(new ID.Adapter())
+            .build()
+            .adapter(RJSRoot.class);
+
     /** A simple graph of track sections. */
     @Json(name = "track_sections")
     public final Collection<RJSTrackSection> trackSections;

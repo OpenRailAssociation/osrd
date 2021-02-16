@@ -15,8 +15,13 @@ repositories {
 }
 
 dependencies {
+    // command line parsing
+    implementation 'com.beust:jcommander:1.78'
+
+    // XML parsing
     implementation group: 'org.dom4j', name: 'dom4j', version: '2.1.0'
 
+    // JSON parsing
     implementation 'com.squareup.moshi:moshi:1.11.0'
     implementation 'com.squareup.moshi:moshi-adapters:1.11.0'
 
