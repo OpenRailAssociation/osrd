@@ -6,6 +6,8 @@ import fr.sncf.osrd.infra.parsing.railjson.schema.trackobjects.BufferStop;
 import fr.sncf.osrd.infra.parsing.railjson.schema.trackranges.OperationalPointPart;
 import fr.sncf.osrd.infra.parsing.railjson.schema.trackobjects.TrainDetector;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
@@ -14,25 +16,32 @@ public class TrackSection implements Identified {
     public final double length;
 
     /** Track objects */
-    public final TrainDetector[] trainDetectors;
-    public final BufferStop[] bufferStops;
+    public final List<TrainDetector> trainDetectors;
+    public final List<BufferStop> bufferStops;
 
     /** Track ranges */
-    public final OperationalPointPart[] operationalPoints;
+    public final List<OperationalPointPart> operationalPoints;
 
     /** Creates a new track section */
     public TrackSection(
             String id,
             double length,
-            TrainDetector[] trainDetectors,
-            BufferStop[] bufferStops,
-            OperationalPointPart[] operationalPoints
+            List<TrainDetector> trainDetectors,
+            List<BufferStop> bufferStops,
+            List<OperationalPointPart> operationalPoints
     ) {
         this.id = id;
         this.length = length;
         this.trainDetectors = trainDetectors;
         this.bufferStops = bufferStops;
         this.operationalPoints = operationalPoints;
+    }
+
+    public TrackSection(
+            String id,
+            double length
+    ) {
+        this(id, length, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
     }
 
     @Override
