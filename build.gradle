@@ -68,7 +68,8 @@ tasks.withType(Checkstyle) {
 
 // enable all linter warnings, and error out on warnings
 tasks.withType(JavaCompile) {
-  options.compilerArgs << "-Xlint:all" << "-Werror"
+    options.compilerArgs << "-Xlint:all" << "-Werror"
+    options.encoding = "UTF-8"
 }
 
 spotbugs {
