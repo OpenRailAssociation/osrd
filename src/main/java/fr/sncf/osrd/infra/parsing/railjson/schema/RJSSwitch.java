@@ -3,12 +3,12 @@ package fr.sncf.osrd.infra.parsing.railjson.schema;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public class Switch implements Identified {
+public class RJSSwitch implements Identified {
     public final String id;
 
-    public final TrackSection.EndpointID base;
-    public final TrackSection.EndpointID left;
-    public final TrackSection.EndpointID right;
+    public final RJSTrackSection.EndpointID base;
+    public final RJSTrackSection.EndpointID left;
+    public final RJSTrackSection.EndpointID right;
 
     /**
      * Create a new serialized switch
@@ -17,11 +17,11 @@ public class Switch implements Identified {
      * @param left the left branch
      * @param right the right branch
      */
-    public Switch(
+    public RJSSwitch(
             String id,
-            TrackSection.EndpointID base,
-            TrackSection.EndpointID left,
-            TrackSection.EndpointID right
+            RJSTrackSection.EndpointID base,
+            RJSTrackSection.EndpointID left,
+            RJSTrackSection.EndpointID right
     ) {
         this.id = id;
         this.base = base;

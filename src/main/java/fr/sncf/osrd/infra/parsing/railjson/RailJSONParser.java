@@ -7,7 +7,7 @@ import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.parsing.railjson.schema.ID;
 import fr.sncf.osrd.infra.parsing.railjson.schema.Identified;
-import fr.sncf.osrd.infra.parsing.railjson.schema.RailJSONRoot;
+import fr.sncf.osrd.infra.parsing.railjson.schema.RJSRoot;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import okio.BufferedSource;
 
@@ -15,11 +15,11 @@ import java.io.IOException;
 import java.util.HashMap;
 
 public class RailJSONParser {
-    private static final JsonAdapter<RailJSONRoot> adapter = new Moshi
+    private static final JsonAdapter<RJSRoot> adapter = new Moshi
             .Builder()
             .add(new IDAdapter())
             .build()
-            .adapter(RailJSONRoot.class);
+            .adapter(RJSRoot.class);
 
     /** A moshi adapter for ID serialization */
     private static class IDAdapter {
@@ -39,7 +39,7 @@ public class RailJSONParser {
      * @param railJSON a railJSON infrastructure
      * @return an OSRD infrastructure
      */
-    public static Infra parse(RailJSONRoot railJSON) throws InvalidInfraException {
+    public static Infra parse(RJSRoot railJSON) throws InvalidInfraException {
         var infra = new Infra.Builder();
 
         // create a unique identifier for all track intersection nodes
