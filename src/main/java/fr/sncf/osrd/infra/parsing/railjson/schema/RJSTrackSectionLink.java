@@ -4,7 +4,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSTrackSectionLink {
-    public final Navigability navigability;
+    public final ApplicableDirections navigability;
     public final RJSTrackSection.EndpointID begin;
     public final RJSTrackSection.EndpointID end;
 
@@ -15,7 +15,7 @@ public class RJSTrackSectionLink {
      * @param end end end of the link
      */
     public RJSTrackSectionLink(
-            Navigability navigability,
+            ApplicableDirections navigability,
             RJSTrackSection.EndpointID begin,
             RJSTrackSection.EndpointID end
     ) {

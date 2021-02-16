@@ -1,147 +1,144 @@
 package fr.sncf.osrd.infra.parsing.railml;
 
 import fr.sncf.osrd.infra.graph.EdgeEndpoint;
-import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.util.MutPair;
+import fr.sncf.osrd.util.PointValue;
 import fr.sncf.osrd.util.RangeValue;
-import fr.sncf.osrd.util.TopoLocation;
-import org.dom4j.Node;
+import org.dom4j.Document;
+import org.dom4j.Element;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-final class NetElement {
-    final TrackSection trackSection;
-    final ArrayList<NetElement> children;
+abstract class NetElement {
+    String id;
 
     /** The start position of the netElement in a set of linear reference systems. */
     final Map<String, Double> lrsStartOffsets;
 
-    NetElement(ArrayList<NetElement> children) {
-        this.trackSection = null;
-        this.lrsStartOffsets = null;
-        this.children = children;
-    }
-
-    NetElement(TrackSection edge, Map<String, Double> lrsStartOffsets) {
-        this.trackSection = edge;
+    NetElement(String id, Map<String, Double> lrsStartOffsets) {
         this.lrsStartOffsets = lrsStartOffsets;
-        this.children = null;
+        this.id = id;
     }
 
-    public static NetElement parseMacroOrMeso(Node netElement, Map<String, NetElement> netElementMap) {
-        return new NetElement(parseChildren(netElement, netElementMap));
-    }
-
-    public static NetElement parseMicro(Node netElement, TrackSection trackSection) {
-        var lrsStartOffsets = parseLrs(netElement);
-        return new NetElement(trackSection, lrsStartOffsets);
-    }
-
-    private static ArrayList<NetElement> parseChildren(Node netElement, Map<String, NetElement> netElementMap) {
-        var children = new ArrayList<NetElement>();
-        for (var elementPart : netElement.selectNodes("elementCollectionUnordered/elementPart")) {
-            var ref = elementPart.valueOf("@ref");
-            children.add(netElementMap.get(ref));
-        }
-        return children;
-    }
-
-    private static Map<String, Double> parseLrs(Node netElement) {
-        var lrsMap = new HashMap<String, MutPair<Double, Double>>();
-
-        for (var intrinsicCoordinate: netElement.selectNodes("associatedPositioningSystem/intrinsicCoordinate")) {
-            var intrinsicCoord = NetRelation.coordParse(intrinsicCoordinate.valueOf("@intrinsicCoord"));
-            var positioningSystemRef = intrinsicCoordinate.valueOf("linearCoordinate/@positioningSystemRef");
-            if (positioningSystemRef.isEmpty())
-                continue;
-            var measure = Double.valueOf(intrinsicCoordinate.valueOf("linearCoordinate/@measure"));
-            lrsMap.putIfAbsent(positioningSystemRef, new MutPair<>(Double.NaN, Double.NaN));
-            if (intrinsicCoord == EdgeEndpoint.BEGIN)
-                lrsMap.get(positioningSystemRef).first = measure;
-            else
-                lrsMap.get(positioningSystemRef).second = measure;
-        }
+    /**
+     * Parses an associatedPositioningSystem
+     *
+     * <pre>
+     * {@code
+     * <netElement id="xxx" length="42.0">
+     *   <relation ref="nr.a"/>
+     *   <relation ref="nr.b"/>
+     *   <associatedPositioningSystem id="xxx">
+     *     <intrinsicCoordinate id="xxx" intrinsicCoord="0">
+     *       <linearCoordinate positioningSystemRef="some_lps" measure="0.0"/>
+     *     </intrinsicCoordinate>
+     *     <intrinsicCoordinate id="xxx" intrinsicCoord="1">
+     *       <linearCoordinate positioningSystemRef="some_lps" measure="500.0"/>
+     *     </intrinsicCoordinate>
+     *   </associatedPositioningSystem>
+     * </netElement>
+     * }
+     * </pre>
+     *
+     * @param rootElement the XML element to parse the associatedPositioningSystem of
+     * @return a map from positioning system ID to start offset
+     */
+    static Map<String, Double> parsePositioningSystem(Element rootElement) {
+        var associatedPositioningSystem = rootElement.element("associatedPositioningSystem");
+        if (associatedPositioningSystem == null)
+            return null;
 
         var lrsStartOffsets = new HashMap<String, Double>();
-        for (var entry : lrsMap.entrySet()) {
-            var range = entry.getValue();
-            lrsStartOffsets.put(entry.getKey(), range.first);
+        for (var intrinsicCoordElem: associatedPositioningSystem.elements("intrinsicCoordinate")) {
+            // parse the intrinsicCoordinate
+            var intrinsicCoord = NetRelation.parseCoord(intrinsicCoordElem.attributeValue("intrinsicCoord"));
+            var linearCoordElem = intrinsicCoordElem.element("linearCoordinate");
+
+            // parse the linearCoordinate
+            var positioningSystemRef = linearCoordElem.attributeValue("positioningSystemRef");
+            var measure = Double.parseDouble(linearCoordElem.attributeValue("measure"));
+
+            // a preliminary export script had empty positioningSystemRefs
+            assert !positioningSystemRef.isEmpty();
+
+            // we only care about the starting point of the edge in the LRS.
+            // this could definitely be improved on.
+            if (intrinsicCoord == EdgeEndpoint.BEGIN)
+                lrsStartOffsets.put(positioningSystemRef, measure);
         }
+
         return lrsStartOffsets;
     }
 
     /**
-     * Given a location in a linear positioning system, yields a locations on TopoEdges this maps to.
-     * @param lrsId identifier of the linear positioning system
-     * @param measure position in the lrs / lps
-     * @return a list of positions in TrackSection (TopoLocation) under this netElement.
+     * Parse pieces of tracks, linking those to nodes.
+     * Nodes were detected using a connected component algorithm.
      */
-    public ArrayList<TopoLocation> mapToTopo(String lrsId, double measure) {
-        var list = new ArrayList<TopoLocation>();
+    static Map<String, NetElement> parse(
+            Map<String, DescriptionLevel> descLevels,
+            Document document
+    ) {
+        var netElementMap = new HashMap<String, NetElement>();
+        var xpath = "/railML/infrastructure/topology/netElements/netElement";
+        var netElements = document.selectNodes(xpath);
 
-        // if it's a macro / meso netElement, get the children's TopoEdges
-        if (trackSection == null) {
-            for (var child : children)
-                list.addAll(child.mapToTopo(lrsId, measure));
-            return list;
+        for (var netElementNode : netElements) {
+            var netElement = (Element) netElementNode;
+            var id = netElement.valueOf("@id");
+            if (descLevels.get(id) != DescriptionLevel.MICRO)
+                continue;
+
+            // create the edge corresponding to the track section
+            var lengthStr = netElement.valueOf("@length");
+            double length = Double.parseDouble(lengthStr);
+            netElementMap.put(id, TrackNetElement.parse(id, netElement, length));
         }
 
-        // if this netElement isn't positioned in this LRS, return an empty list
-        var lrsStartOffset = lrsStartOffsets.get(lrsId);
-        if (lrsStartOffset == null)
-            return list;
-
-        // compute the given position in the edge
-        double position = measure - lrsStartOffset;
-
-        // return if the given lrs location isn't on the edge
-        if (position < 0 || position > trackSection.length)
-            return list;
-
-        // return the location on the edge if it is valid
-        list.add(new TopoLocation(trackSection, position));
-        return list;
-    }
-
-    /**
-     * Given a linear positioning system and a range, yields a list of edges TrackSection this spans on.
-     * @param lrsId identifier of the linear positioning system
-     * @param begin the range start
-     * @param end the range end
-     * @return a list of range on edges this lrs range spans on under this netElement.
-     */
-    public ArrayList<RangeValue<TrackSection>> mapToTopo(String lrsId, double begin, double end) {
-        assert begin <= end;
-        var list = new ArrayList<RangeValue<TrackSection>>();
-        // if it's a macro / meso netElement, get the TopoEdges the child netElements span onto
-        if (trackSection == null) {
-            for (var child : children)
-                list.addAll(child.mapToTopo(lrsId, begin, end));
-            return list;
+        // we need to create meso elements after creating micro elements, so those already are registered
+        for (var netElementNode : netElements) {
+            var netElement = (Element) netElementNode;
+            var id = netElement.valueOf("@id");
+            var descLevel = descLevels.get(id);
+            if (descLevel != DescriptionLevel.MESO)
+                continue;
+            netElementMap.put(id, GroupNetElement.parse(id, netElement, netElementMap));
         }
 
-        // if its a micro netElement, check if there is an overlapping lrs range
-
-        // no TopoEdges span this netElement if it's not referenced in this lrs
-        var lrsStartOffset = lrsStartOffsets.get(lrsId);
-        if (lrsStartOffset == null)
-            return list;
-
-        // check if the netElement is in the given range
-        double positionBegin = begin - lrsStartOffset;
-        double positionEnd = end - lrsStartOffset;
-        if (positionBegin > trackSection.length || positionEnd < 0)
-            return list;
-
-        // clamp
-        if (positionBegin < 0)
-            positionBegin = 0;
-        if (positionEnd > trackSection.length)
-            positionEnd = trackSection.length;
-
-        list.add(new RangeValue<>(positionBegin, positionEnd, trackSection));
-        return list;
+        // we need to create macro elements after creating meso elements, so those already are registered
+        for (var netElementNode : netElements) {
+            var netElement = (Element) netElementNode;
+            var id = netElement.valueOf("@id");
+            var descLevel = descLevels.get(id);
+            if (descLevel != DescriptionLevel.MACRO)
+                continue;
+            netElementMap.put(id, GroupNetElement.parse(id, netElement, netElementMap));
+        }
+        return netElementMap;
     }
+
+    public interface SpotLocationCallback {
+        void acceptLocation(TrackNetElement element, double pos);
+    }
+
+    ArrayList<PointValue<TrackNetElement>> resolve(String lrsId, double measure) {
+        var res = new ArrayList<PointValue<TrackNetElement>>();
+        resolve((element, pos) -> res.add(new PointValue<>(pos, element)), lrsId, measure);
+        return res;
+    }
+
+    abstract void resolve(SpotLocationCallback callback, String lrsId, double measure);
+
+    public interface RangeLocationCallback {
+        void acceptLocation(TrackNetElement element, double begin, double end);
+    }
+
+
+    ArrayList<RangeValue<TrackNetElement>> resolve(String lrsId, double begin, double end) {
+        var res = new ArrayList<RangeValue<TrackNetElement>>();
+        resolve((element, _begin, _end) -> res.add(new RangeValue<>(_begin, _end, element)), lrsId, begin, end);
+        return res;
+    }
+
+    abstract void resolve(RangeLocationCallback callback, String lrsId, double begin, double end);
 }
