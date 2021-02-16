@@ -30,8 +30,8 @@ public class TrackNodeIDs {
 
     /** Assigns node IDs given a list of nodes and relationships. */
     public static TrackNodeIDs from(
-            TrackSectionLink[] links,
-            TrackSection[] trackSections
+            Iterable<TrackSectionLink> links,
+            Iterable<TrackSection> trackSections
     ) throws InvalidInfraException {
         var uf = new UnionFind();
         var endpointIDs = new HashMap<TrackSection.EndpointID, Integer>();
