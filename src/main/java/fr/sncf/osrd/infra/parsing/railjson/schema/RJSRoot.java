@@ -7,33 +7,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public class RailJSONRoot {
+public class RJSRoot {
     /** A simple graph of track sections. */
     @Json(name = "track_sections")
-    public final List<TrackSection> trackSections;
+    public final List<RJSTrackSection> trackSections;
 
     @Json(name = "track_section_links")
-    public final List<TrackSectionLink> trackSectionLinks;
+    public final List<RJSTrackSectionLink> trackSectionLinks;
 
     /** Switches are at the ends of track sections, and link those together. */
-    public final List<Switch> switches;
+    public final List<RJSSwitch> switches;
 
     /**
      * The list of all operational points.
      * Finding reverse dependencies is up to the user.
      */
     @Json(name = "operational_points")
-    public final List<OperationalPoint> operationalPoints;
+    public final List<RJSOperationalPoint> operationalPoints;
 
     /**
      * Track vacancy detection sections
      * Finding reverse dependencies is up to the user.
      */
     @Json(name = "tvd_sections")
-    public final List<TVDSection> tvdSections;
+    public final List<RJSTVDSection> tvdSections;
 
     @Json(name = "speed_sections")
-    public final List<SpeedSection> speedSections;
+    public final List<RJSSpeedSection> speedSections;
 
     /**
      * Create a new serialized RailJSON file
@@ -44,13 +44,13 @@ public class RailJSONRoot {
      * @param tvdSections the list of train detection sections
      * @param speedSections the list of speed sections
      */
-    public RailJSONRoot(
-            List<TrackSection> trackSections,
-            List<TrackSectionLink> trackSectionLinks,
-            List<Switch> switches,
-            List<OperationalPoint> operationalPoints,
-            List<TVDSection> tvdSections,
-            List<SpeedSection> speedSections
+    public RJSRoot(
+            List<RJSTrackSection> trackSections,
+            List<RJSTrackSectionLink> trackSectionLinks,
+            List<RJSSwitch> switches,
+            List<RJSOperationalPoint> operationalPoints,
+            List<RJSTVDSection> tvdSections,
+            List<RJSSpeedSection> speedSections
     ) {
         this.trackSections = trackSections;
         this.trackSectionLinks = trackSectionLinks;
@@ -63,7 +63,7 @@ public class RailJSONRoot {
     /**
      * Create an empty RailJSON file
      */
-    public RailJSONRoot() {
+    public RJSRoot() {
         this(
                 new ArrayList<>(),
                 new ArrayList<>(),

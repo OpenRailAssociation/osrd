@@ -1,12 +1,12 @@
-package fr.sncf.osrd.infra.parsing.railjson.schema.trackranges;
+package fr.sncf.osrd.infra.parsing.railjson.schema.trackobjects;
 
 import fr.sncf.osrd.infra.parsing.railjson.schema.Navigability;
 
-public class DirectionalTrackRange extends TrackRange {
+public class DirectionalRJSTrackObject extends RJSTrackObject {
     public final Navigability navigability;
 
-    DirectionalTrackRange(Navigability navigability, double start, double end) {
-        super(start, end);
+    DirectionalRJSTrackObject(Navigability navigability, double position) {
+        super(position);
         this.navigability = navigability;
     }
 

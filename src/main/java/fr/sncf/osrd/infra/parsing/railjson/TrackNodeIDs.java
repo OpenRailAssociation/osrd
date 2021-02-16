@@ -2,8 +2,8 @@ package fr.sncf.osrd.infra.parsing.railjson;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.parsing.railjson.schema.TrackSection;
-import fr.sncf.osrd.infra.parsing.railjson.schema.TrackSectionLink;
+import fr.sncf.osrd.infra.parsing.railjson.schema.RJSTrackSection;
+import fr.sncf.osrd.infra.parsing.railjson.schema.RJSTrackSectionLink;
 import fr.sncf.osrd.util.UnionFind;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,13 +14,13 @@ public class TrackNodeIDs {
     public final int numberOfNodes;
 
     /** A map from a track section endpoint to a unique endpoint ID */
-    private final Map<TrackSection.EndpointID, Integer> endpointIDs;
+    private final Map<RJSTrackSection.EndpointID, Integer> endpointIDs;
 
     /** A map from endpoint IDs to  */
     private final ArrayList<Integer> endpointToNodeID;
 
     private TrackNodeIDs(int numberOfNodes,
-                         Map<TrackSection.EndpointID, Integer> endpointIDs,
+                         Map<RJSTrackSection.EndpointID, Integer> endpointIDs,
                          ArrayList<Integer> endpointToNodeID
     ) {
         this.numberOfNodes = numberOfNodes;
@@ -30,11 +30,11 @@ public class TrackNodeIDs {
 
     /** Assigns node IDs given a list of nodes and relationships. */
     public static TrackNodeIDs from(
-            Iterable<TrackSectionLink> links,
-            Iterable<TrackSection> trackSections
+            Iterable<RJSTrackSectionLink> links,
+            Iterable<RJSTrackSection> trackSections
     ) throws InvalidInfraException {
         var uf = new UnionFind();
-        var endpointIDs = new HashMap<TrackSection.EndpointID, Integer>();
+        var endpointIDs = new HashMap<RJSTrackSection.EndpointID, Integer>();
 
         // create an union find group for all known track section endpoints
         for (var trackSection : trackSections) {
@@ -64,7 +64,7 @@ public class TrackNodeIDs {
     }
 
     /** Get the unique node identifier this endpoint is connected to. */
-    public int get(TrackSection.EndpointID endpoint) throws InvalidInfraException {
+    public int get(RJSTrackSection.EndpointID endpoint) throws InvalidInfraException {
         Integer index = endpointIDs.get(endpoint);
 
         if (index == null)

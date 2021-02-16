@@ -3,10 +3,10 @@ package fr.sncf.osrd.infra.parsing.railjson.schema;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public class TrackSectionLink {
+public class RJSTrackSectionLink {
     public final Navigability navigability;
-    public final TrackSection.EndpointID begin;
-    public final TrackSection.EndpointID end;
+    public final RJSTrackSection.EndpointID begin;
+    public final RJSTrackSection.EndpointID end;
 
     /**
      * Create a serialized track section link
@@ -14,10 +14,10 @@ public class TrackSectionLink {
      * @param begin the beginning of the link
      * @param end end end of the link
      */
-    public TrackSectionLink(
+    public RJSTrackSectionLink(
             Navigability navigability,
-            TrackSection.EndpointID begin,
-            TrackSection.EndpointID end
+            RJSTrackSection.EndpointID begin,
+            RJSTrackSection.EndpointID end
     ) {
         this.navigability = navigability;
         this.begin = begin;
