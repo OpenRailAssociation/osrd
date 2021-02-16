@@ -1,5 +1,8 @@
 package fr.sncf.osrd.infra.parsing.railjson.schema;
 
+import com.squareup.moshi.FromJson;
+import com.squareup.moshi.ToJson;
+
 public final class ID<T extends Identified> {
     public final String id;
 
@@ -26,5 +29,18 @@ public final class ID<T extends Identified> {
 
         var o = (ID<?>) obj;
         return id.equals(o.id);
+    }
+
+    /** A moshi adapter for ID serialization */
+    public static class Adapter {
+        @ToJson
+        String toJson(ID<?> typedId) {
+            return typedId.id;
+        }
+
+        @FromJson
+        <T extends Identified> ID<T> fromJson(String str) {
+            return new ID<T>(str);
+        }
     }
 }
