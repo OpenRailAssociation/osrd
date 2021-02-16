@@ -49,7 +49,8 @@ You'll need:
  - gradle 6
 
 ```sh
-gradle run --args 'examples/simple/config.json sim_changelog_output.json'
+gradle shadowJar
+java -jar build/libs/osrd-all.jar examples/simple/config.json sim_changelog_output.json
 ```
 
 ## Contributing
