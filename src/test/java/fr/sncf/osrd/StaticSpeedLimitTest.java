@@ -50,16 +50,11 @@ public class StaticSpeedLimitTest {
         var edge = infraBuilder.makeTrackSection(nodeA.getIndex(), nodeB.getIndex(), "e1", edgeLength);
 
         // create operational points for the trip
-        var opStart = new OperationalPoint("start id", "start");
-        var opEnd = new OperationalPoint("end id", "end");
+        var opStart = new OperationalPoint("start id");
+        var opEnd = new OperationalPoint("end id");
 
-        // register operational points on the edge
-        {
-            var builder = edge.operationalPoints.builder();
-            builder.add(0, opStart);
-            builder.add(edgeLength, opEnd);
-            builder.build();
-        }
+        opStart.addRef(edge, 0, 0);
+        opEnd.addRef(edge, edgeLength, edgeLength);
 
         // add the speed limits
         var limits = edge.speedSectionsForward;

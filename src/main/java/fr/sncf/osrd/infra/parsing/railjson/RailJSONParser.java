@@ -5,34 +5,74 @@ import static fr.sncf.osrd.infra.trackgraph.TrackSection.linkEdges;
 import com.squareup.moshi.*;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.parsing.railjson.schema.ID;
-import fr.sncf.osrd.infra.parsing.railjson.schema.Identified;
+import fr.sncf.osrd.infra.OperationalPoint;
+import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.parsing.railjson.schema.RJSRoot;
+import fr.sncf.osrd.infra.parsing.railjson.schema.trackobjects.RJSTrackObject;
+import fr.sncf.osrd.infra.parsing.railjson.schema.trackranges.RJSTrackRange;
+import fr.sncf.osrd.infra.trackgraph.PlaceholderNode;
+import fr.sncf.osrd.infra.trackgraph.PointAttrGetter;
+import fr.sncf.osrd.infra.trackgraph.RangeAttrGetter;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.util.PointSequence;
+import fr.sncf.osrd.util.RangeSequence;
 import okio.BufferedSource;
 
 import java.io.IOException;
 import java.util.HashMap;
 
 public class RailJSONParser {
-    private static final JsonAdapter<RJSRoot> adapter = new Moshi
-            .Builder()
-            .add(new IDAdapter())
-            .build()
-            .adapter(RJSRoot.class);
+    private static final class TrackRangeAttrBuilder<T> {
+        private final RangeSequence.Builder<T>[] builders;
 
-    /** A moshi adapter for ID serialization */
-    private static class IDAdapter {
-        @ToJson
-        String toJson(ID<?> typedId) {
-            return typedId.id;
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        TrackRangeAttrBuilder(TrackSection trackSection, RangeAttrGetter<T> getter) {
+            this.builders = new RangeSequence.Builder[]{
+                    getter.getAttr(trackSection, EdgeDirection.START_TO_STOP).builder(),
+                    getter.getAttr(trackSection, EdgeDirection.STOP_TO_START).builder(),
+            };
         }
 
-        @FromJson
-        <T extends Identified> ID<T> fromJson(String str) {
-            return new ID<T>(str);
+        void add(RJSTrackRange range, T value) {
+            var navigability = range.getNavigability();
+            for (var direction : navigability.directionSet) {
+                var builder = builders[direction.id];
+                builder.add(range.begin, range.end, value);
+            }
+        }
+
+        void build() throws InvalidInfraException {
+            for (var builder : builders)
+                builder.build();
         }
     }
+
+    @SuppressWarnings("unchecked")
+    private static final class TrackPointAttrBuilder<T> {
+        private final PointSequence.Builder<T>[] builders;
+
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        TrackPointAttrBuilder(TrackSection trackSection, PointAttrGetter<T> getter) {
+            this.builders = new PointSequence.Builder[]{
+                    getter.getAttr(trackSection, EdgeDirection.START_TO_STOP).builder(),
+                    getter.getAttr(trackSection, EdgeDirection.STOP_TO_START).builder(),
+            };
+        }
+
+        void add(RJSTrackObject object, T value) {
+            var navigability = object.getNavigability();
+            for (var direction : navigability.directionSet) {
+                var builder = builders[direction.id];
+                builder.add(object.position, value);
+            }
+        }
+
+        void build() throws InvalidInfraException {
+            for (var builder : builders)
+                builder.build();
+        }
+    }
+
 
     /**
      * Parses a structured railJSON into the internal representation
@@ -42,8 +82,22 @@ public class RailJSONParser {
     public static Infra parse(RJSRoot railJSON) throws InvalidInfraException {
         var infra = new Infra.Builder();
 
+        // register operational points
+        for (var operationalPoint : railJSON.operationalPoints) {
+            var op = new OperationalPoint(operationalPoint.id);
+            infra.operationalPoints.put(op.id, op);
+        }
+
         // create a unique identifier for all track intersection nodes
         var nodeIDs = TrackNodeIDs.from(railJSON.trackSectionLinks, railJSON.trackSections);
+        infra.trackGraph.resizeNodes(nodeIDs.numberOfNodes);
+
+        // TODO: parse switches
+
+        // fill nodes with placeholders
+        for (int i = 0; i < nodeIDs.numberOfNodes; i++)
+            if (infra.trackGraph.getNode(i) == null)
+                infra.trackGraph.setNode(i, new PlaceholderNode(String.valueOf(i)));
 
         // create track sections
         var infraTrackSections = new HashMap<String, TrackSection>();
@@ -52,6 +106,13 @@ public class RailJSONParser {
             var endID = nodeIDs.get(trackSection.endEndpoint());
             var infraTrackSection = infra.makeTrackSection(beginID, endID, trackSection.id, trackSection.length);
             infraTrackSections.put(trackSection.id, infraTrackSection);
+
+            for (var rjsOp : trackSection.operationalPoints) {
+                var op = infra.operationalPoints.get(rjsOp.ref.id);
+                // add the reference from the OperationalPoint to the TrackSection,
+                // add from the TrackSection to the OperationalPoint
+                op.addRef(infraTrackSection, rjsOp.begin, rjsOp.end);
+            }
         }
 
         // link track sections together
@@ -77,7 +138,7 @@ public class RailJSONParser {
     public static Infra parse(BufferedSource source, boolean lenient) throws InvalidInfraException, IOException {
         var jsonReader = JsonReader.of(source);
         jsonReader.setLenient(lenient);
-        var railJSON = adapter.fromJson(jsonReader);
+        var railJSON = RJSRoot.adapter.fromJson(jsonReader);
         if (railJSON == null)
             throw new InvalidInfraException("the railJSON source does not contain any data");
         return RailJSONParser.parse(railJSON);

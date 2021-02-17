@@ -1,6 +1,4 @@
-package fr.sncf.osrd.infra.parsing.railjson.schema;
-
-import fr.sncf.osrd.infra.graph.EdgeDirection;
+package fr.sncf.osrd.infra.graph;
 
 public enum ApplicableDirections {
     NORMAL(new EdgeDirection[]{EdgeDirection.START_TO_STOP}),
