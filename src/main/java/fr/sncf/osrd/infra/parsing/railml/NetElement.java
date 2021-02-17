@@ -85,12 +85,12 @@ abstract class NetElement {
 
         for (var netElementNode : netElements) {
             var netElement = (Element) netElementNode;
-            var id = netElement.valueOf("@id");
+            var id = netElement.attributeValue("id");
             if (descLevels.get(id) != DescriptionLevel.MICRO)
                 continue;
 
             // create the edge corresponding to the track section
-            var lengthStr = netElement.valueOf("@length");
+            var lengthStr = netElement.attributeValue("length");
             double length = Double.parseDouble(lengthStr);
             netElementMap.put(id, TrackNetElement.parse(id, netElement, length));
         }
@@ -98,7 +98,7 @@ abstract class NetElement {
         // we need to create meso elements after creating micro elements, so those already are registered
         for (var netElementNode : netElements) {
             var netElement = (Element) netElementNode;
-            var id = netElement.valueOf("@id");
+            var id = netElement.attributeValue("id");
             var descLevel = descLevels.get(id);
             if (descLevel != DescriptionLevel.MESO)
                 continue;
@@ -108,7 +108,7 @@ abstract class NetElement {
         // we need to create macro elements after creating meso elements, so those already are registered
         for (var netElementNode : netElements) {
             var netElement = (Element) netElementNode;
-            var id = netElement.valueOf("@id");
+            var id = netElement.attributeValue("id");
             var descLevel = descLevels.get(id);
             if (descLevel != DescriptionLevel.MACRO)
                 continue;
