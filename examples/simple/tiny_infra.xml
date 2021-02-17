@@ -370,13 +370,13 @@
                                   applicationDirection="both" pos="175.0"/>
                 </trainDetectionElement>
                 <trainDetectionElement id="tde.switch_foo-track" type="axleCounter">
-                    <spotLocation id="tde.switch_foo-track.loc" netElementRef="ne.micro.switch_foo"
+                    <spotLocation id="tde.switch_foo-track.loc" netElementRef="ne.micro.foo_to_bar"
                                   applicationDirection="both" pos="25.0"/>
                 </trainDetectionElement>
 
                 <!-- lonely detector for the signal guarding the station -->
                 <trainDetectionElement id="tde.track-bar" type="axleCounter">
-                    <spotLocation id="tde.track-bar.loc" netElementRef="ne.micro.bar"
+                    <spotLocation id="tde.track-bar.loc" netElementRef="ne.micro.bar_a"
                                   applicationDirection="both" pos="0.0"/>
                 </trainDetectionElement>
             </trainDetectionElements>
