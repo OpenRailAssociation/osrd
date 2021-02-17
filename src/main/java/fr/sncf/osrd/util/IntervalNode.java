@@ -4,30 +4,29 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.util.Objects;
 
-@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public class IntervalNode<T> {
-    public double begin;
-    public double end;
-    public double maxEnd;
-    public int height;
-    public IntervalNode<T> leftChild;
-    public IntervalNode<T> rightChild;
-    public T value;
+public abstract class IntervalNode {
+    public final double begin;
+    public final double end;
+
+    /** The maximum value of all range ends for this subtree */
+    double maxEnd;
+    int height;
+
+    IntervalNode leftChild;
+    IntervalNode rightChild;
 
     /**
      * Creates a new interval tree node
      * @param begin the start of the interval
      * @param end the end of the interval
-     * @param value the value associated with the range
      */
-    public IntervalNode(double begin, double end, T value) {
+    public IntervalNode(double begin, double end) {
         this.begin = begin;
         this.end = end;
         this.maxEnd = end;
         this.height = 1;
         this.leftChild = null;
         this.rightChild = null;
-        this.value = value;
     }
 
     /**
@@ -40,26 +39,28 @@ public class IntervalNode<T> {
         return begin <= otherEnd && end >= otherBegin;
     }
 
-    @Override
     @SuppressFBWarnings(
             value = "FE_FLOATING_POINT_EQUALITY",
             justification = "we don't believe tolerance is needed here"
     )
+    public boolean equals(IntervalNode o) {
+        return o.begin == begin
+                && o.end == end;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (obj == null)
             return false;
 
-        if (obj.getClass() != getClass())
+        if (!(obj instanceof IntervalNode))
             return false;
 
-        IntervalNode<?> node = (IntervalNode<?>) obj;
-        return node.begin == begin
-                && node.end == end
-                && node.value == value;
+        return equals((IntervalNode) obj);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(begin, end, value);
+        return Objects.hash(begin, end);
     }
 }
