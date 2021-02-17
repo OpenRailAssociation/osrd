@@ -15,6 +15,9 @@ public class IntervalTree<NodeT extends IntervalNode> {
      * @param node the node that will be inserted into the tree
      */
     public void insert(IntervalNode node) {
+        if (node.tree != null)
+            throw new RuntimeException("IntervalNode is already attached to a tree");
+        node.tree = this;
         root = insert(root, node);
     }
 
