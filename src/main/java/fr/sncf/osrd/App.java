@@ -8,6 +8,8 @@ import com.beust.jcommander.converters.PathConverter;
 import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.config.ConfigManager;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.parsing.railjson.RailJSONSerializer;
+import fr.sncf.osrd.infra.parsing.railml.RailMLParser;
 import fr.sncf.osrd.simulation.SimulationManager;
 import fr.sncf.osrd.simulation.utils.ChangeSerializer;
 import fr.sncf.osrd.simulation.utils.SimulationError;
@@ -57,6 +59,32 @@ public class App {
         }
     }
 
+    @Parameters(commandDescription = "Converts RailML to RailJSON")
+    public static final class ConvertCommand {
+        @Parameter(
+                names = { "-i", "--input" },
+                description = "The RailML input file",
+                required = true
+        )
+        private String railMLInputPath;
+
+        @Parameter(
+                names = { "-o", "--output" },
+                description = "The path of the converted RailJSON file",
+                required = true,
+                converter = PathConverter.class
+        )
+        private Path railJsonOutputPath;
+
+        void run() throws IOException, InvalidInfraException {
+            logger.info("parsing the RailML infrastructure");
+            var rjsRoot = RailMLParser.parse(railMLInputPath);
+
+            logger.info("serializing the infrastructure to RailJSON");
+            RailJSONSerializer.serialize(rjsRoot, railJsonOutputPath);
+        }
+    }
+
     /**
      * The main entry point for OSRD.
      * @param args the command line arguments
@@ -66,8 +94,10 @@ public class App {
 
         // prepare the command line parser
         var simulateCommand = new SimulateCommand();
+        var convertCommand = new ConvertCommand();
         var argsParser = JCommander.newBuilder()
                 .addCommand("simulate", simulateCommand)
+                .addCommand("convert", convertCommand)
                 .build();
 
         // parse the command line arguments
@@ -89,6 +119,9 @@ public class App {
         switch (parsedCommand) {
             case "simulate":
                 simulateCommand.run();
+                break;
+            case "convert":
+                convertCommand.run();
                 break;
             default:
                 throw new RuntimeException("unknown parsed command");
