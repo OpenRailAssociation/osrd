@@ -1,5 +1,6 @@
 package fr.sncf.osrd.train;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
@@ -46,37 +47,36 @@ public final class TrainPath implements Freezable {
      * @param infra the infra in which the path should be searched
      * @param timetable the timetable containing the list of waypoint
      */
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"}) // TODO: remove me
     public TrainPath(Infra infra, TrainSchedule timetable) {
         // find the start position
         var start = timetable.waypoints.first();
-        var startPosition = start.edge.operationalPoints.stream()
-                .filter(pointValue -> pointValue.value.id.equals(start.operationalPoint.id))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("couldn't find the starting point operational point"));
+        var startPosition = start.operationalPointRef;
 
         // find the stop position
         var goal = timetable.waypoints.last();
-        var goalPosition = goal.edge.operationalPoints.stream()
-                .filter(pointValue -> pointValue.value.id.equals(goal.operationalPoint.id))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("couldn't find the goal point operational point"));
+        var goalPosition = goal.operationalPointRef;
 
         // compute the shortest path from start to stop
         CostFunction<TrackSection> costFunc = (edge, begin, end) -> Math.abs(end - begin);
+
+        // TODO: more flexible pathfinding
+        assert startPosition.begin == startPosition.end;
+        assert goalPosition.begin == goalPosition.end;
         Dijkstra.findPath(infra.trackGraph,
-                start.edge, startPosition.position,
-                goal.edge, goalPosition.position,
+                start.edge, startPosition.begin,
+                goal.edge, goalPosition.begin,
                 costFunc,
                 (edge, direction) -> {
                     // find the offset at which the path starts inside the edge
                     double beginOffset = Double.NEGATIVE_INFINITY;
                     if (edge == start.edge)
-                        beginOffset = startPosition.position;
+                        beginOffset = startPosition.begin; // FIXME, this doesn't work if begin != end
 
                     // find the offset at which the path stops inside the edge
                     double endOffset = Double.POSITIVE_INFINITY;
                     if (edge == goal.edge)
-                        endOffset = goalPosition.position;
+                        endOffset = goalPosition.begin; // FIXME, this doesn't work if begin != end
                     this.addEdge(edge, direction, beginOffset, endOffset);
                 });
 

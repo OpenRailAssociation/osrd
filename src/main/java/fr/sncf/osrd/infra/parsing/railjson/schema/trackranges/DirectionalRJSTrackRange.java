@@ -1,6 +1,6 @@
 package fr.sncf.osrd.infra.parsing.railjson.schema.trackranges;
 
-import fr.sncf.osrd.infra.parsing.railjson.schema.ApplicableDirections;
+import fr.sncf.osrd.infra.graph.ApplicableDirections;
 
 public class DirectionalRJSTrackRange extends RJSTrackRange {
     public final ApplicableDirections applicableDirections;
@@ -11,7 +11,7 @@ public class DirectionalRJSTrackRange extends RJSTrackRange {
     }
 
     @Override
-    ApplicableDirections getNavigability() {
+    public ApplicableDirections getNavigability() {
         return applicableDirections;
     }
 }

@@ -39,7 +39,13 @@ public class Graph<NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>>
         return nodes.get(index);
     }
 
+    /**
+     * Sets the node at some index, growing the array if necessary
+     * @param index the index of the node to set or replace
+     * @param node the node
+     */
     public void setNode(int index, NodeT node) {
+        resizeNodes(index + 1);
         node.setIndex(index);
         nodes.set(index, node);
     }
@@ -54,8 +60,12 @@ public class Graph<NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>>
         edges.add(edge);
     }
 
-    // TODO: deprecate, it's only use in the railML parser and shouldn't
+    /**
+     * Grows the nodes array to a given size
+     * @param numberOfNodes the minimum array size
+     */
     public void resizeNodes(int numberOfNodes) {
+        nodes.ensureCapacity(numberOfNodes);
         while (nodes.size() < numberOfNodes)
             nodes.add(null);
     }

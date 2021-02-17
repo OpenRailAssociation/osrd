@@ -1,17 +1,58 @@
 package fr.sncf.osrd.infra;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.util.IntervalNode;
 
-@SuppressFBWarnings(
-        value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",
-        justification = "kept for later use"
-)
+import java.util.ArrayList;
+import java.util.Objects;
+
 public class OperationalPoint {
     public final String id;
-    public final String name;
+    public final ArrayList<TrackSection> refs = new ArrayList<>();
 
-    public OperationalPoint(String id, String name) {
+    public OperationalPoint(String id) {
         this.id = id;
-        this.name = name;
+    }
+
+    /**
+     * Add a reference to an operational point into a track section
+     * @param section the track section to reference the op from
+     * @param begin the begin offset
+     * @param end the end offset
+     */
+    public void addRef(TrackSection section, double begin, double end) {
+        var ref = new Ref(begin, end, this);
+        this.refs.add(section);
+        section.operationalPoints.insert(ref);
+    }
+
+
+    public static final class Ref extends IntervalNode {
+        public final OperationalPoint op;
+
+        private Ref(double begin, double end, OperationalPoint op) {
+            super(begin, end);
+            this.op = op;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null)
+                return false;
+
+            if (obj.getClass() != Ref.class)
+                return false;
+
+            var o = (Ref) obj;
+            if (o.op != op)
+                return false;
+
+            return super.equals(o);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(super.hashCode(), System.identityHashCode(op));
+        }
     }
 }

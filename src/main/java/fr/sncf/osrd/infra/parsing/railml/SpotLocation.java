@@ -1,8 +1,7 @@
 package fr.sncf.osrd.infra.parsing.railml;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.parsing.railjson.schema.ApplicableDirections;
-import fr.sncf.osrd.util.PointValue;
+import fr.sncf.osrd.infra.graph.ApplicableDirections;
 import org.dom4j.Element;
 
 import java.util.Map;

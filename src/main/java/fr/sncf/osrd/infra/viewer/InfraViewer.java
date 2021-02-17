@@ -1,5 +1,6 @@
 package fr.sncf.osrd.infra.viewer;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.simulation.World;
 import fr.sncf.osrd.train.Train;
@@ -13,6 +14,8 @@ import org.graphstream.ui.spriteManager.SpriteManager;
 import java.util.HashMap;
 import java.util.Map;
 
+// caused by the temporary opRef.begin == opRef.end
+@SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
 public class InfraViewer {
     private final Graph graph;
     private final SpriteManager spriteManager;
@@ -22,6 +25,9 @@ public class InfraViewer {
         // sprite identifiers can't contain dots for some reason
         return id.replace('.', '·');
     }
+
+    private static final String POINT_OP_CSS = "text-alignment: under; shape: box; size: 15px; fill-color: red;";
+    private static final String RANGE_OP_CSS = "text-alignment: under; shape: box; size: 15px; fill-color: red;";
 
     /**
      * Create a viewer for debug purposes
@@ -46,14 +52,21 @@ public class InfraViewer {
             Edge graphEdge = graph.addEdge(edge.id, startId, endId);
             graphEdge.setAttribute("ui.label", edge.id + "(index = " + edge.getIndex() + ")");
 
-            for (var operationalPoint : edge.operationalPoints) {
-                double pos = operationalPoint.position / edge.length;
-                var sprite = spriteManager.addSprite(encodeSpriteId(operationalPoint.value.id + "@" + edge.id));
-                sprite.attachToEdge(edge.id);
-                sprite.setPosition(pos);
-                sprite.setAttribute("ui.style", "text-alignment: under; shape: box; size: 15px; fill-color: red;");
-                sprite.setAttribute("ui.label", operationalPoint.value.name);
-            }
+            edge.operationalPoints.getAll((opRef) -> {
+                // operational points can be point-like objects, or ranges
+                // !! this check causes a linter warning, which has to be waived for the whole class
+                if (opRef.begin == opRef.end) {
+                    double pos = opRef.begin / edge.length;
+                    var opRefID = encodeSpriteId(opRef.op.id + "@" + edge.id);
+                    var sprite = spriteManager.addSprite(opRefID);
+                    sprite.attachToEdge(edge.id);
+                    sprite.setPosition(pos);
+                    sprite.setAttribute("ui.style", POINT_OP_CSS);
+                    sprite.setAttribute("ui.label", opRef.op.id);
+                } else {
+                    throw new RuntimeException("");
+                }
+            });
         }
     }
 

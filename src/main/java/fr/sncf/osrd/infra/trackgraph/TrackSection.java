@@ -1,24 +1,22 @@
 package fr.sncf.osrd.infra.trackgraph;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.SpeedSection;
-import fr.sncf.osrd.infra.blocksection.BlockSection;
 import fr.sncf.osrd.infra.graph.AbstractEdge;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.graph.EdgeEndpoint;
 import fr.sncf.osrd.infra.interlocking.TrackSensor;
 import fr.sncf.osrd.infra.interlocking.VisibleTrackObject;
-import fr.sncf.osrd.util.DoubleOrientedRangeSequence;
-import fr.sncf.osrd.util.PointSequence;
-import fr.sncf.osrd.util.RangeSequence;
-import fr.sncf.osrd.util.RangeValue;
+import fr.sncf.osrd.util.*;
 
 import java.util.ArrayList;
 
 /**
  * An edge in the topological graph.
  */
+@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public final class TrackSection extends AbstractEdge<TrackNode> {
     public final String id;
 
@@ -92,6 +90,7 @@ public final class TrackSection extends AbstractEdge<TrackNode> {
         return length;
     }
 
+    @SuppressFBWarnings({"UPM_UNCALLED_PRIVATE_METHOD"})
     private <ValueT> void validatePoints(PointSequence<ValueT> points) throws InvalidInfraException {
         if (points.getFirstPosition() < 0.)
             throw new InvalidInfraException(String.format("invalid PointSequence start for %s", id));
@@ -112,8 +111,6 @@ public final class TrackSection extends AbstractEdge<TrackNode> {
      */
     public void validate() throws InvalidInfraException {
         validateRanges(slope);
-        validateRanges(blockSections);
-        validatePoints(operationalPoints);
         // TODO: validate speed limits
     }
 
@@ -123,10 +120,9 @@ public final class TrackSection extends AbstractEdge<TrackNode> {
 
     // the data structure used for the slope automatically negates it when iterated on backwards
     public final DoubleOrientedRangeSequence slope = new DoubleOrientedRangeSequence();
-    public final RangeSequence<BlockSection> blockSections = new RangeSequence<>();
     public final ArrayList<RangeValue<SpeedSection>> speedSectionsForward = new ArrayList<>();
     public final ArrayList<RangeValue<SpeedSection>> speedSectionsBackward = new ArrayList<>();
-    public final PointSequence<OperationalPoint> operationalPoints = new PointSequence<>();
+    public final IntervalTree<OperationalPoint.Ref> operationalPoints = new IntervalTree<>();
     public final PointSequence<TrackSensor> trackSensorsForward = new PointSequence<>();
     public final PointSequence<TrackSensor> trackSensorsBackward = new PointSequence<>();
     public final PointSequence<VisibleTrackObject> visibleTrackObjectsForward = new PointSequence<>();
@@ -141,10 +137,6 @@ public final class TrackSection extends AbstractEdge<TrackNode> {
         return edge.slope;
     }
 
-    public static RangeSequence<BlockSection> getBlockSections(TrackSection edge, EdgeDirection direction) {
-        return edge.blockSections;
-    }
-
     /**
      * Gets the speed limit on a given section of track, along a given direction.
      * @param edge the section of track
@@ -155,22 +147,6 @@ public final class TrackSection extends AbstractEdge<TrackNode> {
         if (direction == EdgeDirection.START_TO_STOP)
             return edge.speedSectionsForward;
         return edge.speedSectionsBackward;
-    }
-
-    public static PointSequence<OperationalPoint> getOperationalPoints(TrackSection edge, EdgeDirection direction) {
-        return edge.operationalPoints;
-    }
-
-    /**
-     * Gets the track sensors on a given section of track, along a given direction.
-     * @param edge the section of track
-     * @param direction the direction
-     * @return track sensors
-     */
-    public static PointSequence<TrackSensor> getTrackSensors(TrackSection edge, EdgeDirection direction) {
-        if (direction == EdgeDirection.START_TO_STOP)
-            return edge.trackSensorsForward;
-        return edge.trackSensorsBackward;
     }
 
     /**

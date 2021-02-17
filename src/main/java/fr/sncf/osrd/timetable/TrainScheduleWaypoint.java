@@ -20,18 +20,18 @@ public class TrainScheduleWaypoint {
     // the duration of the train stop, in seconds
     public final int stopDuration;
 
-    public final OperationalPoint operationalPoint;
+    public final OperationalPoint.Ref operationalPointRef;
     public final TrackSection edge;
 
     private TrainScheduleWaypoint(
             LocalTime time,
             int stopDuration,
-            OperationalPoint operationalPoint,
+            OperationalPoint.Ref operationalPointRef,
             TrackSection edge
     ) {
         this.time = time;
         this.stopDuration = stopDuration;
-        this.operationalPoint = operationalPoint;
+        this.operationalPointRef = operationalPointRef;
         this.edge = edge;
     }
 
@@ -48,12 +48,11 @@ public class TrainScheduleWaypoint {
             OperationalPoint operationalPoint,
             TrackSection edge
     ) throws InvalidTimetableException {
-        if (edge.operationalPoints.stream()
-                .map(pointValue -> pointValue.value)
-                .noneMatch(operationalPoint::equals))
+        var operationalPointRef = edge.operationalPoints.find((opRef) -> opRef.op == operationalPoint);
+        if (operationalPointRef == null)
             throw new InvalidTimetableException(String.format(
                     "edge %s has no operational point %s", edge.id, operationalPoint.id));
-        return new TrainScheduleWaypoint(time, stopDuration, operationalPoint, edge);
+        return new TrainScheduleWaypoint(time, stopDuration, operationalPointRef, edge);
     }
 
     /**

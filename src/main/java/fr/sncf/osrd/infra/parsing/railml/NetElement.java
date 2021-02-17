@@ -5,12 +5,16 @@ import fr.sncf.osrd.util.PointValue;
 import fr.sncf.osrd.util.RangeValue;
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 abstract class NetElement {
+    static final Logger logger = LoggerFactory.getLogger(NetElement.class);
+
     String id;
 
     /** The start position of the netElement in a set of linear reference systems. */
@@ -54,6 +58,14 @@ abstract class NetElement {
             // parse the intrinsicCoordinate
             var intrinsicCoord = NetRelation.parseCoord(intrinsicCoordElem.attributeValue("intrinsicCoord"));
             var linearCoordElem = intrinsicCoordElem.element("linearCoordinate");
+
+            // the reference RailML file has this quirk
+            // TODO: figure out if this is legit
+            if (linearCoordElem == null) {
+                logger.warn("intrinsicCoordElem {} has no linearCoordinate",
+                        intrinsicCoordElem.attributeValue("id"));
+                continue;
+            }
 
             // parse the linearCoordinate
             var positioningSystemRef = linearCoordElem.attributeValue("positioningSystemRef");
