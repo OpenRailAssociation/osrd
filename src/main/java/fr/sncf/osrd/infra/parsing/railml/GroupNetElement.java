@@ -28,8 +28,9 @@ public final class GroupNetElement extends NetElement {
 
     private static ArrayList<NetElement> parseChildren(Node netElement, Map<String, NetElement> netElementMap) {
         var children = new ArrayList<NetElement>();
-        for (var elementPart : netElement.selectNodes("elementCollectionUnordered/elementPart")) {
-            var ref = elementPart.valueOf("@ref");
+        for (var elementPartNode : netElement.selectNodes("elementCollectionUnordered/elementPart")) {
+            var elementPart = (Element) elementPartNode;
+            var ref = elementPart.attributeValue("ref");
             children.add(netElementMap.get(ref));
         }
         return children;

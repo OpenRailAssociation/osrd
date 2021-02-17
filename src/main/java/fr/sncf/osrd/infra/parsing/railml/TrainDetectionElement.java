@@ -19,7 +19,7 @@ public class TrainDetectionElement {
         for (var trainDetectionElementNode : document.selectNodes(xpath)) {
             var trainDetectionElement = (Element) trainDetectionElementNode;
             // locate the track netElement the buffer stop is on
-            var id = trainDetectionElement.valueOf("@id");
+            var id = trainDetectionElement.attributeValue("id");
 
             // parse the location, which should only reference a single element
             var location = SpotLocation.parseSingle(netElements, trainDetectionElement);

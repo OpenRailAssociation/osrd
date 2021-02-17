@@ -19,7 +19,7 @@ public class BufferStop {
         for (var bufferStopNode : document.selectNodes(xpath)) {
             var bufferStop = (Element) bufferStopNode;
             // locate the track netElement the buffer stop is on
-            var id = bufferStop.valueOf("@id");
+            var id = bufferStop.attributeValue("id");
 
             // parse the location, which should only reference a single element
             var location = SpotLocation.parseSingle(netElements, bufferStop);

@@ -8,6 +8,7 @@ import fr.sncf.osrd.infra.parsing.railjson.schema.ID;
 import fr.sncf.osrd.infra.parsing.railjson.schema.RJSTrackSection.EndpointID;
 import fr.sncf.osrd.infra.parsing.railjson.schema.RJSTrackSectionLink;
 import org.dom4j.Document;
+import org.dom4j.Element;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -42,21 +43,22 @@ abstract class NetRelation {
     static Map<String, RJSTrackSectionLink> parse(Map<String, DescriptionLevel> descLevels, Document document) {
         var netRelations = new HashMap<String, RJSTrackSectionLink>();
 
-        for (var netRelation : document.selectNodes("/railML/infrastructure/topology/netRelations/netRelation")) {
-            var navigabilityStr = netRelation.valueOf("@navigability").toUpperCase(Locale.ENGLISH);
+        for (var netRelationNode : document.selectNodes("/railML/infrastructure/topology/netRelations/netRelation")) {
+            var netRelation = (Element) netRelationNode;
+            var navigabilityStr = netRelation.attributeValue("navigability").toUpperCase(Locale.ENGLISH);
             if (navigabilityStr.equals("NONE"))
                 continue;
 
             var navigability = ApplicableDirections.valueOf(navigabilityStr);
 
-            var id = netRelation.valueOf("@id");
+            var id = netRelation.attributeValue("id");
             if (descLevels.get(id) != DescriptionLevel.MICRO)
                 continue;
 
-            var positionOnA = netRelation.valueOf("@positionOnA");
+            var positionOnA = netRelation.attributeValue("positionOnA");
             var elementA = netRelation.valueOf("elementA/@ref");
 
-            var positionOnB = netRelation.valueOf("@positionOnB");
+            var positionOnB = netRelation.attributeValue("positionOnB");
             var elementB = netRelation.valueOf("elementB/@ref");
 
             netRelations.put(id, NetRelation.parse(navigability, positionOnA, elementA, positionOnB, elementB));

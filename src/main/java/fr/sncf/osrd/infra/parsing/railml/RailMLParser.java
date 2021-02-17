@@ -8,6 +8,7 @@ import fr.sncf.osrd.infra.parsing.railjson.schema.*;
 import fr.sncf.osrd.util.XmlNamespaceCleaner;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
+import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 import java.util.*;
@@ -68,10 +69,12 @@ public final class RailMLParser {
 
     private static Map<String, DescriptionLevel> parseDescriptionLevels(Document document) {
         var descLevels = new HashMap<String, DescriptionLevel>();
-        for (var level : document.selectNodes("/railML/infrastructure/topology/networks/network/level")) {
-            var descriptionLevel = DescriptionLevel.getValue(level.valueOf("@descriptionLevel"));
-            for (var networkResource : level.selectNodes("networkResource")) {
-                descLevels.put(networkResource.valueOf("@ref"), descriptionLevel);
+        for (var levelNode : document.selectNodes("/railML/infrastructure/topology/networks/network/level")) {
+            var level = (Element) levelNode;
+            var descriptionLevel = DescriptionLevel.getValue(level.attributeValue("descriptionLevel"));
+            for (var networkResourceNode : level.selectNodes("networkResource")) {
+                var networkResource = (Element) networkResourceNode;
+                descLevels.put(networkResource.attributeValue("ref"), descriptionLevel);
             }
         }
         return descLevels;
