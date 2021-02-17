@@ -2,6 +2,7 @@ package fr.sncf.osrd.util;
 
 
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class IntervalTree<NodeT extends IntervalNode> {
     public IntervalNode root;
@@ -91,6 +92,28 @@ public class IntervalTree<NodeT extends IntervalNode> {
         return maxEnd;
     }
 
+    // this is type safe, as only NodeT nodes are inserted in the first place.
+    // we just can't make it work otherwise because java has no self_t
+    @SuppressWarnings("unchecked")
+    public NodeT find(Predicate<NodeT> pred) {
+        return find((NodeT) root, pred);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <NodeT extends IntervalNode> NodeT find(NodeT node, Predicate<NodeT> pred) {
+        if (node == null)
+            return null;
+
+        if (pred.test(node))
+            return node;
+
+        var res = find((NodeT) node.leftChild, pred);
+        if (res != null)
+            return res;
+
+        return find((NodeT) node.rightChild, pred);
+    }
+
     /**
      * Confirm whether the node's interval overlaps with a given interval
      * @param consumer the consumer that will accept nodes whose interval overlap with the search interval
@@ -101,8 +124,6 @@ public class IntervalTree<NodeT extends IntervalNode> {
         findOverlappingIntervals(this.root, consumer, begin, end, Double.NEGATIVE_INFINITY);
     }
 
-    // this is type safe, as only NodeT nodes are inserted in the first place.
-    // we just can't make it work otherwise because java has no self_t
     @SuppressWarnings("unchecked")
     private static <NodeT extends IntervalNode> void findOverlappingIntervals(
             IntervalNode node,
@@ -129,6 +150,10 @@ public class IntervalTree<NodeT extends IntervalNode> {
 
         findOverlappingIntervals(node.leftChild, consumer, begin, end, minBegin);
         findOverlappingIntervals(node.rightChild, consumer, begin, end, node.begin);
+    }
+
+    public void getAll(Consumer<NodeT> consumer) {
+        getAllChildren(root, consumer);
     }
 
     // same as for findOverlappingIntervals

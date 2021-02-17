@@ -1,5 +1,6 @@
 package fr.sncf.osrd.infra.parsing.railjson.schema;
 
+import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.graph.EdgeEndpoint;
 import fr.sncf.osrd.infra.parsing.railjson.schema.trackobjects.RJSBufferStop;
@@ -17,11 +18,15 @@ public class RJSTrackSection implements Identified {
     public final double length;
 
     /** Track objects */
+    @Json(name = "train_detectors")
     public final List<RJSTrainDetector> trainDetectors;
+    @Json(name = "buffer_stops")
     public final List<RJSBufferStop> bufferStops;
 
     /** Track ranges */
+    @Json(name = "operational_points")
     public final List<RJSOperationalPointPart> operationalPoints;
+    @Json(name = "speed_sections")
     public final List<RJSSpeedSectionPart> speedSections;
 
     /** Creates a new track section */

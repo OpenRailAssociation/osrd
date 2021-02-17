@@ -163,11 +163,10 @@ public final class Infra {
         /**
          * Makes a new operational point
          * @param id the operational point identifier
-         * @param name the name of the identifier
          * @return the new operational point
          */
-        public OperationalPoint makeOperationalPoint(String id, String name) {
-            var op = new OperationalPoint(id, name);
+        public OperationalPoint makeOperationalPoint(String id) {
+            var op = new OperationalPoint(id);
             operationalPoints.put(id, op);
             return op;
         }

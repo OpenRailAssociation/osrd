@@ -3,10 +3,9 @@ package fr.sncf.osrd.infra.parsing.railml;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.graph.EdgeEndpoint;
 import fr.sncf.osrd.infra.parsing.railjson.schema.ID;
-import fr.sncf.osrd.infra.parsing.railjson.schema.ApplicableDirections;
+import fr.sncf.osrd.infra.graph.ApplicableDirections;
 import fr.sncf.osrd.infra.parsing.railjson.schema.RJSTrackSection;
 import fr.sncf.osrd.util.FloatCompare;
-import fr.sncf.osrd.util.PointValue;
 import org.dom4j.Element;
 
 import java.util.Locale;
