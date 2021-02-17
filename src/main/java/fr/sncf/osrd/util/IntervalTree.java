@@ -1,9 +1,10 @@
 package fr.sncf.osrd.util;
 
+
 import java.util.function.Consumer;
 
-public class IntervalTree<T> {
-    public IntervalNode<T> root;
+public class IntervalTree<NodeT extends IntervalNode> {
+    public IntervalNode root;
 
     public IntervalTree() {
         this.root = null;
@@ -13,11 +14,11 @@ public class IntervalTree<T> {
      * Insert a new node in the tree
      * @param node the node that will be inserted into the tree
      */
-    public void insert(IntervalNode<T> node) {
+    public void insert(IntervalNode node) {
         root = insert(root, node);
     }
 
-    private IntervalNode<T> insert(IntervalNode<T> tree, IntervalNode<T> node) {
+    private IntervalNode insert(IntervalNode tree, IntervalNode node) {
         // when the tree is empty
         if (tree == null)
             return node;
@@ -45,8 +46,8 @@ public class IntervalTree<T> {
         return tree;
     }
 
-    private IntervalNode<T> leftRotate(IntervalNode<T> node) {
-        IntervalNode<T> right =  node.rightChild;
+    private IntervalNode leftRotate(IntervalNode node) {
+        var right =  node.rightChild;
         node.rightChild = right.leftChild;
         right.leftChild = node;
         node.height = Math.max(height(node.leftChild), height(node.rightChild)) + 1;
@@ -56,8 +57,8 @@ public class IntervalTree<T> {
         return right;
     }
 
-    private IntervalNode<T> rightRotate(IntervalNode<T> node) {
-        IntervalNode<T> left =  node.leftChild;
+    private IntervalNode rightRotate(IntervalNode node) {
+        var left =  node.leftChild;
         node.leftChild = left.rightChild;
         left.rightChild = node;
         node.height = Math.max(height(node.leftChild), height(node.rightChild)) + 1;
@@ -67,15 +68,15 @@ public class IntervalTree<T> {
         return left;
     }
 
-    private int height(IntervalNode<T> node) {
+    private int height(IntervalNode node) {
         return node == null ? 0 : node.height;
     }
 
-    private int heightDiff(IntervalNode<T> node) {
+    private int heightDiff(IntervalNode node) {
         return node == null ? 0 : height(node.leftChild) - height(node.rightChild);
     }
 
-    private double findMax(IntervalNode<T> node) {
+    private double findMax(IntervalNode node) {
         var maxEnd = node.end;
 
         if (node.leftChild != null)
@@ -93,13 +94,16 @@ public class IntervalTree<T> {
      * @param begin the lower bound of the search interval
      * @param end the lower bound of the search interval
      */
-    public void findOverlappingIntervals(Consumer<IntervalNode<T>> consumer, double begin, double end) {
+    public void findOverlappingIntervals(Consumer<NodeT> consumer, double begin, double end) {
         findOverlappingIntervals(this.root, consumer, begin, end, Double.NEGATIVE_INFINITY);
     }
 
-    private static <T> void findOverlappingIntervals(
-            IntervalNode<T> node,
-            Consumer<IntervalNode<T>> consumer,
+    // this is type safe, as only NodeT nodes are inserted in the first place.
+    // we just can't make it work otherwise because java has no self_t
+    @SuppressWarnings("unchecked")
+    private static <NodeT extends IntervalNode> void findOverlappingIntervals(
+            IntervalNode node,
+            Consumer<NodeT> consumer,
             double begin,
             double end,
             double minBegin
@@ -118,18 +122,20 @@ public class IntervalTree<T> {
         }
 
         if (node.overlapsWith(begin, end))
-            consumer.accept(node);
+            consumer.accept((NodeT) node);
 
         findOverlappingIntervals(node.leftChild, consumer, begin, end, minBegin);
         findOverlappingIntervals(node.rightChild, consumer, begin, end, node.begin);
     }
 
-    private static <T> void getAllChildren(IntervalNode<T> node, Consumer<IntervalNode<T>> consumer) {
+    // same as for findOverlappingIntervals
+    @SuppressWarnings("unchecked")
+    private static <NodeT extends IntervalNode> void getAllChildren(IntervalNode node, Consumer<NodeT> consumer) {
         if (node == null)
             return;
 
         getAllChildren(node.leftChild, consumer);
-        consumer.accept(node);
+        consumer.accept((NodeT) node);
         getAllChildren(node.rightChild, consumer);
     }
 }
