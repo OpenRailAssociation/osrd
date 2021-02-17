@@ -15,6 +15,9 @@ public abstract class IntervalNode {
     IntervalNode leftChild;
     IntervalNode rightChild;
 
+    /** A reference to the tree this node belongs to, for safety checks */
+    IntervalTree<?> tree;
+
     /**
      * Creates a new interval tree node
      * @param begin the start of the interval
@@ -27,6 +30,7 @@ public abstract class IntervalNode {
         this.height = 1;
         this.leftChild = null;
         this.rightChild = null;
+        this.tree = null;
     }
 
     /**
