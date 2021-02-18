@@ -81,13 +81,13 @@ public class SignalSimulationTest {
             if (newAspect == aspect)
                 return;
             var change = new SignalAspectChange(sim, this, newAspect);
-            this.createEvent(sim, sim.getTime(), change);
+            sim.createEvent(this, sim.getTime(), change);
             change.apply(sim, this);
         }
 
         @Override
         @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST")
-        protected void timelineEventUpdate(
+        protected void onTimelineEventUpdate(
                 Simulation sim,
                 TimelineEvent<?> event,
                 TimelineEvent.State state

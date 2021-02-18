@@ -25,7 +25,7 @@ public final class SchedulerSystem extends Entity {
 
     @Override
     @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST")
-    protected void timelineEventUpdate(
+    protected void onTimelineEventUpdate(
             Simulation sim,
             TimelineEvent<?> event,
             State state
@@ -117,7 +117,7 @@ public final class SchedulerSystem extends Entity {
                 logger.trace("{}", controller);
 
             var startTime = timetable.getDepartureTime();
-            scheduler.createEvent(sim, startTime, new Train.TrainCreatedChange(sim, timetable, trainPath, controllers));
+            sim.createEvent(scheduler, startTime, new Train.TrainCreatedChange(sim, timetable, trainPath, controllers));
         }
         return scheduler;
     }

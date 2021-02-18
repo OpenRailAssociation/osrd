@@ -32,7 +32,7 @@ public class SimulationTest {
         public final ArrayList<EventUpdate> events = new ArrayList<>();
 
         @Override
-        protected void timelineEventUpdate(
+        protected void onTimelineEventUpdate(
                 Simulation sim,
                 TimelineEvent<?> event,
                 TimelineEvent.State state
@@ -58,7 +58,7 @@ public class SimulationTest {
     public void timerTest() throws SimulationError {
         var sim = new Simulation(null, 1.0, null);
         var timer = new MockEntity("test");
-        timer.createEvent(sim, sim.getTime() + 42, new TEValue<>("time's up"));
+        sim.createEvent(timer, sim.getTime() + 42, new TEValue<String>("time's up"));
         var stepEvent = sim.step();
         assertEquals(stepEvent.toString(), "time's up");
         assertEquals(sim.getTime(), 1.0 + 42.0, 0.00001);
@@ -69,25 +69,25 @@ public class SimulationTest {
     public void testEventOrder() throws SimulationError {
         var sim = new Simulation(null, 0.0, null);
         var timer = new MockEntity("test");
-        timer.createEvent(sim, 1.0, new TEValue<>("a"));
-        timer.createEvent(sim, 2.0, new TEValue<>("b"));
-        timer.createEvent(sim, 3.0, new TEValue<>("c"));
-        timer.createEvent(sim, 4.0, new TEValue<>("d"));
+        sim.createEvent(timer, 1.0, new TEValue<String>("a"));
+        sim.createEvent(timer, 2.0, new TEValue<String>("b"));
+        sim.createEvent(timer, 3.0, new TEValue<String>("c"));
+        sim.createEvent(timer, 4.0, new TEValue<String>("d"));
 
         var timerResponse = new MockEntity("timer");
         var otherChannel = new MockEntity("other");
         // sinks can be functions or methods, as its a functional interface
         timer.addSubscriber(new Entity("subscriber") {
             @Override
-            protected void timelineEventUpdate(
+            protected void onTimelineEventUpdate(
                     Simulation sim,
                     TimelineEvent<?> event,
                     TimelineEvent.State state
             ) throws SimulationError {
                 String msg = event.value.toString();
-                timerResponse.createEvent(sim, sim.getTime() + 0.5, new TEValue<>(msg + "_response"));
+                sim.createEvent(timerResponse, sim.getTime() + 0.5, new TEValue<String>(msg + "_response"));
                 if (sim.getTime() > 2.7)
-                    otherChannel.createEvent(sim, sim.getTime(), new TEValue<>(msg + " simultaneous event"));
+                    sim.createEvent(otherChannel, sim.getTime(), new TEValue<String>(msg + " simultaneous event"));
             }
         });
 

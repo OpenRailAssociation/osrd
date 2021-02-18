@@ -1,7 +1,6 @@
 package fr.sncf.osrd.simulation.utils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.util.Objects;
 
 /**
  * A base event type. Derived types implement updateState to notify some other components about changes.
@@ -31,9 +30,8 @@ public class TimelineEvent<T extends TimelineEventValue> extends TimelineEventId
                 break;
         }
 
-        for (var sink : source.subscribers) {
-            sink.timelineEventUpdate(sim, this, newState);
-        }
+        for (var subscriber : source.subscribers)
+            subscriber.onTimelineEventUpdate(sim, this, newState);
     }
 
     public enum State {
