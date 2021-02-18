@@ -1,6 +1,8 @@
 package fr.sncf.osrd.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.detectorgraph.DetectorNode;
+import fr.sncf.osrd.infra.detectorgraph.TVDSectionPath;
 import fr.sncf.osrd.infra.graph.Graph;
 import fr.sncf.osrd.infra.trackgraph.PlaceholderNode;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
@@ -77,6 +79,7 @@ import fr.sncf.osrd.util.CryoMap;
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public final class Infra {
     public final Graph<TrackNode, TrackSection> trackGraph;
+    public final Graph<DetectorNode, TVDSectionPath> detectorGraph;
 
     public final CryoMap<String, TrackNode> trackNodeMap;
     public final CryoMap<String, TrackSection> trackSectionMap;
@@ -85,6 +88,7 @@ public final class Infra {
     /**
      * Create an OSRD Infra
      * @param trackGraph the track graph
+     * @param detectorGraph the detector graph
      * @param trackNodeMap a map from node IDs to nodes
      * @param trackSectionMap a map to track section IDs to track sections
      * @param operationalPoints a map from operational point IDs to operational points
@@ -92,20 +96,19 @@ public final class Infra {
      */
     public Infra(
             Graph<TrackNode, TrackSection> trackGraph,
+            Graph<DetectorNode, TVDSectionPath> detectorGraph,
             CryoMap<String, TrackNode> trackNodeMap,
             CryoMap<String, TrackSection> trackSectionMap,
             CryoMap<String, OperationalPoint> operationalPoints
     ) throws InvalidInfraException {
         this.trackGraph = trackGraph;
+        this.detectorGraph = detectorGraph;
 
-        for (var node : trackGraph.nodes)
-            node.freeze();
         trackNodeMap.freeze();
         this.trackNodeMap = trackNodeMap;
 
         for (var edge : trackGraph.edges) {
             edge.validate();
-            edge.freeze();
         }
         trackSectionMap.freeze();
         this.trackSectionMap = trackSectionMap;
@@ -119,6 +122,8 @@ public final class Infra {
      */
     public static class Builder {
         public final Graph<TrackNode, TrackSection> trackGraph = new Graph<>();
+        public final Graph<DetectorNode, TVDSectionPath> detectorGraph = new Graph<>();
+
         public final CryoMap<String, OperationalPoint> operationalPoints = new CryoMap<>();
         public final CryoMap<String, TrackNode> trackNodeMap = new CryoMap<>();
         public final CryoMap<String, TrackSection> trackSectionMap = new CryoMap<>();
@@ -172,7 +177,7 @@ public final class Infra {
         }
 
         public Infra build() throws InvalidInfraException {
-            return new Infra(trackGraph, trackNodeMap, trackSectionMap, operationalPoints);
+            return new Infra(trackGraph, detectorGraph, trackNodeMap, trackSectionMap, operationalPoints);
         }
     }
 }

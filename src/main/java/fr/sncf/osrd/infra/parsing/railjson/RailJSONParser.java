@@ -6,14 +6,12 @@ import com.squareup.moshi.*;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
+import fr.sncf.osrd.infra.graph.ApplicableDirections;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.parsing.railjson.schema.RJSRoot;
 import fr.sncf.osrd.infra.parsing.railjson.schema.trackobjects.RJSTrackObject;
 import fr.sncf.osrd.infra.parsing.railjson.schema.trackranges.RJSTrackRange;
-import fr.sncf.osrd.infra.trackgraph.PlaceholderNode;
-import fr.sncf.osrd.infra.trackgraph.PointAttrGetter;
-import fr.sncf.osrd.infra.trackgraph.RangeAttrGetter;
-import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.util.PointSequence;
 import fr.sncf.osrd.util.RangeSequence;
 import okio.BufferedSource;
@@ -113,6 +111,25 @@ public class RailJSONParser {
                 // add from the TrackSection to the OperationalPoint
                 op.addRef(infraTrackSection, rjsOp.begin, rjsOp.end);
             }
+
+            // Parse detectors
+            var detectorsBothBuilder = infraTrackSection.trackSensorsBoth.builder();
+            var detectorsBackwardBuilder = infraTrackSection.trackSensorsBackward.builder();
+            var detectorsForwardBuilder = infraTrackSection.trackSensorsForward.builder();
+
+            for (var rjsDetector : trackSection.trainDetectors) {
+                var detector = new Detector(rjsDetector.id);
+                if (rjsDetector.applicableDirections == ApplicableDirections.BOTH)
+                    detectorsBothBuilder.add(rjsDetector.position, detector);
+                if (rjsDetector.applicableDirections == ApplicableDirections.NORMAL)
+                    detectorsForwardBuilder.add(rjsDetector.position, detector);
+                if (rjsDetector.applicableDirections == ApplicableDirections.REVERSE)
+                    detectorsBackwardBuilder.add(rjsDetector.position, detector);
+            }
+
+            detectorsBothBuilder.build();
+            detectorsBackwardBuilder.build();
+            detectorsForwardBuilder.build();
         }
 
         // link track sections together

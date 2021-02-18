@@ -10,7 +10,7 @@ import fr.sncf.osrd.infra.graph.AbstractNode;
         value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",
         justification = "kept for later use"
 )
-public abstract class TrackNode extends AbstractNode<TrackSection> {
+public abstract class TrackNode extends AbstractNode {
     public final String id;
 
     public TrackNode(String id) {

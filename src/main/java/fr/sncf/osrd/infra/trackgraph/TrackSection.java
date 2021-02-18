@@ -7,18 +7,40 @@ import fr.sncf.osrd.infra.SpeedSection;
 import fr.sncf.osrd.infra.graph.AbstractEdge;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.graph.EdgeEndpoint;
+import fr.sncf.osrd.infra.graph.Graph;
 import fr.sncf.osrd.infra.interlocking.TrackSensor;
 import fr.sncf.osrd.infra.interlocking.VisibleTrackObject;
 import fr.sncf.osrd.util.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * An edge in the topological graph.
  */
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public final class TrackSection extends AbstractEdge<TrackNode> {
+public final class TrackSection extends AbstractEdge<TrackNode, TrackSection> {
     public final String id;
+
+    public final CryoList<TrackSection> startNeighbors = new CryoList<>();
+    public final CryoList<TrackSection> endNeighbors = new CryoList<>();
+    public final CryoList<BufferStop> bufferStops = new CryoList<>();
+
+    /**
+     * Given a side of the edge, return the list of neighbors
+     * @param endpoint the end of the edge to consider
+     * @return the list of neighbors at this end
+     */
+    public List<TrackSection> getNeighbors(EdgeEndpoint endpoint) {
+        if (endpoint == EdgeEndpoint.BEGIN)
+            return startNeighbors;
+        return endNeighbors;
+    }
+
+    @Override
+    public List<TrackSection> getNeighbors(EdgeEndpoint endpoint, Graph<TrackNode, TrackSection> graph) {
+        return getNeighbors(endpoint);
+    }
 
     @Override
     public String toString() {
@@ -114,15 +136,13 @@ public final class TrackSection extends AbstractEdge<TrackNode> {
         // TODO: validate speed limits
     }
 
-    @Override
-    public void freeze() {
-    }
 
     // the data structure used for the slope automatically negates it when iterated on backwards
     public final DoubleOrientedRangeSequence slope = new DoubleOrientedRangeSequence();
     public final ArrayList<RangeValue<SpeedSection>> speedSectionsForward = new ArrayList<>();
     public final ArrayList<RangeValue<SpeedSection>> speedSectionsBackward = new ArrayList<>();
     public final IntervalTree<OperationalPoint.Ref> operationalPoints = new IntervalTree<>();
+    public final PointSequence<TrackSensor> trackSensorsBoth = new PointSequence<>();
     public final PointSequence<TrackSensor> trackSensorsForward = new PointSequence<>();
     public final PointSequence<TrackSensor> trackSensorsBackward = new PointSequence<>();
     public final PointSequence<VisibleTrackObject> visibleTrackObjectsForward = new PointSequence<>();
