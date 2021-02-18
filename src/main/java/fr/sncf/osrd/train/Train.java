@@ -107,7 +107,7 @@ public class Train extends Entity {
 
     @Override
     @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST")
-    protected void timelineEventUpdate(
+    protected void onTimelineEventUpdate(
             Simulation sim,
             TimelineEvent<?> event,
             TimelineEvent.State state

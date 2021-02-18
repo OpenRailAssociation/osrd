@@ -9,7 +9,7 @@ public class PassiveEntity extends Entity {
     }
 
     @Override
-    protected void timelineEventUpdate(
+    protected void onTimelineEventUpdate(
             Simulation sim,
             TimelineEvent<?> event,
             TimelineEvent.State state

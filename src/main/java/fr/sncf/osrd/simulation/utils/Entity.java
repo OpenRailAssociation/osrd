@@ -55,7 +55,7 @@ public abstract class Entity {
 
     // endregion
 
-    protected abstract void timelineEventUpdate(
+    protected abstract void onTimelineEventUpdate(
             Simulation sim,
             TimelineEvent<?> event,
             TimelineEvent.State state
@@ -80,20 +80,5 @@ public abstract class Entity {
             throw new SimulationError(
                     "can't unsubscribe a sink that's not in the subscribers list."
                             + " try storing your lambda or method reference in a field of your class");
-    }
-
-    /**
-     * Creates a new event.
-     * @param sim the simulation this events belongs to
-     * @param scheduledTime the simulation time this event should happen at
-     * @param value the value associated with the event
-     * @return a new event
-     * @throws SimulationError {@inheritDoc}
-     */
-    public <T extends TimelineEventValue> TimelineEvent<T> createEvent(
-            Simulation sim,
-            double scheduledTime, T value
-    ) throws SimulationError {
-        return sim.createEvent(this, scheduledTime, value);
     }
 }
