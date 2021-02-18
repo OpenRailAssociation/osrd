@@ -123,10 +123,7 @@ public final class TrainState {
         assert action.type != Action.ActionType.EMERGENCY_BRAKING;
 
         // compute and limit the traction force
-        var maxTraction = rollingStock.getMaxEffort(speed);
         var traction = action.tractionForce();
-        if (traction > maxTraction)
-            traction = maxTraction;
 
         // compute and limit the braking force
         var brakingForce = action.brakingForce();
@@ -180,7 +177,7 @@ public final class TrainState {
 
     private Action driverDecision(SpeedDirective directive, TrainPhysicsIntegrator integrator) {
         var rollingStock = train.rollingStock;
-        return integrator.actionToTargetSpeed(directive.allowedSpeed, rollingStock.timetableGamma);
+        return integrator.actionToTargetSpeed(directive.allowedSpeed, rollingStock);
     }
 
     @SuppressWarnings("UnnecessaryLocalVariable")
