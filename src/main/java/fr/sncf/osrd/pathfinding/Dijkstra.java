@@ -20,7 +20,7 @@ public class Dijkstra {
      * Edges are added at the head of the list.
      * @param <EdgeT> the type of edges
      */
-    private static class Path<EdgeT extends AbstractEdge<?>> {
+    private static class Path<EdgeT> {
         public final double cost;
         public final EdgeT edge;
         public final EdgeDirection direction;
@@ -46,7 +46,7 @@ public class Dijkstra {
          * @param <EdgeT> the type of the path's edges
          * @return a new path
          */
-        static <EdgeT extends AbstractEdge<?>> Path<EdgeT> init(
+        static <EdgeT extends AbstractEdge<?, ?>> Path<EdgeT> init(
                 double cost,
                 EdgeT startingEdge,
                 EdgeDirection direction
@@ -82,7 +82,7 @@ public class Dijkstra {
      * @param pathConsumer the callback to consume the path
      */
     @SuppressWarnings("unchecked")
-    public static <NodeT extends AbstractNode<?>, EdgeT extends AbstractEdge<?>> void findPath(
+    public static <NodeT extends AbstractNode, EdgeT extends AbstractEdge<NodeT, EdgeT>> void findPath(
             Graph<NodeT, EdgeT> graph,
             EdgeT startEdge,
             double startPosition,
@@ -144,10 +144,7 @@ public class Dijkstra {
             explored[currentDirection.id].set(currentEdge.getIndex());
 
             // explore all the neighbors of the current candidate
-            for (var abstractNeighborEdge : currentEdge.getEndNeighbors(currentDirection)) {
-                // this cast is fine, as all edges are required to have the same type in a graph.
-                // as of 2020, this can't be improved on due to the lack of SelfT compiler support
-                var neighborEdge = (EdgeT) abstractNeighborEdge;
+            for (var neighborEdge : currentEdge.getEndNeighbors(currentDirection, graph)) {
 
                 // find which direction we're approaching the neighbor edge from
                 EdgeDirection direction;
@@ -187,7 +184,7 @@ public class Dijkstra {
         throw new RuntimeException("couldn't find a path");
     }
 
-    private static <EdgeT extends AbstractEdge<?>> void rebuildPath(
+    private static <EdgeT> void rebuildPath(
             Path<EdgeT> path,
             BiConsumer<EdgeT, EdgeDirection> pathConsumer
     ) {

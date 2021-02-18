@@ -3,29 +3,22 @@ package fr.sncf.osrd.infra.graph;
 import fr.sncf.osrd.util.CryoList;
 import fr.sncf.osrd.util.Freezable;
 import fr.sncf.osrd.util.Indexable;
+import org.w3c.dom.Node;
 
 import java.util.List;
 
-public abstract class AbstractEdge<NodeT extends AbstractNode<?>> implements Indexable, Freezable {
+public abstract class AbstractEdge<NodeT extends AbstractNode,
+        EdgeT extends AbstractEdge<NodeT, EdgeT>> implements Indexable {
     public final int startNode;
     public final int endNode;
     public final double length;
-
-    public final CryoList<AbstractEdge<NodeT>> startNeighbors = new CryoList<>();
-    public final CryoList<AbstractEdge<NodeT>> endNeighbors = new CryoList<>();
-
-    private boolean frozen = false;
 
     /**
      * Given a side of the edge, return the list of neighbors
      * @param endpoint the end of the edge to consider
      * @return the list of neighbors at this end
      */
-    public List<AbstractEdge<NodeT>> getNeighbors(EdgeEndpoint endpoint) {
-        if (endpoint == EdgeEndpoint.BEGIN)
-            return startNeighbors;
-        return endNeighbors;
-    }
+    public abstract List<EdgeT> getNeighbors(EdgeEndpoint endpoint, Graph<NodeT, EdgeT> graph);
 
     /**
      * The list of reachable edges at the start of the course over the edge.
@@ -33,10 +26,10 @@ public abstract class AbstractEdge<NodeT extends AbstractNode<?>> implements Ind
      * @return the list of reachable edges at the start of the course over the edge
      */
     @SuppressWarnings("unused")
-    public List<AbstractEdge<NodeT>> getStartNeighbors(EdgeDirection dir) {
+    public List<EdgeT> getStartNeighbors(EdgeDirection dir, Graph<NodeT, EdgeT> graph) {
         if (dir == EdgeDirection.START_TO_STOP)
-            return startNeighbors;
-        return endNeighbors;
+            return getNeighbors(EdgeEndpoint.BEGIN, graph);
+        return getNeighbors(EdgeEndpoint.END, graph);
     }
 
     /**
@@ -67,10 +60,10 @@ public abstract class AbstractEdge<NodeT extends AbstractNode<?>> implements Ind
      * @param dir the course direction
      * @return the list of reachable edges at the end of the course over the edge
      */
-    public List<AbstractEdge<NodeT>> getEndNeighbors(EdgeDirection dir) {
+    public List<EdgeT> getEndNeighbors(EdgeDirection dir, Graph<NodeT, EdgeT> graph) {
         if (dir == EdgeDirection.START_TO_STOP)
-            return endNeighbors;
-        return startNeighbors;
+            return getNeighbors(EdgeEndpoint.END, graph);
+        return getNeighbors(EdgeEndpoint.BEGIN, graph);
     }
 
     private int index = -1;
@@ -85,19 +78,6 @@ public abstract class AbstractEdge<NodeT extends AbstractNode<?>> implements Ind
     public int getIndex() {
         assert index != -1;
         return index;
-    }
-
-    @Override
-    public void freeze() {
-        assert !frozen;
-        startNeighbors.freeze();
-        endNeighbors.freeze();
-        frozen = true;
-    }
-
-    @Override
-    public boolean isFrozen() {
-        return frozen;
     }
 
     protected AbstractEdge(int startNode, int endNode, double length) {

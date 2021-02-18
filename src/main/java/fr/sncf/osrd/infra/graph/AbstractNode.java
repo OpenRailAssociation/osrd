@@ -3,7 +3,7 @@ package fr.sncf.osrd.infra.graph;
 import fr.sncf.osrd.util.Freezable;
 import fr.sncf.osrd.util.Indexable;
 
-public abstract class AbstractNode<EdgeT extends AbstractEdge<?>> implements Indexable, Freezable {
+public abstract class AbstractNode implements Indexable {
     private int index = -1;
 
     @Override

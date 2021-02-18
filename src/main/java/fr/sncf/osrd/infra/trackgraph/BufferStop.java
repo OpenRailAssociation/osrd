@@ -17,13 +17,4 @@ public class BufferStop extends TrackNode {
         super(id);
         this.edge = edge;
     }
-
-    @Override
-    public void freeze() {
-    }
-
-    @Override
-    public boolean isFrozen() {
-        return true;
-    }
 }

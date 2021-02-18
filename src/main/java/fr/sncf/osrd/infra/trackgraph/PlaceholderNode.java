@@ -8,13 +8,4 @@ public class PlaceholderNode extends TrackNode {
     public PlaceholderNode(String id) {
         super(id);
     }
-
-    @Override
-    public void freeze() {
-    }
-
-    @Override
-    public boolean isFrozen() {
-        return true;
-    }
 }
