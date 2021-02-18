@@ -81,28 +81,36 @@ public class TrainPhysicsIntegrator {
      * @param maxSpeed the maximum speed, which we'd like to achieve
      * @return the traction force
      */
-    public Action actionToTargetSpeed(Double maxSpeed, double maxDeleration) {
+    public Action actionToTargetSpeed(Double maxSpeed, RollingStock rollingStock) {
         // the force we'd need to apply to reach the target speed at the next step
+        // F= m*a
+        // a<0 dec force<0
+        // a>0 acc force>0
+        // normally the train speed should be positive
+        assert currentSpeed >= 0;
         var targetForce = (maxSpeed - currentSpeed) / timeStep * inertia;
+        // limited the possible acceleration for reasons of travel comfort
+        if (targetForce > rollingStock.comfortAcceleration * inertia)
+            targetForce = rollingStock.comfortAcceleration * inertia;
 
         var otherForces = computeTotalForce(0, 0);
 
-        var targetForceSign = Math.signum(targetForce);
-        var currentSpeedSign = Math.signum(currentSpeed);
-
-        var force = targetForce - otherForces;
-
-        // if the force goes in the same direction as the current speed
-        if (targetForceSign == currentSpeedSign || targetForceSign == 0 || currentSpeedSign == 0)
-            return Action.accelerate(force);
+        // targetForce = actionForce + otherForces
+        var actionForce = targetForce - otherForces;
 
         // we can't realistically accelerate and brake with infinite forces, so limit it to some given value
-        var maxBrakingForce = -maxDeleration * inertia;
-        if (force < maxBrakingForce)
-            force = maxBrakingForce;
+        if (actionForce > 0) {
+            var maxTraction = rollingStock.getMaxEffort(currentSpeed);
+            if (actionForce > maxTraction)
+                actionForce = maxTraction;
+            return Action.accelerate(actionForce);
+        }
 
-        // if the force is opposite to movement
-        return Action.brake(Math.abs(force));
+        // if the resulting force is negative
+        var maxBrakingForce = -rollingStock.timetableGamma * inertia;
+        if (actionForce < maxBrakingForce)
+            actionForce = maxBrakingForce;
+        return Action.brake(Math.abs(actionForce));
     }
 
     public static class PositionUpdate {
