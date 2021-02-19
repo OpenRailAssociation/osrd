@@ -5,3 +5,9 @@ build
 gradlew*
 *.iml
 *.jar
+
+# avoid mistakenly adding proprietary files
+*.rsl
+*.xml
+*.railml
+*.railml3
