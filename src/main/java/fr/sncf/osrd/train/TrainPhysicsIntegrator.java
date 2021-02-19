@@ -99,7 +99,7 @@ public class TrainPhysicsIntegrator {
         var actionForce = targetForce - otherForces;
 
         // we can't realistically accelerate and brake with infinite forces, so limit it to some given value
-        if (actionForce > 0) {
+        if (actionForce >= 0) {
             var maxTraction = rollingStock.getMaxEffort(currentSpeed);
             if (actionForce > maxTraction)
                 actionForce = maxTraction;
