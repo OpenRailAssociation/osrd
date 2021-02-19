@@ -64,11 +64,11 @@ public class TrainScheduleWaypoint {
             Infra infra
     ) throws InvalidTimetableException {
         var time = LocalTime.parse(json.time, TIME_FORMAT);
-        var operationalPoint = infra.operationalPointMap.get(json.operationalPointId);
+        var operationalPoint = infra.trackGraph.operationalPoints.get(json.operationalPointId);
         if (operationalPoint == null)
             throw new InvalidTimetableException(String.format("unknown operational point %s", json.operationalPointId));
 
-        var edge = infra.trackSectionMap.get(json.edgeId);
+        var edge = infra.trackGraph.trackSectionMap.get(json.edgeId);
         if (edge == null)
             throw new InvalidTimetableException(String.format("unknown edge %s", json.edgeId));
         return TrainScheduleWaypoint.from(time, json.stopDuration, operationalPoint, edge);

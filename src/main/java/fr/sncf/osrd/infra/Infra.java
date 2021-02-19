@@ -1,13 +1,8 @@
 package fr.sncf.osrd.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.detectorgraph.DetectorNode;
-import fr.sncf.osrd.infra.detectorgraph.TVDSectionPath;
-import fr.sncf.osrd.infra.graph.Graph;
-import fr.sncf.osrd.infra.trackgraph.PlaceholderNode;
-import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.infra.trackgraph.TrackNode;
-import fr.sncf.osrd.util.CryoMap;
+import fr.sncf.osrd.infra.detectorgraph.DetectorGraph;
+import fr.sncf.osrd.infra.trackgraph.*;
 
 /**
  * <p>A data structure meant to store the immutable part of a railroad infrastructure.</p>
@@ -22,17 +17,6 @@ import fr.sncf.osrd.util.CryoMap;
  *  <li>Tracks can be part of a line</li>
  *  <li>Block sections are an entirely separate graph</li>
  * </ul>
- *
- * <p>An Infra is meant to be built as follows:</p>
- * <ol>
- *  <li>Lines and tracks are created and registered</li>
- *  <li>The topological nodes as registered first</li>
- *  <li>The topological edges are registered with the nodes, and with the infrastructure</li>
- *  <li>Section signals are registered</li>
- *  <li>Block sections are registered</li>
- *  <li>Edge attributes are computed (elements that were nodes are added as attributes on edges)</li>
- *  <li>Call prepare() to build caches and freeze the infrastructure</li>
- * </ol>
  *
  * <h1>Building a topological graph</h1>
  * <p>A topological graph is a special kind of graph, where there can't be a
@@ -78,106 +62,34 @@ import fr.sncf.osrd.util.CryoMap;
  */
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public final class Infra {
-    public final Graph<TrackNode, TrackSection> trackGraph;
-    public final Graph<DetectorNode, TVDSectionPath> detectorGraph;
-
-    public final CryoMap<String, TrackNode> trackNodeMap;
-    public final CryoMap<String, TrackSection> trackSectionMap;
-    public final CryoMap<String, OperationalPoint> operationalPointMap;
+    public final TrackGraph trackGraph;
+    public final DetectorGraph detectorGraph;
 
     /**
      * Create an OSRD Infra
      * @param trackGraph the track graph
      * @param detectorGraph the detector graph
-     * @param trackNodeMap a map from node IDs to nodes
-     * @param trackSectionMap a map to track section IDs to track sections
-     * @param operationalPoints a map from operational point IDs to operational points
      * @throws InvalidInfraException {@inheritDoc}
      */
     public Infra(
-            Graph<TrackNode, TrackSection> trackGraph,
-            Graph<DetectorNode, TVDSectionPath> detectorGraph,
-            CryoMap<String, TrackNode> trackNodeMap,
-            CryoMap<String, TrackSection> trackSectionMap,
-            CryoMap<String, OperationalPoint> operationalPoints
+            TrackGraph trackGraph,
+            DetectorGraph detectorGraph
     ) throws InvalidInfraException {
         this.trackGraph = trackGraph;
+        this.trackGraph.validate();
         this.detectorGraph = detectorGraph;
 
-        trackNodeMap.freeze();
-        this.trackNodeMap = trackNodeMap;
-
-        for (var edge : trackGraph.edges) {
-            edge.validate();
-        }
-        trackSectionMap.freeze();
-        this.trackSectionMap = trackSectionMap;
-
-        operationalPoints.freeze();
-        this.operationalPointMap = operationalPoints;
     }
 
     /**
      * A helper to help build Infra instances.
      */
     public static class Builder {
-        public final Graph<TrackNode, TrackSection> trackGraph = new Graph<>();
-        public final Graph<DetectorNode, TVDSectionPath> detectorGraph = new Graph<>();
-
-        public final CryoMap<String, OperationalPoint> operationalPoints = new CryoMap<>();
-        public final CryoMap<String, TrackNode> trackNodeMap = new CryoMap<>();
-        public final CryoMap<String, TrackSection> trackSectionMap = new CryoMap<>();
-
-        /**
-         * Create a placeholder node
-         * @param id the placeholder node ID
-         * @return the placeholder node
-         */
-        public PlaceholderNode makePlaceholderNode(String id) {
-            var node = new PlaceholderNode(id);
-            trackGraph.register(node);
-            trackNodeMap.put(node.id, node);
-            return node;
-        }
-
-        /**
-         * Make a new track section
-         * @param startNodeIndex the start node of the track
-         * @param endNodeIndex end end node of the track
-         * @param id the track section ID
-         * @param length the length of the track
-         * @return the new track section
-         */
-        public TrackSection makeTrackSection(
-                int startNodeIndex,
-                int endNodeIndex,
-                String id,
-                double length
-        ) {
-            var edge = TrackSection.linkNodes(
-                    startNodeIndex,
-                    endNodeIndex,
-                    id,
-                    length
-            );
-            trackGraph.register(edge);
-            trackSectionMap.put(edge.id, edge);
-            return edge;
-        }
-
-        /**
-         * Makes a new operational point
-         * @param id the operational point identifier
-         * @return the new operational point
-         */
-        public OperationalPoint makeOperationalPoint(String id) {
-            var op = new OperationalPoint(id);
-            operationalPoints.put(id, op);
-            return op;
-        }
+        public final TrackGraph trackGraph = new TrackGraph();
+        public final DetectorGraph detectorGraph = new DetectorGraph();
 
         public Infra build() throws InvalidInfraException {
-            return new Infra(trackGraph, detectorGraph, trackNodeMap, trackSectionMap, operationalPoints);
+            return new Infra(trackGraph, detectorGraph);
         }
     }
 }

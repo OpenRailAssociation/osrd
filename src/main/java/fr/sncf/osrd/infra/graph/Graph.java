@@ -21,7 +21,7 @@ import java.util.List;
  * @param <NodeT> The types of the nodes
  * @param <EdgeT> The type of the edges
  */
-public class Graph<NodeT extends AbstractNode, EdgeT extends AbstractEdge<NodeT, EdgeT>> {
+public abstract class Graph<NodeT extends AbstractNode, EdgeT extends AbstractEdge<NodeT, EdgeT>> {
     public final CryoList<NodeT> nodes;
     public final CryoList<EdgeT> edges;
 

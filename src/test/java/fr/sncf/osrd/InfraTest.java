@@ -8,9 +8,9 @@ class InfraTest {
     @Test
     public void simpleInfraBuild() throws InvalidInfraException {
         var infraBuilder = new Infra.Builder();
-        var nodeA = infraBuilder.makePlaceholderNode("A");
-        var nodeB = infraBuilder.makePlaceholderNode("B");
-        infraBuilder.makeTrackSection(nodeA.getIndex(), nodeB.getIndex(), "e1", 42);
+        var nodeA = infraBuilder.trackGraph.makePlaceholderNode("A");
+        var nodeB = infraBuilder.trackGraph.makePlaceholderNode("B");
+        infraBuilder.trackGraph.makeTrackSection(nodeA.getIndex(), nodeB.getIndex(), "e1", 42);
         infraBuilder.build();
     }
 }

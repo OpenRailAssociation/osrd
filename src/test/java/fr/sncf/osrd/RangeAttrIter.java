@@ -26,17 +26,17 @@ public class RangeAttrIter {
         // build a test infrastructure
         var infraBuilder = new Infra.Builder();
 
-        var nodeA = infraBuilder.makePlaceholderNode("A");
-        var nodeB = infraBuilder.makePlaceholderNode("B");
-        var nodeC = infraBuilder.makePlaceholderNode("C");
+        var nodeA = infraBuilder.trackGraph.makePlaceholderNode("A");
+        var nodeB = infraBuilder.trackGraph.makePlaceholderNode("B");
+        var nodeC = infraBuilder.trackGraph.makePlaceholderNode("C");
 
-        var forwardEdge = infraBuilder.makeTrackSection(
+        var forwardEdge = infraBuilder.trackGraph.makeTrackSection(
                 nodeA.getIndex(),
                 nodeB.getIndex(),
                 "e1", 42
         );
 
-        var backwardEdge = infraBuilder.makeTrackSection(
+        var backwardEdge = infraBuilder.trackGraph.makeTrackSection(
                 nodeC.getIndex(),
                 nodeB.getIndex(),
                 "e2", 50
