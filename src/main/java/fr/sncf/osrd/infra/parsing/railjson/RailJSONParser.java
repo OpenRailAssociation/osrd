@@ -83,7 +83,7 @@ public class RailJSONParser {
         // register operational points
         for (var operationalPoint : railJSON.operationalPoints) {
             var op = new OperationalPoint(operationalPoint.id);
-            infra.operationalPoints.put(op.id, op);
+            infra.trackGraph.operationalPoints.put(op.id, op);
         }
 
         // create a unique identifier for all track intersection nodes
@@ -102,11 +102,12 @@ public class RailJSONParser {
         for (var trackSection : railJSON.trackSections) {
             var beginID = nodeIDs.get(trackSection.beginEndpoint());
             var endID = nodeIDs.get(trackSection.endEndpoint());
-            var infraTrackSection = infra.makeTrackSection(beginID, endID, trackSection.id, trackSection.length);
+            var infraTrackSection = infra.trackGraph.makeTrackSection(beginID, endID, trackSection.id,
+                    trackSection.length);
             infraTrackSections.put(trackSection.id, infraTrackSection);
 
             for (var rjsOp : trackSection.operationalPoints) {
-                var op = infra.operationalPoints.get(rjsOp.ref.id);
+                var op = infra.trackGraph.operationalPoints.get(rjsOp.ref.id);
                 // add the reference from the OperationalPoint to the TrackSection,
                 // add from the TrackSection to the OperationalPoint
                 op.addRef(infraTrackSection, rjsOp.begin, rjsOp.end);

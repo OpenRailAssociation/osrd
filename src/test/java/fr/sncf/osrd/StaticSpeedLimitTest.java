@@ -44,10 +44,10 @@ public class StaticSpeedLimitTest {
     @Test
     public void simpleSpeedLimitTest() throws InvalidInfraException, SimulationError, InvalidTimetableException {
         var infraBuilder = new Infra.Builder();
-        var nodeA = infraBuilder.makePlaceholderNode("A");
-        var nodeB = infraBuilder.makePlaceholderNode("B");
+        var nodeA = infraBuilder.trackGraph.makePlaceholderNode("A");
+        var nodeB = infraBuilder.trackGraph.makePlaceholderNode("B");
         var edgeLength = 10000.0;
-        var edge = infraBuilder.makeTrackSection(nodeA.getIndex(), nodeB.getIndex(), "e1", edgeLength);
+        var edge = infraBuilder.trackGraph.makeTrackSection(nodeA.getIndex(), nodeB.getIndex(), "e1", edgeLength);
 
         // create operational points for the trip
         var opStart = new OperationalPoint("start id");
