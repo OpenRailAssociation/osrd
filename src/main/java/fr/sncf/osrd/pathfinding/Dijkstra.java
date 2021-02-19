@@ -147,13 +147,7 @@ public class Dijkstra {
             for (var neighborEdge : currentEdge.getEndNeighbors(currentDirection, graph)) {
 
                 // find which direction we're approaching the neighbor edge from
-                EdgeDirection direction;
-                if (neighborEdge.startNode == currentEndNode)
-                    direction = START_TO_STOP;
-                else {
-                    assert neighborEdge.endNode == currentEndNode;
-                    direction = STOP_TO_START;
-                }
+                EdgeDirection direction  = currentEdge.getNeighborDirection(neighborEdge, currentEndNode);
 
                 // if the neighbor was already explored from this direction, skip it
                 if (explored[direction.id].get(neighborEdge.getIndex()))
