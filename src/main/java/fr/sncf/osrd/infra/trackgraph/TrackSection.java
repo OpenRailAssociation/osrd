@@ -142,9 +142,7 @@ public final class TrackSection extends AbstractEdge<TrackNode, TrackSection> {
     public final ArrayList<RangeValue<SpeedSection>> speedSectionsForward = new ArrayList<>();
     public final ArrayList<RangeValue<SpeedSection>> speedSectionsBackward = new ArrayList<>();
     public final IntervalTree<OperationalPoint.Ref> operationalPoints = new IntervalTree<>();
-    public final PointSequence<TrackSensor> trackSensorsBoth = new PointSequence<>();
-    public final PointSequence<TrackSensor> trackSensorsForward = new PointSequence<>();
-    public final PointSequence<TrackSensor> trackSensorsBackward = new PointSequence<>();
+    public final PointSequence<Detector> detectors = new PointSequence<>();
     public final PointSequence<VisibleTrackObject> visibleTrackObjectsForward = new PointSequence<>();
     public final PointSequence<VisibleTrackObject> visibleTrackObjectsBackward = new PointSequence<>();
 

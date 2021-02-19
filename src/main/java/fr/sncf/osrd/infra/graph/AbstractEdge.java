@@ -1,9 +1,6 @@
 package fr.sncf.osrd.infra.graph;
 
-import fr.sncf.osrd.util.CryoList;
-import fr.sncf.osrd.util.Freezable;
 import fr.sncf.osrd.util.Indexable;
-import org.w3c.dom.Node;
 
 import java.util.List;
 
@@ -84,5 +81,15 @@ public abstract class AbstractEdge<NodeT extends AbstractNode,
         this.startNode = startNode;
         this.endNode = endNode;
         this.length = length;
+    }
+
+    /**
+     * Find which direction we're approaching a neighbor edge from
+     */
+    public EdgeDirection getNeighborDirection(EdgeT neighbor, int node) {
+        if (neighbor.startNode == node)
+            return EdgeDirection.START_TO_STOP;
+        assert neighbor.endNode == node;
+        return EdgeDirection.STOP_TO_START;
     }
 }

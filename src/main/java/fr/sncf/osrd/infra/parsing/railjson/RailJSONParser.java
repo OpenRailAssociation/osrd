@@ -114,23 +114,16 @@ public class RailJSONParser {
             }
 
             // Parse detectors
-            var detectorsBothBuilder = infraTrackSection.trackSensorsBoth.builder();
-            var detectorsBackwardBuilder = infraTrackSection.trackSensorsBackward.builder();
-            var detectorsForwardBuilder = infraTrackSection.trackSensorsForward.builder();
+            var detectorsBuilder = infraTrackSection.detectors.builder();
 
             for (var rjsDetector : trackSection.trainDetectors) {
                 var detector = new Detector(rjsDetector.id);
                 if (rjsDetector.applicableDirections == ApplicableDirections.BOTH)
-                    detectorsBothBuilder.add(rjsDetector.position, detector);
-                if (rjsDetector.applicableDirections == ApplicableDirections.NORMAL)
-                    detectorsForwardBuilder.add(rjsDetector.position, detector);
-                if (rjsDetector.applicableDirections == ApplicableDirections.REVERSE)
-                    detectorsBackwardBuilder.add(rjsDetector.position, detector);
+                    detectorsBuilder.add(rjsDetector.position, detector);
+                // TODO: Handle other type of detectors
             }
 
-            detectorsBothBuilder.build();
-            detectorsBackwardBuilder.build();
-            detectorsForwardBuilder.build();
+            detectorsBuilder.build();
         }
 
         // link track sections together

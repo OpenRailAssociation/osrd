@@ -86,9 +86,9 @@ public final class Infra {
      */
     public static class Builder {
         public final TrackGraph trackGraph = new TrackGraph();
-        public final DetectorGraph detectorGraph = new DetectorGraph();
 
         public Infra build() throws InvalidInfraException {
+            var detectorGraph = new DetectorGraph(trackGraph);
             return new Infra(trackGraph, detectorGraph);
         }
     }
