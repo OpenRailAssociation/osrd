@@ -17,7 +17,7 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
 
     public final CryoMap<String, DetectorNode> detectorNodeMap = new CryoMap<>();
     // TVDSectionPath are identified by the couple (StartNode, EndNode)
-    public final CryoMap<Pair<Integer, Integer>, TVDSectionPath> tvdSectionPathMap = new CryoMap<>();
+    private final CryoMap<Pair<Integer, Integer>, TVDSectionPath> tvdSectionPathMap = new CryoMap<>();
 
     /**
      * Build a DetectorGraph given a TrackGraph
@@ -73,6 +73,9 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
             var firstDetector = findDetectorNode(extremityDetectors.getKey().value);
             var lastDetector = findDetectorNode(extremityDetectors.getValue().value);
             if (direction == EdgeDirection.START_TO_STOP) {
+                // Check if the tvdSection not already handled
+                if (containsTVDSectionPath(linkDetector.getIndex(), firstDetector.getIndex()))
+                    return;
                 // Create TVDSectionPath
                 distance += extremityDetectors.getKey().position;
                 var tvdSectionPath = makeTVDSectionPath(linkDetector.getIndex(), firstDetector.getIndex(), distance,
@@ -92,6 +95,9 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
                 linkDetector = lastDetector;
                 distance = trackSection.length - extremityDetectors.getValue().position;
             } else {
+                // Check if the tvdSection not already handled
+                if (containsTVDSectionPath(linkDetector.getIndex(), lastDetector.getIndex()))
+                    return;
                 // Create TVDSectionPath
                 distance += trackSection.length - extremityDetectors.getValue().position;
                 var tvdSectionPath = makeTVDSectionPath(linkDetector.getIndex(), lastDetector.getIndex(), distance,
@@ -225,10 +231,28 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
             EdgeDirection startNodeDirection,
             EdgeDirection endNodeDirection
     ) {
+        // Assure order in the tvdSectionPath id key
+        if (startNode > endNode) {
+            return makeTVDSectionPath(endNode, startNode, length, endNodeDirection, startNodeDirection);
+        }
         var tvdSectionPath = new TVDSectionPath(startNode, endNode, length, startNodeDirection, endNodeDirection);
         this.register(tvdSectionPath);
         var id = new Pair<>(startNode, endNode);
         tvdSectionPathMap.put(id, tvdSectionPath);
         return tvdSectionPath;
+    }
+
+    private Pair<Integer, Integer>  makeTVDSectionPathKey(int nodeA, int nodeB) {
+        if (nodeA < nodeB)
+            return new Pair<>(nodeA, nodeB);
+        return new Pair<>(nodeB, nodeA);
+    }
+
+    public TVDSectionPath getTVDSectionPath(int nodeA, int nodeB) {
+        return tvdSectionPathMap.get(makeTVDSectionPathKey(nodeA, nodeB));
+    }
+
+    public boolean containsTVDSectionPath(int nodeA, int nodeB) {
+        return tvdSectionPathMap.containsKey(makeTVDSectionPathKey(nodeA, nodeB));
     }
 }
