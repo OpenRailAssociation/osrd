@@ -1,9 +1,7 @@
 package fr.sncf.osrd.infra.parsing.railml;
 
-import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 
-import fr.sncf.osrd.infra.parsing.railjson.RailJSONParser;
 import fr.sncf.osrd.infra.parsing.railjson.schema.*;
 import fr.sncf.osrd.util.XmlNamespaceCleaner;
 import org.dom4j.Document;
@@ -63,8 +61,8 @@ public final class RailMLParser {
                 rjsSwitches,
                 rjsOperationalPoints,
                 rjsTvdSections,
-                rjsSpeedSections
-        );
+                rjsSpeedSections,
+                new ArrayList<>());
     }
 
     private static Map<String, DescriptionLevel> parseDescriptionLevels(Document document) {
