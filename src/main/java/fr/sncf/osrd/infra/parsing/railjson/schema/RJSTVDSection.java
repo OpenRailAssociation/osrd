@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
-/** The train detectors reference the TVD sections they're part of. */
+/** The train detectors reference the TVDSection sections they're part of. */
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSTVDSection implements Identified {
     public final String id;

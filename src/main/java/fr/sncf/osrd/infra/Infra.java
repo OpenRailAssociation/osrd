@@ -2,7 +2,12 @@ package fr.sncf.osrd.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.detectorgraph.DetectorGraph;
+import fr.sncf.osrd.infra.parsing.railjson.schema.ID;
 import fr.sncf.osrd.infra.trackgraph.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * <p>A data structure meant to store the immutable part of a railroad infrastructure.</p>
@@ -64,18 +69,22 @@ import fr.sncf.osrd.infra.trackgraph.*;
 public final class Infra {
     public final TrackGraph trackGraph;
     public final DetectorGraph detectorGraph;
+    public final HashMap<ID<TVDSection>, TVDSection> tvdSections;
 
     /**
      * Create an OSRD Infra
      * @param trackGraph the track graph
      * @param detectorGraph the detector graph
+     * @param tvdSections the list of TVDSection
      * @throws InvalidInfraException {@inheritDoc}
      */
     public Infra(
             TrackGraph trackGraph,
-            DetectorGraph detectorGraph
+            DetectorGraph detectorGraph,
+            HashMap<ID<TVDSection>, TVDSection> tvdSections
     ) throws InvalidInfraException {
         this.trackGraph = trackGraph;
+        this.tvdSections = tvdSections;
         this.trackGraph.validate();
         this.detectorGraph = detectorGraph;
 
@@ -86,10 +95,44 @@ public final class Infra {
      */
     public static class Builder {
         public final TrackGraph trackGraph = new TrackGraph();
+        public final HashMap<ID<TVDSection>, TVDSection> tvdSections = new HashMap<>();
 
+        /**
+         * Build a new Infra from the given constructed trackGraph and tvdSections
+         */
         public Infra build() throws InvalidInfraException {
             var detectorGraph = new DetectorGraph(trackGraph);
-            return new Infra(trackGraph, detectorGraph);
+            linkTVDSectionToPath(detectorGraph);
+            return new Infra(trackGraph, detectorGraph, tvdSections);
+        }
+
+        /**
+         * Link TVD Sections with TVDSectionPath of a given detectorGraph
+         */
+        private void linkTVDSectionToPath(DetectorGraph detectorGraph) {
+            // Initialize reverse map DetectorNode -> TVDSections
+            var nbDetector = detectorGraph.nodes.size();
+            var detectorNodeToTVDSections = new ArrayList<HashSet<ID<TVDSection>>>(nbDetector);
+            for (int i = 0; i < nbDetector; i++)
+                detectorNodeToTVDSections.add(new HashSet<>());
+            for (var tvdEntry : tvdSections.entrySet()) {
+                for (var detector : tvdEntry.getValue().detectors) {
+                    var nodeIndex = detectorGraph.detectorNodeMap.get(detector).getIndex();
+                    detectorNodeToTVDSections.get(nodeIndex).add(tvdEntry.getKey());
+                }
+            }
+
+            // Compute which TVDSection belongs to each TVDSectionPath
+            for (var tvdSectionPath : detectorGraph.getTVDSectionPathCollection()) {
+                // Set intersection
+                var tvdNodeStart = detectorNodeToTVDSections.get(tvdSectionPath.startNode);
+                for (var tvdID : detectorNodeToTVDSections.get(tvdSectionPath.endNode)) {
+                    if (tvdNodeStart.contains(tvdID)) {
+                        tvdSectionPath.tvdSections.add(tvdID);
+                        tvdSections.get(tvdID).sections.add(tvdSectionPath);
+                    }
+                }
+            }
         }
     }
 }

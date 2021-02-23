@@ -3,6 +3,7 @@ package fr.sncf.osrd.infra.detectorgraph;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
 import fr.sncf.osrd.infra.graph.EdgeEndpoint;
 import fr.sncf.osrd.infra.graph.Graph;
+import fr.sncf.osrd.infra.parsing.railjson.schema.ID;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
@@ -10,12 +11,13 @@ import fr.sncf.osrd.util.CryoMap;
 import fr.sncf.osrd.util.PointValue;
 import javafx.util.Pair;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
 public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
 
-    public final CryoMap<String, DetectorNode> detectorNodeMap = new CryoMap<>();
+    public final CryoMap<ID<Detector>, DetectorNode> detectorNodeMap = new CryoMap<>();
     // TVDSectionPath are identified by the couple (StartNode, EndNode)
     private final CryoMap<Pair<Integer, Integer>, TVDSectionPath> tvdSectionPathMap = new CryoMap<>();
 
@@ -26,7 +28,7 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
         // Create Detector nodes
         for (var trackSection : trackGraph.edges) {
             for (var detector : trackSection.detectors) {
-                makeDetectorNode(detector.value.id);
+                makeDetectorNode(detector.value);
             }
         }
 
@@ -198,19 +200,19 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
      * @return the detector node
      */
     private DetectorNode findDetectorNode(Detector detector) {
-        return this.detectorNodeMap.get(detector.id);
+        return this.detectorNodeMap.get(ID.from(detector));
     }
 
     /**
      * Create a DetectorNode
      *
-     * @param id the detector ID
+     * @param detector linked to the node
      * @return the node
      */
-    private DetectorNode makeDetectorNode(String id) {
+    private DetectorNode makeDetectorNode(Detector detector) {
         var node = new DetectorNode();
         this.register(node);
-        detectorNodeMap.put(id, node);
+        detectorNodeMap.put(ID.from(detector), node);
         return node;
     }
 
@@ -254,5 +256,9 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
 
     public boolean containsTVDSectionPath(int nodeA, int nodeB) {
         return tvdSectionPathMap.containsKey(makeTVDSectionPathKey(nodeA, nodeB));
+    }
+
+    public Collection<TVDSectionPath> getTVDSectionPathCollection() {
+        return tvdSectionPathMap.values();
     }
 }

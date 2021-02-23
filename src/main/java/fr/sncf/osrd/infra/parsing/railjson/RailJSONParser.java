@@ -6,8 +6,10 @@ import com.squareup.moshi.*;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
+import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.graph.ApplicableDirections;
 import fr.sncf.osrd.infra.graph.EdgeDirection;
+import fr.sncf.osrd.infra.parsing.railjson.schema.ID;
 import fr.sncf.osrd.infra.parsing.railjson.schema.RJSRoot;
 import fr.sncf.osrd.infra.parsing.railjson.schema.trackobjects.RJSTrackObject;
 import fr.sncf.osrd.infra.parsing.railjson.schema.trackranges.RJSTrackRange;
@@ -17,6 +19,7 @@ import fr.sncf.osrd.util.RangeSequence;
 import okio.BufferedSource;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class RailJSONParser {
@@ -97,6 +100,8 @@ public class RailJSONParser {
             if (infra.trackGraph.getNode(i) == null)
                 infra.trackGraph.setNode(i, new PlaceholderNode(String.valueOf(i)));
 
+        var detectorsMap = new HashMap<String, Detector>();
+
         // create track sections
         var infraTrackSections = new HashMap<String, TrackSection>();
         for (var trackSection : railJSON.trackSections) {
@@ -118,6 +123,7 @@ public class RailJSONParser {
 
             for (var rjsDetector : trackSection.trainDetectors) {
                 var detector = new Detector(rjsDetector.id);
+                detectorsMap.put(detector.id, detector);
                 if (rjsDetector.applicableDirections == ApplicableDirections.BOTH)
                     detectorsBuilder.add(rjsDetector.position, detector);
                 // TODO: Handle other type of detectors
@@ -133,6 +139,16 @@ public class RailJSONParser {
             var beginEdge = infraTrackSections.get(begin.section.id);
             var endEdge = infraTrackSections.get(end.section.id);
             linkEdges(beginEdge, begin.endpoint, endEdge, end.endpoint);
+        }
+
+        // Parse TVDSections
+        for (var rjsonTVD : railJSON.tvdSections) {
+            var detectors = new ArrayList<ID<Detector>>();
+            for (var detectorID : rjsonTVD.trainDetectors) {
+                detectors.add(ID.from(detectorsMap.get(detectorID.id)));
+            }
+            var tvd = new TVDSection(rjsonTVD.id, detectors, rjsonTVD.isBerthingTrack);
+            infra.tvdSections.put(ID.from(tvd), tvd);
         }
 
         return infra.build();
