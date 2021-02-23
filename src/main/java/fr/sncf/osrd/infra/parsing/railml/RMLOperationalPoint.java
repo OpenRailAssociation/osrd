@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class OperationalPoint {
+public final class RMLOperationalPoint {
     static ArrayList<RJSOperationalPoint> parse(
             Map<String, NetElement> netElementMap,
             Document document,

@@ -10,7 +10,7 @@ import org.dom4j.Element;
 import java.util.ArrayList;
 import java.util.Map;
 
-public final class SwitchIS {
+public final class RMLSwitchIS {
     private static RJSTrackSection.EndpointID parseSwitchBranch(
             Map<String, RJSTrackSectionLink> netRelations,
             RJSTrackSection.EndpointID baseBranch,
