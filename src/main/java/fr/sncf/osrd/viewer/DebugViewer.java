@@ -16,7 +16,7 @@ import java.util.Map;
 
 // caused by the temporary opRef.begin == opRef.end
 @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
-public class InfraViewer {
+public class DebugViewer {
     private final Graph graph;
     private final SpriteManager spriteManager;
     private final Map<Train, Sprite> trainSprites = new HashMap<>();
@@ -33,7 +33,7 @@ public class InfraViewer {
      * Create a viewer for debug purposes
      * @param infra the infrastructure display
      */
-    public InfraViewer(Infra infra) {
+    public DebugViewer(Infra infra) {
         System.setProperty("org.graphstream.ui", "swing");
         graph = new SingleGraph("OSRD");
         graph.setAttribute("ui.quality");

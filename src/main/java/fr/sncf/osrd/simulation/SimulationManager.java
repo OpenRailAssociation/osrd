@@ -1,7 +1,7 @@
 package fr.sncf.osrd.simulation;
 
 import fr.sncf.osrd.config.Config;
-import fr.sncf.osrd.viewer.InfraViewer;
+import fr.sncf.osrd.viewer.DebugViewer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +33,7 @@ public final class SimulationManager {
     }
 
     private void updateViewer(
-            InfraViewer viewer,
+            DebugViewer viewer,
             TimelineEvent<?> nextEvent
     ) throws InterruptedException {
         double nextEventTime = nextEvent.scheduledTime;
@@ -70,10 +70,10 @@ public final class SimulationManager {
      * Run the simulation
      */
     public void run() throws SimulationError, InterruptedException {
-        InfraViewer viewer = null;
+        DebugViewer viewer = null;
 
         if (config.showViewer) {
-            viewer = new InfraViewer(config.infra);
+            viewer = new DebugViewer(config.infra);
             viewer.display();
         }
 
