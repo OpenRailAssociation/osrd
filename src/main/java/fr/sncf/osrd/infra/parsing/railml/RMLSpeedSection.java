@@ -1,6 +1,7 @@
 package fr.sncf.osrd.infra.parsing.railml;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.SpeedSection;
 import fr.sncf.osrd.infra.parsing.railjson.schema.ID;
 import fr.sncf.osrd.infra.parsing.railjson.schema.RJSSpeedSection;
 import fr.sncf.osrd.infra.parsing.railjson.schema.RJSTrackSection;
@@ -14,7 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class SpeedSection {
+public final class RMLSpeedSection {
     static final Logger logger = LoggerFactory.getLogger(SpeedSection.class);
 
     private static RJSSpeedSection parseSpeedLimit(Element element) {

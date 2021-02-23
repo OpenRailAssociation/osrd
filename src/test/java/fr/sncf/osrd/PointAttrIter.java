@@ -56,7 +56,7 @@ class PointAttrIter {
             var builder = secondEdge.operationalPoints.builder();
             builder.add(42.0 - 42.0, common2a);
             builder.add(42.0 - 42.0, common2b);
-            builder.add(60.0 - 42.0, new OperationalPoint("3"));
+            builder.add(60.0 - 42.0, new RMLOperationalPoint("3"));
             builder.build();
         }
 

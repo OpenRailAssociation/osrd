@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 
-public final class TVDSection {
+public final class RMLTVDSection {
 
     private static ArrayList<ID<RJSBufferStop>> parseBufferStops(Element tvdSection) {
         var bufferStops = new ArrayList<ID<RJSBufferStop>>();

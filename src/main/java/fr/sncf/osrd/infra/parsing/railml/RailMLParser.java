@@ -48,12 +48,12 @@ public final class RailMLParser {
         }
 
         // create and fill the root RailJSON structure
-        var rjsOperationalPoints = OperationalPoint.parse(netElements, document, rjsTrackSections);
-        var rjsSpeedSections = SpeedSection.parse(netElements, document, rjsTrackSections);
-        var rjsTvdSections = TVDSection.parse(netElements, document, rjsTrackSections);
-        var rjsSwitches = SwitchIS.parse(netElements, netRelations, document);
-        BufferStop.parse(netElements, document, rjsTrackSections);
-        TrainDetectionElement.parse(netElements, document, rjsTrackSections);
+        var rjsOperationalPoints = RMLOperationalPoint.parse(netElements, document, rjsTrackSections);
+        var rjsSpeedSections = RMLSpeedSection.parse(netElements, document, rjsTrackSections);
+        var rjsTvdSections = RMLTVDSection.parse(netElements, document, rjsTrackSections);
+        var rjsSwitches = RMLSwitchIS.parse(netElements, netRelations, document);
+        RMLBufferStop.parse(netElements, document, rjsTrackSections);
+        RMLTrainDetectionElement.parse(netElements, document, rjsTrackSections);
 
         return new RJSRoot(
                 rjsTrackSections.values(),
