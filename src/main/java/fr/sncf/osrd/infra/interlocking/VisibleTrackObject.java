@@ -1,6 +1,6 @@
 package fr.sncf.osrd.infra.interlocking;
 
-import fr.sncf.osrd.simulation.utils.Simulation;
+import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.train.TrainState;
 
 public interface VisibleTrackObject {

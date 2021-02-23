@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra.graph;
+package fr.sncf.osrd.util.graph;
 
 /** Encodes a direction along an edge. */
 public enum EdgeDirection {

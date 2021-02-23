@@ -1,9 +1,9 @@
 package fr.sncf.osrd.infra.parsing.railml;
 
-import static fr.sncf.osrd.infra.graph.EdgeEndpoint.*;
+import static fr.sncf.osrd.util.graph.EdgeEndpoint.*;
 
-import fr.sncf.osrd.infra.graph.EdgeEndpoint;
-import fr.sncf.osrd.infra.graph.ApplicableDirections;
+import fr.sncf.osrd.util.graph.EdgeEndpoint;
+import fr.sncf.osrd.util.graph.ApplicableDirections;
 import fr.sncf.osrd.infra.parsing.railjson.schema.ID;
 import fr.sncf.osrd.infra.parsing.railjson.schema.RJSTrackSection.EndpointID;
 import fr.sncf.osrd.infra.parsing.railjson.schema.RJSTrackSectionLink;

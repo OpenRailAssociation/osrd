@@ -2,14 +2,13 @@ package fr.sncf.osrd.simulation;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.simulation.utils.*;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.timetable.Schedule;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPath;
-import fr.sncf.osrd.simulation.utils.TimelineEvent.State;
+import fr.sncf.osrd.simulation.TimelineEvent.State;
 import fr.sncf.osrd.util.CryoList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,4 +1,4 @@
-package fr.sncf.osrd.simulation.utils;
+package fr.sncf.osrd.simulation;
 
 public abstract class SimChange<ResultT> extends Change {
     public SimChange(Simulation sim) {

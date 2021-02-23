@@ -1,9 +1,5 @@
 package fr.sncf.osrd.simulation;
 
-import fr.sncf.osrd.simulation.utils.Change;
-import fr.sncf.osrd.simulation.utils.ChangeLog;
-import fr.sncf.osrd.simulation.utils.Simulation;
-import fr.sncf.osrd.simulation.utils.SimulationError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

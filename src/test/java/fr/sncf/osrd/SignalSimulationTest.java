@@ -4,7 +4,7 @@ import static fr.sncf.osrd.SignalSimulationTest.Signal.Aspect.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.simulation.utils.*;
+import fr.sncf.osrd.simulation.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.Objects;

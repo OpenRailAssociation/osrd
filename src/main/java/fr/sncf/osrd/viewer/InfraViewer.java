@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra.viewer;
+package fr.sncf.osrd.viewer;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;

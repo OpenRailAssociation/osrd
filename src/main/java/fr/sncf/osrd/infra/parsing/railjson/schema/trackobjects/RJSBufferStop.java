@@ -1,7 +1,6 @@
 package fr.sncf.osrd.infra.parsing.railjson.schema.trackobjects;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.graph.ApplicableDirections;
+import fr.sncf.osrd.util.graph.ApplicableDirections;
 import fr.sncf.osrd.infra.parsing.railjson.schema.Identified;
 
 public class RJSBufferStop extends DirectionalRJSTrackObject implements Identified {

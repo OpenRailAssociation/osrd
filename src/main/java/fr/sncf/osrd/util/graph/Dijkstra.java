@@ -1,11 +1,7 @@
-package fr.sncf.osrd.pathfinding;
+package fr.sncf.osrd.util.graph;
 
-import static fr.sncf.osrd.infra.graph.EdgeDirection.*;
+import static fr.sncf.osrd.util.graph.EdgeDirection.*;
 
-import fr.sncf.osrd.infra.graph.AbstractEdge;
-import fr.sncf.osrd.infra.graph.AbstractNode;
-import fr.sncf.osrd.infra.graph.EdgeDirection;
-import fr.sncf.osrd.infra.graph.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

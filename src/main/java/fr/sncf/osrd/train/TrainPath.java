@@ -2,10 +2,10 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.graph.EdgeDirection;
+import fr.sncf.osrd.util.graph.EdgeDirection;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.pathfinding.CostFunction;
-import fr.sncf.osrd.pathfinding.Dijkstra;
+import fr.sncf.osrd.util.graph.CostFunction;
+import fr.sncf.osrd.util.graph.Dijkstra;
 import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.util.CryoList;
 import fr.sncf.osrd.util.Freezable;

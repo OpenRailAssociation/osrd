@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra.graph;
+package fr.sncf.osrd.util.graph;
 
 public enum ApplicableDirections {
     NORMAL(new EdgeDirection[]{EdgeDirection.START_TO_STOP}),

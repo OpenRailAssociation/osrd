@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra.graph;
+package fr.sncf.osrd.util.graph;
 
 /** Encodes an end, an endpoint, the tip of an edge. */
 public enum EdgeEndpoint {

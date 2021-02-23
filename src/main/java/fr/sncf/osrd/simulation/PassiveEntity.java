@@ -1,4 +1,4 @@
-package fr.sncf.osrd.simulation.utils;
+package fr.sncf.osrd.simulation;
 
 /**
  * A convenience class for an Entity that doesn't react to events.

@@ -5,7 +5,7 @@ import static fr.sncf.osrd.infra.trackgraph.TrackSection.linkEdges;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.detectorgraph.DetectorGraph;
-import fr.sncf.osrd.infra.graph.EdgeEndpoint;
+import fr.sncf.osrd.util.graph.EdgeEndpoint;
 import fr.sncf.osrd.infra.parsing.railjson.schema.ID;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;

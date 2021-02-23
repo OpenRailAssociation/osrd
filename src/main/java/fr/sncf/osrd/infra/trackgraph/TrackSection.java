@@ -4,11 +4,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.SpeedSection;
-import fr.sncf.osrd.infra.graph.AbstractEdge;
-import fr.sncf.osrd.infra.graph.EdgeDirection;
-import fr.sncf.osrd.infra.graph.EdgeEndpoint;
-import fr.sncf.osrd.infra.graph.Graph;
-import fr.sncf.osrd.infra.interlocking.TrackSensor;
+import fr.sncf.osrd.util.graph.AbstractEdge;
+import fr.sncf.osrd.util.graph.EdgeDirection;
+import fr.sncf.osrd.util.graph.EdgeEndpoint;
+import fr.sncf.osrd.util.graph.Graph;
 import fr.sncf.osrd.infra.interlocking.VisibleTrackObject;
 import fr.sncf.osrd.util.*;
 

@@ -1,8 +1,8 @@
 package fr.sncf.osrd.infra.detectorgraph;
 
-import fr.sncf.osrd.infra.graph.EdgeDirection;
-import fr.sncf.osrd.infra.graph.EdgeEndpoint;
-import fr.sncf.osrd.infra.graph.Graph;
+import fr.sncf.osrd.util.graph.EdgeDirection;
+import fr.sncf.osrd.util.graph.EdgeEndpoint;
+import fr.sncf.osrd.util.graph.Graph;
 import fr.sncf.osrd.infra.parsing.railjson.schema.ID;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;

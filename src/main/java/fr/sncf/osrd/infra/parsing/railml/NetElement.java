@@ -1,6 +1,6 @@
 package fr.sncf.osrd.infra.parsing.railml;
 
-import fr.sncf.osrd.infra.graph.EdgeEndpoint;
+import fr.sncf.osrd.util.graph.EdgeEndpoint;
 import fr.sncf.osrd.util.PointValue;
 import fr.sncf.osrd.util.RangeValue;
 import org.dom4j.Document;

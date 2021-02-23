@@ -1,6 +1,4 @@
-package fr.sncf.osrd.simulation.utils;
-
-import java.util.Map;
+package fr.sncf.osrd.simulation;
 
 /**
  * The base interface for all events in the simulation.

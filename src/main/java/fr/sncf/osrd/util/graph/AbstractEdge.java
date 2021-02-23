@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra.graph;
+package fr.sncf.osrd.util.graph;
 
 import fr.sncf.osrd.util.Indexable;
 
