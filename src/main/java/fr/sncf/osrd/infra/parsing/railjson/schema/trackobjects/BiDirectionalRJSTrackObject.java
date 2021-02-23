@@ -1,6 +1,6 @@
 package fr.sncf.osrd.infra.parsing.railjson.schema.trackobjects;
 
-import fr.sncf.osrd.infra.graph.ApplicableDirections;
+import fr.sncf.osrd.util.graph.ApplicableDirections;
 
 public class BiDirectionalRJSTrackObject extends RJSTrackObject {
     BiDirectionalRJSTrackObject(double position) {

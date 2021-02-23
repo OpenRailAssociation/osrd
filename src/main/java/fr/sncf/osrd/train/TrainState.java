@@ -2,9 +2,9 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.simulation.utils.Simulation;
-import fr.sncf.osrd.simulation.utils.SimulationError;
-import fr.sncf.osrd.simulation.utils.TimelineEvent;
+import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;

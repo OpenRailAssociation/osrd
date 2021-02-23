@@ -1,8 +1,7 @@
 package fr.sncf.osrd.simulation;
 
 import fr.sncf.osrd.config.Config;
-import fr.sncf.osrd.infra.viewer.InfraViewer;
-import fr.sncf.osrd.simulation.utils.*;
+import fr.sncf.osrd.viewer.InfraViewer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

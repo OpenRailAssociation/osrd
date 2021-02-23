@@ -1,9 +1,7 @@
 package fr.sncf.osrd.simulation;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.simulation.utils.PassiveEntity;
 import fr.sncf.osrd.train.Train;
 
 import java.util.HashSet;

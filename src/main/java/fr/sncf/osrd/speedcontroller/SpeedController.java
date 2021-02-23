@@ -1,6 +1,6 @@
 package fr.sncf.osrd.speedcontroller;
 
-import fr.sncf.osrd.simulation.utils.ChangeSerializer.SerializableDouble;
+import fr.sncf.osrd.simulation.ChangeSerializer.SerializableDouble;
 import fr.sncf.osrd.train.*;
 
 public abstract class SpeedController {

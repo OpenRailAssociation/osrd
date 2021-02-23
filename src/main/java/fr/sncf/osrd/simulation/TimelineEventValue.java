@@ -1,4 +1,4 @@
-package fr.sncf.osrd.simulation.utils;
+package fr.sncf.osrd.simulation;
 
 /**
  * This is a base class for everything that can be associated with a timeline event.

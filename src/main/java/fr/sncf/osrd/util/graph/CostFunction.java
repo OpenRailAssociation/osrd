@@ -1,6 +1,4 @@
-package fr.sncf.osrd.pathfinding;
-
-import fr.sncf.osrd.infra.graph.AbstractEdge;
+package fr.sncf.osrd.util.graph;
 
 @FunctionalInterface
 public interface CostFunction<EdgeT> {

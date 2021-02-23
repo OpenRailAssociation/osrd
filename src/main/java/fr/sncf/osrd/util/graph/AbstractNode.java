@@ -1,6 +1,5 @@
-package fr.sncf.osrd.infra.graph;
+package fr.sncf.osrd.util.graph;
 
-import fr.sncf.osrd.util.Freezable;
 import fr.sncf.osrd.util.Indexable;
 
 public abstract class AbstractNode implements Indexable {

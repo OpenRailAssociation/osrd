@@ -1,4 +1,4 @@
-package fr.sncf.osrd.simulation.utils;
+package fr.sncf.osrd.simulation;
 
 /**
  * A read-only collection of Changes.

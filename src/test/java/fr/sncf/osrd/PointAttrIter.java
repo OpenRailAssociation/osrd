@@ -2,19 +2,6 @@ package fr.sncf.osrd;
 
 import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.OperationalPoint;
-import fr.sncf.osrd.infra.graph.EdgeDirection;
-import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.train.PathAttrIterator;
-import fr.sncf.osrd.train.TrainPath;
-import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.stream.Collectors;
-
 class PointAttrIter {
     /* TODO: adapt these tests to use slopes instead of operationalPoints.
 

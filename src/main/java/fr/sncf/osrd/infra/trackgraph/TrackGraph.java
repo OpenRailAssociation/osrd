@@ -2,7 +2,7 @@ package fr.sncf.osrd.infra.trackgraph;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
-import fr.sncf.osrd.infra.graph.Graph;
+import fr.sncf.osrd.util.graph.Graph;
 import fr.sncf.osrd.util.CryoMap;
 
 public final class TrackGraph extends Graph<TrackNode, TrackSection> {

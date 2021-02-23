@@ -1,11 +1,9 @@
-package fr.sncf.osrd.simulation.utils;
+package fr.sncf.osrd.simulation;
 
-import static fr.sncf.osrd.simulation.utils.TimelineEvent.State;
+import static fr.sncf.osrd.simulation.TimelineEvent.State;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.simulation.SchedulerSystem;
-import fr.sncf.osrd.simulation.World;
 import fr.sncf.osrd.timetable.Schedule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,11 +1,6 @@
-package fr.sncf.osrd.infra.graph;
+package fr.sncf.osrd.util.graph;
 
-import fr.sncf.osrd.util.CryoFlatMap;
 import fr.sncf.osrd.util.CryoList;
-import fr.sncf.osrd.util.Freezable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * <p>A pretty special graph, where edges hold all the topological information.

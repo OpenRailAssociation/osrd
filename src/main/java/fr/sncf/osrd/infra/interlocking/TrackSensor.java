@@ -1,7 +1,7 @@
 package fr.sncf.osrd.infra.interlocking;
 
 import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.simulation.utils.Simulation;
+import fr.sncf.osrd.simulation.Simulation;
 
 public interface TrackSensor {
     /**
