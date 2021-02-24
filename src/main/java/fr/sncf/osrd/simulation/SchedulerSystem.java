@@ -18,7 +18,7 @@ public final class SchedulerSystem extends Entity {
 
     private SchedulerSystem() {
         // the train must react to its own train creation events
-        super("scheduler");
+        super(EntityType.SCHEDULER, "");
         this.addSubscriber(this);
     }
 

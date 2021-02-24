@@ -35,7 +35,7 @@ public final class Simulation {
     static final Logger logger = LoggerFactory.getLogger(Simulation.class);
 
     /** A map from entity identifiers to entities. */
-    private final HashMap<String, Entity> entities = new HashMap<>();
+    private final HashMap<EntityID, Entity> entities = new HashMap<>();
 
     public final World world;
 
@@ -103,16 +103,20 @@ public final class Simulation {
     // region ENTITES
 
     // TODO: document
-    public Entity getEntity(String entityId) {
+    public Entity getEntity(EntityType type, String id) {
+        return entities.get(new EntityID(type, id));
+    }
+
+    public Entity getEntity(EntityID entityId) {
         return entities.get(entityId);
     }
 
     public void registerEntity(Entity entity) {
-        entities.put(entity.entityId, entity);
+        entities.put(entity, entity);
     }
 
     public void removeEntity(Entity entity) {
-        entities.remove(entity.entityId);
+        entities.remove(entity);
     }
 
     // endregion
@@ -382,7 +386,7 @@ public final class Simulation {
             // (so events can be both keys and values in the timeline)
             if (!event.value.equals(otherEvent.value))
                 return false;
-            if (!event.source.entityId.equals(otherEvent.source.entityId))
+            if (!event.source.equalIDs(otherEvent.source))
                 return false;
         }
 

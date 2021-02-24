@@ -4,10 +4,12 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.detectorgraph.DetectorGraph;
 import fr.sncf.osrd.infra.parsing.railjson.schema.ID;
 import fr.sncf.osrd.infra.trackgraph.*;
+import fr.sncf.osrd.simulation.Entity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.function.Consumer;
 
 /**
  * <p>A data structure meant to store the immutable part of a railroad infrastructure.</p>
@@ -87,7 +89,10 @@ public final class Infra {
         this.tvdSections = tvdSections;
         this.trackGraph.validate();
         this.detectorGraph = detectorGraph;
+    }
 
+    public void forAllStatefulObjects(Consumer<StatefulInfraObject<?>> callback) {
+        // TODO: when signals and routes are parsed, add those here
     }
 
     /**
@@ -133,6 +138,25 @@ public final class Infra {
                     }
                 }
             }
+        }
+    }
+
+    public static final class State {
+        public final Infra infra;
+
+        public final HashMap<StatefulInfraObject<?>, Entity> stateMap;
+
+        /** Creates a new infrastructure state */
+        public State(Infra infra) {
+            this.infra = infra;
+            this.stateMap = new HashMap<>();
+            infra.forAllStatefulObjects(obj -> {
+                var objState = obj.newState();
+                stateMap.put(obj, objState);
+            });
+
+            for (var entity : stateMap.values())
+                entity.initialize();
         }
     }
 }

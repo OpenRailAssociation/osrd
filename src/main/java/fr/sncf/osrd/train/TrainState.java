@@ -53,7 +53,7 @@ public final class TrainState {
             return false;
         if (this.status != otherState.status)
             return false;
-        if (!this.train.entityId.equals(otherState.train.entityId))
+        if (!this.train.equalIDs(otherState.train))
             return false;
         if (!this.location.equals(otherState.location))
             return false;
@@ -62,7 +62,7 @@ public final class TrainState {
 
     @Override
     public int hashCode() {
-        return Objects.hash(time, speed, status, train.entityId, location, speedControllers);
+        return Objects.hash(time, speed, status, train, location, speedControllers);
     }
 
     TrainState(

@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra.interlocking;
+package fr.sncf.osrd.infra.signaling;
 
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.simulation.Simulation;

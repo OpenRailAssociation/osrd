@@ -128,8 +128,8 @@ public class ChangeSerializer {
 
     private static class EntityAdapter {
         @ToJson
-        String toJson(Entity entity) {
-            return entity.entityId;
+        EntityID toJson(Entity entity) {
+            return entity;
         }
 
         @FromJson

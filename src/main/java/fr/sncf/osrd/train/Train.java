@@ -19,7 +19,6 @@ public class Train extends Entity {
     // how far the driver of the train can see
     public final double driverSightDistance;
 
-    public final String name;
     public final RollingStock rollingStock;
     public final TrainPath path;
 
@@ -34,15 +33,14 @@ public class Train extends Entity {
 
     Train(
             @SuppressWarnings("SameParameterValue") double driverSightDistance,
-            String name,
+            String id,
             Simulation sim,
             RollingStock rollingStock,
             TrainPath trainPath,
             double initialSpeed,
             List<SpeedController> controllers
     ) {
-        super(String.format("train/%s", name));
-        this.name = name;
+        super(EntityType.TRAIN, id);
         this.driverSightDistance = driverSightDistance;
         this.rollingStock = rollingStock;
         this.path = trainPath;
@@ -79,11 +77,11 @@ public class Train extends Entity {
 
     void planNextMove(Simulation sim) throws SimulationError {
         if (lastState.status == TrainStatus.REACHED_DESTINATION) {
-            logger.info("train {} reached destination, aborting planning", name);
+            logger.info("train {} reached destination, aborting planning", id);
             return;
         }
 
-        logger.info("planning the next move for train {}", name);
+        logger.info("planning the next move for train {}", id);
         var moveEvent = lastState.simulateUntilEvent(sim);
         var change = new TrainPlannedMoveChange(sim, this, moveEvent);
         change.apply(sim, this, moveEvent);
