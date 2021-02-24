@@ -2,14 +2,18 @@ package fr.sncf.osrd.config;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railjson.RailJSONParser;
+import fr.sncf.osrd.infra.railjson.schema.RJSRoot;
 import fr.sncf.osrd.railml.RailMLParser;
 import fr.sncf.osrd.timetable.InvalidTimetableException;
 import fr.sncf.osrd.timetable.Schedule;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.PathUtils;
+import okio.Okio;
+import okio.Sink;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,7 +39,7 @@ public class ConfigManager {
         var jsonConfig = JsonConfig.adapter.fromJson(Files.readString(mainConfigPath));
 
         var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
-        var infra = ConfigManager.getInfra(infraPath.toString());
+        var infra = ConfigManager.getInfra(jsonConfig.infraType, infraPath.toString());
         var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.schedulePath);
         var schedule = ConfigManager.getSchedule(schedulePath, infra);
         return new Config(
@@ -49,16 +53,44 @@ public class ConfigManager {
         );
     }
 
-    static Infra getInfra(String path) {
-        if (infras.containsKey(path))
-            return infras.get(path);
+    @SuppressFBWarnings({"RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"})
+    static Infra getInfra(JsonConfig.InfraType infraType, String pathStr) {
+        if (infras.containsKey(pathStr))
+            return infras.get(pathStr);
+
+        // autodetect the infrastructure type
+        var path = Path.of(pathStr);
+        if (infraType == null) {
+            if (path.endsWith(".json"))
+                infraType = JsonConfig.InfraType.RAILJSON;
+            else if (path.endsWith(".xml"))
+                infraType = JsonConfig.InfraType.RAILML;
+            else
+                infraType = JsonConfig.InfraType.UNKNOWN;
+        }
 
         try {
-            var rjsRoot = RailMLParser.parse(path);
-            var infra = RailJSONParser.parse(rjsRoot);
-            infras.put(path, infra);
-            return infra;
-        } catch (InvalidInfraException e) {
+            switch (infraType) {
+                case RAILML: {
+                    var rjsRoot = RailMLParser.parse(pathStr);
+                    var infra = RailJSONParser.parse(rjsRoot);
+                    infras.put(pathStr, infra);
+                    return infra;
+                }
+                case RAILJSON:
+                    try (
+                            var fileSource = Okio.source(path);
+                            var bufferedSource = Okio.buffer(fileSource)
+                    ) {
+                        var rjsRoot = RJSRoot.adapter.fromJson(bufferedSource);
+                        var infra = RailJSONParser.parse(rjsRoot);
+                        infras.put(pathStr, infra);
+                        return infra;
+                    }
+                default:
+                    throw new RuntimeException("invalid infrastructure type value");
+            }
+        } catch (InvalidInfraException | IOException e) {
             e.printStackTrace();
             return null;
         }
