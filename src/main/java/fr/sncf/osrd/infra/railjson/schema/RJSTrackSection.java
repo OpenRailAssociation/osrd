@@ -3,6 +3,7 @@ package fr.sncf.osrd.infra.railjson.schema;
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSBufferStop;
+import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSSignal;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSOperationalPointPart;
 import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSSpeedSectionPart;
@@ -20,9 +21,9 @@ public class RJSTrackSection implements Identified {
     /** Track objects */
     @Json(name = "train_detectors")
     public final List<RJSTrainDetector> trainDetectors;
-
     @Json(name = "buffer_stops")
     public final List<RJSBufferStop> bufferStops;
+    public final List<RJSSignal> signals;
 
     /** Track ranges */
     @Json(name = "operational_points")
@@ -36,6 +37,7 @@ public class RJSTrackSection implements Identified {
             double length,
             List<RJSTrainDetector> trainDetectors,
             List<RJSBufferStop> bufferStops,
+            List<RJSSignal> signals,
             List<RJSOperationalPointPart> operationalPoints,
             List<RJSSpeedSectionPart> speedSections
     ) {
@@ -43,6 +45,7 @@ public class RJSTrackSection implements Identified {
         this.length = length;
         this.trainDetectors = trainDetectors;
         this.bufferStops = bufferStops;
+        this.signals = signals;
         this.operationalPoints = operationalPoints;
         this.speedSections = speedSections;
     }
@@ -51,7 +54,7 @@ public class RJSTrackSection implements Identified {
             String id,
             double length
     ) {
-        this(id, length, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        this(id, length, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
     }
 
     @Override

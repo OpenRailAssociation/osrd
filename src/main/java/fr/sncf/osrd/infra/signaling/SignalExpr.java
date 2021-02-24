@@ -1,5 +1,6 @@
 package fr.sncf.osrd.infra.signaling;
 
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.simulation.Entity;
 import fr.sncf.osrd.simulation.EntityType;
 
@@ -12,11 +13,11 @@ public abstract class SignalExpr {
     public abstract boolean evaluate(Entity[] arguments);
 
     /** A type for the function that's called whenever a type reference is found */
-    public abstract static class DetectTypeCallback {
-        abstract void foundType(int index, EntityType type);
+    public interface DetectTypeCallback {
+        void foundType(int index, EntityType type) throws InvalidInfraException;
     }
 
-    public abstract void detectTypes(DetectTypeCallback callback);
+    public abstract void detectTypes(DetectTypeCallback callback) throws InvalidInfraException;
 
     public static final class SignalAspectCheck extends SignalExpr {
         /** The signal the condition checks for */
@@ -25,7 +26,7 @@ public abstract class SignalExpr {
         /** The condition is true when the signal has the following aspect */
         public final Aspect aspect;
 
-        SignalAspectCheck(
+        public SignalAspectCheck(
                 int signalArgIndex,
                 Aspect aspect
         ) {
@@ -40,26 +41,27 @@ public abstract class SignalExpr {
         }
 
         @Override
-        public void detectTypes(DetectTypeCallback callback) {
+        public void detectTypes(DetectTypeCallback callback) throws InvalidInfraException {
             callback.foundType(signalArgIndex, EntityType.SIGNAL);
         }
     }
 
-    public abstract static class CompoundExpr extends SignalExpr {
+    /** Infix operators, like "or" and "and" apply to multiple expression */
+    public abstract static class InfixOpExpr extends SignalExpr {
         public final SignalExpr[] expressions;
 
-        public CompoundExpr(SignalExpr[] expressions) {
+        public InfixOpExpr(SignalExpr[] expressions) {
             this.expressions = expressions;
         }
 
         @Override
-        public void detectTypes(DetectTypeCallback callback) {
+        public void detectTypes(DetectTypeCallback callback) throws InvalidInfraException {
             for (var expr : expressions)
                 expr.detectTypes(callback);
         }
     }
 
-    public static final class OrExpr extends CompoundExpr {
+    public static final class OrExpr extends InfixOpExpr {
         public OrExpr(SignalExpr[] expressions) {
             super(expressions);
         }
@@ -74,7 +76,7 @@ public abstract class SignalExpr {
     }
 
 
-    public static final class AndExpr extends CompoundExpr {
+    public static final class AndExpr extends InfixOpExpr {
         public AndExpr(SignalExpr[] expressions) {
             super(expressions);
         }
@@ -101,7 +103,7 @@ public abstract class SignalExpr {
         }
 
         @Override
-        public void detectTypes(DetectTypeCallback callback) {
+        public void detectTypes(DetectTypeCallback callback) throws InvalidInfraException {
             expression.detectTypes(callback);
         }
     }

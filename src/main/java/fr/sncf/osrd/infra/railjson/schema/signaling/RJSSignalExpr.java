@@ -18,14 +18,14 @@ public abstract class RJSSignalExpr {
 
     public static final class SignalAspectCheck extends RJSSignalExpr {
         /** The signal the condition checks for */
-        public final RJSSignalFunction.ParameterRef<RJSSignal> signal;
+        public final RJSSignalFunction.ArgumentRef<RJSSignal> signal;
 
         /** The condition is true when the signal has the following aspect */
         @Json(name = "has_aspect")
         public final ID<RJSAspect> hasAspect;
 
         SignalAspectCheck(
-                RJSSignalFunction.ParameterRef<RJSSignal> signal,
+                RJSSignalFunction.ArgumentRef<RJSSignal> signal,
                 ID<RJSAspect> hasAspect
         ) {
             this.signal = signal;
@@ -33,33 +33,31 @@ public abstract class RJSSignalExpr {
         }
     }
 
-    public static final class OrExpr extends RJSSignalExpr {
+    public abstract static class InfixOpExpr extends RJSSignalExpr {
         public final RJSSignalExpr[] expressions;
 
-        OrExpr(
-                RJSSignalExpr[] expressions
-        ) {
+        public InfixOpExpr(RJSSignalExpr[] expressions) {
             this.expressions = expressions;
         }
     }
 
+    public static final class OrExpr extends InfixOpExpr {
+        public OrExpr(RJSSignalExpr[] expressions) {
+            super(expressions);
+        }
+    }
 
-    public static final class AndExpr extends RJSSignalExpr {
-        public final RJSSignalExpr[] expressions;
 
-        AndExpr(
-                RJSSignalExpr[] expressions
-        ) {
-            this.expressions = expressions;
+    public static final class AndExpr extends InfixOpExpr {
+        public AndExpr(RJSSignalExpr[] expressions) {
+            super(expressions);
         }
     }
 
     public static final class NotExpr extends RJSSignalExpr {
         public final RJSSignalExpr expression;
 
-        NotExpr(
-                RJSSignalExpr expression
-        ) {
+        NotExpr(RJSSignalExpr expression) {
             this.expression = expression;
         }
     }

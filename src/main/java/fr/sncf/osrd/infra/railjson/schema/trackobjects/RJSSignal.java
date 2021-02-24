@@ -11,6 +11,8 @@ import java.util.Map;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSSignal extends RJSTrackObject {
+    public final String id;
+
     /** The track direction for which the signal applies */
     public final ApplicableDirections navigability;
 
@@ -22,12 +24,14 @@ public class RJSSignal extends RJSTrackObject {
     public final ID<RJSSignalFunction> evaluationFunction;
 
     RJSSignal(
+            String id,
             ApplicableDirections navigability,
             double position,
             Map<String, ID<RJSSignalObservable>> arguments,
             ID<RJSSignalFunction> evaluationFunction
     ) {
         super(position);
+        this.id = id;
         this.navigability = navigability;
         this.arguments = arguments;
         this.evaluationFunction = evaluationFunction;

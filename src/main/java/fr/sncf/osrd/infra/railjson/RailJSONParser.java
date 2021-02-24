@@ -9,8 +9,15 @@ import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.railjson.schema.RJSRoot;
+import fr.sncf.osrd.infra.railjson.schema.signaling.RJSSignalExpr;
+import fr.sncf.osrd.infra.railjson.schema.signaling.RJSSignalFunction;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrackObject;
 import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSTrackRange;
+import fr.sncf.osrd.infra.signaling.Aspect;
+import fr.sncf.osrd.infra.signaling.Signal;
+import fr.sncf.osrd.infra.signaling.SignalExpr;
+import fr.sncf.osrd.infra.signaling.SignalFunction;
+import fr.sncf.osrd.simulation.EntityType;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.utils.PointSequence;
@@ -73,6 +80,22 @@ public class RailJSONParser {
         }
     }
 
+    /**
+     * Parses some railJSON infra into the internal representation
+     * @param source a data stream to read from
+     * @param lenient whether to tolerate invalid yet understandable json constructs
+     * @return an OSRD infrastructure
+     * @throws InvalidInfraException {@inheritDoc}
+     * @throws IOException {@inheritDoc}
+     */
+    public static Infra parse(BufferedSource source, boolean lenient) throws InvalidInfraException, IOException {
+        var jsonReader = JsonReader.of(source);
+        jsonReader.setLenient(lenient);
+        var railJSON = RJSRoot.adapter.fromJson(jsonReader);
+        if (railJSON == null)
+            throw new InvalidInfraException("the railJSON source does not contain any data");
+        return RailJSONParser.parse(railJSON);
+    }
 
     /**
      * Parses a structured railJSON into the internal representation
@@ -98,6 +121,19 @@ public class RailJSONParser {
         for (int i = 0; i < nodeIDs.numberOfNodes; i++)
             if (infra.trackGraph.getNode(i) == null)
                 infra.trackGraph.setNode(i, new PlaceholderNode(String.valueOf(i)));
+
+        // parse aspects
+        for (var rjsAspect : railJSON.aspects) {
+            var aspect = new Aspect(rjsAspect.id);
+            infra.aspects.put(aspect.id, aspect);
+        }
+
+        // parse signal functions
+        var signalFunctions = new HashMap<String, SignalFunction>();
+        for (var rjsSignalFunction : railJSON.signalFunctions) {
+            var signalFunction = parseSignalFunction(infra, rjsSignalFunction);
+            signalFunctions.put(signalFunction.functionName, signalFunction);
+        }
 
         var detectors = new HashMap<String, Detector>();
 
@@ -125,6 +161,20 @@ public class RailJSONParser {
                 detectorsBuilder.add(rjsDetector.position, detector);
             }
             detectorsBuilder.build();
+
+            // Parse signals
+            var signalsBuilder = infraTrackSection.signals.builder();
+            for (var rjsSignal : trackSection.signals) {
+                var function = signalFunctions.get(rjsSignal.evaluationFunction.id);
+                // find the entity associated with each argument, by name
+                var argc = function.argumentNames.length;
+                var arguments = new String[argc];
+                for (int i = 0; i < argc; i++)
+                    arguments[i] = rjsSignal.arguments.get(function.argumentNames[i]).id;
+                var signal = new Signal(rjsSignal.id, function, arguments);
+                signalsBuilder.add(rjsSignal.position, signal);
+            }
+            signalsBuilder.build();
         }
 
         // link track sections together
@@ -149,20 +199,83 @@ public class RailJSONParser {
         return infra.build();
     }
 
-    /**
-     * Parses some railJSON infra into the internal representation
-     * @param source a data stream to read from
-     * @param lenient whether to tolerate invalid yet understandable json constructs
-     * @return an OSRD infrastructure
-     * @throws InvalidInfraException {@inheritDoc}
-     * @throws IOException {@inheritDoc}
-     */
-    public static Infra parse(BufferedSource source, boolean lenient) throws InvalidInfraException, IOException {
-        var jsonReader = JsonReader.of(source);
-        jsonReader.setLenient(lenient);
-        var railJSON = RJSRoot.adapter.fromJson(jsonReader);
-        if (railJSON == null)
-            throw new InvalidInfraException("the railJSON source does not contain any data");
-        return RailJSONParser.parse(railJSON);
+    private static SignalFunction parseSignalFunction(
+            Infra.Builder builder,
+            RJSSignalFunction rjsSignalFunction
+    ) throws InvalidInfraException {
+        var argumentNames = rjsSignalFunction.arguments;
+        var defaultAspects = new ArrayList<Aspect>();
+        for (var aspectID : rjsSignalFunction.defaultAspects)
+            defaultAspects.add(builder.aspects.get(aspectID.id));
+
+        // parse rules
+        var rules = new HashMap<Aspect, SignalExpr>();
+        for (var rjsRule : rjsSignalFunction.rules.entrySet()) {
+            var aspect = builder.aspects.get(rjsRule.getKey().id);
+            var expr = parseSignalExpr(builder, argumentNames, rjsRule.getValue());
+            rules.put(aspect, expr);
+        }
+
+        // type check rules
+        var argumentTypes = new EntityType[argumentNames.length];
+        for (var rule : rules.values())
+            rule.detectTypes((i, type) -> {
+                // if there's already a different deduced type, error out
+                if (argumentTypes[i] != null && argumentTypes[i] != type)
+                    throw new InvalidInfraException(
+                            String.format("found contradictory deduced types for argument %s in function %s",
+                                    argumentNames[i], rjsSignalFunction.functionName));
+                argumentTypes[i] = type;
+            });
+
+        return new SignalFunction(
+                rjsSignalFunction.functionName,
+                defaultAspects,
+                rules,
+                argumentNames,
+                argumentTypes
+        );
+    }
+
+    private static int findArgIndex(String[] argumentNames, String argument) throws InvalidInfraException {
+        for (int i = 0; i < argumentNames.length; i++)
+            if (argumentNames[i].equals(argument))
+                return i;
+
+        throw new InvalidInfraException(String.format("signal function argument not found: %s", argument));
+    }
+
+    private static SignalExpr parseSignalExpr(
+            Infra.Builder builder,
+            String[] argumentNames,
+            RJSSignalExpr expr
+    ) throws InvalidInfraException {
+        var type = expr.getClass();
+        if (type == RJSSignalExpr.OrExpr.class) {
+            return new SignalExpr.OrExpr(parseInfixOp(builder, argumentNames, (RJSSignalExpr.InfixOpExpr) expr));
+        } else if (type == RJSSignalExpr.AndExpr.class) {
+            return new SignalExpr.AndExpr(parseInfixOp(builder, argumentNames, (RJSSignalExpr.InfixOpExpr) expr));
+        } else if (type == RJSSignalExpr.NotExpr.class) {
+            var notExpr = (RJSSignalExpr.NotExpr) expr;
+            return new SignalExpr.NotExpr(parseSignalExpr(builder, argumentNames, notExpr.expression));
+        } else if (type == RJSSignalExpr.SignalAspectCheck.class) {
+            var signalExpr = (RJSSignalExpr.SignalAspectCheck) expr;
+            var argIndex = findArgIndex(argumentNames, signalExpr.signal.argumentName);
+            var aspect = builder.aspects.get(signalExpr.hasAspect.id);
+            return new SignalExpr.SignalAspectCheck(argIndex, aspect);
+        } else
+            throw new InvalidInfraException("unsupported signal expression");
+    }
+
+    private static SignalExpr[] parseInfixOp(
+            Infra.Builder builder,
+            String[] argumentNames,
+            RJSSignalExpr.InfixOpExpr expr
+    ) throws InvalidInfraException {
+        var arity = expr.expressions.length;
+        var expressions = new SignalExpr[arity];
+        for (int i = 0; i < arity; i++)
+            expressions[i] = parseSignalExpr(builder, argumentNames, expr.expressions[i]);
+        return expressions;
     }
 }

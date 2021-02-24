@@ -5,6 +5,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.railjson.schema.signaling.RJSAspect;
+import fr.sncf.osrd.infra.railjson.schema.signaling.RJSSignalFunction;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,16 +51,11 @@ public class RJSRoot {
     /** The list of all the aspects signals can take */
     public final Collection<RJSAspect> aspects;
 
-    /**
-     * Create a new serialized RailJSON file
-     * @param trackSections the list of track sections
-     * @param trackSectionLinks the list of links between track section ends
-     * @param switches the list of switches
-     * @param operationalPoints the list of operational points
-     * @param tvdSections the list of train detection sections
-     * @param speedSections the list of speed sections
-     * @param aspects the list of valid signal aspects
-     */
+    /** The list of function definitions */
+    @Json(name = "signal_functions")
+    public final Collection<RJSSignalFunction> signalFunctions;
+
+    /** Create a new serialized RailJSON file */
     public RJSRoot(
             Collection<RJSTrackSection> trackSections,
             Collection<RJSTrackSectionLink> trackSectionLinks,
@@ -67,7 +63,8 @@ public class RJSRoot {
             Collection<RJSOperationalPoint> operationalPoints,
             Collection<RJSTVDSection> tvdSections,
             Collection<RJSSpeedSection> speedSections,
-            Collection<RJSAspect> aspects
+            Collection<RJSAspect> aspects,
+            Collection<RJSSignalFunction> signalFunctions
     ) {
         this.trackSections = trackSections;
         this.trackSectionLinks = trackSectionLinks;
@@ -76,6 +73,7 @@ public class RJSRoot {
         this.tvdSections = tvdSections;
         this.speedSections = speedSections;
         this.aspects = aspects;
+        this.signalFunctions = signalFunctions;
     }
 
     /**
@@ -83,6 +81,7 @@ public class RJSRoot {
      */
     public RJSRoot() {
         this(
+                new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),
