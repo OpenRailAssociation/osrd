@@ -20,6 +20,7 @@ public class RJSTrackSection implements Identified {
     /** Track objects */
     @Json(name = "train_detectors")
     public final List<RJSTrainDetector> trainDetectors;
+
     @Json(name = "buffer_stops")
     public final List<RJSBufferStop> bufferStops;
 

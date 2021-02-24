@@ -113,6 +113,7 @@ public final class Infra {
 
         /**
          * Link TVD Sections with TVDSectionPath of a given detectorGraph
+         * Each TVDSection references TVDSectionPaths, and reciprocally.
          */
         private void linkTVDSectionToPath(DetectorGraph detectorGraph) {
             // Initialize reverse map DetectorNode -> TVDSections
