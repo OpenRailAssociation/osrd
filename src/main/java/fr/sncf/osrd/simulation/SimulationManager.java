@@ -1,7 +1,7 @@
 package fr.sncf.osrd.simulation;
 
 import fr.sncf.osrd.config.Config;
-import fr.sncf.osrd.viewer.DebugViewer;
+import fr.sncf.osrd.DebugViewer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

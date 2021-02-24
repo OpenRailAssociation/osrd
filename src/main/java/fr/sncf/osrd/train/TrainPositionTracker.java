@@ -2,13 +2,13 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.util.graph.EdgeDirection;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.infra.trackgraph.PointAttrGetter;
 import fr.sncf.osrd.infra.trackgraph.RangeAttrGetter;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.util.PointValue;
-import fr.sncf.osrd.util.RangeValue;
-import fr.sncf.osrd.util.TopoLocation;
+import fr.sncf.osrd.utils.PointValue;
+import fr.sncf.osrd.utils.RangeValue;
+import fr.sncf.osrd.utils.TopoLocation;
 
 import java.util.ArrayDeque;
 import java.util.Objects;

@@ -1,7 +1,7 @@
 package fr.sncf.osrd.infra;
 
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.util.IntervalNode;
+import fr.sncf.osrd.utils.IntervalNode;
 
 import java.util.ArrayList;
 import java.util.Objects;

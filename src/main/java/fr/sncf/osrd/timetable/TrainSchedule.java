@@ -4,7 +4,7 @@ import fr.sncf.osrd.config.ConfigManager;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.train.RollingStock;
-import fr.sncf.osrd.util.CryoList;
+import fr.sncf.osrd.utils.CryoList;
 
 import java.nio.file.Path;
 

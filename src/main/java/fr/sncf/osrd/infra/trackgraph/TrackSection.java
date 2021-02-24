@@ -4,12 +4,12 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.SpeedSection;
-import fr.sncf.osrd.util.graph.AbstractEdge;
-import fr.sncf.osrd.util.graph.EdgeDirection;
-import fr.sncf.osrd.util.graph.EdgeEndpoint;
-import fr.sncf.osrd.util.graph.Graph;
+import fr.sncf.osrd.utils.graph.AbstractEdge;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
+import fr.sncf.osrd.utils.graph.EdgeEndpoint;
+import fr.sncf.osrd.utils.graph.Graph;
 import fr.sncf.osrd.infra.signaling.VisibleTrackObject;
-import fr.sncf.osrd.util.*;
+import fr.sncf.osrd.utils.*;
 
 import java.util.ArrayList;
 import java.util.List;

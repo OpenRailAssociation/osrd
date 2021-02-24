@@ -1,6 +1,6 @@
 package fr.sncf.osrd.train;
 
-import fr.sncf.osrd.util.Constants;
+import fr.sncf.osrd.utils.Constants;
 
 /**
  * An utility class to help simulate the train, using forward numerical integration.

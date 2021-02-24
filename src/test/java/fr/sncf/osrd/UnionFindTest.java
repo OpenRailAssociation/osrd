@@ -2,7 +2,7 @@ package fr.sncf.osrd;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import fr.sncf.osrd.util.UnionFind;
+import fr.sncf.osrd.utils.UnionFind;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 

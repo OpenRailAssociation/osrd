@@ -2,8 +2,8 @@ package fr.sncf.osrd;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import fr.sncf.osrd.util.IntervalNode;
-import fr.sncf.osrd.util.IntervalTree;
+import fr.sncf.osrd.utils.IntervalNode;
+import fr.sncf.osrd.utils.IntervalTree;
 
 import java.util.ArrayList;
 import java.util.Objects;

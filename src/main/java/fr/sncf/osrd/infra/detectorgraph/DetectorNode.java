@@ -1,6 +1,6 @@
 package fr.sncf.osrd.infra.detectorgraph;
 
-import fr.sncf.osrd.util.graph.AbstractNode;
+import fr.sncf.osrd.utils.graph.AbstractNode;
 
 import java.util.ArrayList;
 
