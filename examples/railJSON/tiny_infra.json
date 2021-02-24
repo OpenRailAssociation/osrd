@@ -1,0 +1,341 @@
+{
+  "aspects": [
+    {
+      "id": "green"
+    },
+    {
+      "id": "yellow"
+    },
+    {
+      "id": "red"
+    }
+  ],
+  "operational_points": [
+    {
+      "id": "op.station_foo"
+    },
+    {
+      "id": "op.station_bar"
+    }
+  ],
+  "signal_functions": [
+    {
+      "function_name": "bal3",
+      "arguments": [
+        "forward_signal"
+      ],
+      "default_aspects": [
+        {
+          "id": "green"
+        }
+      ],
+      "rules": {
+        "yellow": {
+          "type": "signal_aspect",
+          "signal": {
+            "argument_name": "forward_signal"
+          },
+          "has_aspect": {
+            "id": "red"
+          }
+        }
+      }
+    },
+    {
+      "function_name": "always_red",
+      "arguments": [],
+      "default_aspects": [
+        {
+          "id": "red"
+        }
+      ],
+      "rules": {}
+    }
+  ],
+  "speed_sections": [
+    {
+      "id": "speedsection.mid_limit",
+      "is_signalized": true,
+      "speed": 16.666666666666668
+    }
+  ],
+  "switches": [
+    {
+      "base": {
+        "endpoint": "BEGIN",
+        "section": {
+          "id": "ne.micro.foo_to_bar"
+        }
+      },
+      "id": "switch_foo",
+      "left": {
+        "endpoint": "END",
+        "section": {
+          "id": "ne.micro.foo_b"
+        }
+      },
+      "right": {
+        "endpoint": "END",
+        "section": {
+          "id": "ne.micro.foo_a"
+        }
+      }
+    }
+  ],
+  "track_section_links": [
+    {
+      "begin": {
+        "endpoint": "END",
+        "section": {
+          "id": "ne.micro.foo_a"
+        }
+      },
+      "end": {
+        "endpoint": "BEGIN",
+        "section": {
+          "id": "ne.micro.foo_to_bar"
+        }
+      },
+      "navigability": "BOTH"
+    },
+    {
+      "begin": {
+        "endpoint": "END",
+        "section": {
+          "id": "ne.micro.foo_b"
+        }
+      },
+      "end": {
+        "endpoint": "BEGIN",
+        "section": {
+          "id": "ne.micro.foo_to_bar"
+        }
+      },
+      "navigability": "BOTH"
+    },
+    {
+      "begin": {
+        "endpoint": "END",
+        "section": {
+          "id": "ne.micro.foo_to_bar"
+        }
+      },
+      "end": {
+        "endpoint": "BEGIN",
+        "section": {
+          "id": "ne.micro.bar_a"
+        }
+      },
+      "navigability": "BOTH"
+    }
+  ],
+  "track_sections": [
+    {
+      "buffer_stops": [
+        {
+          "applicableDirections": "REVERSE",
+          "id": "buf_stop_b",
+          "position": 0
+        }
+      ],
+      "id": "ne.micro.foo_b",
+      "length": 200,
+      "operational_points": [
+        {
+          "begin": 100,
+          "end": 100,
+          "ref": {
+            "id": "op.station_foo"
+          }
+        }
+      ],
+      "signals": [],
+      "speed_sections": [],
+      "train_detectors": [
+        {
+          "id": "tde.foo_b-switch_foo",
+          "position": 175
+        }
+      ]
+    },
+    {
+      "buffer_stops": [],
+      "id": "ne.micro.foo_to_bar",
+      "length": 10000,
+      "operational_points": [],
+      "signals": [
+        {
+          "id": "signal.foo_to_bar.1",
+          "position": 25,
+          "navigability": "BOTH",
+          "arguments": {
+            "forward_signal": {"id": "signal.foo_to_bar.2"}
+          },
+          "evaluation_function": {"id": "bal3"}
+        },
+        {
+          "id": "signal.foo_to_bar.2",
+          "position": 50,
+          "navigability": "BOTH",
+          "arguments": {
+            "forward_signal": {"id": "signal.foo_to_bar.3"}
+          },
+          "evaluation_function": {"id": "bal3"}
+        },
+        {
+          "id": "signal.foo_to_bar.3",
+          "position": 75,
+          "navigability": "BOTH",
+          "arguments": {},
+          "evaluation_function": {"id": "always_red"}
+        }
+      ],
+      "speed_sections": [
+        {
+          "applicableDirections": "BOTH",
+          "begin": 2000,
+          "end": 8000,
+          "ref": {
+            "id": "speedsection.mid_limit"
+          }
+        }
+      ],
+      "train_detectors": [
+        {
+          "id": "tde.switch_foo-track",
+          "position": 25
+        }
+      ]
+    },
+    {
+      "buffer_stops": [
+        {
+          "applicableDirections": "REVERSE",
+          "id": "buf_stop_a",
+          "position": 0
+        }
+      ],
+      "id": "ne.micro.foo_a",
+      "length": 200,
+      "operational_points": [
+        {
+          "begin": 100,
+          "end": 100,
+          "ref": {
+            "id": "op.station_foo"
+          }
+        }
+      ],
+      "signals": [],
+      "speed_sections": [],
+      "train_detectors": [
+        {
+          "id": "tde.foo_a-switch_foo",
+          "position": 175
+        }
+      ]
+    },
+    {
+      "buffer_stops": [
+        {
+          "applicableDirections": "NORMAL",
+          "id": "buf_stop_c",
+          "position": 200
+        }
+      ],
+      "id": "ne.micro.bar_a",
+      "length": 200,
+      "operational_points": [
+        {
+          "begin": 100,
+          "end": 100,
+          "ref": {
+            "id": "op.station_bar"
+          }
+        }
+      ],
+      "signals": [],
+      "speed_sections": [],
+      "train_detectors": [
+        {
+          "id": "tde.track-bar",
+          "position": 0
+        }
+      ]
+    }
+  ],
+  "tvd_sections": [
+    {
+      "buffer_stops": [
+        {
+          "id": "buffer_stop_a"
+        }
+      ],
+      "id": "tvd.foo_a",
+      "is_berthing_track": true,
+      "train_detectors": [
+        {
+          "id": "tde.foo_a-switch_foo"
+        }
+      ]
+    },
+    {
+      "buffer_stops": [
+        {
+          "id": "buffer_stop_b"
+        }
+      ],
+      "id": "tvd.foo_b",
+      "is_berthing_track": true,
+      "train_detectors": [
+        {
+          "id": "tde.foo_b-switch_foo"
+        }
+      ]
+    },
+    {
+      "buffer_stops": [],
+      "id": "tvd.switch_foo",
+      "is_berthing_track": false,
+      "train_detectors": [
+        {
+          "id": "tde.foo_b-switch_foo"
+        },
+        {
+          "id": "tde.switch_foo-track"
+        },
+        {
+          "id": "tde.foo_a-switch_foo"
+        }
+      ]
+    },
+    {
+      "buffer_stops": [],
+      "id": "tvd.track",
+      "is_berthing_track": false,
+      "train_detectors": [
+        {
+          "id": "tde.track-bar"
+        },
+        {
+          "id": "tde.switch_foo-track"
+        }
+      ]
+    },
+    {
+      "buffer_stops": [
+        {
+          "id": "buffer_stop_c"
+        }
+      ],
+      "id": "tvd.bar_a",
+      "is_berthing_track": true,
+      "train_detectors": [
+        {
+          "id": "tde.track-bar"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}
