@@ -13,6 +13,8 @@ public final class JsonConfig {
 
     @Json(name = "simulation_time_step")
     public final float simulationTimeStep;
+    @Json(name = "infra_type")
+    public final InfraType infraType;
     @Json(name = "infra_path")
     public final String infraPath;
     @Json(name = "schedule_path")
@@ -28,6 +30,7 @@ public final class JsonConfig {
 
     JsonConfig(
             float simulationTimeStep,
+            InfraType infraType,
             String infraPath,
             String schedulePath,
             boolean showViewer,
@@ -36,11 +39,18 @@ public final class JsonConfig {
             double simulationStepPause
     ) {
         this.simulationTimeStep = simulationTimeStep;
+        this.infraType = infraType;
         this.infraPath = infraPath;
         this.schedulePath = schedulePath;
         this.showViewer = showViewer;
         this.realTimeViewer = realTimeViewer;
         this.changeReplayCheck = changeReplayCheck;
         this.simulationStepPause = simulationStepPause;
+    }
+
+    public static enum InfraType {
+        RAILML,
+        RAILJSON,
+        UNKNOWN,
     }
 }
