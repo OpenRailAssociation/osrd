@@ -3,7 +3,6 @@ package fr.sncf.osrd.infra.detectorgraph;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import fr.sncf.osrd.utils.graph.Graph;
-import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
@@ -16,7 +15,7 @@ import java.util.Iterator;
 
 public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
 
-    public final CryoMap<ID<Detector>, DetectorNode> detectorNodeMap = new CryoMap<>();
+    public final CryoMap<String, DetectorNode> detectorNodeMap = new CryoMap<>();
     // TVDSectionPath are identified by the couple (StartNode, EndNode)
     public final CryoMap<TVDSectionPathID, TVDSectionPath> tvdSectionPathMap = new CryoMap<>();
 
@@ -199,7 +198,7 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
      * @return the detector node
      */
     private DetectorNode findDetectorNode(Detector detector) {
-        return this.detectorNodeMap.get(ID.from(detector));
+        return this.detectorNodeMap.get(detector.id);
     }
 
     /**
@@ -211,7 +210,7 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
     private DetectorNode makeDetectorNode(Detector detector) {
         var node = new DetectorNode();
         this.register(node);
-        detectorNodeMap.put(ID.from(detector), node);
+        detectorNodeMap.put(detector.id, node);
         return node;
     }
 

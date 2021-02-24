@@ -2,7 +2,6 @@ package fr.sncf.osrd.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.detectorgraph.DetectorGraph;
-import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.simulation.Entity;
@@ -72,7 +71,7 @@ import java.util.function.Consumer;
 public final class Infra {
     public final TrackGraph trackGraph;
     public final DetectorGraph detectorGraph;
-    public final HashMap<ID<TVDSection>, TVDSection> tvdSections;
+    public final HashMap<String, TVDSection> tvdSections;
     public final HashMap<String, Aspect> aspects;
 
     /**
@@ -86,7 +85,7 @@ public final class Infra {
     public Infra(
             TrackGraph trackGraph,
             DetectorGraph detectorGraph,
-            HashMap<ID<TVDSection>, TVDSection> tvdSections,
+            HashMap<String, TVDSection> tvdSections,
             HashMap<String, Aspect> aspects
     ) throws InvalidInfraException {
         this.trackGraph = trackGraph;
@@ -105,7 +104,7 @@ public final class Infra {
      */
     public static class Builder {
         public final TrackGraph trackGraph = new TrackGraph();
-        public final HashMap<ID<TVDSection>, TVDSection> tvdSections = new HashMap<>();
+        public final HashMap<String, TVDSection> tvdSections = new HashMap<>();
         public final HashMap<String, Aspect> aspects = new HashMap<>();
 
         /**
@@ -124,12 +123,12 @@ public final class Infra {
         private void linkTVDSectionToPath(DetectorGraph detectorGraph) {
             // Initialize reverse map DetectorNode -> TVDSections
             var nbDetector = detectorGraph.nodes.size();
-            var detectorNodeToTVDSections = new ArrayList<HashSet<ID<TVDSection>>>(nbDetector);
+            var detectorNodeToTVDSections = new ArrayList<HashSet<String>>(nbDetector);
             for (int i = 0; i < nbDetector; i++)
                 detectorNodeToTVDSections.add(new HashSet<>());
             for (var tvdEntry : tvdSections.entrySet()) {
                 for (var detector : tvdEntry.getValue().detectors) {
-                    var nodeIndex = detectorGraph.detectorNodeMap.get(detector).getIndex();
+                    var nodeIndex = detectorGraph.detectorNodeMap.get(detector.id).getIndex();
                     detectorNodeToTVDSections.get(nodeIndex).add(tvdEntry.getKey());
                 }
             }
