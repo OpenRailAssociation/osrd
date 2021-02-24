@@ -1,5 +1,7 @@
 package fr.sncf.osrd.infra.detectorgraph;
 
+import java.util.Objects;
+
 /**
  * Used to identified a TVDSectionPath.
  * The attributes startNode will always be smaller than endNode.
@@ -24,7 +26,7 @@ public final class TVDSectionPathID {
 
     @Override
     public int hashCode() {
-        return (startNode * 0x1f1f1f1f) ^ endNode;
+        return Objects.hash(startNode, endNode);
     }
 
     @Override
