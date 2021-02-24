@@ -8,7 +8,7 @@ import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSSignal;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public abstract class RJSSignalExpr {
-    public final PolymorphicJsonAdapterFactory<RJSSignalExpr> adapter = (
+    public static final PolymorphicJsonAdapterFactory<RJSSignalExpr> adapter = (
             PolymorphicJsonAdapterFactory.of(RJSSignalExpr.class, "type")
                     .withSubtype(SignalAspectCheck.class, "signal_aspect")
                     .withSubtype(OrExpr.class, "or")
