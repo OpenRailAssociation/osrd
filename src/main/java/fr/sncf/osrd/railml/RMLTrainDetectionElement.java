@@ -29,7 +29,7 @@ public class RMLTrainDetectionElement {
 
             // TODO: support directional train detection elements
             if (location.appliesTo != ApplicableDirections.BOTH)
-                throw new InvalidInfraException("directional train detection elements aren't supported");
+                RailMLParser.logger.warn("directional train detection elements aren't supported, ignoring direction");
 
             // add the buffer stop to the RJSTrackSection
             var rjsTrackSection = rjsTrackSections.get(location.netElement.id);

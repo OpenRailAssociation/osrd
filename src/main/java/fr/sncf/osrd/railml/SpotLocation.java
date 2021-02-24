@@ -56,8 +56,26 @@ public final class SpotLocation {
                     "a single spot location references a macro / meso netElement: %s", netElementId));
 
         var trackNetElement = (TrackNetElement) netElement;
-        double position = Double.parseDouble(spotLocationElement.attributeValue("pos"));
-        return new SpotLocation(trackNetElement, applicationDirection, position);
+
+        var posStr = spotLocationElement.attributeValue("pos");
+        if (posStr != null)
+            return new SpotLocation(trackNetElement, applicationDirection, Double.parseDouble(posStr));
+
+        // if there is not pos attribute, it must be located using a linear coordinate
+        var linearCoordinateElement = spotLocationElement.element("linearCoordinate");
+        if (linearCoordinateElement == null)
+            throw new InvalidInfraException(String.format(
+                    "spotLocation %s has no pos nor linearCoordinate", spotLocationElement.attributeValue("id")));
+
+        // parse the content of the linearCoordinate
+        var positioningSystemRef = linearCoordinateElement.attributeValue("positioningSystemRef");
+        var pos = Double.parseDouble(linearCoordinateElement.attributeValue("measure"));
+
+        var location = trackNetElement.resolveSingle(positioningSystemRef, pos);
+        if (Double.isNaN(location))
+            throw new InvalidInfraException(
+                    "the edge of the spotLocation isn't positioned in its linearCoordinate positioning system");
+        return new SpotLocation(trackNetElement, applicationDirection, location);
     }
 
     public interface SpotLocationCallback {

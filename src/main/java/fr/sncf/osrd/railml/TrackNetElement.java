@@ -23,19 +23,28 @@ public final class TrackNetElement extends NetElement {
         return new TrackNetElement(id, NetElement.parsePositioningSystem(netElement), length);
     }
 
-
-    @Override
-    public void resolve(SpotLocationCallback callback, String lrsId, double measure) {
+    /** Finds a the unique location of the netElement in the given LRS */
+    public double resolveSingle(String lrsId, double measure) {
         // if this netElement isn't positioned in this LRS, return an empty list
         var lrsStartOffset = lrsStartOffsets.get(lrsId);
         if (lrsStartOffset == null)
-            return;
+            return Double.NaN;
 
         // compute the given position in the edge
         double position = measure - lrsStartOffset;
 
         // return if the given lrs location isn't on the edge
         if (position < 0 || position > length)
+            return Double.NaN;
+
+        return position;
+    }
+
+
+    @Override
+    public void resolve(SpotLocationCallback callback, String lrsId, double measure) {
+        var position = resolveSingle(lrsId, measure);
+        if (Double.isNaN(position))
             return;
 
         // return the location on the edge if it is valid
