@@ -61,9 +61,9 @@ public class ConfigManager {
         // autodetect the infrastructure type
         var path = Path.of(pathStr);
         if (infraType == null) {
-            if (path.endsWith(".json"))
+            if (pathStr.endsWith(".json"))
                 infraType = JsonConfig.InfraType.RAILJSON;
-            else if (path.endsWith(".xml"))
+            else if (pathStr.endsWith(".xml"))
                 infraType = JsonConfig.InfraType.RAILML;
             else
                 infraType = JsonConfig.InfraType.UNKNOWN;
