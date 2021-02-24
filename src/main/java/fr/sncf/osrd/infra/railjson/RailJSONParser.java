@@ -11,7 +11,6 @@ import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.railjson.schema.RJSRoot;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrackObject;
 import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSTrackRange;
-import fr.sncf.osrd.utils.graph.ApplicableDirections;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.utils.PointSequence;
@@ -100,7 +99,7 @@ public class RailJSONParser {
             if (infra.trackGraph.getNode(i) == null)
                 infra.trackGraph.setNode(i, new PlaceholderNode(String.valueOf(i)));
 
-        var detectorsMap = new HashMap<String, Detector>();
+        var detectors = new HashMap<String, Detector>();
 
         // create track sections
         var infraTrackSections = new HashMap<String, TrackSection>();
@@ -120,15 +119,11 @@ public class RailJSONParser {
 
             // Parse detectors
             var detectorsBuilder = infraTrackSection.detectors.builder();
-
             for (var rjsDetector : trackSection.trainDetectors) {
                 var detector = new Detector(rjsDetector.id);
-                detectorsMap.put(detector.id, detector);
-                if (rjsDetector.applicableDirections == ApplicableDirections.BOTH)
-                    detectorsBuilder.add(rjsDetector.position, detector);
-                // TODO: Handle other type of detectors
+                detectors.put(detector.id, detector);
+                detectorsBuilder.add(rjsDetector.position, detector);
             }
-
             detectorsBuilder.build();
         }
 
@@ -143,11 +138,11 @@ public class RailJSONParser {
 
         // Parse TVDSections
         for (var rjsonTVD : railJSON.tvdSections) {
-            var detectors = new ArrayList<ID<Detector>>();
+            var tvdDetectors = new ArrayList<ID<Detector>>();
             for (var detectorID : rjsonTVD.trainDetectors) {
-                detectors.add(ID.from(detectorsMap.get(detectorID.id)));
+                tvdDetectors.add(ID.from(detectors.get(detectorID.id)));
             }
-            var tvd = new TVDSection(rjsonTVD.id, detectors, rjsonTVD.isBerthingTrack);
+            var tvd = new TVDSection(rjsonTVD.id, tvdDetectors, rjsonTVD.isBerthingTrack);
             infra.tvdSections.put(ID.from(tvd), tvd);
         }
 

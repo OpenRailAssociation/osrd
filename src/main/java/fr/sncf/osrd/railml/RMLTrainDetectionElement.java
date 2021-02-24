@@ -3,6 +3,7 @@ package fr.sncf.osrd.railml;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railjson.schema.RJSTrackSection;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrainDetector;
+import fr.sncf.osrd.utils.graph.ApplicableDirections;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
@@ -26,9 +27,13 @@ public class RMLTrainDetectionElement {
             if (location == null)
                 throw new InvalidInfraException(String.format("missing spotLocation on trainDetectionElement %s", id));
 
+            // TODO: support directional train detection elements
+            if (location.appliesTo != ApplicableDirections.BOTH)
+                throw new InvalidInfraException("directional train detection elements aren't supported");
+
             // add the buffer stop to the RJSTrackSection
             var rjsTrackSection = rjsTrackSections.get(location.netElement.id);
-            rjsTrackSection.trainDetectors.add(new RJSTrainDetector(id, location.appliesTo, location.position));
+            rjsTrackSection.trainDetectors.add(new RJSTrainDetector(id, location.position));
         }
     }
 }
