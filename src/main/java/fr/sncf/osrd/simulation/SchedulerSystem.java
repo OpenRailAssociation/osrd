@@ -9,7 +9,7 @@ import fr.sncf.osrd.timetable.Schedule;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.simulation.TimelineEvent.State;
-import fr.sncf.osrd.util.CryoList;
+import fr.sncf.osrd.utils.CryoList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

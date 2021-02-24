@@ -4,18 +4,16 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.parsing.railjson.RailJSONParser;
-import fr.sncf.osrd.infra.parsing.railml.RailMLParser;
+import fr.sncf.osrd.infra.railjson.RailJSONParser;
+import fr.sncf.osrd.railml.RailMLParser;
 import fr.sncf.osrd.timetable.InvalidTimetableException;
 import fr.sncf.osrd.timetable.Schedule;
 import fr.sncf.osrd.train.RollingStock;
-import fr.sncf.osrd.util.PathUtils;
+import fr.sncf.osrd.utils.PathUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 
 public class ConfigManager {

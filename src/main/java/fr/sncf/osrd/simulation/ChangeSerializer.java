@@ -10,7 +10,7 @@ import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.speedcontroller.*;
 import fr.sncf.osrd.train.PathSection;
 import fr.sncf.osrd.train.Train.*;
-import fr.sncf.osrd.util.CryoList;
+import fr.sncf.osrd.utils.CryoList;
 import okio.BufferedSink;
 import okio.Okio;
 import okio.Sink;

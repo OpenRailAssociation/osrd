@@ -16,9 +16,9 @@ import fr.sncf.osrd.timetable.Schedule;
 import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.timetable.TrainScheduleWaypoint;
 import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.util.CryoList;
-import fr.sncf.osrd.util.RangeValue;
-import fr.sncf.osrd.util.SignAnalyzer;
+import fr.sncf.osrd.utils.CryoList;
+import fr.sncf.osrd.utils.RangeValue;
+import fr.sncf.osrd.utils.SignAnalyzer;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalTime;

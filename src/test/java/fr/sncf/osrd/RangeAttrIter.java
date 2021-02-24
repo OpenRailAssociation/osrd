@@ -5,12 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.util.graph.EdgeDirection;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.train.PathAttrIterator;
 import fr.sncf.osrd.train.TrainPath;
-import fr.sncf.osrd.util.DoubleOrientedRangeSequence;
-import fr.sncf.osrd.util.RangeValue;
+import fr.sncf.osrd.utils.DoubleOrientedRangeSequence;
+import fr.sncf.osrd.utils.RangeValue;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

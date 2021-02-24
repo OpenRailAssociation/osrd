@@ -1,11 +1,11 @@
 package fr.sncf.osrd.infra.detectorgraph;
 
 import fr.sncf.osrd.infra.TVDSection;
-import fr.sncf.osrd.util.graph.AbstractEdge;
-import fr.sncf.osrd.util.graph.EdgeDirection;
-import fr.sncf.osrd.util.graph.EdgeEndpoint;
-import fr.sncf.osrd.util.graph.Graph;
-import fr.sncf.osrd.infra.parsing.railjson.schema.ID;
+import fr.sncf.osrd.utils.graph.AbstractEdge;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
+import fr.sncf.osrd.utils.graph.EdgeEndpoint;
+import fr.sncf.osrd.utils.graph.Graph;
+import fr.sncf.osrd.infra.railjson.schema.ID;
 
 import java.util.ArrayList;
 import java.util.HashSet;

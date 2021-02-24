@@ -2,8 +2,8 @@ package fr.sncf.osrd.infra.trackgraph;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
-import fr.sncf.osrd.util.graph.Graph;
-import fr.sncf.osrd.util.CryoMap;
+import fr.sncf.osrd.utils.graph.Graph;
+import fr.sncf.osrd.utils.CryoMap;
 
 public final class TrackGraph extends Graph<TrackNode, TrackSection> {
     // operationalPoints a map from operational point IDs to operational points

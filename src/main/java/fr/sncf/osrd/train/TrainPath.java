@@ -2,14 +2,14 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.util.graph.EdgeDirection;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.util.graph.CostFunction;
-import fr.sncf.osrd.util.graph.Dijkstra;
+import fr.sncf.osrd.utils.graph.CostFunction;
+import fr.sncf.osrd.utils.graph.Dijkstra;
 import fr.sncf.osrd.timetable.TrainSchedule;
-import fr.sncf.osrd.util.CryoList;
-import fr.sncf.osrd.util.Freezable;
-import fr.sncf.osrd.util.TopoLocation;
+import fr.sncf.osrd.utils.CryoList;
+import fr.sncf.osrd.utils.Freezable;
+import fr.sncf.osrd.utils.TopoLocation;
 
 public final class TrainPath implements Freezable {
     public final CryoList<PathSection> sections = new CryoList<>();

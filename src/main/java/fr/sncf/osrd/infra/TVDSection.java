@@ -2,8 +2,8 @@ package fr.sncf.osrd.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.detectorgraph.TVDSectionPath;
-import fr.sncf.osrd.infra.parsing.railjson.schema.ID;
-import fr.sncf.osrd.infra.parsing.railjson.schema.Identified;
+import fr.sncf.osrd.infra.railjson.schema.ID;
+import fr.sncf.osrd.infra.railjson.schema.Identified;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 
 import java.util.ArrayList;

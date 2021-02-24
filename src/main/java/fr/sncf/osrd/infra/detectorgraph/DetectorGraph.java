@@ -1,14 +1,14 @@
 package fr.sncf.osrd.infra.detectorgraph;
 
-import fr.sncf.osrd.util.graph.EdgeDirection;
-import fr.sncf.osrd.util.graph.EdgeEndpoint;
-import fr.sncf.osrd.util.graph.Graph;
-import fr.sncf.osrd.infra.parsing.railjson.schema.ID;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
+import fr.sncf.osrd.utils.graph.EdgeEndpoint;
+import fr.sncf.osrd.utils.graph.Graph;
+import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.util.CryoMap;
-import fr.sncf.osrd.util.PointValue;
+import fr.sncf.osrd.utils.CryoMap;
+import fr.sncf.osrd.utils.PointValue;
 import javafx.util.Pair;
 
 import java.util.HashSet;

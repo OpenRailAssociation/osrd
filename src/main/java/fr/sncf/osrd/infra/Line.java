@@ -1,7 +1,7 @@
 package fr.sncf.osrd.infra;
 
-import fr.sncf.osrd.util.CryoMap;
-import fr.sncf.osrd.util.Freezable;
+import fr.sncf.osrd.utils.CryoMap;
+import fr.sncf.osrd.utils.Freezable;
 
 public class Line implements Freezable {
     public final String name;

@@ -5,8 +5,8 @@ import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.timetable.TrainSchedule;
-import fr.sncf.osrd.util.CryoList;
-import fr.sncf.osrd.util.TopoLocation;
+import fr.sncf.osrd.utils.CryoList;
+import fr.sncf.osrd.utils.TopoLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

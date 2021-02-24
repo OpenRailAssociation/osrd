@@ -2,7 +2,7 @@ package fr.sncf.osrd.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.detectorgraph.DetectorGraph;
-import fr.sncf.osrd.infra.parsing.railjson.schema.ID;
+import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.simulation.Entity;
 
