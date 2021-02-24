@@ -9,10 +9,14 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public final class RailMLParser {
+    static final Logger logger = LoggerFactory.getLogger(RailMLParser.class);
+
     /**
      * Initialises a new infrastructure from a RailML file.
      * @return the parsed infrastructure
