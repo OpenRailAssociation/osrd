@@ -42,12 +42,12 @@ public class DetectorGraphTest {
         assertEquals(10, tvdSectionD1D2.length, 0.1);
         assertEquals(25, tvdSectionD2D3.length, 0.1);
 
-        assertEquals(1, detectorGraph.detectorNodeMap.get(new ID<Detector>("D1")).startToStopNeighbors.size());
-        assertEquals(0, detectorGraph.detectorNodeMap.get(new ID<Detector>("D1")).stopToStartNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get(new ID<Detector>("D2")).startToStopNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get(new ID<Detector>("D2")).stopToStartNeighbors.size());
-        assertEquals(0, detectorGraph.detectorNodeMap.get(new ID<Detector>("D3")).startToStopNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get(new ID<Detector>("D3")).stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.detectorNodeMap.get("D1").startToStopNeighbors.size());
+        assertEquals(0, detectorGraph.detectorNodeMap.get("D1").stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.detectorNodeMap.get("D2").startToStopNeighbors.size());
+        assertEquals(1, detectorGraph.detectorNodeMap.get("D2").stopToStartNeighbors.size());
+        assertEquals(0, detectorGraph.detectorNodeMap.get("D3").startToStopNeighbors.size());
+        assertEquals(1, detectorGraph.detectorNodeMap.get("D3").stopToStartNeighbors.size());
     }
 
     /**
@@ -102,14 +102,14 @@ public class DetectorGraphTest {
         assertEquals(100, tvdSectionD2D3.length, 0.1);
         assertEquals(400, tvdSectionD3D4.length, 0.1);
 
-        assertEquals(1, detectorGraph.detectorNodeMap.get(new ID<Detector>("D1")).startToStopNeighbors.size());
-        assertEquals(0, detectorGraph.detectorNodeMap.get(new ID<Detector>("D1")).stopToStartNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get(new ID<Detector>("D2")).startToStopNeighbors.size());
-        assertEquals(0, detectorGraph.detectorNodeMap.get(new ID<Detector>("D2")).stopToStartNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get(new ID<Detector>("D3")).startToStopNeighbors.size());
-        assertEquals(2, detectorGraph.detectorNodeMap.get(new ID<Detector>("D3")).stopToStartNeighbors.size());
-        assertEquals(0, detectorGraph.detectorNodeMap.get(new ID<Detector>("D4")).startToStopNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get(new ID<Detector>("D4")).stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.detectorNodeMap.get("D1").startToStopNeighbors.size());
+        assertEquals(0, detectorGraph.detectorNodeMap.get("D1").stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.detectorNodeMap.get("D2").startToStopNeighbors.size());
+        assertEquals(0, detectorGraph.detectorNodeMap.get("D2").stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.detectorNodeMap.get("D3").startToStopNeighbors.size());
+        assertEquals(2, detectorGraph.detectorNodeMap.get("D3").stopToStartNeighbors.size());
+        assertEquals(0, detectorGraph.detectorNodeMap.get("D4").startToStopNeighbors.size());
+        assertEquals(1, detectorGraph.detectorNodeMap.get("D4").stopToStartNeighbors.size());
 
     }
 
@@ -167,12 +167,12 @@ public class DetectorGraphTest {
         assertEquals(100, tvdSectionD2D3.length, 0.1);
         assertEquals(100, tvdSectionD3D1.length, 0.1);
 
-        assertEquals(1, detectorGraph.detectorNodeMap.get(new ID<Detector>("D1")).startToStopNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get(new ID<Detector>("D1")).stopToStartNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get(new ID<Detector>("D2")).startToStopNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get(new ID<Detector>("D2")).stopToStartNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get(new ID<Detector>("D3")).startToStopNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get(new ID<Detector>("D3")).stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.detectorNodeMap.get("D1").startToStopNeighbors.size());
+        assertEquals(1, detectorGraph.detectorNodeMap.get("D1").stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.detectorNodeMap.get("D2").startToStopNeighbors.size());
+        assertEquals(1, detectorGraph.detectorNodeMap.get("D2").stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.detectorNodeMap.get("D3").startToStopNeighbors.size());
+        assertEquals(1, detectorGraph.detectorNodeMap.get("D3").stopToStartNeighbors.size());
 
     }
 }

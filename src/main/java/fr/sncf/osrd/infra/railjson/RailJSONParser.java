@@ -188,12 +188,12 @@ public class RailJSONParser {
 
         // Parse TVDSections
         for (var rjsonTVD : railJSON.tvdSections) {
-            var tvdDetectors = new ArrayList<ID<Detector>>();
+            var tvdDetectors = new ArrayList<Detector>();
             for (var detectorID : rjsonTVD.trainDetectors) {
-                tvdDetectors.add(ID.from(detectors.get(detectorID.id)));
+                tvdDetectors.add(detectors.get(detectorID.id));
             }
             var tvd = new TVDSection(rjsonTVD.id, tvdDetectors, rjsonTVD.isBerthingTrack);
-            infra.tvdSections.put(ID.from(tvd), tvd);
+            infra.tvdSections.put(tvd.id, tvd);
         }
 
         return infra.build();

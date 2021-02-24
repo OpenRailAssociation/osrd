@@ -5,7 +5,6 @@ import fr.sncf.osrd.utils.graph.AbstractEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import fr.sncf.osrd.utils.graph.Graph;
-import fr.sncf.osrd.infra.railjson.schema.ID;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,7 +13,7 @@ public class TVDSectionPath extends AbstractEdge<DetectorNode, TVDSectionPath> {
 
     public final EdgeDirection startNodeDirection;
     public final EdgeDirection endNodeDirection;
-    public final HashSet<ID<TVDSection>> tvdSections = new HashSet<>();
+    public final HashSet<String> tvdSections = new HashSet<>();
 
     public EdgeDirection nodeDirection(EdgeEndpoint endpoint) {
         return endpoint == EdgeEndpoint.BEGIN ? startNodeDirection : endNodeDirection;
