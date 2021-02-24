@@ -13,11 +13,6 @@ import java.nio.file.Path;
 import java.util.Comparator;
 
 public class Schedule implements Freezable {
-    private static final JsonAdapter<JsonSchedule> scheduleAdapter = new Moshi
-            .Builder()
-            .build()
-            .adapter(JsonSchedule.class);
-
     public final CryoList<TrainSchedule> timetables;
 
     public Schedule(CryoList<TrainSchedule> timetables) {
@@ -33,7 +28,7 @@ public class Schedule implements Freezable {
             Path path,
             Infra infra
     ) throws IOException, InvalidInfraException, InvalidTimetableException {
-        JsonSchedule json = scheduleAdapter.fromJson(Files.readString(path));
+        JsonSchedule json = JsonSchedule.adapter.fromJson(Files.readString(path));
         var timetables = new CryoList<TrainSchedule>();
         assert json != null;
         var base = path.getParent();

@@ -1,5 +1,8 @@
 package fr.sncf.osrd.train;
 
+import com.squareup.moshi.Json;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.infra.InvalidInfraException;
 
 
@@ -8,6 +11,11 @@ import fr.sncf.osrd.infra.InvalidInfraException;
  * There must be a RollingStock instance per train on the network.
  */
 public class RollingStock {
+    public static final JsonAdapter<RollingStock> adapter = new Moshi
+            .Builder()
+            .build()
+            .adapter(RollingStock.class);
+
     /*
     These three coefficients are required for the train's physical simulation.
 
@@ -36,8 +44,11 @@ public class RollingStock {
     aerodynamicResistance = json.getDouble("coeffvomc") * 10 * Math.pow(3.6D, 2); // from dN/(km/h)2 to N/(m/s)2
     */
 
+    @Json(name = "rolling_resistance")
     private final double rollingResistance;      // in newtons
+    @Json(name = "mechanical_resistance")
     private final double mechanicalResistance;   // in newtons / (m/s)
+    @Json(name = "aerodynamic_resistance")
     private final double aerodynamicResistance;  // in newtons / (m/s^2)
 
     /**
@@ -61,21 +72,26 @@ public class RollingStock {
     public final double length;
 
     /** The max speed of the train, in meters per seconds. */
+    @Json(name = "max_speed")
     public final double maxSpeed;
 
     /**
      * The time the train takes to start up, in seconds.
      * During this time, the train's maximum acceleration is limited.
      */
+    @Json(name = "startup_time")
     public final double startUpTime;
 
     /** The acceleration to apply during the startup state. */
+    @Json(name = "startup_acceleration")
     public final double startUpAcceleration;
 
     /** The maximum acceleration when the train is in its regular operating mode. */
+    @Json(name = "comfort_acceleration")
     public final double comfortAcceleration;
 
     /** The naive braking deceleration coefficient for timetabling. */
+    @Json(name = "timetable_gamma")
     public final double timetableGamma;
 
     /** The mass of the train, in kilograms. */
@@ -87,22 +103,21 @@ public class RollingStock {
      * also need force to get spinning. This coefficient can be used to account for the difference.
      * It's without unit.
      */
+    @Json(name = "inertia_coefficient")
     public final double inertiaCoefficient;
 
-    public final boolean isTVM300Equiped;
-    public final boolean isTVM430Equiped;
-    public final boolean isETCS1Equiped;
-    public final boolean isETCS2Equiped;
-    public final boolean isKVBEquiped;
+    public final TrainFeatures[] features;
 
     /**
      * Associates a speed to a force.
      * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves
      */
+    @Json(name = "tractive_effort_curve")
     public final TractiveEffortPoint[] tractiveEffortCurve;
 
     public static final class TractiveEffortPoint {
         public final double speed;
+        @Json(name = "max_effort")
         public final double maxEffort;
 
         public TractiveEffortPoint(double speed, double maxEffort) {
@@ -138,11 +153,7 @@ public class RollingStock {
      * @param comfortAcceleration the cruise maximum acceleration, in m/s^2
      * @param mass the mass of the train, in kilograms
      * @param inertiaCoefficient a special inertia coefficient
-     * @param isTVM300Equiped whether the train has TVM300 hardware
-     * @param isTVM430Equiped whether the train has TVM430 hardware
-     * @param isETCS1Equiped whether the train has ETCS1 hardware
-     * @param isETCS2Equiped whether the train has ETCS2 hardware
-     * @param isKVBEquiped whether the train has KVB hardware
+     * @param features whether the train has TVM300 hardware
      * @param tractiveEffortCurve the tractive effort curve for the train
      */
     public RollingStock(
@@ -157,11 +168,7 @@ public class RollingStock {
             double timetableGamma,
             double mass,
             double inertiaCoefficient,
-            boolean isTVM300Equiped,
-            boolean isTVM430Equiped,
-            boolean isETCS1Equiped,
-            boolean isETCS2Equiped,
-            boolean isKVBEquiped,
+            TrainFeatures[] features,
             TractiveEffortPoint[] tractiveEffortCurve
     ) throws InvalidInfraException {
         this.rollingResistance = rollingResistance;
@@ -175,11 +182,7 @@ public class RollingStock {
         this.timetableGamma = timetableGamma;
         this.mass = mass;
         this.inertiaCoefficient = inertiaCoefficient;
-        this.isTVM300Equiped = isTVM300Equiped;
-        this.isTVM430Equiped = isTVM430Equiped;
-        this.isETCS1Equiped = isETCS1Equiped;
-        this.isETCS2Equiped = isETCS2Equiped;
-        this.isKVBEquiped = isKVBEquiped;
+        this.features = features;
         this.tractiveEffortCurve = tractiveEffortCurve;
         validate();
     }

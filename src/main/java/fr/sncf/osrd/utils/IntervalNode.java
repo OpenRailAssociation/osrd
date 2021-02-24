@@ -9,14 +9,14 @@ public abstract class IntervalNode {
     public final double end;
 
     /** The maximum value of all range ends for this subtree */
-    double maxEnd;
-    int height;
+    transient double maxEnd;
+    transient int height;
 
-    IntervalNode leftChild;
-    IntervalNode rightChild;
+    transient IntervalNode leftChild;
+    transient IntervalNode rightChild;
 
     /** A reference to the tree this node belongs to, for safety checks */
-    IntervalTree<?> tree;
+    transient IntervalTree<?> tree;
 
     /**
      * Creates a new interval tree node

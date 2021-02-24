@@ -1,12 +1,46 @@
 package fr.sncf.osrd.config;
 
-@SuppressWarnings("CanBeFinal")
-class JsonConfig {
-    float simulationTimeStep;
-    String infraPath;
-    String schedulePath;
-    boolean showViewer;
-    boolean realTimeViewer = false;
-    boolean changeReplayCheck;
-    double simulationStepPause = 0;
+import com.squareup.moshi.Json;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+
+public final class JsonConfig {
+    public static final JsonAdapter<JsonConfig> adapter = new Moshi
+            .Builder()
+            .build()
+            .adapter(JsonConfig.class)
+            .failOnUnknown();
+
+    @Json(name = "simulation_time_step")
+    public final float simulationTimeStep;
+    @Json(name = "infra_path")
+    public final String infraPath;
+    @Json(name = "schedule_path")
+    public final String schedulePath;
+    @Json(name = "show_viewer")
+    public final boolean showViewer;
+    @Json(name = "realtime_viewer")
+    public final boolean realTimeViewer;
+    @Json(name = "change_replay_check")
+    public final boolean changeReplayCheck;
+    @Json(name = "simulation_step_pause")
+    public final double simulationStepPause;
+
+    JsonConfig(
+            float simulationTimeStep,
+            String infraPath,
+            String schedulePath,
+            boolean showViewer,
+            boolean realTimeViewer,
+            boolean changeReplayCheck,
+            double simulationStepPause
+    ) {
+        this.simulationTimeStep = simulationTimeStep;
+        this.infraPath = infraPath;
+        this.schedulePath = schedulePath;
+        this.showViewer = showViewer;
+        this.realTimeViewer = realTimeViewer;
+        this.changeReplayCheck = changeReplayCheck;
+        this.simulationStepPause = simulationStepPause;
+    }
 }
