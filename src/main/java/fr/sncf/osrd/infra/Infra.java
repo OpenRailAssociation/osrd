@@ -123,7 +123,7 @@ public final class Infra {
             }
 
             // Compute which TVDSection belongs to each TVDSectionPath
-            for (var tvdSectionPath : detectorGraph.getTVDSectionPathCollection()) {
+            for (var tvdSectionPath : detectorGraph.tvdSectionPathMap.values()) {
                 // Set intersection
                 var tvdNodeStart = detectorNodeToTVDSections.get(tvdSectionPath.startNode);
                 for (var tvdID : detectorNodeToTVDSections.get(tvdSectionPath.endNode)) {

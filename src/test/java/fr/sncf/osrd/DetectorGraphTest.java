@@ -35,7 +35,7 @@ public class DetectorGraphTest {
 
         // Check Detector Graph
         assertEquals(3, detectorGraph.detectorNodeMap.size());
-        assertEquals(2, detectorGraph.getTVDSectionPathCollection().size());
+        assertEquals(2, detectorGraph.tvdSectionPathMap.size());
 
         var tvdSectionD1D2 = detectorGraph.getTVDSectionPath(0, 1);
         var tvdSectionD2D3 = detectorGraph.getTVDSectionPath(1, 2);
@@ -93,7 +93,7 @@ public class DetectorGraphTest {
 
         // Check Detector Graph
         assertEquals(4, detectorGraph.detectorNodeMap.size());
-        assertEquals(3, detectorGraph.getTVDSectionPathCollection().size());
+        assertEquals(3, detectorGraph.tvdSectionPathMap.size());
 
         var tvdSectionD1D3 = detectorGraph.getTVDSectionPath(0, 2);
         var tvdSectionD2D3 = detectorGraph.getTVDSectionPath(1, 2);
@@ -158,7 +158,7 @@ public class DetectorGraphTest {
 
         // Check Detector Graph
         assertEquals(3, detectorGraph.detectorNodeMap.size());
-        assertEquals(3, detectorGraph.getTVDSectionPathCollection().size());
+        assertEquals(3, detectorGraph.tvdSectionPathMap.size());
 
         var tvdSectionD1D2 = detectorGraph.getTVDSectionPath(0, 1);
         var tvdSectionD2D3 = detectorGraph.getTVDSectionPath(1, 2);
