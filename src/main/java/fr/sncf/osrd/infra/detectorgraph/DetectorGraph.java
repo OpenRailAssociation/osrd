@@ -11,7 +11,6 @@ import fr.sncf.osrd.util.CryoMap;
 import fr.sncf.osrd.util.PointValue;
 import javafx.util.Pair;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -19,7 +18,7 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
 
     public final CryoMap<ID<Detector>, DetectorNode> detectorNodeMap = new CryoMap<>();
     // TVDSectionPath are identified by the couple (StartNode, EndNode)
-    private final CryoMap<Pair<Integer, Integer>, TVDSectionPath> tvdSectionPathMap = new CryoMap<>();
+    public final CryoMap<TVDSectionPathID, TVDSectionPath> tvdSectionPathMap = new CryoMap<>();
 
     /**
      * Build a DetectorGraph given a TrackGraph
@@ -239,26 +238,16 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
         }
         var tvdSectionPath = new TVDSectionPath(startNode, endNode, length, startNodeDirection, endNodeDirection);
         this.register(tvdSectionPath);
-        var id = new Pair<>(startNode, endNode);
+        var id = TVDSectionPathID.build(startNode, endNode);
         tvdSectionPathMap.put(id, tvdSectionPath);
         return tvdSectionPath;
     }
 
-    private Pair<Integer, Integer>  makeTVDSectionPathKey(int nodeA, int nodeB) {
-        if (nodeA < nodeB)
-            return new Pair<>(nodeA, nodeB);
-        return new Pair<>(nodeB, nodeA);
-    }
-
     public TVDSectionPath getTVDSectionPath(int nodeA, int nodeB) {
-        return tvdSectionPathMap.get(makeTVDSectionPathKey(nodeA, nodeB));
+        return tvdSectionPathMap.get(TVDSectionPathID.build(nodeA, nodeB));
     }
 
-    public boolean containsTVDSectionPath(int nodeA, int nodeB) {
-        return tvdSectionPathMap.containsKey(makeTVDSectionPathKey(nodeA, nodeB));
-    }
-
-    public Collection<TVDSectionPath> getTVDSectionPathCollection() {
-        return tvdSectionPathMap.values();
+    private boolean containsTVDSectionPath(int nodeA, int nodeB) {
+        return tvdSectionPathMap.containsKey(TVDSectionPathID.build(nodeA, nodeB));
     }
 }
