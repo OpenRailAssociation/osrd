@@ -8,7 +8,7 @@ import java.util.Objects;
 
 public class OperationalPoint {
     public final String id;
-    public final ArrayList<TrackSection> refs = new ArrayList<>();
+    public final transient ArrayList<TrackSection> refs = new ArrayList<>();
 
     public OperationalPoint(String id) {
         this.id = id;

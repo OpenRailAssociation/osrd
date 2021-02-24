@@ -1,7 +1,7 @@
-package fr.sncf.osrd.simulation;
+package fr.sncf.osrd;
 
 import fr.sncf.osrd.config.Config;
-import fr.sncf.osrd.DebugViewer;
+import fr.sncf.osrd.simulation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +77,10 @@ public final class SimulationManager {
             viewer.display();
         }
 
-        while (!sim.isSimulationOver()) {
+        for (int eventsCount = 0; !sim.isSimulationOver(); eventsCount++) {
+            if (eventsCount != 0)
+                Thread.sleep((long) (config.simulationStepPause * 1000));
+
             var event = sim.getNextEvent();
 
             if (viewer != null)

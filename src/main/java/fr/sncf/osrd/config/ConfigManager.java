@@ -21,15 +21,6 @@ public class ConfigManager {
     private static final HashMap<Path, Schedule> schedules = new HashMap<>();
     private static final HashMap<Path, RollingStock> rollingStocks = new HashMap<>();
 
-    private static final JsonAdapter<JsonConfig> configAdapter = new Moshi
-            .Builder()
-            .build()
-            .adapter(JsonConfig.class);
-    private static final JsonAdapter<RollingStock> rollingStockAdapter = new Moshi
-            .Builder()
-            .build()
-            .adapter(RollingStock.class);
-
     /**
      * Reads a config file given a filesystem path
      * @param mainConfigPath the path to the main JSON configuration file
@@ -41,7 +32,7 @@ public class ConfigManager {
             Path mainConfigPath
     ) throws IOException, InvalidInfraException, InvalidTimetableException {
         var baseDirPath = mainConfigPath.getParent();
-        var jsonConfig = configAdapter.fromJson(Files.readString(mainConfigPath));
+        var jsonConfig = JsonConfig.adapter.fromJson(Files.readString(mainConfigPath));
 
         var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
         var infra = ConfigManager.getInfra(infraPath.toString());
@@ -95,7 +86,7 @@ public class ConfigManager {
             return rollingStocks.get(path);
 
         try {
-            var rollingStock = rollingStockAdapter.fromJson(Files.readString(path));
+            var rollingStock = RollingStock.adapter.fromJson(Files.readString(path));
             if (rollingStock == null)
                 throw new InvalidInfraException("empty rolling stock");
 

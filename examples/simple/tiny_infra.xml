@@ -573,7 +573,7 @@
                     <designator register="_SimpleRegister" entry="Foo entry switch"/>
                     <hasDemarcatingTraindetector ref="tde.foo_a-switch_foo"/>
                     <hasDemarcatingTraindetector ref="tde.foo_b-switch_foo"/>
-                    <hasDemarcatingTraindetector ref="tde.switch_foo-track_beg"/>
+                    <hasDemarcatingTraindetector ref="tde.switch_foo-track"/>
                 </tvdSection>
                 <tvdSection id="tvd.track" isBerthingTrack="false" partialRouteReleaseDelay="PT1S"
                             residualRouteCancellationDelay="PT90S" technology="axleCounter">

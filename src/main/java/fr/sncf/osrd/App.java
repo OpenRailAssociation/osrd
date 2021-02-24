@@ -10,7 +10,6 @@ import fr.sncf.osrd.config.ConfigManager;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railjson.RailJSONSerializer;
 import fr.sncf.osrd.railml.RailMLParser;
-import fr.sncf.osrd.simulation.SimulationManager;
 import fr.sncf.osrd.simulation.ChangeSerializer;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.timetable.InvalidTimetableException;

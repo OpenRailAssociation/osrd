@@ -2,6 +2,7 @@ package fr.sncf.osrd;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.train.RollingStock;
+import fr.sncf.osrd.train.TrainFeatures;
 
 import java.util.ArrayList;
 
@@ -36,11 +37,12 @@ public class TestTrains {
                     0.5,
                     trainMass,
                     1.05,
-                    true,
-                    true,
-                    true,
-                    true,
-                    true,
+                    new TrainFeatures[] {
+                            TrainFeatures.TVM430,
+                            TrainFeatures.TVM300,
+                            TrainFeatures.ETCS1,
+                            TrainFeatures.ETCS2
+                    },
                     tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0])
             );
 
@@ -56,11 +58,12 @@ public class TestTrains {
                     1,
                     1,
                     1,
-                    true,
-                    true,
-                    true,
-                    true,
-                    true,
+                    new TrainFeatures[] {
+                            TrainFeatures.TVM430,
+                            TrainFeatures.TVM300,
+                            TrainFeatures.ETCS1,
+                            TrainFeatures.ETCS2
+                    },
                     new RollingStock.TractiveEffortPoint[] {
                         new RollingStock.TractiveEffortPoint(0, 1)
                     }

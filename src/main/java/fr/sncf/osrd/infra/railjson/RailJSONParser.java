@@ -190,7 +190,10 @@ public class RailJSONParser {
         for (var rjsonTVD : railJSON.tvdSections) {
             var tvdDetectors = new ArrayList<Detector>();
             for (var detectorID : rjsonTVD.trainDetectors) {
-                tvdDetectors.add(detectors.get(detectorID.id));
+                var detector = detectors.get(detectorID.id);
+                if (detector == null)
+                    throw new InvalidInfraException(String.format("cannot find detector %s", detectorID.id));
+                tvdDetectors.add(detector);
             }
             var tvd = new TVDSection(rjsonTVD.id, tvdDetectors, rjsonTVD.isBerthingTrack);
             infra.tvdSections.put(tvd.id, tvd);
