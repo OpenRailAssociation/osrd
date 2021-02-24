@@ -16,6 +16,7 @@ public class SignalFunction {
     /** A collection of aspects, along with the condition that must be verified for the aspect to be shown */
     public final Map<Aspect, SignalExpr> rules;
 
+    public final String[] argumentNames;
     public final EntityType[] argumentTypes;
 
     /** Creates a new signal state evaluation function */
@@ -23,9 +24,11 @@ public class SignalFunction {
             String functionName,
             ArrayList<Aspect> defaultAspects,
             Map<Aspect, SignalExpr> rules,
+            String[] argumentNames,
             EntityType[] argumentTypes
     ) {
         this.functionName = functionName;
+        this.argumentNames = argumentNames;
         this.argumentTypes = argumentTypes;
         Collections.sort(defaultAspects);
         this.defaultAspects = defaultAspects;

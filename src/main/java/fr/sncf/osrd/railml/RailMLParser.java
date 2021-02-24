@@ -63,6 +63,7 @@ public final class RailMLParser {
                 rjsOperationalPoints,
                 rjsTvdSections,
                 rjsSpeedSections,
+                new ArrayList<>(),
                 new ArrayList<>());
     }
 

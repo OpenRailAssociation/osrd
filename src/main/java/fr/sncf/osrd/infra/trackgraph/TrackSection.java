@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.SpeedSection;
+import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.utils.graph.AbstractEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
@@ -142,6 +143,7 @@ public final class TrackSection extends AbstractEdge<TrackNode, TrackSection> {
     public final ArrayList<RangeValue<SpeedSection>> speedSectionsBackward = new ArrayList<>();
     public final IntervalTree<OperationalPoint.Ref> operationalPoints = new IntervalTree<>();
     public final PointSequence<Detector> detectors = new PointSequence<>();
+    public final PointSequence<Signal> signals = new PointSequence<>();
     public final PointSequence<VisibleTrackObject> visibleTrackObjectsForward = new PointSequence<>();
     public final PointSequence<VisibleTrackObject> visibleTrackObjectsBackward = new PointSequence<>();
 

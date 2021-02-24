@@ -48,22 +48,22 @@ public class RJSSignalFunction implements Identified {
         return functionName;
     }
 
-    public static final class ParameterRef<T> {
-        public final String parameterName;
+    public static final class ArgumentRef<T> {
+        public final String argumentName;
 
-        public ParameterRef(String parameterName) {
-            this.parameterName = parameterName;
+        public ArgumentRef(String argumentName) {
+            this.argumentName = argumentName;
         }
 
         public static class Adapter {
             @ToJson
-            String toJson(ParameterRef<?> parameterRef) {
-                return parameterRef.parameterName;
+            String toJson(ArgumentRef<?> argumentRef) {
+                return argumentRef.argumentName;
             }
 
             @FromJson
-            <T> ParameterRef<T> fromJson(String str) {
-                return new ParameterRef<T>(str);
+            <T> ArgumentRef<T> fromJson(String str) {
+                return new ArgumentRef<T>(str);
             }
         }
     }

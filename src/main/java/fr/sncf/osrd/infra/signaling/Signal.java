@@ -12,7 +12,8 @@ public class Signal extends StatefulInfraObject<Signal.State> {
     public final SignalFunction function;
     public final String[] arguments;
 
-    Signal(String id, SignalFunction function, String[] arguments) {
+    /** The static data describing a signal */
+    public Signal(String id, SignalFunction function, String[] arguments) {
         this.id = id;
         this.function = function;
         this.arguments = arguments;
@@ -23,6 +24,7 @@ public class Signal extends StatefulInfraObject<Signal.State> {
         return new State(this, new Entity[arguments.length]);
     }
 
+    /** The state of the signal is the actual entity which interacts with the rest of the infrastructure */
     public static final class State extends Entity {
         public final Signal signal;
         public final ArrayList<Aspect> aspects;
