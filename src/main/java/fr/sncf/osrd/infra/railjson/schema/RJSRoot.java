@@ -5,6 +5,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.railjson.schema.signaling.RJSAspect;
+import fr.sncf.osrd.infra.railjson.schema.signaling.RJSSignalExpr;
 import fr.sncf.osrd.infra.railjson.schema.signaling.RJSSignalFunction;
 
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ public class RJSRoot {
     public static final JsonAdapter<RJSRoot> adapter = new Moshi
             .Builder()
             .add(new ID.Adapter())
+            .add(RJSSignalExpr.adapter)
             .build()
             .adapter(RJSRoot.class);
 
