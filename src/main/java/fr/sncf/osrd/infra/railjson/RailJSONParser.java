@@ -214,7 +214,7 @@ public class RailJSONParser {
         // parse rules
         var rules = new HashMap<Aspect, SignalExpr>();
         for (var rjsRule : rjsSignalFunction.rules.entrySet()) {
-            var aspect = builder.aspects.get(rjsRule.getKey().id);
+            var aspect = builder.aspects.get(rjsRule.getKey());
             var expr = parseSignalExpr(builder, argumentNames, rjsRule.getValue());
             rules.put(aspect, expr);
         }
