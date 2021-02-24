@@ -1,0 +1,9 @@
+{
+  "simulation_time_step": 1,
+  "infra_path": "tiny_infra.json",
+  "schedule_path": "schedule.json",
+  "show_viewer": true,
+  "realtime_viewer": true,
+  "change_replay_check": true,
+  "simulation_step_pause": 0.2
+}
