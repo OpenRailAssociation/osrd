@@ -16,7 +16,7 @@ public class SimulationTest {
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static class MockEntity extends Entity {
         public MockEntity(String id) {
-            super(id);
+            super(EntityType.SIGNAL, id);
         }
 
         public static class EventUpdate {
@@ -77,7 +77,7 @@ public class SimulationTest {
         var timerResponse = new MockEntity("timer");
         var otherChannel = new MockEntity("other");
         // sinks can be functions or methods, as its a functional interface
-        timer.addSubscriber(new Entity("subscriber") {
+        timer.addSubscriber(new Entity(EntityType.SIGNAL, "subscriber") {
             @Override
             protected void onTimelineEventUpdate(
                     Simulation sim,

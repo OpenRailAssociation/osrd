@@ -7,11 +7,11 @@ public abstract class EntityEventChange<
         ResultT
         > extends Change {
     public final TimelineEventId timelineEventId;
-    public final String entityId;
+    public final EntityID entityId;
 
     protected EntityEventChange(Simulation sim, EntityT entity, TimelineEvent<EventValueT> timelineEvent) {
         super(sim);
-        this.entityId = entity.entityId;
+        this.entityId = entity;
         this.timelineEventId = new TimelineEventId(timelineEvent);
     }
 

@@ -8,7 +8,7 @@ import fr.sncf.osrd.util.graph.AbstractEdge;
 import fr.sncf.osrd.util.graph.EdgeDirection;
 import fr.sncf.osrd.util.graph.EdgeEndpoint;
 import fr.sncf.osrd.util.graph.Graph;
-import fr.sncf.osrd.infra.interlocking.VisibleTrackObject;
+import fr.sncf.osrd.infra.signaling.VisibleTrackObject;
 import fr.sncf.osrd.util.*;
 
 import java.util.ArrayList;

@@ -65,7 +65,7 @@ public class SignalSimulationTest {
 
         @SuppressWarnings("SameParameterValue")
         Signal(String name, Aspect aspect, Signal master) {
-            super(String.format("signal/%s", name));
+            super(EntityType.SIGNAL, name);
             this.aspect = aspect;
             if (master != null)
                 master.addSubscriber(this);

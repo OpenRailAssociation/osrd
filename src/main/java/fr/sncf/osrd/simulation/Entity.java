@@ -3,12 +3,14 @@ package fr.sncf.osrd.simulation;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public abstract class Entity {
-    public final String entityId;
+public abstract class Entity extends EntityID {
     public final transient ArrayList<Entity> subscribers = new ArrayList<>();
 
-    protected Entity(String entityId) {
-        this.entityId = entityId;
+    protected Entity(EntityType type, String id) {
+        super(type, id);
+    }
+
+    public void initialize() {
     }
 
     // region STD_OVERRIDES
@@ -22,7 +24,8 @@ public abstract class Entity {
             return false;
 
         var other = (Entity) obj;
-        if (!this.entityId.equals(other.entityId))
+
+        if (!this.equalIDs(other))
             return false;
 
         // equal entities have the same number of subscribers
@@ -34,7 +37,7 @@ public abstract class Entity {
             var ourSub = subscribers.get(i);
             var theirSub = other.subscribers.get(i);
 
-            if (!ourSub.entityId.equals(theirSub.entityId))
+            if (!ourSub.equalIDs(theirSub))
                 return false;
         }
 
@@ -45,11 +48,11 @@ public abstract class Entity {
     public int hashCode() {
         // we can't just do that, as two mutually subscribed entities wouldn't
         // be able to compute their hash without running into infinite recursion
-        // return Objects.hash(entityId, subscribers);
+        // return Objects.hash(type, id, subscribers);
 
-        var hash = entityId.hashCode();
+        var hash = Objects.hash(type, id);
         for (var sub : subscribers)
-            hash = Objects.hash(hash, sub.entityId);
+            hash = Objects.hash(hash, sub.type, sub.id);
         return hash;
     }
 

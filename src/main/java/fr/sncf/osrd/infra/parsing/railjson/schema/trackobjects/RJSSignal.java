@@ -1,9 +1,10 @@
 package fr.sncf.osrd.infra.parsing.railjson.schema.trackobjects;
 
+import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.util.graph.ApplicableDirections;
 import fr.sncf.osrd.infra.parsing.railjson.schema.ID;
-import fr.sncf.osrd.infra.parsing.railjson.schema.signaling.RJSSignalTemplate;
+import fr.sncf.osrd.infra.parsing.railjson.schema.signaling.RJSSignalFunction;
 import fr.sncf.osrd.infra.parsing.railjson.schema.signaling.RJSSignalObservable;
 
 import java.util.Map;
@@ -14,21 +15,22 @@ public class RJSSignal extends RJSTrackObject {
     public final ApplicableDirections navigability;
 
     /** Assigns a value to all the variables of the template */
-    public final Map<String, ID<RJSSignalObservable>> parameters;
+    public final Map<String, ID<RJSSignalObservable>> arguments;
 
     /** The behavior rules template */
-    public final ID<RJSSignalTemplate> template;
+    @Json(name = "evaluation_function")
+    public final ID<RJSSignalFunction> evaluationFunction;
 
     RJSSignal(
             ApplicableDirections navigability,
             double position,
-            Map<String, ID<RJSSignalObservable>> parameters,
-            ID<RJSSignalTemplate> template
+            Map<String, ID<RJSSignalObservable>> arguments,
+            ID<RJSSignalFunction> evaluationFunction
     ) {
         super(position);
         this.navigability = navigability;
-        this.parameters = parameters;
-        this.template = template;
+        this.arguments = arguments;
+        this.evaluationFunction = evaluationFunction;
     }
 
     @Override
