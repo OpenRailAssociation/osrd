@@ -24,7 +24,7 @@ public class RMLRoute {
 
             var tvdSections = parseTVDSections(route);
             var switchesPosition = parseSwitchesPosition(route);
-            res.add(new RJSRoute(id, tvdSections, switchesPosition));
+            res.add(new RJSRoute(id, tvdSections, switchesPosition, new ArrayList<>()));
         }
         return res;
     }
