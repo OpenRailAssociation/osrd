@@ -33,4 +33,8 @@ public class RJSSwitch implements Identified {
     public String getID() {
         return id;
     }
+
+    public enum Position {
+        LEFT, RIGHT
+    }
 }
