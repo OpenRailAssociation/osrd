@@ -5,7 +5,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 
 import java.io.IOException;
 
-public final class ID<T extends Identified> {
+public final class ID<T extends Identified> implements Comparable<T> {
     public final String id;
 
     public ID(String id) {
@@ -31,6 +31,11 @@ public final class ID<T extends Identified> {
 
         var o = (ID<?>) obj;
         return id.equals(o.id);
+    }
+
+    @Override
+    public int compareTo(T o) {
+        return id.compareTo(o.getID());
     }
 
     /** A moshi adapter for ID serialization */

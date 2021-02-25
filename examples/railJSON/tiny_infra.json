@@ -1,14 +1,8 @@
 {
   "aspects": [
-    {
-      "id": "green"
-    },
-    {
-      "id": "yellow"
-    },
-    {
-      "id": "red"
-    }
+    "green",
+    "yellow",
+    "red"
   ],
   "operational_points": [
     {
@@ -25,9 +19,7 @@
         "forward_signal"
       ],
       "default_aspects": [
-        {
-          "id": "green"
-        }
+        "green"
       ],
       "rules": {
         "yellow": {
@@ -35,9 +27,7 @@
           "signal": {
             "argument_name": "forward_signal"
           },
-          "has_aspect": {
-            "id": "red"
-          }
+          "has_aspect": "red"
         }
       }
     },
@@ -45,9 +35,7 @@
       "function_name": "always_red",
       "arguments": [],
       "default_aspects": [
-        {
-          "id": "red"
-        }
+        "red"
       ],
       "rules": {}
     }
@@ -63,22 +51,16 @@
     {
       "base": {
         "endpoint": "BEGIN",
-        "section": {
-          "id": "ne.micro.foo_to_bar"
-        }
+        "section": "ne.micro.foo_to_bar"
       },
       "id": "switch_foo",
       "left": {
         "endpoint": "END",
-        "section": {
-          "id": "ne.micro.foo_b"
-        }
+        "section": "ne.micro.foo_b"
       },
       "right": {
         "endpoint": "END",
-        "section": {
-          "id": "ne.micro.foo_a"
-        }
+        "section": "ne.micro.foo_a"
       }
     }
   ],
@@ -86,45 +68,33 @@
     {
       "begin": {
         "endpoint": "END",
-        "section": {
-          "id": "ne.micro.foo_a"
-        }
+        "section": "ne.micro.foo_a"
       },
       "end": {
         "endpoint": "BEGIN",
-        "section": {
-          "id": "ne.micro.foo_to_bar"
-        }
+        "section": "ne.micro.foo_to_bar"
       },
       "navigability": "BOTH"
     },
     {
       "begin": {
         "endpoint": "END",
-        "section": {
-          "id": "ne.micro.foo_b"
-        }
+        "section": "ne.micro.foo_b"
       },
       "end": {
         "endpoint": "BEGIN",
-        "section": {
-          "id": "ne.micro.foo_to_bar"
-        }
+        "section": "ne.micro.foo_to_bar"
       },
       "navigability": "BOTH"
     },
     {
       "begin": {
         "endpoint": "END",
-        "section": {
-          "id": "ne.micro.foo_to_bar"
-        }
+        "section": "ne.micro.foo_to_bar"
       },
       "end": {
         "endpoint": "BEGIN",
-        "section": {
-          "id": "ne.micro.bar_a"
-        }
+        "section": "ne.micro.bar_a"
       },
       "navigability": "BOTH"
     }
@@ -144,9 +114,7 @@
         {
           "begin": 100,
           "end": 100,
-          "ref": {
-            "id": "op.station_foo"
-          }
+          "ref": "op.station_foo"
         }
       ],
       "signals": [],
@@ -169,25 +137,25 @@
           "position": 25,
           "navigability": "BOTH",
           "arguments": {
-            "forward_signal": {"id": "signal.foo_to_bar.2"}
+            "forward_signal": "signal.foo_to_bar.2"
           },
-          "evaluation_function": {"id": "bal3"}
+          "evaluation_function": "bal3"
         },
         {
           "id": "signal.foo_to_bar.2",
           "position": 50,
           "navigability": "BOTH",
           "arguments": {
-            "forward_signal": {"id": "signal.foo_to_bar.3"}
+            "forward_signal": "signal.foo_to_bar.3"
           },
-          "evaluation_function": {"id": "bal3"}
+          "evaluation_function": "bal3"
         },
         {
           "id": "signal.foo_to_bar.3",
           "position": 75,
           "navigability": "BOTH",
           "arguments": {},
-          "evaluation_function": {"id": "always_red"}
+          "evaluation_function": "always_red"
         }
       ],
       "speed_sections": [
@@ -195,9 +163,7 @@
           "applicableDirections": "BOTH",
           "begin": 2000,
           "end": 8000,
-          "ref": {
-            "id": "speedsection.mid_limit"
-          }
+          "ref": "speedsection.mid_limit"
         }
       ],
       "train_detectors": [
@@ -221,9 +187,7 @@
         {
           "begin": 100,
           "end": 100,
-          "ref": {
-            "id": "op.station_foo"
-          }
+          "ref": "op.station_foo"
         }
       ],
       "signals": [],
@@ -249,9 +213,7 @@
         {
           "begin": 100,
           "end": 100,
-          "ref": {
-            "id": "op.station_bar"
-          }
+          "ref": "op.station_bar"
         }
       ],
       "signals": [],
@@ -267,30 +229,22 @@
   "tvd_sections": [
     {
       "buffer_stops": [
-        {
-          "id": "buffer_stop_a"
-        }
+        "buffer_stop_a"
       ],
       "id": "tvd.foo_a",
       "is_berthing_track": true,
       "train_detectors": [
-        {
-          "id": "tde.foo_a-switch_foo"
-        }
+        "tde.foo_a-switch_foo"
       ]
     },
     {
       "buffer_stops": [
-        {
-          "id": "buffer_stop_b"
-        }
+        "buffer_stop_b"
       ],
       "id": "tvd.foo_b",
       "is_berthing_track": true,
       "train_detectors": [
-        {
-          "id": "tde.foo_b-switch_foo"
-        }
+        "tde.foo_b-switch_foo"
       ]
     },
     {
@@ -298,15 +252,9 @@
       "id": "tvd.switch_foo",
       "is_berthing_track": false,
       "train_detectors": [
-        {
-          "id": "tde.foo_b-switch_foo"
-        },
-        {
-          "id": "tde.switch_foo-track"
-        },
-        {
-          "id": "tde.foo_a-switch_foo"
-        }
+        "tde.foo_b-switch_foo",
+        "tde.foo_a-switch_foo",
+        "tde.switch_foo-track"
       ]
     },
     {
@@ -314,26 +262,18 @@
       "id": "tvd.track",
       "is_berthing_track": false,
       "train_detectors": [
-        {
-          "id": "tde.track-bar"
-        },
-        {
-          "id": "tde.switch_foo-track"
-        }
+        "tde.track-bar",
+        "tde.switch_foo-track"
       ]
     },
     {
       "buffer_stops": [
-        {
-          "id": "buffer_stop_c"
-        }
+        "buffer_stop_c"
       ],
       "id": "tvd.bar_a",
       "is_berthing_track": true,
       "train_detectors": [
-        {
-          "id": "tde.track-bar"
-        }
+        "tde.track-bar"
       ]
     }
   ],

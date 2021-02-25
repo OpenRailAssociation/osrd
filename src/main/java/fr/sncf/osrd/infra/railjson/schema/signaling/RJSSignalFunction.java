@@ -22,7 +22,7 @@ public class RJSSignalFunction implements Identified {
     public final ID<RJSAspect>[] defaultAspects;
 
     /** A collection of aspects, along with the condition that must be verified for the aspect to be shown */
-    public final Map<String, RJSSignalExpr> rules;
+    public final Map<ID<RJSAspect>, RJSSignalExpr> rules;
 
     /**
      * A template for a signal. It contains references to parameters which are specified inside actual signals.
@@ -35,7 +35,7 @@ public class RJSSignalFunction implements Identified {
             String functionName,
             String[] arguments,
             ID<RJSAspect>[] defaultAspects,
-            Map<String, RJSSignalExpr> rules
+            Map<ID<RJSAspect>, RJSSignalExpr> rules
     ) {
         this.functionName = functionName;
         this.arguments = arguments;
