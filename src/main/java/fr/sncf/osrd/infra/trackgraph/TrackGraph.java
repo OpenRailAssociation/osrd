@@ -2,10 +2,13 @@ package fr.sncf.osrd.infra.trackgraph;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
-import fr.sncf.osrd.utils.graph.Graph;
+import fr.sncf.osrd.utils.graph.AbstractBiGraph;
 import fr.sncf.osrd.utils.CryoMap;
+import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 
-public final class TrackGraph extends Graph<TrackNode, TrackSection> {
+import java.util.List;
+
+public final class TrackGraph extends AbstractBiGraph<TrackNode, TrackSection> {
     // operationalPoints a map from operational point IDs to operational points
     public final CryoMap<String, OperationalPoint> operationalPoints = new CryoMap<>();
     // trackNodeMap a map from node IDs to nodes
@@ -14,15 +17,14 @@ public final class TrackGraph extends Graph<TrackNode, TrackSection> {
     public final CryoMap<String, TrackSection> trackSectionMap = new CryoMap<>();
 
 
-    /**
-     * Create a placeholder node
-     *
-     * @param id the placeholder node ID
-     * @return the placeholder node
-     */
+    /** Create a placeholder node */
     public PlaceholderNode makePlaceholderNode(String id) {
-        var node = new PlaceholderNode(id);
-        this.register(node);
+        return makePlaceholderNode(nextNodeIndex(), id);
+    }
+
+    /** Create a placeholder node at the given node index */
+    public PlaceholderNode makePlaceholderNode(int index, String id) {
+        var node = new PlaceholderNode(this, index, id);
         trackNodeMap.put(node.id, node);
         return node;
     }
@@ -42,13 +44,7 @@ public final class TrackGraph extends Graph<TrackNode, TrackSection> {
             String id,
             double length
     ) {
-        var edge = TrackSection.linkNodes(
-                startNodeIndex,
-                endNodeIndex,
-                id,
-                length
-        );
-        this.register(edge);
+        var edge = new TrackSection(this, nextEdgeIndex(), id, startNodeIndex, endNodeIndex, length);
         trackSectionMap.put(edge.id, edge);
         return edge;
     }
@@ -69,8 +65,12 @@ public final class TrackGraph extends Graph<TrackNode, TrackSection> {
      * Check the validity of the graph
      */
     public void validate() throws InvalidInfraException {
-        for (var edge : this.edges) {
+        for (var edge : this.iterEdges())
             edge.validate();
-        }
+    }
+
+    @Override
+    public List<TrackSection> getNeighbors(TrackSection edge, EdgeEndpoint endpoint) {
+        return edge.getNeighbors(endpoint);
     }
 }

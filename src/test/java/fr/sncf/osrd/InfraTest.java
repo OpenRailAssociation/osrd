@@ -10,7 +10,7 @@ class InfraTest {
         var infraBuilder = new Infra.Builder();
         var nodeA = infraBuilder.trackGraph.makePlaceholderNode("A");
         var nodeB = infraBuilder.trackGraph.makePlaceholderNode("B");
-        infraBuilder.trackGraph.makeTrackSection(nodeA.getIndex(), nodeB.getIndex(), "e1", 42);
+        infraBuilder.trackGraph.makeTrackSection(nodeA.index, nodeB.index, "e1", 42);
         infraBuilder.build();
     }
 }

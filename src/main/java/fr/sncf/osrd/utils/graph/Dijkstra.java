@@ -42,7 +42,7 @@ public class Dijkstra {
          * @param <EdgeT> the type of the path's edges
          * @return a new path
          */
-        static <EdgeT extends AbstractEdge<?, ?>> Path<EdgeT> init(
+        static <EdgeT extends AbstractBiEdge<?, ?>> Path<EdgeT> init(
                 double cost,
                 EdgeT startingEdge,
                 EdgeDirection direction
@@ -78,8 +78,8 @@ public class Dijkstra {
      * @param pathConsumer the callback to consume the path
      */
     @SuppressWarnings("unchecked")
-    public static <NodeT extends AbstractNode, EdgeT extends AbstractEdge<NodeT, EdgeT>> void findPath(
-            Graph<NodeT, EdgeT> graph,
+    public static <NodeT extends AbstractNode, EdgeT extends AbstractBiEdge<NodeT, EdgeT>> void findPath(
+            AbstractBiGraph<NodeT, EdgeT> graph,
             EdgeT startEdge,
             double startPosition,
             EdgeT goalEdge,
@@ -113,7 +113,7 @@ public class Dijkstra {
 
         // we don't see the same neighbors depending on the direction we're coming from,
         // so we need two bitsets to track it we visited an edge
-        var edgeCount = graph.edges.size();
+        var edgeCount = graph.getEdgeCount();
         var explored = new BitSet[] {
                 new BitSet(edgeCount), // START_TO_STOP
                 new BitSet(edgeCount)  // STOP_TO_START
@@ -137,16 +137,16 @@ public class Dijkstra {
             var currentEndNode = currentEdge.getEndNode(currentDirection);
 
             // mark the node as explored
-            explored[currentDirection.id].set(currentEdge.getIndex());
+            explored[currentDirection.id].set(currentEdge.index);
 
             // explore all the neighbors of the current candidate
-            for (var neighborEdge : currentEdge.getEndNeighbors(currentDirection, graph)) {
+            for (var neighborEdge : graph.getEndNeighbors(currentEdge, currentDirection)) {
 
                 // find which direction we're approaching the neighbor edge from
                 EdgeDirection direction  = currentEdge.getNeighborDirection(neighborEdge, currentEndNode);
 
                 // if the neighbor was already explored from this direction, skip it
-                if (explored[direction.id].get(neighborEdge.getIndex()))
+                if (explored[direction.id].get(neighborEdge.index))
                     continue;
 
                 // compute the begin and end position of the portion of the neighbor edge the path covers

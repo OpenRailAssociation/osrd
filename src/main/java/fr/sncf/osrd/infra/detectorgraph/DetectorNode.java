@@ -12,6 +12,11 @@ public class DetectorNode extends AbstractNode {
     /** List of neighbors seen when moving across the detector from the beginning of the track section to the end */
     public final ArrayList<TVDSectionPath> stopToStartNeighbors = new ArrayList<>();
 
+    public DetectorNode(DetectorGraph graph, int index) {
+        super(index);
+        graph.registerNode(this);
+    }
+
     /** Returns the node's adjacency list, given a direction */
     public ArrayList<TVDSectionPath> getNeighbors(EdgeDirection dir) {
         if (dir == EdgeDirection.START_TO_STOP)

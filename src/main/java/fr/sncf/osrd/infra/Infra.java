@@ -122,13 +122,13 @@ public final class Infra {
          */
         private void linkTVDSectionToPath(DetectorGraph detectorGraph) {
             // Initialize reverse map DetectorNode -> TVDSections
-            var nbDetector = detectorGraph.nodes.size();
+            var nbDetector = detectorGraph.getNodeCount();
             var detectorNodeToTVDSections = new ArrayList<HashSet<String>>(nbDetector);
             for (int i = 0; i < nbDetector; i++)
                 detectorNodeToTVDSections.add(new HashSet<>());
             for (var tvdEntry : tvdSections.entrySet()) {
                 for (var detector : tvdEntry.getValue().detectors) {
-                    var nodeIndex = detectorGraph.detectorNodeMap.get(detector.id).getIndex();
+                    var nodeIndex = detectorGraph.detectorNodeMap.get(detector.id).index;
                     detectorNodeToTVDSections.get(nodeIndex).add(tvdEntry.getKey());
                 }
             }

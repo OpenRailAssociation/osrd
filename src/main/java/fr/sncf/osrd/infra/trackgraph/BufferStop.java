@@ -13,8 +13,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public class BufferStop extends TrackNode {
     public final TrackSection edge;
 
-    public BufferStop(String id, TrackSection edge) {
-        super(id);
+    BufferStop(TrackGraph graph, int index, String id, TrackSection edge) {
+        super(index, id);
+        graph.registerNode(this);
         this.edge = edge;
     }
 }

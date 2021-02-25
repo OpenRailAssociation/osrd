@@ -31,14 +31,14 @@ public class RangeAttrIter {
         var nodeC = infraBuilder.trackGraph.makePlaceholderNode("C");
 
         var forwardEdge = infraBuilder.trackGraph.makeTrackSection(
-                nodeA.getIndex(),
-                nodeB.getIndex(),
+                nodeA.index,
+                nodeB.index,
                 "e1", 42
         );
 
         var backwardEdge = infraBuilder.trackGraph.makeTrackSection(
-                nodeC.getIndex(),
-                nodeB.getIndex(),
+                nodeC.index,
+                nodeB.index,
                 "e2", 50
         );
 

@@ -24,7 +24,7 @@ public class DetectorGraphTest {
         var trackGraph = new TrackGraph();
         var nodeA = trackGraph.makePlaceholderNode("A");
         var nodeB = trackGraph.makePlaceholderNode("B");
-        var trackSection = trackGraph.makeTrackSection(nodeA.getIndex(), nodeB.getIndex(), "e1", 100);
+        var trackSection = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "e1", 100);
         var detectorBuilder = trackSection.detectors.builder();
         detectorBuilder.add(40, new Detector("D1"));
         detectorBuilder.add(50, new Detector("D2"));
@@ -71,19 +71,19 @@ public class DetectorGraphTest {
         var nodeD = trackGraph.makePlaceholderNode("D");
 
         // forward
-        var fooA = trackGraph.makeTrackSection(nodeA.getIndex(), nodeC.getIndex(), "foo_a", 100);
+        var fooA = trackGraph.makeTrackSection(nodeA.index, nodeC.index, "foo_a", 100);
         var detectorsFooA = fooA.detectors.builder();
         detectorsFooA.add(75, new Detector("D1"));
         detectorsFooA.build();
 
         // forward
-        var fooB = trackGraph.makeTrackSection(nodeB.getIndex(), nodeC.getIndex(), "foo_b", 100);
+        var fooB = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "foo_b", 100);
         var detectorsFooB = fooB.detectors.builder();
         detectorsFooB.add(50, new Detector("D2"));
         detectorsFooB.build();
 
         // backward
-        var track = trackGraph.makeTrackSection(nodeD.getIndex(), nodeC.getIndex(), "track", 500);
+        var track = trackGraph.makeTrackSection(nodeD.index, nodeC.index, "track", 500);
         var detectorsTrack = track.detectors.builder();
         detectorsTrack.add(50, new Detector("D4"));
         detectorsTrack.add(450, new Detector("D3"));
@@ -103,7 +103,7 @@ public class DetectorGraphTest {
 
         for (int i = 1; i <= 4; i++) {
             var strI = String.format("D%d", i);
-            detectorIDMap.put(strI, detectorGraph.detectorNodeMap.get(strI).getIndex());
+            detectorIDMap.put(strI, detectorGraph.detectorNodeMap.get(strI).index);
         }
 
         var tvdSectionD1D3 = detectorGraph.getTVDSectionPath(detectorIDMap.get("D1"), detectorIDMap.get("D3"));
@@ -144,17 +144,17 @@ public class DetectorGraphTest {
         var nodeB = trackGraph.makePlaceholderNode("B");
         var nodeC = trackGraph.makePlaceholderNode("C");
 
-        var trackAB = trackGraph.makeTrackSection(nodeA.getIndex(), nodeB.getIndex(), "track_a_b", 100);
+        var trackAB = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "track_a_b", 100);
         var detectorsAB = trackAB.detectors.builder();
         detectorsAB.add(50, new Detector("D1"));
         detectorsAB.build();
 
-        var trackBC = trackGraph.makeTrackSection(nodeB.getIndex(), nodeC.getIndex(), "track_b_c", 100);
+        var trackBC = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "track_b_c", 100);
         var detectorsBC = trackBC.detectors.builder();
         detectorsBC.add(50, new Detector("D2"));
         detectorsBC.build();
 
-        var trackCA = trackGraph.makeTrackSection(nodeC.getIndex(), nodeA.getIndex(), "track_c_a", 100);
+        var trackCA = trackGraph.makeTrackSection(nodeC.index, nodeA.index, "track_c_a", 100);
         var detectorsCA = trackCA.detectors.builder();
         detectorsCA.add(50, new Detector("D3"));
         detectorsCA.build();
