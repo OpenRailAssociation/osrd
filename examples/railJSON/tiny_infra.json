@@ -24,9 +24,7 @@
       "rules": {
         "yellow": {
           "type": "signal_aspect",
-          "signal": {
-            "argument_name": "forward_signal"
-          },
+          "signal": "forward_signal",
           "has_aspect": "red"
         }
       }
