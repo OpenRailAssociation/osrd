@@ -70,7 +70,7 @@ public class RJSSignalFunction implements Identified {
 
                 // if the type of the objects to adapt isn't something the factory can produce adapters for,
                 // return null to tell the frame
-                if (rawType != ID.class)
+                if (rawType != ArgumentRef.class)
                     return null;
 
                 return this;
