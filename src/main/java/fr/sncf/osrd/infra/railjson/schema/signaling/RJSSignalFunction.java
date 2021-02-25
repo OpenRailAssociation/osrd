@@ -1,13 +1,16 @@
 package fr.sncf.osrd.infra.railjson.schema.signaling;
 
-import com.squareup.moshi.FromJson;
-import com.squareup.moshi.Json;
-import com.squareup.moshi.ToJson;
+import com.squareup.moshi.*;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.railjson.schema.Identified;
 
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.Set;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSSignalFunction implements Identified {
@@ -49,22 +52,41 @@ public class RJSSignalFunction implements Identified {
     }
 
     public static final class ArgumentRef<T> {
-        @Json(name = "argument_name")
         public final String argumentName;
 
         public ArgumentRef(String argumentName) {
             this.argumentName = argumentName;
         }
 
-        public static class Adapter {
-            @ToJson
-            String toJson(ArgumentRef<?> argumentRef) {
-                return argumentRef.argumentName;
+        public static class Adapter<T> extends JsonAdapter<ArgumentRef<T>> {
+            @SuppressWarnings({"rawtypes", "unchecked"})
+            public static final JsonAdapter.Factory FACTORY = new ArgumentRef.Adapter()::factory;
+
+            private JsonAdapter<?> factory(Type type, Set<? extends Annotation> annotations, Moshi moshi) {
+                // the raw type is the one without a type parameter
+                Class<?> rawType = Types.getRawType(type);
+                if (!annotations.isEmpty())
+                    return null;
+
+                // if the type of the objects to adapt isn't something the factory can produce adapters for,
+                // return null to tell the frame
+                if (rawType != ID.class)
+                    return null;
+
+                return this;
             }
 
-            @FromJson
-            <T> ArgumentRef<T> fromJson(String str) {
-                return new ArgumentRef<T>(str);
+            @Override
+            public ArgumentRef<T> fromJson(JsonReader reader) throws IOException {
+                return new ArgumentRef<T>(reader.nextString());
+            }
+
+            @Override
+            public void toJson(@NonNull JsonWriter writer, ArgumentRef<T> value) throws IOException {
+                if (value != null)
+                    writer.value(value.argumentName);
+                else
+                    writer.nullValue();
             }
         }
     }
