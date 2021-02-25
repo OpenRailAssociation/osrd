@@ -27,9 +27,24 @@ import java.util.function.Supplier;
 import io.github.classgraph.*;
 
 public class ChangeSerializer {
-    private static final Moshi moshi;
-
-    public static final JsonAdapter<Change> changeAdapter;
+    public static final JsonAdapter<Change> changeAdapter = new Moshi.Builder()
+            .add(new EntityAdapter())
+            .add(new CurrentPathEdgesAdapter())
+            .add(new TopoEdgeAdapter())
+            .add(new LocalTimeAdapter())
+            .add(CollectionJsonAdapter.of(CryoList.class, CryoList::new))
+            .add(CollectionJsonAdapter.of(
+                    TrainLocationChange.PathUpdates.class,
+                    TrainLocationChange.PathUpdates::new))
+            .add(CollectionJsonAdapter.of(
+                    TrainLocationChange.SpeedUpdates.class,
+                    TrainLocationChange.SpeedUpdates::new))
+            .add(new SerializableDoubleAdapter())
+            .add(adaptPolymorphicType(Change.class, "changeType"))
+            .add(adaptPolymorphicType(TimelineEventValue.class, "valueType"))
+            .add(adaptPolymorphicType(SpeedController.class, "controllerType"))
+            .build()
+            .adapter(Change.class);
 
     /**
      * A collection of types and names.
@@ -101,29 +116,6 @@ public class ChangeSerializer {
         for (var subtype : SubtypeCollection.fromClass(baseClass))
             adapterFactory = adapterFactory.withSubtype(subtype.type, subtype.label);
         return adapterFactory;
-    }
-
-    static {
-        var builder = new Moshi.Builder()
-                .add(new EntityAdapter())
-                .add(new CurrentPathEdgesAdapter())
-                .add(new TopoEdgeAdapter())
-                .add(new LocalTimeAdapter())
-                .add(CollectionJsonAdapter.of(CryoList.class, CryoList::new))
-                .add(CollectionJsonAdapter.of(
-                        TrainLocationChange.PathUpdates.class,
-                        TrainLocationChange.PathUpdates::new))
-                .add(CollectionJsonAdapter.of(
-                        TrainLocationChange.SpeedUpdates.class,
-                        TrainLocationChange.SpeedUpdates::new))
-                .add(new SerializableDoubleAdapter())
-                .add(adaptPolymorphicType(Change.class, "changeType"))
-                .add(adaptPolymorphicType(TimelineEventValue.class, "valueType"))
-                .add(adaptPolymorphicType(SpeedController.class, "controllerType"))
-                ;
-
-        moshi = builder.build();
-        changeAdapter = moshi.adapter(Change.class);
     }
 
     private static class EntityAdapter {
@@ -204,7 +196,6 @@ public class ChangeSerializer {
                 Class<?> collectionType, // ArrayDeque.class
                 Supplier<Collection<?>> supplier // ArrayDeque::new
         ) {
-
             return (type, annotations, moshi) -> {
                 // the raw type is the one without a type parameter
                 Class<?> rawType = Types.getRawType(type);
