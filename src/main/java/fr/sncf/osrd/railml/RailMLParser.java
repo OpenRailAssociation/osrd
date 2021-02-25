@@ -57,6 +57,7 @@ public final class RailMLParser {
         var rjsSpeedSections = RMLSpeedSection.parse(netElements, document, rjsTrackSections);
         var rjsTvdSections = RMLTVDSection.parse(netElements, document, rjsTrackSections);
         var rjsSwitches = RMLSwitchIS.parse(netElements, netRelations, document);
+        var rjsRoutes = RMLRoute.parse(document);
         RMLBufferStop.parse(netElements, document, rjsTrackSections);
         RMLTrainDetectionElement.parse(netElements, document, rjsTrackSections);
 
@@ -66,6 +67,7 @@ public final class RailMLParser {
                 rjsSwitches,
                 rjsOperationalPoints,
                 rjsTvdSections,
+                rjsRoutes,
                 rjsSpeedSections,
                 new ArrayList<>(),
                 new ArrayList<>());
