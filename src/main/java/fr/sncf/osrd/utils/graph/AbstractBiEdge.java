@@ -1,8 +1,5 @@
 package fr.sncf.osrd.utils.graph;
 
-import fr.sncf.osrd.utils.Indexable;
-
-import java.util.List;
 
 public abstract class AbstractBiEdge<
         NodeT extends AbstractNode,
