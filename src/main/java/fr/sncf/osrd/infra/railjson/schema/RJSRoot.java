@@ -19,6 +19,7 @@ public class RJSRoot {
             .add(new RJSAspect.Adapter())
             .add(RJSSignalFunction.ArgumentRef.Adapter.FACTORY)
             .add(RJSSignalExpr.adapter)
+            .add(RJSRouteWaypoint.adapter)
             .build()
             .adapter(RJSRoot.class);
 
