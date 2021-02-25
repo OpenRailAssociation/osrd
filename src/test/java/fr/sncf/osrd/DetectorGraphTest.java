@@ -6,10 +6,11 @@ import static fr.sncf.osrd.infra.trackgraph.TrackSection.linkEdges;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.detectorgraph.DetectorGraph;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import org.junit.jupiter.api.Test;
+
+import java.util.TreeMap;
 
 public class DetectorGraphTest {
     /**
@@ -69,24 +70,27 @@ public class DetectorGraphTest {
         var nodeC = trackGraph.makePlaceholderNode("C");
         var nodeD = trackGraph.makePlaceholderNode("D");
 
+        // forward
         var fooA = trackGraph.makeTrackSection(nodeA.getIndex(), nodeC.getIndex(), "foo_a", 100);
         var detectorsFooA = fooA.detectors.builder();
         detectorsFooA.add(75, new Detector("D1"));
         detectorsFooA.build();
 
+        // forward
         var fooB = trackGraph.makeTrackSection(nodeB.getIndex(), nodeC.getIndex(), "foo_b", 100);
         var detectorsFooB = fooB.detectors.builder();
         detectorsFooB.add(50, new Detector("D2"));
         detectorsFooB.build();
 
-        var track = trackGraph.makeTrackSection(nodeC.getIndex(), nodeD.getIndex(), "track", 500);
+        // backward
+        var track = trackGraph.makeTrackSection(nodeD.getIndex(), nodeC.getIndex(), "track", 500);
         var detectorsTrack = track.detectors.builder();
-        detectorsTrack.add(50, new Detector("D3"));
-        detectorsTrack.add(450, new Detector("D4"));
+        detectorsTrack.add(50, new Detector("D4"));
+        detectorsTrack.add(450, new Detector("D3"));
         detectorsTrack.build();
 
-        linkEdges(fooA, EdgeEndpoint.END, track, EdgeEndpoint.BEGIN);
-        linkEdges(fooB, EdgeEndpoint.END, track, EdgeEndpoint.BEGIN);
+        linkEdges(fooA, EdgeEndpoint.END, track, EdgeEndpoint.END);
+        linkEdges(fooB, EdgeEndpoint.END, track, EdgeEndpoint.END);
 
         // Build DetectorGraph
         var detectorGraph = DetectorGraph.buildDetectorGraph(trackGraph);
@@ -95,9 +99,16 @@ public class DetectorGraphTest {
         assertEquals(4, detectorGraph.detectorNodeMap.size());
         assertEquals(3, detectorGraph.tvdSectionPathMap.size());
 
-        var tvdSectionD1D3 = detectorGraph.getTVDSectionPath(0, 2);
-        var tvdSectionD2D3 = detectorGraph.getTVDSectionPath(1, 2);
-        var tvdSectionD3D4 = detectorGraph.getTVDSectionPath(2, 3);
+        var detectorIDMap = new TreeMap<String, Integer>();
+
+        for (int i = 1; i <= 4; i++) {
+            var strI = String.format("D%d", i);
+            detectorIDMap.put(strI, detectorGraph.detectorNodeMap.get(strI).getIndex());
+        }
+
+        var tvdSectionD1D3 = detectorGraph.getTVDSectionPath(detectorIDMap.get("D1"), detectorIDMap.get("D3"));
+        var tvdSectionD2D3 = detectorGraph.getTVDSectionPath(detectorIDMap.get("D2"), detectorIDMap.get("D3"));
+        var tvdSectionD3D4 = detectorGraph.getTVDSectionPath(detectorIDMap.get("D3"), detectorIDMap.get("D4"));
         assertEquals(75, tvdSectionD1D3.length, 0.1);
         assertEquals(100, tvdSectionD2D3.length, 0.1);
         assertEquals(400, tvdSectionD3D4.length, 0.1);
@@ -106,11 +117,10 @@ public class DetectorGraphTest {
         assertEquals(0, detectorGraph.detectorNodeMap.get("D1").stopToStartNeighbors.size());
         assertEquals(1, detectorGraph.detectorNodeMap.get("D2").startToStopNeighbors.size());
         assertEquals(0, detectorGraph.detectorNodeMap.get("D2").stopToStartNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get("D3").startToStopNeighbors.size());
-        assertEquals(2, detectorGraph.detectorNodeMap.get("D3").stopToStartNeighbors.size());
-        assertEquals(0, detectorGraph.detectorNodeMap.get("D4").startToStopNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get("D4").stopToStartNeighbors.size());
-
+        assertEquals(2, detectorGraph.detectorNodeMap.get("D3").startToStopNeighbors.size());
+        assertEquals(1, detectorGraph.detectorNodeMap.get("D3").stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.detectorNodeMap.get("D4").startToStopNeighbors.size());
+        assertEquals(0, detectorGraph.detectorNodeMap.get("D4").stopToStartNeighbors.size());
     }
 
     /**
