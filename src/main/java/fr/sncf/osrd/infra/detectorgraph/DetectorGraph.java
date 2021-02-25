@@ -1,17 +1,15 @@
 package fr.sncf.osrd.infra.detectorgraph;
 
-import fr.sncf.osrd.utils.graph.EdgeDirection;
-import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-import fr.sncf.osrd.utils.graph.Graph;
-import fr.sncf.osrd.infra.trackgraph.Detector;
+import static fr.sncf.osrd.utils.graph.EdgeDirection.*;
+
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
+import fr.sncf.osrd.utils.graph.*;
+import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.utils.CryoMap;
 import fr.sncf.osrd.utils.PointValue;
-import javafx.util.Pair;
 
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.BitSet;
 
 public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
 
@@ -19,175 +17,186 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
     // TVDSectionPath are identified by the couple (StartNode, EndNode)
     public final CryoMap<TVDSectionPathID, TVDSectionPath> tvdSectionPathMap = new CryoMap<>();
 
+    public static void markAsVisited(BitSet[] visitedEdgeDirs, TrackSection edge, EdgeDirection dir) {
+        visitedEdgeDirs[dir.id].set(edge.getIndex());
+    }
+
+    public static boolean wasVisitedInAnyDirection(BitSet[] visitedEdgeDirs, TrackSection edge) {
+        var edgeIndex = edge.getIndex();
+        return visitedEdgeDirs[START_TO_STOP.id].get(edgeIndex) || visitedEdgeDirs[STOP_TO_START.id].get(edgeIndex);
+    }
+
     /** Build a DetectorGraph given a TrackGraph */
     public static DetectorGraph buildDetectorGraph(TrackGraph trackGraph) {
         var graph = new DetectorGraph();
+
         // Create Detector nodes
+        for (var trackSection : trackGraph.edges)
+            for (var detector : trackSection.detectors)
+                graph.makeDetectorNode(detector.value.id);
+
+        // create TVDSectionPaths that are begin and end on the same edge
         for (var trackSection : trackGraph.edges) {
-            for (var detector : trackSection.detectors) {
-                graph.makeDetectorNode(detector.value);
+            var detectorsCount = trackSection.detectors.size();
+            for (int i = 1; i < detectorsCount; i++) {
+                var lastDetector = trackSection.detectors.get(i - 1);
+                var curDetector = trackSection.detectors.get(i);
+
+                var lastNode = graph.findDetectorNode(lastDetector.value);
+                var curNode = graph.findDetectorNode(curDetector.value);
+
+                var length = curDetector.position - lastDetector.position;
+                // Create TVDSectionPath
+                graph.makeTVDSectionPath(lastNode, START_TO_STOP, curNode, STOP_TO_START, length);
             }
         }
 
-        // Create list of processed trackSection
-        var processedTrackSection = new HashSet<String>();
-        var visitedTrackSection = new HashSet<Pair<String, EdgeDirection>>();
+        // Create list of visited trackSection
+        var edgeCount = trackGraph.edges.size();
+        var visitedEdgeDirs = new BitSet[] {
+                new BitSet(edgeCount), // START_TO_STOP
+                new BitSet(edgeCount)  // STOP_TO_START
+        };
 
         // Link detectorNodes
-        for (var trackSection : trackGraph.edges) {
-            var iterDetectors = trackSection.detectors.iterator();
-            if (!processedTrackSection.contains(trackSection.id) && iterDetectors.hasNext()) {
-                graph.processTrackSection(trackSection, processedTrackSection);
-                var extremityDetectors = graph.extremityDetectors(iterDetectors);
+        for (var edge : trackGraph.edges) {
+            if (wasVisitedInAnyDirection(visitedEdgeDirs, edge))
+                continue;
 
-                visitedTrackSection.add(new Pair<>(trackSection.id, EdgeDirection.START_TO_STOP));
-                var linkDetector = graph.findDetectorNode(extremityDetectors.getValue().value);
-                var distance = trackSection.length - extremityDetectors.getValue().position;
-                graph.traverseTrackGraph(trackSection, EdgeDirection.START_TO_STOP, linkDetector, distance,
-                        processedTrackSection, visitedTrackSection);
+            if (edge.detectors.size() == 0)
+                continue;
 
-                visitedTrackSection.add(new Pair<>(trackSection.id, EdgeDirection.STOP_TO_START));
-                linkDetector = graph.findDetectorNode(extremityDetectors.getKey().value);
-                distance = extremityDetectors.getKey().position;
-                graph.traverseTrackGraph(trackSection, EdgeDirection.STOP_TO_START, linkDetector, distance,
-                        processedTrackSection, visitedTrackSection);
-            }
+            var lastDetector = getLastDetector(edge);
+            markAsVisited(visitedEdgeDirs, edge, START_TO_STOP);
+            graph.traverseTrackGraph(
+                    edge, START_TO_STOP,
+                    graph.findDetectorNode(lastDetector.value), START_TO_STOP,
+                    edge.length - lastDetector.position,
+                    visitedEdgeDirs
+            );
+
+            var firstDetector = getFirstDetector(edge);
+            markAsVisited(visitedEdgeDirs, edge, STOP_TO_START);
+            graph.traverseTrackGraph(
+                    edge, STOP_TO_START,
+                    graph.findDetectorNode(firstDetector.value), STOP_TO_START,
+                    firstDetector.position,
+                    visitedEdgeDirs
+            );
         }
         return graph;
     }
 
-    private void buildGraph(
-            TrackSection trackSection,
-            EdgeDirection direction,
-            DetectorNode linkDetector,
-            EdgeDirection linkDetectorDirection,
-            double distance,
-            HashSet<String> processedTrackSection,
-            HashSet<Pair<String, EdgeDirection>> visitedTrackSection
-    ) {
-        processTrackSection(trackSection, processedTrackSection);
-
-        var iter = trackSection.detectors.iterator();
-        if (iter.hasNext()) {
-            var extremityDetectors = extremityDetectors(iter);
-            var firstDetector = findDetectorNode(extremityDetectors.getKey().value);
-            var lastDetector = findDetectorNode(extremityDetectors.getValue().value);
-            if (direction == EdgeDirection.START_TO_STOP) {
-                // Check if the tvdSection not already handled
-                if (containsTVDSectionPath(linkDetector.getIndex(), firstDetector.getIndex()))
-                    return;
-                // Create TVDSectionPath
-                distance += extremityDetectors.getKey().position;
-                var tvdSectionPath = makeTVDSectionPath(linkDetector.getIndex(), firstDetector.getIndex(), distance,
-                        linkDetectorDirection, direction);
-                firstDetector.stopToStartNeighbors.add(tvdSectionPath);
-                if (linkDetectorDirection == EdgeDirection.START_TO_STOP)
-                    linkDetector.stopToStartNeighbors.add(tvdSectionPath);
-                else
-                    linkDetector.startToStopNeighbors.add(tvdSectionPath);
-
-                // Backward traversal
-                distance = extremityDetectors.getKey().position;
-                traverseTrackGraph(trackSection, EdgeDirection.STOP_TO_START, firstDetector, distance,
-                        processedTrackSection, visitedTrackSection);
-
-                // Preparing for the continuation of the forward traversal
-                linkDetector = lastDetector;
-                distance = trackSection.length - extremityDetectors.getValue().position;
-            } else {
-                // Check if the tvdSection not already handled
-                if (containsTVDSectionPath(linkDetector.getIndex(), lastDetector.getIndex()))
-                    return;
-                // Create TVDSectionPath
-                distance += trackSection.length - extremityDetectors.getValue().position;
-                var tvdSectionPath = makeTVDSectionPath(linkDetector.getIndex(), lastDetector.getIndex(), distance,
-                        linkDetectorDirection, direction);
-                lastDetector.startToStopNeighbors.add(tvdSectionPath);
-                if (linkDetectorDirection == EdgeDirection.START_TO_STOP)
-                    linkDetector.stopToStartNeighbors.add(tvdSectionPath);
-                else
-                    linkDetector.startToStopNeighbors.add(tvdSectionPath);
-
-                // Backward traversal
-                distance = trackSection.length - extremityDetectors.getValue().position;
-                traverseTrackGraph(trackSection, EdgeDirection.START_TO_STOP, lastDetector, distance,
-                        processedTrackSection, visitedTrackSection);
-
-                // Preparing for the continuation of the forward traversal
-                linkDetector = firstDetector;
-                distance = extremityDetectors.getKey().position;
-            }
-        } else {
-            distance += trackSection.length;
-        }
-
-        // Continue traversal forward
-        traverseTrackGraph(trackSection, direction, linkDetector, distance, processedTrackSection, visitedTrackSection);
+    private static PointValue<Detector> getLastDetector(TrackSection edge) {
+        var detectors = edge.detectors;
+        return detectors.get(detectors.size() - 1);
     }
 
-    private void traverseTrackGraph(
-            TrackSection trackSection,
-            EdgeDirection direction,
-            DetectorNode linkDetector,
-            double distance,
-            HashSet<String> processedTrackSection,
-            HashSet<Pair<String, EdgeDirection>> visitedTrackSection
-    ) {
-        var endpoint = direction == EdgeDirection.START_TO_STOP ? EdgeEndpoint.END : EdgeEndpoint.BEGIN;
-        for (var nextTrackSection: trackSection.getNeighbors(endpoint)) {
-            var nextTrackDirection =
-                    trackSection.getNeighborDirection(nextTrackSection, trackSection.getEndNode(direction));
-            var visitedKey = new Pair<>(nextTrackSection.id, nextTrackDirection);
-            if (!visitedTrackSection.contains(visitedKey)) {
-                visitedTrackSection.add(visitedKey);
-                buildGraph(nextTrackSection, nextTrackDirection, linkDetector, direction.opposite(), distance,
-                        processedTrackSection, visitedTrackSection);
-            }
-        }
-
-    }
-
-    private Pair<PointValue<Detector>, PointValue<Detector>> extremityDetectors(Iterator<PointValue<Detector>> iter) {
-        var firstDetector = iter.next();
-        var lastDetector = firstDetector;
-        // TODO: Change PointSequence to easily retrieve last detector
-        while (iter.hasNext())
-            lastDetector = iter.next();
-        return new Pair<>(firstDetector, lastDetector);
+    private static PointValue<Detector> getFirstDetector(TrackSection edge) {
+        return edge.detectors.get(0);
     }
 
     /**
-     * Create tvdSectionPath between detectors on the same trackSection and link nodes to them.
-     * Important: This function has to be call once by trackSection.
-     * Note: This function doesn't do anything if the given trackSection has less than 2 detectors on it.
-     * @param trackSection to process
+     * Arriving onto trackSection with direction trackDirection, the last seen detector was sourceDetector, which is
+     * tvdSectionPathLength away from the beginning of the trackSection. sourceDetectorDirection is the direction we
+     * were traversing the sourceDetector's track section with.
      */
-    private void processTrackSection(TrackSection trackSection, HashSet<String> processedTrackSection) {
-        // Check trackSection not already processed
-        if (processedTrackSection.contains(trackSection.id))
+    private void linkDetectorsBetweenEdges(
+            TrackSection trackSection,
+            EdgeDirection trackDirection,
+            DetectorNode sourceDetector,
+            EdgeDirection sourceDetectorDirection,
+            double tvdSectionPathLength,
+            BitSet[] visitedEdgeDirs
+    ) {
+        // if the track section has no detectors, skip right over it
+        if (trackSection.detectors.size() == 0) {
+            traverseTrackGraph(
+                    trackSection,
+                    trackDirection,
+                    sourceDetector,
+                    sourceDetectorDirection,
+                    tvdSectionPathLength + trackSection.length,
+                    visitedEdgeDirs);
+            return;
+        }
+
+        var firstEdgeDetector = getFirstDetector(trackSection);
+        var lastEdgeDetector = getLastDetector(trackSection);
+        var firstEdgeDetectorNode = findDetectorNode(firstEdgeDetector.value);
+        var lastEdgeDetectorNode = findDetectorNode(lastEdgeDetector.value);
+        final var firstDetectorNode = trackDirection == START_TO_STOP ? firstEdgeDetectorNode : lastEdgeDetectorNode;
+        final var lastDetectorNode = trackDirection == START_TO_STOP ? lastEdgeDetectorNode : firstEdgeDetectorNode;
+
+        // Check if the tvdSection not already handled
+        if (containsTVDSectionPath(sourceDetector.getIndex(), firstDetectorNode.getIndex()))
             return;
 
-        // Mark the trackSection has processed
-        processedTrackSection.add(trackSection.id);
+        double startToFirstDetectorDist;
+        double lastDetectorToEndDist;
+        if (trackDirection == START_TO_STOP) {
+            startToFirstDetectorDist = firstEdgeDetector.position;
+            lastDetectorToEndDist = trackSection.length - lastEdgeDetector.position;
+        } else {
+            startToFirstDetectorDist = trackSection.length - lastEdgeDetector.position;
+            lastDetectorToEndDist = firstEdgeDetector.position;
+        }
 
-        var iter = trackSection.detectors.iterator();
-        // Check trackSection has detectors
-        if (!iter.hasNext())
-            return;
+        // Create TVDSectionPath between where we're coming and the first detector we run into
+        makeTVDSectionPath(
+                sourceDetector, sourceDetectorDirection, firstDetectorNode, trackDirection.opposite(),
+                tvdSectionPathLength + startToFirstDetectorDist
+        );
 
-        var lastDetector = iter.next();
-        while (iter.hasNext()) {
-            var lastNode = findDetectorNode(lastDetector.value);
-            var curDetector = iter.next();
-            var curNode = findDetectorNode(curDetector.value);
-            var length = curDetector.position - lastDetector.position;
-            // Create TVDSectionPath
-            var tvdSectionPath = makeTVDSectionPath(lastNode.getIndex(), curNode.getIndex(), length,
-                    EdgeDirection.STOP_TO_START, EdgeDirection.START_TO_STOP);
-            // Link nodes to the TVDSectionPath
-            lastNode.startToStopNeighbors.add(tvdSectionPath);
-            curNode.stopToStartNeighbors.add(tvdSectionPath);
-            lastDetector = curDetector;
+        // Backward traversal
+        traverseTrackGraph(
+                trackSection,
+                trackDirection.opposite(),
+                firstDetectorNode,
+                trackDirection.opposite(),
+                startToFirstDetectorDist,
+                visitedEdgeDirs
+        );
+
+        // Continue traversal forward
+        traverseTrackGraph(
+                trackSection,
+                trackDirection,
+                lastDetectorNode,
+                trackDirection,
+                lastDetectorToEndDist,
+                visitedEdgeDirs
+        );
+    }
+
+    /**
+     * Arriving from trackSection with direction trackDirection on it.
+     * The last detector seen was sourceDetector, and the current distance to it is tvdSectionPathLength
+     */
+    private void traverseTrackGraph(
+            TrackSection trackSection,
+            EdgeDirection trackDirection,
+            DetectorNode sourceDetector,
+            EdgeDirection sourceDetectorDirection,
+            double tvdSectionPathLength,
+            BitSet[] visitedEdgeDirs
+    ) {
+        var endpoint = trackDirection == START_TO_STOP ? EdgeEndpoint.END : EdgeEndpoint.BEGIN;
+        for (var neighbor: trackSection.getNeighbors(endpoint)) {
+            // find the direction we're approaching the neighbor from
+            var neighborDir = trackSection.getNeighborDirection(neighbor, trackSection.getEndNode(trackDirection));
+
+            // if the neighbor was already visited from this direction, skip it
+            if (visitedEdgeDirs[neighborDir.id].get(neighbor.getIndex()))
+                continue;
+
+            markAsVisited(visitedEdgeDirs, neighbor, neighborDir);
+
+            linkDetectorsBetweenEdges(
+                    neighbor, neighborDir,
+                    sourceDetector, sourceDetectorDirection,
+                    tvdSectionPathLength, visitedEdgeDirs
+            );
         }
     }
 
@@ -204,13 +213,13 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
     /**
      * Create a DetectorNode
      *
-     * @param detector linked to the node
+     * @param id the node identifier
      * @return the node
      */
-    private DetectorNode makeDetectorNode(Detector detector) {
+    private DetectorNode makeDetectorNode(String id) {
         var node = new DetectorNode();
         this.register(node);
-        detectorNodeMap.put(detector.id, node);
+        detectorNodeMap.put(id, node);
         return node;
     }
 
@@ -218,27 +227,37 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
      * Create a DetectorNode
      *
      * @param startNode start detector node id
+     * @param startNodeDirection the direction of the train when going to the endNode
      * @param endNode end detector node id
+     * @param endNodeDirection the direction of the train when going to the startNode
      * @param length length of the SectionPath
-     * @param startNodeDirection the direction of the train when going to the startNode
-     * @param endNodeDirection the direction of the train when going to the endNode
      * @return the TVDSectionPath
      */
     private TVDSectionPath makeTVDSectionPath(
-            int startNode,
-            int endNode,
-            double length,
+            DetectorNode startNode,
             EdgeDirection startNodeDirection,
-            EdgeDirection endNodeDirection
+            DetectorNode endNode,
+            EdgeDirection endNodeDirection,
+            double length
     ) {
-        // Assure order in the tvdSectionPath id key
-        if (startNode > endNode) {
-            return makeTVDSectionPath(endNode, startNode, length, endNodeDirection, startNodeDirection);
-        }
-        var tvdSectionPath = new TVDSectionPath(startNode, endNode, length, startNodeDirection, endNodeDirection);
+        var startNodeIndex = startNode.getIndex();
+        var endNodeIndex = endNode.getIndex();
+
+        // create the path and register it with the graph
+        var tvdSectionPath = new TVDSectionPath(
+                startNodeIndex, startNodeDirection,
+                endNodeIndex, endNodeDirection,
+                length
+        );
         this.register(tvdSectionPath);
-        var id = TVDSectionPathID.build(startNode, endNode);
+
+        // fill the tvdSectionPathMap
+        var id = TVDSectionPathID.build(startNodeIndex, endNodeIndex);
         tvdSectionPathMap.put(id, tvdSectionPath);
+
+        // fill the node adjacency lists
+        startNode.getNeighbors(startNodeDirection).add(tvdSectionPath);
+        endNode.getNeighbors(endNodeDirection).add(tvdSectionPath);
         return tvdSectionPath;
     }
 

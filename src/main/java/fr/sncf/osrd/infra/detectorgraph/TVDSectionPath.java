@@ -1,6 +1,5 @@
 package fr.sncf.osrd.infra.detectorgraph;
 
-import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.utils.graph.AbstractEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
@@ -10,8 +9,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 public class TVDSectionPath extends AbstractEdge<DetectorNode, TVDSectionPath> {
-
+    /** The direction to the inside of the TVDSection from the start node, relative to the TrackSection */
     public final EdgeDirection startNodeDirection;
+    /** The direction to the inside of the TVDSection from the end node, relative to the TrackSection */
     public final EdgeDirection endNodeDirection;
     public final HashSet<String> tvdSections = new HashSet<>();
 
@@ -32,8 +32,13 @@ public class TVDSectionPath extends AbstractEdge<DetectorNode, TVDSectionPath> {
         return getNode(endpoint, graph).stopToStartNeighbors;
     }
 
-    TVDSectionPath(int startNode, int endNode, double length, EdgeDirection startNodeDirection,
-                   EdgeDirection endNodeDirection) {
+    TVDSectionPath(
+            int startNode,
+            EdgeDirection startNodeDirection,
+            int endNode,
+            EdgeDirection endNodeDirection,
+            double length
+    ) {
         super(startNode, endNode, length);
         this.startNodeDirection = startNodeDirection;
         this.endNodeDirection = endNodeDirection;
