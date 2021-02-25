@@ -49,6 +49,8 @@ public class RJSRoot {
     @Json(name = "tvd_sections")
     public final Collection<RJSTVDSection> tvdSections;
 
+    public final Collection<RJSRoute> routes;
+
     @Json(name = "speed_sections")
     public final Collection<RJSSpeedSection> speedSections;
 
@@ -66,6 +68,7 @@ public class RJSRoot {
             Collection<RJSSwitch> switches,
             Collection<RJSOperationalPoint> operationalPoints,
             Collection<RJSTVDSection> tvdSections,
+            Collection<RJSRoute> routes,
             Collection<RJSSpeedSection> speedSections,
             Collection<RJSAspect> aspects,
             Collection<RJSSignalFunction> signalFunctions
@@ -75,6 +78,7 @@ public class RJSRoot {
         this.switches = switches;
         this.operationalPoints = operationalPoints;
         this.tvdSections = tvdSections;
+        this.routes = routes;
         this.speedSections = speedSections;
         this.aspects = aspects;
         this.signalFunctions = signalFunctions;
@@ -85,6 +89,7 @@ public class RJSRoot {
      */
     public RJSRoot() {
         this(
+                new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),
