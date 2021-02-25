@@ -31,7 +31,7 @@ public class DetectorGraphTest {
         detectorBuilder.build();
 
         // Build DetectorGraph
-        var detectorGraph = new DetectorGraph(trackGraph);
+        var detectorGraph = DetectorGraph.buildDetectorGraph(trackGraph);
 
         // Check Detector Graph
         assertEquals(3, detectorGraph.detectorNodeMap.size());
@@ -89,7 +89,7 @@ public class DetectorGraphTest {
         linkEdges(fooB, EdgeEndpoint.END, track, EdgeEndpoint.BEGIN);
 
         // Build DetectorGraph
-        var detectorGraph = new DetectorGraph(trackGraph);
+        var detectorGraph = DetectorGraph.buildDetectorGraph(trackGraph);
 
         // Check Detector Graph
         assertEquals(4, detectorGraph.detectorNodeMap.size());
@@ -154,7 +154,7 @@ public class DetectorGraphTest {
         linkEdges(trackCA, EdgeEndpoint.END, trackAB, EdgeEndpoint.BEGIN);
 
         // Build DetectorGraph
-        var detectorGraph = new DetectorGraph(trackGraph);
+        var detectorGraph = DetectorGraph.buildDetectorGraph(trackGraph);
 
         // Check Detector Graph
         assertEquals(3, detectorGraph.detectorNodeMap.size());

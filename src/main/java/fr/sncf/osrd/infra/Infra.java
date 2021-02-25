@@ -111,7 +111,7 @@ public final class Infra {
          * Build a new Infra from the given constructed trackGraph and tvdSections
          */
         public Infra build() throws InvalidInfraException {
-            var detectorGraph = new DetectorGraph(trackGraph);
+            var detectorGraph = DetectorGraph.buildDetectorGraph(trackGraph);
             linkTVDSectionToPath(detectorGraph);
             return new Infra(trackGraph, detectorGraph, tvdSections, aspects);
         }
