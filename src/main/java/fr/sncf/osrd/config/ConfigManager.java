@@ -54,16 +54,15 @@ public class ConfigManager {
     }
 
     @SuppressFBWarnings({"RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"})
-    static Infra getInfra(JsonConfig.InfraType infraType, String pathStr) {
-        if (infras.containsKey(pathStr))
-            return infras.get(pathStr);
+    static Infra getInfra(JsonConfig.InfraType infraType, String path) {
+        if (infras.containsKey(path))
+            return infras.get(path);
 
         // autodetect the infrastructure type
-        var path = Path.of(pathStr);
         if (infraType == null) {
-            if (pathStr.endsWith(".json"))
+            if (path.endsWith(".json"))
                 infraType = JsonConfig.InfraType.RAILJSON;
-            else if (pathStr.endsWith(".xml"))
+            else if (path.endsWith(".xml"))
                 infraType = JsonConfig.InfraType.RAILML;
             else
                 infraType = JsonConfig.InfraType.UNKNOWN;
@@ -72,19 +71,19 @@ public class ConfigManager {
         try {
             switch (infraType) {
                 case RAILML: {
-                    var rjsRoot = RailMLParser.parse(pathStr);
+                    var rjsRoot = RailMLParser.parse(path);
                     var infra = RailJSONParser.parse(rjsRoot);
-                    infras.put(pathStr, infra);
+                    infras.put(path, infra);
                     return infra;
                 }
                 case RAILJSON:
                     try (
-                            var fileSource = Okio.source(path);
+                            var fileSource = Okio.source(Path.of(path));
                             var bufferedSource = Okio.buffer(fileSource)
                     ) {
                         var rjsRoot = RJSRoot.adapter.fromJson(bufferedSource);
                         var infra = RailJSONParser.parse(rjsRoot);
-                        infras.put(pathStr, infra);
+                        infras.put(path, infra);
                         return infra;
                     }
                 default:
