@@ -12,6 +12,83 @@
       "id": "op.station_bar"
     }
   ],
+  "routes": [
+    {
+      "id": "rt.buffer_stop_a-C1",
+      "switches_position": {},
+      "tvd_sections": [
+        "tvd.foo_a"
+      ]
+    },
+    {
+      "id": "rt.buffer_stop_b-C3",
+      "switches_position": {},
+      "tvd_sections": [
+        "tvd.foo_b"
+      ]
+    },
+    {
+      "id": "rt.C1-S7",
+      "switches_position": {
+        "il.switch_foo": "RIGHT"
+      },
+      "tvd_sections": [
+        "tvd.switch_foo",
+        "tvd.track"
+      ]
+    },
+    {
+      "id": "rt.C3-S7",
+      "switches_position": {
+        "il.switch_foo": "LEFT"
+      },
+      "tvd_sections": [
+        "tvd.switch_foo",
+        "tvd.track"
+      ]
+    },
+    {
+      "id": "rt.S7-buffer_stop_c",
+      "switches_position": {},
+      "tvd_sections": [
+        "tvd.bar_a"
+      ]
+    },
+    {
+      "id": "rt.buffer_stop_c-C2",
+      "switches_position": {},
+      "tvd_sections": [
+        "tvd.bar_a"
+      ]
+    },
+    {
+      "id": "rt.C2-C6",
+      "switches_position": {},
+      "tvd_sections": [
+        "tvd.track"
+      ]
+    },
+    {
+      "id": "rt.C6-buffer_stop_a",
+      "switches_position": {
+        "il.switch_foo": "RIGHT"
+      },
+      "tvd_sections": [
+        "tvd.track",
+        "tvd.foo_a"
+      ]
+    },
+    {
+      "id": "rt.C6-buffer_stop_b",
+      "switches_position": {
+        "il.switch_foo": "RIGHT"
+      },
+      "tvd_sections": [
+        "tvd.track",
+        "tvd.foo_b"
+      ]
+    }
+  ],
   "signal_functions": [
     {
       "function_name": "bal3",

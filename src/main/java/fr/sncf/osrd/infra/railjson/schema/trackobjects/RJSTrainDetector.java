@@ -1,6 +1,5 @@
 package fr.sncf.osrd.infra.railjson.schema.trackobjects;
 
-import fr.sncf.osrd.utils.graph.ApplicableDirections;
 import fr.sncf.osrd.infra.railjson.schema.Identified;
 
 public class RJSTrainDetector extends BiDirectionalRJSTrackObject implements Identified {
