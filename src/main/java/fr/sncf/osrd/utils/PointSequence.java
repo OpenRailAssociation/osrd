@@ -15,6 +15,10 @@ import java.util.stream.StreamSupport;
  * @param <E> The type of the point objects
  */
 public final class PointSequence<E> extends SortedSequence<E> implements Iterable<PointValue<E>> {
+    public int size() {
+        return data.size();
+    }
+
     public PointValue<E> get(int i) {
         return data.get(i);
     }
