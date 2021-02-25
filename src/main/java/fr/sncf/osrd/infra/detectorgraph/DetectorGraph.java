@@ -9,20 +9,22 @@ import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.utils.CryoMap;
 import fr.sncf.osrd.utils.PointValue;
 
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
 
-public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
+public final class DetectorGraph extends AbstractBiGraph<DetectorNode, TVDSectionPath> {
 
     public final CryoMap<String, DetectorNode> detectorNodeMap = new CryoMap<>();
     // TVDSectionPath are identified by the couple (StartNode, EndNode)
     public final CryoMap<TVDSectionPathID, TVDSectionPath> tvdSectionPathMap = new CryoMap<>();
 
     public static void markAsVisited(BitSet[] visitedEdgeDirs, TrackSection edge, EdgeDirection dir) {
-        visitedEdgeDirs[dir.id].set(edge.getIndex());
+        visitedEdgeDirs[dir.id].set(edge.index);
     }
 
     public static boolean wasVisitedInAnyDirection(BitSet[] visitedEdgeDirs, TrackSection edge) {
-        var edgeIndex = edge.getIndex();
+        var edgeIndex = edge.index;
         return visitedEdgeDirs[START_TO_STOP.id].get(edgeIndex) || visitedEdgeDirs[STOP_TO_START.id].get(edgeIndex);
     }
 
@@ -31,12 +33,12 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
         var graph = new DetectorGraph();
 
         // Create Detector nodes
-        for (var trackSection : trackGraph.edges)
+        for (var trackSection : trackGraph.iterEdges())
             for (var detector : trackSection.detectors)
                 graph.makeDetectorNode(detector.value.id);
 
         // create TVDSectionPaths that are begin and end on the same edge
-        for (var trackSection : trackGraph.edges) {
+        for (var trackSection : trackGraph.iterEdges()) {
             var detectorsCount = trackSection.detectors.size();
             for (int i = 1; i < detectorsCount; i++) {
                 var lastDetector = trackSection.detectors.get(i - 1);
@@ -52,14 +54,14 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
         }
 
         // Create list of visited trackSection
-        var edgeCount = trackGraph.edges.size();
+        var edgeCount = trackGraph.getEdgeCount();
         var visitedEdgeDirs = new BitSet[] {
                 new BitSet(edgeCount), // START_TO_STOP
                 new BitSet(edgeCount)  // STOP_TO_START
         };
 
         // Link detectorNodes
-        for (var edge : trackGraph.edges) {
+        for (var edge : trackGraph.iterEdges()) {
             if (wasVisitedInAnyDirection(visitedEdgeDirs, edge))
                 continue;
 
@@ -129,7 +131,7 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
         final var lastDetectorNode = trackDirection == START_TO_STOP ? lastEdgeDetectorNode : firstEdgeDetectorNode;
 
         // Check if the tvdSection not already handled
-        if (containsTVDSectionPath(sourceDetector.getIndex(), firstDetectorNode.getIndex()))
+        if (containsTVDSectionPath(sourceDetector.index, firstDetectorNode.index))
             return;
 
         double startToFirstDetectorDist;
@@ -187,7 +189,7 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
             var neighborDir = trackSection.getNeighborDirection(neighbor, trackSection.getEndNode(trackDirection));
 
             // if the neighbor was already visited from this direction, skip it
-            if (visitedEdgeDirs[neighborDir.id].get(neighbor.getIndex()))
+            if (visitedEdgeDirs[neighborDir.id].get(neighbor.index))
                 continue;
 
             markAsVisited(visitedEdgeDirs, neighbor, neighborDir);
@@ -217,8 +219,7 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
      * @return the node
      */
     private DetectorNode makeDetectorNode(String id) {
-        var node = new DetectorNode();
-        this.register(node);
+        var node = new DetectorNode(this, nextNodeIndex());
         detectorNodeMap.put(id, node);
         return node;
     }
@@ -240,16 +241,16 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
             EdgeDirection endNodeDirection,
             double length
     ) {
-        var startNodeIndex = startNode.getIndex();
-        var endNodeIndex = endNode.getIndex();
+        var startNodeIndex = startNode.index;
+        var endNodeIndex = endNode.index;
 
         // create the path and register it with the graph
         var tvdSectionPath = new TVDSectionPath(
+                this,
                 startNodeIndex, startNodeDirection,
                 endNodeIndex, endNodeDirection,
                 length
         );
-        this.register(tvdSectionPath);
 
         // fill the tvdSectionPathMap
         var id = TVDSectionPathID.build(startNodeIndex, endNodeIndex);
@@ -267,5 +268,18 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
 
     private boolean containsTVDSectionPath(int nodeA, int nodeB) {
         return tvdSectionPathMap.containsKey(TVDSectionPathID.build(nodeA, nodeB));
+    }
+
+    @Override
+    public List<TVDSectionPath> getNeighbors(
+            TVDSectionPath edge,
+            EdgeEndpoint endpoint
+    ) {
+        var nodeIndex = endpoint == EdgeEndpoint.BEGIN ? edge.startNode : edge.endNode;
+        var node = getNode(nodeIndex);
+
+        if (edge.nodeDirection(endpoint) == EdgeDirection.START_TO_STOP)
+            return node.startToStopNeighbors;
+        return node.stopToStartNeighbors;
     }
 }

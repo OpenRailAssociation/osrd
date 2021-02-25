@@ -40,17 +40,17 @@ public class DebugViewer {
         graph.setAttribute("ui.antialias");
         spriteManager = new SpriteManager(graph);
 
-        for (var node : infra.trackGraph.nodes) {
-            Node graphNode = graph.addNode(String.valueOf(node.getIndex()));
-            graphNode.setAttribute("ui.label", node.id + "(index = " + node.getIndex() + ")");
+        for (var node : infra.trackGraph.iterNodes()) {
+            Node graphNode = graph.addNode(String.valueOf(node.index));
+            graphNode.setAttribute("ui.label", node.id + "(index = " + node.index + ")");
             graphNode.setAttribute("ui.style", "text-alignment: under;");
         }
 
-        for (var edge : infra.trackGraph.edges) {
+        for (var edge : infra.trackGraph.iterEdges()) {
             String startId = String.valueOf(edge.startNode);
             String endId = String.valueOf(edge.endNode);
             Edge graphEdge = graph.addEdge(edge.id, startId, endId);
-            graphEdge.setAttribute("ui.label", edge.id + "(index = " + edge.getIndex() + ")");
+            graphEdge.setAttribute("ui.label", edge.id + "(index = " + edge.index + ")");
 
             edge.operationalPoints.getAll((opRef) -> {
                 // operational points can be point-like objects, or ranges

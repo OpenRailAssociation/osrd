@@ -13,7 +13,8 @@ import fr.sncf.osrd.utils.graph.AbstractNode;
 public abstract class TrackNode extends AbstractNode {
     public final String id;
 
-    public TrackNode(String id) {
+    public TrackNode(int index, String id) {
+        super(index);
         this.id = id;
     }
 }

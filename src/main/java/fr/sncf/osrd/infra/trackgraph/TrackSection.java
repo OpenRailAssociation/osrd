@@ -5,10 +5,10 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.SpeedSection;
 import fr.sncf.osrd.infra.signaling.Signal;
-import fr.sncf.osrd.utils.graph.AbstractEdge;
+import fr.sncf.osrd.utils.graph.AbstractBiEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-import fr.sncf.osrd.utils.graph.Graph;
+import fr.sncf.osrd.utils.graph.AbstractBiGraph;
 import fr.sncf.osrd.infra.signaling.VisibleTrackObject;
 import fr.sncf.osrd.utils.*;
 
@@ -19,7 +19,7 @@ import java.util.List;
  * An edge in the topological graph.
  */
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public final class TrackSection extends AbstractEdge<TrackNode, TrackSection> {
+public final class TrackSection extends AbstractBiEdge<TrackNode, TrackSection> {
     public final String id;
 
     public final CryoList<TrackSection> startNeighbors = new CryoList<>();
@@ -38,11 +38,6 @@ public final class TrackSection extends AbstractEdge<TrackNode, TrackSection> {
     }
 
     @Override
-    public List<TrackSection> getNeighbors(EdgeEndpoint endpoint, Graph<TrackNode, TrackSection> graph) {
-        return getNeighbors(endpoint);
-    }
-
-    @Override
     public String toString() {
         return String.format("TrackSection { id=%s }", id);
     }
@@ -51,32 +46,17 @@ public final class TrackSection extends AbstractEdge<TrackNode, TrackSection> {
      * Create a new topological edge.
      * This constructor is private, as the edge should also be registered into the nodes.
      */
-    private TrackSection(
+    TrackSection(
+            TrackGraph graph,
+            int index,
             String id,
             int startNodeIndex,
             int endNodeIndex,
             double length
     ) {
-        super(startNodeIndex, endNodeIndex, length);
+        super(index, startNodeIndex, endNodeIndex, length);
+        graph.registerEdge(this);
         this.id = id;
-    }
-
-    /**
-     * Link two nodes with a new edge.
-     *
-     * @param startNodeIndex The index of the start node of the edge
-     * @param endNodeIndex The index of the end node of the edge
-     * @param id A unique identifier for the edge
-     * @param length The length of the edge, in meters
-     * @return A new edge
-     */
-    public static TrackSection linkNodes(
-            int startNodeIndex,
-            int endNodeIndex,
-            String id,
-            double length
-    ) {
-        return new TrackSection(id, startNodeIndex, endNodeIndex, length);
     }
 
     public static void linkEdges(

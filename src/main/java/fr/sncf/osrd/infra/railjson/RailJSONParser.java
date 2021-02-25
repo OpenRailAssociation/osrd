@@ -120,7 +120,7 @@ public class RailJSONParser {
         // fill nodes with placeholders
         for (int i = 0; i < nodeIDs.numberOfNodes; i++)
             if (infra.trackGraph.getNode(i) == null)
-                infra.trackGraph.setNode(i, new PlaceholderNode(String.valueOf(i)));
+                infra.trackGraph.makePlaceholderNode(i, String.valueOf(i));
 
         // parse aspects
         for (var rjsAspect : railJSON.aspects) {
