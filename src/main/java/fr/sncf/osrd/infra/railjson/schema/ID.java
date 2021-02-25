@@ -4,6 +4,9 @@ import com.squareup.moshi.*;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.Set;
 
 public final class ID<T extends Identified> implements Comparable<T> {
     public final String id;
@@ -40,23 +43,21 @@ public final class ID<T extends Identified> implements Comparable<T> {
 
     /** A moshi adapter for ID serialization */
     public static class Adapter<T extends Identified> extends JsonAdapter<ID<T>> {
-        @SuppressWarnings("rawtypes")
-        public static final JsonAdapter.Factory FACTORY = new Adapter().factory();
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        public static final JsonAdapter.Factory FACTORY = new Adapter()::factory;
 
-        private JsonAdapter.Factory factory() {
-            return (type, annotations, moshi) -> {
-                // the raw type is the one without a type parameter
-                Class<?> rawType = Types.getRawType(type);
-                if (!annotations.isEmpty())
-                    return null;
+        private JsonAdapter<?> factory(Type type, Set<? extends Annotation> annotations, Moshi moshi) {
+            // the raw type is the one without a type parameter
+            Class<?> rawType = Types.getRawType(type);
+            if (!annotations.isEmpty())
+                return null;
 
-                // if the type of the objects to adapt isn't something the factory can produce adapters for,
-                // return null to tell the frame
-                if (rawType != ID.class)
-                    return null;
+            // if the type of the objects to adapt isn't something the factory can produce adapters for,
+            // return null to tell the frame
+            if (rawType != ID.class)
+                return null;
 
-                return this;
-            };
+            return this;
         }
 
         @Override
