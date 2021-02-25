@@ -1,6 +1,5 @@
 package fr.sncf.osrd.railml;
 
-import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.railjson.schema.RJSRoute;
 import fr.sncf.osrd.infra.railjson.schema.RJSSwitch;
@@ -10,12 +9,13 @@ import org.dom4j.Element;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class RMLRoute {
     static ArrayList<RJSRoute> parse(
             Document document
-    ) throws InvalidInfraException {
+    ) {
         var res = new ArrayList<RJSRoute>();
         var xpath = "/railML/interlocking/assetsForIL/routes/route";
         for (var routeNode :  document.selectNodes(xpath)) {
@@ -38,23 +38,13 @@ public class RMLRoute {
         return tvdSections;
     }
 
-    private static Map<ID<RJSSwitch>, RJSSwitch.Position> parseSwitchesPosition(Element route)
-            throws InvalidInfraException {
+    private static Map<ID<RJSSwitch>, RJSSwitch.Position> parseSwitchesPosition(Element route) {
         var switchesPosition = new HashMap<ID<RJSSwitch>, RJSSwitch.Position>();
         for (var switchPosition : route.elements("facingSwitchInPosition")) {
             var switchID = new ID<RJSSwitch>(switchPosition.element("refersToSwitch").attributeValue("ref"));
-            var position = switchPosition.attributeValue("inPosition");
-            switch (position) {
-                case "LEFT":
-                    switchesPosition.put(switchID, RJSSwitch.Position.LEFT);
-                    break;
-                case "RIGHT":
-                    switchesPosition.put(switchID, RJSSwitch.Position.RIGHT);
-                    break;
-                default:
-                    throw new InvalidInfraException(
-                            String.format("SwitchPosition has an invalid position: '%s'", position));
-            }
+            var positionStr = switchPosition.attributeValue("inPosition");
+            var position = RJSSwitch.Position.valueOf(positionStr.toUpperCase(Locale.ENGLISH));
+            switchesPosition.put(switchID, position);
         }
         return switchesPosition;
     }
