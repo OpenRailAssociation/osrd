@@ -19,14 +19,13 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
     // TVDSectionPath are identified by the couple (StartNode, EndNode)
     public final CryoMap<TVDSectionPathID, TVDSectionPath> tvdSectionPathMap = new CryoMap<>();
 
-    /**
-     * Build a DetectorGraph given a TrackGraph
-     */
-    public DetectorGraph(TrackGraph trackGraph) {
+    /** Build a DetectorGraph given a TrackGraph */
+    public static DetectorGraph buildDetectorGraph(TrackGraph trackGraph) {
+        var graph = new DetectorGraph();
         // Create Detector nodes
         for (var trackSection : trackGraph.edges) {
             for (var detector : trackSection.detectors) {
-                makeDetectorNode(detector.value);
+                graph.makeDetectorNode(detector.value);
             }
         }
 
@@ -38,22 +37,23 @@ public final class DetectorGraph extends Graph<DetectorNode, TVDSectionPath> {
         for (var trackSection : trackGraph.edges) {
             var iterDetectors = trackSection.detectors.iterator();
             if (!processedTrackSection.contains(trackSection.id) && iterDetectors.hasNext()) {
-                processTrackSection(trackSection, processedTrackSection);
-                var extremityDetectors = extremityDetectors(iterDetectors);
+                graph.processTrackSection(trackSection, processedTrackSection);
+                var extremityDetectors = graph.extremityDetectors(iterDetectors);
 
                 visitedTrackSection.add(new Pair<>(trackSection.id, EdgeDirection.START_TO_STOP));
-                var linkDetector = findDetectorNode(extremityDetectors.getValue().value);
+                var linkDetector = graph.findDetectorNode(extremityDetectors.getValue().value);
                 var distance = trackSection.length - extremityDetectors.getValue().position;
-                traverseTrackGraph(trackSection, EdgeDirection.START_TO_STOP, linkDetector, distance,
+                graph.traverseTrackGraph(trackSection, EdgeDirection.START_TO_STOP, linkDetector, distance,
                         processedTrackSection, visitedTrackSection);
 
                 visitedTrackSection.add(new Pair<>(trackSection.id, EdgeDirection.STOP_TO_START));
-                linkDetector = findDetectorNode(extremityDetectors.getKey().value);
+                linkDetector = graph.findDetectorNode(extremityDetectors.getKey().value);
                 distance = extremityDetectors.getKey().position;
-                traverseTrackGraph(trackSection, EdgeDirection.STOP_TO_START, linkDetector, distance,
+                graph.traverseTrackGraph(trackSection, EdgeDirection.STOP_TO_START, linkDetector, distance,
                         processedTrackSection, visitedTrackSection);
             }
         }
+        return graph;
     }
 
     private void buildGraph(
