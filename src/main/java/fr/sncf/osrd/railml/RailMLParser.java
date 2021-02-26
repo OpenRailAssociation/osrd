@@ -32,6 +32,9 @@ public final class RailMLParser {
         // remove xml namespace tags, as these prevent using xpath
         document.accept(new XmlNamespaceCleaner());
 
+        // create RMLGraph
+        var graph = new RMLGraph();
+
         // parse the description level of netElements
         var descLevels = parseDescriptionLevels(document);
 
@@ -39,7 +42,14 @@ public final class RailMLParser {
         var netRelations = NetRelation.parse(descLevels, document);
 
         // parse pieces of track, and add those to the json document
-        var netElements = NetElement.parse(descLevels, document);
+        var netElements = NetElement.parse(descLevels, document, graph);
+
+        // fill NetRelation in the RMLGraph
+        for (var rjsTrackSectionLink : netRelations.values()) {
+            var netRelation = NetRelation.fromTrackSectionLink(rjsTrackSectionLink, netElements);
+            netRelation.begin.getEndpointRelations(netRelation.beginEndpoint).add(netRelation);
+            netRelation.end.getEndpointRelations(netRelation.endEndpoint).add(netRelation);
+        }
 
         // create RailJSON track sections for all micro netElements
         var rjsTrackSections = new HashMap<String, RJSTrackSection>();
