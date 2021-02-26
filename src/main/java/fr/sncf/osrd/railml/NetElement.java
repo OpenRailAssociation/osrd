@@ -1,5 +1,6 @@
 package fr.sncf.osrd.railml;
 
+import fr.sncf.osrd.utils.graph.Edge;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import fr.sncf.osrd.utils.PointValue;
 import fr.sncf.osrd.utils.RangeValue;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-abstract class NetElement {
+abstract class NetElement extends Edge {
     static final Logger logger = LoggerFactory.getLogger(NetElement.class);
 
     String id;
@@ -20,7 +21,8 @@ abstract class NetElement {
     /** The start position of the netElement in a set of linear reference systems. */
     final Map<String, Double> lrsStartOffsets;
 
-    NetElement(String id, Map<String, Double> lrsStartOffsets) {
+    NetElement(int index, double length, String id, Map<String, Double> lrsStartOffsets) {
+        super(index, length);
         this.lrsStartOffsets = lrsStartOffsets;
         this.id = id;
     }
@@ -89,7 +91,8 @@ abstract class NetElement {
      */
     static Map<String, NetElement> parse(
             Map<String, DescriptionLevel> descLevels,
-            Document document
+            Document document,
+            RMLGraph graph
     ) {
         var netElementMap = new HashMap<String, NetElement>();
         var xpath = "/railML/infrastructure/topology/netElements/netElement";
@@ -104,7 +107,9 @@ abstract class NetElement {
             // create the edge corresponding to the track section
             var lengthStr = netElement.attributeValue("length");
             double length = Double.parseDouble(lengthStr);
-            netElementMap.put(id, TrackNetElement.parse(id, netElement, length));
+            var trackNetElement = TrackNetElement.parse(graph.nextEdgeIndex(), id, netElement, length);
+            netElementMap.put(id, trackNetElement);
+            graph.registerEdge(trackNetElement);
         }
 
         // we need to create meso elements after creating micro elements, so those already are registered

@@ -1,26 +1,50 @@
 package fr.sncf.osrd.railml;
 
+import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import org.dom4j.Element;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public final class TrackNetElement extends NetElement {
-    double length;
+    public final List<NetRelation> beginNetRelation;
+    public final List<NetRelation> endNetRelation;
 
-    public TrackNetElement(
-            String id,
-            Map<String, Double> lrsStartOffsets,
-            double length
-    ) {
-        super(id, lrsStartOffsets);
-        this.length = length;
+    /** Return the list of NetRelation at the given endpoint */
+    public List<NetRelation> getEndpointRelations(EdgeEndpoint endpoint) {
+        if (endpoint == EdgeEndpoint.BEGIN)
+            return beginNetRelation;
+        return endNetRelation;
     }
 
+    /** Representation of a track section */
+    public TrackNetElement(
+            int index,
+            String id,
+            Map<String, Double> lrsStartOffsets,
+            double length,
+            List<NetRelation> beginNetRelation,
+            List<NetRelation> endNetRelation) {
+        super(index, length, id, lrsStartOffsets);
+        this.beginNetRelation = beginNetRelation;
+        this.endNetRelation = endNetRelation;
+    }
+
+    /** Parse a TrackNetElement from railML */
     public static TrackNetElement parse(
+            int index,
             String id,
             Element netElement,
             double length
     ) {
-        return new TrackNetElement(id, NetElement.parsePositioningSystem(netElement), length);
+        return new TrackNetElement(
+                index,
+                id,
+                NetElement.parsePositioningSystem(netElement),
+                length,
+                new ArrayList<>(),
+                new ArrayList<>());
     }
 
     /** Finds a the unique location of the netElement in the given LRS */

@@ -14,7 +14,7 @@ public final class GroupNetElement extends NetElement {
             Map<String, Double> lrsMap,
             ArrayList<NetElement> children
     ) {
-        super(id, lrsMap);
+        super(-1, Double.NaN, id, lrsMap);
         this.children = children;
     }
 
