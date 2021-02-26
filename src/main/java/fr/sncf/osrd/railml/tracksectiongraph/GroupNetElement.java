@@ -1,4 +1,4 @@
-package fr.sncf.osrd.railml;
+package fr.sncf.osrd.railml.tracksectiongraph;
 
 import org.dom4j.Element;
 import org.dom4j.Node;

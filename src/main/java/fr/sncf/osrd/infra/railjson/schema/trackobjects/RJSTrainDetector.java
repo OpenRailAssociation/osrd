@@ -1,17 +1,9 @@
 package fr.sncf.osrd.infra.railjson.schema.trackobjects;
 
-import fr.sncf.osrd.infra.railjson.schema.Identified;
+import fr.sncf.osrd.utils.graph.ApplicableDirections;
 
-public class RJSTrainDetector extends BiDirectionalRJSTrackObject implements Identified {
-    public final String id;
-
-    public RJSTrainDetector(String id, double position) {
-        super(position);
-        this.id = id;
-    }
-
-    @Override
-    public String getID() {
-        return id;
+public class RJSTrainDetector extends RJSRouteWaypoint {
+    public RJSTrainDetector(String id, ApplicableDirections applicableDirections, double position) {
+        super(id, applicableDirections, position);
     }
 }

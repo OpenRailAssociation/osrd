@@ -2,7 +2,6 @@ package fr.sncf.osrd.utils.graph;
 
 import static fr.sncf.osrd.utils.graph.EdgeDirection.*;
 
-import fr.sncf.osrd.utils.PointValue;
 import java.util.*;
 
 
@@ -24,7 +23,7 @@ public abstract class BiGraphOverlayBuilder<
     private final BitSet[] visitedEdgeDirs;
     private final HashMap<BridgeObjectT, OverlayNodeT> bridgeToOverlay = new HashMap<>();
 
-    protected abstract List<PointValue<BridgeObjectT>> getBridgeObjects(BaseEdgeT edge);
+    protected abstract List<? extends IPointValue<BridgeObjectT>> getBridgeObjects(BaseEdgeT edge);
 
     protected abstract OverlayNodeT makeOverlayNode(BridgeObjectT bridgeObject);
 
@@ -76,7 +75,7 @@ public abstract class BiGraphOverlayBuilder<
         // create overlay nodes
         for (var baseEdge : baseGraph.iterEdges())
             for (var bridgeObjectPoint : getBridgeObjects(baseEdge))
-                bridgeToOverlay.put(bridgeObjectPoint.value, makeOverlayNode(bridgeObjectPoint.value));
+                bridgeToOverlay.put(bridgeObjectPoint.getValue(), makeOverlayNode(bridgeObjectPoint.getValue()));
 
         // create overlay edges that begin and end on the same edge
         for (var baseEdge : baseGraph.iterEdges()) {
@@ -85,10 +84,10 @@ public abstract class BiGraphOverlayBuilder<
                 var lastBridge = bridgeObjects.get(i - 1);
                 var curBridge = bridgeObjects.get(i);
 
-                var lastNode = bridgeToOverlay.get(lastBridge.value);
-                var curNode = bridgeToOverlay.get(curBridge.value);
+                var lastNode = bridgeToOverlay.get(lastBridge.getValue());
+                var curNode = bridgeToOverlay.get(curBridge.getValue());
 
-                var length = curBridge.position - lastBridge.position;
+                var length = curBridge.getPosition() - lastBridge.getPosition();
                 overlayRegisterEdge(linkOverlayNodes(lastNode, START_TO_STOP, curNode, STOP_TO_START, length));
             }
         }
@@ -106,16 +105,16 @@ public abstract class BiGraphOverlayBuilder<
             markAsVisited(baseEdge, START_TO_STOP);
             traverseBaseGraph(
                     baseEdge, START_TO_STOP,
-                    bridgeToOverlay.get(lastBridge.value), START_TO_STOP,
-                    baseEdge.length - lastBridge.position
+                    bridgeToOverlay.get(lastBridge.getValue()), START_TO_STOP,
+                    baseEdge.length - lastBridge.getPosition()
             );
 
             var firstBridge = bridgeObjects.get(0);
             markAsVisited(baseEdge, STOP_TO_START);
             traverseBaseGraph(
                     baseEdge, STOP_TO_START,
-                    bridgeToOverlay.get(firstBridge.value), STOP_TO_START,
-                    firstBridge.position
+                    bridgeToOverlay.get(firstBridge.getValue()), STOP_TO_START,
+                    firstBridge.getPosition()
             );
         }
     }
@@ -179,8 +178,8 @@ public abstract class BiGraphOverlayBuilder<
 
         var firstEdgeBridge = bridgeObjects.get(0);
         var lastEdgeBridge = bridgeObjects.get(bridgeObjects.size() - 1);
-        var firstEdgeOverlayNode = bridgeToOverlay.get(firstEdgeBridge.value);
-        var lastEdgeOverlayNode = bridgeToOverlay.get(lastEdgeBridge.value);
+        var firstEdgeOverlayNode = bridgeToOverlay.get(firstEdgeBridge.getValue());
+        var lastEdgeOverlayNode = bridgeToOverlay.get(lastEdgeBridge.getValue());
         final var firstOverlayNode = baseEdgeDir == START_TO_STOP ? firstEdgeOverlayNode : lastEdgeOverlayNode;
         final var lastOverlayNode = baseEdgeDir == START_TO_STOP ? lastEdgeOverlayNode : firstEdgeOverlayNode;
 
@@ -191,11 +190,11 @@ public abstract class BiGraphOverlayBuilder<
         double startToFirstBridgeDist;
         double lastBridgeToEndDist;
         if (baseEdgeDir == START_TO_STOP) {
-            startToFirstBridgeDist = firstEdgeBridge.position;
-            lastBridgeToEndDist = baseEdge.length - lastEdgeBridge.position;
+            startToFirstBridgeDist = firstEdgeBridge.getPosition();
+            lastBridgeToEndDist = baseEdge.length - lastEdgeBridge.getPosition();
         } else {
-            startToFirstBridgeDist = baseEdge.length - lastEdgeBridge.position;
-            lastBridgeToEndDist = firstEdgeBridge.position;
+            startToFirstBridgeDist = baseEdge.length - lastEdgeBridge.getPosition();
+            lastBridgeToEndDist = firstEdgeBridge.getPosition();
         }
 
         // the overlay edge between where we're coming and the first detector we run into

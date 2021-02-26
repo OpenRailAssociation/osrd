@@ -7,6 +7,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.railjson.schema.signaling.RJSAspect;
 import fr.sncf.osrd.infra.railjson.schema.signaling.RJSSignalExpr;
 import fr.sncf.osrd.infra.railjson.schema.signaling.RJSSignalFunction;
+import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
 
 import java.util.ArrayList;
 import java.util.Collection;

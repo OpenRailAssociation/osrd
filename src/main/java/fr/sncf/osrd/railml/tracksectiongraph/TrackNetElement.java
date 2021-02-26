@@ -1,4 +1,4 @@
-package fr.sncf.osrd.railml;
+package fr.sncf.osrd.railml.tracksectiongraph;
 
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import org.dom4j.Element;

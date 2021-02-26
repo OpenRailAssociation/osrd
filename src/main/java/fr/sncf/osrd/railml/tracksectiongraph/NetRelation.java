@@ -1,8 +1,9 @@
-package fr.sncf.osrd.railml;
+package fr.sncf.osrd.railml.tracksectiongraph;
 
 import static fr.sncf.osrd.utils.graph.EdgeEndpoint.*;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.railml.DescriptionLevel;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import fr.sncf.osrd.utils.graph.ApplicableDirections;
@@ -17,7 +18,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-class NetRelation implements IBiNeighbor<TrackNetElement> {
+public class NetRelation implements IBiNeighbor<TrackNetElement> {
 
     public final EdgeEndpoint beginEndpoint;
     public final TrackNetElement begin;
@@ -36,6 +37,7 @@ class NetRelation implements IBiNeighbor<TrackNetElement> {
         this.end = end;
     }
 
+    /** Converts a RailJSON trackSectionLink into NetRelation */
     public static NetRelation fromTrackSectionLink(
             RJSTrackSectionLink rjsTrackSectionLink,
             Map<String, NetElement> netElements
@@ -51,6 +53,7 @@ class NetRelation implements IBiNeighbor<TrackNetElement> {
                                endTrack, rjsTrackSectionLink.end.endpoint);
     }
 
+    /** Parse a RailML intrinsicCoord */
     public static EdgeEndpoint parseCoord(String intrinsicCoord) {
         assert intrinsicCoord.equals("0") || intrinsicCoord.equals("1");
         if (intrinsicCoord.equals("0"))
@@ -62,7 +65,7 @@ class NetRelation implements IBiNeighbor<TrackNetElement> {
         return new EndpointID(new ID<>(elementID), parseCoord(position));
     }
 
-    public static RJSTrackSectionLink parse(
+    static RJSTrackSectionLink from(
             ApplicableDirections navigability,
             String positionOnA,
             String elementA,
@@ -76,7 +79,8 @@ class NetRelation implements IBiNeighbor<TrackNetElement> {
         );
     }
 
-    static Map<String, RJSTrackSectionLink> parse(Map<String, DescriptionLevel> descLevels, Document document) {
+    /** Parse all netRelations in a RailML document */
+    public static Map<String, RJSTrackSectionLink> parse(Map<String, DescriptionLevel> descLevels, Document document) {
         var netRelations = new HashMap<String, RJSTrackSectionLink>();
 
         for (var netRelationNode : document.selectNodes("/railML/infrastructure/topology/netRelations/netRelation")) {
@@ -97,7 +101,7 @@ class NetRelation implements IBiNeighbor<TrackNetElement> {
             var positionOnB = netRelation.attributeValue("positionOnB");
             var elementB = netRelation.valueOf("elementB/@ref");
 
-            netRelations.put(id, NetRelation.parse(navigability, positionOnA, elementA, positionOnB, elementB));
+            netRelations.put(id, NetRelation.from(navigability, positionOnA, elementA, positionOnB, elementB));
         }
         return netRelations;
     }

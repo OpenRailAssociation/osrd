@@ -154,11 +154,12 @@ public class RailJSONParser {
             }
 
             // Parse detectors
+            // TODO: from bufferstops and tdes from the infra, and switch to route waypoints
             var detectorsBuilder = infraTrackSection.detectors.builder();
-            for (var rjsDetector : trackSection.trainDetectors) {
-                var detector = new Detector(rjsDetector.id);
+            for (var rjsRouteWaypoint : trackSection.routeWaypoints) {
+                var detector = new Detector(rjsRouteWaypoint.id);
                 detectors.put(detector.id, detector);
-                detectorsBuilder.add(rjsDetector.position, detector);
+                detectorsBuilder.add(rjsRouteWaypoint.position, detector);
             }
             detectorsBuilder.build();
 

@@ -3,6 +3,7 @@ package fr.sncf.osrd.infra.railjson.schema;
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSBufferStop;
+import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSSignal;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSOperationalPointPart;
@@ -19,10 +20,8 @@ public class RJSTrackSection implements Identified {
     public final double length;
 
     /** Track objects */
-    @Json(name = "train_detectors")
-    public final List<RJSTrainDetector> trainDetectors;
-    @Json(name = "buffer_stops")
-    public final List<RJSBufferStop> bufferStops;
+    @Json(name = "route_waypoints")
+    public final List<RJSRouteWaypoint> routeWaypoints;
     public final List<RJSSignal> signals;
 
     /** Track ranges */
@@ -35,16 +34,14 @@ public class RJSTrackSection implements Identified {
     public RJSTrackSection(
             String id,
             double length,
-            List<RJSTrainDetector> trainDetectors,
-            List<RJSBufferStop> bufferStops,
+            List<RJSRouteWaypoint> routeWaypoints,
             List<RJSSignal> signals,
             List<RJSOperationalPointPart> operationalPoints,
             List<RJSSpeedSectionPart> speedSections
     ) {
         this.id = id;
         this.length = length;
-        this.trainDetectors = trainDetectors;
-        this.bufferStops = bufferStops;
+        this.routeWaypoints = routeWaypoints;
         this.signals = signals;
         this.operationalPoints = operationalPoints;
         this.speedSections = speedSections;
@@ -54,7 +51,7 @@ public class RJSTrackSection implements Identified {
             String id,
             double length
     ) {
-        this(id, length, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        this(id, length, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
     }
 
     @Override
