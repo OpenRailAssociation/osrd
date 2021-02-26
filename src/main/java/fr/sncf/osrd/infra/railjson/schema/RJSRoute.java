@@ -1,12 +1,9 @@
 package fr.sncf.osrd.infra.railjson.schema;
 
 import com.squareup.moshi.Json;
-import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSBufferStop;
-import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrainDetector;
+import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.List;
 
@@ -17,7 +14,7 @@ public class RJSRoute implements Identified {
     @Json(name = "tvd_sections")
     public final List<ID<RJSTVDSection>> tvdSections;
 
-    public final List<RJSRouteWaypoint> waypoints;
+    public final List<ID<RJSRouteWaypoint>> waypoints;
 
     @Json(name = "switches_position")
     public final Map<ID<RJSSwitch>, RJSSwitch.Position> switchesPosition;
@@ -27,7 +24,7 @@ public class RJSRoute implements Identified {
             String id,
             List<ID<RJSTVDSection>> tvdSections,
             Map<ID<RJSSwitch>, RJSSwitch.Position> switchesPosition,
-            List<RJSRouteWaypoint> waypoints
+            List<ID<RJSRouteWaypoint>> waypoints
     ) {
         this.id = id;
         this.tvdSections = tvdSections;

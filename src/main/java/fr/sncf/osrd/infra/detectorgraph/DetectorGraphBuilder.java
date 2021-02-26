@@ -2,7 +2,6 @@ package fr.sncf.osrd.infra.detectorgraph;
 
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
-import fr.sncf.osrd.infra.trackgraph.TrackNode;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.utils.PointValue;
 import fr.sncf.osrd.utils.graph.BiGraphOverlayBuilder;

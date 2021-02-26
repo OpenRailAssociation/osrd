@@ -5,6 +5,7 @@ import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.railjson.schema.RJSOperationalPoint;
 import fr.sncf.osrd.infra.railjson.schema.RJSTrackSection;
 import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSOperationalPointPart;
+import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
 import org.dom4j.Document;
 import org.dom4j.Element;
 

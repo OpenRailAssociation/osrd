@@ -1,6 +1,7 @@
 package fr.sncf.osrd.railml;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.utils.graph.ApplicableDirections;

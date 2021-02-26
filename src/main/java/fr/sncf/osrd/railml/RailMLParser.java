@@ -4,6 +4,10 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 
 import fr.sncf.osrd.infra.railjson.schema.RJSRoot;
 import fr.sncf.osrd.infra.railjson.schema.RJSTrackSection;
+import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
+import fr.sncf.osrd.railml.tracksectiongraph.NetRelation;
+import fr.sncf.osrd.railml.tracksectiongraph.RMLTrackSectionGraph;
+import fr.sncf.osrd.railml.tracksectiongraph.TrackNetElement;
 import fr.sncf.osrd.utils.XmlNamespaceCleaner;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -32,8 +36,8 @@ public final class RailMLParser {
         // remove xml namespace tags, as these prevent using xpath
         document.accept(new XmlNamespaceCleaner());
 
-        // create RMLGraph
-        var graph = new RMLGraph();
+        // create RMLGraph in order to later locate the train detectors
+        var graph = new RMLTrackSectionGraph();
 
         // parse the description level of netElements
         var descLevels = parseDescriptionLevels(document);
@@ -67,9 +71,12 @@ public final class RailMLParser {
         var rjsSpeedSections = RMLSpeedSection.parse(netElements, document, rjsTrackSections);
         var rjsTvdSections = RMLTVDSection.parse(netElements, document, rjsTrackSections);
         var rjsSwitches = RMLSwitchIS.parse(netElements, netRelations, document);
-        var rjsRoutes = RMLRoute.parse(document);
-        RMLBufferStop.parse(netElements, document, rjsTrackSections);
         RMLTrainDetectionElement.parse(netElements, document, rjsTrackSections);
+        RMLBufferStop.parse(netElements, document, rjsTrackSections);
+
+        // routes must be parsed at the end, as those depend on train detection elements
+        // and buffer stops, which act as route waypoints
+        var rjsRoutes = RMLRoute.parse(graph, document, rjsTrackSections);
 
         return new RJSRoot(
                 rjsTrackSections.values(),

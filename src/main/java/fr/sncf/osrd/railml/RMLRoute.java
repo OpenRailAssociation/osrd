@@ -1,21 +1,25 @@
 package fr.sncf.osrd.railml;
 
-import fr.sncf.osrd.infra.railjson.schema.ID;
-import fr.sncf.osrd.infra.railjson.schema.RJSRoute;
-import fr.sncf.osrd.infra.railjson.schema.RJSSwitch;
-import fr.sncf.osrd.infra.railjson.schema.RJSTVDSection;
+import fr.sncf.osrd.infra.railjson.schema.*;
+import fr.sncf.osrd.railml.routegraph.RMLRouteGraph;
+import fr.sncf.osrd.railml.routegraph.RMLRouteGraphBuilder;
+import fr.sncf.osrd.railml.tracksectiongraph.RMLTrackSectionGraph;
+
 import org.dom4j.Document;
 import org.dom4j.Element;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class RMLRoute {
     static ArrayList<RJSRoute> parse(
-            Document document
+            RMLTrackSectionGraph graph,
+            Document document,
+            HashMap<String, RJSTrackSection> rjsTrackSections
     ) {
+        var detectorGraph = new RMLRouteGraph();
+        var overlayBuilder = new RMLRouteGraphBuilder(rjsTrackSections, graph, detectorGraph);
+        overlayBuilder.build();
+
         var res = new ArrayList<RJSRoute>();
         var xpath = "/railML/interlocking/assetsForIL/routes/route";
         for (var routeNode :  document.selectNodes(xpath)) {

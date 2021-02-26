@@ -1,6 +1,8 @@
 package fr.sncf.osrd.railml;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
+import fr.sncf.osrd.railml.tracksectiongraph.TrackNetElement;
 import fr.sncf.osrd.utils.graph.ApplicableDirections;
 import org.dom4j.Element;
 import org.slf4j.Logger;

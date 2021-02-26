@@ -6,6 +6,7 @@ import fr.sncf.osrd.infra.railjson.schema.RJSTVDSection;
 import fr.sncf.osrd.infra.railjson.schema.RJSTrackSection;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrainDetector;
+import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
 import org.dom4j.Document;
 import org.dom4j.Element;
 

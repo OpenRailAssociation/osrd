@@ -3,6 +3,7 @@ package fr.sncf.osrd.railml;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railjson.schema.RJSTrackSection;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSBufferStop;
+import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
@@ -28,7 +29,7 @@ public class RMLBufferStop {
 
             // add the buffer stop to the RJSTrackSection
             var rjsTrackSection = rjsTrackSections.get(location.netElement.id);
-            rjsTrackSection.bufferStops.add(new RJSBufferStop(id, location.appliesTo, location.position));
+            rjsTrackSection.routeWaypoints.add(new RJSBufferStop(id, location.appliesTo, location.position));
         }
     }
 }
