@@ -12,12 +12,11 @@ import java.util.*;
  */
 public abstract class BiGraphOverlayBuilder<
         BridgeObjectT,
-        BaseNodeT extends AbstractNode,
-        BaseEdgeT extends AbstractBiEdge<BaseNodeT, BaseEdgeT>,
-        BaseGraphT extends AbstractBiGraph<BaseNodeT, BaseEdgeT>,
-        OverlayNodeT extends AbstractNode,
-        OverlayEdgeT extends AbstractBiEdge<OverlayNodeT, OverlayEdgeT>,
-        OverlayGraphT extends AbstractBiGraph<OverlayNodeT, OverlayEdgeT>
+        BaseEdgeT extends Edge,
+        BaseGraphT extends BiGraph<BaseEdgeT>,
+        OverlayNodeT extends Node,
+        OverlayEdgeT extends BiNEdge<OverlayEdgeT>,
+        OverlayGraphT extends BiNGraph<OverlayEdgeT, OverlayNodeT>
         > {
     protected final BaseGraphT baseGraph;
     protected final OverlayGraphT overlayGraph;
@@ -136,17 +135,17 @@ public abstract class BiGraphOverlayBuilder<
     ) {
         var endpoint = baseEdgeDir == START_TO_STOP ? EdgeEndpoint.END : EdgeEndpoint.BEGIN;
         for (var neighbor: baseGraph.getNeighbors(baseEdge, endpoint)) {
-            // find the direction we're approaching the neighbor from
-            var neighborDir = baseEdge.getNeighborDirection(neighbor, baseEdge.getEndNode(baseEdgeDir));
+            var neighborEdge = neighbor.getEdge(baseEdge, baseEdgeDir);
+            var neighborDir = neighbor.getDirection(baseEdge, baseEdgeDir);
 
             // if the neighbor was already visited from this direction, skip it
-            if (visitedEdgeDirs[neighborDir.id].get(neighbor.index))
+            if (visitedEdgeDirs[neighborDir.id].get(neighborEdge.index))
                 continue;
 
-            markAsVisited(neighbor, neighborDir);
+            markAsVisited(neighborEdge, neighborDir);
 
             linkOverlayNodesBetweenEdges(
-                    neighbor, neighborDir,
+                    neighborEdge, neighborDir,
                     overlayNode, overlayNodeDir,
                     overlayPathLength
             );

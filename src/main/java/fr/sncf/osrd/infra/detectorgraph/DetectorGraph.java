@@ -8,8 +8,7 @@ import fr.sncf.osrd.utils.CryoMap;
 
 import java.util.List;
 
-public final class DetectorGraph extends AbstractBiGraph<DetectorNode, TVDSectionPath> {
-
+public final class DetectorGraph extends BiNGraph<TVDSectionPath, DetectorNode> {
     public final CryoMap<String, DetectorNode> detectorNodeMap = new CryoMap<>();
     // TVDSectionPath are identified by the couple (StartNode, EndNode)
     public final CryoMap<UndirectedBiEdgeID, TVDSectionPath> tvdSectionPathMap = new CryoMap<>();

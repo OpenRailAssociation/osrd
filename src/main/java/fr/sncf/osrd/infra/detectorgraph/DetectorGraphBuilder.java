@@ -12,7 +12,6 @@ import java.util.List;
 
 public final class DetectorGraphBuilder extends BiGraphOverlayBuilder<
         Detector,
-        TrackNode,
         TrackSection,
         TrackGraph,
         DetectorNode,

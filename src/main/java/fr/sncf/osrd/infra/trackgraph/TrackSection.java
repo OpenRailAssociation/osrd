@@ -5,10 +5,10 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.SpeedSection;
 import fr.sncf.osrd.infra.signaling.Signal;
-import fr.sncf.osrd.utils.graph.AbstractBiEdge;
+import fr.sncf.osrd.utils.graph.BiNEdge;
+import fr.sncf.osrd.utils.graph.Edge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-import fr.sncf.osrd.utils.graph.AbstractBiGraph;
 import fr.sncf.osrd.infra.signaling.VisibleTrackObject;
 import fr.sncf.osrd.utils.*;
 
@@ -19,7 +19,7 @@ import java.util.List;
  * An edge in the topological graph.
  */
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public final class TrackSection extends AbstractBiEdge<TrackNode, TrackSection> {
+public final class TrackSection extends BiNEdge<TrackSection> {
     public final String id;
 
     public final CryoList<TrackSection> startNeighbors = new CryoList<>();
