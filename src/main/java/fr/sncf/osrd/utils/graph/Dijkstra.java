@@ -42,7 +42,7 @@ public class Dijkstra {
          * @param <EdgeT> the type of the path's edges
          * @return a new path
          */
-        static <EdgeT extends AbstractBiEdge<?, ?>> Path<EdgeT> init(
+        static <EdgeT extends Edge> Path<EdgeT> init(
                 double cost,
                 EdgeT startingEdge,
                 EdgeDirection direction
@@ -78,8 +78,8 @@ public class Dijkstra {
      * @param pathConsumer the callback to consume the path
      */
     @SuppressWarnings("unchecked")
-    public static <NodeT extends AbstractNode, EdgeT extends AbstractBiEdge<NodeT, EdgeT>> void findPath(
-            AbstractBiGraph<NodeT, EdgeT> graph,
+    public static <EdgeT extends Edge> void findPath(
+            BiGraph<EdgeT> graph,
             EdgeT startEdge,
             double startPosition,
             EdgeT goalEdge,
@@ -134,26 +134,24 @@ public class Dijkstra {
 
             var currentEdge = currentPath.edge;
             var currentDirection = currentPath.direction;
-            var currentEndNode = currentEdge.getEndNode(currentDirection);
 
             // mark the node as explored
             explored[currentDirection.id].set(currentEdge.index);
 
             // explore all the neighbors of the current candidate
-            for (var neighborEdge : graph.getEndNeighbors(currentEdge, currentDirection)) {
-
-                // find which direction we're approaching the neighbor edge from
-                EdgeDirection direction  = currentEdge.getNeighborDirection(neighborEdge, currentEndNode);
+            for (var neighbor : graph.getEndNeighbors(currentEdge, currentDirection)) {
+                var neighborEdge = neighbor.getEdge(currentEdge, currentDirection);
+                var neighborDirection = neighbor.getDirection(currentEdge, currentDirection);
 
                 // if the neighbor was already explored from this direction, skip it
-                if (explored[direction.id].get(neighborEdge.index))
+                if (explored[neighborDirection.id].get(neighborEdge.index))
                     continue;
 
                 // compute the begin and end position of the portion of the neighbor edge the path covers
                 // (it's needed to compute the cost)
                 double neighborBeginPos;
                 double neighborEndPos;
-                if (direction == START_TO_STOP) {
+                if (neighborDirection == START_TO_STOP) {
                     neighborBeginPos = 0.;
                     neighborEndPos = neighborEdge.length;
                 } else {
@@ -168,7 +166,7 @@ public class Dijkstra {
 
                 // compute the added cost of this edge
                 var addedCost = costFunction.apply(neighborEdge, neighborBeginPos, neighborEndPos);
-                queue.add(currentPath.chain(addedCost, neighborEdge, direction));
+                queue.add(currentPath.chain(addedCost, neighborEdge, neighborDirection));
             }
         }
         throw new RuntimeException("couldn't find a path");

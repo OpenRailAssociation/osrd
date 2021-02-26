@@ -1,7 +1,7 @@
 package fr.sncf.osrd.infra.trackgraph;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.utils.graph.AbstractNode;
+import fr.sncf.osrd.utils.graph.Node;
 
 /**
  * A node in the topological infrastructure graph.
@@ -10,7 +10,7 @@ import fr.sncf.osrd.utils.graph.AbstractNode;
         value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",
         justification = "kept for later use"
 )
-public abstract class TrackNode extends AbstractNode {
+public abstract class TrackNode extends Node {
     public final String id;
 
     public TrackNode(int index, String id) {

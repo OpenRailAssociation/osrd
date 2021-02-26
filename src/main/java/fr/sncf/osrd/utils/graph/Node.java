@@ -1,9 +1,9 @@
 package fr.sncf.osrd.utils.graph;
 
-public abstract class AbstractNode {
+public abstract class Node {
     public final int index;
 
-    protected AbstractNode(int index) {
+    protected Node(int index) {
         this.index = index;
     }
 }

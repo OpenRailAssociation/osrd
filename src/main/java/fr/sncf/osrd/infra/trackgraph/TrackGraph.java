@@ -2,13 +2,14 @@ package fr.sncf.osrd.infra.trackgraph;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
-import fr.sncf.osrd.utils.graph.AbstractBiGraph;
 import fr.sncf.osrd.utils.CryoMap;
+import fr.sncf.osrd.utils.graph.BiNGraph;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
+import fr.sncf.osrd.utils.graph.IBiNeighbor;
 
 import java.util.List;
 
-public final class TrackGraph extends AbstractBiGraph<TrackNode, TrackSection> {
+public final class TrackGraph extends BiNGraph<TrackSection, TrackNode> {
     // operationalPoints a map from operational point IDs to operational points
     public final CryoMap<String, OperationalPoint> operationalPoints = new CryoMap<>();
     // trackNodeMap a map from node IDs to nodes

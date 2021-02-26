@@ -1,11 +1,11 @@
 package fr.sncf.osrd.infra.detectorgraph;
 
-import fr.sncf.osrd.utils.graph.AbstractNode;
+import fr.sncf.osrd.utils.graph.Node;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayList;
 
-public class DetectorNode extends AbstractNode {
+public class DetectorNode extends Node {
     /** List of neighbors seen when moving across the detector from the end of the track section to the beginning */
     public final ArrayList<TVDSectionPath> startToStopNeighbors = new ArrayList<>();
 

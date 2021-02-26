@@ -1,14 +1,12 @@
 package fr.sncf.osrd.infra.detectorgraph;
 
-import fr.sncf.osrd.utils.graph.AbstractBiEdge;
+import fr.sncf.osrd.utils.graph.BiNEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-import fr.sncf.osrd.utils.graph.AbstractBiGraph;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 
-public class TVDSectionPath extends AbstractBiEdge<DetectorNode, TVDSectionPath> {
+public class TVDSectionPath extends BiNEdge<TVDSectionPath> {
     /** The direction to the inside of the TVDSection from the start node, relative to the TrackSection */
     public final EdgeDirection startNodeDirection;
     /** The direction to the inside of the TVDSection from the end node, relative to the TrackSection */
