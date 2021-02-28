@@ -1,15 +1,22 @@
 package fr.sncf.osrd.train;
 
+import static fr.sncf.osrd.utils.graph.EdgeDirection.*;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
+import fr.sncf.osrd.utils.graph.*;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.utils.graph.CostFunction;
-import fr.sncf.osrd.utils.graph.Dijkstra;
 import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.utils.CryoList;
 import fr.sncf.osrd.utils.Freezable;
 import fr.sncf.osrd.utils.TopoLocation;
+import fr.sncf.osrd.utils.graph.path.BasicPathChainEnd;
+import fr.sncf.osrd.utils.graph.path.BasicPathChainStart;
+import fr.sncf.osrd.utils.graph.path.GraphPath;
+import fr.sncf.osrd.utils.graph.path.PathChainStart;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 public final class TrainPath implements Freezable {
     public final CryoList<PathSection> sections = new CryoList<>();
@@ -57,28 +64,29 @@ public final class TrainPath implements Freezable {
         var goal = timetable.waypoints.last();
         var goalPosition = goal.operationalPointRef;
 
-        // compute the shortest path from start to stop
-        CostFunction<TrackSection> costFunc = (edge, begin, end) -> Math.abs(end - begin);
-
-        // TODO: more flexible pathfinding
+        // TODO: properly handle ranges
         assert startPosition.begin == startPosition.end;
         assert goalPosition.begin == goalPosition.end;
-        Dijkstra.findPath(infra.trackGraph,
-                start.edge, startPosition.begin,
-                goal.edge, goalPosition.begin,
-                costFunc,
-                (edge, direction) -> {
-                    // find the offset at which the path starts inside the edge
-                    double beginOffset = Double.NEGATIVE_INFINITY;
-                    if (edge == start.edge)
-                        beginOffset = startPosition.begin; // FIXME, this doesn't work if begin != end
 
-                    // find the offset at which the path stops inside the edge
-                    double endOffset = Double.POSITIVE_INFINITY;
-                    if (edge == goal.edge)
-                        endOffset = goalPosition.begin; // FIXME, this doesn't work if begin != end
-                    this.addEdge(edge, direction, beginOffset, endOffset);
+        var startingPoints = new ArrayList<BasicPathChainStart<TrackSection>>();
+        for (var direction : EdgeDirection.values())
+            startingPoints.add(new BasicPathChainStart<>(0, start.edge, direction, startPosition.begin));
+
+        var costFunction = new DistCostFunction<TrackSection>();
+        var goalChecker = new BasicGoalChecker<>(costFunction, goal.edge, goalPosition.begin);
+        var foundPaths = BiGraphDijkstra.findPaths(
+                infra.trackGraph,
+                startingPoints,
+                costFunction,
+                goalChecker,
+                (pathToGoal) -> {
+                    var path = GraphPath.from(pathToGoal);
+                    path.forAllSegments(this::addEdge);
+                    return false;
                 });
+
+        if (foundPaths == 0)
+            throw new RuntimeException("dijkstra found no path");
 
         freeze();
     }

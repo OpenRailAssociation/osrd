@@ -9,5 +9,5 @@ public interface CostFunction<EdgeT> {
      * @param end the end position on the edge
      * @return the cost of making the trip
      */
-    double apply(EdgeT edge, double begin, double end);
+    double evaluate(EdgeT edge, double begin, double end);
 }

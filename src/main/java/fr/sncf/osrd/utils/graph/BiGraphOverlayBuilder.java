@@ -119,7 +119,6 @@ public abstract class BiGraphOverlayBuilder<
         }
     }
 
-
     /**
      * Arriving from baseEdge with direction baseEdgeDir on it.
      * The last seen bridge was overlayNode, and the current distance to it is overlayPathLength.
