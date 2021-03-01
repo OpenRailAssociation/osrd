@@ -11,11 +11,14 @@ import java.util.List;
 public class RJSRoute implements Identified {
     public final String id;
 
+    /** List of TVD sections through which the route transits */
     @Json(name = "tvd_sections")
     public final List<ID<RJSTVDSection>> tvdSections;
 
+    /** List of waypoints that define the route. */
     public final List<ID<RJSRouteWaypoint>> waypoints;
 
+    /** List of the switches and their position through which the route transits */
     @Json(name = "switches_position")
     public final Map<ID<RJSSwitch>, RJSSwitch.Position> switchesPosition;
 

@@ -14,6 +14,7 @@ import java.util.Collection;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSRoot {
+    /** Moshi adapter used to serialize and deserialize RJSRoot */
     public static final JsonAdapter<RJSRoot> adapter = new Moshi
             .Builder()
             .add(ID.Adapter.FACTORY)
@@ -51,8 +52,10 @@ public class RJSRoot {
     @Json(name = "tvd_sections")
     public final Collection<RJSTVDSection> tvdSections;
 
+    /** The list of routes */
     public final Collection<RJSRoute> routes;
 
+    /** The list of speed sections */
     @Json(name = "speed_sections")
     public final Collection<RJSSpeedSection> speedSections;
 

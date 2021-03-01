@@ -19,14 +19,18 @@ public class RJSTrackSection implements Identified {
     public final String id;
     public final double length;
 
-    /** Track objects */
+    /** List of waypoints (detectors and buffer stops) on the track section */
     @Json(name = "route_waypoints")
     public final List<RJSRouteWaypoint> routeWaypoints;
+
+    /** List of signals on the track section */
     public final List<RJSSignal> signals;
 
-    /** Track ranges */
+    /** List of operational points on the track section */
     @Json(name = "operational_points")
     public final List<RJSOperationalPointPart> operationalPoints;
+
+    /** List of speed sections on the track section */
     @Json(name = "speed_sections")
     public final List<RJSSpeedSectionPart> speedSections;
 
