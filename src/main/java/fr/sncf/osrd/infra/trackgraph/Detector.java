@@ -1,16 +1,12 @@
 package fr.sncf.osrd.infra.trackgraph;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.signaling.TrackSensor;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.train.Train;
 
-public class Detector implements TrackSensor {
-    @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public final String id;
+public class Detector extends Waypoint {
 
     public Detector(String id) {
-        this.id = id;
+        super(id);
     }
 
     @Override

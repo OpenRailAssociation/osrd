@@ -1,8 +1,8 @@
 package fr.sncf.osrd.infra.detectorgraph;
 
-import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.utils.PointValue;
 import fr.sncf.osrd.utils.graph.BiGraphOverlayBuilder;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -10,7 +10,7 @@ import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.List;
 
 public final class DetectorGraphBuilder extends BiGraphOverlayBuilder<
-        Detector,
+        Waypoint,
         TrackSection,
         TrackGraph,
         DetectorNode,
@@ -22,12 +22,12 @@ public final class DetectorGraphBuilder extends BiGraphOverlayBuilder<
     }
 
     @Override
-    protected List<PointValue<Detector>> getBridgeObjects(TrackSection edge) {
-        return edge.detectors.data;
+    protected List<PointValue<Waypoint>> getBridgeObjects(TrackSection edge) {
+        return edge.waypoints.data;
     }
 
     @Override
-    protected DetectorNode makeOverlayNode(Detector bridgeObject) {
+    protected DetectorNode makeOverlayNode(Waypoint bridgeObject) {
         var node = new DetectorNode(overlayGraph, overlayGraph.nextNodeIndex());
         overlayGraph.detectorNodeMap.put(bridgeObject.id, node);
         return node;
