@@ -7,9 +7,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public class RJSSpeedSection implements Identified {
     public final String id;
 
+    /** If the speed limit is signalized on the track */
     @Json(name = "is_signalized")
     public final boolean isSignalized;
 
+    /** The speed limit */
     public final double speed;
 
     /**

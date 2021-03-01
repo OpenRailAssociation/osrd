@@ -12,8 +12,10 @@ import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Set;
 
+/** This class represents the function of the behaviour of a signal. */
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSSignalFunction implements Identified {
+    /** Name of the function */
     @Json(name = "function_name")
     public final String functionName;
 

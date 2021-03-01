@@ -14,12 +14,15 @@ import java.util.HashSet;
 public class RJSTVDSection implements Identified {
     public final String id;
 
+    /** If a train can turn around when it is in this section */
     @Json(name = "is_berthing_track")
     public final boolean isBerthingTrack;
 
+    /** List of train detectors in the tvd section */
     @Json(name = "train_detectors")
     public final Collection<ID<RJSTrainDetector>> trainDetectors;
 
+    /** List of buffer stops in the tvd section */
     @Json(name = "buffer_stops")
     public final Collection<ID<RJSBufferStop>> bufferStops;
 

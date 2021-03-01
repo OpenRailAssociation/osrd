@@ -6,8 +6,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public class RJSSwitch implements Identified {
     public final String id;
 
+    /** The base track section of the switch */
     public final RJSTrackSection.EndpointID base;
+    /** The track section linked to the base if the switch is in LEFT position */
     public final RJSTrackSection.EndpointID left;
+    /** The track section linked to the base if the switch is in RIGHT position */
     public final RJSTrackSection.EndpointID right;
 
     /**
