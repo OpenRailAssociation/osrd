@@ -1,7 +1,7 @@
 package fr.sncf.osrd.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.detectorgraph.DetectorGraph;
+import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.simulation.Entity;
@@ -70,21 +70,21 @@ import java.util.function.Consumer;
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public final class Infra {
     public final TrackGraph trackGraph;
-    public final DetectorGraph detectorGraph;
+    public final WaypointGraph waypointGraph;
     public final HashMap<String, TVDSection> tvdSections;
     public final HashMap<String, Aspect> aspects;
 
     /**
      * Create an OSRD Infra
      * @param trackGraph the track graph
-     * @param detectorGraph the detector graph
+     * @param waypointGraph the waypoint graph
      * @param tvdSections the list of TVDSection
      * @param aspects the list of valid signal aspects
      * @throws InvalidInfraException {@inheritDoc}
      */
     public Infra(
             TrackGraph trackGraph,
-            DetectorGraph detectorGraph,
+            WaypointGraph waypointGraph,
             HashMap<String, TVDSection> tvdSections,
             HashMap<String, Aspect> aspects
     ) throws InvalidInfraException {
@@ -92,7 +92,7 @@ public final class Infra {
         this.tvdSections = tvdSections;
         this.aspects = aspects;
         this.trackGraph.validate();
-        this.detectorGraph = detectorGraph;
+        this.waypointGraph = waypointGraph;
     }
 
     public void forAllStatefulObjects(Consumer<StatefulInfraObject<?>> callback) {
@@ -111,7 +111,7 @@ public final class Infra {
          * Build a new Infra from the given constructed trackGraph and tvdSections
          */
         public Infra build() throws InvalidInfraException {
-            var detectorGraph = DetectorGraph.buildDetectorGraph(trackGraph);
+            var detectorGraph = WaypointGraph.buildDetectorGraph(trackGraph);
             linkTVDSectionToPath(detectorGraph);
             return new Infra(trackGraph, detectorGraph, tvdSections, aspects);
         }
@@ -120,21 +120,21 @@ public final class Infra {
          * Link TVD Sections with TVDSectionPath of a given detectorGraph
          * Each TVDSection references TVDSectionPaths, and reciprocally.
          */
-        private void linkTVDSectionToPath(DetectorGraph detectorGraph) {
+        private void linkTVDSectionToPath(WaypointGraph waypointGraph) {
             // Initialize reverse map DetectorNode -> TVDSections
-            var nbDetector = detectorGraph.getNodeCount();
+            var nbDetector = waypointGraph.getNodeCount();
             var detectorNodeToTVDSections = new ArrayList<HashSet<String>>(nbDetector);
             for (int i = 0; i < nbDetector; i++)
                 detectorNodeToTVDSections.add(new HashSet<>());
             for (var tvdEntry : tvdSections.entrySet()) {
                 for (var waypoint : tvdEntry.getValue().waypoints) {
-                    var nodeIndex = detectorGraph.detectorNodeMap.get(waypoint.id).index;
+                    var nodeIndex = waypointGraph.waypointNodeMap.get(waypoint.id).index;
                     detectorNodeToTVDSections.get(nodeIndex).add(tvdEntry.getKey());
                 }
             }
 
             // Compute which TVDSection belongs to each TVDSectionPath
-            for (var tvdSectionPath : detectorGraph.tvdSectionPathMap.values()) {
+            for (var tvdSectionPath : waypointGraph.tvdSectionPathMap.values()) {
                 // Set intersection
                 var tvdNodeStart = detectorNodeToTVDSections.get(tvdSectionPath.startNode);
                 for (var tvdID : detectorNodeToTVDSections.get(tvdSectionPath.endNode)) {

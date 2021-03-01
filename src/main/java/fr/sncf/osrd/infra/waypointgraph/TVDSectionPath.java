@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra.detectorgraph;
+package fr.sncf.osrd.infra.waypointgraph;
 
 import fr.sncf.osrd.utils.graph.BiNEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -18,7 +18,7 @@ public class TVDSectionPath extends BiNEdge<TVDSectionPath> {
     }
 
     TVDSectionPath(
-            DetectorGraph graph,
+            WaypointGraph graph,
             int startNode,
             EdgeDirection startNodeDirection,
             int endNode,

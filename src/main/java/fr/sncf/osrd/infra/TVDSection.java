@@ -1,8 +1,7 @@
 package fr.sncf.osrd.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.detectorgraph.TVDSectionPath;
-import fr.sncf.osrd.infra.trackgraph.Detector;
+import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra.detectorgraph;
+package fr.sncf.osrd.infra.waypointgraph;
 
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
@@ -9,15 +9,15 @@ import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.List;
 
-public final class DetectorGraphBuilder extends BiGraphOverlayBuilder<
+public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
         Waypoint,
         TrackSection,
         TrackGraph,
-        DetectorNode,
+        WaypointNode,
         TVDSectionPath,
-        DetectorGraph
+        WaypointGraph
         > {
-    public DetectorGraphBuilder(TrackGraph baseGraph, DetectorGraph overlayGraph) {
+    public WaypointGraphBuilder(TrackGraph baseGraph, WaypointGraph overlayGraph) {
         super(overlayGraph.tvdSectionPathMap, baseGraph, overlayGraph);
     }
 
@@ -27,17 +27,17 @@ public final class DetectorGraphBuilder extends BiGraphOverlayBuilder<
     }
 
     @Override
-    protected DetectorNode makeOverlayNode(Waypoint bridgeObject) {
-        var node = new DetectorNode(overlayGraph, overlayGraph.nextNodeIndex());
-        overlayGraph.detectorNodeMap.put(bridgeObject.id, node);
+    protected WaypointNode makeOverlayNode(Waypoint bridgeObject) {
+        var node = new WaypointNode(overlayGraph, overlayGraph.nextNodeIndex());
+        overlayGraph.waypointNodeMap.put(bridgeObject.id, node);
         return node;
     }
 
     @Override
     protected TVDSectionPath linkOverlayNodes(
-            DetectorNode startNode,
+            WaypointNode startNode,
             EdgeDirection startNodeDirection,
-            DetectorNode endNode,
+            WaypointNode endNode,
             EdgeDirection endNodeDirection,
             double length
     ) {
