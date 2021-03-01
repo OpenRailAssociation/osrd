@@ -127,8 +127,8 @@ public final class Infra {
             for (int i = 0; i < nbDetector; i++)
                 detectorNodeToTVDSections.add(new HashSet<>());
             for (var tvdEntry : tvdSections.entrySet()) {
-                for (var detector : tvdEntry.getValue().detectors) {
-                    var nodeIndex = detectorGraph.detectorNodeMap.get(detector.id).index;
+                for (var waypoint : tvdEntry.getValue().waypoints) {
+                    var nodeIndex = detectorGraph.detectorNodeMap.get(waypoint.id).index;
                     detectorNodeToTVDSections.get(nodeIndex).add(tvdEntry.getKey());
                 }
             }

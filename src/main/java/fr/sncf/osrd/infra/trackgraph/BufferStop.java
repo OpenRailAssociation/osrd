@@ -1,21 +1,25 @@
 package fr.sncf.osrd.infra.trackgraph;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.train.Train;
 
 /**
  * A stop block prevents trains from going past the end of a track.
  * https://en.wikipedia.org/wiki/Buffer_stop
  */
-@SuppressFBWarnings(
-        value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",
-        justification = "kept for later use"
-)
-public class BufferStop extends TrackNode {
-    public final TrackSection edge;
+public class BufferStop extends Waypoint {
 
-    BufferStop(TrackGraph graph, int index, String id, TrackSection edge) {
-        super(index, id);
-        graph.registerNode(this);
-        this.edge = edge;
+    public BufferStop(String id) {
+        super(id);
+    }
+
+    @Override
+    public void onTrainArrival(Simulation sim, Train train) {
+        // TODO
+    }
+
+    @Override
+    public void onTrainDeparture(Simulation sim, Train train) {
+        // TODO
     }
 }

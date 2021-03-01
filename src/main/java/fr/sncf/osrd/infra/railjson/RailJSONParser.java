@@ -11,7 +11,10 @@ import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.railjson.schema.RJSRoot;
 import fr.sncf.osrd.infra.railjson.schema.signaling.RJSSignalExpr;
 import fr.sncf.osrd.infra.railjson.schema.signaling.RJSSignalFunction;
+import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSBufferStop;
+import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrackObject;
+import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSTrackRange;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.signaling.Signal;
@@ -26,6 +29,7 @@ import okio.BufferedSource;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
 public class RailJSONParser {
@@ -135,7 +139,7 @@ public class RailJSONParser {
             signalFunctions.put(signalFunction.functionName, signalFunction);
         }
 
-        var detectors = new HashMap<String, Detector>();
+        var waypoints = new HashMap<String, Waypoint>();
 
         // create track sections
         var infraTrackSections = new HashMap<String, TrackSection>();
@@ -153,15 +157,21 @@ public class RailJSONParser {
                 op.addRef(infraTrackSection, rjsOp.begin, rjsOp.end);
             }
 
-            // Parse detectors
-            // TODO: from bufferstops and tdes from the infra, and switch to route waypoints
-            var detectorsBuilder = infraTrackSection.detectors.builder();
+            // Parse waypoints
+            var waypointsBuilder = infraTrackSection.waypoints.builder();
             for (var rjsRouteWaypoint : trackSection.routeWaypoints) {
-                var detector = new Detector(rjsRouteWaypoint.id);
-                detectors.put(detector.id, detector);
-                detectorsBuilder.add(rjsRouteWaypoint.position, detector);
+                if (rjsRouteWaypoint.getClass() == RJSTrainDetector.class) {
+                    var detector = new Detector(rjsRouteWaypoint.id);
+                    waypoints.put(detector.id, detector);
+                    waypointsBuilder.add(rjsRouteWaypoint.position, detector);
+                } else if (rjsRouteWaypoint.getClass() == RJSBufferStop.class) {
+                    var bufferStop = new BufferStop(rjsRouteWaypoint.id);
+                    waypoints.put(bufferStop.id, bufferStop);
+                    waypointsBuilder.add(rjsRouteWaypoint.position, bufferStop);
+
+                }
             }
-            detectorsBuilder.build();
+            waypointsBuilder.build();
 
             // Parse signals
             var signalsBuilder = infraTrackSection.signals.builder();
@@ -189,18 +199,27 @@ public class RailJSONParser {
 
         // Parse TVDSections
         for (var rjsonTVD : railJSON.tvdSections) {
-            var tvdDetectors = new ArrayList<Detector>();
-            for (var detectorID : rjsonTVD.trainDetectors) {
-                var detector = detectors.get(detectorID.id);
-                if (detector == null)
-                    throw new InvalidInfraException(String.format("cannot find detector %s", detectorID.id));
-                tvdDetectors.add(detector);
-            }
-            var tvd = new TVDSection(rjsonTVD.id, tvdDetectors, rjsonTVD.isBerthingTrack);
+            var tvdWaypoints = new ArrayList<Waypoint>();
+            findWaypoints(tvdWaypoints, waypoints, rjsonTVD.trainDetectors);
+            findWaypoints(tvdWaypoints, waypoints, rjsonTVD.bufferStops);
+            var tvd = new TVDSection(rjsonTVD.id, tvdWaypoints, rjsonTVD.isBerthingTrack);
             infra.tvdSections.put(tvd.id, tvd);
         }
 
         return infra.build();
+    }
+
+    private static <E extends RJSRouteWaypoint> void findWaypoints(
+            ArrayList<Waypoint> foundWaypoints,
+            HashMap<String, Waypoint> waypointHashMap,
+            Collection<ID<E>> source
+    ) throws InvalidInfraException {
+        for (var waypointID : source) {
+            var waypoint = waypointHashMap.get(waypointID.id);
+            if (waypoint == null)
+                throw new InvalidInfraException(String.format("cannot find waypoint %s", waypointID.id));
+            foundWaypoints.add(waypoint);
+        }
     }
 
     private static SignalFunction parseSignalFunction(
