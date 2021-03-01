@@ -4,7 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static fr.sncf.osrd.infra.trackgraph.TrackSection.linkEdges;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.detectorgraph.DetectorGraph;
+import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
+import fr.sncf.osrd.infra.trackgraph.BufferStop;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
@@ -12,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.TreeMap;
 
-public class DetectorGraphTest {
+public class WaypointGraphTest {
     /**
      * One tiv with 3 detectors on it.
      * A                  B
@@ -32,10 +33,10 @@ public class DetectorGraphTest {
         detectorBuilder.build();
 
         // Build DetectorGraph
-        var detectorGraph = DetectorGraph.buildDetectorGraph(trackGraph);
+        var detectorGraph = WaypointGraph.buildDetectorGraph(trackGraph);
 
         // Check Detector Graph
-        assertEquals(3, detectorGraph.detectorNodeMap.size());
+        assertEquals(3, detectorGraph.waypointNodeMap.size());
         assertEquals(2, detectorGraph.tvdSectionPathMap.size());
 
         var tvdSectionD1D2 = detectorGraph.getTVDSectionPath(0, 1);
@@ -43,16 +44,16 @@ public class DetectorGraphTest {
         assertEquals(10, tvdSectionD1D2.length, 0.1);
         assertEquals(25, tvdSectionD2D3.length, 0.1);
 
-        assertEquals(1, detectorGraph.detectorNodeMap.get("D1").startToStopNeighbors.size());
-        assertEquals(0, detectorGraph.detectorNodeMap.get("D1").stopToStartNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get("D2").startToStopNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get("D2").stopToStartNeighbors.size());
-        assertEquals(0, detectorGraph.detectorNodeMap.get("D3").startToStopNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get("D3").stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D1").startToStopNeighbors.size());
+        assertEquals(0, detectorGraph.waypointNodeMap.get("D1").stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D2").startToStopNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D2").stopToStartNeighbors.size());
+        assertEquals(0, detectorGraph.waypointNodeMap.get("D3").startToStopNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D3").stopToStartNeighbors.size());
     }
 
     /**
-     * Complex track graph.
+     * Complex track graph. Points A, B and D are buffer stops.
      *   A   foo_a        D1
      *   +—————————————————o——,
      *                    D2   \   D3                      D4
@@ -74,12 +75,14 @@ public class DetectorGraphTest {
         var fooA = trackGraph.makeTrackSection(nodeA.index, nodeC.index, "foo_a", 100);
         var detectorsFooA = fooA.waypoints.builder();
         detectorsFooA.add(75, new Detector("D1"));
+        detectorsFooA.add(0, new BufferStop("BS_1"));
         detectorsFooA.build();
 
         // forward
         var fooB = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "foo_b", 100);
         var detectorsFooB = fooB.waypoints.builder();
         detectorsFooB.add(50, new Detector("D2"));
+        detectorsFooB.add(0, new BufferStop("BS_2"));
         detectorsFooB.build();
 
         // backward
@@ -87,40 +90,51 @@ public class DetectorGraphTest {
         var detectorsTrack = track.waypoints.builder();
         detectorsTrack.add(50, new Detector("D4"));
         detectorsTrack.add(450, new Detector("D3"));
+        detectorsTrack.add(0, new BufferStop("BS_3"));
         detectorsTrack.build();
 
         linkEdges(fooA, EdgeEndpoint.END, track, EdgeEndpoint.END);
         linkEdges(fooB, EdgeEndpoint.END, track, EdgeEndpoint.END);
 
         // Build DetectorGraph
-        var detectorGraph = DetectorGraph.buildDetectorGraph(trackGraph);
+        var detectorGraph = WaypointGraph.buildDetectorGraph(trackGraph);
 
         // Check Detector Graph
-        assertEquals(4, detectorGraph.detectorNodeMap.size());
-        assertEquals(3, detectorGraph.tvdSectionPathMap.size());
+        assertEquals(7, detectorGraph.waypointNodeMap.size());
+        assertEquals(6, detectorGraph.tvdSectionPathMap.size());
 
-        var detectorIDMap = new TreeMap<String, Integer>();
+        var waypointsIDMap = new TreeMap<String, Integer>();
 
         for (int i = 1; i <= 4; i++) {
             var strI = String.format("D%d", i);
-            detectorIDMap.put(strI, detectorGraph.detectorNodeMap.get(strI).index);
+            waypointsIDMap.put(strI, detectorGraph.waypointNodeMap.get(strI).index);
+        }
+        for (int i = 1; i <= 3; i++) {
+            var strI = String.format("BS_%d", i);
+            waypointsIDMap.put(strI, detectorGraph.waypointNodeMap.get(strI).index);
         }
 
-        var tvdSectionD1D3 = detectorGraph.getTVDSectionPath(detectorIDMap.get("D1"), detectorIDMap.get("D3"));
-        var tvdSectionD2D3 = detectorGraph.getTVDSectionPath(detectorIDMap.get("D2"), detectorIDMap.get("D3"));
-        var tvdSectionD3D4 = detectorGraph.getTVDSectionPath(detectorIDMap.get("D3"), detectorIDMap.get("D4"));
+        var tvdSectionD1D3 = detectorGraph.getTVDSectionPath(waypointsIDMap.get("D1"), waypointsIDMap.get("D3"));
+        var tvdSectionD2D3 = detectorGraph.getTVDSectionPath(waypointsIDMap.get("D2"), waypointsIDMap.get("D3"));
+        var tvdSectionD3D4 = detectorGraph.getTVDSectionPath(waypointsIDMap.get("D3"), waypointsIDMap.get("D4"));
         assertEquals(75, tvdSectionD1D3.length, 0.1);
         assertEquals(100, tvdSectionD2D3.length, 0.1);
         assertEquals(400, tvdSectionD3D4.length, 0.1);
 
-        assertEquals(1, detectorGraph.detectorNodeMap.get("D1").startToStopNeighbors.size());
-        assertEquals(0, detectorGraph.detectorNodeMap.get("D1").stopToStartNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get("D2").startToStopNeighbors.size());
-        assertEquals(0, detectorGraph.detectorNodeMap.get("D2").stopToStartNeighbors.size());
-        assertEquals(2, detectorGraph.detectorNodeMap.get("D3").startToStopNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get("D3").stopToStartNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get("D4").startToStopNeighbors.size());
-        assertEquals(0, detectorGraph.detectorNodeMap.get("D4").stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D1").startToStopNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D1").stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D2").startToStopNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D2").stopToStartNeighbors.size());
+        assertEquals(2, detectorGraph.waypointNodeMap.get("D3").startToStopNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D3").stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D4").startToStopNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D4").stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("BS_1").startToStopNeighbors.size());
+        assertEquals(0, detectorGraph.waypointNodeMap.get("BS_1").stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("BS_2").startToStopNeighbors.size());
+        assertEquals(0, detectorGraph.waypointNodeMap.get("BS_2").stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("BS_3").startToStopNeighbors.size());
+        assertEquals(0, detectorGraph.waypointNodeMap.get("BS_3").stopToStartNeighbors.size());
     }
 
     /**
@@ -164,10 +178,10 @@ public class DetectorGraphTest {
         linkEdges(trackCA, EdgeEndpoint.END, trackAB, EdgeEndpoint.BEGIN);
 
         // Build DetectorGraph
-        var detectorGraph = DetectorGraph.buildDetectorGraph(trackGraph);
+        var detectorGraph = WaypointGraph.buildDetectorGraph(trackGraph);
 
         // Check Detector Graph
-        assertEquals(3, detectorGraph.detectorNodeMap.size());
+        assertEquals(3, detectorGraph.waypointNodeMap.size());
         assertEquals(3, detectorGraph.tvdSectionPathMap.size());
 
         var tvdSectionD1D2 = detectorGraph.getTVDSectionPath(0, 1);
@@ -177,12 +191,12 @@ public class DetectorGraphTest {
         assertEquals(100, tvdSectionD2D3.length, 0.1);
         assertEquals(100, tvdSectionD3D1.length, 0.1);
 
-        assertEquals(1, detectorGraph.detectorNodeMap.get("D1").startToStopNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get("D1").stopToStartNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get("D2").startToStopNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get("D2").stopToStartNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get("D3").startToStopNeighbors.size());
-        assertEquals(1, detectorGraph.detectorNodeMap.get("D3").stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D1").startToStopNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D1").stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D2").startToStopNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D2").stopToStartNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D3").startToStopNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D3").stopToStartNeighbors.size());
 
     }
 }

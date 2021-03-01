@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra.detectorgraph;
+package fr.sncf.osrd.infra.waypointgraph;
 
 import static fr.sncf.osrd.utils.graph.EdgeDirection.*;
 
@@ -8,15 +8,15 @@ import fr.sncf.osrd.utils.CryoMap;
 
 import java.util.List;
 
-public final class DetectorGraph extends BiNGraph<TVDSectionPath, DetectorNode> {
-    public final CryoMap<String, DetectorNode> detectorNodeMap = new CryoMap<>();
+public final class WaypointGraph extends BiNGraph<TVDSectionPath, WaypointNode> {
+    public final CryoMap<String, WaypointNode> waypointNodeMap = new CryoMap<>();
     // TVDSectionPath are identified by the couple (StartNode, EndNode)
     public final CryoMap<UndirectedBiEdgeID, TVDSectionPath> tvdSectionPathMap = new CryoMap<>();
 
     /** Automatically create a detector graph from a track graph */
-    public static DetectorGraph buildDetectorGraph(TrackGraph trackGraph) {
-        var detectorGraph = new DetectorGraph();
-        var builder = new DetectorGraphBuilder(trackGraph, detectorGraph);
+    public static WaypointGraph buildDetectorGraph(TrackGraph trackGraph) {
+        var detectorGraph = new WaypointGraph();
+        var builder = new WaypointGraphBuilder(trackGraph, detectorGraph);
         builder.build();
         return detectorGraph;
     }
