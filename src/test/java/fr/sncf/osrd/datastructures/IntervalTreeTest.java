@@ -1,4 +1,4 @@
-package fr.sncf.osrd;
+package fr.sncf.osrd.datastructures;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
