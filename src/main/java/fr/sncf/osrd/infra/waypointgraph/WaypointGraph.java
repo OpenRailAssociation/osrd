@@ -3,13 +3,14 @@ package fr.sncf.osrd.infra.waypointgraph;
 import static fr.sncf.osrd.utils.graph.EdgeDirection.*;
 
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
+import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.utils.graph.*;
 import fr.sncf.osrd.utils.CryoMap;
 
 import java.util.List;
 
-public final class WaypointGraph extends BiNGraph<TVDSectionPath, WaypointNode> {
-    public final CryoMap<String, WaypointNode> waypointNodeMap = new CryoMap<>();
+public final class WaypointGraph extends BiNGraph<TVDSectionPath, Waypoint> {
+    public final CryoMap<String, Waypoint> waypointNodeMap = new CryoMap<>();
     // TVDSectionPath are identified by the couple (StartNode, EndNode)
     public final CryoMap<UndirectedBiEdgeID, TVDSectionPath> tvdSectionPathMap = new CryoMap<>();
 

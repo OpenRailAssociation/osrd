@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.TVDSection;
+import fr.sncf.osrd.infra.signaling.Aspect;
+import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.train.PathAttrIterator;
@@ -24,19 +27,19 @@ public class RangeAttrIter {
     @SuppressFBWarnings({"DLS_DEAD_LOCAL_STORE"})
     public void backwardRangeAttrIter() throws InvalidInfraException {
         // build a test infrastructure
-        var infraBuilder = new Infra.Builder();
+        var trackGraph = new TrackGraph();
 
-        var nodeA = infraBuilder.trackGraph.makePlaceholderNode("A");
-        var nodeB = infraBuilder.trackGraph.makePlaceholderNode("B");
-        var nodeC = infraBuilder.trackGraph.makePlaceholderNode("C");
+        var nodeA = trackGraph.makePlaceholderNode("A");
+        var nodeB = trackGraph.makePlaceholderNode("B");
+        var nodeC = trackGraph.makePlaceholderNode("C");
 
-        var forwardEdge = infraBuilder.trackGraph.makeTrackSection(
+        var forwardEdge = trackGraph.makeTrackSection(
                 nodeA.index,
                 nodeB.index,
                 "e1", 42
         );
 
-        var backwardEdge = infraBuilder.trackGraph.makeTrackSection(
+        var backwardEdge = trackGraph.makeTrackSection(
                 nodeC.index,
                 nodeB.index,
                 "e2", 50
@@ -77,8 +80,6 @@ public class RangeAttrIter {
             // builder.add(51.0, -5.);
             builder.build();
         }
-
-        final var infra = infraBuilder.build();
 
         var trainPath = new TrainPath();
         trainPath.addEdge(forwardEdge, EdgeDirection.START_TO_STOP, 0, Double.POSITIVE_INFINITY);

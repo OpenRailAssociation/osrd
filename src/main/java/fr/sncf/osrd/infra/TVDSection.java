@@ -6,7 +6,7 @@ import fr.sncf.osrd.infra.trackgraph.Waypoint;
 
 import java.util.ArrayList;
 
-public class TVDSection {
+public final class TVDSection implements Comparable<TVDSection> {
     public final String id;
     public final ArrayList<Waypoint> waypoints;
     public final ArrayList<TVDSectionPath> sections = new ArrayList<>();
@@ -21,5 +21,24 @@ public class TVDSection {
         this.id = id;
         this.waypoints = waypoints;
         this.isBerthingTrack = isBerthingTrack;
+    }
+
+    @Override
+    public int compareTo(TVDSection o) {
+        return id.compareTo(o.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (obj.getClass() != TVDSection.class)
+            return false;
+        return id.equals(((TVDSection) obj).id);
     }
 }

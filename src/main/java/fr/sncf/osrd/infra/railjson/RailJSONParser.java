@@ -16,11 +16,13 @@ import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrackObject;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSTrackRange;
+import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.signaling.SignalExpr;
 import fr.sncf.osrd.infra.signaling.SignalFunction;
 import fr.sncf.osrd.simulation.EntityType;
+import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.utils.PointSequence;
@@ -107,51 +109,53 @@ public class RailJSONParser {
      * @return an OSRD infrastructure
      */
     public static Infra parse(RJSRoot railJSON) throws InvalidInfraException {
-        var infra = new Infra.Builder();
+        var trackGraph = new TrackGraph();
+        var tvdSectionsMap = new HashMap<String, TVDSection>();
+        var aspectsMap = new HashMap<String, Aspect>();
 
         // register operational points
         for (var operationalPoint : railJSON.operationalPoints) {
             var op = new OperationalPoint(operationalPoint.id);
-            infra.trackGraph.operationalPoints.put(op.id, op);
+            trackGraph.operationalPoints.put(op.id, op);
         }
 
         // create a unique identifier for all track intersection nodes
         var nodeIDs = TrackNodeIDs.from(railJSON.trackSectionLinks, railJSON.trackSections);
-        infra.trackGraph.resizeNodes(nodeIDs.numberOfNodes);
+        trackGraph.resizeNodes(nodeIDs.numberOfNodes);
 
         // TODO: parse switches
 
         // fill nodes with placeholders
         for (int i = 0; i < nodeIDs.numberOfNodes; i++)
-            if (infra.trackGraph.getNode(i) == null)
-                infra.trackGraph.makePlaceholderNode(i, String.valueOf(i));
+            if (trackGraph.getNode(i) == null)
+                trackGraph.makePlaceholderNode(i, String.valueOf(i));
 
         // parse aspects
         for (var rjsAspect : railJSON.aspects) {
             var aspect = new Aspect(rjsAspect.id);
-            infra.aspects.put(aspect.id, aspect);
+            aspectsMap.put(aspect.id, aspect);
         }
 
         // parse signal functions
         var signalFunctions = new HashMap<String, SignalFunction>();
         for (var rjsSignalFunction : railJSON.signalFunctions) {
-            var signalFunction = parseSignalFunction(infra, rjsSignalFunction);
+            var signalFunction = parseSignalFunction(aspectsMap, rjsSignalFunction);
             signalFunctions.put(signalFunction.functionName, signalFunction);
         }
 
-        var waypoints = new HashMap<String, Waypoint>();
+        var waypointsMap = new HashMap<String, Waypoint>();
 
         // create track sections
         var infraTrackSections = new HashMap<String, TrackSection>();
         for (var trackSection : railJSON.trackSections) {
             var beginID = nodeIDs.get(trackSection.beginEndpoint());
             var endID = nodeIDs.get(trackSection.endEndpoint());
-            var infraTrackSection = infra.trackGraph.makeTrackSection(beginID, endID, trackSection.id,
+            var infraTrackSection = trackGraph.makeTrackSection(beginID, endID, trackSection.id,
                     trackSection.length);
             infraTrackSections.put(trackSection.id, infraTrackSection);
 
             for (var rjsOp : trackSection.operationalPoints) {
-                var op = infra.trackGraph.operationalPoints.get(rjsOp.ref.id);
+                var op = trackGraph.operationalPoints.get(rjsOp.ref.id);
                 // add the reference from the OperationalPoint to the TrackSection,
                 // add from the TrackSection to the OperationalPoint
                 op.addRef(infraTrackSection, rjsOp.begin, rjsOp.end);
@@ -159,17 +163,20 @@ public class RailJSONParser {
 
             // Parse waypoints
             var waypointsBuilder = infraTrackSection.waypoints.builder();
+            // Need a unique index for waypoint graph
+            int index = 0;
             for (var rjsRouteWaypoint : trackSection.routeWaypoints) {
                 if (rjsRouteWaypoint.getClass() == RJSTrainDetector.class) {
-                    var detector = new Detector(rjsRouteWaypoint.id);
-                    waypoints.put(detector.id, detector);
+                    var detector = new Detector(index, rjsRouteWaypoint.id);
+                    waypointsMap.put(detector.id, detector);
                     waypointsBuilder.add(rjsRouteWaypoint.position, detector);
                 } else if (rjsRouteWaypoint.getClass() == RJSBufferStop.class) {
-                    var bufferStop = new BufferStop(rjsRouteWaypoint.id);
-                    waypoints.put(bufferStop.id, bufferStop);
+                    var bufferStop = new BufferStop(index, rjsRouteWaypoint.id);
+                    waypointsMap.put(bufferStop.id, bufferStop);
                     waypointsBuilder.add(rjsRouteWaypoint.position, bufferStop);
 
                 }
+                index++;
             }
             waypointsBuilder.build();
 
@@ -200,13 +207,29 @@ public class RailJSONParser {
         // Parse TVDSections
         for (var rjsonTVD : railJSON.tvdSections) {
             var tvdWaypoints = new ArrayList<Waypoint>();
-            findWaypoints(tvdWaypoints, waypoints, rjsonTVD.trainDetectors);
-            findWaypoints(tvdWaypoints, waypoints, rjsonTVD.bufferStops);
+            findWaypoints(tvdWaypoints, waypointsMap, rjsonTVD.trainDetectors);
+            findWaypoints(tvdWaypoints, waypointsMap, rjsonTVD.bufferStops);
             var tvd = new TVDSection(rjsonTVD.id, tvdWaypoints, rjsonTVD.isBerthingTrack);
-            infra.tvdSections.put(tvd.id, tvd);
+            tvdSectionsMap.put(tvd.id, tvd);
         }
 
-        return infra.build();
+        // Build waypoint Graph
+        var waypointGraph = Infra.buildWaypointGraph(trackGraph, tvdSectionsMap);
+
+        // Build route Graph
+        var routeGraph = new RouteGraph.Builder(waypointGraph);
+
+        for (var rjsRoute : railJSON.routes) {
+            var waypoints = new ArrayList<Waypoint>();
+            for (var waypoint : rjsRoute.waypoints)
+                waypoints.add(waypointsMap.get(waypoint.id));
+            var tvdSections = new SortedArraySet<TVDSection>();
+            for (var tvdSection : rjsRoute.tvdSections)
+                tvdSections.add(tvdSectionsMap.get(tvdSection.id));
+            routeGraph.makeRoute(rjsRoute.id, waypoints, tvdSections);
+        }
+
+        return new Infra(trackGraph, waypointGraph, routeGraph.build(), tvdSectionsMap, aspectsMap);
     }
 
     private static <E extends RJSRouteWaypoint> void findWaypoints(
@@ -223,19 +246,19 @@ public class RailJSONParser {
     }
 
     private static SignalFunction parseSignalFunction(
-            Infra.Builder builder,
+            HashMap<String, Aspect> aspectsMap,
             RJSSignalFunction rjsSignalFunction
     ) throws InvalidInfraException {
         var argumentNames = rjsSignalFunction.arguments;
         var defaultAspects = new ArrayList<Aspect>();
         for (var aspectID : rjsSignalFunction.defaultAspects)
-            defaultAspects.add(builder.aspects.get(aspectID.id));
+            defaultAspects.add(aspectsMap.get(aspectID.id));
 
         // parse rules
         var rules = new HashMap<Aspect, SignalExpr>();
         for (var rjsRule : rjsSignalFunction.rules.entrySet()) {
-            var aspect = builder.aspects.get(rjsRule.getKey().id);
-            var expr = parseSignalExpr(builder, argumentNames, rjsRule.getValue());
+            var aspect = aspectsMap.get(rjsRule.getKey().id);
+            var expr = parseSignalExpr(aspectsMap, argumentNames, rjsRule.getValue());
             rules.put(aspect, expr);
         }
 
@@ -269,36 +292,36 @@ public class RailJSONParser {
     }
 
     private static SignalExpr parseSignalExpr(
-            Infra.Builder builder,
+            HashMap<String, Aspect> aspectsMap,
             String[] argumentNames,
             RJSSignalExpr expr
     ) throws InvalidInfraException {
         var type = expr.getClass();
         if (type == RJSSignalExpr.OrExpr.class) {
-            return new SignalExpr.OrExpr(parseInfixOp(builder, argumentNames, (RJSSignalExpr.InfixOpExpr) expr));
+            return new SignalExpr.OrExpr(parseInfixOp(aspectsMap, argumentNames, (RJSSignalExpr.InfixOpExpr) expr));
         } else if (type == RJSSignalExpr.AndExpr.class) {
-            return new SignalExpr.AndExpr(parseInfixOp(builder, argumentNames, (RJSSignalExpr.InfixOpExpr) expr));
+            return new SignalExpr.AndExpr(parseInfixOp(aspectsMap, argumentNames, (RJSSignalExpr.InfixOpExpr) expr));
         } else if (type == RJSSignalExpr.NotExpr.class) {
             var notExpr = (RJSSignalExpr.NotExpr) expr;
-            return new SignalExpr.NotExpr(parseSignalExpr(builder, argumentNames, notExpr.expression));
+            return new SignalExpr.NotExpr(parseSignalExpr(aspectsMap, argumentNames, notExpr.expression));
         } else if (type == RJSSignalExpr.SignalAspectCheck.class) {
             var signalExpr = (RJSSignalExpr.SignalAspectCheck) expr;
             var argIndex = findArgIndex(argumentNames, signalExpr.signal.argumentName);
-            var aspect = builder.aspects.get(signalExpr.hasAspect.id);
+            var aspect = aspectsMap.get(signalExpr.hasAspect.id);
             return new SignalExpr.SignalAspectCheck(argIndex, aspect);
         } else
             throw new InvalidInfraException("unsupported signal expression");
     }
 
     private static SignalExpr[] parseInfixOp(
-            Infra.Builder builder,
+            HashMap<String, Aspect> aspectsMap,
             String[] argumentNames,
             RJSSignalExpr.InfixOpExpr expr
     ) throws InvalidInfraException {
         var arity = expr.expressions.length;
         var expressions = new SignalExpr[arity];
         for (int i = 0; i < arity; i++)
-            expressions[i] = parseSignalExpr(builder, argumentNames, expr.expressions[i]);
+            expressions[i] = parseSignalExpr(aspectsMap, argumentNames, expr.expressions[i]);
         return expressions;
     }
 }
