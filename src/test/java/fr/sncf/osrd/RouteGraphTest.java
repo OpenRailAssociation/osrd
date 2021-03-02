@@ -57,12 +57,12 @@ public class RouteGraphTest {
         var waypointsR1 = new ArrayList<Waypoint>(Arrays.asList(d1, d2, d3));
         var tvdSectionsR1 = new SortedArraySet<TVDSection>();
         tvdSectionsR1.add(tvdSection123);
-        var route1 = routeGraphBuilder.makeRoute("R1", waypointsR1, tvdSectionsR1);
+        final var route1 = routeGraphBuilder.makeRoute("R1", waypointsR1, tvdSectionsR1);
 
         var waypointsR2 = new ArrayList<Waypoint>(Arrays.asList(d3, d2, d1));
         var tvdSectionsR2 = new SortedArraySet<TVDSection>();
         tvdSectionsR2.add(tvdSection123);
-        var route2 = routeGraphBuilder.makeRoute("R2", waypointsR2, tvdSectionsR2);
+        final var route2 = routeGraphBuilder.makeRoute("R2", waypointsR2, tvdSectionsR2);
 
         var routeGraph =  routeGraphBuilder.build();
 
@@ -70,14 +70,14 @@ public class RouteGraphTest {
 
         // Check R1
         assertEquals(35, route1.length, 0.1);
-        assertEquals(2, route1.tvdSectionPaths.size());
-        assertEquals(d1.index, route1.tvdSectionPaths.get(0).startNode);
-        assertEquals(d3.index, route1.tvdSectionPaths.get(1).endNode);
+        assertEquals(2, route1.tvdSectionsPath.size());
+        assertEquals(d1.index, route1.tvdSectionsPath.get(0).startNode);
+        assertEquals(d3.index, route1.tvdSectionsPath.get(1).endNode);
 
         // Check R2
         assertEquals(35, route2.length, 0.1);
-        assertEquals(2, route2.tvdSectionPaths.size());
-        assertEquals(d3.index, route2.tvdSectionPaths.get(0).endNode);
-        assertEquals(d1.index, route2.tvdSectionPaths.get(1).startNode);
+        assertEquals(2, route2.tvdSectionsPath.size());
+        assertEquals(d3.index, route2.tvdSectionsPath.get(0).endNode);
+        assertEquals(d1.index, route2.tvdSectionsPath.get(1).startNode);
     }
 }

@@ -12,16 +12,16 @@ import java.util.ArrayList;
 public abstract class Waypoint extends Node implements TrackSensor {
     public final String id;
 
-    /** List of neighbors seen when moving across the detector from the end of the track section to the beginning */
+    /** List of neighbors seen when moving across the detector from the beginning of the track section to the end */
     public final ArrayList<TVDSectionPath> startToStopNeighbors = new ArrayList<>();
 
-    /** List of neighbors seen when moving across the detector from the beginning of the track section to the end */
+    /** List of neighbors seen when moving across the detector from the end of the track section to the beginning */
     public final ArrayList<TVDSectionPath> stopToStartNeighbors = new ArrayList<>();
 
-    /** List of neighbors routes seen when moving forward on the route graph */
+    /** List of neighbors seen when moving across the detector from the end of the track section to the beginning */
     public final ArrayList<Route> startToStopRoutes = new ArrayList<Route>();
 
-    /** List of neighbors routes seen when moving backward on the route graph */
+    /** List of neighbors seen when moving across the detector from the beginning of the track section to the end */
     public final ArrayList<Route> stopToStartRoutes = new ArrayList<Route>();
 
     public Waypoint(int index, String id) {
