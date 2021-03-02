@@ -1,6 +1,7 @@
 package fr.sncf.osrd.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.trackgraph.*;
@@ -71,6 +72,7 @@ import java.util.function.Consumer;
 public final class Infra {
     public final TrackGraph trackGraph;
     public final WaypointGraph waypointGraph;
+    public final RouteGraph routeGraph;
     public final HashMap<String, TVDSection> tvdSections;
     public final HashMap<String, Aspect> aspects;
 
@@ -78,6 +80,7 @@ public final class Infra {
      * Create an OSRD Infra
      * @param trackGraph the track graph
      * @param waypointGraph the waypoint graph
+     * @param routeGraph the route graph
      * @param tvdSections the list of TVDSection
      * @param aspects the list of valid signal aspects
      * @throws InvalidInfraException {@inheritDoc}
@@ -85,10 +88,12 @@ public final class Infra {
     public Infra(
             TrackGraph trackGraph,
             WaypointGraph waypointGraph,
+            RouteGraph routeGraph,
             HashMap<String, TVDSection> tvdSections,
             HashMap<String, Aspect> aspects
     ) throws InvalidInfraException {
         this.trackGraph = trackGraph;
+        this.routeGraph = routeGraph;
         this.tvdSections = tvdSections;
         this.aspects = aspects;
         this.trackGraph.validate();
@@ -100,48 +105,40 @@ public final class Infra {
     }
 
     /**
-     * A helper to help build Infra instances.
+     * Build a the WaypointGraph once track graph is filled
      */
-    public static class Builder {
-        public final TrackGraph trackGraph = new TrackGraph();
-        public final HashMap<String, TVDSection> tvdSections = new HashMap<>();
-        public final HashMap<String, Aspect> aspects = new HashMap<>();
+    public static WaypointGraph buildWaypointGraph(TrackGraph trackGraph, HashMap<String, TVDSection> tvdSections) {
+        var waypointGraph = WaypointGraph.buildDetectorGraph(trackGraph);
+        linkTVDSectionToPath(waypointGraph, tvdSections);
+        return waypointGraph;
+    }
 
-        /**
-         * Build a new Infra from the given constructed trackGraph and tvdSections
-         */
-        public Infra build() throws InvalidInfraException {
-            var detectorGraph = WaypointGraph.buildDetectorGraph(trackGraph);
-            linkTVDSectionToPath(detectorGraph);
-            return new Infra(trackGraph, detectorGraph, tvdSections, aspects);
+    /**
+     * Link TVD Sections with TVDSectionPath of a given detectorGraph
+     * Each TVDSection references TVDSectionPaths, and reciprocally.
+     */
+    private static void linkTVDSectionToPath(WaypointGraph waypointGraph, HashMap<String, TVDSection> tvdSections) {
+        // Initialize reverse map DetectorNode -> TVDSections
+        var nbDetector = waypointGraph.getNodeCount();
+        var detectorNodeToTVDSections = new ArrayList<HashSet<String>>(nbDetector);
+        for (int i = 0; i < nbDetector; i++)
+            detectorNodeToTVDSections.add(new HashSet<>());
+        for (var tvdEntry : tvdSections.entrySet()) {
+            for (var waypoint : tvdEntry.getValue().waypoints) {
+                var nodeIndex = waypointGraph.waypointNodeMap.get(waypoint.id).index;
+                detectorNodeToTVDSections.get(nodeIndex).add(tvdEntry.getKey());
+            }
         }
 
-        /**
-         * Link TVD Sections with TVDSectionPath of a given detectorGraph
-         * Each TVDSection references TVDSectionPaths, and reciprocally.
-         */
-        private void linkTVDSectionToPath(WaypointGraph waypointGraph) {
-            // Initialize reverse map DetectorNode -> TVDSections
-            var nbDetector = waypointGraph.getNodeCount();
-            var detectorNodeToTVDSections = new ArrayList<HashSet<String>>(nbDetector);
-            for (int i = 0; i < nbDetector; i++)
-                detectorNodeToTVDSections.add(new HashSet<>());
-            for (var tvdEntry : tvdSections.entrySet()) {
-                for (var waypoint : tvdEntry.getValue().waypoints) {
-                    var nodeIndex = waypointGraph.waypointNodeMap.get(waypoint.id).index;
-                    detectorNodeToTVDSections.get(nodeIndex).add(tvdEntry.getKey());
-                }
-            }
-
-            // Compute which TVDSection belongs to each TVDSectionPath
-            for (var tvdSectionPath : waypointGraph.tvdSectionPathMap.values()) {
-                // Set intersection
-                var tvdNodeStart = detectorNodeToTVDSections.get(tvdSectionPath.startNode);
-                for (var tvdID : detectorNodeToTVDSections.get(tvdSectionPath.endNode)) {
-                    if (tvdNodeStart.contains(tvdID)) {
-                        tvdSectionPath.tvdSections.add(tvdID);
-                        tvdSections.get(tvdID).sections.add(tvdSectionPath);
-                    }
+        // Compute which TVDSection belongs to each TVDSectionPath
+        for (var tvdSectionPath : waypointGraph.tvdSectionPathMap.values()) {
+            // Set intersection
+            var tvdNodeStart = detectorNodeToTVDSections.get(tvdSectionPath.startNode);
+            for (var tvdID : detectorNodeToTVDSections.get(tvdSectionPath.endNode)) {
+                if (tvdNodeStart.contains(tvdID)) {
+                    var tvdSection = tvdSections.get(tvdID);
+                    tvdSectionPath.tvdSections.add(tvdSection);
+                    tvdSection.sections.add(tvdSectionPath);
                 }
             }
         }

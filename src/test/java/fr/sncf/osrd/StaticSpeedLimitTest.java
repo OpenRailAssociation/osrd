@@ -4,10 +4,9 @@ import static fr.sncf.osrd.TestTrains.FAST_NO_FRICTION_TRAIN;
 import static org.junit.jupiter.api.Assertions.*;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.OperationalPoint;
-import fr.sncf.osrd.infra.SpeedSection;
+import fr.sncf.osrd.infra.*;
+import fr.sncf.osrd.infra.signaling.Aspect;
+import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.simulation.ArrayChangeLog;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -23,6 +22,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 
@@ -43,11 +43,12 @@ public class StaticSpeedLimitTest {
 
     @Test
     public void simpleSpeedLimitTest() throws InvalidInfraException, SimulationError, InvalidTimetableException {
-        var infraBuilder = new Infra.Builder();
-        var nodeA = infraBuilder.trackGraph.makePlaceholderNode("A");
-        var nodeB = infraBuilder.trackGraph.makePlaceholderNode("B");
+        var trackGraph = new TrackGraph();
+
+        var nodeA = trackGraph.makePlaceholderNode("A");
+        var nodeB = trackGraph.makePlaceholderNode("B");
         var edgeLength = 10000.0;
-        var edge = infraBuilder.trackGraph.makeTrackSection(nodeA.index, nodeB.index, "e1", edgeLength);
+        var edge = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "e1", edgeLength);
 
         // create operational points for the trip
         var opStart = new OperationalPoint("start id");
@@ -61,7 +62,7 @@ public class StaticSpeedLimitTest {
         limits.add(new RangeValue<>(0, 10000, new SpeedSection(false, 30.0)));
         limits.add(new RangeValue<>(5000, 6000, new SpeedSection(false, 25.0)));
 
-        final var infra = infraBuilder.build();
+        final var infra = new Infra(trackGraph, null, null, new HashMap<>(), new HashMap<>());
 
         // create the waypoints the train should go through
         var waypoints = new CryoList<TrainScheduleWaypoint>();

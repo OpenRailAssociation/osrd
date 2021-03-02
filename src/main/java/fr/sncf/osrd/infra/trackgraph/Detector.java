@@ -5,8 +5,8 @@ import fr.sncf.osrd.train.Train;
 
 public class Detector extends Waypoint {
 
-    public Detector(String id) {
-        super(id);
+    public Detector(int index, String id) {
+        super(index, id);
     }
 
     @Override

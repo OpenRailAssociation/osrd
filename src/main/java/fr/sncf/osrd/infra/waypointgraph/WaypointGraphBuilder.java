@@ -17,7 +17,7 @@ public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
         Waypoint,
         TrackSection,
         TrackGraph,
-        WaypointNode,
+        Waypoint,
         TVDSectionPath,
         WaypointGraph
         > {
@@ -31,15 +31,16 @@ public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
     }
 
     @Override
-    protected WaypointNode makeOverlayNode(Waypoint bridgeObject) {
-        var node = new WaypointNode(overlayGraph, overlayGraph.nextNodeIndex());
-        overlayGraph.waypointNodeMap.put(bridgeObject.id, node);
-        return node;
+    protected Waypoint makeOverlayNode(Waypoint waypoint) {
+        overlayGraph.resizeNodes(waypoint.index);
+        overlayGraph.registerNode(waypoint);
+        overlayGraph.waypointNodeMap.put(waypoint.id, waypoint);
+        return waypoint;
     }
 
     @Override
     @SuppressFBWarnings(value = {"BC_UNCONFIRMED_CAST"}, justification = "it's a linter bug, there's no cast")
-    protected TVDSectionPath linkOverlayNodes(OverlayPathEnd<TrackSection, WaypointNode> path) {
+    protected TVDSectionPath linkOverlayNodes(OverlayPathEnd<TrackSection, Waypoint> path) {
         var fullPath = FullPathArray.from(path);
 
         var startNode = fullPath.start.overlayNode;
@@ -60,8 +61,8 @@ public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
         );
 
         // fill the node adjacency lists
-        var startNeighbors = startNode.getNeighbors(startNodeDirection);
-        var endNeighbors = endNode.getNeighbors(endNodeDirection.opposite());
+        var startNeighbors = startNode.getTvdSectionPathNeighbors(startNodeDirection);
+        var endNeighbors = endNode.getTvdSectionPathNeighbors(endNodeDirection.opposite());
 
         startNeighbors.add(tvdSectionPath);
         // don't add the same node twice to the same adjacency list if this path is a loop on the same edge side
