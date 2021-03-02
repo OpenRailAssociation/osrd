@@ -3,14 +3,14 @@ package fr.sncf.osrd.utils.graph.path;
 import fr.sncf.osrd.utils.graph.Edge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
-public class BasicPathChainEnd<EdgeT extends Edge>
-        extends PathChainEnd<EdgeT, BasicPathChainStart<EdgeT>, BasicPathChainEnd<EdgeT>> {
-    public BasicPathChainEnd(
+public class BasicPathEnd<EdgeT extends Edge>
+        extends PathEnd<EdgeT, BasicPathStart<EdgeT>, BasicPathEnd<EdgeT>> {
+    public BasicPathEnd(
             double cost,
             EdgeT edge,
             EdgeDirection direction,
             double position,
-            PathChainNode<EdgeT, BasicPathChainStart<EdgeT>, BasicPathChainEnd<EdgeT>> previous
+            PathNode<EdgeT, BasicPathStart<EdgeT>, BasicPathEnd<EdgeT>> previous
     ) {
         super(cost, edge, direction, position, previous);
     }

@@ -22,7 +22,7 @@ public final class WaypointGraph extends BiNGraph<TVDSectionPath, WaypointNode> 
     }
 
     @Override
-    public List<TVDSectionPath> getNeighbors(
+    public List<TVDSectionPath> getNeighborRels(
             TVDSectionPath edge,
             EdgeEndpoint endpoint
     ) {

@@ -15,7 +15,7 @@ public class RMLRouteGraph extends BiNGraph<RMLTVDSectionPath, RMLRouteWaypoint>
     public final HashMap<UndirectedBiEdgeID, RMLTVDSectionPath> tvdSectionPathMap = new HashMap<>();
 
     @Override
-    public List<RMLTVDSectionPath> getNeighbors(
+    public List<RMLTVDSectionPath> getNeighborRels(
             RMLTVDSectionPath edge,
             EdgeEndpoint endpoint
     ) {

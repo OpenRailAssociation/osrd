@@ -3,10 +3,10 @@ package fr.sncf.osrd.utils.graph.path;
 import fr.sncf.osrd.utils.graph.Edge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
-public abstract class PathChainNode<
+public abstract class PathNode<
         EdgeT extends Edge,
-        PathStartT extends PathChainStart<EdgeT, PathStartT, PathEndT>,
-        PathEndT extends PathChainEnd<EdgeT, PathStartT, PathEndT>
+        PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,
+        PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
         > {
     /** The total cost since the beginning of the path */
     public final double cost;
@@ -23,9 +23,9 @@ public abstract class PathChainNode<
 
     public abstract Type getType();
 
-    public abstract PathChainNode<EdgeT, PathStartT, PathEndT> getPrevious();
+    public abstract PathNode<EdgeT, PathStartT, PathEndT> getPrevious();
 
-    protected PathChainNode(
+    protected PathNode(
             double cost,
             EdgeT edge,
             EdgeDirection direction,
@@ -48,13 +48,13 @@ public abstract class PathChainNode<
 
 
     /** Adds a new intermediary node at the end of a path */
-    public PathChainNode<EdgeT, PathStartT, PathEndT> chain(
+    public PathNode<EdgeT, PathStartT, PathEndT> chain(
             double additionalCost,
             EdgeT edge,
             EdgeDirection direction,
             double position
     ) {
-        assert this.getClass() != PathChainEnd.class;
-        return new PathChainLink<>(cost + additionalCost, edge, direction, position, this);
+        assert this.getClass() != PathEnd.class;
+        return new PathLink<>(cost + additionalCost, edge, direction, position, this);
     }
 }

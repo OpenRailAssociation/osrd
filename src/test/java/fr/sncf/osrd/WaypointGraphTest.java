@@ -10,6 +10,8 @@ import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.TreeMap;
 
@@ -197,6 +199,101 @@ public class WaypointGraphTest {
         assertEquals(1, detectorGraph.waypointNodeMap.get("D2").stopToStartNeighbors.size());
         assertEquals(1, detectorGraph.waypointNodeMap.get("D3").startToStopNeighbors.size());
         assertEquals(1, detectorGraph.waypointNodeMap.get("D3").stopToStartNeighbors.size());
+    }
 
+    /**
+     * Circular track graph connecting both ends of a detector
+     *           A +
+     *            / \
+     *           /   \
+     *          /     \
+     *         /       \
+     *        /         \
+     *       /           \
+     *      /             \
+     *     /       D1      \
+     *  C +________O________+ B
+     */
+    @Test
+    public void selfCircleLoop() throws InvalidInfraException {
+        var trackGraph = new TrackGraph();
+        var nodeA = trackGraph.makePlaceholderNode("A");
+        var nodeB = trackGraph.makePlaceholderNode("B");
+        var nodeC = trackGraph.makePlaceholderNode("C");
+
+        var trackAB = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "track_a_b", 100);
+        var trackBC = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "track_b_c", 100);
+        var trackCA = trackGraph.makeTrackSection(nodeC.index, nodeA.index, "track_c_a", 100);
+
+        linkEdges(trackAB, EdgeEndpoint.END, trackBC, EdgeEndpoint.BEGIN);
+        linkEdges(trackBC, EdgeEndpoint.END, trackCA, EdgeEndpoint.BEGIN);
+        linkEdges(trackCA, EdgeEndpoint.END, trackAB, EdgeEndpoint.BEGIN);
+
+        var detectorsAB = trackAB.waypoints.builder();
+        detectorsAB.add(50, new Detector("D1"));
+        detectorsAB.build();
+
+        // Build DetectorGraph
+        var detectorGraph = WaypointGraph.buildDetectorGraph(trackGraph);
+
+        // Check Detector Graph
+        assertEquals(1, detectorGraph.waypointNodeMap.size());
+        assertEquals(1, detectorGraph.tvdSectionPathMap.size());
+
+        var tvdSectionD1D1 = detectorGraph.getTVDSectionPath(0, 0);
+        assertEquals(300, tvdSectionD1D1.length, 0.1);
+
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D1").startToStopNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D1").stopToStartNeighbors.size());
+    }
+
+    /**
+     * Circular track graph connecting both ends of a detector
+     * If trackLoop is true, the ABC triangle is also a loop.
+     *                 A +
+     *                  / \
+     *                 /   \
+     *                /     \
+     *          D1   /       \
+     *   D +----O---+---------+ B
+     *              C
+     */
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    public void balloonLoop(boolean trackLoop) throws InvalidInfraException {
+        var trackGraph = new TrackGraph();
+        var nodeA = trackGraph.makePlaceholderNode("A");
+        var nodeB = trackGraph.makePlaceholderNode("B");
+        var nodeC = trackGraph.makePlaceholderNode("C");
+        var nodeD = trackGraph.makePlaceholderNode("D");
+
+        final var trackAB = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "track_a_b", 100);
+        final var trackCA = trackGraph.makeTrackSection(nodeC.index, nodeA.index, "track_c_a", 100);
+        final var trackBC = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "track_b_c", 100);
+        final var trackCD = trackGraph.makeTrackSection(nodeC.index, nodeD.index, "track_c_d", 100);
+
+        linkEdges(trackAB, EdgeEndpoint.END, trackBC, EdgeEndpoint.BEGIN);
+        linkEdges(trackCA, EdgeEndpoint.END, trackAB, EdgeEndpoint.BEGIN);
+        if (trackLoop)
+            linkEdges(trackBC, EdgeEndpoint.END, trackCA, EdgeEndpoint.BEGIN);
+        linkEdges(trackCD, EdgeEndpoint.BEGIN, trackBC, EdgeEndpoint.END);
+        linkEdges(trackCD, EdgeEndpoint.BEGIN, trackCA, EdgeEndpoint.BEGIN);
+
+        var detectorsCD = trackCD.waypoints.builder();
+        detectorsCD.add(10, new Detector("D1"));
+        detectorsCD.build();
+
+        // Build DetectorGraph
+        var detectorGraph = WaypointGraph.buildDetectorGraph(trackGraph);
+
+        // Check Detector Graph
+        assertEquals(1, detectorGraph.waypointNodeMap.size());
+        assertEquals(1, detectorGraph.tvdSectionPathMap.size());
+
+        var tvdSectionD1D1 = detectorGraph.getTVDSectionPath(0, 0);
+        assertEquals(320, tvdSectionD1D1.length, 0.1);
+
+        assertEquals(0, detectorGraph.waypointNodeMap.get("D1").startToStopNeighbors.size());
+        assertEquals(1, detectorGraph.waypointNodeMap.get("D1").stopToStartNeighbors.size());
     }
 }

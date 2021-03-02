@@ -1,11 +1,15 @@
 package fr.sncf.osrd.infra.waypointgraph;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.utils.PointValue;
-import fr.sncf.osrd.utils.graph.BiGraphOverlayBuilder;
+import fr.sncf.osrd.utils.graph.UndirectedBiEdgeID;
+import fr.sncf.osrd.utils.graph.overlay.BiGraphOverlayBuilder;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
+import fr.sncf.osrd.utils.graph.overlay.OverlayPathEnd;
+import fr.sncf.osrd.utils.graph.path.FullPathArray;
 
 import java.util.List;
 
@@ -18,7 +22,7 @@ public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
         WaypointGraph
         > {
     public WaypointGraphBuilder(TrackGraph baseGraph, WaypointGraph overlayGraph) {
-        super(overlayGraph.tvdSectionPathMap, baseGraph, overlayGraph);
+        super(baseGraph, overlayGraph, false);
     }
 
     @Override
@@ -34,13 +38,16 @@ public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
     }
 
     @Override
-    protected TVDSectionPath linkOverlayNodes(
-            WaypointNode startNode,
-            EdgeDirection startNodeDirection,
-            WaypointNode endNode,
-            EdgeDirection endNodeDirection,
-            double length
-    ) {
+    @SuppressFBWarnings(value = {"BC_UNCONFIRMED_CAST"}, justification = "it's a linter bug, there's no cast")
+    protected TVDSectionPath linkOverlayNodes(OverlayPathEnd<TrackSection, WaypointNode> path) {
+        var fullPath = FullPathArray.from(path);
+
+        var startNode = fullPath.start.overlayNode;
+        EdgeDirection startNodeDirection = fullPath.start.direction;
+        var endNode = fullPath.end.overlayNode;
+        EdgeDirection endNodeDirection = fullPath.end.direction;
+        double length = path.cost;
+
         var startNodeIndex = startNode.index;
         var endNodeIndex = endNode.index;
 
@@ -53,8 +60,18 @@ public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
         );
 
         // fill the node adjacency lists
-        startNode.getNeighbors(startNodeDirection).add(tvdSectionPath);
-        endNode.getNeighbors(endNodeDirection).add(tvdSectionPath);
+        var startNeighbors = startNode.getNeighbors(startNodeDirection);
+        var endNeighbors = endNode.getNeighbors(endNodeDirection.opposite());
+
+        startNeighbors.add(tvdSectionPath);
+        // don't add the same node twice to the same adjacency list if this path is a loop on the same edge side
+        if (startNeighbors != endNeighbors)
+            endNeighbors.add(tvdSectionPath);
+
+        var tvsSectionID = UndirectedBiEdgeID.from(startNodeIndex, endNodeIndex);
+        var dupTvd = overlayGraph.tvdSectionPathMap.put(tvsSectionID, tvdSectionPath);
+        // the same TVD Section shouldn't appear twice
+        assert dupTvd == null;
         return tvdSectionPath;
     }
 }
