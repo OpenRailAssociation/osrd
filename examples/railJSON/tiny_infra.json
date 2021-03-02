@@ -178,7 +178,7 @@
     {
       "buffer_stops": [
         {
-          "applicableDirections": "REVERSE",
+          "applicable_directions": "REVERSE",
           "id": "buf_stop_b",
           "position": 0
         }
@@ -235,7 +235,7 @@
       ],
       "speed_sections": [
         {
-          "applicableDirections": "BOTH",
+          "applicable_directions": "BOTH",
           "begin": 2000,
           "end": 8000,
           "ref": "speedsection.mid_limit"
@@ -251,7 +251,7 @@
     {
       "buffer_stops": [
         {
-          "applicableDirections": "REVERSE",
+          "applicable_directions": "REVERSE",
           "id": "buf_stop_a",
           "position": 0
         }
@@ -277,7 +277,7 @@
     {
       "buffer_stops": [
         {
-          "applicableDirections": "NORMAL",
+          "applicable_directions": "NORMAL",
           "id": "buf_stop_c",
           "position": 200
         }
