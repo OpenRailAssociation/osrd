@@ -10,7 +10,6 @@ import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
-import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import fr.sncf.osrd.utils.SortedArraySet;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +27,6 @@ public class RouteGraphTest {
      *         R2
      */
     @Test
-    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST_OF_RETURN_VALUE"})
     public void simpleRouteGraphBuild() throws InvalidInfraException {
         // Craft trackGraph
         var trackGraph = new TrackGraph();
@@ -59,26 +57,24 @@ public class RouteGraphTest {
         var waypointsR1 = new ArrayList<Waypoint>(Arrays.asList(d1, d2, d3));
         var tvdSectionsR1 = new SortedArraySet<TVDSection>();
         tvdSectionsR1.add(tvdSection123);
-        routeGraphBuilder.makeRoute("R1", waypointsR1, tvdSectionsR1);
+        var route1 = routeGraphBuilder.makeRoute("R1", waypointsR1, tvdSectionsR1);
 
         var waypointsR2 = new ArrayList<Waypoint>(Arrays.asList(d3, d2, d1));
         var tvdSectionsR2 = new SortedArraySet<TVDSection>();
         tvdSectionsR2.add(tvdSection123);
-        routeGraphBuilder.makeRoute("R2", waypointsR2, tvdSectionsR2);
+        var route2 = routeGraphBuilder.makeRoute("R2", waypointsR2, tvdSectionsR2);
 
         var routeGraph =  routeGraphBuilder.build();
 
         assertEquals(2, routeGraph.getEdgeCount());
 
         // Check R1
-        var route1 = routeGraph.getEdge(0);
         assertEquals(35, route1.length, 0.1);
         assertEquals(2, route1.tvdSectionPaths.size());
         assertEquals(d1.index, route1.tvdSectionPaths.get(0).startNode);
         assertEquals(d3.index, route1.tvdSectionPaths.get(1).endNode);
 
         // Check R2
-        var route2 = routeGraph.getEdge(1);
         assertEquals(35, route2.length, 0.1);
         assertEquals(2, route2.tvdSectionPaths.size());
         assertEquals(d3.index, route2.tvdSectionPaths.get(0).endNode);
