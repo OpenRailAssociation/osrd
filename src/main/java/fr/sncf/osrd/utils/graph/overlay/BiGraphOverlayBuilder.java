@@ -95,7 +95,6 @@ public abstract class BiGraphOverlayBuilder<
                     linkOverlayNodes(new OverlayPathEnd<>(
                             length, baseEdge, STOP_TO_START, prevPos, prevNode,
                             new OverlayPathStart<>(baseEdge, STOP_TO_START, curPos, curNode)));
-
             }
         }
 
