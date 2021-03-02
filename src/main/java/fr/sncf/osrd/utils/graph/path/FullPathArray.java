@@ -8,19 +8,19 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public final class GraphPath<
+public class FullPathArray<
         EdgeT extends Edge,
-        PathStartT extends PathChainStart<EdgeT, PathStartT, PathEndT>,
-        PathEndT extends PathChainEnd<EdgeT, PathStartT, PathEndT>
+        PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,
+        PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
         > {
-    public final ArrayList<PathChainNode<EdgeT, PathStartT, PathEndT>> pathNodes;
+    public final ArrayList<PathNode<EdgeT, PathStartT, PathEndT>> pathNodes;
 
     public final PathStartT start;
     public final PathEndT end;
 
     /** This constructor is not public on purpose, it's meant to be used by the fromChainEnd */
-    private GraphPath(
-            ArrayList<PathChainNode<EdgeT, PathStartT, PathEndT>> pathNodes,
+    protected FullPathArray(
+            ArrayList<PathNode<EdgeT, PathStartT, PathEndT>> pathNodes,
             PathStartT start,
             PathEndT end
     ) {
@@ -33,18 +33,18 @@ public final class GraphPath<
     @SuppressWarnings("unchecked")
     public static <
             EdgeT extends Edge,
-            PathStartT extends PathChainStart<EdgeT, PathStartT, PathEndT>,
-            PathEndT extends PathChainEnd<EdgeT, PathStartT, PathEndT>
-            > GraphPath<EdgeT, PathStartT, PathEndT> from(PathEndT chainEnd) {
-        var elements = new ArrayDeque<PathChainNode<EdgeT, PathStartT, PathEndT>>();
-        for (PathChainNode<EdgeT, PathStartT, PathEndT> cur = chainEnd; cur != null; cur = cur.getPrevious())
+            PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,
+            PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
+            > FullPathArray<EdgeT, PathStartT, PathEndT> from(PathEndT chainEnd) {
+        var elements = new ArrayDeque<PathNode<EdgeT, PathStartT, PathEndT>>();
+        for (PathNode<EdgeT, PathStartT, PathEndT> cur = chainEnd; cur != null; cur = cur.getPrevious())
             elements.addFirst(cur);
 
         // cast the first path node to its correct type
         var firstNode = elements.getFirst();
         var chainStart = (PathStartT) firstNode;
 
-        return new GraphPath<>(new ArrayList<>(elements), chainStart, chainEnd);
+        return new FullPathArray<>(new ArrayList<>(elements), chainStart, chainEnd);
     }
 
     public interface PathSegmentCallback<EdgeT> {
@@ -53,7 +53,7 @@ public final class GraphPath<
 
     /** Builds the segments defined by the list of nodes */
     public void forAllSegments(PathSegmentCallback<EdgeT> callback) {
-        PathChainNode<EdgeT, PathStartT, PathEndT> lastNode = pathNodes.get(0);
+        PathNode<EdgeT, PathStartT, PathEndT> lastNode = pathNodes.get(0);
         for (int i = 1; i < pathNodes.size(); i++) {
             var node = pathNodes.get(i);
             var lastEdge = lastNode.edge;

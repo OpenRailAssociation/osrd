@@ -1,6 +1,6 @@
 package fr.sncf.osrd.utils.graph;
 
-public abstract class BiNEdge<SelfT extends BiNEdge<SelfT>> extends Edge implements IBiNeighbor<SelfT> {
+public abstract class BiNEdge<SelfT extends BiNEdge<SelfT>> extends Edge implements IBiNeighborRel<SelfT> {
     protected BiNEdge(int index, int startNode, int endNode, double length) {
         super(index, length);
         this.startNode = startNode;
@@ -34,5 +34,10 @@ public abstract class BiNEdge<SelfT extends BiNEdge<SelfT>> extends Edge impleme
             return EdgeDirection.START_TO_STOP;
         assert intersectionNode == endNode;
         return EdgeDirection.STOP_TO_START;
+    }
+
+    @Override
+    public boolean isBidirectional() {
+        return true;
     }
 }

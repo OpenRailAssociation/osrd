@@ -4,20 +4,20 @@ import fr.sncf.osrd.utils.graph.Edge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 /** A link to a previous path chain node, which defines a path section. */
-public class PathChainLink<
+public class PathLink<
         EdgeT extends Edge,
-        PathStartT extends PathChainStart<EdgeT, PathStartT, PathEndT>,
-        PathEndT extends PathChainEnd<EdgeT, PathStartT, PathEndT>
+        PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,
+        PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
         >
-        extends PathChainNode<EdgeT, PathStartT, PathEndT> {
-    public final PathChainNode<EdgeT, PathStartT, PathEndT> previous;
+        extends PathNode<EdgeT, PathStartT, PathEndT> {
+    public final PathNode<EdgeT, PathStartT, PathEndT> previous;
 
-    protected PathChainLink(
+    protected PathLink(
             double cost,
             EdgeT edge,
             EdgeDirection direction,
             double position,
-            PathChainNode<EdgeT, PathStartT, PathEndT> previous
+            PathNode<EdgeT, PathStartT, PathEndT> previous
     ) {
         super(cost, edge, direction, position);
         this.previous = previous;
@@ -29,7 +29,7 @@ public class PathChainLink<
     }
 
     @Override
-    public final PathChainNode<EdgeT, PathStartT, PathEndT> getPrevious() {
+    public final PathNode<EdgeT, PathStartT, PathEndT> getPrevious() {
         return previous;
     }
 }

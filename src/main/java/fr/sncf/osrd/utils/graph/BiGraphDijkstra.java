@@ -2,9 +2,9 @@ package fr.sncf.osrd.utils.graph;
 
 import static fr.sncf.osrd.utils.graph.EdgeDirection.*;
 
-import fr.sncf.osrd.utils.graph.path.PathChainEnd;
-import fr.sncf.osrd.utils.graph.path.PathChainNode;
-import fr.sncf.osrd.utils.graph.path.PathChainStart;
+import fr.sncf.osrd.utils.graph.path.PathEnd;
+import fr.sncf.osrd.utils.graph.path.PathNode;
+import fr.sncf.osrd.utils.graph.path.PathStart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,23 +12,23 @@ import java.util.*;
 
 public abstract class BiGraphDijkstra<
         EdgeT extends Edge,
-        PathStartT extends PathChainStart<EdgeT, PathStartT, PathEndT>,
-        PathEndT extends PathChainEnd<EdgeT, PathStartT, PathEndT>
+        PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,
+        PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
         > {
     static final Logger logger = LoggerFactory.getLogger(BiGraphDijkstra.class);
 
     public interface GoalChecker<
             EdgeT extends Edge,
-            PathStartT extends PathChainStart<EdgeT, PathStartT, PathEndT>,
-            PathEndT extends PathChainEnd<EdgeT, PathStartT, PathEndT>
+            PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,
+            PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
             > {
-        PathEndT findGoalOnPathEdge(PathChainNode<EdgeT, PathStartT, PathEndT> node);
+        PathEndT findGoalOnPathEdge(PathNode<EdgeT, PathStartT, PathEndT> node);
     }
 
     public interface GoalReachedCallback<
             EdgeT extends Edge,
-            PathStartT extends PathChainStart<EdgeT, PathStartT, PathEndT>,
-            PathEndT extends PathChainEnd<EdgeT, PathStartT, PathEndT>
+            PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,
+            PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
             > {
         boolean onGoalReached(PathEndT pathToGoal);
     }
@@ -37,8 +37,8 @@ public abstract class BiGraphDijkstra<
     @SuppressWarnings("unchecked")
     public static <
             EdgeT extends Edge,
-            PathStartT extends PathChainStart<EdgeT, PathStartT, PathEndT>,
-            PathEndT extends PathChainEnd<EdgeT, PathStartT, PathEndT>
+            PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,
+            PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
             > int findPaths(
                     BiGraph<EdgeT> graph,
                     Collection<PathStartT> startingPoints,
@@ -47,7 +47,7 @@ public abstract class BiGraphDijkstra<
                     GoalReachedCallback<EdgeT, PathStartT, PathEndT> goalReachedCallback
     ) {
         int foundPaths = 0;
-        var queue = new PriorityQueue<PathChainNode<EdgeT, PathStartT, PathEndT>>(
+        var queue = new PriorityQueue<PathNode<EdgeT, PathStartT, PathEndT>>(
                 Comparator.comparing(path -> path.cost));
         queue.addAll(startingPoints);
 
@@ -58,7 +58,7 @@ public abstract class BiGraphDijkstra<
             var currentPath = queue.poll();
 
             // if the candidate is an end edge, send it to the caller and stop exploring this branch
-            if (currentPath.getType() == PathChainNode.Type.END) {
+            if (currentPath.getType() == PathNode.Type.END) {
                 foundPaths++;
                 if (goalReachedCallback.onGoalReached((PathEndT) currentPath))
                     continue;
@@ -94,7 +94,7 @@ public abstract class BiGraphDijkstra<
             var addedCost = costFunction.evaluate(currentEdge, currentPath.position, currentEdgeLastPosition);
 
             // explore all the neighbors of the current candidate, creating new candidate paths
-            for (var neighbor : graph.getEndNeighbors(currentEdge, currentDirection)) {
+            for (var neighbor : graph.getEndNeighborRels(currentEdge, currentDirection)) {
                 var neighborEdge = neighbor.getEdge(currentEdge, currentDirection);
                 var neighborDirection = neighbor.getDirection(currentEdge, currentDirection);
 

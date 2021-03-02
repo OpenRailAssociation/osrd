@@ -10,7 +10,7 @@ import fr.sncf.osrd.utils.graph.ApplicableDirections;
 import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.railjson.schema.RJSTrackSection.EndpointID;
 import fr.sncf.osrd.infra.railjson.schema.RJSTrackSectionLink;
-import fr.sncf.osrd.utils.graph.IBiNeighbor;
+import fr.sncf.osrd.utils.graph.IBiNeighborRel;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
@@ -18,19 +18,22 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class NetRelation implements IBiNeighbor<TrackNetElement> {
+public class NetRelation implements IBiNeighborRel<TrackNetElement> {
 
+    public final ApplicableDirections navigability;
     public final EdgeEndpoint beginEndpoint;
     public final TrackNetElement begin;
     public final EdgeEndpoint endEndpoint;
     public final TrackNetElement end;
 
     protected NetRelation(
+            ApplicableDirections navigability,
             TrackNetElement begin,
             EdgeEndpoint beginEndpoint,
             TrackNetElement end,
             EdgeEndpoint endEndpoint
     ) {
+        this.navigability = navigability;
         this.beginEndpoint = beginEndpoint;
         this.endEndpoint = endEndpoint;
         this.begin = begin;
@@ -49,8 +52,13 @@ public class NetRelation implements IBiNeighbor<TrackNetElement> {
         }
         var beginTrack = (TrackNetElement) begin;
         var endTrack = (TrackNetElement) end;
-        return new NetRelation(beginTrack, rjsTrackSectionLink.begin.endpoint,
-                               endTrack, rjsTrackSectionLink.end.endpoint);
+        return new NetRelation(
+                rjsTrackSectionLink.navigability,
+                beginTrack,
+                rjsTrackSectionLink.begin.endpoint,
+                endTrack,
+                rjsTrackSectionLink.end.endpoint
+        );
     }
 
     /** Parse a RailML intrinsicCoord */
@@ -118,5 +126,10 @@ public class NetRelation implements IBiNeighbor<TrackNetElement> {
         if (originEdge == begin)
             return endEndpoint == BEGIN ? EdgeDirection.START_TO_STOP : EdgeDirection.STOP_TO_START;
         return beginEndpoint == BEGIN ? EdgeDirection.START_TO_STOP : EdgeDirection.STOP_TO_START;
+    }
+
+    @Override
+    public boolean isBidirectional() {
+        return navigability == ApplicableDirections.BOTH;
     }
 }

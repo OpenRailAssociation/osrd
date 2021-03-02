@@ -1,7 +1,5 @@
 package fr.sncf.osrd.train;
 
-import static fr.sncf.osrd.utils.graph.EdgeDirection.*;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.utils.graph.*;
@@ -10,13 +8,10 @@ import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.utils.CryoList;
 import fr.sncf.osrd.utils.Freezable;
 import fr.sncf.osrd.utils.TopoLocation;
-import fr.sncf.osrd.utils.graph.path.BasicPathChainEnd;
-import fr.sncf.osrd.utils.graph.path.BasicPathChainStart;
-import fr.sncf.osrd.utils.graph.path.GraphPath;
-import fr.sncf.osrd.utils.graph.path.PathChainStart;
+import fr.sncf.osrd.utils.graph.path.BasicPathStart;
+import fr.sncf.osrd.utils.graph.path.FullPathArray;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 public final class TrainPath implements Freezable {
     public final CryoList<PathSection> sections = new CryoList<>();
@@ -68,9 +63,9 @@ public final class TrainPath implements Freezable {
         assert startPosition.begin == startPosition.end;
         assert goalPosition.begin == goalPosition.end;
 
-        var startingPoints = new ArrayList<BasicPathChainStart<TrackSection>>();
+        var startingPoints = new ArrayList<BasicPathStart<TrackSection>>();
         for (var direction : EdgeDirection.values())
-            startingPoints.add(new BasicPathChainStart<>(0, start.edge, direction, startPosition.begin));
+            startingPoints.add(new BasicPathStart<>(0, start.edge, direction, startPosition.begin));
 
         var costFunction = new DistCostFunction<TrackSection>();
         var goalChecker = new BasicGoalChecker<>(costFunction, goal.edge, goalPosition.begin);
@@ -80,7 +75,7 @@ public final class TrainPath implements Freezable {
                 costFunction,
                 goalChecker,
                 (pathToGoal) -> {
-                    var path = GraphPath.from(pathToGoal);
+                    var path = FullPathArray.from(pathToGoal);
                     path.forAllSegments(this::addEdge);
                     return false;
                 });

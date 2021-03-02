@@ -11,17 +11,17 @@ public abstract class BiGraph<EdgeT extends Edge> implements IEdgeGraph<EdgeT> {
      * @param endpoint the end of the edge to consider
      * @return the list of neighbors at this end
      */
-    public abstract List<? extends IBiNeighbor<EdgeT>> getNeighbors(EdgeT edge, EdgeEndpoint endpoint);
+    public abstract List<? extends IBiNeighborRel<EdgeT>> getNeighborRels(EdgeT edge, EdgeEndpoint endpoint);
 
     /**
      * The list of reachable edges at the start of the course over the edge.
      * @param dir the course direction
      * @return the list of reachable edges at the start of the course over the edge
      */
-    public List<? extends IBiNeighbor<EdgeT>> getStartNeighbors(EdgeT edge, EdgeDirection dir) {
+    public List<? extends IBiNeighborRel<EdgeT>> getStartNeighborRels(EdgeT edge, EdgeDirection dir) {
         if (dir == EdgeDirection.START_TO_STOP)
-            return getNeighbors(edge, EdgeEndpoint.BEGIN);
-        return getNeighbors(edge, EdgeEndpoint.END);
+            return getNeighborRels(edge, EdgeEndpoint.BEGIN);
+        return getNeighborRels(edge, EdgeEndpoint.END);
     }
 
     /**
@@ -29,8 +29,8 @@ public abstract class BiGraph<EdgeT extends Edge> implements IEdgeGraph<EdgeT> {
      * @param dir the course direction
      * @return the list of reachable edges at the end of the course over the edge
      */
-    public List<? extends IBiNeighbor<EdgeT>> getEndNeighbors(EdgeT edge, EdgeDirection dir) {
-        return getStartNeighbors(edge, dir.opposite());
+    public List<? extends IBiNeighborRel<EdgeT>> getEndNeighborRels(EdgeT edge, EdgeDirection dir) {
+        return getStartNeighborRels(edge, dir.opposite());
     }
 
     @Override

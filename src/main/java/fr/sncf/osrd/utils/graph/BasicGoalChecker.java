@@ -1,13 +1,13 @@
 package fr.sncf.osrd.utils.graph;
 
-import fr.sncf.osrd.utils.graph.path.BasicPathChainEnd;
-import fr.sncf.osrd.utils.graph.path.BasicPathChainStart;
-import fr.sncf.osrd.utils.graph.path.PathChainNode;
+import fr.sncf.osrd.utils.graph.path.BasicPathEnd;
+import fr.sncf.osrd.utils.graph.path.BasicPathStart;
+import fr.sncf.osrd.utils.graph.path.PathNode;
 
 public class BasicGoalChecker<EdgeT extends Edge> implements BiGraphDijkstra.GoalChecker<
         EdgeT,
-        BasicPathChainStart<EdgeT>,
-        BasicPathChainEnd<EdgeT>
+        BasicPathStart<EdgeT>,
+        BasicPathEnd<EdgeT>
         > {
 
     public final CostFunction<EdgeT> costFunction;
@@ -22,13 +22,13 @@ public class BasicGoalChecker<EdgeT extends Edge> implements BiGraphDijkstra.Goa
     }
 
     @Override
-    public BasicPathChainEnd<EdgeT> findGoalOnPathEdge(
-            PathChainNode<EdgeT, BasicPathChainStart<EdgeT>, BasicPathChainEnd<EdgeT>> pathNode
+    public BasicPathEnd<EdgeT> findGoalOnPathEdge(
+            PathNode<EdgeT, BasicPathStart<EdgeT>, BasicPathEnd<EdgeT>> pathNode
     ) {
         if (!pathNode.isEdgePositionAhead(goalEdge, goalPosition))
             return null;
 
         var addedCost = costFunction.evaluate(goalEdge, pathNode.position, goalPosition);
-        return new BasicPathChainEnd<>(addedCost, goalEdge, pathNode.direction, goalPosition, pathNode);
+        return new BasicPathEnd<>(addedCost, goalEdge, pathNode.direction, goalPosition, pathNode);
     }
 }

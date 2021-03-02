@@ -5,7 +5,6 @@ import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.utils.CryoMap;
 import fr.sncf.osrd.utils.graph.BiNGraph;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-import fr.sncf.osrd.utils.graph.IBiNeighbor;
 
 import java.util.List;
 
@@ -71,7 +70,7 @@ public final class TrackGraph extends BiNGraph<TrackSection, TrackNode> {
     }
 
     @Override
-    public List<TrackSection> getNeighbors(TrackSection edge, EdgeEndpoint endpoint) {
+    public List<TrackSection> getNeighborRels(TrackSection edge, EdgeEndpoint endpoint) {
         return edge.getNeighbors(endpoint);
     }
 }
