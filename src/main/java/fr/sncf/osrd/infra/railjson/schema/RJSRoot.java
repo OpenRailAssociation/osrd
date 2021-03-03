@@ -20,7 +20,6 @@ public class RJSRoot {
             .Builder()
             .add(ID.Adapter.FACTORY)
             .add(new RJSAspect.Adapter())
-            .add(RJSSignalFunction.ArgumentRef.Adapter.FACTORY)
             .add(RJSSignalExpr.adapter)
             .add(RJSRouteWaypoint.adapter)
             .build()

@@ -1,6 +1,7 @@
 package fr.sncf.osrd.infra.signaling;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.simulation.Entity;
 import fr.sncf.osrd.simulation.EntityType;
 import fr.sncf.osrd.utils.SortedArraySet;
@@ -11,28 +12,37 @@ import java.util.*;
 public class SignalFunction {
     public final String functionName;
 
-    /** A collection of expressions that must be evaluated */
-    public final SignalExpr[] rules;
-
     public final String[] argumentNames;
-    public final EntityType[] argumentTypes;
+    public final SignalExprType[] argumentTypes;
 
-    /** Creates a new signal state evaluation function */
-    public SignalFunction(
+    public final SignalExprType returnsType;
+
+    public final SignalExpr body;
+
+    private SignalFunction(
             String functionName,
-            SignalExpr[] rules,
             String[] argumentNames,
-            EntityType[] argumentTypes
+            SignalExprType[] argumentTypes,
+            SignalExprType returnsType,
+            SignalExpr body
     ) {
         this.functionName = functionName;
         this.argumentNames = argumentNames;
         this.argumentTypes = argumentTypes;
-        this.rules = rules;
+        this.returnsType = returnsType;
+        this.body = body;
     }
 
-    /** Evaluates the current aspect of the signal */
-    public void evaluate(Entity[] arguments, SortedArraySet<Aspect> aspects) {
-        for (var rule : rules)
-            rule.evaluate(arguments, aspects);
+    /** Creates and type checks a new signal state evaluation function */
+    public static SignalFunction from(
+            String functionName,
+            String[] argumentNames,
+            SignalExprType[] argumentTypes,
+            SignalExprType returnsType,
+            SignalExpr body
+    ) throws InvalidInfraException {
+        var function = new SignalFunction(functionName, argumentNames, argumentTypes, returnsType, body);
+        function.body.typeCheck(function);
+        return function;
     }
 }
