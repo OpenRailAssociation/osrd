@@ -1,9 +1,11 @@
 package fr.sncf.osrd.infra.signaling;
 
 public final class Aspect implements Comparable<Aspect> {
+    public final int index;
     public final String id;
 
-    public Aspect(String id) {
+    public Aspect(int index, String id) {
+        this.index = index;
         this.id = id;
     }
 
