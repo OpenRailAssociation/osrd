@@ -11,6 +11,7 @@ import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSRoot {
@@ -64,7 +65,7 @@ public class RJSRoot {
 
     /** The list of function definitions */
     @Json(name = "signal_functions")
-    public final Collection<RJSSignalFunction> signalFunctions;
+    public final List<RJSSignalFunction> signalFunctions;
 
     /** Create a new serialized RailJSON file */
     public RJSRoot(
@@ -76,7 +77,7 @@ public class RJSRoot {
             Collection<RJSRoute> routes,
             Collection<RJSSpeedSection> speedSections,
             Collection<RJSAspect> aspects,
-            Collection<RJSSignalFunction> signalFunctions
+            List<RJSSignalFunction> signalFunctions
     ) {
         this.trackSections = trackSections;
         this.trackSectionLinks = trackSectionLinks;

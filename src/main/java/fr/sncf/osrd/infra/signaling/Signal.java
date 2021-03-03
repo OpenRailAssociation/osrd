@@ -3,6 +3,7 @@ package fr.sncf.osrd.infra.signaling;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.StatefulInfraObject;
 import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.utils.SortedArraySet;
 
 import java.util.ArrayList;
 
@@ -27,25 +28,31 @@ public class Signal implements StatefulInfraObject<Signal.State> {
     /** The state of the signal is the actual entity which interacts with the rest of the infrastructure */
     public static final class State extends Entity {
         public final Signal signal;
-        public final ArrayList<Aspect> aspects;
+        public final SortedArraySet<Aspect> aspects;
         public final Entity[] arguments;
 
         State(Signal signal, Entity[] arguments) {
             super(EntityType.SIGNAL, signal.id);
             this.signal = signal;
             this.arguments = arguments;
-            this.aspects = new ArrayList<>();
+            this.aspects = new SortedArraySet<>();
+        }
+
+        private void update() {
+            aspects.clear();
+            signal.function.evaluate(arguments, aspects);
         }
 
         @Override
         public void initialize() {
-
+            update();
         }
 
         @Override
         protected void onTimelineEventUpdate(
                 Simulation sim, TimelineEvent<?> event, TimelineEvent.State state
         ) throws SimulationError {
+            update();
         }
     }
 }
