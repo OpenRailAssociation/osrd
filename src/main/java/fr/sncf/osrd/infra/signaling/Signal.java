@@ -7,7 +7,7 @@ import fr.sncf.osrd.simulation.*;
 import java.util.ArrayList;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public class Signal extends StatefulInfraObject<Signal.State> {
+public class Signal implements StatefulInfraObject<Signal.State> {
     public final String id;
     public final SignalFunction function;
     public final String[] arguments;

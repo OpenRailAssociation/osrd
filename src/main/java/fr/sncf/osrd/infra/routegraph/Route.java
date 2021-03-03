@@ -1,14 +1,15 @@
 package fr.sncf.osrd.infra.routegraph;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.StatefulInfraObject;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
+import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.utils.graph.BiNEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.List;
 
-public class Route extends BiNEdge<Route> {
-    @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
+public class Route extends BiNEdge<Route> implements StatefulInfraObject<Route.State> {
     public final String id;
     /** List of tvdSectionPath forming the route */
     public final List<TVDSectionPath> tvdSectionsPath;
@@ -32,5 +33,34 @@ public class Route extends BiNEdge<Route> {
         graph.registerEdge(this);
         this.id = id;
         this.tvdSectionsPath = tvdSectionsPath;
+    }
+
+    @Override
+    public State newState() {
+        return new State(this);
+    }
+
+    /** The state of the route is the actual entity which interacts with the rest of the infrastructure */
+    @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
+    public static final class State extends Entity {
+        public final Route route;
+        public RouteStatus status;
+
+        State(Route route) {
+            super(EntityType.ROUTE, route.id);
+            this.route = route;
+            this.status = RouteStatus.FREE;
+        }
+
+        @Override
+        public void initialize() {
+
+        }
+
+        @Override
+        protected void onTimelineEventUpdate(
+                Simulation sim, TimelineEvent<?> event, TimelineEvent.State state
+        ) throws SimulationError {
+        }
     }
 }

@@ -23,16 +23,25 @@ import java.util.HashMap;
 
 public class RouteGraphTest {
 
-    private static void checkRoute(Route route, int expectedTvdSectionPath, double expectedLength, Waypoint expectedStart, Waypoint expectedEnd) {
+    private static void checkRoute(
+            Route route,
+            int expectedTvdSectionPath,
+            double expectedLength,
+            Waypoint expectedStart,
+            Waypoint expectedEnd
+    ) {
         assertEquals(expectedLength, route.length, 0.1);
         assertEquals(expectedTvdSectionPath, route.tvdSectionsPath.size());
-        var start = route.tvdSectionsPathDirection.get(0) == EdgeDirection.START_TO_STOP ?
-                route.tvdSectionsPath.get(0).startNode : route.tvdSectionsPath.get(0).endNode;
+
+        var start = route.tvdSectionsPath.get(0).startNode;
+        if (route.tvdSectionsPathDirection.get(0) == EdgeDirection.STOP_TO_START)
+             start = route.tvdSectionsPath.get(0).endNode;
         assertEquals(expectedStart.index, start);
 
-        var last_index = expectedTvdSectionPath - 1;
-        var end = route.tvdSectionsPathDirection.get(last_index) == EdgeDirection.START_TO_STOP ?
-                route.tvdSectionsPath.get(last_index).endNode : route.tvdSectionsPath.get(last_index).startNode;
+        var lastIndex = expectedTvdSectionPath - 1;
+        var end = route.tvdSectionsPath.get(lastIndex).endNode;
+        if (route.tvdSectionsPathDirection.get(lastIndex) == EdgeDirection.STOP_TO_START)
+             end = route.tvdSectionsPath.get(lastIndex).startNode;
         assertEquals(expectedEnd.index, end);
     }
 
@@ -112,29 +121,29 @@ public class RouteGraphTest {
         var nodeD = trackGraph.makePlaceholderNode("D");
         var fooA = trackGraph.makeTrackSection(nodeA.index, nodeC.index, "foo_a", 75);
         var fooB = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "foo_b", 75);
-        var track= trackGraph.makeTrackSection(nodeC.index, nodeD.index, "track", 100);
+        var track = trackGraph.makeTrackSection(nodeC.index, nodeD.index, "track", 100);
 
         linkEdges(fooA, EdgeEndpoint.END, track, EdgeEndpoint.BEGIN);
         linkEdges(fooB, EdgeEndpoint.END, track, EdgeEndpoint.BEGIN);
 
         var index = 0;
-        var bsA = new BufferStop(index++, "BS_A");
-        var d1 = new Detector(index++, "D1");
+        final var bsA = new BufferStop(index++, "BS_A");
+        final var d1 = new Detector(index++, "D1");
         var detectorBuilder = fooA.waypoints.builder();
         detectorBuilder.add(0, bsA);
         detectorBuilder.add(40, d1);
         detectorBuilder.build();
 
-        var bsB = new BufferStop(index++, "BS_B");
-        var d2 = new Detector(index++, "D2");
+        final var bsB = new BufferStop(index++, "BS_B");
+        final var d2 = new Detector(index++, "D2");
         detectorBuilder = fooB.waypoints.builder();
         detectorBuilder.add(0, bsB);
         detectorBuilder.add(40, d2);
         detectorBuilder.build();
 
-        var d3 = new Detector(index++, "D3");
-        var d4 = new Detector(index++, "D4");
-        var bsD = new BufferStop(index++, "BS_D");
+        final var d3 = new Detector(index++, "D3");
+        final var d4 = new Detector(index++, "D4");
+        final var bsD = new BufferStop(index++, "BS_D");
         detectorBuilder = track.waypoints.builder();
         detectorBuilder.add(25, d3);
         detectorBuilder.add(75, d4);
