@@ -19,7 +19,6 @@ import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSTrackRange;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.signaling.*;
-import fr.sncf.osrd.simulation.EntityType;
 import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.infra.trackgraph.*;
@@ -305,7 +304,7 @@ public class RailJSONParser {
             return new SignalExpr.AndExpr(parseInfixOp(aspectsMap, arguments, (RJSSignalExpr.InfixOpExpr) expr));
         if (type == RJSSignalExpr.NotExpr.class) {
             var notExpr = (RJSSignalExpr.NotExpr) expr;
-            return new SignalExpr.NotExpr(parseSignalExpr(aspectsMap, arguments, notExpr.expression));
+            return new SignalExpr.NotExpr(parseSignalExpr(aspectsMap, arguments, notExpr.expr));
         }
 
         // value constructors
@@ -330,7 +329,7 @@ public class RailJSONParser {
         // signals
         if (type == RJSSignalExpr.SignalAspectCheckExpr.class) {
             var signalExpr = (RJSSignalExpr.SignalAspectCheckExpr) expr;
-            var aspect = aspectsMap.get(signalExpr.hasAspect.id);
+            var aspect = aspectsMap.get(signalExpr.aspect.id);
             var signal = parseSignalExpr(aspectsMap, arguments, signalExpr.signal);
             return new SignalExpr.SignalAspectCheckExpr(signal, aspect);
         }
@@ -343,10 +342,10 @@ public class RailJSONParser {
             RJSSignalFunction.Argument[] arguments,
             RJSSignalExpr.InfixOpExpr expr
     ) throws InvalidInfraException {
-        var arity = expr.expressions.length;
+        var arity = expr.exprs.length;
         var expressions = new SignalExpr[arity];
         for (int i = 0; i < arity; i++)
-            expressions[i] = parseSignalExpr(aspectsMap, arguments, expr.expressions[i]);
+            expressions[i] = parseSignalExpr(aspectsMap, arguments, expr.exprs[i]);
         return expressions;
     }
 }
