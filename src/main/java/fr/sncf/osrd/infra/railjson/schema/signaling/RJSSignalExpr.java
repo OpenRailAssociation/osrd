@@ -107,30 +107,30 @@ public abstract class RJSSignalExpr {
     // region BOOLEAN_LOGIC
 
     public abstract static class InfixOpExpr extends RJSSignalExpr {
-        public final RJSSignalExpr[] expressions;
+        public final RJSSignalExpr[] exprs;
 
-        public InfixOpExpr(RJSSignalExpr[] expressions) {
-            this.expressions = expressions;
+        public InfixOpExpr(RJSSignalExpr[] exprs) {
+            this.exprs = exprs;
         }
     }
 
     public static final class OrExpr extends InfixOpExpr {
-        public OrExpr(RJSSignalExpr[] expressions) {
-            super(expressions);
+        public OrExpr(RJSSignalExpr[] exprs) {
+            super(exprs);
         }
     }
 
     public static final class AndExpr extends InfixOpExpr {
-        public AndExpr(RJSSignalExpr[] expressions) {
-            super(expressions);
+        public AndExpr(RJSSignalExpr[] exprs) {
+            super(exprs);
         }
     }
 
     public static final class NotExpr extends RJSSignalExpr {
-        public final RJSSignalExpr expression;
+        public final RJSSignalExpr expr;
 
-        public NotExpr(RJSSignalExpr expression) {
-            this.expression = expression;
+        public NotExpr(RJSSignalExpr expr) {
+            this.expr = expr;
         }
     }
 
@@ -201,10 +201,15 @@ public abstract class RJSSignalExpr {
     }
 
     public static final class EnumMatchExpr extends RJSSignalExpr {
-        @Json(name = "branches")
+        public final RJSSignalExpr expr;
+
         public final Map<String, RJSSignalExpr> branches;
 
-        public EnumMatchExpr(Map<String, RJSSignalExpr> branches) {
+        public EnumMatchExpr(
+                RJSSignalExpr expr,
+                Map<String, RJSSignalExpr> branches
+        ) {
+            this.expr = expr;
             this.branches = branches;
         }
     }
