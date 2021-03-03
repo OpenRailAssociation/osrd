@@ -3,7 +3,6 @@ package fr.sncf.osrd.infra.trackgraph;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.TrackSensor;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
-import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.Node;
 
