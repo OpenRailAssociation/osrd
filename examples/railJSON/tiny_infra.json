@@ -98,19 +98,16 @@
           "name": "aspects"
         }
       ],
-      "returns_types": "ASPECT_SET",
+      "return_type": "ASPECT_SET",
       "body": {
         "type": "condition",
         "if": {
-          "type": "aspectset_contains",
-          "aspects": {
+          "type": "aspect_set_contains",
+          "aspect_set": {
             "type": "argument_ref",
             "argument_name": "aspects"
           },
-          "aspect": {
-            "type": "aspect",
-            "aspect": "RED"
-          }
+          "aspect": "RED"
         },
         "then": {
           "type": "aspect_set",
@@ -123,15 +120,12 @@
         "else": {
           "type": "condition",
           "if": {
-            "type": "aspectset_contains",
-            "aspects": {
+            "type": "aspect_set_contains",
+            "aspect_set": {
               "type": "argument_ref",
               "argument_name": "aspects"
             },
-            "aspect": {
-              "type": "aspect",
-              "aspect": "YELLOW"
-            }
+            "aspect": "YELLOW"
           },
           "then": {
             "type": "aspect_set",
@@ -160,7 +154,7 @@
           "name": "route"
         }
       ],
-      "returns_types": "ASPECT_SET",
+      "return_type": "ASPECT_SET",
       "body": {
         "type": "call",
         "function": "sncf_filter",
@@ -222,7 +216,7 @@
           "name": "right_route"
         }
       ],
-      "returns_types": "ASPECT_SET",
+      "return_type": "ASPECT_SET",
       "body": {
         "type": "match",
         "expr": {

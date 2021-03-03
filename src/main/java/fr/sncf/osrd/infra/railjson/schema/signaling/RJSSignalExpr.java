@@ -4,6 +4,9 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.railjson.schema.ID;
+import fr.sncf.osrd.infra.railjson.schema.RJSRoute;
+import fr.sncf.osrd.infra.railjson.schema.RJSSwitch;
+import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSSignal;
 
 import java.util.Map;
 
@@ -42,9 +45,9 @@ import java.util.Map;
  * {@code
  *
  * fn sncf_filter(aspects: AspectSet) -> AspectSet {
- *     if aspectset_contains(aspects, RED) {
+ *     if aspect_set_contains(aspects, RED) {
  *         AspectSet{RED}
- *     } else if aspectset_contains(aspects, YELLOW) {
+ *     } else if aspect_set_contains(aspects, YELLOW) {
  *         AspectSet{YELLOW}
  *     } else {
  *         aspects
@@ -94,14 +97,19 @@ public abstract class RJSSignalExpr {
                     .withSubtype(TrueExpr.class, "true")
                     .withSubtype(FalseExpr.class, "false")
                     .withSubtype(AspectSetExpr.class, "aspect_set")
+                    .withSubtype(SignalExpr.class, "signal")
+                    .withSubtype(RouteExpr.class, "route")
+                    .withSubtype(SwitchExpr.class, "switch")
                     // control flow
                     .withSubtype(IfExpr.class, "condition")
                     .withSubtype(CallExpr.class, "call")
                     .withSubtype(EnumMatchExpr.class, "match")
                     // function-specific
                     .withSubtype(ArgumentRefExpr.class, "argument_ref")
-                    // signals
+                    // primitives
                     .withSubtype(SignalAspectCheckExpr.class, "signal_has_aspect")
+                    .withSubtype(RouteStateCheckExpr.class, "route_has_state")
+                    .withSubtype(AspectSetContainsExpr.class, "aspect_set_contains")
     );
 
     // region BOOLEAN_LOGIC
@@ -167,6 +175,29 @@ public abstract class RJSSignalExpr {
         }
     }
 
+    public static final class SignalExpr extends RJSSignalExpr {
+        public final ID<RJSSignal> signal;
+
+        public SignalExpr(ID<RJSSignal> signal) {
+            this.signal = signal;
+        }
+    }
+
+    public static final class RouteExpr extends RJSSignalExpr {
+        public final ID<RJSRoute> route;
+
+        public RouteExpr(ID<RJSRoute> route) {
+            this.route = route;
+        }
+    }
+
+    public static final class SwitchExpr extends RJSSignalExpr {
+        public final ID<RJSSwitch> route;
+
+        public SwitchExpr(ID<RJSSwitch> route) {
+            this.route = route;
+        }
+    }
     // endregion
 
     // region CONTROL_FLOW
@@ -229,16 +260,14 @@ public abstract class RJSSignalExpr {
 
     // endregion
 
-    // region SIGNALS
+    // region PRIMITIVES
 
     /**
      * Returns whether some signal has a given aspect.
-     * This rule can also test for the state of the signal being evaluated, if no signal name is given.
      */
     public static final class SignalAspectCheckExpr extends RJSSignalExpr {
         /**
          * The signal the condition checks for.
-         * If no reference is given, the set of aspects of the signal being evaluated is used.
          */
         public final RJSSignalExpr signal;
 
@@ -251,5 +280,41 @@ public abstract class RJSSignalExpr {
         }
     }
 
+    /**
+     * Returns whether some route is in a given state.
+     */
+    public static final class  RouteStateCheckExpr extends RJSSignalExpr {
+        /**
+         * The signal the condition checks for.
+         */
+        public final RJSSignalExpr route;
+
+        /** The condition is true when the signal has the following aspect */
+        public final RJSRoute.State state;
+
+        public RouteStateCheckExpr(RJSSignalExpr route, RJSRoute.State state) {
+            this.route = route;
+            this.state = state;
+        }
+    }
+
+    /**
+     * Returns whether some aspect set contains a given aspect.
+     */
+    public static final class  AspectSetContainsExpr extends RJSSignalExpr {
+        /**
+         * The signal the condition checks for.
+         */
+        @Json(name = "aspect_set")
+        public final RJSSignalExpr aspectSet;
+
+        /** The condition is true when the signal has the following aspect */
+        public final ID<RJSAspect> aspect;
+
+        public AspectSetContainsExpr(RJSSignalExpr aspectSet, ID<RJSAspect> aspect) {
+            this.aspectSet = aspectSet;
+            this.aspect = aspect;
+        }
+    }
     // endregion
 }

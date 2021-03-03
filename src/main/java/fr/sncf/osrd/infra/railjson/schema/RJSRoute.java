@@ -39,4 +39,10 @@ public class RJSRoute implements Identified {
     public String getID() {
         return id;
     }
+
+    public enum State {
+        FREE,
+        RESERVED,
+        OCCUPIED,
+    }
 }
