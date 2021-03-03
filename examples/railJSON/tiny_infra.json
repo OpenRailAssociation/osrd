@@ -91,28 +91,175 @@
   ],
   "signal_functions": [
     {
-      "function_name": "bal3",
+      "function_name": "sncf_filter",
       "arguments": [
-        "forward_signal"
+        {
+          "type": "ASPECT_SET",
+          "name": "aspects"
+        }
       ],
-      "default_aspects": [
-        "green"
-      ],
-      "rules": {
-        "yellow": {
-          "type": "signal_aspect",
-          "signal": "forward_signal",
-          "has_aspect": "red"
+      "returns_types": "ASPECT_SET",
+      "body": {
+        "type": "condition",
+        "if": {
+          "type": "aspectset_contains",
+          "aspects": {
+            "type": "argument_ref",
+            "argument_name": "aspects"
+          },
+          "aspect": {
+            "type": "aspect",
+            "aspect": "RED"
+          }
+        },
+        "then": {
+          "type": "aspect_set",
+          "members": [
+            {
+              "aspect": "RED"
+            }
+          ]
+        },
+        "else": {
+          "type": "condition",
+          "if": {
+            "type": "aspectset_contains",
+            "aspects": {
+              "type": "argument_ref",
+              "argument_name": "aspects"
+            },
+            "aspect": {
+              "type": "aspect",
+              "aspect": "YELLOW"
+            }
+          },
+          "then": {
+            "type": "aspect_set",
+            "members": [
+              {
+                "aspect": "YELLOW"
+              }
+            ]
+          },
+          "else": {
+            "type": "argument_ref",
+            "argument_name": "aspects"
+          }
         }
       }
     },
     {
-      "function_name": "always_red",
-      "arguments": [],
-      "default_aspects": [
-        "red"
+      "function_name": "bal3_line_signal",
+      "arguments": [
+        {
+          "type": "SIGNAL",
+          "name": "master_signal"
+        },
+        {
+          "type": "ROUTE",
+          "name": "route"
+        }
       ],
-      "rules": {}
+      "returns_types": "ASPECT_SET",
+      "body": {
+        "type": "call",
+        "function": "sncf_filter",
+        "arguments": [
+          {
+            "type": "aspect_set",
+            "members": [
+              {
+                "aspect": "RED",
+                "condition": {
+                  "type": "route_has_state",
+                  "route": {
+                    "type": "argument_ref",
+                    "argument_name": "route"
+                  },
+                  "state": "OCCUPIED"
+                }
+              },
+              {
+                "aspect": "YELLOW",
+                "condition": {
+                  "type": "signal_has_aspect",
+                  "route": {
+                    "type": "argument_ref",
+                    "argument_name": "master_signal"
+                  },
+                  "aspect": "RED"
+                }
+              },
+              {
+                "aspect": "GREEN"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function_name": "switch_bal3_signal",
+      "arguments": [
+        {
+          "type": "SWITCH",
+          "name": "switch"
+        },
+        {
+          "type": "SIGNAL",
+          "name": "left_master_signal"
+        },
+        {
+          "type": "SIGNAL",
+          "name": "right_master_signal"
+        },
+        {
+          "type": "ROUTE",
+          "name": "left_route"
+        },
+        {
+          "type": "ROUTE",
+          "name": "right_route"
+        }
+      ],
+      "returns_types": "ASPECT_SET",
+      "body": {
+        "type": "match",
+        "expr": {
+          "type": "argument_ref",
+          "argument_name": "switch"
+        },
+        "branches": {
+          "LEFT": {
+            "type": "call",
+            "function": "bal3_line_signal",
+            "arguments": [
+              {
+                "type": "argument_ref",
+                "argument_name": "left_master_signal"
+              },
+              {
+                "type": "argument_ref",
+                "argument_name": "left_route"
+              }
+            ]
+          },
+          "RIGHT": {
+            "type": "call",
+            "function": "bal3_line_signal",
+            "arguments": [
+              {
+                "type": "argument_ref",
+                "argument_name": "right_master_signal"
+              },
+              {
+                "type": "argument_ref",
+                "argument_name": "right_route"
+              }
+            ]
+          }
+        }
+      }
     }
   ],
   "speed_sections": [

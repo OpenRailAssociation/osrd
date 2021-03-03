@@ -47,7 +47,7 @@ import java.util.Map;
  *     } else if aspectset_contains(aspects, YELLOW) {
  *         AspectSet{YELLOW}
  *     } else {
- *         AspectSet{GREEN}
+ *         aspects
  *     }
  * }
  *
@@ -243,12 +243,11 @@ public abstract class RJSSignalExpr {
         public final RJSSignalExpr signal;
 
         /** The condition is true when the signal has the following aspect */
-        @Json(name = "has_aspect")
-        public final ID<RJSAspect> hasAspect;
+        public final ID<RJSAspect> aspect;
 
-        public SignalAspectCheckExpr(RJSSignalExpr signal, ID<RJSAspect> hasAspect) {
+        public SignalAspectCheckExpr(RJSSignalExpr signal, ID<RJSAspect> aspect) {
             this.signal = signal;
-            this.hasAspect = hasAspect;
+            this.aspect = aspect;
         }
     }
 
