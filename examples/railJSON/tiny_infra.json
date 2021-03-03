@@ -352,26 +352,58 @@
           "id": "signal.foo_to_bar.1",
           "position": 25,
           "navigability": "BOTH",
-          "arguments": {
-            "forward_signal": "signal.foo_to_bar.2"
-          },
-          "evaluation_function": "bal3"
+          "expr": {
+            "type": "call",
+            "function": "bal3_line_signal",
+            "arguments": [
+              {
+                "type": "signal",
+                "signal": "signal.foo_to_bar.2"
+              },
+              {
+                "type": "route",
+                "signal": "ne.micro.foo_to_bar"
+              }
+            ]
+          }
         },
         {
           "id": "signal.foo_to_bar.2",
-          "position": 50,
-          "navigability": "BOTH",
-          "arguments": {
-            "forward_signal": "signal.foo_to_bar.3"
-          },
-          "evaluation_function": "bal3"
-        },
-        {
-          "id": "signal.foo_to_bar.3",
           "position": 75,
           "navigability": "BOTH",
-          "arguments": {},
-          "evaluation_function": "always_red"
+          "expr": {
+            "type": "match",
+            "expr": {
+              "type": "route",
+              "route": "ne.micro.bar_a"
+            },
+            "branches": {
+              "FREE": {
+                "type": "aspect_set",
+                "members": [
+                  {
+                    "aspect": "GREEN"
+                  }
+                ]
+              },
+              "RESERVED": {
+                "type": "aspect_set",
+                "members": [
+                  {
+                    "aspect": "RED"
+                  }
+                ]
+              },
+              "OCCUPIED": {
+                "type": "aspect_set",
+                "members": [
+                  {
+                    "aspect": "RED"
+                  }
+                ]
+              }
+            }
+          }
         }
       ],
       "speed_sections": [
