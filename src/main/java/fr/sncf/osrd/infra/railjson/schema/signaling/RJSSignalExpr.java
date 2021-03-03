@@ -97,7 +97,7 @@ public abstract class RJSSignalExpr {
                     // control flow
                     .withSubtype(IfExpr.class, "condition")
                     .withSubtype(CallExpr.class, "call")
-                    .withSubtype(EnumMatchExpr.class, "call")
+                    .withSubtype(EnumMatchExpr.class, "match")
                     // function-specific
                     .withSubtype(ArgumentRefExpr.class, "argument_ref")
                     // signals
