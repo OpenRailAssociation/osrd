@@ -1,14 +1,17 @@
 package fr.sncf.osrd.utils;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 
-public final class SortedArraySet<E extends Comparable<E>> extends AbstractSet<E> {
+public class SortedArraySet<E extends Comparable<E>> extends AbstractSet<E> {
     private final ArrayList<E> data = new ArrayList<>();
 
     @Override
+    @NonNull
     public Iterator<E> iterator() {
         return data.iterator();
     }
@@ -25,9 +28,7 @@ public final class SortedArraySet<E extends Comparable<E>> extends AbstractSet<E
 
     @Override
     public boolean equals(Object o) {
-        if (o == null)
-            return false;
-        if (o.getClass() != SortedArraySet.class)
+        if (!(o instanceof SortedArraySet))
             return false;
         return data.equals(((SortedArraySet<?>) o).data);
     }

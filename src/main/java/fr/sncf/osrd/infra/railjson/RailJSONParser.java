@@ -19,6 +19,11 @@ import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSTrackRange;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.signaling.*;
+import fr.sncf.osrd.infra.signaling.expr.Expr;
+import fr.sncf.osrd.infra.signaling.expr.value.AspectSet;
+import fr.sncf.osrd.infra.signaling.expr.value.BooleanValue;
+import fr.sncf.osrd.infra.signaling.expr.value.ValueType;
+import fr.sncf.osrd.infra.signaling.expr.Function;
 import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.infra.trackgraph.*;
@@ -128,13 +133,14 @@ public class RailJSONParser {
                 trackGraph.makePlaceholderNode(i, String.valueOf(i));
 
         // parse aspects
+        int aspectCount = 0;
         for (var rjsAspect : railJSON.aspects) {
-            var aspect = new Aspect(rjsAspect.id);
+            var aspect = new Aspect(aspectCount++, rjsAspect.id);
             aspectsMap.put(aspect.id, aspect);
         }
 
         // parse signal functions
-        var signalFunctions = new HashMap<String, SignalFunction>();
+        var signalFunctions = new HashMap<String, Function<?>>();
         for (var rjsSignalFunction : railJSON.signalFunctions) {
             var signalFunction = parseSignalFunction(aspectsMap, rjsSignalFunction);
             signalFunctions.put(signalFunction.functionName, signalFunction);
@@ -180,13 +186,8 @@ public class RailJSONParser {
             // Parse signals
             var signalsBuilder = infraTrackSection.signals.builder();
             for (var rjsSignal : trackSection.signals) {
-                var function = signalFunctions.get(rjsSignal.evaluationFunction.id);
-                // find the entity associated with each argument, by name
-                var argc = function.argumentNames.length;
-                var arguments = new String[argc];
-                for (int i = 0; i < argc; i++)
-                    arguments[i] = rjsSignal.arguments.get(function.argumentNames[i]).id;
-                var signal = new Signal(rjsSignal.id, function, arguments);
+                var expr = parseAspectSetExpr(aspectsMap, null, null, rjsSignal.expr);
+                var signal = new Signal(rjsSignal.id, expr);
                 signalsBuilder.add(rjsSignal.position, signal);
             }
             signalsBuilder.build();
@@ -242,110 +243,223 @@ public class RailJSONParser {
         }
     }
 
-    private static SignalFunction parseSignalFunction(
+    private static Function<?> parseSignalFunction(
             HashMap<String, Aspect> aspectsMap,
             RJSSignalFunction rjsSignalFunction
     ) throws InvalidInfraException {
         var arguments = rjsSignalFunction.arguments;
 
-        var expr = parseSignalExpr(aspectsMap, arguments, rjsSignalFunction.body);
-
         // type check rules
-        var argumentTypes = new SignalExprType[arguments.length];
+        var argumentTypes = new ValueType[arguments.length];
         var argumentNames = new String[arguments.length];
         for (int i = 0; i < arguments.length; i++) {
             argumentNames[i] = arguments[i].name;
             argumentTypes[i] = parseExprType(arguments[i].type);
         }
 
-        return SignalFunction.from(
+        var expr = parseExpr(aspectsMap, argumentNames, argumentTypes, rjsSignalFunction.body);
+
+        return Function.from(
                 rjsSignalFunction.name,
                 argumentNames,
                 argumentTypes,
-                parseExprType(rjsSignalFunction.returnsType),
+                parseExprType(rjsSignalFunction.returnType),
                 expr
         );
     }
 
-    private static SignalExprType parseExprType(RJSSignalExprType type) {
+    private static ValueType parseExprType(RJSSignalExprType type) {
         switch (type) {
             case BOOLEAN:
-                return SignalExprType.BOOLEAN;
+                return ValueType.BOOLEAN;
             case SIGNAL:
-                return SignalExprType.SIGNAL;
+                return ValueType.SIGNAL;
             case ASPECT_SET:
-                return SignalExprType.ASPECT_SET;
+                return ValueType.ASPECT_SET;
         }
         throw new RuntimeException("unknown RJSSignalExprType");
     }
 
     private static int findArgIndex(
-            RJSSignalFunction.Argument[] arguments,
+            String[] arguments,
             String argument
     ) throws InvalidInfraException {
         for (int i = 0; i < arguments.length; i++)
-            if (arguments[i].name.equals(argument))
+            if (arguments[i].equals(argument))
                 return i;
 
         throw new InvalidInfraException(String.format("signal function argument not found: %s", argument));
     }
 
-    private static SignalExpr parseSignalExpr(
+    private static Expr<?> parseExpr(
             HashMap<String, Aspect> aspectsMap,
-            RJSSignalFunction.Argument[] arguments,
+            String[] argumentNames,
+            ValueType[] argumentTypes,
             RJSSignalExpr expr
     ) throws InvalidInfraException {
         var type = expr.getClass();
 
         // boolean operators
         if (type == RJSSignalExpr.OrExpr.class)
-            return new SignalExpr.OrExpr(parseInfixOp(aspectsMap, arguments, (RJSSignalExpr.InfixOpExpr) expr));
+            return new Expr.OrExpr(parseInfixOp(aspectsMap, argumentNames, argumentTypes, (RJSSignalExpr.InfixOpExpr) expr));
         if (type == RJSSignalExpr.AndExpr.class)
-            return new SignalExpr.AndExpr(parseInfixOp(aspectsMap, arguments, (RJSSignalExpr.InfixOpExpr) expr));
+            return new Expr.AndExpr(parseInfixOp(aspectsMap, argumentNames, argumentTypes, (RJSSignalExpr.InfixOpExpr) expr));
         if (type == RJSSignalExpr.NotExpr.class) {
             var notExpr = (RJSSignalExpr.NotExpr) expr;
-            return new SignalExpr.NotExpr(parseSignalExpr(aspectsMap, arguments, notExpr.expr));
+            return new Expr.NotExpr(parseBooleanExpr(aspectsMap, argumentNames, argumentTypes, notExpr.expr));
         }
 
         // value constructors
         if (type == RJSSignalExpr.TrueExpr.class)
-            return new SignalExpr.TrueExpr();
+            return Expr.TrueExpr.INSTANCE;
         if (type == RJSSignalExpr.FalseExpr.class)
-            return new SignalExpr.FalseExpr();
-        // TODO aspectset
+            return Expr.FalseExpr.INSTANCE;
+        if (type == RJSSignalExpr.AspectSetExpr.class)
+            return parseAspectSet(aspectsMap, argumentNames, argumentTypes, (RJSSignalExpr.AspectSetExpr) expr);
 
         // control flow
-        if (type == RJSSignalExpr.IfExpr.class) {
-            var ifExpr = (RJSSignalExpr.IfExpr) expr;
-            var condition = parseSignalExpr(aspectsMap, arguments, ifExpr.condition);
-            var branchTrue = parseSignalExpr(aspectsMap, arguments, ifExpr.branchTrue);
-            var branchFalse = parseSignalExpr(aspectsMap, arguments, ifExpr.branchFalse);
-            return new SignalExpr.IfExpr(condition, branchTrue, branchFalse);
-        }
+        if (type == RJSSignalExpr.IfExpr.class)
+            return parseIfExpr(aspectsMap, argumentNames, argumentTypes, (RJSSignalExpr.IfExpr) expr);
 
         // function-specific
-        // TODO
+        if (type == RJSSignalExpr.ArgumentRefExpr.class) {
+            var argumentExpr = (RJSSignalExpr.ArgumentRefExpr) expr;
+            var argIndex = findArgIndex(argumentNames, argumentExpr.argumentName);
+            return new Expr.ArgumentRefExpr<>(argIndex);
+        }
 
         // signals
         if (type == RJSSignalExpr.SignalAspectCheckExpr.class) {
             var signalExpr = (RJSSignalExpr.SignalAspectCheckExpr) expr;
             var aspect = aspectsMap.get(signalExpr.aspect.id);
-            var signal = parseSignalExpr(aspectsMap, arguments, signalExpr.signal);
-            return new SignalExpr.SignalAspectCheckExpr(signal, aspect);
+            var signal = parseSignalExpr(aspectsMap, argumentNames, argumentTypes, signalExpr.signal);
+            return new Expr.SignalAspectCheckExpr(signal, aspect);
         }
 
         throw new InvalidInfraException("unsupported signal expression");
     }
 
-    private static SignalExpr[] parseInfixOp(
+    private static Expr<?> parseIfExpr(
             HashMap<String, Aspect> aspectsMap,
-            RJSSignalFunction.Argument[] arguments,
+            String[] argumentNames,
+            ValueType[] argumentTypes,
+            RJSSignalExpr.IfExpr expr
+    ) throws InvalidInfraException {
+        var ifExpr = expr;
+        var condition = parseBooleanExpr(aspectsMap, argumentNames, argumentTypes, ifExpr.condition);
+        var branchTrue = parseExpr(aspectsMap, argumentNames, argumentTypes, ifExpr.branchTrue);
+        var branchFalse = parseExpr(aspectsMap, argumentNames, argumentTypes, ifExpr.branchFalse);
+        var branchTrueType = branchTrue.getType(argumentTypes);
+        var branchFalseType = branchFalse.getType(argumentTypes);
+        if (branchTrueType != branchFalseType)
+            throw new InvalidInfraException(String.format(
+                    "then branch has type %s but else has type %s", branchTrueType, branchFalseType));
+
+        // typing is dynamically checked
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        var res = new Expr.IfExpr(condition, branchTrue, branchFalse);
+        return res;
+    }
+
+    private static Expr<?> parseAspectSet(
+            HashMap<String, Aspect> aspectsMap,
+            String[] argumentNames,
+            ValueType[] argumentTypes,
+            RJSSignalExpr.AspectSetExpr expr
+    ) throws InvalidInfraException {
+        var memberCount= expr.members.length;
+        var aspects = new Aspect[memberCount];
+        @SuppressWarnings("unchecked")
+        Expr<BooleanValue>[] conditions = (Expr<BooleanValue>[]) new Expr<?>[memberCount];
+
+        for (int i = 0; i < memberCount; i++) {
+            var member = expr.members[i];
+            aspects[i] = aspectsMap.get(member.aspect.id);
+            if (member.condition != null)
+                conditions[i] = parseBooleanExpr(aspectsMap, argumentNames, argumentTypes, member.condition);
+        }
+
+        return new Expr.AspectSetExpr(aspects, conditions);
+    }
+
+    private static void checkExprType(
+            ValueType expectedType,
+            ValueType[] argumentTypes,
+            Expr<?> expr
+    ) throws InvalidInfraException {
+        var exprType = expr.getType(argumentTypes);
+        if (exprType != expectedType)
+            throw new InvalidInfraException(String.format(
+                    "type mismatch: expected %s, got %s", expectedType.toString(), exprType.toString()));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Expr<BooleanValue> expectBoolean(
+            ValueType[] argumentTypes,
+            Expr<?> expr
+    ) throws InvalidInfraException {
+        checkExprType(ValueType.BOOLEAN, argumentTypes, expr);
+        return (Expr<BooleanValue>) expr;
+    }
+
+    private static Expr<BooleanValue> parseBooleanExpr(
+            HashMap<String, Aspect> aspectsMap,
+            String[] argumentNames,
+            ValueType[] argumentTypes,
+            RJSSignalExpr expr
+    ) throws InvalidInfraException {
+        return expectBoolean(argumentTypes, parseExpr(aspectsMap, argumentNames, argumentTypes, expr));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Expr<Signal.State> expectSignal(
+            ValueType[] argumentTypes,
+            Expr<?> expr
+    ) throws InvalidInfraException {
+        checkExprType(ValueType.SIGNAL, argumentTypes, expr);
+        return (Expr<Signal.State>) expr;
+    }
+
+    private static Expr<Signal.State> parseSignalExpr(
+            HashMap<String, Aspect> aspectsMap,
+            String[] argumentNames,
+            ValueType[] argumentTypes,
+            RJSSignalExpr expr
+    ) throws InvalidInfraException {
+        return expectSignal(argumentTypes, parseExpr(aspectsMap, argumentNames, argumentTypes, expr));
+    }
+
+
+    @SuppressWarnings("unchecked")
+    private static Expr<AspectSet> expectAspectSet(
+            ValueType[] argumentTypes,
+            Expr<?> expr
+    ) throws InvalidInfraException {
+        checkExprType(ValueType.ASPECT_SET, argumentTypes, expr);
+        return (Expr<AspectSet>) expr;
+    }
+
+    private static Expr<AspectSet> parseAspectSetExpr(
+            HashMap<String, Aspect> aspectsMap,
+            String[] argumentNames,
+            ValueType[] argumentTypes,
+            RJSSignalExpr expr
+    ) throws InvalidInfraException {
+        return expectAspectSet(argumentTypes, parseExpr(aspectsMap, argumentNames, argumentTypes, expr));
+    }
+
+
+    private static Expr<BooleanValue>[] parseInfixOp(
+            HashMap<String, Aspect> aspectsMap,
+            String[] argumentNames,
+            ValueType[] argumentTypes,
             RJSSignalExpr.InfixOpExpr expr
     ) throws InvalidInfraException {
         var arity = expr.exprs.length;
-        var expressions = new SignalExpr[arity];
+        @SuppressWarnings("unchecked")
+        var expressions = (Expr<BooleanValue>[]) new Expr<?>[arity];
         for (int i = 0; i < arity; i++)
-            expressions[i] = parseSignalExpr(aspectsMap, arguments, expr.exprs[i]);
+            expressions[i] = parseBooleanExpr(aspectsMap, argumentNames, argumentTypes, expr.exprs[i]);
         return expressions;
     }
 }
