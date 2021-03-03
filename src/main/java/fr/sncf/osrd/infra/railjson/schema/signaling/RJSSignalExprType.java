@@ -4,4 +4,6 @@ public enum RJSSignalExprType {
     BOOLEAN,
     ASPECT_SET,
     SIGNAL,
+    ROUTE,
+    SWITCH,
 }

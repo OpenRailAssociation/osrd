@@ -12,17 +12,17 @@ public class RJSSignalFunction implements Identified {
     /** The list of the names of the argument of the function. Types are deduced from the AST */
     public final Argument[] arguments;
 
-    @Json(name = "returns_type")
-    public final RJSSignalExprType returnsType;
+    @Json(name = "return_type")
+    public final RJSSignalExprType returnType;
 
     /** The expression to evaluate */
     public final RJSSignalExpr body;
 
     /** A mathematical function for the signal expression language */
-    public RJSSignalFunction(String name, Argument[] arguments, RJSSignalExprType returnsType, RJSSignalExpr body) {
+    public RJSSignalFunction(String name, Argument[] arguments, RJSSignalExprType returnType, RJSSignalExpr body) {
         this.name = name;
         this.arguments = arguments;
-        this.returnsType = returnsType;
+        this.returnType = returnType;
         this.body = body;
     }
 
