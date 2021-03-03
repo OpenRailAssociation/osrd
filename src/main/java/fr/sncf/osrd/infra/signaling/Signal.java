@@ -39,8 +39,6 @@ public class Signal implements StatefulInfraObject<Signal.State> {
         }
 
         private void update() {
-            aspects.clear();
-            signal.function.evaluate(arguments, aspects);
         }
 
         @Override

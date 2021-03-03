@@ -10,6 +10,7 @@ import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.railjson.schema.RJSRoot;
 import fr.sncf.osrd.infra.railjson.schema.signaling.RJSSignalExpr;
+import fr.sncf.osrd.infra.railjson.schema.signaling.RJSSignalExprType;
 import fr.sncf.osrd.infra.railjson.schema.signaling.RJSSignalFunction;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
@@ -17,10 +18,7 @@ import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrackObject;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSTrackRange;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
-import fr.sncf.osrd.infra.signaling.Aspect;
-import fr.sncf.osrd.infra.signaling.Signal;
-import fr.sncf.osrd.infra.signaling.SignalExpr;
-import fr.sncf.osrd.infra.signaling.SignalFunction;
+import fr.sncf.osrd.infra.signaling.*;
 import fr.sncf.osrd.simulation.EntityType;
 import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -249,36 +247,45 @@ public class RailJSONParser {
             HashMap<String, Aspect> aspectsMap,
             RJSSignalFunction rjsSignalFunction
     ) throws InvalidInfraException {
-        var argumentNames = rjsSignalFunction.arguments;
+        var arguments = rjsSignalFunction.arguments;
 
-        // parse rules
-        var rules = new ArrayList<SignalExpr>();
-        for (var rjsRule : rjsSignalFunction.rules)
-            rules.add(parseSignalExpr(aspectsMap, argumentNames, rjsRule));
+        var expr = parseSignalExpr(aspectsMap, arguments, rjsSignalFunction.body);
 
         // type check rules
-        var argumentTypes = new EntityType[argumentNames.length];
-        for (var rule : rules)
-            rule.detectTypes((i, type) -> {
-                // if there's already a different deduced type, error out
-                if (argumentTypes[i] != null && argumentTypes[i] != type)
-                    throw new InvalidInfraException(
-                            String.format("found contradictory deduced types for argument %s in function %s",
-                                    argumentNames[i], rjsSignalFunction.functionName));
-                argumentTypes[i] = type;
-            });
+        var argumentTypes = new SignalExprType[arguments.length];
+        var argumentNames = new String[arguments.length];
+        for (int i = 0; i < arguments.length; i++) {
+            argumentNames[i] = arguments[i].name;
+            argumentTypes[i] = parseExprType(arguments[i].type);
+        }
 
-        return new SignalFunction(
-                rjsSignalFunction.functionName,
-                rules.toArray(new SignalExpr[rules.size()]),
+        return SignalFunction.from(
+                rjsSignalFunction.name,
                 argumentNames,
-                argumentTypes
+                argumentTypes,
+                parseExprType(rjsSignalFunction.returnsType),
+                expr
         );
     }
 
-    private static int findArgIndex(String[] argumentNames, String argument) throws InvalidInfraException {
-        for (int i = 0; i < argumentNames.length; i++)
-            if (argumentNames[i].equals(argument))
+    private static SignalExprType parseExprType(RJSSignalExprType type) {
+        switch (type) {
+            case BOOLEAN:
+                return SignalExprType.BOOLEAN;
+            case SIGNAL:
+                return SignalExprType.SIGNAL;
+            case ASPECT_SET:
+                return SignalExprType.ASPECT_SET;
+        }
+        throw new RuntimeException("unknown RJSSignalExprType");
+    }
+
+    private static int findArgIndex(
+            RJSSignalFunction.Argument[] arguments,
+            String argument
+    ) throws InvalidInfraException {
+        for (int i = 0; i < arguments.length; i++)
+            if (arguments[i].name.equals(argument))
                 return i;
 
         throw new InvalidInfraException(String.format("signal function argument not found: %s", argument));
@@ -286,51 +293,46 @@ public class RailJSONParser {
 
     private static SignalExpr parseSignalExpr(
             HashMap<String, Aspect> aspectsMap,
-            String[] argumentNames,
+            RJSSignalFunction.Argument[] arguments,
             RJSSignalExpr expr
     ) throws InvalidInfraException {
         var type = expr.getClass();
 
-        // constants
+        // boolean operators
+        if (type == RJSSignalExpr.OrExpr.class)
+            return new SignalExpr.OrExpr(parseInfixOp(aspectsMap, arguments, (RJSSignalExpr.InfixOpExpr) expr));
+        if (type == RJSSignalExpr.AndExpr.class)
+            return new SignalExpr.AndExpr(parseInfixOp(aspectsMap, arguments, (RJSSignalExpr.InfixOpExpr) expr));
+        if (type == RJSSignalExpr.NotExpr.class) {
+            var notExpr = (RJSSignalExpr.NotExpr) expr;
+            return new SignalExpr.NotExpr(parseSignalExpr(aspectsMap, arguments, notExpr.expression));
+        }
+
+        // value constructors
         if (type == RJSSignalExpr.TrueExpr.class)
             return new SignalExpr.TrueExpr();
         if (type == RJSSignalExpr.FalseExpr.class)
             return new SignalExpr.FalseExpr();
-
-        // boolean operators
-        if (type == RJSSignalExpr.OrExpr.class)
-            return new SignalExpr.OrExpr(parseInfixOp(aspectsMap, argumentNames, (RJSSignalExpr.InfixOpExpr) expr));
-        if (type == RJSSignalExpr.AndExpr.class)
-            return new SignalExpr.AndExpr(parseInfixOp(aspectsMap, argumentNames, (RJSSignalExpr.InfixOpExpr) expr));
-        if (type == RJSSignalExpr.NotExpr.class) {
-            var notExpr = (RJSSignalExpr.NotExpr) expr;
-            return new SignalExpr.NotExpr(parseSignalExpr(aspectsMap, argumentNames, notExpr.expression));
-        }
+        // TODO aspectset
 
         // control flow
         if (type == RJSSignalExpr.IfExpr.class) {
             var ifExpr = (RJSSignalExpr.IfExpr) expr;
-            var condition = parseSignalExpr(aspectsMap, argumentNames, ifExpr.condition);
-            var branchTrue = parseSignalExpr(aspectsMap, argumentNames, ifExpr.branchTrue);
-            SignalExpr branchFalse = null;
-            if (ifExpr.branchFalse != null)
-                branchFalse = parseSignalExpr(aspectsMap, argumentNames, ifExpr.branchFalse);
+            var condition = parseSignalExpr(aspectsMap, arguments, ifExpr.condition);
+            var branchTrue = parseSignalExpr(aspectsMap, arguments, ifExpr.branchTrue);
+            var branchFalse = parseSignalExpr(aspectsMap, arguments, ifExpr.branchFalse);
             return new SignalExpr.IfExpr(condition, branchTrue, branchFalse);
         }
 
-        // signal operations
+        // function-specific
+        // TODO
+
+        // signals
         if (type == RJSSignalExpr.SignalAspectCheckExpr.class) {
             var signalExpr = (RJSSignalExpr.SignalAspectCheckExpr) expr;
             var aspect = aspectsMap.get(signalExpr.hasAspect.id);
-            if (signalExpr.signal == null)
-                return new SignalExpr.SelfAspectCheckExpr(aspect);
-            var argIndex = findArgIndex(argumentNames, signalExpr.signal.argumentName);
-            return new SignalExpr.SignalAspectCheckExpr(argIndex, aspect);
-        }
-        if (type == RJSSignalExpr.SetAspectExpr.class) {
-            var signalExpr = (RJSSignalExpr.SetAspectExpr) expr;
-            var aspect = aspectsMap.get(signalExpr.aspect.id);
-            return new SignalExpr.SetSignalAspectExpr(aspect);
+            var signal = parseSignalExpr(aspectsMap, arguments, signalExpr.signal);
+            return new SignalExpr.SignalAspectCheckExpr(signal, aspect);
         }
 
         throw new InvalidInfraException("unsupported signal expression");
@@ -338,13 +340,13 @@ public class RailJSONParser {
 
     private static SignalExpr[] parseInfixOp(
             HashMap<String, Aspect> aspectsMap,
-            String[] argumentNames,
+            RJSSignalFunction.Argument[] arguments,
             RJSSignalExpr.InfixOpExpr expr
     ) throws InvalidInfraException {
         var arity = expr.expressions.length;
         var expressions = new SignalExpr[arity];
         for (int i = 0; i < arity; i++)
-            expressions[i] = parseSignalExpr(aspectsMap, argumentNames, expr.expressions[i]);
+            expressions[i] = parseSignalExpr(aspectsMap, arguments, expr.expressions[i]);
         return expressions;
     }
 }

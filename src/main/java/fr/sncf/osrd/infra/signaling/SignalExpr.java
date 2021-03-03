@@ -6,6 +6,8 @@ import fr.sncf.osrd.simulation.EntityType;
 import fr.sncf.osrd.utils.SortedArraySet;
 
 public abstract class SignalExpr {
+    public SignalExprType type;
+
     /**
      * Evaluates an expression, returning whether it's true or not
      * @param arguments the argument list of the function
@@ -18,66 +20,33 @@ public abstract class SignalExpr {
         void foundType(int index, EntityType type) throws InvalidInfraException;
     }
 
-    public abstract void detectTypes(DetectTypeCallback callback) throws InvalidInfraException;
+    public abstract SignalExprType typeCheck(SignalFunction function) throws InvalidInfraException;
 
     // region SIGNALS
 
     public static final class SignalAspectCheckExpr extends SignalExpr {
         /** The signal the condition checks for */
-        public final int signalArgIndex;
+        public final SignalExpr signal;
 
         /** The condition is true when the signal has the following aspect */
         public final Aspect aspect;
 
-        public SignalAspectCheckExpr(int signalArgIndex, Aspect aspect) {
-            this.signalArgIndex = signalArgIndex;
+        public SignalAspectCheckExpr(SignalExpr signal, Aspect aspect) {
+            this.signal = signal;
             this.aspect = aspect;
         }
 
         @Override
         public boolean evaluate(Entity[] arguments, SortedArraySet<Aspect> aspects) {
-            var signalState = (Signal.State) arguments[signalArgIndex];
-            return signalState.aspects.contains(aspect);
+            // TODO
+            return false;
         }
 
         @Override
-        public void detectTypes(DetectTypeCallback callback) throws InvalidInfraException {
-            callback.foundType(signalArgIndex, EntityType.SIGNAL);
-        }
-    }
-
-    public static final class SelfAspectCheckExpr extends SignalExpr {
-        /** The condition is true when this signal has the following aspect */
-        public final Aspect aspect;
-
-        public SelfAspectCheckExpr(Aspect aspect) {
-            this.aspect = aspect;
-        }
-
-        @Override
-        public boolean evaluate(Entity[] arguments, SortedArraySet<Aspect> aspects) {
-            return aspects.contains(aspect);
-        }
-
-        @Override
-        public void detectTypes(DetectTypeCallback callback) {
-        }
-    }
-
-    public static final class SetSignalAspectExpr extends SignalExpr {
-        public final Aspect aspect;
-
-        public SetSignalAspectExpr(Aspect aspect) {
-            this.aspect = aspect;
-        }
-
-        @Override
-        public boolean evaluate(Entity[] arguments, SortedArraySet<Aspect> aspects) {
-            return aspects.add(aspect);
-        }
-
-        @Override
-        public void detectTypes(DetectTypeCallback callback) {
+        public SignalExprType typeCheck(SignalFunction function) throws InvalidInfraException {
+            if (signal.typeCheck(function) != SignalExprType.SIGNAL)
+                throw new InvalidInfraException("signal aspect check type mismatch");
+            return SignalExprType.BOOLEAN;
         }
     }
 
@@ -94,9 +63,10 @@ public abstract class SignalExpr {
         }
 
         @Override
-        public void detectTypes(DetectTypeCallback callback) throws InvalidInfraException {
+        public SignalExprType typeCheck(SignalFunction function) throws InvalidInfraException {
             for (var expr : expressions)
-                expr.detectTypes(callback);
+                expr.typeCheck(function);
+            return SignalExprType.BOOLEAN;
         }
     }
 
@@ -141,8 +111,9 @@ public abstract class SignalExpr {
         }
 
         @Override
-        public void detectTypes(DetectTypeCallback callback) throws InvalidInfraException {
-            expression.detectTypes(callback);
+        public SignalExprType typeCheck(SignalFunction function) throws InvalidInfraException {
+            expression.typeCheck(function);
+            return SignalExprType.BOOLEAN;
         }
     }
 
@@ -156,7 +127,8 @@ public abstract class SignalExpr {
         }
 
         @Override
-        public void detectTypes(DetectTypeCallback callback) {
+        public SignalExprType typeCheck(SignalFunction function) {
+            return SignalExprType.BOOLEAN;
         }
     }
 
@@ -171,7 +143,8 @@ public abstract class SignalExpr {
         }
 
         @Override
-        public void detectTypes(DetectTypeCallback callback) {
+        public SignalExprType typeCheck(SignalFunction function) {
+            return SignalExprType.BOOLEAN;
         }
     }
 
@@ -201,10 +174,13 @@ public abstract class SignalExpr {
         }
 
         @Override
-        public void detectTypes(DetectTypeCallback callback) throws InvalidInfraException {
-            ifExpr.detectTypes(callback);
-            thenExpr.detectTypes(callback);
-            elseExpr.detectTypes(callback);
+        public SignalExprType typeCheck(SignalFunction function) throws InvalidInfraException {
+            if (ifExpr.typeCheck(function) != SignalExprType.BOOLEAN)
+                throw new InvalidInfraException("conditions can only work on booleans");
+            var bodyType = thenExpr.typeCheck(function);
+            if (elseExpr.typeCheck(function) != bodyType)
+                throw new InvalidInfraException("the then and else branch have different types");
+            return bodyType;
         }
     }
 
