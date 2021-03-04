@@ -20,9 +20,9 @@ class PrettyPrinterTest {
         var printer = new PrettyPrinter(new PrintStream(content));
 
         @SuppressWarnings({"unchecked"})
-        var body = new RSExpr.OrExpr((RSExpr<RSBool>[]) new RSExpr<?>[]{
-                RSExpr.TrueExpr.INSTANCE,
-                RSExpr.FalseExpr.INSTANCE
+        var body = new RSExpr.Or((RSExpr<RSBool>[]) new RSExpr<?>[]{
+                RSExpr.True.INSTANCE,
+                RSExpr.False.INSTANCE
         });
         var fct = new RSFunction<>("function_test", new String[0], new RSType[0], RSType.BOOLEAN, body);
 

@@ -42,8 +42,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
     }
 
-    public static final class OrExpr extends InfixOpExpr {
-        public OrExpr(RSExpr<RSBool>[] expressions) {
+    public static final class Or extends InfixOpExpr {
+        public Or(RSExpr<RSBool>[] expressions) {
             super(expressions);
         }
 
@@ -61,8 +61,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
     }
 
-    public static final class AndExpr extends InfixOpExpr {
-        public AndExpr(RSExpr<RSBool>[] expressions) {
+    public static final class And extends InfixOpExpr {
+        public And(RSExpr<RSBool>[] expressions) {
             super(expressions);
         }
 
@@ -80,10 +80,10 @@ public abstract class RSExpr<T extends RSValue> {
         }
     }
 
-    public static final class NotExpr extends RSExpr<RSBool> {
+    public static final class Not extends RSExpr<RSBool> {
         public final RSExpr<RSBool> expr;
 
-        public NotExpr(RSExpr<RSBool> expr) {
+        public Not(RSExpr<RSBool> expr) {
             this.expr = expr;
         }
 
@@ -107,11 +107,11 @@ public abstract class RSExpr<T extends RSValue> {
 
     // region VALUE_CONSTRUCTORS
 
-    public static final class TrueExpr extends RSExpr<RSBool> {
-        private TrueExpr() {
+    public static final class True extends RSExpr<RSBool> {
+        private True() {
         }
 
-        public static final TrueExpr INSTANCE = new TrueExpr();
+        public static final True INSTANCE = new True();
 
         @Override
         public RSBool evaluate(Infra.State infraState, RSValue[] scope) {
@@ -129,11 +129,11 @@ public abstract class RSExpr<T extends RSValue> {
         }
     }
 
-    public static final class FalseExpr extends RSExpr<RSBool> {
-        private FalseExpr() {
+    public static final class False extends RSExpr<RSBool> {
+        private False() {
         }
 
-        public static final FalseExpr INSTANCE = new FalseExpr();
+        public static final False INSTANCE = new False();
 
         @Override
         public RSBool evaluate(Infra.State infraState, RSValue[] scope) {
@@ -151,11 +151,11 @@ public abstract class RSExpr<T extends RSValue> {
         }
     }
 
-    public static final class AspectSetExpr extends RSExpr<RSAspectSet> {
+    public static final class AspectSet extends RSExpr<RSAspectSet> {
         public final Aspect[] aspects;
         public final RSExpr<RSBool>[] conditions;
 
-        public AspectSetExpr(Aspect[] aspects, RSExpr<RSBool>[] conditions) {
+        public AspectSet(Aspect[] aspects, RSExpr<RSBool>[] conditions) {
             this.aspects = aspects;
             this.conditions = conditions;
         }
@@ -182,12 +182,12 @@ public abstract class RSExpr<T extends RSValue> {
         }
     }
 
-    public static final class SignalRefExpr extends RSExpr<Signal.State> {
+    public static final class SignalRef extends RSExpr<Signal.State> {
         public final String signalName;
 
         private Signal signal = null;
 
-        public SignalRefExpr(String signalName) {
+        public SignalRef(String signalName) {
             this.signalName = signalName;
         }
 
@@ -214,12 +214,12 @@ public abstract class RSExpr<T extends RSValue> {
         }
     }
 
-    public static final class RouteRefExpr extends RSExpr<Route.State> {
+    public static final class RouteRef extends RSExpr<Route.State> {
         public final String routeName;
 
         private Route route = null;
 
-        public RouteRefExpr(String routeName) {
+        public RouteRef(String routeName) {
             this.routeName = routeName;
         }
 
@@ -250,13 +250,13 @@ public abstract class RSExpr<T extends RSValue> {
 
     // region CONTROL_FLOW
 
-    public static final class IfExpr<T extends RSValue> extends RSExpr<T> {
+    public static final class If<T extends RSValue> extends RSExpr<T> {
         public final RSExpr<RSBool> ifExpr;
         public final RSExpr<T> thenExpr;
         public final RSExpr<T> elseExpr;
 
         /** A condition */
-        public IfExpr(RSExpr<RSBool> ifExpr, RSExpr<T> thenExpr, RSExpr<T> elseExpr) {
+        public If(RSExpr<RSBool> ifExpr, RSExpr<T> thenExpr, RSExpr<T> elseExpr) {
             this.ifExpr = ifExpr;
             this.thenExpr = thenExpr;
             this.elseExpr = elseExpr;
@@ -282,11 +282,11 @@ public abstract class RSExpr<T extends RSValue> {
         }
     }
 
-    public static final class CallExpr<T extends RSValue> extends RSExpr<T> {
+    public static final class Call<T extends RSValue> extends RSExpr<T> {
         public final RSFunction<T> function;
         public final RSExpr<?>[] arguments;
 
-        public CallExpr(RSFunction<T> function, RSExpr<?>[] arguments) {
+        public Call(RSFunction<T> function, RSExpr<?>[] arguments) {
             this.function = function;
             this.arguments = arguments;
         }
@@ -310,11 +310,11 @@ public abstract class RSExpr<T extends RSValue> {
         }
     }
 
-    public static final class EnumMatchExpr<T extends RSValue, CondT extends RSMatchable> extends RSExpr<T> {
+    public static final class EnumMatch<T extends RSValue, CondT extends RSMatchable> extends RSExpr<T> {
         public final RSExpr<CondT> expr;
         public final RSExpr<T>[] branches;
 
-        public EnumMatchExpr(RSExpr<CondT> expr, RSExpr<T>[] branches) {
+        public EnumMatch(RSExpr<CondT> expr, RSExpr<T>[] branches) {
             this.expr = expr;
             this.branches = branches;
         }
@@ -340,10 +340,10 @@ public abstract class RSExpr<T extends RSValue> {
 
     // region FUNCTION_SPECIFIC
 
-    public static final class ArgumentRefExpr<T extends RSValue> extends RSExpr<T> {
+    public static final class ArgumentRef<T extends RSValue> extends RSExpr<T> {
         public final int argumentIndex;
 
-        public ArgumentRefExpr(int argumentIndex) {
+        public ArgumentRef(int argumentIndex) {
             this.argumentIndex = argumentIndex;
         }
 
@@ -368,14 +368,14 @@ public abstract class RSExpr<T extends RSValue> {
 
     // region PRIMITIVES
 
-    public static final class SignalAspectCheckExpr extends RSExpr<RSBool> {
+    public static final class SignalAspectCheck extends RSExpr<RSBool> {
         /** The signal the condition checks for */
         public final RSExpr<Signal.State> signalExpr;
 
         /** The condition is true when the signal has the following aspect */
         public final Aspect aspect;
 
-        public SignalAspectCheckExpr(RSExpr<Signal.State> signalExpr, Aspect aspect) {
+        public SignalAspectCheck(RSExpr<Signal.State> signalExpr, Aspect aspect) {
             this.signalExpr = signalExpr;
             this.aspect = aspect;
         }
@@ -397,11 +397,11 @@ public abstract class RSExpr<T extends RSValue> {
         }
     }
 
-    public static final class RouteStateCheckExpr extends RSExpr<RSBool> {
+    public static final class RouteStateCheck extends RSExpr<RSBool> {
         public final RSExpr<Route.State> routeExpr;
         public final RouteStatus status;
 
-        public RouteStateCheckExpr(RSExpr<Route.State> routeExpr, RouteStatus status) {
+        public RouteStateCheck(RSExpr<Route.State> routeExpr, RouteStatus status) {
             this.routeExpr = routeExpr;
             this.status = status;
         }
@@ -422,11 +422,11 @@ public abstract class RSExpr<T extends RSValue> {
         }
     }
 
-    public static final class AspectSetContainsExpr extends RSExpr<RSBool> {
+    public static final class AspectSetContains extends RSExpr<RSBool> {
         public final RSExpr<RSAspectSet> expr;
         public final Aspect aspect;
 
-        public AspectSetContainsExpr(RSExpr<RSAspectSet> expr, Aspect aspect) {
+        public AspectSetContains(RSExpr<RSAspectSet> expr, Aspect aspect) {
             this.expr = expr;
             this.aspect = aspect;
         }
