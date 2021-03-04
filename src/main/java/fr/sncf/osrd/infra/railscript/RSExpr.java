@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra.signaling.expr;
+package fr.sncf.osrd.infra.railscript;
 
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
@@ -6,109 +6,109 @@ import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteStatus;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.signaling.Signal;
-import fr.sncf.osrd.infra.signaling.expr.value.*;
+import fr.sncf.osrd.infra.railscript.value.*;
 
 import java.util.Map;
 
-public abstract class Expr<T extends IExprValue> {
+public abstract class RSExpr<T extends RSValue> {
     /**
      * Evaluates an expression, returning whether it's true or not
      * @param infraState the state of the infrastructure
      * @param scope the argument list of the function
      * @return whether the expression is true
      */
-    public abstract T evaluate(Infra.State infraState, IExprValue[] scope);
+    public abstract T evaluate(Infra.State infraState, RSValue[] scope);
 
-    public abstract void accept(ExprVisitor visitor) throws InvalidInfraException;
+    public abstract void accept(RSExprVisitor visitor) throws InvalidInfraException;
 
-    public abstract ValueType getType(ValueType[] argumentTypes);
+    public abstract RSValueType getType(RSValueType[] argumentTypes);
 
     // value constructors
-    // TODO: support RJSSignalExpr.SwitchExpr
+    // TODO: support RJSSignalExpr.SwitchRefExpr
 
     // region BOOLEAN_OPERATORS
 
     /** Infix operators, like "or" and "and" apply to multiple expression */
-    public abstract static class InfixOpExpr extends Expr<BooleanValue> {
-        public final Expr<BooleanValue>[] expressions;
+    public abstract static class InfixOpExpr extends RSExpr<RSBool> {
+        public final RSExpr<RSBool>[] expressions;
 
-        public InfixOpExpr(Expr<BooleanValue>[] expressions) {
+        public InfixOpExpr(RSExpr<RSBool>[] expressions) {
             this.expressions = expressions;
         }
 
         @Override
-        public ValueType getType(ValueType[] argumentTypes) {
-            return ValueType.BOOLEAN;
+        public RSValueType getType(RSValueType[] argumentTypes) {
+            return RSValueType.BOOLEAN;
         }
 
         @Override
-        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             for (var expr : expressions)
                 expr.accept(visitor);
         }
     }
 
     public static final class OrExpr extends InfixOpExpr {
-        public OrExpr(Expr<BooleanValue>[] expressions) {
+        public OrExpr(RSExpr<RSBool>[] expressions) {
             super(expressions);
         }
 
         @Override
-        public BooleanValue evaluate(Infra.State infraState, IExprValue[] scope) {
+        public RSBool evaluate(Infra.State infraState, RSValue[] scope) {
             for (var expr : expressions)
                 if (expr.evaluate(infraState, scope).value)
-                    return BooleanValue.True;
-            return BooleanValue.False;
+                    return RSBool.True;
+            return RSBool.False;
         }
 
         @Override
-        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
             super.accept(visitor);
         }
     }
 
     public static final class AndExpr extends InfixOpExpr {
-        public AndExpr(Expr<BooleanValue>[] expressions) {
+        public AndExpr(RSExpr<RSBool>[] expressions) {
             super(expressions);
         }
 
         @Override
-        public BooleanValue evaluate(Infra.State infraState, IExprValue[] scope) {
+        public RSBool evaluate(Infra.State infraState, RSValue[] scope) {
             for (var expr : expressions)
                 if (!expr.evaluate(infraState, scope).value)
-                    return BooleanValue.True;
-            return BooleanValue.False;
+                    return RSBool.True;
+            return RSBool.False;
         }
 
         @Override
-        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
             super.accept(visitor);
         }
     }
 
-    public static final class NotExpr extends Expr<BooleanValue> {
-        public final Expr<BooleanValue> expr;
+    public static final class NotExpr extends RSExpr<RSBool> {
+        public final RSExpr<RSBool> expr;
 
-        public NotExpr(Expr<BooleanValue> expr) {
+        public NotExpr(RSExpr<RSBool> expr) {
             this.expr = expr;
         }
 
         @Override
-        public BooleanValue evaluate(Infra.State infraState, IExprValue[] scope) {
-            return BooleanValue.from(!expr.evaluate(infraState, scope).value);
+        public RSBool evaluate(Infra.State infraState, RSValue[] scope) {
+            return RSBool.from(!expr.evaluate(infraState, scope).value);
         }
 
         @Override
-        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
             expr.accept(visitor);
         }
 
         @Override
-        public ValueType getType(ValueType[] argumentTypes) {
-            return ValueType.BOOLEAN;
+        public RSValueType getType(RSValueType[] argumentTypes) {
+            return RSValueType.BOOLEAN;
         }
     }
 
@@ -116,62 +116,62 @@ public abstract class Expr<T extends IExprValue> {
 
     // region VALUE_CONSTRUCTORS
 
-    public static final class TrueExpr extends Expr<BooleanValue> {
+    public static final class TrueExpr extends RSExpr<RSBool> {
         private TrueExpr() {
         }
 
         public static final TrueExpr INSTANCE = new TrueExpr();
 
         @Override
-        public BooleanValue evaluate(Infra.State infraState, IExprValue[] scope) {
-            return BooleanValue.True;
+        public RSBool evaluate(Infra.State infraState, RSValue[] scope) {
+            return RSBool.True;
         }
 
         @Override
-        public ValueType getType(ValueType[] argumentTypes) {
-            return ValueType.BOOLEAN;
+        public RSValueType getType(RSValueType[] argumentTypes) {
+            return RSValueType.BOOLEAN;
         }
 
         @Override
-        public void accept(ExprVisitor visitor) {
+        public void accept(RSExprVisitor visitor) {
             visitor.visit(this);
         }
     }
 
-    public static final class FalseExpr extends Expr<BooleanValue> {
+    public static final class FalseExpr extends RSExpr<RSBool> {
         private FalseExpr() {
         }
 
         public static final FalseExpr INSTANCE = new FalseExpr();
 
         @Override
-        public BooleanValue evaluate(Infra.State infraState, IExprValue[] scope) {
-            return BooleanValue.False;
+        public RSBool evaluate(Infra.State infraState, RSValue[] scope) {
+            return RSBool.False;
         }
 
         @Override
-        public ValueType getType(ValueType[] argumentTypes) {
-            return ValueType.BOOLEAN;
+        public RSValueType getType(RSValueType[] argumentTypes) {
+            return RSValueType.BOOLEAN;
         }
 
         @Override
-        public void accept(ExprVisitor visitor) {
+        public void accept(RSExprVisitor visitor) {
             visitor.visit(this);
         }
     }
 
-    public static final class AspectSetExpr extends Expr<AspectSet> {
+    public static final class AspectSetExpr extends RSExpr<RSAspectSet> {
         public final Aspect[] aspects;
-        public final Expr<BooleanValue>[] conditions;
+        public final RSExpr<RSBool>[] conditions;
 
-        public AspectSetExpr(Aspect[] aspects, Expr<BooleanValue>[] conditions) {
+        public AspectSetExpr(Aspect[] aspects, RSExpr<RSBool>[] conditions) {
             this.aspects = aspects;
             this.conditions = conditions;
         }
 
         @Override
-        public AspectSet evaluate(Infra.State infraState, IExprValue[] scope) {
-            var res = new AspectSet();
+        public RSAspectSet evaluate(Infra.State infraState, RSValue[] scope) {
+            var res = new RSAspectSet();
             for (int i = 0; i < aspects.length; i++) {
                 var condition = conditions[i];
                 if (condition == null || condition.evaluate(infraState, scope).value)
@@ -181,19 +181,19 @@ public abstract class Expr<T extends IExprValue> {
         }
 
         @Override
-        public ValueType getType(ValueType[] argumentTypes) {
-            return ValueType.ASPECT_SET;
+        public RSValueType getType(RSValueType[] argumentTypes) {
+            return RSValueType.ASPECT_SET;
         }
 
         @Override
-        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
             for (var condition : conditions)
                 condition.accept(visitor);
         }
     }
 
-    public static final class SignalRefExpr extends Expr<Signal.State> {
+    public static final class SignalRefExpr extends RSExpr<Signal.State> {
         public final String signalName;
 
         private Signal signal = null;
@@ -210,22 +210,22 @@ public abstract class Expr<T extends IExprValue> {
         }
 
         @Override
-        public Signal.State evaluate(Infra.State infraState, IExprValue[] scope) {
+        public Signal.State evaluate(Infra.State infraState, RSValue[] scope) {
             return infraState.getState(signal);
         }
 
         @Override
-        public ValueType getType(ValueType[] argumentTypes) {
-            return ValueType.SIGNAL;
+        public RSValueType getType(RSValueType[] argumentTypes) {
+            return RSValueType.SIGNAL;
         }
 
         @Override
-        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
         }
     }
 
-    public static final class RouteRefExpr extends Expr<Route.State> {
+    public static final class RouteRefExpr extends RSExpr<Route.State> {
         public final String routeName;
 
         private Route route = null;
@@ -242,17 +242,17 @@ public abstract class Expr<T extends IExprValue> {
         }
 
         @Override
-        public Route.State evaluate(Infra.State infraState, IExprValue[] scope) {
+        public Route.State evaluate(Infra.State infraState, RSValue[] scope) {
             return infraState.getState(route);
         }
 
         @Override
-        public ValueType getType(ValueType[] argumentTypes) {
-            return ValueType.ROUTE;
+        public RSValueType getType(RSValueType[] argumentTypes) {
+            return RSValueType.ROUTE;
         }
 
         @Override
-        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
         }
     }
@@ -261,20 +261,20 @@ public abstract class Expr<T extends IExprValue> {
 
     // region CONTROL_FLOW
 
-    public static final class IfExpr<T extends IExprValue> extends Expr<T> {
-        public final Expr<BooleanValue> ifExpr;
-        public final Expr<T> thenExpr;
-        public final Expr<T> elseExpr;
+    public static final class IfExpr<T extends RSValue> extends RSExpr<T> {
+        public final RSExpr<RSBool> ifExpr;
+        public final RSExpr<T> thenExpr;
+        public final RSExpr<T> elseExpr;
 
         /** A condition */
-        public IfExpr(Expr<BooleanValue> ifExpr, Expr<T> thenExpr, Expr<T> elseExpr) {
+        public IfExpr(RSExpr<RSBool> ifExpr, RSExpr<T> thenExpr, RSExpr<T> elseExpr) {
             this.ifExpr = ifExpr;
             this.thenExpr = thenExpr;
             this.elseExpr = elseExpr;
         }
 
         @Override
-        public T evaluate(Infra.State infraState, IExprValue[] scope) {
+        public T evaluate(Infra.State infraState, RSValue[] scope) {
             if (ifExpr.evaluate(infraState, scope).value) {
                 return thenExpr.evaluate(infraState, scope);
             } else {
@@ -283,12 +283,12 @@ public abstract class Expr<T extends IExprValue> {
         }
 
         @Override
-        public ValueType getType(ValueType[] argumentTypes) {
+        public RSValueType getType(RSValueType[] argumentTypes) {
             return thenExpr.getType(argumentTypes);
         }
 
         @Override
-        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
             ifExpr.accept(visitor);
             thenExpr.accept(visitor);
@@ -296,58 +296,58 @@ public abstract class Expr<T extends IExprValue> {
         }
     }
 
-    public static final class CallExpr<T extends IExprValue> extends Expr<T> {
-        public final Function<T> function;
-        public final Expr<?>[] arguments;
+    public static final class CallExpr<T extends RSValue> extends RSExpr<T> {
+        public final RSFunction<T> function;
+        public final RSExpr<?>[] arguments;
 
-        public CallExpr(Function<T> function, Expr<?>[] arguments) {
+        public CallExpr(RSFunction<T> function, RSExpr<?>[] arguments) {
             this.function = function;
             this.arguments = arguments;
         }
 
         @Override
-        public T evaluate(Infra.State infraState, IExprValue[] scope) {
-            var newScope = new IExprValue[arguments.length];
+        public T evaluate(Infra.State infraState, RSValue[] scope) {
+            var newScope = new RSValue[arguments.length];
             for (int i = 0; i < arguments.length; i++)
                 newScope[i] = arguments[i].evaluate(infraState, scope);
             return function.body.evaluate(infraState, newScope);
         }
 
         @Override
-        public ValueType getType(ValueType[] argumentTypes) {
+        public RSValueType getType(RSValueType[] argumentTypes) {
             return this.function.returnsType;
         }
 
         @Override
-        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
             for (var arg : arguments)
                 arg.accept(visitor);
         }
     }
 
-    public static final class EnumMatchExpr<T extends IExprValue, CondT extends IMatchableValue> extends Expr<T> {
-        public final Expr<CondT> expr;
-        public final Expr<T>[] branches;
+    public static final class EnumMatchExpr<T extends RSValue, CondT extends RSMatchable> extends RSExpr<T> {
+        public final RSExpr<CondT> expr;
+        public final RSExpr<T>[] branches;
 
-        public EnumMatchExpr(Expr<CondT> expr, Expr<T>[] branches) {
+        public EnumMatchExpr(RSExpr<CondT> expr, RSExpr<T>[] branches) {
             this.expr = expr;
             this.branches = branches;
         }
 
         @Override
-        public T evaluate(Infra.State infraState, IExprValue[] scope) {
+        public T evaluate(Infra.State infraState, RSValue[] scope) {
             var branchIndex = expr.evaluate(infraState, scope).getEnumValue();
             return branches[branchIndex].evaluate(infraState, scope);
         }
 
         @Override
-        public ValueType getType(ValueType[] argumentTypes) {
+        public RSValueType getType(RSValueType[] argumentTypes) {
             return branches[0].getType(argumentTypes);
         }
 
         @Override
-        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
             expr.accept(visitor);
             for (var branch : branches)
@@ -359,7 +359,7 @@ public abstract class Expr<T extends IExprValue> {
 
     // region FUNCTION_SPECIFIC
 
-    public static final class ArgumentRefExpr<T extends IExprValue> extends Expr<T> {
+    public static final class ArgumentRefExpr<T extends RSValue> extends RSExpr<T> {
         public final int argumentIndex;
 
         public ArgumentRefExpr(int argumentIndex) {
@@ -368,17 +368,17 @@ public abstract class Expr<T extends IExprValue> {
 
         @Override
         @SuppressWarnings("unchecked")
-        public T evaluate(Infra.State infraState, IExprValue[] scope) {
+        public T evaluate(Infra.State infraState, RSValue[] scope) {
             return (T) scope[argumentIndex];
         }
 
         @Override
-        public ValueType getType(ValueType[] argumentTypes) {
+        public RSValueType getType(RSValueType[] argumentTypes) {
             return argumentTypes[argumentIndex];
         }
 
         @Override
-        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
         }
     }
@@ -387,82 +387,82 @@ public abstract class Expr<T extends IExprValue> {
 
     // region PRIMITIVES
 
-    public static final class SignalAspectCheckExpr extends Expr<BooleanValue> {
+    public static final class SignalAspectCheckExpr extends RSExpr<RSBool> {
         /** The signal the condition checks for */
-        public final Expr<Signal.State> signalExpr;
+        public final RSExpr<Signal.State> signalExpr;
 
         /** The condition is true when the signal has the following aspect */
         public final Aspect aspect;
 
-        public SignalAspectCheckExpr(Expr<Signal.State> signalExpr, Aspect aspect) {
+        public SignalAspectCheckExpr(RSExpr<Signal.State> signalExpr, Aspect aspect) {
             this.signalExpr = signalExpr;
             this.aspect = aspect;
         }
 
         @Override
-        public BooleanValue evaluate(Infra.State infraState, IExprValue[] scope) {
+        public RSBool evaluate(Infra.State infraState, RSValue[] scope) {
             var signal = signalExpr.evaluate(infraState, scope);
-            return BooleanValue.from(signal.aspects.contains(aspect));
+            return RSBool.from(signal.aspects.contains(aspect));
         }
 
         @Override
-        public ValueType getType(ValueType[] argumentTypes) {
-            return ValueType.BOOLEAN;
+        public RSValueType getType(RSValueType[] argumentTypes) {
+            return RSValueType.BOOLEAN;
         }
 
         @Override
-        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
             signalExpr.accept(visitor);
         }
     }
 
-    public static final class RouteStateCheckExpr extends Expr<BooleanValue> {
-        public final Expr<Route.State> routeExpr;
+    public static final class RouteStateCheckExpr extends RSExpr<RSBool> {
+        public final RSExpr<Route.State> routeExpr;
         public final RouteStatus status;
 
-        public RouteStateCheckExpr(Expr<Route.State> routeExpr, RouteStatus status) {
+        public RouteStateCheckExpr(RSExpr<Route.State> routeExpr, RouteStatus status) {
             this.routeExpr = routeExpr;
             this.status = status;
         }
 
         @Override
-        public BooleanValue evaluate(Infra.State infraState, IExprValue[] scope) {
-            return BooleanValue.from(routeExpr.evaluate(infraState, scope).status == status);
+        public RSBool evaluate(Infra.State infraState, RSValue[] scope) {
+            return RSBool.from(routeExpr.evaluate(infraState, scope).status == status);
         }
 
         @Override
-        public ValueType getType(ValueType[] argumentTypes) {
-            return ValueType.BOOLEAN;
+        public RSValueType getType(RSValueType[] argumentTypes) {
+            return RSValueType.BOOLEAN;
         }
 
         @Override
-        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
         }
     }
 
-    public static final class AspectSetContainsExpr extends Expr<BooleanValue> {
-        public final Expr<AspectSet> expr;
+    public static final class AspectSetContainsExpr extends RSExpr<RSBool> {
+        public final RSExpr<RSAspectSet> expr;
         public final Aspect aspect;
 
-        public AspectSetContainsExpr(Expr<AspectSet> expr, Aspect aspect) {
+        public AspectSetContainsExpr(RSExpr<RSAspectSet> expr, Aspect aspect) {
             this.expr = expr;
             this.aspect = aspect;
         }
 
         @Override
-        public BooleanValue evaluate(Infra.State infraState, IExprValue[] scope) {
-            return BooleanValue.from(expr.evaluate(infraState, scope).contains(aspect));
+        public RSBool evaluate(Infra.State infraState, RSValue[] scope) {
+            return RSBool.from(expr.evaluate(infraState, scope).contains(aspect));
         }
 
         @Override
-        public ValueType getType(ValueType[] argumentTypes) {
-            return ValueType.BOOLEAN;
+        public RSValueType getType(RSValueType[] argumentTypes) {
+            return RSValueType.BOOLEAN;
         }
 
         @Override
-        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
             expr.accept(visitor);
         }
