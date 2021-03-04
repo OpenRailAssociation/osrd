@@ -91,26 +91,26 @@ public abstract class RJSRSExpr {
     public static final PolymorphicJsonAdapterFactory<RJSRSExpr> adapter = (
             PolymorphicJsonAdapterFactory.of(RJSRSExpr.class, "type")
                     // boolean operators
-                    .withSubtype(OrExpr.class, "or")
-                    .withSubtype(AndExpr.class, "and")
-                    .withSubtype(NotExpr.class, "not")
+                    .withSubtype(Or.class, "or")
+                    .withSubtype(And.class, "and")
+                    .withSubtype(Not.class, "not")
                     // value constructors
-                    .withSubtype(TrueExpr.class, "true")
-                    .withSubtype(FalseExpr.class, "false")
-                    .withSubtype(AspectSetExpr.class, "aspect_set")
-                    .withSubtype(SignalRefExpr.class, "signal")
-                    .withSubtype(RouteRefExpr.class, "route")
-                    .withSubtype(SwitchRefExpr.class, "switch")
+                    .withSubtype(True.class, "true")
+                    .withSubtype(False.class, "false")
+                    .withSubtype(AspectSet.class, "aspect_set")
+                    .withSubtype(SignalRef.class, "signal")
+                    .withSubtype(RouteRef.class, "route")
+                    .withSubtype(SwitchRef.class, "switch")
                     // control flow
-                    .withSubtype(IfExpr.class, "condition")
-                    .withSubtype(CallExpr.class, "call")
-                    .withSubtype(EnumMatchExpr.class, "match")
+                    .withSubtype(If.class, "condition")
+                    .withSubtype(Call.class, "call")
+                    .withSubtype(EnumMatch.class, "match")
                     // function-specific
-                    .withSubtype(ArgumentRefExpr.class, "argument_ref")
+                    .withSubtype(ArgumentRef.class, "argument_ref")
                     // primitives
-                    .withSubtype(SignalAspectCheckExpr.class, "signal_has_aspect")
-                    .withSubtype(RouteStateCheckExpr.class, "route_has_state")
-                    .withSubtype(AspectSetContainsExpr.class, "aspect_set_contains")
+                    .withSubtype(SignalAspectCheck.class, "signal_has_aspect")
+                    .withSubtype(RouteStateCheck.class, "route_has_state")
+                    .withSubtype(AspectSetContains.class, "aspect_set_contains")
     );
 
     // region BOOLEAN_LOGIC
@@ -123,22 +123,22 @@ public abstract class RJSRSExpr {
         }
     }
 
-    public static final class OrExpr extends InfixOpExpr {
-        public OrExpr(RJSRSExpr[] exprs) {
+    public static final class Or extends InfixOpExpr {
+        public Or(RJSRSExpr[] exprs) {
             super(exprs);
         }
     }
 
-    public static final class AndExpr extends InfixOpExpr {
-        public AndExpr(RJSRSExpr[] exprs) {
+    public static final class And extends InfixOpExpr {
+        public And(RJSRSExpr[] exprs) {
             super(exprs);
         }
     }
 
-    public static final class NotExpr extends RJSRSExpr {
+    public static final class Not extends RJSRSExpr {
         public final RJSRSExpr expr;
 
-        public NotExpr(RJSRSExpr expr) {
+        public Not(RJSRSExpr expr) {
             this.expr = expr;
         }
     }
@@ -147,17 +147,17 @@ public abstract class RJSRSExpr {
 
     // region VALUE_CONSTRUCTORS
 
-    public static final class TrueExpr extends RJSRSExpr {
-        public TrueExpr() {
+    public static final class True extends RJSRSExpr {
+        public True() {
         }
     }
 
-    public static final class FalseExpr extends RJSRSExpr {
-        public FalseExpr() {
+    public static final class False extends RJSRSExpr {
+        public False() {
         }
     }
 
-    public static final class AspectSetExpr extends RJSRSExpr {
+    public static final class AspectSet extends RJSRSExpr {
         public static final class AspectSetMember {
             public final ID<RJSAspect> aspect;
 
@@ -171,31 +171,31 @@ public abstract class RJSRSExpr {
 
         public final AspectSetMember[] members;
 
-        public AspectSetExpr(AspectSetMember[] members) {
+        public AspectSet(AspectSetMember[] members) {
             this.members = members;
         }
     }
 
-    public static final class SignalRefExpr extends RJSRSExpr {
+    public static final class SignalRef extends RJSRSExpr {
         public final ID<RJSSignal> signal;
 
-        public SignalRefExpr(ID<RJSSignal> signal) {
+        public SignalRef(ID<RJSSignal> signal) {
             this.signal = signal;
         }
     }
 
-    public static final class RouteRefExpr extends RJSRSExpr {
+    public static final class RouteRef extends RJSRSExpr {
         public final ID<RJSRoute> route;
 
-        public RouteRefExpr(ID<RJSRoute> route) {
+        public RouteRef(ID<RJSRoute> route) {
             this.route = route;
         }
     }
 
-    public static final class SwitchRefExpr extends RJSRSExpr {
+    public static final class SwitchRef extends RJSRSExpr {
         public final ID<RJSSwitch> route;
 
-        public SwitchRefExpr(ID<RJSSwitch> route) {
+        public SwitchRef(ID<RJSSwitch> route) {
             this.route = route;
         }
     }
@@ -203,7 +203,7 @@ public abstract class RJSRSExpr {
 
     // region CONTROL_FLOW
 
-    public static final class IfExpr extends RJSRSExpr {
+    public static final class If extends RJSRSExpr {
         @Json(name = "if")
         public final RJSRSExpr condition;
 
@@ -214,30 +214,30 @@ public abstract class RJSRSExpr {
         public final RJSRSExpr branchFalse;
 
         /** If the "if" expression returns true, run the "then" branch. Otherwise, run the "else" branch. */
-        public IfExpr(RJSRSExpr condition, RJSRSExpr branchTrue, RJSRSExpr branchFalse) {
+        public If(RJSRSExpr condition, RJSRSExpr branchTrue, RJSRSExpr branchFalse) {
             this.condition = condition;
             this.branchTrue = branchTrue;
             this.branchFalse = branchFalse;
         }
     }
 
-    public static final class CallExpr extends RJSRSExpr {
+    public static final class Call extends RJSRSExpr {
         public final ID<RJSRSFunction> function;
 
         public final RJSRSExpr[] arguments;
 
-        CallExpr(ID<RJSRSFunction> function, RJSRSExpr[] arguments) {
+        Call(ID<RJSRSFunction> function, RJSRSExpr[] arguments) {
             this.function = function;
             this.arguments = arguments;
         }
     }
 
-    public static final class EnumMatchExpr extends RJSRSExpr {
+    public static final class EnumMatch extends RJSRSExpr {
         public final RJSRSExpr expr;
 
         public final Map<String, RJSRSExpr> branches;
 
-        public EnumMatchExpr(
+        public EnumMatch(
                 RJSRSExpr expr,
                 Map<String, RJSRSExpr> branches
         ) {
@@ -250,11 +250,11 @@ public abstract class RJSRSExpr {
 
     // region FUNCTION_SPECIFIC
 
-    public static final class ArgumentRefExpr extends RJSRSExpr {
+    public static final class ArgumentRef extends RJSRSExpr {
         @Json(name = "argument_name")
         public final String argumentName;
 
-        public ArgumentRefExpr(String argumentName) {
+        public ArgumentRef(String argumentName) {
             this.argumentName = argumentName;
         }
     }
@@ -266,7 +266,7 @@ public abstract class RJSRSExpr {
     /**
      * Returns whether some signal has a given aspect.
      */
-    public static final class SignalAspectCheckExpr extends RJSRSExpr {
+    public static final class SignalAspectCheck extends RJSRSExpr {
         /**
          * The signal the condition checks for.
          */
@@ -275,7 +275,7 @@ public abstract class RJSRSExpr {
         /** The condition is true when the signal has the following aspect */
         public final ID<RJSAspect> aspect;
 
-        public SignalAspectCheckExpr(RJSRSExpr signal, ID<RJSAspect> aspect) {
+        public SignalAspectCheck(RJSRSExpr signal, ID<RJSAspect> aspect) {
             this.signal = signal;
             this.aspect = aspect;
         }
@@ -284,7 +284,7 @@ public abstract class RJSRSExpr {
     /**
      * Returns whether some route is in a given state.
      */
-    public static final class  RouteStateCheckExpr extends RJSRSExpr {
+    public static final class RouteStateCheck extends RJSRSExpr {
         /**
          * The signal the condition checks for.
          */
@@ -293,7 +293,7 @@ public abstract class RJSRSExpr {
         /** The condition is true when the signal has the following aspect */
         public final RJSRoute.State state;
 
-        public RouteStateCheckExpr(RJSRSExpr route, RJSRoute.State state) {
+        public RouteStateCheck(RJSRSExpr route, RJSRoute.State state) {
             this.route = route;
             this.state = state;
         }
@@ -302,7 +302,7 @@ public abstract class RJSRSExpr {
     /**
      * Returns whether some aspect set contains a given aspect.
      */
-    public static final class AspectSetContainsExpr extends RJSRSExpr {
+    public static final class AspectSetContains extends RJSRSExpr {
         /**
          * The signal the condition checks for.
          */
@@ -312,7 +312,7 @@ public abstract class RJSRSExpr {
         /** The condition is true when the signal has the following aspect */
         public final ID<RJSAspect> aspect;
 
-        public AspectSetContainsExpr(RJSRSExpr aspectSet, ID<RJSAspect> aspect) {
+        public AspectSetContains(RJSRSExpr aspectSet, ID<RJSAspect> aspect) {
             this.aspectSet = aspectSet;
             this.aspect = aspect;
         }

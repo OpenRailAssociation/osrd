@@ -85,27 +85,27 @@ public class PrettyPrinter extends RSExprVisitor {
     }
 
     @Override
-    public void visit(RSExpr.TrueExpr expr) {
+    public void visit(RSExpr.True expr) {
         out.print("true");
     }
 
     @Override
-    public void visit(RSExpr.FalseExpr expr) {
+    public void visit(RSExpr.False expr) {
         out.print("false");
     }
 
     @Override
-    public void visit(RSExpr.SignalRefExpr expr) {
+    public void visit(RSExpr.SignalRef expr) {
         out.printf("\"%s\"", expr.signalName);
     }
 
     @Override
-    public void visit(RSExpr.RouteRefExpr expr) {
+    public void visit(RSExpr.RouteRef expr) {
         out.printf("\"%s\"", expr.routeName);
     }
 
     @Override
-    public void visit(RSExpr.OrExpr expr) throws InvalidInfraException {
+    public void visit(RSExpr.Or expr) throws InvalidInfraException {
         if (expr.expressions.length == 1) {
             expr.expressions[0].accept(this);
             return;
@@ -120,7 +120,7 @@ public class PrettyPrinter extends RSExprVisitor {
     }
 
     @Override
-    public void visit(RSExpr.AndExpr expr) throws InvalidInfraException {
+    public void visit(RSExpr.And expr) throws InvalidInfraException {
         expr.expressions[0].accept(this);
         for (var i = 1; i < expr.expressions.length; i++) {
             out.print(" and ");
@@ -129,13 +129,13 @@ public class PrettyPrinter extends RSExprVisitor {
     }
 
     @Override
-    public void visit(RSExpr.NotExpr expr) throws InvalidInfraException {
+    public void visit(RSExpr.Not expr) throws InvalidInfraException {
         out.print("not ");
         expr.expr.accept(this);
     }
 
     @Override
-    public void visit(RSExpr.AspectSetExpr expr) throws InvalidInfraException {
+    public void visit(RSExpr.AspectSet expr) throws InvalidInfraException {
         out.print("AspectSet{\n");
         inctab();
         for (var i = 0; i < expr.conditions.length; i++) {
@@ -155,7 +155,7 @@ public class PrettyPrinter extends RSExprVisitor {
     }
 
     @Override
-    public void visit(RSExpr.IfExpr<?> expr) throws InvalidInfraException {
+    public void visit(RSExpr.If<?> expr) throws InvalidInfraException {
         out.print("if ");
         expr.ifExpr.accept(this);
         out.println(" {");
@@ -170,7 +170,7 @@ public class PrettyPrinter extends RSExprVisitor {
     }
 
     @Override
-    public void visit(RSExpr.CallExpr<?> expr) throws InvalidInfraException {
+    public void visit(RSExpr.Call<?> expr) throws InvalidInfraException {
         out.printf("%s(", expr.function.functionName);
         for (var i = 0; i < expr.arguments.length - 1; i++) {
             expr.arguments[i].accept(this);
@@ -182,7 +182,7 @@ public class PrettyPrinter extends RSExprVisitor {
     }
 
     @Override
-    public void visit(RSExpr.EnumMatchExpr<?, ?> expr) throws InvalidInfraException {
+    public void visit(RSExpr.EnumMatch<?, ?> expr) throws InvalidInfraException {
         out.print("match ");
         expr.expr.accept(this);
         out.print(" {\n");
@@ -200,26 +200,26 @@ public class PrettyPrinter extends RSExprVisitor {
     }
 
     @Override
-    public void visit(RSExpr.ArgumentRefExpr<?> expr) {
+    public void visit(RSExpr.ArgumentRef<?> expr) {
         out.printf("%s", currentFct.argumentNames[expr.argumentIndex]);
     }
 
     @Override
-    public void visit(RSExpr.SignalAspectCheckExpr expr) throws InvalidInfraException {
+    public void visit(RSExpr.SignalAspectCheck expr) throws InvalidInfraException {
         out.print("signal_has_aspect");
         expr.signalExpr.accept(this);
         out.printf(", %s)", expr.aspect);
     }
 
     @Override
-    public void visit(RSExpr.RouteStateCheckExpr expr) throws InvalidInfraException {
+    public void visit(RSExpr.RouteStateCheck expr) throws InvalidInfraException {
         out.print("route_has_state");
         expr.routeExpr.accept(this);
         out.printf(", %s)", expr.status);
     }
 
     @Override
-    public void visit(RSExpr.AspectSetContainsExpr expr) throws InvalidInfraException {
+    public void visit(RSExpr.AspectSetContains expr) throws InvalidInfraException {
         out.print("aspect_set_contains(");
         expr.expr.accept(this);
         out.printf(", %s)", expr.aspect);
