@@ -14,7 +14,7 @@ public final class SimulationManager {
     private final Config config;
 
     private SimulationManager(Config config, ArrayChangeLog changelog) throws SimulationError {
-        this.sim = Simulation.create(config.infra, 0, config.schedule, changelog);
+        this.sim = Simulation.create(config.infra, 0, changelog);
         this.changelog = changelog;
         this.config = config;
     }
@@ -43,13 +43,13 @@ public final class SimulationManager {
 
         // if the user doesn't want realtime visualization, update the viewer once per timeline event
         if (!config.realTimeViewer) {
-            viewer.update(sim.world, nextEventTime);
+            viewer.update(sim.trains, nextEventTime);
             Thread.sleep((long) (interpolationStep * 1000));
             return;
         }
 
         // skip updates when there are no trains
-        if (sim.world.trains.isEmpty())
+        if (sim.trains.isEmpty())
             return;
 
         // move the time forward by time increments
@@ -62,7 +62,7 @@ public final class SimulationManager {
                 interpolatedTime = nextEventTime;
 
             Thread.sleep((long) (interpolationStep * 1000));
-            viewer.update(sim.world, interpolatedTime);
+            viewer.update(sim.trains, interpolatedTime);
         }
     }
 
@@ -70,13 +70,18 @@ public final class SimulationManager {
      * Run the simulation
      */
     public void run() throws SimulationError, InterruptedException {
-        DebugViewer viewer = null;
+        // plan train creation
+        for (var trainSchedule : config.schedule.trainSchedules)
+            sim.scheduler.planTrain(sim, trainSchedule);
 
+        // initialize the viewer
+        DebugViewer viewer = null;
         if (config.showViewer) {
             viewer = new DebugViewer(config.infra);
             viewer.display();
         }
 
+        // run the simulation loop
         for (int eventsCount = 0; !sim.isSimulationOver(); eventsCount++) {
             if (eventsCount != 0)
                 Thread.sleep((long) (config.simulationStepPause * 1000));

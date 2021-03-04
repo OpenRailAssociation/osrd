@@ -10,9 +10,6 @@ public abstract class Entity extends EntityID {
         super(type, id);
     }
 
-    public void initialize() {
-    }
-
     // region STD_OVERRIDES
 
     @Override

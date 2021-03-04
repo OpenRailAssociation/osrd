@@ -33,6 +33,19 @@ public class SortedArraySet<E extends Comparable<E>> extends AbstractSet<E> {
         return data.equals(((SortedArraySet<?>) o).data);
     }
 
+    /** Check whether the set contains some element */
+    public boolean contains(E o) {
+        for (var element : data) {
+            var cmpRes = element.compareTo(o);
+            if (cmpRes < 0)
+                continue;
+            if (cmpRes == 0)
+                return true;
+            break;
+        }
+        return false;
+    }
+
     @Override
     public int hashCode() {
         return data.hashCode();

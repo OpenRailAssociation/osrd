@@ -7,6 +7,7 @@ import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 class InfraTest {
@@ -18,6 +19,6 @@ class InfraTest {
         var nodeB = trackGraph.makePlaceholderNode("B");
         trackGraph.makeTrackSection(nodeA.index, nodeB.index, "e1", 42);
 
-        new Infra(trackGraph, null, null, new HashMap<>(), new HashMap<>());
+        new Infra(trackGraph, null, null, new HashMap<>(), new HashMap<>(), new ArrayList<>());
     }
 }

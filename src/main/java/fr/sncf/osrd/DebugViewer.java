@@ -2,7 +2,6 @@ package fr.sncf.osrd;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.simulation.World;
 import fr.sncf.osrd.train.Train;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
@@ -11,6 +10,7 @@ import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.spriteManager.Sprite;
 import org.graphstream.ui.spriteManager.SpriteManager;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -74,8 +74,8 @@ public class DebugViewer {
         graph.display();
     }
 
-    public void update(World world, double currentTime) {
-        for (var train : world.trains)
+    public void update(Collection<Train> trains, double currentTime) {
+        for (var train : trains)
             displayTrain(train, currentTime);
     }
 

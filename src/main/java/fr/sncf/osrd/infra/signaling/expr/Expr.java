@@ -1,18 +1,30 @@
 package fr.sncf.osrd.infra.signaling.expr;
 
+import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.routegraph.Route;
+import fr.sncf.osrd.infra.routegraph.RouteStatus;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.signaling.expr.value.*;
 
+import java.util.Map;
+
 public abstract class Expr<T extends IExprValue> {
     /**
      * Evaluates an expression, returning whether it's true or not
+     * @param infraState the state of the infrastructure
      * @param scope the argument list of the function
      * @return whether the expression is true
      */
-    public abstract T evaluate(IExprValue[] scope);
+    public abstract T evaluate(Infra.State infraState, IExprValue[] scope);
+
+    public abstract void accept(ExprVisitor visitor) throws InvalidInfraException;
 
     public abstract ValueType getType(ValueType[] argumentTypes);
+
+    // value constructors
+    // TODO: support RJSSignalExpr.SwitchExpr
 
     // region BOOLEAN_OPERATORS
 
@@ -28,6 +40,12 @@ public abstract class Expr<T extends IExprValue> {
         public ValueType getType(ValueType[] argumentTypes) {
             return ValueType.BOOLEAN;
         }
+
+        @Override
+        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+            for (var expr : expressions)
+                expr.accept(visitor);
+        }
     }
 
     public static final class OrExpr extends InfixOpExpr {
@@ -36,11 +54,17 @@ public abstract class Expr<T extends IExprValue> {
         }
 
         @Override
-        public BooleanValue evaluate(IExprValue[] scope) {
+        public BooleanValue evaluate(Infra.State infraState, IExprValue[] scope) {
             for (var expr : expressions)
-                if (expr.evaluate(scope).value)
+                if (expr.evaluate(infraState, scope).value)
                     return BooleanValue.True;
             return BooleanValue.False;
+        }
+
+        @Override
+        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+            super.accept(visitor);
         }
     }
 
@@ -50,24 +74,36 @@ public abstract class Expr<T extends IExprValue> {
         }
 
         @Override
-        public BooleanValue evaluate(IExprValue[] scope) {
+        public BooleanValue evaluate(Infra.State infraState, IExprValue[] scope) {
             for (var expr : expressions)
-                if (!expr.evaluate(scope).value)
+                if (!expr.evaluate(infraState, scope).value)
                     return BooleanValue.True;
             return BooleanValue.False;
+        }
+
+        @Override
+        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+            super.accept(visitor);
         }
     }
 
     public static final class NotExpr extends Expr<BooleanValue> {
-        public final Expr<BooleanValue> expression;
+        public final Expr<BooleanValue> expr;
 
-        public NotExpr(Expr<BooleanValue> expression) {
-            this.expression = expression;
+        public NotExpr(Expr<BooleanValue> expr) {
+            this.expr = expr;
         }
 
         @Override
-        public BooleanValue evaluate(IExprValue[] scope) {
-            return BooleanValue.from(!expression.evaluate(scope).value);
+        public BooleanValue evaluate(Infra.State infraState, IExprValue[] scope) {
+            return BooleanValue.from(!expr.evaluate(infraState, scope).value);
+        }
+
+        @Override
+        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+            expr.accept(visitor);
         }
 
         @Override
@@ -87,13 +123,18 @@ public abstract class Expr<T extends IExprValue> {
         public static final TrueExpr INSTANCE = new TrueExpr();
 
         @Override
-        public BooleanValue evaluate(IExprValue[] scope) {
+        public BooleanValue evaluate(Infra.State infraState, IExprValue[] scope) {
             return BooleanValue.True;
         }
 
         @Override
         public ValueType getType(ValueType[] argumentTypes) {
             return ValueType.BOOLEAN;
+        }
+
+        @Override
+        public void accept(ExprVisitor visitor) {
+            visitor.visit(this);
         }
     }
 
@@ -104,13 +145,18 @@ public abstract class Expr<T extends IExprValue> {
         public static final FalseExpr INSTANCE = new FalseExpr();
 
         @Override
-        public BooleanValue evaluate(IExprValue[] scope) {
+        public BooleanValue evaluate(Infra.State infraState, IExprValue[] scope) {
             return BooleanValue.False;
         }
 
         @Override
         public ValueType getType(ValueType[] argumentTypes) {
             return ValueType.BOOLEAN;
+        }
+
+        @Override
+        public void accept(ExprVisitor visitor) {
+            visitor.visit(this);
         }
     }
 
@@ -124,11 +170,11 @@ public abstract class Expr<T extends IExprValue> {
         }
 
         @Override
-        public AspectSet evaluate(IExprValue[] scope) {
+        public AspectSet evaluate(Infra.State infraState, IExprValue[] scope) {
             var res = new AspectSet();
             for (int i = 0; i < aspects.length; i++) {
                 var condition = conditions[i];
-                if (condition == null || condition.evaluate(scope).value)
+                if (condition == null || condition.evaluate(infraState, scope).value)
                     res.add(aspects[i]);
             }
             return res;
@@ -137,6 +183,77 @@ public abstract class Expr<T extends IExprValue> {
         @Override
         public ValueType getType(ValueType[] argumentTypes) {
             return ValueType.ASPECT_SET;
+        }
+
+        @Override
+        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+            for (var condition : conditions)
+                condition.accept(visitor);
+        }
+    }
+
+    public static final class SignalRefExpr extends Expr<Signal.State> {
+        public final String signalName;
+
+        private Signal signal = null;
+
+        public SignalRefExpr(String signalName) {
+            this.signalName = signalName;
+        }
+
+        /** Resolve the name of the signal reference into a signal */
+        public void resolve(Map<String, Signal> signals) throws InvalidInfraException {
+            signal = signals.get(signalName);
+            if (signal == null)
+                throw new InvalidInfraException("unknown signal " + signalName);
+        }
+
+        @Override
+        public Signal.State evaluate(Infra.State infraState, IExprValue[] scope) {
+            return infraState.getState(signal);
+        }
+
+        @Override
+        public ValueType getType(ValueType[] argumentTypes) {
+            return ValueType.SIGNAL;
+        }
+
+        @Override
+        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+        }
+    }
+
+    public static final class RouteRefExpr extends Expr<Route.State> {
+        public final String routeName;
+
+        private Route route = null;
+
+        public RouteRefExpr(String routeName) {
+            this.routeName = routeName;
+        }
+
+        /** Resolve the name of the route reference into a route */
+        public void resolve(Map<String, Route> routes) throws InvalidInfraException {
+            route = routes.get(routeName);
+            if (route == null)
+                throw new InvalidInfraException("unknown route " + routeName);
+        }
+
+        @Override
+        public Route.State evaluate(Infra.State infraState, IExprValue[] scope) {
+            return infraState.getState(route);
+        }
+
+        @Override
+        public ValueType getType(ValueType[] argumentTypes) {
+            return ValueType.ROUTE;
+        }
+
+        @Override
+        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
         }
     }
 
@@ -157,17 +274,25 @@ public abstract class Expr<T extends IExprValue> {
         }
 
         @Override
-        public T evaluate(IExprValue[] scope) {
-            if (ifExpr.evaluate(scope).value) {
-                return thenExpr.evaluate(scope);
+        public T evaluate(Infra.State infraState, IExprValue[] scope) {
+            if (ifExpr.evaluate(infraState, scope).value) {
+                return thenExpr.evaluate(infraState, scope);
             } else {
-                return elseExpr.evaluate(scope);
+                return elseExpr.evaluate(infraState, scope);
             }
         }
 
         @Override
         public ValueType getType(ValueType[] argumentTypes) {
             return thenExpr.getType(argumentTypes);
+        }
+
+        @Override
+        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+            ifExpr.accept(visitor);
+            thenExpr.accept(visitor);
+            elseExpr.accept(visitor);
         }
     }
 
@@ -181,16 +306,23 @@ public abstract class Expr<T extends IExprValue> {
         }
 
         @Override
-        public T evaluate(IExprValue[] scope) {
+        public T evaluate(Infra.State infraState, IExprValue[] scope) {
             var newScope = new IExprValue[arguments.length];
             for (int i = 0; i < arguments.length; i++)
-                newScope[i] = arguments[i].evaluate(scope);
-            return function.body.evaluate(newScope);
+                newScope[i] = arguments[i].evaluate(infraState, scope);
+            return function.body.evaluate(infraState, newScope);
         }
 
         @Override
         public ValueType getType(ValueType[] argumentTypes) {
             return this.function.returnsType;
+        }
+
+        @Override
+        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+            for (var arg : arguments)
+                arg.accept(visitor);
         }
     }
 
@@ -204,14 +336,22 @@ public abstract class Expr<T extends IExprValue> {
         }
 
         @Override
-        public T evaluate(IExprValue[] scope) {
-            var branchIndex = expr.evaluate(scope).getEnumValue();
-            return branches[branchIndex].evaluate(scope);
+        public T evaluate(Infra.State infraState, IExprValue[] scope) {
+            var branchIndex = expr.evaluate(infraState, scope).getEnumValue();
+            return branches[branchIndex].evaluate(infraState, scope);
         }
 
         @Override
         public ValueType getType(ValueType[] argumentTypes) {
             return branches[0].getType(argumentTypes);
+        }
+
+        @Override
+        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+            expr.accept(visitor);
+            for (var branch : branches)
+                branch.accept(visitor);
         }
     }
 
@@ -228,7 +368,7 @@ public abstract class Expr<T extends IExprValue> {
 
         @Override
         @SuppressWarnings("unchecked")
-        public T evaluate(IExprValue[] scope) {
+        public T evaluate(Infra.State infraState, IExprValue[] scope) {
             return (T) scope[argumentIndex];
         }
 
@@ -236,11 +376,16 @@ public abstract class Expr<T extends IExprValue> {
         public ValueType getType(ValueType[] argumentTypes) {
             return argumentTypes[argumentIndex];
         }
+
+        @Override
+        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+        }
     }
 
     // endregion
 
-    // region SIGNALS
+    // region PRIMITIVES
 
     public static final class SignalAspectCheckExpr extends Expr<BooleanValue> {
         /** The signal the condition checks for */
@@ -255,14 +400,71 @@ public abstract class Expr<T extends IExprValue> {
         }
 
         @Override
-        public BooleanValue evaluate(IExprValue[] scope) {
-            var signal = signalExpr.evaluate(scope);
+        public BooleanValue evaluate(Infra.State infraState, IExprValue[] scope) {
+            var signal = signalExpr.evaluate(infraState, scope);
             return BooleanValue.from(signal.aspects.contains(aspect));
         }
 
         @Override
         public ValueType getType(ValueType[] argumentTypes) {
             return ValueType.BOOLEAN;
+        }
+
+        @Override
+        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+            signalExpr.accept(visitor);
+        }
+    }
+
+    public static final class RouteStateCheckExpr extends Expr<BooleanValue> {
+        public final Expr<Route.State> routeExpr;
+        public final RouteStatus status;
+
+        public RouteStateCheckExpr(Expr<Route.State> routeExpr, RouteStatus status) {
+            this.routeExpr = routeExpr;
+            this.status = status;
+        }
+
+        @Override
+        public BooleanValue evaluate(Infra.State infraState, IExprValue[] scope) {
+            return BooleanValue.from(routeExpr.evaluate(infraState, scope).status == status);
+        }
+
+        @Override
+        public ValueType getType(ValueType[] argumentTypes) {
+            return ValueType.BOOLEAN;
+        }
+
+        @Override
+        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+        }
+    }
+
+    public static final class AspectSetContainsExpr extends Expr<BooleanValue> {
+        public final Expr<AspectSet> expr;
+        public final Aspect aspect;
+
+        public AspectSetContainsExpr(Expr<AspectSet> expr, Aspect aspect) {
+            this.expr = expr;
+            this.aspect = aspect;
+        }
+
+        @Override
+        public BooleanValue evaluate(Infra.State infraState, IExprValue[] scope) {
+            return BooleanValue.from(expr.evaluate(infraState, scope).contains(aspect));
+        }
+
+        @Override
+        public ValueType getType(ValueType[] argumentTypes) {
+            return ValueType.BOOLEAN;
+        }
+
+        @Override
+        public void accept(ExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+            expr.accept(visitor);
         }
     }
 

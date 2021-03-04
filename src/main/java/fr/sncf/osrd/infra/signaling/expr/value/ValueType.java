@@ -5,4 +5,5 @@ public enum ValueType {
     ASPECT,
     ASPECT_SET,
     SIGNAL,
+    ROUTE,
 }

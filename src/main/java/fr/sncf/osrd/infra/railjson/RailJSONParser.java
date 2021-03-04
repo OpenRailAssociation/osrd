@@ -9,6 +9,7 @@ import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.railjson.schema.RJSRoot;
+import fr.sncf.osrd.infra.railjson.schema.RJSRoute;
 import fr.sncf.osrd.infra.railjson.schema.signaling.RJSSignalExpr;
 import fr.sncf.osrd.infra.railjson.schema.signaling.RJSSignalExprType;
 import fr.sncf.osrd.infra.railjson.schema.signaling.RJSSignalFunction;
@@ -17,9 +18,12 @@ import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrackObject;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSTrackRange;
+import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
+import fr.sncf.osrd.infra.routegraph.RouteStatus;
 import fr.sncf.osrd.infra.signaling.*;
 import fr.sncf.osrd.infra.signaling.expr.Expr;
+import fr.sncf.osrd.infra.signaling.expr.ExprVisitor;
 import fr.sncf.osrd.infra.signaling.expr.value.AspectSet;
 import fr.sncf.osrd.infra.signaling.expr.value.BooleanValue;
 import fr.sncf.osrd.infra.signaling.expr.value.ValueType;
@@ -150,6 +154,7 @@ public class RailJSONParser {
 
         // create track sections
         var infraTrackSections = new HashMap<String, TrackSection>();
+        var signals = new ArrayList<Signal>();
         for (var trackSection : railJSON.trackSections) {
             var beginID = nodeIDs.get(trackSection.beginEndpoint());
             var endID = nodeIDs.get(trackSection.endEndpoint());
@@ -187,8 +192,9 @@ public class RailJSONParser {
             var signalsBuilder = infraTrackSection.signals.builder();
             for (var rjsSignal : trackSection.signals) {
                 var expr = parseAspectSetExpr(aspectsMap, null, null, rjsSignal.expr);
-                var signal = new Signal(rjsSignal.id, expr);
+                var signal = new Signal(signals.size(), rjsSignal.id, expr);
                 signalsBuilder.add(rjsSignal.position, signal);
+                signals.add(signal);
             }
             signalsBuilder.build();
         }
@@ -227,7 +233,33 @@ public class RailJSONParser {
             routeGraph.makeRoute(rjsRoute.id, waypoints, tvdSections);
         }
 
-        return new Infra(trackGraph, waypointGraph, routeGraph.build(), tvdSectionsMap, aspectsMap);
+        // build name maps to prepare resolving names in expressions
+        var signalNames = new HashMap<String, Signal>();
+        for (var signal : signals)
+            signalNames.put(signal.id, signal);
+
+        var routeNames = new HashMap<String, Route>();
+        for (var route : routeGraph.routeGraph.iterEdges())
+            routeNames.put(route.id, route);
+
+        // resolve names
+        var nameResolver = new ExprVisitor() {
+            @Override
+            public void visit(Expr.SignalRefExpr expr) throws InvalidInfraException {
+                expr.resolve(signalNames);
+            }
+
+            @Override
+            public void visit(Expr.RouteRefExpr expr) throws InvalidInfraException {
+                expr.resolve(routeNames);
+            }
+        };
+        for (var function : signalFunctions.values())
+            function.body.accept(nameResolver);
+        for (var signal : signals)
+            signal.expr.accept(nameResolver);
+
+        return new Infra(trackGraph, waypointGraph, routeGraph.build(), tvdSectionsMap, aspectsMap, signals);
     }
 
     private static <E extends RJSRouteWaypoint> void findWaypoints(
@@ -258,7 +290,6 @@ public class RailJSONParser {
         }
 
         var expr = parseExpr(aspectsMap, argumentNames, argumentTypes, rjsSignalFunction.body);
-
         return Function.from(
                 rjsSignalFunction.name,
                 argumentNames,
@@ -293,20 +324,20 @@ public class RailJSONParser {
 
     private static Expr<?> parseExpr(
             HashMap<String, Aspect> aspectsMap,
-            String[] argumentNames,
-            ValueType[] argumentTypes,
+            String[] argNames,
+            ValueType[] argTypes,
             RJSSignalExpr expr
     ) throws InvalidInfraException {
         var type = expr.getClass();
 
         // boolean operators
         if (type == RJSSignalExpr.OrExpr.class)
-            return new Expr.OrExpr(parseInfixOp(aspectsMap, argumentNames, argumentTypes, (RJSSignalExpr.InfixOpExpr) expr));
+            return new Expr.OrExpr(parseInfixOp(aspectsMap, argNames, argTypes, (RJSSignalExpr.InfixOpExpr) expr));
         if (type == RJSSignalExpr.AndExpr.class)
-            return new Expr.AndExpr(parseInfixOp(aspectsMap, argumentNames, argumentTypes, (RJSSignalExpr.InfixOpExpr) expr));
+            return new Expr.AndExpr(parseInfixOp(aspectsMap, argNames, argTypes, (RJSSignalExpr.InfixOpExpr) expr));
         if (type == RJSSignalExpr.NotExpr.class) {
             var notExpr = (RJSSignalExpr.NotExpr) expr;
-            return new Expr.NotExpr(parseBooleanExpr(aspectsMap, argumentNames, argumentTypes, notExpr.expr));
+            return new Expr.NotExpr(parseBooleanExpr(aspectsMap, argNames, argTypes, notExpr.expr));
         }
 
         // value constructors
@@ -315,37 +346,64 @@ public class RailJSONParser {
         if (type == RJSSignalExpr.FalseExpr.class)
             return Expr.FalseExpr.INSTANCE;
         if (type == RJSSignalExpr.AspectSetExpr.class)
-            return parseAspectSet(aspectsMap, argumentNames, argumentTypes, (RJSSignalExpr.AspectSetExpr) expr);
+            return parseAspectSet(aspectsMap, argNames, argTypes, (RJSSignalExpr.AspectSetExpr) expr);
+        if (type == RJSSignalExpr.SignalRefExpr.class)
+            return new Expr.SignalRefExpr(((RJSSignalExpr.SignalRefExpr) expr).signal.id);
+        if (type == RJSSignalExpr.RouteRefExpr.class)
+            return new Expr.RouteRefExpr(((RJSSignalExpr.RouteRefExpr) expr).route.id);
 
         // control flow
         if (type == RJSSignalExpr.IfExpr.class)
-            return parseIfExpr(aspectsMap, argumentNames, argumentTypes, (RJSSignalExpr.IfExpr) expr);
+            return parseIfExpr(aspectsMap, argNames, argTypes, (RJSSignalExpr.IfExpr) expr);
 
         // function-specific
         if (type == RJSSignalExpr.ArgumentRefExpr.class) {
             var argumentExpr = (RJSSignalExpr.ArgumentRefExpr) expr;
-            var argIndex = findArgIndex(argumentNames, argumentExpr.argumentName);
+            var argIndex = findArgIndex(argNames, argumentExpr.argumentName);
             return new Expr.ArgumentRefExpr<>(argIndex);
         }
 
-        // signals
+        // primitives
         if (type == RJSSignalExpr.SignalAspectCheckExpr.class) {
             var signalExpr = (RJSSignalExpr.SignalAspectCheckExpr) expr;
             var aspect = aspectsMap.get(signalExpr.aspect.id);
-            var signal = parseSignalExpr(aspectsMap, argumentNames, argumentTypes, signalExpr.signal);
+            var signal = parseSignalExpr(aspectsMap, argNames, argTypes, signalExpr.signal);
             return new Expr.SignalAspectCheckExpr(signal, aspect);
+        }
+        if (type == RJSSignalExpr.RouteStateCheckExpr.class) {
+            var routeStateExpr = (RJSSignalExpr.RouteStateCheckExpr) expr;
+            var route = parseRouteExpr(aspectsMap, argNames, argTypes, routeStateExpr.route);
+            var routeState = parseRouteState(routeStateExpr.state);
+            return new Expr.RouteStateCheckExpr(route, routeState);
+        }
+        if (type == RJSSignalExpr.AspectSetContainsExpr.class) {
+            var aspectSetContainsExpr = (RJSSignalExpr.AspectSetContainsExpr) expr;
+            var aspectSet = parseAspectSetExpr(aspectsMap, argNames, argTypes, aspectSetContainsExpr.aspectSet);
+            var aspect = aspectsMap.get(aspectSetContainsExpr.aspect.id);
+            return new Expr.AspectSetContainsExpr(aspectSet, aspect);
         }
 
         throw new InvalidInfraException("unsupported signal expression");
+    }
+
+    private static RouteStatus parseRouteState(RJSRoute.State state) {
+        switch (state) {
+            case FREE:
+                return RouteStatus.FREE;
+            case RESERVED:
+                return RouteStatus.RESERVED;
+            case OCCUPIED:
+                return RouteStatus.OCCUPIED;
+        }
+        throw new RuntimeException("unsupported RailJSON route state");
     }
 
     private static Expr<?> parseIfExpr(
             HashMap<String, Aspect> aspectsMap,
             String[] argumentNames,
             ValueType[] argumentTypes,
-            RJSSignalExpr.IfExpr expr
+            RJSSignalExpr.IfExpr ifExpr
     ) throws InvalidInfraException {
-        var ifExpr = expr;
         var condition = parseBooleanExpr(aspectsMap, argumentNames, argumentTypes, ifExpr.condition);
         var branchTrue = parseExpr(aspectsMap, argumentNames, argumentTypes, ifExpr.branchTrue);
         var branchFalse = parseExpr(aspectsMap, argumentNames, argumentTypes, ifExpr.branchFalse);
@@ -367,7 +425,7 @@ public class RailJSONParser {
             ValueType[] argumentTypes,
             RJSSignalExpr.AspectSetExpr expr
     ) throws InvalidInfraException {
-        var memberCount= expr.members.length;
+        var memberCount = expr.members.length;
         var aspects = new Aspect[memberCount];
         @SuppressWarnings("unchecked")
         Expr<BooleanValue>[] conditions = (Expr<BooleanValue>[]) new Expr<?>[memberCount];
@@ -394,60 +452,52 @@ public class RailJSONParser {
     }
 
     @SuppressWarnings("unchecked")
-    private static Expr<BooleanValue> expectBoolean(
-            ValueType[] argumentTypes,
-            Expr<?> expr
-    ) throws InvalidInfraException {
-        checkExprType(ValueType.BOOLEAN, argumentTypes, expr);
-        return (Expr<BooleanValue>) expr;
-    }
-
     private static Expr<BooleanValue> parseBooleanExpr(
             HashMap<String, Aspect> aspectsMap,
             String[] argumentNames,
             ValueType[] argumentTypes,
-            RJSSignalExpr expr
+            RJSSignalExpr rjsExpr
     ) throws InvalidInfraException {
-        return expectBoolean(argumentTypes, parseExpr(aspectsMap, argumentNames, argumentTypes, expr));
+        Expr<?> expr = parseExpr(aspectsMap, argumentNames, argumentTypes, rjsExpr);
+        checkExprType(ValueType.BOOLEAN, argumentTypes, expr);
+        return (Expr<BooleanValue>) expr;
     }
 
     @SuppressWarnings("unchecked")
-    private static Expr<Signal.State> expectSignal(
-            ValueType[] argumentTypes,
-            Expr<?> expr
-    ) throws InvalidInfraException {
-        checkExprType(ValueType.SIGNAL, argumentTypes, expr);
-        return (Expr<Signal.State>) expr;
-    }
-
     private static Expr<Signal.State> parseSignalExpr(
             HashMap<String, Aspect> aspectsMap,
             String[] argumentNames,
             ValueType[] argumentTypes,
-            RJSSignalExpr expr
+            RJSSignalExpr rjsExpr
     ) throws InvalidInfraException {
-        return expectSignal(argumentTypes, parseExpr(aspectsMap, argumentNames, argumentTypes, expr));
+        Expr<?> expr = parseExpr(aspectsMap, argumentNames, argumentTypes, rjsExpr);
+        checkExprType(ValueType.SIGNAL, argumentTypes, expr);
+        return (Expr<Signal.State>) expr;
     }
-
 
     @SuppressWarnings("unchecked")
-    private static Expr<AspectSet> expectAspectSet(
+    private static Expr<Route.State> parseRouteExpr(
+            HashMap<String, Aspect> aspectsMap,
+            String[] argumentNames,
             ValueType[] argumentTypes,
-            Expr<?> expr
+            RJSSignalExpr rjsExpr
     ) throws InvalidInfraException {
-        checkExprType(ValueType.ASPECT_SET, argumentTypes, expr);
-        return (Expr<AspectSet>) expr;
+        Expr<?> expr = parseExpr(aspectsMap, argumentNames, argumentTypes, rjsExpr);
+        checkExprType(ValueType.ROUTE, argumentTypes, expr);
+        return (Expr<Route.State>) expr;
     }
 
+    @SuppressWarnings("unchecked")
     private static Expr<AspectSet> parseAspectSetExpr(
             HashMap<String, Aspect> aspectsMap,
             String[] argumentNames,
             ValueType[] argumentTypes,
-            RJSSignalExpr expr
+            RJSSignalExpr rjsExpr
     ) throws InvalidInfraException {
-        return expectAspectSet(argumentTypes, parseExpr(aspectsMap, argumentNames, argumentTypes, expr));
+        Expr<?> expr = parseExpr(aspectsMap, argumentNames, argumentTypes, rjsExpr);
+        checkExprType(ValueType.ASPECT_SET, argumentTypes, expr);
+        return (Expr<AspectSet>) expr;
     }
-
 
     private static Expr<BooleanValue>[] parseInfixOp(
             HashMap<String, Aspect> aspectsMap,

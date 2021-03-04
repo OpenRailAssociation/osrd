@@ -5,6 +5,7 @@ import static fr.sncf.osrd.simulation.TimelineEvent.State;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.timetable.Schedule;
+import fr.sncf.osrd.train.Train;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +38,9 @@ public final class Simulation {
     /** A map from entity identifiers to entities. */
     private final HashMap<EntityID, Entity> entities = new HashMap<>();
 
-    public final World world;
+    public final Infra infra;
+    public SchedulerSystem scheduler = new SchedulerSystem();
+    public final HashSet<Train> trains = new HashSet<>();
 
     // changes may need to be logged to enable replays
     // it's basically a pointer to the event sourcing
@@ -63,41 +66,25 @@ public final class Simulation {
     /** The number of event that were scheduled. it is used to associate a unique number to events. */
     long revision = 0;
 
-    /**
-     * Creates a new Discrete TimelineEvent SimulationManager
-     * @param world the external state of the simulation
-     * @param time the initial time of the simulation
-     */
-    public Simulation(
-            World world,
+    /** Creates a new Discrete TimelineEvent SimulationManager */
+    private Simulation(
+            Infra infra,
             double time,
             ChangeLog changelog
     ) {
-        this.changelog = changelog;
-        this.world = world;
+        this.infra = infra;
         this.startTime = time;
         this.time = time;
+        this.changelog = changelog;
     }
 
-    /**
-     * Creates a simulation, including the required entities to make it work.
-     * @param infra the infrastructure to work on
-     * @param simStartTime the start time of the simulation
-     * @param schedule the schedule according to which trains should be started
-     * @param changelog where to log changes
-     * @return A new simulation
-     * @throws SimulationError {@inheritDoc}
-     */
+    /** Creates a simulation, planning train creations */
     public static Simulation create(
             Infra infra,
             double simStartTime,
-            Schedule schedule,
             ChangeLog changelog
-    ) throws SimulationError {
-        var world = new World(infra);
-        var sim = new Simulation(world, simStartTime, changelog);
-        world.scheduler = SchedulerSystem.fromSchedule(sim, schedule);
-        return sim;
+    ) {
+        return new Simulation(infra, simStartTime, changelog);
     }
 
     // region ENTITES

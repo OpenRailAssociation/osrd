@@ -97,9 +97,9 @@ public abstract class RJSSignalExpr {
                     .withSubtype(TrueExpr.class, "true")
                     .withSubtype(FalseExpr.class, "false")
                     .withSubtype(AspectSetExpr.class, "aspect_set")
-                    .withSubtype(SignalExpr.class, "signal")
-                    .withSubtype(RouteExpr.class, "route")
-                    .withSubtype(SwitchExpr.class, "switch")
+                    .withSubtype(SignalRefExpr.class, "signal")
+                    .withSubtype(RouteRefExpr.class, "route")
+                    .withSubtype(SwitchRefExpr.class, "switch")
                     // control flow
                     .withSubtype(IfExpr.class, "condition")
                     .withSubtype(CallExpr.class, "call")
@@ -175,26 +175,26 @@ public abstract class RJSSignalExpr {
         }
     }
 
-    public static final class SignalExpr extends RJSSignalExpr {
+    public static final class SignalRefExpr extends RJSSignalExpr {
         public final ID<RJSSignal> signal;
 
-        public SignalExpr(ID<RJSSignal> signal) {
+        public SignalRefExpr(ID<RJSSignal> signal) {
             this.signal = signal;
         }
     }
 
-    public static final class RouteExpr extends RJSSignalExpr {
+    public static final class RouteRefExpr extends RJSSignalExpr {
         public final ID<RJSRoute> route;
 
-        public RouteExpr(ID<RJSRoute> route) {
+        public RouteRefExpr(ID<RJSRoute> route) {
             this.route = route;
         }
     }
 
-    public static final class SwitchExpr extends RJSSignalExpr {
+    public static final class SwitchRefExpr extends RJSSignalExpr {
         public final ID<RJSSwitch> route;
 
-        public SwitchExpr(ID<RJSSwitch> route) {
+        public SwitchRefExpr(ID<RJSSwitch> route) {
             this.route = route;
         }
     }
@@ -301,7 +301,7 @@ public abstract class RJSSignalExpr {
     /**
      * Returns whether some aspect set contains a given aspect.
      */
-    public static final class  AspectSetContainsExpr extends RJSSignalExpr {
+    public static final class AspectSetContainsExpr extends RJSSignalExpr {
         /**
          * The signal the condition checks for.
          */

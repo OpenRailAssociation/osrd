@@ -20,8 +20,7 @@ public class SimulationChecker {
     }
 
     private static void replayCheck(Simulation oldSim, ChangeLog changelog) throws SimulationError {
-        var world = new World(oldSim.world.infra);
-        var replaySim = new Simulation(world, oldSim.startTime, null);
+        var replaySim = Simulation.create(oldSim.infra, oldSim.startTime, null);
         for (var change : changelog)
             change.replay(replaySim);
 

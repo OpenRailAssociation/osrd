@@ -1,27 +1,25 @@
 package fr.sncf.osrd.infra.signaling;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.StatefulInfraObject;
 import fr.sncf.osrd.infra.signaling.expr.Expr;
-import fr.sncf.osrd.infra.signaling.expr.Function;
 import fr.sncf.osrd.infra.signaling.expr.value.AspectSet;
 import fr.sncf.osrd.infra.signaling.expr.value.IExprValue;
-import fr.sncf.osrd.infra.signaling.expr.value.IMatchableValue;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.utils.SortedArraySet;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public class Signal implements StatefulInfraObject<Signal.State> {
+public class Signal {
+    public final int index;
     public final String id;
     public final Expr<AspectSet> expr;
 
     /** The static data describing a signal */
-    public Signal(String id, Expr<AspectSet> expr) {
+    public Signal(int index, String id, Expr<AspectSet> expr) {
+        this.index = index;
         this.id = id;
         this.expr = expr;
     }
 
-    @Override
     public State newState() {
         return new State(this);
     }
@@ -38,9 +36,9 @@ public class Signal implements StatefulInfraObject<Signal.State> {
         }
 
         private void update() {
+
         }
 
-        @Override
         public void initialize() {
             update();
         }

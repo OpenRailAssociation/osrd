@@ -44,7 +44,7 @@ public class Train extends Entity {
         this.driverSightDistance = driverSightDistance;
         this.rollingStock = rollingStock;
         this.path = trainPath;
-        var location = new TrainPositionTracker(sim.world.infra, trainPath, rollingStock.length);
+        var location = new TrainPositionTracker(sim.infra, trainPath, rollingStock.length);
         this.lastState = new TrainState(
                 sim.getTime(),
                 location,
@@ -189,7 +189,7 @@ public class Train extends Entity {
                     controllers
             );
             sim.registerEntity(train);
-            sim.world.trains.add(train);
+            sim.trains.add(train);
             return train;
         }
 
