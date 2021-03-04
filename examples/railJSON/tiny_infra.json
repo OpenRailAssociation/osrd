@@ -91,7 +91,7 @@
   ],
   "script_functions": [
     {
-      "function_name": "sncf_filter",
+      "name": "sncf_filter",
       "arguments": [
         {
           "type": "ASPECT_SET",
@@ -143,7 +143,7 @@
       }
     },
     {
-      "function_name": "bal3_line_signal",
+      "name": "bal3_line_signal",
       "arguments": [
         {
           "type": "SIGNAL",
@@ -193,7 +193,7 @@
       }
     },
     {
-      "function_name": "switch_bal3_signal",
+      "name": "switch_bal3_signal",
       "arguments": [
         {
           "type": "SWITCH",
