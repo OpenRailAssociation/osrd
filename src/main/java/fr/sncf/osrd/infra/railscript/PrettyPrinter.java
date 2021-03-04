@@ -3,8 +3,13 @@ package fr.sncf.osrd.infra.railscript;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.value.RSType;
+import fr.sncf.osrd.infra.routegraph.Route;
+import fr.sncf.osrd.infra.routegraph.RouteStatus;
 
 import java.io.PrintStream;
+import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /** This class allow to pretty print signaling functions and expressions */
 public class PrettyPrinter extends RSExprVisitor {
@@ -71,24 +76,29 @@ public class PrettyPrinter extends RSExprVisitor {
         }
     }
 
+    /** Display the tab matching the current indentation */
     private void tab() {
         out.print(" ".repeat(curtab));
     }
 
+    /** Increase one level of indentation **/
     private void inc() {
         curtab += tabstop;
     }
 
+    /** Increase one level of indentation and display the current tab **/
     private void inctab() {
         inc();
         tab();
     }
 
+    /** Decrease one level of indentation **/
     private void dec() {
         curtab -= tabstop;
         assert curtab >= 0;
     }
 
+    /** Decrease one level of indentation and display the current tab **/
     private void dectab() {
         dec();
         tab();
@@ -197,6 +207,18 @@ public class PrettyPrinter extends RSExprVisitor {
 
     @Override
     public void visit(RSExpr.EnumMatch<?, ?> expr) throws InvalidInfraException {
+        var condType = expr.expr.getType(new RSType[0]);
+        var enumValues = new ArrayList<String>();
+        switch (condType) {
+            case ROUTE:
+                var routes = RouteStatus.values();
+                for (var route : routes) {
+                    enumValues.add(route.name());
+                }
+                break;
+            default:
+                throw new InvalidInfraException("EnumMatch: the type of the condition expr isn't matchable");
+        }
         out.print("match ");
         expr.expr.accept(this);
         out.print(" {\n");
@@ -204,7 +226,7 @@ public class PrettyPrinter extends RSExprVisitor {
         for (var i = 0; i < expr.branches.length; i++) {
             // TODO print enum value instead of int
             tab();
-            out.printf("%d: ", i);
+            out.printf("%s: ", enumValues.get(i));
             expr.branches[i].accept(this);
             if (i < expr.branches.length - 1)
                 out.print(",");
@@ -221,14 +243,14 @@ public class PrettyPrinter extends RSExprVisitor {
 
     @Override
     public void visit(RSExpr.SignalAspectCheck expr) throws InvalidInfraException {
-        out.print("signal_has_aspect");
+        out.print("signal_has_aspect(");
         expr.signalExpr.accept(this);
         out.printf(", %s)", expr.aspect);
     }
 
     @Override
     public void visit(RSExpr.RouteStateCheck expr) throws InvalidInfraException {
-        out.print("route_has_state");
+        out.print("route_has_state(");
         expr.routeExpr.accept(this);
         out.printf(", %s)", expr.status);
     }
