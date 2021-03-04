@@ -105,7 +105,7 @@ public class RailScriptExprParser {
     }
 
     /** Turns a Json serialized expression into its runnable counterpart */
-    @SuppressFBWarnings({"BC_UNCONFIRMED_CASTgit "})
+    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
     public RSExpr<?> parse(RJSRSExpr expr) throws InvalidInfraException {
         var type = expr.getClass();
 
