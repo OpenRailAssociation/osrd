@@ -9,8 +9,8 @@ import fr.sncf.osrd.infra.railscript.value.RSType;
 public class RSFunction<T extends RSValue> {
     public final String functionName;
 
-    public final String[] argumentNames;
-    public final RSType[] argumentTypes;
+    public final String[] argNames;
+    public final RSType[] argTypes;
 
     public final RSType returnsType;
 
@@ -18,26 +18,31 @@ public class RSFunction<T extends RSValue> {
 
     public final int slotsCount;
 
+    public int getArgCount() {
+        return argNames.length;
+    }
+
     /**
      * Represents a function in RailScript
      * @param functionName name of the function
-     * @param argumentNames list of the argument names
-     * @param argumentTypes list of the argument types
+     * @param argNames list of the argument names
+     * @param argTypes list of the argument types
      * @param returnsType the return type of the function
      * @param body the expression to evaluate when the function is called
      * @param slotsCount the number of slots required to evaluate the function
      */
     public RSFunction(
             String functionName,
-            String[] argumentNames,
-            RSType[] argumentTypes,
+            String[] argNames,
+            RSType[] argTypes,
             RSType returnsType,
             RSExpr<T> body,
             int slotsCount
     ) {
+        assert argNames.length == argTypes.length;
         this.functionName = functionName;
-        this.argumentNames = argumentNames;
-        this.argumentTypes = argumentTypes;
+        this.argNames = argNames;
+        this.argTypes = argTypes;
         this.returnsType = returnsType;
         this.body = body;
         this.slotsCount = slotsCount;

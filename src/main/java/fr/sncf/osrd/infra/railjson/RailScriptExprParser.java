@@ -90,6 +90,8 @@ public class RailScriptExprParser {
                 return RSType.SIGNAL;
             case ROUTE:
                 return RSType.ROUTE;
+            case SWITCH:
+                return RSType.SWITCH;
             case ASPECT_SET:
                 return RSType.ASPECT_SET;
         }
@@ -134,9 +136,10 @@ public class RailScriptExprParser {
         // control flow
         if (type == RJSRSExpr.If.class)
             return parseIfExpr((RJSRSExpr.If) expr);
-        if (type == RJSRSExpr.Call.class) {
+        if (type == RJSRSExpr.Call.class)
             return parseCallExpr((RJSRSExpr.Call) expr);
-        }
+        if (type == RJSRSExpr.EnumMatch.class)
+            return parseEnumMatch((RJSRSExpr.EnumMatch) expr);
 
         // function-specific
         if (type == RJSRSExpr.ArgumentRef.class) {
@@ -172,6 +175,41 @@ public class RailScriptExprParser {
         }
 
         throw new InvalidInfraException("unsupported signal expression");
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private RSExpr<?> parseEnumMatch(RJSRSExpr.EnumMatch rjsMatchExpr) throws InvalidInfraException {
+        var expr = parse(rjsMatchExpr.expr);
+
+        var exprType = expr.getType(argTypes);
+        var enumConstants = exprType.enumClass.getEnumConstants();
+        var branches = new RSExpr<?>[enumConstants.length];
+        for (var matchBranch : rjsMatchExpr.branches.entrySet()) {
+            var branchOrdinal = parseEnumVal(enumConstants, matchBranch.getKey());
+            branches[branchOrdinal] = parse(matchBranch.getValue());
+        }
+
+        for (int i = 0; i < enumConstants.length; i++)
+            if (branches[i] == null)
+                throw new InvalidInfraException("missing branch for enum value " + enumConstants[i].name());
+
+        var matchType = branches[0].getType(argTypes);
+        for (int i = 1; i < enumConstants.length; i++)
+            if (branches[i].getType(argTypes) != matchType)
+                throw new InvalidInfraException(
+                        "type for match branch " + enumConstants[i].name()
+                        + " differs from branch type " + enumConstants[0].name());
+
+        return new RSExpr.EnumMatch(expr, branches);
+    }
+
+    private static int parseEnumVal(Enum<?>[] enumValues, String val) throws InvalidInfraException {
+        for (int i = 0; i < enumValues.length; i++) {
+            var enumVal = enumValues[i];
+            if (enumVal.name().equals(val))
+                return enumVal.ordinal();
+        }
+        throw new InvalidInfraException("unknown enum value: " + val);
     }
 
     private static RouteStatus parseRouteState(RJSRoute.State state) {
