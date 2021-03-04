@@ -16,7 +16,15 @@ public class RSFunction<T extends RSValue> {
 
     public final RSExpr<T> body;
 
-    private RSFunction(
+    /**
+     * Represents a function in RailScript
+     * @param functionName name of the function
+     * @param argumentNames list of the argument names
+     * @param argumentTypes list of the argument types
+     * @param returnsType the return type of the function
+     * @param body the expression to evaluate when the function is called
+     */
+    public RSFunction(
             String functionName,
             String[] argumentNames,
             RSType[] argumentTypes,
