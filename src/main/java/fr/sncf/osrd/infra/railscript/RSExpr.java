@@ -40,12 +40,6 @@ public abstract class RSExpr<T extends RSValue> {
         public RSType getType(RSType[] argumentTypes) {
             return RSType.BOOLEAN;
         }
-
-        @Override
-        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
-            for (var expr : expressions)
-                expr.accept(visitor);
-        }
     }
 
     public static final class OrExpr extends InfixOpExpr {
@@ -64,7 +58,6 @@ public abstract class RSExpr<T extends RSValue> {
         @Override
         public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
-            super.accept(visitor);
         }
     }
 
@@ -84,7 +77,6 @@ public abstract class RSExpr<T extends RSValue> {
         @Override
         public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
-            super.accept(visitor);
         }
     }
 
@@ -103,7 +95,6 @@ public abstract class RSExpr<T extends RSValue> {
         @Override
         public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
-            expr.accept(visitor);
         }
 
         @Override
@@ -188,8 +179,6 @@ public abstract class RSExpr<T extends RSValue> {
         @Override
         public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
-            for (var condition : conditions)
-                condition.accept(visitor);
         }
     }
 
@@ -290,9 +279,6 @@ public abstract class RSExpr<T extends RSValue> {
         @Override
         public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
-            ifExpr.accept(visitor);
-            thenExpr.accept(visitor);
-            elseExpr.accept(visitor);
         }
     }
 
@@ -321,8 +307,6 @@ public abstract class RSExpr<T extends RSValue> {
         @Override
         public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
-            for (var arg : arguments)
-                arg.accept(visitor);
         }
     }
 
@@ -349,9 +333,6 @@ public abstract class RSExpr<T extends RSValue> {
         @Override
         public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
-            expr.accept(visitor);
-            for (var branch : branches)
-                branch.accept(visitor);
         }
     }
 
@@ -413,7 +394,6 @@ public abstract class RSExpr<T extends RSValue> {
         @Override
         public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
-            signalExpr.accept(visitor);
         }
     }
 
@@ -464,7 +444,6 @@ public abstract class RSExpr<T extends RSValue> {
         @Override
         public void accept(RSExprVisitor visitor) throws InvalidInfraException {
             visitor.visit(this);
-            expr.accept(visitor);
         }
     }
 
