@@ -1,6 +1,7 @@
 package fr.sncf.osrd.infra.routegraph;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.railscript.value.RSMatchable;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.simulation.*;
@@ -41,7 +42,7 @@ public class Route extends BiNEdge<Route> {
 
     /** The state of the route is the actual entity which interacts with the rest of the infrastructure */
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public static final class State extends Entity implements RSValue {
+    public static final class State extends Entity implements RSMatchable {
         public final Route route;
         public RouteStatus status;
 
@@ -55,6 +56,11 @@ public class Route extends BiNEdge<Route> {
         protected void onTimelineEventUpdate(
                 Simulation sim, TimelineEvent<?> event, TimelineEvent.State state
         ) throws SimulationError {
+        }
+
+        @Override
+        public int getEnumValue() {
+            return status.ordinal();
         }
     }
 }
