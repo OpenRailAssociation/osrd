@@ -21,7 +21,7 @@ public abstract class RSExpr<T extends RSValue> {
 
     public abstract void accept(RSExprVisitor visitor) throws InvalidInfraException;
 
-    public abstract RSValueType getType(RSValueType[] argumentTypes);
+    public abstract RSType getType(RSType[] argumentTypes);
 
     // value constructors
     // TODO: support RJSSignalExpr.SwitchRefExpr
@@ -37,8 +37,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSValueType getType(RSValueType[] argumentTypes) {
-            return RSValueType.BOOLEAN;
+        public RSType getType(RSType[] argumentTypes) {
+            return RSType.BOOLEAN;
         }
 
         @Override
@@ -107,8 +107,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSValueType getType(RSValueType[] argumentTypes) {
-            return RSValueType.BOOLEAN;
+        public RSType getType(RSType[] argumentTypes) {
+            return RSType.BOOLEAN;
         }
     }
 
@@ -128,8 +128,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSValueType getType(RSValueType[] argumentTypes) {
-            return RSValueType.BOOLEAN;
+        public RSType getType(RSType[] argumentTypes) {
+            return RSType.BOOLEAN;
         }
 
         @Override
@@ -150,8 +150,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSValueType getType(RSValueType[] argumentTypes) {
-            return RSValueType.BOOLEAN;
+        public RSType getType(RSType[] argumentTypes) {
+            return RSType.BOOLEAN;
         }
 
         @Override
@@ -181,8 +181,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSValueType getType(RSValueType[] argumentTypes) {
-            return RSValueType.ASPECT_SET;
+        public RSType getType(RSType[] argumentTypes) {
+            return RSType.ASPECT_SET;
         }
 
         @Override
@@ -215,8 +215,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSValueType getType(RSValueType[] argumentTypes) {
-            return RSValueType.SIGNAL;
+        public RSType getType(RSType[] argumentTypes) {
+            return RSType.SIGNAL;
         }
 
         @Override
@@ -247,8 +247,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSValueType getType(RSValueType[] argumentTypes) {
-            return RSValueType.ROUTE;
+        public RSType getType(RSType[] argumentTypes) {
+            return RSType.ROUTE;
         }
 
         @Override
@@ -283,7 +283,7 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSValueType getType(RSValueType[] argumentTypes) {
+        public RSType getType(RSType[] argumentTypes) {
             return thenExpr.getType(argumentTypes);
         }
 
@@ -314,7 +314,7 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSValueType getType(RSValueType[] argumentTypes) {
+        public RSType getType(RSType[] argumentTypes) {
             return this.function.returnsType;
         }
 
@@ -342,7 +342,7 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSValueType getType(RSValueType[] argumentTypes) {
+        public RSType getType(RSType[] argumentTypes) {
             return branches[0].getType(argumentTypes);
         }
 
@@ -373,7 +373,7 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSValueType getType(RSValueType[] argumentTypes) {
+        public RSType getType(RSType[] argumentTypes) {
             return argumentTypes[argumentIndex];
         }
 
@@ -406,8 +406,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSValueType getType(RSValueType[] argumentTypes) {
-            return RSValueType.BOOLEAN;
+        public RSType getType(RSType[] argumentTypes) {
+            return RSType.BOOLEAN;
         }
 
         @Override
@@ -432,8 +432,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSValueType getType(RSValueType[] argumentTypes) {
-            return RSValueType.BOOLEAN;
+        public RSType getType(RSType[] argumentTypes) {
+            return RSType.BOOLEAN;
         }
 
         @Override
@@ -457,8 +457,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSValueType getType(RSValueType[] argumentTypes) {
-            return RSValueType.BOOLEAN;
+        public RSType getType(RSType[] argumentTypes) {
+            return RSType.BOOLEAN;
         }
 
         @Override

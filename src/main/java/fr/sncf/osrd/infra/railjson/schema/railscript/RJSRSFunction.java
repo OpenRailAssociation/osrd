@@ -1,11 +1,11 @@
-package fr.sncf.osrd.infra.railjson.schema.signaling;
+package fr.sncf.osrd.infra.railjson.schema.railscript;
 
 import com.squareup.moshi.*;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.railjson.schema.Identified;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public class RJSSignalFunction implements Identified {
+public class RJSRSFunction implements Identified {
     /** Name of the function */
     public final String name;
 
@@ -13,13 +13,13 @@ public class RJSSignalFunction implements Identified {
     public final Argument[] arguments;
 
     @Json(name = "return_type")
-    public final RJSSignalExprType returnType;
+    public final RJSRSType returnType;
 
     /** The expression to evaluate */
-    public final RJSSignalExpr body;
+    public final RJSRSExpr body;
 
     /** A mathematical function for the signal expression language */
-    public RJSSignalFunction(String name, Argument[] arguments, RJSSignalExprType returnType, RJSSignalExpr body) {
+    public RJSRSFunction(String name, Argument[] arguments, RJSRSType returnType, RJSRSExpr body) {
         this.name = name;
         this.arguments = arguments;
         this.returnType = returnType;
@@ -33,9 +33,9 @@ public class RJSSignalFunction implements Identified {
 
     public static final class Argument {
         public final String name;
-        public final RJSSignalExprType type;
+        public final RJSRSType type;
 
-        public Argument(String name, RJSSignalExprType type) {
+        public Argument(String name, RJSRSType type) {
             this.name = name;
             this.type = type;
         }
