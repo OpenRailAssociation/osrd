@@ -16,6 +16,8 @@ public class RSFunction<T extends RSValue> {
 
     public final RSExpr<T> body;
 
+    public final int slotsCount;
+
     /**
      * Represents a function in RailScript
      * @param functionName name of the function
@@ -23,19 +25,22 @@ public class RSFunction<T extends RSValue> {
      * @param argumentTypes list of the argument types
      * @param returnsType the return type of the function
      * @param body the expression to evaluate when the function is called
+     * @param slotsCount the number of slots required to evaluate the function
      */
     public RSFunction(
             String functionName,
             String[] argumentNames,
             RSType[] argumentTypes,
             RSType returnsType,
-            RSExpr<T> body
+            RSExpr<T> body,
+            int slotsCount
     ) {
         this.functionName = functionName;
         this.argumentNames = argumentNames;
         this.argumentTypes = argumentTypes;
         this.returnsType = returnsType;
         this.body = body;
+        this.slotsCount = slotsCount;
     }
 
     /** Creates and type checks a new signal state evaluation function */
@@ -44,9 +49,10 @@ public class RSFunction<T extends RSValue> {
             String[] argumentNames,
             RSType[] argumentTypes,
             RSType returnType,
-            RSExpr<T> body
+            RSExpr<T> body,
+            int slotsCount
     ) throws InvalidInfraException {
-        var function = new RSFunction<>(functionName, argumentNames, argumentTypes, returnType, body);
+        var function = new RSFunction<>(functionName, argumentNames, argumentTypes, returnType, body, slotsCount);
         if (function.body.getType(argumentTypes) != returnType)
             throw new InvalidInfraException("return type mismatch in function" + functionName);
         return function;

@@ -108,6 +108,7 @@ public abstract class RJSRSExpr {
                     // function-specific
                     .withSubtype(ArgumentRef.class, "argument_ref")
                     // primitives
+                    .withSubtype(Delay.class, "delay")
                     .withSubtype(SignalAspectCheck.class, "signal_has_aspect")
                     .withSubtype(RouteStateCheck.class, "route_has_state")
                     .withSubtype(AspectSetContains.class, "aspect_set_contains")
@@ -115,21 +116,21 @@ public abstract class RJSRSExpr {
 
     // region BOOLEAN_LOGIC
 
-    public abstract static class InfixOpExpr extends RJSRSExpr {
+    public abstract static class InfixOp extends RJSRSExpr {
         public final RJSRSExpr[] exprs;
 
-        public InfixOpExpr(RJSRSExpr[] exprs) {
+        public InfixOp(RJSRSExpr[] exprs) {
             this.exprs = exprs;
         }
     }
 
-    public static final class Or extends InfixOpExpr {
+    public static final class Or extends InfixOp {
         public Or(RJSRSExpr[] exprs) {
             super(exprs);
         }
     }
 
-    public static final class And extends InfixOpExpr {
+    public static final class And extends InfixOp {
         public And(RJSRSExpr[] exprs) {
             super(exprs);
         }
@@ -262,6 +263,19 @@ public abstract class RJSRSExpr {
     // endregion
 
     // region PRIMITIVES
+
+    public static final class Delay extends RJSRSExpr {
+        /** The expression to delay the propagation of */
+        public final RJSRSExpr expr;
+
+        /** The duration of the delay */
+        public final double duration;
+
+        public Delay(double duration, RJSRSExpr expr) {
+            this.duration = duration;
+            this.expr = expr;
+        }
+    }
 
     /**
      * Returns whether some signal has a given aspect.

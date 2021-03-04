@@ -14,10 +14,11 @@ public abstract class RSExpr<T extends RSValue> {
     /**
      * Evaluates an expression, returning whether it's true or not
      * @param infraState the state of the infrastructure
-     * @param scope the argument list of the function
+     * @param scopeOffset the offset of the current scope in the state array
+     * @param valueSlots the state of the program
      * @return whether the expression is true
      */
-    public abstract T evaluate(Infra.State infraState, RSValue[] scope);
+    public abstract T evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots);
 
     public abstract void accept(RSExprVisitor visitor) throws InvalidInfraException;
 
@@ -48,9 +49,9 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSBool evaluate(Infra.State infraState, RSValue[] scope) {
+        public RSBool evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
             for (var expr : expressions)
-                if (expr.evaluate(infraState, scope).value)
+                if (expr.evaluate(infraState, scopeOffset, valueSlots).value)
                     return RSBool.True;
             return RSBool.False;
         }
@@ -67,9 +68,9 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSBool evaluate(Infra.State infraState, RSValue[] scope) {
+        public RSBool evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
             for (var expr : expressions)
-                if (!expr.evaluate(infraState, scope).value)
+                if (!expr.evaluate(infraState, scopeOffset, valueSlots).value)
                     return RSBool.True;
             return RSBool.False;
         }
@@ -88,8 +89,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSBool evaluate(Infra.State infraState, RSValue[] scope) {
-            return RSBool.from(!expr.evaluate(infraState, scope).value);
+        public RSBool evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
+            return RSBool.from(!expr.evaluate(infraState, scopeOffset, valueSlots).value);
         }
 
         @Override
@@ -114,7 +115,7 @@ public abstract class RSExpr<T extends RSValue> {
         public static final True INSTANCE = new True();
 
         @Override
-        public RSBool evaluate(Infra.State infraState, RSValue[] scope) {
+        public RSBool evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
             return RSBool.True;
         }
 
@@ -136,7 +137,7 @@ public abstract class RSExpr<T extends RSValue> {
         public static final False INSTANCE = new False();
 
         @Override
-        public RSBool evaluate(Infra.State infraState, RSValue[] scope) {
+        public RSBool evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
             return RSBool.False;
         }
 
@@ -161,11 +162,11 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSAspectSet evaluate(Infra.State infraState, RSValue[] scope) {
+        public RSAspectSet evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
             var res = new RSAspectSet();
             for (int i = 0; i < aspects.length; i++) {
                 var condition = conditions[i];
-                if (condition == null || condition.evaluate(infraState, scope).value)
+                if (condition == null || condition.evaluate(infraState, scopeOffset, valueSlots).value)
                     res.add(aspects[i]);
             }
             return res;
@@ -199,7 +200,7 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public Signal.State evaluate(Infra.State infraState, RSValue[] scope) {
+        public Signal.State evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
             return infraState.getState(signal);
         }
 
@@ -231,7 +232,7 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public Route.State evaluate(Infra.State infraState, RSValue[] scope) {
+        public Route.State evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
             return infraState.getState(route);
         }
 
@@ -263,11 +264,11 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public T evaluate(Infra.State infraState, RSValue[] scope) {
-            if (ifExpr.evaluate(infraState, scope).value) {
-                return thenExpr.evaluate(infraState, scope);
+        public T evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
+            if (ifExpr.evaluate(infraState, scopeOffset, valueSlots).value) {
+                return thenExpr.evaluate(infraState, scopeOffset, valueSlots);
             } else {
-                return elseExpr.evaluate(infraState, scope);
+                return elseExpr.evaluate(infraState, scopeOffset, valueSlots);
             }
         }
 
@@ -285,18 +286,21 @@ public abstract class RSExpr<T extends RSValue> {
     public static final class Call<T extends RSValue> extends RSExpr<T> {
         public final RSFunction<T> function;
         public final RSExpr<?>[] arguments;
+        public final int scopeOffset;
 
-        public Call(RSFunction<T> function, RSExpr<?>[] arguments) {
+        /** Creates an expression which calls a function */
+        public Call(RSFunction<T> function, RSExpr<?>[] arguments, int scopeOffset) {
             this.function = function;
             this.arguments = arguments;
+            this.scopeOffset = scopeOffset;
         }
 
         @Override
-        public T evaluate(Infra.State infraState, RSValue[] scope) {
-            var newScope = new RSValue[arguments.length];
+        public T evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
+            var newScopeOffset = scopeOffset + this.scopeOffset;
             for (int i = 0; i < arguments.length; i++)
-                newScope[i] = arguments[i].evaluate(infraState, scope);
-            return function.body.evaluate(infraState, newScope);
+                valueSlots[newScopeOffset + i] = arguments[i].evaluate(infraState, scopeOffset, valueSlots);
+            return function.body.evaluate(infraState, newScopeOffset, valueSlots);
         }
 
         @Override
@@ -320,9 +324,9 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public T evaluate(Infra.State infraState, RSValue[] scope) {
-            var branchIndex = expr.evaluate(infraState, scope).getEnumValue();
-            return branches[branchIndex].evaluate(infraState, scope);
+        public T evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
+            var branchIndex = expr.evaluate(infraState, scopeOffset, valueSlots).getEnumValue();
+            return branches[branchIndex].evaluate(infraState, scopeOffset, valueSlots);
         }
 
         @Override
@@ -341,25 +345,25 @@ public abstract class RSExpr<T extends RSValue> {
     // region FUNCTION_SPECIFIC
 
     public static final class ArgumentRef<T extends RSValue> extends RSExpr<T> {
-        public final int argumentIndex;
+        public final int slotIndex;
 
-        public ArgumentRef(int argumentIndex) {
-            this.argumentIndex = argumentIndex;
+        public ArgumentRef(int slotIndex) {
+            this.slotIndex = slotIndex;
         }
 
         @Override
         @SuppressWarnings("unchecked")
-        public T evaluate(Infra.State infraState, RSValue[] scope) {
-            return (T) scope[argumentIndex];
+        public T evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
+            return (T) valueSlots[scopeOffset + slotIndex];
         }
 
         @Override
         public RSType getType(RSType[] argumentTypes) {
-            return argumentTypes[argumentIndex];
+            return argumentTypes[slotIndex];
         }
 
         @Override
-        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
+        public void accept(RSExprVisitor visitor) {
             visitor.visit(this);
         }
     }
@@ -367,6 +371,35 @@ public abstract class RSExpr<T extends RSValue> {
     // endregion
 
     // region PRIMITIVES
+
+    public static final class Delay<T extends RSValue> extends RSExpr<T> {
+        public final double duration;
+        public final RSExpr<T> expr;
+        public final int delaySlotIndex;
+
+        /** A delay expression, which delays change propagation of expressions */
+        public Delay(double duration, RSExpr<T> expr, int delaySlotIndex) {
+            this.duration = duration;
+            this.expr = expr;
+            this.delaySlotIndex = delaySlotIndex;
+        }
+
+        @Override
+        public T evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
+            
+            return null;
+        }
+
+        @Override
+        public RSType getType(RSType[] argumentTypes) {
+            return expr.getType(argumentTypes);
+        }
+
+        @Override
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+        }
+    }
 
     public static final class SignalAspectCheck extends RSExpr<RSBool> {
         /** The signal the condition checks for */
@@ -381,8 +414,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSBool evaluate(Infra.State infraState, RSValue[] scope) {
-            var signal = signalExpr.evaluate(infraState, scope);
+        public RSBool evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
+            var signal = signalExpr.evaluate(infraState, scopeOffset, valueSlots);
             return RSBool.from(signal.aspects.contains(aspect));
         }
 
@@ -407,8 +440,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSBool evaluate(Infra.State infraState, RSValue[] scope) {
-            return RSBool.from(routeExpr.evaluate(infraState, scope).status == status);
+        public RSBool evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
+            return RSBool.from(routeExpr.evaluate(infraState, scopeOffset, valueSlots).status == status);
         }
 
         @Override
@@ -432,8 +465,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSBool evaluate(Infra.State infraState, RSValue[] scope) {
-            return RSBool.from(expr.evaluate(infraState, scope).contains(aspect));
+        public RSBool evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
+            return RSBool.from(expr.evaluate(infraState, scopeOffset, valueSlots).contains(aspect));
         }
 
         @Override
