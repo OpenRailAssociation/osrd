@@ -148,9 +148,9 @@ class PrettyPrinterTest {
 
         var expected = String.join("\n",
                 "match \"route\" {",
-                "    0: true,",
-                "    1: false,",
-                "    2: false",
+                "    FREE: true,",
+                "    RESERVED: false,",
+                "    OCCUPIED: false",
                 "}"
         );
         assertEquals(expected, content.toString());
