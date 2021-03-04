@@ -3,13 +3,10 @@ package fr.sncf.osrd.infra.railscript;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.value.RSType;
-import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteStatus;
 
 import java.io.PrintStream;
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /** This class allow to pretty print signaling functions and expressions */
 public class PrettyPrinter extends RSExprVisitor {
@@ -31,14 +28,14 @@ public class PrettyPrinter extends RSExprVisitor {
         currentFct = fct;
         out.printf("fn %s(", fct.functionName);
         // Arguments
-        if (fct.argumentNames.length > 0) {
+        if (fct.argNames.length > 0) {
             out.println();
             inc();
             inctab();
-            for (var i = 0; i < fct.argumentNames.length; i++) {
-                out.printf("%s: ", fct.argumentNames[i]);
-                print(fct.argumentTypes[i]);
-                if (i < fct.argumentNames.length - 1) {
+            for (var i = 0; i < fct.argNames.length; i++) {
+                out.printf("%s: ", fct.argNames[i]);
+                print(fct.argTypes[i]);
+                if (i < fct.argNames.length - 1) {
                     out.println(",");
                     tab();
                 }
@@ -238,7 +235,7 @@ public class PrettyPrinter extends RSExprVisitor {
 
     @Override
     public void visit(RSExpr.ArgumentRef<?> expr) {
-        out.printf("%s", currentFct.argumentNames[expr.slotIndex]);
+        out.printf("%s", currentFct.argNames[expr.slotIndex]);
     }
 
     @Override

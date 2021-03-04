@@ -177,7 +177,7 @@
                 "aspect": "YELLOW",
                 "condition": {
                   "type": "signal_has_aspect",
-                  "route": {
+                  "signal": {
                     "type": "argument_ref",
                     "argument_name": "master_signal"
                   },

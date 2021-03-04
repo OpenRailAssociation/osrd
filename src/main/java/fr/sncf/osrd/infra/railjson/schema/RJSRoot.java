@@ -23,8 +23,7 @@ public class RJSRoot {
             .add(RJSRSExpr.adapter)
             .add(RJSRouteWaypoint.adapter)
             .build()
-            .adapter(RJSRoot.class)
-            .failOnUnknown();
+            .adapter(RJSRoot.class);
 
     /** An incremental format version number, which may be used for migrations */
     public final int version = 1;
