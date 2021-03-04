@@ -7,6 +7,8 @@ import fr.sncf.osrd.infra.routegraph.RouteStatus;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /** This class allow to pretty print signaling functions and expressions */
 public class PrettyPrinter extends RSExprVisitor {
@@ -70,6 +72,9 @@ public class PrettyPrinter extends RSExprVisitor {
                 break;
             case ROUTE:
                 out.print("Route");
+                break;
+            case SWITCH:
+                out.print("Switch");
                 break;
         }
     }
@@ -205,19 +210,12 @@ public class PrettyPrinter extends RSExprVisitor {
 
     @Override
     public void visit(RSExpr.EnumMatch<?, ?> expr) throws InvalidInfraException {
-        var argTypes = currentFct == null ? new RSType[0] : currentFct.argumentTypes;
-        var condType = expr.expr.getType(argTypes);
-        var enumValues = new ArrayList<String>();
-        switch (condType) {
-            case ROUTE:
-                var routes = RouteStatus.values();
-                for (var route : routes) {
-                    enumValues.add(route.name());
-                }
-                break;
-            default:
-                throw new InvalidInfraException("EnumMatch: the type of the condition expr isn't matchable");
-        }
+        var argTypes = currentFct == null ? new RSType[0] : currentFct.argTypes;
+        var enumCond = expr.expr.getType(argTypes).enumClass;
+        if (enumCond == null)
+            throw new InvalidInfraException("EnumMatch: the type of the condition expr isn't matchable");
+        var enumValues = enumCond.getEnumConstants();
+
         out.print("match ");
         expr.expr.accept(this);
         out.print(" {\n");
@@ -225,7 +223,7 @@ public class PrettyPrinter extends RSExprVisitor {
         for (var i = 0; i < expr.branches.length; i++) {
             // TODO print enum value instead of int
             tab();
-            out.printf("%s: ", enumValues.get(i));
+            out.printf("%s: ", enumValues[i].name());
             expr.branches[i].accept(this);
             if (i < expr.branches.length - 1)
                 out.print(",");

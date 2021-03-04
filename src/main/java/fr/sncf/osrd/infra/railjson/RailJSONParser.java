@@ -120,7 +120,11 @@ public class RailJSONParser {
         var nodeIDs = TrackNodeIDs.from(railJSON.trackSectionLinks, railJSON.trackSections);
         trackGraph.resizeNodes(nodeIDs.numberOfNodes);
 
-        // TODO: parse switches
+        // create switch nodes
+        for (var rjsSwitch : railJSON.switches) {
+            var index = nodeIDs.get(rjsSwitch.base);
+            trackGraph.makeSwitchNode(index, rjsSwitch.id);
+        }
 
         // fill nodes with placeholders
         for (int i = 0; i < nodeIDs.numberOfNodes; i++)
