@@ -12,12 +12,15 @@ import fr.sncf.osrd.infra.railjson.RailJSONSerializer;
 import fr.sncf.osrd.railml.RailMLParser;
 import fr.sncf.osrd.simulation.ChangeSerializer;
 import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
+import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.timetable.InvalidTimetableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 
 public class App {
     static final Logger logger = LoggerFactory.getLogger(App.class);
@@ -45,13 +48,13 @@ public class App {
                 logger.info("parsing the configuration file");
                 Config config = ConfigManager.readConfigFile(configPath);
 
-                logger.info("creating the simulation");
-                var simulation = SimulationManager.fromConfig(config, true);
-
                 logger.info("starting the simulation");
-                simulation.run();
+                var changeConsumers = new ArrayList<ChangeConsumer>();
+                var changelog = new ArrayChangeLog();
+                changeConsumers.add(changelog);
+                SimulationManager.run(config, changeConsumers);
 
-                ChangeSerializer.serializeChangeLog(simulation.changelog, outputChangelogPath);
+                ChangeSerializer.serializeChangeLog(changelog, outputChangelogPath);
             } catch (SimulationError simulationError) {
                 logger.error("an logic error prevented the simulation from completing", simulationError);
             }

@@ -4,7 +4,7 @@ import static fr.sncf.osrd.simulation.TimelineEvent.State;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.timetable.Schedule;
+import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.train.Train;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,7 @@ public final class Simulation {
     // changes may need to be logged to enable replays
     // it's basically a pointer to the event sourcing
     // event store insertion function
-    public final ChangeLog changelog;
+    public final ChangeConsumer changeConsumer;
 
     /**
      * The current time of the simulation.
@@ -70,21 +70,21 @@ public final class Simulation {
     private Simulation(
             Infra infra,
             double time,
-            ChangeLog changelog
+            ChangeConsumer changeConsumer
     ) {
         this.infra = infra;
         this.startTime = time;
         this.time = time;
-        this.changelog = changelog;
+        this.changeConsumer = changeConsumer;
     }
 
     /** Creates a simulation, planning train creations */
     public static Simulation create(
             Infra infra,
             double simStartTime,
-            ChangeLog changelog
+            ChangeConsumer changeConsumer
     ) {
-        return new Simulation(infra, simStartTime, changelog);
+        return new Simulation(infra, simStartTime, changeConsumer);
     }
 
     // region ENTITES
@@ -111,8 +111,8 @@ public final class Simulation {
     // region EVENT_SOURCING
 
     void onChangeCreated(Change change) {
-        if (changelog != null)
-            changelog.changeCreationCallback(change);
+        if (changeConsumer != null)
+            changeConsumer.changeCreationCallback(change);
         change.state = Change.State.REGISTERED;
     }
 
@@ -122,8 +122,8 @@ public final class Simulation {
      */
     public void publishChange(Change change) {
         logger.info("change published {}", change);
-        if (changelog != null)
-            changelog.changePublishedCallback(change);
+        if (changeConsumer != null)
+            changeConsumer.changePublishedCallback(change);
         change.state = Change.State.PUBLISHED;
     }
 

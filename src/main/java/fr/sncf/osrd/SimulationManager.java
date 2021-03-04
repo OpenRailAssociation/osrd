@@ -2,37 +2,20 @@ package fr.sncf.osrd;
 
 import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
+import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
+import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
 
 public final class SimulationManager {
     static final Logger logger = LoggerFactory.getLogger(SimulationManager.class);
 
-    public final ArrayChangeLog changelog;
-
-    private final Simulation sim;
-    private final Config config;
-
-    private SimulationManager(Config config, ArrayChangeLog changelog) throws SimulationError {
-        this.sim = Simulation.create(config.infra, 0, changelog);
-        this.changelog = changelog;
-        this.config = config;
-    }
-
-    /**
-     * Instantiate a simulation without starting it
-     * @param config all the required parameters for the simulation
-     */
-    public static SimulationManager fromConfig(Config config, boolean needsChangeLog) throws SimulationError {
-        ArrayChangeLog changelog = null;
-        if (needsChangeLog || config.changeReplayCheck)
-            changelog = new ArrayChangeLog();
-
-        // create a logger for event sourcing changes
-        return new SimulationManager(config, changelog);
-    }
-
-    private void updateViewer(
+    private static void updateViewer(
+            Simulation sim,
+            Config config,
             DebugViewer viewer,
             TimelineEvent<?> nextEvent
     ) throws InterruptedException {
@@ -69,7 +52,16 @@ public final class SimulationManager {
     /**
      * Run the simulation
      */
-    public void run() throws SimulationError, InterruptedException {
+    public static void run(
+            Config config,
+            ArrayList<ChangeConsumer> changeConsumers
+    ) throws SimulationError, InterruptedException {
+        // create the simulation and add change consumers
+        var multiplexer = new ChangeConsumerMultiplexer(changeConsumers);
+        var sim = Simulation.create(config.infra, 0, multiplexer);
+        if (config.changeReplayCheck)
+            multiplexer.add(ChangeReplayChecker.from(sim));
+
         // plan train creation
         for (var trainSchedule : config.schedule.trainSchedules)
             sim.scheduler.planTrain(sim, trainSchedule);
@@ -89,12 +81,9 @@ public final class SimulationManager {
             var event = sim.getNextEvent();
 
             if (viewer != null)
-                updateViewer(viewer, event);
+                updateViewer(sim, config, viewer, event);
 
             sim.step(event);
         }
-
-        if (config.changeReplayCheck)
-            SimulationChecker.check(sim, changelog);
     }
 }
