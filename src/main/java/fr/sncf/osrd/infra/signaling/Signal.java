@@ -1,9 +1,9 @@
 package fr.sncf.osrd.infra.signaling;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.signaling.expr.Expr;
-import fr.sncf.osrd.infra.signaling.expr.value.AspectSet;
-import fr.sncf.osrd.infra.signaling.expr.value.IExprValue;
+import fr.sncf.osrd.infra.railscript.RSExpr;
+import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
+import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.utils.SortedArraySet;
 
@@ -11,10 +11,10 @@ import fr.sncf.osrd.utils.SortedArraySet;
 public class Signal {
     public final int index;
     public final String id;
-    public final Expr<AspectSet> expr;
+    public final RSExpr<RSAspectSet> expr;
 
     /** The static data describing a signal */
-    public Signal(int index, String id, Expr<AspectSet> expr) {
+    public Signal(int index, String id, RSExpr<RSAspectSet> expr) {
         this.index = index;
         this.id = id;
         this.expr = expr;
@@ -25,7 +25,7 @@ public class Signal {
     }
 
     /** The state of the signal is the actual entity which interacts with the rest of the infrastructure */
-    public static final class State extends Entity implements IExprValue {
+    public static final class State extends Entity implements RSValue {
         public final Signal signal;
         public final SortedArraySet<Aspect> aspects;
 

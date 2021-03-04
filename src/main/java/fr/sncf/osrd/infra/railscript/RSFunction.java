@@ -1,27 +1,27 @@
-package fr.sncf.osrd.infra.signaling.expr;
+package fr.sncf.osrd.infra.railscript;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.signaling.expr.value.IExprValue;
-import fr.sncf.osrd.infra.signaling.expr.value.ValueType;
+import fr.sncf.osrd.infra.railscript.value.RSValue;
+import fr.sncf.osrd.infra.railscript.value.RSValueType;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public class Function<T extends IExprValue> {
+public class RSFunction<T extends RSValue> {
     public final String functionName;
 
     public final String[] argumentNames;
-    public final ValueType[] argumentTypes;
+    public final RSValueType[] argumentTypes;
 
-    public final ValueType returnsType;
+    public final RSValueType returnsType;
 
-    public final Expr<T> body;
+    public final RSExpr<T> body;
 
-    private Function(
+    private RSFunction(
             String functionName,
             String[] argumentNames,
-            ValueType[] argumentTypes,
-            ValueType returnsType,
-            Expr<T> body
+            RSValueType[] argumentTypes,
+            RSValueType returnsType,
+            RSExpr<T> body
     ) {
         this.functionName = functionName;
         this.argumentNames = argumentNames;
@@ -31,14 +31,14 @@ public class Function<T extends IExprValue> {
     }
 
     /** Creates and type checks a new signal state evaluation function */
-    public static <T extends IExprValue> Function<T> from(
+    public static <T extends RSValue> RSFunction<T> from(
             String functionName,
             String[] argumentNames,
-            ValueType[] argumentTypes,
-            ValueType returnType,
-            Expr<T> body
+            RSValueType[] argumentTypes,
+            RSValueType returnType,
+            RSExpr<T> body
     ) throws InvalidInfraException {
-        var function = new Function<>(functionName, argumentNames, argumentTypes, returnType, body);
+        var function = new RSFunction<>(functionName, argumentNames, argumentTypes, returnType, body);
         if (function.body.getType(argumentTypes) != returnType)
             throw new InvalidInfraException("return type mismatch in function" + functionName);
         return function;

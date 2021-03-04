@@ -1,7 +1,7 @@
 package fr.sncf.osrd.infra.routegraph;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.signaling.expr.value.IExprValue;
+import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.utils.graph.BiNEdge;
@@ -41,7 +41,7 @@ public class Route extends BiNEdge<Route> {
 
     /** The state of the route is the actual entity which interacts with the rest of the infrastructure */
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public static final class State extends Entity implements IExprValue {
+    public static final class State extends Entity implements RSValue {
         public final Route route;
         public RouteStatus status;
 
