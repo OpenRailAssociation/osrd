@@ -2,10 +2,8 @@ package fr.sncf.osrd.infra.railjson.schema;
 
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSSignal;
-import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSOperationalPointPart;
 import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSSpeedSectionPart;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;

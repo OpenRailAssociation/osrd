@@ -14,6 +14,7 @@
   ],
   "routes": [
     {
+      "waypoints": [],
       "id": "rt.buffer_stop_a-C1",
       "switches_position": {},
       "tvd_sections": [
@@ -21,6 +22,7 @@
       ]
     },
     {
+      "waypoints": [],
       "id": "rt.buffer_stop_b-C3",
       "switches_position": {},
       "tvd_sections": [
@@ -28,6 +30,7 @@
       ]
     },
     {
+      "waypoints": [],
       "id": "rt.C1-S7",
       "switches_position": {
         "il.switch_foo": "RIGHT"
@@ -38,6 +41,7 @@
       ]
     },
     {
+      "waypoints": [],
       "id": "rt.C3-S7",
       "switches_position": {
         "il.switch_foo": "LEFT"
@@ -48,6 +52,7 @@
       ]
     },
     {
+      "waypoints": [],
       "id": "rt.S7-buffer_stop_c",
       "switches_position": {},
       "tvd_sections": [
@@ -55,6 +60,7 @@
       ]
     },
     {
+      "waypoints": [],
       "id": "rt.buffer_stop_c-C2",
       "switches_position": {},
       "tvd_sections": [
@@ -62,6 +68,7 @@
       ]
     },
     {
+      "waypoints": [],
       "id": "rt.C2-C6",
       "switches_position": {},
       "tvd_sections": [
@@ -69,6 +76,7 @@
       ]
     },
     {
+      "waypoints": [],
       "id": "rt.C6-buffer_stop_a",
       "switches_position": {
         "il.switch_foo": "RIGHT"
@@ -79,6 +87,7 @@
       ]
     },
     {
+      "waypoints": [],
       "id": "rt.C6-buffer_stop_b",
       "switches_position": {
         "il.switch_foo": "RIGHT"
@@ -317,13 +326,6 @@
   ],
   "track_sections": [
     {
-      "buffer_stops": [
-        {
-          "applicable_directions": "REVERSE",
-          "id": "buf_stop_b",
-          "position": 0
-        }
-      ],
       "id": "ne.micro.foo_b",
       "length": 200,
       "operational_points": [
@@ -335,15 +337,21 @@
       ],
       "signals": [],
       "speed_sections": [],
-      "train_detectors": [
+      "route_waypoints": [
         {
+          "type": "detector",
           "id": "tde.foo_b-switch_foo",
           "position": 175
+        },
+        {
+          "type": "buffer_stop",
+          "applicable_directions": "REVERSE",
+          "id": "buffer_stop_b",
+          "position": 0
         }
       ]
     },
     {
-      "buffer_stops": [],
       "id": "ne.micro.foo_to_bar",
       "length": 10000,
       "operational_points": [],
@@ -362,7 +370,7 @@
               },
               {
                 "type": "route",
-                "signal": "ne.micro.foo_to_bar"
+                "route": "rt.C2-C6"
               }
             ]
           }
@@ -375,7 +383,7 @@
             "type": "match",
             "expr": {
               "type": "route",
-              "route": "ne.micro.bar_a"
+              "route": "rt.C2-C6"
             },
             "branches": {
               "FREE": {
@@ -414,19 +422,26 @@
           "ref": "speedsection.mid_limit"
         }
       ],
-      "train_detectors": [
+      "route_waypoints": [
         {
+          "type": "detector",
           "id": "tde.switch_foo-track",
           "position": 25
         }
       ]
     },
     {
-      "buffer_stops": [
+      "route_waypoints": [
         {
+          "type": "buffer_stop",
           "applicable_directions": "REVERSE",
-          "id": "buf_stop_a",
+          "id": "buffer_stop_a",
           "position": 0
+        },
+        {
+          "type": "detector",
+          "id": "tde.foo_a-switch_foo",
+          "position": 175
         }
       ],
       "id": "ne.micro.foo_a",
@@ -439,20 +454,20 @@
         }
       ],
       "signals": [],
-      "speed_sections": [],
-      "train_detectors": [
-        {
-          "id": "tde.foo_a-switch_foo",
-          "position": 175
-        }
-      ]
+      "speed_sections": []
     },
     {
-      "buffer_stops": [
+      "route_waypoints": [
         {
+          "type": "buffer_stop",
           "applicable_directions": "NORMAL",
-          "id": "buf_stop_c",
+          "id": "buffer_stop_c",
           "position": 200
+        },
+        {
+          "type": "detector",
+          "id": "tde.track-bar",
+          "position": 0
         }
       ],
       "id": "ne.micro.bar_a",
@@ -465,13 +480,7 @@
         }
       ],
       "signals": [],
-      "speed_sections": [],
-      "train_detectors": [
-        {
-          "id": "tde.track-bar",
-          "position": 0
-        }
-      ]
+      "speed_sections": []
     }
   ],
   "tvd_sections": [
