@@ -144,7 +144,7 @@ public class RailJSONParser {
 
         // parse signal functions
         var signalFunctions = new HashMap<String, RSFunction<?>>();
-        for (var rjsSignalFunction : railJSON.signalFunctions) {
+        for (var rjsSignalFunction : railJSON.scriptFunctions) {
             var signalFunction = parseSignalFunction(aspectsMap, rjsSignalFunction);
             signalFunctions.put(signalFunction.functionName, signalFunction);
         }
@@ -306,6 +306,8 @@ public class RailJSONParser {
                 return RSType.SIGNAL;
             case ASPECT_SET:
                 return RSType.ASPECT_SET;
+            case ROUTE:
+                return RSType.ROUTE;
         }
         throw new RuntimeException("unknown RJSSignalExprType");
     }
