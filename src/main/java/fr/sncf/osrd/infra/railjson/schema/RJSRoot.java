@@ -63,8 +63,8 @@ public class RJSRoot {
     public final Collection<RJSAspect> aspects;
 
     /** The list of function definitions */
-    @Json(name = "signal_functions")
-    public final List<RJSRSFunction> signalFunctions;
+    @Json(name = "script_functions")
+    public final List<RJSRSFunction> scriptFunctions;
 
     /** Create a new serialized RailJSON file */
     public RJSRoot(
@@ -86,7 +86,7 @@ public class RJSRoot {
         this.routes = routes;
         this.speedSections = speedSections;
         this.aspects = aspects;
-        this.signalFunctions = signalFunctions;
+        this.scriptFunctions = signalFunctions;
     }
 
     /**

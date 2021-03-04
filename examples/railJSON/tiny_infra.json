@@ -89,7 +89,7 @@
       ]
     }
   ],
-  "signal_functions": [
+  "script_functions": [
     {
       "function_name": "sncf_filter",
       "arguments": [
