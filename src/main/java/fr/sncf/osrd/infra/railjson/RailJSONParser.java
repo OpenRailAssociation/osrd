@@ -9,23 +9,15 @@ import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.railjson.schema.RJSRoot;
-import fr.sncf.osrd.infra.railjson.schema.RJSRoute;
-import fr.sncf.osrd.infra.railjson.schema.railscript.RJSRSExpr;
-import fr.sncf.osrd.infra.railjson.schema.railscript.RJSRSType;
-import fr.sncf.osrd.infra.railjson.schema.railscript.RJSRSFunction;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrackObject;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSTrackRange;
-import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
-import fr.sncf.osrd.infra.railscript.value.RSBool;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
-import fr.sncf.osrd.infra.routegraph.RouteStatus;
 import fr.sncf.osrd.infra.signaling.*;
 import fr.sncf.osrd.infra.railscript.RSExprVisitor;
-import fr.sncf.osrd.infra.railscript.value.RSType;
 import fr.sncf.osrd.infra.railscript.RSFunction;
 import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -143,10 +135,11 @@ public class RailJSONParser {
         }
 
         // parse signal functions
-        var signalFunctions = new HashMap<String, RSFunction<?>>();
-        for (var rjsSignalFunction : railJSON.scriptFunctions) {
-            var signalFunction = parseSignalFunction(aspectsMap, rjsSignalFunction);
-            signalFunctions.put(signalFunction.functionName, signalFunction);
+        var scriptFunctions = new HashMap<String, RSFunction<?>>();
+        for (var rjsScriptFunction : railJSON.scriptFunctions) {
+            var scriptFunction = RailScriptExprParser.parseFunction(
+                    aspectsMap, scriptFunctions, rjsScriptFunction);
+            scriptFunctions.put(scriptFunction.functionName, scriptFunction);
         }
 
         var waypointsMap = new HashMap<String, Waypoint>();
@@ -190,7 +183,8 @@ public class RailJSONParser {
             // Parse signals
             var signalsBuilder = infraTrackSection.signals.builder();
             for (var rjsSignal : trackSection.signals) {
-                var expr = parseAspectSetExpr(aspectsMap, null, null, rjsSignal.expr);
+                var parser = new RailScriptExprParser(aspectsMap, scriptFunctions);
+                var expr = parser.parseAspectSetExpr(rjsSignal.expr);
                 var signal = new Signal(signals.size(), rjsSignal.id, expr);
                 signalsBuilder.add(rjsSignal.position, signal);
                 signals.add(signal);
@@ -253,7 +247,7 @@ public class RailJSONParser {
                 expr.resolve(routeNames);
             }
         };
-        for (var function : signalFunctions.values())
+        for (var function : scriptFunctions.values())
             function.body.accept(nameResolver);
         for (var signal : signals)
             signal.expr.accept(nameResolver);
@@ -272,245 +266,5 @@ public class RailJSONParser {
                 throw new InvalidInfraException(String.format("cannot find waypoint %s", waypointID.id));
             foundWaypoints.add(waypoint);
         }
-    }
-
-    private static RSFunction<?> parseSignalFunction(
-            HashMap<String, Aspect> aspectsMap,
-            RJSRSFunction rjsSignalFunction
-    ) throws InvalidInfraException {
-        var arguments = rjsSignalFunction.arguments;
-
-        // type check rules
-        var argumentTypes = new RSType[arguments.length];
-        var argumentNames = new String[arguments.length];
-        for (int i = 0; i < arguments.length; i++) {
-            argumentNames[i] = arguments[i].name;
-            argumentTypes[i] = parseExprType(arguments[i].type);
-        }
-
-        var expr = parseExpr(aspectsMap, argumentNames, argumentTypes, rjsSignalFunction.body);
-        return RSFunction.from(
-                rjsSignalFunction.name,
-                argumentNames,
-                argumentTypes,
-                parseExprType(rjsSignalFunction.returnType),
-                expr
-        );
-    }
-
-    private static RSType parseExprType(RJSRSType type) {
-        switch (type) {
-            case BOOLEAN:
-                return RSType.BOOLEAN;
-            case SIGNAL:
-                return RSType.SIGNAL;
-            case ASPECT_SET:
-                return RSType.ASPECT_SET;
-            case ROUTE:
-                return RSType.ROUTE;
-        }
-        throw new RuntimeException("unknown RJSSignalExprType");
-    }
-
-    private static int findArgIndex(
-            String[] arguments,
-            String argument
-    ) throws InvalidInfraException {
-        for (int i = 0; i < arguments.length; i++)
-            if (arguments[i].equals(argument))
-                return i;
-
-        throw new InvalidInfraException(String.format("signal function argument not found: %s", argument));
-    }
-
-    private static RSExpr<?> parseExpr(
-            HashMap<String, Aspect> aspectsMap,
-            String[] argNames,
-            RSType[] argTypes,
-            RJSRSExpr expr
-    ) throws InvalidInfraException {
-        var type = expr.getClass();
-
-        // boolean operators
-        if (type == RJSRSExpr.Or.class)
-            return new RSExpr.Or(parseInfixOp(aspectsMap, argNames, argTypes, (RJSRSExpr.InfixOpExpr) expr));
-        if (type == RJSRSExpr.And.class)
-            return new RSExpr.And(parseInfixOp(aspectsMap, argNames, argTypes, (RJSRSExpr.InfixOpExpr) expr));
-        if (type == RJSRSExpr.Not.class) {
-            var notExpr = (RJSRSExpr.Not) expr;
-            return new RSExpr.Not(parseBooleanExpr(aspectsMap, argNames, argTypes, notExpr.expr));
-        }
-
-        // value constructors
-        if (type == RJSRSExpr.True.class)
-            return RSExpr.True.INSTANCE;
-        if (type == RJSRSExpr.False.class)
-            return RSExpr.False.INSTANCE;
-        if (type == RJSRSExpr.AspectSet.class)
-            return parseAspectSet(aspectsMap, argNames, argTypes, (RJSRSExpr.AspectSet) expr);
-        if (type == RJSRSExpr.SignalRef.class)
-            return new RSExpr.SignalRef(((RJSRSExpr.SignalRef) expr).signal.id);
-        if (type == RJSRSExpr.RouteRef.class)
-            return new RSExpr.RouteRef(((RJSRSExpr.RouteRef) expr).route.id);
-
-        // control flow
-        if (type == RJSRSExpr.If.class)
-            return parseIfExpr(aspectsMap, argNames, argTypes, (RJSRSExpr.If) expr);
-
-        // function-specific
-        if (type == RJSRSExpr.ArgumentRef.class) {
-            var argumentExpr = (RJSRSExpr.ArgumentRef) expr;
-            var argIndex = findArgIndex(argNames, argumentExpr.argumentName);
-            return new RSExpr.ArgumentRef<>(argIndex);
-        }
-
-        // primitives
-        if (type == RJSRSExpr.SignalAspectCheck.class) {
-            var signalExpr = (RJSRSExpr.SignalAspectCheck) expr;
-            var aspect = aspectsMap.get(signalExpr.aspect.id);
-            var signal = parseSignalExpr(aspectsMap, argNames, argTypes, signalExpr.signal);
-            return new RSExpr.SignalAspectCheck(signal, aspect);
-        }
-        if (type == RJSRSExpr.RouteStateCheck.class) {
-            var routeStateExpr = (RJSRSExpr.RouteStateCheck) expr;
-            var route = parseRouteExpr(aspectsMap, argNames, argTypes, routeStateExpr.route);
-            var routeState = parseRouteState(routeStateExpr.state);
-            return new RSExpr.RouteStateCheck(route, routeState);
-        }
-        if (type == RJSRSExpr.AspectSetContains.class) {
-            var aspectSetContainsExpr = (RJSRSExpr.AspectSetContains) expr;
-            var aspectSet = parseAspectSetExpr(aspectsMap, argNames, argTypes, aspectSetContainsExpr.aspectSet);
-            var aspect = aspectsMap.get(aspectSetContainsExpr.aspect.id);
-            return new RSExpr.AspectSetContains(aspectSet, aspect);
-        }
-
-        throw new InvalidInfraException("unsupported signal expression");
-    }
-
-    private static RouteStatus parseRouteState(RJSRoute.State state) {
-        switch (state) {
-            case FREE:
-                return RouteStatus.FREE;
-            case RESERVED:
-                return RouteStatus.RESERVED;
-            case OCCUPIED:
-                return RouteStatus.OCCUPIED;
-        }
-        throw new RuntimeException("unsupported RailJSON route state");
-    }
-
-    private static RSExpr<?> parseIfExpr(
-            HashMap<String, Aspect> aspectsMap,
-            String[] argumentNames,
-            RSType[] argumentTypes,
-            RJSRSExpr.If ifExpr
-    ) throws InvalidInfraException {
-        var condition = parseBooleanExpr(aspectsMap, argumentNames, argumentTypes, ifExpr.condition);
-        var branchTrue = parseExpr(aspectsMap, argumentNames, argumentTypes, ifExpr.branchTrue);
-        var branchFalse = parseExpr(aspectsMap, argumentNames, argumentTypes, ifExpr.branchFalse);
-        var branchTrueType = branchTrue.getType(argumentTypes);
-        var branchFalseType = branchFalse.getType(argumentTypes);
-        if (branchTrueType != branchFalseType)
-            throw new InvalidInfraException(String.format(
-                    "then branch has type %s but else has type %s", branchTrueType, branchFalseType));
-
-        // typing is dynamically checked
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        var res = new RSExpr.If(condition, branchTrue, branchFalse);
-        return res;
-    }
-
-    private static RSExpr<RSAspectSet> parseAspectSet(
-            HashMap<String, Aspect> aspectsMap,
-            String[] argumentNames,
-            RSType[] argumentTypes,
-            RJSRSExpr.AspectSet expr
-    ) throws InvalidInfraException {
-        var memberCount = expr.members.length;
-        var aspects = new Aspect[memberCount];
-        @SuppressWarnings({"unchecked"})
-        var conditions = (RSExpr<RSBool>[]) new RSExpr<?>[memberCount];
-
-        for (int i = 0; i < memberCount; i++) {
-            var member = expr.members[i];
-            aspects[i] = aspectsMap.get(member.aspect.id);
-            if (member.condition != null)
-                conditions[i] = parseBooleanExpr(aspectsMap, argumentNames, argumentTypes, member.condition);
-        }
-
-        return new RSExpr.AspectSet(aspects, conditions);
-    }
-
-    private static void checkExprType(
-            RSType expectedType,
-            RSType[] argumentTypes,
-            RSExpr<?> expr
-    ) throws InvalidInfraException {
-        var exprType = expr.getType(argumentTypes);
-        if (exprType != expectedType)
-            throw new InvalidInfraException(String.format(
-                    "type mismatch: expected %s, got %s", expectedType.toString(), exprType.toString()));
-    }
-
-    @SuppressWarnings("unchecked")
-    private static RSExpr<RSBool> parseBooleanExpr(
-            HashMap<String, Aspect> aspectsMap,
-            String[] argumentNames,
-            RSType[] argumentTypes,
-            RJSRSExpr rjsExpr
-    ) throws InvalidInfraException {
-        var expr = parseExpr(aspectsMap, argumentNames, argumentTypes, rjsExpr);
-        checkExprType(RSType.BOOLEAN, argumentTypes, expr);
-        return (RSExpr<RSBool>) expr;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static RSExpr<Signal.State> parseSignalExpr(
-            HashMap<String, Aspect> aspectsMap,
-            String[] argumentNames,
-            RSType[] argumentTypes,
-            RJSRSExpr rjsExpr
-    ) throws InvalidInfraException {
-        var expr = parseExpr(aspectsMap, argumentNames, argumentTypes, rjsExpr);
-        checkExprType(RSType.SIGNAL, argumentTypes, expr);
-        return (RSExpr<Signal.State>) expr;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static RSExpr<Route.State> parseRouteExpr(
-            HashMap<String, Aspect> aspectsMap,
-            String[] argumentNames,
-            RSType[] argumentTypes,
-            RJSRSExpr rjsExpr
-    ) throws InvalidInfraException {
-        var expr = parseExpr(aspectsMap, argumentNames, argumentTypes, rjsExpr);
-        checkExprType(RSType.ROUTE, argumentTypes, expr);
-        return (RSExpr<Route.State>) expr;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static RSExpr<RSAspectSet> parseAspectSetExpr(
-            HashMap<String, Aspect> aspectsMap,
-            String[] argumentNames,
-            RSType[] argumentTypes,
-            RJSRSExpr rjsExpr
-    ) throws InvalidInfraException {
-        var expr = parseExpr(aspectsMap, argumentNames, argumentTypes, rjsExpr);
-        checkExprType(RSType.ASPECT_SET, argumentTypes, expr);
-        return (RSExpr<RSAspectSet>) expr;
-    }
-
-    private static RSExpr<RSBool>[] parseInfixOp(
-            HashMap<String, Aspect> aspectsMap,
-            String[] argumentNames,
-            RSType[] argumentTypes,
-            RJSRSExpr.InfixOpExpr expr
-    ) throws InvalidInfraException {
-        var arity = expr.exprs.length;
-        @SuppressWarnings({"unchecked"})
-        var expressions = (RSExpr<RSBool>[]) new RSExpr<?>[arity];
-        for (int i = 0; i < arity; i++)
-            expressions[i] = parseBooleanExpr(aspectsMap, argumentNames, argumentTypes, expr.exprs[i]);
-        return expressions;
     }
 }

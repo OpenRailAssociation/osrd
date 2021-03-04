@@ -57,6 +57,10 @@ public class RSExprVisitor {
     public void visit(RSExpr.ArgumentRef<?> expr) {
     }
 
+    public void visit(RSExpr.Delay<?> expr) throws InvalidInfraException {
+        expr.expr.accept(this);
+    }
+
     public void visit(RSExpr.SignalAspectCheck expr) throws InvalidInfraException {
         expr.signalExpr.accept(this);
     }

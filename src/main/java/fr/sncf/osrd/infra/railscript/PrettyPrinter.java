@@ -216,7 +216,7 @@ public class PrettyPrinter extends RSExprVisitor {
 
     @Override
     public void visit(RSExpr.ArgumentRef<?> expr) {
-        out.printf("%s", currentFct.argumentNames[expr.argumentIndex]);
+        out.printf("%s", currentFct.argumentNames[expr.slotIndex]);
     }
 
     @Override
