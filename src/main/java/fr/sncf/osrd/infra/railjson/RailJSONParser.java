@@ -147,6 +147,8 @@ public class RailJSONParser {
         // create track sections
         var infraTrackSections = new HashMap<String, TrackSection>();
         var signals = new ArrayList<Signal>();
+        // Need a unique index for waypoint graph
+        int waypointIndex = 0;
         for (var trackSection : railJSON.trackSections) {
             var beginID = nodeIDs.get(trackSection.beginEndpoint());
             var endID = nodeIDs.get(trackSection.endEndpoint());
@@ -163,20 +165,17 @@ public class RailJSONParser {
 
             // Parse waypoints
             var waypointsBuilder = infraTrackSection.waypoints.builder();
-            // Need a unique index for waypoint graph
-            int index = 0;
             for (var rjsRouteWaypoint : trackSection.routeWaypoints) {
                 if (rjsRouteWaypoint.getClass() == RJSTrainDetector.class) {
-                    var detector = new Detector(index, rjsRouteWaypoint.id);
+                    var detector = new Detector(waypointIndex, rjsRouteWaypoint.id);
                     waypointsMap.put(detector.id, detector);
                     waypointsBuilder.add(rjsRouteWaypoint.position, detector);
                 } else if (rjsRouteWaypoint.getClass() == RJSBufferStop.class) {
-                    var bufferStop = new BufferStop(index, rjsRouteWaypoint.id);
+                    var bufferStop = new BufferStop(waypointIndex, rjsRouteWaypoint.id);
                     waypointsMap.put(bufferStop.id, bufferStop);
                     waypointsBuilder.add(rjsRouteWaypoint.position, bufferStop);
-
                 }
-                index++;
+                waypointIndex++;
             }
             waypointsBuilder.build();
 
