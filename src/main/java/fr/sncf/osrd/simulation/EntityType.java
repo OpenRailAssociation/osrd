@@ -4,5 +4,6 @@ public enum EntityType {
     SIGNAL,
     TRAIN,
     ROUTE,
+    SWITCH,
     SCHEDULER,
 }

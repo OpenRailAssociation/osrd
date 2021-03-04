@@ -29,6 +29,13 @@ public final class TrackGraph extends BiNGraph<TrackSection, TrackNode> {
         return node;
     }
 
+    /** Create a switch node at the given node index */
+    public Switch makeSwitchNode(int index, String id) {
+        var node = new Switch(this, index, id);
+        trackNodeMap.put(node.id, node);
+        return node;
+    }
+
     /**
      * Make a new track section
      *
