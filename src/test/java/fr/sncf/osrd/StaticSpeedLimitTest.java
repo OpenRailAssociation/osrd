@@ -62,23 +62,19 @@ public class StaticSpeedLimitTest {
         limits.add(new RangeValue<>(0, 10000, new SpeedSection(false, 30.0)));
         limits.add(new RangeValue<>(5000, 6000, new SpeedSection(false, 25.0)));
 
-        final var infra = new Infra(trackGraph, null, null, new HashMap<>(), new HashMap<>());
+        final var infra = new Infra(
+                trackGraph, null, null,
+                new HashMap<>(), new HashMap<>(), new ArrayList<>());
 
         // create the waypoints the train should go through
         var waypoints = new CryoList<TrainScheduleWaypoint>();
         waypoints.add(TrainScheduleWaypoint.from(LocalTime.ofSecondOfDay(0), 0, opStart, edge));
         waypoints.add(TrainScheduleWaypoint.from(LocalTime.ofSecondOfDay(10), 0, opEnd, edge));
 
-        // create the schedule and timetable
-        var timetable = new TrainSchedule("test train", waypoints, FAST_NO_FRICTION_TRAIN, 0);
-        var timetables = new CryoList<TrainSchedule>();
-        timetables.add(timetable);
-        timetables.freeze();
-        var schedule = new Schedule(timetables);
-
         // initialize the simulation
         var changelog = new ArrayChangeLog();
-        var sim = Simulation.create(infra, 0, schedule, changelog);
+        var sim = Simulation.create(infra, 0, changelog);
+        sim.scheduler.planTrain(sim, new TrainSchedule("test train", waypoints, FAST_NO_FRICTION_TRAIN, 0));
 
         // run the simulation
         while (!sim.isSimulationOver())

@@ -1,7 +1,5 @@
 package fr.sncf.osrd.timetable;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.utils.CryoList;
@@ -13,10 +11,10 @@ import java.nio.file.Path;
 import java.util.Comparator;
 
 public class Schedule implements Freezable {
-    public final CryoList<TrainSchedule> timetables;
+    public final CryoList<TrainSchedule> trainSchedules;
 
-    public Schedule(CryoList<TrainSchedule> timetables) {
-        this.timetables = timetables;
+    public Schedule(CryoList<TrainSchedule> trainSchedules) {
+        this.trainSchedules = trainSchedules;
     }
 
     /**
@@ -41,11 +39,11 @@ public class Schedule implements Freezable {
 
     @Override
     public void freeze() {
-        timetables.freeze();
+        trainSchedules.freeze();
     }
 
     @Override
     public boolean isFrozen() {
-        return timetables.isFrozen();
+        return trainSchedules.isFrozen();
     }
 }

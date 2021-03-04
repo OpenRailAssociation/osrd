@@ -1,7 +1,9 @@
 package fr.sncf.osrd.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
+import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.trackgraph.*;
@@ -75,6 +77,7 @@ public final class Infra {
     public final RouteGraph routeGraph;
     public final HashMap<String, TVDSection> tvdSections;
     public final HashMap<String, Aspect> aspects;
+    public final ArrayList<Signal> signals;
 
     /**
      * Create an OSRD Infra
@@ -90,18 +93,16 @@ public final class Infra {
             WaypointGraph waypointGraph,
             RouteGraph routeGraph,
             HashMap<String, TVDSection> tvdSections,
-            HashMap<String, Aspect> aspects
+            HashMap<String, Aspect> aspects,
+            ArrayList<Signal> signals
     ) throws InvalidInfraException {
         this.trackGraph = trackGraph;
         this.routeGraph = routeGraph;
         this.tvdSections = tvdSections;
         this.aspects = aspects;
+        this.signals = signals;
         this.trackGraph.validate();
         this.waypointGraph = waypointGraph;
-    }
-
-    public void forAllStatefulObjects(Consumer<StatefulInfraObject<?>> callback) {
-        // TODO: when signals and routes are parsed, add those here
     }
 
     /**
@@ -147,19 +148,39 @@ public final class Infra {
     public static final class State {
         public final Infra infra;
 
-        public final HashMap<StatefulInfraObject<?>, Entity> stateMap;
+        private final Signal.State[] signalStates;
+        private final Route.State[] routeStates;
 
-        /** Creates a new infrastructure state */
-        public State(Infra infra) {
+        private State(Infra infra, Signal.State[] signalStates, Route.State[] routeStates) {
             this.infra = infra;
-            this.stateMap = new HashMap<>();
-            infra.forAllStatefulObjects(obj -> {
-                var objState = obj.newState();
-                stateMap.put(obj, objState);
-            });
+            this.signalStates = signalStates;
+            this.routeStates = routeStates;
+        }
 
-            for (var entity : stateMap.values())
-                entity.initialize();
+        public Signal.State getState(Signal signal) {
+            return signalStates[signal.index];
+        }
+
+        public Route.State getState(Route route) {
+            return routeStates[route.index];
+        }
+
+        /** Initializes a state for the infrastructure */
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST_OF_RETURN_VALUE"})
+        public static State from(Infra infra) {
+            // create a new state for each signal
+            var signalCount = infra.signals.size();
+            var signalStates = new Signal.State[signalCount];
+            for (int i = 0; i < signalCount; i++)
+                signalStates[i] = infra.signals.get(i).newState();
+
+            var routeCount = infra.routeGraph.getEdgeCount();
+            var routeStates = new Route.State[routeCount];
+            for (int i = 0; i < signalCount; i++)
+                routeStates[i] = infra.routeGraph.getEdge(i).newState();
+
+            // TODO: initialize the state of the signals
+            return new State(infra, signalStates, routeStates);
         }
     }
 }
