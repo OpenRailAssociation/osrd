@@ -5,8 +5,8 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.railjson.schema.signaling.RJSAspect;
-import fr.sncf.osrd.infra.railjson.schema.signaling.RJSSignalExpr;
-import fr.sncf.osrd.infra.railjson.schema.signaling.RJSSignalFunction;
+import fr.sncf.osrd.infra.railjson.schema.railscript.RJSRSExpr;
+import fr.sncf.osrd.infra.railjson.schema.railscript.RJSRSFunction;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
 
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ public class RJSRoot {
             .Builder()
             .add(ID.Adapter.FACTORY)
             .add(new RJSAspect.Adapter())
-            .add(RJSSignalExpr.adapter)
+            .add(RJSRSExpr.adapter)
             .add(RJSRouteWaypoint.adapter)
             .build()
             .adapter(RJSRoot.class);
@@ -64,7 +64,7 @@ public class RJSRoot {
 
     /** The list of function definitions */
     @Json(name = "signal_functions")
-    public final List<RJSSignalFunction> signalFunctions;
+    public final List<RJSRSFunction> signalFunctions;
 
     /** Create a new serialized RailJSON file */
     public RJSRoot(
@@ -76,7 +76,7 @@ public class RJSRoot {
             Collection<RJSRoute> routes,
             Collection<RJSSpeedSection> speedSections,
             Collection<RJSAspect> aspects,
-            List<RJSSignalFunction> signalFunctions
+            List<RJSRSFunction> signalFunctions
     ) {
         this.trackSections = trackSections;
         this.trackSectionLinks = trackSectionLinks;

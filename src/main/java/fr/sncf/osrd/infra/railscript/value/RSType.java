@@ -1,8 +1,7 @@
 package fr.sncf.osrd.infra.railscript.value;
 
-public enum RSValueType {
+public enum RSType {
     BOOLEAN,
-    ASPECT,
     ASPECT_SET,
     SIGNAL,
     ROUTE,
