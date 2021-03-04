@@ -54,6 +54,7 @@ public class PrettyPrinter extends RSExprVisitor {
         out.println();
         dectab();
         out.print("}\n");
+        currentFct = null;
     }
 
     private void print(RSType type) {
@@ -204,7 +205,8 @@ public class PrettyPrinter extends RSExprVisitor {
 
     @Override
     public void visit(RSExpr.EnumMatch<?, ?> expr) throws InvalidInfraException {
-        var condType = expr.expr.getType(new RSType[0]);
+        var argTypes = currentFct == null ? new RSType[0] : currentFct.argumentTypes;
+        var condType = expr.expr.getType(argTypes);
         var enumValues = new ArrayList<String>();
         switch (condType) {
             case ROUTE:
