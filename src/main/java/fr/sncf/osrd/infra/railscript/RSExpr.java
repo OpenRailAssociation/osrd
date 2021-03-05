@@ -1,6 +1,5 @@
 package fr.sncf.osrd.infra.railscript;
 
-import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteStatus;
@@ -13,12 +12,10 @@ import java.util.Map;
 public abstract class RSExpr<T extends RSValue> {
     /**
      * Evaluates an expression, returning whether it's true or not
-     * @param infraState the state of the infrastructure
-     * @param scopeOffset the offset of the current scope in the state array
-     * @param valueSlots the state of the program
+     * @param state the global state of the program
      * @return whether the expression is true
      */
-    public abstract T evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots);
+    public abstract T evaluate(RSExprState<?> state);
 
     public abstract void accept(RSExprVisitor visitor) throws InvalidInfraException;
 
@@ -49,9 +46,9 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSBool evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
+        public RSBool evaluate(RSExprState<?> state) {
             for (var expr : expressions)
-                if (expr.evaluate(infraState, scopeOffset, valueSlots).value)
+                if (expr.evaluate(state).value)
                     return RSBool.True;
             return RSBool.False;
         }
@@ -68,9 +65,9 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSBool evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
+        public RSBool evaluate(RSExprState<?> state) {
             for (var expr : expressions)
-                if (!expr.evaluate(infraState, scopeOffset, valueSlots).value)
+                if (!expr.evaluate(state).value)
                     return RSBool.True;
             return RSBool.False;
         }
@@ -89,8 +86,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSBool evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
-            return RSBool.from(!expr.evaluate(infraState, scopeOffset, valueSlots).value);
+        public RSBool evaluate(RSExprState<?> state) {
+            return RSBool.from(!expr.evaluate(state).value);
         }
 
         @Override
@@ -115,7 +112,7 @@ public abstract class RSExpr<T extends RSValue> {
         public static final True INSTANCE = new True();
 
         @Override
-        public RSBool evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
+        public RSBool evaluate(RSExprState<?> state) {
             return RSBool.True;
         }
 
@@ -137,7 +134,7 @@ public abstract class RSExpr<T extends RSValue> {
         public static final False INSTANCE = new False();
 
         @Override
-        public RSBool evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
+        public RSBool evaluate(RSExprState<?> state) {
             return RSBool.False;
         }
 
@@ -162,11 +159,11 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSAspectSet evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
+        public RSAspectSet evaluate(RSExprState<?> state) {
             var res = new RSAspectSet();
             for (int i = 0; i < aspects.length; i++) {
                 var condition = conditions[i];
-                if (condition == null || condition.evaluate(infraState, scopeOffset, valueSlots).value)
+                if (condition == null || condition.evaluate(state).value)
                     res.add(aspects[i]);
             }
             return res;
@@ -200,8 +197,10 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public Signal.State evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
-            return infraState.getState(signal);
+        public Signal.State evaluate(
+                RSExprState<?> state
+        ) {
+            return state.infraState.getState(this.signal);
         }
 
         @Override
@@ -232,8 +231,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public Route.State evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
-            return infraState.getState(route);
+        public Route.State evaluate(RSExprState<?> state) {
+            return state.infraState.getState(route);
         }
 
         @Override
@@ -264,11 +263,11 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public T evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
-            if (ifExpr.evaluate(infraState, scopeOffset, valueSlots).value) {
-                return thenExpr.evaluate(infraState, scopeOffset, valueSlots);
+        public T evaluate(RSExprState<?> state) {
+            if (ifExpr.evaluate(state).value) {
+                return thenExpr.evaluate(state);
             } else {
-                return elseExpr.evaluate(infraState, scopeOffset, valueSlots);
+                return elseExpr.evaluate(state);
             }
         }
 
@@ -296,11 +295,16 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public T evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
-            var newScopeOffset = scopeOffset + this.scopeOffset;
+        public T evaluate(RSExprState<?> state) {
+            // evaluate the arguments outside of the scope
             for (int i = 0; i < arguments.length; i++)
-                valueSlots[newScopeOffset + i] = arguments[i].evaluate(infraState, scopeOffset, valueSlots);
-            return function.body.evaluate(infraState, newScopeOffset, valueSlots);
+                state.setValue(scopeOffset + i, arguments[i].evaluate(state));
+
+            // push the new scope and make the call
+            state.pushScope(scopeOffset);
+            var res = function.body.evaluate(state);
+            state.popScope(scopeOffset);
+            return res;
         }
 
         @Override
@@ -324,9 +328,9 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public T evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
-            var branchIndex = expr.evaluate(infraState, scopeOffset, valueSlots).getEnumValue();
-            return branches[branchIndex].evaluate(infraState, scopeOffset, valueSlots);
+        public T evaluate(RSExprState<?> state) {
+            var branchIndex = expr.evaluate(state).getEnumValue();
+            return branches[branchIndex].evaluate(state);
         }
 
         @Override
@@ -353,8 +357,8 @@ public abstract class RSExpr<T extends RSValue> {
 
         @Override
         @SuppressWarnings("unchecked")
-        public T evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
-            return (T) valueSlots[scopeOffset + slotIndex];
+        public T evaluate(RSExprState<?> state) {
+            return (T) state.getValue(slotIndex);
         }
 
         @Override
@@ -385,8 +389,30 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public T evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
-            
+        @SuppressWarnings({"unchecked", "fallthrough"})
+        public T evaluate(RSExprState<?> state) {
+            switch (state.evalMode) {
+                case INITIALIZE: {
+                    // when initializing, all values propagate instantaneously
+                    T newValue = expr.evaluate(state);
+                    state.setValue(delaySlotIndex, newValue);
+                    return newValue;
+                }
+                case DELAY_UPDATE:
+                    // if this slot received a planned update, we must return the value from the update
+                    if (state.hasDelaySlotChanged(delaySlotIndex))
+                        return (T) state.getValue(delaySlotIndex);
+                    // otherwise, behave as if the input changed
+                    // FALLTHROUGH
+                case INPUT_CHANGE:
+                    var oldValue = (T) state.getValue(delaySlotIndex);
+                    T newValue = expr.evaluate(state);
+
+                    // if the value of the expression changed, plan an update
+                    if (!newValue.equals(oldValue))
+                        state.planDelayedUpdate(delaySlotIndex, newValue, duration);
+                    return oldValue;
+            }
             return null;
         }
 
@@ -414,9 +440,9 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSBool evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
-            var signal = signalExpr.evaluate(infraState, scopeOffset, valueSlots);
-            return RSBool.from(signal.aspects.contains(aspect));
+        public RSBool evaluate(RSExprState<?> state) {
+            var someSignal = signalExpr.evaluate(state);
+            return RSBool.from(someSignal.aspects.contains(aspect));
         }
 
         @Override
@@ -440,8 +466,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSBool evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
-            return RSBool.from(routeExpr.evaluate(infraState, scopeOffset, valueSlots).status == status);
+        public RSBool evaluate(RSExprState<?> state) {
+            return RSBool.from(routeExpr.evaluate(state).status == status);
         }
 
         @Override
@@ -465,8 +491,8 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public RSBool evaluate(Infra.State infraState, int scopeOffset, RSValue[] valueSlots) {
-            return RSBool.from(expr.evaluate(infraState, scopeOffset, valueSlots).contains(aspect));
+        public RSBool evaluate(RSExprState<?> state) {
+            return RSBool.from(expr.evaluate(state).contains(aspect));
         }
 
         @Override

@@ -186,8 +186,7 @@ public class RailJSONParser {
             // Parse signals
             var signalsBuilder = infraTrackSection.signals.builder();
             for (var rjsSignal : trackSection.signals) {
-                var parser = new RailScriptExprParser(aspectsMap, scriptFunctions);
-                var expr = parser.parseAspectSetExpr(rjsSignal.expr);
+                var expr = RailScriptExprParser.parseStatefulSignalExpr(aspectsMap, scriptFunctions, rjsSignal.expr);
                 var signal = new Signal(signals.size(), rjsSignal.id, expr);
                 signalsBuilder.add(rjsSignal.position, signal);
                 signals.add(signal);
@@ -238,7 +237,7 @@ public class RailJSONParser {
         for (var route : routeGraph.routeGraph.iterEdges())
             routeNames.put(route.id, route);
 
-        // resolve names
+        // resolve names of routes and signals
         var nameResolver = new RSExprVisitor() {
             @Override
             public void visit(RSExpr.SignalRef expr) throws InvalidInfraException {

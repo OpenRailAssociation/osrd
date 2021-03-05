@@ -2,6 +2,7 @@ package fr.sncf.osrd.infra.signaling;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.railscript.RSExpr;
+import fr.sncf.osrd.infra.railscript.RSStatefulExpr;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.simulation.*;
@@ -11,10 +12,10 @@ import fr.sncf.osrd.utils.SortedArraySet;
 public class Signal {
     public final int index;
     public final String id;
-    public final RSExpr<RSAspectSet> expr;
+    public final RSStatefulExpr<RSAspectSet> expr;
 
     /** The static data describing a signal */
-    public Signal(int index, String id, RSExpr<RSAspectSet> expr) {
+    public Signal(int index, String id, RSStatefulExpr<RSAspectSet> expr) {
         this.index = index;
         this.id = id;
         this.expr = expr;

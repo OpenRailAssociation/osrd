@@ -8,6 +8,7 @@ import fr.sncf.osrd.infra.railjson.schema.railscript.RJSRSFunction;
 import fr.sncf.osrd.infra.railjson.schema.railscript.RJSRSType;
 import fr.sncf.osrd.infra.railscript.RSExpr;
 import fr.sncf.osrd.infra.railscript.RSFunction;
+import fr.sncf.osrd.infra.railscript.RSStatefulExpr;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
 import fr.sncf.osrd.infra.railscript.value.RSBool;
 import fr.sncf.osrd.infra.railscript.value.RSType;
@@ -46,7 +47,7 @@ public class RailScriptExprParser {
         this.argTypes = argTypes;
     }
 
-    public RailScriptExprParser(HashMap<String, Aspect> aspectsMap, HashMap<String, RSFunction<?>> scriptFunctions) {
+    private RailScriptExprParser(HashMap<String, Aspect> aspectsMap, HashMap<String, RSFunction<?>> scriptFunctions) {
         this(aspectsMap, scriptFunctions, null, null);
     }
 
@@ -82,6 +83,17 @@ public class RailScriptExprParser {
         );
     }
 
+    /** Parses an AspectSet expression */
+    public static RSStatefulExpr<RSAspectSet> parseStatefulSignalExpr(
+            HashMap<String, Aspect> aspectsMap,
+            HashMap<String, RSFunction<?>> scriptFunctions,
+            RJSRSExpr rjsExpr
+    ) throws InvalidInfraException {
+        var parser = new RailScriptExprParser(aspectsMap, scriptFunctions);
+        var expr = parser.parseAspectSetExpr(rjsExpr);
+        return new RSStatefulExpr<>(expr, parser.slotsCount);
+    }
+
     private static RSType parseExprType(RJSRSType type) {
         switch (type) {
             case BOOLEAN:
@@ -108,7 +120,7 @@ public class RailScriptExprParser {
 
     /** Turns a Json serialized expression into its runnable counterpart */
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-    public RSExpr<?> parse(RJSRSExpr expr) throws InvalidInfraException {
+    private RSExpr<?> parse(RJSRSExpr expr) throws InvalidInfraException {
         var type = expr.getClass();
 
         // boolean operators
@@ -301,7 +313,7 @@ public class RailScriptExprParser {
 
     /** Parse a Json RailScript expression, and ensure it returns an AspectSet */
     @SuppressWarnings("unchecked")
-    public RSExpr<RSAspectSet> parseAspectSetExpr(RJSRSExpr rjsExpr) throws InvalidInfraException {
+    private RSExpr<RSAspectSet> parseAspectSetExpr(RJSRSExpr rjsExpr) throws InvalidInfraException {
         var expr = parse(rjsExpr);
         checkExprType(RSType.ASPECT_SET, expr);
         return (RSExpr<RSAspectSet>) expr;

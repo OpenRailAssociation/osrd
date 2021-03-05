@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.*;
+import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
+import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -60,8 +62,11 @@ public class StaticSpeedLimitTest {
         limits.add(new RangeValue<>(0, 10000, new SpeedSection(false, 30.0)));
         limits.add(new RangeValue<>(5000, 6000, new SpeedSection(false, 25.0)));
 
+        // TODO: this infra is missing many bits, no detectors nor routes isn't ideal
+        var waypointGraph = WaypointGraph.buildDetectorGraph(trackGraph);
+        var routeGraph = new RouteGraph.Builder(waypointGraph).build();
         final var infra = new Infra(
-                trackGraph, null, null,
+                trackGraph, waypointGraph, routeGraph,
                 new HashMap<>(), new HashMap<>(), new ArrayList<>());
 
         // create the waypoints the train should go through
@@ -71,7 +76,7 @@ public class StaticSpeedLimitTest {
 
         // initialize the simulation
         var changelog = new ArrayChangeLog();
-        var sim = Simulation.create(infra, 0, changelog);
+        var sim = Simulation.createFromInfra(infra, 0, changelog);
         sim.scheduler.planTrain(sim, new TrainSchedule("test train", waypoints, FAST_NO_FRICTION_TRAIN, 0));
 
         // run the simulation
