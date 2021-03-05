@@ -11,7 +11,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 // **it does not check for the exact content of the timeline event**
 @SuppressFBWarnings({"EQ_DOESNT_OVERRIDE_EQUALS"})
 public class TimelineEvent<T extends TimelineEventValue> extends TimelineEventId {
-    public final Entity source;
+    public final Entity<?> source;
 
     void updateState(Simulation sim, State newState) throws SimulationError {
         assert this.state.hasTransitionTo(newState);
@@ -30,7 +30,7 @@ public class TimelineEvent<T extends TimelineEventValue> extends TimelineEventId
                 break;
         }
 
-        for (var subscriber : source.subscribers)
+        for (var subscriber : source.getSubscribers())
             subscriber.onTimelineEventUpdate(sim, this, newState);
     }
 
@@ -73,10 +73,6 @@ public class TimelineEvent<T extends TimelineEventValue> extends TimelineEventId
                     return true;
             return false;
         }
-
-        public boolean isFinalState() {
-            return validTransitions.length == 0;
-        }
     }
 
     protected State state;
@@ -96,7 +92,7 @@ public class TimelineEvent<T extends TimelineEventValue> extends TimelineEventId
      * @param scheduledTime the time at will the event is planned to happen
      * @param value the value associated with the event
      */
-    TimelineEvent(Entity source, long revision, double scheduledTime, T value) {
+    TimelineEvent(Entity<?> source, long revision, double scheduledTime, T value) {
         super(scheduledTime, revision);
         this.source = source;
         this.state = State.UNREGISTERED;

@@ -200,7 +200,7 @@ public abstract class RSExpr<T extends RSValue> {
         public Signal.State evaluate(
                 RSExprState<?> state
         ) {
-            return state.infraState.getState(this.signal);
+            return state.infraState.getSignalState(this.signal.index);
         }
 
         @Override
@@ -232,7 +232,7 @@ public abstract class RSExpr<T extends RSValue> {
 
         @Override
         public Route.State evaluate(RSExprState<?> state) {
-            return state.infraState.getState(route);
+            return state.infraState.getRouteState(route.index);
         }
 
         @Override

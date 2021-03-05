@@ -1,12 +1,11 @@
 package fr.sncf.osrd.infra.signaling;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.railscript.RSExpr;
+import fr.sncf.osrd.infra.railscript.RSExprState;
 import fr.sncf.osrd.infra.railscript.RSStatefulExpr;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.simulation.*;
-import fr.sncf.osrd.utils.SortedArraySet;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class Signal {
@@ -22,18 +21,33 @@ public class Signal {
     }
 
     public State newState() {
-        return new State(this);
+        return new State(this, expr.makeState());
+    }
+
+    public static class SignalID implements EntityID<Signal.State> {
+        public final int signalIndex;
+
+        public SignalID(int signalIndex) {
+            this.signalIndex = signalIndex;
+        }
+
+        @Override
+        public State getEntity(Simulation sim) {
+            return sim.infraState.getSignalState(signalIndex);
+        }
     }
 
     /** The state of the signal is the actual entity which interacts with the rest of the infrastructure */
-    public static final class State extends Entity implements RSValue {
+    public static final class State extends AbstractEntity<Signal.State> implements RSValue {
         public final Signal signal;
-        public final SortedArraySet<Aspect> aspects;
+        public final RSAspectSet aspects;
+        public final RSExprState<RSAspectSet> exprState;
 
-        State(Signal signal) {
-            super(EntityType.SIGNAL, signal.id);
+        State(Signal signal, RSExprState<RSAspectSet> exprState) {
+            super(new SignalID(signal.index));
             this.signal = signal;
-            this.aspects = new SortedArraySet<>();
+            this.exprState = exprState;
+            this.aspects = new RSAspectSet();
         }
 
         private void update() {
@@ -45,7 +59,7 @@ public class Signal {
         }
 
         @Override
-        protected void onTimelineEventUpdate(
+        public void onTimelineEventUpdate(
                 Simulation sim, TimelineEvent<?> event, TimelineEvent.State state
         ) throws SimulationError {
             update();

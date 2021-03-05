@@ -35,13 +35,10 @@ import java.util.*;
 public final class Simulation {
     static final Logger logger = LoggerFactory.getLogger(Simulation.class);
 
-    /** A map from entity identifiers to entities. */
-    private final HashMap<EntityID, Entity> entities = new HashMap<>();
-
     public final Infra infra;
     public final Infra.State infraState;
     public SchedulerSystem scheduler = new SchedulerSystem();
-    public final HashSet<Train> trains = new HashSet<>();
+    public final HashMap<String, Train> trains = new HashMap<>();
 
     // changes may need to be logged to enable replays
     // it's basically a pointer to the event sourcing
@@ -87,10 +84,8 @@ public final class Simulation {
             double simStartTime,
             ChangeConsumer changeConsumer
     ) {
-        var infraState = Infra.State.createUninitialized(infra);
-        var sim = new Simulation(infra, infraState, simStartTime, changeConsumer);
-        infraState.initialize(sim);
-        return sim;
+        var infraState = Infra.State.from(infra);
+        return new Simulation(infra, infraState, simStartTime, changeConsumer);
     }
 
     /** Creates a simulation without any infra linked (for testing) */
@@ -101,27 +96,6 @@ public final class Simulation {
         return new Simulation(null, null, simStartTime, changeConsumer);
     }
 
-
-    // region ENTITES
-
-    // TODO: document
-    public Entity getEntity(EntityType type, String id) {
-        return entities.get(new EntityID(type, id));
-    }
-
-    public Entity getEntity(EntityID entityId) {
-        return entities.get(entityId);
-    }
-
-    public void registerEntity(Entity entity) {
-        entities.put(entity, entity);
-    }
-
-    public void removeEntity(Entity entity) {
-        entities.remove(entity);
-    }
-
-    // endregion
 
     // region EVENT_SOURCING
 
@@ -183,7 +157,7 @@ public final class Simulation {
      * Executes the next event in the simulation.
      * @throws SimulationError {@inheritDoc}
      */
-    public Object step(TimelineEvent<?> event) throws SimulationError {
+    public TimelineEventValue step(TimelineEvent<?> event) throws SimulationError {
         // step the simulation time forward
         logger.debug("changing the simulation clock from {} to {}", time, event.scheduledTime);
 
@@ -195,7 +169,7 @@ public final class Simulation {
         return event.value;
     }
 
-    public Object step() throws SimulationError {
+    public TimelineEventValue step() throws SimulationError {
         var event = getNextEvent();
         return step(event);
     }
@@ -205,14 +179,14 @@ public final class Simulation {
      * @param entity the source of the event
      * @param scheduledTime the time at which the event will occur
      * @param value the value associated with the event. you can get it back when the event happens
-     * @param <T> the type of the value
+     * @param <ValueT> the type of the value
      * @return a timeline event
      * @throws SimulationError {@inheritDoc}
      */
-    public <T extends TimelineEventValue> TimelineEvent<T> createEvent(
-            Entity entity,
+    public <EntityT extends Entity<EntityT>, ValueT extends TimelineEventValue> TimelineEvent<ValueT> createEvent(
+            EntityT entity,
             double scheduledTime,
-            T value
+            ValueT value
     ) throws SimulationError {
         // sanity checks
         if (scheduledTime < time)
@@ -236,26 +210,26 @@ public final class Simulation {
 
     // region CHANGES
 
-    public static final class TimelineEventCreated<T extends TimelineEventValue>
-            extends EntityChange<Entity, TimelineEvent<T>> {
+    public static final class TimelineEventCreated<EntityT extends Entity<EntityT>, ValueT extends TimelineEventValue>
+            extends EntityChange<EntityT, TimelineEvent<ValueT>> {
         private final long revision;
         private final double scheduledTime;
         // this should really be T, but isn't as we need moshi (our serialization framework)
         // to understand this need to be treated as a polymorphic field
         private final TimelineEventValue value;
 
-        TimelineEventCreated(Simulation sim, Entity producer, long revision, double scheduledTime, T value) {
-            super(sim, producer);
+        TimelineEventCreated(Simulation sim, EntityT producer, long revision, double scheduledTime, ValueT value) {
+            super(sim, producer.getID());
             this.revision = revision;
             this.scheduledTime = scheduledTime;
             this.value = value;
         }
 
         @Override
-        public final TimelineEvent<T> apply(Simulation sim, Entity entity) {
+        public final TimelineEvent<ValueT> apply(Simulation sim, EntityT entity) {
             // this cast is there to restore the static type parameter, because of the hack above
             @SuppressWarnings("unchecked")
-            var event = new TimelineEvent<T>(entity, this.revision, this.scheduledTime, (T) this.value);
+            var event = new TimelineEvent<ValueT>(entity, this.revision, this.scheduledTime, (ValueT) this.value);
 
             // ensure the simulation has the correct revision number
             assert this.revision == sim.revision;
@@ -366,10 +340,6 @@ public final class Simulation {
         if (this.revision != otherSim.revision)
             return false;
 
-        // if the two simulations don't have the same entities, something is off
-        if (!this.entities.equals(otherSim.entities))
-            return false;
-
         if (this.timeline.size() != otherSim.timeline.size())
             return false;
 
@@ -388,7 +358,7 @@ public final class Simulation {
             // (so events can be both keys and values in the timeline)
             if (!event.value.equals(otherEvent.value))
                 return false;
-            if (!event.source.equalIDs(otherEvent.source))
+            if (!event.source.getID().equals(otherEvent.source.getID()))
                 return false;
         }
 
@@ -398,7 +368,7 @@ public final class Simulation {
 
     @Override
     public int hashCode() {
-        return Objects.hash(time, revision, entities, timeline);
+        return Objects.hash(time, revision, timeline);
     }
 
     // endregion

@@ -10,13 +10,11 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 
 public class SimulationTest {
-    /**
-     * A class that collects event updates it receives, for testing purposes.
-     */
+    /** A class that collects event updates it receives, for testing purposes. */
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public static class MockEntity extends Entity {
+    public static class MockEntity extends AbstractEntity<MockEntity> {
         public MockEntity(String id) {
-            super(EntityType.SIGNAL, id);
+            super(new MockEntityID<>(id));
         }
 
         public static class EventUpdate {
@@ -32,7 +30,7 @@ public class SimulationTest {
         public final ArrayList<EventUpdate> events = new ArrayList<>();
 
         @Override
-        protected void onTimelineEventUpdate(
+        public void onTimelineEventUpdate(
                 Simulation sim,
                 TimelineEvent<?> event,
                 TimelineEvent.State state
@@ -41,7 +39,7 @@ public class SimulationTest {
         }
     }
 
-    public static class TEValue<T> extends TimelineEventValue {
+    public static class TEValue<T> implements TimelineEventValue {
         public final T value;
 
         public TEValue(T value) {
@@ -58,10 +56,34 @@ public class SimulationTest {
     public void timerTest() throws SimulationError {
         var sim = Simulation.createWithoutInfra(1.0, null);
         var timer = new MockEntity("test");
-        sim.createEvent(timer, sim.getTime() + 42, new TEValue<String>("time's up"));
+        sim.createEvent(timer, sim.getTime() + 42, new TEValue<>("time's up"));
         var stepEvent = sim.step();
         assertEquals(stepEvent.toString(), "time's up");
         assertEquals(sim.getTime(), 1.0 + 42.0, 0.00001);
+    }
+
+    public static class ProxyEntity extends AbstractEntity<ProxyEntity> {
+        private final MockEntity timerResponse;
+        private final MockEntity otherChannel;
+
+        /** A test class which forwards events */
+        public ProxyEntity(MockEntity timerResponse, MockEntity otherChannel) {
+            super(null);
+            this.timerResponse = timerResponse;
+            this.otherChannel = otherChannel;
+        }
+
+        @Override
+        public void onTimelineEventUpdate(
+                Simulation sim,
+                TimelineEvent<?> event,
+                TimelineEvent.State state
+        ) throws SimulationError {
+            String msg = event.value.toString();
+            sim.createEvent(timerResponse, sim.getTime() + 0.5, new TEValue<>(msg + "_response"));
+            if (sim.getTime() > 2.7)
+                sim.createEvent(otherChannel, sim.getTime(), new TEValue<>(msg + " simultaneous event"));
+        }
     }
 
     @Test
@@ -69,27 +91,15 @@ public class SimulationTest {
     public void testEventOrder() throws SimulationError {
         var sim = Simulation.createWithoutInfra(0.0, null);
         var timer = new MockEntity("test");
-        sim.createEvent(timer, 1.0, new TEValue<String>("a"));
-        sim.createEvent(timer, 2.0, new TEValue<String>("b"));
-        sim.createEvent(timer, 3.0, new TEValue<String>("c"));
-        sim.createEvent(timer, 4.0, new TEValue<String>("d"));
+        sim.createEvent(timer, 1.0, new TEValue<>("a"));
+        sim.createEvent(timer, 2.0, new TEValue<>("b"));
+        sim.createEvent(timer, 3.0, new TEValue<>("c"));
+        sim.createEvent(timer, 4.0, new TEValue<>("d"));
 
         var timerResponse = new MockEntity("timer");
         var otherChannel = new MockEntity("other");
         // sinks can be functions or methods, as its a functional interface
-        timer.addSubscriber(new Entity(EntityType.SIGNAL, "subscriber") {
-            @Override
-            protected void onTimelineEventUpdate(
-                    Simulation sim,
-                    TimelineEvent<?> event,
-                    TimelineEvent.State state
-            ) throws SimulationError {
-                String msg = event.value.toString();
-                sim.createEvent(timerResponse, sim.getTime() + 0.5, new TEValue<String>(msg + "_response"));
-                if (sim.getTime() > 2.7)
-                    sim.createEvent(otherChannel, sim.getTime(), new TEValue<String>(msg + " simultaneous event"));
-            }
-        });
+        timer.subscribers.add(new ProxyEntity(timerResponse, otherChannel));
 
         assertFalse(sim.isSimulationOver());
         assertEquals("a", sim.step().toString());
@@ -107,12 +117,12 @@ public class SimulationTest {
     }
 
     @Test
-    public void testMethodSourceUnregister() throws SimulationError {
+    public void testMethodSourceUnregister() {
         var source = new MockEntity("source");
         var sinkClass = new MockEntity("sink");
-        source.addSubscriber(sinkClass);
+        source.subscribers.add(sinkClass);
         assertEquals(1, source.subscribers.size());
-        source.removeSubscriber(sinkClass);
+        source.subscribers.remove(sinkClass);
         assertEquals(0, source.subscribers.size());
     }
 }

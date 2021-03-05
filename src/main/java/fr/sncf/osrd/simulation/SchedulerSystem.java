@@ -14,19 +14,28 @@ import fr.sncf.osrd.utils.CryoList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class SchedulerSystem extends Entity {
+import java.util.List;
+
+public final class SchedulerSystem extends AbstractEntity<SchedulerSystem> {
+    public static final EntityID<SchedulerSystem> ID = new EntityID<SchedulerSystem>() {
+        @Override
+        public SchedulerSystem getEntity(Simulation sim) {
+            return sim.scheduler;
+        }
+    };
+
     static final Logger logger = LoggerFactory.getLogger(SchedulerSystem.class);
 
     /** Create the scheduler system, without starting it */
     public SchedulerSystem() {
         // the train must react to its own train creation events
-        super(EntityType.SCHEDULER, "");
-        this.addSubscriber(this);
+        super(ID);
+        this.subscribers.add(this);
     }
 
     @Override
     @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST")
-    protected void onTimelineEventUpdate(
+    public void onTimelineEventUpdate(
             Simulation sim,
             TimelineEvent<?> event,
             State state

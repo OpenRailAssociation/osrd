@@ -121,12 +121,12 @@ public class ChangeSerializer {
 
     private static class EntityAdapter {
         @ToJson
-        EntityID toJson(Entity entity) {
-            return entity;
+        EntityID<?> toJson(Entity<?> entity) {
+            return entity.getID();
         }
 
         @FromJson
-        Entity fromJson(String entityId) {
+        Entity<?> fromJson(String entityId) {
             throw new RuntimeException("not implemented");
         }
     }
