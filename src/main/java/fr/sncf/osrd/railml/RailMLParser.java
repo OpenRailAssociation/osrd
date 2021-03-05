@@ -67,12 +67,14 @@ public final class RailMLParser {
         }
 
         // create and fill the root RailJSON structure
-        var rjsOperationalPoints = RMLOperationalPoint.parse(netElements, document, rjsTrackSections);
-        var rjsSpeedSections = RMLSpeedSection.parse(netElements, document, rjsTrackSections);
-        var rjsTvdSections = RMLTVDSection.parse(netElements, document, rjsTrackSections);
-        var rjsSwitches = RMLSwitchIS.parse(netElements, netRelations, document);
+        final var rjsOperationalPoints = RMLOperationalPoint.parse(netElements, document, rjsTrackSections);
+        final var rjsSpeedSections = RMLSpeedSection.parse(netElements, document, rjsTrackSections);
+        final var rjsTvdSections = RMLTVDSection.parse(netElements, document, rjsTrackSections);
+        final var rjsSwitches = RMLSwitchIS.parse(netElements, netRelations, document);
         RMLTrainDetectionElement.parse(netElements, document, rjsTrackSections);
         RMLBufferStop.parse(netElements, document, rjsTrackSections);
+        final var rmlSignalsIS = RMLSignalIS.parse(netElements, document, rjsTrackSections);
+        RMLSignalIL.parse(netElements, document, rjsTrackSections, rmlSignalsIS);
 
         // routes must be parsed at the end, as those depend on train detection elements
         // and buffer stops, which act as route waypoints
