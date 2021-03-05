@@ -20,7 +20,7 @@ public class RMLTrainDetectionElement {
         var xpath = "/railML/infrastructure/functionalInfrastructure/trainDetectionElements/trainDetectionElement";
         for (var trainDetectionElementNode : document.selectNodes(xpath)) {
             var trainDetectionElement = (Element) trainDetectionElementNode;
-            // locate the track netElement the buffer stop is on
+            // locate the track netElement the detector is on
             var id = trainDetectionElement.attributeValue("id");
 
             // parse the location, which should only reference a single element

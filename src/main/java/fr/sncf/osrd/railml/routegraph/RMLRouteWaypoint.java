@@ -12,8 +12,16 @@ public class RMLRouteWaypoint extends Node {
     /** List of neighbors seen when moving across the detector from the beginning of the track section to the end */
     public final ArrayList<RMLTVDSectionPath> stopToStartNeighbors = new ArrayList<>();
 
-    public RMLRouteWaypoint(RMLRouteGraph graph, int index) {
+    public final String id;
+
+    /** Instantiate a RMLRouteWaypoint
+     * @param graph to register the waypoint
+     * @param id of the waypoint. Must be unique.
+     * @param index of the waypoint. Must be unique.
+     */
+    public RMLRouteWaypoint(RMLRouteGraph graph, String id, int index) {
         super(index);
+        this.id = id;
         graph.registerNode(this);
     }
 

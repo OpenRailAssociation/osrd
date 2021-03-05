@@ -38,7 +38,7 @@ public final class RMLRouteGraphBuilder extends BiGraphOverlayBuilder<
 
     @Override
     protected RMLRouteWaypoint makeOverlayNode(RJSRouteWaypoint bridgeObject) {
-        var node = new RMLRouteWaypoint(overlayGraph, overlayGraph.nextNodeIndex());
+        var node = new RMLRouteWaypoint(overlayGraph, bridgeObject.id, overlayGraph.nextNodeIndex());
         overlayGraph.waypointsMap.put(bridgeObject.id, node);
         return node;
     }
