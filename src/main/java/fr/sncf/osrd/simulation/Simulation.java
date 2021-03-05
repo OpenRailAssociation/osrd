@@ -39,6 +39,7 @@ public final class Simulation {
     private final HashMap<EntityID, Entity> entities = new HashMap<>();
 
     public final Infra infra;
+    public final Infra.State infraState;
     public SchedulerSystem scheduler = new SchedulerSystem();
     public final HashSet<Train> trains = new HashSet<>();
 
@@ -69,23 +70,37 @@ public final class Simulation {
     /** Creates a new Discrete TimelineEvent SimulationManager */
     private Simulation(
             Infra infra,
+            Infra.State infraState,
             double time,
             ChangeConsumer changeConsumer
     ) {
         this.infra = infra;
+        this.infraState = infraState;
         this.startTime = time;
         this.time = time;
         this.changeConsumer = changeConsumer;
     }
 
-    /** Creates a simulation, planning train creations */
-    public static Simulation create(
+    /** Creates a simulation and initialize infrastructure entities */
+    public static Simulation createFromInfra(
             Infra infra,
             double simStartTime,
             ChangeConsumer changeConsumer
     ) {
-        return new Simulation(infra, simStartTime, changeConsumer);
+        var infraState = Infra.State.createUninitialized(infra);
+        var sim = new Simulation(infra, infraState, simStartTime, changeConsumer);
+        infraState.initialize(sim);
+        return sim;
     }
+
+    /** Creates a simulation without any infra linked (for testing) */
+    public static Simulation createWithoutInfra(
+            double simStartTime,
+            ChangeConsumer changeConsumer
+    ) {
+        return new Simulation(null, null, simStartTime, changeConsumer);
+    }
+
 
     // region ENTITES
 

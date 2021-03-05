@@ -4,8 +4,6 @@ import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-
 public class ChangeReplayChecker extends ChangeConsumer {
     static final Logger logger = LoggerFactory.getLogger(ChangeReplayChecker.class);
 
@@ -19,7 +17,7 @@ public class ChangeReplayChecker extends ChangeConsumer {
 
     /** Creates a change replay checker */
     public static ChangeReplayChecker from(Simulation referenceSim) {
-        var replaySim = Simulation.create(referenceSim.infra, referenceSim.startTime, null);
+        var replaySim = Simulation.createFromInfra(referenceSim.infra, referenceSim.startTime, null);
         assert replaySim.equals(referenceSim) : "the reference and replay simulation shouldn't differ from the start";
         return new ChangeReplayChecker(referenceSim, replaySim);
     }

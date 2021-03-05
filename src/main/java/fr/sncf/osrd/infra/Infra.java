@@ -8,6 +8,7 @@ import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.simulation.Entity;
+import fr.sncf.osrd.simulation.Simulation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -167,20 +168,28 @@ public final class Infra {
 
         /** Initializes a state for the infrastructure */
         @SuppressFBWarnings({"BC_UNCONFIRMED_CAST_OF_RETURN_VALUE"})
-        public static State from(Infra infra) {
+        public static State createUninitialized(Infra infra) {
             // create a new state for each signal
             var signalCount = infra.signals.size();
             var signalStates = new Signal.State[signalCount];
-            for (int i = 0; i < signalCount; i++)
-                signalStates[i] = infra.signals.get(i).newState();
-
             var routeCount = infra.routeGraph.getEdgeCount();
             var routeStates = new Route.State[routeCount];
-            for (int i = 0; i < signalCount; i++)
+            return new State(infra, signalStates, routeStates);
+        }
+
+        /** Initializes a state for the infrastructure */
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST_OF_RETURN_VALUE"})
+        public void initialize(Simulation sim) {
+            for (int i = 0; i < signalStates.length; i++)
+                signalStates[i] = infra.signals.get(i).newState();
+
+            for (int i = 0; i < routeStates.length; i++)
                 routeStates[i] = infra.routeGraph.getEdge(i).newState();
 
-            // TODO: initialize the state of the signals
-            return new State(infra, signalStates, routeStates);
+            for (var signalState : signalStates)
+                sim.registerEntity(signalState);
+            for (var routeState : routeStates)
+                sim.registerEntity(routeState);
         }
     }
 }

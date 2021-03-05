@@ -2,7 +2,6 @@ package fr.sncf.osrd;
 
 import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.simulation.*;
-import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
 import org.slf4j.Logger;
@@ -58,7 +57,7 @@ public final class SimulationManager {
     ) throws SimulationError, InterruptedException {
         // create the simulation and add change consumers
         var multiplexer = new ChangeConsumerMultiplexer(changeConsumers);
-        var sim = Simulation.create(config.infra, 0, multiplexer);
+        var sim = Simulation.createFromInfra(config.infra, 0, multiplexer);
         if (config.changeReplayCheck)
             multiplexer.add(ChangeReplayChecker.from(sim));
 
