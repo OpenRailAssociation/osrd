@@ -47,16 +47,17 @@ public final class RslParser {
         var rjsSwitches = switchParse(document,nodeMap,rjsTrackSectionLinks);
 
         //create track section links for all the nodes not being switches
-        //TODO entrySet
-        nodeMap.forEach((key, value) -> {
-            if(value.size()==3) return;
-            ApplicableDirections navigability = ApplicableDirections.valueOf("BOTH");
-            //create the string ID with begin track section ID-end track section ID
-            var id = String.join("-", value.get(0).getID(), value.get(1).getID());
-            if(!value.get(0).getBidirectional().equals("TRUE"))
-                navigability = ApplicableDirections.valueOf("NORMAL");
-            rjsTrackSectionLinks.put(id, new RJSTrackSectionLink(navigability, value.get(0).endEndpoint(), value.get(1).beginEndpoint()));
-        });
+        for(var entry : nodeMap.entrySet()){
+            if (entry.getValue().size() > 2) continue;
+            /* x ------x x------
+               x x------ ------x
+               X x------ x------
+               x ------x ------x
+             */
+            var id = String.join("-", entry.getValue().get(0).getID(), entry.getValue().get(1).getID());
+            var navigability = findLinkNavigability(entry.getValue().get(0),entry.getValue().get(1));
+            rjsTrackSectionLinks.put(id, new RJSTrackSectionLink(navigability, entry.getValue().get(0).endEndpoint(), entry.getValue().get(1).beginEndpoint()));
+        }
 
         var rjsOperationalPoints = timingPointsParse(document, rjsTrackSections,nodeMap);
         var rjsSpeedSections = speedIndicatorsParse(document, rjsTrackSections);
@@ -112,8 +113,6 @@ public final class RslParser {
     private static ArrayList<RJSSwitch> switchParse
     (Document document, HashMap<Integer, ArrayList<Edge>> nodeMap, HashMap<String, RJSTrackSectionLink> trackSectionLinks) {
         var switches = new ArrayList<RJSSwitch>();
-        RJSTrackSection.EndpointID base, right, left;
-        ApplicableDirections navigability = ApplicableDirections.valueOf("BOTH");
 
         for (var node : document.selectNodes("/line/nodes/switch")) {
             var switchNode = (Element) node;
@@ -121,65 +120,57 @@ public final class RslParser {
             var baseBranchNodeID = Integer.getInteger(switchNode.attributeValue("start"));
 
             //TODO exception to verify that we have 3 elements
-            var firstTrackSection = nodeMap.get(id).get(0); //track sections having the switch as node
-            var secondTrackSection = nodeMap.get(id).get(1);
-            var thirdTrackSection = nodeMap.get(id).get(2);
+            var baseTrackSection = findBase(nodeMap.get(id),baseBranchNodeID);
+            var otherTrackSections = findOthers(nodeMap.get(id),baseTrackSection);
 
-            //TODO loop over nodeMap.get(id)
-            if(nodeMap.get(baseBranchNodeID).contains(firstTrackSection)){
-                // first track section is the base branch
-                //TODO put this in a function
-                if (firstTrackSection.beginEndpoint().endpoint.id == baseBranchNodeID) {
-                    base = firstTrackSection.beginEndpoint();
-                    left = secondTrackSection.endEndpoint();
-                    right = thirdTrackSection.endEndpoint();
-                } else {
-                    base = firstTrackSection.endEndpoint();
-                    left = secondTrackSection.beginEndpoint();
-                    right = thirdTrackSection.beginEndpoint();
-                }
-                if(!firstTrackSection.getBidirectional().equals("true"))
-                    navigability = ApplicableDirections.valueOf("NORMAL");
-            }
-            else if(nodeMap.get(baseBranchNodeID).contains(secondTrackSection)){
-                // second track section is the base branch
-                if (secondTrackSection.beginEndpoint().endpoint.id == baseBranchNodeID) {
-                    base = secondTrackSection.beginEndpoint();
-                    left = firstTrackSection.endEndpoint();
-                    right = thirdTrackSection.endEndpoint();
-                } else {
-                    base = secondTrackSection.endEndpoint();
-                    left = firstTrackSection.beginEndpoint();
-                    right = thirdTrackSection.beginEndpoint();
-                }
-                if(!secondTrackSection.getBidirectional().equals("true"))
-                    navigability = ApplicableDirections.NORMAL; //TODO put like this
-
-            }
-            else{
-                // third track section is the base branch
-                if (thirdTrackSection.beginEndpoint().endpoint.id == baseBranchNodeID) {
-                    base = thirdTrackSection.beginEndpoint();
-                    left = firstTrackSection.endEndpoint();
-                    right = secondTrackSection.endEndpoint();
-                } else {
-                    base = thirdTrackSection.endEndpoint();
-                    left = firstTrackSection.beginEndpoint();
-                    right = secondTrackSection.beginEndpoint();
-                }
-                if(!thirdTrackSection.getBidirectional().equals("true"))
-                    navigability = ApplicableDirections.valueOf("NORMAL");
-            }
+            var base = findEndpoint(baseTrackSection,id);
+            var left = findEndpoint(otherTrackSections.get(0),id);
+            var right = findEndpoint(otherTrackSections.get(1),id);
             var rjsSwitch = new RJSSwitch(id, base, left, right);
             switches.add(rjsSwitch);
+
             //create 2 track section links for each switch: base/right, base/left
             //create the string ID with begin track section ID-end track section ID
             var id1 = String.join("-", base.section.id,left.section.id);
-            trackSectionLinks.put(id1, new RJSTrackSectionLink(navigability,base,left));
+            var navigability1 = findLinkNavigability(baseTrackSection,otherTrackSections.get(0));
+            trackSectionLinks.put(id1, new RJSTrackSectionLink(navigability1,base,left));
             var id2 = String.join("-",base.section.id,right.section.id);
-            trackSectionLinks.put(id2, new RJSTrackSectionLink(navigability,base,right));
+            var navigability2 = findLinkNavigability(baseTrackSection,otherTrackSections.get(1));
+            trackSectionLinks.put(id2, new RJSTrackSectionLink(navigability2,base,right));
         }
         return switches;
+    }
+
+    private static ApplicableDirections findLinkNavigability(RJSTrackSection section, RJSTrackSection section1) {
+        ApplicableDirections navigability = null;
+        return navigability;
+    }
+
+
+    private static ArrayList<Edge> findOthers(ArrayList<Edge> edges, Edge baseTrackSection) {
+        ArrayList<Edge> others = null;
+        for(var edge : edges){
+            if(!edge.equals(baseTrackSection)) others.add(edge);
+        }
+        return others;
+    }
+
+    private static RJSTrackSection.EndpointID findEndpoint(Edge trackSection, String ID) {
+        var id = Integer.getInteger(ID);
+        if(trackSection.beginEndpoint().endpoint.id == id) return trackSection.beginEndpoint();
+        return trackSection.endEndpoint();
+    }
+
+    private static Edge findBase(ArrayList<Edge> edges, Integer baseBranchNodeID) {
+        Edge baseEdge = null;
+        for(var edge : edges){
+            if((edge.beginEndpoint().endpoint.id == baseBranchNodeID)||
+                    (edge.endEndpoint().endpoint.id == baseBranchNodeID)) {
+                baseEdge=edge;
+                break;
+            }
+        }
+        return baseEdge;
     }
 
     private static void createNodeMap
