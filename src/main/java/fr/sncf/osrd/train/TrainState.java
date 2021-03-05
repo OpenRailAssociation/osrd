@@ -53,7 +53,7 @@ public final class TrainState {
             return false;
         if (this.status != otherState.status)
             return false;
-        if (!this.train.equalIDs(otherState.train))
+        if (!this.train.id.equals(otherState.train.id))
             return false;
         if (!this.location.equals(otherState.location))
             return false;

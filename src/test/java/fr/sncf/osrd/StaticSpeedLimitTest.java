@@ -67,7 +67,7 @@ public class StaticSpeedLimitTest {
         var routeGraph = new RouteGraph.Builder(waypointGraph).build();
         final var infra = new Infra(
                 trackGraph, waypointGraph, routeGraph,
-                new HashMap<>(), new HashMap<>(), new ArrayList<>());
+                new HashMap<>(), new HashMap<>(), new ArrayList<>(), new ArrayList<>());
 
         // create the waypoints the train should go through
         var waypoints = new CryoList<TrainScheduleWaypoint>();

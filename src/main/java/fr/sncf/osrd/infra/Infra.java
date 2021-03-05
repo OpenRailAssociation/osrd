@@ -7,13 +7,11 @@ import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.trackgraph.*;
-import fr.sncf.osrd.simulation.Entity;
 import fr.sncf.osrd.simulation.Simulation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.function.Consumer;
 
 /**
  * <p>A data structure meant to store the immutable part of a railroad infrastructure.</p>
@@ -79,6 +77,7 @@ public final class Infra {
     public final HashMap<String, TVDSection> tvdSections;
     public final HashMap<String, Aspect> aspects;
     public final ArrayList<Signal> signals;
+    public final ArrayList<Switch> switches;
 
     /**
      * Create an OSRD Infra
@@ -95,13 +94,15 @@ public final class Infra {
             RouteGraph routeGraph,
             HashMap<String, TVDSection> tvdSections,
             HashMap<String, Aspect> aspects,
-            ArrayList<Signal> signals
+            ArrayList<Signal> signals,
+            ArrayList<Switch> switches
     ) throws InvalidInfraException {
         this.trackGraph = trackGraph;
         this.routeGraph = routeGraph;
         this.tvdSections = tvdSections;
         this.aspects = aspects;
         this.signals = signals;
+        this.switches = switches;
         this.trackGraph.validate();
         this.waypointGraph = waypointGraph;
     }
@@ -147,49 +148,53 @@ public final class Infra {
     }
 
     public static final class State {
-        public final Infra infra;
-
         private final Signal.State[] signalStates;
         private final Route.State[] routeStates;
+        private final Switch.State[] switchStates;
 
-        private State(Infra infra, Signal.State[] signalStates, Route.State[] routeStates) {
-            this.infra = infra;
+        private State(
+                Signal.State[] signalStates,
+                Route.State[] routeStates,
+                Switch.State[] switchStates
+        ) {
             this.signalStates = signalStates;
             this.routeStates = routeStates;
+            this.switchStates = switchStates;
         }
 
-        public Signal.State getState(Signal signal) {
-            return signalStates[signal.index];
+        public Signal.State getSignalState(int signalIndex) {
+            return signalStates[signalIndex];
         }
 
-        public Route.State getState(Route route) {
-            return routeStates[route.index];
+        public Route.State getRouteState(int routeIndex) {
+            return routeStates[routeIndex];
         }
+
+
+        public Switch.State getSwitchState(int switchIndex) {
+            return switchStates[switchIndex];
+        }
+
 
         /** Initializes a state for the infrastructure */
         @SuppressFBWarnings({"BC_UNCONFIRMED_CAST_OF_RETURN_VALUE"})
-        public static State createUninitialized(Infra infra) {
-            // create a new state for each signal
+        public static State from(Infra infra) {
             var signalCount = infra.signals.size();
             var signalStates = new Signal.State[signalCount];
-            var routeCount = infra.routeGraph.getEdgeCount();
-            var routeStates = new Route.State[routeCount];
-            return new State(infra, signalStates, routeStates);
-        }
-
-        /** Initializes a state for the infrastructure */
-        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST_OF_RETURN_VALUE"})
-        public void initialize(Simulation sim) {
-            for (int i = 0; i < signalStates.length; i++)
+            for (int i = 0; i < signalCount; i++)
                 signalStates[i] = infra.signals.get(i).newState();
 
-            for (int i = 0; i < routeStates.length; i++)
+            var routeCount = infra.routeGraph.getEdgeCount();
+            var routeStates = new Route.State[routeCount];
+            for (int i = 0; i < routeCount; i++)
                 routeStates[i] = infra.routeGraph.getEdge(i).newState();
 
-            for (var signalState : signalStates)
-                sim.registerEntity(signalState);
-            for (var routeState : routeStates)
-                sim.registerEntity(routeState);
+            var switchCount = infra.switches.size();
+            var switchStates = new Switch.State[switchCount];
+            for (int i = 0; i < switchCount; i++)
+                switchStates[i] = infra.switches.get(i).newState();
+
+            return new State(signalStates, routeStates, switchStates);
         }
     }
 }

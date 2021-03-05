@@ -1,6 +1,6 @@
 package fr.sncf.osrd;
 
-import static fr.sncf.osrd.SignalSimulationTest.Signal.Aspect.*;
+import static fr.sncf.osrd.SignalSimulationTest.TestSignal.Aspect.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -10,9 +10,9 @@ import org.junit.jupiter.api.Test;
 import java.util.Objects;
 
 public class SignalSimulationTest {
-    public static final class SignalAspectChange extends EntityChange<Signal, Void> {
-        public final Signal signal;
-        public final Signal.Aspect newAspect;
+    public static final class SignalAspectChange extends EntityChange<TestSignal, Void> {
+        public final TestSignal signal;
+        public final TestSignal.Aspect newAspect;
 
         /**
          * Creates a change of signal aspect
@@ -20,8 +20,8 @@ public class SignalSimulationTest {
          * @param signal the signal for which the aspect changed
          * @param newAspect the new aspect of the signal
          */
-        public SignalAspectChange(Simulation sim, Signal signal, Signal.Aspect newAspect) {
-            super(sim, signal);
+        public SignalAspectChange(Simulation sim, TestSignal signal, TestSignal.Aspect newAspect) {
+            super(sim, signal.getID());
             this.signal = signal;
             this.newAspect = newAspect;
         }
@@ -44,13 +44,13 @@ public class SignalSimulationTest {
         }
 
         @Override
-        public Void apply(Simulation sim, Signal signal) {
+        public Void apply(Simulation sim, TestSignal signal) {
             signal.aspect = newAspect;
             return null;
         }
     }
 
-    public static class Signal extends Entity {
+    public static class TestSignal extends AbstractEntity<TestSignal> {
         public enum Aspect {
             RED,
             YELLOW,
@@ -64,11 +64,11 @@ public class SignalSimulationTest {
         }
 
         @SuppressWarnings("SameParameterValue")
-        Signal(String name, Aspect aspect, Signal master) {
-            super(EntityType.SIGNAL, name);
+        TestSignal(String name, Aspect aspect, TestSignal master) {
+            super(new MockEntityID<>(name));
             this.aspect = aspect;
             if (master != null)
-                master.addSubscriber(this);
+                master.subscribers.add(this);
         }
 
         /**
@@ -87,7 +87,7 @@ public class SignalSimulationTest {
 
         @Override
         @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST")
-        protected void onTimelineEventUpdate(
+        public void onTimelineEventUpdate(
                 Simulation sim,
                 TimelineEvent<?> event,
                 TimelineEvent.State state
@@ -115,8 +115,8 @@ public class SignalSimulationTest {
     @Test
     public void testSignaling() throws SimulationError {
         var sim = Simulation.createWithoutInfra(0.0, null);
-        final var masterSignal = new Signal("master", GREEN, null);
-        final var slaveSignal = new Signal("slave", GREEN, masterSignal);
+        final var masterSignal = new TestSignal("master", GREEN, null);
+        final var slaveSignal = new TestSignal("slave", GREEN, masterSignal);
         masterSignal.setAspect(sim, RED);
 
         assertFalse(sim.isSimulationOver());
@@ -125,7 +125,8 @@ public class SignalSimulationTest {
         assertTrue(sim.isSimulationOver());
 
         // we must be able to unsubscribe sinks
-        masterSignal.removeSubscriber(slaveSignal);
+        masterSignal.subscribers.remove(slaveSignal);
+        assertTrue(masterSignal.subscribers.isEmpty());
         masterSignal.setAspect(sim, YELLOW);
         assertEquals(new SignalAspectChange(sim, masterSignal, YELLOW), sim.step());
         assertTrue(sim.isSimulationOver());

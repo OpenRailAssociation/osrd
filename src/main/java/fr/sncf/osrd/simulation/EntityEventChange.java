@@ -2,16 +2,16 @@ package fr.sncf.osrd.simulation;
 
 @SuppressWarnings("UnusedReturnValue")
 public abstract class EntityEventChange<
-        EntityT extends Entity,
+        EntityT extends Entity<EntityT>,
         EventValueT extends TimelineEventValue,
         ResultT
         > extends Change {
     public final TimelineEventId timelineEventId;
-    public final EntityID entityId;
+    public final EntityID<EntityT> entityId;
 
-    protected EntityEventChange(Simulation sim, EntityT entity, TimelineEvent<EventValueT> timelineEvent) {
+    protected EntityEventChange(Simulation sim, EntityID<EntityT> entityId, TimelineEvent<EventValueT> timelineEvent) {
         super(sim);
-        this.entityId = entity;
+        this.entityId = entityId;
         this.timelineEventId = new TimelineEventId(timelineEvent);
     }
 
@@ -21,12 +21,7 @@ public abstract class EntityEventChange<
     @Override
     @SuppressWarnings("unchecked")
     public void replay(Simulation sim) {
-        // we need these unsafe casts, as there is no formal guarantee that
-        // objects with some identifier always have the same type:
-        // in a simulation run, "foobar" could be a train, and could be a
-        // signal in another.
-        // This won't happen because we pick our identifiers to be unique.
-        var entity = (EntityT) sim.getEntity(entityId);
+        var entity = entityId.getEntity(sim);
         var event = (TimelineEvent<EventValueT>) sim.getTimelineEvent(timelineEventId);
         this.apply(sim, entity, event);
     }

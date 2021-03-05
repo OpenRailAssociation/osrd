@@ -13,8 +13,25 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Train extends Entity {
+public class Train extends AbstractEntity<Train> {
     static final Logger logger = LoggerFactory.getLogger(Train.class);
+
+    public static class TrainEntityID implements EntityID<Train> {
+        public final String trainName;
+
+        public TrainEntityID(String trainName) {
+            this.trainName = trainName;
+        }
+
+        @Override
+        public Train getEntity(Simulation sim) {
+            return sim.trains.get(trainName);
+        }
+    }
+
+    public String getName() {
+        return ((TrainEntityID) id).trainName;
+    }
 
     // how far the driver of the train can see
     public final double driverSightDistance;
@@ -33,14 +50,14 @@ public class Train extends Entity {
 
     Train(
             @SuppressWarnings("SameParameterValue") double driverSightDistance,
-            String id,
+            String name,
             Simulation sim,
             RollingStock rollingStock,
             TrainPath trainPath,
             double initialSpeed,
             List<SpeedController> controllers
     ) {
-        super(EntityType.TRAIN, id);
+        super(new TrainEntityID(name));
         this.driverSightDistance = driverSightDistance;
         this.rollingStock = rollingStock;
         this.path = trainPath;
@@ -54,7 +71,7 @@ public class Train extends Entity {
                 this
         );
         // the train must react to its own move events
-        this.addSubscriber(this);
+        this.subscribers.add(this);
     }
 
     /**
@@ -105,7 +122,7 @@ public class Train extends Entity {
 
     @Override
     @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST")
-    protected void onTimelineEventUpdate(
+    public void onTimelineEventUpdate(
             Simulation sim,
             TimelineEvent<?> event,
             TimelineEvent.State state
@@ -175,9 +192,7 @@ public class Train extends Entity {
         public Train apply(Simulation sim) {
             var trainName = timetable.name;
 
-            var controllers = new ArrayList<SpeedController>();
-            for (var controller : initialControllers)
-                controllers.add(controller);
+            var controllers = new ArrayList<>(initialControllers);
 
             var train = new Train(
                     400,
@@ -188,8 +203,7 @@ public class Train extends Entity {
                     timetable.initialSpeed,
                     controllers
             );
-            sim.registerEntity(train);
-            sim.trains.add(train);
+            sim.trains.put(trainName, train);
             return train;
         }
 
@@ -315,7 +329,7 @@ public class Train extends Entity {
                 Train train,
                 TrainState newState
         ) {
-            super(sim,  train);
+            super(sim, train.getID());
             this.newState = newState;
         }
 
@@ -338,8 +352,8 @@ public class Train extends Entity {
     }
 
     public static final class TrainPlannedMoveChange extends EntityEventChange<Train, TrainLocationChange, Void> {
-        public TrainPlannedMoveChange(Simulation sim, Train entity, TimelineEvent<TrainLocationChange> timelineEvent) {
-            super(sim, entity, timelineEvent);
+        public TrainPlannedMoveChange(Simulation sim, Train train, TimelineEvent<TrainLocationChange> timelineEvent) {
+            super(sim, train.getID(), timelineEvent);
         }
 
         @Override

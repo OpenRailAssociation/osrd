@@ -121,9 +121,10 @@ public class RailJSONParser {
         trackGraph.resizeNodes(nodeIDs.numberOfNodes);
 
         // create switch nodes
+        var switches = new ArrayList<Switch>();
         for (var rjsSwitch : railJSON.switches) {
             var index = nodeIDs.get(rjsSwitch.base);
-            trackGraph.makeSwitchNode(index, rjsSwitch.id);
+            switches.add(trackGraph.makeSwitchNode(index, rjsSwitch.id));
         }
 
         // fill nodes with placeholders
@@ -254,7 +255,7 @@ public class RailJSONParser {
         for (var signal : signals)
             signal.expr.accept(nameResolver);
 
-        return new Infra(trackGraph, waypointGraph, routeGraph.build(), tvdSectionsMap, aspectsMap, signals);
+        return new Infra(trackGraph, waypointGraph, routeGraph.build(), tvdSectionsMap, aspectsMap, signals, switches);
     }
 
     private static <E extends RJSRouteWaypoint> void findWaypoints(

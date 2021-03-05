@@ -5,5 +5,5 @@ package fr.sncf.osrd.simulation;
  * This is useful for statically enumerating all the types that can end up in the timeline,
  * which is very useful for serialization.
  */
-public abstract class TimelineEventValue {
+public interface TimelineEventValue {
 }

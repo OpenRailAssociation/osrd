@@ -14,20 +14,34 @@ public class Switch extends TrackNode {
         return new Switch.State(this);
     }
 
+    public static final class SwitchEntityID implements EntityID<Switch.State> {
+        private final int switchIndex;
+
+        public SwitchEntityID(int switchIndex) {
+            this.switchIndex = switchIndex;
+        }
+
+        @Override
+        public State getEntity(Simulation sim) {
+            return sim.infraState.getSwitchState(switchIndex);
+        }
+    }
+
     /** The state of the route is the actual entity which interacts with the rest of the infrastructure */
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public static final class State extends Entity implements RSMatchable {
+    public static final class State extends AbstractEntity<Switch.State> implements RSMatchable {
         public final Switch switchRef;
         public SwitchPosition position;
 
         State(Switch switchRef) {
-            super(EntityType.SWITCH, switchRef.id);
+            super(new SwitchEntityID(switchRef.index));
             this.switchRef = switchRef;
+            // TODO: configurable default position
             this.position = SwitchPosition.LEFT;
         }
 
         @Override
-        protected void onTimelineEventUpdate(
+        public void onTimelineEventUpdate(
                 Simulation sim, TimelineEvent<?> event, TimelineEvent.State state
         ) throws SimulationError {
         }
