@@ -215,24 +215,24 @@
         <functionalInfrastructure>
             <!-- FUNCTIONAL INFRASTRUCTURE ELEMENTS
 
-            buf_stop_a +—————foo_a—————,
-                                        \
-            buf_stop_b +——————foo_b——————+—————————————foo_to_bar—————————————+—————bar_a————+ buf_stop_c
+            buffer_stop_a +—————foo_a—————,
+                                           \
+            buffer_stop_b +——————foo_b——————+—————————————foo_to_bar—————————————+—————bar_a————+ buffer_stop_c
                                    switch_foo
             -->
             <bufferStops>
-                <bufferStop id="buf_stop_a" type="fixedBufferStop">
-                    <spotLocation id="buf_stop_a.loc" netElementRef="ne.micro.foo_a" applicationDirection="reverse" pos="0.0">
+                <bufferStop id="buffer_stop_a" type="fixedBufferStop">
+                    <spotLocation id="buffer_stop_a.loc" netElementRef="ne.micro.foo_a" applicationDirection="reverse" pos="0.0">
                         <linearCoordinate positioningSystemRef="lps_foo_to_bar" measure="0.0"/>
                     </spotLocation>
                 </bufferStop>
-                <bufferStop id="buf_stop_b" type="fixedBufferStop">
-                    <spotLocation id="buf_stop_b.loc" netElementRef="ne.micro.foo_b" applicationDirection="reverse" pos="0.0">
+                <bufferStop id="buffer_stop_b" type="fixedBufferStop">
+                    <spotLocation id="buffer_stop_b.loc" netElementRef="ne.micro.foo_b" applicationDirection="reverse" pos="0.0">
                         <linearCoordinate positioningSystemRef="lps_foo_to_bar" measure="0.0"/>
                     </spotLocation>
                 </bufferStop>
-                <bufferStop id="buf_stop_c" type="fixedBufferStop">
-                    <spotLocation id="buf_stop_c.loc" netElementRef="ne.micro.bar_a" applicationDirection="normal" pos="200.0">
+                <bufferStop id="buffer_stop_c" type="fixedBufferStop">
+                    <spotLocation id="buffer_stop_c.loc" netElementRef="ne.micro.bar_a" applicationDirection="normal" pos="200.0">
                         <linearCoordinate positioningSystemRef="lps_foo_to_bar" measure="10400.0"/>
                     </spotLocation>
                 </bufferStop>
@@ -256,7 +256,7 @@
                                               posEnd="200.0">
                         </associatedNetElement>
                     </linearLocation>
-                    <trackBegin ref="buf_stop_a"/>
+                    <trackBegin ref="buffer_stop_a"/>
                     <trackEnd ref="switch_foo"/>
                     <length value="200.0" type="physical"/>
                 </track>
@@ -267,7 +267,7 @@
                                               posEnd="200.0">
                         </associatedNetElement>
                     </linearLocation>
-                    <trackBegin ref="buf_stop_b"/>
+                    <trackBegin ref="buffer_stop_b"/>
                     <trackEnd ref="switch_foo"/>
                     <length value="200.0" type="physical"/>
                 </track>
@@ -283,7 +283,7 @@
                                               posEnd="200.0"/>
                     </linearLocation>
                     <trackBegin ref="switch_foo"/>
-                    <trackEnd ref="buf_stop_c"/>
+                    <trackEnd ref="buffer_stop_c"/>
                     <length value="10200.0" type="physical"/>
                 </track>
             </tracks>
