@@ -33,7 +33,7 @@ public class RJSSignal extends RJSTrackObject implements Identified {
         this.expr = expr;
         this.navigability = navigability;
         if (navigability == ApplicableDirections.BOTH)
-            throw new InvalidInfraException(String.format("Signal 's' has can't be applied in both direction", id));
+            throw new InvalidInfraException(String.format("Signal '%s' can't apply for both directions", id));
     }
 
     @Override
