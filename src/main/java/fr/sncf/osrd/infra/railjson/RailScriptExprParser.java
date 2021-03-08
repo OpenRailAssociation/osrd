@@ -144,6 +144,8 @@ public class RailScriptExprParser {
             return new RSExpr.SignalRef(((RJSRSExpr.SignalRef) expr).signal.id);
         if (type == RJSRSExpr.RouteRef.class)
             return new RSExpr.RouteRef(((RJSRSExpr.RouteRef) expr).route.id);
+        if (type == RJSRSExpr.SwitchRef.class)
+            return new RSExpr.SwitchRef(((RJSRSExpr.SwitchRef) expr).switchRef.id);
 
         // control flow
         if (type == RJSRSExpr.If.class)

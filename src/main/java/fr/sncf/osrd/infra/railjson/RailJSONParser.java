@@ -238,6 +238,10 @@ public class RailJSONParser {
         for (var route : routeGraph.routeGraph.iterEdges())
             routeNames.put(route.id, route);
 
+        var switchNames = new HashMap<String, Switch>();
+        for (var switchRef : switches)
+            switchNames.put(switchRef.id, switchRef);
+
         // resolve names of routes and signals
         var nameResolver = new RSExprVisitor() {
             @Override
@@ -248,6 +252,11 @@ public class RailJSONParser {
             @Override
             public void visit(RSExpr.RouteRef expr) throws InvalidInfraException {
                 expr.resolve(routeNames);
+            }
+
+            @Override
+            public void visit(RSExpr.SwitchRef expr) throws InvalidInfraException {
+                expr.resolve(switchNames);
             }
         };
         for (var function : scriptFunctions.values())

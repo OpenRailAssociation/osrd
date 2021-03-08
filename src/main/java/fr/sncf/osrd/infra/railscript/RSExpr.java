@@ -6,6 +6,7 @@ import fr.sncf.osrd.infra.routegraph.RouteStatus;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.railscript.value.*;
+import fr.sncf.osrd.infra.trackgraph.Switch;
 
 import java.util.Map;
 
@@ -238,6 +239,38 @@ public abstract class RSExpr<T extends RSValue> {
         @Override
         public RSType getType(RSType[] argumentTypes) {
             return RSType.ROUTE;
+        }
+
+        @Override
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+        }
+    }
+
+    public static final class SwitchRef extends RSExpr<Switch.State> {
+        public final String switchName;
+
+        private Switch switcRef = null;
+
+        public SwitchRef(String switchName) {
+            this.switchName = switchName;
+        }
+
+        /** Resolve the name of the route reference into a route */
+        public void resolve(Map<String, Switch> switches) throws InvalidInfraException {
+            switcRef = switches.get(switchName);
+            if (switcRef == null)
+                throw new InvalidInfraException("unknown switch " + switchName);
+        }
+
+        @Override
+        public Switch.State evaluate(RSExprState<?> state) {
+            return state.infraState.getSwitchState(switcRef.index);
+        }
+
+        @Override
+        public RSType getType(RSType[] argumentTypes) {
+            return RSType.SWITCH;
         }
 
         @Override
