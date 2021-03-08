@@ -1,7 +1,5 @@
 package fr.sncf.osrd.config;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
@@ -13,7 +11,6 @@ import fr.sncf.osrd.timetable.Schedule;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.PathUtils;
 import okio.Okio;
-import okio.Sink;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -53,13 +50,14 @@ public class ConfigManager {
         );
     }
 
+    /** Load an infra from a given RailML or RailJSON file */
     @SuppressFBWarnings({"RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"})
-    static Infra getInfra(JsonConfig.InfraType infraType, String path) {
+    public static Infra getInfra(JsonConfig.InfraType infraType, String path) {
         if (infras.containsKey(path))
             return infras.get(path);
 
         // autodetect the infrastructure type
-        if (infraType == null) {
+        if (infraType == null || infraType == JsonConfig.InfraType.UNKNOWN) {
             if (path.endsWith(".json"))
                 infraType = JsonConfig.InfraType.RAILJSON;
             else if (path.endsWith(".xml"))

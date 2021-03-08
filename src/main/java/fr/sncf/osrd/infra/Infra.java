@@ -7,7 +7,6 @@ import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.trackgraph.*;
-import fr.sncf.osrd.simulation.Simulation;
 
 import java.util.ArrayList;
 import java.util.HashMap;

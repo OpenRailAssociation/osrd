@@ -3,12 +3,10 @@ package fr.sncf.osrd.infra.railscript;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.value.RSType;
-import fr.sncf.osrd.infra.routegraph.RouteStatus;
+import fr.sncf.osrd.infra.railscript.value.RSValue;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.stream.Collectors;
+import java.util.HashMap;
 
 /** This class allow to pretty print signaling functions and expressions */
 public class PrettyPrinter extends RSExprVisitor {
@@ -21,8 +19,27 @@ public class PrettyPrinter extends RSExprVisitor {
         this.out = out;
     }
 
-    public void print(Infra infra) {
-        // TODO
+    /** Pretty print all script functions of an infra */
+    public void print(Infra infra) throws InvalidInfraException {
+        // Search for all functions
+        var functionsFinder = new FunctionsFinder();
+
+        for (var signal: infra.signals)
+            signal.expr.accept(functionsFinder);
+
+        out.println("// SCRIPT FUNCTIONS\n");
+        // Pretty print functions found
+        for (var function : functionsFinder.functions.values()) {
+            print(function);
+            out.println();
+        }
+
+        out.println("\n// SIGNAL EXPRESSIONS\n");
+        for (var signal: infra.signals) {
+            out.printf("%s: ", signal.id);
+            signal.expr.accept(this);
+            out.println("\n");
+        }
     }
 
     /** Pretty print a function */
@@ -247,7 +264,7 @@ public class PrettyPrinter extends RSExprVisitor {
     public void visit(RSExpr.SignalAspectCheck expr) throws InvalidInfraException {
         out.print("signal_has_aspect(");
         expr.signalExpr.accept(this);
-        out.printf(", %s)", expr.aspect);
+        out.printf(", %s)", expr.aspect.id);
     }
 
     @Override
@@ -261,7 +278,7 @@ public class PrettyPrinter extends RSExprVisitor {
     public void visit(RSExpr.AspectSetContains expr) throws InvalidInfraException {
         out.print("aspect_set_contains(");
         expr.expr.accept(this);
-        out.printf(", %s)", expr.aspect);
+        out.printf(", %s)", expr.aspect.id);
     }
 
     @Override
@@ -269,5 +286,15 @@ public class PrettyPrinter extends RSExprVisitor {
         out.print("delay(");
         expr.expr.accept(this);
         out.printf(", %f)", expr.duration);
+    }
+
+    private static class FunctionsFinder extends RSExprVisitor {
+        public final HashMap<String, RSFunction<? extends RSValue>> functions = new HashMap<>();
+
+        @Override
+        public void visit(RSExpr.Call<? extends RSValue> expr) throws InvalidInfraException {
+            functions.put(expr.function.functionName, expr.function);
+            expr.function.body.accept(this);
+        }
     }
 }
