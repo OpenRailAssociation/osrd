@@ -238,7 +238,7 @@
                 </bufferStop>
             </bufferStops>
             <switchesIS>
-                <switchIS id="switch_foo" continueCourse="left" branchCourse="right" type="ordinarySwitch">
+                <switchIS id="il.switch_foo" continueCourse="left" branchCourse="right" type="ordinarySwitch">
                     <name name="Switch Foo" language="en"/>
                     <spotLocation id="switch_foo.loc" netElementRef="ne.micro.foo_to_bar" applicationDirection="reverse" pos="0.0">
                         <linearCoordinate positioningSystemRef="lps_foo_to_bar" measure="200.0"/>
@@ -257,7 +257,7 @@
                         </associatedNetElement>
                     </linearLocation>
                     <trackBegin ref="buffer_stop_a"/>
-                    <trackEnd ref="switch_foo"/>
+                    <trackEnd ref="il.switch_foo"/>
                     <length value="200.0" type="physical"/>
                 </track>
                 <track id="track.foo-station" type="mainTrack">
@@ -268,7 +268,7 @@
                         </associatedNetElement>
                     </linearLocation>
                     <trackBegin ref="buffer_stop_b"/>
-                    <trackEnd ref="switch_foo"/>
+                    <trackEnd ref="il.switch_foo"/>
                     <length value="200.0" type="physical"/>
                 </track>
                 <track id="track.foo_to_bar" type="mainTrack">
@@ -282,7 +282,7 @@
                                               posBegin="0.0"
                                               posEnd="200.0"/>
                     </linearLocation>
-                    <trackBegin ref="switch_foo"/>
+                    <trackBegin ref="il.switch_foo"/>
                     <trackEnd ref="buffer_stop_c"/>
                     <length value="10200.0" type="physical"/>
                 </track>
@@ -596,7 +596,7 @@
                           typicalThrowTime="PT6S"
                           preferredPosition="left" numberOfBladeSwitchActuators="2" numberOfFrogSwitchActuators="0">
                     <designator register="_SimpleRegister" entry="Foo entry switch"/>
-                    <refersTo ref="switch_foo"/>
+                    <refersTo ref="il.switch_foo"/>
                     <!-- consider adding a hasFoulingTrainDetectors -->
                     <connectedToPowerSupply ref="main_power_supply"/>
                     <branchLeft ref="track.foo-station"/>
