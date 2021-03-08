@@ -8,7 +8,6 @@ import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.utils.FloatCompare;
 import org.dom4j.Element;
-
 import java.util.Locale;
 import java.util.Map;
 

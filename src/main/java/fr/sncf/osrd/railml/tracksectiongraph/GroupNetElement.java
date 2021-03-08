@@ -2,7 +2,6 @@ package fr.sncf.osrd.railml.tracksectiongraph;
 
 import org.dom4j.Element;
 import org.dom4j.Node;
-
 import java.util.ArrayList;
 import java.util.Map;
 

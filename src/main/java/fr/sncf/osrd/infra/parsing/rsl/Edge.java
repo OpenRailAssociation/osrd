@@ -3,16 +3,17 @@ package fr.sncf.osrd.infra.parsing.rsl;
 import fr.sncf.osrd.infra.parsing.railjson.schema.RJSTrackSection;
 import org.dom4j.Document;
 import org.dom4j.Element;
-
 import java.util.ArrayList;
 
-public class Edge extends RJSTrackSection
-{
-    private String startNodeID, endNodeID, bidirectional;
-    private double grade, speed;
+public class Edge extends RJSTrackSection {
+    private String startNodeID;
+    private String endNodeID;
+    private String bidirectional;
+    private double grade;
+    private double speed;
 
-    public Edge(String id, double length, String startNodeID, String endNodeID, String bidirectional, double speed, double grade)
-    {
+    public Edge(String id, double length, String startNodeID, String endNodeID,
+             String bidirectional, double speed, double grade) {
         super(id, length);
         this.startNodeID = startNodeID;
         this.endNodeID = endNodeID;
@@ -24,8 +25,8 @@ public class Edge extends RJSTrackSection
     public String getBidirectional(){
         return bidirectional;
     }
-    public static ArrayList<Edge> parseEdges(Document document) {
 
+    public static ArrayList<Edge> parseEdges(Document document) {
         var edgesList = new ArrayList<Edge>();
         var edges = document.selectNodes("/line/links");
 
@@ -41,8 +42,8 @@ public class Edge extends RJSTrackSection
             double speed = Double.parseDouble(speedStr);
             double grade = Double.parseDouble(gradeStr);
             //create the string ID with startNodeID-endNodeID
-            var id = String.join("-",startNodeID,endNodeID);
-            var parsedEdge = new Edge(id,length,startNodeID,endNodeID,bidirectional,speed,grade);
+            var id = String.join("-", startNodeID, endNodeID);
+            var parsedEdge = new Edge(id, length, startNodeID, endNodeID, bidirectional, speed, grade);
             edgesList.add(parsedEdge);
         }
         return edgesList;
