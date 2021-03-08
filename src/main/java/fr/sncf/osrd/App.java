@@ -7,8 +7,10 @@ import com.beust.jcommander.Parameters;
 import com.beust.jcommander.converters.PathConverter;
 import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.config.ConfigManager;
+import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railjson.RailJSONSerializer;
+import fr.sncf.osrd.infra.railscript.PrettyPrinter;
 import fr.sncf.osrd.railml.RailMLParser;
 import fr.sncf.osrd.simulation.ChangeSerializer;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -19,6 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
@@ -87,6 +91,39 @@ public class App {
         }
     }
 
+    @Parameters(commandDescription = "Display nicely signals behaviors of an infra in railscript")
+    public static final class PrettyPrintCommand {
+        @Parameter(
+                names = { "-i", "--input" },
+                description = "The infra input file (supports RailML and RailJSON)",
+                required = true
+        )
+        private String inputPath;
+
+        @Parameter(
+                names = { "-o", "--output" },
+                description = "The path of the railscript file",
+                converter = PathConverter.class
+        )
+        private Path railScriptOutputPath;
+
+        void run() throws IOException, InvalidInfraException {
+            // Setup pretty printer
+            var stream = System.out;
+            if (railScriptOutputPath != null) {
+                stream = new PrintStream(railScriptOutputPath.toString(), StandardCharsets.UTF_8);
+            }
+            var printer = new PrettyPrinter(stream);
+
+            logger.info("parsing the input infrastructure");
+            var infra = ConfigManager.getInfra(JsonConfig.InfraType.UNKNOWN, inputPath);
+
+            logger.info("Pretty print signals behaviors to RailScript");
+            if (infra != null)
+                printer.print(infra);
+        }
+    }
+
     /**
      * The main entry point for OSRD.
      * @param args the command line arguments
@@ -97,9 +134,11 @@ public class App {
         // prepare the command line parser
         var simulateCommand = new SimulateCommand();
         var convertCommand = new ConvertCommand();
+        var prettyPrintCommand = new PrettyPrintCommand();
         var argsParser = JCommander.newBuilder()
                 .addCommand("simulate", simulateCommand)
                 .addCommand("convert", convertCommand)
+                .addCommand("pretty-print-signals", prettyPrintCommand)
                 .build();
 
         // parse the command line arguments
@@ -124,6 +163,9 @@ public class App {
                 break;
             case "convert":
                 convertCommand.run();
+                break;
+            case "pretty-print-signals":
+                prettyPrintCommand.run();
                 break;
             default:
                 throw new RuntimeException("unknown parsed command");

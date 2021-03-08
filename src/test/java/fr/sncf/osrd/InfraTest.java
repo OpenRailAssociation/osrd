@@ -2,8 +2,6 @@ package fr.sncf.osrd;
 
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.TVDSection;
-import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import org.junit.jupiter.api.Test;
 
