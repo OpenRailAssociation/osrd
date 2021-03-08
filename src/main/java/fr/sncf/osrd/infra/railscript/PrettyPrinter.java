@@ -123,6 +123,11 @@ public class PrettyPrinter extends RSExprVisitor {
     }
 
     @Override
+    public void visit(RSExpr.SwitchRef expr) throws InvalidInfraException {
+        out.printf("\"%s\"", expr.switchName);
+    }
+
+    @Override
     public void visit(RSExpr.RouteRef expr) {
         out.printf("\"%s\"", expr.routeName);
     }
@@ -257,5 +262,12 @@ public class PrettyPrinter extends RSExprVisitor {
         out.print("aspect_set_contains(");
         expr.expr.accept(this);
         out.printf(", %s)", expr.aspect);
+    }
+
+    @Override
+    public void visit(RSExpr.Delay<?> expr) throws InvalidInfraException {
+        out.print("delay(");
+        expr.expr.accept(this);
+        out.printf(", %f)", expr.duration);
     }
 }

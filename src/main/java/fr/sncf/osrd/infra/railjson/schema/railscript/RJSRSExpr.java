@@ -194,10 +194,11 @@ public abstract class RJSRSExpr {
     }
 
     public static final class SwitchRef extends RJSRSExpr {
-        public final ID<RJSSwitch> route;
+        @Json(name = "switch")
+        public final ID<RJSSwitch> switchRef;
 
-        public SwitchRef(ID<RJSSwitch> route) {
-            this.route = route;
+        public SwitchRef(ID<RJSSwitch> switchRef) {
+            this.switchRef = switchRef;
         }
     }
     // endregion

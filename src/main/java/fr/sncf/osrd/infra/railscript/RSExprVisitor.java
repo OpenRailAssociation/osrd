@@ -38,6 +38,9 @@ public class RSExprVisitor {
     public void visit(RSExpr.RouteRef expr) throws InvalidInfraException {
     }
 
+    public void visit(RSExpr.SwitchRef expr) throws InvalidInfraException {
+    }
+
     /** Visit method */
     public void visit(RSExpr.If<?> expr) throws InvalidInfraException {
         expr.ifExpr.accept(this);
