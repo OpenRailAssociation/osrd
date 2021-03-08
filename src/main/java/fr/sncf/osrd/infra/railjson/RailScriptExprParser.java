@@ -186,7 +186,7 @@ public class RailScriptExprParser {
             return new RSExpr.AspectSetContains(aspectSet, aspect);
         }
 
-        throw new InvalidInfraException("unsupported signal expression");
+        throw new InvalidInfraException(String.format("'%s' unsupported signal expression", type));
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
