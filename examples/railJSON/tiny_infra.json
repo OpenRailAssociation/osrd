@@ -1,8 +1,8 @@
 {
   "aspects": [
-    "green",
-    "yellow",
-    "red"
+    "GREEN",
+    "YELLOW",
+    "RED"
   ],
   "operational_points": [
     {
@@ -14,23 +14,28 @@
   ],
   "routes": [
     {
-      "waypoints": [],
       "id": "rt.buffer_stop_a-C1",
       "switches_position": {},
       "tvd_sections": [
         "tvd.foo_a"
+      ],
+      "waypoints": [
+        "buffer_stop_a",
+        "tde.foo_a-switch_foo"
       ]
     },
     {
-      "waypoints": [],
       "id": "rt.buffer_stop_b-C3",
       "switches_position": {},
       "tvd_sections": [
         "tvd.foo_b"
+      ],
+      "waypoints": [
+        "buffer_stop_b",
+        "tde.foo_b-switch_foo"
       ]
     },
     {
-      "waypoints": [],
       "id": "rt.C1-S7",
       "switches_position": {
         "il.switch_foo": "RIGHT"
@@ -38,10 +43,14 @@
       "tvd_sections": [
         "tvd.switch_foo",
         "tvd.track"
+      ],
+      "waypoints": [
+        "tde.foo_a-switch_foo",
+        "tde.switch_foo-track",
+        "tde.track-bar"
       ]
     },
     {
-      "waypoints": [],
       "id": "rt.C3-S7",
       "switches_position": {
         "il.switch_foo": "LEFT"
@@ -49,52 +58,74 @@
       "tvd_sections": [
         "tvd.switch_foo",
         "tvd.track"
+      ],
+      "waypoints": [
+        "tde.foo_b-switch_foo",
+        "tde.switch_foo-track",
+        "tde.track-bar"
       ]
     },
     {
-      "waypoints": [],
       "id": "rt.S7-buffer_stop_c",
       "switches_position": {},
       "tvd_sections": [
         "tvd.bar_a"
+      ],
+      "waypoints": [
+        "tde.track-bar",
+        "buffer_stop_c"
       ]
     },
     {
-      "waypoints": [],
       "id": "rt.buffer_stop_c-C2",
       "switches_position": {},
       "tvd_sections": [
         "tvd.bar_a"
+      ],
+      "waypoints": [
+        "buffer_stop_c",
+        "tde.track-bar"
       ]
     },
     {
-      "waypoints": [],
       "id": "rt.C2-C6",
       "switches_position": {},
       "tvd_sections": [
         "tvd.track"
+      ],
+      "waypoints": [
+        "tde.track-bar",
+        "tde.switch_foo-track"
       ]
     },
     {
-      "waypoints": [],
       "id": "rt.C6-buffer_stop_a",
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
       "tvd_sections": [
-        "tvd.track",
+        "tvd.switch_foo",
         "tvd.foo_a"
+      ],
+      "waypoints": [
+        "tde.switch_foo-track",
+        "tde.foo_a-switch_foo",
+        "buffer_stop_a"
       ]
     },
     {
-      "waypoints": [],
       "id": "rt.C6-buffer_stop_b",
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
       "tvd_sections": [
-        "tvd.track",
+        "tvd.switch_foo",
         "tvd.foo_b"
+      ],
+      "waypoints": [
+        "tde.switch_foo-track",
+        "tde.foo_b-switch_foo",
+        "buffer_stop_b"
       ]
     }
   ],
@@ -152,6 +183,78 @@
       }
     },
     {
+      "name": "warn_signal",
+      "arguments": [
+        {
+          "type": "SIGNAL",
+          "name": "master_signal"
+        }
+      ],
+      "return_type": "ASPECT_SET",
+      "body": {
+        "type": "call",
+        "function": "sncf_filter",
+        "arguments": [
+          {
+            "type": "aspect_set",
+            "members": [
+              {
+                "aspect": "YELLOW",
+                "condition": {
+                  "type": "signal_has_aspect",
+                  "signal": {
+                    "type": "argument_ref",
+                    "argument_name": "master_signal"
+                  },
+                  "aspect": "RED"
+                }
+              },
+              {
+                "aspect": "GREEN"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "check_route",
+      "arguments": [
+        {
+          "type": "ROUTE",
+          "name": "route"
+        }
+      ],
+      "return_type": "ASPECT_SET",
+      "body": {
+        "type": "condition",
+        "if": {
+          "type": "route_has_state",
+          "route": {
+            "type": "argument_ref",
+            "argument_name": "route"
+          },
+          "state": "OCCUPIED"
+        },
+        "then": {
+          "type": "aspect_set",
+          "members": [
+            {
+              "aspect": "RED"
+            }
+          ]
+        },
+        "else": {
+          "type": "aspect_set",
+          "members": [
+            {
+              "aspect": "GREEN"
+            }
+          ]
+        }
+      }
+    },
+    {
       "name": "bal3_line_signal",
       "arguments": [
         {
@@ -202,19 +305,11 @@
       }
     },
     {
-      "name": "switch_bal3_signal",
+      "name": "switch_signal",
       "arguments": [
         {
           "type": "SWITCH",
           "name": "switch"
-        },
-        {
-          "type": "SIGNAL",
-          "name": "left_master_signal"
-        },
-        {
-          "type": "SIGNAL",
-          "name": "right_master_signal"
         },
         {
           "type": "ROUTE",
@@ -235,12 +330,8 @@
         "branches": {
           "LEFT": {
             "type": "call",
-            "function": "bal3_line_signal",
+            "function": "check_route",
             "arguments": [
-              {
-                "type": "argument_ref",
-                "argument_name": "left_master_signal"
-              },
               {
                 "type": "argument_ref",
                 "argument_name": "left_route"
@@ -249,12 +340,8 @@
           },
           "RIGHT": {
             "type": "call",
-            "function": "bal3_line_signal",
+            "function": "check_route",
             "arguments": [
-              {
-                "type": "argument_ref",
-                "argument_name": "right_master_signal"
-              },
               {
                 "type": "argument_ref",
                 "argument_name": "right_route"
@@ -278,7 +365,7 @@
         "endpoint": "BEGIN",
         "section": "ne.micro.foo_to_bar"
       },
-      "id": "switch_foo",
+      "id": "il.switch_foo",
       "left": {
         "endpoint": "END",
         "section": "ne.micro.foo_b"
@@ -335,115 +422,135 @@
           "ref": "op.station_foo"
         }
       ],
-      "signals": [],
-      "speed_sections": [],
       "route_waypoints": [
         {
-          "type": "detector",
-          "id": "tde.foo_b-switch_foo",
-          "position": 175
-        },
-        {
           "type": "buffer_stop",
-          "applicable_directions": "REVERSE",
+          "application_directions": "REVERSE",
           "id": "buffer_stop_b",
           "position": 0
+        },
+        {
+          "type": "detector",
+          "application_directions": "BOTH",
+          "id": "tde.foo_b-switch_foo",
+          "position": 175
         }
-      ]
-    },
-    {
-      "id": "ne.micro.foo_to_bar",
-      "length": 10000,
-      "operational_points": [],
+      ],
       "signals": [
         {
-          "id": "signal.foo_to_bar.1",
-          "position": 25,
-          "navigability": "BOTH",
           "expr": {
             "type": "call",
             "function": "bal3_line_signal",
             "arguments": [
               {
                 "type": "signal",
-                "signal": "signal.foo_to_bar.2"
+                "signal": "il.sig.W5"
               },
               {
                 "type": "route",
-                "route": "rt.C2-C6"
+                "route": "rt.C3-S7"
               }
             ]
-          }
+          },
+          "id": "il.sig.C3",
+          "navigability": "NORMAL",
+          "position": 0
+        }
+      ],
+      "speed_sections": []
+    },
+    {
+      "id": "ne.micro.foo_to_bar",
+      "length": 10000,
+      "operational_points": [],
+      "route_waypoints": [
+        {
+          "type": "detector",
+          "application_directions": "BOTH",
+          "id": "tde.switch_foo-track",
+          "position": 25
+        }
+      ],
+      "signals": [
+        {
+          "expr": {
+            "type": "call",
+            "function": "warn_signal",
+            "arguments": [
+              {
+                "type": "signal",
+                "signal": "il.sig.C6"
+              }
+            ]
+          },
+          "id": "il.sig.W4",
+          "navigability": "REVERSE",
+          "position": 1025
         },
         {
-          "id": "signal.foo_to_bar.2",
-          "position": 75,
-          "navigability": "BOTH",
           "expr": {
-            "type": "match",
-            "expr": {
-              "type": "route",
-              "route": "rt.C2-C6"
-            },
-            "branches": {
-              "FREE": {
-                "type": "aspect_set",
-                "members": [
-                  {
-                    "aspect": "GREEN"
-                  }
-                ]
-              },
-              "RESERVED": {
-                "type": "aspect_set",
-                "members": [
-                  {
-                    "aspect": "RED"
-                  }
-                ]
-              },
-              "OCCUPIED": {
-                "type": "aspect_set",
-                "members": [
-                  {
-                    "aspect": "RED"
-                  }
-                ]
+            "type": "call",
+            "function": "warn_signal",
+            "arguments": [
+              {
+                "type": "signal",
+                "signal": "il.sig.S7"
               }
-            }
-          }
+            ]
+          },
+          "id": "il.sig.W5",
+          "navigability": "NORMAL",
+          "position": 8975
+        },
+        {
+          "expr": {
+            "type": "call",
+            "function": "switch_signal",
+            "arguments": [
+              {
+                "type": "switch",
+                "switch": "il.switch_foo"
+              },
+              {
+                "type": "route",
+                "route": "rt.C6-buffer_stop_a"
+              },
+              {
+                "type": "route",
+                "route": "rt.C6-buffer_stop_b"
+              }
+            ]
+          },
+          "id": "il.sig.C6",
+          "navigability": "REVERSE",
+          "position": 50
+        },
+        {
+          "expr": {
+            "type": "call",
+            "function": "check_route",
+            "arguments": [
+              {
+                "type": "route",
+                "route": "rt.S7-buffer_stop_c"
+              }
+            ]
+          },
+          "id": "il.sig.S7",
+          "navigability": "NORMAL",
+          "position": 9975
         }
       ],
       "speed_sections": [
         {
-          "applicable_directions": "BOTH",
+          "applicable_direction": "BOTH",
           "begin": 2000,
           "end": 8000,
           "ref": "speedsection.mid_limit"
         }
-      ],
-      "route_waypoints": [
-        {
-          "type": "detector",
-          "id": "tde.switch_foo-track",
-          "position": 25
-        }
       ]
     },
     {
-      "route_waypoints": [
-        {
-          "type": "buffer_stop",
-          "applicable_directions": "REVERSE",
-          "id": "buffer_stop_a",
-          "position": 0
-        },
-        {
-          "type": "detector",
-          "id": "tde.foo_a-switch_foo",
-          "position": 175
-        }
-      ],
       "id": "ne.micro.foo_a",
       "length": 200,
       "operational_points": [
@@ -453,23 +560,40 @@
           "ref": "op.station_foo"
         }
       ],
-      "signals": [],
-      "speed_sections": []
-    },
-    {
       "route_waypoints": [
         {
           "type": "buffer_stop",
-          "applicable_directions": "NORMAL",
-          "id": "buffer_stop_c",
-          "position": 200
+          "application_directions": "REVERSE",
+          "id": "buffer_stop_a",
+          "position": 0
         },
         {
           "type": "detector",
-          "id": "tde.track-bar",
-          "position": 0
+          "application_directions": "BOTH",
+          "id": "tde.foo_a-switch_foo",
+          "position": 175
         }
       ],
+      "signals": [
+        {
+          "expr": {
+            "type": "call",
+            "function": "check_route",
+            "arguments": [
+              {
+                "type": "route",
+                "route": "rt.C1-S7"
+              }
+            ]
+          },
+          "id": "il.sig.C1",
+          "navigability": "NORMAL",
+          "position": 150
+        }
+      ],
+      "speed_sections": []
+    },
+    {
       "id": "ne.micro.bar_a",
       "length": 200,
       "operational_points": [
@@ -479,7 +603,41 @@
           "ref": "op.station_bar"
         }
       ],
-      "signals": [],
+      "route_waypoints": [
+        {
+          "type": "detector",
+          "application_directions": "BOTH",
+          "id": "tde.track-bar",
+          "position": 0
+        },
+        {
+          "type": "buffer_stop",
+          "application_directions": "NORMAL",
+          "id": "buffer_stop_c",
+          "position": 200
+        }
+      ],
+      "signals": [
+        {
+          "expr": {
+            "type": "call",
+            "function": "bal3_line_signal",
+            "arguments": [
+              {
+                "type": "signal",
+                "signal": "il.sig.W4"
+              },
+              {
+                "type": "route",
+                "route": "rt.C2-C6"
+              }
+            ]
+          },
+          "id": "il.sig.C2",
+          "navigability": "REVERSE",
+          "position": 25
+        }
+      ],
       "speed_sections": []
     }
   ],
