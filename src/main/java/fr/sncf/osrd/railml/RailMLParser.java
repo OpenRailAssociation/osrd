@@ -76,6 +76,17 @@ public final class RailMLParser {
         final var rmlSignalsIS = RMLSignalIS.parse(netElements, document, rjsTrackSections);
         RMLSignalIL.parse(netElements, document, rjsTrackSections, rmlSignalsIS);
 
+        // Sort waypoints needed to create RMLRouteGraph
+        for (var rjsTrackSection : rjsTrackSections.values()) {
+            rjsTrackSection.routeWaypoints.sort((w1, w2) -> {
+                if (w1.position < w2.position)
+                    return -1;
+                else if (w1.position > w2.position)
+                    return 1;
+                return 0;
+            });
+        }
+
         // routes must be parsed at the end, as those depend on train detection elements
         // and buffer stops, which act as route waypoints
         var rjsRoutes = RMLRoute.parse(graph, document, rjsTrackSections);

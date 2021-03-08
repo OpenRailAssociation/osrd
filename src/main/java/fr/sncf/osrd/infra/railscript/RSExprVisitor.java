@@ -24,9 +24,12 @@ public class RSExprVisitor {
     public void visit(RSExpr.False expr) {
     }
 
+    /** Visit method */
     public void visit(RSExpr.AspectSet expr) throws InvalidInfraException {
-        for (var condition : expr.conditions)
-            condition.accept(this);
+        for (var condition : expr.conditions) {
+            if (condition != null)
+                condition.accept(this);
+        }
     }
 
     public void visit(RSExpr.SignalRef expr) throws InvalidInfraException {

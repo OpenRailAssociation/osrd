@@ -74,7 +74,7 @@ public class RMLRoute {
         return waypoints;
     }
 
-    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+    @SuppressFBWarnings(value = {"BC_UNCONFIRMED_CAST"}, justification = "it's a linter bug, there's no cast")
     private static ArrayList<RMLRouteWaypoint> computeRouteWaypoints(
             RMLRouteWaypoint entryWaypoint,
             RMLRouteWaypoint exitWaypoint,
@@ -90,15 +90,8 @@ public class RMLRoute {
             if (edge.endNode == entryWaypoint.index)
                 startingPoints.add(new BasicPathStart<>(0, edge, EdgeDirection.STOP_TO_START, edge.length));
             // Find goal edges
-            if (edge.startNode == exitWaypoint.index || edge.endNode == exitWaypoint.index) {
+            if (edge.startNode == exitWaypoint.index || edge.endNode == exitWaypoint.index)
                 goalEdges.add(edge);
-                // Check if the current edge is a valid route. If so we can return the list of waypoints.
-                if (startingPoints.size() > 0 && edge == startingPoints.get(startingPoints.size() - 1).edge) {
-                    waypoints.add(entryWaypoint);
-                    waypoints.add(exitWaypoint);
-                    return waypoints;
-                }
-            }
         }
         // Prepare for dijkstra
         var costFunction = new DistCostFunction<RMLTVDSectionPath>();
@@ -132,7 +125,10 @@ public class RMLRoute {
                     entryWaypoint.id, exitWaypoint.id));
 
         // Convert path nodes to a list of waypoints
-        for (var node : availablePaths.get(0).pathNodes) {
+        // Ignore last node since it's a duplicated edge of the second last.
+        var nodes = availablePaths.get(0).pathNodes;
+        for (var i = 0; i < nodes.size() - 1; i++) {
+            var node = nodes.get(i);
             if (node.direction == EdgeDirection.START_TO_STOP)
                 waypoints.add(rmlRouteGraph.getNode(node.edge.startNode));
             else

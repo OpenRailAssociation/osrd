@@ -346,9 +346,9 @@
             </operationalPoints>
             <!-- TODO: add platforms -->
             <!-- TVD SECTIONS / TRAIN DETECTION ELEMENTS
-                 175m      50m   1975m       6000m         2000m          200m
-             ___________  ______  ____  ______________  ___________  ______________
-            /           \/      \/    \/              \/           \/              \
+                 175m      50m                 9975m                      200m
+             ___________  ______  _________________________________  ______________
+            /           \/      \/                                 \/              \
 
                 foo_a       switch_foo
             +————————————|——,  /
@@ -728,7 +728,7 @@
                     <facingSwitchInPosition id="rt.C6-buffer_stop_a.switch_pos" inPosition="right">
                         <refersToSwitch ref="il.switch_foo"/>
                     </facingSwitchInPosition>
-                    <hasTvdSection ref="tvd.track"/>
+                    <hasTvdSection ref="tvd.switch_foo"/>
                     <hasTvdSection ref="tvd.foo_a"/>
                     <routeEntry>
                         <refersTo ref="il.sig.C6"/>
@@ -742,7 +742,7 @@
                     <facingSwitchInPosition id="rt.C6-buffer_stop_b.switch_pos" inPosition="right">
                         <refersToSwitch ref="il.switch_foo"/>
                     </facingSwitchInPosition>
-                    <hasTvdSection ref="tvd.track"/>
+                    <hasTvdSection ref="tvd.switch_foo"/>
                     <hasTvdSection ref="tvd.foo_b"/>
                     <routeEntry>
                         <refersTo ref="il.sig.C6"/>
