@@ -44,10 +44,12 @@ public final class RslParser {
         var rjsTrackSectionLinks = new HashMap<String, RJSTrackSectionLink>();
         var rjsSwitches = switchParse(document, nodeMap, rjsTrackSectionLinks);
 
-        //create track section links for all the nodes not being switches
+        // create track section links for all the nodes not being switches
         for (var entry : nodeMap.entrySet()) {
-            if (entry.getValue().size() > 2) continue;
-            addTrackSectionLinks(entry.getValue().get(0), entry.getValue().get(1),
+            var neighbors = entry.getValue();
+            if (neighbors.size() > 2)
+                continue;
+            addTrackSectionLinks(neighbors.get(0), neighbors.get(1),
                     entry.getKey(), rjsTrackSectionLinks);
         }
 
@@ -147,22 +149,17 @@ public final class RslParser {
             var id = switchNode.attributeValue("nodeID");
             var baseBranchNodeID = Integer.getInteger(switchNode.attributeValue("start"));
 
-            try {
-                var baseTrackSection = findBase(nodeMap, id, baseBranchNodeID);
-                var otherTrackSections = findOthers(nodeMap, id, baseTrackSection);
-                var base = findEndpoint(baseTrackSection, id);
-                var left = findEndpoint(otherTrackSections.get(0), id);
-                var right = findEndpoint(otherTrackSections.get(1), id);
-                var rjsSwitch = new RJSSwitch(id, base, left, right);
-                switches.add(rjsSwitch);
+            var baseTrackSection = findBase(nodeMap, id, baseBranchNodeID);
+            var otherTrackSections = findOthers(nodeMap, id, baseTrackSection);
+            var base = findEndpoint(baseTrackSection, id);
+            var left = findEndpoint(otherTrackSections.get(0), id);
+            var right = findEndpoint(otherTrackSections.get(1), id);
+            var rjsSwitch = new RJSSwitch(id, base, left, right);
+            switches.add(rjsSwitch);
 
-                //create 2 track section links for each switch: base/right, base/left
-                addTrackSectionLinks(baseTrackSection, otherTrackSections.get(0), id, trackSectionLinks);
-                addTrackSectionLinks(baseTrackSection, otherTrackSections.get(1), id, trackSectionLinks);
-            } catch (Exception e){
-                System.out.println("Tracks linked by the switch " + id + " not found");
-                continue;
-            }
+            //create 2 track section links for each switch: base/right, base/left
+            addTrackSectionLinks(baseTrackSection, otherTrackSections.get(0), id, trackSectionLinks);
+            addTrackSectionLinks(baseTrackSection, otherTrackSections.get(1), id, trackSectionLinks);
         }
         return switches;
     }
@@ -199,7 +196,7 @@ public final class RslParser {
         for (var edge : nodeMap.get(id)) {
             if ((edge.beginEndpoint().endpoint.id == baseBranchNodeID)
                     || (edge.endEndpoint().endpoint.id == baseBranchNodeID)) {
-                baseEdge=edge;
+                baseEdge = edge;
                 break;
             }
         }
@@ -207,14 +204,12 @@ public final class RslParser {
     }
 
     /**
-     *Find the EndPoint of the track section corresponding to a node
-     *@param trackSection
-     *@param ID node id
-     *@return the EndPoint
+     * Find the EndPoint of the track section corresponding to a node
      */
-    private static RJSTrackSection.EndpointID findEndpoint(Edge trackSection, String ID) {
-        var id = Integer.getInteger(ID);
-        if (trackSection.beginEndpoint().endpoint.id == id) return trackSection.beginEndpoint();
+    private static RJSTrackSection.EndpointID findEndpoint(Edge trackSection, String nomeID) {
+        var id = Integer.getInteger(nomeID);
+        if (trackSection.beginEndpoint().endpoint.id == id)
+            return trackSection.beginEndpoint();
         return trackSection.endEndpoint();
     }
 
@@ -224,20 +219,16 @@ public final class RslParser {
     private static void createNodeMap(HashMap<String, ArrayList<Edge>> nodeMap, Edge edge) {
         var startNodeID = String.valueOf(edge.beginEndpoint().endpoint.id);
         var endNodeID = String.valueOf(edge.endEndpoint().endpoint.id);
-        if (!nodeMap.containsKey(startNodeID)) {
-            var relatedTrackSections = new ArrayList<Edge>();
-            relatedTrackSections.add(edge);
-            nodeMap.put(startNodeID, relatedTrackSections);
-        } else {
-            nodeMap.get(startNodeID).add(edge);
-        }
-        if (!nodeMap.containsKey(endNodeID)) {
-            var relatedTrackSections = new ArrayList<Edge>();
-            relatedTrackSections.add(edge);
-            nodeMap.put(endNodeID, relatedTrackSections);
-        } else {
-            nodeMap.get(endNodeID).add(edge);
-            return;
+
+        for (var node : new String[]{ startNodeID, endNodeID }) {
+            var neighbors = nodeMap.get(node);
+            if (neighbors == null) {
+                var relatedTrackSections = new ArrayList<Edge>();
+                relatedTrackSections.add(edge);
+                nodeMap.put(node, relatedTrackSections);
+            } else {
+                neighbors.add(edge);
+            }
         }
     }
 }

@@ -214,7 +214,7 @@
         </topology>
         <geometry>
             <horizontalCurves>
-                <horizontalCurve id="hor1" curveType="arc" radius="+10" lenght="1000">
+                <horizontalCurve id="hor1" curveType="arc" radius="5000" lenght="1000">
                     <beginsInGeometryPoint ref="point_hor1"/>
                     <endsInGeometryPoint ref="point_hor2"/>
                 </horizontalCurve>
@@ -222,14 +222,25 @@
             <gradientCurves>
                 <gradientCurve id="grad1" curveType="straight" gradient="+10" lenght="1000">
                     <beginsInGeometryPoint ref="point_grad1"/>
+                    <endsInGeometryPoint ref="point_grad2"/>
                 </gradientCurve>
             </gradientCurves>
             <geometryPoints>
                 <geometryPoint id="point_hor1">
-                    <spotLocation id="tde.foo_a-switch_foo.loc" netElementRef="ne.micro.foo_a"
-                                  applicationDirection="both" pos="175.0"/>
+                    <spotLocation id="curve_start.loc" netElementRef="ne.micro.foo_to_bar"
+                                  applicationDirection="both" pos="0.0"/>
+                </geometryPoint>
+                <geometryPoint id="point_hor2">
+                    <spotLocation id="curve_end.loc" netElementRef="ne.micro.foo_to_bar"
+                                  applicationDirection="both" pos="1000.0"/>
                 </geometryPoint>
                 <geometryPoint id="point_grad1">
+                    <spotLocation id="slope_start.loc" netElementRef="ne.micro.foo_to_bar"
+                                  applicationDirection="both" pos="1000.0"/>
+                </geometryPoint>
+                <geometryPoint id="point_grad2">
+                    <spotLocation id="slope_end.loc" netElementRef="ne.micro.foo_to_bar"
+                                  applicationDirection="both" pos="2000.0"/>
                 </geometryPoint>
             </geometryPoints>
         </geometry>

@@ -6,12 +6,16 @@ import org.dom4j.Element;
 import java.util.ArrayList;
 
 public class Edge extends RJSTrackSection {
+    /**
+     * Extension of RJS Track section to parse rsl edge (links)
+     */
     private String startNodeID;
     private String endNodeID;
     private String bidirectional;
     private double grade;
     private double speed;
 
+    /** Creates a new Edge */
     public Edge(String id, double length, String startNodeID, String endNodeID,
              String bidirectional, double speed, double grade) {
         super(id, length);
@@ -22,10 +26,13 @@ public class Edge extends RJSTrackSection {
         this.grade = grade;
     }
 
-    public String getBidirectional(){
+    public String getBidirectional() {
         return bidirectional;
     }
 
+    /**
+     * Read Edge from rsl file
+     */
     public static ArrayList<Edge> parseEdges(Document document) {
         var edgesList = new ArrayList<Edge>();
         var edges = document.selectNodes("/line/links");
