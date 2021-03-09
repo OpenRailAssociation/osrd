@@ -78,20 +78,32 @@ public final class TVDSection implements Comparable<TVDSection> {
                 Simulation sim,
                 TimelineEvent<?> event,
                 TimelineEvent.State state
-        ) throws SimulationError {}
+        ) throws SimulationError { }
 
-        public void reserve() {
-            this.reserved = true;
-            // TODO Send event to notify the modification
+        /** Mark the tvd section as reserved */
+        public void reserve(Simulation sim) throws SimulationError {
+            if (!reserved) {
+                reserved = true;
+                notifySubscribers(sim);
+            }
         }
 
-        public void free() {
-            this.reserved = false;
-            // TODO Send event to notify the modification
+        /** Mark the tvd section as free */
+        public void free(Simulation sim) throws SimulationError {
+            if (reserved) {
+                reserved = false;
+                notifySubscribers(sim);
+            }
+        }
+
+        private void notifySubscribers(Simulation sim) throws SimulationError {
+            sim.createEvent(this, 0, new TVDSectionUpdateEvent());
         }
 
         public boolean isReserved() {
             return reserved;
         }
     }
+
+    public static class TVDSectionUpdateEvent implements TimelineEventValue { }
 }
