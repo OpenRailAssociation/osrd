@@ -417,7 +417,7 @@
                 </signalIS>
                 <signalIS id="sig.C3" isSwitchable="true">
                     <name name="C3" language="en"/>
-                    <spotLocation id="sig.C3" netElementRef="ne.micro.foo_b" applicationDirection="normal" pos="0.0">
+                    <spotLocation id="sig.C3" netElementRef="ne.micro.foo_b" applicationDirection="normal" pos="150.0">
                         <linearCoordinate positioningSystemRef="lps_foo_to_bar" measure="150.0" lateralDistance="2.2"
                                           lateralSide="right"/>
                     </spotLocation>
