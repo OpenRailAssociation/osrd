@@ -5,8 +5,11 @@ import fr.sncf.osrd.infra.railscript.value.RSMatchable;
 import fr.sncf.osrd.simulation.*;
 
 public class Switch extends TrackNode {
-    Switch(TrackGraph graph, int index, String id) {
+    public final int switchIndex;
+
+    Switch(TrackGraph graph, int index, String id, int switchIndex) {
         super(index, id);
+        this.switchIndex = switchIndex;
         graph.registerNode(this);
     }
 
@@ -34,7 +37,7 @@ public class Switch extends TrackNode {
         public SwitchPosition position;
 
         State(Switch switchRef) {
-            super(new SwitchEntityID(switchRef.index));
+            super(new SwitchEntityID(switchRef.switchIndex));
             this.switchRef = switchRef;
             // TODO: configurable default position
             this.position = SwitchPosition.LEFT;

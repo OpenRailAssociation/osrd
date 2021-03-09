@@ -122,9 +122,10 @@ public class RailJSONParser {
 
         // create switch nodes
         var switches = new ArrayList<Switch>();
+        var switchIndex = 0;
         for (var rjsSwitch : railJSON.switches) {
             var index = nodeIDs.get(rjsSwitch.base);
-            switches.add(trackGraph.makeSwitchNode(index, rjsSwitch.id));
+            switches.add(trackGraph.makeSwitchNode(index, rjsSwitch.id, switchIndex++));
         }
 
         // fill nodes with placeholders

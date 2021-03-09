@@ -265,7 +265,7 @@ public abstract class RSExpr<T extends RSValue> {
 
         @Override
         public Switch.State evaluate(RSExprState<?> state) {
-            return state.infraState.getSwitchState(switcRef.index);
+            return state.infraState.getSwitchState(switcRef.switchIndex);
         }
 
         @Override
