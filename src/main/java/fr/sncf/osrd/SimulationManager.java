@@ -1,6 +1,7 @@
 package fr.sncf.osrd;
 
 import fr.sncf.osrd.config.Config;
+import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
@@ -23,9 +24,13 @@ public final class SimulationManager {
         // the time to wait between simulation steps
         double interpolationStep = 1.0;
 
+        var signals = new ArrayList<Signal.State>();
+        for (var signal : sim.infra.signals)
+            signals.add(sim.infraState.getSignalState(signal.index));
+
         // if the user doesn't want realtime visualization, update the viewer once per timeline event
         if (!config.realTimeViewer) {
-            viewer.update(sim.trains.values(), nextEventTime);
+            viewer.update(sim.trains.values(), signals, nextEventTime);
             Thread.sleep((long) (interpolationStep * 1000));
             return;
         }
@@ -44,7 +49,7 @@ public final class SimulationManager {
                 interpolatedTime = nextEventTime;
 
             Thread.sleep((long) (interpolationStep * 1000));
-            viewer.update(sim.trains.values(), interpolatedTime);
+            viewer.update(sim.trains.values(), signals, interpolatedTime);
         }
     }
 
