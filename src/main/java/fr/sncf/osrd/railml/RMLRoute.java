@@ -5,6 +5,7 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railjson.schema.*;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSSignal;
+import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.railml.routegraph.RMLRouteGraph;
 import fr.sncf.osrd.railml.routegraph.RMLRouteGraphBuilder;
 import fr.sncf.osrd.railml.routegraph.RMLRouteWaypoint;
@@ -81,22 +82,19 @@ public class RMLRoute {
             RMLRouteGraph rmlRouteGraph
     ) throws InvalidInfraException {
         var waypoints = new ArrayList<RMLRouteWaypoint>();
+        var goalEdges = rmlRouteGraph.waypointToTvdSectionPath.get(exitWaypoint.index);
         var startingPoints = new ArrayList<BasicPathStart<RMLTVDSectionPath>>();
-        var goalEdges = new ArrayList<RMLTVDSectionPath>();
-        for (var edge : rmlRouteGraph.iterEdges()) {
-            // Find starting edges
+        // Find starting edges
+        for (var edge : rmlRouteGraph.waypointToTvdSectionPath.get(entryWaypoint.index)) {
             if (edge.startNode == entryWaypoint.index)
                 startingPoints.add(new BasicPathStart<>(0, edge, EdgeDirection.START_TO_STOP, 0));
-            if (edge.endNode == entryWaypoint.index)
+            else
                 startingPoints.add(new BasicPathStart<>(0, edge, EdgeDirection.STOP_TO_START, edge.length));
-            // Find goal edges
-            if (edge.startNode == exitWaypoint.index || edge.endNode == exitWaypoint.index)
-                goalEdges.add(edge);
         }
         // Prepare for dijkstra
         var costFunction = new DistCostFunction<RMLTVDSectionPath>();
-        var availablePaths = new ArrayList<FullPathArray<RMLTVDSectionPath,
-                BasicPathStart<RMLTVDSectionPath>, BasicPathEnd<RMLTVDSectionPath>>>();
+        var availablePaths = new ArrayList<
+                FullPathArray<RMLTVDSectionPath, BasicPathStart<RMLTVDSectionPath>, BasicPathEnd<RMLTVDSectionPath>>>();
 
         // Compute the paths from the entry waypoint to the exit waypoint
         BiGraphDijkstra.findPaths(
@@ -113,15 +111,14 @@ public class RMLRoute {
                     return null;
                 },
                 (pathToGoal) -> {
-                    var path = FullPathArray.from(pathToGoal);
-                    availablePaths.add(path);
-                    return true;
+                    availablePaths.add(FullPathArray.from(pathToGoal));
+                    return false;
                 });
 
         // If multiple or none path is found then throw an error
-        if (availablePaths.size() != 1)
+        if (availablePaths.isEmpty())
             throw new InvalidInfraException(String.format(
-                    "Multiple path possible to construct the route from '%s' to '%s'",
+                    "No path found to construct the route from '%s' to '%s'",
                     entryWaypoint.id, exitWaypoint.id));
 
         // Convert path nodes to a list of waypoints
