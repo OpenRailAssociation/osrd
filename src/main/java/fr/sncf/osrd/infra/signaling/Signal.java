@@ -40,7 +40,7 @@ public class Signal {
     /** The state of the signal is the actual entity which interacts with the rest of the infrastructure */
     public static final class State extends AbstractEntity<Signal.State> implements RSValue {
         public final Signal signal;
-        public final RSAspectSet aspects;
+        public RSAspectSet aspects;
         public final RSExprState<RSAspectSet> exprState;
 
         State(Signal signal, RSExprState<RSAspectSet> exprState) {
@@ -50,19 +50,11 @@ public class Signal {
             this.aspects = new RSAspectSet();
         }
 
-        private void update() {
-
-        }
-
-        public void initialize() {
-            update();
-        }
-
         @Override
         public void onTimelineEventUpdate(
                 Simulation sim, TimelineEvent<?> event, TimelineEvent.State state
         ) throws SimulationError {
-            update();
+            this.aspects = exprState.evalInputChange(sim.infraState, null);
         }
     }
 }

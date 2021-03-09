@@ -193,7 +193,13 @@ public final class Infra {
             for (int i = 0; i < switchCount; i++)
                 switchStates[i] = infra.switches.get(i).newState();
 
-            return new State(signalStates, routeStates, switchStates);
+            var state = new State(signalStates, routeStates, switchStates);
+
+            // Initialize Signals
+            for (var signal : signalStates)
+                signal.aspects = signal.exprState.evalInit(state);
+
+            return state;
         }
     }
 }
