@@ -206,11 +206,12 @@ public class RailJSONParser {
         }
 
         // Parse TVDSections
+        var index = 0;
         for (var rjsonTVD : railJSON.tvdSections) {
             var tvdWaypoints = new ArrayList<Waypoint>();
             findWaypoints(tvdWaypoints, waypointsMap, rjsonTVD.trainDetectors);
             findWaypoints(tvdWaypoints, waypointsMap, rjsonTVD.bufferStops);
-            var tvd = new TVDSection(rjsonTVD.id, tvdWaypoints, rjsonTVD.isBerthingTrack);
+            var tvd = new TVDSection(rjsonTVD.id, index++, tvdWaypoints, rjsonTVD.isBerthingTrack);
             tvdSectionsMap.put(tvd.id, tvd);
         }
 

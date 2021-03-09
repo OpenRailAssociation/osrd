@@ -72,7 +72,7 @@ public class RouteGraphTest {
         // Craft tvdSections
         var tvdSections = new HashMap<String, TVDSection>();
         var tvd123Waypoints = new ArrayList<Waypoint>(Arrays.asList(d1, d2, d3));
-        var tvdSection123 = new TVDSection("TVDSection123", tvd123Waypoints, false);
+        var tvdSection123 = new TVDSection("TVDSection123", 0, tvd123Waypoints, false);
         tvdSections.put("TVDSection123", tvdSection123);
 
         // Build DetectorGraph
@@ -151,22 +151,23 @@ public class RouteGraphTest {
         detectorBuilder.build();
 
         // Craft tvdSections
+        index = 0;
         var tvdSections = new HashMap<String, TVDSection>();
 
         var tvdWaypoints123 = new ArrayList<Waypoint>(Arrays.asList(d1, d2, d3));
-        var tvdSection123 = new TVDSection("TVDSection123", tvdWaypoints123, false);
+        var tvdSection123 = new TVDSection("TVDSection123", index++, tvdWaypoints123, false);
         tvdSections.put("TVDSection123", tvdSection123);
 
         var tvdFooWaypoints1A = new ArrayList<Waypoint>(Arrays.asList(d1, bsA));
-        var tvdSection1A = new TVDSection("TVDSection1A", tvdFooWaypoints1A, true);
+        var tvdSection1A = new TVDSection("TVDSection1A", index++, tvdFooWaypoints1A, true);
         tvdSections.put("TVDSection1A", tvdSection1A);
 
         var tvdFooWaypoints2B = new ArrayList<Waypoint>(Arrays.asList(d2, bsB));
-        var tvdSection2B = new TVDSection("TVDSection2B", tvdFooWaypoints2B, true);
+        var tvdSection2B = new TVDSection("TVDSection2B", index++, tvdFooWaypoints2B, true);
         tvdSections.put("TVDSection2B", tvdSection2B);
 
         var tvdFooWaypoints34D = new ArrayList<Waypoint>(Arrays.asList(d3, d4, bsD));
-        var tvdSection34D = new TVDSection("TVDSection34D", tvdFooWaypoints34D, true);
+        var tvdSection34D = new TVDSection("TVDSection34D", index++, tvdFooWaypoints34D, true);
         tvdSections.put("TVDSection34D", tvdSection34D);
 
         // Build DetectorGraph
