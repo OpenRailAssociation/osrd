@@ -85,7 +85,7 @@ public class Route extends BiNEdge<Route> {
 
             if (newStatus != status) {
                 status = newStatus;
-                // TODO Send notification to subscribers
+                sim.createEvent(this, 0, new Route.RouteUpdateEvent());
             }
         }
 
@@ -107,4 +107,6 @@ public class Route extends BiNEdge<Route> {
             return status.ordinal();
         }
     }
+
+    public static class RouteUpdateEvent implements TimelineEventValue { }
 }

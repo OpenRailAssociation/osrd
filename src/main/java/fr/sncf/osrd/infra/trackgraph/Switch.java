@@ -34,13 +34,25 @@ public class Switch extends TrackNode {
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static final class State extends AbstractEntity<Switch.State> implements RSMatchable {
         public final Switch switchRef;
-        public SwitchPosition position;
+        private SwitchPosition position;
 
         State(Switch switchRef) {
             super(new SwitchEntityID(switchRef.switchIndex));
             this.switchRef = switchRef;
             // TODO: configurable default position
             this.position = SwitchPosition.LEFT;
+        }
+
+        public SwitchPosition getPosition() {
+            return position;
+        }
+
+        /** Change position of the switch */
+        public void setPosition(SwitchPosition position, Simulation sim) throws SimulationError {
+            if (this.position != position) {
+                this.position = position;
+                sim.createEvent(this, 0, new Switch.SwitchUpdateEvent());
+            }
         }
 
         @Override
@@ -54,4 +66,6 @@ public class Switch extends TrackNode {
             return position.ordinal();
         }
     }
+
+    public static class SwitchUpdateEvent implements TimelineEventValue { }
 }

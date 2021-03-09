@@ -62,7 +62,7 @@ public class Signal {
             var newAspects = exprState.evalInputChange(sim.infraState, null);
             if (!newAspects.equals(aspects)) {
                 aspects = newAspects;
-                // TODO Send notification to subscribers
+                sim.createEvent(this, 0, new Signal.SignalUpdateEvent());
             }
         }
 
@@ -109,4 +109,6 @@ public class Signal {
             }
         }
     }
+
+    public static class SignalUpdateEvent implements TimelineEventValue { }
 }
