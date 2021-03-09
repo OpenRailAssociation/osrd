@@ -62,7 +62,7 @@ public class SortedArraySet<E extends Comparable<E>> extends AbstractSet<E> {
         return true;
     }
 
-    /** Computes the intersection of this set with otherSet, and stores the result in resultSet */
+    /** Computes the intersection of setA with setB , and stores the result in resultSet */
     public static <E extends Comparable<E>> void intersect(
             SortedArraySet<E> resultSet,
             SortedArraySet<E> setA,
@@ -99,6 +99,23 @@ public class SortedArraySet<E extends Comparable<E>> extends AbstractSet<E> {
     public SortedArraySet<E> intersect(SortedArraySet<E> otherSet) {
         var res = new SortedArraySet<E>();
         intersect(res, this, otherSet);
+        return res;
+    }
+
+    /** Computes the union of setA with setB, and stores the result in resultSet */
+    public static <E extends Comparable<E>> void union(
+            SortedArraySet<E> resultSet,
+            SortedArraySet<E> setA,
+            SortedArraySet<E> setB
+    ) {
+        resultSet.addAll(setA);
+        resultSet.addAll(setB);
+    }
+
+    /** Creates a new set and fills it with the union of this set with some otherSet. */
+    public SortedArraySet<E> union(SortedArraySet<E> otherSet) {
+        var res = new SortedArraySet<E>();
+        union(res, this, otherSet);
         return res;
     }
 }

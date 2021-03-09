@@ -150,15 +150,17 @@ public final class Infra {
         private final Signal.State[] signalStates;
         private final Route.State[] routeStates;
         private final Switch.State[] switchStates;
+        private final TVDSection.State[] tvdSectionStates;
 
         private State(
                 Signal.State[] signalStates,
                 Route.State[] routeStates,
-                Switch.State[] switchStates
-        ) {
+                Switch.State[] switchStates,
+                TVDSection.State[] tvdSectionStates) {
             this.signalStates = signalStates;
             this.routeStates = routeStates;
             this.switchStates = switchStates;
+            this.tvdSectionStates = tvdSectionStates;
         }
 
         public Signal.State getSignalState(int signalIndex) {
@@ -172,6 +174,10 @@ public final class Infra {
 
         public Switch.State getSwitchState(int switchIndex) {
             return switchStates[switchIndex];
+        }
+
+        public TVDSection.State getTvdSectionState(int tvdSectionIndex) {
+            return tvdSectionStates[tvdSectionIndex];
         }
 
 
@@ -190,14 +196,22 @@ public final class Infra {
 
             var switchCount = infra.switches.size();
             var switchStates = new Switch.State[switchCount];
-            for (int i = 0; i < switchCount; i++)
-                switchStates[i] = infra.switches.get(i).newState();
+            for (var infraSwitch : infra.switches)
+                switchStates[infraSwitch.index] = infraSwitch.newState();
 
-            var state = new State(signalStates, routeStates, switchStates);
+            var tvdSectionCount = infra.tvdSections.size();
+            var tvdSectionStates = new TVDSection.State[tvdSectionCount];
+            for (var tvdSection : infra.tvdSections.values())
+                tvdSectionStates[tvdSection.index] = tvdSection.newState();
 
-            // Initialize Signals
+            var state = new State(signalStates, routeStates, switchStates, tvdSectionStates);
+
+            // Initialize entities
             for (var signal : signalStates)
-                signal.aspects = signal.exprState.evalInit(state);
+                signal.initialize(state);
+
+            for (var route : routeStates)
+                route.initialize(state);
 
             return state;
         }

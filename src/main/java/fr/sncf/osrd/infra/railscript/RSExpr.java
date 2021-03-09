@@ -184,7 +184,7 @@ public abstract class RSExpr<T extends RSValue> {
     public static final class SignalRef extends RSExpr<Signal.State> {
         public final String signalName;
 
-        private Signal signal = null;
+        public Signal signal = null;
 
         public SignalRef(String signalName) {
             this.signalName = signalName;
@@ -218,7 +218,7 @@ public abstract class RSExpr<T extends RSValue> {
     public static final class RouteRef extends RSExpr<Route.State> {
         public final String routeName;
 
-        private Route route = null;
+        public Route route = null;
 
         public RouteRef(String routeName) {
             this.routeName = routeName;
@@ -250,7 +250,7 @@ public abstract class RSExpr<T extends RSValue> {
     public static final class SwitchRef extends RSExpr<Switch.State> {
         public final String switchName;
 
-        private Switch switcRef = null;
+        public Switch switcRef = null;
 
         public SwitchRef(String switchName) {
             this.switchName = switchName;
