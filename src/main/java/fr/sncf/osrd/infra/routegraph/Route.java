@@ -4,6 +4,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.railscript.value.RSMatchable;
+import fr.sncf.osrd.infra.trackgraph.Switch;
+import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.utils.graph.BiNEdge;
@@ -11,6 +13,7 @@ import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 public class Route extends BiNEdge<Route> {
@@ -20,13 +23,16 @@ public class Route extends BiNEdge<Route> {
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public final List<EdgeDirection> tvdSectionsPathDirection;
     public final TransitType transitType;
+    public final HashMap<Switch, SwitchPosition> switchesPosition;
 
     protected Route(
             String id,
             RouteGraph graph,
             double length,
-            TransitType transitType, List<TVDSectionPath> tvdSectionsPath,
-            List<EdgeDirection> tvdSectionsPathDirection
+            TransitType transitType,
+            List<TVDSectionPath> tvdSectionsPath,
+            List<EdgeDirection> tvdSectionsPathDirection,
+            HashMap<Switch, SwitchPosition> switchesPosition
     ) {
         super(
                 graph.nextEdgeIndex(),
@@ -36,6 +42,7 @@ public class Route extends BiNEdge<Route> {
         );
         this.transitType = transitType;
         this.tvdSectionsPathDirection = tvdSectionsPathDirection;
+        this.switchesPosition = switchesPosition;
         graph.registerEdge(this);
         this.id = id;
         this.tvdSectionsPath = tvdSectionsPath;
@@ -121,6 +128,10 @@ public class Route extends BiNEdge<Route> {
             sim.createEvent(this, sim.getTime(), new RouteReserveChange(sim, this));
             for (var tvdSection : tvdSectionStates)
                 tvdSection.reserve(sim);
+            for (var switchPos : route.switchesPosition.entrySet()) {
+                var switchState = sim.infraState.getSwitchState(switchPos.getKey().switchIndex);
+                switchState.setPosition(sim, switchPos.getValue());
+            }
         }
 
         /** Initialize his tvdSections and register itself as subscriber of them */

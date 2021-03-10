@@ -10,6 +10,7 @@ import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.railjson.schema.RJSRoot;
 import fr.sncf.osrd.infra.railjson.schema.RJSRoute;
+import fr.sncf.osrd.infra.railjson.schema.RJSSwitch;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrackObject;
@@ -122,12 +123,13 @@ public class RailJSONParser {
         trackGraph.resizeNodes(nodeIDs.numberOfNodes);
 
         // create switch nodes
-        var switches = new ArrayList<Switch>();
+        var switchNames = new HashMap<String, Switch>();
         var switchIndex = 0;
         for (var rjsSwitch : railJSON.switches) {
             var index = nodeIDs.get(rjsSwitch.base);
-            switches.add(trackGraph.makeSwitchNode(index, rjsSwitch.id, switchIndex++));
+            switchNames.put(rjsSwitch.id, trackGraph.makeSwitchNode(index, rjsSwitch.id, switchIndex++));
         }
+        final var switches = new ArrayList<>(switchNames.values());
 
         // fill nodes with placeholders
         for (int i = 0; i < nodeIDs.numberOfNodes; i++)
@@ -229,10 +231,17 @@ public class RailJSONParser {
             var tvdSections = new SortedArraySet<TVDSection>();
             for (var tvdSection : rjsRoute.tvdSections)
                 tvdSections.add(tvdSectionsMap.get(tvdSection.id));
-            var transitType = Route.TransitType.RIGID;
-            if (rjsRoute.transitType == RJSRoute.TransitType.FLEXIBLE)
-                transitType = Route.TransitType.FLEXIBLE;
-            routeGraph.makeRoute(rjsRoute.id, waypoints, tvdSections, transitType);
+
+            var transitType = rjsRoute.transitType.parse();
+
+            var switchesPosition = new HashMap<Switch, SwitchPosition>();
+            for (var switchPos : rjsRoute.switchesPosition.entrySet()) {
+                var switchRef = switchNames.get(switchPos.getKey().id);
+                var position = switchPos.getValue().parse();
+                switchesPosition.put(switchRef, position);
+            }
+
+            routeGraph.makeRoute(rjsRoute.id, waypoints, tvdSections, transitType, switchesPosition);
         }
 
         // build name maps to prepare resolving names in expressions
@@ -243,10 +252,6 @@ public class RailJSONParser {
         var routeNames = new HashMap<String, Route>();
         for (var route : routeGraph.routeGraph.iterEdges())
             routeNames.put(route.id, route);
-
-        var switchNames = new HashMap<String, Switch>();
-        for (var switchRef : switches)
-            switchNames.put(switchRef.id, switchRef);
 
         // resolve names of routes and signals
         var nameResolver = new RSExprVisitor() {

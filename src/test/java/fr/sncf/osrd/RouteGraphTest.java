@@ -45,6 +45,15 @@ public class RouteGraphTest {
         assertEquals(expectedEnd.index, end);
     }
 
+    private static Route makeRoute(
+            RouteGraph.Builder builder,
+            String id,
+            ArrayList<Waypoint> waypoints,
+            SortedArraySet<TVDSection> tvdSections
+    ) throws InvalidInfraException {
+        return builder.makeRoute(id, waypoints, tvdSections, Route.TransitType.FLEXIBLE, null);
+    }
+
     /**
      * One tiv with 2 routes
      *         R1
@@ -84,12 +93,12 @@ public class RouteGraphTest {
         var waypointsR1 = new ArrayList<Waypoint>(Arrays.asList(d1, d2, d3));
         var tvdSectionsR1 = new SortedArraySet<TVDSection>();
         tvdSectionsR1.add(tvdSection123);
-        final var route1 = routeGraphBuilder.makeRoute("R1", waypointsR1, tvdSectionsR1, Route.TransitType.FLEXIBLE);
+        final var route1 = makeRoute(routeGraphBuilder, "R1", waypointsR1, tvdSectionsR1);
 
         var waypointsR2 = new ArrayList<Waypoint>(Arrays.asList(d3, d2, d1));
         var tvdSectionsR2 = new SortedArraySet<TVDSection>();
         tvdSectionsR2.add(tvdSection123);
-        final var route2 = routeGraphBuilder.makeRoute("R2", waypointsR2, tvdSectionsR2, Route.TransitType.FLEXIBLE);
+        final var route2 = makeRoute(routeGraphBuilder, "R2", waypointsR2, tvdSectionsR2);
 
         var routeGraph =  routeGraphBuilder.build();
 
@@ -180,23 +189,23 @@ public class RouteGraphTest {
         var tvdSectionsR1 = new SortedArraySet<TVDSection>();
         tvdSectionsR1.add(tvdSection123);
         tvdSectionsR1.add(tvdSection1A);
-        final var route1 = routeGraphBuilder.makeRoute("R1", waypointsR1, tvdSectionsR1, Route.TransitType.FLEXIBLE);
+        final var route1 = makeRoute(routeGraphBuilder, "R1", waypointsR1, tvdSectionsR1);
 
         var waypointsR2 = new ArrayList<>(Arrays.asList(bsB, d2, d3));
         var tvdSectionsR2 = new SortedArraySet<TVDSection>();
         tvdSectionsR2.add(tvdSection123);
         tvdSectionsR2.add(tvdSection2B);
-        final var route2 = routeGraphBuilder.makeRoute("R2", waypointsR2, tvdSectionsR2, Route.TransitType.FLEXIBLE);
+        final var route2 = makeRoute(routeGraphBuilder, "R2", waypointsR2, tvdSectionsR2);
 
         var waypointsR3 = new ArrayList<>(Arrays.asList(d3, d4, bsD));
         var tvdSectionsR3 = new SortedArraySet<TVDSection>();
         tvdSectionsR3.add(tvdSection34D);
-        final var route3 = routeGraphBuilder.makeRoute("R3", waypointsR3, tvdSectionsR3, Route.TransitType.FLEXIBLE);
+        final var route3 = makeRoute(routeGraphBuilder, "R3", waypointsR3, tvdSectionsR3);
 
         var waypointsR4 = new ArrayList<>(Arrays.asList(bsD, d4, d3));
         var tvdSectionsR4 = new SortedArraySet<TVDSection>();
         tvdSectionsR4.add(tvdSection34D);
-        final var route4 = routeGraphBuilder.makeRoute("R4", waypointsR4, tvdSectionsR4, Route.TransitType.FLEXIBLE);
+        final var route4 = makeRoute(routeGraphBuilder, "R4", waypointsR4, tvdSectionsR4);
 
         var routeGraph =  routeGraphBuilder.build();
 

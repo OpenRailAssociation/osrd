@@ -1,6 +1,7 @@
 package fr.sncf.osrd.infra.railjson.schema;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSSwitch implements Identified {
@@ -38,6 +39,17 @@ public class RJSSwitch implements Identified {
     }
 
     public enum Position {
-        LEFT, RIGHT
+        LEFT, RIGHT;
+
+        /** Parse into SwitchPosition */
+        public SwitchPosition parse() {
+            switch (this) {
+                case LEFT:
+                    return SwitchPosition.LEFT;
+                case RIGHT:
+                    return SwitchPosition.RIGHT;
+            }
+            return null;
+        }
     }
 }

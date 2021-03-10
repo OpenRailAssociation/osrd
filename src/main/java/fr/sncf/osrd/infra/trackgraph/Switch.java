@@ -47,7 +47,7 @@ public class Switch extends TrackNode {
         }
 
         /** Change position of the switch */
-        public void setPosition(SwitchPosition position, Simulation sim) throws SimulationError {
+        public void setPosition(Simulation sim, SwitchPosition position) throws SimulationError {
             if (this.position != position) {
                 sim.createEvent(this, sim.getTime(), new Switch.SwitchPositionChange(sim, this, position));
             }
