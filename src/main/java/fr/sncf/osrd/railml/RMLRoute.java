@@ -5,7 +5,6 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railjson.schema.*;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSSignal;
-import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.railml.routegraph.RMLRouteGraph;
 import fr.sncf.osrd.railml.routegraph.RMLRouteGraphBuilder;
 import fr.sncf.osrd.railml.routegraph.RMLRouteWaypoint;
@@ -59,8 +58,8 @@ public class RMLRoute {
                     false, route, rmlRouteGraph, rjsTrackSections, graph, signalTrackNetElementMap);
             var rmlRouteWaypoints = computeRouteWaypoints(entryWaypoint, exitWaypoint, rmlRouteGraph);
             var routeWaypoints = rmlToRjsWaypoints(rmlRouteWaypoints, rjsWaypointsMap);
-
-            res.add(new RJSRoute(id, tvdSections, switchesPosition, routeWaypoints));
+            // TODO Add transit type parsing
+            res.add(new RJSRoute(id, tvdSections, switchesPosition, routeWaypoints, RJSRoute.TransitType.FLEXIBLE));
         }
         return res;
     }

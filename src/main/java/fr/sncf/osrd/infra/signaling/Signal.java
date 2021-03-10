@@ -17,6 +17,9 @@ public class Signal {
     public final int index;
     public final String id;
     public final RSStatefulExpr<RSAspectSet> expr;
+    public final ArrayList<Signal> signalDependencies = new ArrayList<>();
+    public final ArrayList<Route> routeDependencies = new ArrayList<>();
+    public final ArrayList<Switch> switchDependencies = new ArrayList<>();
 
     /** The static data describing a signal */
     public Signal(int index, String id, RSStatefulExpr<RSAspectSet> expr) {
@@ -61,27 +64,20 @@ public class Signal {
         ) throws SimulationError {
             var newAspects = exprState.evalInputChange(sim.infraState, null);
             if (!newAspects.equals(aspects)) {
-                aspects = newAspects;
-                sim.createEvent(this, 0, new Signal.SignalUpdateEvent());
+                sim.createEvent(this, sim.getTime(), new Signal.SignalChange(sim, this, newAspects));
             }
         }
 
         /** Initialize the aspect and register itself as subscriber of his dependencies */
         public void initialize(Infra.State state) {
             aspects = exprState.evalInit(state);
-            var dependenciesFinder = new DependenciesFinder();
-            try {
-                signal.expr.accept(dependenciesFinder);
-            } catch (InvalidInfraException e) {
-                e.printStackTrace();
-            }
 
             // Register itself to his dependencies
-            for (var route : dependenciesFinder.routeDependencies)
+            for (var route : signal.routeDependencies)
                 state.getRouteState(route.index).subscribers.add(this);
-            for (var signal : dependenciesFinder.signalDependencies)
+            for (var signal : signal.signalDependencies)
                 state.getSignalState(signal.index).subscribers.add(this);
-            for (var switchRef : dependenciesFinder.switchDependencies)
+            for (var switchRef : signal.switchDependencies)
                 state.getSwitchState(switchRef.switchIndex).subscribers.add(this);
         }
 
@@ -110,5 +106,44 @@ public class Signal {
         }
     }
 
-    public static class SignalUpdateEvent implements TimelineEventValue { }
+    public static final class SignalChange extends EntityChange<Signal.State, SignalChange> {
+        RSAspectSet aspects;
+
+        protected SignalChange(Simulation sim, Signal.State entity, RSAspectSet aspects) {
+            super(sim, entity.id);
+            this.aspects = aspects;
+        }
+
+        @Override
+        public SignalChange apply(Simulation sim, Signal.State entity) {
+            entity.aspects = aspects;
+            return this;
+        }
+    }
+
+    public static class DependenciesFinder extends RSExprVisitor {
+        final Signal signal;
+
+        public DependenciesFinder(Signal signal) {
+            this.signal = signal;
+        }
+
+        @Override
+        public void visit(RSExpr.SignalRef expr) throws InvalidInfraException {
+            signal.signalDependencies.add(expr.signal);
+            super.visit(expr);
+        }
+
+        @Override
+        public void visit(RSExpr.RouteRef expr) throws InvalidInfraException {
+            signal.routeDependencies.add(expr.route);
+            super.visit(expr);
+        }
+
+        @Override
+        public void visit(RSExpr.SwitchRef expr) throws InvalidInfraException {
+            signal.switchDependencies.add(expr.switcRef);
+            super.visit(expr);
+        }
+    }
 }

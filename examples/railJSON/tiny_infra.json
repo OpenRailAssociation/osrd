@@ -15,6 +15,7 @@
   "routes": [
     {
       "id": "rt.buffer_stop_a-C1",
+      "transit_type": "FLEXIBLE",
       "switches_position": {},
       "tvd_sections": [
         "tvd.foo_a"
@@ -26,6 +27,7 @@
     },
     {
       "id": "rt.buffer_stop_b-C3",
+      "transit_type": "FLEXIBLE",
       "switches_position": {},
       "tvd_sections": [
         "tvd.foo_b"
@@ -37,6 +39,7 @@
     },
     {
       "id": "rt.C1-S7",
+      "transit_type": "FLEXIBLE",
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
@@ -52,6 +55,7 @@
     },
     {
       "id": "rt.C3-S7",
+      "transit_type": "FLEXIBLE",
       "switches_position": {
         "il.switch_foo": "LEFT"
       },
@@ -67,6 +71,7 @@
     },
     {
       "id": "rt.S7-buffer_stop_c",
+      "transit_type": "FLEXIBLE",
       "switches_position": {},
       "tvd_sections": [
         "tvd.bar_a"
@@ -78,6 +83,7 @@
     },
     {
       "id": "rt.buffer_stop_c-C2",
+      "transit_type": "FLEXIBLE",
       "switches_position": {},
       "tvd_sections": [
         "tvd.bar_a"
@@ -89,6 +95,7 @@
     },
     {
       "id": "rt.C2-C6",
+      "transit_type": "FLEXIBLE",
       "switches_position": {},
       "tvd_sections": [
         "tvd.track"
@@ -100,6 +107,7 @@
     },
     {
       "id": "rt.C6-buffer_stop_a",
+      "transit_type": "FLEXIBLE",
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
@@ -115,6 +123,7 @@
     },
     {
       "id": "rt.C6-buffer_stop_b",
+      "transit_type": "FLEXIBLE",
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
@@ -229,12 +238,25 @@
       "body": {
         "type": "condition",
         "if": {
-          "type": "route_has_state",
-          "route": {
-            "type": "argument_ref",
-            "argument_name": "route"
-          },
-          "state": "OCCUPIED"
+          "type": "or",
+          "exprs": [
+            {
+              "type": "route_has_state",
+              "route": {
+                "type": "argument_ref",
+                "argument_name": "route"
+              },
+              "state": "OCCUPIED"
+            },
+            {
+              "type": "route_has_state",
+              "route": {
+                "type": "argument_ref",
+                "argument_name": "route"
+              },
+              "state": "CONFLICT"
+            }
+          ]
         },
         "then": {
           "type": "aspect_set",
@@ -248,7 +270,7 @@
           "type": "aspect_set",
           "members": [
             {
-              "aspect": "GREEN"
+              "aspect": "YELLOW"
             }
           ]
         }
@@ -277,12 +299,25 @@
               {
                 "aspect": "RED",
                 "condition": {
-                  "type": "route_has_state",
-                  "route": {
-                    "type": "argument_ref",
-                    "argument_name": "route"
-                  },
-                  "state": "OCCUPIED"
+                  "type": "or",
+                  "exprs": [
+                    {
+                      "type": "route_has_state",
+                      "route": {
+                        "type": "argument_ref",
+                        "argument_name": "route"
+                      },
+                      "state": "OCCUPIED"
+                    },
+                    {
+                      "type": "route_has_state",
+                      "route": {
+                        "type": "argument_ref",
+                        "argument_name": "route"
+                      },
+                      "state": "CONFLICT"
+                    }
+                  ]
                 }
               },
               {
@@ -578,8 +613,12 @@
         {
           "expr": {
             "type": "call",
-            "function": "check_route",
+            "function": "bal3_line_signal",
             "arguments": [
+              {
+                "type": "signal",
+                "signal": "il.sig.W5"
+              },
               {
                 "type": "route",
                 "route": "rt.C1-S7"

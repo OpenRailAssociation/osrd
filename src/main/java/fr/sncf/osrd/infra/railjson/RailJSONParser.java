@@ -9,6 +9,7 @@ import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.railjson.schema.RJSRoot;
+import fr.sncf.osrd.infra.railjson.schema.RJSRoute;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrackObject;
@@ -228,7 +229,10 @@ public class RailJSONParser {
             var tvdSections = new SortedArraySet<TVDSection>();
             for (var tvdSection : rjsRoute.tvdSections)
                 tvdSections.add(tvdSectionsMap.get(tvdSection.id));
-            routeGraph.makeRoute(rjsRoute.id, waypoints, tvdSections);
+            var transitType = Route.TransitType.RIGID;
+            if (rjsRoute.transitType == RJSRoute.TransitType.FLEXIBLE)
+                transitType = Route.TransitType.FLEXIBLE;
+            routeGraph.makeRoute(rjsRoute.id, waypoints, tvdSections, transitType);
         }
 
         // build name maps to prepare resolving names in expressions
@@ -265,6 +269,12 @@ public class RailJSONParser {
             function.body.accept(nameResolver);
         for (var signal : signals)
             signal.expr.accept(nameResolver);
+
+        // Fill signals dependencies
+        for (var signal : signals) {
+            var dependenciesFinder = new Signal.DependenciesFinder(signal);
+            signal.expr.accept(dependenciesFinder);
+        }
 
         return new Infra(trackGraph, waypointGraph, routeGraph.build(), tvdSectionsMap, aspectsMap, signals, switches);
     }

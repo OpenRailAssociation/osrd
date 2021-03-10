@@ -22,17 +22,22 @@ public class RJSRoute implements Identified {
     @Json(name = "switches_position")
     public final Map<ID<RJSSwitch>, RJSSwitch.Position> switchesPosition;
 
+    @Json(name = "transit_type")
+    public final RJSRoute.TransitType transitType;
+
     /** Routes are described as a list of waypoints, TVD Sections and Switches in specific positions */
     public RJSRoute(
             String id,
             List<ID<RJSTVDSection>> tvdSections,
             Map<ID<RJSSwitch>, RJSSwitch.Position> switchesPosition,
-            List<ID<RJSRouteWaypoint>> waypoints
+            List<ID<RJSRouteWaypoint>> waypoints,
+            TransitType transitType
     ) {
         this.id = id;
         this.tvdSections = tvdSections;
         this.switchesPosition = switchesPosition;
         this.waypoints = waypoints;
+        this.transitType = transitType;
     }
 
     @Override
@@ -44,5 +49,11 @@ public class RJSRoute implements Identified {
         FREE,
         RESERVED,
         OCCUPIED,
+        CONFLICT
+    }
+
+    public enum TransitType {
+        FLEXIBLE,
+        RIGID
     }
 }

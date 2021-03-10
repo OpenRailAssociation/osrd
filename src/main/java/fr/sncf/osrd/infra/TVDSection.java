@@ -80,24 +80,28 @@ public final class TVDSection implements Comparable<TVDSection> {
                 TimelineEvent.State state
         ) throws SimulationError { }
 
-        /** Mark the tvd section as reserved */
+        /** Create an event to reserve the tvd section */
         public void reserve(Simulation sim) throws SimulationError {
-            if (!reserved) {
-                reserved = true;
-                notifySubscribers(sim);
-            }
+            assert !reserved;
+            sim.createEvent(this, sim.getTime(), new TVDSectionReservedChange(sim, this));
         }
 
-        /** Mark the tvd section as free */
+        /** Create an event to notify route that the tvd section is occupied */
+        public void occupy(Simulation sim) throws SimulationError {
+            assert reserved;
+            sim.createEvent(this, sim.getTime(), new TVDSectionOccupiedChange(sim, this));
+        }
+
+        /** Create an event to notify route that the tvd section is not occupied anymore */
+        public void notOccupy(Simulation sim) throws SimulationError {
+            assert reserved;
+            sim.createEvent(this, sim.getTime(), new TVDSectionNotOccupiedChange(sim, this));
+        }
+
+        /** Create an event to free the tvd section */
         public void free(Simulation sim) throws SimulationError {
-            if (reserved) {
-                reserved = false;
-                notifySubscribers(sim);
-            }
-        }
-
-        private void notifySubscribers(Simulation sim) throws SimulationError {
-            sim.createEvent(this, 0, new TVDSectionUpdateEvent());
+            assert reserved;
+            sim.createEvent(this, sim.getTime(), new TVDSectionFreedChange(sim, this));
         }
 
         public boolean isReserved() {
@@ -105,5 +109,52 @@ public final class TVDSection implements Comparable<TVDSection> {
         }
     }
 
-    public static class TVDSectionUpdateEvent implements TimelineEventValue { }
+    public static final class TVDSectionReservedChange
+            extends EntityChange<TVDSection.State, TVDSectionReservedChange> {
+        public TVDSectionReservedChange(Simulation sim, TVDSection.State entity) {
+            super(sim, entity.id);
+        }
+
+        @Override
+        public TVDSectionReservedChange apply(Simulation sim, TVDSection.State entity) {
+            entity.reserved = true;
+            return this;
+        }
+    }
+
+    public static final class TVDSectionFreedChange extends EntityChange<TVDSection.State, TVDSectionFreedChange> {
+        public TVDSectionFreedChange(Simulation sim, TVDSection.State entity) {
+            super(sim, entity.id);
+        }
+
+        @Override
+        public TVDSectionFreedChange apply(Simulation sim, TVDSection.State entity) {
+            entity.reserved = false;
+            return this;
+        }
+    }
+
+    public static final class TVDSectionOccupiedChange
+            extends EntityChange<TVDSection.State, TVDSectionOccupiedChange> {
+        public TVDSectionOccupiedChange(Simulation sim, TVDSection.State entity) {
+            super(sim, entity.id);
+        }
+
+        @Override
+        public TVDSectionOccupiedChange apply(Simulation sim, TVDSection.State entity) {
+            return this;
+        }
+    }
+
+    public static final class TVDSectionNotOccupiedChange
+            extends EntityChange<TVDSection.State, TVDSectionNotOccupiedChange> {
+        public TVDSectionNotOccupiedChange(Simulation sim, TVDSection.State entity) {
+            super(sim, entity.id);
+        }
+
+        @Override
+        public TVDSectionNotOccupiedChange apply(Simulation sim, TVDSection.State entity) {
+            return this;
+        }
+    }
 }
