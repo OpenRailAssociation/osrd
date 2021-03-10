@@ -1,7 +1,6 @@
 package fr.sncf.osrd.infra.waypointgraph;
 
 import fr.sncf.osrd.infra.TVDSection;
-import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.BiNEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
@@ -11,7 +10,7 @@ public class TVDSectionPath extends BiNEdge<TVDSectionPath> {
     public final EdgeDirection startNodeDirection;
     /** The direction to the inside of the TVDSection from the end node, relative to the TrackSection */
     public final EdgeDirection endNodeDirection;
-    public final SortedArraySet<TVDSection> tvdSections = new SortedArraySet<>();
+    public TVDSection tvdSection = null;
 
     public EdgeDirection nodeDirection(EdgeEndpoint endpoint) {
         return endpoint == EdgeEndpoint.BEGIN ? startNodeDirection : endNodeDirection;

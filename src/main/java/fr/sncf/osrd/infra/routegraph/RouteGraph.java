@@ -38,8 +38,12 @@ public class RouteGraph extends BiNGraph<Route, Waypoint> {
         }
 
         /** Add a route to the Route Graph */
-        public Route makeRoute(String id, List<Waypoint> waypoints, SortedArraySet<TVDSection> tvdSections)
-                throws InvalidInfraException {
+        public Route makeRoute(
+                String id,
+                List<Waypoint> waypoints,
+                SortedArraySet<TVDSection> tvdSections,
+                Route.TransitType transitType
+        ) throws InvalidInfraException {
             if (waypoints.size() < 2) {
                 throw new InvalidInfraException(String.format("Route '%s' doesn't contains enough waypoints", id));
             }
@@ -56,7 +60,7 @@ public class RouteGraph extends BiNGraph<Route, Waypoint> {
                 if (tvdSectionPath == null)
                     throw new InvalidInfraException(String.format(
                             "Route: '%s' couldn't find tvd section path: (%d, %d)", id, startIndex, endIndex));
-                if (tvdSections.intersect(tvdSectionPath.tvdSections).isEmpty())
+                if (!tvdSections.contains(tvdSectionPath.tvdSection))
                     throw new InvalidInfraException(
                             String.format("Route '%s' has a tvd section path outside tvd section", id));
 
@@ -70,7 +74,7 @@ public class RouteGraph extends BiNGraph<Route, Waypoint> {
             }
 
             // Create route
-            var route = new Route(id, routeGraph, length, tvdSectionsPath, tvdSectionsPathDirection);
+            var route = new Route(id, routeGraph, length, transitType, tvdSectionsPath, tvdSectionsPathDirection);
 
             // Link route to the starting waypoint
             var startWaypoint = waypointGraph.getNode(tvdSectionsPath.get(0).startNode);

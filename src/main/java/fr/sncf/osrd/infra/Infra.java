@@ -7,10 +7,10 @@ import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.trackgraph.*;
+import fr.sncf.osrd.utils.SortedArraySet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 /**
  * <p>A data structure meant to store the immutable part of a railroad infrastructure.</p>
@@ -109,7 +109,10 @@ public final class Infra {
     /**
      * Build a the WaypointGraph once track graph is filled
      */
-    public static WaypointGraph buildWaypointGraph(TrackGraph trackGraph, HashMap<String, TVDSection> tvdSections) {
+    public static WaypointGraph buildWaypointGraph(
+            TrackGraph trackGraph, HashMap<String,
+            TVDSection> tvdSections
+    ) throws InvalidInfraException {
         var waypointGraph = WaypointGraph.buildDetectorGraph(trackGraph);
         linkTVDSectionToPath(waypointGraph, tvdSections);
         return waypointGraph;
@@ -119,30 +122,38 @@ public final class Infra {
      * Link TVD Sections with TVDSectionPath of a given detectorGraph
      * Each TVDSection references TVDSectionPaths, and reciprocally.
      */
-    private static void linkTVDSectionToPath(WaypointGraph waypointGraph, HashMap<String, TVDSection> tvdSections) {
+    private static void linkTVDSectionToPath(
+            WaypointGraph waypointGraph,
+            HashMap<String, TVDSection> tvdSections
+    ) throws InvalidInfraException {
         // Initialize reverse map DetectorNode -> TVDSections
         var nbDetector = waypointGraph.getNodeCount();
-        var detectorNodeToTVDSections = new ArrayList<HashSet<String>>(nbDetector);
+        var detectorNodeToTVDSections = new ArrayList<SortedArraySet<TVDSection>>(nbDetector);
         for (int i = 0; i < nbDetector; i++)
-            detectorNodeToTVDSections.add(new HashSet<>());
-        for (var tvdEntry : tvdSections.entrySet()) {
-            for (var waypoint : tvdEntry.getValue().waypoints) {
+            detectorNodeToTVDSections.add(new SortedArraySet<>());
+        for (var tvdSection : tvdSections.values()) {
+            for (var waypoint : tvdSection.waypoints) {
                 var nodeIndex = waypointGraph.waypointNodeMap.get(waypoint.id).index;
-                detectorNodeToTVDSections.get(nodeIndex).add(tvdEntry.getKey());
+                detectorNodeToTVDSections.get(nodeIndex).add(tvdSection);
             }
         }
 
         // Compute which TVDSection belongs to each TVDSectionPath
         for (var tvdSectionPath : waypointGraph.tvdSectionPathMap.values()) {
             // Set intersection
-            var tvdNodeStart = detectorNodeToTVDSections.get(tvdSectionPath.startNode);
-            for (var tvdID : detectorNodeToTVDSections.get(tvdSectionPath.endNode)) {
-                if (tvdNodeStart.contains(tvdID)) {
-                    var tvdSection = tvdSections.get(tvdID);
-                    tvdSectionPath.tvdSections.add(tvdSection);
-                    tvdSection.sections.add(tvdSectionPath);
-                }
+            var tvdSectionsStart = detectorNodeToTVDSections.get(tvdSectionPath.startNode);
+            var tvdSectionsEnd = detectorNodeToTVDSections.get(tvdSectionPath.endNode);
+            var tvdSectionIntersection = tvdSectionsStart.intersect(tvdSectionsEnd);
+            // Check only one tvd section is in the intersection
+            if (tvdSectionIntersection.size() != 1) {
+                throw new InvalidInfraException(String.format(
+                        "Tvd section path have %d tvd section available. Should be 1.",
+                        tvdSectionIntersection.size()));
             }
+            // Fill data structures
+            var tvdSection = tvdSectionIntersection.get(0);
+            tvdSectionPath.tvdSection = tvdSection;
+            tvdSection.sections.add(tvdSectionPath);
         }
     }
 
@@ -197,7 +208,7 @@ public final class Infra {
             var switchCount = infra.switches.size();
             var switchStates = new Switch.State[switchCount];
             for (var infraSwitch : infra.switches)
-                switchStates[infraSwitch.index] = infraSwitch.newState();
+                switchStates[infraSwitch.switchIndex] = infraSwitch.newState();
 
             var tvdSectionCount = infra.tvdSections.size();
             var tvdSectionStates = new TVDSection.State[tvdSectionCount];

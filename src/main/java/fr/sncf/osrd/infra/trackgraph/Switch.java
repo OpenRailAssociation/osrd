@@ -39,7 +39,6 @@ public class Switch extends TrackNode {
         State(Switch switchRef) {
             super(new SwitchEntityID(switchRef.switchIndex));
             this.switchRef = switchRef;
-            // TODO: configurable default position
             this.position = SwitchPosition.LEFT;
         }
 
@@ -50,8 +49,7 @@ public class Switch extends TrackNode {
         /** Change position of the switch */
         public void setPosition(SwitchPosition position, Simulation sim) throws SimulationError {
             if (this.position != position) {
-                this.position = position;
-                sim.createEvent(this, 0, new Switch.SwitchUpdateEvent());
+                sim.createEvent(this, sim.getTime(), new Switch.SwitchPositionChange(sim, this, position));
             }
         }
 
@@ -67,5 +65,18 @@ public class Switch extends TrackNode {
         }
     }
 
-    public static class SwitchUpdateEvent implements TimelineEventValue { }
+    public static final class SwitchPositionChange extends EntityChange<Switch.State, Switch.SwitchPositionChange> {
+        SwitchPosition position;
+
+        protected SwitchPositionChange(Simulation sim, Switch.State entity, SwitchPosition position) {
+            super(sim, entity.id);
+            this.position = position;
+        }
+
+        @Override
+        public Switch.SwitchPositionChange apply(Simulation sim, Switch.State entity) {
+            entity.position = position;
+            return this;
+        }
+    }
 }
