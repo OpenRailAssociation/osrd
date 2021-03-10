@@ -3,6 +3,7 @@ package fr.sncf.osrd.infra.parsing.rsl;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.graph.ApplicableDirections;
 import fr.sncf.osrd.infra.parsing.railjson.schema.*;
+import fr.sncf.osrd.infra.parsing.railjson.schema.trackranges.RJSOperationalPointPart;
 import fr.sncf.osrd.util.XmlNamespaceCleaner;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -123,13 +124,22 @@ public final class RslParser {
         for (var node : document.selectNodes("/line/nodes/track")) {
             var trackNode = (Element) node;
             // create the operational point
-            if (trackNode.attributeValue("type") == "timingPoint") {
+            if ((trackNode.attributeValue("type") == "timingPoint") ||
+            (trackNode.attributeValue("type") == "stopBoardPass")) {
                 var id = trackNode.attributeValue("NodeID");
                 var rjsOperationalPoint = new RJSOperationalPoint(id);
                 var operationalPointID = ID.from(rjsOperationalPoint);
                 operationalPoints.add(rjsOperationalPoint);
 
                 // link tracks sections back to the operational point
+                for (var edge : nodeMap.get(id)) {
+                    var endOpPoint = findEndpoint(edge,id);
+                    if (endOpPoint.endpoint.equals("BEGIN")) {
+                        var opPart = new RJSOperationalPointPart(operationalPointID, 0, 0);
+                        edge.operationalPoints.add(opPart);
+                        break;
+                    }
+                }
             }
         }
         return operationalPoints;
