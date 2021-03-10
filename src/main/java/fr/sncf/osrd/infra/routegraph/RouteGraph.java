@@ -2,6 +2,8 @@ package fr.sncf.osrd.infra.routegraph;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.TVDSection;
+import fr.sncf.osrd.infra.trackgraph.Switch;
+import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.utils.SortedArraySet;
@@ -11,6 +13,7 @@ import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class RouteGraph extends BiNGraph<Route, Waypoint> {
@@ -42,7 +45,8 @@ public class RouteGraph extends BiNGraph<Route, Waypoint> {
                 String id,
                 List<Waypoint> waypoints,
                 SortedArraySet<TVDSection> tvdSections,
-                Route.TransitType transitType
+                Route.TransitType transitType,
+                HashMap<Switch, SwitchPosition> switchesPosition
         ) throws InvalidInfraException {
             if (waypoints.size() < 2) {
                 throw new InvalidInfraException(String.format("Route '%s' doesn't contains enough waypoints", id));
@@ -74,7 +78,15 @@ public class RouteGraph extends BiNGraph<Route, Waypoint> {
             }
 
             // Create route
-            var route = new Route(id, routeGraph, length, transitType, tvdSectionsPath, tvdSectionsPathDirection);
+            var route = new Route(
+                    id,
+                    routeGraph,
+                    length,
+                    transitType,
+                    tvdSectionsPath,
+                    tvdSectionsPathDirection,
+                    switchesPosition
+            );
 
             // Link route to the starting waypoint
             var startWaypoint = waypointGraph.getNode(tvdSectionsPath.get(0).startNode);

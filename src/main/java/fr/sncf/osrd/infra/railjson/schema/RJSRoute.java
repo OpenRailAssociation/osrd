@@ -3,6 +3,7 @@ package fr.sncf.osrd.infra.railjson.schema;
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
+import fr.sncf.osrd.infra.routegraph.Route;
 
 import java.util.Map;
 import java.util.List;
@@ -53,7 +54,17 @@ public class RJSRoute implements Identified {
     }
 
     public enum TransitType {
-        FLEXIBLE,
-        RIGID
+        FLEXIBLE, RIGID;
+
+        /** Parse into Route.TransitType */
+        public Route.TransitType parse() {
+            switch (this) {
+                case FLEXIBLE:
+                    return Route.TransitType.FLEXIBLE;
+                case RIGID:
+                    return Route.TransitType.RIGID;
+            }
+            return null;
+        }
     }
 }
