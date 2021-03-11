@@ -1,9 +1,12 @@
 package fr.sncf.osrd.infra.parsing.rsl;
 
+import fr.sncf.osrd.App;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.graph.ApplicableDirections;
 import fr.sncf.osrd.infra.graph.EdgeEndpoint;
 import fr.sncf.osrd.infra.parsing.railjson.schema.*;
+import fr.sncf.osrd.infra.parsing.railjson.schema.trackobjects.RJSBufferStop;
+import fr.sncf.osrd.infra.parsing.railjson.schema.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.infra.parsing.railjson.schema.trackranges.RJSOperationalPointPart;
 import fr.sncf.osrd.infra.parsing.railjson.schema.trackranges.RJSSpeedSectionPart;
 import fr.sncf.osrd.util.XmlNamespaceCleaner;
@@ -13,6 +16,7 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public final class RslParser {
     /**
@@ -59,7 +63,7 @@ public final class RslParser {
         }
 
         var rjsOperationalPoints = timingPointsParse(document, rjsTrackSections, nodeMap);
-        var rjsTvdSections = tvdSectionsParse();
+        var rjsTvdSections = tvdSectionsParse(document, rjsTrackSections, nodeMap);
 
         return new RJSRoot(
                 rjsTrackSections.values(),
@@ -69,6 +73,46 @@ public final class RslParser {
                 rjsTvdSections,
                 rjsSpeedSections
         );
+    }
+
+    /**
+     * Read the block sections from a Rsl file
+     * @return the TVD sections list for RJS
+     */
+    private static ArrayList<RJSTVDSection> tvdSectionsParse(Document document,
+                                         HashMap<String, RJSTrackSection> rjsTrackSections,
+                                         HashMap<String, ArrayList<Edge>> nodeMap) {
+        var rjstvdsections = new ArrayList<RJSTVDSection>();
+
+        for (var node : document.selectNodes("/line/blockSections/blockSection")) {
+            var blockSectionNode = (Element) node;
+            var id = new String(blockSectionNode.attributeValue("uuid") + "_tvd");
+            var isBerthingTrack = Boolean.parseBoolean(blockSectionNode.attributeValue("shuntingBlock"));
+
+            // The block section is a list of nodes
+            // the train detectors are put et the begin of each block section
+            HashSet<ID<RJSTrainDetector>> trainDetectors = null;
+            var partNode = (Element) blockSectionNode.selectNodes("/part");
+            var nodes = new String(partNode.attributeValue("nodes"));
+            var nodesId = nodes.split(" ");
+            var beginNodeId = nodesId[0];
+            var trainDetector = new RJSTrainDetector(beginNodeId, ApplicableDirections.BOTH, 0);
+
+            // Link tracks sections back to the train detector
+            for (var edge : nodeMap.get(beginNodeId)) {
+                var endOpPoint = findEndpoint(edge, beginNodeId);
+                if (endOpPoint.endpoint == EdgeEndpoint.BEGIN) {
+                    edge.trainDetectors.add(trainDetector);
+                    break;
+                }
+            }
+
+            // Add the train detector to the list of this tvd section
+            trainDetectors.add(new ID<RJSTrainDetector>(beginNodeId));
+            ArrayList<ID<RJSBufferStop>> bufferStops = null;
+            rjstvdsections.add(new RJSTVDSection(id, isBerthingTrack, trainDetectors, bufferStops));
+        }
+        return rjstvdsections;
     }
 
     /**
@@ -115,15 +159,6 @@ public final class RslParser {
         var navigability = findLinkNavigability(firstTrack, secondTrack);
         rjsTrackSectionLinks.put(id,
                 new RJSTrackSectionLink(navigability, firstTrack.endEndpoint(), secondTrack.beginEndpoint()));
-    }
-
-    /**
-     * Read the block sections from a Rsl file
-     * @return the TVD sections list for RJS
-     */
-    private static ArrayList<RJSTVDSection> tvdSectionsParse() {
-        ArrayList<RJSTVDSection> rjsTvdSections = new ArrayList<RJSTVDSection>();
-        return rjsTvdSections;
     }
 
     /**
