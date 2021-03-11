@@ -243,7 +243,6 @@ public class PrettyPrinter extends RSExprVisitor {
         out.print(" {\n");
         inc();
         for (var i = 0; i < expr.branches.length; i++) {
-            // TODO print enum value instead of int
             tab();
             out.printf("%s: ", enumValues[i].name());
             expr.branches[i].accept(this);

@@ -22,9 +22,6 @@ public abstract class RSExpr<T extends RSValue> {
 
     public abstract RSType getType(RSType[] argumentTypes);
 
-    // value constructors
-    // TODO: support RJSSignalExpr.SwitchRefExpr
-
     // region BOOLEAN_OPERATORS
 
     /** Infix operators, like "or" and "and" apply to multiple expression */

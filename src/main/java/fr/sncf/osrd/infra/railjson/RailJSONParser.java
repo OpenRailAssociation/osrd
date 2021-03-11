@@ -9,8 +9,6 @@ import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.railjson.schema.RJSRoot;
-import fr.sncf.osrd.infra.railjson.schema.RJSRoute;
-import fr.sncf.osrd.infra.railjson.schema.RJSSwitch;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrackObject;
