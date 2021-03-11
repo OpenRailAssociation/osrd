@@ -12,10 +12,13 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railjson.RailJSONSerializer;
 import fr.sncf.osrd.infra.railscript.PrettyPrinter;
 import fr.sncf.osrd.railml.RailMLParser;
+import fr.sncf.osrd.simulation.ChangeReplayChecker;
 import fr.sncf.osrd.simulation.ChangeSerializer;
+import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
+import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
 import fr.sncf.osrd.timetable.InvalidTimetableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +59,25 @@ public class App {
                 var changeConsumers = new ArrayList<ChangeConsumer>();
                 var changelog = new ArrayChangeLog();
                 changeConsumers.add(changelog);
-                SimulationManager.run(config, changeConsumers);
+
+                // create the simulation and add change consumers
+                var multiplexer = new ChangeConsumerMultiplexer(changeConsumers);
+                var sim = Simulation.createFromInfra(config.infra, 0, multiplexer);
+
+                if (config.changeReplayCheck)
+                    multiplexer.add(ChangeReplayChecker.from(sim));
+
+                // create the viewer
+                if (config.showViewer)
+                    multiplexer.add(DebugViewer.from(config.infra, config.realTimeViewer));
+
+                // plan train creation
+                for (var trainSchedule : config.schedule.trainSchedules)
+                    sim.scheduler.planTrain(sim, trainSchedule);
+
+                // run the simulation loop
+                while (!sim.isSimulationOver())
+                    sim.step();
 
                 ChangeSerializer.serializeChangeLog(changelog, outputChangelogPath);
             } catch (SimulationError simulationError) {
