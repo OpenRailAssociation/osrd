@@ -137,7 +137,7 @@ public class RailJSONParser {
         // parse aspects
         int aspectCount = 0;
         for (var rjsAspect : railJSON.aspects) {
-            var aspect = new Aspect(aspectCount++, rjsAspect.id);
+            var aspect = new Aspect(aspectCount++, rjsAspect.id, rjsAspect.color);
             aspectsMap.put(aspect.id, aspect);
         }
 

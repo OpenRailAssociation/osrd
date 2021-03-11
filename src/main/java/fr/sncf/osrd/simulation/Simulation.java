@@ -1,7 +1,5 @@
 package fr.sncf.osrd.simulation;
 
-import static fr.sncf.osrd.simulation.TimelineEvent.State;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
@@ -127,16 +125,13 @@ public final class Simulation {
      * @throws SimulationError {@inheritDoc}
      */
     public void cancel(TimelineEvent<?> event) throws SimulationError {
-        if (event.state != State.SCHEDULED)
-            throw new SimulationError("only scheduled events can be cancelled");
-
         // remove the event from the timeline
         var change = new TimelineEventCancelled(this, event);
         change.apply(this);
         this.publishChange(change);
 
         // send update messages to subscribed entities
-        event.updateState(this, State.CANCELLED);
+        event.onCancellation(this);
     }
 
     /** Checks if the simulation is over (nextEvent() would throw an exception). */
@@ -145,19 +140,12 @@ public final class Simulation {
     }
 
     /**
-     * Returns the next event from the timeline.
-     * @return the next event in the timeline
-     */
-    public TimelineEvent<?> getNextEvent() {
-        // get the next event in the timeline
-        return timeline.get(timeline.firstKey());
-    }
-
-    /**
      * Executes the next event in the simulation.
      * @throws SimulationError {@inheritDoc}
      */
-    public TimelineEventValue step(TimelineEvent<?> event) throws SimulationError {
+    public TimelineEventValue step() throws SimulationError {
+        var event = timeline.get(timeline.firstKey());
+
         // step the simulation time forward
         logger.debug("changing the simulation clock from {} to {}", time, event.scheduledTime);
 
@@ -165,41 +153,31 @@ public final class Simulation {
         change.apply(this);
         this.publishChange(change);
 
-        event.updateState(this, State.HAPPENED);
+        event.onOccurrence(this);
         return event.value;
     }
 
-    public TimelineEventValue step() throws SimulationError {
-        var event = getNextEvent();
-        return step(event);
-    }
-
-    /**
-     * Create a new event
-     * @param entity the source of the event
-     * @param scheduledTime the time at which the event will occur
-     * @param value the value associated with the event. you can get it back when the event happens
-     * @param <ValueT> the type of the value
-     * @return a timeline event
-     * @throws SimulationError {@inheritDoc}
-     */
-    public <EntityT extends Entity<EntityT>, ValueT extends TimelineEventValue> TimelineEvent<ValueT> createEvent(
+    /** Create a new event, and insert it on the timeline */
+    public <EntityT extends Entity<EntityT>, ValueT extends TimelineEventValue> TimelineEvent<ValueT> scheduleEvent(
             EntityT entity,
             double scheduledTime,
             ValueT value
-    ) throws SimulationError {
-        // sanity checks
-        if (scheduledTime < time)
-            throw new SimulationError("an event was scheduled before the current simulation time");
-
-        // create the event
+    ) {
         var change = new TimelineEventCreated<>(this, entity, this.revision, scheduledTime, value);
         var event = change.apply(this, entity);
         this.publishChange(change);
-
-        // notify listening entities
-        event.updateState(this, State.SCHEDULED);
         return event;
+    }
+
+    /** Create a change corresponding to the creation of an event, without applying it */
+    public <EntityT extends Entity<EntityT>,
+            ValueT extends TimelineEventValue
+            > TimelineEventCreated<EntityT, ValueT> prepareEvent(
+            EntityT entity,
+            double scheduledTime,
+            ValueT value
+    ) {
+        return new TimelineEventCreated<>(this, entity, this.revision, scheduledTime, value);
     }
 
     public TimelineEvent<?> getTimelineEvent(TimelineEventId timelineEventId) {
@@ -211,12 +189,18 @@ public final class Simulation {
     // region CHANGES
 
     public static final class TimelineEventCreated<EntityT extends Entity<EntityT>, ValueT extends TimelineEventValue>
-            extends EntityChange<EntityT, TimelineEvent<ValueT>> {
+            extends EntityChange<EntityT, EntityID<EntityT>, TimelineEvent<ValueT>> {
         private final long revision;
         private final double scheduledTime;
         // this should really be T, but isn't as we need moshi (our serialization framework)
         // to understand this need to be treated as a polymorphic field
         private final TimelineEventValue value;
+
+        // this cast is there to restore the static type parameter, because of the hack above
+        @SuppressWarnings("unchecked")
+        public ValueT getValue() {
+            return (ValueT) this.value;
+        }
 
         TimelineEventCreated(Simulation sim, EntityT producer, long revision, double scheduledTime, ValueT value) {
             super(sim, producer.getID());
@@ -227,12 +211,11 @@ public final class Simulation {
 
         @Override
         public final TimelineEvent<ValueT> apply(Simulation sim, EntityT entity) {
-            // this cast is there to restore the static type parameter, because of the hack above
-            @SuppressWarnings("unchecked")
-            var event = new TimelineEvent<ValueT>(entity, this.revision, this.scheduledTime, (ValueT) this.value);
-
-            // ensure the simulation has the correct revision number
+            // sanity checks
+            assert scheduledTime >= sim.time;
             assert this.revision == sim.revision;
+
+            var event = new TimelineEvent<>(entity, this.revision, this.scheduledTime, getValue());
 
             // update the revision number of the simulation
             sim.revision = this.revision + 1;
@@ -240,6 +223,7 @@ public final class Simulation {
             // add the event to the timeline
             sim.timeline.put(event, event);
 
+            event.onScheduled();
             return event;
         }
 

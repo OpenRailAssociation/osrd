@@ -291,7 +291,7 @@ public class PrettyPrinter extends RSExprVisitor {
         public final HashMap<String, RSFunction<? extends RSValue>> functions = new HashMap<>();
 
         @Override
-        public void visit(RSExpr.Call<? extends RSValue> expr) throws InvalidInfraException {
+        public void visit(RSExpr.Call<?> expr) throws InvalidInfraException {
             functions.put(expr.function.functionName, expr.function);
             expr.function.body.accept(this);
         }

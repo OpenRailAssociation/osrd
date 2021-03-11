@@ -32,7 +32,7 @@ public class Switch extends TrackNode {
 
     /** The state of the route is the actual entity which interacts with the rest of the infrastructure */
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public static final class State extends AbstractEntity<Switch.State> implements RSMatchable {
+    public static final class State extends AbstractEntity<Switch.State, SwitchEntityID> implements RSMatchable {
         public final Switch switchRef;
         private SwitchPosition position;
 
@@ -47,16 +47,18 @@ public class Switch extends TrackNode {
         }
 
         /** Change position of the switch */
-        public void setPosition(Simulation sim, SwitchPosition position) throws SimulationError {
-            if (this.position != position) {
-                sim.createEvent(this, sim.getTime(), new Switch.SwitchPositionChange(sim, this, position));
-            }
+        public void setPosition(Simulation sim, SwitchPosition position) {
+            if (this.position != position)
+                sim.scheduleEvent(this,  sim.getTime(), new Switch.SwitchPositionChange(sim, this, position));
         }
 
         @Override
-        public void onTimelineEventUpdate(
-                Simulation sim, TimelineEvent<?> event, TimelineEvent.State state
-        ) throws SimulationError {
+        public void onEventOccurred(Simulation sim, TimelineEvent<?> event) {
+        }
+
+        @Override
+        public void onEventCancelled(Simulation sim, TimelineEvent<?> event) {
+
         }
 
         @Override
@@ -65,7 +67,8 @@ public class Switch extends TrackNode {
         }
     }
 
-    public static final class SwitchPositionChange extends EntityChange<Switch.State, Switch.SwitchPositionChange> {
+    public static final class SwitchPositionChange
+            extends EntityChange<Switch.State, SwitchEntityID, Switch.SwitchPositionChange> {
         SwitchPosition position;
 
         protected SwitchPositionChange(Simulation sim, Switch.State entity, SwitchPosition position) {

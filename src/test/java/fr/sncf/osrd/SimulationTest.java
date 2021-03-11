@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class SimulationTest {
     /** A class that collects event updates it receives, for testing purposes. */
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public static class MockEntity extends AbstractEntity<MockEntity> {
+    public static class MockEntity extends AbstractEntity<MockEntity, MockEntityID<MockEntity>> {
         public MockEntity(String id) {
             super(new MockEntityID<>(id));
         }
@@ -30,12 +30,13 @@ public class SimulationTest {
         public final ArrayList<EventUpdate> events = new ArrayList<>();
 
         @Override
-        public void onTimelineEventUpdate(
-                Simulation sim,
-                TimelineEvent<?> event,
-                TimelineEvent.State state
-        ) {
-            events.add(new EventUpdate(event, state));
+        public void onEventOccurred(Simulation sim, TimelineEvent<?> event) {
+            events.add(new EventUpdate(event, TimelineEvent.State.OCCURRED));
+        }
+
+        @Override
+        public void onEventCancelled(Simulation sim, TimelineEvent<?> event) {
+            events.add(new EventUpdate(event, TimelineEvent.State.CANCELLED));
         }
     }
 
@@ -56,13 +57,13 @@ public class SimulationTest {
     public void timerTest() throws SimulationError {
         var sim = Simulation.createWithoutInfra(1.0, null);
         var timer = new MockEntity("test");
-        sim.createEvent(timer, sim.getTime() + 42, new TEValue<>("time's up"));
+        sim.scheduleEvent(timer, sim.getTime() + 42, new TEValue<>("time's up"));
         var stepEvent = sim.step();
         assertEquals(stepEvent.toString(), "time's up");
         assertEquals(sim.getTime(), 1.0 + 42.0, 0.00001);
     }
 
-    public static class ProxyEntity extends AbstractEntity<ProxyEntity> {
+    public static class ProxyEntity extends AbstractEntity<ProxyEntity, MockEntityID<ProxyEntity>> {
         private final MockEntity timerResponse;
         private final MockEntity otherChannel;
 
@@ -74,15 +75,15 @@ public class SimulationTest {
         }
 
         @Override
-        public void onTimelineEventUpdate(
-                Simulation sim,
-                TimelineEvent<?> event,
-                TimelineEvent.State state
-        ) throws SimulationError {
+        public void onEventOccurred(Simulation sim, TimelineEvent<?> event) {
             String msg = event.value.toString();
-            sim.createEvent(timerResponse, sim.getTime() + 0.5, new TEValue<>(msg + "_response"));
+            sim.scheduleEvent(timerResponse, sim.getTime() + 0.5, new TEValue<>(msg + "_response"));
             if (sim.getTime() > 2.7)
-                sim.createEvent(otherChannel, sim.getTime(), new TEValue<>(msg + " simultaneous event"));
+                sim.scheduleEvent(otherChannel, sim.getTime(), new TEValue<>(msg + " simultaneous event"));
+        }
+
+        @Override
+        public void onEventCancelled(Simulation sim, TimelineEvent<?> event) throws SimulationError {
         }
     }
 
@@ -91,10 +92,10 @@ public class SimulationTest {
     public void testEventOrder() throws SimulationError {
         var sim = Simulation.createWithoutInfra(0.0, null);
         var timer = new MockEntity("test");
-        sim.createEvent(timer, 1.0, new TEValue<>("a"));
-        sim.createEvent(timer, 2.0, new TEValue<>("b"));
-        sim.createEvent(timer, 3.0, new TEValue<>("c"));
-        sim.createEvent(timer, 4.0, new TEValue<>("d"));
+        sim.scheduleEvent(timer, 1.0, new TEValue<>("a"));
+        sim.scheduleEvent(timer, 2.0, new TEValue<>("b"));
+        sim.scheduleEvent(timer, 3.0, new TEValue<>("c"));
+        sim.scheduleEvent(timer, 4.0, new TEValue<>("d"));
 
         var timerResponse = new MockEntity("timer");
         var otherChannel = new MockEntity("other");

@@ -88,9 +88,9 @@ class PrettyPrinterTest {
         @SuppressWarnings({"unchecked"})
         var aspectSet = new RSExpr.AspectSet(
                 new Aspect[] {
-                        new Aspect(0, "GREEN"),
-                        new Aspect(0, "YELLOW"),
-                        new Aspect(0, "RED")
+                        new Aspect(0, "GREEN", "#2a850c"),
+                        new Aspect(1, "YELLOW", "#f08a05"),
+                        new Aspect(2, "RED", "#db0c04")
                 },
                 (RSExpr<RSBool>[]) new RSExpr<?>[]{
                         RSExpr.True.INSTANCE,

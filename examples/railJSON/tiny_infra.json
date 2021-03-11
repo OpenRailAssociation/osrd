@@ -1,8 +1,8 @@
 {
   "aspects": [
-    "GREEN",
-    "YELLOW",
-    "RED"
+    {"id": "GREEN", "color": "#2a850c"},
+    {"id": "YELLOW", "color": "#f08a05"},
+    {"id": "RED", "color": "#db0c04"}
   ],
   "operational_points": [
     {

@@ -19,7 +19,6 @@ public class RJSRoot {
     public static final JsonAdapter<RJSRoot> adapter = new Moshi
             .Builder()
             .add(ID.Adapter.FACTORY)
-            .add(new RJSAspect.Adapter())
             .add(RJSRSExpr.adapter)
             .add(RJSRouteWaypoint.adapter)
             .build()

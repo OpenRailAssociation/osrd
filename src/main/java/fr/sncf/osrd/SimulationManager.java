@@ -13,49 +13,8 @@ import java.util.ArrayList;
 public final class SimulationManager {
     static final Logger logger = LoggerFactory.getLogger(SimulationManager.class);
 
-    private static void updateViewer(
-            Simulation sim,
-            Config config,
-            DebugViewer viewer,
-            TimelineEvent<?> nextEvent
-    ) throws InterruptedException {
-        double nextEventTime = nextEvent.scheduledTime;
 
-        // the time to wait between simulation steps
-        double interpolationStep = 1.0;
-
-        var signals = new ArrayList<Signal.State>();
-        for (var signal : sim.infra.signals)
-            signals.add(sim.infraState.getSignalState(signal.index));
-
-        // if the user doesn't want realtime visualization, update the viewer once per timeline event
-        if (!config.realTimeViewer) {
-            viewer.update(sim.trains.values(), signals, nextEventTime);
-            Thread.sleep((long) (interpolationStep * 1000));
-            return;
-        }
-
-        // skip updates when there are no trains
-        if (sim.trains.isEmpty())
-            return;
-
-        // move the time forward by time increments
-        // to help the viewer see something
-        double interpolatedTime = sim.getTime();
-
-        while (sim.getTime() < nextEventTime) {
-            interpolatedTime += interpolationStep;
-            if (interpolatedTime > nextEventTime)
-                interpolatedTime = nextEventTime;
-
-            Thread.sleep((long) (interpolationStep * 1000));
-            viewer.update(sim.trains.values(), signals, interpolatedTime);
-        }
-    }
-
-    /**
-     * Run the simulation
-     */
+    /** Run the simulation */
     public static void run(
             Config config,
             ArrayList<ChangeConsumer> changeConsumers
@@ -63,31 +22,20 @@ public final class SimulationManager {
         // create the simulation and add change consumers
         var multiplexer = new ChangeConsumerMultiplexer(changeConsumers);
         var sim = Simulation.createFromInfra(config.infra, 0, multiplexer);
+
         if (config.changeReplayCheck)
             multiplexer.add(ChangeReplayChecker.from(sim));
+
+        // create the viewer
+        if (config.showViewer)
+            multiplexer.add(DebugViewer.from(config.infra, config.realTimeViewer));
 
         // plan train creation
         for (var trainSchedule : config.schedule.trainSchedules)
             sim.scheduler.planTrain(sim, trainSchedule);
 
-        // initialize the viewer
-        DebugViewer viewer = null;
-        if (config.showViewer) {
-            viewer = new DebugViewer(config.infra);
-            viewer.display();
-        }
-
         // run the simulation loop
-        for (int eventsCount = 0; !sim.isSimulationOver(); eventsCount++) {
-            if (eventsCount != 0)
-                Thread.sleep((long) (config.simulationStepPause * 1000));
-
-            var event = sim.getNextEvent();
-
-            if (viewer != null)
-                updateViewer(sim, config, viewer, event);
-
-            sim.step(event);
-        }
+        while (!sim.isSimulationOver())
+            sim.step();
     }
 }

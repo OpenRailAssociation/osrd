@@ -13,25 +13,48 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public class TimelineEvent<T extends TimelineEventValue> extends TimelineEventId {
     public final Entity<?> source;
 
-    void updateState(Simulation sim, State newState) throws SimulationError {
+    // some value associated with the event
+    public final T value;
+
+    void onScheduled() {
+        setState(State.SCHEDULED);
+    }
+
+    void onOccurrence(Simulation sim) throws SimulationError {
+        setState(State.OCCURRED);
+        for (var subscriber : source.getSubscribers())
+            subscriber.onEventOccurred(sim, this);
+    }
+
+    void onCancellation(Simulation sim) throws SimulationError {
+        setState(State.CANCELLED);
+        for (var subscriber : source.getSubscribers())
+            subscriber.onEventCancelled(sim, this);
+    }
+
+    /**
+     * Creates a new event
+     *
+     * @param source the entity the event was generated from
+     * @param revision the revision of the event
+     * @param scheduledTime the time at will the event is planned to happen
+     * @param value the value associated with the event
+     */
+    TimelineEvent(Entity<?> source, long revision, double scheduledTime, T value) {
+        super(scheduledTime, revision);
+        this.source = source;
+        this.state = State.UNREGISTERED;
+        this.value = value;
+    }
+
+    /** The state of the event is only kept track of to enforce correct use of the API. */
+    // region STATE_TRACKING
+
+    private State state;
+
+    private void setState(State newState) {
         assert this.state.hasTransitionTo(newState);
         this.state = newState;
-
-        switch (newState) {
-            case UNREGISTERED:
-                throw new SimulationError("updated an event's state to UNINITIALIZED");
-                // event sinks don't need to be notified when the event is scheduled
-            case SCHEDULED:
-                return;
-
-            // for now, notify subscribers for these two states
-            case HAPPENED:
-            case CANCELLED:
-                break;
-        }
-
-        for (var subscriber : source.getSubscribers())
-            subscriber.onTimelineEventUpdate(sim, this, newState);
     }
 
     public enum State {
@@ -44,14 +67,14 @@ public class TimelineEvent<T extends TimelineEventValue> extends TimelineEventId
         // the event got cancelled before it happened
         CANCELLED(2),
         // the event has happened
-        HAPPENED(3),
+        OCCURRED(3),
         ;
 
         static {
             UNREGISTERED.validTransitions = new State[]{ State.SCHEDULED };
-            SCHEDULED.validTransitions = new State[]{ State.CANCELLED, State.HAPPENED };
+            SCHEDULED.validTransitions = new State[]{ State.CANCELLED, State.OCCURRED};
             CANCELLED.validTransitions = new State[]{ };
-            HAPPENED.validTransitions = new State[]{ };
+            OCCURRED.validTransitions = new State[]{ };
         }
 
         public final int id;
@@ -75,27 +98,5 @@ public class TimelineEvent<T extends TimelineEventValue> extends TimelineEventId
         }
     }
 
-    protected State state;
-
-    public State getState() {
-        return state;
-    }
-
-    // some value associated with the event
-    public final T value;
-
-    /**
-     * Creates a new event
-     *
-     * @param source the entity the event was generated from
-     * @param revision the revision of the event
-     * @param scheduledTime the time at will the event is planned to happen
-     * @param value the value associated with the event
-     */
-    TimelineEvent(Entity<?> source, long revision, double scheduledTime, T value) {
-        super(scheduledTime, revision);
-        this.source = source;
-        this.state = State.UNREGISTERED;
-        this.value = value;
-    }
+    // endregion
 }

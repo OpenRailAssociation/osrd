@@ -2,9 +2,14 @@ package fr.sncf.osrd;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.signaling.Aspect;
+import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
 import fr.sncf.osrd.infra.signaling.Signal;
+import fr.sncf.osrd.simulation.Change;
+import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
+import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.TrainPath;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
@@ -12,19 +17,32 @@ import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.spriteManager.Sprite;
 import org.graphstream.ui.spriteManager.SpriteManager;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 // caused by the temporary opRef.begin == opRef.end
 @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
-public class DebugViewer {
+public class DebugViewer extends ChangeConsumer {
+    private final Infra infra;
+    private final boolean realTime;
+
     private final Graph graph;
     private final SpriteManager spriteManager;
-    private final Map<Train, Sprite> trainSprites = new HashMap<>();
+    private final Map<String, TrainData> trains = new HashMap<>();
     private final Map<Signal, Sprite> signalSprites = new HashMap<>();
-    private final Map<String, Aspect> aspects = new HashMap<>();
+
+    static final class TrainData {
+        final String name;
+        final Sprite sprite;
+        final TrainPath path;
+        Train.TrainLocationChange nextMove = null;
+
+        TrainData(String name, Sprite sprite, TrainPath path) {
+            this.name = name;
+            this.sprite = sprite;
+            this.path = path;
+        }
+    }
 
     private static String encodeSpriteId(String id) {
         // sprite identifiers can't contain dots for some reason
@@ -32,26 +50,26 @@ public class DebugViewer {
     }
 
     private static final String POINT_OP_CSS = "text-alignment: under; shape: box; size: 15px; fill-color: red;";
-    private static final String RANGE_OP_CSS = "text-alignment: under; shape: box; size: 15px; fill-color: red;";
+
+    private DebugViewer(Infra infra, boolean realTime, Graph graph, SpriteManager spriteManager) {
+        this.infra = infra;
+        this.realTime = realTime;
+        this.graph = graph;
+        this.spriteManager = spriteManager;
+    }
 
     /**
      * Create a viewer for debug purposes
      * @param infra the infrastructure display
      */
-    public DebugViewer(Infra infra) {
+    public static DebugViewer from(Infra infra, boolean realTime) {
         System.setProperty("org.graphstream.ui", "swing");
-        graph = new SingleGraph("OSRD");
+
+        var graph = new SingleGraph("OSRD");
         graph.setAttribute("ui.quality");
         graph.setAttribute("ui.antialias");
-        spriteManager = new SpriteManager(graph);
-        for (var aspect : infra.aspects.values()) {
-            if (aspect.id.toUpperCase(Locale.ROOT).contains("GREEN"))
-                aspects.put("GREEN", aspect);
-            else if (aspect.id.toUpperCase(Locale.ROOT).contains("YELLOW"))
-                aspects.put("YELLOW", aspect);
-            else if (aspect.id.toUpperCase(Locale.ROOT).contains("RED"))
-                aspects.put("RED", aspect);
-        }
+        var spriteManager = new SpriteManager(graph);
+        var viewer = new DebugViewer(infra, realTime, graph, spriteManager);
 
         for (var node : infra.trackGraph.iterNodes()) {
             Node graphNode = graph.addNode(String.valueOf(node.index));
@@ -92,48 +110,44 @@ public class DebugViewer {
                         "text-alignment: under; shape: circle; size: 20px; fill-color: #2a850c;"
                 );
                 sprite.setAttribute("ui.label", signal.value.id);
-                signalSprites.put(signal.value, sprite);
+                viewer.signalSprites.put(signal.value, sprite);
             }
         }
-    }
 
-    public void display() {
         graph.display();
+        return viewer;
     }
 
-    /** Update the debug viewer with the new states of the simulation */
-    public void update(Collection<Train> trains, Collection<Signal.State> signals, double currentTime) {
-        for (var train : trains)
-            displayTrain(train, currentTime);
+    private void updateSignal(Signal signal, RSAspectSet aspects) {
+        var sprite = signalSprites.get(signal);
 
-        for (var signal : signals)
-            displaySignal(signal);
+        var signalCSS = String.format(
+                "text-alignment: under; shape: circle; size: 20px; fill-color: %s;",
+                aspects.iterator().next().color
+        );
+
+        sprite.setAttribute("ui.style", signalCSS);
     }
 
-    private void displaySignal(Signal.State signal) {
-        var sprite = signalSprites.get(signal.signal);
-        if (signal.aspects.contains(aspects.get("RED"))) {
-            sprite.setAttribute("ui.style", "text-alignment: under; shape: circle; size: 20px; fill-color: #db0c04;");
-        } else if (signal.aspects.contains(aspects.get("YELLOW"))) {
-            sprite.setAttribute("ui.style", "text-alignment: under; shape: circle; size: 20px; fill-color: #f08a05;");
-        } else {
-            sprite.setAttribute("ui.style", "text-alignment: under; shape: circle; size: 20px; fill-color: #2a850c;");
-        }
+    private void createTrain(TrainSchedule schedule, TrainPath path) {
+        var trainName = schedule.name;
+        var sprite = spriteManager.addSprite(encodeSpriteId(String.valueOf(trains.size())));
+        sprite.setAttribute("ui.style", "text-alignment: under; shape: circle; size: 20px; fill-color: #256ba8;");
+        sprite.setAttribute("ui.label", trainName);
+        trains.put(trainName, new TrainData(trainName, sprite, path));
     }
 
-    private void displayTrain(Train train, double currentTime) {
-        if (!trainSprites.containsKey(train)) {
-            var sprite = spriteManager.addSprite(encodeSpriteId(String.valueOf(trainSprites.size())));
-            sprite.setAttribute("ui.style", "text-alignment: under; shape: circle; size: 20px; fill-color: #256ba8;");
-            sprite.setAttribute("ui.label", train.id);
-            trainSprites.put(train, sprite);
-        }
+    private void updateTrain(TrainData trainData) {
+        var sprite = trainData.sprite;
+        var nextMove = trainData.nextMove;
 
-        var sprite = trainSprites.get(train);
-        var trainPhysics = train.getInterpolatedHeadLocationAndSpeed(currentTime);
-        sprite.setAttribute("ui.label", String.format("%s (%.2f m/s)", train.id, trainPhysics.speed));
+        var lastUpdate = nextMove.findLastSpeedUpdate(currentTime);
+        var pathPosition = lastUpdate.interpolatePosition(currentTime);
+        var headTopoLocation = trainData.path.findLocation(pathPosition);
+        var speed = lastUpdate.speed;
 
-        var headTopoLocation = trainPhysics.location;
+        sprite.setAttribute("ui.label", String.format("%s (%.2f m/s)", trainData.name, speed));
+
         if (!sprite.attached() || !sprite.getAttachment().getId().equals(headTopoLocation.edge.id))
             sprite.attachToEdge(headTopoLocation.edge.id);
 
@@ -142,5 +156,85 @@ public class DebugViewer {
         // a very nasty crash inside graphstream
         assert edgePosition >= 0 && edgePosition <= 1 && !Double.isNaN(edgePosition);
         sprite.setPosition(edgePosition);
+    }
+
+    private double currentTime = Double.NaN;
+
+    private void updateTime(double nextEventTime) throws InterruptedException {
+        if (Double.isNaN(currentTime)) {
+            currentTime = nextEventTime;
+            return;
+        }
+
+        // the time to wait between simulation steps
+        double interpolationStep = 1.0;
+
+        // if the user doesn't want realtime visualization, update the viewer once per timeline event
+        if (!realTime) {
+            Thread.sleep((long) (interpolationStep * 1000));
+            return;
+        }
+
+        // move the time forward by time increments
+        // to help the viewer see something
+        while (currentTime < nextEventTime) {
+            currentTime += interpolationStep;
+            if (currentTime > nextEventTime)
+                currentTime = nextEventTime;
+
+            Thread.sleep((long) (interpolationStep * 1000));
+            for (var trainData : trains.values())
+                updateTrain(trainData);
+        }
+    }
+
+    @Override
+    public void changeCreationCallback(Change change) {
+    }
+
+    @Override
+    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+    public void changePublishedCallback(Change change) {
+        // region TRAIN_CHANGES
+        if (change.getClass() == Train.TrainCreatedChange.class) {
+            var trainCreated = (Train.TrainCreatedChange) change;
+            createTrain(trainCreated.schedule, trainCreated.trainPath);
+            return;
+        }
+
+        if (change.getClass() == Train.TrainPlannedMoveChange.class) {
+            var plannedMoveChange = (Train.TrainPlannedMoveChange) change;
+            var trainName = plannedMoveChange.entityId.trainName;
+            var trainData = trains.get(trainName);
+            trainData.nextMove = plannedMoveChange.moveEventCreated.getValue();
+            return;
+        }
+
+        if (change.getClass() == Train.TrainLocationChange.class) {
+            var locationChange = (Train.TrainLocationChange) change;
+            var trainName = locationChange.entityId.trainName;
+            var trainData = trains.get(trainName);
+            trainData.nextMove = locationChange;
+            return;
+        }
+        // endregion
+
+        // region SIGNAL_CHANGES
+        if (change.getClass() == Signal.SignalAspectChange.class) {
+            var aspectChange = (Signal.SignalAspectChange) change;
+            var signal = infra.signals.get(aspectChange.entityId.signalIndex);
+            updateSignal(signal, aspectChange.aspects);
+            return;
+        }
+        // endregion
+
+        if (change.getClass() == Simulation.TimelineEventOccurred.class) {
+            var eventOccuredChange = (Simulation.TimelineEventOccurred) change;
+            try {
+                updateTime(eventOccuredChange.timelineEventId.scheduledTime);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }
