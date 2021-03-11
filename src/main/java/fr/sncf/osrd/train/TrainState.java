@@ -3,6 +3,7 @@ package fr.sncf.osrd.train;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.Simulation.TimelineEventCreated;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
@@ -181,7 +182,7 @@ public final class TrainState {
     }
 
     @SuppressWarnings("UnnecessaryLocalVariable")
-    TimelineEvent<Train.TrainLocationChange> simulateUntilEvent(Simulation sim) throws SimulationError {
+    TimelineEventCreated<Train, Train.TrainLocationChange> simulateUntilEvent(Simulation sim) throws SimulationError {
         // 1) find the next event position
 
         // look for objects in the range [train_position, +inf)
@@ -209,7 +210,7 @@ public final class TrainState {
         // 3) create an event with simulation data up to this point
         var eventTime = simulationResult.newState.time;
         assert eventTime > sim.getTime();
-        return sim.createEvent(train, eventTime, simulationResult);
+        return sim.prepareEvent(train, eventTime, simulationResult);
     }
 
     @SuppressFBWarnings({"UPM_UNCALLED_PRIVATE_METHOD"})

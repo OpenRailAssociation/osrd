@@ -3,19 +3,22 @@ package fr.sncf.osrd.simulation;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractEntity<T extends AbstractEntity<T>> implements Entity<T> {
+public abstract class AbstractEntity<
+        T extends AbstractEntity<T, EntityIDT>,
+        EntityIDT extends EntityID<T>
+        > implements Entity<T> {
     /** A list of entities which should be notified abouts events from this entity */
     public final transient ArrayList<Entity<?>> subscribers = new ArrayList<>();
 
     /** A unique identifier for this entity */
-    public final EntityID<T> id;
+    public final EntityIDT id;
 
-    protected AbstractEntity(EntityID<T> id) {
+    protected AbstractEntity(EntityIDT id) {
         this.id = id;
     }
 
     @Override
-    public EntityID<T> getID() {
+    public EntityIDT getID() {
         return id;
     }
 
@@ -34,7 +37,7 @@ public abstract class AbstractEntity<T extends AbstractEntity<T>> implements Ent
         if (this.getClass() != obj.getClass())
             return false;
 
-        var other = (AbstractEntity<?>) obj;
+        var other = (AbstractEntity<?, ?>) obj;
 
         if (!this.id.equals(other.id))
             return false;

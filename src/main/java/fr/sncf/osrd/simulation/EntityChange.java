@@ -1,9 +1,12 @@
 package fr.sncf.osrd.simulation;
 
-public abstract class EntityChange<EntityT extends Entity<EntityT>, ResultT> extends Change {
-    public final EntityID<EntityT> entityId;
+public abstract class EntityChange<
+        EntityT extends Entity<EntityT>,
+        EntityIDT extends EntityID<EntityT>, ResultT
+        > extends Change {
+    public final EntityIDT entityId;
 
-    protected EntityChange(Simulation sim, EntityID<EntityT> entityId) {
+    protected EntityChange(Simulation sim, EntityIDT entityId) {
         super(sim);
         this.entityId = entityId;
     }

@@ -3,13 +3,14 @@ package fr.sncf.osrd.simulation;
 @SuppressWarnings("UnusedReturnValue")
 public abstract class EntityEventChange<
         EntityT extends Entity<EntityT>,
+        EntityIDT extends EntityID<EntityT>,
         EventValueT extends TimelineEventValue,
         ResultT
         > extends Change {
     public final TimelineEventId timelineEventId;
-    public final EntityID<EntityT> entityId;
+    public final EntityIDT entityId;
 
-    protected EntityEventChange(Simulation sim, EntityID<EntityT> entityId, TimelineEvent<EventValueT> timelineEvent) {
+    protected EntityEventChange(Simulation sim, EntityIDT entityId, TimelineEvent<EventValueT> timelineEvent) {
         super(sim);
         this.entityId = entityId;
         this.timelineEventId = new TimelineEventId(timelineEvent);

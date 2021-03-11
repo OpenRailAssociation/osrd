@@ -4,9 +4,13 @@ public final class Aspect implements Comparable<Aspect> {
     public final int index;
     public final String id;
 
-    public Aspect(int index, String id) {
+    public final String color;
+
+    /** Create an aspect */
+    public Aspect(int index, String id, String color) {
         this.index = index;
         this.id = id;
+        this.color = color;
     }
 
     @Override

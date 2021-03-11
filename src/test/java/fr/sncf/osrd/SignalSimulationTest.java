@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Objects;
 
 public class SignalSimulationTest {
-    public static final class SignalAspectChange extends EntityChange<TestSignal, Void> {
+    public static final class SignalAspectChange extends EntityChange<TestSignal, MockEntityID<TestSignal>, Void> {
         public final TestSignal signal;
         public final TestSignal.Aspect newAspect;
 
@@ -50,7 +50,7 @@ public class SignalSimulationTest {
         }
     }
 
-    public static class TestSignal extends AbstractEntity<TestSignal> {
+    public static class TestSignal extends AbstractEntity<TestSignal, MockEntityID<TestSignal>> {
         public enum Aspect {
             RED,
             YELLOW,
@@ -58,10 +58,6 @@ public class SignalSimulationTest {
         }
 
         private Aspect aspect;
-
-        public Aspect getAspect() {
-            return aspect;
-        }
 
         @SuppressWarnings("SameParameterValue")
         TestSignal(String name, Aspect aspect, TestSignal master) {
@@ -75,32 +71,33 @@ public class SignalSimulationTest {
          * Sets the aspect of the signal, creating an event in case it changes.
          * @param sim the simulation
          * @param newAspect the new aspect of the signal
-         * @throws SimulationError if there's a logic error
          */
-        public void setAspect(Simulation sim, Aspect newAspect) throws SimulationError {
+        public void setAspect(Simulation sim, Aspect newAspect) {
             if (newAspect == aspect)
                 return;
             var change = new SignalAspectChange(sim, this, newAspect);
-            sim.createEvent(this, sim.getTime(), change);
+            sim.scheduleEvent(this, sim.getTime(), change);
             change.apply(sim, this);
         }
 
         @Override
         @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST")
-        public void onTimelineEventUpdate(
+        public void onEventOccurred(
                 Simulation sim,
-                TimelineEvent<?> event,
-                TimelineEvent.State state
-        ) throws SimulationError {
+                TimelineEvent<?> event
+        ) {
             if (event.value.getClass() == SignalAspectChange.class)
-                masterAspectChanged(sim, (SignalAspectChange) event.value, state);
+                masterAspectChanged(sim, (SignalAspectChange) event.value);
+        }
+
+        @Override
+        public void onEventCancelled(Simulation sim, TimelineEvent<?> event) {
         }
 
         private void masterAspectChanged(
                 Simulation sim,
-                SignalAspectChange event,
-                TimelineEvent.State state
-        ) throws SimulationError {
+                SignalAspectChange event
+        )  {
             var newAspect = aspect;
             if (event.newAspect == RED) {
                 newAspect = YELLOW;

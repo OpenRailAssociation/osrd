@@ -46,7 +46,7 @@ public class Signal {
     }
 
     /** The state of the signal is the actual entity which interacts with the rest of the infrastructure */
-    public static final class State extends AbstractEntity<Signal.State> implements RSValue {
+    public static final class State extends AbstractEntity<Signal.State, SignalID> implements RSValue {
         public final Signal signal;
         public RSAspectSet aspects;
         public final RSExprState<RSAspectSet> exprState;
@@ -59,13 +59,11 @@ public class Signal {
         }
 
         @Override
-        public void onTimelineEventUpdate(
-                Simulation sim, TimelineEvent<?> event, TimelineEvent.State state
-        ) throws SimulationError {
+        public void onEventOccurred(Simulation sim, TimelineEvent<?> event) {
             var delayHandler = new DelayHandler(this, sim);
             RSAspectSet newAspects = null;
 
-            if (event.value.getClass() == Signal.SignalChange.class && event.source != this) {
+            if (event.value.getClass() == SignalAspectChange.class && event.source != this) {
                 // Check that another signal has change aspect
                 newAspects = exprState.evalInputChange(sim.infraState, delayHandler);
             } else if (event.value.getClass() == Signal.SignalDelayUpdateChange.class && event.source == this) {
@@ -80,7 +78,11 @@ public class Signal {
             }
 
             if (newAspects != null && !newAspects.equals(aspects))
-                sim.createEvent(this, sim.getTime(), new Signal.SignalChange(sim, this, newAspects));
+                sim.scheduleEvent(this, sim.getTime(), new SignalAspectChange(sim, this, newAspects));
+        }
+
+        @Override
+        public void onEventCancelled(Simulation sim, TimelineEvent<?> event) throws SimulationError {
         }
 
         /** Initialize the aspect and register itself as subscriber of his dependencies */
@@ -97,22 +99,23 @@ public class Signal {
         }
     }
 
-    public static final class SignalChange extends EntityChange<Signal.State, SignalChange> {
-        RSAspectSet aspects;
+    public static final class SignalAspectChange extends EntityChange<Signal.State, SignalID, SignalAspectChange> {
+        public final RSAspectSet aspects;
 
-        protected SignalChange(Simulation sim, Signal.State entity, RSAspectSet aspects) {
+        protected SignalAspectChange(Simulation sim, Signal.State entity, RSAspectSet aspects) {
             super(sim, entity.id);
             this.aspects = aspects;
         }
 
         @Override
-        public SignalChange apply(Simulation sim, Signal.State entity) {
+        public SignalAspectChange apply(Simulation sim, Signal.State entity) {
             entity.aspects = aspects;
             return this;
         }
     }
 
-    public static final class SignalDelayUpdateChange extends EntityChange<Signal.State, SignalDelayUpdateChange> {
+    public static final class SignalDelayUpdateChange
+            extends EntityChange<Signal.State, SignalID, SignalDelayUpdateChange> {
         int delaySlot;
         RSValue value;
 
@@ -165,15 +168,11 @@ public class Signal {
 
         @Override
         public void planDelayedUpdate(int index, RSValue value, double delay) {
-            try {
-                sim.createEvent(
-                        signalState,
-                        sim.getTime() + delay,
-                        new SignalDelayUpdateChange(sim, signalState, index, value)
-                );
-            } catch (SimulationError simulationError) {
-                simulationError.printStackTrace();
-            }
+            sim.scheduleEvent(
+                    signalState,
+                    sim.getTime() + delay,
+                    new SignalDelayUpdateChange(sim, signalState, index, value)
+            );
         }
     }
 }

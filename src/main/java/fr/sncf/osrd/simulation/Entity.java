@@ -8,9 +8,13 @@ public interface Entity<T extends Entity<T>> {
 
     List<Entity<?>> getSubscribers();
 
-    void onTimelineEventUpdate(
+    void onEventOccurred(
             Simulation sim,
-            TimelineEvent<?> event,
-            TimelineEvent.State state
+            TimelineEvent<?> event
+    ) throws SimulationError;
+
+    void onEventCancelled(
+            Simulation sim,
+            TimelineEvent<?> event
     ) throws SimulationError;
 }

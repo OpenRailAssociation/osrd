@@ -5,7 +5,6 @@ import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.timetable.Schedule;
 import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPath;
@@ -14,9 +13,7 @@ import fr.sncf.osrd.utils.CryoList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
-public final class SchedulerSystem extends AbstractEntity<SchedulerSystem> {
+public final class SchedulerSystem extends AbstractEntity<SchedulerSystem, EntityID<SchedulerSystem>> {
     public static final EntityID<SchedulerSystem> ID = new EntityID<SchedulerSystem>() {
         @Override
         public SchedulerSystem getEntity(Simulation sim) {
@@ -35,23 +32,20 @@ public final class SchedulerSystem extends AbstractEntity<SchedulerSystem> {
 
     @Override
     @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST")
-    public void onTimelineEventUpdate(
+    public void onEventOccurred(
             Simulation sim,
-            TimelineEvent<?> event,
-            State state
+            TimelineEvent<?> event
     ) throws SimulationError {
-        // we don't support train creation events for now
-        if (state != State.HAPPENED) {
-            logger.info("train creation cancelled");
-            return;
-        }
-
         if (event.value.getClass() != Train.TrainCreatedChange.class)
             return;
         var newTrainChange = (Train.TrainCreatedChange) event.value;
 
-        logger.info("starting train {}", newTrainChange.timetable.name);
+        logger.info("starting train {}", newTrainChange.schedule.name);
         Train.createTrain(sim, newTrainChange);
+    }
+
+    @Override
+    public void onEventCancelled(Simulation sim, TimelineEvent<?> event) throws SimulationError {
     }
 
     /** Plans to start a train from a given schedule */
@@ -117,6 +111,6 @@ public final class SchedulerSystem extends AbstractEntity<SchedulerSystem> {
             logger.trace("{}", controller);
 
         var startTime = timetable.getDepartureTime();
-        sim.createEvent(this, startTime, new Train.TrainCreatedChange(sim, timetable, trainPath, controllers));
+        sim.scheduleEvent(this, startTime, new Train.TrainCreatedChange(sim, timetable, trainPath, controllers));
     }
 }
