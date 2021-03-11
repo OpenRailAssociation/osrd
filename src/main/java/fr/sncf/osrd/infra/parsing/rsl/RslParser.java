@@ -2,8 +2,10 @@ package fr.sncf.osrd.infra.parsing.rsl;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.graph.ApplicableDirections;
+import fr.sncf.osrd.infra.graph.EdgeEndpoint;
 import fr.sncf.osrd.infra.parsing.railjson.schema.*;
 import fr.sncf.osrd.infra.parsing.railjson.schema.trackranges.RJSOperationalPointPart;
+import fr.sncf.osrd.infra.parsing.railjson.schema.trackranges.RJSSpeedSectionPart;
 import fr.sncf.osrd.util.XmlNamespaceCleaner;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -15,7 +17,6 @@ import java.util.HashMap;
 public final class RslParser {
     /**
      * Initialises a new infrastructure from a Rsl file.
-     *
      * @return the parsed infrastructure
      */
     public static RJSRoot parse(String inputPath) throws InvalidInfraException {
@@ -33,11 +34,14 @@ public final class RslParser {
         var edges = Edge.parseEdges(document);
 
         // create and fill the root RailJSON structure:
+        // create the track sections map and the speed sections list
         // create a map of all edges connected to a given node
         var rjsTrackSections = new HashMap<String, RJSTrackSection>();
+        var rjsSpeedSections = new ArrayList<RJSSpeedSection>();
         var nodeMap = new HashMap<String, ArrayList<Edge>>();
         for (var edge : edges) {
             rjsTrackSections.put(edge.id, edge);
+            speedSectionParse(rjsSpeedSections, rjsTrackSections, edge);
             createNodeMap(nodeMap, edge);
         }
 
@@ -55,7 +59,6 @@ public final class RslParser {
         }
 
         var rjsOperationalPoints = timingPointsParse(document, rjsTrackSections, nodeMap);
-        var rjsSpeedSections = speedIndicatorsParse(document, rjsTrackSections);
         var rjsTvdSections = tvdSectionsParse();
 
         return new RJSRoot(
@@ -69,8 +72,35 @@ public final class RslParser {
     }
 
     /**
+     * Create the speed sections for normal and reverse direction and add to the corresponding track section
+     * */
+    private static void speedSectionParse(ArrayList<RJSSpeedSection> rjsSpeedSections,
+                                           HashMap<String, RJSTrackSection> rjsTrackSections, Edge edge) {
+        var ssID = new String("speed_section_" + edge.id);
+        var speedSection = new RJSSpeedSection(ssID, false, edge.getSpeed());
+        var speedSectionPart = new RJSSpeedSectionPart(
+                ID.from(speedSection), ApplicableDirections.NORMAL, 0, edge.length);
+        addSpeedSection(rjsSpeedSections, rjsTrackSections.get(edge.id), speedSection, speedSectionPart);
+        // speed limit in the opposite direction
+        var ssReverseID = new String("speed_section_" + edge.id + "_reverse");
+        var speedSectionReverse = new RJSSpeedSection(ssReverseID, false, edge.getSpeedReverse());
+        var speedSectionPartReverse = new RJSSpeedSectionPart(ID.from(speedSectionReverse),
+                ApplicableDirections.REVERSE, 0, edge.length);
+        addSpeedSection(rjsSpeedSections, rjsTrackSections.get(edge.id), speedSectionReverse, speedSectionPartReverse);
+    }
+
+    /**
+     * Add the speed section to a list and to the corresponding track section
+     * */
+    private static void addSpeedSection(ArrayList<RJSSpeedSection> rjsSpeedSections,
+                                        RJSTrackSection rjsTrackSection,
+             RJSSpeedSection speedSection, RJSSpeedSectionPart speedSectionPart) {
+        rjsSpeedSections.add(speedSection);
+        rjsTrackSection.speedSections.add(speedSectionPart);
+    }
+
+    /**
      * Create the track section link and add to a map
-     *
      * */
     private static void addTrackSectionLinks(Edge edge, Edge edge1, String nodeID,
                                              HashMap<String, RJSTrackSectionLink> rjsTrackSectionLinks) {
@@ -89,7 +119,6 @@ public final class RslParser {
 
     /**
      * Read the block sections from a Rsl file
-     *
      * @return the TVD sections list for RJS
      */
     private static ArrayList<RJSTVDSection> tvdSectionsParse() {
@@ -98,23 +127,7 @@ public final class RslParser {
     }
 
     /**
-     * Read the speed indicators from a Rsl file
-     *
-     * @return the Speed sections list for RJS
-     */
-    private static ArrayList<RJSSpeedSection> speedIndicatorsParse(Document document,
-                                                                   HashMap<String, RJSTrackSection> rjsTrackSections) {
-        var speedSections = new ArrayList<RJSSpeedSection>();
-        for (var node : document.selectNodes("/line/nodes/speedIndicator")) {
-            var speedIndicatorNode = (Element) node;
-
-        }
-        return speedSections;
-    }
-
-    /**
      * Read the time points from a Rsl file
-     *
      * @return the operational points list for RJS
      */
     private static ArrayList<RJSOperationalPoint> timingPointsParse(Document document,
@@ -124,18 +137,17 @@ public final class RslParser {
         for (var node : document.selectNodes("/line/nodes/track")) {
             var trackNode = (Element) node;
             // create the operational point
-            if ((trackNode.attributeValue("type") == "timingPoint") ||
-            (trackNode.attributeValue("type") == "stopBoardPass")) {
+            if ((trackNode.attributeValue("type").equals("timingPoint"))
+                    || (trackNode.attributeValue("type").equals("stopBoardPass"))) {
                 var id = trackNode.attributeValue("NodeID");
                 var rjsOperationalPoint = new RJSOperationalPoint(id);
-                var operationalPointID = ID.from(rjsOperationalPoint);
                 operationalPoints.add(rjsOperationalPoint);
 
                 // link tracks sections back to the operational point
                 for (var edge : nodeMap.get(id)) {
-                    var endOpPoint = findEndpoint(edge,id);
-                    if (endOpPoint.endpoint.equals("BEGIN")) {
-                        var opPart = new RJSOperationalPointPart(operationalPointID, 0, 0);
+                    var endOpPoint = findEndpoint(edge, id);
+                    if (endOpPoint.endpoint == EdgeEndpoint.BEGIN) {
+                        var opPart = new RJSOperationalPointPart(ID.from(rjsOperationalPoint), 0, 0);
                         edge.operationalPoints.add(opPart);
                         break;
                     }
@@ -147,7 +159,6 @@ public final class RslParser {
 
     /**
      * Read the switches from a Rsl file
-     *
      * @return the switches list for RJS
      */
     private static ArrayList<RJSSwitch> switchParse(Document document, HashMap<String, ArrayList<Edge>> nodeMap,
@@ -176,12 +187,11 @@ public final class RslParser {
 
     /**
      * Check if one of the tracks sections is not bidirectional
-     *
      * @return the navigability of the link
      */
     private static ApplicableDirections findLinkNavigability(Edge section, Edge section1) {
         ApplicableDirections navigability = ApplicableDirections.BOTH;
-        if ((!section.getBidirectional().equals("true")) || (!section1.getBidirectional().equals("true")))
+        if ((!section.isBidirectional()) || (!section1.isBidirectional()))
             navigability = ApplicableDirections.NORMAL;
         return navigability;
     }
