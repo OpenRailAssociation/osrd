@@ -52,10 +52,10 @@ public class Route extends BiNEdge<Route> {
         return new State(this);
     }
 
-    public static class RouteEntityID implements EntityID<Route.State> {
+    public static class RouteID implements EntityID<Route.State> {
         private final int routeIndex;
 
-        public RouteEntityID(int routeIndex) {
+        public RouteID(int routeIndex) {
             this.routeIndex = routeIndex;
         }
 
@@ -67,14 +67,14 @@ public class Route extends BiNEdge<Route> {
 
     /** The state of the route is the actual entity which interacts with the rest of the infrastructure */
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public static final class State extends AbstractEntity<Route.State, RouteEntityID> implements RSMatchable {
+    public static final class State extends AbstractEntity<Route.State, RouteID> implements RSMatchable {
         public final Route route;
         public RouteStatus status;
         public final Collection<TVDSection.State> tvdSectionStates;
         private int nbReservedTvdSection;
 
         State(Route route) {
-            super(new RouteEntityID(route.index));
+            super(new RouteID(route.index));
             this.route = route;
             this.status = RouteStatus.FREE;
             this.tvdSectionStates = new ArrayList<>();
@@ -153,7 +153,7 @@ public class Route extends BiNEdge<Route> {
         }
     }
 
-    public static class RouteFreeChange extends EntityChange<Route.State, RouteEntityID, RouteFreeChange> {
+    public static class RouteFreeChange extends EntityChange<Route.State, RouteID, RouteFreeChange> {
         public RouteFreeChange(Simulation sim, Route.State entity) {
             super(sim, entity.id);
         }
@@ -165,7 +165,7 @@ public class Route extends BiNEdge<Route> {
         }
     }
 
-    public static class RouteOccupyChange extends EntityChange<Route.State, RouteEntityID, RouteOccupyChange> {
+    public static class RouteOccupyChange extends EntityChange<Route.State, RouteID, RouteOccupyChange> {
         public RouteOccupyChange(Simulation sim, Route.State entity) {
             super(sim, entity.id);
         }
@@ -177,7 +177,7 @@ public class Route extends BiNEdge<Route> {
         }
     }
 
-    public static class RouteReserveChange extends EntityChange<Route.State, RouteEntityID, RouteReserveChange> {
+    public static class RouteReserveChange extends EntityChange<Route.State, RouteID, RouteReserveChange> {
         public RouteReserveChange(Simulation sim, Route.State entity) {
             super(sim, entity.id);
         }
@@ -189,7 +189,7 @@ public class Route extends BiNEdge<Route> {
         }
     }
 
-    public static class RouteConflictChange extends EntityChange<Route.State, RouteEntityID, RouteConflictChange> {
+    public static class RouteConflictChange extends EntityChange<Route.State, RouteID, RouteConflictChange> {
         public RouteConflictChange(Simulation sim, Route.State entity) {
             super(sim, entity.id);
         }

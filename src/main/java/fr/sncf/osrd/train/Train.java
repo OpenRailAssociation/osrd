@@ -13,19 +13,24 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Train extends AbstractEntity<Train, Train.TrainEntityID> {
+public class Train extends AbstractEntity<Train, Train.TrainID> {
     static final Logger logger = LoggerFactory.getLogger(Train.class);
 
-    public static class TrainEntityID implements EntityID<Train> {
+    public static class TrainID implements EntityID<Train> {
         public final String trainName;
 
-        public TrainEntityID(String trainName) {
+        public TrainID(String trainName) {
             this.trainName = trainName;
         }
 
         @Override
         public Train getEntity(Simulation sim) {
             return sim.trains.get(trainName);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("TrainID { %s }", trainName);
         }
     }
 
@@ -57,7 +62,7 @@ public class Train extends AbstractEntity<Train, Train.TrainEntityID> {
             double initialSpeed,
             List<SpeedController> controllers
     ) {
-        super(new TrainEntityID(name));
+        super(new TrainID(name));
         this.driverSightDistance = driverSightDistance;
         this.rollingStock = rollingStock;
         this.path = trainPath;
@@ -173,7 +178,7 @@ public class Train extends AbstractEntity<Train, Train.TrainEntityID> {
         }
     }
 
-    public static class TrainLocationChange extends EntityChange<Train, TrainEntityID, Void> {
+    public static class TrainLocationChange extends EntityChange<Train, TrainID, Void> {
         public final TrainState newState;
 
         @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
@@ -312,7 +317,7 @@ public class Train extends AbstractEntity<Train, Train.TrainEntityID> {
     }
 
     public static final class TrainPlannedMoveChange extends EntityChange<
-            Train, TrainEntityID, Void> {
+            Train, TrainID, Void> {
         public final TimelineEventCreated<Train, TrainLocationChange> moveEventCreated;
 
         public TrainPlannedMoveChange(
