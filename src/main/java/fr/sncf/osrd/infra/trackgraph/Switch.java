@@ -17,10 +17,10 @@ public class Switch extends TrackNode {
         return new Switch.State(this);
     }
 
-    public static final class SwitchEntityID implements EntityID<Switch.State> {
+    public static final class SwitchID implements EntityID<Switch.State> {
         private final int switchIndex;
 
-        public SwitchEntityID(int switchIndex) {
+        public SwitchID(int switchIndex) {
             this.switchIndex = switchIndex;
         }
 
@@ -32,12 +32,12 @@ public class Switch extends TrackNode {
 
     /** The state of the route is the actual entity which interacts with the rest of the infrastructure */
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public static final class State extends AbstractEntity<Switch.State, SwitchEntityID> implements RSMatchable {
+    public static final class State extends AbstractEntity<Switch.State, SwitchID> implements RSMatchable {
         public final Switch switchRef;
         private SwitchPosition position;
 
         State(Switch switchRef) {
-            super(new SwitchEntityID(switchRef.switchIndex));
+            super(new SwitchID(switchRef.switchIndex));
             this.switchRef = switchRef;
             this.position = SwitchPosition.LEFT;
         }
@@ -68,7 +68,7 @@ public class Switch extends TrackNode {
     }
 
     public static final class SwitchPositionChange
-            extends EntityChange<Switch.State, SwitchEntityID, Switch.SwitchPositionChange> {
+            extends EntityChange<Switch.State, SwitchID, Switch.SwitchPositionChange> {
         SwitchPosition position;
 
         protected SwitchPositionChange(Simulation sim, Switch.State entity, SwitchPosition position) {
