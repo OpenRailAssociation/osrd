@@ -62,10 +62,25 @@ public class Signal {
         public void onTimelineEventUpdate(
                 Simulation sim, TimelineEvent<?> event, TimelineEvent.State state
         ) throws SimulationError {
-            var newAspects = exprState.evalInputChange(sim.infraState, null);
-            if (!newAspects.equals(aspects)) {
-                sim.createEvent(this, sim.getTime(), new Signal.SignalChange(sim, this, newAspects));
+            var delayHandler = new DelayHandler(this, sim);
+            RSAspectSet newAspects = null;
+
+            if (event.value.getClass() == Signal.SignalChange.class && event.source != this) {
+                // Check that another signal has change aspect
+                newAspects = exprState.evalInputChange(sim.infraState, delayHandler);
+            } else if (event.value.getClass() == Signal.SignalDelayUpdateChange.class && event.source == this) {
+                // Check that a delay update as occurred on itself
+                var delayEvent = (Signal.SignalDelayUpdateChange) event.value;
+                newAspects = exprState.evalDelayUpdate(
+                        sim.infraState,
+                        delayHandler,
+                        delayEvent.delaySlot,
+                        delayEvent.value
+                );
             }
+
+            if (newAspects != null && !newAspects.equals(aspects))
+                sim.createEvent(this, sim.getTime(), new Signal.SignalChange(sim, this, newAspects));
         }
 
         /** Initialize the aspect and register itself as subscriber of his dependencies */
@@ -80,30 +95,6 @@ public class Signal {
             for (var switchRef : signal.switchDependencies)
                 state.getSwitchState(switchRef.switchIndex).subscribers.add(this);
         }
-
-        private static class DependenciesFinder extends RSExprVisitor {
-            public final ArrayList<Signal> signalDependencies = new ArrayList<>();
-            public final ArrayList<Route> routeDependencies = new ArrayList<>();
-            public final ArrayList<Switch> switchDependencies = new ArrayList<>();
-
-            @Override
-            public void visit(RSExpr.SignalRef expr) throws InvalidInfraException {
-                signalDependencies.add(expr.signal);
-                super.visit(expr);
-            }
-
-            @Override
-            public void visit(RSExpr.RouteRef expr) throws InvalidInfraException {
-                routeDependencies.add(expr.route);
-                super.visit(expr);
-            }
-
-            @Override
-            public void visit(RSExpr.SwitchRef expr) throws InvalidInfraException {
-                switchDependencies.add(expr.switcRef);
-                super.visit(expr);
-            }
-        }
     }
 
     public static final class SignalChange extends EntityChange<Signal.State, SignalChange> {
@@ -117,6 +108,22 @@ public class Signal {
         @Override
         public SignalChange apply(Simulation sim, Signal.State entity) {
             entity.aspects = aspects;
+            return this;
+        }
+    }
+
+    public static final class SignalDelayUpdateChange extends EntityChange<Signal.State, SignalDelayUpdateChange> {
+        int delaySlot;
+        RSValue value;
+
+        protected SignalDelayUpdateChange(Simulation sim, Signal.State entity, int delaySlot, RSValue value) {
+            super(sim, entity.id);
+            this.delaySlot = delaySlot;
+            this.value = value;
+        }
+
+        @Override
+        public SignalDelayUpdateChange apply(Simulation sim, Signal.State entity) {
             return this;
         }
     }
@@ -144,6 +151,29 @@ public class Signal {
         public void visit(RSExpr.SwitchRef expr) throws InvalidInfraException {
             signal.switchDependencies.add(expr.switcRef);
             super.visit(expr);
+        }
+    }
+
+    static class DelayHandler implements RSDelayHandler {
+        private final Signal.State signalState;
+        private final Simulation sim;
+
+        DelayHandler(State signalState, Simulation sim) {
+            this.signalState = signalState;
+            this.sim = sim;
+        }
+
+        @Override
+        public void planDelayedUpdate(int index, RSValue value, double delay) {
+            try {
+                sim.createEvent(
+                        signalState,
+                        sim.getTime() + delay,
+                        new SignalDelayUpdateChange(sim, signalState, index, value)
+                );
+            } catch (SimulationError simulationError) {
+                simulationError.printStackTrace();
+            }
         }
     }
 }

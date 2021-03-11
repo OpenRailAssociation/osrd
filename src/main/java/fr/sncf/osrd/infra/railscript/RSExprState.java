@@ -46,7 +46,7 @@ public class RSExprState<T extends RSValue> {
 
     void planDelayedUpdate(int index, RSValue value, double delay) {
         assert evalMode != RSExprEvalMode.INITIALIZE;
-        // TODO: send delay updates
+        delayHandler.planDelayedUpdate(index, value, delay);
     }
 
     Infra.State infraState;
