@@ -60,15 +60,15 @@ public class Signal {
 
         @Override
         public void onEventOccurred(Simulation sim, TimelineEvent<?> event) {
-            var delayHandler = new DelayHandler(this, sim);
+            var delayHandler = new DelayHandler(sim, this);
             RSAspectSet newAspects = null;
 
             if (event.value.getClass() == SignalAspectChange.class && event.source != this) {
                 // Check that another signal has change aspect
                 newAspects = exprState.evalInputChange(sim.infraState, delayHandler);
-            } else if (event.value.getClass() == Signal.SignalDelayUpdateChange.class && event.source == this) {
+            } else if (event.value.getClass() == SignalDelayUpdateEventValue.class && event.source == this) {
                 // Check that a delay update as occurred on itself
-                var delayEvent = (Signal.SignalDelayUpdateChange) event.value;
+                var delayEvent = (SignalDelayUpdateEventValue) event.value;
                 newAspects = exprState.evalDelayUpdate(
                         sim.infraState,
                         delayHandler,
@@ -77,13 +77,15 @@ public class Signal {
                 );
             }
 
-            if (newAspects != null && !newAspects.equals(aspects))
-                sim.scheduleEvent(this, sim.getTime(), new SignalAspectChange(sim, this, newAspects));
+            if (newAspects != null && !newAspects.equals(aspects)) {
+                var change = new SignalAspectChange(sim, this, newAspects);
+                change.apply(sim, this);
+                sim.scheduleEvent(this, sim.getTime(), change);
+            }
         }
 
         @Override
-        public void onEventCancelled(Simulation sim, TimelineEvent<?> event) throws SimulationError {
-        }
+        public void onEventCancelled(Simulation sim, TimelineEvent<?> event) { }
 
         /** Initialize the aspect and register itself as subscriber of his dependencies */
         public void initialize(Infra.State state) {
@@ -99,7 +101,7 @@ public class Signal {
         }
     }
 
-    public static final class SignalAspectChange extends EntityChange<Signal.State, SignalID, SignalAspectChange> {
+    public static final class SignalAspectChange extends EntityChange<State, SignalID, Void> {
         public final RSAspectSet aspects;
 
         protected SignalAspectChange(Simulation sim, Signal.State entity, RSAspectSet aspects) {
@@ -108,26 +110,19 @@ public class Signal {
         }
 
         @Override
-        public SignalAspectChange apply(Simulation sim, Signal.State entity) {
+        public Void apply(Simulation sim, Signal.State entity) {
             entity.aspects = aspects;
-            return this;
+            return null;
         }
     }
 
-    public static final class SignalDelayUpdateChange
-            extends EntityChange<Signal.State, SignalID, SignalDelayUpdateChange> {
-        int delaySlot;
-        RSValue value;
+    public static final class SignalDelayUpdateEventValue implements TimelineEventValue {
+        public final int delaySlot;
+        public final RSValue value;
 
-        protected SignalDelayUpdateChange(Simulation sim, Signal.State entity, int delaySlot, RSValue value) {
-            super(sim, entity.id);
+        public SignalDelayUpdateEventValue(int delaySlot, RSValue value) {
             this.delaySlot = delaySlot;
             this.value = value;
-        }
-
-        @Override
-        public SignalDelayUpdateChange apply(Simulation sim, Signal.State entity) {
-            return this;
         }
     }
 
@@ -158,20 +153,21 @@ public class Signal {
     }
 
     static class DelayHandler implements RSDelayHandler {
-        private final Signal.State signalState;
-        private final Simulation sim;
 
-        DelayHandler(State signalState, Simulation sim) {
-            this.signalState = signalState;
+        private final Simulation sim;
+        private final State signalState;
+
+        DelayHandler(Simulation sim, State signalState) {
             this.sim = sim;
+            this.signalState = signalState;
         }
 
         @Override
-        public void planDelayedUpdate(int index, RSValue value, double delay) {
+        public void planDelayedUpdate(int delaySlot, RSValue value, double delay) {
             sim.scheduleEvent(
                     signalState,
                     sim.getTime() + delay,
-                    new SignalDelayUpdateChange(sim, signalState, index, value)
+                    new SignalDelayUpdateEventValue(delaySlot, value)
             );
         }
     }
