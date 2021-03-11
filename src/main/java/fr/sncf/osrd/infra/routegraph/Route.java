@@ -81,23 +81,25 @@ public class Route extends BiNEdge<Route> {
         }
 
         @Override
-        public void onEventOccurred(
-                Simulation sim,
-                TimelineEvent<?> event
-        ) throws SimulationError {
+        public void onEventOccurred(Simulation sim, TimelineEvent<?> event) {
             switch (status) {
                 case FREE:
-                    if (event.value.getClass() == TVDSection.TVDSectionReservedChange.class)
-                        sim.scheduleEvent(this, sim.getTime(), new Route.RouteConflictChange(sim, this));
+                    if (event.value.getClass() == TVDSection.TVDSectionReservedChange.class) {
+                        var change = new Route.RouteConflictChange(sim, this);
+                        change.apply(sim, this);
+                        sim.scheduleEvent(this, sim.getTime(), change);
+                    }
                     break;
                 case RESERVED:
-                    if (event.value.getClass() == TVDSection.TVDSectionOccupiedChange.class) {
-                        sim.scheduleEvent(this, sim.getTime(), new RouteOccupyChange(sim, this));
+                    if (event.value.getClass() == TVDSection.TVDSectionOccupied.class) {
+                        var change = new RouteOccupyChange(sim, this);
+                        change.apply(sim, this);
+                        sim.scheduleEvent(this, sim.getTime(), change);
                         nbReservedTvdSection = tvdSectionStates.size();
                     }
                     break;
                 case OCCUPIED:
-                    if (event.value.getClass() == TVDSection.TVDSectionNotOccupiedChange.class) {
+                    if (event.value.getClass() == TVDSection.TVDSectionNotOccupied.class) {
                         if (route.transitType == TransitType.FLEXIBLE) {
                             var tvdSection = (TVDSection.State) event.source;
                             tvdSection.free(sim);
@@ -117,19 +119,21 @@ public class Route extends BiNEdge<Route> {
                     if (tvdSectionState.isReserved())
                         return;
                 }
-                sim.scheduleEvent(this, sim.getTime(), new RouteFreeChange(sim, this));
+                var change = new RouteFreeChange(sim, this);
+                change.apply(sim, this);
+                sim.scheduleEvent(this, sim.getTime(), change);
             }
         }
 
         @Override
-        public void onEventCancelled(Simulation sim, TimelineEvent<?> event) throws SimulationError {
-
-        }
+        public void onEventCancelled(Simulation sim, TimelineEvent<?> event) { }
 
         /** Reserve a route and his tvd sections. Routes that share tvd sections will have the status CONFLICT */
-        public void reserve(Simulation sim) throws SimulationError {
+        public void reserve(Simulation sim) {
             assert status == RouteStatus.FREE;
-            sim.scheduleEvent(this, sim.getTime(), new RouteReserveChange(sim, this));
+            var change = new RouteReserveChange(sim, this);
+            change.apply(sim, this);
+            sim.scheduleEvent(this, sim.getTime(), change);
             for (var tvdSection : tvdSectionStates)
                 tvdSection.reserve(sim);
             for (var switchPos : route.switchesPosition.entrySet()) {
@@ -153,51 +157,51 @@ public class Route extends BiNEdge<Route> {
         }
     }
 
-    public static class RouteFreeChange extends EntityChange<Route.State, RouteID, RouteFreeChange> {
+    public static class RouteFreeChange extends EntityChange<Route.State, RouteID, Void> {
         public RouteFreeChange(Simulation sim, Route.State entity) {
             super(sim, entity.id);
         }
 
         @Override
-        public RouteFreeChange apply(Simulation sim, Route.State entity) {
+        public Void apply(Simulation sim, Route.State entity) {
             entity.status = RouteStatus.FREE;
-            return this;
+            return null;
         }
     }
 
-    public static class RouteOccupyChange extends EntityChange<Route.State, RouteID, RouteOccupyChange> {
+    public static class RouteOccupyChange extends EntityChange<Route.State, RouteID, Void> {
         public RouteOccupyChange(Simulation sim, Route.State entity) {
             super(sim, entity.id);
         }
 
         @Override
-        public RouteOccupyChange apply(Simulation sim, Route.State entity) {
+        public Void apply(Simulation sim, Route.State entity) {
             entity.status = RouteStatus.OCCUPIED;
-            return this;
+            return null;
         }
     }
 
-    public static class RouteReserveChange extends EntityChange<Route.State, RouteID, RouteReserveChange> {
+    public static class RouteReserveChange extends EntityChange<Route.State, RouteID, Void> {
         public RouteReserveChange(Simulation sim, Route.State entity) {
             super(sim, entity.id);
         }
 
         @Override
-        public RouteReserveChange apply(Simulation sim, Route.State entity) {
+        public Void apply(Simulation sim, Route.State entity) {
             entity.status = RouteStatus.RESERVED;
-            return this;
+            return null;
         }
     }
 
-    public static class RouteConflictChange extends EntityChange<Route.State, RouteID, RouteConflictChange> {
+    public static class RouteConflictChange extends EntityChange<Route.State, RouteID, Void> {
         public RouteConflictChange(Simulation sim, Route.State entity) {
             super(sim, entity.id);
         }
 
         @Override
-        public RouteConflictChange apply(Simulation sim, Route.State entity) {
+        public Void apply(Simulation sim, Route.State entity) {
             entity.status = RouteStatus.CONFLICT;
-            return this;
+            return null;
         }
     }
 

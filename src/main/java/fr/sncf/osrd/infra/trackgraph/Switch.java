@@ -48,18 +48,18 @@ public class Switch extends TrackNode {
 
         /** Change position of the switch */
         public void setPosition(Simulation sim, SwitchPosition position) {
-            if (this.position != position)
-                sim.scheduleEvent(this,  sim.getTime(), new Switch.SwitchPositionChange(sim, this, position));
+            if (this.position != position) {
+                var change = new Switch.SwitchPositionChange(sim, this, position);
+                change.apply(sim, this);
+                sim.scheduleEvent(this, sim.getTime(), change);
+            }
         }
 
         @Override
-        public void onEventOccurred(Simulation sim, TimelineEvent<?> event) {
-        }
+        public void onEventOccurred(Simulation sim, TimelineEvent<?> event) { }
 
         @Override
-        public void onEventCancelled(Simulation sim, TimelineEvent<?> event) {
-
-        }
+        public void onEventCancelled(Simulation sim, TimelineEvent<?> event) { }
 
         @Override
         public int getEnumValue() {
@@ -68,7 +68,7 @@ public class Switch extends TrackNode {
     }
 
     public static final class SwitchPositionChange
-            extends EntityChange<Switch.State, SwitchID, Switch.SwitchPositionChange> {
+            extends EntityChange<Switch.State, SwitchID, Void> {
         SwitchPosition position;
 
         protected SwitchPositionChange(Simulation sim, Switch.State entity, SwitchPosition position) {
@@ -77,9 +77,9 @@ public class Switch extends TrackNode {
         }
 
         @Override
-        public Switch.SwitchPositionChange apply(Simulation sim, Switch.State entity) {
+        public Void apply(Simulation sim, Switch.State entity) {
             entity.position = position;
-            return this;
+            return null;
         }
     }
 }
