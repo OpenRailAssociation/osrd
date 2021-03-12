@@ -77,10 +77,27 @@ public final class Infra {
     public final HashMap<String, Aspect> aspects;
     public final ArrayList<Signal> signals;
     public final ArrayList<Switch> switches;
-    public final ArrayList<Signal> topologicalSignalOrder;
+
+    private Infra(
+            TrackGraph trackGraph,
+            WaypointGraph waypointGraph,
+            RouteGraph routeGraph,
+            HashMap<String, TVDSection> tvdSections,
+            HashMap<String, Aspect> aspects,
+            ArrayList<Signal> signals,
+            ArrayList<Switch> switches
+    ) {
+        this.trackGraph = trackGraph;
+        this.routeGraph = routeGraph;
+        this.tvdSections = tvdSections;
+        this.aspects = aspects;
+        this.signals = signals;
+        this.switches = switches;
+        this.waypointGraph = waypointGraph;
+    }
 
     /** Create an OSRD Infra */
-    public Infra(
+    public static Infra build(
             TrackGraph trackGraph,
             WaypointGraph waypointGraph,
             RouteGraph routeGraph,
@@ -89,15 +106,16 @@ public final class Infra {
             ArrayList<Signal> signals,
             ArrayList<Switch> switches
     ) throws InvalidInfraException {
-        this.trackGraph = trackGraph;
-        this.routeGraph = routeGraph;
-        this.tvdSections = tvdSections;
-        this.aspects = aspects;
-        this.signals = signals;
-        this.switches = switches;
-        this.trackGraph.validate();
-        this.waypointGraph = waypointGraph;
-        this.topologicalSignalOrder = buildTopologicalSignalOrder(signals);
+        var infra = new Infra(trackGraph, waypointGraph, routeGraph, tvdSections, aspects, signals, switches);
+        infra.trackGraph.validate();
+
+        // Evaluate initial aspects of signals
+        var topologicalSignalOrder = buildTopologicalSignalOrder(signals);
+        var initialState = infra.createInitialState();
+        for (var i = topologicalSignalOrder.size() - 1; i >= 0; i--)
+            signals.get(topologicalSignalOrder.get(i).index).evalInitialAspect(initialState);
+
+        return infra;
     }
 
     /**
@@ -185,6 +203,40 @@ public final class Infra {
         }
     }
 
+    /** Initializes a state for the infrastructure */
+    public State createInitialState() {
+        var signalCount = signals.size();
+        var signalStates = new Signal.State[signalCount];
+        for (int i = 0; i < signalCount; i++)
+            signalStates[i] = signals.get(i).newState();
+
+        var routeCount = routeGraph.getEdgeCount();
+        var routeStates = new Route.State[routeCount];
+        for (int i = 0; i < routeCount; i++)
+            routeStates[i] = routeGraph.getEdge(i).newState();
+
+        var switchCount = switches.size();
+        var switchStates = new Switch.State[switchCount];
+        for (var infraSwitch : switches)
+            switchStates[infraSwitch.switchIndex] = infraSwitch.newState();
+
+        var tvdSectionCount = tvdSections.size();
+        var tvdSectionStates = new TVDSection.State[tvdSectionCount];
+        for (var tvdSection : tvdSections.values())
+            tvdSectionStates[tvdSection.index] = tvdSection.newState();
+
+        var state = new State(signalStates, routeStates, switchStates, tvdSectionStates);
+
+        // Initialize entities
+        for (var signal : signalStates)
+            signal.initialize(state);
+
+        for (var route : routeStates)
+            route.initialize(state);
+
+        return state;
+    }
+
     public static final class State {
         private final Signal.State[] signalStates;
         private final Route.State[] routeStates;
@@ -217,42 +269,6 @@ public final class Infra {
 
         public TVDSection.State getTvdSectionState(int tvdSectionIndex) {
             return tvdSectionStates[tvdSectionIndex];
-        }
-
-
-        /** Initializes a state for the infrastructure */
-        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST_OF_RETURN_VALUE"})
-        public static State from(Infra infra) {
-            var signalCount = infra.signals.size();
-            var signalStates = new Signal.State[signalCount];
-            for (int i = 0; i < signalCount; i++)
-                signalStates[i] = infra.signals.get(i).newState();
-
-            var routeCount = infra.routeGraph.getEdgeCount();
-            var routeStates = new Route.State[routeCount];
-            for (int i = 0; i < routeCount; i++)
-                routeStates[i] = infra.routeGraph.getEdge(i).newState();
-
-            var switchCount = infra.switches.size();
-            var switchStates = new Switch.State[switchCount];
-            for (var infraSwitch : infra.switches)
-                switchStates[infraSwitch.switchIndex] = infraSwitch.newState();
-
-            var tvdSectionCount = infra.tvdSections.size();
-            var tvdSectionStates = new TVDSection.State[tvdSectionCount];
-            for (var tvdSection : infra.tvdSections.values())
-                tvdSectionStates[tvdSection.index] = tvdSection.newState();
-
-            var state = new State(signalStates, routeStates, switchStates, tvdSectionStates);
-
-            // Initialize entities
-            for (var i = infra.topologicalSignalOrder.size() - 1; i >= 0; i--)
-                signalStates[infra.topologicalSignalOrder.get(i).index].initialize(state);
-
-            for (var route : routeStates)
-                route.initialize(state);
-
-            return state;
         }
     }
 }

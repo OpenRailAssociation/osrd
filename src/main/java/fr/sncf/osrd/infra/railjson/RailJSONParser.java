@@ -279,7 +279,8 @@ public class RailJSONParser {
             signal.expr.accept(dependenciesFinder);
         }
 
-        return new Infra(trackGraph, waypointGraph, routeGraph.build(), tvdSectionsMap, aspectsMap, signals, switches);
+        return Infra.build(trackGraph, waypointGraph, routeGraph.build(),
+                tvdSectionsMap, aspectsMap, signals, switches);
     }
 
     private static <E extends RJSRouteWaypoint> void findWaypoints(

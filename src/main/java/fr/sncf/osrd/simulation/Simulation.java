@@ -82,7 +82,7 @@ public final class Simulation {
             double simStartTime,
             ChangeConsumer changeConsumer
     ) {
-        var infraState = Infra.State.from(infra);
+        var infraState = infra.createInitialState();
         return new Simulation(infra, infraState, simStartTime, changeConsumer);
     }
 
