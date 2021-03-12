@@ -6,6 +6,7 @@ import fr.sncf.osrd.simulation.Simulation.TimelineEventCreated;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.timetable.TrainSchedule;
+import fr.sncf.osrd.timetable.TrainSchedule.TrainID;
 import fr.sncf.osrd.utils.CryoList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,101 +14,59 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Train extends AbstractEntity<Train, Train.TrainID> {
+public class Train extends AbstractEntity<Train, TrainID> {
     static final Logger logger = LoggerFactory.getLogger(Train.class);
-
-    public static class TrainID implements EntityID<Train> {
-        public final String trainName;
-
-        public TrainID(String trainName) {
-            this.trainName = trainName;
-        }
-
-        @Override
-        public Train getEntity(Simulation sim) {
-            return sim.trains.get(trainName);
-        }
-
-        @Override
-        public String toString() {
-            return String.format("TrainID { %s }", trainName);
-        }
-    }
 
     public String getName() {
         return id.trainName;
     }
 
-    // how far the driver of the train can see
-    public final double driverSightDistance;
-
-    public final RollingStock rollingStock;
-    public final TrainPath path;
-
     private TrainState lastState;
-
-    // the candidate next state, which corresponds to the state of the train when
-    // it goes through the next point of interest, such as a signal getting in sight range
-    private TrainState nextState = null;
 
     // the timeline event for the train's arrival at the next point of interest
     private TimelineEvent<TrainLocationChange> nextMoveEvent = null;
 
-    Train(
-            @SuppressWarnings("SameParameterValue") double driverSightDistance,
-            String name,
-            Simulation sim,
-            RollingStock rollingStock,
-            TrainPath trainPath,
-            double initialSpeed,
-            List<SpeedController> controllers
-    ) {
-        super(new TrainID(name));
-        this.driverSightDistance = driverSightDistance;
-        this.rollingStock = rollingStock;
-        this.path = trainPath;
-        var location = new TrainPositionTracker(sim.infra, trainPath, rollingStock.length);
+    private Train(Simulation sim, TrainSchedule schedule, List<SpeedController> controllers) {
+        super(schedule.trainID);
+        var location = new TrainPositionTracker(sim.infra, schedule.path, schedule.rollingStock.length);
         this.lastState = new TrainState(
                 sim.getTime(),
                 location,
-                initialSpeed,
+                schedule.initialSpeed,
                 TrainStatus.STARTING_UP,
                 controllers,
-                this
+                schedule
         );
         // the train must react to its own move events
         this.subscribers.add(this);
     }
 
-    /**
-     * Creates a train entity
-     * @param sim the simulation
-     * @param trainCreatedChange the change modeling the train's creation
-     * @return A new train entity
-     */
-    public static Train createTrain(
+    // region ENTITY_REACTOR
+
+    /** Create a train */
+    public static Train create(
             Simulation sim,
-            TrainCreatedChange trainCreatedChange
+            TrainSchedule schedule,
+            CryoList<SpeedController> controllers
     ) throws SimulationError {
+        var trainCreatedChange = new Train.TrainCreatedChange(sim, schedule, controllers);
         var train = trainCreatedChange.apply(sim);
         sim.publishChange(trainCreatedChange);
-        train.planNextMove(sim);
+        train.updateNextMove(sim);
         return train;
     }
 
-    // region ENTITY_REACTOR
-
-    void planNextMove(Simulation sim) throws SimulationError {
+    private void updateNextMove(Simulation sim) throws SimulationError {
         if (lastState.status == TrainStatus.REACHED_DESTINATION) {
             logger.info("train {} reached destination, aborting planning", id);
             return;
         }
 
         logger.info("planning the next move for train {}", id);
-        var moveEventChange = lastState.simulateUntilEvent(sim);
-        var change = new TrainPlannedMoveChange(sim, this, moveEventChange);
-        change.apply(sim, this);
-        sim.publishChange(change);
+        var moveEventChange = lastState.simulateUntilEvent(this, sim);
+        var nextMoveChange = new TrainPlannedMoveChange(sim, this, moveEventChange);
+        nextMoveChange.apply(sim, this);
+        sim.publishChange(nextMoveChange);
     }
 
     @Override
@@ -116,14 +75,14 @@ public class Train extends AbstractEntity<Train, Train.TrainID> {
             var locationChange = (TrainLocationChange) event.value;
             locationChange.apply(sim, this);
             sim.publishChange(locationChange);
-            planNextMove(sim);
+            updateNextMove(sim);
         }
     }
 
     @Override
     public void onEventCancelled(Simulation sim, TimelineEvent<?> event) throws SimulationError {
         if (event.value.getClass() == TrainLocationChange.class)
-            planNextMove(sim);
+            updateNextMove(sim);
     }
 
     // endregion
@@ -132,49 +91,30 @@ public class Train extends AbstractEntity<Train, Train.TrainID> {
 
     public static final class TrainCreatedChange extends SimChange<Train> {
         public final TrainSchedule schedule;
-        public final TrainPath trainPath;
         public final CryoList<SpeedController> initialControllers;
 
-        /**
-         * A change corresponding to a train's creation.
-         * @param sim the simulation
-         * @param schedule the train's timetable
-         * @param trainPath the path the train shall follow
-         */
+        /** A change corresponding to a train's creation. */
         public TrainCreatedChange(
                 Simulation sim,
                 TrainSchedule schedule,
-                TrainPath trainPath,
                 CryoList<SpeedController> initialControllers
         ) {
             super(sim);
             this.schedule = schedule;
-            this.trainPath = trainPath;
             this.initialControllers = initialControllers;
         }
 
         @Override
         public Train apply(Simulation sim) {
-            var trainName = schedule.name;
-
             var controllers = new ArrayList<>(initialControllers);
-
-            var train = new Train(
-                    400,
-                    trainName,
-                    sim,
-                    schedule.rollingStock,
-                    trainPath,
-                    schedule.initialSpeed,
-                    controllers
-            );
-            sim.trains.put(trainName, train);
+            var train = new Train(sim, schedule, controllers);
+            sim.trains.put(train.getName(), train);
             return train;
         }
 
         @Override
         public String toString() {
-            return String.format("TrainCreatedChange { name=%s }", schedule.name);
+            return String.format("TrainCreatedChange { name=%s }", schedule.trainID);
         }
     }
 
@@ -282,26 +222,15 @@ public class Train extends AbstractEntity<Train, Train.TrainID> {
             return lastUpdate;
         }
 
-        /**
-         * Creates a change corresponding to the movement of a train
-         *
-         * @param sim the simulation
-         * @param train the train this movement is about
-         * @param newState the state of the train after the change
-         */
-        public TrainLocationChange(
-                Simulation sim,
-                Train train,
-                TrainState newState
-        ) {
-            super(sim, train.getID());
+        /** Creates a change corresponding to the movement of a train */
+        public TrainLocationChange(Simulation sim, TrainID trainID, TrainState newState) {
+            super(sim, trainID);
             this.newState = newState;
         }
 
         @Override
         public final Void apply(Simulation sim, Train train) {
             train.lastState = this.newState;
-            train.nextState = null;
             train.nextMoveEvent = null;
             return null;
         }
@@ -316,8 +245,7 @@ public class Train extends AbstractEntity<Train, Train.TrainID> {
         }
     }
 
-    public static final class TrainPlannedMoveChange extends EntityChange<
-            Train, TrainID, Void> {
+    public static final class TrainPlannedMoveChange extends EntityChange<Train, TrainID, Void> {
         public final TimelineEventCreated<Train, TrainLocationChange> moveEventCreated;
 
         public TrainPlannedMoveChange(
