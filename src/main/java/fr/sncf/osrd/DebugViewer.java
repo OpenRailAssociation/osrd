@@ -105,12 +105,9 @@ public class DebugViewer extends ChangeConsumer {
                 var sprite = spriteManager.addSprite(signalRefID);
                 sprite.attachToEdge(edge.id);
                 sprite.setPosition(pos);;
-                sprite.setAttribute(
-                        "ui.style",
-                        "text-alignment: under; shape: circle; size: 20px; fill-color: #2a850c;"
-                );
                 sprite.setAttribute("ui.label", signal.value.id);
                 viewer.signalSprites.put(signal.value, sprite);
+                viewer.updateSignal(signal.value, signal.value.getInitialAspects());
             }
         }
 

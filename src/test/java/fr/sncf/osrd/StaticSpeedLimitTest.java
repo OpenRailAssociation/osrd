@@ -65,8 +65,7 @@ public class StaticSpeedLimitTest {
         // TODO: this infra is missing many bits, no detectors nor routes isn't ideal
         var waypointGraph = WaypointGraph.buildDetectorGraph(trackGraph);
         var routeGraph = new RouteGraph.Builder(waypointGraph).build();
-        final var infra = new Infra(
-                trackGraph, waypointGraph, routeGraph,
+        final var infra = Infra.build( trackGraph, waypointGraph, routeGraph,
                 new HashMap<>(), new HashMap<>(), new ArrayList<>(), new ArrayList<>());
 
         // create the waypoints the train should go through

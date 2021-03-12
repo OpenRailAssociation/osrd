@@ -21,6 +21,8 @@ public class Signal {
     public final ArrayList<Route> routeDependencies = new ArrayList<>();
     public final ArrayList<Switch> switchDependencies = new ArrayList<>();
 
+    private RSAspectSet initialAspects = new RSAspectSet();
+
     /** The static data describing a signal */
     public Signal(int index, String id, RSStatefulExpr<RSAspectSet> expr) {
         this.index = index;
@@ -30,6 +32,10 @@ public class Signal {
 
     public State newState() {
         return new State(this, expr.makeState());
+    }
+
+    public void evalInitialAspect(Infra.State initialState) {
+        initialAspects = initialState.getSignalState(index).exprState.evalInit(initialState);
     }
 
     public static class SignalID implements EntityID<Signal.State> {
@@ -45,6 +51,10 @@ public class Signal {
         }
     }
 
+    public RSAspectSet getInitialAspects() {
+        return initialAspects;
+    }
+
     /** The state of the signal is the actual entity which interacts with the rest of the infrastructure */
     public static final class State extends AbstractEntity<Signal.State, SignalID> implements RSValue {
         public final Signal signal;
@@ -55,7 +65,7 @@ public class Signal {
             super(new SignalID(signal.index));
             this.signal = signal;
             this.exprState = exprState;
-            this.aspects = new RSAspectSet();
+            this.aspects = signal.initialAspects;
         }
 
         @Override
@@ -87,10 +97,8 @@ public class Signal {
         @Override
         public void onEventCancelled(Simulation sim, TimelineEvent<?> event) { }
 
-        /** Initialize the aspect and register itself as subscriber of his dependencies */
+        /** Register itself as subscriber of his dependencies */
         public void initialize(Infra.State state) {
-            aspects = exprState.evalInit(state);
-
             // Register itself to his dependencies
             for (var route : signal.routeDependencies)
                 state.getRouteState(route.index).subscribers.add(this);
@@ -98,6 +106,7 @@ public class Signal {
                 state.getSignalState(signal.index).subscribers.add(this);
             for (var switchRef : signal.switchDependencies)
                 state.getSwitchState(switchRef.switchIndex).subscribers.add(this);
+
             // The signal must be subscribe to itself to receive SignalDelayUpdateEventValue
             subscribers.add(this);
         }

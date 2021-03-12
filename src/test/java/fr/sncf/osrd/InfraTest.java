@@ -17,8 +17,7 @@ class InfraTest {
         var nodeB = trackGraph.makePlaceholderNode("B");
         trackGraph.makeTrackSection(nodeA.index, nodeB.index, "e1", 42);
 
-        new Infra(trackGraph, null, null,
-                new HashMap<>(), new HashMap<>(),
+        Infra.build(trackGraph, null, null, new HashMap<>(), new HashMap<>(),
                 new ArrayList<>(), new ArrayList<>());
     }
 }
