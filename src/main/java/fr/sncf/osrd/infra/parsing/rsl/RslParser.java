@@ -80,9 +80,10 @@ public final class RslParser {
      * @return the TVD sections list for RJS
      */
     private static ArrayList<RJSTVDSection> tvdSectionsParse(Document document,
-                                         HashMap<String, RJSTrackSection> rjsTrackSections,
+                                             HashMap<String, RJSTrackSection> rjsTrackSections,
                                          HashMap<String, ArrayList<Edge>> nodeMap) {
         var rjstvdsections = new ArrayList<RJSTVDSection>();
+        var trainDetectorsMap = new HashMap<String,RJSTrainDetector>();
 
         for (var node : document.selectNodes("/line/blockSections/blockSection")) {
             var blockSectionNode = (Element) node;
@@ -92,26 +93,32 @@ public final class RslParser {
             // The block section is a list of nodes
             // the train detectors are put et the begin of each block section
             HashSet<ID<RJSTrainDetector>> trainDetectors = null;
-            var partNode = (Element) blockSectionNode.selectNodes("/part");
-            var nodes = new String(partNode.attributeValue("nodes"));
+            var partNode = blockSectionNode.element("/part");
+            var nodes = partNode.attributeValue("nodes");
             var nodesId = nodes.split(" ");
             var beginNodeId = nodesId[0];
+            var endNodeId = nodesId[nodesId.length-1];
             var trainDetector = new RJSTrainDetector(beginNodeId, ApplicableDirections.BOTH, 0);
+            trainDetectorsMap.put(beginNodeId,trainDetector);
+            if (trainDetectorsMap.get(endNodeId) == null)
+                trainDetectorsMap.put(endNodeId,trainDetector);
 
             // Link tracks sections back to the train detector
+            String trainDetectorEdgeID = null;
             for (var edge : nodeMap.get(beginNodeId)) {
-                var endOpPoint = findEndpoint(edge, beginNodeId);
-                if (endOpPoint.endpoint == EdgeEndpoint.BEGIN) {
-                    edge.trainDetectors.add(trainDetector);
+                if ((edge.beginEndpoint().endpoint.id == Integer.getInteger(beginNodeId))
+                        || (edge.endEndpoint().endpoint.id == Integer.getInteger(endNodeId))) {
+                    trainDetectorEdgeID = edge.id;
                     break;
                 }
             }
-
+            rjsTrackSections.get(trainDetectorEdgeID).trainDetectors.add(trainDetector);
             // Add the train detector to the list of this tvd section
-            trainDetectors.add(new ID<RJSTrainDetector>(beginNodeId));
+            trainDetectors.add(new ID<>(beginNodeId));
             ArrayList<ID<RJSBufferStop>> bufferStops = null;
             rjstvdsections.add(new RJSTVDSection(id, isBerthingTrack, trainDetectors, bufferStops));
         }
+
         return rjstvdsections;
     }
 
@@ -120,7 +127,7 @@ public final class RslParser {
      * */
     private static void speedSectionParse(ArrayList<RJSSpeedSection> rjsSpeedSections,
                                            HashMap<String, RJSTrackSection> rjsTrackSections, Edge edge) {
-        var ssID = new String("speed_section_" + edge.id);
+        var ssID = "speed_section_" + edge.id;
         var speedSection = new RJSSpeedSection(ssID, false, edge.getSpeed());
         var speedSectionPart = new RJSSpeedSectionPart(
                 ID.from(speedSection), ApplicableDirections.NORMAL, 0, edge.length);
