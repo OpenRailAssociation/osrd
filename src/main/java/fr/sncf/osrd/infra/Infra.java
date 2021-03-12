@@ -77,16 +77,9 @@ public final class Infra {
     public final HashMap<String, Aspect> aspects;
     public final ArrayList<Signal> signals;
     public final ArrayList<Switch> switches;
+    public final ArrayList<Signal> topologicalSignalOrder;
 
-    /**
-     * Create an OSRD Infra
-     * @param trackGraph the track graph
-     * @param waypointGraph the waypoint graph
-     * @param routeGraph the route graph
-     * @param tvdSections the list of TVDSection
-     * @param aspects the list of valid signal aspects
-     * @throws InvalidInfraException {@inheritDoc}
-     */
+    /** Create an OSRD Infra */
     public Infra(
             TrackGraph trackGraph,
             WaypointGraph waypointGraph,
@@ -104,6 +97,7 @@ public final class Infra {
         this.switches = switches;
         this.trackGraph.validate();
         this.waypointGraph = waypointGraph;
+        this.topologicalSignalOrder = buildTopologicalSignalOrder(signals);
     }
 
     /**
@@ -116,6 +110,40 @@ public final class Infra {
         var waypointGraph = WaypointGraph.buildDetectorGraph(trackGraph);
         linkTVDSectionToPath(waypointGraph, tvdSections);
         return waypointGraph;
+    }
+
+    private static ArrayList<Signal> buildTopologicalSignalOrder(
+            ArrayList<Signal> signals
+    ) throws InvalidInfraException {
+        var order = new ArrayList<Signal>();
+        var indeg = new int[signals.size()];
+        for (Signal signal : signals) {
+            for (var neighbor : signal.signalDependencies)
+                indeg[neighbor.index] += 1;
+        }
+
+        var toVisit = new ArrayList<Signal>();
+        for (var node = 0; node < signals.size(); node++) {
+            if (indeg[node] == 0)
+                toVisit.add(signals.get(node));
+        }
+
+        while (!toVisit.isEmpty()) {
+            var node = toVisit.remove(toVisit.size() - 1); // pop()
+            order.add(node);
+            for (var neighbor : node.signalDependencies) {
+                indeg[neighbor.index] -= 1;
+                if (indeg[neighbor.index] == 0)
+                    toVisit.add(neighbor);
+            }
+        }
+
+        for (var deg : indeg) {
+            if (deg != 0)
+                throw new InvalidInfraException("The signal dependency graph has a cycle.");
+        }
+
+        return order;
     }
 
     /**
@@ -218,8 +246,8 @@ public final class Infra {
             var state = new State(signalStates, routeStates, switchStates, tvdSectionStates);
 
             // Initialize entities
-            for (var signal : signalStates)
-                signal.initialize(state);
+            for (var i = infra.topologicalSignalOrder.size() - 1; i >= 0; i--)
+                signalStates[infra.topologicalSignalOrder.get(i).index].initialize(state);
 
             for (var route : routeStates)
                 route.initialize(state);

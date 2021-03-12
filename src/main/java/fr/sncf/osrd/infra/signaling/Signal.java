@@ -98,6 +98,8 @@ public class Signal {
                 state.getSignalState(signal.index).subscribers.add(this);
             for (var switchRef : signal.switchDependencies)
                 state.getSwitchState(switchRef.switchIndex).subscribers.add(this);
+            // The signal must be subscribe to itself to receive SignalDelayUpdateEventValue
+            subscribers.add(this);
         }
     }
 
