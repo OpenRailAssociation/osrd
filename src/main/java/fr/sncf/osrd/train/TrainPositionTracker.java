@@ -2,44 +2,70 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
-import fr.sncf.osrd.infra.trackgraph.PointAttrGetter;
-import fr.sncf.osrd.infra.trackgraph.RangeAttrGetter;
-import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.utils.PointValue;
-import fr.sncf.osrd.utils.RangeValue;
-import fr.sncf.osrd.utils.TopoLocation;
 
 import java.util.ArrayDeque;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 public final class TrainPositionTracker implements Cloneable {
-    public final transient Infra infra;
+    private final transient Infra infra;
+    private final transient Infra.State infraState;
 
-    /** The planned path the train shall follow. */
-    public final transient TrainPath path;
-
-    /** The index of the edge the head of the train currently is at. */
-    private int currentPathIndex = 0;
-
-    /** The length of the train, in meters. */
-    private final double trainLength;
+    /** Distance covered since the train has departed */
+    private double pathPosition = 0;
 
     /** The list of edges the train currently spans over. */
-    private final ArrayDeque<PathSection> currentPathEdges;
+    public final ArrayDeque<TrackSectionRange> trackSectionRanges;
 
     /**
-     *  The position of the head of the train on its edge.
-     *  Its the ground truth for the position of the train.
+     * Create a new position tracker on some given infrastructure and path.
+     * @param infraState the infrastructure to navigate on
      */
-    private double headEdgePosition;
+    public TrainPositionTracker(
+            Infra infra,
+            Infra.State infraState,
+            ArrayDeque<TrackSectionRange> trackSectionRanges
+    ) {
+        this.infra = infra;
+        this.infraState = infraState;
+        this.trackSectionRanges = trackSectionRanges;
+    }
 
-    /**
-     *  The position of the tail on its edge.
-     *  Its recomputed from the head edge position at each update.
+    /** Compute initial track section ranges given a location and a train length.
+     * @param offset relative to the start of the edge
      */
-    private double tailEdgePosition = Double.NaN;
+    public static ArrayDeque<TrackSectionRange> computeInitialPosition(
+            Infra infra,
+            TrackSection track,
+            EdgeDirection direction,
+            double offset,
+            double trainLength
+    ) {
+        var positions = new ArrayDeque<TrackSectionRange>();
+        offset = track.position(direction, offset);
+        while (true) {
+            var availableSpace = offset;
+            var startOffset = Double.max(0, availableSpace - trainLength);
+            positions.add(new TrackSectionRange(track, direction, startOffset, availableSpace));
+            if (availableSpace >= trainLength)
+                return positions;
+
+            trainLength -= availableSpace;
+            var neighbors = infra.trackGraph.getStartNeighborRels(track, direction);
+            assert neighbors.size() == 1;
+            direction = neighbors.get(0).getDirection(track, direction).opposite();
+            track = neighbors.get(0).getEdge(track, direction);
+            offset = track.length;
+        }
+    }
+
+    private TrainPositionTracker(TrainPositionTracker tracker) {
+        this.infra = tracker.infra;
+        this.infraState = tracker.infraState;
+        this.trackSectionRanges = tracker.trackSectionRanges.clone();
+        this.pathPosition = tracker.pathPosition;
+    }
 
     // region STD_OVERRIDES
 
@@ -53,29 +79,13 @@ public final class TrainPositionTracker implements Cloneable {
             return false;
 
         var other = (TrainPositionTracker) obj;
-        if (!path.equals(other.path))
-            return false;
-
-        if (currentPathIndex != other.currentPathIndex)
-            return false;
-
-        if (trainLength != other.trainLength)
-            return false;
-
-        if (!currentPathEdges.equals(other.currentPathEdges))
-            return false;
-
-        if (headEdgePosition != other.headEdgePosition)
-            return false;
-
-        return tailEdgePosition == other.tailEdgePosition;
+        return trackSectionRanges.equals(other.trackSectionRanges);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(path, currentPathIndex, trainLength, currentPathEdges, headEdgePosition, tailEdgePosition);
+        return Objects.hash(trackSectionRanges);
     }
-
     // endregion
 
     /**
@@ -87,233 +97,90 @@ public final class TrainPositionTracker implements Cloneable {
         return new TrainPositionTracker(this);
     }
 
-    /** Checks whether we reached the end of the path. */
-    public boolean hasReachedGoal() {
-        // we haven't reached our goal if we aren't on the last edge
-        if (currentPathIndex < path.sections.size() - 1)
-            return false;
+    private TrackSectionRange nextTrackSectionPosition(double delta) {
+        var curTrackSectionPos = trackSectionRanges.getFirst();
+        var neighbors = infra.trackGraph.getEndNeighborRels(curTrackSectionPos.edge, curTrackSectionPos.direction);
 
-        // if we don't have any and somehow don't have any more
-        if (currentPathEdges.isEmpty())
-            return true;
+        if (neighbors.isEmpty())
+            return null;
 
-        // we must also have reached the correct point on the last edge
-        return headEdgePosition >= currentPathEdges.getFirst().endOffset;
-    }
+        var next = neighbors.get(0);
+        var nextTrackSection = next.getEdge(curTrackSectionPos.edge, curTrackSectionPos.direction);
 
-    /** Gets the position of the head relative to the start of the path. */
-    public double getHeadPathPosition() {
-        return currentPathEdges.getFirst().pathStartOffset + headEdgePosition;
-    }
+        // In case of a switch, we need to get the next track section align with the position of the switch.
+        if (neighbors.size() > 1) {
+            var nodeIndex = curTrackSectionPos.edge.getEndNode(curTrackSectionPos.direction);
+            var node = infra.trackGraph.getNode(nodeIndex);
+            assert node.getClass() == Switch.class;
+            var switchState = infraState.getSwitchState(((Switch) node).switchIndex);
+            nextTrackSection = switchState.getLinkedTrackSection();
+        }
 
-    /** Return the head's location on the graph */
-    public TopoLocation getHeadTopoLocation() {
-        var headPathElement = currentPathEdges.getFirst();
-        return new TopoLocation(headPathElement.edge, headEdgePosition);
-    }
-
-    /** Gets the position of the head relative to the start of the path. */
-    public double getTailPathPosition() {
-        return currentPathEdges.getLast().pathStartOffset + tailEdgePosition;
+        var nextTrackSectionDirection = nextTrackSection.getDirection(curTrackSectionPos.edge, curTrackSectionPos.direction);
+        return TrackSectionRange.makeNext(nextTrackSection, nextTrackSectionDirection, delta);
     }
 
     /**
-     * Create a new position tracker on some given infrastructure and path.
-     * @param infra the infrastructure to navigate on
-     * @param path the path to follow
-     * @param trainLength the length of the train
-     */
-    public TrainPositionTracker(Infra infra, TrainPath path, double trainLength) {
-        this.infra = infra;
-        this.path = path;
-        this.trainLength = trainLength;
-        this.currentPathEdges = new ArrayDeque<>();
-        var firstSection = path.sections.first();
-        currentPathEdges.add(firstSection);
-        if (firstSection.direction == EdgeDirection.START_TO_STOP)
-            headEdgePosition = firstSection.beginOffset;
-        else
-            headEdgePosition = firstSection.edge.length - firstSection.beginOffset;
-        assert headEdgePosition >= 0.0;
-        updatePosition(0);
-    }
-
-    private TrainPositionTracker(TrainPositionTracker tracker) {
-        this.infra = tracker.infra;
-        this.path = tracker.path;
-        this.trainLength = tracker.trainLength;
-        this.currentPathIndex = tracker.currentPathIndex;
-        this.currentPathEdges = tracker.currentPathEdges.clone();
-        this.headEdgePosition = tracker.headEdgePosition;
-        this.tailEdgePosition = tracker.tailEdgePosition;
-    }
-
-    private PathSection headPathEdge() {
-        return currentPathEdges.getFirst();
-    }
-
-    private PathSection nextPathEdge() {
-        ++currentPathIndex;
-        return path.sections.get(currentPathIndex);
-    }
-
-    private boolean hasNextPathEdge() {
-        return currentPathIndex < path.sections.size() - 1;
-    }
-
-    /**
-     * Updates the position of the train on the network
-     * @param positionDelta How much the train moves by
+     * Updates the position of the train on the network.
+     * @param positionDelta How much the train moves by.
      */
     public void updatePosition(double positionDelta) {
-        headEdgePosition += positionDelta;
-        assert headEdgePosition >= 0.0;
+        var delta = updateHeadPosition(positionDelta);
+        updateTailPosition(delta);
+        pathPosition += delta;
+    }
+
+    /** TODO: Check if it's the wanted behavior...
+     * Move the head of train to positionDelta ahead.
+     * The train stop if it can't go further.
+     * @return The delta distance travelled by the train.
+     */
+    private double updateHeadPosition(double positionDelta) {
+        var delta = positionDelta;
+        var headPos = trackSectionRanges.getFirst();
+        var deltaFree = headPos.edge.length - headPos.endOffset;
+        var deltaMove = Double.min(positionDelta, deltaFree);
+        headPos.endOffset += deltaMove;
+        delta -= deltaMove;
 
         // add edges to the current edges queue as the train moves forward
+        while (positionDelta > 0) {
+            var nextPos = nextTrackSectionPosition(positionDelta);
+            if (nextPos == null)
+                return positionDelta - delta;
+            delta -= nextPos.edge.length;
+            trackSectionRanges.addFirst(nextPos);
+        }
+        return positionDelta;
+    }
+
+    private void updateTailPosition(double positionDelta) {
         while (true) {
-            var headEdgeLength = headPathEdge().edge.length;
-            // if there are no edges after the current head edge, stop
-            if (!hasNextPathEdge()) {
-                // disallow going out of the path
-                if (headEdgePosition > headEdgeLength)
-                    headEdgePosition = headEdgeLength;
+            var tailPos = trackSectionRanges.getLast();
+            var availableSpace = tailPos.edge.length - tailPos.beginOffset;
+            if (availableSpace > positionDelta) {
+                tailPos.beginOffset += positionDelta;
                 break;
             }
-            // stop adding edges when the head position lies inside the current head edge
-            if (headEdgePosition < headEdgeLength)
-                break;
-
-            // add the next edge on the path to the current edges queue
-            var newEdge = nextPathEdge();
-            assert !currentPathEdges.contains(newEdge);
-            currentPathEdges.addFirst(newEdge);
-
-            // TODO: re-introduce events on edge changes?
-            // joinedEdgeSignal.dispatch(newEdge);
-
-            // as the head edge changed, so does the position
-            headEdgePosition -= headEdgeLength;
-            assert headEdgePosition >= 0.0;
+            positionDelta -= availableSpace;
+            trackSectionRanges.removeLast();
         }
-
-        /*
-         * remove edges off the tail as the train leaves those
-         *
-         *   removable           train
-         *                   ===========>
-         * +------------+-----------+---------+
-         *                   ^          ^
-         *                  tail        head
-         * \__________________________________/
-         *          total edges span
-         * \____________/\____________________/
-         *  tail edge len    next edges span
-         *               \______________/\____/
-         *          new available space     `head edge headroom
-         *
-         * continue while newAvailableSpace >= trainLength
-         */
-
-        var headEdgeHeadroom = headPathEdge().edge.length - headEdgePosition;
-        var totalEdgesSpan = currentPathEdges.stream().mapToDouble(pathEdge -> pathEdge.edge.length).sum();
-        assert headEdgeHeadroom >= 0.;
-        while (currentPathEdges.size() > 1) {
-            var tailEdgeLength = currentPathEdges.getLast().edge.length;
-            var nextEdgesSpan = totalEdgesSpan - tailEdgeLength;
-            var newAvailableSpace = nextEdgesSpan - headEdgeHeadroom;
-            if (newAvailableSpace < trainLength)
-                break;
-
-            // TODO: re-introduce events on edge changes?
-            // leftEdgeSignal.dispatch(currentPathEdges.removeLast());
-            totalEdgesSpan -= tailEdgeLength;
-            currentPathEdges.removeLast();
-        }
-        tailEdgePosition = totalEdgesSpan - (trainLength + headEdgeHeadroom);
     }
 
-    /**
-     * Stream point attributes ahead of the train
-     * @param distance the lookahead distance
-     * @param attrGetter a function that gets a PointSequence from an edge
-     * @param <ValueT> the type of the attributes
-     * @return a stream on the point attributes ahead of the train
-     */
-    public <ValueT> Stream<PointValue<ValueT>> streamPointAttrForward(
-            double distance,
-            PointAttrGetter<ValueT> attrGetter
-    ) {
-        var headPathPosition = getHeadPathPosition();
-        return PathAttrIterator.streamPoints(
-                path,
-                currentPathIndex,
-                headPathPosition,
-                headPathPosition + distance,
-                attrGetter);
+    public double getPathPosition() {
+        return pathPosition;
     }
 
-    /**
-     * Stream range attributes ahead of the train
-     * @param distance the lookahead distance
-     * @param attrGetter a function that gets a RangeSequence from an edge
-     * @param <ValueT> the type of the attributes
-     * @return a stream on the range attributes ahead of the train
-     */
-    public <ValueT> Stream<RangeValue<ValueT>> streamRangeAttrForward(
-            double distance,
-            RangeAttrGetter<ValueT> attrGetter
-    ) {
-        var headPathPosition = getHeadPathPosition();
-        return PathAttrIterator.streamRanges(
-                path,
-                currentPathIndex,
-                headPathPosition,
-                headPathPosition + distance,
-                attrGetter);
-    }
-
-    /**
-     * Stream point attributes under the train
-     * @param attrGetter a function that gets a PointSequence from an edge
-     * @param <ValueT> the type of the sequence elements
-     * @return a stream on point attributes under the train
-     */
-    public <ValueT> Stream<PointValue<ValueT>> streamPointAttrUnderTrain(PointAttrGetter<ValueT> attrGetter) {
-        var tailPathPosition = getTailPathPosition();
-        var firstEdgeIndex = currentPathIndex - currentPathEdges.size();
-        return PathAttrIterator.streamPoints(
-                path,
-                firstEdgeIndex,
-                tailPathPosition,
-                tailPathPosition + trainLength,
-                attrGetter);
-    }
-
-    /**
-     * Stream range attributes under the train
-     * @param attrGetter a function that gets a RangeSequence from an edge
-     * @param <ValueT> the type of the sequence elements
-     * @return a stream on range attributes under the train
-     */
-    public <ValueT> Stream<RangeValue<ValueT>> streamRangeAttrUnderTrain(RangeAttrGetter<ValueT> attrGetter) {
-        var tailPathPosition = getTailPathPosition();
-        var firstEdgeIndex = currentPathIndex - currentPathEdges.size() + 1;
-        return PathAttrIterator.streamRanges(
-                path,
-                firstEdgeIndex,
-                tailPathPosition,
-                tailPathPosition + trainLength,
-                attrGetter);
-    }
-
-    /**
-     * Computes the maximum grade (slope) under the train.
-     * @return the maximum grade (slope) under the train.
-     */
+    /** Computes the maximum grade (slope) under the train. */
     public double maxTrainGrade() {
-        return this.streamRangeAttrUnderTrain(TrackSection::getSlope)
-                .map(e -> e.value)
-                .max(Double::compareTo)
-                .orElse(0.);
+        var val = 0.;
+        for (var track : trackSectionRanges) {
+            for (var slope : TrackSection.getSlope(track.edge, track.direction).data) {
+                var pos = track.getEdgeRelPosition(slope.position);
+                if (pos > track.beginOffset && pos < track.endOffset)
+                    val = Double.max(slope.value, val);
+            }
+        }
+        return val;
     }
 }

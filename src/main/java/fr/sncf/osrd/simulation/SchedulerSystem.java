@@ -7,7 +7,6 @@ import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.utils.CryoList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,16 +26,13 @@ public final class SchedulerSystem extends AbstractEntity<SchedulerSystem, Entit
     /** The value embed in the train creation event */
     public static final class TrainCreation implements TimelineEventValue {
         public final TrainSchedule schedule;
-        public final TrainPath path;
         public final CryoList<SpeedController> controllers;
 
         TrainCreation(
                 TrainSchedule schedule,
-                TrainPath path,
                 CryoList<SpeedController> controllers
         ) {
             this.schedule = schedule;
-            this.path = path;
             this.controllers = controllers;
         }
     }
@@ -58,13 +54,13 @@ public final class SchedulerSystem extends AbstractEntity<SchedulerSystem, Entit
     }
 
     @Override
-    public void onEventCancelled(Simulation sim, TimelineEvent<?> event) throws SimulationError {
+    public void onEventCancelled(Simulation sim, TimelineEvent<?> event) {
     }
 
     /** Plans to start a train from a given schedule */
-    public void planTrain(Simulation sim, TrainSchedule schedule) throws SimulationError {
+    public void planTrain(Simulation sim, TrainSchedule schedule) {
         // the path is computed at the beginning of the simulation, as it is (for now) part of the event
-        var trainPath = schedule.path;
+        var trainPath = schedule.fullPath;
         var rollingStock = schedule.rollingStock;
 
         var controllers = new CryoList<SpeedController>();
@@ -76,9 +72,10 @@ public final class SchedulerSystem extends AbstractEntity<SchedulerSystem, Entit
                 Double.POSITIVE_INFINITY
         ));
 
-        for (var pathSection : trainPath.sections) {
-            var edge = pathSection.edge;
-            for (var speedRange : TrackSection.getSpeedSections(edge, pathSection.direction)) {
+        var offset = 0;
+        for (var trackSectionRange : trainPath) {
+            var edge = trackSectionRange.edge;
+            for (var speedRange : TrackSection.getSpeedSections(edge, trackSectionRange.direction)) {
                 var speedSection = speedRange.value;
 
                 // signalized speed sections are handled dynamically
@@ -90,7 +87,6 @@ public final class SchedulerSystem extends AbstractEntity<SchedulerSystem, Entit
                     continue;
 
                 // compute where this limit is active from and to
-                var offset = pathSection.pathStartOffset;
                 var begin = offset + speedRange.begin;
                 var end = offset + speedRange.end;
 
@@ -117,13 +113,13 @@ public final class SchedulerSystem extends AbstractEntity<SchedulerSystem, Entit
 
                 controllers.add(new MaxSpeedController(speedSection.speedLimit, begin, end));
             }
+            offset += trackSectionRange.edge.length;
         }
 
         logger.trace("created initial speed controllers:");
         for (var controller : controllers)
             logger.trace("{}", controller);
 
-        var startTime = schedule.getDepartureTime();
-        sim.scheduleEvent(this, startTime, new TrainCreation(schedule, trainPath, controllers));
+        sim.scheduleEvent(this, schedule.departureTime, new TrainCreation(schedule, controllers));
     }
 }

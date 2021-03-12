@@ -197,6 +197,13 @@ public class RailJSONParser {
             signalsBuilder.build();
         }
 
+        // Fill switch with their right / left track sections
+        for (var rjsSwitch : railJSON.switches) {
+            var switchRef = switchNames.get(rjsSwitch.id);
+            switchRef.leftTrackSection = infraTrackSections.get(rjsSwitch.left.section.id);
+            switchRef.rightTrackSection = infraTrackSections.get(rjsSwitch.right.section.id);
+        }
+
         // link track sections together
         for (var trackSectionLink : railJSON.trackSectionLinks) {
             var begin = trackSectionLink.begin;

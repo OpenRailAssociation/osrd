@@ -9,7 +9,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.simulation.changelog.ChangeLog;
 import fr.sncf.osrd.speedcontroller.*;
-import fr.sncf.osrd.train.PathSection;
+import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.Train.*;
 import fr.sncf.osrd.utils.CryoList;
 import okio.BufferedSink;
@@ -35,11 +35,11 @@ public class ChangeSerializer {
             .add(new LocalTimeAdapter())
             .add(CollectionJsonAdapter.of(CryoList.class, CryoList::new))
             .add(CollectionJsonAdapter.of(
-                    TrainLocationChange.PathUpdates.class,
-                    TrainLocationChange.PathUpdates::new))
+                    TrainStateChange.PathUpdates.class,
+                    TrainStateChange.PathUpdates::new))
             .add(CollectionJsonAdapter.of(
-                    TrainLocationChange.SpeedUpdates.class,
-                    TrainLocationChange.SpeedUpdates::new))
+                    TrainStateChange.SpeedUpdates.class,
+                    TrainStateChange.SpeedUpdates::new))
             .add(new SerializableDoubleAdapter())
             .add(adaptPolymorphicType(Change.class, "changeType"))
             .add(adaptPolymorphicType(TimelineEventValue.class, "valueType"))
@@ -157,12 +157,12 @@ public class ChangeSerializer {
 
     private static class CurrentPathEdgesAdapter {
         @ToJson
-        Collection<PathSection> edgesFromJson(ArrayDeque<PathSection> currentPathEdges) {
+        Collection<TrackSectionRange> edgesFromJson(ArrayDeque<TrackSectionRange> currentPathEdges) {
             return currentPathEdges;
         }
 
         @FromJson
-        ArrayDeque<PathSection> eventToJson(Collection<PathSection> currentPathEdgesColl) {
+        ArrayDeque<TrackSectionRange> eventToJson(Collection<TrackSectionRange> currentPathEdgesColl) {
             throw new RuntimeException("not implemented");
         }
     }

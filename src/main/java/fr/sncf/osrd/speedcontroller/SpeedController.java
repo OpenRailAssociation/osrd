@@ -16,7 +16,7 @@ public abstract class SpeedController {
     }
 
     public boolean isActive(TrainState state) {
-        var position = state.location.getHeadPathPosition();
+        var position = state.location.getPathPosition();
         return (position >= beginPosition && position < endPosition);
     }
 

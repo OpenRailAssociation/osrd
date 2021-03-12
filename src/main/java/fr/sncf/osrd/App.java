@@ -71,10 +71,6 @@ public class App {
                 if (config.showViewer)
                     multiplexer.add(DebugViewer.from(config.infra, config.realTimeViewer));
 
-                // plan train creation
-                for (var trainSchedule : config.schedule.trainSchedules)
-                    sim.scheduler.planTrain(sim, trainSchedule);
-
                 // run the simulation loop
                 while (!sim.isSimulationOver())
                     sim.step();

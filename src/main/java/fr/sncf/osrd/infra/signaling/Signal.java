@@ -9,11 +9,12 @@ import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.train.Train;
 
 import java.util.ArrayList;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public class Signal {
+public class Signal implements TrainInteractable {
     public final int index;
     public final String id;
     public final RSStatefulExpr<RSAspectSet> expr;
@@ -36,6 +37,11 @@ public class Signal {
 
     public void evalInitialAspect(Infra.State initialState) {
         initialAspects = initialState.getSignalState(index).exprState.evalInit(initialState);
+    }
+
+    @Override
+    public void interact(Simulation sim, Train train) {
+        // TODO
     }
 
     public static class SignalID implements EntityID<Signal.State> {

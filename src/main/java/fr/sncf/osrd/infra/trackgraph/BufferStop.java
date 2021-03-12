@@ -14,12 +14,7 @@ public class BufferStop extends Waypoint {
     }
 
     @Override
-    public void onTrainArrival(Simulation sim, Train train) {
-        // TODO
-    }
-
-    @Override
-    public void onTrainDeparture(Simulation sim, Train train) {
+    public void interact(Simulation sim, Train train) {
         // TODO
     }
 }

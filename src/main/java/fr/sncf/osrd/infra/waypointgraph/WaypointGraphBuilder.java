@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
+import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.PointValue;
 import fr.sncf.osrd.utils.graph.UndirectedBiEdgeID;
 import fr.sncf.osrd.utils.graph.overlay.BiGraphOverlayBuilder;
@@ -11,6 +12,7 @@ import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.overlay.OverlayPathEnd;
 import fr.sncf.osrd.utils.graph.path.FullPathArray;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
@@ -43,6 +45,16 @@ public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
     protected TVDSectionPath linkOverlayNodes(OverlayPathEnd<TrackSection, Waypoint> path) {
         var fullPath = FullPathArray.from(path);
 
+        // Build list of track sections position
+        var trackSections = new ArrayList<TrackSectionRange>();
+        var lastNode = fullPath.pathNodes.get(0);
+        for (var nodeIndex = 1; nodeIndex < fullPath.pathNodes.size(); nodeIndex++) {
+            var curNode = fullPath.pathNodes.get(nodeIndex);
+            var endOffset = lastNode.edge == curNode.edge ? curNode.position : lastNode.edge.length;
+            trackSections.add(new TrackSectionRange(lastNode.edge, lastNode.direction, lastNode.position, endOffset));
+            lastNode = curNode;
+        }
+
         var startNode = fullPath.start.overlayNode;
         EdgeDirection startNodeDirection = fullPath.start.direction;
         var endNode = fullPath.end.overlayNode;
@@ -57,8 +69,8 @@ public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
                 overlayGraph,
                 startNodeIndex, startNodeDirection,
                 endNodeIndex, endNodeDirection,
-                length
-        );
+                length,
+                trackSections);
 
         // fill the node adjacency lists
         var startNeighbors = startNode.getTvdSectionPathNeighbors(startNodeDirection);

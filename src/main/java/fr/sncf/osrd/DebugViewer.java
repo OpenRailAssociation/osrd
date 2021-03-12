@@ -9,7 +9,6 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.TrainPath;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
@@ -33,14 +32,15 @@ public class DebugViewer extends ChangeConsumer {
 
     static final class TrainData {
         final String name;
+        final TrainSchedule schedule;
         final Sprite sprite;
-        final TrainPath path;
-        Train.TrainLocationChange nextMove = null;
 
-        TrainData(String name, Sprite sprite, TrainPath path) {
+        Train.TrainStateChange nextMove = null;
+
+        TrainData(String name, Sprite sprite, TrainSchedule schedule) {
             this.name = name;
+            this.schedule = schedule;
             this.sprite = sprite;
-            this.path = path;
         }
     }
 
@@ -126,12 +126,12 @@ public class DebugViewer extends ChangeConsumer {
         sprite.setAttribute("ui.style", signalCSS);
     }
 
-    private void createTrain(TrainSchedule schedule, TrainPath path) {
+    private void createTrain(TrainSchedule schedule) {
         var trainName = schedule.trainID.trainName;
         var sprite = spriteManager.addSprite(encodeSpriteId(String.valueOf(trains.size())));
         sprite.setAttribute("ui.style", "text-alignment: under; shape: circle; size: 20px; fill-color: #256ba8;");
         sprite.setAttribute("ui.label", trainName);
-        trains.put(trainName, new TrainData(trainName, sprite, path));
+        trains.put(trainName, new TrainData(trainName, sprite, schedule));
     }
 
     private void updateTrain(TrainData trainData) {
@@ -140,7 +140,7 @@ public class DebugViewer extends ChangeConsumer {
 
         var lastUpdate = nextMove.findLastSpeedUpdate(currentTime);
         var pathPosition = lastUpdate.interpolatePosition(currentTime);
-        var headTopoLocation = trainData.path.findLocation(pathPosition);
+        var headTopoLocation = trainData.schedule.findLocation(pathPosition);
         var speed = lastUpdate.speed;
 
         sprite.setAttribute("ui.label", String.format("%s (%.2f m/s)", trainData.name, speed));
@@ -195,25 +195,22 @@ public class DebugViewer extends ChangeConsumer {
         // region TRAIN_CHANGES
         if (change.getClass() == Train.TrainCreatedChange.class) {
             var trainCreated = (Train.TrainCreatedChange) change;
-            createTrain(trainCreated.schedule, trainCreated.schedule.path);
+            createTrain(trainCreated.schedule);
             return;
         }
 
-        if (change.getClass() == Train.TrainPlannedMoveChange.class) {
-            var plannedMoveChange = (Train.TrainPlannedMoveChange) change;
-            var trainName = plannedMoveChange.entityId.trainName;
-            var trainData = trains.get(trainName);
-            trainData.nextMove = plannedMoveChange.moveEventCreated.getValue();
-            return;
+        if (change.getClass() == Simulation.TimelineEventCreated.class) {
+            var timelineEventCreated = (Simulation.TimelineEventCreated<?, ?>) change;
+            if (timelineEventCreated.entityId.getClass() == TrainSchedule.TrainID.class) {
+                var trainName = ((TrainSchedule.TrainID) timelineEventCreated.entityId).trainName;
+                var eventValue = timelineEventCreated.getValue();
+                if (eventValue.getClass() == Train.TrainReachesInteraction.class) {
+                    var trainReachesInteraction = (Train.TrainReachesInteraction) eventValue;
+                    trains.get(trainName).nextMove = trainReachesInteraction.trainStateChange;
+                }
+            }
         }
 
-        if (change.getClass() == Train.TrainLocationChange.class) {
-            var locationChange = (Train.TrainLocationChange) change;
-            var trainName = locationChange.entityId.trainName;
-            var trainData = trains.get(trainName);
-            trainData.nextMove = locationChange;
-            return;
-        }
         // endregion
 
         // region SIGNAL_CHANGES
