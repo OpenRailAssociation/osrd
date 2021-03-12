@@ -130,7 +130,7 @@ public class DebugViewer extends ChangeConsumer {
     }
 
     private void createTrain(TrainSchedule schedule, TrainPath path) {
-        var trainName = schedule.name;
+        var trainName = schedule.trainID.trainName;
         var sprite = spriteManager.addSprite(encodeSpriteId(String.valueOf(trains.size())));
         sprite.setAttribute("ui.style", "text-alignment: under; shape: circle; size: 20px; fill-color: #256ba8;");
         sprite.setAttribute("ui.label", trainName);
@@ -198,7 +198,7 @@ public class DebugViewer extends ChangeConsumer {
         // region TRAIN_CHANGES
         if (change.getClass() == Train.TrainCreatedChange.class) {
             var trainCreated = (Train.TrainCreatedChange) change;
-            createTrain(trainCreated.schedule, trainCreated.trainPath);
+            createTrain(trainCreated.schedule, trainCreated.schedule.path);
             return;
         }
 

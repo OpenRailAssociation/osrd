@@ -8,18 +8,12 @@ import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPath;
-import fr.sncf.osrd.simulation.TimelineEvent.State;
 import fr.sncf.osrd.utils.CryoList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class SchedulerSystem extends AbstractEntity<SchedulerSystem, EntityID<SchedulerSystem>> {
-    public static final EntityID<SchedulerSystem> ID = new EntityID<SchedulerSystem>() {
-        @Override
-        public SchedulerSystem getEntity(Simulation sim) {
-            return sim.scheduler;
-        }
-    };
+    public static final EntityID<SchedulerSystem> ID = sim -> sim.scheduler;
 
     static final Logger logger = LoggerFactory.getLogger(SchedulerSystem.class);
 
@@ -30,18 +24,37 @@ public final class SchedulerSystem extends AbstractEntity<SchedulerSystem, Entit
         this.subscribers.add(this);
     }
 
+    /** The value embed in the train creation event */
+    public static final class TrainCreation implements TimelineEventValue {
+        public final TrainSchedule schedule;
+        public final TrainPath path;
+        public final CryoList<SpeedController> controllers;
+
+        TrainCreation(
+                TrainSchedule schedule,
+                TrainPath path,
+                CryoList<SpeedController> controllers
+        ) {
+            this.schedule = schedule;
+            this.path = path;
+            this.controllers = controllers;
+        }
+    }
+
     @Override
     @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST")
     public void onEventOccurred(
             Simulation sim,
             TimelineEvent<?> event
     ) throws SimulationError {
-        if (event.value.getClass() != Train.TrainCreatedChange.class)
+        if (event.value.getClass() != TrainCreation.class)
             return;
-        var newTrainChange = (Train.TrainCreatedChange) event.value;
 
-        logger.info("starting train {}", newTrainChange.schedule.name);
-        Train.createTrain(sim, newTrainChange);
+        var trainCreation = (TrainCreation) event.value;
+        var trainName = trainCreation.schedule.trainID;
+        logger.info("starting train {}", trainName);
+
+        Train.create(sim, trainCreation.schedule, trainCreation.controllers);
     }
 
     @Override
@@ -49,10 +62,10 @@ public final class SchedulerSystem extends AbstractEntity<SchedulerSystem, Entit
     }
 
     /** Plans to start a train from a given schedule */
-    public void planTrain(Simulation sim, TrainSchedule timetable) throws SimulationError {
+    public void planTrain(Simulation sim, TrainSchedule schedule) throws SimulationError {
         // the path is computed at the beginning of the simulation, as it is (for now) part of the event
-        var trainPath = new TrainPath(sim.infra, timetable);
-        var rollingStock = timetable.rollingStock;
+        var trainPath = schedule.path;
+        var rollingStock = schedule.rollingStock;
 
         var controllers = new CryoList<SpeedController>();
 
@@ -110,7 +123,7 @@ public final class SchedulerSystem extends AbstractEntity<SchedulerSystem, Entit
         for (var controller : controllers)
             logger.trace("{}", controller);
 
-        var startTime = timetable.getDepartureTime();
-        sim.scheduleEvent(this, startTime, new Train.TrainCreatedChange(sim, timetable, trainPath, controllers));
+        var startTime = schedule.getDepartureTime();
+        sim.scheduleEvent(this, startTime, new TrainCreation(schedule, trainPath, controllers));
     }
 }

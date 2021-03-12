@@ -2,6 +2,7 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.timetable.TrainScheduleWaypoint;
 import fr.sncf.osrd.utils.graph.*;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.timetable.TrainSchedule;
@@ -37,26 +38,20 @@ public final class TrainPath implements Freezable {
         return TopoLocation.fromDirection(section.edge, section.direction, offset);
     }
 
-    /**
-     * Creates a container to hold the path some train will follow
-     */
+    /** Creates a container to hold the path some train will follow */
     public TrainPath() {
     }
 
 
-    /**
-     * Creates and store the path some train will follow
-     * @param infra the infra in which the path should be searched
-     * @param timetable the timetable containing the list of waypoint
-     */
+    /** Creates and store the path some train will follow */
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"}) // TODO: remove me
-    public TrainPath(Infra infra, TrainSchedule timetable) {
+    public static TrainPath from(Infra infra, CryoList<TrainScheduleWaypoint> waypoints) {
         // find the start position
-        var start = timetable.waypoints.first();
+        var start = waypoints.first();
         var startPosition = start.operationalPointRef;
 
         // find the stop position
-        var goal = timetable.waypoints.last();
+        var goal = waypoints.last();
         var goalPosition = goal.operationalPointRef;
 
         // TODO: properly handle ranges
@@ -69,6 +64,8 @@ public final class TrainPath implements Freezable {
 
         var costFunction = new DistCostFunction<TrackSection>();
         var goalChecker = new BasicGoalChecker<>(costFunction, goal.edge, goalPosition.begin);
+
+        var trainPath = new TrainPath();
         var foundPaths = BiGraphDijkstra.findPaths(
                 infra.trackGraph,
                 startingPoints,
@@ -76,14 +73,14 @@ public final class TrainPath implements Freezable {
                 goalChecker,
                 (pathToGoal) -> {
                     var path = FullPathArray.from(pathToGoal);
-                    path.forAllSegments(this::addEdge);
+                    path.forAllSegments(trainPath::addEdge);
                     return false;
                 });
 
         if (foundPaths == 0)
             throw new RuntimeException("dijkstra found no path");
 
-        freeze();
+        return trainPath;
     }
 
     /**

@@ -5,10 +5,10 @@ import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.Simulation.TimelineEventCreated;
 import fr.sncf.osrd.simulation.SimulationError;
-import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
+import fr.sncf.osrd.timetable.TrainSchedule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +29,7 @@ public final class TrainState {
     public TrainStatus status;
 
     // the train this is the state of
-    public final transient Train train;
+    public final transient TrainSchedule trainSchedule;
 
     // this field MUST be kept private, as it is not the position of the train at the current simulation time,
     // but rather the position of the train at the last event. it's fine and expected, but SpeedControllers need
@@ -54,7 +54,7 @@ public final class TrainState {
             return false;
         if (this.status != otherState.status)
             return false;
-        if (!this.train.id.equals(otherState.train.id))
+        if (!this.trainSchedule.trainID.equals(otherState.trainSchedule.trainID))
             return false;
         if (!this.location.equals(otherState.location))
             return false;
@@ -63,7 +63,7 @@ public final class TrainState {
 
     @Override
     public int hashCode() {
-        return Objects.hash(time, speed, status, train, location, speedControllers);
+        return Objects.hash(time, speed, status, trainSchedule.trainID, location, speedControllers);
     }
 
     TrainState(
@@ -72,14 +72,14 @@ public final class TrainState {
             double speed,
             TrainStatus status,
             List<SpeedController> speedControllers,
-            Train train
+            TrainSchedule trainSchedule
     ) {
         this.time = time;
         this.location = location;
         this.speed = speed;
         this.status = status;
         this.speedControllers = speedControllers;
-        this.train = train;
+        this.trainSchedule = trainSchedule;
     }
 
     protected TrainState clone() {
@@ -89,7 +89,7 @@ public final class TrainState {
                 speed,
                 status,
                 new ArrayList<>(speedControllers),
-                train);
+                trainSchedule);
     }
 
     private void step(
@@ -99,9 +99,9 @@ public final class TrainState {
 
         // TODO: find out the actual max braking / acceleration force
 
-        var rollingStock = train.rollingStock;
+        var rollingStock = trainSchedule.rollingStock;
         var integrator = TrainPhysicsIntegrator.make(
-                1.0,
+                timeStep,
                 rollingStock,
                 speed,
                 location.maxTrainGrade());
@@ -148,7 +148,7 @@ public final class TrainState {
     ) throws SimulationError {
         var nextState = this.clone();
 
-        var locationChange = new Train.TrainLocationChange(sim, train, nextState);
+        var locationChange = new Train.TrainLocationChange(sim, trainSchedule.trainID, nextState);
 
         for (int i = 0; nextState.location.getHeadPathPosition() < goalTrackPosition; i++) {
             if (i >= 10000)
@@ -177,12 +177,13 @@ public final class TrainState {
     }
 
     private Action driverDecision(SpeedDirective directive, TrainPhysicsIntegrator integrator) {
-        var rollingStock = train.rollingStock;
+        var rollingStock = trainSchedule.rollingStock;
         return integrator.actionToTargetSpeed(directive.allowedSpeed, rollingStock);
     }
 
     @SuppressWarnings("UnnecessaryLocalVariable")
-    TimelineEventCreated<Train, Train.TrainLocationChange> simulateUntilEvent(Simulation sim) throws SimulationError {
+    TimelineEventCreated<Train, Train.TrainLocationChange> simulateUntilEvent(Train train, Simulation sim)
+            throws SimulationError {
         // 1) find the next event position
 
         // look for objects in the range [train_position, +inf)
@@ -193,7 +194,8 @@ public final class TrainState {
                     // the position of track object relative to path of the train
                     // (the distance to the train's starting point)
                     var pathObjectPosition = pointValue.position;
-                    var sightDistance = Math.min(train.driverSightDistance, pointValue.value.getSightDistance());
+                    var driverSightDistance = trainSchedule.driverSightDistance;
+                    var sightDistance = Math.min(driverSightDistance, pointValue.value.getSightDistance());
                     // return the path position at which the object becomes visible
                     return pathObjectPosition - sightDistance;
                 })
@@ -216,8 +218,8 @@ public final class TrainState {
     @SuppressFBWarnings({"UPM_UNCALLED_PRIVATE_METHOD"})
     private double getMaxAcceleration() {
         if (status == TrainStatus.STARTING_UP)
-            return train.rollingStock.startUpAcceleration;
-        return train.rollingStock.comfortAcceleration;
+            return trainSchedule.rollingStock.startUpAcceleration;
+        return trainSchedule.rollingStock.comfortAcceleration;
     }
 
     /**
@@ -232,7 +234,7 @@ public final class TrainState {
                 speedLimit,
                 currentPos + distanceToAnnounce,
                 currentPos + distanceToExecution,
-                train.rollingStock.timetableGamma
+                trainSchedule.rollingStock.timetableGamma
         ));
     }
 }

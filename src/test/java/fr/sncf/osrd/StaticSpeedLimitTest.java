@@ -77,7 +77,8 @@ public class StaticSpeedLimitTest {
         // initialize the simulation
         var changelog = new ArrayChangeLog();
         var sim = Simulation.createFromInfra(infra, 0, changelog);
-        sim.scheduler.planTrain(sim, new TrainSchedule("test train", waypoints, FAST_NO_FRICTION_TRAIN, 0));
+        var schedule = TrainSchedule.from(infra, "test train", waypoints, FAST_NO_FRICTION_TRAIN, 0, 400);
+        sim.scheduler.planTrain(sim, schedule);
 
         // run the simulation
         while (!sim.isSimulationOver())
