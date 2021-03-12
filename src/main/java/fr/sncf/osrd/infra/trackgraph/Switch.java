@@ -6,8 +6,15 @@ import fr.sncf.osrd.simulation.*;
 
 public class Switch extends TrackNode {
     public final int switchIndex;
+    public TrackSection leftTrackSection;
+    public TrackSection rightTrackSection;
 
-    Switch(TrackGraph graph, int index, String id, int switchIndex) {
+    Switch(
+            TrackGraph graph,
+            int index,
+            String id,
+            int switchIndex
+    ) {
         super(index, id);
         this.switchIndex = switchIndex;
         graph.registerNode(this);
@@ -34,6 +41,7 @@ public class Switch extends TrackNode {
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static final class State extends AbstractEntity<Switch.State, SwitchID> implements RSMatchable {
         public final Switch switchRef;
+
         private SwitchPosition position;
 
         State(Switch switchRef) {
@@ -44,6 +52,12 @@ public class Switch extends TrackNode {
 
         public SwitchPosition getPosition() {
             return position;
+        }
+
+        public TrackSection getLinkedTrackSection() {
+            if (position == SwitchPosition.LEFT)
+                return switchRef.leftTrackSection;
+            return switchRef.rightTrackSection;
         }
 
         /** Change position of the switch */

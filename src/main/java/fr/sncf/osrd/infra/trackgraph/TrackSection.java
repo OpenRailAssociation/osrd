@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.SpeedSection;
+import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.utils.graph.BiNEdge;
 import fr.sncf.osrd.utils.graph.Edge;
@@ -22,9 +23,9 @@ import java.util.List;
 public final class TrackSection extends BiNEdge<TrackSection> {
     public final String id;
 
-    public final CryoList<TrackSection> startNeighbors = new CryoList<>();
-    public final CryoList<TrackSection> endNeighbors = new CryoList<>();
-    public final CryoList<BufferStop> bufferStops = new CryoList<>();
+    public final ArrayList<TrackSection> startNeighbors = new ArrayList<>();
+    public final ArrayList<TrackSection> endNeighbors = new ArrayList<>();
+    public final ArrayList<Route> routes = new ArrayList<>();
 
     /**
      * Given a side of the edge, return the list of neighbors
@@ -90,6 +91,16 @@ public final class TrackSection extends BiNEdge<TrackSection> {
         if (direction == EdgeDirection.START_TO_STOP)
             return 0.0;
         return length;
+    }
+
+    /**
+     * Gets the position in the edge along a direction
+     * @param direction the direction to consider positioning from
+     */
+    public double position(EdgeDirection direction, double pos) {
+        if (direction == EdgeDirection.START_TO_STOP)
+            return pos;
+        return length - pos;
     }
 
     @SuppressFBWarnings({"UPM_UNCALLED_PRIVATE_METHOD"})

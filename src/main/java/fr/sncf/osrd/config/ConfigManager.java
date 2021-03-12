@@ -6,8 +6,6 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railjson.RailJSONParser;
 import fr.sncf.osrd.infra.railjson.schema.RJSRoot;
 import fr.sncf.osrd.railml.RailMLParser;
-import fr.sncf.osrd.timetable.InvalidTimetableException;
-import fr.sncf.osrd.timetable.Schedule;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.PathUtils;
 import okio.Okio;
@@ -19,7 +17,6 @@ import java.util.HashMap;
 
 public class ConfigManager {
     private static final HashMap<String, Infra> infras = new HashMap<>();
-    private static final HashMap<Path, Schedule> schedules = new HashMap<>();
     private static final HashMap<Path, RollingStock> rollingStocks = new HashMap<>();
 
     /**
@@ -31,18 +28,15 @@ public class ConfigManager {
      */
     public static Config readConfigFile(
             Path mainConfigPath
-    ) throws IOException, InvalidInfraException, InvalidTimetableException {
+    ) throws IOException {
         var baseDirPath = mainConfigPath.getParent();
         var jsonConfig = JsonConfig.adapter.fromJson(Files.readString(mainConfigPath));
 
         var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
         var infra = ConfigManager.getInfra(jsonConfig.infraType, infraPath.toString());
-        var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.schedulePath);
-        var schedule = ConfigManager.getSchedule(schedulePath, infra);
         return new Config(
                 jsonConfig.simulationTimeStep,
                 infra,
-                schedule,
                 jsonConfig.simulationStepPause,
                 jsonConfig.showViewer,
                 jsonConfig.realTimeViewer,
@@ -91,18 +85,6 @@ public class ConfigManager {
             e.printStackTrace();
             return null;
         }
-    }
-
-    static Schedule getSchedule(
-            Path path,
-            Infra infra
-    ) throws InvalidInfraException, InvalidTimetableException, IOException {
-        if (schedules.containsKey(path))
-            return schedules.get(path);
-
-        var schedule = Schedule.fromJSONFile(path, infra);
-        schedules.put(path, schedule);
-        return schedule;
     }
 
     /**

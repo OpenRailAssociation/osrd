@@ -108,7 +108,7 @@
  *
  * <pre>
  * {@code
- * INFO Simulation - change published TimelineEventCreated { revision=1, scheduledTime=29041.000000, value=TrainLocationChange { speed=70.36, newState.headPathPosition=10335.27 } }
+ * INFO Simulation - change published TimelineEventCreated { revision=1, scheduledTime=29041.000000, value=TrainStateChange { speed=70.36, newState.headPathPosition=10335.27 } }
  * }
  * </pre>
  * </li>
@@ -132,7 +132,7 @@
  * {@code
  * DEBUG Simulation - changing the simulation clock from 28800.0 to 29041.0
  * INFO Simulation - change published TimelineEventOccurred { TimelineEventId { scheduledTime=29041.000000, revision=1 } }
- * INFO Simulation - change published TrainLocationChange { speed=70.36, newState.headPathPosition=10335.27 }
+ * INFO Simulation - change published TrainStateChange { speed=70.36, newState.headPathPosition=10335.27 }
  * INFO Train - train Test. reached destination, aborting planning
  * }
  * </pre>

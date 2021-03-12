@@ -1,8 +1,8 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.signaling.TrainInteractable;
 import fr.sncf.osrd.simulation.*;
-import fr.sncf.osrd.simulation.Simulation.TimelineEventCreated;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.timetable.TrainSchedule;
@@ -11,6 +11,7 @@ import fr.sncf.osrd.utils.CryoList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,19 +24,24 @@ public class Train extends AbstractEntity<Train, TrainID> {
 
     private TrainState lastState;
 
-    // the timeline event for the train's arrival at the next point of interest
-    private TimelineEvent<TrainLocationChange> nextMoveEvent = null;
-
-    private Train(Simulation sim, TrainSchedule schedule, List<SpeedController> controllers) {
+    private Train(
+            Simulation sim,
+            TrainSchedule schedule,
+            List<SpeedController> controllers,
+            ArrayDeque<TrackSectionRange> trackSectionRanges
+    ) {
         super(schedule.trainID);
-        var location = new TrainPositionTracker(sim.infra, schedule.path, schedule.rollingStock.length);
+        var location = new TrainPositionTracker(sim.infra, sim.infraState, trackSectionRanges);
+        var stageState = schedule.stages.get(0).getState();
         this.lastState = new TrainState(
                 sim.getTime(),
                 location,
                 schedule.initialSpeed,
                 TrainStatus.STARTING_UP,
                 controllers,
-                schedule
+                schedule,
+                0,
+                stageState
         );
         // the train must react to its own move events
         this.subscribers.add(this);
@@ -49,40 +55,59 @@ public class Train extends AbstractEntity<Train, TrainID> {
             TrainSchedule schedule,
             CryoList<SpeedController> controllers
     ) throws SimulationError {
-        var trainCreatedChange = new Train.TrainCreatedChange(sim, schedule, controllers);
+        var trackSectionPositions = TrainPositionTracker.computeInitialPosition(
+                sim.infra,
+                schedule.startTrackSection,
+                schedule.startDirection,
+                schedule.startOffset,
+                schedule.rollingStock.length
+        );
+        var trainCreatedChange = new Train.TrainCreatedChange(sim, schedule, controllers, trackSectionPositions);
         var train = trainCreatedChange.apply(sim);
         sim.publishChange(trainCreatedChange);
-        train.updateNextMove(sim);
+        train.scheduleStateChange(sim);
         return train;
     }
 
-    private void updateNextMove(Simulation sim) throws SimulationError {
+    private void scheduleStateChange(Simulation sim) throws SimulationError {
         if (lastState.status == TrainStatus.REACHED_DESTINATION) {
             logger.info("train {} reached destination, aborting planning", id);
             return;
         }
 
         logger.info("planning the next move for train {}", id);
-        var moveEventChange = lastState.simulateUntilEvent(this, sim);
-        var nextMoveChange = new TrainPlannedMoveChange(sim, this, moveEventChange);
-        nextMoveChange.apply(sim, this);
-        sim.publishChange(nextMoveChange);
+        lastState.scheduleStateChange(this, sim);
     }
 
     @Override
     public void onEventOccurred(Simulation sim, TimelineEvent<?> event) throws SimulationError {
-        if (event.value.getClass() == TrainLocationChange.class) {
-            var locationChange = (TrainLocationChange) event.value;
-            locationChange.apply(sim, this);
-            sim.publishChange(locationChange);
-            updateNextMove(sim);
+        if (event.value.getClass() == TrainStateChange.class) {
+            var stateChange = (TrainStateChange) event.value;
+            stateChange.apply(sim, this);
+            sim.publishChange(stateChange);
+            scheduleStateChange(sim);
+            return;
+        }
+        if (event.value.getClass() == TrainReachesInteraction.class) {
+            var eventInteract =  (TrainReachesInteraction) event.value;
+
+            // Apply StateChange
+            var stateChange = eventInteract.trainStateChange;
+            stateChange.apply(sim, this);
+            sim.publishChange(stateChange);
+
+            // Interact
+            eventInteract.interactionObject.interact(sim, this);
+
+            // Schedule next state
+            scheduleStateChange(sim);
         }
     }
 
     @Override
     public void onEventCancelled(Simulation sim, TimelineEvent<?> event) throws SimulationError {
-        if (event.value.getClass() == TrainLocationChange.class)
-            updateNextMove(sim);
+        if (event.value.getClass() == TrainStateChange.class)
+            scheduleStateChange(sim);
     }
 
     // endregion
@@ -92,22 +117,25 @@ public class Train extends AbstractEntity<Train, TrainID> {
     public static final class TrainCreatedChange extends SimChange<Train> {
         public final TrainSchedule schedule;
         public final CryoList<SpeedController> initialControllers;
+        public final ArrayDeque<TrackSectionRange> trackSectionRanges;
 
         /** A change corresponding to a train's creation. */
         public TrainCreatedChange(
                 Simulation sim,
                 TrainSchedule schedule,
-                CryoList<SpeedController> initialControllers
+                CryoList<SpeedController> initialControllers,
+                ArrayDeque<TrackSectionRange> trackSectionRanges
         ) {
             super(sim);
             this.schedule = schedule;
             this.initialControllers = initialControllers;
+            this.trackSectionRanges = trackSectionRanges;
         }
 
         @Override
         public Train apply(Simulation sim) {
             var controllers = new ArrayList<>(initialControllers);
-            var train = new Train(sim, schedule, controllers);
+            var train = new Train(sim, schedule, controllers, trackSectionRanges);
             sim.trains.put(train.getName(), train);
             return train;
         }
@@ -118,8 +146,17 @@ public class Train extends AbstractEntity<Train, TrainID> {
         }
     }
 
-    public static class TrainLocationChange extends EntityChange<Train, TrainID, Void> {
+    public static class TrainStateChange extends EntityChange<Train, TrainID, Void> {
         public final TrainState newState;
+        public final SpeedUpdates positionUpdates = new SpeedUpdates();
+        public final PathUpdates<SpeedController[]> speedControllersUpdates = new PathUpdates<>();
+        public final PathUpdates<SpeedDirective> speedDirectivesUpdates = new PathUpdates<>();
+
+        /** Creates a change corresponding to the movement of a train */
+        public TrainStateChange(Simulation sim, TrainID trainID, TrainState newState) {
+            super(sim, trainID);
+            this.newState = newState;
+        }
 
         @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
         public static final class PathValue<T> {
@@ -201,10 +238,6 @@ public class Train extends AbstractEntity<Train, TrainID> {
             }
         }
 
-        public final SpeedUpdates positionUpdates = new SpeedUpdates();
-        public final PathUpdates<SpeedController[]> speedControllersUpdates = new PathUpdates<>();
-        public final PathUpdates<SpeedDirective> speedDirectivesUpdates = new PathUpdates<>();
-
         /**
          * Finds the last speed update at a given time
          * @param time the reference time
@@ -222,52 +255,32 @@ public class Train extends AbstractEntity<Train, TrainID> {
             return lastUpdate;
         }
 
-        /** Creates a change corresponding to the movement of a train */
-        public TrainLocationChange(Simulation sim, TrainID trainID, TrainState newState) {
-            super(sim, trainID);
-            this.newState = newState;
-        }
-
         @Override
         public final Void apply(Simulation sim, Train train) {
             train.lastState = this.newState;
-            train.nextMoveEvent = null;
             return null;
         }
 
         @Override
         public String toString() {
             return String.format(
-                    "TrainLocationChange { speed=%.2f, newState.headPathPosition=%.2f }",
+                    "TrainStateChange { speed=%.2f, newState.headPathPosition=%.2f }",
                     newState.speed,
-                    newState.location.getHeadPathPosition()
+                    newState.location.getPathPosition()
             );
         }
     }
+    // endregion
 
-    public static final class TrainPlannedMoveChange extends EntityChange<Train, TrainID, Void> {
-        public final TimelineEventCreated<Train, TrainLocationChange> moveEventCreated;
+    // region EVENT VALUES
+    public static final class TrainReachesInteraction implements TimelineEventValue {
+        public final TrainInteractable interactionObject;
+        public final TrainStateChange trainStateChange;
 
-        public TrainPlannedMoveChange(
-                Simulation sim,
-                Train train,
-                TimelineEventCreated<Train, TrainLocationChange> moveEventCreated
-        ) {
-            super(sim, train.getID());
-            this.moveEventCreated = moveEventCreated;
-        }
-
-        @Override
-        public Void apply(Simulation sim, Train train) {
-            train.nextMoveEvent = moveEventCreated.apply(sim, train);
-            return null;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("TrainPlannedMoveChange { moveEventCreation=%s }", moveEventCreated);
+        public TrainReachesInteraction(TrainInteractable interactionObject, TrainStateChange trainStateChange) {
+            this.interactionObject = interactionObject;
+            this.trainStateChange = trainStateChange;
         }
     }
-
     // endregion
 }

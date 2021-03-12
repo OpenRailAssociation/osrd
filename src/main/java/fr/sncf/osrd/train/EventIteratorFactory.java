@@ -4,5 +4,5 @@ import java.util.Iterator;
 
 @FunctionalInterface
 public interface EventIteratorFactory<EventT> {
-    Iterator<EventT> apply(PathSection edge);
+    Iterator<EventT> apply(TrackSectionRange edge);
 }

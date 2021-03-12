@@ -5,23 +5,30 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.*;
+import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
+import fr.sncf.osrd.infra.trackgraph.BufferStop;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
+import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.timetable.InvalidTimetableException;
 import fr.sncf.osrd.timetable.TrainSchedule;
-import fr.sncf.osrd.timetable.TrainScheduleWaypoint;
 import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.lifestages.LifeStage;
+import fr.sncf.osrd.train.lifestages.SignalNavigateStage;
 import fr.sncf.osrd.utils.CryoList;
 import fr.sncf.osrd.utils.RangeValue;
 import fr.sncf.osrd.utils.SignAnalyzer;
+import fr.sncf.osrd.utils.SortedArraySet;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
@@ -49,6 +56,12 @@ public class StaticSpeedLimitTest {
         var nodeB = trackGraph.makePlaceholderNode("B");
         var edgeLength = 10000.0;
         var edge = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "e1", edgeLength);
+        var waypointsBuilder = edge.waypoints.builder();
+        var bufferStopA = new BufferStop(0, "BufferStopA");
+        waypointsBuilder.add(0, bufferStopA);
+        var bufferStopB = new BufferStop(1, "BufferStopB");
+        waypointsBuilder.add(10000, bufferStopB);
+        waypointsBuilder.build();
 
         // create operational points for the trip
         var opStart = new OperationalPoint("start id");
@@ -62,21 +75,30 @@ public class StaticSpeedLimitTest {
         limits.add(new RangeValue<>(0, 10000, new SpeedSection(false, 30.0)));
         limits.add(new RangeValue<>(5000, 6000, new SpeedSection(false, 25.0)));
 
-        // TODO: this infra is missing many bits, no detectors nor routes isn't ideal
-        var waypointGraph = WaypointGraph.buildDetectorGraph(trackGraph);
-        var routeGraph = new RouteGraph.Builder(waypointGraph).build();
-        final var infra = Infra.build( trackGraph, waypointGraph, routeGraph,
-                new HashMap<>(), new HashMap<>(), new ArrayList<>(), new ArrayList<>());
+        var tvdSections = new HashMap<String, TVDSection>();
 
-        // create the waypoints the train should go through
-        var waypoints = new CryoList<TrainScheduleWaypoint>();
-        waypoints.add(TrainScheduleWaypoint.from(LocalTime.ofSecondOfDay(0), 0, opStart, edge));
-        waypoints.add(TrainScheduleWaypoint.from(LocalTime.ofSecondOfDay(10), 0, opEnd, edge));
+        var waypointsAB = new ArrayList<Waypoint>(Arrays.asList(bufferStopA, bufferStopB));
+        var tvdSection = new TVDSection("TVDSectionAB", 0, waypointsAB, false);
+        tvdSections.put(tvdSection.id, tvdSection);
+
+        var waypointGraph = Infra.buildWaypointGraph(trackGraph, tvdSections);
+        var routeGraphBuilder = new RouteGraph.Builder(waypointGraph);
+
+        var tvdSectionsR1 = new SortedArraySet<TVDSection>();
+        tvdSectionsR1.add(tvdSection);
+        routeGraphBuilder.makeRoute("R1", waypointsAB, tvdSectionsR1, Route.TransitType.FLEXIBLE, new HashMap<>());
+
+        final var infra = Infra.build( trackGraph, waypointGraph, routeGraphBuilder.build(),
+                tvdSections, new HashMap<>(), new ArrayList<>(), new ArrayList<>());
 
         // initialize the simulation
         var changelog = new ArrayChangeLog();
         var sim = Simulation.createFromInfra(infra, 0, changelog);
-        var schedule = TrainSchedule.from(infra, "test train", waypoints, FAST_NO_FRICTION_TRAIN, 0, 400);
+
+        var stages = new ArrayList<LifeStage>();
+        stages.add(SignalNavigateStage.from(infra, opStart, opEnd, 200));
+
+        var schedule = new TrainSchedule("test_train", edge, EdgeDirection.START_TO_STOP, 200, stages, FAST_NO_FRICTION_TRAIN, 0, 400, 0);
         sim.scheduler.planTrain(sim, schedule);
 
         // run the simulation
@@ -85,10 +107,10 @@ public class StaticSpeedLimitTest {
 
         // get location changes and ensure these is only one
         var locationChanges = changelog.publishedChanges.stream()
-                .filter(change -> change.getClass() == Train.TrainLocationChange.class)
-                .map(change -> (Train.TrainLocationChange) change)
+                .filter(change -> change.getClass() == Train.TrainStateChange.class)
+                .map(change -> (Train.TrainStateChange) change)
                 .collect(Collectors.toList());
-        assertEquals(locationChanges.size(), 1);
+    assertEquals(locationChanges.size(), 2);
         var locationChange = locationChanges.get(0);
 
         // create the list of all speed derivative sign changes
