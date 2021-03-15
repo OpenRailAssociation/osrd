@@ -28,6 +28,19 @@ dependencies {
     // HTTP server framework
     implementation group: 'org.takes', name: 'takes', version: '1.19'
 
+    // ClassGraph (FastClasspathScanner)
+    // https://mvnrepository.com/artifact/io.github.classgraph/classgraph
+    implementation group: 'io.github.classgraph', name: 'classgraph', version: '4.8.102'
+
+    // for debug UI
+    implementation 'org.graphstream:gs-core:2.0'
+    implementation 'org.graphstream:gs-ui-swing:2.0'
+
+    // the logging API stub
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'
+    // the logging API implementation
+    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.+'
+
     // Use JUnit Jupiter API for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7'
@@ -39,19 +52,6 @@ dependencies {
     compileOnly 'com.github.spotbugs:spotbugs-annotations:4.1.4'
     testCompileOnly 'net.jcip:jcip-annotations:1.0'
     testCompileOnly 'com.github.spotbugs:spotbugs-annotations:4.1.4'
-
-    // for debug IU
-    implementation 'org.graphstream:gs-core:2.0'
-    implementation 'org.graphstream:gs-ui-swing:2.0'
-
-    // the logging API stub
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'
-    // the logging API implementation
-    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.+'
-
-    // ClassGraph (FastClasspathScanner)
-    // https://mvnrepository.com/artifact/io.github.classgraph/classgraph
-    implementation group: 'io.github.classgraph', name: 'classgraph', version: '4.8.102'
 }
 
 application {
