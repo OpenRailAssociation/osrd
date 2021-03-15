@@ -50,7 +50,7 @@ public class Edge extends RJSTrackSection {
      */
     public static ArrayList<Edge> parseEdges(Document document) {
         var edgesList = new ArrayList<Edge>();
-        var edges = document.selectNodes("/line/links");
+        var edges = document.selectNodes("/line/links/link");
 
         for (var edgeNode : edges) {
             var edge = (Element) edgeNode;
@@ -61,10 +61,19 @@ public class Edge extends RJSTrackSection {
             var speedStr = edge.attributeValue("vmax");
             var speedRevStr = edge.attributeValue("vmaxr");
             var gradeStr = edge.attributeValue("gradient");
-            double length = Double.parseDouble(lengthStr);
-            double speed = Double.parseDouble(speedStr);
-            double speedReverse = Double.parseDouble(speedRevStr);
-            double grade = Double.parseDouble(gradeStr);
+            double length = 0;
+            if (lengthStr != null)
+                length = Double.parseDouble(lengthStr);
+            double speed = Double.POSITIVE_INFINITY;
+            if (speedStr != null)
+                speed = Double.parseDouble(speedStr);
+            double speedReverse = Double.POSITIVE_INFINITY;
+            if (speedRevStr != null)
+                speedReverse = Double.parseDouble(speedRevStr);
+            double grade = 0;
+            if (gradeStr != null)
+                grade = Double.parseDouble(gradeStr);
+
             //create the string ID with startNodeID-endNodeID
             var id = String.join("-", startNodeID, endNodeID);
             var parsedEdge = new Edge(id, length, startNodeID, endNodeID, bidirectional, speed, speedReverse, grade);
@@ -73,4 +82,10 @@ public class Edge extends RJSTrackSection {
         return edgesList;
     }
 
+    public String getEndNodeID() {
+        return endNodeID;
+    }
+    public String getStartNodeID() {
+        return startNodeID;
+    }
 }

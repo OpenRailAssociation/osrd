@@ -56,7 +56,7 @@ public final class RslParser {
         // create track section links for all the nodes not being switches
         for (var entry : nodeMap.entrySet()) {
             var neighbors = entry.getValue();
-            if (neighbors.size() > 2)
+            if ((neighbors.size() > 2) || (neighbors.size() <= 1))
                 continue;
             addTrackSectionLinks(neighbors.get(0), neighbors.get(1),
                     entry.getKey(), rjsTrackSectionLinks);
@@ -85,41 +85,54 @@ public final class RslParser {
         var rjstvdsections = new ArrayList<RJSTVDSection>();
         var trainDetectorsMap = new HashMap<String,RJSTrainDetector>();
 
-        for (var node : document.selectNodes("/line/blockSections/blockSection")) {
+        for (var node : document.selectNodes("/line/blockSections/blocksection")) {
             var blockSectionNode = (Element) node;
             var id = new String(blockSectionNode.attributeValue("uuid") + "_tvd");
             var isBerthingTrack = Boolean.parseBoolean(blockSectionNode.attributeValue("shuntingBlock"));
-
             // The block section is a list of nodes
-            // the train detectors are put et the begin of each block section
-            HashSet<ID<RJSTrainDetector>> trainDetectors = null;
-            var partNode = blockSectionNode.element("/part");
+            // the train detectors are put at the begin and the end of each block section
+            var partNode = blockSectionNode.element("part");
             var nodes = partNode.attributeValue("nodes");
             var nodesId = nodes.split(" ");
             var beginNodeId = nodesId[0];
             var endNodeId = nodesId[nodesId.length-1];
-            var trainDetector = new RJSTrainDetector(beginNodeId, ApplicableDirections.BOTH, 0);
-            trainDetectorsMap.put(beginNodeId,trainDetector);
-            if (trainDetectorsMap.get(endNodeId) == null)
-                trainDetectorsMap.put(endNodeId,trainDetector);
+            var trainDetectors = new HashSet<ID<RJSTrainDetector>>();
 
-            // Link tracks sections back to the train detector
-            String trainDetectorEdgeID = null;
-            for (var edge : nodeMap.get(beginNodeId)) {
-                if ((edge.beginEndpoint().endpoint.id == Integer.getInteger(beginNodeId))
-                        || (edge.endEndpoint().endpoint.id == Integer.getInteger(endNodeId))) {
-                    trainDetectorEdgeID = edge.id;
-                    break;
-                }
+            tdeParse(nodeMap,trainDetectors,trainDetectorsMap,rjsTrackSections,beginNodeId);
+            // check if I need to create a detector for the block section end
+            if (trainDetectorsMap.get(endNodeId) == null) {
+                tdeParse(nodeMap, trainDetectors, trainDetectorsMap, rjsTrackSections, endNodeId);
             }
-            rjsTrackSections.get(trainDetectorEdgeID).trainDetectors.add(trainDetector);
-            // Add the train detector to the list of this tvd section
-            trainDetectors.add(new ID<>(beginNodeId));
+
             ArrayList<ID<RJSBufferStop>> bufferStops = null;
             rjstvdsections.add(new RJSTVDSection(id, isBerthingTrack, trainDetectors, bufferStops));
         }
-
         return rjstvdsections;
+    }
+
+    /**
+     * Create the tde and link to the corresponding track sections
+     * */
+    private static void tdeParse(HashMap<String, ArrayList<Edge>> nodeMap,
+                                 HashSet<ID<RJSTrainDetector>> trainDetectors,
+                                 HashMap<String, RJSTrainDetector> trainDetectorsMap,
+                                 HashMap<String, RJSTrackSection> rjsTrackSections, String nodeId) {
+
+        // Find the position of beginNode in the edge it is in
+        for(var edge : nodeMap.get(nodeId)) {
+            var endTdePoint = findEndpoint( edge, nodeId);
+            RJSTrainDetector trainDetector;
+            if (endTdePoint.endpoint == EdgeEndpoint.BEGIN) {
+                trainDetector = new RJSTrainDetector("tde_" + nodeId, ApplicableDirections.BOTH, 0);
+            }
+            else {
+                trainDetector = new RJSTrainDetector("tde_" + nodeId, ApplicableDirections.BOTH, edge.length);
+            }
+            trainDetectorsMap.put(nodeId,trainDetector);
+            trainDetectors.add(new ID<>("tde_"+nodeId));
+            // Link tracks sections back to the train detector
+            rjsTrackSections.get(edge.id).trainDetectors.add(trainDetector);
+        }
     }
 
     /**
@@ -181,7 +194,7 @@ public final class RslParser {
             // create the operational point
             if ((trackNode.attributeValue("type").equals("timingPoint"))
                     || (trackNode.attributeValue("type").equals("stopBoardPass"))) {
-                var id = trackNode.attributeValue("NodeID");
+                var id = trackNode.attributeValue("nodeID");
                 var rjsOperationalPoint = new RJSOperationalPoint(id);
                 operationalPoints.add(rjsOperationalPoint);
 
@@ -210,8 +223,7 @@ public final class RslParser {
         for (var node : document.selectNodes("/line/nodes/switch")) {
             var switchNode = (Element) node;
             var id = switchNode.attributeValue("nodeID");
-            var baseBranchNodeID = Integer.getInteger(switchNode.attributeValue("start"));
-
+            var baseBranchNodeID = switchNode.attributeValue("start");
             var baseTrackSection = findBase(nodeMap, id, baseBranchNodeID);
             var otherTrackSections = findOthers(nodeMap, id, baseTrackSection);
             var base = findEndpoint(baseTrackSection, id);
@@ -243,9 +255,10 @@ public final class RslParser {
      */
     private static ArrayList<Edge> findOthers(HashMap<String,
             ArrayList<Edge>> nodeMap, String id, Edge baseTrackSection) {
-        ArrayList<Edge> others = null;
+        ArrayList<Edge> others = new ArrayList<>();
         for (var edge : nodeMap.get(id)) {
-            if (!edge.equals(baseTrackSection)) others.add(edge);
+            if (!edge.equals(baseTrackSection))
+                others.add(edge);
         }
         return others;
     }
@@ -253,11 +266,11 @@ public final class RslParser {
     /**
      * Find the base track of the switch
      */
-    private static Edge findBase(HashMap<String, ArrayList<Edge>> nodeMap, String id, Integer baseBranchNodeID) {
+    private static Edge findBase(HashMap<String, ArrayList<Edge>> nodeMap, String id, String baseBranchNodeID) {
         Edge baseEdge = null;
         for (var edge : nodeMap.get(id)) {
-            if ((edge.beginEndpoint().endpoint.id == baseBranchNodeID)
-                    || (edge.endEndpoint().endpoint.id == baseBranchNodeID)) {
+            if (edge.getEndNodeID().equals(baseBranchNodeID)
+                    || edge.getStartNodeID().equals(baseBranchNodeID)) {
                 baseEdge = edge;
                 break;
             }
@@ -268,9 +281,8 @@ public final class RslParser {
     /**
      * Find the EndPoint of the track section corresponding to a node
      */
-    private static RJSTrackSection.EndpointID findEndpoint(Edge trackSection, String nomeID) {
-        var id = Integer.getInteger(nomeID);
-        if (trackSection.beginEndpoint().endpoint.id == id)
+    private static RJSTrackSection.EndpointID findEndpoint(Edge trackSection, String nodeID) {
+        if (trackSection.getStartNodeID().equals(nodeID))
             return trackSection.beginEndpoint();
         return trackSection.endEndpoint();
     }
@@ -279,8 +291,8 @@ public final class RslParser {
      * Put the edge twice in the nodeMap with startNodeID and endNodeID as keys
      */
     private static void createNodeMap(HashMap<String, ArrayList<Edge>> nodeMap, Edge edge) {
-        var startNodeID = String.valueOf(edge.beginEndpoint().endpoint.id);
-        var endNodeID = String.valueOf(edge.endEndpoint().endpoint.id);
+        var startNodeID = edge.getStartNodeID();
+        var endNodeID = edge.getEndNodeID();
 
         for (var node : new String[]{ startNodeID, endNodeID }) {
             var neighbors = nodeMap.get(node);
