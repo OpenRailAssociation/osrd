@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
 
     # osrd apps
+    'infra.apps.InfraConfig',
     'osrd.apps.MainServiceAppConfig',
 ]
 
