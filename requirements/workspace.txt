@@ -1,0 +1,4 @@
+-r base.txt
+
+django-debug-toolbar==3.2
+ikp3db==1.4.1
