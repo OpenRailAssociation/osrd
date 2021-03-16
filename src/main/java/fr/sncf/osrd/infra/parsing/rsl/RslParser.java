@@ -83,7 +83,7 @@ public final class RslParser {
                                              HashMap<String, RJSTrackSection> rjsTrackSections,
                                          HashMap<String, ArrayList<Edge>> nodeMap) {
         var rjstvdsections = new ArrayList<RJSTVDSection>();
-        var trainDetectorsMap = new HashMap<String,RJSTrainDetector>();
+        var trainDetectorsMap = new HashMap<String, RJSTrainDetector>();
 
         for (var node : document.selectNodes("/line/blockSections/blocksection")) {
             var blockSectionNode = (Element) node;
@@ -95,10 +95,10 @@ public final class RslParser {
             var nodes = partNode.attributeValue("nodes");
             var nodesId = nodes.split(" ");
             var beginNodeId = nodesId[0];
-            var endNodeId = nodesId[nodesId.length-1];
+            var endNodeId = nodesId[nodesId.length - 1];
             var trainDetectors = new HashSet<ID<RJSTrainDetector>>();
 
-            tdeParse(nodeMap,trainDetectors,trainDetectorsMap,rjsTrackSections,beginNodeId);
+            tdeParse(nodeMap, trainDetectors, trainDetectorsMap, rjsTrackSections, beginNodeId);
             // check if I need to create a detector for the block section end
             if (trainDetectorsMap.get(endNodeId) == null) {
                 tdeParse(nodeMap, trainDetectors, trainDetectorsMap, rjsTrackSections, endNodeId);
@@ -119,17 +119,16 @@ public final class RslParser {
                                  HashMap<String, RJSTrackSection> rjsTrackSections, String nodeId) {
 
         // Find the position of beginNode in the edge it is in
-        for(var edge : nodeMap.get(nodeId)) {
-            var endTdePoint = findEndpoint( edge, nodeId);
+        for (var edge : nodeMap.get(nodeId)) {
+            var endTdePoint = findEndpoint(edge, nodeId);
             RJSTrainDetector trainDetector;
             if (endTdePoint.endpoint == EdgeEndpoint.BEGIN) {
                 trainDetector = new RJSTrainDetector("tde_" + nodeId, ApplicableDirections.BOTH, 0);
-            }
-            else {
+            } else {
                 trainDetector = new RJSTrainDetector("tde_" + nodeId, ApplicableDirections.BOTH, edge.length);
             }
-            trainDetectorsMap.put(nodeId,trainDetector);
-            trainDetectors.add(new ID<>("tde_"+nodeId));
+            trainDetectorsMap.put(nodeId, trainDetector);
+            trainDetectors.add(new ID<>("tde_" + nodeId));
             // Link tracks sections back to the train detector
             rjsTrackSections.get(edge.id).trainDetectors.add(trainDetector);
         }

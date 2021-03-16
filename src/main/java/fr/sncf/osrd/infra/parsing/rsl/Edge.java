@@ -54,13 +54,13 @@ public class Edge extends RJSTrackSection {
 
         for (var edgeNode : edges) {
             var edge = (Element) edgeNode;
-            var startNodeID = edge.attributeValue("source");
-            var endNodeID = edge.attributeValue("target");
-            var bidirectional = edge.attributeValue("bidirectional");
-            var lengthStr = edge.attributeValue("length");
-            var speedStr = edge.attributeValue("vmax");
-            var speedRevStr = edge.attributeValue("vmaxr");
-            var gradeStr = edge.attributeValue("gradient");
+            final var startNodeID = edge.attributeValue("source");
+            final var endNodeID = edge.attributeValue("target");
+            final var bidirectional = edge.attributeValue("bidirectional");
+            final var lengthStr = edge.attributeValue("length");
+            final var speedStr = edge.attributeValue("vmax");
+            final var speedRevStr = edge.attributeValue("vmaxr");
+            final var gradeStr = edge.attributeValue("gradient");
             double length = 0;
             if (lengthStr != null)
                 length = Double.parseDouble(lengthStr);
@@ -85,6 +85,7 @@ public class Edge extends RJSTrackSection {
     public String getEndNodeID() {
         return endNodeID;
     }
+
     public String getStartNodeID() {
         return startNodeID;
     }
