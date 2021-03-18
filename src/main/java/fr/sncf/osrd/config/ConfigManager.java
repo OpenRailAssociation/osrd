@@ -3,8 +3,8 @@ package fr.sncf.osrd.config;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.railjson.RailJSONParser;
-import fr.sncf.osrd.infra.railjson.schema.RJSRoot;
+import fr.sncf.osrd.infra.parser.RailJSONParser;
+import fr.sncf.osrd.railjson.infra.RJSInfra;
 import fr.sncf.osrd.railml.RailMLParser;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.PathUtils;
@@ -73,7 +73,7 @@ public class ConfigManager {
                             var fileSource = Okio.source(Path.of(path));
                             var bufferedSource = Okio.buffer(fileSource)
                     ) {
-                        var rjsRoot = RJSRoot.adapter.fromJson(bufferedSource);
+                        var rjsRoot = RJSInfra.adapter.fromJson(bufferedSource);
                         var infra = RailJSONParser.parse(rjsRoot);
                         infras.put(path, infra);
                         return infra;

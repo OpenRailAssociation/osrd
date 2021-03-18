@@ -2,8 +2,8 @@ package fr.sncf.osrd.railml;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 
-import fr.sncf.osrd.infra.railjson.schema.RJSRoot;
-import fr.sncf.osrd.infra.railjson.schema.RJSTrackSection;
+import fr.sncf.osrd.railjson.infra.RJSInfra;
+import fr.sncf.osrd.railjson.infra.RJSTrackSection;
 import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
 import fr.sncf.osrd.railml.tracksectiongraph.NetRelation;
 import fr.sncf.osrd.railml.tracksectiongraph.RMLTrackSectionGraph;
@@ -25,7 +25,7 @@ public final class RailMLParser {
      * Initialises a new infrastructure from a RailML file.
      * @return the parsed infrastructure
      */
-    public static RJSRoot parse(String inputPath) throws InvalidInfraException {
+    public static RJSInfra parse(String inputPath) throws InvalidInfraException {
         Document document;
         try {
             document = new SAXReader().read(inputPath);
@@ -91,7 +91,7 @@ public final class RailMLParser {
         // and buffer stops, which act as route waypoints
         var rjsRoutes = RMLRoute.parse(graph, document, rjsTrackSections);
 
-        return new RJSRoot(
+        return new RJSInfra(
                 rjsTrackSections.values(),
                 netRelations.values(),
                 rjsSwitches,

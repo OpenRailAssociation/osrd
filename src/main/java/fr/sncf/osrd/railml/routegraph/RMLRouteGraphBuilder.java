@@ -1,8 +1,8 @@
 package fr.sncf.osrd.railml.routegraph;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.railjson.schema.RJSTrackSection;
-import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
+import fr.sncf.osrd.railjson.infra.RJSTrackSection;
+import fr.sncf.osrd.railjson.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railml.tracksectiongraph.RMLTrackSectionGraph;
 import fr.sncf.osrd.railml.tracksectiongraph.TrackNetElement;
 import fr.sncf.osrd.utils.graph.*;
