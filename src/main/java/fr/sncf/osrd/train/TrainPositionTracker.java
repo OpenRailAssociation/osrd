@@ -113,10 +113,11 @@ public final class TrainPositionTracker implements Cloneable {
             var node = infra.trackGraph.getNode(nodeIndex);
             assert node.getClass() == Switch.class;
             var switchState = infraState.getSwitchState(((Switch) node).switchIndex);
-            nextTrackSection = switchState.getLinkedTrackSection();
+            nextTrackSection = switchState.getBranch();
         }
 
-        var nextTrackSectionDirection = nextTrackSection.getDirection(curTrackSectionPos.edge, curTrackSectionPos.direction);
+        var nextTrackSectionDirection = nextTrackSection.getDirection(
+                curTrackSectionPos.edge, curTrackSectionPos.direction);
         return TrackSectionRange.makeNext(nextTrackSection, nextTrackSectionDirection, delta);
     }
 

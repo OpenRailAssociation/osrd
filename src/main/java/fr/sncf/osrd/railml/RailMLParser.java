@@ -74,7 +74,7 @@ public final class RailMLParser {
         RMLTrainDetectionElement.parse(netElements, document, rjsTrackSections);
         RMLBufferStop.parse(netElements, document, rjsTrackSections);
         final var rmlSignalsIS = RMLSignalIS.parse(netElements, document, rjsTrackSections);
-        RMLSignalIL.parse(netElements, document, rjsTrackSections, rmlSignalsIS);
+        RMLSignalIL.parse(document, rmlSignalsIS);
 
         // Sort waypoints needed to create RMLRouteGraph
         for (var rjsTrackSection : rjsTrackSections.values()) {

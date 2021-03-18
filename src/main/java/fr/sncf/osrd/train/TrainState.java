@@ -1,20 +1,23 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.signaling.TrainInteractable;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.train.lifestages.LifeStageState;
+import fr.sncf.osrd.utils.PointValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public final class TrainState {
+public final class TrainState implements Cloneable {
     static final Logger logger = LoggerFactory.getLogger(TrainState.class);
 
     // the time for which this state is relevant
@@ -36,6 +39,8 @@ public final class TrainState {
     public final TrainPositionTracker location;
 
     public final transient List<SpeedController> speedControllers;
+
+    public final ArrayDeque<PointValue<TrainInteractable>> interactablesUnderTrain;
 
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
@@ -73,7 +78,8 @@ public final class TrainState {
             List<SpeedController> speedControllers,
             TrainSchedule trainSchedule,
             int currentStageIndex,
-            LifeStageState currentStageState
+            LifeStageState currentStageState,
+            ArrayDeque<PointValue<TrainInteractable>> interactablesUnderTrain
     ) {
         this.time = time;
         this.location = location;
@@ -83,8 +89,11 @@ public final class TrainState {
         this.trainSchedule = trainSchedule;
         this.currentStageIndex = currentStageIndex;
         this.currentStageState = currentStageState;
+        this.interactablesUnderTrain = interactablesUnderTrain;
     }
 
+    /** Create a clone */
+    @Override
     public TrainState clone() {
         return new TrainState(
                 time,
@@ -94,7 +103,8 @@ public final class TrainState {
                 new ArrayList<>(speedControllers),
                 trainSchedule,
                 currentStageIndex,
-                currentStageState
+                currentStageState,
+                new ArrayDeque<>(interactablesUnderTrain)
         );
     }
 
@@ -111,8 +121,9 @@ public final class TrainState {
                     new ArrayList<>(speedControllers),
                     trainSchedule,
                     currentStageIndex,
-                    currentStageState
-            );
+                    currentStageState,
+                    new ArrayDeque<>(interactablesUnderTrain)
+                    );
 
         var nextStageState = trainSchedule.stages.get(nextStage).getState();
         return new TrainState(
@@ -123,7 +134,8 @@ public final class TrainState {
                 new ArrayList<>(speedControllers),
                 trainSchedule,
                 nextStage,
-                nextStageState
+                nextStageState,
+                new ArrayDeque<>(interactablesUnderTrain)
         );
     }
 

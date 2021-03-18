@@ -15,9 +15,7 @@ import java.util.Map;
 
 public class RMLSignalIL {
     static void parse(
-            Map<String, NetElement> netElements,
             Document document,
-            HashMap<String, RJSTrackSection> rjsTrackSections,
             HashMap<String, RMLSignalIS> rmlSignalsIS
     ) throws InvalidInfraException {
         var xpath = "/railML/interlocking/assetsForIL/signalsIL/signalIL";
@@ -36,7 +34,8 @@ public class RMLSignalIL {
             // add the signal to the RJSTrackSection
             var rmlSignalIS = rmlSignalsIS.get(refSignalIS);
             var rjsTrackSection = rmlSignalIS.rjsTrackSection;
-            rjsTrackSection.signals.add(new RJSSignal(id, rmlSignalIS.navigability, rmlSignalIS.position, expr));
+            rjsTrackSection.signals.add(new RJSSignal(
+                    id, rmlSignalIS.navigability, rmlSignalIS.position, rmlSignalIS.sightDistance, expr));
         }
     }
 }

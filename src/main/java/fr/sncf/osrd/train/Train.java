@@ -2,18 +2,20 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.signaling.TrainInteractable;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.timetable.TrainSchedule.TrainID;
+import fr.sncf.osrd.train.lifestages.SignalNavigateStage;
 import fr.sncf.osrd.utils.CryoList;
+import fr.sncf.osrd.utils.PointValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 public class Train extends AbstractEntity<Train, TrainID> {
     static final Logger logger = LoggerFactory.getLogger(Train.class);
@@ -25,29 +27,46 @@ public class Train extends AbstractEntity<Train, TrainID> {
     private TrainState lastState;
 
     private Train(
-            Simulation sim,
             TrainSchedule schedule,
-            List<SpeedController> controllers,
-            ArrayDeque<TrackSectionRange> trackSectionRanges
+            TrainState initialState
     ) {
         super(schedule.trainID);
-        var location = new TrainPositionTracker(sim.infra, sim.infraState, trackSectionRanges);
-        var stageState = schedule.stages.get(0).getState();
-        this.lastState = new TrainState(
-                sim.getTime(),
-                location,
-                schedule.initialSpeed,
-                TrainStatus.STARTING_UP,
-                controllers,
-                schedule,
-                0,
-                stageState
-        );
+        this.lastState = initialState;
         // the train must react to its own move events
         this.subscribers.add(this);
     }
 
-    // region ENTITY_REACTOR
+    private static ArrayDeque<PointValue<TrainInteractable>> findTailInteractables(
+            double trainLength,
+            Collection<TrackSectionRange> pathRanges
+    ) {
+        var res = new ArrayDeque<PointValue<TrainInteractable>>();
+        // the offset of the current range from the start of the path
+        double pathStartOffset = -trainLength;
+
+        // for all track sections on the path, create a list of interactable objects
+        for (var pathRange : pathRanges) {
+            var interactables = TrackSection.getInteractables(pathRange.edge, pathRange.direction);
+            for (var interactablePoint : interactables) {
+                var interactable = interactablePoint.value;
+                if (!interactable.getInteractionType().interactsWithTail())
+                    continue;
+
+                // the position of the interactable object inside the path track section range
+                var interactablePosition = pathRange.getEdgeRelPosition(interactablePoint.position);
+
+                // skip the object if it isn't part of the portion of the edge inside the path
+                if (interactablePosition < pathRange.beginOffset || interactablePosition > pathRange.endOffset)
+                    continue;
+
+                // compute the position of the interactable object relative to the start of the path
+                var interactablePathPosition = pathStartOffset + interactablePosition;
+                res.addLast(new PointValue<>(interactablePathPosition, interactable));
+            }
+            pathStartOffset += pathRange.length();
+        }
+        return res;
+    }
 
     /** Create a train */
     public static Train create(
@@ -62,12 +81,32 @@ public class Train extends AbstractEntity<Train, TrainID> {
                 schedule.startOffset,
                 schedule.rollingStock.length
         );
-        var trainCreatedChange = new Train.TrainCreatedChange(sim, schedule, controllers, trackSectionPositions);
+
+        // compute the list of objects that interact with the tail of the train which are under the train at startup
+        var interactablesUnderTrain = findTailInteractables(schedule.rollingStock.length, trackSectionPositions);
+
+        var location = new TrainPositionTracker(sim.infra, sim.infraState, trackSectionPositions);
+        var stageState = schedule.stages.get(0).getState();
+        var initialState = new TrainState(
+                sim.getTime(),
+                location,
+                schedule.initialSpeed,
+                TrainStatus.STARTING_UP,
+                controllers,
+                schedule,
+                0,
+                stageState,
+                interactablesUnderTrain
+        );
+
+        var trainCreatedChange = new TrainCreatedChange(sim, schedule, initialState);
         var train = trainCreatedChange.apply(sim);
         sim.publishChange(trainCreatedChange);
         train.scheduleStateChange(sim);
         return train;
     }
+
+    // region ENTITY_REACTOR
 
     private void scheduleStateChange(Simulation sim) throws SimulationError {
         if (lastState.status == TrainStatus.REACHED_DESTINATION) {
@@ -116,26 +155,22 @@ public class Train extends AbstractEntity<Train, TrainID> {
 
     public static final class TrainCreatedChange extends SimChange<Train> {
         public final TrainSchedule schedule;
-        public final CryoList<SpeedController> initialControllers;
-        public final ArrayDeque<TrackSectionRange> trackSectionRanges;
+        public final TrainState initialState;
 
         /** A change corresponding to a train's creation. */
         public TrainCreatedChange(
                 Simulation sim,
                 TrainSchedule schedule,
-                CryoList<SpeedController> initialControllers,
-                ArrayDeque<TrackSectionRange> trackSectionRanges
+                TrainState initialState
         ) {
             super(sim);
             this.schedule = schedule;
-            this.initialControllers = initialControllers;
-            this.trackSectionRanges = trackSectionRanges;
+            this.initialState = initialState;
         }
 
         @Override
         public Train apply(Simulation sim) {
-            var controllers = new ArrayList<>(initialControllers);
-            var train = new Train(sim, schedule, controllers, trackSectionRanges);
+            var train = new Train(schedule, initialState.clone());
             sim.trains.put(train.getName(), train);
             return train;
         }
@@ -276,10 +311,17 @@ public class Train extends AbstractEntity<Train, TrainID> {
     public static final class TrainReachesInteraction implements TimelineEventValue {
         public final TrainInteractable interactionObject;
         public final TrainStateChange trainStateChange;
+        public final SignalNavigateStage.InteractionType interactionType;
 
-        public TrainReachesInteraction(TrainInteractable interactionObject, TrainStateChange trainStateChange) {
+        /** Event value that represents train interacting with an element */
+        public TrainReachesInteraction(
+                TrainInteractable interactionObject,
+                TrainStateChange trainStateChange,
+                SignalNavigateStage.InteractionType interactionType
+        ) {
             this.interactionObject = interactionObject;
             this.trainStateChange = trainStateChange;
+            this.interactionType = interactionType;
         }
     }
     // endregion

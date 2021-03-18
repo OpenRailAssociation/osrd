@@ -20,7 +20,6 @@ public final class TrainSchedule {
     public final ArrayList<LifeStage> stages;
     public final RollingStock rollingStock;
     public final double initialSpeed;
-    public final double driverSightDistance;
     public final double departureTime;
     public final ArrayList<TrackSectionRange> fullPath;
 
@@ -33,13 +32,11 @@ public final class TrainSchedule {
             ArrayList<LifeStage> stages,
             RollingStock rollingStock,
             double initialSpeed,
-            double driverSightDistance,
             double departureTime
     ) {
         this.startTrackSection = startTrackSection;
         this.startDirection = startDirection;
         this.startOffset = startOffset;
-        this.driverSightDistance = driverSightDistance;
         this.trainID = new TrainID(trainID);
         this.stages = stages;
         this.rollingStock = rollingStock;

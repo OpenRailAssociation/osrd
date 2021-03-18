@@ -54,7 +54,8 @@ public class Switch extends TrackNode {
             return position;
         }
 
-        public TrackSection getLinkedTrackSection() {
+        /** Return currently active branch */
+        public TrackSection getBranch() {
             if (position == SwitchPosition.LEFT)
                 return switchRef.leftTrackSection;
             return switchRef.rightTrackSection;

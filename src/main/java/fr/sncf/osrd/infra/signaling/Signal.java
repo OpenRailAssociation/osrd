@@ -10,6 +10,9 @@ import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.TrainInteractionType;
+import fr.sncf.osrd.utils.graph.ApplicableDirections;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayList;
 
@@ -21,14 +24,21 @@ public class Signal implements TrainInteractable {
     public final ArrayList<Signal> signalDependencies = new ArrayList<>();
     public final ArrayList<Route> routeDependencies = new ArrayList<>();
     public final ArrayList<Switch> switchDependencies = new ArrayList<>();
+    public final ApplicableDirections direction;
 
     private RSAspectSet initialAspects = new RSAspectSet();
 
     /** The static data describing a signal */
-    public Signal(int index, String id, RSStatefulExpr<RSAspectSet> expr) {
+    public Signal(
+            int index,
+            String id,
+            RSStatefulExpr<RSAspectSet> expr,
+            ApplicableDirections direction
+    ) {
         this.index = index;
         this.id = id;
         this.expr = expr;
+        this.direction = direction;
     }
 
     public State newState() {
@@ -37,6 +47,16 @@ public class Signal implements TrainInteractable {
 
     public void evalInitialAspect(Infra.State initialState) {
         initialAspects = initialState.getSignalState(index).exprState.evalInit(initialState);
+    }
+
+    @Override
+    public TrainInteractionType getInteractionType() {
+        return TrainInteractionType.HEAD;
+    }
+
+    @Override
+    public double getInteractionDistance() {
+        return 0;
     }
 
     @Override

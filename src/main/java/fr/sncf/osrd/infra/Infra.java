@@ -4,9 +4,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.signaling.Signal;
+import fr.sncf.osrd.infra.signaling.TrainInteractable;
 import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.trackgraph.*;
+import fr.sncf.osrd.utils.PointSequence;
 import fr.sncf.osrd.utils.SortedArraySet;
 
 import java.util.ArrayList;
@@ -109,6 +111,25 @@ public final class Infra {
         var infra = new Infra(trackGraph, waypointGraph, routeGraph, tvdSections, aspects, signals, switches);
         infra.trackGraph.validate();
 
+        for (var trackSection : trackGraph.iterEdges()) {
+            @SuppressWarnings("unchecked")
+            var forwardBuilder = trackSection.interactablesForward.builder();
+            var backwardBuilder = trackSection.interactablesBackward.builder();
+
+            for (var signal : trackSection.signals) {
+                if (signal.value.direction.appliesToNormal())
+                    forwardBuilder.add(signal.position, signal.value);
+                if (signal.value.direction.appliesToReverse())
+                    backwardBuilder.add(signal.position, signal.value);
+            }
+            for (var waypoint : trackSection.waypoints) {
+                forwardBuilder.add(waypoint.position, waypoint.value);
+                backwardBuilder.add(waypoint.position, waypoint.value);
+            }
+            forwardBuilder.build();
+            backwardBuilder.build();
+        }
+
         // Evaluate initial aspects of signals
         var topologicalSignalOrder = buildTopologicalSignalOrder(signals);
         var initialState = infra.createInitialState();
@@ -204,6 +225,7 @@ public final class Infra {
     }
 
     /** Initializes a state for the infrastructure */
+    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST_OF_RETURN_VALUE"})
     public State createInitialState() {
         var signalCount = signals.size();
         var signalStates = new Signal.State[signalCount];
