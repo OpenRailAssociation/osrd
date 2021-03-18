@@ -2,6 +2,7 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.signaling.TrainInteractable;
+import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
@@ -9,8 +10,10 @@ import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.timetable.TrainSchedule.TrainID;
 import fr.sncf.osrd.train.lifestages.SignalNavigateStage;
+import fr.sncf.osrd.train.lifestages.SignalNavigateStage.InteractionType;
 import fr.sncf.osrd.utils.CryoList;
 import fr.sncf.osrd.utils.PointValue;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,7 +139,7 @@ public class Train extends AbstractEntity<Train, TrainID> {
             sim.publishChange(stateChange);
 
             // Interact
-            eventInteract.interactionObject.interact(sim, this);
+            eventInteract.interactionObject.interact(sim, this, eventInteract.interactionType);
 
             // Schedule next state
             scheduleStateChange(sim);
@@ -149,6 +152,19 @@ public class Train extends AbstractEntity<Train, TrainID> {
             scheduleStateChange(sim);
     }
 
+    // endregion
+
+    // region INTERACTIONS
+    /** Make the train interact with a detector */
+    public void interact(Simulation sim, Detector detector, InteractionType interactionType) {
+        if (lastState.currentStageState.getClass() == SignalNavigateStage.State.class) {
+            var navigateStageState = (SignalNavigateStage.State) lastState.currentStageState;
+            navigateStageState.updateTVDSections(sim, detector, interactionType);
+            return;
+
+        }
+        throw new RuntimeException("Unexpected stage while interacting with a detector");
+    }
     // endregion
 
     // region CHANGES
@@ -317,7 +333,7 @@ public class Train extends AbstractEntity<Train, TrainID> {
         public TrainReachesInteraction(
                 TrainInteractable interactionObject,
                 TrainStateChange trainStateChange,
-                SignalNavigateStage.InteractionType interactionType
+                InteractionType interactionType
         ) {
             this.interactionObject = interactionObject;
             this.trainStateChange = trainStateChange;

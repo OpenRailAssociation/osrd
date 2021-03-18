@@ -21,6 +21,17 @@ public abstract class BiNEdge<SelfT extends BiNEdge<SelfT>> extends Edge impleme
         return startNode;
     }
 
+    /**
+     * The node at the start of the course over the edge.
+     * @param dir the course direction
+     * @return The node at the end of the course over the edge.
+     */
+    public int getStartNode(EdgeDirection dir) {
+        if (dir == EdgeDirection.START_TO_STOP)
+            return startNode;
+        return endNode;
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public SelfT getEdge(SelfT originEdge, EdgeDirection direction) {
