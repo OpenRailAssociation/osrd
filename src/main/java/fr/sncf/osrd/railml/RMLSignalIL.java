@@ -1,17 +1,14 @@
 package fr.sncf.osrd.railml;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.railjson.schema.ID;
-import fr.sncf.osrd.infra.railjson.schema.RJSTrackSection;
-import fr.sncf.osrd.infra.railjson.schema.railscript.RJSRSExpr;
-import fr.sncf.osrd.infra.railjson.schema.signaling.RJSAspect;
-import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSSignal;
-import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
+import fr.sncf.osrd.railjson.infra.ID;
+import fr.sncf.osrd.railjson.infra.railscript.RJSRSExpr;
+import fr.sncf.osrd.railjson.infra.signaling.RJSAspect;
+import fr.sncf.osrd.railjson.infra.trackobjects.RJSSignal;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
 import java.util.HashMap;
-import java.util.Map;
 
 public class RMLSignalIL {
     static void parse(

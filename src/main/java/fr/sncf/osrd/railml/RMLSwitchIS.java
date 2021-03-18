@@ -1,9 +1,9 @@
 package fr.sncf.osrd.railml;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.railjson.schema.RJSSwitch;
-import fr.sncf.osrd.infra.railjson.schema.RJSTrackSection;
-import fr.sncf.osrd.infra.railjson.schema.RJSTrackSectionLink;
+import fr.sncf.osrd.railjson.infra.RJSSwitch;
+import fr.sncf.osrd.railjson.infra.RJSTrackSection;
+import fr.sncf.osrd.railjson.infra.RJSTrackSectionLink;
 import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
 import org.dom4j.Document;
 import org.dom4j.Element;

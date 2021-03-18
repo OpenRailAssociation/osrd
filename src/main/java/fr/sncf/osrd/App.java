@@ -9,7 +9,7 @@ import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.config.ConfigManager;
 import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.railjson.RailJSONSerializer;
+import fr.sncf.osrd.infra.parser.RailJSONSerializer;
 import fr.sncf.osrd.infra.railscript.PrettyPrinter;
 import fr.sncf.osrd.railml.RailMLParser;
 import fr.sncf.osrd.simulation.ChangeReplayChecker;
