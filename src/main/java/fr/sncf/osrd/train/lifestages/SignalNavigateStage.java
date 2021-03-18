@@ -5,6 +5,7 @@ import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.TrainInteractable;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
@@ -24,6 +25,7 @@ import java.util.Comparator;
 import java.util.function.Consumer;
 
 public class SignalNavigateStage implements LifeStage {
+    @SuppressFBWarnings({"URF_UNREAD_FIELD"})
     private final ArrayList<Route> routePath;
     private final ArrayList<TrackSectionRange> trackSectionPath;
     private final ArrayList<PointValue<TrainInteractable>> eventPath;
@@ -39,8 +41,14 @@ public class SignalNavigateStage implements LifeStage {
     }
 
     /** Creates and store the path some train will follow */
-    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"}) // TODO: remove me
-    public static SignalNavigateStage from(Infra infra, OperationalPoint start, OperationalPoint end, double beginOffset) {
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY", "BC_UNCONFIRMED_CAST"}) // TODO: remove me
+    public static SignalNavigateStage from(
+            Infra infra,
+            OperationalPoint start,
+            OperationalPoint end,
+            double beginOffset,
+            double driverSightDistance
+    ) {
         // TODO Compute offset of the start/end of each route
         var startingPoints = new ArrayList<BasicPathStart<Route>>();
         for (var tracks : start.refs) {
@@ -86,7 +94,7 @@ public class SignalNavigateStage implements LifeStage {
         }
 
         var trackSectionPath = routesToTrackSectionPositions(routePath, beginOffset);
-        var eventPath = trackSectionToEventPath(trackSectionPath);
+        var eventPath = trackSectionToEventPath(driverSightDistance, trackSectionPath);
 
         return new SignalNavigateStage(routePath, trackSectionPath, eventPath);
     }
@@ -101,14 +109,15 @@ public class SignalNavigateStage implements LifeStage {
         for (var route : routePath) {
             for (var tvdSectionPath : route.tvdSectionsPath) {
                 for (var trackSection : tvdSectionPath.trackSections) {
-                    if (beginOffset > 0) {
-                        if (beginOffset < trackSection.length())
-                            flattenSections.add(new TrackSectionRange(trackSection.edge, trackSection.direction,
-                                            trackSection.beginOffset + beginOffset, trackSection.endOffset));
-                        beginOffset -= trackSection.length();
+                    if (beginOffset <= 0) {
+                        flattenSections.add(trackSection);
                         continue;
                     }
-                    flattenSections.add(trackSection);
+
+                    if (beginOffset < trackSection.length())
+                        flattenSections.add(new TrackSectionRange(trackSection.edge, trackSection.direction,
+                                trackSection.beginOffset + beginOffset, trackSection.endOffset));
+                    beginOffset -= trackSection.length();
                 }
             }
         }
@@ -135,30 +144,36 @@ public class SignalNavigateStage implements LifeStage {
     }
 
     private static ArrayList<PointValue<TrainInteractable>> trackSectionToEventPath(
-            ArrayList<TrackSectionRange> trackSections
+            double driverSightDistance,
+            Iterable<TrackSectionRange> trackSectionRanges
     ) {
         var eventPath = new ArrayList<PointValue<TrainInteractable>>();
-        var pathLength = 0;
-        for (var track : trackSections) {
-            for (var signal : track.edge.signals)
-                addEventToEventPath(eventPath, signal, track, pathLength);
-            for (var waypoint : track.edge.waypoints)
-                addEventToEventPath(eventPath, waypoint, track, pathLength);
-            pathLength += track.edge.length;
+        double pathLength = 0;
+        for (var trackRange : trackSectionRanges) {
+            for (var interactablePoint : TrackSection.getInteractables(trackRange.edge, trackRange.direction)) {
+                var objEdgePosition = trackRange.getEdgeRelPosition(interactablePoint.position);
+                if (objEdgePosition < trackRange.beginOffset || objEdgePosition > trackRange.endOffset)
+                    continue;
+
+                var interactable = interactablePoint.value;
+
+                var sightDistance = Double.min(interactable.getInteractionDistance(), driverSightDistance);
+                var edgeDistToObj = objEdgePosition - trackRange.beginOffset;
+                var objPathOffset = pathLength + edgeDistToObj - sightDistance;
+                if (objPathOffset < 0)
+                    objPathOffset = 0;
+
+                eventPath.add(new PointValue<>(objPathOffset, interactable));
+            }
+            pathLength += trackRange.edge.length;
         }
         eventPath.sort(Comparator.comparing(pointValue -> pointValue.position));
         return eventPath;
     }
 
-    private static void addEventToEventPath(
-            ArrayList<PointValue<TrainInteractable>> eventPath,
-            PointValue<? extends  TrainInteractable> event,
-            TrackSectionRange track,
-            double pathLength
-    ) {
-        var pos = track.getEdgeRelPosition(event.position);
-        if (pos >= track.beginOffset && pos <= track.endOffset)
-            eventPath.add(new PointValue<>(pos + pathLength - track.beginOffset, event.value));
+    public enum InteractionType {
+        TAIL,
+        HEAD
     }
 
     @Override
@@ -171,6 +186,7 @@ public class SignalNavigateStage implements LifeStage {
         trackSectionPath.forEach(consumer);
     }
 
+    @SuppressFBWarnings({"URF_UNREAD_FIELD"})
     public static class State extends LifeStageState {
         public final SignalNavigateStage stage;
         private int routeIndex = 0;
@@ -179,6 +195,35 @@ public class SignalNavigateStage implements LifeStage {
 
         public State(SignalNavigateStage stage) {
             this.stage = stage;
+        }
+
+        private InteractionType nextInteractionType(TrainState trainState) {
+            var nextHeadPosition = stage.eventPath.get(eventPathIndex).position;
+
+            double nextTailPosition = Double.POSITIVE_INFINITY;
+            if (!trainState.interactablesUnderTrain.isEmpty())
+                nextTailPosition = trainState.interactablesUnderTrain.getFirst().position;
+
+            if (nextTailPosition + trainState.trainSchedule.rollingStock.length < nextHeadPosition)
+                return InteractionType.TAIL;
+            return InteractionType.HEAD;
+        }
+
+        private PointValue<TrainInteractable> nextInteraction(TrainState trainState, InteractionType interactionType) {
+            switch (interactionType) {
+                case HEAD:
+                    var nextHeadEvent = stage.eventPath.get(eventPathIndex);
+
+                    if (nextHeadEvent.value.getInteractionType().interactsWithTail())
+                        trainState.interactablesUnderTrain.addLast(nextHeadEvent);
+
+                    eventPathIndex++;
+                    return nextHeadEvent;
+                case TAIL:
+                    return trainState.interactablesUnderTrain.removeFirst();
+                default:
+                    throw new RuntimeException("Unknown interaction type");
+            }
         }
 
         @Override
@@ -194,8 +239,8 @@ public class SignalNavigateStage implements LifeStage {
             }
 
             // 1) find the next event position
-            var nextEventTrackPosition = stage.eventPath.get(eventPathIndex);
-            eventPathIndex++;
+            var interactionType = nextInteractionType(trainState);
+            var nextEventTrackPosition = nextInteraction(trainState, interactionType);
 
             // 2) simulate up to nextEventTrackPosition
             var newTrainState = trainState.clone();
@@ -204,7 +249,8 @@ public class SignalNavigateStage implements LifeStage {
             // 3) create an event with simulation data up to this point
             var eventTime = simulationResult.newState.time;
             assert eventTime >= sim.getTime();
-            var event = new Train.TrainReachesInteraction(nextEventTrackPosition.value, simulationResult);
+            var event = new Train.TrainReachesInteraction(
+                    nextEventTrackPosition.value, simulationResult, interactionType);
             sim.scheduleEvent(train, eventTime, event);
         }
 

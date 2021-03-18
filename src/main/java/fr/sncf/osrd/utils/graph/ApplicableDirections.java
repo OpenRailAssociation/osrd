@@ -26,4 +26,12 @@ public enum ApplicableDirections {
         }
         throw new RuntimeException("impossible switch branch");
     }
+
+    public boolean appliesToNormal() {
+        return this != REVERSE;
+    }
+
+    public boolean appliesToReverse() {
+        return this != NORMAL;
+    }
 }

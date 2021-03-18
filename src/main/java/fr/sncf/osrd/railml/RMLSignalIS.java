@@ -1,11 +1,7 @@
 package fr.sncf.osrd.railml;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.railjson.schema.ID;
 import fr.sncf.osrd.infra.railjson.schema.RJSTrackSection;
-import fr.sncf.osrd.infra.railjson.schema.railscript.RJSRSExpr;
-import fr.sncf.osrd.infra.railjson.schema.signaling.RJSAspect;
-import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSSignal;
 import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
 import fr.sncf.osrd.utils.graph.ApplicableDirections;
 import org.dom4j.Document;
@@ -17,12 +13,19 @@ import java.util.Map;
 public class RMLSignalIS {
     final RJSTrackSection rjsTrackSection;
     final double position;
+    final double sightDistance;
     final ApplicableDirections navigability;
 
-    private RMLSignalIS(RJSTrackSection rjsTrackSection, ApplicableDirections navigability, double position) {
+    private RMLSignalIS(
+            RJSTrackSection rjsTrackSection,
+            ApplicableDirections navigability,
+            double position,
+            double sightDistance
+    ) {
         this.rjsTrackSection = rjsTrackSection;
         this.navigability = navigability;
         this.position = position;
+        this.sightDistance = sightDistance;
     }
 
     static HashMap<String, RMLSignalIS> parse(
@@ -42,8 +45,13 @@ public class RMLSignalIS {
             if (location == null)
                 throw new InvalidInfraException(String.format("missing spotLocation on signal %s", id));
 
+            double sightDistance = 0;
+            var sightDistanceStr = signal.attributeValue("sightDistance");
+            if (sightDistanceStr != null)
+                sightDistance = Double.parseDouble(sightDistanceStr);
+
             var rjsTrackSection = rjsTrackSections.get(location.netElement.id);
-            signals.put(id, new RMLSignalIS(rjsTrackSection, location.appliesTo, location.position));
+            signals.put(id, new RMLSignalIS(rjsTrackSection, location.appliesTo, location.position, sightDistance));
         }
         return signals;
     }

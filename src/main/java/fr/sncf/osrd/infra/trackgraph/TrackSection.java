@@ -6,11 +6,10 @@ import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.SpeedSection;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.Signal;
+import fr.sncf.osrd.infra.signaling.TrainInteractable;
 import fr.sncf.osrd.utils.graph.BiNEdge;
-import fr.sncf.osrd.utils.graph.Edge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-import fr.sncf.osrd.infra.signaling.VisibleTrackObject;
 import fr.sncf.osrd.utils.*;
 
 import java.util.ArrayList;
@@ -26,6 +25,16 @@ public final class TrackSection extends BiNEdge<TrackSection> {
     public final ArrayList<TrackSection> startNeighbors = new ArrayList<>();
     public final ArrayList<TrackSection> endNeighbors = new ArrayList<>();
     public final ArrayList<Route> routes = new ArrayList<>();
+
+    // the data structure used for the slope automatically negates it when iterated on backwards
+    public final DoubleOrientedRangeSequence slope = new DoubleOrientedRangeSequence();
+    public final ArrayList<RangeValue<SpeedSection>> speedSectionsForward = new ArrayList<>();
+    public final ArrayList<RangeValue<SpeedSection>> speedSectionsBackward = new ArrayList<>();
+    public final IntervalTree<OperationalPoint.Ref> operationalPoints = new IntervalTree<>();
+    public final PointSequence<Waypoint> waypoints = new PointSequence<>();
+    public final PointSequence<Signal> signals = new PointSequence<>();
+    public final PointSequence<TrainInteractable> interactablesForward = new PointSequence<>();
+    public final PointSequence<TrainInteractable> interactablesBackward = new PointSequence<>();
 
     /**
      * Given a side of the edge, return the list of neighbors
@@ -127,17 +136,6 @@ public final class TrackSection extends BiNEdge<TrackSection> {
         // TODO: validate speed limits
     }
 
-
-    // the data structure used for the slope automatically negates it when iterated on backwards
-    public final DoubleOrientedRangeSequence slope = new DoubleOrientedRangeSequence();
-    public final ArrayList<RangeValue<SpeedSection>> speedSectionsForward = new ArrayList<>();
-    public final ArrayList<RangeValue<SpeedSection>> speedSectionsBackward = new ArrayList<>();
-    public final IntervalTree<OperationalPoint.Ref> operationalPoints = new IntervalTree<>();
-    public final PointSequence<Waypoint> waypoints = new PointSequence<>();
-    public final PointSequence<Signal> signals = new PointSequence<>();
-    public final PointSequence<VisibleTrackObject> visibleTrackObjectsForward = new PointSequence<>();
-    public final PointSequence<VisibleTrackObject> visibleTrackObjectsBackward = new PointSequence<>();
-
     /*
      * All the functions below are attributes getters, meant to implement either RangeAttrGetter or PointAttrGetter.
      * These can be passed around to build generic algorithms on attributes.
@@ -165,9 +163,9 @@ public final class TrackSection extends BiNEdge<TrackSection> {
      * @param direction the direction
      * @return visible track objects
      */
-    public static PointSequence<VisibleTrackObject> getVisibleTrackObjects(TrackSection edge, EdgeDirection direction) {
+    public static PointSequence<TrainInteractable> getInteractables(TrackSection edge, EdgeDirection direction) {
         if (direction == EdgeDirection.START_TO_STOP)
-            return edge.visibleTrackObjectsForward;
-        return edge.visibleTrackObjectsBackward;
+            return edge.interactablesForward;
+        return edge.interactablesBackward;
     }
 }

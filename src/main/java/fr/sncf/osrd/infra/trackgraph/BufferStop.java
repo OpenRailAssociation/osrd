@@ -2,6 +2,7 @@ package fr.sncf.osrd.infra.trackgraph;
 
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.TrainInteractionType;
 
 /**
  * A stop block prevents trains from going past the end of a track.
@@ -11,6 +12,16 @@ public class BufferStop extends Waypoint {
 
     public BufferStop(int index, String id) {
         super(index, id);
+    }
+
+    @Override
+    public TrainInteractionType getInteractionType() {
+        return TrainInteractionType.HEAD;
+    }
+
+    @Override
+    public double getInteractionDistance() {
+        return 0;
     }
 
     @Override

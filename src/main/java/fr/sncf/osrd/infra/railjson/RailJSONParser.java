@@ -107,8 +107,6 @@ public class RailJSONParser {
      */
     public static Infra parse(RJSRoot railJSON) throws InvalidInfraException {
         var trackGraph = new TrackGraph();
-        var tvdSectionsMap = new HashMap<String, TVDSection>();
-        var aspectsMap = new HashMap<String, Aspect>();
 
         // register operational points
         for (var operationalPoint : railJSON.operationalPoints) {
@@ -135,9 +133,10 @@ public class RailJSONParser {
                 trackGraph.makePlaceholderNode(i, String.valueOf(i));
 
         // parse aspects
-        int aspectCount = 0;
+        int aspectIndex = 0;
+        var aspectsMap = new HashMap<String, Aspect>();
         for (var rjsAspect : railJSON.aspects) {
-            var aspect = new Aspect(aspectCount++, rjsAspect.id, rjsAspect.color);
+            var aspect = new Aspect(aspectIndex++, rjsAspect.id, rjsAspect.color);
             aspectsMap.put(aspect.id, aspect);
         }
 
@@ -190,7 +189,7 @@ public class RailJSONParser {
             var signalsBuilder = infraTrackSection.signals.builder();
             for (var rjsSignal : trackSection.signals) {
                 var expr = RailScriptExprParser.parseStatefulSignalExpr(aspectsMap, scriptFunctions, rjsSignal.expr);
-                var signal = new Signal(signals.size(), rjsSignal.id, expr);
+                var signal = new Signal(signals.size(), rjsSignal.id, expr, rjsSignal.navigability);
                 signalsBuilder.add(rjsSignal.position, signal);
                 signals.add(signal);
             }
@@ -214,12 +213,13 @@ public class RailJSONParser {
         }
 
         // Parse TVDSections
-        var index = 0;
+        var tvdSectionIndex = 0;
+        var tvdSectionsMap = new HashMap<String, TVDSection>();
         for (var rjsonTVD : railJSON.tvdSections) {
             var tvdWaypoints = new ArrayList<Waypoint>();
             findWaypoints(tvdWaypoints, waypointsMap, rjsonTVD.trainDetectors);
             findWaypoints(tvdWaypoints, waypointsMap, rjsonTVD.bufferStops);
-            var tvd = new TVDSection(rjsonTVD.id, index++, tvdWaypoints, rjsonTVD.isBerthingTrack);
+            var tvd = new TVDSection(rjsonTVD.id, tvdSectionIndex++, tvdWaypoints, rjsonTVD.isBerthingTrack);
             tvdSectionsMap.put(tvd.id, tvd);
         }
 
