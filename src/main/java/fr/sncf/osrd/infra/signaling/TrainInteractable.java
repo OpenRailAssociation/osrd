@@ -3,6 +3,7 @@ package fr.sncf.osrd.infra.signaling;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.train.TrainInteractionType;
+import fr.sncf.osrd.train.lifestages.SignalNavigateStage;
 
 public interface TrainInteractable {
     TrainInteractionType getInteractionType();
@@ -15,5 +16,5 @@ public interface TrainInteractable {
      * @param sim the simulation
      * @param train the train arriving on the sensor
      */
-    void interact(Simulation sim, Train train);
+    void interact(Simulation sim, Train train, SignalNavigateStage.InteractionType interactionType);
 }

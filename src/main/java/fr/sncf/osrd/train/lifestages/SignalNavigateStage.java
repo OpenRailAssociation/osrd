@@ -3,9 +3,12 @@ package fr.sncf.osrd.train.lifestages;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.OperationalPoint;
+import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.TrainInteractable;
+import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
@@ -190,7 +193,6 @@ public class SignalNavigateStage implements LifeStage {
     public static class State extends LifeStageState {
         public final SignalNavigateStage stage;
         private int routeIndex = 0;
-        private int trackSectionIndex = 0;
         private int eventPathIndex = 0;
 
         public State(SignalNavigateStage stage) {
@@ -272,6 +274,47 @@ public class SignalNavigateStage implements LifeStage {
                     currentPos + distanceToExecution,
                     trainState.trainSchedule.rollingStock.timetableGamma
             ));
+        }
+
+        private TVDSection findForwardTVDSection(Waypoint waypoint) {
+            for (; routeIndex < stage.routePath.size(); routeIndex++) {
+                var route = stage.routePath.get(routeIndex);
+                for (var i = 0; i < route.tvdSectionsPath.size(); i++) {
+                    var tvdSectionPath = route.tvdSectionsPath.get(i);
+                    var tvdSectionPathDirection = route.tvdSectionsPathDirection.get(i);
+                    if (tvdSectionPath.getEndNode(tvdSectionPathDirection) == waypoint.index)
+                        return waypoint.getTvdSectionPathNeighbors(tvdSectionPathDirection).get(0).tvdSection;
+                }
+            }
+            throw new RuntimeException("Can't find the waypoin in the planned route path");
+        }
+
+        private TVDSection findBackwardTVDSection(Waypoint waypoint) {
+            for (; routeIndex < stage.routePath.size(); routeIndex++) {
+                var route = stage.routePath.get(routeIndex);
+                for (var i = 0; i < route.tvdSectionsPath.size(); i++) {
+                    var tvdSectionPath = route.tvdSectionsPath.get(i);
+                    var tvdSectionPathDirection = route.tvdSectionsPathDirection.get(i);
+                    if (tvdSectionPath.getEndNode(tvdSectionPathDirection) == waypoint.index)
+                        return tvdSectionPath.tvdSection;
+                }
+            }
+            throw new RuntimeException("Can't find the waypoin in the planned route path");
+        }
+
+        /** Occupy and free tvd sections given a detector the train is interacting with. */
+        public void updateTVDSections(Simulation sim, Detector detector, InteractionType interactionType) {
+            // Occupy the next tvdSection
+            if (interactionType == InteractionType.HEAD) {
+                var forwardTVDSectionPath = findForwardTVDSection(detector);
+                var nextTVDSection = sim.infraState.getTvdSectionState(forwardTVDSectionPath.index);
+                nextTVDSection.occupy(sim);
+                return;
+            }
+            // Free the last tvdSection
+            var backwardTVDSectionPath = findBackwardTVDSection(detector);
+            var nextTVDSection = sim.infraState.getTvdSectionState(backwardTVDSectionPath.index);
+            nextTVDSection.occupy(sim);
         }
     }
 }
