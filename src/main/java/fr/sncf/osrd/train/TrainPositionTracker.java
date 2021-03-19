@@ -3,6 +3,7 @@ package fr.sncf.osrd.train;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.trackgraph.*;
+import fr.sncf.osrd.utils.FloatCompare;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayDeque;
@@ -30,34 +31,6 @@ public final class TrainPositionTracker implements Cloneable {
         this.infra = infra;
         this.infraState = infraState;
         this.trackSectionRanges = trackSectionRanges;
-    }
-
-    /** Compute initial track section ranges given a location and a train length.
-     * @param offset relative to the start of the edge
-     */
-    public static ArrayDeque<TrackSectionRange> computeInitialPosition(
-            Infra infra,
-            TrackSection track,
-            EdgeDirection direction,
-            double offset,
-            double trainLength
-    ) {
-        var positions = new ArrayDeque<TrackSectionRange>();
-        offset = track.position(direction, offset);
-        while (true) {
-            var availableSpace = offset;
-            var startOffset = Double.max(0, availableSpace - trainLength);
-            positions.add(new TrackSectionRange(track, direction, startOffset, availableSpace));
-            if (availableSpace >= trainLength)
-                return positions;
-
-            trainLength -= availableSpace;
-            var neighbors = infra.trackGraph.getStartNeighborRels(track, direction);
-            assert neighbors.size() == 1;
-            direction = neighbors.get(0).getDirection(track, direction).opposite();
-            track = neighbors.get(0).getEdge(track, direction);
-            offset = track.length;
-        }
     }
 
     private TrainPositionTracker(TrainPositionTracker tracker) {
@@ -125,10 +98,16 @@ public final class TrainPositionTracker implements Cloneable {
      * Updates the position of the train on the network.
      * @param positionDelta How much the train moves by.
      */
-    public void updatePosition(double positionDelta) {
-        var delta = updateHeadPosition(positionDelta);
-        updateTailPosition(delta);
-        pathPosition += delta;
+    public void updatePosition(double expectedTrainLength, double positionDelta) {
+        pathPosition += updateHeadPosition(positionDelta);
+
+        double currentTrainLength = 0;
+        for (var section : trackSectionRanges)
+            currentTrainLength += section.length();
+
+        var tailDisplacement = currentTrainLength - expectedTrainLength;
+        if (tailDisplacement > 0)
+            updateTailPosition(tailDisplacement);
     }
 
     /** TODO: Check if it's the wanted behavior...
@@ -136,23 +115,24 @@ public final class TrainPositionTracker implements Cloneable {
      * The train stop if it can't go further.
      * @return The delta distance travelled by the train.
      */
-    private double updateHeadPosition(double positionDelta) {
-        var delta = positionDelta;
+    private double updateHeadPosition(double targetDist) {
+        var remainingDist = targetDist;
         var headPos = trackSectionRanges.getFirst();
-        var deltaFree = headPos.edge.length - headPos.endOffset;
-        var deltaMove = Double.min(positionDelta, deltaFree);
-        headPos.endOffset += deltaMove;
-        delta -= deltaMove;
+        var edgeSpaceAhead = headPos.edge.length - headPos.endOffset;
+        var edgeMovement = Double.min(targetDist, edgeSpaceAhead);
+        headPos.endOffset += edgeMovement;
+        remainingDist -= edgeMovement;
 
         // add edges to the current edges queue as the train moves forward
-        while (positionDelta > 0) {
-            var nextPos = nextTrackSectionPosition(positionDelta);
+        while (remainingDist > 0) {
+            var nextPos = nextTrackSectionPosition(remainingDist);
             if (nextPos == null)
-                return positionDelta - delta;
-            delta -= nextPos.edge.length;
+                return targetDist - remainingDist;
+            // this should kind of be nextPos.length(), but doing it this way avoids float compare errors
+            remainingDist -= nextPos.edge.length;
             trackSectionRanges.addFirst(nextPos);
         }
-        return positionDelta;
+        return targetDist;
     }
 
     private void updateTailPosition(double positionDelta) {
