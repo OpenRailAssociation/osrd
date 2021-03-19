@@ -7,7 +7,7 @@ import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.timetable.TrainSchedule;
-import fr.sncf.osrd.train.lifestages.LifeStageState;
+import fr.sncf.osrd.train.phases.PhaseState;
 import fr.sncf.osrd.utils.PointValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +30,8 @@ public final class TrainState implements Cloneable {
     public TrainStatus status;
 
     public final transient TrainSchedule trainSchedule;
-    public final int currentStageIndex;
-    public final LifeStageState currentStageState;
+    public final int currentPhaseIndex;
+    public final PhaseState currentPhaseState;
 
     // this field MUST be kept private, as it is not the position of the train at the current simulation time,
     // but rather the position of the train at the last event. it's fine and expected, but SpeedControllers need
@@ -77,8 +77,8 @@ public final class TrainState implements Cloneable {
             TrainStatus status,
             List<SpeedController> speedControllers,
             TrainSchedule trainSchedule,
-            int currentStageIndex,
-            LifeStageState currentStageState,
+            int currentPhaseIndex,
+            PhaseState currentPhaseState,
             ArrayDeque<PointValue<TrainInteractable>> interactablesUnderTrain
     ) {
         this.time = time;
@@ -87,8 +87,8 @@ public final class TrainState implements Cloneable {
         this.status = status;
         this.speedControllers = speedControllers;
         this.trainSchedule = trainSchedule;
-        this.currentStageIndex = currentStageIndex;
-        this.currentStageState = currentStageState;
+        this.currentPhaseIndex = currentPhaseIndex;
+        this.currentPhaseState = currentPhaseState;
         this.interactablesUnderTrain = interactablesUnderTrain;
     }
 
@@ -102,17 +102,17 @@ public final class TrainState implements Cloneable {
                 status,
                 new ArrayList<>(speedControllers),
                 trainSchedule,
-                currentStageIndex,
-                currentStageState,
+                currentPhaseIndex,
+                currentPhaseState,
                 new ArrayDeque<>(interactablesUnderTrain)
         );
     }
 
-    /** Create a new TrainState pointing at the next stage */
-    public TrainState nextStage() {
-        var nextStage = currentStageIndex + 1;
+    /** Create a new TrainState pointing at the next phase */
+    public TrainState nextPhase() {
+        var nextPhase = currentPhaseIndex + 1;
 
-        if (nextStage == trainSchedule.stages.size())
+        if (nextPhase == trainSchedule.phases.size())
             return new TrainState(
                     time,
                     location.clone(),
@@ -120,12 +120,12 @@ public final class TrainState implements Cloneable {
                     TrainStatus.REACHED_DESTINATION,
                     new ArrayList<>(speedControllers),
                     trainSchedule,
-                    currentStageIndex,
-                    currentStageState,
+                    currentPhaseIndex,
+                    currentPhaseState,
                     new ArrayDeque<>(interactablesUnderTrain)
                     );
 
-        var nextStageState = trainSchedule.stages.get(nextStage).getState();
+        var nextPhaseState = trainSchedule.phases.get(nextPhase).getState();
         return new TrainState(
                 time,
                 location.clone(),
@@ -133,8 +133,8 @@ public final class TrainState implements Cloneable {
                 status,
                 new ArrayList<>(speedControllers),
                 trainSchedule,
-                nextStage,
-                nextStageState,
+                nextPhase,
+                nextPhaseState,
                 new ArrayDeque<>(interactablesUnderTrain)
         );
     }
@@ -223,7 +223,7 @@ public final class TrainState implements Cloneable {
     }
 
     void scheduleStateChange(Train train, Simulation sim) throws SimulationError {
-        currentStageState.simulate(sim, train, this);
+        currentPhaseState.simulate(sim, train, this);
     }
 
     @SuppressFBWarnings({"UPM_UNCALLED_PRIVATE_METHOD"})

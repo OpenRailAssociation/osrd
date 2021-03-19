@@ -1,4 +1,4 @@
-package fr.sncf.osrd.train.lifestages;
+package fr.sncf.osrd.train.phases;
 
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.train.TrackSectionRange;
@@ -7,15 +7,15 @@ import fr.sncf.osrd.train.TrainState;
 
 import java.util.function.Consumer;
 
-public class StopStage extends LifeStageState implements LifeStage {
+public class StopPhase extends PhaseState implements Phase {
     public final double duration;
 
-    public StopStage(double duration) {
+    public StopPhase(double duration) {
         this.duration = duration;
     }
 
     @Override
-    public LifeStageState getState() {
+    public PhaseState getState() {
         return this;
     }
 
@@ -29,7 +29,7 @@ public class StopStage extends LifeStageState implements LifeStage {
         sim.scheduleEvent(
                 train,
                 sim.getTime() + duration,
-                new Train.TrainStateChange(sim, train.getID(), trainState.nextStage())
+                new Train.TrainStateChange(sim, train.getID(), trainState.nextPhase())
         );
     }
 }

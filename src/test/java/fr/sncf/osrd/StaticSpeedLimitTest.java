@@ -15,8 +15,8 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.lifestages.LifeStage;
-import fr.sncf.osrd.train.lifestages.SignalNavigateStage;
+import fr.sncf.osrd.train.phases.Phase;
+import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.RangeValue;
 import fr.sncf.osrd.utils.SignAnalyzer;
 import fr.sncf.osrd.utils.SortedArraySet;
@@ -91,12 +91,12 @@ public class StaticSpeedLimitTest {
         var changelog = new ArrayChangeLog();
         var sim = Simulation.createFromInfra(infra, 0, changelog);
 
-        var stages = new ArrayList<LifeStage>();
-        stages.add(SignalNavigateStage.from(infra, opStart, opEnd, 200, 400));
+        var phases = new ArrayList<Phase>();
+        phases.add(SignalNavigatePhase.from(infra, opStart, opEnd, 200, 400));
 
         var schedule = new TrainSchedule(
                 "test_train", edge, EdgeDirection.START_TO_STOP,
-                200, stages, FAST_NO_FRICTION_TRAIN,
+                200, phases, FAST_NO_FRICTION_TRAIN,
                 0, 0
         );
         sim.scheduler.planTrain(sim, schedule);

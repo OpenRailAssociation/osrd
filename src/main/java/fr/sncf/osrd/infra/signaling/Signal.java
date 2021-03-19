@@ -11,9 +11,8 @@ import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainInteractionType;
-import fr.sncf.osrd.train.lifestages.SignalNavigateStage;
+import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.graph.ApplicableDirections;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayList;
 
@@ -61,7 +60,7 @@ public class Signal implements TrainInteractable {
     }
 
     @Override
-    public void interact(Simulation sim, Train train, SignalNavigateStage.InteractionType interactionType) {
+    public void interact(Simulation sim, Train train, SignalNavigatePhase.InteractionType interactionType) {
         // TODO
     }
 
