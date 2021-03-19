@@ -47,16 +47,21 @@ public final class TrainSchedule {
             phase.forEachPathSection(fullPath::add);
     }
 
-    /** Find location on track given a distance from the start */
+    /** Find location on track given a distance from the start.
+     * If the path position is higher than the fullPath length the function return null. */
     public TrackSectionLocation findLocation(double pathPosition) {
         for (var track : fullPath) {
-            pathPosition -= track.edge.length;
+            pathPosition -= track.length();
             if (pathPosition < 0) {
-                return new TrackSectionLocation(track.edge, track.getEdgeRelPosition(-pathPosition));
+                var location = track.getBeginPosition();
+                if (track.direction == EdgeDirection.START_TO_STOP)
+                    location -= pathPosition;
+                else
+                    location += pathPosition;
+                return new TrackSectionLocation(track.edge, location);
             }
         }
-        var track = fullPath.get(fullPath.size() - 1);
-        return new TrackSectionLocation(track.edge, track.getEdgeRelPosition(-pathPosition));
+        return null;
     }
 
     public static class TrainID implements EntityID<Train> {

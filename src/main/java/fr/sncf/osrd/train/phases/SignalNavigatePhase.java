@@ -23,13 +23,15 @@ import fr.sncf.osrd.utils.graph.path.BasicPathEnd;
 import fr.sncf.osrd.utils.graph.path.BasicPathStart;
 import fr.sncf.osrd.utils.graph.path.FullPathArray;
 
+import java.lang.reflect.Field;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.function.Consumer;
 
 public class SignalNavigatePhase implements Phase {
     @SuppressFBWarnings({"URF_UNREAD_FIELD"})
-    private final ArrayList<Route> routePath;
+    public final ArrayList<Route> routePath;
     private final ArrayList<TrackSectionRange> trackSectionPath;
     private final ArrayList<PointValue<TrainInteractable>> eventPath;
 
@@ -108,39 +110,37 @@ public class SignalNavigatePhase implements Phase {
             ArrayList<Route> routePath,
             double beginOffset
     ) {
-        var flattenSections = new ArrayList<TrackSectionRange>();
+        // Flatten the list of track section range
+        var flattenSections = new ArrayDeque<TrackSectionRange>();
         for (var route : routePath) {
-            for (var tvdSectionPath : route.tvdSectionsPath) {
-                for (var trackSection : tvdSectionPath.trackSections) {
-                    if (beginOffset <= 0) {
-                        flattenSections.add(trackSection);
+            for (var i = 0; i < route.tvdSectionsPath.size(); i++) {
+                var tvdSectionPath = route.tvdSectionsPath.get(i);
+                var tvdSectionPathDir = route.tvdSectionsPathDirection.get(i);
+                for (var trackIndex = 0; trackIndex < tvdSectionPath.trackSections.size(); trackIndex++) {
+                    // Reverse iteration if reverse tvd section path
+                    if (tvdSectionPathDir == EdgeDirection.STOP_TO_START) {
+                        trackIndex = tvdSectionPath.trackSections.size() - 1 - trackIndex;
+                        var trackSection = tvdSectionPath.trackSections.get(trackIndex);
+                        flattenSections.addLast(TrackSectionRange.opposite(trackSection));
                         continue;
                     }
-
-                    if (beginOffset < trackSection.length())
-                        flattenSections.add(new TrackSectionRange(trackSection.edge, trackSection.direction,
-                                trackSection.beginOffset + beginOffset, trackSection.endOffset));
-                    beginOffset -= trackSection.length();
+                    flattenSections.addLast(tvdSectionPath.trackSections.get(trackIndex));
                 }
             }
         }
 
         var trackSectionPath = new ArrayList<TrackSectionRange>();
 
-        TrackSectionRange lastTrack = flattenSections.get(0);
-        for (var i = 1; i < flattenSections.size(); i++) {
-            var currentTrack = flattenSections.get(i);
+        TrackSectionRange lastTrack = flattenSections.removeFirst();
+        while (!flattenSections.isEmpty()) {
+            var currentTrack = flattenSections.removeFirst();
             if (lastTrack.edge != currentTrack.edge) {
                 trackSectionPath.add(lastTrack);
                 lastTrack = currentTrack;
                 continue;
             }
             // Merge the last track section range with the current one
-            lastTrack = new TrackSectionRange(
-                    lastTrack.edge,
-                    lastTrack.direction,
-                    lastTrack.beginOffset,
-                    currentTrack.endOffset);
+            lastTrack = TrackSectionRange.merge(lastTrack, currentTrack);
         }
         trackSectionPath.add(lastTrack);
         return trackSectionPath;
@@ -154,14 +154,13 @@ public class SignalNavigatePhase implements Phase {
         double pathLength = 0;
         for (var trackRange : trackSectionRanges) {
             for (var interactablePoint : TrackSection.getInteractables(trackRange.edge, trackRange.direction)) {
-                var objEdgePosition = trackRange.getEdgeRelPosition(interactablePoint.position);
-                if (objEdgePosition < trackRange.beginOffset || objEdgePosition > trackRange.endOffset)
+                if (!trackRange.containsPosition(interactablePoint.position))
                     continue;
 
                 var interactable = interactablePoint.value;
 
                 var sightDistance = Double.min(interactable.getInteractionDistance(), driverSightDistance);
-                var edgeDistToObj = objEdgePosition - trackRange.beginOffset;
+                var edgeDistToObj = Math.abs(interactablePoint.position - trackRange.getBeginPosition());
                 var objPathOffset = pathLength + edgeDistToObj - sightDistance;
                 if (objPathOffset < 0)
                     objPathOffset = 0;
@@ -316,6 +315,10 @@ public class SignalNavigatePhase implements Phase {
             var backwardTVDSectionPath = findBackwardTVDSection(detector);
             var nextTVDSection = sim.infraState.getTvdSectionState(backwardTVDSectionPath.index);
             nextTVDSection.occupy(sim);
+        }
+
+        public int getRouteIndex() {
+            return routeIndex;
         }
     }
 }
