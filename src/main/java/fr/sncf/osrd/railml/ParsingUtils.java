@@ -3,7 +3,7 @@ package fr.sncf.osrd.railml;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-import fr.sncf.osrd.railjson.infra.ID;
+import fr.sncf.osrd.railjson.common.ID;
 import fr.sncf.osrd.utils.graph.ApplicableDirections;
 import fr.sncf.osrd.railjson.infra.RJSTrackSection;
 import fr.sncf.osrd.utils.FloatCompare;

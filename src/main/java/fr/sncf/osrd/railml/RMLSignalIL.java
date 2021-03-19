@@ -1,7 +1,7 @@
 package fr.sncf.osrd.railml;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.railjson.infra.ID;
+import fr.sncf.osrd.railjson.common.ID;
 import fr.sncf.osrd.railjson.infra.railscript.RJSRSExpr;
 import fr.sncf.osrd.railjson.infra.signaling.RJSAspect;
 import fr.sncf.osrd.railjson.infra.trackobjects.RJSSignal;

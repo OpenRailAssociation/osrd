@@ -1,6 +1,7 @@
 package fr.sncf.osrd.railjson.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.railjson.common.Identified;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSOperationalPoint implements Identified {

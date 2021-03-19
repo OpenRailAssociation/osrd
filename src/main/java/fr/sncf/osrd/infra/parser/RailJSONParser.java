@@ -7,7 +7,7 @@ import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.TVDSection;
-import fr.sncf.osrd.railjson.infra.ID;
+import fr.sncf.osrd.railjson.common.ID;
 import fr.sncf.osrd.railjson.infra.RJSInfra;
 import fr.sncf.osrd.railjson.infra.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.railjson.infra.trackobjects.RJSRouteWaypoint;

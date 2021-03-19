@@ -2,6 +2,7 @@ package fr.sncf.osrd.railml;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.railjson.common.ID;
 import fr.sncf.osrd.railjson.infra.*;
 import fr.sncf.osrd.railjson.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railjson.infra.trackobjects.RJSSignal;

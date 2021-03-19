@@ -3,7 +3,7 @@ package fr.sncf.osrd.railjson.infra.railscript;
 import com.squareup.moshi.Json;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.railjson.infra.ID;
+import fr.sncf.osrd.railjson.common.ID;
 import fr.sncf.osrd.railjson.infra.RJSRoute;
 import fr.sncf.osrd.railjson.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.infra.signaling.RJSAspect;

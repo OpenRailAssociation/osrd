@@ -1,7 +1,7 @@
 package fr.sncf.osrd.railjson.infra.trackobjects;
 
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
-import fr.sncf.osrd.railjson.infra.Identified;
+import fr.sncf.osrd.railjson.common.Identified;
 import fr.sncf.osrd.utils.graph.ApplicableDirections;
 import fr.sncf.osrd.utils.graph.IPointValue;
 
