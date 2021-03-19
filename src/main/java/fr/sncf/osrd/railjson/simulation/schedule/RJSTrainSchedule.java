@@ -3,7 +3,7 @@ package fr.sncf.osrd.railjson.simulation.schedule;
 import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.common.ID;
 import fr.sncf.osrd.railjson.common.Identified;
-import fr.sncf.osrd.railjson.common.RJSTrackRange;
+import fr.sncf.osrd.railjson.common.RJSTrackLocation;
 import fr.sncf.osrd.railjson.infra.RJSRoute;
 import fr.sncf.osrd.railjson.simulation.rollingstock.RJSRollingStock;
 
@@ -20,8 +20,8 @@ public class RJSTrainSchedule implements Identified {
     public final double departureTime;
 
     /** The initial state of the train */
-    @Json(name = "initial_location")
-    public final RJSTrackRange[] initialLocation;
+    @Json(name = "initial_head_location")
+    public final RJSTrackLocation initialHeadLocation;
     @Json(name = "initial_route")
     public final ID<RJSRoute> initialRoute;
     @Json(name = "initial_speed")
@@ -34,7 +34,7 @@ public class RJSTrainSchedule implements Identified {
             String id,
             ID<RJSRollingStock> rollingStock,
             double departureTime,
-            RJSTrackRange[] initialLocation,
+            RJSTrackLocation initialHeadLocation,
             ID<RJSRoute> initialRoute,
             double initialSpeed,
             RJSTrainPhase[] phases
@@ -42,7 +42,7 @@ public class RJSTrainSchedule implements Identified {
         this.id = id;
         this.rollingStock = rollingStock;
         this.departureTime = departureTime;
-        this.initialLocation = initialLocation;
+        this.initialHeadLocation = initialHeadLocation;
         this.initialRoute = initialRoute;
         this.initialSpeed = initialSpeed;
         this.phases = phases;
