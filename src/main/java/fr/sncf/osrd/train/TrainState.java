@@ -180,7 +180,7 @@ public final class TrainState implements Cloneable {
         var update = integrator.computeUpdate(traction, brakingForce);
 
         // update location
-        location.updatePosition(update.positionDelta);
+        location.updatePosition(rollingStock.length, update.positionDelta);
         this.time += update.timeDelta;
         var newLocation = location.getPathPosition();
 

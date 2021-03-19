@@ -38,56 +38,22 @@ public class Train extends AbstractEntity<Train, TrainID> {
         this.subscribers.add(this);
     }
 
-    private static ArrayDeque<PointValue<TrainInteractable>> findTailInteractables(
-            double trainLength,
-            Collection<TrackSectionRange> pathRanges
-    ) {
-        var res = new ArrayDeque<PointValue<TrainInteractable>>();
-        // the offset of the current range from the start of the path
-        double pathStartOffset = -trainLength;
-
-        // for all track sections on the path, create a list of interactable objects
-        for (var pathRange : pathRanges) {
-            var interactables = TrackSection.getInteractables(pathRange.edge, pathRange.direction);
-            for (var interactablePoint : interactables) {
-                var interactable = interactablePoint.value;
-                if (!interactable.getInteractionType().interactsWithTail())
-                    continue;
-
-                // the position of the interactable object inside the path track section range
-                var interactablePosition = pathRange.getEdgeRelPosition(interactablePoint.position);
-
-                // skip the object if it isn't part of the portion of the edge inside the path
-                if (interactablePosition < pathRange.beginOffset || interactablePosition > pathRange.endOffset)
-                    continue;
-
-                // compute the position of the interactable object relative to the start of the path
-                var interactablePathPosition = pathStartOffset + interactablePosition;
-                res.addLast(new PointValue<>(interactablePathPosition, interactable));
-            }
-            pathStartOffset += pathRange.length();
-        }
-        return res;
-    }
-
     /** Create a train */
     public static Train create(
             Simulation sim,
             TrainSchedule schedule,
             CryoList<SpeedController> controllers
     ) throws SimulationError {
-        var trackSectionPositions = TrainPositionTracker.computeInitialPosition(
-                sim.infra,
+        // the train starts out as a point like object on the beginning of the route
+        var initialPosition = new ArrayDeque<TrackSectionRange>();
+        initialPosition.addFirst(new TrackSectionRange(
                 schedule.startTrackSection,
                 schedule.startDirection,
                 schedule.startOffset,
-                schedule.rollingStock.length
-        );
+                schedule.startOffset
+        ));
 
-        // compute the list of objects that interact with the tail of the train which are under the train at startup
-        var interactablesUnderTrain = findTailInteractables(schedule.rollingStock.length, trackSectionPositions);
-
-        var location = new TrainPositionTracker(sim.infra, sim.infraState, trackSectionPositions);
+        var location = new TrainPositionTracker(sim.infra, sim.infraState, initialPosition);
         var phaseState = schedule.phases.get(0).getState();
         var initialState = new TrainState(
                 sim.getTime(),
@@ -98,7 +64,7 @@ public class Train extends AbstractEntity<Train, TrainID> {
                 schedule,
                 0,
                 phaseState,
-                interactablesUnderTrain
+                null
         );
 
         var trainCreatedChange = new TrainCreatedChange(sim, schedule, initialState);
