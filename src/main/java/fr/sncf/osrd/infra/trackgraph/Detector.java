@@ -3,7 +3,7 @@ package fr.sncf.osrd.infra.trackgraph;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainInteractionType;
-import fr.sncf.osrd.train.lifestages.SignalNavigateStage;
+import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 
 public class Detector extends Waypoint {
 
@@ -22,7 +22,7 @@ public class Detector extends Waypoint {
     }
 
     @Override
-    public void interact(Simulation sim, Train train, SignalNavigateStage.InteractionType interactionType) {
+    public void interact(Simulation sim, Train train, SignalNavigatePhase.InteractionType interactionType) {
         train.interact(sim, this, interactionType);
     }
 }

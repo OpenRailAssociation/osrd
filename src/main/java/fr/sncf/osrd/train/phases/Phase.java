@@ -1,12 +1,12 @@
-package fr.sncf.osrd.train.lifestages;
+package fr.sncf.osrd.train.phases;
 
 
 import fr.sncf.osrd.train.TrackSectionRange;
 
 import java.util.function.Consumer;
 
-public interface LifeStage {
-    LifeStageState getState();
+public interface Phase {
+    PhaseState getState();
 
     void forEachPathSection(Consumer<TrackSectionRange> consumer);
 }

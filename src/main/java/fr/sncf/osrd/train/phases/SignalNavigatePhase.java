@@ -1,4 +1,4 @@
-package fr.sncf.osrd.train.lifestages;
+package fr.sncf.osrd.train.phases;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
@@ -27,13 +27,13 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.function.Consumer;
 
-public class SignalNavigateStage implements LifeStage {
+public class SignalNavigatePhase implements Phase {
     @SuppressFBWarnings({"URF_UNREAD_FIELD"})
     private final ArrayList<Route> routePath;
     private final ArrayList<TrackSectionRange> trackSectionPath;
     private final ArrayList<PointValue<TrainInteractable>> eventPath;
 
-    private SignalNavigateStage(
+    private SignalNavigatePhase(
             ArrayList<Route> routePath,
             ArrayList<TrackSectionRange> trackSectionPath,
             ArrayList<PointValue<TrainInteractable>> eventPath
@@ -45,7 +45,7 @@ public class SignalNavigateStage implements LifeStage {
 
     /** Creates and store the path some train will follow */
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY", "BC_UNCONFIRMED_CAST"}) // TODO: remove me
-    public static SignalNavigateStage from(
+    public static SignalNavigatePhase from(
             Infra infra,
             OperationalPoint start,
             OperationalPoint end,
@@ -99,7 +99,7 @@ public class SignalNavigateStage implements LifeStage {
         var trackSectionPath = routesToTrackSectionPositions(routePath, beginOffset);
         var eventPath = trackSectionToEventPath(driverSightDistance, trackSectionPath);
 
-        return new SignalNavigateStage(routePath, trackSectionPath, eventPath);
+        return new SignalNavigatePhase(routePath, trackSectionPath, eventPath);
     }
 
     /** Build track section path. Need to concatenate all track section of all TvdSectionPath.
@@ -180,7 +180,7 @@ public class SignalNavigateStage implements LifeStage {
     }
 
     @Override
-    public LifeStageState getState() {
+    public PhaseState getState() {
         return new State(this);
     }
 
@@ -190,17 +190,17 @@ public class SignalNavigateStage implements LifeStage {
     }
 
     @SuppressFBWarnings({"URF_UNREAD_FIELD"})
-    public static class State extends LifeStageState {
-        public final SignalNavigateStage stage;
+    public static class State extends PhaseState {
+        public final SignalNavigatePhase phase;
         private int routeIndex = 0;
         private int eventPathIndex = 0;
 
-        public State(SignalNavigateStage stage) {
-            this.stage = stage;
+        public State(SignalNavigatePhase phase) {
+            this.phase = phase;
         }
 
         private InteractionType nextInteractionType(TrainState trainState) {
-            var nextHeadPosition = stage.eventPath.get(eventPathIndex).position;
+            var nextHeadPosition = phase.eventPath.get(eventPathIndex).position;
 
             double nextTailPosition = Double.POSITIVE_INFINITY;
             if (!trainState.interactablesUnderTrain.isEmpty())
@@ -214,7 +214,7 @@ public class SignalNavigateStage implements LifeStage {
         private PointValue<TrainInteractable> nextInteraction(TrainState trainState, InteractionType interactionType) {
             switch (interactionType) {
                 case HEAD:
-                    var nextHeadEvent = stage.eventPath.get(eventPathIndex);
+                    var nextHeadEvent = phase.eventPath.get(eventPathIndex);
 
                     if (nextHeadEvent.value.getInteractionType().interactsWithTail())
                         trainState.interactablesUnderTrain.addLast(nextHeadEvent);
@@ -231,11 +231,11 @@ public class SignalNavigateStage implements LifeStage {
         @Override
         public void simulate(Simulation sim, Train train, TrainState trainState) throws SimulationError {
             // Check if we reached our goal
-            if (eventPathIndex == stage.eventPath.size()) {
+            if (eventPathIndex == phase.eventPath.size()) {
                 sim.scheduleEvent(
                         train,
                         sim.getTime(),
-                        new Train.TrainStateChange(sim, train.getID(), trainState.nextStage())
+                        new Train.TrainStateChange(sim, train.getID(), trainState.nextPhase())
                 );
                 return;
             }
@@ -276,30 +276,31 @@ public class SignalNavigateStage implements LifeStage {
             ));
         }
 
-        private TVDSection findForwardTVDSection(Waypoint waypoint) {
-            for (; routeIndex < stage.routePath.size(); routeIndex++) {
-                var route = stage.routePath.get(routeIndex);
+        private int findBackwardTVDSectionPathIndex(Waypoint waypoint) {
+            for (; routeIndex < phase.routePath.size(); routeIndex++) {
+                var route = phase.routePath.get(routeIndex);
                 for (var i = 0; i < route.tvdSectionsPath.size(); i++) {
                     var tvdSectionPath = route.tvdSectionsPath.get(i);
                     var tvdSectionPathDirection = route.tvdSectionsPathDirection.get(i);
                     if (tvdSectionPath.getEndNode(tvdSectionPathDirection) == waypoint.index)
-                        return waypoint.getTvdSectionPathNeighbors(tvdSectionPathDirection).get(0).tvdSection;
+                        return i;
                 }
             }
-            throw new RuntimeException("Can't find the waypoin in the planned route path");
+            throw new RuntimeException("Can't find the waypoint in the planned route path");
+        }
+
+        private TVDSection findForwardTVDSection(Waypoint waypoint) {
+            var tvdSectionPathIndex = findBackwardTVDSectionPathIndex(waypoint);
+            var route = phase.routePath.get(routeIndex);
+            var tvdSectionPathDirection = route.tvdSectionsPathDirection.get(tvdSectionPathIndex);
+            return waypoint.getTvdSectionPathNeighbors(tvdSectionPathDirection).get(0).tvdSection;
         }
 
         private TVDSection findBackwardTVDSection(Waypoint waypoint) {
-            for (; routeIndex < stage.routePath.size(); routeIndex++) {
-                var route = stage.routePath.get(routeIndex);
-                for (var i = 0; i < route.tvdSectionsPath.size(); i++) {
-                    var tvdSectionPath = route.tvdSectionsPath.get(i);
-                    var tvdSectionPathDirection = route.tvdSectionsPathDirection.get(i);
-                    if (tvdSectionPath.getEndNode(tvdSectionPathDirection) == waypoint.index)
-                        return tvdSectionPath.tvdSection;
-                }
-            }
-            throw new RuntimeException("Can't find the waypoin in the planned route path");
+            var tvdSectionPathIndex = findBackwardTVDSectionPathIndex(waypoint);
+            var route = phase.routePath.get(routeIndex);
+            var tvdSectionPath = route.tvdSectionsPath.get(tvdSectionPathIndex);
+            return tvdSectionPath.tvdSection;
         }
 
         /** Occupy and free tvd sections given a detector the train is interacting with. */

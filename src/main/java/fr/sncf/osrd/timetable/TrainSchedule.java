@@ -6,7 +6,7 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.lifestages.LifeStage;
+import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
@@ -17,7 +17,7 @@ public final class TrainSchedule {
     public final TrackSection startTrackSection;
     public final EdgeDirection startDirection;
     public final double startOffset;
-    public final ArrayList<LifeStage> stages;
+    public final ArrayList<Phase> phases;
     public final RollingStock rollingStock;
     public final double initialSpeed;
     public final double departureTime;
@@ -29,7 +29,7 @@ public final class TrainSchedule {
             TrackSection startTrackSection,
             EdgeDirection startDirection,
             double startOffset,
-            ArrayList<LifeStage> stages,
+            ArrayList<Phase> phases,
             RollingStock rollingStock,
             double initialSpeed,
             double departureTime
@@ -38,13 +38,13 @@ public final class TrainSchedule {
         this.startDirection = startDirection;
         this.startOffset = startOffset;
         this.trainID = new TrainID(trainID);
-        this.stages = stages;
+        this.phases = phases;
         this.rollingStock = rollingStock;
         this.initialSpeed = initialSpeed;
         this.departureTime = departureTime;
         this.fullPath = new ArrayList<>();
-        for (var stage : stages)
-            stage.forEachPathSection(fullPath::add);
+        for (var phase : phases)
+            phase.forEachPathSection(fullPath::add);
     }
 
     /** Find location on track given a distance from the start */

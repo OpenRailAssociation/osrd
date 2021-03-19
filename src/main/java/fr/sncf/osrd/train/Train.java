@@ -9,11 +9,10 @@ import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.timetable.TrainSchedule;
 import fr.sncf.osrd.timetable.TrainSchedule.TrainID;
-import fr.sncf.osrd.train.lifestages.SignalNavigateStage;
-import fr.sncf.osrd.train.lifestages.SignalNavigateStage.InteractionType;
+import fr.sncf.osrd.train.phases.SignalNavigatePhase;
+import fr.sncf.osrd.train.phases.SignalNavigatePhase.InteractionType;
 import fr.sncf.osrd.utils.CryoList;
 import fr.sncf.osrd.utils.PointValue;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +88,7 @@ public class Train extends AbstractEntity<Train, TrainID> {
         var interactablesUnderTrain = findTailInteractables(schedule.rollingStock.length, trackSectionPositions);
 
         var location = new TrainPositionTracker(sim.infra, sim.infraState, trackSectionPositions);
-        var stageState = schedule.stages.get(0).getState();
+        var phaseState = schedule.phases.get(0).getState();
         var initialState = new TrainState(
                 sim.getTime(),
                 location,
@@ -98,7 +97,7 @@ public class Train extends AbstractEntity<Train, TrainID> {
                 controllers,
                 schedule,
                 0,
-                stageState,
+                phaseState,
                 interactablesUnderTrain
         );
 
@@ -157,13 +156,13 @@ public class Train extends AbstractEntity<Train, TrainID> {
     // region INTERACTIONS
     /** Make the train interact with a detector */
     public void interact(Simulation sim, Detector detector, InteractionType interactionType) {
-        if (lastState.currentStageState.getClass() == SignalNavigateStage.State.class) {
-            var navigateStageState = (SignalNavigateStage.State) lastState.currentStageState;
-            navigateStageState.updateTVDSections(sim, detector, interactionType);
+        if (lastState.currentPhaseState.getClass() == SignalNavigatePhase.State.class) {
+            var navigatePhaseState = (SignalNavigatePhase.State) lastState.currentPhaseState;
+            navigatePhaseState.updateTVDSections(sim, detector, interactionType);
             return;
 
         }
-        throw new RuntimeException("Unexpected stage while interacting with a detector");
+        throw new RuntimeException("Unexpected phase while interacting with a detector");
     }
     // endregion
 
@@ -327,7 +326,7 @@ public class Train extends AbstractEntity<Train, TrainID> {
     public static final class TrainReachesInteraction implements TimelineEventValue {
         public final TrainInteractable interactionObject;
         public final TrainStateChange trainStateChange;
-        public final SignalNavigateStage.InteractionType interactionType;
+        public final SignalNavigatePhase.InteractionType interactionType;
 
         /** Event value that represents train interacting with an element */
         public TrainReachesInteraction(
