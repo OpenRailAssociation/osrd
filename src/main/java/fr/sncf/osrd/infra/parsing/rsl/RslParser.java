@@ -1,22 +1,23 @@
 package fr.sncf.osrd.infra.parsing.rsl;
 
-import fr.sncf.osrd.App;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.graph.ApplicableDirections;
-import fr.sncf.osrd.infra.graph.EdgeEndpoint;
-import fr.sncf.osrd.infra.parsing.railjson.schema.*;
-import fr.sncf.osrd.infra.parsing.railjson.schema.trackobjects.RJSBufferStop;
-import fr.sncf.osrd.infra.parsing.railjson.schema.trackobjects.RJSTrainDetector;
-import fr.sncf.osrd.infra.parsing.railjson.schema.trackranges.RJSOperationalPointPart;
-import fr.sncf.osrd.infra.parsing.railjson.schema.trackranges.RJSSpeedSectionPart;
-import fr.sncf.osrd.util.XmlNamespaceCleaner;
+import fr.sncf.osrd.infra.railjson.schema.railscript.RJSRSFunction;
+import fr.sncf.osrd.infra.railjson.schema.signaling.RJSAspect;
+import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
+import fr.sncf.osrd.utils.graph.ApplicableDirections;
+import fr.sncf.osrd.utils.graph.EdgeEndpoint;
+import fr.sncf.osrd.infra.railjson.schema.*;
+import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSBufferStop;
+import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrainDetector;
+import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSOperationalPointPart;
+import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSSpeedSectionPart;
+import fr.sncf.osrd.utils.XmlNamespaceCleaner;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+
+import java.util.*;
 
 public final class RslParser {
     /**
@@ -64,6 +65,10 @@ public final class RslParser {
 
         var rjsOperationalPoints = timingPointsParse(document, rjsTrackSections, nodeMap);
         var rjsTvdSections = tvdSectionsParse(document, rjsTrackSections, nodeMap);
+        var rjsRoutes = routeParse(document, rjsTvdSections, rjsSwitches);
+
+        List<RJSAspect> rjsAspects = null;
+        List<RJSRSFunction> rjsSignalFunctions = null;
 
         return new RJSRoot(
                 rjsTrackSections.values(),
@@ -71,8 +76,97 @@ public final class RslParser {
                 rjsSwitches,
                 rjsOperationalPoints,
                 rjsTvdSections,
-                rjsSpeedSections
+                rjsRoutes,
+                rjsSpeedSections,
+                rjsAspects,
+                rjsSignalFunctions
         );
+    }
+
+    /**
+     * Create the route from the tvd sections
+     */
+    private static ArrayList<RJSRoute> routeParse(Document document,
+                                                  ArrayList<RJSTVDSection> rjsTvdSections,
+                                                  ArrayList<RJSSwitch> rjsSwitches) {
+        var rjsRoutes = new ArrayList<RJSRoute>();
+
+        // create a map of tvd section
+        var tvdSectionsMap = new HashMap<String, RJSTVDSection>();
+        for (var rjsTvdSection : rjsTvdSections) {
+            tvdSectionsMap.put(rjsTvdSection.id, rjsTvdSection);
+        }
+
+        for (var node : document.selectNodes("/line/blockSections/blocksection")) {
+            var blockSectionNode = (Element) node;
+            var routeID = blockSectionNode.attributeValue("uuid");
+            var tvdSection = tvdSectionsMap.get(routeID + "_tvd");
+            var tvdSections = new ArrayList<ID<RJSTVDSection>>();
+            tvdSections.add(ID.from(tvdSection));
+            var waypoints = waypointsParse(tvdSection.trainDetectors);
+            var transitType = RJSRoute.TransitType.RIGID;
+            var partNode = blockSectionNode.element("part");
+            var nodes = partNode.attributeValue("nodes");
+            var nodesId = nodes.split(" ");
+            var switchPosition = parseSwitchPosition(rjsSwitches, nodesId);
+
+            var rjsRoute = new RJSRoute(routeID, tvdSections, switchPosition, waypoints, transitType);
+            rjsRoutes.add(rjsRoute);
+        }
+        return rjsRoutes;
+    }
+
+    private static HashMap<ID<RJSSwitch>, RJSSwitch.Position> parseSwitchPosition(
+                                            ArrayList<RJSSwitch> switches,
+                                            String[] nodesID) {
+        // create switch map
+        var switchMap = new HashMap<String, RJSSwitch>();
+        for (var rjsswitch : switches) {
+            switchMap.put(rjsswitch.id, rjsswitch);
+        }
+        // Create switch Position map
+        var switchPosition = new HashMap<ID<RJSSwitch>, RJSSwitch.Position>();
+        for (var nodeID : nodesID) {
+            if (switchMap.get(nodeID) == null)
+                continue;
+
+            var position = findSwitchPosition(switchMap.get(nodeID), nodesID);
+            switchPosition.put(ID.from(switchMap.get(nodeID)), position);
+        }
+        return switchPosition;
+    }
+
+    private static RJSSwitch.Position findSwitchPosition(RJSSwitch rjsSwitch, String[] nodesID) {
+        var nodeSwitchID = rjsSwitch.id;
+        var leftEdgeID = rjsSwitch.left.section;
+        var nodesLeftEdgeID = leftEdgeID.id.split("-");
+        String leftNodeID = nodesLeftEdgeID[0];
+        if (nodesLeftEdgeID[0].equals(nodeSwitchID))
+            leftNodeID = nodesLeftEdgeID[1];
+
+        String previousNodeID = null;
+        String nextNodeID = null;
+        for (int i = 1; i < nodesID.length - 1; i++) {
+            if (nodesID[i].equals(nodeSwitchID)) {
+                previousNodeID = nodesID[i - 1];
+                nextNodeID = nodesID[i + 1];
+                break;
+            }
+        }
+        if (previousNodeID.equals(leftNodeID) || nextNodeID.equals(leftNodeID))
+            return RJSSwitch.Position.LEFT;
+        return RJSSwitch.Position.RIGHT;
+    }
+
+    private static List<ID<RJSRouteWaypoint>> waypointsParse(Collection<ID<RJSTrainDetector>> trainDetectors) {
+        List<ID<RJSRouteWaypoint>> waypointsID = new ArrayList<>();
+        List<ID<RJSTrainDetector>> listTrainDetectorsID = new ArrayList<>(trainDetectors);
+
+        for (var trainDetectorID : listTrainDetectorsID) {
+            ID<RJSRouteWaypoint> waypointID = ID.fromID(trainDetectorID);
+            waypointsID.add(waypointID);
+        }
+        return waypointsID;
     }
 
     /**
@@ -80,29 +174,34 @@ public final class RslParser {
      * @return the TVD sections list for RJS
      */
     private static ArrayList<RJSTVDSection> tvdSectionsParse(Document document,
-                                             HashMap<String, RJSTrackSection> rjsTrackSections,
-                                         HashMap<String, ArrayList<Edge>> nodeMap) {
+                                                             HashMap<String, RJSTrackSection> rjsTrackSections,
+                                                             HashMap<String, ArrayList<Edge>> nodeMap) {
         var rjstvdsections = new ArrayList<RJSTVDSection>();
         var trainDetectorsMap = new HashMap<String, RJSTrainDetector>();
 
         for (var node : document.selectNodes("/line/blockSections/blocksection")) {
             var blockSectionNode = (Element) node;
-            var id = new String(blockSectionNode.attributeValue("uuid") + "_tvd");
-            var isBerthingTrack = Boolean.parseBoolean(blockSectionNode.attributeValue("shuntingBlock"));
+            final var id = new String(blockSectionNode.attributeValue("uuid") + "_tvd");
+            final var isBerthingTrack = Boolean.parseBoolean(blockSectionNode.attributeValue("shuntingBlock"));
             // The block section is a list of nodes
             // the train detectors are put at the begin and the end of each block section
             var partNode = blockSectionNode.element("part");
             var nodes = partNode.attributeValue("nodes");
             var nodesId = nodes.split(" ");
+
             var beginNodeId = nodesId[0];
             var endNodeId = nodesId[nodesId.length - 1];
             var trainDetectors = new HashSet<ID<RJSTrainDetector>>();
+            trainDetectors.add(new ID<>("tde_" + beginNodeId));
+            trainDetectors.add(new ID<>("tde_" + endNodeId));
 
-            tdeParse(nodeMap, trainDetectors, trainDetectorsMap, rjsTrackSections, beginNodeId);
+            // check if I need to create a detector for the block section begin
+            if (trainDetectorsMap.get(beginNodeId) == null)
+                tdeParse(nodeMap, trainDetectorsMap, rjsTrackSections, beginNodeId);
+
             // check if I need to create a detector for the block section end
-            if (trainDetectorsMap.get(endNodeId) == null) {
-                tdeParse(nodeMap, trainDetectors, trainDetectorsMap, rjsTrackSections, endNodeId);
-            }
+            if (trainDetectorsMap.get(endNodeId) == null)
+                tdeParse(nodeMap, trainDetectorsMap, rjsTrackSections, endNodeId);
 
             ArrayList<ID<RJSBufferStop>> bufferStops = null;
             rjstvdsections.add(new RJSTVDSection(id, isBerthingTrack, trainDetectors, bufferStops));
@@ -114,7 +213,6 @@ public final class RslParser {
      * Create the tde and link to the corresponding track sections
      * */
     private static void tdeParse(HashMap<String, ArrayList<Edge>> nodeMap,
-                                 HashSet<ID<RJSTrainDetector>> trainDetectors,
                                  HashMap<String, RJSTrainDetector> trainDetectorsMap,
                                  HashMap<String, RJSTrackSection> rjsTrackSections, String nodeId) {
 
@@ -128,9 +226,9 @@ public final class RslParser {
                 trainDetector = new RJSTrainDetector("tde_" + nodeId, ApplicableDirections.BOTH, edge.length);
             }
             trainDetectorsMap.put(nodeId, trainDetector);
-            trainDetectors.add(new ID<>("tde_" + nodeId));
+
             // Link tracks sections back to the train detector
-            rjsTrackSections.get(edge.id).trainDetectors.add(trainDetector);
+            rjsTrackSections.get(edge.id).routeWaypoints.add(trainDetector);
         }
     }
 
@@ -191,20 +289,21 @@ public final class RslParser {
         for (var node : document.selectNodes("/line/nodes/track")) {
             var trackNode = (Element) node;
             // create the operational point
-            if ((trackNode.attributeValue("type").equals("timingPoint"))
-                    || (trackNode.attributeValue("type").equals("stopBoardPass"))) {
-                var id = trackNode.attributeValue("nodeID");
-                var rjsOperationalPoint = new RJSOperationalPoint(id);
-                operationalPoints.add(rjsOperationalPoint);
+            var type = trackNode.attributeValue("type");
+            if (!type.equals("timingPoint") && !type.equals("stopBoardPass"))
+                continue;
 
-                // link tracks sections back to the operational point
-                for (var edge : nodeMap.get(id)) {
-                    var endOpPoint = findEndpoint(edge, id);
-                    if (endOpPoint.endpoint == EdgeEndpoint.BEGIN) {
-                        var opPart = new RJSOperationalPointPart(ID.from(rjsOperationalPoint), 0, 0);
-                        edge.operationalPoints.add(opPart);
-                        break;
-                    }
+            var id = trackNode.attributeValue("nodeID");
+            var rjsOperationalPoint = new RJSOperationalPoint(id);
+            operationalPoints.add(rjsOperationalPoint);
+
+            // link tracks sections back to the operational point
+            for (var edge : nodeMap.get(id)) {
+                var endOpPoint = findEndpoint(edge, id);
+                if (endOpPoint.endpoint == EdgeEndpoint.BEGIN) {
+                    var opPart = new RJSOperationalPointPart(ID.from(rjsOperationalPoint), 0, 0);
+                    edge.operationalPoints.add(opPart);
+                    break;
                 }
             }
         }

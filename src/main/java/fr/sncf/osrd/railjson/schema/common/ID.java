@@ -19,6 +19,10 @@ public final class ID<T extends Identified> implements Comparable<T> {
         return new ID<>(obj.getID());
     }
 
+    public static <T extends Identified> ID<T> fromID(ID<? extends T> subclassID) {
+        return new ID<T>(subclassID.id);
+    }
+
     @Override
     public int hashCode() {
         return id.hashCode();
@@ -40,6 +44,8 @@ public final class ID<T extends Identified> implements Comparable<T> {
     public int compareTo(T o) {
         return id.compareTo(o.getID());
     }
+
+
 
     /** A moshi adapter for ID serialization */
     public static class Adapter<T extends Identified> extends JsonAdapter<ID<T>> {
