@@ -3,8 +3,6 @@ package fr.sncf.osrd.train;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.trackgraph.*;
-import fr.sncf.osrd.utils.FloatCompare;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayDeque;
 import java.util.Objects;
@@ -118,9 +116,9 @@ public final class TrainPositionTracker implements Cloneable {
     private double updateHeadPosition(double targetDist) {
         var remainingDist = targetDist;
         var headPos = trackSectionRanges.getFirst();
-        var edgeSpaceAhead = headPos.edge.length - headPos.endOffset;
+        var edgeSpaceAhead = headPos.forwardSpace();
         var edgeMovement = Double.min(targetDist, edgeSpaceAhead);
-        headPos.endOffset += edgeMovement;
+        headPos.expandForward(edgeMovement);
         remainingDist -= edgeMovement;
 
         // add edges to the current edges queue as the train moves forward
@@ -138,9 +136,9 @@ public final class TrainPositionTracker implements Cloneable {
     private void updateTailPosition(double positionDelta) {
         while (true) {
             var tailPos = trackSectionRanges.getLast();
-            var availableSpace = tailPos.edge.length - tailPos.beginOffset;
+            var availableSpace = tailPos.length();
             if (availableSpace > positionDelta) {
-                tailPos.beginOffset += positionDelta;
+                tailPos.shrinkForward(positionDelta);
                 break;
             }
             positionDelta -= availableSpace;
@@ -157,8 +155,7 @@ public final class TrainPositionTracker implements Cloneable {
         var val = 0.;
         for (var track : trackSectionRanges) {
             for (var slope : TrackSection.getSlope(track.edge, track.direction).data) {
-                var pos = track.getEdgeRelPosition(slope.position);
-                if (pos > track.beginOffset && pos < track.endOffset)
+                if (track.containsPosition(slope.position))
                     val = Double.max(slope.value, val);
             }
         }

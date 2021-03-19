@@ -64,8 +64,10 @@ public class Train extends AbstractEntity<Train, TrainID> {
                 schedule,
                 0,
                 phaseState,
-                null
+                new ArrayDeque<>()
         );
+
+        ActivateRoute.trainCreation(sim, initialState);
 
         var trainCreatedChange = new TrainCreatedChange(sim, schedule, initialState);
         var train = trainCreatedChange.apply(sim);

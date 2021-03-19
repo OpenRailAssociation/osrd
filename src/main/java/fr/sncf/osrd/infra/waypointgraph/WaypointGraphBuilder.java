@@ -10,8 +10,11 @@ import fr.sncf.osrd.utils.graph.UndirectedBiEdgeID;
 import fr.sncf.osrd.utils.graph.overlay.BiGraphOverlayBuilder;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.overlay.OverlayPathEnd;
+import fr.sncf.osrd.utils.graph.overlay.OverlayPathStart;
 import fr.sncf.osrd.utils.graph.path.FullPathArray;
+import fr.sncf.osrd.utils.graph.path.PathNode;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,14 +49,6 @@ public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
         var fullPath = FullPathArray.from(path);
 
         // Build list of track sections position
-        var trackSections = new ArrayList<TrackSectionRange>();
-        var lastNode = fullPath.pathNodes.get(0);
-        for (var nodeIndex = 1; nodeIndex < fullPath.pathNodes.size(); nodeIndex++) {
-            var curNode = fullPath.pathNodes.get(nodeIndex);
-            var endOffset = lastNode.edge == curNode.edge ? curNode.position : lastNode.edge.length;
-            trackSections.add(new TrackSectionRange(lastNode.edge, lastNode.direction, lastNode.position, endOffset));
-            lastNode = curNode;
-        }
 
         var startNode = fullPath.start.overlayNode;
         EdgeDirection startNodeDirection = fullPath.start.direction;
@@ -63,6 +58,7 @@ public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
 
         var startNodeIndex = startNode.index;
         var endNodeIndex = endNode.index;
+        var trackSections = buildTrackSectionsFromFullPath(fullPath.pathNodes);
 
         // create the path and register it with the graph
         var tvdSectionPath = new TVDSectionPath(
@@ -86,5 +82,48 @@ public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
         // the same TVD Section shouldn't appear twice
         assert dupTvd == null;
         return tvdSectionPath;
+    }
+
+    private static ArrayList<TrackSectionRange> buildTrackSectionsFromFullPath(
+            ArrayList<PathNode<TrackSection, OverlayPathStart<TrackSection, Waypoint>,
+                    OverlayPathEnd<TrackSection, Waypoint>>> pathNodes
+    ) {
+        var trackSections = new ArrayList<TrackSectionRange>();
+        var firstNode = pathNodes.get(0);
+        var firstTrackEndPosition = firstNode.edge.length;
+        if (firstNode.direction == EdgeDirection.STOP_TO_START)
+            firstTrackEndPosition = 0;
+
+        // Corner case only one track section
+        if (firstNode.edge == pathNodes.get(1).edge) {
+            assert pathNodes.size() == 2;
+            firstTrackEndPosition = pathNodes.get(1).position;
+            var firstTrack = new TrackSectionRange(firstNode.edge, firstNode.direction,
+                    firstNode.position, firstTrackEndPosition);
+            trackSections.add(firstTrack);
+            return trackSections;
+
+        }
+        var firstTrack = new TrackSectionRange(firstNode.edge, firstNode.direction,
+                firstNode.position, firstTrackEndPosition);
+
+        trackSections.add(firstTrack);
+
+        for (var nodeIndex = 1; nodeIndex < pathNodes.size() - 1; nodeIndex++) {
+            var curNode = pathNodes.get(nodeIndex);
+            var endPosition = curNode.edge.length - curNode.position;
+            var trackSection = new TrackSectionRange(curNode.edge, curNode.direction, curNode.position, endPosition);
+            trackSections.add(trackSection);
+        }
+
+        // Last node case
+        var lastNode = pathNodes.get(pathNodes.size() - 1);
+        double lastTrackBeginPosition = 0.;
+        if (lastNode.direction == EdgeDirection.STOP_TO_START)
+            lastTrackBeginPosition = lastNode.edge.length;
+        trackSections.add(
+                new TrackSectionRange(lastNode.edge, lastNode.direction, lastTrackBeginPosition, lastNode.position));
+
+        return trackSections;
     }
 }
