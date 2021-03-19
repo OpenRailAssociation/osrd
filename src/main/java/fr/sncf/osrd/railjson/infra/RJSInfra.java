@@ -4,6 +4,7 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.railjson.common.ID;
 import fr.sncf.osrd.railjson.infra.signaling.RJSAspect;
 import fr.sncf.osrd.railjson.infra.railscript.RJSRSExpr;
 import fr.sncf.osrd.railjson.infra.railscript.RJSRSFunction;
@@ -15,7 +16,7 @@ import java.util.List;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSInfra {
-    /** Moshi adapter used to serialize and deserialize RJSRoot */
+    /** Moshi adapter used to serialize and deserialize RJSInfra */
     public static final JsonAdapter<RJSInfra> adapter = new Moshi
             .Builder()
             .add(ID.Adapter.FACTORY)

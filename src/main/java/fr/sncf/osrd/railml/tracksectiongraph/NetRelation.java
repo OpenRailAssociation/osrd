@@ -7,7 +7,7 @@ import fr.sncf.osrd.railml.DescriptionLevel;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import fr.sncf.osrd.utils.graph.ApplicableDirections;
-import fr.sncf.osrd.railjson.infra.ID;
+import fr.sncf.osrd.railjson.common.ID;
 import fr.sncf.osrd.railjson.infra.RJSTrackSection.EndpointID;
 import fr.sncf.osrd.railjson.infra.RJSTrackSectionLink;
 import fr.sncf.osrd.utils.graph.IBiNeighborRel;

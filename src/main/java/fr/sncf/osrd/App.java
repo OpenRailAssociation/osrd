@@ -19,7 +19,6 @@ import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
-import fr.sncf.osrd.timetable.InvalidTimetableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +49,7 @@ public class App {
         )
         private Path outputChangelogPath;
 
-        void run() throws IOException, InterruptedException, InvalidInfraException, InvalidTimetableException {
+        void run() throws IOException, InterruptedException, InvalidInfraException {
             try {
                 logger.info("parsing the configuration file");
                 Config config = ConfigManager.readConfigFile(configPath);
@@ -146,7 +145,7 @@ public class App {
      * @param args the command line arguments
      */
     public static void main(String[] args)
-            throws IOException, InterruptedException, InvalidInfraException, InvalidTimetableException {
+            throws IOException, InterruptedException, InvalidInfraException {
 
         // prepare the command line parser
         var simulateCommand = new SimulateCommand();

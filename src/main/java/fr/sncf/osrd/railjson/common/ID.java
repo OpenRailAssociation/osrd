@@ -1,4 +1,4 @@
-package fr.sncf.osrd.railjson.infra;
+package fr.sncf.osrd.railjson.common;
 
 import com.squareup.moshi.*;
 import edu.umd.cs.findbugs.annotations.NonNull;

@@ -1,6 +1,6 @@
 package fr.sncf.osrd.railjson.infra.signaling;
 
-import fr.sncf.osrd.railjson.infra.Identified;
+import fr.sncf.osrd.railjson.common.Identified;
 
 public class RJSAspect implements Identified {
     public final String id;

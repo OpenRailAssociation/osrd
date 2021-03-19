@@ -2,6 +2,8 @@ package fr.sncf.osrd.railjson.infra;
 
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.railjson.common.ID;
+import fr.sncf.osrd.railjson.common.Identified;
 import fr.sncf.osrd.railjson.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railjson.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.railjson.infra.trackranges.RJSOperationalPointPart;
