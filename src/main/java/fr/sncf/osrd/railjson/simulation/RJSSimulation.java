@@ -3,6 +3,7 @@ package fr.sncf.osrd.railjson.simulation;
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import fr.sncf.osrd.railjson.common.ID;
 import fr.sncf.osrd.railjson.simulation.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.simulation.schedule.RJSTrainSchedule;
 
@@ -12,6 +13,7 @@ public class RJSSimulation {
     /** Moshi adapter used to serialize and deserialize RJSRoot */
     public static final JsonAdapter<RJSSimulation> adapter = new Moshi
             .Builder()
+            .add(ID.Adapter.FACTORY)
             .build()
             .adapter(RJSSimulation.class);
 
