@@ -256,31 +256,30 @@ public class SignalNavigatePhase implements Phase {
             ));
         }
 
-        private int findBackwardTVDSectionPathIndex(Waypoint waypoint) {
-            for (; routeIndex < phase.routePath.size(); routeIndex++) {
-                var route = phase.routePath.get(routeIndex);
-                for (var i = 0; i < route.tvdSectionsPath.size(); i++) {
-                    var tvdSectionPath = route.tvdSectionsPath.get(i);
-                    var tvdSectionPathDirection = route.tvdSectionsPathDirection.get(i);
-                    if (tvdSectionPath.getEndNode(tvdSectionPathDirection) == waypoint.index)
-                        return i;
+        private TVDSection findForwardTVDSection(Waypoint waypoint) {
+            // TODO: Find a faster and smarter way to do it
+            for (var route : phase.routePath) {
+                for (var j = 0; j < route.tvdSectionsPath.size(); j++) {
+                    var tvdSectionPath = route.tvdSectionsPath.get(j);
+                    var tvdSectionPathDirection = route.tvdSectionsPathDirection.get(j);
+                    if (tvdSectionPath.getStartNode(tvdSectionPathDirection) == waypoint.index)
+                        return tvdSectionPath.tvdSection;
                 }
             }
             throw new RuntimeException("Can't find the waypoint in the planned route path");
         }
 
-        private TVDSection findForwardTVDSection(Waypoint waypoint) {
-            var tvdSectionPathIndex = findBackwardTVDSectionPathIndex(waypoint);
-            var route = phase.routePath.get(routeIndex);
-            var tvdSectionPathDirection = route.tvdSectionsPathDirection.get(tvdSectionPathIndex);
-            return waypoint.getTvdSectionPathNeighbors(tvdSectionPathDirection).get(0).tvdSection;
-        }
-
         private TVDSection findBackwardTVDSection(Waypoint waypoint) {
-            var tvdSectionPathIndex = findBackwardTVDSectionPathIndex(waypoint);
-            var route = phase.routePath.get(routeIndex);
-            var tvdSectionPath = route.tvdSectionsPath.get(tvdSectionPathIndex);
-            return tvdSectionPath.tvdSection;
+            // TODO: Find a faster and smarter way to do it
+            for (var route : phase.routePath) {
+                for (var j = 0; j < route.tvdSectionsPath.size(); j++) {
+                    var tvdSectionPath = route.tvdSectionsPath.get(j);
+                    var tvdSectionPathDirection = route.tvdSectionsPathDirection.get(j);
+                    if (tvdSectionPath.getEndNode(tvdSectionPathDirection) == waypoint.index)
+                        return tvdSectionPath.tvdSection;
+                }
+            }
+            throw new RuntimeException("Can't find the waypoint in the planned route path");
         }
 
         /** Occupy and free tvd sections given a detector the train is interacting with. */
@@ -300,10 +299,10 @@ public class SignalNavigatePhase implements Phase {
                 nextTVDSection.occupy(sim);
                 return;
             }
-            // Free the last tvdSection
+            // Doesn't occupy the last tvdSection
             var backwardTVDSectionPath = findBackwardTVDSection(detector);
-            var nextTVDSection = sim.infraState.getTvdSectionState(backwardTVDSectionPath.index);
-            nextTVDSection.occupy(sim);
+            var backwardTVDSection = sim.infraState.getTvdSectionState(backwardTVDSectionPath.index);
+            backwardTVDSection.notOccupy(sim);
         }
 
         public int getRouteIndex() {

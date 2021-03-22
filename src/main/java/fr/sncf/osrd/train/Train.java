@@ -88,6 +88,12 @@ public class Train extends AbstractEntity<Train, TrainID> {
 
     @Override
     public void onEventOccurred(Simulation sim, TimelineEvent<?> event) throws SimulationError {
+        // TODO find a smarter way to do it
+        if (lastState.currentPhaseState.getClass() == SignalNavigatePhase.State.class) {
+            var navigateState = (SignalNavigatePhase.State) lastState.currentPhaseState;
+            ActivateRoute.reserveRoutes(sim, navigateState);
+        }
+
         if (event.value.getClass() == TrainStateChange.class) {
             var stateChange = (TrainStateChange) event.value;
             stateChange.apply(sim, this);
