@@ -2,8 +2,8 @@ package fr.sncf.osrd.railml;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 
-import fr.sncf.osrd.railjson.infra.RJSInfra;
-import fr.sncf.osrd.railjson.infra.RJSTrackSection;
+import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
 import fr.sncf.osrd.railml.tracksectiongraph.NetRelation;
 import fr.sncf.osrd.railml.tracksectiongraph.RMLTrackSectionGraph;

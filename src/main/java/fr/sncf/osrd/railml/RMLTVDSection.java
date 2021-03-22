@@ -1,11 +1,11 @@
 package fr.sncf.osrd.railml;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.railjson.common.ID;
-import fr.sncf.osrd.railjson.infra.RJSTVDSection;
-import fr.sncf.osrd.railjson.infra.RJSTrackSection;
-import fr.sncf.osrd.railjson.infra.trackobjects.RJSBufferStop;
-import fr.sncf.osrd.railjson.infra.trackobjects.RJSTrainDetector;
+import fr.sncf.osrd.railjson.schema.common.ID;
+import fr.sncf.osrd.railjson.schema.infra.RJSTVDSection;
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
 import org.dom4j.Document;
 import org.dom4j.Element;

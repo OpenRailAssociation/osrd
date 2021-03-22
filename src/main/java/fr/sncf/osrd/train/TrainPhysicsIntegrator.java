@@ -1,6 +1,6 @@
 package fr.sncf.osrd.train;
 
-import fr.sncf.osrd.rollingstock.RollingStock;
+import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.utils.Constants;
 
 /**

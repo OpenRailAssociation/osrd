@@ -13,7 +13,6 @@ import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
-import fr.sncf.osrd.schedule.TrainSchedule;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
