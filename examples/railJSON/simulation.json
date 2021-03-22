@@ -39,7 +39,7 @@
   ],
   "train_schedules": [
     {
-      "name": "Test.",
+      "id": "Test.",
       "rolling_stock": "fast_rolling_stock",
       "departure_time": 0,
       "initial_head_location": {
