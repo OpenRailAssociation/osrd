@@ -1,6 +1,7 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.simulation.ChangeSerializer.SerializableDouble;
@@ -93,6 +94,13 @@ public final class TrackSectionRange {
         if (Double.min(beginPosition, endPosition) > position)
             return false;
         return Double.max(beginPosition, endPosition) > position;
+    }
+
+    /** Check if a position is contained in the track section range */
+    public boolean containsLocation(TrackSectionLocation location) {
+        if (location.edge != edge)
+            return false;
+        return containsPosition(location.position);
     }
 
     public double length() {
