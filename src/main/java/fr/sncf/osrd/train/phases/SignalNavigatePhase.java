@@ -117,7 +117,7 @@ public class SignalNavigatePhase implements Phase {
                 var tvdSectionPath = route.tvdSectionsPath.get(i);
                 var tvdSectionPathDir = route.tvdSectionsPathDirection.get(i);
                 for (var trackIndex = 0; trackIndex < tvdSectionPath.trackSections.size(); trackIndex++) {
-                    // Reverse iteration if reverse tvd section path
+                    // Reverse iteration if the tvd section path is reversed
                     if (tvdSectionPathDir == EdgeDirection.STOP_TO_START) {
                         trackIndex = tvdSectionPath.trackSections.size() - 1 - trackIndex;
                         var trackSection = tvdSectionPath.trackSections.get(trackIndex);
@@ -129,8 +129,23 @@ public class SignalNavigatePhase implements Phase {
             }
         }
 
-        var trackSectionPath = new ArrayList<TrackSectionRange>();
+        // Drop the begin offset
+        while (beginOffset > 0) {
+            var firstTrack = flattenSections.removeFirst();
+            if (beginOffset < firstTrack.length()) {
+                var newTrackSection = new TrackSectionRange(
+                        firstTrack.edge,
+                        firstTrack.direction,
+                        firstTrack.getBeginPosition() + beginOffset,
+                        firstTrack.getEndPosition()
+                );
+                flattenSections.addFirst(newTrackSection);
+            }
+            beginOffset -= firstTrack.length();
+        }
 
+        // Merge duplicated edges
+        var trackSectionPath = new ArrayList<TrackSectionRange>();
         TrackSectionRange lastTrack = flattenSections.removeFirst();
         while (!flattenSections.isEmpty()) {
             var currentTrack = flattenSections.removeFirst();
@@ -139,7 +154,6 @@ public class SignalNavigatePhase implements Phase {
                 lastTrack = currentTrack;
                 continue;
             }
-            // Merge the last track section range with the current one
             lastTrack = TrackSectionRange.merge(lastTrack, currentTrack);
         }
         trackSectionPath.add(lastTrack);
