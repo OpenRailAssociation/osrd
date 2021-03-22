@@ -11,7 +11,9 @@ import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.PrettyPrinter;
-import fr.sncf.osrd.railjson.infra.RJSInfra;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
+import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railml.RailMLParser;
 import fr.sncf.osrd.simulation.ChangeReplayChecker;
 import fr.sncf.osrd.simulation.ChangeSerializer;
@@ -20,7 +22,7 @@ import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
-import fr.sncf.osrd.utils.moshi.MoshiSerializer;
+import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +53,7 @@ public class App {
         )
         private Path outputChangelogPath;
 
-        void run() throws IOException, InterruptedException, InvalidInfraException {
+        void run() {
             try {
                 logger.info("parsing the configuration file");
                 Config config = Config.readFromFile(configPath);
@@ -72,6 +74,10 @@ public class App {
                 if (config.showViewer)
                     multiplexer.add(DebugViewer.from(config.infra, config.realTimeViewer));
 
+                // insert the train start events into the simulation
+                for (var trainSchedule : config.trainSchedules)
+                    sim.scheduler.planTrain(sim, trainSchedule);
+
                 // run the simulation loop
                 while (!sim.isSimulationOver())
                     sim.step();
@@ -79,6 +85,10 @@ public class App {
                 ChangeSerializer.serializeChangeLog(changelog, outputChangelogPath);
             } catch (SimulationError simulationError) {
                 logger.error("an logic error prevented the simulation from completing", simulationError);
+            } catch (InvalidInfraException | InvalidRollingStock | InvalidSchedule exception) {
+                logger.error("an error occurred while parsing the input", exception);
+            } catch (IOException ioException) {
+                logger.error("IO error", ioException);
             }
         }
     }
@@ -105,7 +115,7 @@ public class App {
             var rjsInfra = RailMLParser.parse(railMLInputPath);
 
             logger.info("serializing the infrastructure to RailJSON");
-            MoshiSerializer.serialize(RJSInfra.adapter, rjsInfra, railJsonOutputPath);
+            MoshiUtils.serialize(RJSInfra.adapter, rjsInfra, railJsonOutputPath);
         }
     }
 
@@ -137,8 +147,7 @@ public class App {
             var infra = Infra.parseFromFile(JsonConfig.InfraType.UNKNOWN, inputPath);
 
             logger.info("Pretty print signals behaviors to RailScript");
-            if (infra != null)
-                printer.print(infra);
+            printer.print(infra);
         }
     }
 
@@ -147,7 +156,7 @@ public class App {
      * @param args the command line arguments
      */
     public static void main(String[] args)
-            throws IOException, InterruptedException, InvalidInfraException {
+            throws IOException, InvalidInfraException {
 
         // prepare the command line parser
         var simulateCommand = new SimulateCommand();

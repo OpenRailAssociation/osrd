@@ -1,10 +1,10 @@
 package fr.sncf.osrd.railml;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.railjson.common.ID;
-import fr.sncf.osrd.railjson.infra.RJSOperationalPoint;
-import fr.sncf.osrd.railjson.infra.RJSTrackSection;
-import fr.sncf.osrd.railjson.infra.trackranges.RJSOperationalPointPart;
+import fr.sncf.osrd.railjson.schema.common.ID;
+import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPoint;
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSOperationalPointPart;
 import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
 import org.dom4j.Document;
 import org.dom4j.Element;

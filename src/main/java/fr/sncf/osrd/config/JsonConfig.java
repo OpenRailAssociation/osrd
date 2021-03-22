@@ -17,8 +17,8 @@ public final class JsonConfig {
     public final InfraType infraType;
     @Json(name = "infra_path")
     public final String infraPath;
-    @Json(name = "schedule_path")
-    public final String schedulePath;
+    @Json(name = "simulation_path")
+    public final String simulationPath;
     @Json(name = "show_viewer")
     public final boolean showViewer;
     @Json(name = "realtime_viewer")
@@ -32,7 +32,7 @@ public final class JsonConfig {
             float simulationTimeStep,
             InfraType infraType,
             String infraPath,
-            String schedulePath,
+            String simulationPath,
             boolean showViewer,
             boolean realTimeViewer,
             boolean changeReplayCheck,
@@ -41,7 +41,7 @@ public final class JsonConfig {
         this.simulationTimeStep = simulationTimeStep;
         this.infraType = infraType;
         this.infraPath = infraPath;
-        this.schedulePath = schedulePath;
+        this.simulationPath = simulationPath;
         this.showViewer = showViewer;
         this.realTimeViewer = realTimeViewer;
         this.changeReplayCheck = changeReplayCheck;

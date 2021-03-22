@@ -7,7 +7,6 @@ import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.simulation.Change;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
-import fr.sncf.osrd.schedule.TrainSchedule;
 import fr.sncf.osrd.train.Train;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;

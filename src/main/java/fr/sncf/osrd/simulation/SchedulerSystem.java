@@ -5,7 +5,7 @@ import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.schedule.TrainSchedule;
+import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.utils.CryoList;
 import org.slf4j.Logger;

@@ -2,17 +2,15 @@ package fr.sncf.osrd.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.config.JsonConfig;
-import fr.sncf.osrd.infra.railjson_parser.RailJSONParser;
+import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.signaling.Signal;
-import fr.sncf.osrd.infra.signaling.TrainInteractable;
 import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.trackgraph.*;
-import fr.sncf.osrd.railjson.infra.RJSInfra;
+import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railml.RailMLParser;
-import fr.sncf.osrd.utils.PointSequence;
 import fr.sncf.osrd.utils.SortedArraySet;
 import okio.Okio;
 
