@@ -1,8 +1,6 @@
 package fr.sncf.osrd.train.phases;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.TrainInteractable;
@@ -17,97 +15,49 @@ import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.utils.PointValue;
 import fr.sncf.osrd.utils.TrackSectionLocation;
-import fr.sncf.osrd.utils.graph.BiGraphDijkstra;
-import fr.sncf.osrd.utils.graph.DistCostFunction;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
-import fr.sncf.osrd.utils.graph.path.BasicPathEnd;
-import fr.sncf.osrd.utils.graph.path.BasicPathStart;
-import fr.sncf.osrd.utils.graph.path.FullPathArray;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class SignalNavigatePhase implements Phase {
     @SuppressFBWarnings({"URF_UNREAD_FIELD"})
-    public final ArrayList<Route> routePath;
+    public final List<Route> routePath;
+    public final TrackSectionLocation endLocation;
     private final ArrayList<TrackSectionRange> trackSectionPath;
     private final ArrayList<PointValue<TrainInteractable>> eventPath;
 
     private SignalNavigatePhase(
-            ArrayList<Route> routePath,
+            List<Route> routePath,
+            TrackSectionLocation endLocation,
             ArrayList<TrackSectionRange> trackSectionPath,
             ArrayList<PointValue<TrainInteractable>> eventPath
     ) {
         this.routePath = routePath;
+        this.endLocation = endLocation;
         this.trackSectionPath = trackSectionPath;
         this.eventPath = eventPath;
     }
 
-    /** Creates and store the path some train will follow */
-    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY", "BC_UNCONFIRMED_CAST"}) // TODO: remove me
+    /** Create a new navigation phase from an already determined path */
     public static SignalNavigatePhase from(
-            Infra infra,
-            OperationalPoint start,
-            OperationalPoint end,
-            double beginOffset,
-            double driverSightDistance
+            List<Route> routes,
+            double driverSightDistance,
+            TrackSectionLocation startLocation,
+            TrackSectionLocation endLocation
     ) {
-        // TODO Compute offset of the start/end of each route
-        var startingPoints = new ArrayList<BasicPathStart<Route>>();
-        for (var tracks : start.refs) {
-            for (var route : tracks.routes)
-                startingPoints.add(new BasicPathStart<>(0, route, EdgeDirection.START_TO_STOP, 0));
-        }
-        var goalEdges = new ArrayList<Route>();
-        for (var tracks : end.refs) {
-            goalEdges.addAll(tracks.routes);
-        }
-
-        var costFunction = new DistCostFunction<Route>();
-        var foundPaths = new ArrayList<FullPathArray<Route, BasicPathStart<Route>, BasicPathEnd<Route>>>();
-
-        BiGraphDijkstra.findPaths(
-                infra.routeGraph,
-                startingPoints,
-                costFunction,
-                (pathNode) -> {
-                    for (var goalEdge : goalEdges) {
-                        if (goalEdge == pathNode.edge) {
-                            var addedCost = costFunction.evaluate(goalEdge, pathNode.position, goalEdge.length);
-                            return new BasicPathEnd<>(addedCost, goalEdge, pathNode.direction, 0, pathNode);
-                        }
-                    }
-                    return null;
-                },
-                (pathToGoal) -> {
-                    foundPaths.add(FullPathArray.from(pathToGoal));
-                    return false;
-                });
-
-        if (foundPaths.isEmpty())
-            throw new RuntimeException("dijkstra found no path");
-
-        var routePath = new ArrayList<Route>();
-        // Convert path nodes to a list of routes
-        // Ignore last node since it's a duplicated edge of the second last.
-        var nodes = foundPaths.get(0).pathNodes;
-        for (var i = 0; i < nodes.size() - 1; i++) {
-            var node = nodes.get(i);
-            routePath.add(node.edge);
-        }
-
-        var trackSectionPath = routesToTrackSectionRange(routePath, beginOffset);
+        var trackSectionPath = routesToTrackSectionRange(routes, startLocation, endLocation);
         var eventPath = trackSectionToEventPath(driverSightDistance, trackSectionPath);
-
-        return new SignalNavigatePhase(routePath, trackSectionPath, eventPath);
+        return new SignalNavigatePhase(routes, endLocation, trackSectionPath, eventPath);
     }
 
     /** Build track section path. Need to concatenate all track section of all TvdSectionPath.
      * Avoid to have in the path TrackSectionPositions that reference the same TrackSection. */
     private static ArrayList<TrackSectionRange> routesToTrackSectionRange(
-            ArrayList<Route> routePath,
+            List<Route> routePath,
             TrackSectionLocation beginLocation,
             TrackSectionLocation endLocation
     ) {
@@ -137,7 +87,7 @@ public class SignalNavigatePhase implements Phase {
             var firstTrack = flattenSections.removeFirst();
             if (firstTrack.containsLocation(beginLocation)) {
                 var newTrackSection = new TrackSectionRange(firstTrack.edge, firstTrack.direction,
-                        beginLocation.position, firstTrack.getEndPosition());
+                        beginLocation.offset, firstTrack.getEndPosition());
                 flattenSections.addFirst(newTrackSection);
                 break;
             }
@@ -150,7 +100,7 @@ public class SignalNavigatePhase implements Phase {
             var lastTrack = flattenSections.removeLast();
             if (lastTrack.containsLocation(endLocation)) {
                 var newTrackSection = new TrackSectionRange(lastTrack.edge, lastTrack.direction,
-                        lastTrack.getEndPosition(), endLocation.position);
+                        lastTrack.getBeginPosition(), endLocation.offset);
                 flattenSections.addLast(newTrackSection);
                 break;
             }
@@ -207,6 +157,11 @@ public class SignalNavigatePhase implements Phase {
     @Override
     public PhaseState getState() {
         return new State(this);
+    }
+
+    @Override
+    public TrackSectionLocation getEndLocation() {
+        return endLocation;
     }
 
     @Override

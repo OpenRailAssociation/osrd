@@ -5,7 +5,7 @@ import fr.sncf.osrd.railjson.common.ID;
 import fr.sncf.osrd.railjson.common.Identified;
 import fr.sncf.osrd.railjson.common.RJSTrackLocation;
 import fr.sncf.osrd.railjson.infra.RJSRoute;
-import fr.sncf.osrd.railjson.simulation.rollingstock.RJSRollingStock;
+import fr.sncf.osrd.railjson.rollingstock.RJSRollingStock;
 
 public class RJSTrainSchedule implements Identified {
     /** The identifier of this train */

@@ -4,7 +4,7 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.railjson.common.ID;
-import fr.sncf.osrd.railjson.simulation.rollingstock.RJSRollingStock;
+import fr.sncf.osrd.railjson.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.simulation.schedule.RJSTrainSchedule;
 
 import java.util.Collection;

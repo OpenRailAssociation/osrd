@@ -84,6 +84,7 @@ public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
         return tvdSectionPath;
     }
 
+    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
     private static ArrayList<TrackSectionRange> buildTrackSectionsFromFullPath(
             ArrayList<PathNode<TrackSection, OverlayPathStart<TrackSection, Waypoint>,
                     OverlayPathEnd<TrackSection, Waypoint>>> pathNodes

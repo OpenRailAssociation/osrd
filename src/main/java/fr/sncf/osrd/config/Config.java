@@ -2,6 +2,12 @@ package fr.sncf.osrd.config;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.utils.PathUtils;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class Config {
@@ -35,5 +41,23 @@ public class Config {
         this.showViewer = showViewer;
         this.realTimeViewer = realTimeViewer;
         this.changeReplayCheck = changeReplayCheck;
+    }
+
+    /** Parses the configuration from a file */
+    public static Config readFromFile(
+            Path mainConfigPath
+    ) throws IOException, InvalidInfraException {
+        var baseDirPath = mainConfigPath.getParent();
+        var jsonConfig = JsonConfig.adapter.fromJson(Files.readString(mainConfigPath));
+        var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
+        var infra = Infra.parseFromFile(jsonConfig.infraType, infraPath.toString());
+        return new Config(
+                jsonConfig.simulationTimeStep,
+                infra,
+                jsonConfig.simulationStepPause,
+                jsonConfig.showViewer,
+                jsonConfig.realTimeViewer,
+                jsonConfig.changeReplayCheck
+        );
     }
 }

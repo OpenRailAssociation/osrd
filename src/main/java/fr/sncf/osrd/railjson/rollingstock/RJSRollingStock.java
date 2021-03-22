@@ -1,4 +1,4 @@
-package fr.sncf.osrd.railjson.simulation.rollingstock;
+package fr.sncf.osrd.railjson.rollingstock;
 
 import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.common.Identified;
@@ -57,7 +57,7 @@ public class RJSRollingStock implements Identified {
      * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves
      */
     @Json(name = "tractive_effort_curve")
-    public final RJSRollingStock.TractiveEffortPoint[] tractiveEffortCurve;
+    public final RJSTractiveEffortPoint[] tractiveEffortCurve;
 
     /** Creates a new rolling stock */
     public RJSRollingStock(
@@ -72,7 +72,7 @@ public class RJSRollingStock implements Identified {
             double startUpAcceleration,
             double comfortAcceleration,
             double timetableGamma,
-            TractiveEffortPoint[] tractiveEffortCurve
+            RJSTractiveEffortPoint[] tractiveEffortCurve
     ) {
         this.id = id;
         this.length = length;
@@ -88,12 +88,28 @@ public class RJSRollingStock implements Identified {
         this.tractiveEffortCurve = tractiveEffortCurve;
     }
 
-    public static final class TractiveEffortPoint {
+    /** Creates an empty rolling stock */
+    public RJSRollingStock() {
+        this.id = null;
+        this.length = Double.NaN;
+        this.mass = Double.NaN;
+        this.inertiaCoefficient = Double.NaN;
+        this.rollingResistance = null;
+        this.capabilities = new RJSTrainCapability[0];
+        this.maxSpeed = Double.NaN;
+        this.startUpTime = Double.NaN;
+        this.startUpAcceleration = Double.NaN;
+        this.comfortAcceleration = Double.NaN;
+        this.timetableGamma = Double.NaN;
+        this.tractiveEffortCurve = null;
+    }
+
+    public static final class RJSTractiveEffortPoint {
         public final double speed;
         @Json(name = "max_effort")
         public final double maxEffort;
 
-        public TractiveEffortPoint(double speed, double maxEffort) {
+        public RJSTractiveEffortPoint(double speed, double maxEffort) {
             this.speed = speed;
             this.maxEffort = maxEffort;
         }

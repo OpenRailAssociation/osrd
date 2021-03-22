@@ -1,4 +1,4 @@
-package fr.sncf.osrd.railjson.simulation.rollingstock;
+package fr.sncf.osrd.railjson.rollingstock;
 
 /** A capability is a feature that might be required to perform some operation,
  * such as driving on some routes. */

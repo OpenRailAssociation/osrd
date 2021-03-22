@@ -7,7 +7,7 @@ import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.simulation.Change;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
-import fr.sncf.osrd.timetable.TrainSchedule;
+import fr.sncf.osrd.schedule.TrainSchedule;
 import fr.sncf.osrd.train.Train;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
@@ -148,7 +148,7 @@ public class DebugViewer extends ChangeConsumer {
         if (!sprite.attached() || !sprite.getAttachment().getId().equals(headTopoLocation.edge.id))
             sprite.attachToEdge(headTopoLocation.edge.id);
 
-        var edgePosition = headTopoLocation.position / headTopoLocation.edge.length;
+        var edgePosition = headTopoLocation.offset / headTopoLocation.edge.length;
         // this assert is very, very important, as a failure results in
         // a very nasty crash inside graphstream
         assert edgePosition >= 0 && edgePosition <= 1 && !Double.isNaN(edgePosition);
@@ -210,7 +210,6 @@ public class DebugViewer extends ChangeConsumer {
                 }
             }
         }
-
         // endregion
 
         // region SIGNAL_CHANGES

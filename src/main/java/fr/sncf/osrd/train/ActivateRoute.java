@@ -23,11 +23,10 @@ public class ActivateRoute {
     /** Reserve the initial routes, mark occupied tvd sections and add interactable elements that are under the train
      * to the TrainState*/
     public static void trainCreation(Simulation sim, TrainState trainState) throws SimulationError {
-        // Reserve initial route
         Route route = trainState.trainSchedule.initialRoute;
         var routeState = sim.infraState.getRouteState(route.index);
 
-        // Try to reserve the route
+        // Reserve the initial route
         if (routeState.status != RouteStatus.FREE)
             throw new SimulationError(
                     String.format("Impossible to reserve the route '%s' since it is not available.", routeState.id));

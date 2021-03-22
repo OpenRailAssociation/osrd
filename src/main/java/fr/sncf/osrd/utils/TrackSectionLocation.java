@@ -1,14 +1,13 @@
 package fr.sncf.osrd.utils;
 
-import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 
 public class TrackSectionLocation {
     public final TrackSection edge;
-    public final double position;
+    public final double offset;
 
-    public TrackSectionLocation(TrackSection edge, double position) {
+    public TrackSectionLocation(TrackSection edge, double offset) {
         this.edge = edge;
-        this.position = position;
+        this.offset = offset;
     }
 }

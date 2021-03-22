@@ -6,7 +6,7 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
-import fr.sncf.osrd.timetable.TrainSchedule;
+import fr.sncf.osrd.schedule.TrainSchedule;
 import fr.sncf.osrd.train.phases.PhaseState;
 import fr.sncf.osrd.utils.PointValue;
 import org.slf4j.Logger;

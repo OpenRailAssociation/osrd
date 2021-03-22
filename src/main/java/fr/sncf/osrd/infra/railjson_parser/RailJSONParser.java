@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra.parser;
+package fr.sncf.osrd.infra.railjson_parser;
 
 import static fr.sncf.osrd.infra.trackgraph.TrackSection.linkEdges;
 

@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra.parser;
+package fr.sncf.osrd.infra.railjson_parser;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;

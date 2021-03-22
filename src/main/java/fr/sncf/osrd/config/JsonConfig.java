@@ -48,7 +48,7 @@ public final class JsonConfig {
         this.simulationStepPause = simulationStepPause;
     }
 
-    public static enum InfraType {
+    public enum InfraType {
         RAILML,
         RAILJSON,
         UNKNOWN,

@@ -6,8 +6,8 @@ import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
-import fr.sncf.osrd.timetable.TrainSchedule;
-import fr.sncf.osrd.timetable.TrainSchedule.TrainID;
+import fr.sncf.osrd.schedule.TrainSchedule;
+import fr.sncf.osrd.schedule.TrainSchedule.TrainID;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase.InteractionType;
 import fr.sncf.osrd.utils.CryoList;
@@ -43,11 +43,12 @@ public class Train extends AbstractEntity<Train, TrainID> {
     ) throws SimulationError {
         // the train starts out as a point like object on the beginning of the route
         var initialPosition = new ArrayDeque<TrackSectionRange>();
+        var initialLocation = schedule.initialLocation;
         initialPosition.addFirst(new TrackSectionRange(
-                schedule.startTrackSection,
-                schedule.startDirection,
-                schedule.startOffset,
-                schedule.startOffset
+                initialLocation.edge,
+                schedule.initialDirection,
+                initialLocation.offset,
+                initialLocation.offset
         ));
 
         var location = new TrainPositionTracker(sim.infra, sim.infraState, initialPosition);
