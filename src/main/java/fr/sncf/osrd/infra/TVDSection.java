@@ -6,6 +6,7 @@ import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.simulation.*;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public final class TVDSection implements Comparable<TVDSection> {
     public final String id;
@@ -49,7 +50,7 @@ public final class TVDSection implements Comparable<TVDSection> {
         return new TVDSection.State(this);
     }
 
-    public static class TVDSectionEntityID implements EntityID<TVDSection.State> {
+    public static final class TVDSectionEntityID implements EntityID<TVDSection.State> {
         private final int tvdSectionIndex;
 
         public TVDSectionEntityID(int tvdSectionIndex) {
@@ -59,6 +60,18 @@ public final class TVDSection implements Comparable<TVDSection> {
         @Override
         public State getEntity(Simulation sim) {
             return sim.infraState.getTvdSectionState(tvdSectionIndex);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(tvdSectionIndex);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null || obj.getClass() != TVDSectionEntityID.class)
+                return false;
+            return tvdSectionIndex == ((TVDSectionEntityID) obj).tvdSectionIndex;
         }
     }
 

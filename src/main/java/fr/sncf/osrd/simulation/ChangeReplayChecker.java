@@ -9,6 +9,7 @@ public class ChangeReplayChecker extends ChangeConsumer {
 
     private final Simulation referenceSim;
     private final Simulation replaySim;
+    private boolean isConsistent = true;
 
     private ChangeReplayChecker(Simulation referenceSim, Simulation replaySim) {
         this.referenceSim = referenceSim;
@@ -25,8 +26,6 @@ public class ChangeReplayChecker extends ChangeConsumer {
     @Override
     public void changeCreationCallback(Change change) {
     }
-
-    private boolean isConsistent = true;
 
     @Override
     public void changePublishedCallback(Change change) {

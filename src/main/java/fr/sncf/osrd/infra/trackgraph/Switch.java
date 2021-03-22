@@ -4,6 +4,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.railscript.value.RSMatchable;
 import fr.sncf.osrd.simulation.*;
 
+import java.util.Objects;
+
 public class Switch extends TrackNode {
     public final int switchIndex;
     public TrackSection leftTrackSection;
@@ -34,6 +36,18 @@ public class Switch extends TrackNode {
         @Override
         public State getEntity(Simulation sim) {
             return sim.infraState.getSwitchState(switchIndex);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(switchIndex);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null || obj.getClass() != SwitchID.class)
+                return false;
+            return switchIndex == ((SwitchID) obj).switchIndex;
         }
     }
 

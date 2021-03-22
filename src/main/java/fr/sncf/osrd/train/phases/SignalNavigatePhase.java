@@ -285,6 +285,14 @@ public class SignalNavigatePhase implements Phase {
 
         /** Occupy and free tvd sections given a detector the train is interacting with. */
         public void updateTVDSections(Simulation sim, Detector detector, InteractionType interactionType) {
+            // Update route index
+            var currentRoute = phase.routePath.get(routeIndex);
+            var tvdSectionPathIndex = currentRoute.tvdSectionsPath.size() - 1;
+            var lastTvdSectionPath = currentRoute.tvdSectionsPath.get(tvdSectionPathIndex);
+            var lastTvdSectionPathDir = currentRoute.tvdSectionsPathDirection.get(tvdSectionPathIndex);
+            if (lastTvdSectionPath.getEndNode(lastTvdSectionPathDir) == detector.index)
+                routeIndex++;
+
             // Occupy the next tvdSection
             if (interactionType == InteractionType.HEAD) {
                 var forwardTVDSectionPath = findForwardTVDSection(detector);
