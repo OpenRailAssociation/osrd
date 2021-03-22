@@ -152,4 +152,10 @@ public final class TrackSectionRange {
                 Double.max(left.beginPosition, right.beginPosition),
                 Double.min(left.endPosition, right.endPosition));
     }
+
+    public boolean intersect(TrackSectionRange other) {
+        if (other.edge != edge)
+            return false;
+        return other.containsPosition(beginPosition) || other.containsPosition(endPosition);
+    }
 }
