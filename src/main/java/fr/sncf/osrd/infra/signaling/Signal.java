@@ -130,6 +130,7 @@ public class Signal implements TrainInteractable {
             if (newAspects != null && !newAspects.equals(aspects)) {
                 var change = new SignalAspectChange(sim, this, newAspects);
                 change.apply(sim, this);
+                sim.publishChange(change);
                 sim.scheduleEvent(this, sim.getTime(), change);
             }
         }

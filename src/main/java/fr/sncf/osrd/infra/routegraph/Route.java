@@ -96,6 +96,7 @@ public class Route extends BiNEdge<Route> {
                     if (event.value.getClass() == TVDSection.TVDSectionReservedChange.class) {
                         var change = new Route.RouteConflictChange(sim, this);
                         change.apply(sim, this);
+                        sim.publishChange(change);
                         sim.scheduleEvent(this, sim.getTime(), change);
                     }
                     break;
@@ -103,6 +104,7 @@ public class Route extends BiNEdge<Route> {
                     if (event.value.getClass() == TVDSection.TVDSectionOccupied.class) {
                         var change = new RouteOccupyChange(sim, this);
                         change.apply(sim, this);
+                        sim.publishChange(change);
                         sim.scheduleEvent(this, sim.getTime(), change);
                         nbReservedTvdSection = tvdSectionStates.size();
                     }
@@ -130,6 +132,7 @@ public class Route extends BiNEdge<Route> {
                 }
                 var change = new RouteFreeChange(sim, this);
                 change.apply(sim, this);
+                sim.publishChange(change);
                 sim.scheduleEvent(this, sim.getTime(), change);
             }
         }
@@ -142,6 +145,7 @@ public class Route extends BiNEdge<Route> {
             assert status == RouteStatus.FREE;
             var change = new RouteReserveChange(sim, this);
             change.apply(sim, this);
+            sim.publishChange(change);
             sim.scheduleEvent(this, sim.getTime(), change);
             for (var tvdSection : tvdSectionStates)
                 tvdSection.reserve(sim);

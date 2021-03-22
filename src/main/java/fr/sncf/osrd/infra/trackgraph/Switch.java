@@ -80,6 +80,7 @@ public class Switch extends TrackNode {
             if (this.position != position) {
                 var change = new Switch.SwitchPositionChange(sim, this, position);
                 change.apply(sim, this);
+                sim.publishChange(change);
                 sim.scheduleEvent(this, sim.getTime(), change);
             }
         }

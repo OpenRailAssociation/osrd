@@ -91,6 +91,7 @@ public final class TVDSection implements Comparable<TVDSection> {
             assert !reserved;
             var change = new TVDSectionReservedChange(sim, this);
             change.apply(sim, this);
+            sim.publishChange(change);
             sim.scheduleEvent(this, sim.getTime(), change);
         }
 
@@ -99,6 +100,7 @@ public final class TVDSection implements Comparable<TVDSection> {
             assert reserved;
             var change = new TVDSectionFreedChange(sim, this);
             change.apply(sim, this);
+            sim.publishChange(change);
             sim.scheduleEvent(this, sim.getTime(), change);
         }
 
