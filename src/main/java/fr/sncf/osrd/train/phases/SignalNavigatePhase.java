@@ -16,6 +16,7 @@ import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.utils.PointValue;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.BiGraphDijkstra;
 import fr.sncf.osrd.utils.graph.DistCostFunction;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -23,7 +24,6 @@ import fr.sncf.osrd.utils.graph.path.BasicPathEnd;
 import fr.sncf.osrd.utils.graph.path.BasicPathStart;
 import fr.sncf.osrd.utils.graph.path.FullPathArray;
 
-import java.lang.reflect.Field;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -98,7 +98,7 @@ public class SignalNavigatePhase implements Phase {
             routePath.add(node.edge);
         }
 
-        var trackSectionPath = routesToTrackSectionPositions(routePath, beginOffset);
+        var trackSectionPath = routesToTrackSectionRange(routePath, beginOffset);
         var eventPath = trackSectionToEventPath(driverSightDistance, trackSectionPath);
 
         return new SignalNavigatePhase(routePath, trackSectionPath, eventPath);
@@ -106,9 +106,10 @@ public class SignalNavigatePhase implements Phase {
 
     /** Build track section path. Need to concatenate all track section of all TvdSectionPath.
      * Avoid to have in the path TrackSectionPositions that reference the same TrackSection. */
-    private static ArrayList<TrackSectionRange> routesToTrackSectionPositions(
+    private static ArrayList<TrackSectionRange> routesToTrackSectionRange(
             ArrayList<Route> routePath,
-            double beginOffset
+            TrackSectionLocation beginLocation,
+            TrackSectionLocation endLocation
     ) {
         // Flatten the list of track section range
         var flattenSections = new ArrayDeque<TrackSectionRange>();
@@ -129,19 +130,30 @@ public class SignalNavigatePhase implements Phase {
             }
         }
 
-        // Drop the begin offset
-        while (beginOffset > 0) {
+        // Drop first track sections until the begin location
+        while (true) {
+            if (flattenSections.isEmpty())
+                throw new RuntimeException("Begin position not contained in the route path");
             var firstTrack = flattenSections.removeFirst();
-            if (beginOffset < firstTrack.length()) {
-                var newTrackSection = new TrackSectionRange(
-                        firstTrack.edge,
-                        firstTrack.direction,
-                        firstTrack.getBeginPosition() + beginOffset,
-                        firstTrack.getEndPosition()
-                );
+            if (firstTrack.containsLocation(beginLocation)) {
+                var newTrackSection = new TrackSectionRange(firstTrack.edge, firstTrack.direction,
+                        beginLocation.position, firstTrack.getEndPosition());
                 flattenSections.addFirst(newTrackSection);
+                break;
             }
-            beginOffset -= firstTrack.length();
+        }
+
+        // Drop lasts track sections until the end location
+        while (true) {
+            if (flattenSections.isEmpty())
+                throw new RuntimeException("End position not contained in the route path");
+            var lastTrack = flattenSections.removeLast();
+            if (lastTrack.containsLocation(endLocation)) {
+                var newTrackSection = new TrackSectionRange(lastTrack.edge, lastTrack.direction,
+                        lastTrack.getEndPosition(), endLocation.position);
+                flattenSections.addLast(newTrackSection);
+                break;
+            }
         }
 
         // Merge duplicated edges
