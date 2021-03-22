@@ -123,7 +123,6 @@ public class StaticSpeedLimitTest {
         // The second state change contain the movement of the train
         var locationChange = locationChanges.get(1);
 
-
         // create the list of all speed derivative sign changes
         var profile = new ArrayList<ProfileData>();
         var profiler = new SignAnalyzer();

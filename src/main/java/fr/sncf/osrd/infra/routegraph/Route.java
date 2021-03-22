@@ -11,10 +11,7 @@ import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.utils.graph.BiNEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class Route extends BiNEdge<Route> {
     public final String id;
@@ -52,11 +49,23 @@ public class Route extends BiNEdge<Route> {
         return new State(this);
     }
 
-    public static class RouteID implements EntityID<Route.State> {
+    public static final class RouteID implements EntityID<Route.State> {
         private final int routeIndex;
 
         public RouteID(int routeIndex) {
             this.routeIndex = routeIndex;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null || obj.getClass() != RouteID.class)
+                return false;
+            return routeIndex == ((RouteID) obj).routeIndex;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(routeIndex);
         }
 
         @Override

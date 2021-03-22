@@ -15,6 +15,7 @@ import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.graph.ApplicableDirections;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class Signal implements TrainInteractable {
@@ -64,7 +65,7 @@ public class Signal implements TrainInteractable {
         // TODO
     }
 
-    public static class SignalID implements EntityID<Signal.State> {
+    public static final class SignalID implements EntityID<Signal.State> {
         public final int signalIndex;
 
         public SignalID(int signalIndex) {
@@ -74,6 +75,18 @@ public class Signal implements TrainInteractable {
         @Override
         public State getEntity(Simulation sim) {
             return sim.infraState.getSignalState(signalIndex);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(signalIndex);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null || obj.getClass() != SignalID.class)
+                return false;
+            return signalIndex == ((SignalID) obj).signalIndex;
         }
     }
 
@@ -99,8 +112,9 @@ public class Signal implements TrainInteractable {
             var delayHandler = new DelayHandler(sim, this);
             RSAspectSet newAspects = null;
 
-            if (event.value.getClass() == SignalAspectChange.class && event.source != this) {
-                // Check that another signal has change aspect
+            if ((event.value.getClass() == SignalAspectChange.class && event.source != this)
+                    || event.source.getClass() == Route.State.class) {
+                // Eval aspect when a dependency changed
                 newAspects = exprState.evalInputChange(sim.infraState, delayHandler);
             } else if (event.value.getClass() == SignalDelayUpdateEventValue.class && event.source == this) {
                 // Check that a delay update as occurred on itself
