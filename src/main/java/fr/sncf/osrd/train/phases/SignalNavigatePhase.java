@@ -143,7 +143,7 @@ public class SignalNavigatePhase implements Phase {
 
                 eventPath.add(new PointValue<>(objPathOffset, interactable));
             }
-            pathLength += trackRange.edge.length;
+            pathLength += trackRange.length();
         }
         eventPath.sort(Comparator.comparing(pointValue -> pointValue.position));
         return eventPath;
