@@ -1,0 +1,14 @@
+<configuration>
+    <appender name="COLOR" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>[%date{"HH:mm:ss,SSS"}] %highlight(%-7([%level])) %23([%logger{0}]) %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="fr.sncf.osrd.utils.graph.Dijkstra" level="TRACE"/>
+    <logger name="fr.sncf.osrd.simulation.SchedulerSystem" level="TRACE"/>
+
+    <root level="debug">
+        <appender-ref ref="COLOR"/>
+    </root>
+</configuration>

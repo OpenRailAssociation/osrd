@@ -39,7 +39,8 @@ dependencies {
     // the logging API stub
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'
     // the logging API implementation
-    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.+'
+    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 
     // Use JUnit Jupiter API for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
