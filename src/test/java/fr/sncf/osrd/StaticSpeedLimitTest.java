@@ -13,13 +13,14 @@ import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
-import fr.sncf.osrd.timetable.TrainSchedule;
+import fr.sncf.osrd.schedule.TrainSchedule;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.RangeValue;
 import fr.sncf.osrd.utils.SignAnalyzer;
 import fr.sncf.osrd.utils.SortedArraySet;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
 
@@ -82,7 +83,8 @@ public class StaticSpeedLimitTest {
 
         var tvdSectionsR1 = new SortedArraySet<TVDSection>();
         tvdSectionsR1.add(tvdSection);
-        routeGraphBuilder.makeRoute("R1", waypointsAB, tvdSectionsR1, Route.TransitType.FLEXIBLE, new HashMap<>());
+        var route = routeGraphBuilder.makeRoute(
+                "R1", waypointsAB, tvdSectionsR1, Route.TransitType.FLEXIBLE, new HashMap<>());
 
         final var infra = Infra.build(trackGraph, waypointGraph, routeGraphBuilder.build(),
                 tvdSections, new HashMap<>(), new ArrayList<>(), new ArrayList<>());
@@ -91,13 +93,20 @@ public class StaticSpeedLimitTest {
         var changelog = new ArrayChangeLog();
         var sim = Simulation.createFromInfra(infra, 0, changelog);
 
+        var startLocation = new TrackSectionLocation(edge, 0);
         var phases = new ArrayList<Phase>();
-        phases.add(SignalNavigatePhase.from(infra, opStart, opEnd, 200, 400));
+        phases.add(SignalNavigatePhase.from(
+                Arrays.asList(route), 400, startLocation, new TrackSectionLocation(edge, 10000)));
 
         var schedule = new TrainSchedule(
-                "test_train", edge, EdgeDirection.START_TO_STOP,
-                200, phases, FAST_NO_FRICTION_TRAIN,
-                0, 0
+                "test_train",
+                FAST_NO_FRICTION_TRAIN,
+                0,
+                startLocation,
+                EdgeDirection.START_TO_STOP,
+                route,
+                0,
+                phases
         );
         sim.scheduler.planTrain(sim, schedule);
 
@@ -110,8 +119,11 @@ public class StaticSpeedLimitTest {
                 .filter(change -> change.getClass() == Train.TrainStateChange.class)
                 .map(change -> (Train.TrainStateChange) change)
                 .collect(Collectors.toList());
-        assertEquals(locationChanges.size(), 2);
-        var locationChange = locationChanges.get(0);
+        // Expect 3 state change: Go to A (already there) -> Go to B -> Next phase
+        assertEquals(3, locationChanges.size());
+        // The second state change contain the movement of the train
+        var locationChange = locationChanges.get(1);
+
 
         // create the list of all speed derivative sign changes
         var profile = new ArrayList<ProfileData>();

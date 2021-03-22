@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class RouteGraph extends BiNGraph<Route, Waypoint> {
+    public final HashMap<String, Route> routeMap = new HashMap<>();
 
     @Override
     public List<Route> getNeighborRels(Route route, EdgeEndpoint endpoint) {
@@ -26,7 +27,6 @@ public class RouteGraph extends BiNGraph<Route, Waypoint> {
     }
 
     public static class Builder {
-
         public RouteGraph routeGraph = new RouteGraph();
         public final WaypointGraph waypointGraph;
 
@@ -87,6 +87,8 @@ public class RouteGraph extends BiNGraph<Route, Waypoint> {
                     tvdSectionsPathDirection,
                     switchesPosition
             );
+
+            routeGraph.routeMap.put(id, route);
 
             // Link route to the starting waypoint
             var startWaypoint = waypointGraph.getNode(tvdSectionsPath.get(0).startNode);

@@ -1,6 +1,8 @@
 package fr.sncf.osrd.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.config.JsonConfig;
+import fr.sncf.osrd.infra.railjson_parser.RailJSONParser;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.signaling.Signal;
@@ -8,9 +10,14 @@ import fr.sncf.osrd.infra.signaling.TrainInteractable;
 import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.trackgraph.*;
+import fr.sncf.osrd.railjson.infra.RJSInfra;
+import fr.sncf.osrd.railml.RailMLParser;
 import fr.sncf.osrd.utils.PointSequence;
 import fr.sncf.osrd.utils.SortedArraySet;
+import okio.Okio;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -291,6 +298,40 @@ public final class Infra {
 
         public TVDSection.State getTvdSectionState(int tvdSectionIndex) {
             return tvdSectionStates[tvdSectionIndex];
+        }
+    }
+
+    /** Load an infra from a given RailML or RailJSON file */
+    @SuppressFBWarnings({"RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"})
+    public static Infra parseFromFile(
+            JsonConfig.InfraType infraType,
+            String path
+    ) throws InvalidInfraException, IOException {
+        // autodetect the infrastructure type
+        if (infraType == null || infraType == JsonConfig.InfraType.UNKNOWN) {
+            if (path.endsWith(".json"))
+                infraType = JsonConfig.InfraType.RAILJSON;
+            else if (path.endsWith(".xml"))
+                infraType = JsonConfig.InfraType.RAILML;
+            else
+                infraType = JsonConfig.InfraType.UNKNOWN;
+        }
+
+        switch (infraType) {
+            case RAILML: {
+                var rjsRoot = RailMLParser.parse(path);
+                return RailJSONParser.parse(rjsRoot);
+            }
+            case RAILJSON:
+                try (
+                        var fileSource = Okio.source(Path.of(path));
+                        var bufferedSource = Okio.buffer(fileSource)
+                ) {
+                    var rjsRoot = RJSInfra.adapter.fromJson(bufferedSource);
+                    return RailJSONParser.parse(rjsRoot);
+                }
+            default:
+                throw new RuntimeException("invalid infrastructure type value");
         }
     }
 }

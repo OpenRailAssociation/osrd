@@ -1,9 +1,9 @@
-package fr.sncf.osrd.timetable;
+package fr.sncf.osrd.schedule;
 
-import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.infra.routegraph.Route;
+import fr.sncf.osrd.rollingstock.RollingStock;
 import fr.sncf.osrd.simulation.EntityID;
 import fr.sncf.osrd.simulation.Simulation;
-import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.phases.Phase;
@@ -14,34 +14,36 @@ import java.util.ArrayList;
 
 public final class TrainSchedule {
     public final TrainID trainID;
-    public final TrackSection startTrackSection;
-    public final EdgeDirection startDirection;
-    public final double startOffset;
-    public final ArrayList<Phase> phases;
     public final RollingStock rollingStock;
-    public final double initialSpeed;
+
     public final double departureTime;
+
+    public final TrackSectionLocation initialLocation;
+    public final EdgeDirection initialDirection;
+    public final Route initialRoute;
+    public final double initialSpeed;
+
+    public final ArrayList<Phase> phases;
     public final ArrayList<TrackSectionRange> fullPath;
 
     /** Create a new train schedule */
     public TrainSchedule(
             String trainID,
-            TrackSection startTrackSection,
-            EdgeDirection startDirection,
-            double startOffset,
-            ArrayList<Phase> phases,
             RollingStock rollingStock,
+            double departureTime,
+            TrackSectionLocation initialLocation,
+            EdgeDirection initialDirection, Route initialRoute,
             double initialSpeed,
-            double departureTime
+            ArrayList<Phase> phases
     ) {
-        this.startTrackSection = startTrackSection;
-        this.startDirection = startDirection;
-        this.startOffset = startOffset;
         this.trainID = new TrainID(trainID);
-        this.phases = phases;
         this.rollingStock = rollingStock;
-        this.initialSpeed = initialSpeed;
         this.departureTime = departureTime;
+        this.initialLocation = initialLocation;
+        this.initialDirection = initialDirection;
+        this.initialRoute = initialRoute;
+        this.initialSpeed = initialSpeed;
+        this.phases = phases;
         this.fullPath = new ArrayList<>();
         for (var phase : phases)
             phase.forEachPathSection(fullPath::add);

@@ -27,9 +27,21 @@ public abstract class RJSTrainPhase {
         /** The location of the head of the train when it exits this phase */
         public final RJSTrackLocation endLocation;
 
-        public Navigate(ID<RJSRoute>[] routes, RJSTrackLocation endLocation) {
+        /** The distance at which the driver can see objects on the tracks */
+        public final double driverSightDistance;
+
+        /** Create a navigation phase */
+        public Navigate(ID<RJSRoute>[] routes, RJSTrackLocation endLocation, double driverSightDistance) {
             this.routes = routes;
             this.endLocation = endLocation;
+            this.driverSightDistance = driverSightDistance;
+        }
+
+        /** Create an uninitialized navigation phase */
+        public Navigate() {
+            this.routes = null;
+            this.endLocation = null;
+            this.driverSightDistance = Double.NaN;
         }
     }
 

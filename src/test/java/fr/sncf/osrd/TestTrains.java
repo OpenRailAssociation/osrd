@@ -1,14 +1,33 @@
 package fr.sncf.osrd;
 
-import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.train.RollingStock;
-import fr.sncf.osrd.train.TrainFeatures;
+import fr.sncf.osrd.rollingstock.RollingStock;
+import fr.sncf.osrd.train.TrainCapability;
 
 import java.util.ArrayList;
 
 public class TestTrains {
+    public static final RollingStock FAST_NO_FRICTION_TRAIN = new RollingStock(
+            "no friction train",
+            200, 1, 1, 0,
+            0,
+            0,
+            new TrainCapability[] {
+                    TrainCapability.TVM430,
+                    TrainCapability.TVM300,
+                    TrainCapability.ETCS1,
+                    TrainCapability.ETCS2
+            }, 300,
+            0,
+            1,
+            1,
+            1,
+            new RollingStock.TractiveEffortPoint[] {
+                    new RollingStock.TractiveEffortPoint(0, 1)
+            }
+    );
+
     public static final RollingStock REALISTIC_FAST_TRAIN;
-    public static final RollingStock FAST_NO_FRICTION_TRAIN;
+
 
     static {
         double trainMass = 850000; // in kilos
@@ -24,52 +43,22 @@ public class TestTrains {
         }
         tractiveEffortCurve.add(new RollingStock.TractiveEffortPoint(maxSpeed, minEffort));
 
-        try {
-            REALISTIC_FAST_TRAIN = new RollingStock(
-                    (0.65 * trainMass) / 100,
-                    ((0.008 * trainMass) / 100) * 3.6,
-                    (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
-                    400,
-                    maxSpeed,
-                    30,
-                    0.05,
-                    0.25,
-                    0.5,
-                    trainMass,
-                    1.05,
-                    new TrainFeatures[] {
-                            TrainFeatures.TVM430,
-                            TrainFeatures.TVM300,
-                            TrainFeatures.ETCS1,
-                            TrainFeatures.ETCS2
-                    },
-                    tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0])
-            );
-
-            FAST_NO_FRICTION_TRAIN = new RollingStock(
-                    0,
-                    0,
-                    0,
-                    200,
-                    300,
-                    0,
-                    1,
-                    1,
-                    1,
-                    1,
-                    1,
-                    new TrainFeatures[] {
-                            TrainFeatures.TVM430,
-                            TrainFeatures.TVM300,
-                            TrainFeatures.ETCS1,
-                            TrainFeatures.ETCS2
-                    },
-                    new RollingStock.TractiveEffortPoint[] {
-                        new RollingStock.TractiveEffortPoint(0, 1)
-                    }
-            );
-        } catch (InvalidInfraException e) {
-            throw new RuntimeException("error while building test trains", e);
-        }
+        REALISTIC_FAST_TRAIN = new RollingStock(
+                "fast train",
+                400, trainMass, 1.05, (0.65 * trainMass) / 100,
+                ((0.008 * trainMass) / 100) * 3.6,
+                (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
+                new TrainCapability[] {
+                        TrainCapability.TVM430,
+                        TrainCapability.TVM300,
+                        TrainCapability.ETCS1,
+                        TrainCapability.ETCS2
+                }, maxSpeed,
+                30,
+                0.05,
+                0.25,
+                0.5,
+                tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0])
+        );
     }
 }

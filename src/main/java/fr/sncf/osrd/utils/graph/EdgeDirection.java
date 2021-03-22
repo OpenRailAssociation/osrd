@@ -20,4 +20,11 @@ public enum EdgeDirection {
             return STOP_TO_START;
         return START_TO_STOP;
     }
+
+    /** Compose the stacking up of directions: going in reverse on a reverse edge is just like normal */
+    public EdgeDirection compose(EdgeDirection other) {
+        if (this == other)
+            return START_TO_STOP;
+        return STOP_TO_START;
+    }
 }

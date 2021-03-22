@@ -93,14 +93,14 @@ public final class TrackSectionRange {
     public boolean containsPosition(double position) {
         if (Double.min(beginPosition, endPosition) > position)
             return false;
-        return Double.max(beginPosition, endPosition) > position;
+        return Double.max(beginPosition, endPosition) >= position;
     }
 
     /** Check if a position is contained in the track section range */
     public boolean containsLocation(TrackSectionLocation location) {
         if (location.edge != edge)
             return false;
-        return containsPosition(location.position);
+        return containsPosition(location.offset);
     }
 
     public double length() {
@@ -161,6 +161,7 @@ public final class TrackSectionRange {
                 Double.min(left.endPosition, right.endPosition));
     }
 
+    /** Returns whether there is a common point between two ranges */
     public boolean intersect(TrackSectionRange other) {
         if (other.edge != edge)
             return false;

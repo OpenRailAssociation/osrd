@@ -7,11 +7,11 @@ import com.beust.jcommander.Parameters;
 import com.beust.jcommander.converters.PathConverter;
 import fr.sncf.osrd.api.ApiServerCommand;
 import fr.sncf.osrd.config.Config;
-import fr.sncf.osrd.config.ConfigManager;
 import fr.sncf.osrd.config.JsonConfig;
+import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.parser.RailJSONSerializer;
 import fr.sncf.osrd.infra.railscript.PrettyPrinter;
+import fr.sncf.osrd.railjson.infra.RJSInfra;
 import fr.sncf.osrd.railml.RailMLParser;
 import fr.sncf.osrd.simulation.ChangeReplayChecker;
 import fr.sncf.osrd.simulation.ChangeSerializer;
@@ -20,6 +20,7 @@ import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
+import fr.sncf.osrd.utils.moshi.MoshiSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +54,7 @@ public class App {
         void run() throws IOException, InterruptedException, InvalidInfraException {
             try {
                 logger.info("parsing the configuration file");
-                Config config = ConfigManager.readConfigFile(configPath);
+                Config config = Config.readFromFile(configPath);
 
                 logger.info("starting the simulation");
                 var changeConsumers = new ArrayList<ChangeConsumer>();
@@ -101,10 +102,10 @@ public class App {
 
         void run() throws IOException, InvalidInfraException {
             logger.info("parsing the RailML infrastructure");
-            var rjsRoot = RailMLParser.parse(railMLInputPath);
+            var rjsInfra = RailMLParser.parse(railMLInputPath);
 
             logger.info("serializing the infrastructure to RailJSON");
-            RailJSONSerializer.serialize(rjsRoot, railJsonOutputPath);
+            MoshiSerializer.serialize(RJSInfra.adapter, rjsInfra, railJsonOutputPath);
         }
     }
 
@@ -133,7 +134,7 @@ public class App {
             var printer = new PrettyPrinter(stream);
 
             logger.info("parsing the input infrastructure");
-            var infra = ConfigManager.getInfra(JsonConfig.InfraType.UNKNOWN, inputPath);
+            var infra = Infra.parseFromFile(JsonConfig.InfraType.UNKNOWN, inputPath);
 
             logger.info("Pretty print signals behaviors to RailScript");
             if (infra != null)
