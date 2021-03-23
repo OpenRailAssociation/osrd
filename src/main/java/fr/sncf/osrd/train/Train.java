@@ -1,7 +1,7 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.signaling.TrainInteractable;
+import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
@@ -9,7 +9,6 @@ import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.TrainSchedule.TrainID;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
-import fr.sncf.osrd.train.phases.SignalNavigatePhase.InteractionType;
 import fr.sncf.osrd.utils.CryoList;
 import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.DeepEqualsUtils;
@@ -17,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
-import java.util.Objects;
 
 public class Train extends AbstractEntity<Train, TrainID> {
     static final Logger logger = LoggerFactory.getLogger(Train.class);
@@ -104,8 +102,8 @@ public class Train extends AbstractEntity<Train, TrainID> {
             scheduleStateChange(sim);
             return;
         }
-        if (event.value.getClass() == TrainReachesInteraction.class) {
-            var eventInteract =  (TrainReachesInteraction) event.value;
+        if (event.value.getClass() == TrainReachesActionPoint.class) {
+            var eventInteract =  (TrainReachesActionPoint) event.value;
 
             // Apply StateChange
             var stateChange = eventInteract.trainStateChange;
@@ -113,7 +111,7 @@ public class Train extends AbstractEntity<Train, TrainID> {
             sim.publishChange(stateChange);
 
             // Interact
-            eventInteract.interactionObject.interact(sim, this, eventInteract.interactionType);
+            eventInteract.actionPoint.interact(sim, this, eventInteract.interactionType);
 
             // Schedule next state
             scheduleStateChange(sim);
@@ -130,7 +128,7 @@ public class Train extends AbstractEntity<Train, TrainID> {
 
     // region INTERACTIONS
     /** Make the train interact with a detector */
-    public void interact(Simulation sim, Detector detector, InteractionType interactionType) {
+    public void interact(Simulation sim, Detector detector, TrainInteractionType interactionType) {
         if (lastState.currentPhaseState.getClass() == SignalNavigatePhase.State.class) {
             var navigatePhaseState = (SignalNavigatePhase.State) lastState.currentPhaseState;
             navigatePhaseState.updateTVDSections(sim, detector, interactionType);
@@ -333,18 +331,18 @@ public class Train extends AbstractEntity<Train, TrainID> {
     // endregion
 
     // region EVENT VALUES
-    public static final class TrainReachesInteraction implements TimelineEventValue {
-        public final TrainInteractable interactionObject;
+    public static final class TrainReachesActionPoint implements TimelineEventValue {
+        public final ActionPoint actionPoint;
         public final TrainStateChange trainStateChange;
-        public final SignalNavigatePhase.InteractionType interactionType;
+        public final TrainInteractionType interactionType;
 
-        /** Event value that represents train interacting with an element */
-        public TrainReachesInteraction(
-                TrainInteractable interactionObject,
+        /** Event value that represents train interacting with an action point */
+        public TrainReachesActionPoint(
+                ActionPoint actionPoint,
                 TrainStateChange trainStateChange,
-                InteractionType interactionType
+                TrainInteractionType interactionType
         ) {
-            this.interactionObject = interactionObject;
+            this.actionPoint = actionPoint;
             this.trainStateChange = trainStateChange;
             this.interactionType = interactionType;
         }
@@ -352,10 +350,10 @@ public class Train extends AbstractEntity<Train, TrainID> {
         @Override
         @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
         public boolean deepEquals(TimelineEventValue other) {
-            if (other.getClass() != TrainReachesInteraction.class)
+            if (other.getClass() != TrainReachesActionPoint.class)
                 return false;
-            var o = (TrainReachesInteraction) other;
-            return o.interactionObject == interactionObject
+            var o = (TrainReachesActionPoint) other;
+            return o.actionPoint == actionPoint
                     && o.trainStateChange.deepEquals(trainStateChange)
                     && o.interactionType == interactionType;
         }

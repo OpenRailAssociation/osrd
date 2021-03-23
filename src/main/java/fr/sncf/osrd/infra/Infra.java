@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
 
 /**
  * <p>A data structure meant to store the immutable part of a railroad infrastructure.</p>
@@ -121,8 +120,8 @@ public final class Infra {
 
         for (var trackSection : trackGraph.iterEdges()) {
             @SuppressWarnings("unchecked")
-            var forwardBuilder = trackSection.interactablesForward.builder();
-            var backwardBuilder = trackSection.interactablesBackward.builder();
+            var forwardBuilder = trackSection.forwardActionPoints.builder();
+            var backwardBuilder = trackSection.backwardActionPoints.builder();
 
             for (var signal : trackSection.signals) {
                 if (signal.value.direction.appliesToNormal())

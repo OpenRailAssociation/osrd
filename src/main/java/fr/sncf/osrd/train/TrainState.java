@@ -1,7 +1,7 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.signaling.TrainInteractable;
+import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.speedcontroller.SpeedController;
@@ -9,7 +9,6 @@ import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.train.phases.PhaseState;
 import fr.sncf.osrd.utils.DeepComparable;
-import fr.sncf.osrd.utils.DeepEqualsUtils;
 import fr.sncf.osrd.utils.PointValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     static final Logger logger = LoggerFactory.getLogger(TrainState.class);
@@ -42,7 +40,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
     public final transient List<SpeedController> speedControllers;
 
-    public final ArrayDeque<PointValue<TrainInteractable>> interactablesUnderTrain;
+    public final ArrayDeque<PointValue<ActionPoint>> actionPointsUnderTrain;
 
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
@@ -63,7 +61,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             return false;
         if (!speedControllers.equals(o.speedControllers))
             return false;
-        return interactablesUnderTrain.equals(o.interactablesUnderTrain);
+        return actionPointsUnderTrain.equals(o.actionPointsUnderTrain);
     }
 
     TrainState(
@@ -75,7 +73,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             TrainSchedule trainSchedule,
             int currentPhaseIndex,
             PhaseState currentPhaseState,
-            ArrayDeque<PointValue<TrainInteractable>> interactablesUnderTrain
+            ArrayDeque<PointValue<ActionPoint>> actionPointsUnderTrain
     ) {
         this.time = time;
         this.location = location;
@@ -85,7 +83,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         this.trainSchedule = trainSchedule;
         this.currentPhaseIndex = currentPhaseIndex;
         this.currentPhaseState = currentPhaseState;
-        this.interactablesUnderTrain = interactablesUnderTrain;
+        this.actionPointsUnderTrain = actionPointsUnderTrain;
     }
 
     /** Create a clone */
@@ -100,7 +98,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 trainSchedule,
                 currentPhaseIndex,
                 currentPhaseState,
-                new ArrayDeque<>(interactablesUnderTrain)
+                new ArrayDeque<>(actionPointsUnderTrain)
         );
     }
 
@@ -118,7 +116,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                     trainSchedule,
                     currentPhaseIndex,
                     currentPhaseState,
-                    new ArrayDeque<>(interactablesUnderTrain)
+                    new ArrayDeque<>(actionPointsUnderTrain)
                     );
 
         var nextPhaseState = trainSchedule.phases.get(nextPhase).getState();
@@ -131,7 +129,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 trainSchedule,
                 nextPhase,
                 nextPhaseState,
-                new ArrayDeque<>(interactablesUnderTrain)
+                new ArrayDeque<>(actionPointsUnderTrain)
         );
     }
 
