@@ -5,6 +5,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.converters.PathConverter;
+import fr.sncf.osrd.api.ApiServerCommand;
 import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.config.ConfigManager;
 import fr.sncf.osrd.config.JsonConfig;
@@ -151,10 +152,12 @@ public class App {
         var simulateCommand = new SimulateCommand();
         var convertCommand = new ConvertCommand();
         var prettyPrintCommand = new PrettyPrintCommand();
+        var apiServerCommand = new ApiServerCommand();
         var argsParser = JCommander.newBuilder()
                 .addCommand("simulate", simulateCommand)
                 .addCommand("convert", convertCommand)
                 .addCommand("pretty-print-signals", prettyPrintCommand)
+                .addCommand("api", apiServerCommand)
                 .build();
 
         // parse the command line arguments
@@ -182,6 +185,9 @@ public class App {
                 break;
             case "pretty-print-signals":
                 prettyPrintCommand.run();
+                break;
+            case "api":
+                apiServerCommand.run();
                 break;
             default:
                 throw new RuntimeException("unknown parsed command");

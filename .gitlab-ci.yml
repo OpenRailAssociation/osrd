@@ -23,6 +23,22 @@ build:
       - build
       - .gradle
 
+docker_build:
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker build --cache-from "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" --build-arg BRANCH=${CI_COMMIT_BRANCH} .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+  only:
+    refs:
+      - prod
+      - staging
+      - dev
+
 test:
   stage: test
   script: gradle check
