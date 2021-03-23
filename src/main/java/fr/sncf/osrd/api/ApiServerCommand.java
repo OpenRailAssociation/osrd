@@ -23,12 +23,13 @@ public final class ApiServerCommand {
     )
     private int port = 8000;
 
+    /** Run Api Server */
     public void run() throws IOException {
         var routes = new TkFork(
-            new FkRegex("/health", "")
+                new FkRegex("/health", "")
         );
-        var server_config = new TkSlf4j(new TkFallback(routes, new FbChain(new FbStatus(404, new RsWithStatus(404)))));
-        var server = new FtBasic(server_config, port);
+        var serverConfig = new TkSlf4j(new TkFallback(routes, new FbChain(new FbStatus(404, new RsWithStatus(404)))));
+        var server = new FtBasic(serverConfig, port);
         server.start(Exit.NEVER);
     }
 }
