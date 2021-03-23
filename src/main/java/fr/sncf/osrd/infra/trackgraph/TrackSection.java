@@ -6,7 +6,7 @@ import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.SpeedSection;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.Signal;
-import fr.sncf.osrd.infra.signaling.TrainInteractable;
+import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.utils.graph.BiNEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
@@ -33,8 +33,8 @@ public final class TrackSection extends BiNEdge<TrackSection> {
     public final IntervalTree<OperationalPoint.Ref> operationalPoints = new IntervalTree<>();
     public final PointSequence<Waypoint> waypoints = new PointSequence<>();
     public final PointSequence<Signal> signals = new PointSequence<>();
-    public final PointSequence<TrainInteractable> interactablesForward = new PointSequence<>();
-    public final PointSequence<TrainInteractable> interactablesBackward = new PointSequence<>();
+    public final PointSequence<ActionPoint> forwardActionPoints = new PointSequence<>();
+    public final PointSequence<ActionPoint> backwardActionPoints = new PointSequence<>();
 
     /**
      * Given a side of the edge, return the list of neighbors
@@ -163,9 +163,9 @@ public final class TrackSection extends BiNEdge<TrackSection> {
      * @param direction the direction
      * @return visible track objects
      */
-    public static PointSequence<TrainInteractable> getInteractables(TrackSection edge, EdgeDirection direction) {
+    public static PointSequence<ActionPoint> getInteractables(TrackSection edge, EdgeDirection direction) {
         if (direction == EdgeDirection.START_TO_STOP)
-            return edge.interactablesForward;
-        return edge.interactablesBackward;
+            return edge.forwardActionPoints;
+        return edge.backwardActionPoints;
     }
 }

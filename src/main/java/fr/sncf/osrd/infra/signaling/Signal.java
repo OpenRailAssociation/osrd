@@ -9,17 +9,15 @@ import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.train.Action;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainInteractionType;
-import fr.sncf.osrd.train.phases.SignalNavigatePhase;
-import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.graph.ApplicableDirections;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public class Signal implements TrainInteractable {
+public class Signal implements ActionPoint {
     public final int index;
     public final String id;
     public final RSStatefulExpr<RSAspectSet> expr;
@@ -57,12 +55,12 @@ public class Signal implements TrainInteractable {
     }
 
     @Override
-    public double getInteractionDistance() {
+    public double getActionDistance() {
         return 0;
     }
 
     @Override
-    public void interact(Simulation sim, Train train, SignalNavigatePhase.InteractionType interactionType) {
+    public void interact(Simulation sim, Train train, TrainInteractionType interactionType) {
         // TODO
     }
 

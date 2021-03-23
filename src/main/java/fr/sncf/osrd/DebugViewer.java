@@ -220,8 +220,8 @@ public class DebugViewer extends ChangeConsumer {
             if (timelineEventCreated.entityId.getClass() == TrainSchedule.TrainID.class) {
                 var trainName = ((TrainSchedule.TrainID) timelineEventCreated.entityId).trainName;
                 var eventValue = timelineEventCreated.getValue();
-                if (eventValue.getClass() == Train.TrainReachesInteraction.class) {
-                    var trainReachesInteraction = (Train.TrainReachesInteraction) eventValue;
+                if (eventValue.getClass() == Train.TrainReachesActionPoint.class) {
+                    var trainReachesInteraction = (Train.TrainReachesActionPoint) eventValue;
                     trains.get(trainName).nextMove = trainReachesInteraction.trainStateChange;
                 }
             }

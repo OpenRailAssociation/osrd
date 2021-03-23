@@ -3,7 +3,7 @@ package fr.sncf.osrd.train.phases;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.routegraph.Route;
-import fr.sncf.osrd.infra.signaling.TrainInteractable;
+import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
@@ -12,6 +12,7 @@ import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.TrainInteractionType;
 import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.utils.PointValue;
 import fr.sncf.osrd.utils.TrackSectionLocation;
@@ -28,18 +29,18 @@ public final class SignalNavigatePhase implements Phase {
     public final List<Route> routePath;
     public final TrackSectionLocation endLocation;
     private final ArrayList<TrackSectionRange> trackSectionPath;
-    private final ArrayList<PointValue<TrainInteractable>> eventPath;
+    private final ArrayList<PointValue<ActionPoint>> actionPointPath;
 
     private SignalNavigatePhase(
             List<Route> routePath,
             TrackSectionLocation endLocation,
             ArrayList<TrackSectionRange> trackSectionPath,
-            ArrayList<PointValue<TrainInteractable>> eventPath
+            ArrayList<PointValue<ActionPoint>> actionPointPath
     ) {
         this.routePath = routePath;
         this.endLocation = endLocation;
         this.trackSectionPath = trackSectionPath;
-        this.eventPath = eventPath;
+        this.actionPointPath = actionPointPath;
     }
 
 
@@ -52,8 +53,8 @@ public final class SignalNavigatePhase implements Phase {
             TrackSectionLocation endLocation
     ) {
         var trackSectionPath = routesToTrackSectionRange(routes, startLocation, endLocation);
-        var eventPath = trackSectionToEventPath(driverSightDistance, trackSectionPath);
-        return new SignalNavigatePhase(routes, endLocation, trackSectionPath, eventPath);
+        var actionPointPath = trackSectionToActionPointPath(driverSightDistance, trackSectionPath);
+        return new SignalNavigatePhase(routes, endLocation, trackSectionPath, actionPointPath);
     }
 
     /** Build track section path. Need to concatenate all track section of all TvdSectionPath.
@@ -124,11 +125,11 @@ public final class SignalNavigatePhase implements Phase {
         return trackSectionPath;
     }
 
-    private static ArrayList<PointValue<TrainInteractable>> trackSectionToEventPath(
+    private static ArrayList<PointValue<ActionPoint>> trackSectionToActionPointPath(
             double driverSightDistance,
             Iterable<TrackSectionRange> trackSectionRanges
     ) {
-        var eventPath = new ArrayList<PointValue<TrainInteractable>>();
+        var eventPath = new ArrayList<PointValue<ActionPoint>>();
         double pathLength = 0;
         for (var trackRange : trackSectionRanges) {
             for (var interactablePoint : TrackSection.getInteractables(trackRange.edge, trackRange.direction)) {
@@ -137,7 +138,7 @@ public final class SignalNavigatePhase implements Phase {
 
                 var interactable = interactablePoint.value;
 
-                var sightDistance = Double.min(interactable.getInteractionDistance(), driverSightDistance);
+                var sightDistance = Double.min(interactable.getActionDistance(), driverSightDistance);
                 var edgeDistToObj = Math.abs(interactablePoint.position - trackRange.getBeginPosition());
                 var objPathOffset = pathLength + edgeDistToObj - sightDistance;
                 if (objPathOffset < 0)
@@ -148,12 +149,12 @@ public final class SignalNavigatePhase implements Phase {
             pathLength += trackRange.length();
         }
         eventPath.sort(Comparator.comparing(pointValue -> pointValue.position));
+        // If no action point at the very end of the path then add a virtual action point
+        if (eventPath.get(eventPath.size() - 1).position < pathLength) {
+            var virtualActionPoint = new VirtualActionPoint();
+            eventPath.add(new PointValue<>(pathLength, virtualActionPoint));
+        }
         return eventPath;
-    }
-
-    public enum InteractionType {
-        TAIL,
-        HEAD
     }
 
     @Override
@@ -169,6 +170,23 @@ public final class SignalNavigatePhase implements Phase {
     @Override
     public void forEachPathSection(Consumer<TrackSectionRange> consumer) {
         trackSectionPath.forEach(consumer);
+    }
+
+    /** This class represent an empty action point. It's as last  event  in the event path */
+    private static final class VirtualActionPoint implements ActionPoint {
+
+        @Override
+        public TrainInteractionType getInteractionType() {
+            return TrainInteractionType.HEAD;
+        }
+
+        @Override
+        public double getActionDistance() {
+            return 0;
+        }
+
+        @Override
+        public void interact(Simulation sim, Train train, TrainInteractionType actionType) { }
     }
 
     @SuppressFBWarnings({"URF_UNREAD_FIELD"})
@@ -190,30 +208,30 @@ public final class SignalNavigatePhase implements Phase {
             this.phase = phase;
         }
 
-        private InteractionType nextInteractionType(TrainState trainState) {
-            var nextHeadPosition = phase.eventPath.get(eventPathIndex).position;
+        private TrainInteractionType nextInteractionType(TrainState trainState) {
+            var nextHeadPosition = phase.actionPointPath.get(eventPathIndex).position;
 
             double nextTailPosition = Double.POSITIVE_INFINITY;
-            if (!trainState.interactablesUnderTrain.isEmpty())
-                nextTailPosition = trainState.interactablesUnderTrain.getFirst().position;
+            if (!trainState.actionPointsUnderTrain.isEmpty())
+                nextTailPosition = trainState.actionPointsUnderTrain.getFirst().position;
 
             if (nextTailPosition + trainState.trainSchedule.rollingStock.length < nextHeadPosition)
-                return InteractionType.TAIL;
-            return InteractionType.HEAD;
+                return TrainInteractionType.TAIL;
+            return TrainInteractionType.HEAD;
         }
 
-        private PointValue<TrainInteractable> nextInteraction(TrainState trainState, InteractionType interactionType) {
+        private PointValue<ActionPoint> nextInteraction(TrainState trainState, TrainInteractionType interactionType) {
             switch (interactionType) {
                 case HEAD:
-                    var nextHeadEvent = phase.eventPath.get(eventPathIndex);
+                    var nextHeadEvent = phase.actionPointPath.get(eventPathIndex);
 
                     if (nextHeadEvent.value.getInteractionType().interactsWithTail())
-                        trainState.interactablesUnderTrain.addLast(nextHeadEvent);
+                        trainState.actionPointsUnderTrain.addLast(nextHeadEvent);
 
                     eventPathIndex++;
                     return nextHeadEvent;
                 case TAIL:
-                    var nextInteraction = trainState.interactablesUnderTrain.removeFirst();
+                    var nextInteraction = trainState.actionPointsUnderTrain.removeFirst();
                     // Need to compute the next interaction position relative to the head
                     var goalPosition = nextInteraction.position + trainState.trainSchedule.rollingStock.length;
                     return new PointValue<>(goalPosition, nextInteraction.value);
@@ -225,7 +243,7 @@ public final class SignalNavigatePhase implements Phase {
         @Override
         public void simulate(Simulation sim, Train train, TrainState trainState) throws SimulationError {
             // Check if we reached our goal
-            if (eventPathIndex == phase.eventPath.size()) {
+            if (eventPathIndex == phase.actionPointPath.size()) {
                 sim.scheduleEvent(
                         train,
                         sim.getTime(),
@@ -245,7 +263,7 @@ public final class SignalNavigatePhase implements Phase {
             // 3) create an event with simulation data up to this point
             var eventTime = simulationResult.newState.time;
             assert eventTime >= sim.getTime();
-            var event = new Train.TrainReachesInteraction(
+            var event = new Train.TrainReachesActionPoint(
                     nextEventTrackPosition.value, simulationResult, interactionType);
             sim.scheduleEvent(train, eventTime, event);
         }
@@ -297,7 +315,7 @@ public final class SignalNavigatePhase implements Phase {
         }
 
         /** Occupy and free tvd sections given a detector the train is interacting with. */
-        public void updateTVDSections(Simulation sim, Detector detector, InteractionType interactionType) {
+        public void updateTVDSections(Simulation sim, Detector detector, TrainInteractionType interactionType) {
             // Update route index
             var currentRoute = phase.routePath.get(routeIndex);
             var tvdSectionPathIndex = currentRoute.tvdSectionsPath.size() - 1;
@@ -307,7 +325,7 @@ public final class SignalNavigatePhase implements Phase {
                 routeIndex++;
 
             // Occupy the next tvdSection
-            if (interactionType == InteractionType.HEAD) {
+            if (interactionType == TrainInteractionType.HEAD) {
                 var forwardTVDSectionPath = findForwardTVDSection(detector);
                 var nextTVDSection = sim.infraState.getTvdSectionState(forwardTVDSectionPath.index);
                 nextTVDSection.occupy(sim);

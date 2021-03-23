@@ -3,18 +3,17 @@ package fr.sncf.osrd.infra.signaling;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.train.TrainInteractionType;
-import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 
-public interface TrainInteractable {
+public interface ActionPoint {
     TrainInteractionType getInteractionType();
 
-    /** Gets the distance from the object at which the interaction occurs */
-    double getInteractionDistance();
+    /** Gets the distance from the object at which the action occurs */
+    double getActionDistance();
 
     /**
      * A method called by a train when its head arrives on it.
      * @param sim the simulation
      * @param train the train arriving on the sensor
      */
-    void interact(Simulation sim, Train train, SignalNavigatePhase.InteractionType interactionType);
+    void interact(Simulation sim, Train train, TrainInteractionType actionType);
 }
