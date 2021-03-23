@@ -12,15 +12,34 @@ import fr.sncf.osrd.utils.TrackSectionLocation;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.ui.geom.Point3;
+import org.graphstream.ui.graphicGraph.GraphicGraph;
+import org.graphstream.ui.layout.Layouts;
 import org.graphstream.ui.spriteManager.Sprite;
 import org.graphstream.ui.spriteManager.SpriteManager;
+import org.graphstream.ui.swing_viewer.DefaultView;
+import org.graphstream.ui.swing_viewer.SwingViewer;
+import org.graphstream.ui.swing_viewer.util.DefaultMouseManager;
+import org.graphstream.ui.view.View;
+import org.graphstream.ui.view.camera.Camera;
+import org.graphstream.ui.view.util.InteractiveElement;
+import org.graphstream.ui.view.util.MouseManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
+import javax.swing.event.MouseInputAdapter;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
 // caused by the temporary opRef.begin == opRef.end
 @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
 public class DebugViewer extends ChangeConsumer {
+    static final Logger logger = LoggerFactory.getLogger(DebugViewer.class);
+
     private final Infra infra;
     private final boolean realTime;
 
@@ -73,10 +92,14 @@ public class DebugViewer extends ChangeConsumer {
         var spriteManager = new SpriteManager(graph);
         var viewer = new DebugViewer(infra, realTime, spriteManager);
 
+        // An edge with a size of graphview size of 1 is a 100m
+        var referenceEdgeSize = 100.0;
+
         for (var node : infra.trackGraph.iterNodes()) {
             Node graphNode = graph.addNode(String.valueOf(node.index));
             //graphNode.setAttribute("ui.label", node.id + "(index = " + node.index + ")");
             graphNode.setAttribute("ui.style", "text-alignment: under;");
+            graphNode.setAttribute("layout.weight", referenceEdgeSize);
         }
 
         for (var edge : infra.trackGraph.iterEdges()) {
@@ -84,6 +107,7 @@ public class DebugViewer extends ChangeConsumer {
             String endId = String.valueOf(edge.endNode);
             Edge graphEdge = graph.addEdge(edge.id, startId, endId);
             graphEdge.setAttribute("ui.label", edge.id + "(index = " + edge.index + ")");
+            graphEdge.setAttribute("layout.weight", edge.length / referenceEdgeSize);
 
             edge.operationalPoints.getAll((opRef) -> {
                 // operational points can be point-like objects, or ranges
@@ -113,8 +137,91 @@ public class DebugViewer extends ChangeConsumer {
             }
         }
 
-        graph.display();
+        viewer.show();
         return viewer;
+    }
+
+    private void show() {
+        // if you believe something is wrong with the code below, just run graph.display() instead
+
+        // create the graphstream swing infrastructure needed
+        SwingViewer viewer = new SwingViewer(graph, SwingViewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+        var view = (DefaultView) viewer.addDefaultView(false);
+        viewer.enableAutoLayout(Layouts.newLayoutAlgorithm());
+        view.setMouseManager(new MouseManager() {
+            @Override
+            public void init(GraphicGraph graph, View view) {
+            }
+
+            @Override
+            public void release() {
+            }
+
+            @Override
+            public EnumSet<InteractiveElement> getManagedTypes() {
+                return EnumSet.noneOf(InteractiveElement.class);
+            }
+        });
+
+        var frame = new JFrame("OSRD");
+        frame.setLayout(new BorderLayout());
+        frame.setSize(800, 600);
+        frame.setLocationRelativeTo(null);
+        frame.add(view, BorderLayout.CENTER);
+        frame.addWindowListener(view);
+        frame.addComponentListener(view);
+        view.addMouseWheelListener((mwe) -> {
+            var camera = view.getCamera();
+            var wheelRotation = mwe.getWheelRotation();
+            var zoom = camera.getViewPercent();
+            if (wheelRotation > 0) {
+                zoom += 0.05;
+            } else if (mwe.getWheelRotation() < 0) {
+                zoom -= 0.05;
+            }
+            camera.setViewPercent(Math.max(0, zoom));
+        });
+
+        var dragHandler = new MouseInputAdapter() {
+            private Point grabPoint = null;
+            private Point3 grabPointCenter = null;
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (grabPoint == null)
+                    return;
+
+                // compute the movement in screen space pixels
+                var deltaX = grabPoint.x - e.getX();
+                var deltaY = grabPoint.y - e.getY();
+
+                var camera = view.getCamera();
+                var ratioPx2Gu = camera.getMetrics().ratioPx2Gu;
+
+                camera.setViewCenter(
+                        grabPointCenter.x + deltaX / ratioPx2Gu,
+                        grabPointCenter.y - deltaY / ratioPx2Gu,
+                        grabPointCenter.z
+                );
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                grabPoint = new Point(e.getPoint());
+                grabPointCenter = new Point3(view.getCamera().getViewCenter());
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                grabPoint = null;
+                grabPointCenter = null;
+            }
+        };
+
+        view.addMouseMotionListener(dragHandler);
+        view.addMouseListener(dragHandler);
+
+        frame.setVisible(true);
     }
 
     private void updateSignal(Signal signal, RSAspectSet aspects) {
