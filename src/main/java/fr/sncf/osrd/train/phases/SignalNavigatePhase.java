@@ -213,7 +213,10 @@ public final class SignalNavigatePhase implements Phase {
                     eventPathIndex++;
                     return nextHeadEvent;
                 case TAIL:
-                    return trainState.interactablesUnderTrain.removeFirst();
+                    var nextInteraction = trainState.interactablesUnderTrain.removeFirst();
+                    // Need to compute the next interaction position relative to the head
+                    var goalPosition = nextInteraction.position + trainState.trainSchedule.rollingStock.length;
+                    return new PointValue<>(goalPosition, nextInteraction.value);
                 default:
                     throw new RuntimeException("Unknown interaction type");
             }
