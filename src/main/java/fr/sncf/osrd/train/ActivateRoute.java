@@ -11,7 +11,7 @@ public class ActivateRoute {
     /** This function try to reserve forwarding routes */
     public static void reserveRoutes(Simulation sim, SignalNavigatePhase.State navigatePhaseState) {
         // TODO have a smarter way to reserve routes
-        if (navigatePhaseState.phase.routePath.size() == navigatePhaseState.getRouteIndex())
+        if (navigatePhaseState.getRouteIndex() + 1 >= navigatePhaseState.phase.routePath.size())
             return;
         var nextRoute = navigatePhaseState.phase.routePath.get(navigatePhaseState.getRouteIndex() + 1);
         var nextRouteState = sim.infraState.getRouteState(nextRoute.index);
