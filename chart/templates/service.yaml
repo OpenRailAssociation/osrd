@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "osrd-core.fullname" . }}-osrd-core
+  labels:
+    app: osrd-core
+  annotations:
+    app.gitlab.com/app: {{ required "Missing CI_PROJECT_PATH_SLUG" .Values.CI_PROJECT_PATH_SLUG }}
+    app.gitlab.com/env: {{ required "Missing CI_ENVIRONMENT_SLUG" .Values.CI_ENVIRONMENT_SLUG }}
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 100%
+  selector:
+    matchLabels:
+      app: osrd-core
+  template:
+    metadata:
+      labels:
+        app: osrd-core
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+        app.gitlab.com/app: {{ required "Missing CI_PROJECT_PATH_SLUG" .Values.CI_PROJECT_PATH_SLUG }}
+        app.gitlab.com/env: {{ required "Missing CI_ENVIRONMENT_SLUG" .Values.CI_ENVIRONMENT_SLUG }}
+    spec:
+      nodeSelector:
+        group: app
+      containers:
+        - name: osrd-core
+          image: {{ .Values.image }}:{{ required "Missing CI_COMMIT_BRANCH" .Values.CI_COMMIT_BRANCH }}
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: "5m"
+              memory: "50Mi"
+            limits:
+              cpu: "500m"
+              memory: "500Mi"
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /health/
+              port: 8000
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health/
+              port: 8000
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
+            periodSeconds: 5
+      imagePullSecrets:
+      - name: gitlab-read-registry-osrd-core
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "osrd-core.fullname" . }}-osrd-core
+  labels:
+    app: osrd-core
+  annotations:
+    app.gitlab.com/app: {{ required "Missing CI_PROJECT_PATH_SLUG" .Values.CI_PROJECT_PATH_SLUG }}
+    app.gitlab.com/env: {{ required "Missing CI_ENVIRONMENT_SLUG" .Values.CI_ENVIRONMENT_SLUG }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: osrd-core
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      protocol: TCP
