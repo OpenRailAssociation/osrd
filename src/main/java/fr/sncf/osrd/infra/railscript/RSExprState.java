@@ -2,8 +2,18 @@ package fr.sncf.osrd.infra.railscript;
 
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
+import fr.sncf.osrd.utils.DeepComparable;
 
-public class RSExprState<T extends RSValue> {
+import java.util.Arrays;
+
+public class RSExprState<T extends RSValue> implements DeepComparable<RSExprState<?>> {
+    @Override
+    public boolean deepEquals(RSExprState<?> other) {
+        if (other.rootExpr != rootExpr)
+            return false;
+        return Arrays.equals(varStates, other.varStates);
+    }
+
     public enum RSExprEvalMode {
         INITIALIZE,
         INPUT_CHANGE,

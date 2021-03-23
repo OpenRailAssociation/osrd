@@ -1,4 +1,6 @@
 package fr.sncf.osrd.infra.railscript.value;
 
-public interface RSValue {
+import fr.sncf.osrd.utils.DeepComparable;
+
+public interface RSValue extends DeepComparable<RSValue> {
 }

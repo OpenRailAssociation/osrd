@@ -16,4 +16,19 @@ public final class RSBool implements RSValue {
             return True;
         return False;
     }
+
+    @Override
+    public int hashCode() {
+        return Boolean.hashCode(value);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj == this;
+    }
+
+    @Override
+    public boolean deepEquals(RSValue other) {
+        return equals(other);
+    }
 }

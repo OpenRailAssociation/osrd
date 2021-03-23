@@ -17,10 +17,10 @@ public class ChangeReplayChecker extends ChangeConsumer {
     }
 
     /** Creates a change replay checker */
-    public static ChangeReplayChecker from(Simulation referenceSim) {
-        var replaySim = Simulation.createFromInfra(referenceSim.infra, referenceSim.startTime, null);
-        assert replaySim.equals(referenceSim) : "the reference and replay simulation shouldn't differ from the start";
-        return new ChangeReplayChecker(referenceSim, replaySim);
+    public static ChangeReplayChecker from(Simulation refSim) {
+        var replaySim = Simulation.createFromInfra(refSim.infra, refSim.startTime, null);
+        assert replaySim.deepEquals(refSim) : "the reference and replay simulation shouldn't differ from the start";
+        return new ChangeReplayChecker(refSim, replaySim);
     }
 
     @Override
@@ -31,7 +31,7 @@ public class ChangeReplayChecker extends ChangeConsumer {
     public void changePublishedCallback(Change change) {
         change.replay(replaySim);
 
-        var newConsistency = referenceSim.equals(replaySim);
+        var newConsistency = referenceSim.deepEquals(replaySim);
         if (newConsistency == isConsistent)
             return;
 

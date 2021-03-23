@@ -1,6 +1,7 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
@@ -8,7 +9,7 @@ import fr.sncf.osrd.simulation.ChangeSerializer.SerializableDouble;
 
 import java.util.Objects;
 
-public final class TrackSectionRange {
+public final class TrackSectionRange implements DeepComparable<TrackSectionRange> {
     public final TrackSection edge;
     public final EdgeDirection direction;
 
@@ -19,6 +20,15 @@ public final class TrackSectionRange {
     private double endPosition;
 
     // region STD_OVERRIDES
+
+    @Override
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
+    public boolean deepEquals(TrackSectionRange other) {
+        return edge == other.edge
+                && direction == other.direction
+                && beginPosition == other.beginPosition
+                && endPosition == other.endPosition;
+    }
 
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})

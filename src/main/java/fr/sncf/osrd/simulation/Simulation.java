@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.utils.DeepComparable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +31,7 @@ import java.util.*;
  *   <li>loop</li>
  * </ol>
  */
-public final class Simulation {
+public final class Simulation implements DeepComparable<Simulation> {
     static final Logger logger = LoggerFactory.getLogger(Simulation.class);
 
     public final Infra infra;
@@ -303,19 +304,9 @@ public final class Simulation {
 
     // endregion
 
-    // region STD_OVERRIDES
-
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
-    public boolean equals(Object obj) {
-        if (obj == null)
-            return false;
-
-        if (obj.getClass() != Simulation.class)
-            return false;
-
-        var otherSim = (Simulation) obj;
-
+    public boolean deepEquals(Simulation otherSim) {
         // two simulations must have the same time to be equal
         if (this.time != otherSim.time)
             return false;
@@ -335,25 +326,10 @@ public final class Simulation {
                 return false;
 
             // stop if the TimelineEventId aren't the same
-            if (!event.equals(otherEvent))
-                return false;
-
-            // the value and entityId aren't in the equals implementation of events
-            // (so events can be both keys and values in the timeline)
-            if (!event.value.equals(otherEvent.value))
-                return false;
-            if (!event.source.getID().equals(otherEvent.source.getID()))
+            if (!event.deepEquals(otherEvent))
                 return false;
         }
 
-        // if all fields are equal, the simulations are equal
-        return true;
+        return this.infraState.deepEquals(otherSim.infraState);
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(time, revision, timeline);
-    }
-
-    // endregion
 }

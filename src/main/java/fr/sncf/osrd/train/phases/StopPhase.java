@@ -1,5 +1,6 @@
 package fr.sncf.osrd.train.phases;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.Train;
@@ -37,5 +38,14 @@ public class StopPhase extends PhaseState implements Phase {
                 sim.getTime() + duration,
                 new Train.TrainStateChange(sim, train.getID(), trainState.nextPhase())
         );
+    }
+
+    @Override
+    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST", "FE_FLOATING_POINT_EQUALITY"})
+    public boolean deepEquals(PhaseState other) {
+        if (other.getClass() != StopPhase.class)
+            return false;
+        var o = (StopPhase) other;
+        return o.duration == duration;
     }
 }

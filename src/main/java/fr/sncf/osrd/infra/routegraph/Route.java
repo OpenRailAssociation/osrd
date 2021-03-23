@@ -4,14 +4,19 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.railscript.value.RSMatchable;
+import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.utils.DeepEqualsUtils;
 import fr.sncf.osrd.utils.graph.BiNEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 
 public class Route extends BiNEdge<Route> {
     public final String id;
@@ -79,7 +84,7 @@ public class Route extends BiNEdge<Route> {
     public static final class State extends AbstractEntity<Route.State, RouteID> implements RSMatchable {
         public final Route route;
         public RouteStatus status;
-        public final Collection<TVDSection.State> tvdSectionStates;
+        public final List<TVDSection.State> tvdSectionStates;
         private int nbReservedTvdSection;
 
         State(Route route) {
@@ -94,7 +99,7 @@ public class Route extends BiNEdge<Route> {
             switch (status) {
                 case FREE:
                     if (event.value.getClass() == TVDSection.TVDSectionReservedChange.class) {
-                        var change = new Route.RouteConflictChange(sim, this);
+                        var change = new Route.RouteStatusChange(sim, this, RouteStatus.CONFLICT);
                         change.apply(sim, this);
                         sim.publishChange(change);
                         sim.scheduleEvent(this, sim.getTime(), change);
@@ -102,7 +107,7 @@ public class Route extends BiNEdge<Route> {
                     break;
                 case RESERVED:
                     if (event.value.getClass() == TVDSection.TVDSectionOccupied.class) {
-                        var change = new RouteOccupyChange(sim, this);
+                        var change = new RouteStatusChange(sim, this, RouteStatus.OCCUPIED);
                         change.apply(sim, this);
                         sim.publishChange(change);
                         sim.scheduleEvent(this, sim.getTime(), change);
@@ -130,7 +135,7 @@ public class Route extends BiNEdge<Route> {
                     if (tvdSectionState.isReserved())
                         return;
                 }
-                var change = new RouteFreeChange(sim, this);
+                var change = new RouteStatusChange(sim, this, RouteStatus.FREE);
                 change.apply(sim, this);
                 sim.publishChange(change);
                 sim.scheduleEvent(this, sim.getTime(), change);
@@ -143,7 +148,7 @@ public class Route extends BiNEdge<Route> {
         /** Reserve a route and his tvd sections. Routes that share tvd sections will have the status CONFLICT */
         public void reserve(Simulation sim) {
             assert status == RouteStatus.FREE;
-            var change = new RouteReserveChange(sim, this);
+            var change = new RouteStatusChange(sim, this, RouteStatus.RESERVED);
             change.apply(sim, this);
             sim.publishChange(change);
             sim.scheduleEvent(this, sim.getTime(), change);
@@ -168,53 +173,46 @@ public class Route extends BiNEdge<Route> {
         public int getEnumValue() {
             return status.ordinal();
         }
+
+        @Override
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+        public boolean deepEquals(RSValue other) {
+            if (other.getClass() != Route.State.class)
+                return false;
+            var o = (Route.State) other;
+            if (route != o.route)
+                return false;
+            if (status != o.status)
+                return false;
+            if (nbReservedTvdSection != o.nbReservedTvdSection)
+                return false;
+
+            return DeepEqualsUtils.deepEquals(tvdSectionStates, o.tvdSectionStates);
+        }
     }
 
-    public static class RouteFreeChange extends EntityChange<Route.State, RouteID, Void> {
-        public RouteFreeChange(Simulation sim, Route.State entity) {
+    public static class RouteStatusChange extends EntityChange<Route.State, RouteID, Void>
+            implements TimelineEventValue {
+        public final RouteStatus newStatus;
+
+        public RouteStatusChange(Simulation sim, Route.State entity, RouteStatus newStatus) {
             super(sim, entity.id);
+            this.newStatus = newStatus;
         }
 
         @Override
         public Void apply(Simulation sim, Route.State entity) {
-            entity.status = RouteStatus.FREE;
+            entity.status = newStatus;
             return null;
-        }
-    }
-
-    public static class RouteOccupyChange extends EntityChange<Route.State, RouteID, Void> {
-        public RouteOccupyChange(Simulation sim, Route.State entity) {
-            super(sim, entity.id);
         }
 
         @Override
-        public Void apply(Simulation sim, Route.State entity) {
-            entity.status = RouteStatus.OCCUPIED;
-            return null;
-        }
-    }
-
-    public static class RouteReserveChange extends EntityChange<Route.State, RouteID, Void> {
-        public RouteReserveChange(Simulation sim, Route.State entity) {
-            super(sim, entity.id);
-        }
-
-        @Override
-        public Void apply(Simulation sim, Route.State entity) {
-            entity.status = RouteStatus.RESERVED;
-            return null;
-        }
-    }
-
-    public static class RouteConflictChange extends EntityChange<Route.State, RouteID, Void> {
-        public RouteConflictChange(Simulation sim, Route.State entity) {
-            super(sim, entity.id);
-        }
-
-        @Override
-        public Void apply(Simulation sim, Route.State entity) {
-            entity.status = RouteStatus.CONFLICT;
-            return null;
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+        public boolean deepEquals(TimelineEventValue other) {
+            if (other.getClass() != RouteStatusChange.class)
+                return false;
+            var o = (RouteStatusChange) other;
+            return o.newStatus == newStatus && o.entityId == entityId;
         }
     }
 

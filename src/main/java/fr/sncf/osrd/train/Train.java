@@ -11,10 +11,13 @@ import fr.sncf.osrd.TrainSchedule.TrainID;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase.InteractionType;
 import fr.sncf.osrd.utils.CryoList;
+import fr.sncf.osrd.utils.DeepComparable;
+import fr.sncf.osrd.utils.DeepEqualsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
+import java.util.Objects;
 
 public class Train extends AbstractEntity<Train, TrainID> {
     static final Logger logger = LoggerFactory.getLogger(Train.class);
@@ -168,7 +171,7 @@ public class Train extends AbstractEntity<Train, TrainID> {
         }
     }
 
-    public static class TrainStateChange extends EntityChange<Train, TrainID, Void> {
+    public static class TrainStateChange extends EntityChange<Train, TrainID, Void> implements TimelineEventValue {
         public final TrainState newState;
         public final SpeedUpdates positionUpdates = new SpeedUpdates();
         public final PathUpdates<SpeedController[]> speedControllersUpdates = new PathUpdates<>();
@@ -180,6 +183,21 @@ public class Train extends AbstractEntity<Train, TrainID> {
             this.newState = newState;
         }
 
+        @Override
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+        public boolean deepEquals(TimelineEventValue other) {
+            if (other.getClass() != TrainStateChange.class)
+                return false;
+            var o = (TrainStateChange) other;
+            if (!o.newState.deepEquals(o.newState))
+                return false;
+            if (!DeepEqualsUtils.deepEquals(positionUpdates, o.positionUpdates))
+                return false;
+            if (!speedDirectivesUpdates.equals(o.speedDirectivesUpdates))
+                return false;
+            return speedDirectivesUpdates.equals(o.speedDirectivesUpdates);
+        }
+
         @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
         public static final class PathValue<T> {
             public final double pathPosition;
@@ -189,9 +207,23 @@ public class Train extends AbstractEntity<Train, TrainID> {
                 this.pathPosition = pathPosition;
                 this.value = value;
             }
+
+            @Override
+            public int hashCode() {
+                return value.hashCode() * 31 + Double.hashCode(pathPosition);
+            }
+
+            @Override
+            @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
+            public boolean equals(Object obj) {
+                if (obj == null || obj.getClass() != PathValue.class)
+                    return false;
+                var o = (PathValue<?>) obj;
+                return o.pathPosition == pathPosition && o.value.equals(value);
+            }
         }
 
-        public static final class SpeedUpdate {
+        public static final class SpeedUpdate implements DeepComparable<SpeedUpdate> {
             public double pathPosition;
             public double time;
             public double speed;
@@ -211,6 +243,12 @@ public class Train extends AbstractEntity<Train, TrainID> {
             public double interpolatePosition(double nextTime) {
                 double delta = time - nextTime;
                 return pathPosition + delta * speed;
+            }
+
+            @Override
+            @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
+            public boolean deepEquals(SpeedUpdate other) {
+                return pathPosition == other.pathPosition && time == other.time && speed == other.speed;
             }
         }
 
@@ -309,6 +347,17 @@ public class Train extends AbstractEntity<Train, TrainID> {
             this.interactionObject = interactionObject;
             this.trainStateChange = trainStateChange;
             this.interactionType = interactionType;
+        }
+
+        @Override
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+        public boolean deepEquals(TimelineEventValue other) {
+            if (other.getClass() != TrainReachesInteraction.class)
+                return false;
+            var o = (TrainReachesInteraction) other;
+            return o.interactionObject == interactionObject
+                    && o.trainStateChange.deepEquals(trainStateChange)
+                    && o.interactionType == interactionType;
         }
     }
     // endregion

@@ -23,7 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class SignalNavigatePhase implements Phase {
+public final class SignalNavigatePhase implements Phase {
     @SuppressFBWarnings({"URF_UNREAD_FIELD"})
     public final List<Route> routePath;
     public final TrackSectionLocation endLocation;
@@ -41,6 +41,8 @@ public class SignalNavigatePhase implements Phase {
         this.trackSectionPath = trackSectionPath;
         this.eventPath = eventPath;
     }
+
+
 
     /** Create a new navigation phase from an already determined path */
     public static SignalNavigatePhase from(
@@ -170,10 +172,19 @@ public class SignalNavigatePhase implements Phase {
     }
 
     @SuppressFBWarnings({"URF_UNREAD_FIELD"})
-    public static class State extends PhaseState {
+    public static final class State extends PhaseState {
         public final SignalNavigatePhase phase;
         private int routeIndex = 0;
         private int eventPathIndex = 0;
+
+        @Override
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+        public boolean deepEquals(PhaseState other) {
+            if (other.getClass() != State.class)
+                return false;
+            var o = (State) other;
+            return o.phase == phase && o.routeIndex == routeIndex && o.eventPathIndex == eventPathIndex;
+        }
 
         public State(SignalNavigatePhase phase) {
             this.phase = phase;
