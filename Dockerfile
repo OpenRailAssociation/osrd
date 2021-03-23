@@ -2,7 +2,7 @@ FROM gradle:6.6.1-jdk11 AS build
 
 WORKDIR /home/gradle/src
 COPY --chown=gradle:gradle . .
-RUN gradle jar --no-daemon
+RUN gradle shadowJar --no-daemon
 
 FROM amazoncorretto:11
 
