@@ -8,8 +8,8 @@ import fr.sncf.osrd.simulation.Change;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 import org.graphstream.graph.Edge;
-import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.spriteManager.Sprite;
@@ -24,7 +24,6 @@ public class DebugViewer extends ChangeConsumer {
     private final Infra infra;
     private final boolean realTime;
 
-    private final Graph graph;
     private final SpriteManager spriteManager;
     private final Map<String, TrainData> trains = new HashMap<>();
     private final Map<Signal, Sprite> signalSprites = new HashMap<>();
@@ -33,14 +32,16 @@ public class DebugViewer extends ChangeConsumer {
     static final class TrainData {
         final String name;
         final TrainSchedule schedule;
-        final Sprite sprite;
+        final Sprite spriteHead;
+        final Sprite spriteTail;
 
         Train.TrainStateChange nextMove = null;
 
-        TrainData(String name, Sprite sprite, TrainSchedule schedule) {
+        TrainData(String name, Sprite spriteHead, Sprite spriteTail, TrainSchedule schedule) {
             this.name = name;
             this.schedule = schedule;
-            this.sprite = sprite;
+            this.spriteHead = spriteHead;
+            this.spriteTail = spriteTail;
         }
     }
 
@@ -50,11 +51,12 @@ public class DebugViewer extends ChangeConsumer {
     }
 
     private static final String POINT_OP_CSS = "text-alignment: under; shape: box; size: 15px; fill-color: red;";
+    private static final String TRAIN_CSS = "text-alignment: under; shape: box; size: 25px, 10px; fill-color: #256ba8;"
+            + "z-index: 2; sprite-orientation: to;";
 
-    private DebugViewer(Infra infra, boolean realTime, Graph graph, SpriteManager spriteManager) {
+    private DebugViewer(Infra infra, boolean realTime, SpriteManager spriteManager) {
         this.infra = infra;
         this.realTime = realTime;
-        this.graph = graph;
         this.spriteManager = spriteManager;
     }
 
@@ -69,7 +71,7 @@ public class DebugViewer extends ChangeConsumer {
         graph.setAttribute("ui.quality");
         graph.setAttribute("ui.antialias");
         var spriteManager = new SpriteManager(graph);
-        var viewer = new DebugViewer(infra, realTime, graph, spriteManager);
+        var viewer = new DebugViewer(infra, realTime, spriteManager);
 
         for (var node : infra.trackGraph.iterNodes()) {
             Node graphNode = graph.addNode(String.valueOf(node.index));
@@ -128,30 +130,41 @@ public class DebugViewer extends ChangeConsumer {
 
     private void createTrain(TrainSchedule schedule) {
         var trainName = schedule.trainID.trainName;
-        var sprite = spriteManager.addSprite(encodeSpriteId(String.valueOf(trains.size())));
-        sprite.setAttribute("ui.style", "text-alignment: under; shape: circle; size: 20px; fill-color: #256ba8;");
-        sprite.setAttribute("ui.label", trainName);
-        trains.put(trainName, new TrainData(trainName, sprite, schedule));
+        var spriteHead = spriteManager.addSprite(encodeSpriteId(trainName + "head"));
+        spriteHead.setAttribute("ui.style", TRAIN_CSS);
+        spriteHead.setAttribute("ui.label", trainName);
+        var spriteTail = spriteManager.addSprite(encodeSpriteId(trainName + "tail"));
+        spriteTail.setAttribute("ui.style", TRAIN_CSS);
+        var trainData = new TrainData(trainName, spriteHead, spriteTail, schedule);
+        setTrainLocation(spriteHead, schedule.initialLocation);
+        setTrainLocation(spriteTail, schedule.initialLocation);
+        trains.put(trainName, trainData);
     }
 
     private void updateTrain(TrainData trainData) {
-        var sprite = trainData.sprite;
+        var spriteHead = trainData.spriteHead;
         var nextMove = trainData.nextMove;
 
         var lastUpdate = nextMove.findLastSpeedUpdate(currentTime);
-        var pathPosition = lastUpdate.interpolatePosition(currentTime);
-        var headTopoLocation = trainData.schedule.findLocation(pathPosition);
+        var pathHeadPosition = lastUpdate.interpolatePosition(currentTime);
+        var pathTailPosition = Double.max(0, pathHeadPosition - trainData.schedule.rollingStock.length);
+        var headLocation = trainData.schedule.findLocation(pathHeadPosition);
+        var tailLocation = trainData.schedule.findLocation(pathTailPosition);
         var speed = lastUpdate.speed;
+        spriteHead.setAttribute("ui.label", String.format("%s (%.2f m/s)", trainData.name, speed));
+        setTrainLocation(spriteHead, headLocation);
+        setTrainLocation(trainData.spriteTail, tailLocation);
+    }
 
-        sprite.setAttribute("ui.label", String.format("%s (%.2f m/s)", trainData.name, speed));
+    private void setTrainLocation(Sprite sprite, TrackSectionLocation location) {
+        if (!sprite.attached() || !sprite.getAttachment().getId().equals(location.edge.id))
+            sprite.attachToEdge(location.edge.id);
 
-        if (!sprite.attached() || !sprite.getAttachment().getId().equals(headTopoLocation.edge.id))
-            sprite.attachToEdge(headTopoLocation.edge.id);
-
-        var edgePosition = headTopoLocation.offset / headTopoLocation.edge.length;
+        var edgePosition = location.offset / location.edge.length;
         // this assert is very, very important, as a failure results in
         // a very nasty crash inside graphstream
         assert edgePosition >= 0 && edgePosition <= 1 && !Double.isNaN(edgePosition);
+        // sprite.setPosition(edgePosition);
         sprite.setPosition(edgePosition);
     }
 
@@ -170,7 +183,7 @@ public class DebugViewer extends ChangeConsumer {
                 currentTime = nextEventTime;
                 for (var trainData : trains.values())
                     updateTrain(trainData);
-                Thread.sleep((long) (interpolationStep * 1000));
+                Thread.sleep((long) (interpolationStep * 3000));
             }
             return;
         }
