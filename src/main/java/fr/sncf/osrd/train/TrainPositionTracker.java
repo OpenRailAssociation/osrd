@@ -3,11 +3,13 @@ package fr.sncf.osrd.train;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.trackgraph.*;
+import fr.sncf.osrd.utils.DeepComparable;
+import fr.sncf.osrd.utils.DeepEqualsUtils;
 
 import java.util.ArrayDeque;
 import java.util.Objects;
 
-public final class TrainPositionTracker implements Cloneable {
+public final class TrainPositionTracker implements Cloneable, DeepComparable<TrainPositionTracker> {
     private final transient Infra infra;
     private final transient Infra.State infraState;
 
@@ -160,5 +162,12 @@ public final class TrainPositionTracker implements Cloneable {
             }
         }
         return val;
+    }
+
+    @Override
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
+    public boolean deepEquals(TrainPositionTracker other) {
+        return pathPosition == other.pathPosition
+                && DeepEqualsUtils.deepEquals(trackSectionRanges, other.trackSectionRanges);
     }
 }

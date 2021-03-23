@@ -1,9 +1,11 @@
 package fr.sncf.osrd.speedcontroller;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.ChangeSerializer.SerializableDouble;
 import fr.sncf.osrd.train.*;
+import fr.sncf.osrd.utils.DeepComparable;
 
-public abstract class SpeedController {
+public abstract class SpeedController implements DeepComparable<SpeedController> {
     @SerializableDouble
     public final double beginPosition;
 
@@ -18,6 +20,11 @@ public abstract class SpeedController {
     public boolean isActive(TrainState state) {
         var position = state.location.getPathPosition();
         return (position >= beginPosition && position < endPosition);
+    }
+
+    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST", "FE_FLOATING_POINT_EQUALITY"})
+    protected boolean equalRange(SpeedController o) {
+        return o.beginPosition == beginPosition && o.endPosition == endPosition;
     }
 
     /**

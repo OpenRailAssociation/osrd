@@ -10,7 +10,9 @@ import org.junit.jupiter.api.Test;
 import java.util.Objects;
 
 public class SignalSimulationTest {
-    public static final class SignalAspectChange extends EntityChange<TestSignal, MockEntityID<TestSignal>, Void> {
+    public static final class SignalAspectChange
+            extends EntityChange<TestSignal, MockEntityID<TestSignal>, Void>
+            implements TimelineEventValue {
         public final TestSignal signal;
         public final TestSignal.Aspect newAspect;
 
@@ -47,6 +49,15 @@ public class SignalSimulationTest {
         public Void apply(Simulation sim, TestSignal signal) {
             signal.aspect = newAspect;
             return null;
+        }
+
+        @Override
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+        public boolean deepEquals(TimelineEventValue other) {
+            if (other.getClass() != SignalAspectChange.class)
+                return false;
+            var o = (SignalAspectChange) other;
+            return o.signal == signal && o.newAspect == newAspect;
         }
     }
 

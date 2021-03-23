@@ -35,6 +35,15 @@ public final class SchedulerSystem extends AbstractEntity<SchedulerSystem, Entit
             this.schedule = schedule;
             this.controllers = controllers;
         }
+
+        @Override
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+        public boolean deepEquals(TimelineEventValue other) {
+            if (other.getClass() != TrainCreation.class)
+                return false;
+            var o = (TrainCreation) other;
+            return o.schedule == schedule && controllers.equals(o.controllers);
+        }
     }
 
     @Override

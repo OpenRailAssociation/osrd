@@ -11,6 +11,8 @@ import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railml.RailMLParser;
+import fr.sncf.osrd.utils.DeepEqualsUtils;
+import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.SortedArraySet;
 import okio.Okio;
 
@@ -18,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * <p>A data structure meant to store the immutable part of a railroad infrastructure.</p>
@@ -264,7 +267,7 @@ public final class Infra {
         return state;
     }
 
-    public static final class State {
+    public static final class State implements DeepComparable<State> {
         private final Signal.State[] signalStates;
         private final Route.State[] routeStates;
         private final Switch.State[] switchStates;
@@ -296,6 +299,17 @@ public final class Infra {
 
         public TVDSection.State getTvdSectionState(int tvdSectionIndex) {
             return tvdSectionStates[tvdSectionIndex];
+        }
+
+        @Override
+        public boolean deepEquals(Infra.State otherState) {
+            if (!DeepEqualsUtils.deepEquals(signalStates, otherState.signalStates))
+                return false;
+            if (!DeepEqualsUtils.deepEquals(routeStates, otherState.routeStates))
+                return false;
+            if (!DeepEqualsUtils.deepEquals(switchStates, otherState.switchStates))
+                return false;
+            return DeepEqualsUtils.deepEquals(tvdSectionStates, otherState.tvdSectionStates);
         }
     }
 

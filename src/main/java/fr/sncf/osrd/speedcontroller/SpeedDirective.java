@@ -1,6 +1,10 @@
 package fr.sncf.osrd.speedcontroller;
 
-public class SpeedDirective {
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+import java.util.Objects;
+
+public final class SpeedDirective {
     public double allowedSpeed;
     public double warningSpeed;
     public double emergencyBrakingSpeed;
@@ -46,5 +50,24 @@ public class SpeedDirective {
             emergencyBrakingSpeed = directive.emergencyBrakingSpeed;
         if (directive.coast)
             coast = true;
+    }
+
+    @Override
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (obj.getClass() != SpeedDirective.class)
+            return false;
+        var other = (SpeedDirective) obj;
+        return allowedSpeed == other.allowedSpeed
+                && warningSpeed == other.warningSpeed
+                && emergencyBrakingSpeed == other.emergencyBrakingSpeed
+                && coast == other.coast;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(allowedSpeed, warningSpeed, emergencyBrakingSpeed, coast);
     }
 }

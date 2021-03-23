@@ -1,6 +1,7 @@
 package fr.sncf.osrd.simulation;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.utils.DeepComparable;
 
 /**
  * A base event type. Derived types implement updateState to notify some other components about changes.
@@ -10,7 +11,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 // timeline events are equal when their identifier is.
 // **it does not check for the exact content of the timeline event**
 @SuppressFBWarnings({"EQ_DOESNT_OVERRIDE_EQUALS"})
-public class TimelineEvent<T extends TimelineEventValue> extends TimelineEventId {
+public final class TimelineEvent<T extends TimelineEventValue> extends TimelineEventId
+        implements DeepComparable<TimelineEvent<?>> {
     public final Entity<?> source;
 
     // some value associated with the event
@@ -55,6 +57,17 @@ public class TimelineEvent<T extends TimelineEventValue> extends TimelineEventId
     private void setState(State newState) {
         assert this.state.hasTransitionTo(newState);
         this.state = newState;
+    }
+
+    @Override
+    public boolean deepEquals(TimelineEvent<?> other) {
+        if (!super.equals(other))
+            return false;
+        if (!value.deepEquals(other.value))
+            return false;
+        if (!source.getID().equals(other.source.getID()))
+            return false;
+        return false;
     }
 
     public enum State {

@@ -51,6 +51,14 @@ public class SimulationTest {
         public String toString() {
             return value.toString();
         }
+
+        @Override
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+        public boolean deepEquals(TimelineEventValue other) {
+            if (other.getClass() != TEValue.class)
+                return false;
+            return ((TEValue<?>) other).value == value;
+        }
     }
 
     @Test

@@ -2,6 +2,7 @@ package fr.sncf.osrd.infra.trackgraph;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.railscript.value.RSMatchable;
+import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.simulation.*;
 
 import java.util.Objects;
@@ -95,10 +96,20 @@ public class Switch extends TrackNode {
         public int getEnumValue() {
             return position.ordinal();
         }
+
+        @Override
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+        public boolean deepEquals(RSValue other) {
+            if (other.getClass() != State.class)
+                return false;
+            var o = (State) other;
+            return o.position == position && o.switchRef == switchRef;
+        }
     }
 
     public static final class SwitchPositionChange
-            extends EntityChange<Switch.State, SwitchID, Void> {
+            extends EntityChange<Switch.State, SwitchID, Void>
+            implements TimelineEventValue {
         SwitchPosition position;
 
         protected SwitchPositionChange(Simulation sim, Switch.State entity, SwitchPosition position) {
@@ -110,6 +121,15 @@ public class Switch extends TrackNode {
         public Void apply(Simulation sim, Switch.State entity) {
             entity.position = position;
             return null;
+        }
+
+        @Override
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+        public boolean deepEquals(TimelineEventValue other) {
+            if (other.getClass() != SwitchPositionChange.class)
+                return false;
+            var o = (SwitchPositionChange) other;
+            return o.entityId == entityId && o.position == position;
         }
     }
 }

@@ -12,6 +12,7 @@ import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainInteractionType;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
+import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.graph.ApplicableDirections;
 
 import java.util.ArrayList;
@@ -79,7 +80,7 @@ public class Signal implements TrainInteractable {
 
         @Override
         public int hashCode() {
-            return Objects.hash(signalIndex);
+            return Integer.hashCode(signalIndex);
         }
 
         @Override
@@ -151,9 +152,24 @@ public class Signal implements TrainInteractable {
             // The signal must be subscribe to itself to receive SignalDelayUpdateEventValue
             subscribers.add(this);
         }
+
+        @Override
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+        public boolean deepEquals(RSValue otherVal) {
+            if (otherVal.getClass() != Signal.State.class)
+                return false;
+            var other = (Signal.State) otherVal;
+            if (!signal.id.equals(other.signal.id))
+                return false;
+            if (!aspects.deepEquals(other.aspects))
+                return false;
+            return exprState.deepEquals(other.exprState);
+        }
     }
 
-    public static final class SignalAspectChange extends EntityChange<State, SignalID, Void> {
+    public static final class SignalAspectChange
+            extends EntityChange<State, SignalID, Void>
+            implements TimelineEventValue {
         public final RSAspectSet aspects;
 
         protected SignalAspectChange(Simulation sim, Signal.State entity, RSAspectSet aspects) {
@@ -166,6 +182,17 @@ public class Signal implements TrainInteractable {
             entity.aspects = aspects;
             return null;
         }
+
+        @Override
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+        public boolean deepEquals(TimelineEventValue other) {
+            if (other.getClass() != SignalAspectChange.class)
+                return false;
+            var o = ((SignalAspectChange) other);
+            if (!super.equals(o))
+                return false;
+            return entityId.equals(o.entityId);
+        }
     }
 
     public static final class SignalDelayUpdateEventValue implements TimelineEventValue {
@@ -175,6 +202,17 @@ public class Signal implements TrainInteractable {
         public SignalDelayUpdateEventValue(int delaySlot, RSValue value) {
             this.delaySlot = delaySlot;
             this.value = value;
+        }
+
+        @Override
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+        public boolean deepEquals(TimelineEventValue other) {
+            if (other.getClass() != SignalDelayUpdateEventValue.class)
+                return false;
+            var o = (SignalDelayUpdateEventValue) other;
+            if (delaySlot != ((SignalDelayUpdateEventValue) other).delaySlot)
+                return false;
+            return value.deepEquals(o.value);
         }
     }
 

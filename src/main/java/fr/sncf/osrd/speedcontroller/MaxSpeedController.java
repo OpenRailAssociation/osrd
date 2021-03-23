@@ -1,5 +1,7 @@
 package fr.sncf.osrd.speedcontroller;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 public class MaxSpeedController extends SpeedController {
     public final double speedLimit;
 
@@ -22,4 +24,15 @@ public class MaxSpeedController extends SpeedController {
                 speedLimit, beginPosition, endPosition
         );
     }
+
+    @Override
+    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST", "FE_FLOATING_POINT_EQUALITY"})
+    public boolean deepEquals(SpeedController other) {
+        if (!equalRange(other))
+            return false;
+        if (other.getClass() != MaxSpeedController.class)
+            return false;
+        return ((MaxSpeedController) other).speedLimit == speedLimit;
+    }
+
 }

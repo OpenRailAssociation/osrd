@@ -8,6 +8,8 @@ import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.train.phases.PhaseState;
+import fr.sncf.osrd.utils.DeepComparable;
+import fr.sncf.osrd.utils.DeepEqualsUtils;
 import fr.sncf.osrd.utils.PointValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public final class TrainState implements Cloneable {
+public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     static final Logger logger = LoggerFactory.getLogger(TrainState.class);
 
     // the time for which this state is relevant
@@ -44,30 +46,24 @@ public final class TrainState implements Cloneable {
 
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
-    public boolean equals(Object obj) {
-        if (obj == null)
+    public boolean deepEquals(TrainState o) {
+        if (time != o.time)
             return false;
-
-        if (obj.getClass() != TrainState.class)
+        if (speed != o.speed)
             return false;
-
-        var otherState = (TrainState) obj;
-        if (this.time != otherState.time)
+        if (status != o.status)
             return false;
-        if (this.speed != otherState.speed)
+        if (trainSchedule != o.trainSchedule)
             return false;
-        if (this.status != otherState.status)
+        if (currentPhaseIndex != o.currentPhaseIndex)
             return false;
-        if (!this.trainSchedule.trainID.equals(otherState.trainSchedule.trainID))
+        if (!currentPhaseState.deepEquals(o.currentPhaseState))
             return false;
-        if (!this.location.equals(otherState.location))
+        if (!location.deepEquals(o.location))
             return false;
-        return this.speedControllers.equals(otherState.speedControllers);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(time, speed, status, trainSchedule.trainID, location, speedControllers);
+        if (!speedControllers.equals(o.speedControllers))
+            return false;
+        return interactablesUnderTrain.equals(o.interactablesUnderTrain);
     }
 
     TrainState(

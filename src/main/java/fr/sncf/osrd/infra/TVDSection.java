@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.utils.DeepComparable;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -76,7 +77,9 @@ public final class TVDSection implements Comparable<TVDSection> {
     }
 
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public static class State extends AbstractEntity<TVDSection.State, TVDSectionEntityID> {
+    public static class State
+            extends AbstractEntity<TVDSection.State, TVDSectionEntityID>
+            implements DeepComparable<State> {
         public final TVDSection tvdSection;
         private boolean reserved;
 
@@ -125,10 +128,16 @@ public final class TVDSection implements Comparable<TVDSection> {
 
         @Override
         public void onEventCancelled(Simulation sim, TimelineEvent<?> event) { }
+
+        @Override
+        public boolean deepEquals(State other) {
+            return tvdSection == other.tvdSection && reserved == other.reserved;
+        }
     }
 
     public static final class TVDSectionReservedChange
-            extends EntityChange<TVDSection.State, TVDSectionEntityID, Void> {
+            extends EntityChange<TVDSection.State, TVDSectionEntityID, Void>
+            implements TimelineEventValue {
         public TVDSectionReservedChange(Simulation sim, TVDSection.State entity) {
             super(sim, entity.id);
         }
@@ -138,10 +147,20 @@ public final class TVDSection implements Comparable<TVDSection> {
             entity.reserved = true;
             return null;
         }
+
+        @Override
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+        public boolean deepEquals(TimelineEventValue other) {
+            if (other.getClass() != TVDSectionReservedChange.class)
+                return false;
+            var o = (TVDSectionReservedChange) other;
+            return o.entityId.equals(entityId);
+        }
     }
 
     public static final class TVDSectionFreedChange
-            extends EntityChange<TVDSection.State, TVDSectionEntityID, Void> {
+            extends EntityChange<TVDSection.State, TVDSectionEntityID, Void>
+            implements TimelineEventValue {
         public TVDSectionFreedChange(Simulation sim, TVDSection.State entity) {
             super(sim, entity.id);
         }
@@ -151,9 +170,28 @@ public final class TVDSection implements Comparable<TVDSection> {
             entity.reserved = false;
             return null;
         }
+
+        @Override
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+        public boolean deepEquals(TimelineEventValue other) {
+            if (other.getClass() != TVDSectionFreedChange.class)
+                return false;
+            var o = (TVDSectionFreedChange) other;
+            return o.entityId == entityId;
+        }
     }
 
-    public static final class TVDSectionOccupied implements TimelineEventValue { }
+    public static final class TVDSectionOccupied implements TimelineEventValue {
+        @Override
+        public boolean deepEquals(TimelineEventValue other) {
+            return other.getClass() == TVDSectionOccupied.class;
+        }
+    }
 
-    public static final class TVDSectionNotOccupied implements TimelineEventValue { }
+    public static final class TVDSectionNotOccupied implements TimelineEventValue {
+        @Override
+        public boolean deepEquals(TimelineEventValue other) {
+            return other.getClass() == TVDSectionNotOccupied.class;
+        }
+    }
 }

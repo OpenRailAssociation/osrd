@@ -1,6 +1,7 @@
 package fr.sncf.osrd.simulation;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.utils.DeepComparable;
 
 import java.util.Objects;
 
@@ -33,8 +34,7 @@ public class TimelineEventId implements Comparable<TimelineEventId> {
         if (!(obj instanceof TimelineEventId))
             return false;
 
-        // because of type erasure, we can't cast to the exact type
-        TimelineEvent<?> o = (TimelineEvent<?>) obj;
+        var o = (TimelineEvent<?>) obj;
         return scheduledTime == o.scheduledTime && revision == o.revision;
     }
 

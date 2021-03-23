@@ -1,6 +1,8 @@
 package fr.sncf.osrd.infra.signaling;
 
-public final class Aspect implements Comparable<Aspect> {
+import fr.sncf.osrd.utils.DeepComparable;
+
+public final class Aspect implements Comparable<Aspect>, DeepComparable<Aspect> {
     public final int index;
     public final String id;
 
@@ -32,5 +34,10 @@ public final class Aspect implements Comparable<Aspect> {
             return false;
 
         return compareTo((Aspect) obj) == 0;
+    }
+
+    @Override
+    public boolean deepEquals(Aspect other) {
+        return other.id.equals(id);
     }
 }
