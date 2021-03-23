@@ -28,6 +28,7 @@ public class DebugViewer extends ChangeConsumer {
     private final SpriteManager spriteManager;
     private final Map<String, TrainData> trains = new HashMap<>();
     private final Map<Signal, Sprite> signalSprites = new HashMap<>();
+    private double currentTime = Double.NaN;
 
     static final class TrainData {
         final String name;
@@ -154,8 +155,6 @@ public class DebugViewer extends ChangeConsumer {
         sprite.setPosition(edgePosition);
     }
 
-    private double currentTime = Double.NaN;
-
     private void updateTime(double nextEventTime) throws InterruptedException {
         if (Double.isNaN(currentTime)) {
             currentTime = nextEventTime;
@@ -167,7 +166,12 @@ public class DebugViewer extends ChangeConsumer {
 
         // if the user doesn't want realtime visualization, update the viewer once per timeline event
         if (!realTime) {
-            Thread.sleep((long) (interpolationStep * 1000));
+            if (currentTime < nextEventTime) {
+                currentTime = nextEventTime;
+                for (var trainData : trains.values())
+                    updateTrain(trainData);
+                Thread.sleep((long) (interpolationStep * 1000));
+            }
             return;
         }
 
