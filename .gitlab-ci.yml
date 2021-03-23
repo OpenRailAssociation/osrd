@@ -53,3 +53,22 @@ test:
       junit:
         - build/reports/checkstyle/*.xml
         - build/test-results/test/*.xml
+
+deploy:
+  stage: deploy
+  image: registry.gitlab.com/osrdata/misc/helm-kubectl-gnupg:master
+  needs: ["docker_build"]
+  script:
+    - echo ${SECRETS_PGP_PRIVATE_KEY} | base64 -d | gpg --import
+    - cd chart
+    - helm dep update .
+    - helm secrets dec secrets.yaml
+    - helm upgrade --install osrd-core-${CI_COMMIT_BRANCH} . --namespace ${KUBE_NAMESPACE} --set CI_COMMIT_BRANCH=${CI_COMMIT_BRANCH} --set CI_ENVIRONMENT_SLUG=${CI_ENVIRONMENT_SLUG} --set CI_PROJECT_PATH_SLUG=${CI_PROJECT_PATH_SLUG} -f secrets.yaml.dec
+  environment:
+    name: dev
+    kubernetes:
+      namespace: osrdata-${CI_COMMIT_BRANCH}
+  only:
+    refs:
+      - dev
+      - staging

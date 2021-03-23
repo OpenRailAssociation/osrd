@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gitlab-read-registry-osrd-core
+data:
+  .dockerconfigjson: {{ template "imagePullSecret" . }}
+type: kubernetes.io/dockerconfigjson

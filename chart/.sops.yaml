@@ -1,0 +1,7 @@
+creation_rules:
+  - path_regex: secrets\.review\.yaml
+    pgp: '5BD5A39D21C304745E5974225EA0989E61E945AF'
+  - path_regex: secrets\.yaml
+    pgp: '6075474F6F74EAC66BBDF033AC96C0D4A6BD9157'
+  - path_regex: secrets\.prod\.yaml
+    pgp: '879CEA2D2F813AE61BD9B986E63C1980FEE0A548'

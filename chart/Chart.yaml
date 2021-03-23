@@ -1,0 +1,6 @@
+apiVersion: v2
+name: osrd-core
+description: A Helm chart for osrd-core
+type: application
+version: 0.1.0
+appVersion: "1.16.0"
