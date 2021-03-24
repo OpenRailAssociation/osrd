@@ -42,11 +42,11 @@ public class Route extends BiNEdge<Route> {
                 tvdSectionsPath.get(tvdSectionsPath.size() - 1).startNode,
                 length
         );
+        this.id = id;
         this.transitType = transitType;
         this.tvdSectionsPathDirection = tvdSectionsPathDirection;
         this.switchesPosition = switchesPosition;
         graph.registerEdge(this);
-        this.id = id;
         this.tvdSectionsPath = tvdSectionsPath;
     }
 
@@ -85,7 +85,6 @@ public class Route extends BiNEdge<Route> {
         public final Route route;
         public RouteStatus status;
         public final List<TVDSection.State> tvdSectionStates;
-        private int nbReservedTvdSection;
 
         State(Route route) {
             super(new RouteID(route.index));
@@ -111,18 +110,17 @@ public class Route extends BiNEdge<Route> {
                         change.apply(sim, this);
                         sim.publishChange(change);
                         sim.scheduleEvent(this, sim.getTime(), change);
-                        nbReservedTvdSection = tvdSectionStates.size();
                     }
                     break;
                 case OCCUPIED:
                     if (event.value.getClass() == TVDSection.TVDSectionNotOccupied.class) {
+                        var tvdSectionNotOcucupied = (TVDSection.State) event.source;
                         if (route.transitType == TransitType.FLEXIBLE) {
-                            var tvdSection = (TVDSection.State) event.source;
-                            tvdSection.free(sim);
+                            tvdSectionNotOcucupied.free(sim);
                         } else {
-                            nbReservedTvdSection--;
                             // The train has covered the entire route
-                            if (nbReservedTvdSection == 0) {
+                            var lastTvdSection = route.tvdSectionsPath.get(route.tvdSectionsPath.size() - 1);
+                            if (lastTvdSection.index == tvdSectionNotOcucupied.id.getIndex()) {
                                 for (var tvdSection : tvdSectionStates)
                                     tvdSection.free(sim);
                             }
@@ -183,8 +181,6 @@ public class Route extends BiNEdge<Route> {
             if (route != o.route)
                 return false;
             if (status != o.status)
-                return false;
-            if (nbReservedTvdSection != o.nbReservedTvdSection)
                 return false;
 
             return DeepEqualsUtils.deepEquals(tvdSectionStates, o.tvdSectionStates);
