@@ -67,7 +67,7 @@ public final class TimelineEvent<T extends TimelineEventValue> extends TimelineE
             return false;
         if (!source.getID().equals(other.source.getID()))
             return false;
-        return false;
+        return true;
     }
 
     public enum State {

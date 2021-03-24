@@ -58,6 +58,10 @@ public final class TVDSection implements Comparable<TVDSection> {
             this.tvdSectionIndex = tvdSectionIndex;
         }
 
+        public int getIndex() {
+            return tvdSectionIndex;
+        }
+
         @Override
         public State getEntity(Simulation sim) {
             return sim.infraState.getTvdSectionState(tvdSectionIndex);
