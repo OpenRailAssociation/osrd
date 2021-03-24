@@ -1,9 +1,11 @@
 package fr.sncf.osrd.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.infra.changes.TVDSectionFreedChange;
 import fr.sncf.osrd.utils.DeepComparable;
 
 import java.util.ArrayList;
@@ -14,6 +16,8 @@ public final class TVDSection implements Comparable<TVDSection> {
     public final int index;
     public final ArrayList<Waypoint> waypoints;
     public final ArrayList<TVDSectionPath> sections = new ArrayList<>();
+    public final ArrayList<Route> routes = new ArrayList<>();
+
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public final boolean isBerthingTrack;
 
@@ -85,7 +89,7 @@ public final class TVDSection implements Comparable<TVDSection> {
             extends AbstractEntity<TVDSection.State, TVDSectionEntityID>
             implements DeepComparable<State> {
         public final TVDSection tvdSection;
-        private boolean reserved;
+        boolean reserved;
 
         State(TVDSection tvdSection) {
             super(new TVDSectionEntityID(tvdSection.index));
@@ -95,32 +99,42 @@ public final class TVDSection implements Comparable<TVDSection> {
 
         /** Create an event to reserve the tvd section */
         public void reserve(Simulation sim) {
-            assert !reserved;
-            var change = new TVDSectionReservedChange(sim, this);
+            var change = new TVDSectionReservationChange(sim, this, true);
             change.apply(sim, this);
             sim.publishChange(change);
-            sim.scheduleEvent(this, sim.getTime(), change);
+            for (var route : tvdSection.routes) {
+                var routeState = sim.infraState.getRouteState(route.index);
+                routeState.onTvdSectionReserved();
+            }
         }
 
         /** Create an event to free the tvd section */
         public void free(Simulation sim) {
-            assert reserved;
-            var change = new TVDSectionFreedChange(sim, this);
+            var change = new TVDSectionReservationChange(sim, this, false);
             change.apply(sim, this);
             sim.publishChange(change);
-            sim.scheduleEvent(this, sim.getTime(), change);
+            for (var route : tvdSection.routes) {
+                var routeState = sim.infraState.getRouteState(route.index);
+                routeState.onTvdSectionFreed();
+            }
         }
 
         /** Create an event to notify route that the tvd section is occupied */
         public void occupy(Simulation sim) {
             assert reserved;
-            sim.scheduleEvent(this, sim.getTime(), new TVDSectionOccupied());
+            for (var route : tvdSection.routes) {
+                var routeState = sim.infraState.getRouteState(route.index);
+                routeState.onTvdSectionOccupied();
+            }
         }
 
         /** Create an event to notify route that the tvd section is not occupied anymore */
-        public void notOccupy(Simulation sim) {
+        public void unoccupy(Simulation sim) {
             assert reserved;
-            sim.scheduleEvent(this, sim.getTime(), new TVDSectionNotOccupied());
+            for (var route : tvdSection.routes) {
+                var routeState = sim.infraState.getRouteState(route.index);
+                routeState.onTvdSectionUnoccupied();
+            }
         }
 
         public boolean isReserved() {
@@ -128,74 +142,35 @@ public final class TVDSection implements Comparable<TVDSection> {
         }
 
         @Override
-        public void onEventOccurred(Simulation sim, TimelineEvent<?> event) { }
-
-        @Override
-        public void onEventCancelled(Simulation sim, TimelineEvent<?> event) { }
-
-        @Override
         public boolean deepEquals(State other) {
             return tvdSection == other.tvdSection && reserved == other.reserved;
         }
     }
 
-    public static final class TVDSectionReservedChange
+    public static final class TVDSectionReservationChange
             extends EntityChange<TVDSection.State, TVDSectionEntityID, Void>
             implements TimelineEventValue {
-        public TVDSectionReservedChange(Simulation sim, TVDSection.State entity) {
+        public final boolean newReservation;
+
+        public TVDSectionReservationChange(Simulation sim, TVDSection.State entity, boolean newReservation) {
             super(sim, entity.id);
+            this.newReservation = newReservation;
         }
 
         @Override
         public Void apply(Simulation sim, TVDSection.State entity) {
-            entity.reserved = true;
+            assert entity.reserved != newReservation;
+            entity.reserved = newReservation;
             return null;
         }
 
         @Override
         @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
         public boolean deepEquals(TimelineEventValue other) {
-            if (other.getClass() != TVDSectionReservedChange.class)
+            if (other.getClass() != TVDSectionReservationChange.class)
                 return false;
-            var o = (TVDSectionReservedChange) other;
-            return o.entityId.equals(entityId);
-        }
-    }
-
-    public static final class TVDSectionFreedChange
-            extends EntityChange<TVDSection.State, TVDSectionEntityID, Void>
-            implements TimelineEventValue {
-        public TVDSectionFreedChange(Simulation sim, TVDSection.State entity) {
-            super(sim, entity.id);
-        }
-
-        @Override
-        public Void apply(Simulation sim, TVDSection.State entity) {
-            entity.reserved = false;
-            return null;
-        }
-
-        @Override
-        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-        public boolean deepEquals(TimelineEventValue other) {
-            if (other.getClass() != TVDSectionFreedChange.class)
-                return false;
-            var o = (TVDSectionFreedChange) other;
-            return o.entityId == entityId;
-        }
-    }
-
-    public static final class TVDSectionOccupied implements TimelineEventValue {
-        @Override
-        public boolean deepEquals(TimelineEventValue other) {
-            return other.getClass() == TVDSectionOccupied.class;
-        }
-    }
-
-    public static final class TVDSectionNotOccupied implements TimelineEventValue {
-        @Override
-        public boolean deepEquals(TimelineEventValue other) {
-            return other.getClass() == TVDSectionNotOccupied.class;
+            var o = (TVDSectionReservationChange) other;
+            return o.entityId.equals(entityId) && o.newReservation == newReservation;
         }
     }
 }

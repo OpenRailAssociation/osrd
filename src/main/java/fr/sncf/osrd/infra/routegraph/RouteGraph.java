@@ -98,8 +98,9 @@ public class RouteGraph extends BiNGraph<Route, Waypoint> {
                 waypointDirection = firstTVDSectionPath.endNodeDirection;
             startWaypoint.getRouteNeighbors(waypointDirection).add(route);
 
-            // Link route to track sections
+            // Link route to track sections and tvd sections
             for (var tvdSectionPath : route.tvdSectionsPath) {
+                tvdSectionPath.tvdSection.routes.add(route);
                 for (var trackSection : tvdSectionPath.trackSections)
                     trackSection.edge.routes.add(route);
             }

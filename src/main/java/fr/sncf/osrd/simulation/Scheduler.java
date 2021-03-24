@@ -11,63 +11,73 @@ import fr.sncf.osrd.utils.CryoList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class SchedulerSystem extends AbstractEntity<SchedulerSystem, EntityID<SchedulerSystem>> {
-    public static final EntityID<SchedulerSystem> ID = sim -> sim.scheduler;
+import java.util.List;
 
-    static final Logger logger = LoggerFactory.getLogger(SchedulerSystem.class);
-
-    /** Create the scheduler system, without starting it */
-    public SchedulerSystem() {
-        // the train must react to its own train creation events
-        super(ID);
-        this.subscribers.add(this);
-    }
+public abstract class Scheduler {
+    static final Logger logger = LoggerFactory.getLogger(Scheduler.class);
 
     /** The value embed in the train creation event */
-    public static final class TrainCreation implements TimelineEventValue {
+    public static final class TrainCreatedEvent extends TimelineEvent {
         public final TrainSchedule schedule;
-        public final CryoList<SpeedController> controllers;
+        public final List<SpeedController> controllers;
 
-        TrainCreation(
+        TrainCreatedEvent(
+                TimelineEventId eventId,
                 TrainSchedule schedule,
-                CryoList<SpeedController> controllers
+                List<SpeedController> controllers
         ) {
+            super(eventId);
             this.schedule = schedule;
             this.controllers = controllers;
         }
 
         @Override
+        void onOccurrence(Simulation sim) throws SimulationError {
+            var trainName = schedule.trainID;
+            logger.info("starting train {}", trainName);
+
+            Train.create(sim, schedule, controllers);
+        }
+
+        @Override
+        void onCancellation(Simulation sim) throws SimulationError {
+            throw new SimulationError("cancelling train creation isn't supported");
+        }
+
+        @Override
         @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-        public boolean deepEquals(TimelineEventValue other) {
-            if (other.getClass() != TrainCreation.class)
+        public boolean deepEquals(TimelineEvent other) {
+            if (other.getClass() != TrainCreatedEvent.class)
                 return false;
-            var o = (TrainCreation) other;
+            var o = (TrainCreatedEvent) other;
             return o.schedule == schedule && controllers.equals(o.controllers);
         }
     }
 
-    @Override
-    @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST")
-    public void onEventOccurred(
-            Simulation sim,
-            TimelineEvent<?> event
-    ) throws SimulationError {
-        if (event.value.getClass() != TrainCreation.class)
-            return;
+    public static class TrainPlannedChange extends SimChange<Void> {
+        public final TrainSchedule schedule;
+        public final List<SpeedController> controllers;
 
-        var trainCreation = (TrainCreation) event.value;
-        var trainName = trainCreation.schedule.trainID;
-        logger.info("starting train {}", trainName);
+        public TrainPlannedChange(
+                Simulation sim,
+                TrainSchedule schedule,
+                List<SpeedController> controllers
+        ) {
+            super(sim);
+            this.schedule = schedule;
+            this.controllers = controllers;
+        }
 
-        Train.create(sim, trainCreation.schedule, trainCreation.controllers);
-    }
-
-    @Override
-    public void onEventCancelled(Simulation sim, TimelineEvent<?> event) {
+        @Override
+        public Void apply(Simulation sim) {
+            var event = new TrainCreatedEvent(sim.nextEventId(schedule.departureTime), schedule, controllers);
+            sim.scheduleEvent(event);
+            return null;
+        }
     }
 
     /** Plans to start a train from a given schedule */
-    public void planTrain(Simulation sim, TrainSchedule schedule) {
+    public static void planTrain(Simulation sim, TrainSchedule schedule) {
         // the path is computed at the beginning of the simulation, as it is (for now) part of the event
         var trainPath = schedule.fullPath;
         var rollingStock = schedule.rollingStock;
@@ -129,6 +139,8 @@ public final class SchedulerSystem extends AbstractEntity<SchedulerSystem, Entit
         for (var controller : controllers)
             logger.trace("{}", controller);
 
-        sim.scheduleEvent(this, schedule.departureTime, new TrainCreation(schedule, controllers));
+        var trainPlanned = new TrainPlannedChange(sim, schedule, controllers);
+        trainPlanned.apply(sim);
+        sim.publishChange(trainPlanned);
     }
 }

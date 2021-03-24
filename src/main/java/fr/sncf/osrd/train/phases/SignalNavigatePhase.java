@@ -334,7 +334,7 @@ public final class SignalNavigatePhase implements Phase {
             // Doesn't occupy the last tvdSection
             var backwardTVDSectionPath = findBackwardTVDSection(detector);
             var backwardTVDSection = sim.infraState.getTvdSectionState(backwardTVDSectionPath.index);
-            backwardTVDSection.notOccupy(sim);
+            backwardTVDSection.unoccupy(sim);
         }
 
         public int getRouteIndex() {

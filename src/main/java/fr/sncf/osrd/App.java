@@ -15,10 +15,7 @@ import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railml.RailMLParser;
-import fr.sncf.osrd.simulation.ChangeReplayChecker;
-import fr.sncf.osrd.simulation.ChangeSerializer;
-import fr.sncf.osrd.simulation.Simulation;
-import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
@@ -76,7 +73,7 @@ public class App {
 
                 // insert the train start events into the simulation
                 for (var trainSchedule : config.trainSchedules)
-                    sim.scheduler.planTrain(sim, trainSchedule);
+                    Scheduler.planTrain(sim, trainSchedule);
 
                 // run the simulation loop
                 while (!sim.isSimulationOver())

@@ -9,7 +9,6 @@ import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.simulation.*;
-import fr.sncf.osrd.train.Action;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainInteractionType;
 import fr.sncf.osrd.utils.graph.ApplicableDirections;
@@ -107,7 +106,7 @@ public class Signal implements ActionPoint {
         }
 
         @Override
-        public void onEventOccurred(Simulation sim, TimelineEvent<?> event) {
+        public void onEventOccurred(Simulation sim, SubscribersTimelineEvent<?> event) {
             var delayHandler = new DelayHandler(sim, this);
             RSAspectSet newAspects = null;
 
@@ -135,7 +134,7 @@ public class Signal implements ActionPoint {
         }
 
         @Override
-        public void onEventCancelled(Simulation sim, TimelineEvent<?> event) { }
+        public void onEventCancelled(Simulation sim, SubscribersTimelineEvent<?> event) { }
 
         /** Register itself as subscriber of his dependencies */
         public void initialize(Infra.State state) {

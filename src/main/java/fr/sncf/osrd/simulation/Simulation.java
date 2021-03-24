@@ -36,7 +36,6 @@ public final class Simulation implements DeepComparable<Simulation> {
 
     public final Infra infra;
     public final Infra.State infraState;
-    public SchedulerSystem scheduler = new SchedulerSystem();
     public final HashMap<String, Train> trains = new HashMap<>();
 
     // changes may need to be logged to enable replays
@@ -58,7 +57,7 @@ public final class Simulation implements DeepComparable<Simulation> {
     public final double startTime;
 
     /** The list of events pending execution. */
-    private final SortedMap<TimelineEventId, TimelineEvent<?>> timeline = new TreeMap<>();
+    private final SortedMap<TimelineEventId, TimelineEvent> timeline = new TreeMap<>();
 
     /** The number of event that were scheduled. it is used to associate a unique number to events. */
     long revision = 0;
@@ -125,9 +124,9 @@ public final class Simulation implements DeepComparable<Simulation> {
      * @param event the event to cancel
      * @throws SimulationError {@inheritDoc}
      */
-    public void cancel(TimelineEvent<?> event) throws SimulationError {
+    public void cancel(TimelineEvent event) throws SimulationError {
         // remove the event from the timeline
-        var change = new TimelineEventCancelled(this, event);
+        var change = new TimelineEventCancelled(this, event.eventId);
         change.apply(this);
         this.publishChange(change);
 
@@ -144,100 +143,47 @@ public final class Simulation implements DeepComparable<Simulation> {
      * Executes the next event in the simulation.
      * @throws SimulationError {@inheritDoc}
      */
-    public TimelineEventValue step() throws SimulationError {
+    public TimelineEvent step() throws SimulationError {
         var event = timeline.get(timeline.firstKey());
 
         // step the simulation time forward
-        logger.debug("changing the simulation clock from {} to {}", time, event.scheduledTime);
+        logger.debug("changing the simulation clock from {} to {}", time, event.eventId.scheduledTime);
 
-        var change = new TimelineEventOccurred(this, event);
+        var change = new TimelineEventOccurred(this, event.eventId);
         change.apply(this);
         this.publishChange(change);
 
         event.onOccurrence(this);
-        return event.value;
-    }
-
-    /** Create a new event, and insert it on the timeline */
-    public <EntityT extends Entity<EntityT>, ValueT extends TimelineEventValue> TimelineEvent<ValueT> scheduleEvent(
-            EntityT entity,
-            double scheduledTime,
-            ValueT value
-    ) {
-        var change = new TimelineEventCreated<>(this, entity, this.revision, scheduledTime, value);
-        var event = change.apply(this, entity);
-        this.publishChange(change);
         return event;
     }
 
-    /** Create a change corresponding to the creation of an event, without applying it */
-    public <EntityT extends Entity<EntityT>,
-            ValueT extends TimelineEventValue
-            > TimelineEventCreated<EntityT, ValueT> prepareEvent(
-            EntityT entity,
-            double scheduledTime,
-            ValueT value
-    ) {
-        return new TimelineEventCreated<>(this, entity, this.revision, scheduledTime, value);
+    /** Create an event ID for a given time */
+    public TimelineEventId nextEventId(double scheduledTime) {
+        var res = new TimelineEventId(scheduledTime, revision);
+        // update the revision number of the simulation
+        this.revision++;
+        return res;
     }
 
-    public TimelineEvent<?> getTimelineEvent(TimelineEventId timelineEventId) {
-        return timeline.get(timelineEventId);
+    /** Inserts an event into the timeline */
+    public void scheduleEvent(TimelineEvent event) {
+        var eventId = event.eventId;
+        assert eventId.scheduledTime >= this.time;
+        assert this.revision > eventId.revision;
+
+        // add the event to the timeline
+        this.timeline.put(eventId, event);
+
+        event.setState(TimelineEvent.State.SCHEDULED);
+    }
+
+    public TimelineEvent getTimelineEvent(TimelineEventId eventId) {
+        return timeline.get(eventId);
     }
 
     // endregion
 
     // region CHANGES
-
-    public static final class TimelineEventCreated<EntityT extends Entity<EntityT>, ValueT extends TimelineEventValue>
-            extends EntityChange<EntityT, EntityID<EntityT>, TimelineEvent<ValueT>> {
-        private final long revision;
-        private final double scheduledTime;
-        // this should really be T, but isn't as we need moshi (our serialization framework)
-        // to understand this need to be treated as a polymorphic field
-        private final TimelineEventValue value;
-
-        // this cast is there to restore the static type parameter, because of the hack above
-        @SuppressWarnings("unchecked")
-        public ValueT getValue() {
-            return (ValueT) this.value;
-        }
-
-        TimelineEventCreated(Simulation sim, EntityT producer, long revision, double scheduledTime, ValueT value) {
-            super(sim, producer.getID());
-            this.revision = revision;
-            this.scheduledTime = scheduledTime;
-            this.value = value;
-        }
-
-        @Override
-        public final TimelineEvent<ValueT> apply(Simulation sim, EntityT entity) {
-            // sanity checks
-            assert scheduledTime >= sim.time;
-            assert this.revision == sim.revision;
-
-            var event = new TimelineEvent<>(entity, this.revision, this.scheduledTime, getValue());
-
-            // update the revision number of the simulation
-            sim.revision = this.revision + 1;
-
-            // add the event to the timeline
-            sim.timeline.put(event, event);
-
-            event.onScheduled();
-            return event;
-        }
-
-        @Override
-        public final String toString() {
-            return String.format(
-                    "TimelineEventCreated { revision=%d, scheduledTime=%f, value=%s }",
-                    revision,
-                    scheduledTime,
-                    value.toString()
-            );
-        }
-    }
 
     public static final class TimelineEventOccurred extends SimChange<Void> {
         public final TimelineEventId timelineEventId;
@@ -249,8 +195,7 @@ public final class Simulation implements DeepComparable<Simulation> {
          */
         public TimelineEventOccurred(Simulation sim, TimelineEventId timelineEventId) {
             super(sim);
-            // create a copy to avoid getting a superclass
-            this.timelineEventId = new TimelineEventId(timelineEventId);
+            this.timelineEventId = timelineEventId;
         }
 
         @Override
@@ -284,9 +229,7 @@ public final class Simulation implements DeepComparable<Simulation> {
          */
         public TimelineEventCancelled(Simulation sim, TimelineEventId timelineEventId) {
             super(sim);
-
-            // create a copy to avoid getting a superclass
-            this.timelineEventId = new TimelineEventId(timelineEventId);
+            this.timelineEventId = timelineEventId;
         }
 
         @Override
@@ -319,7 +262,7 @@ public final class Simulation implements DeepComparable<Simulation> {
             return false;
 
         for (var event : this.timeline.values()) {
-            var otherEvent = otherSim.timeline.getOrDefault(event, null);
+            var otherEvent = otherSim.timeline.getOrDefault(event.eventId, null);
 
             // stop if some event is in this simulation but not in the other
             if (otherEvent == null)

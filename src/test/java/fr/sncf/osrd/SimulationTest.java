@@ -18,10 +18,10 @@ public class SimulationTest {
         }
 
         public static class EventUpdate {
-            public final TimelineEvent<?> event;
-            public final TimelineEvent.State state;
+            public final SubscribersTimelineEvent<?> event;
+            public final SubscribersTimelineEvent.State state;
 
-            public EventUpdate(TimelineEvent<?> event, TimelineEvent.State state) {
+            public EventUpdate(SubscribersTimelineEvent<?> event, SubscribersTimelineEvent.State state) {
                 this.event = event;
                 this.state = state;
             }
@@ -30,13 +30,13 @@ public class SimulationTest {
         public final ArrayList<EventUpdate> events = new ArrayList<>();
 
         @Override
-        public void onEventOccurred(Simulation sim, TimelineEvent<?> event) {
-            events.add(new EventUpdate(event, TimelineEvent.State.OCCURRED));
+        public void onEventOccurred(Simulation sim, SubscribersTimelineEvent<?> event) {
+            events.add(new EventUpdate(event, SubscribersTimelineEvent.State.OCCURRED));
         }
 
         @Override
-        public void onEventCancelled(Simulation sim, TimelineEvent<?> event) {
-            events.add(new EventUpdate(event, TimelineEvent.State.CANCELLED));
+        public void onEventCancelled(Simulation sim, SubscribersTimelineEvent<?> event) {
+            events.add(new EventUpdate(event, SubscribersTimelineEvent.State.CANCELLED));
         }
     }
 
@@ -83,7 +83,7 @@ public class SimulationTest {
         }
 
         @Override
-        public void onEventOccurred(Simulation sim, TimelineEvent<?> event) {
+        public void onEventOccurred(Simulation sim, SubscribersTimelineEvent<?> event) {
             String msg = event.value.toString();
             sim.scheduleEvent(timerResponse, sim.getTime() + 0.5, new TEValue<>(msg + "_response"));
             if (sim.getTime() > 2.7)
@@ -91,7 +91,7 @@ public class SimulationTest {
         }
 
         @Override
-        public void onEventCancelled(Simulation sim, TimelineEvent<?> event) throws SimulationError {
+        public void onEventCancelled(Simulation sim, SubscribersTimelineEvent<?> event) throws SimulationError {
         }
     }
 

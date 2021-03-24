@@ -10,6 +10,7 @@ import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.trackgraph.BufferStop;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
+import fr.sncf.osrd.simulation.Scheduler;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -107,7 +108,7 @@ public class StaticSpeedLimitTest {
                 0,
                 phases
         );
-        sim.scheduler.planTrain(sim, schedule);
+        Scheduler.planTrain(sim, schedule);
 
         // run the simulation
         while (!sim.isSimulationOver())
