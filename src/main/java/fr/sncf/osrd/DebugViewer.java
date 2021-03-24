@@ -36,7 +36,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 // caused by the temporary opRef.begin == opRef.end
-@SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
+@SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY", "SIC_INNER_SHOULD_BE_STATIC_ANON"})
 public class DebugViewer extends ChangeConsumer {
     static final Logger logger = LoggerFactory.getLogger(DebugViewer.class);
 
@@ -44,6 +44,7 @@ public class DebugViewer extends ChangeConsumer {
     private final boolean realTime;
 
     private final SpriteManager spriteManager;
+    private final SingleGraph graph;
     private final Map<String, TrainData> trains = new HashMap<>();
     private final Map<Signal, Sprite> signalSprites = new HashMap<>();
     private double currentTime = Double.NaN;
@@ -73,10 +74,11 @@ public class DebugViewer extends ChangeConsumer {
     private static final String TRAIN_CSS = "text-alignment: under; shape: box; size: 25px, 10px; fill-color: #256ba8;"
             + "z-index: 2; sprite-orientation: to;";
 
-    private DebugViewer(Infra infra, boolean realTime, SpriteManager spriteManager) {
+    private DebugViewer(Infra infra, boolean realTime, SingleGraph graph, SpriteManager spriteManager) {
         this.infra = infra;
         this.realTime = realTime;
         this.spriteManager = spriteManager;
+        this.graph = graph;
     }
 
     /**
@@ -90,7 +92,7 @@ public class DebugViewer extends ChangeConsumer {
         graph.setAttribute("ui.quality");
         graph.setAttribute("ui.antialias");
         var spriteManager = new SpriteManager(graph);
-        var viewer = new DebugViewer(infra, realTime, spriteManager);
+        var viewer = new DebugViewer(infra, realTime, graph, spriteManager);
 
         // An edge with a size of graphview size of 1 is a 100m
         var referenceEdgeSize = 100.0;
