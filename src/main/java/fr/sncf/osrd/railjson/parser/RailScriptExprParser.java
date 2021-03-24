@@ -26,13 +26,26 @@ public class RailScriptExprParser {
     private final RSType[] argTypes;
 
     /** The number of slots required to evaluate the function */
-    public int slotsCount = 0;
+    public int argSlotCount = 0;
+    public int delaySlotCount = 0;
 
-    /** Allocates some slots */
-    public int reserveSlots(int newSlots) {
-        var slotRangeStart = slotsCount;
-        slotsCount += newSlots;
-        return slotRangeStart;
+    /** Reserve slots for arguments, and return the start of the allocated index space */
+    public int reserveArgSlots(int argSlotCount) {
+        var res = this.argSlotCount;
+        this.argSlotCount += argSlotCount;
+        return res;
+    }
+
+    /** Reserve slots for delayed values, and return the start of the allocated index space */
+    public int reserveDelaySlots(int delaySlotCount) {
+        var res = this.delaySlotCount;
+        this.delaySlotCount += delaySlotCount;
+        return res;
+    }
+
+    public void reserveSlots(int argSlotCount, int delaySlotCount) {
+        this.argSlotCount += argSlotCount;
+        this.delaySlotCount += delaySlotCount;
     }
 
     private RailScriptExprParser(
@@ -70,7 +83,7 @@ public class RailScriptExprParser {
         var parser = new RailScriptExprParser(aspectsMap, scriptFunctions, argumentNames, argumentTypes);
 
         // reserve slots for arguments before parsing
-        parser.reserveSlots(arguments.length);
+        parser.reserveArgSlots(arguments.length);
 
         var expr = parser.parse(rjsSignalFunction.body);
         return RSFunction.from(
@@ -79,7 +92,8 @@ public class RailScriptExprParser {
                 argumentTypes,
                 parseExprType(rjsSignalFunction.returnType),
                 expr,
-                parser.slotsCount
+                parser.argSlotCount,
+                parser.delaySlotCount
         );
     }
 
@@ -91,7 +105,7 @@ public class RailScriptExprParser {
     ) throws InvalidInfraException {
         var parser = new RailScriptExprParser(aspectsMap, scriptFunctions);
         var expr = parser.parseAspectSetExpr(rjsExpr);
-        return new RSStatefulExpr<>(expr, parser.slotsCount);
+        return new RSStatefulExpr<>(expr, parser.argSlotCount, parser.delaySlotCount);
     }
 
     private static RSType parseExprType(RJSRSType type) {
@@ -166,7 +180,7 @@ public class RailScriptExprParser {
         // primitives
         if (type == RJSRSExpr.Delay.class) {
             var delayExpr = (RJSRSExpr.Delay) expr;
-            var delaySlotIndex = reserveSlots(1);
+            var delaySlotIndex = reserveDelaySlots(1);
             return new RSExpr.Delay<>(delayExpr.duration, parse(delayExpr.expr), delaySlotIndex);
         }
         if (type == RJSRSExpr.SignalAspectCheck.class) {
@@ -267,8 +281,9 @@ public class RailScriptExprParser {
         var function = scriptFunctions.get(expr.function.id);
 
         // reserve enough slots for the function, and store the slot offset
-        var callOffset = reserveSlots(function.slotsCount);
-        return new RSExpr.Call<>(function, args, callOffset);
+        var res = new RSExpr.Call<>(function, args, this.argSlotCount, this.delaySlotCount);
+        reserveSlots(function.argSlotsCount, function.delaySlotsCount);
+        return res;
     }
 
     private RSExpr<RSAspectSet> parseAspectSet(RJSRSExpr.AspectSet expr) throws InvalidInfraException {

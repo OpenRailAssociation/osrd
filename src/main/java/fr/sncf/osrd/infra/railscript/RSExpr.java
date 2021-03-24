@@ -315,25 +315,27 @@ public abstract class RSExpr<T extends RSValue> {
     public static final class Call<T extends RSValue> extends RSExpr<T> {
         public final RSFunction<T> function;
         public final RSExpr<?>[] arguments;
-        public final int scopeOffset;
+        public final int argScopeOffset;
+        public final int delayScopeOffset;
 
         /** Creates an expression which calls a function */
-        public Call(RSFunction<T> function, RSExpr<?>[] arguments, int scopeOffset) {
+        public Call(RSFunction<T> function, RSExpr<?>[] arguments, int argScopeOffset, int delayScopeOffset) {
             this.function = function;
             this.arguments = arguments;
-            this.scopeOffset = scopeOffset;
+            this.argScopeOffset = argScopeOffset;
+            this.delayScopeOffset = delayScopeOffset;
         }
 
         @Override
         public T evaluate(RSExprState<?> state) {
             // evaluate the arguments outside of the scope
             for (int i = 0; i < arguments.length; i++)
-                state.setValue(scopeOffset + i, arguments[i].evaluate(state));
+                state.setArgValue(argScopeOffset + i, arguments[i].evaluate(state));
 
             // push the new scope and make the call
-            state.pushScope(scopeOffset);
+            state.pushScope(argScopeOffset, delayScopeOffset);
             var res = function.body.evaluate(state);
-            state.popScope(scopeOffset);
+            state.popScope(argScopeOffset, delayScopeOffset);
             return res;
         }
 
@@ -388,7 +390,7 @@ public abstract class RSExpr<T extends RSValue> {
         @Override
         @SuppressWarnings("unchecked")
         public T evaluate(RSExprState<?> state) {
-            return (T) state.getValue(slotIndex);
+            return (T) state.getArgValue(slotIndex);
         }
 
         @Override
@@ -425,23 +427,25 @@ public abstract class RSExpr<T extends RSValue> {
                 case INITIALIZE: {
                     // when initializing, all values propagate instantaneously
                     T newValue = expr.evaluate(state);
-                    state.setValue(delaySlotIndex, newValue);
+                    state.setDelayCurrentValue(delaySlotIndex, newValue);
+                    state.setDelayLaggingValue(delaySlotIndex, newValue);
                     return newValue;
                 }
                 case DELAY_UPDATE:
                     // if this slot received a planned update, we must return the value from the update
                     if (state.hasDelaySlotChanged(delaySlotIndex))
-                        return (T) state.getValue(delaySlotIndex);
+                        return (T) state.getDelayLaggingValue(delaySlotIndex);
                     // otherwise, behave as if the input changed
                     // FALLTHROUGH
                 case INPUT_CHANGE:
-                    var oldValue = (T) state.getValue(delaySlotIndex);
                     T newValue = expr.evaluate(state);
 
                     // if the value of the expression changed, plan an update
-                    if (!newValue.equals(oldValue))
+                    if (!newValue.equals((T) state.getDelayCurrentValue(delaySlotIndex))) {
                         state.planDelayedUpdate(delaySlotIndex, newValue, duration);
-                    return oldValue;
+                        state.setDelayCurrentValue(delaySlotIndex, newValue);
+                    }
+                    return (T) state.getDelayLaggingValue(delaySlotIndex);
             }
             return null;
         }

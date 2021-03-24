@@ -16,28 +16,22 @@ public class RSFunction<T extends RSValue> {
 
     public final RSExpr<T> body;
 
-    public final int slotsCount;
+    public final int argSlotsCount;
+    public final int delaySlotsCount;
 
     public int getArgCount() {
         return argNames.length;
     }
 
-    /**
-     * Represents a function in RailScript
-     * @param functionName name of the function
-     * @param argNames list of the argument names
-     * @param argTypes list of the argument types
-     * @param returnsType the return type of the function
-     * @param body the expression to evaluate when the function is called
-     * @param slotsCount the number of slots required to evaluate the function
-     */
+    /** Represents a function in RailScript */
     public RSFunction(
             String functionName,
             String[] argNames,
             RSType[] argTypes,
             RSType returnsType,
             RSExpr<T> body,
-            int slotsCount
+            int argSlotsCount,
+            int delaySlotsCount
     ) {
         assert argNames.length == argTypes.length;
         this.functionName = functionName;
@@ -45,7 +39,8 @@ public class RSFunction<T extends RSValue> {
         this.argTypes = argTypes;
         this.returnsType = returnsType;
         this.body = body;
-        this.slotsCount = slotsCount;
+        this.argSlotsCount = argSlotsCount;
+        this.delaySlotsCount = delaySlotsCount;
     }
 
     /** Creates and type checks a new signal state evaluation function */
@@ -55,9 +50,11 @@ public class RSFunction<T extends RSValue> {
             RSType[] argumentTypes,
             RSType returnType,
             RSExpr<T> body,
-            int slotsCount
+            int argSlotsCount,
+            int delaySlotsCount
     ) throws InvalidInfraException {
-        var function = new RSFunction<>(functionName, argumentNames, argumentTypes, returnType, body, slotsCount);
+        var function = new RSFunction<>(
+                functionName, argumentNames, argumentTypes, returnType, body, argSlotsCount, delaySlotsCount);
         if (function.body.getType(argumentTypes) != returnType)
             throw new InvalidInfraException("return type mismatch in function" + functionName);
         return function;

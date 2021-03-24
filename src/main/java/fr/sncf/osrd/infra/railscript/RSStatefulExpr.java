@@ -5,15 +5,18 @@ import fr.sncf.osrd.infra.railscript.value.RSValue;
 
 public class RSStatefulExpr<T extends RSValue> {
     public final RSExpr<T> rootExpr;
-    public final int stateSize;
+    public final int argSlotCount;
+    public final int delaySlotCount;
 
-    public RSStatefulExpr(RSExpr<T> rootExpr, int stateSize) {
+    /** Create a new state container for a RailScript expression */
+    public RSStatefulExpr(RSExpr<T> rootExpr, int argSlotCount, int delaySlotCount) {
         this.rootExpr = rootExpr;
-        this.stateSize = stateSize;
+        this.argSlotCount = argSlotCount;
+        this.delaySlotCount = delaySlotCount;
     }
 
     public RSExprState<T> makeState() {
-        return new RSExprState<>(rootExpr, stateSize);
+        return new RSExprState<>(rootExpr, argSlotCount, delaySlotCount);
     }
 
     public void accept(RSExprVisitor visitor) throws InvalidInfraException {
