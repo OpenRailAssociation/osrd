@@ -131,13 +131,22 @@ public class TrainPhysicsIntegrator {
         return currentSpeed * timeStep + 0.5 * acceleration * timeStep * timeStep;
     }
 
+    private static double computeTimeDelta(double currentSpeed, double acceleration, double positionDelta) {
+        // Solve: acceleration / 2 * t^2 + currentSpeed * t - positionDelta = 0
+        if (acceleration == 0)
+            return positionDelta / currentSpeed;
+        var numerator = -currentSpeed + Math.sqrt(currentSpeed * currentSpeed + 2 * positionDelta * acceleration);
+        return numerator / (2 * acceleration);
+    }
+
     /**
      * Compute the train's acceleration given an action force
      * @param actionTractionForce the force indirectly applied by the driver
      * @param actionBrakingForce the braking force indirectly applied by the driver
+     * @param maxDistance the maximum distance the train can go
      * @return the new speed of the train
      */
-    public PositionUpdate computeUpdate(double actionTractionForce, double actionBrakingForce) {
+    public PositionUpdate computeUpdate(double actionTractionForce, double actionBrakingForce, double maxDistance) {
         // the rolling resistance is the sum of forces that always go the direction
         // opposite to the train's movement
         assert actionBrakingForce >= 0.;
@@ -172,33 +181,23 @@ public class TrainPhysicsIntegrator {
         // when the train changes direction, the rolling resistance doesn't apply
         // in the same direction for all the integration step.
 
-        // general case: if the speed doesn't change sign, there's no need to
-        // fixup the integration of the rolling resistance
-        if (currentSpeed == 0.0 || Math.signum(newSpeed) == Math.signum(currentSpeed))
-            return new PositionUpdate(
-                    timeStep,
-                    computePositionDelta(currentSpeed, fullStepAcceleration, timeStep),
-                    newSpeed);
+        var timeDelta = timeStep;
 
-        // compute the integration step at which the speed is zero
-        // currentSpeed + signChangeTimeStep * fullStepAcceleration = 0
-        // or
-        // finalSpeed - currentSpeed = signChangeTimeStep * fullStepAcceleration, where finalSpeed = 0
-        double signChangeTimeStep = -currentSpeed / fullStepAcceleration;
+        // if the speed change sign we integrate only the step at which the speed is zero
+        if (currentSpeed != 0.0 && Math.signum(newSpeed) != Math.signum(currentSpeed)) {
+            timeDelta = -currentSpeed / fullStepAcceleration;
+            newSpeed = 0.;
+        }
 
-        var remainingStep = timeStep - signChangeTimeStep;
+        // TODO the integration of the rolling resistance
+        var newPositionDelta = computePositionDelta(currentSpeed, fullStepAcceleration, timeDelta);
 
-        // the integral of the speed up to the sign change
-        var signChangePositionDelta = computePositionDelta(currentSpeed, fullStepAcceleration, signChangeTimeStep);
+        if (newPositionDelta <= maxDistance)
+            return new PositionUpdate(timeDelta, newPositionDelta, newSpeed);
 
-        var totalOtherForce = computeTotalForce(0.0, actionTractionForce);
-        if (Math.abs(totalOtherForce) <= rollingResistance)
-            return new PositionUpdate(signChangeTimeStep, signChangePositionDelta, 0.0);
-
-        effectiveRollingResistance = Math.copySign(rollingResistance, -totalOtherForce);
-        var remainingStepAcceleration = computeAcceleration(effectiveRollingResistance, actionTractionForce);
-        var remainingPositionDelta = computePositionDelta(0.0, remainingStepAcceleration, remainingStep);
-        newSpeed = 0.0 + remainingStepAcceleration * remainingStep;
-        return new PositionUpdate(timeStep, signChangePositionDelta + remainingPositionDelta, newSpeed);
+        timeDelta = computeTimeDelta(currentSpeed, fullStepAcceleration, maxDistance);
+        assert timeDelta < timeStep && timeDelta > 0;
+        newSpeed = currentSpeed + fullStepAcceleration * timeDelta;
+        return  new PositionUpdate(timeDelta, maxDistance, newSpeed);
     }
 }

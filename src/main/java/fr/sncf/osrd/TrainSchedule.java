@@ -53,7 +53,7 @@ public final class TrainSchedule {
      * If the path position is higher than the fullPath length the function return null. */
     public TrackSectionLocation findLocation(double pathPosition) {
         for (var track : fullPath) {
-            if (pathPosition < track.length()) {
+            if (pathPosition <= track.length()) {
                 var location = track.getBeginPosition();
                 if (track.direction == EdgeDirection.START_TO_STOP)
                     location += pathPosition;

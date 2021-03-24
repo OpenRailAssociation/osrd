@@ -18,7 +18,7 @@ public class TrainPhysics {
         // 40m / km slope?
         for (int i = 0; i < 10; i++) {
             var simulator = TrainPhysicsIntegrator.make(1.0, REALISTIC_FAST_TRAIN, speed, 40);
-            speed = simulator.computeUpdate(0.0, 0.0).speed;
+            speed = simulator.computeUpdate(0.0, 0.0, 1000.).speed;
         }
 
         // we expect about -4m/s (the train goes backward)
@@ -35,7 +35,7 @@ public class TrainPhysics {
         // how fast would a train go after 10 steps of 1 sec, full throttle on a 45deg slope?
         for (int i = 0; i < 10; i++) {
             var simulator = TrainPhysicsIntegrator.make(1.0, rollingStock, speed, 1000);
-            speed = simulator.computeUpdate(maxTraction, 0.0).speed;
+            speed = simulator.computeUpdate(maxTraction, 0.0, 1000.).speed;
         }
 
         // we expect the train to go pretty fast
@@ -52,7 +52,7 @@ public class TrainPhysics {
         for (int i = 0; i < 20 * 60; i++) {
             double maxTraction = rollingStock.getMaxEffort(speed);
             var simulator = TrainPhysicsIntegrator.make(1.0, rollingStock, speed, 0.0);
-            var update = simulator.computeUpdate(maxTraction, 0.0);
+            var update = simulator.computeUpdate(maxTraction, 0.0, 1000.);
             speed = update.speed;
         }
 
@@ -64,7 +64,7 @@ public class TrainPhysics {
         for (int i = 0; i < 20 * 60; i++) {
             double maxTraction = rollingStock.getMaxEffort(speed);
             var simulator = TrainPhysicsIntegrator.make(1.0, rollingStock, speed, 35.0);
-            var update = simulator.computeUpdate(maxTraction, 0.0);
+            var update = simulator.computeUpdate(maxTraction, 0.0, 1000.);
             speed = update.speed;
         }
 
@@ -81,7 +81,7 @@ public class TrainPhysics {
 
         // make a huge traction effort
         var simulator = TrainPhysicsIntegrator.make(1.0, rollingStock, speed, 0.0);
-        speed = simulator.computeUpdate(500000.0, 0.0).speed;
+        speed = simulator.computeUpdate(500000.0, 0.0, 1000.).speed;
 
         assertTrue(speed > 0.5);
 
@@ -89,14 +89,14 @@ public class TrainPhysics {
         for (int i = 0; i < 60; i++) {
             simulator = TrainPhysicsIntegrator.make(1.0, rollingStock, speed, 0.0);
             double prevSpeed = speed;
-            speed = simulator.computeUpdate(0.0, 0.0).speed;
+            speed = simulator.computeUpdate(0.0, 0.0, 1000.).speed;
             assertTrue(speed < prevSpeed && speed > 0.);
         }
 
         // another minute later
         for (int i = 0; i < 60; i++) {
             simulator = TrainPhysicsIntegrator.make(1.0, rollingStock, speed, 0.0);
-            speed = simulator.computeUpdate(0.0, 0.0).speed;
+            speed = simulator.computeUpdate(0.0, 0.0, 1000.).speed;
         }
 
         // it should be stopped
