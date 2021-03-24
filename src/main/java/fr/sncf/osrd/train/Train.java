@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
+import java.util.List;
 
 public class Train extends AbstractEntity<Train, TrainID> {
     static final Logger logger = LoggerFactory.getLogger(Train.class);
@@ -40,7 +41,7 @@ public class Train extends AbstractEntity<Train, TrainID> {
     public static Train create(
             Simulation sim,
             TrainSchedule schedule,
-            CryoList<SpeedController> controllers
+            List<SpeedController> controllers
     ) throws SimulationError {
         // the train starts out as a point like object on the beginning of the route
         var initialPosition = new ArrayDeque<TrackSectionRange>();
@@ -88,7 +89,7 @@ public class Train extends AbstractEntity<Train, TrainID> {
     }
 
     @Override
-    public void onEventOccurred(Simulation sim, TimelineEvent<?> event) throws SimulationError {
+    public void onEventOccurred(Simulation sim, SubscribersTimelineEvent<?> event) throws SimulationError {
         // TODO find a smarter way to do it
         if (lastState.currentPhaseState.getClass() == SignalNavigatePhase.State.class) {
             var navigateState = (SignalNavigatePhase.State) lastState.currentPhaseState;
@@ -119,7 +120,7 @@ public class Train extends AbstractEntity<Train, TrainID> {
     }
 
     @Override
-    public void onEventCancelled(Simulation sim, TimelineEvent<?> event) throws SimulationError {
+    public void onEventCancelled(Simulation sim, SubscribersTimelineEvent<?> event) throws SimulationError {
         if (event.value.getClass() == TrainStateChange.class)
             scheduleStateChange(sim);
     }

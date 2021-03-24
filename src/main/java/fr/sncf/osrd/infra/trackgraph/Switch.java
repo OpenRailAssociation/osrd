@@ -87,10 +87,10 @@ public class Switch extends TrackNode {
         }
 
         @Override
-        public void onEventOccurred(Simulation sim, TimelineEvent<?> event) { }
+        public void onEventOccurred(Simulation sim, SubscribersTimelineEvent<?> event) { }
 
         @Override
-        public void onEventCancelled(Simulation sim, TimelineEvent<?> event) { }
+        public void onEventCancelled(Simulation sim, SubscribersTimelineEvent<?> event) { }
 
         @Override
         public int getEnumValue() {

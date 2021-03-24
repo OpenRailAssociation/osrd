@@ -1,73 +1,27 @@
 package fr.sncf.osrd.simulation;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.utils.DeepComparable;
 
-/**
- * A base event type. Derived types implement updateState to notify some other components about changes.
- * @param <T> the type of the value
- */
-// even though this warning is ignored, it is sort of correct:
-// timeline events are equal when their identifier is.
-// **it does not check for the exact content of the timeline event**
-@SuppressFBWarnings({"EQ_DOESNT_OVERRIDE_EQUALS"})
-public final class TimelineEvent<T extends TimelineEventValue> extends TimelineEventId
-        implements DeepComparable<TimelineEvent<?>> {
-    public final Entity<?> source;
+public abstract class TimelineEvent implements DeepComparable<TimelineEvent> {
+    public final TimelineEventId eventId;
 
-    // some value associated with the event
-    public final T value;
-
-    void onScheduled() {
-        setState(State.SCHEDULED);
-    }
-
-    void onOccurrence(Simulation sim) throws SimulationError {
-        setState(State.OCCURRED);
-        for (var subscriber : source.getSubscribers())
-            subscriber.onEventOccurred(sim, this);
-    }
-
-    void onCancellation(Simulation sim) throws SimulationError {
-        setState(State.CANCELLED);
-        for (var subscriber : source.getSubscribers())
-            subscriber.onEventCancelled(sim, this);
-    }
-
-    /**
-     * Creates a new event
-     *
-     * @param source the entity the event was generated from
-     * @param revision the revision of the event
-     * @param scheduledTime the time at will the event is planned to happen
-     * @param value the value associated with the event
-     */
-    TimelineEvent(Entity<?> source, long revision, double scheduledTime, T value) {
-        super(scheduledTime, revision);
-        this.source = source;
+    public TimelineEvent(TimelineEventId eventId) {
         this.state = State.UNREGISTERED;
-        this.value = value;
+        this.eventId = eventId;
     }
+
+    abstract void onOccurrence(Simulation sim) throws SimulationError;
+
+    abstract void onCancellation(Simulation sim) throws SimulationError;
 
     /** The state of the event is only kept track of to enforce correct use of the API. */
     // region STATE_TRACKING
 
     private State state;
 
-    private void setState(State newState) {
+    void setState(State newState) {
         assert this.state.hasTransitionTo(newState);
         this.state = newState;
-    }
-
-    @Override
-    public boolean deepEquals(TimelineEvent<?> other) {
-        if (!super.equals(other))
-            return false;
-        if (!value.deepEquals(other.value))
-            return false;
-        if (!source.getID().equals(other.source.getID()))
-            return false;
-        return true;
     }
 
     public enum State {

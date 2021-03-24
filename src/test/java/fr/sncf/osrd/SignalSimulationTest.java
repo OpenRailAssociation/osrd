@@ -95,14 +95,14 @@ public class SignalSimulationTest {
         @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST")
         public void onEventOccurred(
                 Simulation sim,
-                TimelineEvent<?> event
+                SubscribersTimelineEvent<?> event
         ) {
             if (event.value.getClass() == SignalAspectChange.class)
                 masterAspectChanged(sim, (SignalAspectChange) event.value);
         }
 
         @Override
-        public void onEventCancelled(Simulation sim, TimelineEvent<?> event) {
+        public void onEventCancelled(Simulation sim, SubscribersTimelineEvent<?> event) {
         }
 
         private void masterAspectChanged(

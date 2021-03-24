@@ -9,6 +9,7 @@ import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.infra.changes.TVDSectionFreedChange;
 import fr.sncf.osrd.utils.DeepEqualsUtils;
 import fr.sncf.osrd.utils.graph.BiNEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -94,10 +95,10 @@ public class Route extends BiNEdge<Route> {
         }
 
         @Override
-        public void onEventOccurred(Simulation sim, TimelineEvent<?> event) {
+        public void onEventOccurred(Simulation sim, SubscribersTimelineEvent<?> event) {
             switch (status) {
                 case FREE:
-                    if (event.value.getClass() == TVDSection.TVDSectionReservedChange.class) {
+                    if (event.value.getClass() == TVDSection.TVDSectionReservationChange.class) {
                         var change = new Route.RouteStatusChange(sim, this, RouteStatus.CONFLICT);
                         change.apply(sim, this);
                         sim.publishChange(change);
@@ -114,13 +115,13 @@ public class Route extends BiNEdge<Route> {
                     break;
                 case OCCUPIED:
                     if (event.value.getClass() == TVDSection.TVDSectionNotOccupied.class) {
-                        var tvdSectionNotOcucupied = (TVDSection.State) event.source;
+                        var tvdSectionNotOccupied = (TVDSection.State) event.source;
                         if (route.transitType == TransitType.FLEXIBLE) {
-                            tvdSectionNotOcucupied.free(sim);
+                            tvdSectionNotOccupied.free(sim);
                         } else {
                             // The train has covered the entire route
                             var lastTvdSection = route.tvdSectionsPath.get(route.tvdSectionsPath.size() - 1);
-                            if (lastTvdSection.index == tvdSectionNotOcucupied.id.getIndex()) {
+                            if (lastTvdSection.index == tvdSectionNotOccupied.id.getIndex()) {
                                 for (var tvdSection : tvdSectionStates)
                                     tvdSection.free(sim);
                             }
@@ -128,7 +129,7 @@ public class Route extends BiNEdge<Route> {
                     }
                     break;
             }
-            if (event.value.getClass() == TVDSection.TVDSectionFreedChange.class) {
+            if (event.value.getClass() == TVDSectionFreedChange.class) {
                 for (var tvdSectionState : tvdSectionStates) {
                     if (tvdSectionState.isReserved())
                         return;
@@ -141,7 +142,7 @@ public class Route extends BiNEdge<Route> {
         }
 
         @Override
-        public void onEventCancelled(Simulation sim, TimelineEvent<?> event) { }
+        public void onEventCancelled(Simulation sim, SubscribersTimelineEvent<?> event) { }
 
         /** Reserve a route and his tvd sections. Routes that share tvd sections will have the status CONFLICT */
         public void reserve(Simulation sim) {

@@ -5,7 +5,7 @@ import fr.sncf.osrd.utils.DeepComparable;
 
 import java.util.Objects;
 
-public class TimelineEventId implements Comparable<TimelineEventId> {
+public final class TimelineEventId implements Comparable<TimelineEventId> {
     // the simulation time the event is planned to execute at
     public final double scheduledTime;
 
@@ -13,14 +13,9 @@ public class TimelineEventId implements Comparable<TimelineEventId> {
     // this is needed to enforce an absolute event order
     final long revision;
 
-    public TimelineEventId(double scheduledTime, long revision) {
+    TimelineEventId(double scheduledTime, long revision) {
         this.scheduledTime = scheduledTime;
         this.revision = revision;
-    }
-
-    public TimelineEventId(TimelineEventId o) {
-        this.scheduledTime = o.scheduledTime;
-        this.revision = o.revision;
     }
 
     // region STD_OVERRIDES
@@ -31,16 +26,16 @@ public class TimelineEventId implements Comparable<TimelineEventId> {
         if (obj == null)
             return false;
 
-        if (!(obj instanceof TimelineEventId))
+        if (obj.getClass() != TimelineEventId.class)
             return false;
 
-        var o = (TimelineEvent<?>) obj;
+        var o = (TimelineEventId) obj;
         return scheduledTime == o.scheduledTime && revision == o.revision;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(scheduledTime, revision);
+        return Double.hashCode(scheduledTime) + Long.hashCode(revision);
     }
 
     @Override
