@@ -135,7 +135,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
     private void step(
             Train.TrainStateChange locationChange,
-            @SuppressWarnings("SameParameterValue") double timeStep
+            @SuppressWarnings("SameParameterValue") double timeStep,
+            double distanceStep
     ) {
 
         // TODO: find out the actual max braking / acceleration force
@@ -171,7 +172,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         var brakingForce = action.brakingForce();
 
         // run the physics sim
-        var update = integrator.computeUpdate(traction, brakingForce);
+        var update = integrator.computeUpdate(traction, brakingForce, distanceStep);
 
         // update location
         location.updatePosition(rollingStock.length, update.positionDelta);
@@ -194,7 +195,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         for (int i = 0; location.getPathPosition() < goalPathPosition; i++) {
             if (i >= 10000)
                 throw new SimulationError("train physics numerical integration doesn't seem to stop");
-            step(locationChange, 1.0);
+            var distanceStep = goalPathPosition - location.getPathPosition();
+            step(locationChange, 1.0, distanceStep);
         }
 
         return locationChange;

@@ -75,7 +75,7 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         var neighbors = infra.trackGraph.getEndNeighborRels(curTrackSectionPos.edge, curTrackSectionPos.direction);
 
         if (neighbors.isEmpty())
-            return null;
+            throw new RuntimeException("Couldn't find a next track section");
 
         var next = neighbors.get(0);
         var nextTrackSection = next.getEdge(curTrackSectionPos.edge, curTrackSectionPos.direction);
@@ -126,8 +126,6 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         // add edges to the current edges queue as the train moves forward
         while (remainingDist > 0) {
             var nextPos = nextTrackSectionPosition(remainingDist);
-            if (nextPos == null)
-                return targetDist - remainingDist;
             // this should kind of be nextPos.length(), but doing it this way avoids float compare errors
             remainingDist -= nextPos.edge.length;
             trackSectionRanges.addFirst(nextPos);
