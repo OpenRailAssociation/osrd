@@ -25,7 +25,7 @@ class PrettyPrinterTest {
                         new RSExpr.Not(RSExpr.False.INSTANCE)
                 })
         });
-        return new RSFunction<>("function_test", new String[0], new RSType[0], RSType.BOOLEAN, body, 0);
+        return new RSFunction<>("function_test", new String[0], new RSType[0], RSType.BOOLEAN, body, 0, 0);
     }
 
     private RSFunction<RSBool> simpleIfFunction() {
@@ -40,7 +40,7 @@ class PrettyPrinterTest {
                 new RSType[]{RSType.BOOLEAN, RSType.BOOLEAN},
                 RSType.BOOLEAN,
                 body,
-                2);
+                2, 0);
     }
 
     @Test
@@ -124,7 +124,7 @@ class PrettyPrinterTest {
         var call = new RSExpr.Call<RSBool>(fct, new RSExpr<?>[]{
                 RSExpr.True.INSTANCE,
                 RSExpr.False.INSTANCE
-        }, 0);
+        }, 0, 0);
         printer.visit(call);
 
         var expected = String.join("\n", "function_test(true, false)");
