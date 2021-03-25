@@ -9,7 +9,7 @@ import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.simulation.*;
-import fr.sncf.osrd.utils.DeepEqualsUtils;
+import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.graph.BiNEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
@@ -65,6 +65,7 @@ public class Route extends BiNEdge<Route> {
             this.status = RouteStatus.FREE;
         }
 
+        /** Notify the route that one of his tvd section isn't occupied anymore */
         public void onTvdSectionUnoccupied(Simulation sim, TVDSection.State tvdSectionUnoccupied) {
             if (status != RouteStatus.OCCUPIED)
                 return;
@@ -83,6 +84,7 @@ public class Route extends BiNEdge<Route> {
             }
         }
 
+        /** Notify the route that one of his tvd section was freed */
         public void onTvdSectionFreed(Simulation sim) {
             if (status == RouteStatus.FREE)
                 return;
@@ -100,6 +102,7 @@ public class Route extends BiNEdge<Route> {
             notifySignals(sim);
         }
 
+        /** Notify the route that one of his tvd section is reserved */
         public void onTvdSectionReserved(Simulation sim) {
             if (status != RouteStatus.FREE)
                 return;
@@ -109,6 +112,7 @@ public class Route extends BiNEdge<Route> {
             notifySignals(sim);
         }
 
+        /** Notify the route that one of his tvd section is occupied */
         public void onTvdSectionOccupied(Simulation sim) {
             if (status != RouteStatus.RESERVED)
                 return;
@@ -163,8 +167,7 @@ public class Route extends BiNEdge<Route> {
         }
     }
 
-    public static class RouteStatusChange extends EntityChange<Route.State, Void>
-            implements TimelineEventValue {
+    public static class RouteStatusChange extends EntityChange<Route.State, Void> {
         public final RouteStatus newStatus;
         public final int routeIndex;
 
@@ -184,15 +187,6 @@ public class Route extends BiNEdge<Route> {
         @Override
         public Route.State getEntity(Simulation sim) {
             return sim.infraState.getRouteState(routeIndex);
-        }
-
-        @Override
-        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-        public boolean deepEquals(TimelineEventValue other) {
-            if (other.getClass() != RouteStatusChange.class)
-                return false;
-            var o = (RouteStatusChange) other;
-            return o.newStatus == newStatus && o.routeIndex == routeIndex;
         }
     }
 

@@ -113,12 +113,11 @@ public final class TVDSection implements Comparable<TVDSection> {
         }
     }
 
-    public static final class TVDSectionReservationChange extends EntityChange<TVDSection.State, Void>
-            implements TimelineEventValue {
+    public static final class TVDSectionReservationChange extends EntityChange<TVDSection.State, Void> {
         public final boolean newReservation;
         public final int tvdSectionIndex;
 
-        public TVDSectionReservationChange(Simulation sim, TVDSection.State entity, boolean newReservation) {
+        TVDSectionReservationChange(Simulation sim, TVDSection.State entity, boolean newReservation) {
             super(sim);
             this.newReservation = newReservation;
             this.tvdSectionIndex = entity.tvdSection.index;
@@ -134,15 +133,6 @@ public final class TVDSection implements Comparable<TVDSection> {
         @Override
         public TVDSection.State getEntity(Simulation sim) {
             return sim.infraState.getTvdSectionState(tvdSectionIndex);
-        }
-
-        @Override
-        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-        public boolean deepEquals(TimelineEventValue other) {
-            if (other.getClass() != TVDSectionReservationChange.class)
-                return false;
-            var o = (TVDSectionReservationChange) other;
-            return o.tvdSectionIndex == tvdSectionIndex && o.newReservation == newReservation;
         }
     }
 }

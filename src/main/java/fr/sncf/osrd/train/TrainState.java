@@ -218,7 +218,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         return integrator.actionToTargetSpeed(directive.allowedSpeed, rollingStock);
     }
 
-    void scheduleStateChange(Train train, Simulation sim) throws SimulationError {
+    void simulatePhase(Train train, Simulation sim) throws SimulationError {
         currentPhaseState.simulate(sim, train, this);
     }
 

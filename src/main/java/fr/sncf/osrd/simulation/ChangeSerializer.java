@@ -41,7 +41,6 @@ public class ChangeSerializer {
                     TrainStateChange.SpeedUpdates::new))
             .add(new SerializableDoubleAdapter())
             .add(adaptPolymorphicType(Change.class, "changeType"))
-            .add(adaptPolymorphicType(TimelineEventValue.class, "valueType"))
             .add(adaptPolymorphicType(SpeedController.class, "controllerType"))
             .build()
             .adapter(Change.class);

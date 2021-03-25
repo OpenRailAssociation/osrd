@@ -82,7 +82,7 @@ public class Signal implements ActionPoint {
             updateAspect(sim, newAspects);
         }
 
-        /**  */
+        /** Notify the signal when a SignalDelayUpdateEvent occurred */
         public void notifyDelayChange(Simulation sim, int delaySlot, RSValue value) {
             var delayHandler = new DelayHandler(sim, this);
             var newAspects = exprState.evalDelayUpdate(sim.infraState, delayHandler, delaySlot, value);
@@ -101,7 +101,7 @@ public class Signal implements ActionPoint {
             }
         }
 
-    @Override
+        @Override
         @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
         public boolean deepEquals(RSValue otherVal) {
             if (otherVal.getClass() != Signal.State.class)
@@ -115,8 +115,7 @@ public class Signal implements ActionPoint {
         }
     }
 
-    public static final class SignalAspectChange extends EntityChange<State, Void>
-            implements TimelineEventValue {
+    public static final class SignalAspectChange extends EntityChange<State, Void> {
         public final RSAspectSet aspects;
         public final int signalIndex;
 
@@ -136,16 +135,33 @@ public class Signal implements ActionPoint {
         public Signal.State getEntity(Simulation sim) {
             return sim.infraState.getSignalState(signalIndex);
         }
+    }
+
+    public static final class SignalPlanDelayUpdateChange extends EntityChange<Signal.State, Void> {
+        public final int delaySlot;
+        public final RSValue value;
+        private final int signalIndex;
+        private final double time;
+
+        /** Change that create a SignalDelayUpdateEvent when applied. */
+        public SignalPlanDelayUpdateChange(Simulation sim, int delaySlot, RSValue value, int signalIndex, double time) {
+            super(sim);
+            this.delaySlot = delaySlot;
+            this.value = value;
+            this.signalIndex = signalIndex;
+            this.time = time;
+        }
 
         @Override
-        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-        public boolean deepEquals(TimelineEventValue other) {
-            if (other.getClass() != SignalAspectChange.class)
-                return false;
-            var o = ((SignalAspectChange) other);
-            if (!super.equals(o))
-                return false;
-            return signalIndex == o.signalIndex;
+        public Void apply(Simulation sim, Signal.State entity) {
+            var event = new SignalDelayUpdateEvent(sim.nextEventId(time), delaySlot, value, entity);
+            sim.scheduleEvent(event);
+            return null;
+        }
+
+        @Override
+        public Signal.State getEntity(Simulation sim) {
+            return sim.infraState.getSignalState(signalIndex);
         }
     }
 
@@ -154,7 +170,7 @@ public class Signal implements ActionPoint {
         public final RSValue value;
         private final int signalIndex;
 
-        public SignalDelayUpdateEvent(TimelineEventId eventId, int delaySlot, RSValue value, Signal.State entity) {
+        private SignalDelayUpdateEvent(TimelineEventId eventId, int delaySlot, RSValue value, Signal.State entity) {
             super(eventId);
             this.delaySlot = delaySlot;
             this.value = value;
@@ -180,6 +196,13 @@ public class Signal implements ActionPoint {
             if (delaySlot != ((SignalDelayUpdateEvent) other).delaySlot)
                 return false;
             return value.deepEquals(o.value);
+        }
+
+        /** Plan a SignalDelayUpdateEvent creating a change that schedule it */
+        public static void plan(Simulation sim, double time, int delaySlot, RSValue value, Signal.State signal) {
+            var change = new SignalPlanDelayUpdateChange(sim, delaySlot, value, signal.signal.index, time);
+            change.apply(sim, signal);
+            sim.publishChange(change);
         }
     }
 
@@ -221,9 +244,7 @@ public class Signal implements ActionPoint {
 
         @Override
         public void planDelayedUpdate(int delaySlot, RSValue value, double delay) {
-            var eventId = sim.nextEventId(sim.getTime() + delay);
-            var event = new SignalDelayUpdateEvent(eventId, delaySlot, value, signalState);
-            sim.scheduleEvent(event);
+            SignalDelayUpdateEvent.plan(sim, sim.getTime() + delay, delaySlot, value, signalState);
         }
     }
 }

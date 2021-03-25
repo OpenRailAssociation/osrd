@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.utils.DeepComparable;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class SimulationTest {
         }
     }
 
-    public static class TEValue<T> implements TimelineEventValue {
+    public static class TEValue<T> implements DeepComparable<TimelineEventValue> {
         public final T value;
 
         public TEValue(T value) {
