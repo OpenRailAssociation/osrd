@@ -247,7 +247,7 @@ public abstract class RSExpr<T extends RSValue> {
     public static final class SwitchRef extends RSExpr<Switch.State> {
         public final String switchName;
 
-        public Switch switcRef = null;
+        public Switch switchRef = null;
 
         public SwitchRef(String switchName) {
             this.switchName = switchName;
@@ -255,14 +255,14 @@ public abstract class RSExpr<T extends RSValue> {
 
         /** Resolve the name of the route reference into a route */
         public void resolve(Map<String, Switch> switches) throws InvalidInfraException {
-            switcRef = switches.get(switchName);
-            if (switcRef == null)
+            switchRef = switches.get(switchName);
+            if (switchRef == null)
                 throw new InvalidInfraException("unknown switch " + switchName);
         }
 
         @Override
         public Switch.State evaluate(RSExprState<?> state) {
-            return state.infraState.getSwitchState(switcRef.switchIndex);
+            return state.infraState.getSwitchState(switchRef.switchIndex);
         }
 
         @Override

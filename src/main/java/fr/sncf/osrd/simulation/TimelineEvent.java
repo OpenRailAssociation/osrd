@@ -24,6 +24,10 @@ public abstract class TimelineEvent implements DeepComparable<TimelineEvent> {
         this.state = newState;
     }
 
+    public State getState() {
+        return state;
+    }
+
     public enum State {
         // the event wasn't registered with the simulation
         UNREGISTERED(0),

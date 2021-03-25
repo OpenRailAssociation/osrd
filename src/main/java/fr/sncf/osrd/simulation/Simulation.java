@@ -265,6 +265,12 @@ public final class Simulation implements DeepComparable<Simulation> {
                 return false;
         }
 
+        // this slightly weird edge case is only used for testing
+        if (this.infraState == null && otherSim.infraState == null)
+            return true;
+        if (this.infraState == null || otherSim.infraState == null)
+            return false;
+
         return this.infraState.deepEquals(otherSim.infraState);
     }
 }

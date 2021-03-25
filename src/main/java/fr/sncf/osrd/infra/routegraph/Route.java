@@ -48,6 +48,7 @@ public class Route extends BiNEdge<Route> {
         this.switchesPosition = switchesPosition;
         graph.registerEdge(this);
         this.tvdSectionsPath = tvdSectionsPath;
+        this.signalSubscribers = new ArrayList<>();
     }
 
     public State newState() {

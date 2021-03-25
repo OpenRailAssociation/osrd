@@ -18,7 +18,13 @@ public class ChangeReplayChecker extends ChangeConsumer {
 
     /** Creates a change replay checker */
     public static ChangeReplayChecker from(Simulation refSim) {
-        var replaySim = Simulation.createFromInfra(refSim.infra, refSim.startTime, null);
+        var refInfra = refSim.infra;
+        Simulation replaySim;
+        if (refInfra != null)
+            replaySim = Simulation.createFromInfra(refInfra, refSim.startTime, null);
+        else
+            replaySim = Simulation.createWithoutInfra(refSim.startTime, null);
+
         assert replaySim.deepEquals(refSim) : "the reference and replay simulation shouldn't differ from the start";
         return new ChangeReplayChecker(refSim, replaySim);
     }

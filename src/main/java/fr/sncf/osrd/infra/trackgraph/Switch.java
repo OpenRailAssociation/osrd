@@ -23,6 +23,7 @@ public class Switch extends TrackNode {
     ) {
         super(index, id);
         this.switchIndex = switchIndex;
+        this.signalSubscribers = new ArrayList<>();
         graph.registerNode(this);
     }
 
