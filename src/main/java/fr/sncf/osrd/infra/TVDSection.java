@@ -134,5 +134,13 @@ public final class TVDSection implements Comparable<TVDSection> {
         public TVDSection.State getEntity(Simulation sim) {
             return sim.infraState.getTvdSectionState(tvdSectionIndex);
         }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "TVDSectionReservationChange { tvdSection: %d, newReservation: %s }",
+                    tvdSectionIndex, newReservation
+            );
+        }
     }
 }

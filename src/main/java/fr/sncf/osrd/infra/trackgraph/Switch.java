@@ -102,5 +102,10 @@ public class Switch extends TrackNode {
         public Switch.State getEntity(Simulation sim) {
             return sim.infraState.getSwitchState(switchIndex);
         }
+
+        @Override
+        public String toString() {
+            return String.format("SwitchPositionChange { switch: %d, position: %s }", switchIndex, position);
+        }
     }
 }

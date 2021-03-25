@@ -29,4 +29,9 @@ public class BufferStop extends Waypoint {
     public void interact(Simulation sim, Train train, TrainInteractionType interactionType) {
         // TODO
     }
+
+    @Override
+    public String toString() {
+        return String.format("BufferStop { id=%s }", id);
+    }
 }

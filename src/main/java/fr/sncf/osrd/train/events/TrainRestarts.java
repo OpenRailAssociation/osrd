@@ -35,17 +35,17 @@ public final class TrainRestarts extends TimelineEvent {
             Train train,
             Train.TrainStateChange stateChange
     ) {
-        var change = new TrainPlanedRestart(sim, actionTime, train.getName(), stateChange);
+        var change = new TrainPlannedRestart(sim, actionTime, train.getName(), stateChange);
         change.apply(sim, train);
         sim.publishChange(change);
     }
 
-    public static class TrainPlanedRestart extends EntityChange<Train, Void> {
+    public static class TrainPlannedRestart extends EntityChange<Train, Void> {
         public final double actionTime;
         public final String trainId;
         public final Train.TrainStateChange stateChange;
 
-        TrainPlanedRestart(
+        TrainPlannedRestart(
                 Simulation sim,
                 double actionTime,
                 String trainId,
@@ -70,6 +70,11 @@ public final class TrainRestarts extends TimelineEvent {
         @Override
         public Train getEntity(Simulation sim) {
             return sim.trains.get(trainId);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("TrainPlannedRestart { actionTime=%.3f, trainId=%s }", actionTime, trainId);
         }
     }
 

@@ -189,6 +189,11 @@ public class Route extends BiNEdge<Route> {
         public Route.State getEntity(Simulation sim) {
             return sim.infraState.getRouteState(routeIndex);
         }
+
+        @Override
+        public String toString() {
+            return String.format("RouteStatusChange { route: %d, status: %s }", routeIndex, newStatus);
+        }
     }
 
     public enum TransitType {

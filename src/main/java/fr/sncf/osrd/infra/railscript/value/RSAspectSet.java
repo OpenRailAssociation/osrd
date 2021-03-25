@@ -21,4 +21,15 @@ public final class RSAspectSet extends SortedArraySet<Aspect> implements RSValue
                 return false;
         return true;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append('[');
+        for (var i = 0; i < data.size() - 1; i++)
+            stringBuilder.append(String.format("%s, ", data.get(i).id));
+        stringBuilder.append(data.get(data.size() - 1).id);
+        stringBuilder.append(']');
+        return stringBuilder.toString();
+    }
 }
