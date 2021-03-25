@@ -7,6 +7,7 @@ import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.utils.CryoList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,14 +53,21 @@ public abstract class Scheduler {
             var o = (TrainCreatedEvent) other;
             return o.schedule == schedule && controllers.equals(o.controllers);
         }
+
+        /** Plan a TrainCreatedEvent creating a change that schedule it and return the created train */
+        public static void plan(Simulation sim, TrainSchedule schedule, List<SpeedController> controllers) {
+            var change = new TrainCreationPlannedChange(sim, schedule, controllers);
+            change.apply(sim);
+            sim.publishChange(change);
+        }
     }
 
-    public static class TrainPlannedChange extends SimChange<Void> {
+    public static class TrainCreationPlannedChange extends SimChange<Void> {
         public final TrainSchedule schedule;
         public final List<SpeedController> controllers;
 
         /** Plan */
-        public TrainPlannedChange(Simulation sim, TrainSchedule schedule, List<SpeedController> controllers) {
+        TrainCreationPlannedChange(Simulation sim, TrainSchedule schedule, List<SpeedController> controllers) {
             super(sim);
             this.schedule = schedule;
             this.controllers = controllers;
@@ -136,8 +144,6 @@ public abstract class Scheduler {
         for (var controller : controllers)
             logger.trace("{}", controller);
 
-        var trainPlanned = new TrainPlannedChange(sim, schedule, controllers);
-        trainPlanned.apply(sim);
-        sim.publishChange(trainPlanned);
+        TrainCreatedEvent.plan(sim, schedule, controllers);
     }
 }
