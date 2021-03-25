@@ -11,7 +11,7 @@ import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.ArrayList;
 
 public final class TrainSchedule {
-    public final TrainID trainID;
+    public final String trainID;
     public final RollingStock rollingStock;
 
     public final double departureTime;
@@ -34,7 +34,7 @@ public final class TrainSchedule {
             double initialSpeed,
             ArrayList<Phase> phases
     ) {
-        this.trainID = new TrainID(trainID);
+        this.trainID = trainID;
         this.rollingStock = rollingStock;
         this.departureTime = departureTime;
         this.initialLocation = initialLocation;
@@ -62,23 +62,5 @@ public final class TrainSchedule {
             pathPosition -= track.length();
         }
         return null;
-    }
-
-    public static class TrainID implements EntityID<Train> {
-        public final String trainName;
-
-        public TrainID(String trainName) {
-            this.trainName = trainName;
-        }
-
-        @Override
-        public Train getEntity(Simulation sim) {
-            return sim.trains.get(trainName);
-        }
-
-        @Override
-        public String toString() {
-            return String.format("TrainID { %s }", trainName);
-        }
     }
 }

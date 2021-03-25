@@ -29,7 +29,6 @@ import io.github.classgraph.*;
 
 public class ChangeSerializer {
     public static final JsonAdapter<Change> changeAdapter = new Moshi.Builder()
-            .add(new EntityAdapter())
             .add(new CurrentPathEdgesAdapter())
             .add(new TopoEdgeAdapter())
             .add(new LocalTimeAdapter())
@@ -117,18 +116,6 @@ public class ChangeSerializer {
         for (var subtype : SubtypeCollection.fromClass(baseClass))
             adapterFactory = adapterFactory.withSubtype(subtype.type, subtype.label);
         return adapterFactory;
-    }
-
-    private static class EntityAdapter {
-        @ToJson
-        EntityID<?> toJson(Entity<?> entity) {
-            return entity.getID();
-        }
-
-        @FromJson
-        Entity<?> fromJson(String entityId) {
-            throw new RuntimeException("not implemented");
-        }
     }
 
     private static class TopoEdgeAdapter {
