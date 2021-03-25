@@ -1,15 +1,14 @@
 package fr.sncf.osrd.infra.routegraph;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.railscript.value.RSMatchable;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
+import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.simulation.*;
-import fr.sncf.osrd.infra.changes.TVDSectionFreedChange;
 import fr.sncf.osrd.utils.DeepEqualsUtils;
 import fr.sncf.osrd.utils.graph.BiNEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -17,7 +16,6 @@ import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 public class Route extends BiNEdge<Route> {
     public final String id;
@@ -27,6 +25,7 @@ public class Route extends BiNEdge<Route> {
     public final List<EdgeDirection> tvdSectionsPathDirection;
     public final TransitType transitType;
     public final HashMap<Switch, SwitchPosition> switchesPosition;
+    public ArrayList<Signal> signalSubscribers;
 
     protected Route(
             String id,
@@ -55,94 +54,76 @@ public class Route extends BiNEdge<Route> {
         return new State(this);
     }
 
-    public static final class RouteID implements EntityID<Route.State> {
-        private final int routeIndex;
-
-        public RouteID(int routeIndex) {
-            this.routeIndex = routeIndex;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null || obj.getClass() != RouteID.class)
-                return false;
-            return routeIndex == ((RouteID) obj).routeIndex;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(routeIndex);
-        }
-
-        @Override
-        public State getEntity(Simulation sim) {
-            return sim.infraState.getRouteState(routeIndex);
-        }
-    }
-
     /** The state of the route is the actual entity which interacts with the rest of the infrastructure */
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public static final class State extends AbstractEntity<Route.State, RouteID> implements RSMatchable {
+    public static final class State implements RSMatchable {
         public final Route route;
         public RouteStatus status;
-        public final List<TVDSection.State> tvdSectionStates;
 
         State(Route route) {
-            super(new RouteID(route.index));
             this.route = route;
             this.status = RouteStatus.FREE;
-            this.tvdSectionStates = new ArrayList<>();
         }
 
-        @Override
-        public void onEventOccurred(Simulation sim, SubscribersTimelineEvent<?> event) {
-            switch (status) {
-                case FREE:
-                    if (event.value.getClass() == TVDSection.TVDSectionReservationChange.class) {
-                        var change = new Route.RouteStatusChange(sim, this, RouteStatus.CONFLICT);
-                        change.apply(sim, this);
-                        sim.publishChange(change);
-                        sim.scheduleEvent(this, sim.getTime(), change);
-                    }
-                    break;
-                case RESERVED:
-                    if (event.value.getClass() == TVDSection.TVDSectionOccupied.class) {
-                        var change = new RouteStatusChange(sim, this, RouteStatus.OCCUPIED);
-                        change.apply(sim, this);
-                        sim.publishChange(change);
-                        sim.scheduleEvent(this, sim.getTime(), change);
-                    }
-                    break;
-                case OCCUPIED:
-                    if (event.value.getClass() == TVDSection.TVDSectionNotOccupied.class) {
-                        var tvdSectionNotOccupied = (TVDSection.State) event.source;
-                        if (route.transitType == TransitType.FLEXIBLE) {
-                            tvdSectionNotOccupied.free(sim);
-                        } else {
-                            // The train has covered the entire route
-                            var lastTvdSection = route.tvdSectionsPath.get(route.tvdSectionsPath.size() - 1);
-                            if (lastTvdSection.index == tvdSectionNotOccupied.id.getIndex()) {
-                                for (var tvdSection : tvdSectionStates)
-                                    tvdSection.free(sim);
-                            }
-                        }
-                    }
-                    break;
+        public void onTvdSectionUnoccupied(Simulation sim, TVDSection.State tvdSectionUnoccupied) {
+            if (status != RouteStatus.OCCUPIED)
+                return;
+
+            if (route.transitType == TransitType.FLEXIBLE) {
+                tvdSectionUnoccupied.free(sim);
+                return;
             }
-            if (event.value.getClass() == TVDSectionFreedChange.class) {
-                for (var tvdSectionState : tvdSectionStates) {
-                    if (tvdSectionState.isReserved())
-                        return;
+            // The train has covered the entire route
+            var lastTvdSection = route.tvdSectionsPath.get(route.tvdSectionsPath.size() - 1).tvdSection;
+            if (lastTvdSection == tvdSectionUnoccupied.tvdSection) {
+                for (var tvdSectionPath : route.tvdSectionsPath) {
+                    var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
+                    tvdSection.free(sim);
                 }
-                var change = new RouteStatusChange(sim, this, RouteStatus.FREE);
-                change.apply(sim, this);
-                sim.publishChange(change);
-                sim.scheduleEvent(this, sim.getTime(), change);
             }
         }
 
-        @Override
-        public void onEventCancelled(Simulation sim, SubscribersTimelineEvent<?> event) { }
+        public void onTvdSectionFreed(Simulation sim) {
+            if (status == RouteStatus.FREE)
+                return;
+
+            // Check that all tvd sections are free to free the route
+            for (var tvdSectionPath : route.tvdSectionsPath) {
+                var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
+                if (tvdSection.isReserved())
+                    return;
+            }
+
+            var change = new RouteStatusChange(sim, this, RouteStatus.FREE);
+            change.apply(sim, this);
+            sim.publishChange(change);
+            notifySignals(sim);
+        }
+
+        public void onTvdSectionReserved(Simulation sim) {
+            if (status != RouteStatus.FREE)
+                return;
+            var change = new Route.RouteStatusChange(sim, this, RouteStatus.CONFLICT);
+            change.apply(sim, this);
+            sim.publishChange(change);
+            notifySignals(sim);
+        }
+
+        public void onTvdSectionOccupied(Simulation sim) {
+            if (status != RouteStatus.RESERVED)
+                return;
+            var change = new RouteStatusChange(sim, this, RouteStatus.OCCUPIED);
+            change.apply(sim, this);
+            sim.publishChange(change);
+            notifySignals(sim);
+        }
+
+        private void notifySignals(Simulation sim) {
+            for (var signal : route.signalSubscribers) {
+                var signalState = sim.infraState.getSignalState(signal.index);
+                signalState.notifyChange(sim);
+            }
+        }
 
         /** Reserve a route and his tvd sections. Routes that share tvd sections will have the status CONFLICT */
         public void reserve(Simulation sim) {
@@ -150,21 +131,18 @@ public class Route extends BiNEdge<Route> {
             var change = new RouteStatusChange(sim, this, RouteStatus.RESERVED);
             change.apply(sim, this);
             sim.publishChange(change);
-            sim.scheduleEvent(this, sim.getTime(), change);
-            for (var tvdSection : tvdSectionStates)
+            notifySignals(sim);
+
+            // Reserve the tvd sections
+            for (var tvdSectionPath : route.tvdSectionsPath) {
+                var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
                 tvdSection.reserve(sim);
+            }
+
+            // Set the switches in the required position
             for (var switchPos : route.switchesPosition.entrySet()) {
                 var switchState = sim.infraState.getSwitchState(switchPos.getKey().switchIndex);
                 switchState.setPosition(sim, switchPos.getValue());
-            }
-        }
-
-        /** Initialize his tvdSections and register itself as subscriber of them */
-        public void initialize(Infra.State state) {
-            for (var tvdSectionPath : route.tvdSectionsPath) {
-                var tvdSectionState = state.getTvdSectionState(tvdSectionPath.tvdSection.index);
-                tvdSectionState.subscribers.add(this);
-                tvdSectionStates.add(tvdSectionState);
             }
         }
 
@@ -181,20 +159,20 @@ public class Route extends BiNEdge<Route> {
             var o = (Route.State) other;
             if (route != o.route)
                 return false;
-            if (status != o.status)
-                return false;
-
-            return DeepEqualsUtils.deepEquals(tvdSectionStates, o.tvdSectionStates);
+            return status == o.status;
         }
     }
 
-    public static class RouteStatusChange extends EntityChange<Route.State, RouteID, Void>
+    public static class RouteStatusChange extends EntityChange<Route.State, Void>
             implements TimelineEventValue {
         public final RouteStatus newStatus;
+        public final int routeIndex;
 
+        /** create a RouteStatusChange */
         public RouteStatusChange(Simulation sim, Route.State entity, RouteStatus newStatus) {
-            super(sim, entity.id);
+            super(sim);
             this.newStatus = newStatus;
+            this.routeIndex = entity.route.index;
         }
 
         @Override
@@ -204,12 +182,17 @@ public class Route extends BiNEdge<Route> {
         }
 
         @Override
+        public Route.State getEntity(Simulation sim) {
+            return sim.infraState.getRouteState(routeIndex);
+        }
+
+        @Override
         @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
         public boolean deepEquals(TimelineEventValue other) {
             if (other.getClass() != RouteStatusChange.class)
                 return false;
             var o = (RouteStatusChange) other;
-            return o.newStatus == newStatus && o.entityId == entityId;
+            return o.newStatus == newStatus && o.routeIndex == routeIndex;
         }
     }
 

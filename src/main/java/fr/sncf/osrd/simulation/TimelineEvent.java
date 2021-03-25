@@ -10,9 +10,9 @@ public abstract class TimelineEvent implements DeepComparable<TimelineEvent> {
         this.eventId = eventId;
     }
 
-    abstract void onOccurrence(Simulation sim) throws SimulationError;
+    protected abstract void onOccurrence(Simulation sim) throws SimulationError;
 
-    abstract void onCancellation(Simulation sim) throws SimulationError;
+    protected abstract void onCancellation(Simulation sim) throws SimulationError;
 
     /** The state of the event is only kept track of to enforce correct use of the API. */
     // region STATE_TRACKING

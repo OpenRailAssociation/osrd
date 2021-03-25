@@ -1,7 +1,5 @@
 package fr.sncf.osrd;
 
-import fr.sncf.osrd.simulation.Entity;
-import fr.sncf.osrd.simulation.EntityID;
 import fr.sncf.osrd.simulation.Simulation;
 
 public final class MockEntityID<T extends Entity<T>> implements EntityID<T> {

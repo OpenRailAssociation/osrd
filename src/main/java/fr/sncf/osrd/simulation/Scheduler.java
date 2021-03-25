@@ -32,7 +32,7 @@ public abstract class Scheduler {
         }
 
         @Override
-        void onOccurrence(Simulation sim) throws SimulationError {
+        protected void onOccurrence(Simulation sim) throws SimulationError {
             var trainName = schedule.trainID;
             logger.info("starting train {}", trainName);
 
@@ -40,7 +40,7 @@ public abstract class Scheduler {
         }
 
         @Override
-        void onCancellation(Simulation sim) throws SimulationError {
+        protected void onCancellation(Simulation sim) throws SimulationError {
             throw new SimulationError("cancelling train creation isn't supported");
         }
 

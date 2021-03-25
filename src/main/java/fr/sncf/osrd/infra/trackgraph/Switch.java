@@ -3,14 +3,16 @@ package fr.sncf.osrd.infra.trackgraph;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.railscript.value.RSMatchable;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
+import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.simulation.*;
 
-import java.util.Objects;
+import java.util.ArrayList;
 
 public class Switch extends TrackNode {
     public final int switchIndex;
     public TrackSection leftTrackSection;
     public TrackSection rightTrackSection;
+    public ArrayList<Signal> signalSubscribers;
 
     Switch(
             TrackGraph graph,
@@ -27,40 +29,14 @@ public class Switch extends TrackNode {
         return new Switch.State(this);
     }
 
-    public static final class SwitchID implements EntityID<Switch.State> {
-        private final int switchIndex;
-
-        public SwitchID(int switchIndex) {
-            this.switchIndex = switchIndex;
-        }
-
-        @Override
-        public State getEntity(Simulation sim) {
-            return sim.infraState.getSwitchState(switchIndex);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(switchIndex);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null || obj.getClass() != SwitchID.class)
-                return false;
-            return switchIndex == ((SwitchID) obj).switchIndex;
-        }
-    }
-
     /** The state of the route is the actual entity which interacts with the rest of the infrastructure */
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public static final class State extends AbstractEntity<Switch.State, SwitchID> implements RSMatchable {
+    public static final class State implements RSMatchable {
         public final Switch switchRef;
 
         private SwitchPosition position;
 
         State(Switch switchRef) {
-            super(new SwitchID(switchRef.switchIndex));
             this.switchRef = switchRef;
             this.position = SwitchPosition.LEFT;
         }
@@ -82,16 +58,12 @@ public class Switch extends TrackNode {
                 var change = new Switch.SwitchPositionChange(sim, this, position);
                 change.apply(sim, this);
                 sim.publishChange(change);
-                sim.scheduleEvent(this, sim.getTime(), change);
+                for (var signal : switchRef.signalSubscribers) {
+                    var signalState = sim.infraState.getSignalState(signal.index);
+                    signalState.notifyChange(sim);
+                }
             }
         }
-
-        @Override
-        public void onEventOccurred(Simulation sim, SubscribersTimelineEvent<?> event) { }
-
-        @Override
-        public void onEventCancelled(Simulation sim, SubscribersTimelineEvent<?> event) { }
-
         @Override
         public int getEnumValue() {
             return position.ordinal();
@@ -107,14 +79,15 @@ public class Switch extends TrackNode {
         }
     }
 
-    public static final class SwitchPositionChange
-            extends EntityChange<Switch.State, SwitchID, Void>
+    public static final class SwitchPositionChange extends EntityChange<Switch.State, Void>
             implements TimelineEventValue {
         SwitchPosition position;
+        public final int switchIndex;
 
         protected SwitchPositionChange(Simulation sim, Switch.State entity, SwitchPosition position) {
-            super(sim, entity.id);
+            super(sim);
             this.position = position;
+            this.switchIndex = entity.switchRef.switchIndex;
         }
 
         @Override
@@ -124,12 +97,17 @@ public class Switch extends TrackNode {
         }
 
         @Override
+        public Switch.State getEntity(Simulation sim) {
+            return sim.infraState.getSwitchState(switchIndex);
+        }
+
+        @Override
         @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
         public boolean deepEquals(TimelineEventValue other) {
             if (other.getClass() != SwitchPositionChange.class)
                 return false;
             var o = (SwitchPositionChange) other;
-            return o.entityId == entityId && o.position == position;
+            return o.switchIndex == switchIndex && o.position == position;
         }
     }
 }
