@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 public class SortedArraySet<E extends Comparable<E>> extends AbstractSet<E> {
-    private final ArrayList<E> data = new ArrayList<>();
+    protected final ArrayList<E> data = new ArrayList<>();
 
     public E get(int index) {
         return data.get(index);

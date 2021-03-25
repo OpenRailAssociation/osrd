@@ -25,4 +25,9 @@ public class Detector extends Waypoint {
     public void interact(Simulation sim, Train train, TrainInteractionType interactionType) {
         train.interact(sim, this, interactionType);
     }
+
+    @Override
+    public String toString() {
+        return String.format("Detector { id=%s }", id);
+    }
 }

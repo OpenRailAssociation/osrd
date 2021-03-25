@@ -7,7 +7,6 @@ import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.utils.CryoList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,18 +55,18 @@ public abstract class Scheduler {
 
         /** Plan a TrainCreatedEvent creating a change that schedule it and return the created train */
         public static void plan(Simulation sim, TrainSchedule schedule, List<SpeedController> controllers) {
-            var change = new TrainCreationPlannedChange(sim, schedule, controllers);
+            var change = new TrainCreationPlanned(sim, schedule, controllers);
             change.apply(sim);
             sim.publishChange(change);
         }
     }
 
-    public static class TrainCreationPlannedChange extends SimChange<Void> {
+    public static class TrainCreationPlanned extends SimChange<Void> {
         public final TrainSchedule schedule;
         public final List<SpeedController> controllers;
 
-        /** Plan */
-        TrainCreationPlannedChange(Simulation sim, TrainSchedule schedule, List<SpeedController> controllers) {
+        /** Plans the creation of some train */
+        TrainCreationPlanned(Simulation sim, TrainSchedule schedule, List<SpeedController> controllers) {
             super(sim);
             this.schedule = schedule;
             this.controllers = controllers;
@@ -78,6 +77,11 @@ public abstract class Scheduler {
             var event = new TrainCreatedEvent(sim.nextEventId(schedule.departureTime), schedule, controllers);
             sim.scheduleEvent(event);
             return null;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("TrainCreationPlanned { %s }", schedule.trainID);
         }
     }
 

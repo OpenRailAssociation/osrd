@@ -30,6 +30,15 @@ public class SignalSimulationTest {
         public void replay(Simulation sim) {
             throw new RuntimeException("replay not implemented");
         }
+
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "SignalAspectChange { signal=%s, newAspect=%s } ",
+                    signal.name, newAspect.name()
+            );
+        }
     }
 
     public static final class AspectChangeEvent extends TimelineEvent {
@@ -108,6 +117,14 @@ public class SignalSimulationTest {
             public void replay(Simulation sim) {
                 apply(sim);
             }
+
+            @Override
+            public String toString() {
+                return String.format(
+                        "AspectChangePlanned { eventTime=%.3f, signal=%s, newAspect=%s } ",
+                        eventTime, signal.name, newAspect.name()
+                );
+            }
         }
     }
 
@@ -119,10 +136,12 @@ public class SignalSimulationTest {
         }
 
         private Aspect aspect;
+        public final String name;
         public double receptionDelay;
         public ArrayList<TestSignal> subscribers;
 
-        TestSignal(double receptionDelay, Aspect aspect) {
+        TestSignal(String name, double receptionDelay, Aspect aspect) {
+            this.name = name;
             this.receptionDelay = receptionDelay;
             this.aspect = aspect;
             this.subscribers = new ArrayList<>();
@@ -164,8 +183,8 @@ public class SignalSimulationTest {
     public void testSignaling() throws SimulationError {
         var changelog = new ArrayChangeLog();
         var sim = Simulation.createWithoutInfra(0.0, changelog);
-        final var masterSignal = new TestSignal(1., GREEN);
-        final var slaveSignal = new TestSignal(1., GREEN);
+        final var masterSignal = new TestSignal("master", 1., GREEN);
+        final var slaveSignal = new TestSignal("slave", 1., GREEN);
         masterSignal.subscribers.add(slaveSignal);
 
         assertTrue(sim.isSimulationOver());

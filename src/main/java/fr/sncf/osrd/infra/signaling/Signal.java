@@ -63,6 +63,11 @@ public class Signal implements ActionPoint {
         return initialAspects;
     }
 
+    @Override
+    public String toString() {
+        return String.format("Signal { id=%s }", id);
+    }
+
     /** The state of the signal is the actual entity which interacts with the rest of the infrastructure */
     public static final class State implements RSValue {
         public final Signal signal;
@@ -135,6 +140,11 @@ public class Signal implements ActionPoint {
         public Signal.State getEntity(Simulation sim) {
             return sim.infraState.getSignalState(signalIndex);
         }
+
+        @Override
+        public String toString() {
+            return String.format("SignalAspectChange { signal: %d, aspects: %s }", signalIndex, aspects.toString());
+        }
     }
 
     public static final class SignalPlanDelayUpdateChange extends EntityChange<Signal.State, Void> {
@@ -162,6 +172,12 @@ public class Signal implements ActionPoint {
         @Override
         public Signal.State getEntity(Simulation sim) {
             return sim.infraState.getSignalState(signalIndex);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("SignalPlanDelayUpdateChange { signal: %d, time: %.3f, delaySlot: %d }",
+                    signalIndex, time, delaySlot);
         }
     }
 

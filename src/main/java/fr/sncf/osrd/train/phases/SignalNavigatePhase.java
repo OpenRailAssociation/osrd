@@ -173,7 +173,7 @@ public final class SignalNavigatePhase implements Phase {
         trackSectionPath.forEach(consumer);
     }
 
-    /** This class represent an empty action point. It's as last  event  in the event path */
+    /** This class represent an empty action point. It's as last event in the event path */
     private static final class VirtualActionPoint implements ActionPoint {
 
         @Override
@@ -188,6 +188,11 @@ public final class SignalNavigatePhase implements Phase {
 
         @Override
         public void interact(Simulation sim, Train train, TrainInteractionType actionType) { }
+
+        @Override
+        public String toString() {
+            return "VirtualActionPoint { }";
+        }
     }
 
     @SuppressFBWarnings({"URF_UNREAD_FIELD"})

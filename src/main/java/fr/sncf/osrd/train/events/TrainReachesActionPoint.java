@@ -115,5 +115,13 @@ public final class TrainReachesActionPoint extends TimelineEvent {
         public Train getEntity(Simulation sim) {
             return sim.trains.get(trainId);
         }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "TrainPlannedMoveToActionPoint { actionTime=%.3f, trainId=%s, actionPoint=%s, interactsWith=%s }",
+                    actionTime, trainId, actionPoint, interactionType.name()
+            );
+        }
     }
 }

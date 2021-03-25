@@ -125,6 +125,11 @@ public class SimulationTest {
             public void replay(Simulation sim) {
                 apply(sim);
             }
+
+            @Override
+            public String toString() {
+                return String.format("TestEventPlanned { eventTime=%.3f, data=%s }", eventTime, data);
+            }
         }
     }
 

@@ -18,4 +18,7 @@ public abstract class Change {
     }
 
     public abstract void replay(Simulation sim);
+
+    /** Enforce mandatory pretty-printing on all changes */
+    public abstract String toString();
 }
