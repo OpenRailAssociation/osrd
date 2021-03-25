@@ -54,7 +54,7 @@ You'll need:
 gradle shadowJar
 java -jar build/libs/osrd-all.jar \
     simulate \
-    --config examples/simple/config.json \
+    --config examples/tiny_infra/config_railjson.json \
     -o sim_changelog_output.json
 ```
 
