@@ -7,7 +7,6 @@ import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.TrainSchedule;
-import fr.sncf.osrd.TrainSchedule.TrainID;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.CryoList;
 import fr.sncf.osrd.utils.DeepComparable;
@@ -18,23 +17,19 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayDeque;
 import java.util.List;
 
-public class Train extends AbstractEntity<Train, TrainID> {
+public class Train {
     static final Logger logger = LoggerFactory.getLogger(Train.class);
 
     public String getName() {
-        return id.trainName;
+        return schedule.trainID;
     }
 
     private TrainState lastState;
+    public final TrainSchedule schedule;
 
-    private Train(
-            TrainSchedule schedule,
-            TrainState initialState
-    ) {
-        super(schedule.trainID);
+    private Train(TrainSchedule schedule, TrainState initialState) {
+        this.schedule = schedule;
         this.lastState = initialState;
-        // the train must react to its own move events
-        this.subscribers.add(this);
     }
 
     /** Create a train */
@@ -78,51 +73,22 @@ public class Train extends AbstractEntity<Train, TrainID> {
 
     // region ENTITY_REACTOR
 
-    private void scheduleStateChange(Simulation sim) throws SimulationError {
+    public void scheduleStateChange(Simulation sim) throws SimulationError {
         if (lastState.status == TrainStatus.REACHED_DESTINATION) {
-            logger.info("train {} reached destination, aborting planning", id);
+            logger.info("train {} reached destination, aborting planning", getName());
             return;
         }
 
-        logger.info("planning the next move for train {}", id);
+        logger.info("planning the next move for train {}", getName());
         lastState.scheduleStateChange(this, sim);
     }
 
-    @Override
-    public void onEventOccurred(Simulation sim, SubscribersTimelineEvent<?> event) throws SimulationError {
-        // TODO find a smarter way to do it
+    public void onEventOccurred(Simulation sim) {
+        // TODO find a smarter way to do it and remove this method
         if (lastState.currentPhaseState.getClass() == SignalNavigatePhase.State.class) {
             var navigateState = (SignalNavigatePhase.State) lastState.currentPhaseState;
             ActivateRoute.reserveRoutes(sim, navigateState);
         }
-
-        if (event.value.getClass() == TrainStateChange.class) {
-            var stateChange = (TrainStateChange) event.value;
-            stateChange.apply(sim, this);
-            sim.publishChange(stateChange);
-            scheduleStateChange(sim);
-            return;
-        }
-        if (event.value.getClass() == TrainReachesActionPoint.class) {
-            var eventInteract =  (TrainReachesActionPoint) event.value;
-
-            // Apply StateChange
-            var stateChange = eventInteract.trainStateChange;
-            stateChange.apply(sim, this);
-            sim.publishChange(stateChange);
-
-            // Interact
-            eventInteract.actionPoint.interact(sim, this, eventInteract.interactionType);
-
-            // Schedule next state
-            scheduleStateChange(sim);
-        }
-    }
-
-    @Override
-    public void onEventCancelled(Simulation sim, SubscribersTimelineEvent<?> event) throws SimulationError {
-        if (event.value.getClass() == TrainStateChange.class)
-            scheduleStateChange(sim);
     }
 
     // endregion
@@ -170,24 +136,22 @@ public class Train extends AbstractEntity<Train, TrainID> {
         }
     }
 
-    public static class TrainStateChange extends EntityChange<Train, TrainID, Void> implements TimelineEventValue {
+    public static class TrainStateChange extends EntityChange<Train, Void> implements DeepComparable<TrainStateChange> {
+        public final String trainID;
         public final TrainState newState;
         public final SpeedUpdates positionUpdates = new SpeedUpdates();
         public final PathUpdates<SpeedController[]> speedControllersUpdates = new PathUpdates<>();
         public final PathUpdates<SpeedDirective> speedDirectivesUpdates = new PathUpdates<>();
 
         /** Creates a change corresponding to the movement of a train */
-        public TrainStateChange(Simulation sim, TrainID trainID, TrainState newState) {
-            super(sim, trainID);
+        public TrainStateChange(Simulation sim, String trainID, TrainState newState) {
+            super(sim);
+            this.trainID = trainID;
             this.newState = newState;
         }
 
-        @Override
         @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-        public boolean deepEquals(TimelineEventValue other) {
-            if (other.getClass() != TrainStateChange.class)
-                return false;
-            var o = (TrainStateChange) other;
+        public boolean deepEquals(TrainStateChange o) {
             if (!o.newState.deepEquals(o.newState))
                 return false;
             if (!DeepEqualsUtils.deepEquals(positionUpdates, o.positionUpdates))
@@ -321,42 +285,17 @@ public class Train extends AbstractEntity<Train, TrainID> {
         }
 
         @Override
+        public Train getEntity(Simulation sim) {
+            return sim.trains.get(trainID);
+        }
+
+        @Override
         public String toString() {
             return String.format(
                     "TrainStateChange { speed=%.2f, newState.headPathPosition=%.2f }",
                     newState.speed,
                     newState.location.getPathPosition()
             );
-        }
-    }
-    // endregion
-
-    // region EVENT VALUES
-    public static final class TrainReachesActionPoint implements TimelineEventValue {
-        public final ActionPoint actionPoint;
-        public final TrainStateChange trainStateChange;
-        public final TrainInteractionType interactionType;
-
-        /** Event value that represents train interacting with an action point */
-        public TrainReachesActionPoint(
-                ActionPoint actionPoint,
-                TrainStateChange trainStateChange,
-                TrainInteractionType interactionType
-        ) {
-            this.actionPoint = actionPoint;
-            this.trainStateChange = trainStateChange;
-            this.interactionType = interactionType;
-        }
-
-        @Override
-        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-        public boolean deepEquals(TimelineEventValue other) {
-            if (other.getClass() != TrainReachesActionPoint.class)
-                return false;
-            var o = (TrainReachesActionPoint) other;
-            return o.actionPoint == actionPoint
-                    && o.trainStateChange.deepEquals(trainStateChange)
-                    && o.interactionType == interactionType;
         }
     }
     // endregion

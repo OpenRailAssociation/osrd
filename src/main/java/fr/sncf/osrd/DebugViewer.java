@@ -340,7 +340,7 @@ public class DebugViewer extends ChangeConsumer {
         // region SIGNAL_CHANGES
         if (change.getClass() == Signal.SignalAspectChange.class) {
             var aspectChange = (Signal.SignalAspectChange) change;
-            var signal = infra.signals.get(aspectChange.entityId.signalIndex);
+            var signal = infra.signals.get(aspectChange.signalIndex);
             updateSignal(signal, aspectChange.aspects);
             return;
         }

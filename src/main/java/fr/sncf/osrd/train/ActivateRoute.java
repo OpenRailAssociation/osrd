@@ -28,8 +28,8 @@ public class ActivateRoute {
 
         // Reserve the initial route
         if (routeState.status != RouteStatus.FREE)
-            throw new SimulationError(
-                    String.format("Impossible to reserve the route '%s' since it is not available.", routeState.id));
+            throw new SimulationError(String.format(
+                    "Impossible to reserve the route '%s' since it is not available.", routeState.route.id));
         routeState.reserve(sim);
 
         // Reserve the tvdSection where the train is created

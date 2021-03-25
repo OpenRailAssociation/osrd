@@ -14,6 +14,7 @@ import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainInteractionType;
 import fr.sncf.osrd.train.TrainState;
+import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.PointValue;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -244,11 +245,9 @@ public final class SignalNavigatePhase implements Phase {
         public void simulate(Simulation sim, Train train, TrainState trainState) throws SimulationError {
             // Check if we reached our goal
             if (eventPathIndex == phase.actionPointPath.size()) {
-                sim.scheduleEvent(
-                        train,
-                        sim.getTime(),
-                        new Train.TrainStateChange(sim, train.getID(), trainState.nextPhase())
-                );
+                var change = new Train.TrainStateChange(sim, train.getName(), trainState.nextPhase());
+                change.apply(sim, train);
+                sim.publishChange(change);
                 return;
             }
 
@@ -261,11 +260,14 @@ public final class SignalNavigatePhase implements Phase {
             var simulationResult = newTrainState.evolveState(sim, nextEventTrackPosition.position);
 
             // 3) create an event with simulation data up to this point
-            var eventTime = simulationResult.newState.time;
-            assert eventTime >= sim.getTime();
-            var event = new Train.TrainReachesActionPoint(
-                    nextEventTrackPosition.value, simulationResult, interactionType);
-            sim.scheduleEvent(train, eventTime, event);
+            TrainReachesActionPoint.plan(
+                    sim,
+                    simulationResult.newState.time,
+                    train,
+                    nextEventTrackPosition.value,
+                    simulationResult,
+                    interactionType
+            );
         }
 
         /**
