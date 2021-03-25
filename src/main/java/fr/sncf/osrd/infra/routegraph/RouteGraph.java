@@ -100,7 +100,7 @@ public class RouteGraph extends BiNGraph<Route, Waypoint> {
 
             // Link route to track sections and tvd sections
             for (var tvdSectionPath : route.tvdSectionsPath) {
-                tvdSectionPath.tvdSection.routes.add(route);
+                tvdSectionPath.tvdSection.routeSubscribers.add(route);
                 for (var trackSection : tvdSectionPath.trackSections)
                     trackSection.edge.routes.add(route);
             }

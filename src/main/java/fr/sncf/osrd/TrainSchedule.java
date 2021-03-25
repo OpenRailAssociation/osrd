@@ -1,8 +1,6 @@
 package fr.sncf.osrd;
 
 import fr.sncf.osrd.infra.routegraph.Route;
-import fr.sncf.osrd.RollingStock;
-import fr.sncf.osrd.simulation.EntityID;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.Train;

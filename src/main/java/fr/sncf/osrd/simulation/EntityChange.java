@@ -1,20 +1,16 @@
 package fr.sncf.osrd.simulation;
 
-public abstract class EntityChange<
-        EntityT extends Entity<EntityT>,
-        EntityIDT extends EntityID<EntityT>, ResultT
-        > extends Change {
-    public final EntityIDT entityId;
-
-    protected EntityChange(Simulation sim, EntityIDT entityId) {
+public abstract class EntityChange<EntityT, ResultT> extends Change {
+    protected EntityChange(Simulation sim) {
         super(sim);
-        this.entityId = entityId;
     }
 
     public abstract ResultT apply(Simulation sim, EntityT entity);
 
+    public abstract EntityT getEntity(Simulation sim);
+
     @Override
     public void replay(Simulation sim) {
-        this.apply(sim, entityId.getEntity(sim));
+        this.apply(sim, getEntity(sim));
     }
 }
