@@ -8,6 +8,7 @@ import fr.sncf.osrd.simulation.Change;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
@@ -19,9 +20,7 @@ import org.graphstream.ui.spriteManager.Sprite;
 import org.graphstream.ui.spriteManager.SpriteManager;
 import org.graphstream.ui.swing_viewer.DefaultView;
 import org.graphstream.ui.swing_viewer.SwingViewer;
-import org.graphstream.ui.swing_viewer.util.DefaultMouseManager;
 import org.graphstream.ui.view.View;
-import org.graphstream.ui.view.camera.Camera;
 import org.graphstream.ui.view.util.InteractiveElement;
 import org.graphstream.ui.view.util.MouseManager;
 import org.slf4j.Logger;
@@ -238,7 +237,7 @@ public class DebugViewer extends ChangeConsumer {
     }
 
     private void createTrain(TrainSchedule schedule) {
-        var trainName = schedule.trainID.trainName;
+        var trainName = schedule.trainID;
         var spriteHead = spriteManager.addSprite(encodeSpriteId(trainName + "head"));
         spriteHead.setAttribute("ui.style", TRAIN_CSS);
         spriteHead.setAttribute("ui.label", trainName);
@@ -324,16 +323,9 @@ public class DebugViewer extends ChangeConsumer {
             return;
         }
 
-        if (change.getClass() == Simulation.TimelineEventCreated.class) {
-            var timelineEventCreated = (Simulation.TimelineEventCreated<?, ?>) change;
-            if (timelineEventCreated.entityId.getClass() == TrainSchedule.TrainID.class) {
-                var trainName = ((TrainSchedule.TrainID) timelineEventCreated.entityId).trainName;
-                var eventValue = timelineEventCreated.getValue();
-                if (eventValue.getClass() == Train.TrainReachesActionPoint.class) {
-                    var trainReachesInteraction = (Train.TrainReachesActionPoint) eventValue;
-                    trains.get(trainName).nextMove = trainReachesInteraction.trainStateChange;
-                }
-            }
+        if (change.getClass() == TrainReachesActionPoint.TrainPlannedMoveToActionPoint.class) {
+            var trainReachesAction = (TrainReachesActionPoint.TrainPlannedMoveToActionPoint) change;
+            trains.get(trainReachesAction.trainId).nextMove = trainReachesAction.stateChange;
         }
         // endregion
 

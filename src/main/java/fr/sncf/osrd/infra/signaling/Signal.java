@@ -118,7 +118,7 @@ public class Signal implements ActionPoint {
     public static final class SignalAspectChange extends EntityChange<State, Void>
             implements TimelineEventValue {
         public final RSAspectSet aspects;
-        private final int signalIndex;
+        public final int signalIndex;
 
         protected SignalAspectChange(Simulation sim, Signal.State entity, RSAspectSet aspects) {
             super(sim);
