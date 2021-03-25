@@ -58,11 +58,8 @@ public abstract class Scheduler {
         public final TrainSchedule schedule;
         public final List<SpeedController> controllers;
 
-        public TrainPlannedChange(
-                Simulation sim,
-                TrainSchedule schedule,
-                List<SpeedController> controllers
-        ) {
+        /** Plan */
+        public TrainPlannedChange(Simulation sim, TrainSchedule schedule, List<SpeedController> controllers) {
             super(sim);
             this.schedule = schedule;
             this.controllers = controllers;

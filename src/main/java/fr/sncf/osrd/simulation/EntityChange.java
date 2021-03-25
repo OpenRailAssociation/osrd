@@ -1,5 +1,7 @@
 package fr.sncf.osrd.simulation;
 
+import fr.sncf.osrd.utils.DeepComparable;
+
 public abstract class EntityChange<EntityT, ResultT> extends Change {
     protected EntityChange(Simulation sim) {
         super(sim);

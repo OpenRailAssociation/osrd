@@ -1,7 +1,6 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
@@ -73,6 +72,7 @@ public class Train {
 
     // region ENTITY_REACTOR
 
+    /** Simulate the current state to schedule the next one */
     public void scheduleStateChange(Simulation sim) throws SimulationError {
         if (lastState.status == TrainStatus.REACHED_DESTINATION) {
             logger.info("train {} reached destination, aborting planning", getName());
@@ -80,9 +80,10 @@ public class Train {
         }
 
         logger.info("planning the next move for train {}", getName());
-        lastState.scheduleStateChange(this, sim);
+        lastState.simulatePhase(this, sim);
     }
 
+    /** Reserve routes when the train is in navigate phase */
     public void onEventOccurred(Simulation sim) {
         // TODO find a smarter way to do it and remove this method
         if (lastState.currentPhaseState.getClass() == SignalNavigatePhase.State.class) {
@@ -150,13 +151,12 @@ public class Train {
             this.newState = newState;
         }
 
+        /** Deep compare two train state change */
         @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
         public boolean deepEquals(TrainStateChange o) {
             if (!o.newState.deepEquals(o.newState))
                 return false;
             if (!DeepEqualsUtils.deepEquals(positionUpdates, o.positionUpdates))
-                return false;
-            if (!speedDirectivesUpdates.equals(o.speedDirectivesUpdates))
                 return false;
             return speedDirectivesUpdates.equals(o.speedDirectivesUpdates);
         }

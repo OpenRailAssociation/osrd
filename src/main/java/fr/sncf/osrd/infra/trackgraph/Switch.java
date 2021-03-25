@@ -5,6 +5,7 @@ import fr.sncf.osrd.infra.railscript.value.RSMatchable;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.utils.DeepComparable;
 
 import java.util.ArrayList;
 
@@ -64,6 +65,7 @@ public class Switch extends TrackNode {
                 }
             }
         }
+
         @Override
         public int getEnumValue() {
             return position.ordinal();
@@ -79,8 +81,7 @@ public class Switch extends TrackNode {
         }
     }
 
-    public static final class SwitchPositionChange extends EntityChange<Switch.State, Void>
-            implements TimelineEventValue {
+    public static final class SwitchPositionChange extends EntityChange<Switch.State, Void> {
         SwitchPosition position;
         public final int switchIndex;
 
@@ -99,15 +100,6 @@ public class Switch extends TrackNode {
         @Override
         public Switch.State getEntity(Simulation sim) {
             return sim.infraState.getSwitchState(switchIndex);
-        }
-
-        @Override
-        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-        public boolean deepEquals(TimelineEventValue other) {
-            if (other.getClass() != SwitchPositionChange.class)
-                return false;
-            var o = (SwitchPositionChange) other;
-            return o.switchIndex == switchIndex && o.position == position;
         }
     }
 }

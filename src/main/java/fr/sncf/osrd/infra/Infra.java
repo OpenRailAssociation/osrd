@@ -164,7 +164,7 @@ public final class Infra {
         var order = new ArrayList<Signal>();
         var indeg = new int[signals.size()];
         for (Signal signal : signals) {
-            for (var neighbor : signal.signalDependencies)
+            for (var neighbor : signal.signalSubscribers)
                 indeg[neighbor.index] += 1;
         }
 
@@ -177,7 +177,7 @@ public final class Infra {
         while (!toVisit.isEmpty()) {
             var node = toVisit.remove(toVisit.size() - 1); // pop()
             order.add(node);
-            for (var neighbor : node.signalDependencies) {
+            for (var neighbor : node.signalSubscribers) {
                 indeg[neighbor.index] -= 1;
                 if (indeg[neighbor.index] == 0)
                     toVisit.add(neighbor);
@@ -255,13 +255,6 @@ public final class Infra {
             tvdSectionStates[tvdSection.index] = tvdSection.newState();
 
         var state = new State(signalStates, routeStates, switchStates, tvdSectionStates);
-
-        // Initialize entities
-        for (var signal : signalStates)
-            signal.initialize(state);
-
-        for (var route : routeStates)
-            route.initialize(state);
 
         return state;
     }

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.utils.DeepComparable;
 import org.junit.jupiter.api.Test;
 
 import java.util.Objects;
@@ -12,7 +13,7 @@ import java.util.Objects;
 public class SignalSimulationTest {
     public static final class SignalAspectChange
             extends EntityChange<TestSignal, MockEntityID<TestSignal>, Void>
-            implements TimelineEventValue {
+            implements DeepComparable<TimelineEventValue> {
         public final TestSignal signal;
         public final TestSignal.Aspect newAspect;
 
@@ -32,6 +33,17 @@ public class SignalSimulationTest {
         public boolean equals(Object obj) {
             if (obj == null)
                 return false;
+
+        @Override
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+        public boolean deepEquals(TimelineEventValue other) {
+            if (other.getClass() != SignalAspectChange.class)
+                return false;
+            var o = ((SignalAspectChange) other);
+            if (!super.equals(o))
+                return false;
+            return signalIndex == o.signalIndex;
+        }
 
             if (this.getClass() != obj.getClass())
                 return false;
