@@ -4,6 +4,7 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
+import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspect;
 import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
 import fr.sncf.osrd.railml.tracksectiongraph.NetRelation;
 import fr.sncf.osrd.railml.tracksectiongraph.RMLTrackSectionGraph;
@@ -76,7 +77,11 @@ public final class RailMLParser {
         final var rmlSignalsIS = RMLSignalIS.parse(netElements, document, rjsTrackSections);
         RMLSignalIL.parse(document, rmlSignalsIS);
 
-        // Sort waypoints needed to create RMLRouteGraph
+        // TODO: parse RailML aspects
+        var rjsAspects = new ArrayList<RJSAspect>();
+        rjsAspects.add(new RJSAspect("GREEN", "#2a850c"));
+
+        // sort waypoints needed to create RMLRouteGraph
         for (var rjsTrackSection : rjsTrackSections.values()) {
             rjsTrackSection.routeWaypoints.sort((w1, w2) -> {
                 if (w1.position < w2.position)
@@ -99,7 +104,7 @@ public final class RailMLParser {
                 rjsTvdSections,
                 rjsRoutes,
                 rjsSpeedSections,
-                new ArrayList<>(),
+                rjsAspects,
                 new ArrayList<>());
     }
 

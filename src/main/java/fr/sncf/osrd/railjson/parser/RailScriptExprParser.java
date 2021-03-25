@@ -294,7 +294,12 @@ public class RailScriptExprParser {
 
         for (int i = 0; i < memberCount; i++) {
             var member = expr.members[i];
-            aspects[i] = aspectsMap.get(member.aspect.id);
+
+            var aspect = aspectsMap.get(member.aspect.id);
+            if (aspect == null)
+                throw new InvalidInfraException(String.format("unknown aspect %s", member.aspect.id));
+
+            aspects[i] = aspect;
             if (member.condition != null)
                 conditions[i] = parseBooleanExpr(member.condition);
         }
