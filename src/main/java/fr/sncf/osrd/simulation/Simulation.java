@@ -190,12 +190,7 @@ public final class Simulation implements DeepComparable<Simulation> {
     public static final class TimelineEventOccurred extends SimChange<Void> {
         public final TimelineEventId timelineEventId;
 
-        /**
-         * Creates a change corresponding to a timeline event happening
-         * @param sim the simulation
-         * @param timelineEventId the identifier of the timeline event
-         */
-        public TimelineEventOccurred(Simulation sim, TimelineEventId timelineEventId) {
+        TimelineEventOccurred(Simulation sim, TimelineEventId timelineEventId) {
             super(sim);
             this.timelineEventId = timelineEventId;
         }
@@ -224,12 +219,7 @@ public final class Simulation implements DeepComparable<Simulation> {
     public static final class TimelineEventCancelled extends SimChange<Void> {
         public final TimelineEventId timelineEventId;
 
-        /**
-         * Creates a change corresponding to a timeline event being cancelled
-         * @param sim the simulation
-         * @param timelineEventId the identifier of the timeline event
-         */
-        public TimelineEventCancelled(Simulation sim, TimelineEventId timelineEventId) {
+        TimelineEventCancelled(Simulation sim, TimelineEventId timelineEventId) {
             super(sim);
             this.timelineEventId = timelineEventId;
         }
