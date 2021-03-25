@@ -5,75 +5,113 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.*;
-import fr.sncf.osrd.utils.DeepComparable;
+import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import org.junit.jupiter.api.Test;
 
-import java.util.Objects;
+import java.util.ArrayList;
 
+@SuppressWarnings("MissingJavadocMethod")
 public class SignalSimulationTest {
-    public static final class SignalAspectChange
-            extends EntityChange<TestSignal, MockEntityID<TestSignal>, Void>
-            implements DeepComparable<TimelineEventValue> {
+    public static final class SignalAspectChange extends Change {
         public final TestSignal signal;
         public final TestSignal.Aspect newAspect;
 
-        /**
-         * Creates a change of signal aspect
-         * @param sim the simulation
-         * @param signal the signal for which the aspect changed
-         * @param newAspect the new aspect of the signal
-         */
         public SignalAspectChange(Simulation sim, TestSignal signal, TestSignal.Aspect newAspect) {
-            super(sim, signal.getID());
+            super(sim);
+            this.signal = signal;
+            this.newAspect = newAspect;
+        }
+
+        public void apply() {
+            signal.aspect = newAspect;
+        }
+
+        @Override
+        public void replay(Simulation sim) {
+            throw new RuntimeException("replay not implemented");
+        }
+    }
+
+    public static final class AspectChangeEvent extends TimelineEvent {
+        public final TestSignal signal;
+        public final TestSignal.Aspect newAspect;
+
+        private AspectChangeEvent(
+                TimelineEventId eventId,
+                TestSignal signal,
+                TestSignal.Aspect newAspect
+        ) {
+            super(eventId);
             this.signal = signal;
             this.newAspect = newAspect;
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (obj == null)
-                return false;
-
-        @Override
-        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-        public boolean deepEquals(TimelineEventValue other) {
-            if (other.getClass() != SignalAspectChange.class)
-                return false;
-            var o = ((SignalAspectChange) other);
-            if (!super.equals(o))
-                return false;
-            return signalIndex == o.signalIndex;
-        }
-
-            if (this.getClass() != obj.getClass())
-                return false;
-
-            var o = (SignalAspectChange) obj;
-            return this.signal == o.signal && this.newAspect == o.newAspect;
+        protected void onOccurrence(Simulation sim) {
+            signal.setAspect(sim, newAspect);
         }
 
         @Override
-        public int hashCode() {
-            return Objects.hash(signal, newAspect);
+        protected void onCancellation(Simulation sim) {
         }
 
         @Override
-        public Void apply(Simulation sim, TestSignal signal) {
-            signal.aspect = newAspect;
-            return null;
-        }
-
-        @Override
-        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-        public boolean deepEquals(TimelineEventValue other) {
-            if (other.getClass() != SignalAspectChange.class)
+        @SuppressFBWarnings("BC_UNCONFIRMED_CAST")
+        public boolean deepEquals(TimelineEvent other) {
+            if (other.getClass() != AspectChangeEvent.class)
                 return false;
-            var o = (SignalAspectChange) other;
-            return o.signal == signal && o.newAspect == newAspect;
+            var o = (AspectChangeEvent) other;
+            return o.signal == signal
+                    && o.newAspect == newAspect;
+        }
+
+        public static AspectChangeEvent plan(
+                Simulation sim,
+                double eventTime,
+                TestSignal signal,
+                TestSignal.Aspect newAspect
+        ) {
+            var change = new AspectChangePlanned(sim, eventTime, signal, newAspect);
+            var event = change.apply(sim);
+            sim.publishChange(change);
+            return event;
+        }
+
+        public static class AspectChangePlanned extends Change {
+            public final double eventTime;
+            public final TestSignal signal;
+            public final TestSignal.Aspect newAspect;
+
+            AspectChangePlanned(
+                    Simulation sim,
+                    double eventTime,
+                    TestSignal signal,
+                    TestSignal.Aspect newAspect
+            ) {
+                super(sim);
+                this.eventTime = eventTime;
+                this.signal = signal;
+                this.newAspect = newAspect;
+            }
+
+            AspectChangeEvent apply(Simulation sim) {
+                var event = new AspectChangeEvent(
+                        sim.nextEventId(eventTime),
+                        signal,
+                        newAspect
+                );
+                sim.scheduleEvent(event);
+                return event;
+            }
+
+            @Override
+            public void replay(Simulation sim) {
+                apply(sim);
+            }
         }
     }
 
-    public static class TestSignal extends AbstractEntity<TestSignal, MockEntityID<TestSignal>> {
+    public static class TestSignal {
         public enum Aspect {
             RED,
             YELLOW,
@@ -81,40 +119,25 @@ public class SignalSimulationTest {
         }
 
         private Aspect aspect;
+        public double receptionDelay;
+        public ArrayList<TestSignal> subscribers;
 
-        @SuppressWarnings("SameParameterValue")
-        TestSignal(String name, Aspect aspect, TestSignal master) {
-            super(new MockEntityID<>(name));
+        TestSignal(double receptionDelay, Aspect aspect) {
+            this.receptionDelay = receptionDelay;
             this.aspect = aspect;
-            if (master != null)
-                master.subscribers.add(this);
+            this.subscribers = new ArrayList<>();
         }
 
-        /**
-         * Sets the aspect of the signal, creating an event in case it changes.
-         * @param sim the simulation
-         * @param newAspect the new aspect of the signal
-         */
         public void setAspect(Simulation sim, Aspect newAspect) {
             if (newAspect == aspect)
                 return;
+
             var change = new SignalAspectChange(sim, this, newAspect);
-            sim.scheduleEvent(this, sim.getTime(), change);
-            change.apply(sim, this);
-        }
+            change.apply();
+            sim.publishChange(change);
 
-        @Override
-        @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST")
-        public void onEventOccurred(
-                Simulation sim,
-                SubscribersTimelineEvent<?> event
-        ) {
-            if (event.value.getClass() == SignalAspectChange.class)
-                masterAspectChanged(sim, (SignalAspectChange) event.value);
-        }
-
-        @Override
-        public void onEventCancelled(Simulation sim, SubscribersTimelineEvent<?> event) {
+            for (var sub : subscribers)
+                sub.masterAspectChanged(sim, change);
         }
 
         private void masterAspectChanged(
@@ -128,27 +151,41 @@ public class SignalSimulationTest {
                 newAspect = GREEN;
             }
 
-            setAspect(sim, newAspect);
+            AspectChangeEvent.plan(
+                    sim,
+                    sim.getTime() + receptionDelay,
+                    this,
+                    newAspect
+            );
         }
     }
 
     @Test
     public void testSignaling() throws SimulationError {
-        var sim = Simulation.createWithoutInfra(0.0, null);
-        final var masterSignal = new TestSignal("master", GREEN, null);
-        final var slaveSignal = new TestSignal("slave", GREEN, masterSignal);
-        masterSignal.setAspect(sim, RED);
+        var changelog = new ArrayChangeLog();
+        var sim = Simulation.createWithoutInfra(0.0, changelog);
+        final var masterSignal = new TestSignal(1., GREEN);
+        final var slaveSignal = new TestSignal(1., GREEN);
+        masterSignal.subscribers.add(slaveSignal);
+
+        assertTrue(sim.isSimulationOver());
+        AspectChangeEvent.plan(sim, 2., masterSignal, RED);
+        assertFalse(sim.isSimulationOver());
+
+        var masterChangeEvent = (AspectChangeEvent) sim.step();
+        assertEquals(masterChangeEvent.eventId.scheduledTime, 2., 0.00001);
+        assertSame(masterChangeEvent.signal, masterSignal);
+        assertSame(masterChangeEvent.newAspect, RED);
 
         assertFalse(sim.isSimulationOver());
-        assertEquals(new SignalAspectChange(sim, masterSignal, RED), sim.step());
-        assertEquals(new SignalAspectChange(sim, slaveSignal, YELLOW), sim.step());
+
+        var slaveChangeEvent = (AspectChangeEvent) sim.step();
+        assertEquals(slaveChangeEvent.eventId.scheduledTime, 3., 0.00001);
+        assertSame(slaveChangeEvent.signal, slaveSignal);
+        assertSame(slaveChangeEvent.newAspect, YELLOW);
+
         assertTrue(sim.isSimulationOver());
 
-        // we must be able to unsubscribe sinks
-        masterSignal.subscribers.remove(slaveSignal);
-        assertTrue(masterSignal.subscribers.isEmpty());
-        masterSignal.setAspect(sim, YELLOW);
-        assertEquals(new SignalAspectChange(sim, masterSignal, YELLOW), sim.step());
-        assertTrue(sim.isSimulationOver());
+        assertEquals(changelog.size(), 6);
     }
 }

@@ -189,6 +189,7 @@ public class Signal implements ActionPoint {
         }
 
         @Override
+        @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
         public boolean deepEquals(TimelineEvent other) {
             if (other.getClass() != SignalDelayUpdateEvent.class)
                 return false;
@@ -227,7 +228,7 @@ public class Signal implements ActionPoint {
 
         @Override
         public void visit(RSExpr.SwitchRef expr) throws InvalidInfraException {
-            expr.switcRef.signalSubscribers.add(signal);
+            expr.switchRef.signalSubscribers.add(signal);
             super.visit(expr);
         }
     }

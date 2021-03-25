@@ -13,7 +13,7 @@ public final class TimelineEventId implements Comparable<TimelineEventId> {
     // this is needed to enforce an absolute event order
     final long revision;
 
-    TimelineEventId(double scheduledTime, long revision) {
+    public TimelineEventId(double scheduledTime, long revision) {
         this.scheduledTime = scheduledTime;
         this.revision = revision;
     }
