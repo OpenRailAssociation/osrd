@@ -34,13 +34,15 @@ Many of these goals currently aren't _yet_ fulfilled: the simulation is pretty s
  - [x] Import of railML3 infrastructure
  - [x] Static speed restrictions
  - [x] Full history of internal simulation events
- - [ ] Basic interlocking / signaling support
+ - [x] Basic interlocking / signaling support
+ - [ ] Make the train react to signals
  - [ ] pathfinding in the route graph
  - [ ] ERTMS support
  - [ ] Parallel integration of train movement
  - [ ] Variable step integration
  - [ ] Driver behavior model
  - [ ] API server mode
+ - [ ] ~~Rewrite everything in Rust~~
 
 ## Getting Started
 
