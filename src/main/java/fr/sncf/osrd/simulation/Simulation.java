@@ -131,6 +131,7 @@ public final class Simulation implements DeepComparable<Simulation> {
         this.publishChange(change);
 
         // send update messages to subscribed entities
+        event.setState(TimelineEvent.State.CANCELLED);
         event.onCancellation(this);
     }
 
@@ -153,6 +154,7 @@ public final class Simulation implements DeepComparable<Simulation> {
         change.apply(this);
         this.publishChange(change);
 
+        event.setState(TimelineEvent.State.OCCURRED);
         event.onOccurrence(this);
         return event;
     }
