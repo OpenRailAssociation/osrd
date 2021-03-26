@@ -22,7 +22,7 @@ public class RSExprState<T extends RSValue> implements DeepComparable<RSExprStat
     }
 
     /** The expression this is the state of */
-    private final RSExpr<T> rootExpr;
+    private final transient RSExpr<T> rootExpr;
 
     // region PERSISTENT_STATE
     private final RSValue[] delayLaggingStates;
@@ -30,13 +30,13 @@ public class RSExprState<T extends RSValue> implements DeepComparable<RSExprStat
     // endregion
 
     // region CALL_STATE
-    Infra.State infraState;
-    RSExprEvalMode evalMode = RSExprEvalMode.INITIALIZE;
-    final RSValue[] argStates;
-    int argScopeOffset = 0;
-    int delayScopeOffset = 0;
-    private int lastUpdatedDelaySlot = -1;
-    private RSDelayHandler delayHandler = null;
+    transient Infra.State infraState;
+    transient RSExprEvalMode evalMode = RSExprEvalMode.INITIALIZE;
+    final transient RSValue[] argStates;
+    transient int argScopeOffset = 0;
+    transient int delayScopeOffset = 0;
+    private transient int lastUpdatedDelaySlot = -1;
+    private transient RSDelayHandler delayHandler = null;
     // endregion
 
     void pushScope(int argScopeOffset, int delayScopeOffset) {
