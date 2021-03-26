@@ -80,6 +80,9 @@ public class App {
                 while (!sim.isSimulationOver())
                     sim.step();
 
+                logger.info("simulation done. {} changes were produced", changelog.size());
+
+                logger.debug("serializing changes");
                 ChangeSerializer.serializeChangeLog(changelog, outputChangelogPath);
             } catch (SimulationError simulationError) {
                 logger.error("an logic error prevented the simulation from completing", simulationError);
