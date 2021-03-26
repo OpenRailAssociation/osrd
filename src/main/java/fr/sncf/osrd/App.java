@@ -69,7 +69,7 @@ public class App {
 
                 // create the viewer
                 if (config.showViewer)
-                    multiplexer.add(DebugViewer.from(config.infra, config.realTimeViewer));
+                    multiplexer.add(DebugViewer.from(config.infra, config.realTimeViewer, config.simulationStepPause));
 
                 // insert the train start events into the simulation
                 for (var trainSchedule : config.trainSchedules)

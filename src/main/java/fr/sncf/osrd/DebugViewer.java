@@ -41,6 +41,7 @@ public class DebugViewer extends ChangeConsumer {
 
     private final Infra infra;
     private final boolean realTime;
+    private final double stepPause;
 
     private final SpriteManager spriteManager;
     private final SingleGraph graph;
@@ -73,9 +74,16 @@ public class DebugViewer extends ChangeConsumer {
     private static final String TRAIN_CSS = "text-alignment: under; shape: box; size: 25px, 10px; fill-color: #256ba8;"
             + "z-index: 2; sprite-orientation: to;";
 
-    private DebugViewer(Infra infra, boolean realTime, SingleGraph graph, SpriteManager spriteManager) {
+    private DebugViewer(
+            Infra infra,
+            boolean realTime,
+            double stepPause,
+            SingleGraph graph,
+            SpriteManager spriteManager
+    ) {
         this.infra = infra;
         this.realTime = realTime;
+        this.stepPause = stepPause;
         this.spriteManager = spriteManager;
         this.graph = graph;
     }
@@ -84,14 +92,14 @@ public class DebugViewer extends ChangeConsumer {
      * Create a viewer for debug purposes
      * @param infra the infrastructure display
      */
-    public static DebugViewer from(Infra infra, boolean realTime) {
+    public static DebugViewer from(Infra infra, boolean realTime, double stepPause) {
         System.setProperty("org.graphstream.ui", "swing");
 
         var graph = new SingleGraph("OSRD");
         graph.setAttribute("ui.quality");
         graph.setAttribute("ui.antialias");
         var spriteManager = new SpriteManager(graph);
-        var viewer = new DebugViewer(infra, realTime, graph, spriteManager);
+        var viewer = new DebugViewer(infra, realTime, stepPause, graph, spriteManager);
 
         // An edge with a size of graphview size of 1 is a 100m
         var referenceEdgeSize = 100.0;
@@ -282,19 +290,19 @@ public class DebugViewer extends ChangeConsumer {
             return;
         }
 
-        // the time to wait between simulation steps
-        double interpolationStep = 1.0;
-
         // if the user doesn't want realtime visualization, update the viewer once per timeline event
         if (!realTime) {
             if (currentTime < nextEventTime) {
                 currentTime = nextEventTime;
                 for (var trainData : trains.values())
                     updateTrain(trainData);
-                Thread.sleep((long) (interpolationStep * 3000));
+                Thread.sleep((long) (stepPause * 1000));
             }
             return;
         }
+
+        // the time to wait between simulation steps
+        double interpolationStep = 1.0;
 
         // move the time forward by time increments
         // to help the viewer see something
