@@ -50,6 +50,12 @@ public class SortedArraySet<E extends Comparable<E>> extends AbstractSet<E> {
         return false;
     }
 
+    /** Check whether the given set is a subset */
+    public boolean contains(SortedArraySet<E> o) {
+        var intersection = intersect(o);
+        return intersection.size() == o.size();
+    }
+
     @Override
     public int hashCode() {
         return data.hashCode();

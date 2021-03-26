@@ -1,8 +1,17 @@
 {
   "aspects": [
-    {"id": "GREEN", "color": "#2a850c"},
-    {"id": "YELLOW", "color": "#f08a05"},
-    {"id": "RED", "color": "#db0c04"}
+    {
+      "id": "GREEN",
+      "color": "#2a850c"
+    },
+    {
+      "id": "YELLOW",
+      "color": "#f08a05"
+    },
+    {
+      "id": "RED",
+      "color": "#db0c04"
+    }
   ],
   "operational_points": [
     {
@@ -20,6 +29,11 @@
       "tvd_sections": [
         "tvd.foo_a"
       ],
+      "release_groups": [
+        [
+          "tvd.foo_a"
+        ]
+      ],
       "waypoints": [
         "buffer_stop_a",
         "tde.foo_a-switch_foo"
@@ -31,6 +45,11 @@
       "switches_position": {},
       "tvd_sections": [
         "tvd.foo_b"
+      ],
+      "release_groups": [
+        [
+          "tvd.foo_b"
+        ]
       ],
       "waypoints": [
         "buffer_stop_b",
@@ -46,6 +65,14 @@
       "tvd_sections": [
         "tvd.switch_foo",
         "tvd.track"
+      ],
+      "release_groups": [
+        [
+          "tvd.track"
+        ],
+        [
+          "tvd.switch_foo"
+        ]
       ],
       "waypoints": [
         "tde.foo_a-switch_foo",
@@ -63,6 +90,14 @@
         "tvd.switch_foo",
         "tvd.track"
       ],
+      "release_groups": [
+        [
+          "tvd.track"
+        ],
+        [
+          "tvd.switch_foo"
+        ]
+      ],
       "waypoints": [
         "tde.foo_b-switch_foo",
         "tde.switch_foo-track",
@@ -76,6 +111,11 @@
       "tvd_sections": [
         "tvd.bar_a"
       ],
+      "release_groups": [
+        [
+          "tvd.bar_a"
+        ]
+      ],
       "waypoints": [
         "tde.track-bar",
         "buffer_stop_c"
@@ -88,6 +128,11 @@
       "tvd_sections": [
         "tvd.bar_a"
       ],
+      "release_groups": [
+        [
+          "tvd.bar_a"
+        ]
+      ],
       "waypoints": [
         "buffer_stop_c",
         "tde.track-bar"
@@ -99,6 +144,11 @@
       "switches_position": {},
       "tvd_sections": [
         "tvd.track"
+      ],
+      "release_groups": [
+        [
+          "tvd.track"
+        ]
       ],
       "waypoints": [
         "tde.track-bar",
@@ -115,6 +165,14 @@
         "tvd.switch_foo",
         "tvd.foo_a"
       ],
+      "release_groups": [
+        [
+          "tvd.switch_foo"
+        ],
+        [
+          "tvd.foo_a"
+        ]
+      ],
       "waypoints": [
         "tde.switch_foo-track",
         "tde.foo_a-switch_foo",
@@ -130,6 +188,14 @@
       "tvd_sections": [
         "tvd.switch_foo",
         "tvd.foo_b"
+      ],
+      "release_groups": [
+        [
+          "tvd.switch_foo"
+        ],
+        [
+          "tvd.foo_b"
+        ]
       ],
       "waypoints": [
         "tde.switch_foo-track",

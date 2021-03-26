@@ -45,7 +45,7 @@ public class RouteGraph extends BiNGraph<Route, Waypoint> {
                 String id,
                 List<Waypoint> waypoints,
                 SortedArraySet<TVDSection> tvdSections,
-                Route.TransitType transitType,
+                List<SortedArraySet<TVDSection>> releaseGroups,
                 HashMap<Switch, SwitchPosition> switchesPosition
         ) throws InvalidInfraException {
             if (waypoints.size() < 2) {
@@ -77,12 +77,26 @@ public class RouteGraph extends BiNGraph<Route, Waypoint> {
                 length += tvdSectionPath.length;
             }
 
+            // Checks that the release groups are consistent and complete
+            var copiedTvdSections = new SortedArraySet<TVDSection>();
+            for (var releaseGroup : releaseGroups) {
+                for (var tvdSection : releaseGroup) {
+                    if (!tvdSections.contains(tvdSection))
+                        throw new InvalidInfraException(String.format(
+                                "Route '%s' has a release group that doesn't match route's tvd sections", id));
+                    copiedTvdSections.add(tvdSection);
+                }
+            }
+            if (copiedTvdSections.size() != tvdSections.size())
+                throw new InvalidInfraException(String.format(
+                        "Route '%s' has a tvd section that is not part of any of its release groups", id));
+
             // Create route
             var route = new Route(
                     id,
                     routeGraph,
                     length,
-                    transitType,
+                    releaseGroups,
                     tvdSectionsPath,
                     tvdSectionsPathDirection,
                     switchesPosition

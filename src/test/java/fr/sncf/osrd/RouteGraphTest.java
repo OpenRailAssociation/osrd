@@ -51,7 +51,15 @@ public class RouteGraphTest {
             ArrayList<Waypoint> waypoints,
             SortedArraySet<TVDSection> tvdSections
     ) throws InvalidInfraException {
-        return builder.makeRoute(id, waypoints, tvdSections, Route.TransitType.FLEXIBLE, null);
+        // Create a "flexible transit" release group
+        var releaseGroups = new ArrayList<SortedArraySet<TVDSection>>();
+        for (var tvdSection : tvdSections) {
+            var releaseGroup = new SortedArraySet<TVDSection>();
+            releaseGroup.add(tvdSection);
+            releaseGroups.add(releaseGroup);
+        }
+
+        return builder.makeRoute(id, waypoints, tvdSections, releaseGroups, null);
     }
 
     /**
