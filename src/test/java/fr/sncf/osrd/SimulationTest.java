@@ -90,34 +90,27 @@ public class SimulationTest {
             return event;
         }
 
-        public static class TestEventPlanned extends Change {
-            public final double eventTime;
+        public static class TestEventPlanned extends Simulation.TimelineEventCreated {
             public final String data;
             private final BiConsumer<Simulation, TestEvent> onOccurrenceCallback;
             private final BiConsumer<Simulation, TestEvent> onCancellationCallback;
 
-            TestEventPlanned(
+            private TestEventPlanned(
                     Simulation sim,
                     double eventTime,
                     String data,
                     BiConsumer<Simulation, TestEvent> onOccurrenceCallback,
                     BiConsumer<Simulation, TestEvent> onCancellationCallback
             ) {
-                super(sim);
-                this.eventTime = eventTime;
+                super(sim, eventTime);
                 this.data = data;
                 this.onOccurrenceCallback = onOccurrenceCallback;
                 this.onCancellationCallback = onCancellationCallback;
             }
 
-            TestEvent apply(Simulation sim) {
-                var event = new TestEvent(
-                        sim.nextEventId(eventTime),
-                        data,
-                        onOccurrenceCallback,
-                        onCancellationCallback
-                );
-                sim.scheduleEvent(event);
+            private TestEvent apply(Simulation sim) {
+                var event = new TestEvent(eventId, data, onOccurrenceCallback, onCancellationCallback);
+                super.scheduleEvent(sim, event);
                 return event;
             }
 
@@ -128,7 +121,7 @@ public class SimulationTest {
 
             @Override
             public String toString() {
-                return String.format("TestEventPlanned { eventTime=%.3f, data=%s }", eventTime, data);
+                return String.format("TestEventPlanned { eventId=%s, data=%s }", eventId, data);
             }
         }
     }

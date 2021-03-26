@@ -19,6 +19,7 @@ import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
+import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +74,7 @@ public class App {
 
                 // insert the train start events into the simulation
                 for (var trainSchedule : config.trainSchedules)
-                    Scheduler.planTrain(sim, trainSchedule);
+                    TrainCreatedEvent.plan(sim, trainSchedule);
 
                 // run the simulation loop
                 while (!sim.isSimulationOver())

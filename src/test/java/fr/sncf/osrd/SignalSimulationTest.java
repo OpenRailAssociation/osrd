@@ -86,30 +86,24 @@ public class SignalSimulationTest {
             return event;
         }
 
-        public static class AspectChangePlanned extends Change {
-            public final double eventTime;
+        public static class AspectChangePlanned extends Simulation.TimelineEventCreated {
             public final TestSignal signal;
             public final TestSignal.Aspect newAspect;
 
-            AspectChangePlanned(
+            private AspectChangePlanned(
                     Simulation sim,
                     double eventTime,
                     TestSignal signal,
                     TestSignal.Aspect newAspect
             ) {
-                super(sim);
-                this.eventTime = eventTime;
+                super(sim, eventTime);
                 this.signal = signal;
                 this.newAspect = newAspect;
             }
 
-            AspectChangeEvent apply(Simulation sim) {
-                var event = new AspectChangeEvent(
-                        sim.nextEventId(eventTime),
-                        signal,
-                        newAspect
-                );
-                sim.scheduleEvent(event);
+            private AspectChangeEvent apply(Simulation sim) {
+                var event = new AspectChangeEvent(eventId, signal, newAspect);
+                super.scheduleEvent(sim, event);
                 return event;
             }
 
@@ -121,8 +115,8 @@ public class SignalSimulationTest {
             @Override
             public String toString() {
                 return String.format(
-                        "AspectChangePlanned { eventTime=%.3f, signal=%s, newAspect=%s } ",
-                        eventTime, signal.name, newAspect.name()
+                        "AspectChangePlanned { eventId=%s, signal=%s, newAspect=%s } ",
+                        eventId, signal.name, newAspect.name()
                 );
             }
         }
