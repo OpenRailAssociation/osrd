@@ -6,9 +6,11 @@ import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.infra.routegraph.Route;
+import fr.sncf.osrd.utils.SortedArraySet;
 
 import java.util.Map;
 import java.util.List;
+import java.util.Set;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSRoute implements Identified {
@@ -25,8 +27,8 @@ public class RJSRoute implements Identified {
     @Json(name = "switches_position")
     public final Map<ID<RJSSwitch>, RJSSwitch.Position> switchesPosition;
 
-    @Json(name = "transit_type")
-    public final RJSRoute.TransitType transitType;
+    @Json(name = "release_groups")
+    public final List<Set<ID<RJSTVDSection>>> releaseGroups;
 
     /** Routes are described as a list of waypoints, TVD Sections and Switches in specific positions */
     public RJSRoute(
@@ -34,13 +36,13 @@ public class RJSRoute implements Identified {
             List<ID<RJSTVDSection>> tvdSections,
             Map<ID<RJSSwitch>, RJSSwitch.Position> switchesPosition,
             List<ID<RJSRouteWaypoint>> waypoints,
-            TransitType transitType
+            List<Set<ID<RJSTVDSection>>> releaseGroups
     ) {
         this.id = id;
         this.tvdSections = tvdSections;
         this.switchesPosition = switchesPosition;
         this.waypoints = waypoints;
-        this.transitType = transitType;
+        this.releaseGroups = releaseGroups;
     }
 
     @Override

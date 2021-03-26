@@ -9,7 +9,7 @@ import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.simulation.*;
-import fr.sncf.osrd.utils.DeepComparable;
+import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.BiNEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
@@ -23,7 +23,7 @@ public class Route extends BiNEdge<Route> {
     public final List<TVDSectionPath> tvdSectionsPath;
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public final List<EdgeDirection> tvdSectionsPathDirection;
-    public final TransitType transitType;
+    public final List<SortedArraySet<TVDSection>> releaseGroups;
     public final HashMap<Switch, SwitchPosition> switchesPosition;
     public ArrayList<Signal> signalSubscribers;
 
@@ -31,7 +31,7 @@ public class Route extends BiNEdge<Route> {
             String id,
             RouteGraph graph,
             double length,
-            TransitType transitType,
+            List<SortedArraySet<TVDSection>> releaseGroups,
             List<TVDSectionPath> tvdSectionsPath,
             List<EdgeDirection> tvdSectionsPathDirection,
             HashMap<Switch, SwitchPosition> switchesPosition
@@ -43,7 +43,7 @@ public class Route extends BiNEdge<Route> {
                 length
         );
         this.id = id;
-        this.transitType = transitType;
+        this.releaseGroups = releaseGroups;
         this.tvdSectionsPathDirection = tvdSectionsPathDirection;
         this.switchesPosition = switchesPosition;
         graph.registerEdge(this);
@@ -71,16 +71,24 @@ public class Route extends BiNEdge<Route> {
             if (status != RouteStatus.OCCUPIED)
                 return;
 
-            if (route.transitType == TransitType.FLEXIBLE) {
-                tvdSectionUnoccupied.free(sim);
-                return;
+            // TODO This function could be optimized.
+            // One way to do it is to add an attribute to tvdSection to know if they're occupied
+            var tvdSectionsBehind = new SortedArraySet<TVDSection>();
+            for (var tvdSectionPath : route.tvdSectionsPath) {
+                tvdSectionsBehind.add(tvdSectionPath.tvdSection);
+                if (tvdSectionPath.tvdSection == tvdSectionUnoccupied.tvdSection)
+                    break;
             }
-            // The train has covered the entire route
-            var lastTvdSection = route.tvdSectionsPath.get(route.tvdSectionsPath.size() - 1).tvdSection;
-            if (lastTvdSection == tvdSectionUnoccupied.tvdSection) {
-                for (var tvdSectionPath : route.tvdSectionsPath) {
-                    var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
-                    tvdSection.free(sim);
+
+            for (var releaseGroup : route.releaseGroups) {
+                if (!releaseGroup.contains(tvdSectionUnoccupied.tvdSection))
+                    continue;
+                if (!tvdSectionsBehind.contains(releaseGroup))
+                    continue;
+                for (var releasedTvdSection : releaseGroup) {
+                    var tvdSection = sim.infraState.getTvdSectionState(releasedTvdSection.index);
+                    if (tvdSection.isReserved())
+                        tvdSection.free(sim);
                 }
             }
         }

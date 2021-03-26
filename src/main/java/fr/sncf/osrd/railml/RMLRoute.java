@@ -13,6 +13,7 @@ import fr.sncf.osrd.railml.routegraph.RMLTVDSectionPath;
 import fr.sncf.osrd.railml.tracksectiongraph.RMLTrackSectionGraph;
 
 import fr.sncf.osrd.railml.tracksectiongraph.TrackNetElement;
+import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.*;
 import fr.sncf.osrd.utils.graph.path.*;
 import org.dom4j.Document;
@@ -24,7 +25,8 @@ public class RMLRoute {
     static ArrayList<RJSRoute> parse(
             RMLTrackSectionGraph graph,
             Document document,
-            HashMap<String, RJSTrackSection> rjsTrackSections
+            HashMap<String, RJSTrackSection> rjsTrackSections,
+            HashMap<String, RMLReleaseGroupRear> releaseGroupsRear
     ) throws InvalidInfraException {
         var rmlRouteGraph = new RMLRouteGraph();
         var overlayBuilder = new RMLRouteGraphBuilder(rjsTrackSections, graph, rmlRouteGraph);
@@ -52,6 +54,7 @@ public class RMLRoute {
 
             var tvdSections = parseTVDSections(route);
             var switchesPosition = parseSwitchesPosition(route);
+            var releaseGroups = parseReleaseGroups(route, releaseGroupsRear);
 
             var entryWaypoint = parseEntryExitWaypoint(
                     true, route, rmlRouteGraph, rjsTrackSections, graph, signalTrackNetElementMap);
@@ -59,8 +62,20 @@ public class RMLRoute {
                     false, route, rmlRouteGraph, rjsTrackSections, graph, signalTrackNetElementMap);
             var rmlRouteWaypoints = computeRouteWaypoints(entryWaypoint, exitWaypoint, rmlRouteGraph);
             var routeWaypoints = rmlToRjsWaypoints(rmlRouteWaypoints, rjsWaypointsMap);
-            // TODO Add transit type parsing
-            res.add(new RJSRoute(id, tvdSections, switchesPosition, routeWaypoints, RJSRoute.TransitType.FLEXIBLE));
+
+            res.add(new RJSRoute(id, tvdSections, switchesPosition, routeWaypoints, releaseGroups));
+        }
+        return res;
+    }
+
+    private static List<Set<ID<RJSTVDSection>>> parseReleaseGroups(
+            Element route,
+            HashMap<String, RMLReleaseGroupRear> releaseGroupsRear
+    ) {
+        var res = new ArrayList<Set<ID<RJSTVDSection>>>();
+        for (var releaseGroup : route.elements("hasReleaseGroup")) {
+            var releaseGroupId = releaseGroup.attributeValue("ref");
+            res.add(releaseGroupsRear.get(releaseGroupId).tvdSections);
         }
         return res;
     }

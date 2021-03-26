@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 public class RailJSONParser {
     /**
@@ -182,7 +183,21 @@ public class RailJSONParser {
             for (var tvdSection : rjsRoute.tvdSections)
                 tvdSections.add(tvdSectionsMap.get(tvdSection.id));
 
-            var transitType = rjsRoute.transitType.parse();
+            // Parse release groups
+            var releaseGroups = new ArrayList<SortedArraySet<TVDSection>>();
+            for (var rjsReleaseGroup : rjsRoute.releaseGroups) {
+                var releaseGroup = new SortedArraySet<TVDSection>();
+                for (var rjsTvdSection : rjsReleaseGroup) {
+                    var tvdSection = tvdSectionsMap.get(rjsTvdSection.id);
+                    if (tvdSection == null)
+                        throw new InvalidInfraException(String.format(
+                                "A release group contains an unknown tvd section (%s)",
+                                rjsTvdSection.id
+                        ));
+                    releaseGroup.add(tvdSection);
+                }
+                releaseGroups.add(releaseGroup);
+            }
 
             var switchesPosition = new HashMap<Switch, SwitchPosition>();
             for (var switchPos : rjsRoute.switchesPosition.entrySet()) {
@@ -191,7 +206,7 @@ public class RailJSONParser {
                 switchesPosition.put(switchRef, position);
             }
 
-            routeGraph.makeRoute(rjsRoute.id, waypoints, tvdSections, transitType, switchesPosition);
+            routeGraph.makeRoute(rjsRoute.id, waypoints, tvdSections, releaseGroups, switchesPosition);
         }
 
         // build name maps to prepare resolving names in expressions

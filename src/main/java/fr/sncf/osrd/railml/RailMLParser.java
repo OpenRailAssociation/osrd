@@ -94,7 +94,8 @@ public final class RailMLParser {
 
         // routes must be parsed at the end, as those depend on train detection elements
         // and buffer stops, which act as route waypoints
-        var rjsRoutes = RMLRoute.parse(graph, document, rjsTrackSections);
+        final var rmlReleaseGroupsRear = RMLReleaseGroupRear.parse(document);
+        var rjsRoutes = RMLRoute.parse(graph, document, rjsTrackSections, rmlReleaseGroupsRear);
 
         return new RJSInfra(
                 rjsTrackSections.values(),

@@ -640,11 +640,35 @@
                     <refersTo ref="sig.S7"/>
                 </signalIL>
             </signalsIL>
+            <routeReleaseGroupsRear>
+                <routeReleaseGroupRear id="rlg.foo_a">
+                    <hasTvdSection ref="tvd.foo_a" />
+                </routeReleaseGroupRear>
+                <routeReleaseGroupRear id="rlg.switch_foo">
+                    <hasTvdSection ref="tvd.switch_foo" />
+                </routeReleaseGroupRear>
+                <routeReleaseGroupRear id="rlg.foo_b">
+                    <hasTvdSection ref="tvd.foo_b" />
+                </routeReleaseGroupRear>
+                <routeReleaseGroupRear id="rlg.bar_a">
+                    <hasTvdSection ref="tvd.bar_a" />
+                </routeReleaseGroupRear>
+                <routeReleaseGroupRear id="rlg.foo_a-switch_foo">
+                    <hasTvdSection ref="tvd.foo_a-switch_foo" />
+                </routeReleaseGroupRear>
+                <routeReleaseGroupRear id="rlg.foo_b-switch_foo">
+                    <hasTvdSection ref="tvd.foo_b-switch_foo" />
+                </routeReleaseGroupRear>
+                <routeReleaseGroupRear id="rlg.track">
+                    <hasTvdSection ref="tvd.track" />
+                </routeReleaseGroupRear>
+            </routeReleaseGroupsRear>
             <routes>
                 <!-- normal direction -->
                 <route id="rt.buffer_stop_a-C1" locksAutomatically="false" processingDelay="PT1S">
                     <handlesRouteType ref="regular_route"/>
                     <hasTvdSection ref="tvd.foo_a"/>
+                    <hasReleaseGroup ref="rlg.foo_a"/>
                     <routeEntry id="rt.buffer_stop_a-C1.entry">
                         <refersTo ref="buffer_stop_a"/>
                     </routeEntry>
@@ -655,6 +679,7 @@
                 <route id="rt.buffer_stop_b-C3" locksAutomatically="false" processingDelay="PT1S">
                     <handlesRouteType ref="regular_route"/>
                     <hasTvdSection ref="tvd.foo_b"/>
+                    <hasReleaseGroup ref="rlg.foo_b"/>
                     <routeEntry id="rt.buffer_stop_b-C3.entry">
                         <refersTo ref="buffer_stop_b"/>
                     </routeEntry>
@@ -669,7 +694,9 @@
                         <refersToSwitch ref="il.switch_foo"/>
                     </facingSwitchInPosition>
                     <hasTvdSection ref="tvd.switch_foo"/>
+                    <hasReleaseGroup ref="rlg.switch_foo"/>
                     <hasTvdSection ref="tvd.track"/>
+                    <hasReleaseGroup ref="rlg.track"/>
                     <routeEntry id="rt.C1-S7.entry">
                         <refersTo ref="il.sig.C1"/>
                     </routeEntry>
@@ -684,7 +711,9 @@
                         <refersToSwitch ref="il.switch_foo"/>
                     </facingSwitchInPosition>
                     <hasTvdSection ref="tvd.switch_foo"/>
+                    <hasReleaseGroup ref="rlg.switch_foo"/>
                     <hasTvdSection ref="tvd.track"/>
+                    <hasReleaseGroup ref="rlg.track"/>
                     <routeEntry id="rt.C3-S7.entry">
                         <refersTo ref="il.sig.C3"/>
                     </routeEntry>
@@ -695,6 +724,7 @@
                 <route id="rt.S7-buffer_stop_c" locksAutomatically="false" processingDelay="PT1S">
                     <handlesRouteType ref="regular_route"/>
                     <hasTvdSection ref="tvd.bar_a"/>
+                    <hasReleaseGroup ref="rlg.bar_a"/>
                     <routeEntry>
                         <refersTo ref="il.sig.S7"/>
                     </routeEntry>
@@ -706,6 +736,7 @@
                 <route id="rt.buffer_stop_c-C2" locksAutomatically="false" processingDelay="PT1S">
                     <handlesRouteType ref="regular_route"/>
                     <hasTvdSection ref="tvd.bar_a"/>
+                    <hasReleaseGroup ref="rlg.bar_a"/>
                     <routeEntry id="rt.buffer_stop_c-C2.entry">
                         <refersTo ref="buffer_stop_c"/>
                     </routeEntry>
@@ -716,6 +747,7 @@
                 <route id="rt.C2-C6" locksAutomatically="false" processingDelay="PT1S">
                     <handlesRouteType ref="regular_route"/>
                     <hasTvdSection ref="tvd.track"/>
+                    <hasReleaseGroup ref="rlg.track"/>
                     <routeEntry id="rt.C2-C6.entry">
                         <refersTo ref="il.sig.C2"/>
                     </routeEntry>
@@ -729,7 +761,9 @@
                         <refersToSwitch ref="il.switch_foo"/>
                     </facingSwitchInPosition>
                     <hasTvdSection ref="tvd.switch_foo"/>
+                    <hasReleaseGroup ref="rlg.switch_foo"/>
                     <hasTvdSection ref="tvd.foo_a"/>
+                    <hasReleaseGroup ref="rlg.foo_a"/>
                     <routeEntry>
                         <refersTo ref="il.sig.C6"/>
                     </routeEntry>
@@ -743,7 +777,9 @@
                         <refersToSwitch ref="il.switch_foo"/>
                     </facingSwitchInPosition>
                     <hasTvdSection ref="tvd.switch_foo"/>
+                    <hasReleaseGroup ref="rlg.switch_foo"/>
                     <hasTvdSection ref="tvd.foo_b"/>
+                    <hasReleaseGroup ref="rlg.foo_b"/>
                     <routeEntry>
                         <refersTo ref="il.sig.C6"/>
                     </routeEntry>
