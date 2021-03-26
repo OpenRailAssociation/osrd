@@ -60,7 +60,7 @@ public final class Simulation implements DeepComparable<Simulation> {
     private final SortedMap<TimelineEventId, TimelineEvent> timeline = new TreeMap<>();
 
     /** The number of event that were scheduled. it is used to associate a unique number to events. */
-    long revision = 0;
+    private long revision = 0;
 
     /** Creates a new Discrete TimelineEvent SimulationManager */
     private Simulation(
@@ -159,33 +159,36 @@ public final class Simulation implements DeepComparable<Simulation> {
         return event;
     }
 
-    /** Create an event ID for a given time */
-    public TimelineEventId nextEventId(double scheduledTime) {
-        var res = new TimelineEventId(scheduledTime, revision);
-        // update the revision number of the simulation
-        this.revision++;
-        return res;
-    }
-
-    /** Inserts an event into the timeline */
-    public void scheduleEvent(TimelineEvent event) {
-        var eventId = event.eventId;
-        assert eventId.scheduledTime >= this.time;
-        assert this.revision > eventId.revision;
-
-        // add the event to the timeline
-        this.timeline.put(eventId, event);
-
-        event.setState(TimelineEvent.State.SCHEDULED);
-    }
-
-    public TimelineEvent getTimelineEvent(TimelineEventId eventId) {
-        return timeline.get(eventId);
-    }
-
     // endregion
 
     // region CHANGES
+
+    public abstract static class TimelineEventCreated extends Change {
+        public final TimelineEventId eventId;
+
+        protected TimelineEventCreated(Simulation sim, double scheduledTime) {
+            super(sim);
+            this.eventId = new TimelineEventId(scheduledTime, sim.revision);
+        }
+
+        protected void scheduleEvent(Simulation sim, TimelineEvent event) {
+            assert event.eventId == this.eventId;
+            var eventId = event.eventId;
+            assert eventId.scheduledTime >= sim.time;
+
+            // increment the revision of the simulation
+            // a mismatch here can be caused by:
+            //  - not scheduling a TimelineEventCreated immediately after creation
+            //  - replaying changes after missing some
+            assert sim.revision == eventId.revision : "event revision mismatch";
+            sim.revision++;
+
+            // add the event to the timeline
+            sim.timeline.put(eventId, event);
+
+            event.setState(TimelineEvent.State.SCHEDULED);
+        }
+    }
 
     public static final class TimelineEventOccurred extends SimChange<Void> {
         public final TimelineEventId timelineEventId;

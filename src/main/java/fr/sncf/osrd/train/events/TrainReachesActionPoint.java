@@ -12,7 +12,7 @@ public final class TrainReachesActionPoint extends TimelineEvent {
     public final Train.TrainStateChange trainStateChange;
     public final TrainInteractionType interactionType;
 
-    /** Event value that represents train interacting with an action point */
+    /** Event that represents a train's interaction with an action point */
     private TrainReachesActionPoint(
             TimelineEventId eventId,
             Train train,
@@ -61,7 +61,7 @@ public final class TrainReachesActionPoint extends TimelineEvent {
     }
 
     /** Plan a move to an action point */
-    public static void plan(
+    public static TrainReachesActionPoint plan(
             Simulation sim,
             double actionTime,
             Train train,
@@ -72,18 +72,18 @@ public final class TrainReachesActionPoint extends TimelineEvent {
         var change = new TrainPlannedMoveToActionPoint(
                 sim, actionTime, train.getName(), actionPoint, trainStateChange, interactionType
         );
-        change.apply(sim, train);
+        var event = change.apply(sim, train);
         sim.publishChange(change);
+        return event;
     }
 
-    public static class TrainPlannedMoveToActionPoint extends EntityChange<Train, Void> {
-        public final double actionTime;
+    public static class TrainPlannedMoveToActionPoint extends Simulation.TimelineEventCreated {
         public final String trainId;
         public final ActionPoint actionPoint;
         public final Train.TrainStateChange stateChange;
         public final TrainInteractionType interactionType;
 
-        TrainPlannedMoveToActionPoint(
+        private TrainPlannedMoveToActionPoint(
                 Simulation sim,
                 double actionTime,
                 String trainId,
@@ -91,36 +91,35 @@ public final class TrainReachesActionPoint extends TimelineEvent {
                 Train.TrainStateChange stateChange,
                 TrainInteractionType interactionType
         ) {
-            super(sim);
-            this.actionTime = actionTime;
+            super(sim, actionTime);
             this.trainId = trainId;
             this.actionPoint = actionPoint;
             this.stateChange = stateChange;
             this.interactionType = interactionType;
         }
 
-        @Override
-        public Void apply(Simulation sim, Train train) {
-            sim.scheduleEvent(new TrainReachesActionPoint(
-                    sim.nextEventId(actionTime),
+        private TrainReachesActionPoint apply(Simulation sim, Train train) {
+            var event = new TrainReachesActionPoint(
+                    eventId,
                     train,
                     actionPoint,
                     stateChange,
                     interactionType
-            ));
-            return null;
+            );
+            super.scheduleEvent(sim, event);
+            return event;
         }
 
         @Override
-        public Train getEntity(Simulation sim) {
-            return sim.trains.get(trainId);
+        public void replay(Simulation sim) {
+            apply(sim, sim.trains.get(trainId));
         }
 
         @Override
         public String toString() {
             return String.format(
-                    "TrainPlannedMoveToActionPoint { actionTime=%.3f, trainId=%s, actionPoint=%s, interactsWith=%s }",
-                    actionTime, trainId, actionPoint, interactionType.name()
+                    "TrainPlannedMoveToActionPoint { eventId=%s, trainId=%s, actionPoint=%s, interactsWith=%s }",
+                    eventId, trainId, actionPoint, interactionType.name()
             );
         }
     }

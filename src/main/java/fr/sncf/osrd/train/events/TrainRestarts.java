@@ -29,19 +29,19 @@ public final class TrainRestarts extends TimelineEvent {
     }
 
     /** Plan a move to an action point */
-    public static void plan(
+    public static TrainRestarts plan(
             Simulation sim,
             double actionTime,
             Train train,
             Train.TrainStateChange stateChange
     ) {
         var change = new TrainPlannedRestart(sim, actionTime, train.getName(), stateChange);
-        change.apply(sim, train);
+        var event = change.apply(sim, train);
         sim.publishChange(change);
+        return event;
     }
 
-    public static class TrainPlannedRestart extends EntityChange<Train, Void> {
-        public final double actionTime;
+    public static class TrainPlannedRestart extends Simulation.TimelineEventCreated {
         public final String trainId;
         public final Train.TrainStateChange stateChange;
 
@@ -51,30 +51,25 @@ public final class TrainRestarts extends TimelineEvent {
                 String trainId,
                 Train.TrainStateChange stateChange
         ) {
-            super(sim);
-            this.actionTime = actionTime;
+            super(sim, actionTime);
             this.trainId = trainId;
             this.stateChange = stateChange;
         }
 
-        @Override
-        public Void apply(Simulation sim, Train train) {
-            sim.scheduleEvent(new TrainRestarts(
-                    sim.nextEventId(actionTime),
-                    train,
-                    stateChange
-            ));
-            return null;
+        private TrainRestarts apply(Simulation sim, Train train) {
+            var event = new TrainRestarts(eventId, train, stateChange);
+            super.scheduleEvent(sim, event);
+            return event;
         }
 
         @Override
-        public Train getEntity(Simulation sim) {
-            return sim.trains.get(trainId);
+        public void replay(Simulation sim) {
+            apply(sim, sim.trains.get(trainId));
         }
 
         @Override
         public String toString() {
-            return String.format("TrainPlannedRestart { actionTime=%.3f, trainId=%s }", actionTime, trainId);
+            return String.format("TrainPlannedRestart { eventId=%s, trainId=%s }", eventId, trainId);
         }
     }
 
