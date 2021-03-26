@@ -19,6 +19,7 @@ import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
+import fr.sncf.osrd.simulation.changelog.ChangeLogSummarizer;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import org.slf4j.Logger;
@@ -80,7 +81,8 @@ public class App {
                 while (!sim.isSimulationOver())
                     sim.step();
 
-                logger.info("simulation done. {} changes were produced", changelog.size());
+                logger.info("done simulating");
+                ChangeLogSummarizer.summarize(changelog);
 
                 logger.debug("serializing changes");
                 ChangeSerializer.serializeChangeLog(changelog, outputChangelogPath);
