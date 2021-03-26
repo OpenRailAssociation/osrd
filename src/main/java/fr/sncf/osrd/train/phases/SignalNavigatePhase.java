@@ -174,7 +174,7 @@ public final class SignalNavigatePhase implements Phase {
     }
 
     /** This class represent an empty action point. It's as last event in the event path */
-    private static final class VirtualActionPoint implements ActionPoint {
+    public static final class VirtualActionPoint implements ActionPoint {
 
         @Override
         public TrainInteractionType getInteractionType() {

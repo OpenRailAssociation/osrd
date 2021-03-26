@@ -6,11 +6,25 @@ import com.squareup.moshi.*;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.TVDSection;
+import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
+import fr.sncf.osrd.infra.railscript.value.RSBool;
+import fr.sncf.osrd.infra.railscript.value.RSValue;
+import fr.sncf.osrd.infra.routegraph.Route;
+import fr.sncf.osrd.infra.signaling.ActionPoint;
+import fr.sncf.osrd.infra.signaling.Signal;
+import fr.sncf.osrd.infra.trackgraph.BufferStop;
+import fr.sncf.osrd.infra.trackgraph.Detector;
+import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.simulation.changelog.ChangeLog;
 import fr.sncf.osrd.speedcontroller.*;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.Train.*;
+import fr.sncf.osrd.train.phases.Phase;
+import fr.sncf.osrd.train.phases.PhaseState;
+import fr.sncf.osrd.train.phases.SignalNavigatePhase;
+import fr.sncf.osrd.train.phases.StopPhase;
 import fr.sncf.osrd.utils.CryoList;
 import okio.BufferedSink;
 import okio.Okio;
@@ -19,7 +33,6 @@ import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
-import java.time.LocalTime;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,8 +44,14 @@ public class ChangeSerializer {
     public static final JsonAdapter<Change> changeAdapter = new Moshi.Builder()
             .add(new CurrentPathEdgesAdapter())
             .add(new TopoEdgeAdapter())
-            .add(new LocalTimeAdapter())
+            .add(new RouteAdapter())
+            .add(new SignalAdapter())
+            .add(new SwitchAdapter())
+            .add(new TVDSectionAdapter())
             .add(CollectionJsonAdapter.of(CryoList.class, CryoList::new))
+            .add(CollectionJsonAdapter.of(ArrayList.class, ArrayList::new))
+            .add(CollectionJsonAdapter.of(ArrayDeque.class, ArrayDeque::new))
+            .add(CollectionJsonAdapter.of(RSAspectSet.class, RSAspectSet::new))
             .add(CollectionJsonAdapter.of(
                     TrainStateChange.PathUpdates.class,
                     TrainStateChange.PathUpdates::new))
@@ -41,6 +60,24 @@ public class ChangeSerializer {
                     TrainStateChange.SpeedUpdates::new))
             .add(new SerializableDoubleAdapter())
             .add(adaptPolymorphicType(Change.class, "changeType"))
+            .add(PolymorphicJsonAdapterFactory.of(Phase.class, "phaseType")
+                    .withSubtype(SignalNavigatePhase.class, "navigatePhase")
+                    .withSubtype(StopPhase.class, "stopPhase")
+            )
+            .add(adaptPolymorphicType(PhaseState.class, "phaseStateType"))
+            .add(PolymorphicJsonAdapterFactory.of(ActionPoint.class, "actionPointType")
+                    .withSubtype(BufferStop.class, "bufferStop")
+                    .withSubtype(Detector.class, "detector")
+                    .withSubtype(Signal.class, "signal")
+                    .withSubtype(SignalNavigatePhase.VirtualActionPoint.class, "virtualActionPoint")
+            )
+            .add(PolymorphicJsonAdapterFactory.of(RSValue.class, "valueType")
+                    .withSubtype(RSAspectSet.class, "aspectSet")
+                    .withSubtype(RSBool.class, "bool")
+                    .withSubtype(Signal.State.class, "signal")
+                    .withSubtype(Route.State.class, "route")
+                    .withSubtype(Switch.State.class, "switch")
+            )
             .add(adaptPolymorphicType(SpeedController.class, "controllerType"))
             .build()
             .adapter(Change.class);
@@ -117,26 +154,71 @@ public class ChangeSerializer {
         return adapterFactory;
     }
 
-    private static class TopoEdgeAdapter {
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+    public static final class IdentifiedObject {
+        public final String id;
+
+        public IdentifiedObject(String id) {
+            this.id = id;
+        }
+    }
+
+    private static class RouteAdapter {
         @ToJson
-        String toJson(TrackSection edge) {
-            return edge.id;
+        IdentifiedObject toJson(Route route) {
+            return new IdentifiedObject(route.id);
         }
 
         @FromJson
-        TrackSection fromJson(String edgeId) {
+        Route fromJson(IdentifiedObject id) {
             throw new RuntimeException("not implemented");
         }
     }
 
-    private static class LocalTimeAdapter {
+    private static class SignalAdapter {
         @ToJson
-        String toJson(LocalTime time) {
-            return String.valueOf(time.toSecondOfDay());
+        IdentifiedObject toJson(Signal signal) {
+            return new IdentifiedObject(signal.id);
         }
 
         @FromJson
-        LocalTime fromJson(String time) {
+        Signal fromJson(IdentifiedObject id) {
+            throw new RuntimeException("not implemented");
+        }
+    }
+
+    private static class SwitchAdapter {
+        @ToJson
+        IdentifiedObject toJson(Switch aSwitch) {
+            return new IdentifiedObject(aSwitch.id);
+        }
+
+        @FromJson
+        Switch fromJson(IdentifiedObject id) {
+            throw new RuntimeException("not implemented");
+        }
+    }
+
+    private static class TVDSectionAdapter {
+        @ToJson
+        IdentifiedObject toJson(TVDSection tvdSection) {
+            return new IdentifiedObject(tvdSection.id);
+        }
+
+        @FromJson
+        TVDSection fromJson(IdentifiedObject id) {
+            throw new RuntimeException("not implemented");
+        }
+    }
+
+    private static class TopoEdgeAdapter {
+        @ToJson
+        IdentifiedObject toJson(TrackSection edge) {
+            return new IdentifiedObject(edge.id);
+        }
+
+        @FromJson
+        TrackSection fromJson(IdentifiedObject edgeId) {
             throw new RuntimeException("not implemented");
         }
     }
