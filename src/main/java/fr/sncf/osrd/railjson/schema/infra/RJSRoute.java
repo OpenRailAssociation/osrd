@@ -56,19 +56,4 @@ public class RJSRoute implements Identified {
         OCCUPIED,
         CONFLICT
     }
-
-    public enum TransitType {
-        FLEXIBLE, RIGID;
-
-        /** Parse into Route.TransitType */
-        public Route.TransitType parse() {
-            switch (this) {
-                case FLEXIBLE:
-                    return Route.TransitType.FLEXIBLE;
-                case RIGID:
-                    return Route.TransitType.RIGID;
-            }
-            return null;
-        }
-    }
 }

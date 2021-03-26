@@ -203,9 +203,4 @@ public class Route extends BiNEdge<Route> {
             return String.format("RouteStatusChange { route: %d, status: %s }", routeIndex, newStatus);
         }
     }
-
-    public enum TransitType {
-        FLEXIBLE,
-        RIGID
-    }
 }
