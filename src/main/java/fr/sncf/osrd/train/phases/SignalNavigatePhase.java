@@ -16,10 +16,8 @@ import fr.sncf.osrd.train.TrainInteractionType;
 import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.PointValue;
-import fr.sncf.osrd.utils.TrackSectionLoc;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -28,13 +26,13 @@ import java.util.function.Consumer;
 public final class SignalNavigatePhase implements Phase {
     @SuppressFBWarnings({"URF_UNREAD_FIELD"})
     public final List<Route> routePath;
-    public final TrackSectionLoc endLocation;
+    public final TrackSectionLocation endLocation;
     private final ArrayList<TrackSectionRange> trackSectionPath;
     private final ArrayList<PointValue<ActionPoint>> actionPointPath;
 
     private SignalNavigatePhase(
             List<Route> routePath,
-            TrackSectionLoc endLocation,
+            TrackSectionLocation endLocation,
             ArrayList<TrackSectionRange> trackSectionPath,
             ArrayList<PointValue<ActionPoint>> actionPointPath
     ) {
@@ -50,72 +48,12 @@ public final class SignalNavigatePhase implements Phase {
     public static SignalNavigatePhase from(
             List<Route> routes,
             double driverSightDistance,
-            TrackSectionLoc startLocation,
-            TrackSectionLoc endLocation
+            TrackSectionLocation startLocation,
+            TrackSectionLocation endLocation
     ) {
-        var trackSectionPath = routesToTrackSectionRange(routes, startLocation, endLocation);
+        var trackSectionPath = Route.routesToTrackSectionRange(routes, startLocation, endLocation);
         var actionPointPath = trackSectionToActionPointPath(driverSightDistance, trackSectionPath);
         return new SignalNavigatePhase(routes, endLocation, trackSectionPath, actionPointPath);
-    }
-
-    /** Build track section path. Need to concatenate all track section of all TvdSectionPath.
-     * Avoid to have in the path TrackSectionPositions that reference the same TrackSection. */
-    private static ArrayList<TrackSectionRange> routesToTrackSectionRange(
-            List<Route> routePath,
-            TrackSectionLoc beginLocation,
-            TrackSectionLoc endLocation
-    ) {
-        // Flatten the list of track section range
-        var flattenSections = new ArrayDeque<TrackSectionRange>();
-        for (var route : routePath) {
-            for (var i = 0; i < route.tvdSectionsPaths.size(); i++) {
-                var tvdSectionPath = route.tvdSectionsPaths.get(i);
-                var tvdSectionPathDir = route.tvdSectionsPathDirections.get(i);
-                for (var trackSection : tvdSectionPath.getTrackSections(tvdSectionPathDir))
-                    flattenSections.addLast(trackSection);
-            }
-        }
-
-        // Drop first track sections until the begin location
-        while (true) {
-            if (flattenSections.isEmpty())
-                throw new RuntimeException("Begin position not contained in the route path");
-            var firstTrack = flattenSections.removeFirst();
-            if (firstTrack.containsLocation(beginLocation)) {
-                var newTrackSection = new TrackSectionRange(firstTrack.edge, firstTrack.direction,
-                        beginLocation.offset, firstTrack.getEndPosition());
-                flattenSections.addFirst(newTrackSection);
-                break;
-            }
-        }
-
-        // Drop lasts track sections until the end location
-        while (true) {
-            if (flattenSections.isEmpty())
-                throw new RuntimeException("End position not contained in the route path");
-            var lastTrack = flattenSections.removeLast();
-            if (lastTrack.containsLocation(endLocation)) {
-                var newTrackSection = new TrackSectionRange(lastTrack.edge, lastTrack.direction,
-                        lastTrack.getBeginPosition(), endLocation.offset);
-                flattenSections.addLast(newTrackSection);
-                break;
-            }
-        }
-
-        // Merge duplicated edges
-        var trackSectionPath = new ArrayList<TrackSectionRange>();
-        TrackSectionRange lastTrack = flattenSections.removeFirst();
-        while (!flattenSections.isEmpty()) {
-            var currentTrack = flattenSections.removeFirst();
-            if (lastTrack.edge != currentTrack.edge) {
-                trackSectionPath.add(lastTrack);
-                lastTrack = currentTrack;
-                continue;
-            }
-            lastTrack = TrackSectionRange.merge(lastTrack, currentTrack);
-        }
-        trackSectionPath.add(lastTrack);
-        return trackSectionPath;
     }
 
     private static ArrayList<PointValue<ActionPoint>> trackSectionToActionPointPath(
@@ -156,7 +94,7 @@ public final class SignalNavigatePhase implements Phase {
     }
 
     @Override
-    public TrackSectionLoc getEndLocation() {
+    public TrackSectionLocation getEndLocation() {
         return endLocation;
     }
 

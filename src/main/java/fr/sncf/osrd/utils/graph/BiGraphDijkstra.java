@@ -42,6 +42,7 @@ public abstract class BiGraphDijkstra<
                 Comparator.comparing(path -> path.cost));
     }
 
+    /** Create a priority queue from starting points */
     public static <
             EdgeT extends Edge,
             PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,

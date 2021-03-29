@@ -19,7 +19,7 @@ import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.RangeValue;
 import fr.sncf.osrd.utils.SignAnalyzer;
 import fr.sncf.osrd.utils.SortedArraySet;
-import fr.sncf.osrd.utils.TrackSectionLoc;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
 
@@ -96,10 +96,10 @@ public class StaticSpeedLimitTest {
         var changelog = new ArrayChangeLog();
         var sim = Simulation.createFromInfra(infra, 0, changelog);
 
-        var startLocation = new TrackSectionLoc(edge, 0);
+        var startLocation = new TrackSectionLocation(edge, 0);
         var phases = new ArrayList<Phase>();
         phases.add(SignalNavigatePhase.from(
-                Arrays.asList(route), 400, startLocation, new TrackSectionLoc(edge, 10000)));
+                Arrays.asList(route), 400, startLocation, new TrackSectionLocation(edge, 10000)));
 
         var schedule = new TrainSchedule(
                 "test_train",

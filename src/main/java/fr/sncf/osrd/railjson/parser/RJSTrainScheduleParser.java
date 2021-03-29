@@ -14,7 +14,7 @@ import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.train.phases.StopPhase;
-import fr.sncf.osrd.utils.TrackSectionLoc;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayList;
@@ -88,7 +88,7 @@ public class RJSTrainScheduleParser {
 
     private static Phase parsePhase(
             Infra infra,
-            TrackSectionLoc startLocation,
+            TrackSectionLocation startLocation,
             RJSTrainPhase rjsPhase
     ) throws InvalidSchedule {
         if (rjsPhase.getClass() == RJSTrainPhase.Stop.class) {
@@ -115,7 +115,7 @@ public class RJSTrainScheduleParser {
         throw new RuntimeException("unknown train phase");
     }
 
-    private static TrackSectionLoc parseLocation(Infra infra, RJSTrackLocation location) throws InvalidSchedule {
+    private static TrackSectionLocation parseLocation(Infra infra, RJSTrackLocation location) throws InvalidSchedule {
         var trackSectionID = location.trackSection.id;
         var trackSection = infra.trackGraph.trackSectionMap.get(trackSectionID);
         if (trackSection == null)
@@ -123,6 +123,6 @@ public class RJSTrainScheduleParser {
         var offset = location.offset;
         if (offset < 0 || offset > trackSection.length)
             throw new InvalidSchedule("invalid track section offset");
-        return new TrackSectionLoc(trackSection, offset);
+        return new TrackSectionLocation(trackSection, offset);
     }
 }

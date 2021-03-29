@@ -24,7 +24,7 @@ public class WaypointGraphTest {
             assert trackSectionRange.getEndPosition() <= trackSectionRange.getBeginPosition();
     }
 
-    public static void checkWaypointGraph(WaypointGraph waypointGraph) {
+    private static void checkWaypointGraph(WaypointGraph waypointGraph) {
         for (var tvdSectionPath : waypointGraph.iterEdges()) {
             for (var trackSectionRange : tvdSectionPath.getTrackSections(EdgeDirection.START_TO_STOP))
                 checkTrackSectionRange(trackSectionRange);
@@ -166,7 +166,6 @@ public class WaypointGraphTest {
         assertEquals(450., trackSectionsD3D4[0].getEndPosition());
         assertEquals(EdgeDirection.START_TO_STOP, trackSectionsD3D4[0].direction);
 
-        var tvdSectionPathD1D3 = waypointGraph.getTVDSectionPath(0, 5);
         var trackSectionsD1D3 = tvdSectionD1D3.getTrackSections(EdgeDirection.START_TO_STOP);
         assertEquals(2, trackSectionsD1D3.length);
         assertEquals(75., trackSectionsD1D3[0].getBeginPosition());

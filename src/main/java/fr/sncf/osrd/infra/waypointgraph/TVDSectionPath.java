@@ -1,5 +1,6 @@
 package fr.sncf.osrd.infra.waypointgraph;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.train.TrackSectionRange;
@@ -14,6 +15,7 @@ public class TVDSectionPath extends BiNEdge<TVDSectionPath> {
     private final TrackSectionRange[] trackSectionsForward;
     private final TrackSectionRange[] trackSectionsBackward;
 
+    /** Return the direction of the waypoint at the given endpoint relative to the TrackSection */
     public EdgeDirection nodeDirection(EdgeDirection direction, EdgeEndpoint endpoint) {
         var trackSections = getTrackSections(direction);
         if (endpoint == EdgeEndpoint.BEGIN)
@@ -21,6 +23,8 @@ public class TVDSectionPath extends BiNEdge<TVDSectionPath> {
         return trackSections[trackSections.length - 1].direction;
     }
 
+    /** Return the list of TrackSectionRange composing the TvdSectionPath */
+    @SuppressFBWarnings({"EI_EXPOSE_REP"})
     public TrackSectionRange[] getTrackSections(EdgeDirection direction) {
         if (direction == EdgeDirection.START_TO_STOP)
             return trackSectionsForward;
@@ -36,7 +40,8 @@ public class TVDSectionPath extends BiNEdge<TVDSectionPath> {
     ) {
         super(graph.nextEdgeIndex(), startNode, endNode, length);
         this.trackSectionsForward = trackSections.toArray(new TrackSectionRange[trackSections.size()]);
-        this.trackSectionsBackward = reverseTrackSections(trackSections).toArray(new TrackSectionRange[trackSections.size()]);
+        this.trackSectionsBackward
+                = reverseTrackSections(trackSections).toArray(new TrackSectionRange[trackSections.size()]);
         graph.registerEdge(this);
     }
 

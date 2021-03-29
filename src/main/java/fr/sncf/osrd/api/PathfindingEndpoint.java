@@ -7,9 +7,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteLocation;
-import fr.sncf.osrd.railml.routegraph.RMLTVDSectionPath;
-import fr.sncf.osrd.utils.TrackSectionDirectedLoc;
-import fr.sncf.osrd.utils.TrackSectionLoc;
+import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.graph.BiGraphDijkstra;
 import fr.sncf.osrd.utils.graph.DistCostFunction;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -95,10 +93,11 @@ public class PathfindingEndpoint implements Take {
         }
 
         var costFunction = new DistCostFunction<Route>();
-        PriorityQueue<PathNode<Route, BasicPathStart<Route>, BasicPathEnd<Route>>> candidatePaths = BiGraphDijkstra.makePriorityQueue();
+        PriorityQueue<PathNode<Route, BasicPathStart<Route>, BasicPathEnd<Route>>> candidatePaths =
+                BiGraphDijkstra.makePriorityQueue();
         for (var startWaypoint : waypoints[0])
-            candidatePaths.add(new BasicPathStart<>(0, startWaypoint.route, EdgeDirection.START_TO_STOP, startWaypoint.offset));
-
+            candidatePaths.add(
+                    new BasicPathStart<>(0, startWaypoint.route, EdgeDirection.START_TO_STOP, startWaypoint.offset));
 
         var pathsToGoal = new ArrayList<PathNode<Route, BasicPathStart<Route>, BasicPathEnd<Route>>>();
         // Compute the paths from the entry waypoint to the exit waypoint
@@ -113,8 +112,18 @@ public class PathfindingEndpoint implements Take {
                         for (var goalEdge : destinationWaypoints) {
                             if (goalEdge.route != pathNode.edge)
                                 continue;
-                            var addedCost = costFunction.evaluate(goalEdge.route, pathNode.position, goalEdge.route.length);
-                            return new BasicPathEnd<>(addedCost, goalEdge.route, pathNode.direction, goalEdge.offset, pathNode);
+                            var addedCost = costFunction.evaluate(
+                                    goalEdge.route,
+                                    pathNode.position,
+                                    goalEdge.route.length
+                            );
+                            return new BasicPathEnd<>(
+                                    addedCost,
+                                    goalEdge.route,
+                                    pathNode.direction,
+                                    goalEdge.offset,
+                                    pathNode
+                            );
                         }
                         return null;
                     },
@@ -127,6 +136,33 @@ public class PathfindingEndpoint implements Take {
             candidatePaths.addAll(pathsToGoal);
         }
 
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        var resRoutes = (ArrayList<RouteLocation>[]) new ArrayList[reqWaypoints.length - 1];
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        var resTrackSections = (ArrayList<TrackSectionRange>[]) new ArrayList[reqWaypoints.length - 1];
+
+        for (int i = 0; i < pathsToGoal.size(); i++) {
+            var pathEnd = (BasicPathEnd<Route>)  pathsToGoal.get(i);
+            var path = FullPathArray.from(pathEnd);
+            resRoutes[i] = fullPathToRoutes(path);
+            var beginLoc = resRoutes[i].get(0).getTrackSectionLocation();
+            var endLoc = resRoutes[i].get(resRoutes[i].size() - 1).getTrackSectionLocation();
+            var routes = new ArrayList<Route>();
+            for (var routeLoc : resRoutes[i])
+                routes.add(routeLoc.route);
+            resTrackSections[i] = Route.routesToTrackSectionRange(routes, beginLoc, endLoc);
+        }
+
         return new RsText("ok");
+    }
+
+    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+    private ArrayList<RouteLocation> fullPathToRoutes(
+            FullPathArray<Route, BasicPathStart<Route>, BasicPathEnd<Route>> path
+    ) {
+        var routes = new ArrayList<RouteLocation>();
+        for (var node : path.pathNodes)
+            routes.add(new RouteLocation(node.edge, node.position));
+        return  routes;
     }
 }
