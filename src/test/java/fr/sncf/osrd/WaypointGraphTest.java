@@ -5,6 +5,7 @@ import static fr.sncf.osrd.infra.trackgraph.TrackSection.linkEdges;
 
 import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import fr.sncf.osrd.infra.trackgraph.BufferStop;
+import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import fr.sncf.osrd.infra.trackgraph.Detector;
@@ -16,6 +17,22 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.TreeMap;
 
 public class WaypointGraphTest {
+    private static void checkTrackSectionRange(TrackSectionRange trackSectionRange) {
+        if (trackSectionRange.direction == EdgeDirection.START_TO_STOP)
+            assert trackSectionRange.getBeginPosition() <= trackSectionRange.getEndPosition();
+        else
+            assert trackSectionRange.getEndPosition() <= trackSectionRange.getBeginPosition();
+    }
+
+    public static void checkWaypointGraph(WaypointGraph waypointGraph) {
+        for (var tvdSectionPath : waypointGraph.iterEdges()) {
+            for (var trackSectionRange : tvdSectionPath.getTrackSections(EdgeDirection.START_TO_STOP))
+                checkTrackSectionRange(trackSectionRange);
+            for (var trackSectionRange : tvdSectionPath.getTrackSections(EdgeDirection.STOP_TO_START))
+                checkTrackSectionRange(trackSectionRange);
+        }
+    }
+
     /**
      * One tiv with 3 detectors on it.
      * A                  B
@@ -53,12 +70,7 @@ public class WaypointGraphTest {
         assertEquals(0, waypointGraph.waypointNodeMap.get("D3").startToStopNeighbors.size());
         assertEquals(1, waypointGraph.waypointNodeMap.get("D3").stopToStartNeighbors.size());
 
-        for (var tvdSectionPath : waypointGraph.iterEdges()) {
-            for (var trackSectionRange : tvdSectionPath.getTrackSections(EdgeDirection.START_TO_STOP))
-                assert trackSectionRange.getBeginPosition() <= trackSectionRange.getEndPosition();
-            for (var trackSectionRange : tvdSectionPath.getTrackSections(EdgeDirection.STOP_TO_START))
-                assert trackSectionRange.getEndPosition() <= trackSectionRange.getBeginPosition();
-        }
+        checkWaypointGraph(waypointGraph);
     }
 
     /**
@@ -145,14 +157,7 @@ public class WaypointGraphTest {
         assertEquals(1, waypointGraph.waypointNodeMap.get("BS_3").startToStopNeighbors.size());
         assertEquals(0, waypointGraph.waypointNodeMap.get("BS_3").stopToStartNeighbors.size());
 
-        // Check tvd section path
-
-        for (var tvdSectionPath : waypointGraph.iterEdges()) {
-            for (var trackSectionRange : tvdSectionPath.getTrackSections(EdgeDirection.START_TO_STOP))
-                assert trackSectionRange.getBeginPosition() <= trackSectionRange.getEndPosition();
-            for (var trackSectionRange : tvdSectionPath.getTrackSections(EdgeDirection.STOP_TO_START))
-                assert trackSectionRange.getEndPosition() <= trackSectionRange.getBeginPosition();
-        }
+        checkWaypointGraph(waypointGraph);
 
         var tvdSectionPathD3D4 = waypointGraph.getTVDSectionPath(4, 5);
         var trackSectionsD3D4 = tvdSectionPathD3D4.getTrackSections(EdgeDirection.START_TO_STOP);
@@ -234,12 +239,7 @@ public class WaypointGraphTest {
         assertEquals(1, waypointGraph.waypointNodeMap.get("D3").startToStopNeighbors.size());
         assertEquals(1, waypointGraph.waypointNodeMap.get("D3").stopToStartNeighbors.size());
 
-        for (var tvdSectionPath : waypointGraph.iterEdges()) {
-            for (var trackSectionRange : tvdSectionPath.getTrackSections(EdgeDirection.START_TO_STOP))
-                assert trackSectionRange.getBeginPosition() <= trackSectionRange.getEndPosition();
-            for (var trackSectionRange : tvdSectionPath.getTrackSections(EdgeDirection.STOP_TO_START))
-                assert trackSectionRange.getEndPosition() <= trackSectionRange.getBeginPosition();
-        }
+        checkWaypointGraph(waypointGraph);
     }
 
     /**
@@ -287,12 +287,7 @@ public class WaypointGraphTest {
         assertEquals(1, waypointGraph.waypointNodeMap.get("D1").startToStopNeighbors.size());
         assertEquals(1, waypointGraph.waypointNodeMap.get("D1").stopToStartNeighbors.size());
 
-        for (var tvdSectionPath : waypointGraph.iterEdges()) {
-            for (var trackSectionRange : tvdSectionPath.getTrackSections(EdgeDirection.START_TO_STOP))
-                assert trackSectionRange.getBeginPosition() <= trackSectionRange.getEndPosition();
-            for (var trackSectionRange : tvdSectionPath.getTrackSections(EdgeDirection.STOP_TO_START))
-                assert trackSectionRange.getEndPosition() <= trackSectionRange.getBeginPosition();
-        }
+        checkWaypointGraph(waypointGraph);
     }
 
     /**
@@ -344,11 +339,6 @@ public class WaypointGraphTest {
         assertEquals(0, waypointGraph.waypointNodeMap.get("D1").startToStopNeighbors.size());
         assertEquals(1, waypointGraph.waypointNodeMap.get("D1").stopToStartNeighbors.size());
 
-        for (var tvdSectionPath : waypointGraph.iterEdges()) {
-            for (var trackSectionRange : tvdSectionPath.getTrackSections(EdgeDirection.START_TO_STOP))
-                assert trackSectionRange.getBeginPosition() <= trackSectionRange.getEndPosition();
-            for (var trackSectionRange : tvdSectionPath.getTrackSections(EdgeDirection.STOP_TO_START))
-                assert trackSectionRange.getEndPosition() <= trackSectionRange.getBeginPosition();
-        }
+        checkWaypointGraph(waypointGraph);
     }
 }
