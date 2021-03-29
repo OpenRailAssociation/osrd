@@ -3,7 +3,7 @@ package fr.sncf.osrd;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.phases.Phase;
-import fr.sncf.osrd.utils.TrackSectionLoc;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ public final class TrainSchedule {
 
     public final double departureTime;
 
-    public final TrackSectionLoc initialLocation;
+    public final TrackSectionLocation initialLocation;
     public final EdgeDirection initialDirection;
     public final Route initialRoute;
     public final double initialSpeed;
@@ -27,7 +27,7 @@ public final class TrainSchedule {
             String trainID,
             RollingStock rollingStock,
             double departureTime,
-            TrackSectionLoc initialLocation,
+            TrackSectionLocation initialLocation,
             EdgeDirection initialDirection, Route initialRoute,
             double initialSpeed,
             ArrayList<Phase> phases
@@ -47,7 +47,7 @@ public final class TrainSchedule {
 
     /** Find location on track given a distance from the start.
      * If the path position is higher than the fullPath length the function return null. */
-    public TrackSectionLoc findLocation(double pathPosition) {
+    public TrackSectionLocation findLocation(double pathPosition) {
         for (var track : fullPath) {
             if (pathPosition <= track.length()) {
                 var location = track.getBeginPosition();
@@ -55,7 +55,7 @@ public final class TrainSchedule {
                     location += pathPosition;
                 else
                     location -= pathPosition;
-                return new TrackSectionLoc(track.edge, location);
+                return new TrackSectionLocation(track.edge, location);
             }
             pathPosition -= track.length();
         }

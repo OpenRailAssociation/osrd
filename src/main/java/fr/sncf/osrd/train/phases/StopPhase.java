@@ -6,7 +6,7 @@ import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.train.events.TrainRestarts;
-import fr.sncf.osrd.utils.TrackSectionLoc;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.util.function.Consumer;
 
@@ -23,7 +23,7 @@ public class StopPhase extends PhaseState implements Phase {
     }
 
     @Override
-    public TrackSectionLoc getEndLocation() {
+    public TrackSectionLocation getEndLocation() {
         return null;
     }
 

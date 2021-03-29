@@ -76,7 +76,8 @@ public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
         if (startNeighbors != endNeighbors)
             endNeighbors.add(tvdSectionPath);
 
-        var dupTvd = overlayGraph.tvdSectionPathMap.put(UndirectedBiEdgeID.from(startNodeIndex, endNodeIndex), tvdSectionPath);
+        var dupTvd = overlayGraph.tvdSectionPathMap.put(
+                UndirectedBiEdgeID.from(startNodeIndex, endNodeIndex), tvdSectionPath);
         assert dupTvd == null;
     }
 

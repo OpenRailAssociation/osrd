@@ -30,7 +30,14 @@ public final class TrackSection extends BiNEdge<TrackSection> {
         public final double routeOffset;
         public final EdgeDirection direction;
 
-        public RouteFragment(Route route, double routeOffset, double trackBegin, double trackEnd, EdgeDirection direction) {
+        /** Represent an interval in a route */
+        public RouteFragment(
+                Route route,
+                double routeOffset,
+                double trackBegin,
+                double trackEnd,
+                EdgeDirection direction
+        ) {
             super(trackBegin, trackEnd);
             this.route = route;
             this.routeOffset = routeOffset;
@@ -51,6 +58,7 @@ public final class TrackSection extends BiNEdge<TrackSection> {
     public final PointSequence<ActionPoint> forwardActionPoints = new PointSequence<>();
     public final PointSequence<ActionPoint> backwardActionPoints = new PointSequence<>();
 
+    /** Return routes the track section is part of given a direction */
     public IntervalTree<RouteFragment> getRoutes(EdgeDirection direction) {
         if (direction == EdgeDirection.START_TO_STOP)
             return forwardRoutes;

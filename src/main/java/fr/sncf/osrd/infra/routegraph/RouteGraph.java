@@ -108,7 +108,8 @@ public class RouteGraph extends BiNGraph<Route, Waypoint> {
             // Link route to the starting waypoint
             var startWaypoint = waypointGraph.getNode(tvdSectionsPath.get(0).startNode);
             var firstTVDSectionPath = tvdSectionsPath.get(0);
-            var waypointDirection = firstTVDSectionPath.nodeDirection(tvdSectionsPathDirection.get(0), EdgeEndpoint.BEGIN);
+            var waypointDirection =
+                    firstTVDSectionPath.nodeDirection(tvdSectionsPathDirection.get(0), EdgeEndpoint.BEGIN);
             startWaypoint.getRouteNeighbors(waypointDirection).add(route);
 
             // Link route to track sections and tvd sections
@@ -121,7 +122,8 @@ public class RouteGraph extends BiNGraph<Route, Waypoint> {
                     var trackSection = trackSectionRange.edge;
                     var trackBegin = Math.min(trackSectionRange.getBeginPosition(), trackSectionRange.getEndPosition());
                     var trackEnd = Math.max(trackSectionRange.getBeginPosition(), trackSectionRange.getEndPosition());
-                    var routeFragment = new TrackSection.RouteFragment(route, routeOffset, trackBegin, trackEnd, trackSectionRange.direction);
+                    var routeFragment = new TrackSection.RouteFragment(
+                            route, routeOffset, trackBegin, trackEnd, trackSectionRange.direction);
                     trackSection.getRoutes(trackSectionRange.direction).insert(routeFragment);
                     routeOffset += trackSectionRange.length();
                 }

@@ -9,7 +9,7 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
-import fr.sncf.osrd.utils.TrackSectionLoc;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
@@ -272,7 +272,7 @@ public class DebugViewer extends ChangeConsumer {
         setTrainLocation(trainData.spriteTail, tailLocation);
     }
 
-    private void setTrainLocation(Sprite sprite, TrackSectionLoc location) {
+    private void setTrainLocation(Sprite sprite, TrackSectionLocation location) {
         if (!sprite.attached() || !sprite.getAttachment().getId().equals(location.edge.id))
             sprite.attachToEdge(location.edge.id);
 
