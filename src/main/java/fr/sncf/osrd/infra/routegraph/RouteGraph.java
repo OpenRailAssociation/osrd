@@ -121,7 +121,7 @@ public class RouteGraph extends BiNGraph<Route, Waypoint> {
                     var trackSection = trackSectionRange.edge;
                     var trackBegin = Math.min(trackSectionRange.getBeginPosition(), trackSectionRange.getEndPosition());
                     var trackEnd = Math.max(trackSectionRange.getBeginPosition(), trackSectionRange.getEndPosition());
-                    var routeFragment = new TrackSection.RouteFragment(route, routeOffset, trackBegin, trackEnd);
+                    var routeFragment = new TrackSection.RouteFragment(route, routeOffset, trackBegin, trackEnd, trackSectionRange.direction);
                     trackSection.getRoutes(trackSectionRange.direction).insert(routeFragment);
                     routeOffset += trackSectionRange.length();
                 }

@@ -28,11 +28,13 @@ public final class TrackSection extends BiNEdge<TrackSection> {
     public static final class RouteFragment extends IntervalNode {
         public final Route route;
         public final double routeOffset;
+        public final EdgeDirection direction;
 
-        public RouteFragment(Route route, double routeOffset, double trackBegin, double trackEnd) {
+        public RouteFragment(Route route, double routeOffset, double trackBegin, double trackEnd, EdgeDirection direction) {
             super(trackBegin, trackEnd);
             this.route = route;
             this.routeOffset = routeOffset;
+            this.direction = direction;
         }
     }
 
