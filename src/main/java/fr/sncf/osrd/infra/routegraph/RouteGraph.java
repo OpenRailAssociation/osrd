@@ -4,6 +4,7 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.utils.SortedArraySet;
@@ -22,8 +23,8 @@ public class RouteGraph extends BiNGraph<Route, Waypoint> {
     @Override
     public List<Route> getNeighborRels(Route route, EdgeEndpoint endpoint) {
         if (endpoint == EdgeEndpoint.BEGIN)
-            return getNode(route.tvdSectionsPath.get(0).startNode).stopToStartRoutes;
-        return getNode(route.tvdSectionsPath.get(route.tvdSectionsPath.size() - 1).endNode).startToStopRoutes;
+            return getNode(route.tvdSectionsPaths.get(0).startNode).stopToStartRoutes;
+        return getNode(route.tvdSectionsPaths.get(route.tvdSectionsPaths.size() - 1).endNode).startToStopRoutes;
     }
 
     public static class Builder {
@@ -107,18 +108,24 @@ public class RouteGraph extends BiNGraph<Route, Waypoint> {
             // Link route to the starting waypoint
             var startWaypoint = waypointGraph.getNode(tvdSectionsPath.get(0).startNode);
             var firstTVDSectionPath = tvdSectionsPath.get(0);
-            var waypointDirection = firstTVDSectionPath.startNodeDirection;
-            if (tvdSectionsPathDirection.get(0) == EdgeDirection.STOP_TO_START)
-                waypointDirection = firstTVDSectionPath.endNodeDirection;
+            var waypointDirection = firstTVDSectionPath.nodeDirection(tvdSectionsPathDirection.get(0), EdgeEndpoint.BEGIN);
             startWaypoint.getRouteNeighbors(waypointDirection).add(route);
 
             // Link route to track sections and tvd sections
-            for (var tvdSectionPath : route.tvdSectionsPath) {
+            double routeOffset = 0;
+            for (int i = 0; i < route.tvdSectionsPaths.size(); i++) {
+                var tvdSectionPath = route.tvdSectionsPaths.get(i);
+                var tvdSectionPathDir = route.tvdSectionsPathDirections.get(i);
                 tvdSectionPath.tvdSection.routeSubscribers.add(route);
-                for (var trackSection : tvdSectionPath.trackSections)
-                    trackSection.edge.routes.add(route);
+                for (var trackSectionRange : tvdSectionPath.getTrackSections(tvdSectionPathDir)) {
+                    var trackSection = trackSectionRange.edge;
+                    var trackBegin = Math.min(trackSectionRange.getBeginPosition(), trackSectionRange.getEndPosition());
+                    var trackEnd = Math.max(trackSectionRange.getBeginPosition(), trackSectionRange.getEndPosition());
+                    var routeFragment = new TrackSection.RouteFragment(route, routeOffset, trackBegin, trackEnd);
+                    trackSection.getRoutes(trackSectionRange.direction).insert(routeFragment);
+                    routeOffset += trackSectionRange.length();
+                }
             }
-
             return route;
         }
 

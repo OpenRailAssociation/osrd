@@ -20,9 +20,9 @@ import java.util.List;
 public class Route extends BiNEdge<Route> {
     public final String id;
     /** List of tvdSectionPath forming the route */
-    public final List<TVDSectionPath> tvdSectionsPath;
+    public final List<TVDSectionPath> tvdSectionsPaths;
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public final List<EdgeDirection> tvdSectionsPathDirection;
+    public final List<EdgeDirection> tvdSectionsPathDirections;
     public final List<SortedArraySet<TVDSection>> releaseGroups;
     public final HashMap<Switch, SwitchPosition> switchesPosition;
     public ArrayList<Signal> signalSubscribers;
@@ -32,22 +32,22 @@ public class Route extends BiNEdge<Route> {
             RouteGraph graph,
             double length,
             List<SortedArraySet<TVDSection>> releaseGroups,
-            List<TVDSectionPath> tvdSectionsPath,
-            List<EdgeDirection> tvdSectionsPathDirection,
+            List<TVDSectionPath> tvdSectionsPaths,
+            List<EdgeDirection> tvdSectionsPathDirections,
             HashMap<Switch, SwitchPosition> switchesPosition
     ) {
         super(
                 graph.nextEdgeIndex(),
-                tvdSectionsPath.get(0).startNode,
-                tvdSectionsPath.get(tvdSectionsPath.size() - 1).startNode,
+                tvdSectionsPaths.get(0).startNode,
+                tvdSectionsPaths.get(tvdSectionsPaths.size() - 1).startNode,
                 length
         );
         this.id = id;
         this.releaseGroups = releaseGroups;
-        this.tvdSectionsPathDirection = tvdSectionsPathDirection;
+        this.tvdSectionsPathDirections = tvdSectionsPathDirections;
         this.switchesPosition = switchesPosition;
         graph.registerEdge(this);
-        this.tvdSectionsPath = tvdSectionsPath;
+        this.tvdSectionsPaths = tvdSectionsPaths;
         this.signalSubscribers = new ArrayList<>();
     }
 
@@ -74,7 +74,7 @@ public class Route extends BiNEdge<Route> {
             // TODO This function could be optimized.
             // One way to do it is to add an attribute to tvdSection to know if they're occupied
             var tvdSectionsBehind = new SortedArraySet<TVDSection>();
-            for (var tvdSectionPath : route.tvdSectionsPath) {
+            for (var tvdSectionPath : route.tvdSectionsPaths) {
                 tvdSectionsBehind.add(tvdSectionPath.tvdSection);
                 if (tvdSectionPath.tvdSection == tvdSectionUnoccupied.tvdSection)
                     break;
@@ -99,7 +99,7 @@ public class Route extends BiNEdge<Route> {
                 return;
 
             // Check that all tvd sections are free to free the route
-            for (var tvdSectionPath : route.tvdSectionsPath) {
+            for (var tvdSectionPath : route.tvdSectionsPaths) {
                 var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
                 if (tvdSection.isReserved())
                     return;
@@ -147,7 +147,7 @@ public class Route extends BiNEdge<Route> {
             notifySignals(sim);
 
             // Reserve the tvd sections
-            for (var tvdSectionPath : route.tvdSectionsPath) {
+            for (var tvdSectionPath : route.tvdSectionsPaths) {
                 var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
                 tvdSection.reserve(sim);
             }

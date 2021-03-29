@@ -31,17 +31,17 @@ public class RouteGraphTest {
             Waypoint expectedEnd
     ) {
         assertEquals(expectedLength, route.length, 0.1);
-        assertEquals(expectedTvdSectionPath, route.tvdSectionsPath.size());
+        assertEquals(expectedTvdSectionPath, route.tvdSectionsPaths.size());
 
-        var start = route.tvdSectionsPath.get(0).startNode;
-        if (route.tvdSectionsPathDirection.get(0) == EdgeDirection.STOP_TO_START)
-             start = route.tvdSectionsPath.get(0).endNode;
+        var start = route.tvdSectionsPaths.get(0).startNode;
+        if (route.tvdSectionsPathDirections.get(0) == EdgeDirection.STOP_TO_START)
+             start = route.tvdSectionsPaths.get(0).endNode;
         assertEquals(expectedStart.index, start);
 
         var lastIndex = expectedTvdSectionPath - 1;
-        var end = route.tvdSectionsPath.get(lastIndex).endNode;
-        if (route.tvdSectionsPathDirection.get(lastIndex) == EdgeDirection.STOP_TO_START)
-             end = route.tvdSectionsPath.get(lastIndex).startNode;
+        var end = route.tvdSectionsPaths.get(lastIndex).endNode;
+        if (route.tvdSectionsPathDirections.get(lastIndex) == EdgeDirection.STOP_TO_START)
+             end = route.tvdSectionsPaths.get(lastIndex).startNode;
         assertEquals(expectedEnd.index, end);
     }
 

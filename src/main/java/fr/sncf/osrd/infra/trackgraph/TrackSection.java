@@ -24,7 +24,20 @@ public final class TrackSection extends BiNEdge<TrackSection> {
 
     public final ArrayList<TrackSection> startNeighbors = new ArrayList<>();
     public final ArrayList<TrackSection> endNeighbors = new ArrayList<>();
-    public final ArrayList<Route> routes = new ArrayList<>();
+
+    public static final class RouteFragment extends IntervalNode {
+        public final Route route;
+        public final double routeOffset;
+
+        public RouteFragment(Route route, double routeOffset, double trackBegin, double trackEnd) {
+            super(trackBegin, trackEnd);
+            this.route = route;
+            this.routeOffset = routeOffset;
+        }
+    }
+
+    public final IntervalTree<RouteFragment> forwardRoutes = new IntervalTree<>();
+    public final IntervalTree<RouteFragment> backwardRoutes = new IntervalTree<>();
 
     // the data structure used for the slope automatically negates it when iterated on backwards
     public final DoubleOrientedRangeSequence slope = new DoubleOrientedRangeSequence();
@@ -35,6 +48,12 @@ public final class TrackSection extends BiNEdge<TrackSection> {
     public final PointSequence<Signal> signals = new PointSequence<>();
     public final PointSequence<ActionPoint> forwardActionPoints = new PointSequence<>();
     public final PointSequence<ActionPoint> backwardActionPoints = new PointSequence<>();
+
+    public IntervalTree<RouteFragment> getRoutes(EdgeDirection direction) {
+        if (direction == EdgeDirection.START_TO_STOP)
+            return forwardRoutes;
+        return backwardRoutes;
+    }
 
     /**
      * Given a side of the edge, return the list of neighbors
