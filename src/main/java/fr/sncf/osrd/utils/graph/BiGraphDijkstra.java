@@ -33,6 +33,28 @@ public abstract class BiGraphDijkstra<
         boolean onGoalReached(PathEndT pathToGoal);
     }
 
+    public static <
+            EdgeT extends Edge,
+            PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,
+            PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
+            > PriorityQueue<PathNode<EdgeT, PathStartT, PathEndT>> makePriorityQueue() {
+        return new PriorityQueue<>(
+                Comparator.comparing(path -> path.cost));
+    }
+
+    public static <
+            EdgeT extends Edge,
+            PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,
+            PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
+            > PriorityQueue<PathNode<EdgeT, PathStartT, PathEndT>> makePriorityQueue(
+                    Iterable<PathStartT> startingPoints
+    ) {
+        PriorityQueue<PathNode<EdgeT, PathStartT, PathEndT>> queue = makePriorityQueue();
+        for (var startingPoint : startingPoints)
+            queue.add(startingPoint);
+        return queue;
+    }
+
     /** Compute the shortest path from start to goal */
     @SuppressWarnings("unchecked")
     public static <
@@ -41,21 +63,16 @@ public abstract class BiGraphDijkstra<
             PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
             > int findPaths(
                     BiGraph<EdgeT> graph,
-                    Collection<PathStartT> startingPoints,
+                    PriorityQueue<PathNode<EdgeT, PathStartT, PathEndT>> candidatePaths,
                     CostFunction<EdgeT> costFunction,
                     GoalChecker<EdgeT, PathStartT, PathEndT> goalChecker,
                     GoalReachedCallback<EdgeT, PathStartT, PathEndT> goalReachedCallback
     ) {
         int foundPaths = 0;
-        var queue = new PriorityQueue<PathNode<EdgeT, PathStartT, PathEndT>>(
-                Comparator.comparing(path -> path.cost));
-        queue.addAll(startingPoints);
-
         var visitedState = makeVisitedState(graph.getEdgeCount());
-
-        while (!queue.isEmpty()) {
+        while (!candidatePaths.isEmpty()) {
             // pop the next candidate off the queue, which is the one with the smallest cost
-            var currentPath = queue.poll();
+            var currentPath = candidatePaths.poll();
 
             // if the candidate is an end edge, send it to the caller and stop exploring this branch
             if (currentPath.getType() == PathNode.Type.END) {
@@ -81,7 +98,7 @@ public abstract class BiGraphDijkstra<
             // we add the path to the queue to ensure the cheapest path to the goal gets found first
             var pathEnd = goalChecker.findGoalOnPathEdge(currentPath);
             if (pathEnd != null) {
-                queue.add(pathEnd);
+                candidatePaths.add(pathEnd);
                 continue;
             }
 
@@ -104,7 +121,7 @@ public abstract class BiGraphDijkstra<
                     continue;
 
                 var neighborFirstPos = neighborEdge.getFirstPosition(neighborDirection);
-                queue.add(currentPath.chain(addedCost, neighborEdge, neighborDirection, neighborFirstPos));
+                candidatePaths.add(currentPath.chain(addedCost, neighborEdge, neighborDirection, neighborFirstPos));
             }
         }
         return foundPaths;

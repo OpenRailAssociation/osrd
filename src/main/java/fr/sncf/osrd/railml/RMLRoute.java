@@ -114,7 +114,7 @@ public class RMLRoute {
         // Compute the paths from the entry waypoint to the exit waypoint
         BiGraphDijkstra.findPaths(
                 rmlRouteGraph,
-                startingPoints,
+                BiGraphDijkstra.makePriorityQueue(startingPoints),
                 costFunction,
                 (pathNode) -> {
                     for (var goalEdge : goalEdges) {

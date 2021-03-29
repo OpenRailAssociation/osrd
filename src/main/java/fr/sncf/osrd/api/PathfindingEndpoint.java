@@ -22,6 +22,7 @@ import org.takes.rs.RsWithStatus;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.PriorityQueue;
 
 public class PathfindingEndpoint implements Take {
     private static final JsonAdapter<PathfindingRequest> adapter = new Moshi
@@ -94,30 +95,36 @@ public class PathfindingEndpoint implements Take {
         }
 
         var costFunction = new DistCostFunction<Route>();
-        var paths = new ArrayList<FullPathArray<Route, BasicPathStart<Route>, BasicPathEnd<Route>>>();
+        PriorityQueue<PathNode<Route, BasicPathStart<Route>, BasicPathEnd<Route>>> candidatePaths = BiGraphDijkstra.makePriorityQueue();
+        for (var startWaypoint : waypoints[0])
+            candidatePaths.add(new BasicPathStart<>(0, startWaypoint.route, EdgeDirection.START_TO_STOP, startWaypoint.offset));
 
+
+        var pathsToGoal = new ArrayList<PathNode<Route, BasicPathStart<Route>, BasicPathEnd<Route>>>();
         // Compute the paths from the entry waypoint to the exit waypoint
-        var currentPaths = new ArrayList<BasicPathStart<Route>>();
         for (int i = 1; i < waypoints.length; i++) {
             var destinationWaypoints = waypoints[i];
 
             BiGraphDijkstra.findPaths(
                     infra.routeGraph,
-                    currentPaths,
+                    candidatePaths,
                     costFunction,
                     (pathNode) -> {
                         for (var goalEdge : destinationWaypoints) {
                             if (goalEdge.route != pathNode.edge)
                                 continue;
                             var addedCost = costFunction.evaluate(goalEdge.route, pathNode.position, goalEdge.route.length);
-                            return new BasicPathEnd<>(addedCost, goalEdge.route, pathNode.direction, 0, pathNode);
+                            return new BasicPathEnd<>(addedCost, goalEdge.route, pathNode.direction, goalEdge.offset, pathNode);
                         }
                         return null;
                     },
                     (pathToGoal) -> {
-                        paths.add(FullPathArray.from(pathToGoal));
+                        pathsToGoal.add(pathToGoal);
                         return false;
                     });
+
+            candidatePaths.clear();
+            candidatePaths.addAll(pathsToGoal);
         }
 
         return new RsText("ok");
