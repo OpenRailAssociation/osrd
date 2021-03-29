@@ -14,7 +14,6 @@ import fr.sncf.osrd.utils.graph.overlay.OverlayPathStart;
 import fr.sncf.osrd.utils.graph.path.FullPathArray;
 import fr.sncf.osrd.utils.graph.path.PathNode;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +44,7 @@ public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
 
     @Override
     @SuppressFBWarnings(value = {"BC_UNCONFIRMED_CAST"}, justification = "it's a linter bug, there's no cast")
-    protected TVDSectionPath linkOverlayNodes(OverlayPathEnd<TrackSection, Waypoint> path) {
+    protected void linkOverlayNodes(OverlayPathEnd<TrackSection, Waypoint> path) {
         var fullPath = FullPathArray.from(path);
 
         // Build list of track sections position
@@ -63,8 +62,8 @@ public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
         // create the path and register it with the graph
         var tvdSectionPath = new TVDSectionPath(
                 overlayGraph,
-                startNodeIndex, startNodeDirection,
-                endNodeIndex, endNodeDirection,
+                startNodeIndex,
+                endNodeIndex,
                 length,
                 trackSections);
 
@@ -77,11 +76,8 @@ public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
         if (startNeighbors != endNeighbors)
             endNeighbors.add(tvdSectionPath);
 
-        var tvsSectionID = UndirectedBiEdgeID.from(startNodeIndex, endNodeIndex);
-        var dupTvd = overlayGraph.tvdSectionPathMap.put(tvsSectionID, tvdSectionPath);
-        // the same TVD Section shouldn't appear twice
+        var dupTvd = overlayGraph.tvdSectionPathMap.put(UndirectedBiEdgeID.from(startNodeIndex, endNodeIndex), tvdSectionPath);
         assert dupTvd == null;
-        return tvdSectionPath;
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})

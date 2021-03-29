@@ -14,7 +14,7 @@ import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.train.phases.StopPhase;
-import fr.sncf.osrd.utils.TrackSectionLocation;
+import fr.sncf.osrd.utils.TrackSectionLoc;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayList;
@@ -56,16 +56,16 @@ public class RJSTrainScheduleParser {
 
         // find from what direction the train arrives on the initial location
         EdgeDirection initialDirection = null;
-        var tvdSectionPaths = initialRoute.tvdSectionsPath;
-        var tvdSectionPathDirs = initialRoute.tvdSectionsPathDirection;
+        var tvdSectionPaths = initialRoute.tvdSectionsPaths;
+        var tvdSectionPathDirs = initialRoute.tvdSectionsPathDirections;
 
         trackSectionLoop:
         for (int i = 0; i < tvdSectionPaths.size(); i++) {
             var tvdSectionPath = tvdSectionPaths.get(i);
             var tvdSectionPathDir = tvdSectionPathDirs.get(i);
-            for (var trackSectionRange : tvdSectionPath.trackSections) {
+            for (var trackSectionRange : tvdSectionPath.getTrackSections(tvdSectionPathDir)) {
                 if (trackSectionRange.containsLocation(initialLocation)) {
-                    initialDirection = trackSectionRange.direction.compose(tvdSectionPathDir);
+                    initialDirection = trackSectionRange.direction;
                     break trackSectionLoop;
                 }
             }
@@ -88,7 +88,7 @@ public class RJSTrainScheduleParser {
 
     private static Phase parsePhase(
             Infra infra,
-            TrackSectionLocation startLocation,
+            TrackSectionLoc startLocation,
             RJSTrainPhase rjsPhase
     ) throws InvalidSchedule {
         if (rjsPhase.getClass() == RJSTrainPhase.Stop.class) {
@@ -115,7 +115,7 @@ public class RJSTrainScheduleParser {
         throw new RuntimeException("unknown train phase");
     }
 
-    private static TrackSectionLocation parseLocation(Infra infra, RJSTrackLocation location) throws InvalidSchedule {
+    private static TrackSectionLoc parseLocation(Infra infra, RJSTrackLocation location) throws InvalidSchedule {
         var trackSectionID = location.trackSection.id;
         var trackSection = infra.trackGraph.trackSectionMap.get(trackSectionID);
         if (trackSection == null)
@@ -123,6 +123,6 @@ public class RJSTrainScheduleParser {
         var offset = location.offset;
         if (offset < 0 || offset > trackSection.length)
             throw new InvalidSchedule("invalid track section offset");
-        return new TrackSectionLocation(trackSection, offset);
+        return new TrackSectionLoc(trackSection, offset);
     }
 }

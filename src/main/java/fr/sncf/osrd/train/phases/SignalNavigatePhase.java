@@ -16,7 +16,7 @@ import fr.sncf.osrd.train.TrainInteractionType;
 import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.PointValue;
-import fr.sncf.osrd.utils.TrackSectionLocation;
+import fr.sncf.osrd.utils.TrackSectionLoc;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayDeque;
@@ -28,13 +28,13 @@ import java.util.function.Consumer;
 public final class SignalNavigatePhase implements Phase {
     @SuppressFBWarnings({"URF_UNREAD_FIELD"})
     public final List<Route> routePath;
-    public final TrackSectionLocation endLocation;
+    public final TrackSectionLoc endLocation;
     private final ArrayList<TrackSectionRange> trackSectionPath;
     private final ArrayList<PointValue<ActionPoint>> actionPointPath;
 
     private SignalNavigatePhase(
             List<Route> routePath,
-            TrackSectionLocation endLocation,
+            TrackSectionLoc endLocation,
             ArrayList<TrackSectionRange> trackSectionPath,
             ArrayList<PointValue<ActionPoint>> actionPointPath
     ) {
@@ -50,8 +50,8 @@ public final class SignalNavigatePhase implements Phase {
     public static SignalNavigatePhase from(
             List<Route> routes,
             double driverSightDistance,
-            TrackSectionLocation startLocation,
-            TrackSectionLocation endLocation
+            TrackSectionLoc startLocation,
+            TrackSectionLoc endLocation
     ) {
         var trackSectionPath = routesToTrackSectionRange(routes, startLocation, endLocation);
         var actionPointPath = trackSectionToActionPointPath(driverSightDistance, trackSectionPath);
@@ -62,25 +62,17 @@ public final class SignalNavigatePhase implements Phase {
      * Avoid to have in the path TrackSectionPositions that reference the same TrackSection. */
     private static ArrayList<TrackSectionRange> routesToTrackSectionRange(
             List<Route> routePath,
-            TrackSectionLocation beginLocation,
-            TrackSectionLocation endLocation
+            TrackSectionLoc beginLocation,
+            TrackSectionLoc endLocation
     ) {
         // Flatten the list of track section range
         var flattenSections = new ArrayDeque<TrackSectionRange>();
         for (var route : routePath) {
-            for (var i = 0; i < route.tvdSectionsPath.size(); i++) {
-                var tvdSectionPath = route.tvdSectionsPath.get(i);
-                var tvdSectionPathDir = route.tvdSectionsPathDirection.get(i);
-                for (var trackIndex = 0; trackIndex < tvdSectionPath.trackSections.size(); trackIndex++) {
-                    // Reverse iteration if the tvd section path is reversed
-                    if (tvdSectionPathDir == EdgeDirection.STOP_TO_START) {
-                        trackIndex = tvdSectionPath.trackSections.size() - 1 - trackIndex;
-                        var trackSection = tvdSectionPath.trackSections.get(trackIndex);
-                        flattenSections.addLast(TrackSectionRange.opposite(trackSection));
-                        continue;
-                    }
-                    flattenSections.addLast(tvdSectionPath.trackSections.get(trackIndex));
-                }
+            for (var i = 0; i < route.tvdSectionsPaths.size(); i++) {
+                var tvdSectionPath = route.tvdSectionsPaths.get(i);
+                var tvdSectionPathDir = route.tvdSectionsPathDirections.get(i);
+                for (var trackSection : tvdSectionPath.getTrackSections(tvdSectionPathDir))
+                    flattenSections.addLast(trackSection);
             }
         }
 
@@ -164,7 +156,7 @@ public final class SignalNavigatePhase implements Phase {
     }
 
     @Override
-    public TrackSectionLocation getEndLocation() {
+    public TrackSectionLoc getEndLocation() {
         return endLocation;
     }
 
@@ -298,9 +290,9 @@ public final class SignalNavigatePhase implements Phase {
         private TVDSection findForwardTVDSection(Waypoint waypoint) {
             // TODO: Find a faster and smarter way to do it
             for (var route : phase.routePath) {
-                for (var j = 0; j < route.tvdSectionsPath.size(); j++) {
-                    var tvdSectionPath = route.tvdSectionsPath.get(j);
-                    var tvdSectionPathDirection = route.tvdSectionsPathDirection.get(j);
+                for (var j = 0; j < route.tvdSectionsPaths.size(); j++) {
+                    var tvdSectionPath = route.tvdSectionsPaths.get(j);
+                    var tvdSectionPathDirection = route.tvdSectionsPathDirections.get(j);
                     if (tvdSectionPath.getStartNode(tvdSectionPathDirection) == waypoint.index)
                         return tvdSectionPath.tvdSection;
                 }
@@ -311,9 +303,9 @@ public final class SignalNavigatePhase implements Phase {
         private TVDSection findBackwardTVDSection(Waypoint waypoint) {
             // TODO: Find a faster and smarter way to do it
             for (var route : phase.routePath) {
-                for (var j = 0; j < route.tvdSectionsPath.size(); j++) {
-                    var tvdSectionPath = route.tvdSectionsPath.get(j);
-                    var tvdSectionPathDirection = route.tvdSectionsPathDirection.get(j);
+                for (var j = 0; j < route.tvdSectionsPaths.size(); j++) {
+                    var tvdSectionPath = route.tvdSectionsPaths.get(j);
+                    var tvdSectionPathDirection = route.tvdSectionsPathDirections.get(j);
                     if (tvdSectionPath.getEndNode(tvdSectionPathDirection) == waypoint.index)
                         return tvdSectionPath.tvdSection;
                 }
@@ -325,9 +317,9 @@ public final class SignalNavigatePhase implements Phase {
         public void updateTVDSections(Simulation sim, Detector detector, TrainInteractionType interactionType) {
             // Update route index
             var currentRoute = phase.routePath.get(routeIndex);
-            var tvdSectionPathIndex = currentRoute.tvdSectionsPath.size() - 1;
-            var lastTvdSectionPath = currentRoute.tvdSectionsPath.get(tvdSectionPathIndex);
-            var lastTvdSectionPathDir = currentRoute.tvdSectionsPathDirection.get(tvdSectionPathIndex);
+            var tvdSectionPathIndex = currentRoute.tvdSectionsPaths.size() - 1;
+            var lastTvdSectionPath = currentRoute.tvdSectionsPaths.get(tvdSectionPathIndex);
+            var lastTvdSectionPathDir = currentRoute.tvdSectionsPathDirections.get(tvdSectionPathIndex);
             if (lastTvdSectionPath.getEndNode(lastTvdSectionPathDir) == detector.index)
                 routeIndex++;
 

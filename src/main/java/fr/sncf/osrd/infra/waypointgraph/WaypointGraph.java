@@ -30,7 +30,7 @@ public final class WaypointGraph extends BiNGraph<TVDSectionPath, Waypoint> {
         var nodeIndex = endpoint == EdgeEndpoint.BEGIN ? edge.startNode : edge.endNode;
         var node = getNode(nodeIndex);
 
-        if (edge.nodeDirection(endpoint) == START_TO_STOP)
+        if (edge.nodeDirection(START_TO_STOP, endpoint) == START_TO_STOP)
             return node.startToStopNeighbors;
         return node.stopToStartNeighbors;
     }

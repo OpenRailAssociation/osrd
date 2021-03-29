@@ -45,7 +45,7 @@ public abstract class BiGraphOverlayBuilder<
     protected abstract OverlayNodeT makeOverlayNode(BridgeObjectT bridgeObject);
 
     /** Create an edge in the overlay */
-    protected abstract OverlayEdgeT linkOverlayNodes(OverlayPathEnd<BaseEdgeT, OverlayNodeT> path);
+    protected abstract void linkOverlayNodes(OverlayPathEnd<BaseEdgeT, OverlayNodeT> path);
 
     private final int[] edgeDirLastVisited;
 

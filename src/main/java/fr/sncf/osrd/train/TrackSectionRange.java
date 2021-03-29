@@ -2,7 +2,7 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.utils.DeepComparable;
-import fr.sncf.osrd.utils.TrackSectionLocation;
+import fr.sncf.osrd.utils.TrackSectionLoc;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.simulation.ChangeSerializer.SerializableDouble;
@@ -79,12 +79,12 @@ public final class TrackSectionRange implements DeepComparable<TrackSectionRange
     }
 
     /** Creates the opposite track section range */
-    public static TrackSectionRange opposite(TrackSectionRange trackSectionRange) {
+    public  TrackSectionRange opposite() {
         return new TrackSectionRange(
-                trackSectionRange.edge,
-                trackSectionRange.direction.opposite(),
-                trackSectionRange.endPosition,
-                trackSectionRange.beginPosition
+                this.edge,
+                this.direction.opposite(),
+                this.endPosition,
+                this.beginPosition
         );
     }
 
@@ -107,7 +107,7 @@ public final class TrackSectionRange implements DeepComparable<TrackSectionRange
     }
 
     /** Check if a position is contained in the track section range */
-    public boolean containsLocation(TrackSectionLocation location) {
+    public boolean containsLocation(TrackSectionLoc location) {
         if (location.edge != edge)
             return false;
         return containsPosition(location.offset);

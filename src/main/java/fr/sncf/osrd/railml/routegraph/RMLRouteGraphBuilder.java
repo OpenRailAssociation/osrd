@@ -45,7 +45,7 @@ public final class RMLRouteGraphBuilder extends BiGraphOverlayBuilder<
 
     @Override
     @SuppressFBWarnings(value = {"BC_UNCONFIRMED_CAST"}, justification = "it's a linter bug, there's no cast")
-    protected RMLTVDSectionPath linkOverlayNodes(OverlayPathEnd<TrackNetElement, RMLRouteWaypoint> path) {
+    protected void linkOverlayNodes(OverlayPathEnd<TrackNetElement, RMLRouteWaypoint> path) {
         var fullPath = FullPathArray.from(path);
 
         var startNode = fullPath.start.overlayNode;
@@ -76,6 +76,5 @@ public final class RMLRouteGraphBuilder extends BiGraphOverlayBuilder<
             endNeighbors.add(tvdSectionPath);
 
         overlayGraph.tvdSectionPathMap.put(UndirectedBiEdgeID.from(startNodeIndex, endNodeIndex), tvdSectionPath);
-        return tvdSectionPath;
     }
 }
