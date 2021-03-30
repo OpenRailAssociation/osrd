@@ -15,18 +15,26 @@ import fr.sncf.osrd.utils.graph.path.*;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
+import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
+import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.PriorityQueue;
 
 public class PathfindingEndpoint implements Take {
-    private static final JsonAdapter<PathfindingRequest> adapter = new Moshi
+    private static final JsonAdapter<PathfindingRequest> adapterRequest = new Moshi
             .Builder()
             .build()
             .adapter(PathfindingRequest.class)
+            .failOnUnknown();
+    private static final JsonAdapter<PathfindingResult[]> adapterResult = new Moshi
+            .Builder()
+            .build()
+            .adapter(PathfindingResult[].class)
             .failOnUnknown();
 
     private final Infra infra;
@@ -65,7 +73,7 @@ public class PathfindingEndpoint implements Take {
     public Response act(Request req) throws IOException {
         var buffer = new okio.Buffer();
         buffer.write(req.body().readAllBytes());
-        var jsonRequest = adapter.fromJson(buffer);
+        var jsonRequest = adapterRequest.fromJson(buffer);
         if (jsonRequest == null)
             return new RsWithStatus(new RsText("missing request body"), 400);
 
@@ -152,8 +160,10 @@ public class PathfindingEndpoint implements Take {
                 routes.add(routeLoc.route);
             resTrackSections[i] = Route.routesToTrackSectionRange(routes, beginLoc, endLoc);
         }
-
-        return new RsText("ok");
+        var result = new PathfindingResult[resRoutes.length];
+        for (int i = 0; i < resRoutes.length; i++)
+            result[i] = PathfindingResult.from(resRoutes[i], resTrackSections[i]);
+        return new RsJson(new RsWithBody(adapterResult.toJson(result)));
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
@@ -164,5 +174,55 @@ public class PathfindingEndpoint implements Take {
         for (var node : path.pathNodes)
             routes.add(new RouteLocation(node.edge, node.position));
         return  routes;
+    }
+
+    @SuppressFBWarnings({"URF_UNREAD_FIELD"})
+    private static class PathfindingResult {
+        private final List<RouteLocationResult> routes;
+        @Json(name = "track_sections")
+        private final List<TrackSectionRangeResult> trackSections;
+
+        private PathfindingResult(List<RouteLocationResult> routes, List<TrackSectionRangeResult> trackSections) {
+            this.routes = routes;
+            this.trackSections = trackSections;
+        }
+
+        public static PathfindingResult from(List<RouteLocation> routes, List<TrackSectionRange> trackSections) {
+            var resRoutes = new ArrayList<RouteLocationResult>();
+            var resTrackSections = new ArrayList<TrackSectionRangeResult>();
+            for (var route : routes)
+                resRoutes.add(new RouteLocationResult(route.route.id, route.offset));
+            for (var track : trackSections)
+                resTrackSections.add(new TrackSectionRangeResult(
+                        track.edge.id, track.getBeginPosition(), track.getEndPosition()));
+            return new PathfindingResult(resRoutes, resTrackSections);
+        }
+    }
+
+    @SuppressFBWarnings({"URF_UNREAD_FIELD"})
+    private static class RouteLocationResult {
+        private final String route;
+        private final double offset;
+
+        private RouteLocationResult(String route, double offset) {
+            this.route = route;
+            this.offset = offset;
+        }
+    }
+
+    @SuppressFBWarnings({"URF_UNREAD_FIELD"})
+    private static class TrackSectionRangeResult {
+        @Json(name = "track_section")
+        private final String trackSection;
+        @Json(name = "begin_position")
+        private final double beginPosition;
+        @Json(name = "end_position")
+        private final double endPosition;
+
+        private TrackSectionRangeResult(String trackSection, double beginPosition, double endPosition) {
+            this.trackSection = trackSection;
+            this.beginPosition = beginPosition;
+            this.endPosition = endPosition;
+        }
     }
 }

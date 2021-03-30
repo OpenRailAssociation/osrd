@@ -2,7 +2,6 @@ package fr.sncf.osrd.infra.waypointgraph;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.TVDSection;
-import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.graph.BiNEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
