@@ -1,8 +1,8 @@
-package fr.sncf.osrd.infra.signaling.events;
+package fr.sncf.osrd.infra_state.events;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
-import fr.sncf.osrd.infra.signaling.Signal;
+import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.*;
 
 public class SignalDelayedUpdateEvent extends TimelineEvent {
@@ -10,7 +10,7 @@ public class SignalDelayedUpdateEvent extends TimelineEvent {
     public final RSValue value;
     private final int signalIndex;
 
-    private SignalDelayedUpdateEvent(TimelineEventId eventId, int delaySlot, RSValue value, Signal.State entity) {
+    private SignalDelayedUpdateEvent(TimelineEventId eventId, int delaySlot, RSValue value, SignalState entity) {
         super(eventId);
         this.delaySlot = delaySlot;
         this.value = value;
@@ -45,7 +45,7 @@ public class SignalDelayedUpdateEvent extends TimelineEvent {
             double time,
             int delaySlot,
             RSValue value,
-            Signal.State signal
+            SignalState signal
     ) {
         var change = new SignalPlanDelayUpdateChange(sim, delaySlot, value, signal.signal.index, time);
         var event = change.apply(sim, signal);
@@ -71,7 +71,7 @@ public class SignalDelayedUpdateEvent extends TimelineEvent {
             this.signalIndex = signalIndex;
         }
 
-        private SignalDelayedUpdateEvent apply(Simulation sim, Signal.State entity) {
+        private SignalDelayedUpdateEvent apply(Simulation sim, SignalState entity) {
             var event = new SignalDelayedUpdateEvent(eventId, delaySlot, value, entity);
             super.scheduleEvent(sim, event);
             return event;

@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra.routegraph;
+package fr.sncf.osrd.infra_state;
 
 public enum RouteStatus {
    FREE,

@@ -17,6 +17,9 @@ import fr.sncf.osrd.infra.trackgraph.BufferStop;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.infra_state.RouteState;
+import fr.sncf.osrd.infra_state.SignalState;
+import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.simulation.changelog.ChangeLog;
 import fr.sncf.osrd.speedcontroller.*;
 import fr.sncf.osrd.train.TrackSectionRange;
@@ -74,9 +77,9 @@ public class ChangeSerializer {
             .add(PolymorphicJsonAdapterFactory.of(RSValue.class, "valueType")
                     .withSubtype(RSAspectSet.class, "aspectSet")
                     .withSubtype(RSBool.class, "bool")
-                    .withSubtype(Signal.State.class, "signal")
-                    .withSubtype(Route.State.class, "route")
-                    .withSubtype(Switch.State.class, "switch")
+                    .withSubtype(SignalState.class, "signal")
+                    .withSubtype(RouteState.class, "route")
+                    .withSubtype(SwitchState.class, "switch")
             )
             .add(adaptPolymorphicType(SpeedController.class, "controllerType"))
             .build()

@@ -3,6 +3,7 @@ package fr.sncf.osrd.train;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.trackgraph.*;
+import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.DeepEqualsUtils;
 
@@ -11,7 +12,7 @@ import java.util.Objects;
 
 public final class TrainPositionTracker implements Cloneable, DeepComparable<TrainPositionTracker> {
     private final transient Infra infra;
-    private final transient Infra.State infraState;
+    private final transient InfraState infraState;
 
     /** Distance covered since the train has departed */
     private double pathPosition = 0;
@@ -25,7 +26,7 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
      */
     public TrainPositionTracker(
             Infra infra,
-            Infra.State infraState,
+            InfraState infraState,
             ArrayDeque<TrackSectionRange> trackSectionRanges
     ) {
         this.infra = infra;

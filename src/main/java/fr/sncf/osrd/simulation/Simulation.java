@@ -2,6 +2,7 @@ package fr.sncf.osrd.simulation;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.utils.DeepComparable;
@@ -35,7 +36,7 @@ public final class Simulation implements DeepComparable<Simulation> {
     static final Logger logger = LoggerFactory.getLogger(Simulation.class);
 
     public final Infra infra;
-    public final Infra.State infraState;
+    public final InfraState infraState;
     public final HashMap<String, Train> trains = new HashMap<>();
 
     // changes may need to be logged to enable replays
@@ -65,7 +66,7 @@ public final class Simulation implements DeepComparable<Simulation> {
     /** Creates a new Discrete TimelineEvent SimulationManager */
     private Simulation(
             Infra infra,
-            Infra.State infraState,
+            InfraState infraState,
             double time,
             ChangeConsumer changeConsumer
     ) {
@@ -82,7 +83,7 @@ public final class Simulation implements DeepComparable<Simulation> {
             double simStartTime,
             ChangeConsumer changeConsumer
     ) {
-        var infraState = infra.createInitialState();
+        var infraState = InfraState.from(infra);
         return new Simulation(infra, infraState, simStartTime, changeConsumer);
     }
 

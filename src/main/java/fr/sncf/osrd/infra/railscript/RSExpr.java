@@ -2,11 +2,14 @@ package fr.sncf.osrd.infra.railscript;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.routegraph.Route;
-import fr.sncf.osrd.infra.routegraph.RouteStatus;
+import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.railscript.value.*;
 import fr.sncf.osrd.infra.trackgraph.Switch;
+import fr.sncf.osrd.infra_state.RouteState;
+import fr.sncf.osrd.infra_state.SignalState;
+import fr.sncf.osrd.infra_state.SwitchState;
 
 import java.util.Map;
 
@@ -178,7 +181,7 @@ public abstract class RSExpr<T extends RSValue> {
         }
     }
 
-    public static final class SignalRef extends RSExpr<Signal.State> {
+    public static final class SignalRef extends RSExpr<SignalState> {
         public final String signalName;
 
         public Signal signal = null;
@@ -195,7 +198,7 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public Signal.State evaluate(
+        public SignalState evaluate(
                 RSExprState<?> state
         ) {
             return state.infraState.getSignalState(this.signal.index);
@@ -212,7 +215,7 @@ public abstract class RSExpr<T extends RSValue> {
         }
     }
 
-    public static final class RouteRef extends RSExpr<Route.State> {
+    public static final class RouteRef extends RSExpr<RouteState> {
         public final String routeName;
 
         public Route route = null;
@@ -229,7 +232,7 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public Route.State evaluate(RSExprState<?> state) {
+        public RouteState evaluate(RSExprState<?> state) {
             return state.infraState.getRouteState(route.index);
         }
 
@@ -244,7 +247,7 @@ public abstract class RSExpr<T extends RSValue> {
         }
     }
 
-    public static final class SwitchRef extends RSExpr<Switch.State> {
+    public static final class SwitchRef extends RSExpr<SwitchState> {
         public final String switchName;
 
         public Switch switchRef = null;
@@ -261,7 +264,7 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
-        public Switch.State evaluate(RSExprState<?> state) {
+        public SwitchState evaluate(RSExprState<?> state) {
             return state.infraState.getSwitchState(switchRef.switchIndex);
         }
 
@@ -463,12 +466,12 @@ public abstract class RSExpr<T extends RSValue> {
 
     public static final class SignalAspectCheck extends RSExpr<RSBool> {
         /** The signal the condition checks for */
-        public final RSExpr<Signal.State> signalExpr;
+        public final RSExpr<SignalState> signalExpr;
 
         /** The condition is true when the signal has the following aspect */
         public final Aspect aspect;
 
-        public SignalAspectCheck(RSExpr<Signal.State> signalExpr, Aspect aspect) {
+        public SignalAspectCheck(RSExpr<SignalState> signalExpr, Aspect aspect) {
             this.signalExpr = signalExpr;
             this.aspect = aspect;
         }
@@ -491,10 +494,10 @@ public abstract class RSExpr<T extends RSValue> {
     }
 
     public static final class RouteStateCheck extends RSExpr<RSBool> {
-        public final RSExpr<Route.State> routeExpr;
+        public final RSExpr<RouteState> routeExpr;
         public final RouteStatus status;
 
-        public RouteStateCheck(RSExpr<Route.State> routeExpr, RouteStatus status) {
+        public RouteStateCheck(RSExpr<RouteState> routeExpr, RouteStatus status) {
             this.routeExpr = routeExpr;
             this.status = status;
         }

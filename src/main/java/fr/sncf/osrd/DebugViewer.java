@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
 import fr.sncf.osrd.infra.signaling.Signal;
+import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.Change;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
@@ -338,8 +339,8 @@ public class DebugViewer extends ChangeConsumer {
         // endregion
 
         // region SIGNAL_CHANGES
-        if (change.getClass() == Signal.SignalAspectChange.class) {
-            var aspectChange = (Signal.SignalAspectChange) change;
+        if (change.getClass() == SignalState.SignalAspectChange.class) {
+            var aspectChange = (SignalState.SignalAspectChange) change;
             var signal = infra.signals.get(aspectChange.signalIndex);
             updateSignal(signal, aspectChange.aspects);
             return;

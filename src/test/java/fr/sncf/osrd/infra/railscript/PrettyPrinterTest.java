@@ -6,8 +6,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.value.RSBool;
 import fr.sncf.osrd.infra.railscript.value.RSType;
-import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.Aspect;
+import fr.sncf.osrd.infra_state.RouteState;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -137,7 +137,7 @@ class PrettyPrinterTest {
         var printer = new PrettyPrinter(new PrintStream(content));
 
         @SuppressWarnings({"unchecked"})
-        var match = new RSExpr.EnumMatch<RSBool, Route.State>(new RSExpr.RouteRef("route"),
+        var match = new RSExpr.EnumMatch<RSBool, RouteState>(new RSExpr.RouteRef("route"),
                 (RSExpr<RSBool>[]) new RSExpr<?>[] {
                         RSExpr.True.INSTANCE,
                         RSExpr.False.INSTANCE,

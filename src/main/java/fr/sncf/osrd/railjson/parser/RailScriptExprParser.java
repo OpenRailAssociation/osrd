@@ -2,6 +2,8 @@ package fr.sncf.osrd.railjson.parser;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra_state.RouteState;
+import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSFunction;
@@ -12,10 +14,8 @@ import fr.sncf.osrd.infra.railscript.RSStatefulExpr;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
 import fr.sncf.osrd.infra.railscript.value.RSBool;
 import fr.sncf.osrd.infra.railscript.value.RSType;
-import fr.sncf.osrd.infra.routegraph.Route;
-import fr.sncf.osrd.infra.routegraph.RouteStatus;
+import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.infra.signaling.Aspect;
-import fr.sncf.osrd.infra.signaling.Signal;
 
 import java.util.HashMap;
 
@@ -322,17 +322,17 @@ public class RailScriptExprParser {
     }
 
     @SuppressWarnings("unchecked")
-    private RSExpr<Signal.State> parseSignalExpr(RJSRSExpr rjsExpr) throws InvalidInfraException {
+    private RSExpr<SignalState> parseSignalExpr(RJSRSExpr rjsExpr) throws InvalidInfraException {
         var expr = parse(rjsExpr);
         checkExprType(RSType.SIGNAL, expr);
-        return (RSExpr<Signal.State>) expr;
+        return (RSExpr<SignalState>) expr;
     }
 
     @SuppressWarnings("unchecked")
-    private RSExpr<Route.State> parseRouteExpr(RJSRSExpr rjsExpr) throws InvalidInfraException {
+    private RSExpr<RouteState> parseRouteExpr(RJSRSExpr rjsExpr) throws InvalidInfraException {
         var expr = parse(rjsExpr);
         checkExprType(RSType.ROUTE, expr);
-        return (RSExpr<Route.State>) expr;
+        return (RSExpr<RouteState>) expr;
     }
 
     /** Parse a Json RailScript expression, and ensure it returns an AspectSet */
