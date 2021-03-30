@@ -2,6 +2,10 @@ package fr.sncf.osrd.cli;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import fr.sncf.osrd.api.PathfindingEndpoint;
+import fr.sncf.osrd.config.JsonConfig;
+import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.InvalidInfraException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.takes.facets.fallback.FbChain;
@@ -27,12 +31,23 @@ public final class ApiServerCommand implements CliCommand {
     )
     private int port = 8000;
 
+    @Parameter(
+            names = { "-i", "--input" },
+            description = "The infra input file (supports RailML and RailJSON)",
+            required = true
+    )
+    private String inputPath;
+
     /** Run the Api Server */
     public int run() {
         try {
+            logger.info("parsing the input infrastructure");
+            var infra = Infra.parseFromFile(JsonConfig.InfraType.UNKNOWN, inputPath);
+
             // the list of endpoints
             var routes = new TkFork(
-                    new FkRegex("/health", "")
+                    new FkRegex("/health", ""),
+                    new FkRegex("/pathfinding", new PathfindingEndpoint(infra))
             );
 
             // the list of pages which should be displayed on error
@@ -47,6 +62,9 @@ public final class ApiServerCommand implements CliCommand {
             return 0;
         } catch (IOException ioException) {
             logger.error("IO error", ioException);
+            return 1;
+        } catch (InvalidInfraException infraException) {
+            logger.error("Infra exception", infraException);
             return 1;
         }
     }
