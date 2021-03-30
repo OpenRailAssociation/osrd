@@ -1,6 +1,6 @@
 package fr.sncf.osrd.infra.railscript.value;
 
-import fr.sncf.osrd.infra.routegraph.RouteStatus;
+import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 
 public enum RSType {

@@ -1,7 +1,7 @@
 package fr.sncf.osrd.infra.railscript;
 
-import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
+import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.utils.DeepComparable;
 
 import java.util.Arrays;
@@ -30,7 +30,7 @@ public class RSExprState<T extends RSValue> implements DeepComparable<RSExprStat
     // endregion
 
     // region CALL_STATE
-    transient Infra.State infraState;
+    transient InfraState infraState;
     transient RSExprEvalMode evalMode = RSExprEvalMode.INITIALIZE;
     final transient RSValue[] argStates;
     transient int argScopeOffset = 0;
@@ -94,7 +94,7 @@ public class RSExprState<T extends RSValue> implements DeepComparable<RSExprStat
         this.delayLaggingStates = new RSValue[delaySlotCount];
     }
 
-    private T eval(Infra.State infraState, RSDelayHandler delayHandler, RSExprEvalMode evalMode) {
+    private T eval(InfraState infraState, RSDelayHandler delayHandler, RSExprEvalMode evalMode) {
         this.argScopeOffset = 0;
         this.delayHandler = delayHandler;
         this.evalMode = evalMode;
@@ -105,16 +105,16 @@ public class RSExprState<T extends RSValue> implements DeepComparable<RSExprStat
         return res;
     }
 
-    public T evalInit(Infra.State state) {
+    public T evalInit(InfraState state) {
         return eval(state, null, RSExprEvalMode.INITIALIZE);
     }
 
-    public T evalInputChange(Infra.State infraState, RSDelayHandler delayHandler) {
+    public T evalInputChange(InfraState infraState, RSDelayHandler delayHandler) {
         return eval(infraState, delayHandler, RSExprEvalMode.INPUT_CHANGE);
     }
 
     /** Evaluates the result of a delayed update */
-    public T evalDelayUpdate(Infra.State infraState, RSDelayHandler delayHandler, int delaySlot, RSValue value) {
+    public T evalDelayUpdate(InfraState infraState, RSDelayHandler delayHandler, int delaySlot, RSValue value) {
         setDelayLaggingValue(delaySlot, value);
         lastUpdatedDelaySlot = delaySlot;
         return eval(infraState, delayHandler, RSExprEvalMode.DELAY_UPDATE);

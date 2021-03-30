@@ -2,8 +2,8 @@ package fr.sncf.osrd.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.config.JsonConfig;
+import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
-import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
@@ -11,8 +11,6 @@ import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railml.RailMLParser;
-import fr.sncf.osrd.utils.DeepEqualsUtils;
-import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.SortedArraySet;
 import okio.Okio;
 
@@ -139,7 +137,7 @@ public final class Infra {
 
         // Evaluate initial aspects of signals
         var topologicalSignalOrder = buildTopologicalSignalOrder(signals);
-        var initialState = infra.createInitialState();
+        var initialState = InfraState.from(infra);
         for (var i = topologicalSignalOrder.size() - 1; i >= 0; i--)
             signals.get(topologicalSignalOrder.get(i).index).evalInitialAspect(initialState);
 
@@ -228,80 +226,6 @@ public final class Infra {
             var tvdSection = tvdSectionIntersection.get(0);
             tvdSectionPath.tvdSection = tvdSection;
             tvdSection.sections.add(tvdSectionPath);
-        }
-    }
-
-    /** Initializes a state for the infrastructure */
-    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST_OF_RETURN_VALUE"})
-    public State createInitialState() {
-        var signalCount = signals.size();
-        var signalStates = new Signal.State[signalCount];
-        for (int i = 0; i < signalCount; i++)
-            signalStates[i] = signals.get(i).newState();
-
-        var routeCount = routeGraph.getEdgeCount();
-        var routeStates = new Route.State[routeCount];
-        for (int i = 0; i < routeCount; i++)
-            routeStates[i] = routeGraph.getEdge(i).newState();
-
-        var switchCount = switches.size();
-        var switchStates = new Switch.State[switchCount];
-        for (var infraSwitch : switches)
-            switchStates[infraSwitch.switchIndex] = infraSwitch.newState();
-
-        var tvdSectionCount = tvdSections.size();
-        var tvdSectionStates = new TVDSection.State[tvdSectionCount];
-        for (var tvdSection : tvdSections.values())
-            tvdSectionStates[tvdSection.index] = tvdSection.newState();
-
-        var state = new State(signalStates, routeStates, switchStates, tvdSectionStates);
-
-        return state;
-    }
-
-    public static final class State implements DeepComparable<State> {
-        private final Signal.State[] signalStates;
-        private final Route.State[] routeStates;
-        private final Switch.State[] switchStates;
-        private final TVDSection.State[] tvdSectionStates;
-
-        private State(
-                Signal.State[] signalStates,
-                Route.State[] routeStates,
-                Switch.State[] switchStates,
-                TVDSection.State[] tvdSectionStates) {
-            this.signalStates = signalStates;
-            this.routeStates = routeStates;
-            this.switchStates = switchStates;
-            this.tvdSectionStates = tvdSectionStates;
-        }
-
-        public Signal.State getSignalState(int signalIndex) {
-            return signalStates[signalIndex];
-        }
-
-        public Route.State getRouteState(int routeIndex) {
-            return routeStates[routeIndex];
-        }
-
-
-        public Switch.State getSwitchState(int switchIndex) {
-            return switchStates[switchIndex];
-        }
-
-        public TVDSection.State getTvdSectionState(int tvdSectionIndex) {
-            return tvdSectionStates[tvdSectionIndex];
-        }
-
-        @Override
-        public boolean deepEquals(Infra.State otherState) {
-            if (!DeepEqualsUtils.deepEquals(signalStates, otherState.signalStates))
-                return false;
-            if (!DeepEqualsUtils.deepEquals(routeStates, otherState.routeStates))
-                return false;
-            if (!DeepEqualsUtils.deepEquals(switchStates, otherState.switchStates))
-                return false;
-            return DeepEqualsUtils.deepEquals(tvdSectionStates, otherState.tvdSectionStates);
         }
     }
 
