@@ -26,12 +26,12 @@ import java.util.List;
 import java.util.PriorityQueue;
 
 public class PathfindingEndpoint implements Take {
-    private static final JsonAdapter<PathfindingRequest> adapterRequest = new Moshi
+    public static final JsonAdapter<PathfindingRequest> adapterRequest = new Moshi
             .Builder()
             .build()
             .adapter(PathfindingRequest.class)
             .failOnUnknown();
-    private static final JsonAdapter<PathfindingResult[]> adapterResult = new Moshi
+    public static final JsonAdapter<PathfindingResult[]> adapterResult = new Moshi
             .Builder()
             .build()
             .adapter(PathfindingResult[].class)
@@ -176,18 +176,18 @@ public class PathfindingEndpoint implements Take {
         return  routes;
     }
 
-    @SuppressFBWarnings({"URF_UNREAD_FIELD"})
-    private static class PathfindingResult {
-        private final List<RouteLocationResult> routes;
+    @SuppressFBWarnings({"URF_UNREAD_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
+    public static class PathfindingResult {
+        public final List<RouteLocationResult> routes;
         @Json(name = "track_sections")
-        private final List<TrackSectionRangeResult> trackSections;
+        public final List<TrackSectionRangeResult> trackSections;
 
         private PathfindingResult(List<RouteLocationResult> routes, List<TrackSectionRangeResult> trackSections) {
             this.routes = routes;
             this.trackSections = trackSections;
         }
 
-        public static PathfindingResult from(List<RouteLocation> routes, List<TrackSectionRange> trackSections) {
+        static PathfindingResult from(List<RouteLocation> routes, List<TrackSectionRange> trackSections) {
             var resRoutes = new ArrayList<RouteLocationResult>();
             var resTrackSections = new ArrayList<TrackSectionRangeResult>();
             for (var route : routes)

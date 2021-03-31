@@ -38,8 +38,9 @@ public class Route extends BiNEdge<Route> {
     ) {
         super(
                 graph.nextEdgeIndex(),
-                tvdSectionsPaths.get(0).startNode,
-                tvdSectionsPaths.get(tvdSectionsPaths.size() - 1).startNode,
+                tvdSectionsPaths.get(0).getStartNode(tvdSectionsPathDirections.get(0)),
+                tvdSectionsPaths.get(tvdSectionsPaths.size() - 1).getEndNode(
+                        tvdSectionsPathDirections.get(tvdSectionsPaths.size() - 1)),
                 length
         );
         this.id = id;
