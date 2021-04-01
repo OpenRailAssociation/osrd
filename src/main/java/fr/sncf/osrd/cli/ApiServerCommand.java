@@ -3,6 +3,7 @@ package fr.sncf.osrd.cli;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import fr.sncf.osrd.api.PathfindingEndpoint;
+import fr.sncf.osrd.api.SimulationEndpoint;
 import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
@@ -47,7 +48,8 @@ public final class ApiServerCommand implements CliCommand {
             // the list of endpoints
             var routes = new TkFork(
                     new FkRegex("/health", ""),
-                    new FkRegex("/pathfinding", new PathfindingEndpoint(infra))
+                    new FkRegex("/pathfinding", new PathfindingEndpoint(infra)),
+                    new FkRegex("/simulation", new SimulationEndpoint(infra))
             );
 
             // the list of pages which should be displayed on error
