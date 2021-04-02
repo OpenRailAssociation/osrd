@@ -390,3 +390,17 @@ export const exportToJson = (obj) => {
     document.body.removeChild(a);
   }
 };
+
+/**
+ * Given two corners (as [lng, lat] point coordinates), returns the proper GeoJSON object to draw it
+ * @param {array} c1 - The first corner
+ * @param {array} c2 - The corner at the opposite of c1
+ */
+export const getGeoJSONRectangle = (c1, c2) => ({
+  type: 'Feature',
+  properties: {},
+  geometry: {
+    type: 'Polygon',
+    coordinates: [[c1, [c1[0], c2[1]], c2, [c2[0], c1[1]], c1]],
+  },
+});

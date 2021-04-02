@@ -8,6 +8,7 @@ import Loader from 'common/Loader';
 import HomeOSRD from 'applications/osrd/Home';
 import HomeSmartFlows from 'applications/smartflows/Home';
 import HomeCarto from 'applications/carto/Home';
+import HomeEditor from 'applications/editor/Home';
 
 import * as allUserActions from 'reducers/user';
 import Home from 'main/Home';
@@ -17,7 +18,7 @@ class App extends React.Component {
   static propTypes = {
     userActions: PropTypes.object.isRequired,
     user: PropTypes.object.isRequired,
-  }
+  };
 
   async componentDidMount() {
     const { userActions } = this.props;
@@ -43,6 +44,9 @@ class App extends React.Component {
               </Route>
               <Route path="/carto">
                 <HomeCarto />
+              </Route>
+              <Route path="/editor">
+                <HomeEditor />
               </Route>
             </Switch>
           </Router>

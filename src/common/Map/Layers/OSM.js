@@ -24,7 +24,7 @@ const OSM = (props) => {
 
   const genLayers = () => {
     const osmStyle = getMapStyle();
-    return osmStyle.map((layer) => <Layer {...layer} key={layer.id} />);
+    return osmStyle.map((layer) => <Layer {...layer} key={layer.id} id={`osm/${layer.id}`} />);
   };
 
   return (

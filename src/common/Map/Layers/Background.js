@@ -6,7 +6,7 @@ const Background = (props) => {
   const { colors } = props;
 
   const backgroundParams = {
-    id: 'backgroundParams',
+    id: 'osm/background',
     type: 'background',
     layout: {
       visibility: 'visible',
