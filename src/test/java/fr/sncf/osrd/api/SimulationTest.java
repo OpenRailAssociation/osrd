@@ -1,7 +1,5 @@
 package fr.sncf.osrd.api;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.Infra;
 import org.junit.jupiter.api.Test;
@@ -26,6 +24,8 @@ public class SimulationTest {
                 new SimulationEndpoint(infra).act(new RqFake("POST", "/simulation", requestBody))
         ).printBody();
 
-        assertEquals("ok", result);
+        var simResultChanges =  SimulationEndpoint.adapterResult.fromJson(result);
+        for (int i = 1; i < simResultChanges.length; i++)
+            assert simResultChanges[i - 1].time <= simResultChanges[i].time;
     }
 }
