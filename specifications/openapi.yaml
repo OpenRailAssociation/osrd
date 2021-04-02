@@ -1,0 +1,142 @@
+openapi: 3.0.1
+info:
+  title: OSRD Core
+  description: 'OSRD backend api description.'
+  termsOfService: http://swagger.io/terms/
+  license:
+    name: GNU GPLv3
+    url: https://www.gnu.org/licenses/gpl-3.0.fr.html
+  version: 0.1.0
+servers:
+- url: http://gateway.dgexsol.fr/osrd/
+  description: Production server
+- url: http://gateway.staging.dgexsol.fr/osrd/
+  description: Staging server
+tags:
+- name: pathfinding
+  description: Execute pathfinding on the infrastructure
+- name: simulation
+  description: Simulate a schedule on the infrastructure
+paths:
+  /pathfinding:
+    post:
+      tags:
+      - pathfinding
+      summary: Find a path that passes through waypoints.
+      operationId: pathfinding
+      requestBody:
+        description: Waypoints
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Waypoints'
+        required: true
+      responses:
+        200:
+          description: Path found
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PathfindingResult'
+        400:
+          description: Missing request body
+components:
+  schemas:
+    Waypoints:
+      required:
+      - waypoints
+      type: object
+      properties:
+        waypoints:
+          type: array
+          minItems: 2
+          items:
+            type: array
+            minItems: 1
+            items:
+              $ref: '#/components/schemas/Waypoint'
+      example:
+        -
+          - track_section: "track_departure"
+            direction: "START_TO_STOP"
+            offset: 4.2
+          - track_section: "track_departure_bis"
+            direction: "START_TO_STOP"
+            offset: 14.2
+        -
+          - track_section: "track_destination"
+            direction: "STOP_TO_START"
+            offset: 138.32
+    Waypoint:
+      required:
+      - track_section
+      - direction
+      - offset
+      properties:
+        track_section:
+          type: string
+        direction:
+          type: string
+          enum:
+          - START_TO_STOP
+          - STOP_TO_START
+        offset:
+          type: number
+          format: double
+          minimum: 0
+    PathfindingResult:
+      required:
+      - track_sections
+      - routes
+      properties:
+        routes:
+          type: array
+          minItems: 2
+          items:
+            $ref: '#/components/schemas/RouteLocation'
+
+        track_sections:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/TrackSectionRange'
+      example:
+       routes:
+        -  track_section: "route_foo"
+           offset: 4.2
+        -  track_section: "route_foo"
+           offset: 178.3
+       track_sections:
+        -  track_section: "track_foo"
+           begin_position: 4.2
+           end_position: 178.3
+    RouteLocation:
+      required:
+      - route
+      - offset
+      properties:
+        route:
+          type: string
+        offset:
+          type: number
+          format: double
+          minimum: 0
+    TrackSectionRange:
+      required:
+      - track_section
+      - begin_position
+      - end_position
+      properties:
+        track_section:
+          type: string
+        begin_position:
+          type: number
+          format: double
+          minimum: 0
+        end_position:
+          type: number
+          format: double
+          minimum: 0
+
+        
