@@ -24,8 +24,8 @@ public class RMLSignalIL {
             var refSignalIS = signal.element("refersTo").attributeValue("ref");
 
             // TODO: parse signal functions and create AST expr
-            var aspect = new RJSAspect("GREEN", "#00FF00");
-            var greenAspectSetMember = new RJSRSExpr.AspectSet.AspectSetMember(ID.from(aspect), null);
+            var aspect = new ID<RJSAspect>("GREEN");
+            var greenAspectSetMember = new RJSRSExpr.AspectSet.AspectSetMember(aspect, null);
             var expr = new RJSRSExpr.AspectSet(new RJSRSExpr.AspectSet.AspectSetMember[]{greenAspectSetMember});
 
             // add the signal to the RJSTrackSection
