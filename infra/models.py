@@ -29,5 +29,3 @@ class Simulation(models.Model):
 
 class RollingStock(models.Model):
     pass
-
-
