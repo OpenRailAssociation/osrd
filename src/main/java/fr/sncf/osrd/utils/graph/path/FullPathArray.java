@@ -2,27 +2,22 @@ package fr.sncf.osrd.utils.graph.path;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.utils.graph.Edge;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public class FullPathArray<
-        EdgeT extends Edge,
-        PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,
-        PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
-        > {
-    public final ArrayList<PathNode<EdgeT, PathStartT, PathEndT>> pathNodes;
+public class FullPathArray<EdgeT extends Edge, NodeT extends PathNode<EdgeT, NodeT>> {
+    public final ArrayList<NodeT> pathNodes;
 
-    public final PathStartT start;
-    public final PathEndT end;
+    public final NodeT start;
+    public final NodeT end;
 
     /** This constructor is not public on purpose, it's meant to be used by the fromChainEnd */
     protected FullPathArray(
-            ArrayList<PathNode<EdgeT, PathStartT, PathEndT>> pathNodes,
-            PathStartT start,
-            PathEndT end
+            ArrayList<NodeT> pathNodes,
+            NodeT start,
+            NodeT end
     ) {
         this.pathNodes = pathNodes;
         this.start = start;
@@ -30,56 +25,18 @@ public class FullPathArray<
     }
 
     /** Reconstructs a Path from a node chain */
-    @SuppressWarnings("unchecked")
-    public static <
-            EdgeT extends Edge,
-            PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,
-            PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
-            > FullPathArray<EdgeT, PathStartT, PathEndT> from(PathEndT chainEnd) {
-        var elements = new ArrayDeque<PathNode<EdgeT, PathStartT, PathEndT>>();
-        for (PathNode<EdgeT, PathStartT, PathEndT> cur = chainEnd; cur != null; cur = cur.getPrevious())
+    public static <EdgeT extends Edge, NodeT extends PathNode<EdgeT, NodeT>> FullPathArray<EdgeT, NodeT> from(
+            NodeT endNode
+    ) {
+        assert endNode.type == PathNode.Type.END;
+        var elements = new ArrayDeque<NodeT>();
+        for (NodeT cur = endNode; cur != null; cur = cur.getPrevious())
             elements.addFirst(cur);
 
-        // cast the first path node to its correct type
+        // Get the first node of the chain
         var firstNode = elements.getFirst();
-        var chainStart = (PathStartT) firstNode;
+        assert firstNode.type == PathNode.Type.START;
 
-        return new FullPathArray<>(new ArrayList<>(elements), chainStart, chainEnd);
-    }
-
-    public interface PathSegmentCallback<EdgeT> {
-        void feed(EdgeT edge, EdgeDirection dir, double begin, double end);
-    }
-
-    /** Builds the segments defined by the list of nodes */
-    public void forAllSegments(PathSegmentCallback<EdgeT> callback) {
-        PathNode<EdgeT, PathStartT, PathEndT> lastNode = pathNodes.get(0);
-        for (int i = 1; i < pathNodes.size(); i++) {
-            var node = pathNodes.get(i);
-            var lastEdge = lastNode.edge;
-            var newEdge = node.edge;
-            var lastDirection = lastNode.direction;
-            if (lastEdge == newEdge) {
-                // if both nodes are on the same edge, we only need to push the space between the two edges
-                feed(callback, lastEdge, lastDirection, lastNode.position, node.position);
-            } else {
-                // if the two nodes aren't on the same edge, push the segment from the last node to the end,
-                // and from the beginning of the new edge to the new node
-                feed(callback, lastEdge, lastDirection, lastNode.position, lastEdge.getLastPosition(lastDirection));
-                feed(callback, lastEdge, node.direction, newEdge.getFirstPosition(node.direction), node.position);
-            }
-            lastNode = node;
-        }
-    }
-
-    private static <EdgeT> void feed(
-            PathSegmentCallback<EdgeT> callback,
-            EdgeT edge,
-            EdgeDirection dir,
-            double begin,
-            double end
-    ) {
-        if (begin != end)
-            callback.feed(edge, dir, begin, end);
+        return new FullPathArray<EdgeT, NodeT>(new ArrayList<>(elements), firstNode, endNode);
     }
 }

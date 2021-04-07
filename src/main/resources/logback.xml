@@ -5,7 +5,7 @@
         </encoder>
     </appender>
 
-    <logger name="fr.sncf.osrd.utils.graph.Dijkstra" level="TRACE"/>
+    <logger name="fr.sncf.osrd.utils.graph.BiDijkstra" level="TRACE"/>
     <logger name="fr.sncf.osrd.train.events.TrainCreatedEvent" level="TRACE"/>
 
     <root level="debug">

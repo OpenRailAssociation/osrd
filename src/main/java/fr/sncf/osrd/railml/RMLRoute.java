@@ -13,7 +13,6 @@ import fr.sncf.osrd.railml.routegraph.RMLTVDSectionPath;
 import fr.sncf.osrd.railml.tracksectiongraph.RMLTrackSectionGraph;
 
 import fr.sncf.osrd.railml.tracksectiongraph.TrackNetElement;
-import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.*;
 import fr.sncf.osrd.utils.graph.path.*;
 import org.dom4j.Document;
@@ -98,29 +97,28 @@ public class RMLRoute {
     ) throws InvalidInfraException {
         var waypoints = new ArrayList<RMLRouteWaypoint>();
         var goalEdges = rmlRouteGraph.waypointToTvdSectionPath.get(exitWaypoint.index);
-        var startingPoints = new ArrayList<BasicPathStart<RMLTVDSectionPath>>();
+        var startingPoints = new ArrayList<BasicDirPathNode<RMLTVDSectionPath>>();
         // Find starting edges
         for (var edge : rmlRouteGraph.waypointToTvdSectionPath.get(entryWaypoint.index)) {
             if (edge.startNode == entryWaypoint.index)
-                startingPoints.add(new BasicPathStart<>(0, edge, EdgeDirection.START_TO_STOP, 0));
+                startingPoints.add(new BasicDirPathNode<>(edge, 0, EdgeDirection.START_TO_STOP));
             else
-                startingPoints.add(new BasicPathStart<>(0, edge, EdgeDirection.STOP_TO_START, edge.length));
+                startingPoints.add(new BasicDirPathNode<>(edge, edge.length, EdgeDirection.STOP_TO_START));
         }
         // Prepare for dijkstra
         var costFunction = new DistCostFunction<RMLTVDSectionPath>();
-        var availablePaths = new ArrayList<
-                FullPathArray<RMLTVDSectionPath, BasicPathStart<RMLTVDSectionPath>, BasicPathEnd<RMLTVDSectionPath>>>();
+        var availablePaths = new ArrayList<FullPathArray<RMLTVDSectionPath, BasicDirPathNode<RMLTVDSectionPath>>>();
 
         // Compute the paths from the entry waypoint to the exit waypoint
-        BiGraphDijkstra.findPaths(
+        BiDijkstra.findPaths(
                 rmlRouteGraph,
-                BiGraphDijkstra.makePriorityQueue(startingPoints),
+                BiDijkstra.makePriorityQueue(startingPoints),
                 costFunction,
                 (pathNode) -> {
                     for (var goalEdge : goalEdges) {
                         if (goalEdge == pathNode.edge) {
                             var addedCost = costFunction.evaluate(goalEdge, pathNode.position, goalEdge.length);
-                            return new BasicPathEnd<>(addedCost, goalEdge, pathNode.direction, 0, pathNode);
+                            return pathNode.end(addedCost, goalEdge, 0, pathNode.direction);
                         }
                     }
                     return null;

@@ -2,72 +2,43 @@ package fr.sncf.osrd.utils.graph;
 
 import static fr.sncf.osrd.utils.graph.EdgeDirection.*;
 
-import fr.sncf.osrd.utils.graph.path.PathEnd;
+import fr.sncf.osrd.utils.graph.path.BasicDirPathNode;
 import fr.sncf.osrd.utils.graph.path.PathNode;
-import fr.sncf.osrd.utils.graph.path.PathStart;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-public abstract class BiGraphDijkstra<
-        EdgeT extends Edge,
-        PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,
-        PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
-        > {
-    static final Logger logger = LoggerFactory.getLogger(BiGraphDijkstra.class);
-
-    public interface GoalChecker<
-            EdgeT extends Edge,
-            PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,
-            PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
-            > {
-        PathEndT findGoalOnPathEdge(PathNode<EdgeT, PathStartT, PathEndT> node);
+public abstract class BiDijkstra {
+    public interface GoalChecker<EdgeT extends Edge> {
+        BasicDirPathNode<EdgeT> findGoalOnPathEdge(BasicDirPathNode<EdgeT> node);
     }
 
-    public interface GoalReachedCallback<
-            EdgeT extends Edge,
-            PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,
-            PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
-            > {
-        boolean onGoalReached(PathEndT pathToGoal);
+    public interface GoalReachedCallback<EdgeT extends Edge> {
+        boolean onGoalReached(BasicDirPathNode<EdgeT> pathToGoal);
     }
 
-    public static <
-            EdgeT extends Edge,
-            PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,
-            PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
-            > PriorityQueue<PathNode<EdgeT, PathStartT, PathEndT>> makePriorityQueue() {
+    public static <EdgeT extends Edge> PriorityQueue<BasicDirPathNode<EdgeT>> makePriorityQueue() {
         return new PriorityQueue<>(
                 Comparator.comparing(path -> path.cost));
     }
 
     /** Create a priority queue from starting points */
-    public static <
-            EdgeT extends Edge,
-            PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,
-            PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
-            > PriorityQueue<PathNode<EdgeT, PathStartT, PathEndT>> makePriorityQueue(
-                    Iterable<PathStartT> startingPoints
+    public static <EdgeT extends Edge> PriorityQueue<BasicDirPathNode<EdgeT>> makePriorityQueue(
+                    Iterable<BasicDirPathNode<EdgeT>> startingPoints
     ) {
-        PriorityQueue<PathNode<EdgeT, PathStartT, PathEndT>> queue = makePriorityQueue();
+        PriorityQueue<BasicDirPathNode<EdgeT>> queue = makePriorityQueue();
         for (var startingPoint : startingPoints)
             queue.add(startingPoint);
         return queue;
     }
 
-    /** Compute the shortest path from start to goal */
+    /** Compute the shortest path from start to goal in a bidirectional graph */
     @SuppressWarnings("unchecked")
-    public static <
-            EdgeT extends Edge,
-            PathStartT extends PathStart<EdgeT, PathStartT, PathEndT>,
-            PathEndT extends PathEnd<EdgeT, PathStartT, PathEndT>
-            > int findPaths(
+    public static <EdgeT extends Edge> int findPaths(
                     BiGraph<EdgeT> graph,
-                    PriorityQueue<PathNode<EdgeT, PathStartT, PathEndT>> candidatePaths,
+                    PriorityQueue<BasicDirPathNode<EdgeT>> candidatePaths,
                     CostFunction<EdgeT> costFunction,
-                    GoalChecker<EdgeT, PathStartT, PathEndT> goalChecker,
-                    GoalReachedCallback<EdgeT, PathStartT, PathEndT> goalReachedCallback
+                    GoalChecker<EdgeT> goalChecker,
+                    GoalReachedCallback<EdgeT> goalReachedCallback
     ) {
         int foundPaths = 0;
         var visitedState = makeVisitedState(graph.getEdgeCount());
@@ -76,9 +47,9 @@ public abstract class BiGraphDijkstra<
             var currentPath = candidatePaths.poll();
 
             // if the candidate is an end edge, send it to the caller and stop exploring this branch
-            if (currentPath.getType() == PathNode.Type.END) {
+            if (currentPath.type == PathNode.Type.END) {
                 foundPaths++;
-                if (goalReachedCallback.onGoalReached((PathEndT) currentPath))
+                if (goalReachedCallback.onGoalReached(currentPath))
                     continue;
                 return foundPaths;
             }
@@ -122,7 +93,7 @@ public abstract class BiGraphDijkstra<
                     continue;
 
                 var neighborFirstPos = neighborEdge.getFirstPosition(neighborDirection);
-                candidatePaths.add(currentPath.chain(addedCost, neighborEdge, neighborDirection, neighborFirstPos));
+                candidatePaths.add(currentPath.chain(addedCost, neighborEdge, neighborFirstPos, neighborDirection));
             }
         }
         return foundPaths;

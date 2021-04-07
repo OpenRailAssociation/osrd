@@ -3,7 +3,6 @@ package fr.sncf.osrd.utils.graph.overlay;
 import static fr.sncf.osrd.utils.graph.EdgeDirection.*;
 
 import fr.sncf.osrd.utils.graph.*;
-import fr.sncf.osrd.utils.graph.path.PathNode;
 
 import java.util.*;
 
@@ -45,7 +44,7 @@ public abstract class BiGraphOverlayBuilder<
     protected abstract OverlayNodeT makeOverlayNode(BridgeObjectT bridgeObject);
 
     /** Create an edge in the overlay */
-    protected abstract void linkOverlayNodes(OverlayPathEnd<BaseEdgeT, OverlayNodeT> path);
+    protected abstract void linkOverlayNodes(OverlayPathNode<BaseEdgeT, OverlayNodeT> path);
 
     private final int[] edgeDirLastVisited;
 
@@ -86,15 +85,14 @@ public abstract class BiGraphOverlayBuilder<
                 var curPos = curBridge.getPosition();
 
                 var length = curBridge.getPosition() - prevBridge.getPosition();
-                linkOverlayNodes(new OverlayPathEnd<>(
-                        length, baseEdge, START_TO_STOP, curPos, curNode,
-                        new OverlayPathStart<>(baseEdge, START_TO_STOP, prevPos, prevNode)));
+                var path = new OverlayPathNode<>(baseEdge, prevPos, START_TO_STOP, prevNode);
+                linkOverlayNodes(path.end(length, baseEdge, curPos, START_TO_STOP, curNode));
 
                 // if the overlay is directed, also add backward links
-                if (isDirected)
-                    linkOverlayNodes(new OverlayPathEnd<>(
-                            length, baseEdge, STOP_TO_START, prevPos, prevNode,
-                            new OverlayPathStart<>(baseEdge, STOP_TO_START, curPos, curNode)));
+                if (isDirected) {
+                    path = new OverlayPathNode<>(baseEdge, prevPos, STOP_TO_START, prevNode);
+                    linkOverlayNodes(path.end(length, baseEdge, curPos, STOP_TO_START, curNode));
+                }
             }
         }
 
@@ -119,7 +117,7 @@ public abstract class BiGraphOverlayBuilder<
 
                 // start exploring all possible paths to other bridge objects from this one
                 var lastNode = bridgeToOverlay.get(lastBridge.getValue());
-                var pathStart = new OverlayPathStart<>(baseEdge, direction, lastBridge.getPosition(), lastNode);
+                var pathStart = new OverlayPathNode<>(baseEdge, lastBridge.getPosition(), direction, lastNode);
                 exploreNeighborsAtPathEnd(lastNode, direction, pathStart, spaceAfterLastBridge, !isDirected);
             }
         }
@@ -136,11 +134,7 @@ public abstract class BiGraphOverlayBuilder<
     private void exploreNeighborsAtPathEnd(
             OverlayNodeT pathStart,
             EdgeDirection pathStartDir,
-            PathNode<
-                    BaseEdgeT,
-                    OverlayPathStart<BaseEdgeT, OverlayNodeT>,
-                    OverlayPathEnd<BaseEdgeT, OverlayNodeT>
-                    > sourcePath,
+            OverlayPathNode<BaseEdgeT, OverlayNodeT> sourcePath,
             double pendingPathCost,
             boolean isPathBidirectional
     ) {
@@ -167,7 +161,7 @@ public abstract class BiGraphOverlayBuilder<
                 exploreNeighborsAtPathEnd(
                         pathStart,
                         pathStartDir,
-                        sourcePath.chain(pendingPathCost, neighborEdge, neighborDir, neighborFirstPos),
+                        sourcePath.chain(pendingPathCost, neighborEdge, neighborFirstPos, neighborDir),
                         neighborEdge.length,
                         isPathBidirectional && neighborRel.isBidirectional()
                 );
@@ -192,14 +186,15 @@ public abstract class BiGraphOverlayBuilder<
                 continue;
 
             // the overlay edge between where we're coming and the first detector we run into
-            linkOverlayNodes(new OverlayPathEnd<>(
+            linkOverlayNodes(
+                    sourcePath.end(
                     pendingPathCost + startToFirstBridgeDist,
                     neighborEdge,
-                    neighborDir,
                     firstBridge.getPosition(),
-                    pathEnd,
-                    sourcePath
-            ));
+                    neighborDir,
+                    pathEnd
+                    )
+            );
         }
     }
 
