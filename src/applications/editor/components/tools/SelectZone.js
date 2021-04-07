@@ -18,8 +18,9 @@ import Background from 'common/Map/Layers/Background';
 import OSM from 'common/Map/Layers/OSM';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import Platform from 'common/Map/Layers/Platform';
-import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import EditorZone from 'common/Map/Layers/EditorZone';
+import CustomLines from 'common/Map/Layers/CustomLines';
+import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 
 const SELECTION_ZONE_STYLE = {
   type: 'line',
@@ -37,26 +38,23 @@ const SelectZone = () => {
     dispatch,
   ]);
 
-  const [firstCorner, setFirstCorner] = useState(null);
-  const [secondCorner, setSecondCorner] = useState(null);
+  const [state, setState] = useState({ firstCorner: null, secondCorner: null });
+  const { firstCorner, secondCorner } = state;
   const geoJSON =
     firstCorner && secondCorner ? getGeoJSONRectangle(firstCorner, secondCorner) : null;
 
   /* Interactions */
-  const getCursor = () => 'crosshair';
+  const getCursor = (params) => (params.isDragging ? 'grabbing' : 'crosshair');
   const onClick = useCallback(
     (event) => {
       const corner = event.lngLat;
       if (!firstCorner) {
-        setFirstCorner(corner);
-        setSecondCorner(corner);
+        setState({ ...state, firstCorner: corner, secondCorner: corner });
       } else if (isEqual(firstCorner, corner)) {
-        setFirstCorner(null);
-        setSecondCorner(null);
+        setState({ ...state, firstCorner: null, secondCorner: null });
       } else {
         const zone = [firstCorner, corner];
-        setFirstCorner(null);
-        setSecondCorner(null);
+        setState({ ...state, firstCorner: null, secondCorner: null });
         dispatch(selectZone(...zone));
       }
     },
@@ -65,7 +63,7 @@ const SelectZone = () => {
   const onMove = useCallback(
     (event) => {
       if (firstCorner) {
-        setSecondCorner(event.lngLat);
+        setState({ ...state, secondCorner: event.lngLat });
       }
     },
     [firstCorner]
@@ -73,8 +71,7 @@ const SelectZone = () => {
   const onKeyDown = useCallback(
     (event) => {
       if (event.key === 'Escape') {
-        setFirstCorner(null);
-        setSecondCorner(null);
+        setState({ ...state, firstCorner: null, secondCorner: null });
       }
     },
     [firstCorner]
@@ -112,6 +109,7 @@ const SelectZone = () => {
       onClick={onClick}
       onMouseMove={onMove}
       controller={mapController}
+      doubleClickZoom={false}
       touchRotate
       asyncRender
     >
@@ -137,8 +135,10 @@ const SelectZone = () => {
       {/* Chartis layers */}
       <TracksGeographic colors={colors[mapStyle]} />
 
-      {/* Selection rectangle */}
+      {/* Editor layers */}
       <EditorZone />
+      <CustomLines />
+
       {geoJSON && (
         <Source type="geojson" data={geoJSON}>
           <Layer {...SELECTION_ZONE_STYLE} />

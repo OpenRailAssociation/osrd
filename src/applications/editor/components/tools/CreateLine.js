@@ -25,7 +25,7 @@ import EditorZone from 'common/Map/Layers/EditorZone';
 const NEW_LINE_STYLE = {
   type: 'line',
   paint: {
-    'line-color': '#000066',
+    'line-color': '#000000',
   },
 };
 
@@ -45,44 +45,34 @@ const CreateLine = () => {
     dispatch,
   ]);
 
-  const [points, setPoints] = useState([]);
-  const [mousePoint, setMousePoint] = useState(null);
-  const geoJSON = points.length
-    ? {
-        type: 'FeatureCollection',
-        features: [
-          getGeoJSONPolyline(points),
-          { ...getGeoJSONPolyline([points[points.length - 1], mousePoint]) },
-        ],
-      }
-    : null;
+  const [state, setState] = useState({ points: [], mousePoint: null });
+  const { points, mousePoint } = state;
 
   /* Interactions */
-  const getCursor = () => 'crosshair';
+  const getCursor = (params) => (params.isDragging ? 'grabbing' : 'crosshair');
   const onClick = useCallback(
     (event) => {
       const point = event.lngLat;
       if (isEqual(point, points[points.length - 1]) && points.length > 1) {
         dispatch(createLine(points));
-        setPoints([]);
+        setState({ ...state, points: [] });
       } else {
-        setPoints(points.concat([point]));
-        setMousePoint(point);
+        setState({ ...state, points: points.concat([point]), mousePoint: point });
       }
     },
-    [points]
+    [state]
   );
   const onMove = (event) => {
-    setMousePoint(event.lngLat);
+    setState({ ...state, mousePoint: event.lngLat });
   };
   const onKeyDown = (event) => {
     if (event.key === 'Escape') {
-      setPoints([]);
+      setState({ ...state, points: [] });
     } else if (event.key === 'Backspace' && points.length) {
-      setPoints(points.slice(0, -1));
+      setState({ ...state, points: points.slice(0, -1) });
     } else if (event.key === 'Enter' && points.length > 1) {
       dispatch(createLine(points));
-      setPoints([]);
+      setState({ ...state, points: [] });
     }
   };
 
@@ -118,6 +108,7 @@ const CreateLine = () => {
       onClick={onClick}
       onMouseMove={onMove}
       controller={mapController}
+      doubleClickZoom={false}
       touchRotate
       asyncRender
     >
@@ -146,9 +137,15 @@ const CreateLine = () => {
       {/* Editor layers */}
       <EditorZone />
       <CustomLines />
-      {geoJSON && (
-        <Source type="geojson" data={geoJSON}>
+
+      {points.length > 1 ? (
+        <Source type="geojson" data={getGeoJSONPolyline(points)}>
           <Layer {...NEW_LINE_STYLE} />
+        </Source>
+      ) : null}
+      {points.length && (
+        <Source type="geojson" data={getGeoJSONPolyline([points[points.length - 1], mousePoint])}>
+          <Layer {...LAST_LINE_STYLE} />
         </Source>
       )}
     </ReactMapGL>

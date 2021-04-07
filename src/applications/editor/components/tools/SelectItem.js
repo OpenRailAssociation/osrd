@@ -15,6 +15,7 @@ import OSM from 'common/Map/Layers/OSM';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import Platform from 'common/Map/Layers/Platform';
 import EditorZone from 'common/Map/Layers/EditorZone';
+import CustomLines from 'common/Map/Layers/CustomLines';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 
 const INTERACTIVE_LAYER_IDS = ['chartis/tracks-geo/main', 'chartis/tracks-geo/service'];
@@ -115,6 +116,7 @@ const SelectItem = () => {
 
       {/* Editor layers */}
       <EditorZone />
+      <CustomLines />
     </ReactMapGL>
   );
 };
