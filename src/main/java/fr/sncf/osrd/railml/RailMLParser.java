@@ -80,7 +80,7 @@ public final class RailMLParser {
 
         // TODO: parse RailML aspects
         var rjsAspects = new ArrayList<RJSAspect>();
-        rjsAspects.add(new RJSAspect("GREEN", "#2a850c"));
+        rjsAspects.add(new RJSAspect("GREEN", "#2a850c", new ArrayList<>()));
 
         // sort waypoints needed to create RMLRouteGraph
         for (var rjsTrackSection : rjsTrackSections.values()) {

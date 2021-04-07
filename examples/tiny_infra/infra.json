@@ -2,15 +2,36 @@
   "aspects": [
     {
       "id": "GREEN",
-      "color": "#2a850c"
+      "color": "#2a850c",
+      "constraints": []
     },
     {
       "id": "YELLOW",
-      "color": "#f08a05"
+      "color": "#f08a05",
+      "constraints": [
+        {
+          "type": "speed_limit",
+          "speed": 30,
+          "applies_at": {
+            "element": "NEXT_SIGNAL",
+            "offset": -200
+          }
+        }
+      ]
     },
     {
       "id": "RED",
-      "color": "#db0c04"
+      "color": "#db0c04",
+      "constraints": [
+        {
+          "type": "speed_limit",
+          "speed": 0,
+          "applies_at": {
+            "element": "CURRENT_SIGNAL",
+            "offset": -5
+          }
+        }
+      ]
     }
   ],
   "operational_points": [
