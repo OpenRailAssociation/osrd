@@ -8,6 +8,7 @@ from service_core.internal_views import HealthView
 
 service_urlpatterns = [
     path('', include('osrd.urls')),
+    path('infra/', include('infra.urls')),
 ]
 
 urlpatterns = [

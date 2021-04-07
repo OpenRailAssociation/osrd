@@ -1,3 +1,9 @@
 from django.contrib import admin
+from django.contrib.admin import ModelAdmin
 
-# Register your models here.
+from infra.models import Infra
+
+
+@admin.register(Infra)
+class InfraModelAdmin(ModelAdmin):
+    pass
