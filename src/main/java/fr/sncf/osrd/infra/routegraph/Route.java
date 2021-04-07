@@ -10,6 +10,7 @@ import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.BiNEdge;
+import fr.sncf.osrd.utils.graph.DirNEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayDeque;
@@ -17,7 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class Route extends BiNEdge<Route> {
+public class Route extends DirNEdge {
     public final String id;
     /** List of tvdSectionPath forming the route */
     public final List<TVDSectionPath> tvdSectionsPaths;

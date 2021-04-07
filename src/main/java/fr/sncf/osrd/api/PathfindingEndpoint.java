@@ -8,7 +8,7 @@ import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteLocation;
 import fr.sncf.osrd.train.TrackSectionRange;
-import fr.sncf.osrd.utils.graph.BiGraphDijkstra;
+import fr.sncf.osrd.utils.graph.Dijkstra;
 import fr.sncf.osrd.utils.graph.DistCostFunction;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.path.*;
@@ -23,7 +23,6 @@ import org.takes.rs.RsWithStatus;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.PriorityQueue;
 
 public class PathfindingEndpoint implements Take {
     public static final JsonAdapter<PathfindingRequest> adapterRequest = new Moshi
@@ -101,18 +100,17 @@ public class PathfindingEndpoint implements Take {
         }
 
         var costFunction = new DistCostFunction<Route>();
-        PriorityQueue<PathNode<Route, BasicPathStart<Route>, BasicPathEnd<Route>>> candidatePaths =
-                BiGraphDijkstra.makePriorityQueue();
+        var candidatePaths = Dijkstra.<Route>makePriorityQueue();
         for (var startWaypoint : waypoints[0])
-            candidatePaths.add(
-                    new BasicPathStart<>(0, startWaypoint.route, EdgeDirection.START_TO_STOP, startWaypoint.offset));
+            candidatePaths.add(new BasicPathNode<>(startWaypoint.route, startWaypoint.offset));
 
-        var pathsToGoal = new ArrayList<PathNode<Route, BasicPathStart<Route>, BasicPathEnd<Route>>>();
+        var pathsToGoal = new ArrayList<BasicPathNode<Route>>();
+
         // Compute the paths from the entry waypoint to the exit waypoint
         for (int i = 1; i < waypoints.length; i++) {
             var destinationWaypoints = waypoints[i];
 
-            BiGraphDijkstra.findPaths(
+            Dijkstra.findPaths(
                     infra.routeGraph,
                     candidatePaths,
                     costFunction,
@@ -125,13 +123,7 @@ public class PathfindingEndpoint implements Take {
                                     pathNode.position,
                                     goalEdge.route.length
                             );
-                            return new BasicPathEnd<>(
-                                    addedCost,
-                                    goalEdge.route,
-                                    pathNode.direction,
-                                    goalEdge.offset,
-                                    pathNode
-                            );
+                            return pathNode.end(addedCost, goalEdge.route, goalEdge.offset);
                         }
                         return null;
                     },
@@ -150,8 +142,7 @@ public class PathfindingEndpoint implements Take {
         var resTrackSections = (ArrayList<TrackSectionRange>[]) new ArrayList[reqWaypoints.length - 1];
 
         for (int i = 0; i < pathsToGoal.size(); i++) {
-            var pathEnd = (BasicPathEnd<Route>)  pathsToGoal.get(i);
-            var path = FullPathArray.from(pathEnd);
+            var path = FullPathArray.from(pathsToGoal.get(i));
             resRoutes[i] = fullPathToRoutes(path);
             var beginLoc = resRoutes[i].get(0).getTrackSectionLocation();
             var endLoc = resRoutes[i].get(resRoutes[i].size() - 1).getTrackSectionLocation();
@@ -167,9 +158,7 @@ public class PathfindingEndpoint implements Take {
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-    private ArrayList<RouteLocation> fullPathToRoutes(
-            FullPathArray<Route, BasicPathStart<Route>, BasicPathEnd<Route>> path
-    ) {
+    private ArrayList<RouteLocation> fullPathToRoutes(FullPathArray<Route, BasicPathNode<Route>> path) {
         var routes = new ArrayList<RouteLocation>();
         for (var node : path.pathNodes)
             routes.add(new RouteLocation(node.edge, node.position));

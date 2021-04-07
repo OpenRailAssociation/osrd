@@ -7,7 +7,7 @@ import fr.sncf.osrd.railml.tracksectiongraph.RMLTrackSectionGraph;
 import fr.sncf.osrd.railml.tracksectiongraph.TrackNetElement;
 import fr.sncf.osrd.utils.graph.*;
 import fr.sncf.osrd.utils.graph.overlay.BiGraphOverlayBuilder;
-import fr.sncf.osrd.utils.graph.overlay.OverlayPathEnd;
+import fr.sncf.osrd.utils.graph.overlay.OverlayPathNode;
 import fr.sncf.osrd.utils.graph.path.FullPathArray;
 
 import java.util.HashMap;
@@ -45,7 +45,7 @@ public final class RMLRouteGraphBuilder extends BiGraphOverlayBuilder<
 
     @Override
     @SuppressFBWarnings(value = {"BC_UNCONFIRMED_CAST"}, justification = "it's a linter bug, there's no cast")
-    protected void linkOverlayNodes(OverlayPathEnd<TrackNetElement, RMLRouteWaypoint> path) {
+    protected void linkOverlayNodes(OverlayPathNode<TrackNetElement, RMLRouteWaypoint> path) {
         var fullPath = FullPathArray.from(path);
 
         var startNode = fullPath.start.overlayNode;

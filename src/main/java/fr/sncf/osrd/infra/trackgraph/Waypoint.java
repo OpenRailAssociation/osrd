@@ -18,10 +18,10 @@ public abstract class Waypoint extends Node implements ActionPoint {
     public final ArrayList<TVDSectionPath> stopToStartNeighbors = new ArrayList<>();
 
     /** List of neighbors seen when moving across the detector from the end of the track section to the beginning */
-    public final ArrayList<Route> startToStopRoutes = new ArrayList<Route>();
+    public final ArrayList<Route> startToStopRoutes = new ArrayList<>();
 
     /** List of neighbors seen when moving across the detector from the beginning of the track section to the end */
-    public final ArrayList<Route> stopToStartRoutes = new ArrayList<Route>();
+    public final ArrayList<Route> stopToStartRoutes = new ArrayList<>();
 
     public Waypoint(int index, String id) {
         super(index);

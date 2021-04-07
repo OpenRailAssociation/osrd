@@ -9,8 +9,8 @@ import fr.sncf.osrd.utils.PointValue;
 import fr.sncf.osrd.utils.graph.UndirectedBiEdgeID;
 import fr.sncf.osrd.utils.graph.overlay.BiGraphOverlayBuilder;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
-import fr.sncf.osrd.utils.graph.overlay.OverlayPathEnd;
-import fr.sncf.osrd.utils.graph.overlay.OverlayPathStart;
+import fr.sncf.osrd.utils.graph.overlay.OverlayPathNode;
+import fr.sncf.osrd.utils.graph.path.BasicDirPathNode;
 import fr.sncf.osrd.utils.graph.path.FullPathArray;
 import fr.sncf.osrd.utils.graph.path.PathNode;
 
@@ -44,7 +44,7 @@ public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
 
     @Override
     @SuppressFBWarnings(value = {"BC_UNCONFIRMED_CAST"}, justification = "it's a linter bug, there's no cast")
-    protected void linkOverlayNodes(OverlayPathEnd<TrackSection, Waypoint> path) {
+    protected void linkOverlayNodes(OverlayPathNode<TrackSection, Waypoint> path) {
         var fullPath = FullPathArray.from(path);
 
         // Build list of track sections position
@@ -83,8 +83,7 @@ public final class WaypointGraphBuilder extends BiGraphOverlayBuilder<
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
     private static ArrayList<TrackSectionRange> buildTrackSectionsFromFullPath(
-            ArrayList<PathNode<TrackSection, OverlayPathStart<TrackSection, Waypoint>,
-                    OverlayPathEnd<TrackSection, Waypoint>>> pathNodes
+            ArrayList<OverlayPathNode<TrackSection, Waypoint>> pathNodes
     ) {
         var trackSections = new ArrayList<TrackSectionRange>();
         var firstNode = pathNodes.get(0);
