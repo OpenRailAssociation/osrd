@@ -14,10 +14,8 @@ import Background from 'common/Map/Layers/Background';
 import OSM from 'common/Map/Layers/OSM';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import Platform from 'common/Map/Layers/Platform';
+import EditorZone from 'common/Map/Layers/EditorZone';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
-
-/* Objects & various */
-import EditorZone from '../../../../common/Map/Layers/EditorZone';
 
 const INTERACTIVE_LAYER_IDS = ['chartis/tracks-geo/main', 'chartis/tracks-geo/service'];
 

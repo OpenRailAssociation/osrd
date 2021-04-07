@@ -8,6 +8,7 @@ import 'common/Map/Map.scss';
 import ButtonUseTool from './components/ButtonUseTool';
 import SelectItem from './components/tools/SelectItem';
 import SelectZone from './components/tools/SelectZone';
+import CreateLine from './components/tools/CreateLine';
 
 /* Toolbox */
 const TOOLS = [
@@ -36,14 +37,14 @@ const TOOLS = [
     tool: 'create-line',
     label: 'Créer une ligne',
     icon: MdShowChart,
-    mapComponent: SelectItem,
+    mapComponent: CreateLine,
     isEnabled(editorState) {
       return editorState.editionZone;
     },
   },
 ];
 
-const Map = () => {
+const Editor = () => {
   const editorState = useSelector((state) => state.editor);
   const { fullscreen } = useSelector((state) => state.main);
 
@@ -69,4 +70,4 @@ const Map = () => {
   );
 };
 
-export default Map;
+export default Editor;

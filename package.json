@@ -42,7 +42,7 @@
     "react-i18next": "^11.3.1",
     "react-icons": "^3.11.0",
     "react-id-generator": "^3.0.0",
-    "react-map-gl": "^5.3.8",
+    "react-map-gl": "^5.3.11",
     "react-map-gl-draw": "^0.17.3",
     "react-redux": "^7.2.0",
     "react-rnd": "^10.1.7",

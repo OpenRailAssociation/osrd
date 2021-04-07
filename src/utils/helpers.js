@@ -392,7 +392,8 @@ export const exportToJson = (obj) => {
 };
 
 /**
- * Given two corners (as [lng, lat] point coordinates), returns the proper GeoJSON object to draw it
+ * Given two corners (as [lng, lat] point coordinates), returns the proper GeoJSON object to draw
+ * the related rectangle
  * @param {array} c1 - The first corner
  * @param {array} c2 - The corner at the opposite of c1
  */
@@ -402,5 +403,19 @@ export const getGeoJSONRectangle = (c1, c2) => ({
   geometry: {
     type: 'Polygon',
     coordinates: [[c1, [c1[0], c2[1]], c2, [c2[0], c1[1]], c1]],
+  },
+});
+
+/**
+ * Given a list of points (as [lng, lat] point coordinates), returns the proper GeoJSON object to
+ * draw a line joining them
+ * @param {array} points - An array of [lng, lat] points
+ */
+export const getGeoJSONPolyline = (points) => ({
+  type: 'Feature',
+  properties: {},
+  geometry: {
+    type: 'LineString',
+    coordinates: points,
   },
 });

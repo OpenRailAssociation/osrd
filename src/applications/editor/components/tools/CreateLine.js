@@ -4,9 +4,9 @@ import { useParams } from 'react-router-dom';
 import ReactMapGL, { AttributionControl, Layer, ScaleControl, Source } from 'react-map-gl';
 import { isEqual } from 'lodash';
 
-import { selectZone } from 'reducers/editor';
+import { createLine } from 'reducers/editor';
 import { updateViewport } from 'reducers/map';
-import { getGeoJSONRectangle } from 'utils/helpers';
+import { getGeoJSONPolyline } from 'utils/helpers';
 import { KeyDownMapController } from 'utils/mapboxHelper';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 
@@ -19,17 +19,25 @@ import OSM from 'common/Map/Layers/OSM';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import Platform from 'common/Map/Layers/Platform';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
+import CustomLines from 'common/Map/Layers/CustomLines';
 import EditorZone from 'common/Map/Layers/EditorZone';
 
-const SELECTION_ZONE_STYLE = {
+const NEW_LINE_STYLE = {
   type: 'line',
   paint: {
-    'line-dasharray': [3, 3],
-    'line-opacity': 0.8,
+    'line-color': '#000066',
   },
 };
 
-const SelectZone = () => {
+const LAST_LINE_STYLE = {
+  type: 'line',
+  paint: {
+    'line-color': '#000000',
+    'line-dasharray': [3, 3],
+  },
+};
+
+const CreateLine = () => {
   const { mapStyle, viewport } = useSelector((state) => state.map);
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
   const dispatch = useDispatch();
@@ -37,48 +45,46 @@ const SelectZone = () => {
     dispatch,
   ]);
 
-  const [firstCorner, setFirstCorner] = useState(null);
-  const [secondCorner, setSecondCorner] = useState(null);
-  const geoJSON =
-    firstCorner && secondCorner ? getGeoJSONRectangle(firstCorner, secondCorner) : null;
+  const [points, setPoints] = useState([]);
+  const [mousePoint, setMousePoint] = useState(null);
+  const geoJSON = points.length
+    ? {
+        type: 'FeatureCollection',
+        features: [
+          getGeoJSONPolyline(points),
+          { ...getGeoJSONPolyline([points[points.length - 1], mousePoint]) },
+        ],
+      }
+    : null;
 
   /* Interactions */
   const getCursor = () => 'crosshair';
   const onClick = useCallback(
     (event) => {
-      const corner = event.lngLat;
-      if (!firstCorner) {
-        setFirstCorner(corner);
-        setSecondCorner(corner);
-      } else if (isEqual(firstCorner, corner)) {
-        setFirstCorner(null);
-        setSecondCorner(null);
+      const point = event.lngLat;
+      if (isEqual(point, points[points.length - 1]) && points.length > 1) {
+        dispatch(createLine(points));
+        setPoints([]);
       } else {
-        const zone = [firstCorner, corner];
-        setFirstCorner(null);
-        setSecondCorner(null);
-        dispatch(selectZone(...zone));
+        setPoints(points.concat([point]));
+        setMousePoint(point);
       }
     },
-    [firstCorner]
+    [points]
   );
-  const onMove = useCallback(
-    (event) => {
-      if (firstCorner) {
-        setSecondCorner(event.lngLat);
-      }
-    },
-    [firstCorner]
-  );
-  const onKeyDown = useCallback(
-    (event) => {
-      if (event.key === 'Escape') {
-        setFirstCorner(null);
-        setSecondCorner(null);
-      }
-    },
-    [firstCorner]
-  );
+  const onMove = (event) => {
+    setMousePoint(event.lngLat);
+  };
+  const onKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      setPoints([]);
+    } else if (event.key === 'Backspace' && points.length) {
+      setPoints(points.slice(0, -1));
+    } else if (event.key === 'Enter' && points.length > 1) {
+      dispatch(createLine(points));
+      setPoints([]);
+    }
+  };
 
   /* Custom controller for keyboard handling */
   const [mapController] = useState(new KeyDownMapController(onKeyDown));
@@ -137,15 +143,16 @@ const SelectZone = () => {
       {/* Chartis layers */}
       <TracksGeographic colors={colors[mapStyle]} />
 
-      {/* Selection rectangle */}
+      {/* Editor layers */}
       <EditorZone />
+      <CustomLines />
       {geoJSON && (
         <Source type="geojson" data={geoJSON}>
-          <Layer {...SELECTION_ZONE_STYLE} />
+          <Layer {...NEW_LINE_STYLE} />
         </Source>
       )}
     </ReactMapGL>
   );
 };
 
-export default SelectZone;
+export default CreateLine;

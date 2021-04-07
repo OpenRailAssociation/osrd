@@ -5,7 +5,7 @@ import { Route, Switch } from 'react-router-dom';
 import config from 'config/config';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/logo_osrd_seul_blanc.svg';
-import Map from './Map';
+import Editor from './Editor';
 
 class HomeEditorUnplugged extends React.Component {
   static propTypes = {
@@ -20,10 +20,10 @@ class HomeEditorUnplugged extends React.Component {
         <div className="no-mastnav">
           <Switch>
             <Route exact path="/editor">
-              <Map urlmap={config.proxy} />
+              <Editor urlmap={config.proxy} />
             </Route>
             <Route path="/editor/:urlLat/:urlLon/:urlZoom/:urlBearing/:urlPitch">
-              <Map urlmap={config.proxy} />
+              <Editor urlmap={config.proxy} />
             </Route>
           </Switch>
         </div>

@@ -4,6 +4,7 @@ import produce from 'immer';
 // Action Types
 const SELECT_TOOL = 'editor/SELECT_TOOL';
 const SELECT_ZONE = 'editor/SELECT_ZONE';
+const CREATE_LINE = 'editor/CREATE_LINE';
 
 export const initialState = {
   // Tool state:
@@ -11,6 +12,9 @@ export const initialState = {
 
   // Edition zone:
   editionZone: null, // null or [[topLeftLng, topLeftLat], [bottomRightLng, bottomRightLat]]
+
+  // New items:
+  lines: [], // an array of paths (arrays of [lng, lat] points)
 };
 
 export default function reducer(state = initialState, action) {
@@ -30,6 +34,9 @@ export default function reducer(state = initialState, action) {
           draft.editionZone = null;
         }
         break;
+      case CREATE_LINE:
+        draft.lines = state.lines.concat([action.line]);
+        break;
     }
   });
 }
@@ -48,6 +55,15 @@ export function selectZone(topLeft, bottomRight) {
     dispatch({
       type: SELECT_ZONE,
       corners: [topLeft, bottomRight],
+    });
+  };
+}
+
+export function createLine(line) {
+  return (dispatch) => {
+    dispatch({
+      type: CREATE_LINE,
+      line,
     });
   };
 }
