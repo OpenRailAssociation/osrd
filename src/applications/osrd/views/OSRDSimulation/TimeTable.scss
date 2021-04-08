@@ -1,0 +1,17 @@
+.osrd-simulation-timetable-line {
+  padding: .2rem 0;
+  transition: .2s;
+  background: linear-gradient(white 0%, white 45%, #d7d7d7 45%, #d7d7d7 55%, white 55%);
+  background-position: 50% 0 0 0;
+  background-repeat: no-repeat;
+  &:hover {
+  background: linear-gradient(#f2f2f2 0%, #f2f2f2 45%, #333 45%, #333 55%, #f2f2f2 55%);
+  }
+  .osrd-simulation-timetable-elem {
+    background-color: #fff;
+    padding: 0 1rem;
+  }
+  &:hover .osrd-simulation-timetable-elem {
+    background-color: #f2f2f2;    
+  }
+}

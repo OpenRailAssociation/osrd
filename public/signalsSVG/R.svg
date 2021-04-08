@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   height="64"
+   width="64"
+   version="1.1"
+   id="svg2">
+  <metadata
+     id="metadata8">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs6" />
+  <g
+     transform="translate(-107.73191,-4.8418837)"
+     id="g3769">
+    <rect
+       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.636824"
+       id="rect2987"
+       width="64"
+       height="64"
+       x="107.73191"
+       y="4.8418837" />
+    <rect
+       style="fill:none;stroke:#ffffff;stroke-width:3.97394;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect2989"
+       width="58.026062"
+       height="58.026058"
+       x="110.71888"
+       y="7.8288546" />
+    <path
+       d="m 125.25885,52.841884 v -32 h 13.68242 c 3.44072,3.3e-5 5.94075,0.287436 7.50007,0.862211 1.5593,0.574836 2.80748,1.597119 3.74456,3.066849 0.93702,1.469785 1.40554,3.150546 1.40558,5.042291 -4e-5,2.401112 -0.71014,4.383829 -2.13034,5.948158 -1.42024,1.564363 -3.54324,2.550264 -6.36902,2.957708 1.40555,0.81493 2.56589,1.70988 3.48101,2.684856 0.91506,0.974999 2.14859,2.706694 3.70062,5.195089 l 3.93122,6.242838 h -7.77461 l -4.69989,-6.963166 c -1.66914,-2.488393 -2.81118,-4.056377 -3.4261,-4.703956 -0.61496,-0.647554 -1.2665,-1.091393 -1.95463,-1.331513 -0.68816,-0.240096 -1.77895,-0.360151 -3.27236,-0.360164 h -1.31773 v 13.358799 z m 6.5008,-18.466576 h 4.80971 c 3.1186,1.9e-5 5.06592,-0.13095 5.84194,-0.392906 0.77597,-0.261917 1.38358,-0.713032 1.82285,-1.353342 0.43922,-0.640271 0.65885,-1.440633 0.65887,-2.401092 -2e-5,-1.076829 -0.2892,-1.946314 -0.86751,-2.608458 -0.57835,-0.662093 -1.39462,-1.080463 -2.44878,-1.255115 -0.52711,-0.07274 -2.10838,-0.109114 -4.74382,-0.109141 h -5.07326 z"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:79.8359px;line-height:125%;font-family:Arial;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.561665"
+       id="path3777" />
+  </g>
+</svg>

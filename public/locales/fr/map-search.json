@@ -1,0 +1,11 @@
+{
+  "search": "Rechercher",
+  "station": "Gare",
+  "signalbox": "Poste",
+  "placeholdername": "Nom, appelation, libellé",
+  "placeholderline": "Numéro de ligne",
+  "noresult": "Aucun résultat",
+  "name": "Libellé",
+  "linecode": "Code ligne",
+  "signal": "Signal"
+}

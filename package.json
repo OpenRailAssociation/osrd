@@ -1,0 +1,100 @@
+{
+  "name": "osrd",
+  "version": "0.1.0",
+  "private": true,
+  "proxy": "https://api.dev.dgexsol.fr",
+  "dependencies": {
+    "@nivo/circle-packing": "^0.61.0",
+    "@nivo/line": "^0.61.1",
+    "@sentry/browser": "^5.19.2",
+    "@sncf/bootstrap-sncf.metier": "^4.3.1-r5",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.3.2",
+    "@testing-library/user-event": "^7.1.2",
+    "@turf/bbox": "^6.0.1",
+    "@turf/bearing": "^6.0.1",
+    "@turf/difference": "^6.0.1",
+    "@turf/length": "^6.0.2",
+    "@turf/mask": "^5.1.5",
+    "axios": "^0.19.1",
+    "copy-to-clipboard": "^3.3.1",
+    "d3": "^5.16.0",
+    "debounce": "^1.2.0",
+    "deck.gl": "^8.1.0",
+    "fetch-mock": "^9.4.0",
+    "i18next": "^19.1.0",
+    "i18next-browser-languagedetector": "^4.0.1",
+    "i18next-xhr-backend": "^3.2.2",
+    "immer": "^5.3.6",
+    "js-sha256": "^0.9.0",
+    "jwt-decode": "^2.2.0",
+    "lodash": "^4.17.15",
+    "node-sass": "^4.14.1",
+    "react": "^16.12.0",
+    "react-beautiful-dnd": "^13.0.0",
+    "react-dom": "^16.12.0",
+    "react-flatpickr": "^3.10.0",
+    "react-i18next": "^11.3.1",
+    "react-icons": "^3.11.0",
+    "react-id-generator": "^3.0.0",
+    "react-map-gl": "^5.3.8",
+    "react-map-gl-draw": "^0.17.3",
+    "react-redux": "^7.2.0",
+    "react-rnd": "^10.1.7",
+    "react-router-dom": "^5.1.2",
+    "react-scripts": "^3.4.1",
+    "redux": "^4.0.5",
+    "redux-mock-store": "^1.5.4",
+    "redux-persist": "^6.0.0",
+    "redux-persist-transform-compress": "^4.2.0",
+    "redux-persist-transform-filter": "0.0.20",
+    "redux-thunk": "^2.3.0",
+    "seamless-immutable": "^7.1.4",
+    "turf-point": "^2.0.1",
+    "wellknown": "^0.5.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "docs": "jsdoc -c ./jsdoc.json"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.4",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/preset-env": "^7.8.4",
+    "@babel/preset-react": "^7.8.3",
+    "babel-loader": "8.1.0",
+    "better-docs": "^1.4.7",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb": "^18.0.1",
+    "eslint-plugin-babel": "^5.3.0",
+    "eslint-plugin-flowtype": "^3.13.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.18.3",
+    "eslint-plugin-react-hooks": "^1.7.0",
+    "jsdoc": "^3.6.3",
+    "react-test-renderer": "^16.13.1",
+    "typescript": "^3.8.2"
+  },
+  "resolutions": {
+    "@turf/difference": "6.0.1"
+  }
+}

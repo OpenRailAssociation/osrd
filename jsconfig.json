@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "module": "commonjs",
+    "target": "es2018",
+    "jsx": "preserve",
+    "checkJs": true,
+    "baseUrl": "./src"
+  },
+  "exclude": ["node_modules", "**/node_modules/*"]
+}

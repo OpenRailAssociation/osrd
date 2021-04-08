@@ -1,0 +1,77 @@
+.actionbar.smartflows {
+  width: 100%;
+}
+.mastcontainer.smartflows {
+  padding-left: 0;
+  padding-bottom: 0;
+  height: 100vh;
+}
+
+/* override bootstrap */
+.cell-inner {
+  min-height: inherit !important;
+  font-size: .9em;
+}
+td:first-child .cell-inner {
+  font-size: .9em;
+}
+.table-hover .cell-inner {
+  cursor: pointer;
+}
+.stationselected {
+  font-weight: bold;
+}
+.form-control.clear-option ~ .btn-clear.btn-sm {
+  font-size: .5em;
+  height: 1.3rem;
+  width: 1.3rem;
+}
+
+.map-container {
+  height: 45vh;
+}
+
+/* Top Gares */
+.top-gares {
+  height: 45vh;
+}
+.top-gares-title {
+  padding: 5px 10px;
+  text-align: center;
+  background-color: #0088ce;
+  color: #fff;
+  font-size: 1.2em;
+}
+.top-gares .table-wrapper {
+  height: calc(100% - 2rem);
+  overflow: auto;
+}
+
+/* bubblegraph */
+.infos-gare {
+  height: 35vh;
+}
+.infos-gare-title {
+  padding: 6px 10px 0;
+  font-size: 1em;
+  text-align: left;
+  background-color: #333;
+  color: #fff;
+  font-weight: 500;
+}
+.infos-gare-title button {
+  border: none;
+  box-shadow: none;
+  color: inherit;
+  font-weight: normal;
+  background: none;
+  padding: 0 1rem 5px;
+  transition: .2s;
+}
+.infos-gare-title button:hover {
+  color: #aaa;
+}
+.infos-gare-subtitle {
+  padding: .5rem 1rem;
+  font-size: .9em;
+}

@@ -1,0 +1,47 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Test CarcSNCF should render CardSNCF 1`] = `
+<a
+  className="card overflow-hidden mb-2"
+  href="/midi"
+  onClick={[Function]}
+>
+  <img
+    alt="DataViz"
+    className="card-img-top"
+    src="dataviz.png"
+  />
+  <div
+    className="card-body text-center"
+  >
+    <h5
+      className="card-title mb-0 text-base font-weight-normal"
+    >
+      DataViz
+    </h5>
+  </div>
+</a>
+`;
+
+exports[`Test CardSNCF should render CardSNCF 1`] = `
+<a
+  className="card overflow-hidden mb-2"
+  href="/midi"
+  onClick={[Function]}
+>
+  <img
+    alt="DataViz"
+    className="card-img-top"
+    src="dataviz.png"
+  />
+  <div
+    className="card-body text-center"
+  >
+    <h5
+      className="card-title mb-0 text-base font-weight-normal"
+    >
+      DataViz
+    </h5>
+  </div>
+</a>
+`;

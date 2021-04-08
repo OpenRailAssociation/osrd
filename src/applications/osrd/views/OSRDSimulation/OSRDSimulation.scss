@@ -1,0 +1,29 @@
+.osrd-simulation-container {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+.grid .tick {
+  opacity: .2;
+  line {
+    stroke: #333;
+  }
+}
+
+.chartTrain {
+  cursor: move;
+}
+
+.guideLines {
+  stroke: #333;
+  stroke-width: 0.5;
+  opacity: 0.5;
+  stroke-dasharray: 3;
+  pointer-events: none;
+}
+
+.curve-label {
+  fill: #333;
+  font-size: .75rem;
+}
