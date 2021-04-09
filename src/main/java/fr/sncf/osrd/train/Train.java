@@ -1,6 +1,7 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
@@ -96,15 +97,26 @@ public class Train {
 
     // region INTERACTIONS
     /** Make the train interact with a detector */
-    public void interact(Simulation sim, Detector detector, TrainInteractionType interactionType)
-            throws SimulationError {
+    public void interact(Simulation sim, Detector detector, InteractionType interactionType) throws SimulationError {
         if (lastState.currentPhaseState.getClass() == SignalNavigatePhase.State.class) {
             var navigatePhaseState = (SignalNavigatePhase.State) lastState.currentPhaseState;
             navigatePhaseState.updateTVDSections(sim, detector, interactionType);
             return;
-
         }
         throw new RuntimeException("Unexpected phase while interacting with a detector");
+    }
+
+    public void interact(Simulation sim, Signal signal, InteractionType interactionType) throws SimulationError {
+        if (lastState.currentPhaseState.getClass() == SignalNavigatePhase.State.class) {
+            var navigatePhaseState = (SignalNavigatePhase.State) lastState.currentPhaseState;
+            if (interactionType == InteractionType.SEEN) {
+                // TODO Subscribe to the signal
+            } else if (interactionType == InteractionType.HEAD) {
+                // TODO Unsubscribe to the signal
+            }
+            return;
+        }
+        throw new RuntimeException("Unexpected phase while interacting with a signal");
     }
     // endregion
 

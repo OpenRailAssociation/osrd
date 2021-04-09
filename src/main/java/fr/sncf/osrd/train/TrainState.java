@@ -40,7 +40,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
     public final transient List<SpeedController> speedControllers;
 
-    public final ArrayDeque<PointValue<ActionPoint>> actionPointsUnderTrain;
+    public final ArrayDeque<Interaction> actionPointsUnderTrain;
 
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
@@ -73,7 +73,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             TrainSchedule trainSchedule,
             int currentPhaseIndex,
             PhaseState currentPhaseState,
-            ArrayDeque<PointValue<ActionPoint>> actionPointsUnderTrain
+            ArrayDeque<Interaction> actionPointsUnderTrain
     ) {
         this.time = time;
         this.location = location;

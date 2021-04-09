@@ -2,17 +2,22 @@ package fr.sncf.osrd.infra.signaling;
 
 import fr.sncf.osrd.utils.DeepComparable;
 
+import java.util.ArrayList;
+
 public final class Aspect implements Comparable<Aspect>, DeepComparable<Aspect> {
     public final int index;
     public final String id;
 
     public final String color;
 
+    public final ArrayList<AspectConstraint> constraints;
+
     /** Create an aspect */
-    public Aspect(int index, String id, String color) {
+    public Aspect(int index, String id, String color, ArrayList<AspectConstraint> constraints) {
         this.index = index;
         this.id = id;
         this.color = color;
+        this.constraints = constraints;
     }
 
     @Override

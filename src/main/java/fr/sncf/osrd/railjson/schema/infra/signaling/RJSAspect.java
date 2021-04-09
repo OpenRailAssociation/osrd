@@ -12,6 +12,7 @@ public class RJSAspect implements Identified {
 
     public final List<RJSAspectConstraint> constraints;
 
+    /** Create an RJSAspect */
     public RJSAspect(String id, String color, List<RJSAspectConstraint> constraints) {
         this.id = id;
         this.color = color;

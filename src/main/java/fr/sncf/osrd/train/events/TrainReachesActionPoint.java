@@ -3,28 +3,27 @@ package fr.sncf.osrd.train.events;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.train.Interaction;
+import fr.sncf.osrd.train.InteractionType;
 import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.TrainInteractionType;
+import fr.sncf.osrd.train.InteractionsType;
 
 public final class TrainReachesActionPoint extends TimelineEvent {
     public final Train train;
-    public final ActionPoint actionPoint;
     public final Train.TrainStateChange trainStateChange;
-    public final TrainInteractionType interactionType;
+    public final Interaction interaction;
 
     /** Event that represents a train's interaction with an action point */
     private TrainReachesActionPoint(
             TimelineEventId eventId,
             Train train,
-            ActionPoint actionPoint,
             Train.TrainStateChange trainStateChange,
-            TrainInteractionType interactionType
+            Interaction interaction
     ) {
         super(eventId);
         this.train = train;
-        this.actionPoint = actionPoint;
         this.trainStateChange = trainStateChange;
-        this.interactionType = interactionType;
+        this.interaction = interaction;
     }
 
     @Override
@@ -35,7 +34,7 @@ public final class TrainReachesActionPoint extends TimelineEvent {
         sim.publishChange(stateChange);
 
         // Interact
-        actionPoint.interact(sim, train, interactionType);
+        interaction.interact(sim, train);
 
         train.onEventOccurred(sim);
 
@@ -55,9 +54,8 @@ public final class TrainReachesActionPoint extends TimelineEvent {
             return false;
         var o = (TrainReachesActionPoint) other;
         return o.train.getName().equals(train.getName())
-                && o.actionPoint == actionPoint
                 && o.trainStateChange.deepEquals(trainStateChange)
-                && o.interactionType == interactionType;
+                && o.interaction.deepEquals(interaction);
     }
 
     /** Plan a move to an action point */
@@ -65,12 +63,11 @@ public final class TrainReachesActionPoint extends TimelineEvent {
             Simulation sim,
             double actionTime,
             Train train,
-            ActionPoint actionPoint,
             Train.TrainStateChange trainStateChange,
-            TrainInteractionType interactionType
+            Interaction interaction
     ) {
         var change = new TrainPlannedMoveToActionPoint(
-                sim, actionTime, train.getName(), actionPoint, trainStateChange, interactionType
+                sim, actionTime, train.getName(), trainStateChange, interaction
         );
         var event = change.apply(sim, train);
         sim.publishChange(change);
@@ -79,32 +76,28 @@ public final class TrainReachesActionPoint extends TimelineEvent {
 
     public static class TrainPlannedMoveToActionPoint extends Simulation.TimelineEventCreated {
         public final String trainId;
-        public final ActionPoint actionPoint;
         public final Train.TrainStateChange stateChange;
-        public final TrainInteractionType interactionType;
+        public final Interaction interaction;
 
         private TrainPlannedMoveToActionPoint(
                 Simulation sim,
                 double actionTime,
                 String trainId,
-                ActionPoint actionPoint,
                 Train.TrainStateChange stateChange,
-                TrainInteractionType interactionType
+                Interaction interaction
         ) {
             super(sim, actionTime);
             this.trainId = trainId;
-            this.actionPoint = actionPoint;
             this.stateChange = stateChange;
-            this.interactionType = interactionType;
+            this.interaction = interaction;
         }
 
         private TrainReachesActionPoint apply(Simulation sim, Train train) {
             var event = new TrainReachesActionPoint(
                     eventId,
                     train,
-                    actionPoint,
                     stateChange,
-                    interactionType
+                    interaction
             );
             super.scheduleEvent(sim, event);
             return event;
@@ -119,7 +112,7 @@ public final class TrainReachesActionPoint extends TimelineEvent {
         public String toString() {
             return String.format(
                     "TrainPlannedMoveToActionPoint { eventId=%s, trainId=%s, actionPoint=%s, interactsWith=%s }",
-                    eventId, trainId, actionPoint, interactionType.name()
+                    eventId, trainId, interaction.actionPoint, interaction.interactionType.name()
             );
         }
     }

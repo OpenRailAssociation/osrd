@@ -82,7 +82,10 @@ public class RailJSONParser {
         int aspectIndex = 0;
         var aspectsMap = new HashMap<String, Aspect>();
         for (var rjsAspect : railJSON.aspects) {
-            var aspect = new Aspect(aspectIndex++, rjsAspect.id, rjsAspect.color);
+            var constraints = new ArrayList<AspectConstraint>();
+            for (var constraint : rjsAspect.constraints)
+                constraints.add(constraint.parse());
+            var aspect = new Aspect(aspectIndex++, rjsAspect.id, rjsAspect.color, constraints);
             aspectsMap.put(aspect.id, aspect);
         }
 
