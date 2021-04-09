@@ -12,6 +12,7 @@ import fr.sncf.osrd.infra.railscript.value.RSBool;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
+import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.BufferStop;
 import fr.sncf.osrd.infra.trackgraph.Detector;
@@ -51,6 +52,7 @@ public class ChangeSerializer {
             .add(new SignalAdapter())
             .add(new SwitchAdapter())
             .add(new TVDSectionAdapter())
+            .add(new AspectAdapter())
             .add(CollectionJsonAdapter.of(CryoList.class, CryoList::new))
             .add(CollectionJsonAdapter.of(ArrayList.class, ArrayList::new))
             .add(CollectionJsonAdapter.of(ArrayDeque.class, ArrayDeque::new))
@@ -210,6 +212,18 @@ public class ChangeSerializer {
 
         @FromJson
         TVDSection fromJson(IdentifiedObject id) {
+            throw new RuntimeException("not implemented");
+        }
+    }
+
+    private static class AspectAdapter {
+        @ToJson
+        IdentifiedObject toJson(Aspect aspect) {
+            return new IdentifiedObject(aspect.id);
+        }
+
+        @FromJson
+        Aspect fromJson(IdentifiedObject id) {
             throw new RuntimeException("not implemented");
         }
     }
