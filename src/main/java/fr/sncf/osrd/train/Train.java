@@ -106,17 +106,19 @@ public class Train {
         throw new RuntimeException("Unexpected phase while interacting with a detector");
     }
 
-    public void interact(Simulation sim, Signal signal, InteractionType interactionType) throws SimulationError {
-        if (lastState.currentPhaseState.getClass() == SignalNavigatePhase.State.class) {
-            var navigatePhaseState = (SignalNavigatePhase.State) lastState.currentPhaseState;
-            if (interactionType == InteractionType.SEEN) {
-                // TODO Subscribe to the signal
-            } else if (interactionType == InteractionType.HEAD) {
-                // TODO Unsubscribe to the signal
-            }
-            return;
+    /** Make the train interact with a signal */
+    public void interact(Simulation sim, Signal signal, InteractionType interactionType) {
+        if (lastState.currentPhaseState.getClass() != SignalNavigatePhase.State.class)
+            throw new RuntimeException("Unexpected phase while interacting with a signal");
+
+        var navigatePhaseState = (SignalNavigatePhase.State) lastState.currentPhaseState;
+
+        assert interactionType != InteractionType.TAIL;
+        if (interactionType == InteractionType.SEEN) {
+            navigatePhaseState.subscribeToSignal(sim, signal, lastState);
+        } else {
+            navigatePhaseState.unsubscribeToSignal(sim, signal, lastState);
         }
-        throw new RuntimeException("Unexpected phase while interacting with a signal");
     }
     // endregion
 

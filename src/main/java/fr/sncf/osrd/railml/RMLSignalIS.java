@@ -13,19 +13,16 @@ import java.util.Map;
 public class RMLSignalIS {
     final RJSTrackSection rjsTrackSection;
     final double position;
-    final double sightDistance;
     final ApplicableDirections navigability;
 
     private RMLSignalIS(
             RJSTrackSection rjsTrackSection,
             ApplicableDirections navigability,
-            double position,
-            double sightDistance
+            double position
     ) {
         this.rjsTrackSection = rjsTrackSection;
         this.navigability = navigability;
         this.position = position;
-        this.sightDistance = sightDistance;
     }
 
     static HashMap<String, RMLSignalIS> parse(
@@ -45,13 +42,8 @@ public class RMLSignalIS {
             if (location == null)
                 throw new InvalidInfraException(String.format("missing spotLocation on signal %s", id));
 
-            double sightDistance = 0;
-            var sightDistanceStr = signal.attributeValue("sightDistance");
-            if (sightDistanceStr != null)
-                sightDistance = Double.parseDouble(sightDistanceStr);
-
             var rjsTrackSection = rjsTrackSections.get(location.netElement.id);
-            signals.put(id, new RMLSignalIS(rjsTrackSection, location.appliesTo, location.position, sightDistance));
+            signals.put(id, new RMLSignalIS(rjsTrackSection, location.appliesTo, location.position));
         }
         return signals;
     }

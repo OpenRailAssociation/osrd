@@ -9,6 +9,10 @@ import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra_state.events.SignalDelayedUpdateEvent;
 import fr.sncf.osrd.simulation.EntityChange;
 import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.TrainState;
+
+import java.util.ArrayList;
 
 /**
  * The state of the signal is the actual entity which interacts with the rest of the infrastructure
@@ -17,6 +21,7 @@ public final class SignalState implements RSValue {
     public final Signal signal;
     public RSAspectSet aspects;
     public final RSExprState<RSAspectSet> exprState;
+    private final ArrayList<TrainState> trainSubscribers = new ArrayList<>();
 
     private SignalState(Signal signal, RSExprState<RSAspectSet> exprState) {
         this.signal = signal;
@@ -55,7 +60,17 @@ public final class SignalState implements RSValue {
                 var signalState = sim.infraState.getSignalState(signal.index);
                 signalState.notifyChange(sim);
             }
+            for (var train : trainSubscribers)
+                train.notifySignalAspectsChange(sim);
         }
+    }
+
+    public void subscribeTrain(TrainState train) {
+        trainSubscribers.add(train);
+    }
+
+    public void unsubscribeTrain(TrainState train) {
+        trainSubscribers.remove(train);
     }
 
     @Override

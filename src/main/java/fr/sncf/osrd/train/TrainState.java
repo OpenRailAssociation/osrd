@@ -228,4 +228,11 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             return trainSchedule.rollingStock.startUpAcceleration;
         return trainSchedule.rollingStock.comfortAcceleration;
     }
+
+    public void notifySignalAspectsChange(Simulation sim) {
+        // TODO:
+        // Cancel TrainReachesActionPoint
+        // Evolve State until the new simulation time
+        // Simulate Phase
+    }
 }
