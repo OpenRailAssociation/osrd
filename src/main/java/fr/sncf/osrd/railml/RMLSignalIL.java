@@ -21,6 +21,11 @@ public class RMLSignalIL {
             // locate the track netElement the signal is on
             var id = signal.attributeValue("id");
 
+            double sightDistance = Double.MAX_VALUE;
+            var sightDistanceStr = signal.attributeValue("sightDistance");
+            if (sightDistanceStr != null)
+                sightDistance = Double.parseDouble(sightDistanceStr);
+
             var refSignalIS = signal.element("refersTo").attributeValue("ref");
 
             // TODO: parse signal functions and create AST expr
@@ -32,7 +37,7 @@ public class RMLSignalIL {
             var rmlSignalIS = rmlSignalsIS.get(refSignalIS);
             var rjsTrackSection = rmlSignalIS.rjsTrackSection;
             rjsTrackSection.signals.add(new RJSSignal(
-                    id, rmlSignalIS.navigability, rmlSignalIS.position, rmlSignalIS.sightDistance, expr));
+                    id, rmlSignalIS.navigability, rmlSignalIS.position, sightDistance, expr));
         }
     }
 }

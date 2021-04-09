@@ -4,9 +4,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
+import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
+import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
@@ -15,7 +17,7 @@ import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -69,7 +71,8 @@ public final class SignalNavigatePhase implements Phase {
                 if (interactable.getInteractionsType().interactWithHead()) {
                     var distance = pathLength + edgeDistToObj;
                     eventPath.add(new Interaction(InteractionType.HEAD, distance, interactable));
-                } else if (interactable.getInteractionsType().interactWhenSeen()) {
+                }
+                if (interactable.getInteractionsType().interactWhenSeen()) {
                     var sightDistance = Double.min(interactable.getActionDistance(), driverSightDistance);
                     var distance = pathLength + edgeDistToObj - sightDistance;
                     if (distance < 0)
@@ -79,9 +82,11 @@ public final class SignalNavigatePhase implements Phase {
             }
             pathLength += trackRange.length();
         }
-        eventPath.sort(Comparator.comparing(interaction -> interaction.position));
+
+        Collections.sort(eventPath);
+
         // If no action point at the very end of the path then add a virtual action point
-        if (eventPath.get(eventPath.size() - 1).position < pathLength) {
+        if (eventPath.isEmpty() || eventPath.get(eventPath.size() - 1).position < pathLength) {
             var virtualActionPoint = new VirtualActionPoint();
             eventPath.add(new Interaction(InteractionType.HEAD, pathLength, virtualActionPoint));
         }
@@ -130,6 +135,7 @@ public final class SignalNavigatePhase implements Phase {
         public final SignalNavigatePhase phase;
         private int routeIndex = 0;
         private int interactionsPathIndex = 0;
+        private SignalState signalSubscribed = null;
 
         @Override
         @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
@@ -163,6 +169,8 @@ public final class SignalNavigatePhase implements Phase {
         public void simulate(Simulation sim, Train train, TrainState trainState) throws SimulationError {
             // Check if we reached our goal
             if (interactionsPathIndex == phase.interactionsPath.size()) {
+                if (signalSubscribed != null)
+                    unsubscribeToSignal(sim, signalSubscribed.signal, trainState);
                 var change = new Train.TrainStateChange(sim, train.getName(), trainState.nextPhase());
                 change.apply(sim, train);
                 sim.publishChange(change);
@@ -275,6 +283,24 @@ public final class SignalNavigatePhase implements Phase {
             var backwardTVDSectionPath = findBackwardTVDSection(detector);
             var backwardTVDSection = sim.infraState.getTvdSectionState(backwardTVDSectionPath.index);
             backwardTVDSection.unoccupy(sim);
+        }
+
+        /** Subscribe to a signal */
+        public void subscribeToSignal(Simulation sim, Signal signal, TrainState train) {
+            assert signalSubscribed == null;
+            var signalState = sim.infraState.getSignalState(signal.index);
+            signalState.subscribeTrain(train);
+            signalSubscribed = signalState;
+
+        }
+
+        /** Unsubscribe to a signal */
+        public void unsubscribeToSignal(Simulation sim, Signal signal, TrainState train) {
+            assert signalSubscribed != null;
+            var signalState = sim.infraState.getSignalState(signal.index);
+            signalState.unsubscribeTrain(train);
+            signalSubscribed = null;
+
         }
 
         public int getRouteIndex() {

@@ -138,7 +138,13 @@ public class RailJSONParser {
             var signalsBuilder = infraTrackSection.signals.builder();
             for (var rjsSignal : trackSection.signals) {
                 var expr = RailScriptExprParser.parseStatefulSignalExpr(aspectsMap, scriptFunctions, rjsSignal.expr);
-                var signal = new Signal(signals.size(), rjsSignal.id, expr, rjsSignal.navigability);
+                var signal = new Signal(
+                        signals.size(),
+                        rjsSignal.id,
+                        expr,
+                        rjsSignal.navigability,
+                        rjsSignal.sightDistance
+                );
                 signalsBuilder.add(rjsSignal.position, signal);
                 signals.add(signal);
             }

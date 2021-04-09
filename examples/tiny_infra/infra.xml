@@ -605,37 +605,37 @@
             </switchesIL>
             <signalsIL>
                 <signalIL id="il.sig.C1" isVirtual="false" releaseSpeed="0" malfunctionSpeed="0" approachSpeed="0"
-                          passingSpeed="0" releaseDelay="PT5S" function="exit">
+                          passingSpeed="0" releaseDelay="PT5S" function="exit" sightDistance="400">
                     <designator register="_SimpleRegister" entry="Arnau 68N2"/>
                     <refersTo ref="sig.C1"/>
                 </signalIL>
                 <signalIL id="il.sig.C2" isVirtual="false" releaseSpeed="0" malfunctionSpeed="0" approachSpeed="0"
-                          passingSpeed="0" releaseDelay="PT5S" function="exit">
+                          passingSpeed="0" releaseDelay="PT5S" function="exit" sightDistance="400">
                     <designator register="_SimpleRegister" entry="Arnau 68N2"/>
                     <refersTo ref="sig.C2"/>
                 </signalIL>
                 <signalIL id="il.sig.C3" isVirtual="false" releaseSpeed="0" malfunctionSpeed="0" approachSpeed="0"
-                          passingSpeed="0" releaseDelay="PT5S" function="exit">
+                          passingSpeed="0" releaseDelay="PT5S" function="exit" sightDistance="400">
                     <designator register="_SimpleRegister" entry="Arnau 68N2"/>
                     <refersTo ref="sig.C3"/>
                 </signalIL>
                 <signalIL id="il.sig.W4" isVirtual="false" releaseSpeed="0" malfunctionSpeed="0" approachSpeed="0"
-                          passingSpeed="0" releaseDelay="PT5S" function="exit">
+                          passingSpeed="0" releaseDelay="PT5S" function="exit" sightDistance="400">
                     <designator register="_SimpleRegister" entry="Arnau 68N2"/>
                     <refersTo ref="sig.W4"/>
                 </signalIL>
                 <signalIL id="il.sig.W5" isVirtual="false" releaseSpeed="0" malfunctionSpeed="0" approachSpeed="0"
-                          passingSpeed="0" releaseDelay="PT5S" function="exit">
+                          passingSpeed="0" releaseDelay="PT5S" function="exit" sightDistance="400">
                     <designator register="_SimpleRegister" entry="Arnau 68N2"/>
                     <refersTo ref="sig.W5"/>
                 </signalIL>
                 <signalIL id="il.sig.C6" isVirtual="false" releaseSpeed="0" malfunctionSpeed="0" approachSpeed="0"
-                          passingSpeed="0" releaseDelay="PT5S" function="exit">
+                          passingSpeed="0" releaseDelay="PT5S" function="exit" sightDistance="400">
                     <designator register="_SimpleRegister" entry="Arnau 68N2"/>
                     <refersTo ref="sig.C6"/>
                 </signalIL>
                 <signalIL id="il.sig.S7" isVirtual="false" releaseSpeed="0" malfunctionSpeed="0" approachSpeed="0"
-                          passingSpeed="0" releaseDelay="PT5S" function="exit">
+                          passingSpeed="0" releaseDelay="PT5S" function="exit" sightDistance="400">
                     <designator register="_SimpleRegister" entry="Arnau 68N2"/>
                     <refersTo ref="sig.S7"/>
                 </signalIL>
