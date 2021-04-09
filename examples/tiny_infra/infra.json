@@ -45,7 +45,6 @@
   "routes": [
     {
       "id": "rt.buffer_stop_a-C1",
-      "transit_type": "FLEXIBLE",
       "switches_position": {},
       "tvd_sections": [
         "tvd.foo_a"
@@ -62,7 +61,6 @@
     },
     {
       "id": "rt.buffer_stop_b-C3",
-      "transit_type": "FLEXIBLE",
       "switches_position": {},
       "tvd_sections": [
         "tvd.foo_b"
@@ -79,7 +77,6 @@
     },
     {
       "id": "rt.C1-S7",
-      "transit_type": "FLEXIBLE",
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
@@ -103,7 +100,6 @@
     },
     {
       "id": "rt.C3-S7",
-      "transit_type": "FLEXIBLE",
       "switches_position": {
         "il.switch_foo": "LEFT"
       },
@@ -127,7 +123,6 @@
     },
     {
       "id": "rt.S7-buffer_stop_c",
-      "transit_type": "FLEXIBLE",
       "switches_position": {},
       "tvd_sections": [
         "tvd.bar_a"
@@ -144,7 +139,6 @@
     },
     {
       "id": "rt.buffer_stop_c-C2",
-      "transit_type": "FLEXIBLE",
       "switches_position": {},
       "tvd_sections": [
         "tvd.bar_a"
@@ -161,7 +155,6 @@
     },
     {
       "id": "rt.C2-C6",
-      "transit_type": "FLEXIBLE",
       "switches_position": {},
       "tvd_sections": [
         "tvd.track"
@@ -178,7 +171,6 @@
     },
     {
       "id": "rt.C6-buffer_stop_a",
-      "transit_type": "FLEXIBLE",
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
@@ -202,7 +194,6 @@
     },
     {
       "id": "rt.C6-buffer_stop_b",
-      "transit_type": "FLEXIBLE",
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
@@ -585,7 +576,8 @@
           },
           "id": "il.sig.C3",
           "navigability": "NORMAL",
-          "position": 150
+          "position": 150,
+          "sightDistance": 400
         }
       ],
       "speed_sections": []
@@ -616,7 +608,8 @@
           },
           "id": "il.sig.W4",
           "navigability": "REVERSE",
-          "position": 1025
+          "position": 1025,
+          "sightDistance": 400
         },
         {
           "expr": {
@@ -631,7 +624,8 @@
           },
           "id": "il.sig.W5",
           "navigability": "NORMAL",
-          "position": 8975
+          "position": 8975,
+          "sightDistance": 400
         },
         {
           "expr": {
@@ -654,7 +648,8 @@
           },
           "id": "il.sig.C6",
           "navigability": "REVERSE",
-          "position": 50
+          "position": 50,
+          "sightDistance": 400
         },
         {
           "expr": {
@@ -669,7 +664,8 @@
           },
           "id": "il.sig.S7",
           "navigability": "NORMAL",
-          "position": 9975
+          "position": 9975,
+          "sightDistance": 400
         }
       ],
       "speed_sections": [
@@ -723,7 +719,8 @@
           },
           "id": "il.sig.C1",
           "navigability": "NORMAL",
-          "position": 150
+          "position": 150,
+          "sightDistance": 400
         }
       ],
       "speed_sections": []
@@ -770,7 +767,8 @@
           },
           "id": "il.sig.C2",
           "navigability": "REVERSE",
-          "position": 25
+          "position": 25,
+          "sightDistance": 400
         }
       ],
       "speed_sections": []

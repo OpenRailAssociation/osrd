@@ -16,6 +16,7 @@ import java.util.ArrayList;
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class Signal implements ActionPoint {
     public final int index;
+    public final double sightDistance;
     public final String id;
     public final RSStatefulExpr<RSAspectSet> expr;
     public final ArrayList<Signal> signalSubscribers = new ArrayList<>();
@@ -23,19 +24,21 @@ public class Signal implements ActionPoint {
 
     private RSAspectSet initialAspects = new RSAspectSet();
     private static final InteractionsType interactionsType =
-            new InteractionsType(new InteractionType[]{InteractionType.HEAD, InteractionType.TAIL});
+            new InteractionsType(new InteractionType[]{InteractionType.HEAD, InteractionType.SEEN});
 
     /** The static data describing a signal */
     public Signal(
             int index,
             String id,
             RSStatefulExpr<RSAspectSet> expr,
-            ApplicableDirections direction
+            ApplicableDirections direction,
+            double sightDistance
     ) {
         this.index = index;
         this.id = id;
         this.expr = expr;
         this.direction = direction;
+        this.sightDistance = sightDistance;
     }
 
     public void evalInitialAspect(InfraState initialState) {
@@ -49,8 +52,7 @@ public class Signal implements ActionPoint {
 
     @Override
     public double getActionDistance() {
-        // TODO shouldn't be 0 but the signal sight distance
-        return 0;
+        return sightDistance;
     }
 
     @Override
