@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 
 @SuppressFBWarnings({"DM_DEFAULT_ENCODING"})
 class PrettyPrinterTest {
@@ -88,9 +89,9 @@ class PrettyPrinterTest {
         @SuppressWarnings({"unchecked"})
         var aspectSet = new RSExpr.AspectSet(
                 new Aspect[] {
-                        new Aspect(0, "GREEN", "#2a850c"),
-                        new Aspect(1, "YELLOW", "#f08a05"),
-                        new Aspect(2, "RED", "#db0c04")
+                        new Aspect(0, "GREEN", "#2a850c", new ArrayList<>()),
+                        new Aspect(1, "YELLOW", "#f08a05", new ArrayList<>()),
+                        new Aspect(2, "RED", "#db0c04", new ArrayList<>())
                 },
                 (RSExpr<RSBool>[]) new RSExpr<?>[]{
                         RSExpr.True.INSTANCE,

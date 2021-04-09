@@ -6,8 +6,9 @@ import fr.sncf.osrd.infra.railscript.*;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
 import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.train.InteractionType;
 import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.TrainInteractionType;
+import fr.sncf.osrd.train.InteractionsType;
 import fr.sncf.osrd.utils.graph.ApplicableDirections;
 
 import java.util.ArrayList;
@@ -21,6 +22,8 @@ public class Signal implements ActionPoint {
     public final ApplicableDirections direction;
 
     private RSAspectSet initialAspects = new RSAspectSet();
+    private static final InteractionsType interactionsType =
+            new InteractionsType(new InteractionType[]{InteractionType.HEAD, InteractionType.TAIL});
 
     /** The static data describing a signal */
     public Signal(
@@ -40,18 +43,19 @@ public class Signal implements ActionPoint {
     }
 
     @Override
-    public TrainInteractionType getInteractionType() {
-        return TrainInteractionType.HEAD;
+    public InteractionsType getInteractionsType() {
+        return interactionsType;
     }
 
     @Override
     public double getActionDistance() {
+        // TODO shouldn't be 0 but the signal sight distance
         return 0;
     }
 
     @Override
-    public void interact(Simulation sim, Train train, TrainInteractionType interactionType) {
-        // TODO
+    public void interact(Simulation sim, Train train, InteractionType interactionType) throws SimulationError {
+        train.interact(sim, this, interactionType);
     }
 
     public RSAspectSet getInitialAspects() {
