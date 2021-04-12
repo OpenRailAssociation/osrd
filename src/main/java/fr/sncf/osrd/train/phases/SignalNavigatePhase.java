@@ -11,6 +11,7 @@ import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
@@ -136,6 +137,7 @@ public final class SignalNavigatePhase implements Phase {
         private int routeIndex = 0;
         private int interactionsPathIndex = 0;
         private SignalState signalSubscribed = null;
+        private TimelineEvent lastEvent = null;
 
         @Override
         @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
@@ -188,7 +190,7 @@ public final class SignalNavigatePhase implements Phase {
             var simulationResult = newTrainState.evolveState(sim, nextInteraction.position);
 
             // 4) create an event with simulation data up to this point
-            TrainReachesActionPoint.plan(
+            lastEvent = TrainReachesActionPoint.plan(
                     sim,
                     simulationResult.newState.time,
                     train,
@@ -305,6 +307,10 @@ public final class SignalNavigatePhase implements Phase {
 
         public int getRouteIndex() {
             return routeIndex;
+        }
+
+        public TimelineEvent getLastEvent() {
+            return lastEvent;
         }
     }
 }

@@ -4,10 +4,12 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.train.phases.PhaseState;
+import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.PointValue;
 import org.slf4j.Logger;
@@ -229,10 +231,23 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         return trainSchedule.rollingStock.comfortAcceleration;
     }
 
+    /** Notifies the train that the signal to which it is subscribed has changed its aspects */
     public void notifySignalAspectsChange(Simulation sim) {
-        // TODO:
+        if (currentPhaseState.getClass() != SignalNavigatePhase.State.class)
+            throw new RuntimeException("Train should be in navigate phase when notified by signal aspects change");
+        var signalNavigatePhase = (SignalNavigatePhase.State) currentPhaseState;
+        var lastEvent = signalNavigatePhase.getLastEvent();
+        // If the last event has already occurred no need to cancel it
+        if (lastEvent.getState() == TimelineEvent.State.OCCURRED)
+            return;
+
         // Cancel TrainReachesActionPoint
-        // Evolve State until the new simulation time
-        // Simulate Phase
+        try {
+            sim.cancel(lastEvent);
+        } catch (SimulationError simulationError) {
+            throw new RuntimeException(simulationError);
+        }
+
+        // TODO: Evolve State until the new simulation time
     }
 }
