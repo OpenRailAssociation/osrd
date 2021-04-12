@@ -43,9 +43,7 @@ public final class TrainReachesActionPoint extends TimelineEvent {
     }
 
     @Override
-    protected void onCancellation(Simulation sim) throws SimulationError {
-        throw new SimulationError("TrainReachesActionPoint cancellation not implemented");
-    }
+    protected void onCancellation(Simulation sim) {}
 
     @Override
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})

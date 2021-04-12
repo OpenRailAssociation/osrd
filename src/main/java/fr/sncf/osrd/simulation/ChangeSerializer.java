@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
+import java.sql.Time;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,6 +54,7 @@ public class ChangeSerializer {
             .add(new SwitchAdapter())
             .add(new TVDSectionAdapter())
             .add(new AspectAdapter())
+            .add(new TimelineEventAdapter())
             .add(CollectionJsonAdapter.of(CryoList.class, CryoList::new))
             .add(CollectionJsonAdapter.of(ArrayList.class, ArrayList::new))
             .add(CollectionJsonAdapter.of(ArrayDeque.class, ArrayDeque::new))
@@ -224,6 +226,18 @@ public class ChangeSerializer {
 
         @FromJson
         Aspect fromJson(IdentifiedObject id) {
+            throw new RuntimeException("not implemented");
+        }
+    }
+
+    private static class TimelineEventAdapter {
+        @ToJson
+        TimelineEventId toJson(TimelineEvent timelineEvent) {
+            return timelineEvent.eventId;
+        }
+
+        @FromJson
+        TimelineEvent fromJson(TimelineEventId id) {
             throw new RuntimeException("not implemented");
         }
     }
