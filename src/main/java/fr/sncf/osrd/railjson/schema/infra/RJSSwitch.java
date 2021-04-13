@@ -14,6 +14,8 @@ public class RJSSwitch implements Identified {
     public final RJSTrackSection.EndpointID left;
     /** The track section linked to the base if the switch is in RIGHT position */
     public final RJSTrackSection.EndpointID right;
+    /** The time it takes for the switch to change position in milliseconds */
+    public long position_change_delay;
 
     /**
      * Create a new serialized switch
@@ -21,17 +23,20 @@ public class RJSSwitch implements Identified {
      * @param base the base branch
      * @param left the left branch
      * @param right the right branch
+     * @param position_change_delay the delay when changing position
      */
     public RJSSwitch(
             String id,
             RJSTrackSection.EndpointID base,
             RJSTrackSection.EndpointID left,
-            RJSTrackSection.EndpointID right
+            RJSTrackSection.EndpointID right,
+            long position_change_delay
     ) {
         this.id = id;
         this.base = base;
         this.left = left;
         this.right = right;
+        this.position_change_delay = position_change_delay;
     }
 
     @Override
