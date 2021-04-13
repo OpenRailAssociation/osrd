@@ -50,7 +50,7 @@ public final class RMLSwitchIS {
             var baseBranch = ParsingUtils.parseLocationEndpointID(netElements, switchIS);
             var leftBranch = parseSwitchBranch(netRelations, baseBranch, switchIS, "leftBranch");
             var rightBranch = parseSwitchBranch(netRelations, baseBranch, switchIS, "rightBranch");
-            res.add(new RJSSwitch(id, baseBranch, leftBranch, rightBranch));
+            res.add(new RJSSwitch(id, baseBranch, leftBranch, rightBranch, 0));
         }
         return res;
     }
