@@ -20,7 +20,16 @@ import Hillshade from 'common/Map/Layers/Hillshade';
 import Platform from 'common/Map/Layers/Platform';
 import EditorZone from 'common/Map/Layers/EditorZone';
 import CustomLines from 'common/Map/Layers/CustomLines';
+import SignalBox from 'common/Map/Layers/SignalBox';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
+
+const layerStyle = {
+  type: 'line',
+  paint: {
+    'line-color': '#FF0000',
+    'line-width': 1,
+  },
+};
 
 const SELECTION_ZONE_STYLE = {
   type: 'line',
@@ -32,6 +41,8 @@ const SELECTION_ZONE_STYLE = {
 
 const SelectZone = () => {
   const { mapStyle, viewport } = useSelector((state) => state.map);
+  const editionData = useSelector((state) => state.editor.editionData);
+  console.log(editionData);
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
   const dispatch = useDispatch();
   const updateViewportChange = useCallback((value) => dispatch(updateViewport(value, '/editor')), [
@@ -58,7 +69,7 @@ const SelectZone = () => {
         dispatch(selectZone(...zone));
       }
     },
-    [firstCorner]
+    [firstCorner],
   );
   const onMove = useCallback(
     (event) => {
@@ -66,7 +77,7 @@ const SelectZone = () => {
         setState({ ...state, secondCorner: event.lngLat });
       }
     },
-    [firstCorner]
+    [firstCorner],
   );
   const onKeyDown = useCallback(
     (event) => {
@@ -74,7 +85,7 @@ const SelectZone = () => {
         setState({ ...state, firstCorner: null, secondCorner: null });
       }
     },
-    [firstCorner]
+    [firstCorner],
   );
 
   /* Custom controller for keyboard handling */
@@ -125,25 +136,31 @@ const SelectZone = () => {
           bottom: 20,
         }}
       />
-
       {/* OSM layers */}
       <Background colors={colors[mapStyle]} />
       <OSM mapStyle={mapStyle} />
       <Hillshade mapStyle={mapStyle} />
       <Platform colors={colors[mapStyle]} />
-
       {/* Chartis layers */}
       <TracksGeographic colors={colors[mapStyle]} />
-
       {/* Editor layers */}
       <EditorZone />
       <CustomLines />
-
       {geoJSON && (
         <Source type="geojson" data={geoJSON}>
           <Layer {...SELECTION_ZONE_STYLE} />
         </Source>
       )}
+      {/* Data of the selected zone */}
+      {editionData !== null &&
+        editionData.map((geojson, index) => {
+          console.log(geojson, index);
+          return (
+            <Source key={index} type="geojson" data={geojson}>
+              <Layer {...layerStyle} />
+            </Source>
+          );
+        })}
     </ReactMapGL>
   );
 };

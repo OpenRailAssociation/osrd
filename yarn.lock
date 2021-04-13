@@ -2452,7 +2452,7 @@
     "@turf/helpers" "^6.3.0"
     "@turf/meta" "^6.3.0"
 
-"@turf/bbox-polygon@>=4.0.0":
+"@turf/bbox-polygon@>=4.0.0", "@turf/bbox-polygon@^6.3.0":
   version "6.3.0"
   resolved "https://registry.yarnpkg.com/@turf/bbox-polygon/-/bbox-polygon-6.3.0.tgz#9ffa79d56ae50cc7730b35b2a6d2a02493268365"
   integrity sha512-CCyTBM8LzGRu/lReNlgDyjRO8NojtJ7EPPvSl3bdKQbNFsCm25gwe7Y3xsaCkWLNn5g89lQJI9Izf9xdEsENjQ==
@@ -12497,10 +12497,10 @@ react-map-gl-draw@^0.17.3:
     prop-types "^15.7.2"
     uuid "^3.4.0"
 
-react-map-gl@^5.3.8:
-  version "5.3.15"
-  resolved "https://registry.yarnpkg.com/react-map-gl/-/react-map-gl-5.3.15.tgz#e5a290ab122ee2ca7bec00a15c45c0a0b053f15d"
-  integrity sha512-ydlsnOSvNQquZLxRMFTmBmDEcTDmbJLJSaskcACGp/58EeMO6kHNvnSZwoVfcU17ql/wDWjhDsdMsjLqA7qmvQ==
+react-map-gl@^5.3.11:
+  version "5.3.12"
+  resolved "https://registry.yarnpkg.com/react-map-gl/-/react-map-gl-5.3.12.tgz#bf927ad7ba4f2707f416097f88d672319de27ef4"
+  integrity sha512-Z4mtzOO9GGfS9y8t2wHeV+k1WMPHgKDe8LAd+DOt769TdqpO4O8eu7pT1T37eO39wJ7lv8MWS2S3n4McpBZUtw==
   dependencies:
     "@babel/runtime" "^7.0.0"
     "@types/geojson" "^7946.0.7"

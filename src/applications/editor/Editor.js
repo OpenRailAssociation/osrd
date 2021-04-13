@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { GiArrowCursor, MdPhotoSizeSelectSmall, MdShowChart } from 'react-icons/all';
-
+import { LoaderState } from 'common/Loader';
 import 'common/Map/Map.scss';
 
 /* Tools */
@@ -53,6 +53,7 @@ const Editor = () => {
 
   return (
     <main className={`mastcontainer mastcontainer-map${fullscreen ? ' fullscreen' : ''}`}>
+      <LoaderState />
       <div className="toolbox">
         {TOOLS.map(({ tool, label, icon, isEnabled }) => (
           <ButtonUseTool
