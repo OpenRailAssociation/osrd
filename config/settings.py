@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     # osrd apps
     'infra.apps.InfraConfig',
     'osrd.apps.MainServiceAppConfig',
+    'osrd_infra.apps.OsrdInfraConfig',
 ]
 
 MIDDLEWARE = [
