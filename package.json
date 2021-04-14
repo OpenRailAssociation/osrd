@@ -89,6 +89,8 @@
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@babel/preset-env": "^7.8.4",
     "@babel/preset-react": "^7.8.3",
+    "@types/react-redux": "^7.1.16",
+    "babel-loader": "8.1.0",
     "better-docs": "^1.4.7",
     "eslint": "7.11.0",
     "eslint-config-airbnb": "^18.0.1",

@@ -1,16 +1,15 @@
 import bboxPolygon from '@turf/bbox-polygon';
+import { GeoJSON } from 'geojson';
 import { get } from '../../common/requests';
 
 /**
  * Call the chartis API for geojson.
- *
- * @param {[[number, number], [number, number]]} bbox  The selected bbox (NO/SE).
- * @param {String[]} layers  List of layer's slug to call
- * @return {GeoJSON[]}
  */
-export async function getGeoJson(bbox, layers) {
-  const geoJson = bboxPolygon(bbox.flat());
-  console.log('bbox', bbox, geoJson);
+export async function getGeoJson(
+  bbox: [[number, number], [number, number]],
+  layers: Array<String>,
+): Promise<Array<GeoJSON>> {
+  const geoJson = bboxPolygon(bbox.flat() as any);
   const result = await Promise.all(
     layers.map((layer) =>
       get(
