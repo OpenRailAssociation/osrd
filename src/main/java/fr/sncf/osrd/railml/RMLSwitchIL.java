@@ -11,26 +11,22 @@ import java.util.HashMap;
 // https://wiki3.railml.org/index.php?title=IL:switchIL
 public class RMLSwitchIL {
 
-    static void parse(
+    static ArrayList<RJSSwitch> parse(
             Document document,
-            ArrayList<RJSSwitch> switches
+            HashMap<String, RMLSwitchIS> switchesIS
     ) throws InvalidInfraException {
-
-        var switch_per_id = new HashMap<String, RJSSwitch>();
-        for (var s : switches) {
-            switch_per_id.put(s.id, s);
-        }
-
         var xpath = "/railML/interlocking/assetsForIL/switchesIL/switchIL";
+        var res = new ArrayList<RJSSwitch>();
         for (var switchNode : document.selectNodes(xpath)) {
             var switchIL = (Element) switchNode;
             var throwTime_iso8601 = switchIL.attributeValue("typicalThrowTime", "PT0S");
             var throwTime = java.time.Duration.parse(throwTime_iso8601).toMillis();
             var id = switchIL.attributeValue("id");
-            var switchIS = switch_per_id.get(id);
+            var switchIS = switchesIS.get(id);
             if (switchIS == null)
                 throw new InvalidInfraException(String.format("Invalid XML, switchIL %s has no matching switchIS", id));
-            switchIS.position_change_delay = throwTime;
+            res.add(new RJSSwitch(id, switchIS.base, switchIS.left, switchIS.right, throwTime));
         }
+        return res;
     }
 }
