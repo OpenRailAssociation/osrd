@@ -1,5 +1,6 @@
 package fr.sncf.osrd.railjson.schema.infra;
 
+import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.railjson.schema.common.Identified;
@@ -15,7 +16,8 @@ public class RJSSwitch implements Identified {
     /** The track section linked to the base if the switch is in RIGHT position */
     public final RJSTrackSection.EndpointID right;
     /** The time it takes for the switch to change position in milliseconds */
-    public long position_change_delay;
+    @Json(name = "position_change_delay")
+    public final long positionChangeDelay;
 
     /**
      * Create a new serialized switch
@@ -23,20 +25,20 @@ public class RJSSwitch implements Identified {
      * @param base the base branch
      * @param left the left branch
      * @param right the right branch
-     * @param position_change_delay the delay when changing position
+     * @param positionChangeDelay the delay when changing position
      */
     public RJSSwitch(
             String id,
             RJSTrackSection.EndpointID base,
             RJSTrackSection.EndpointID left,
             RJSTrackSection.EndpointID right,
-            long position_change_delay
+            long positionChangeDelay
     ) {
         this.id = id;
         this.base = base;
         this.left = left;
         this.right = right;
-        this.position_change_delay = position_change_delay;
+        this.positionChangeDelay = positionChangeDelay;
     }
 
     @Override

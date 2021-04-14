@@ -9,9 +9,23 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 public final class RMLSwitchIS {
+
+    final RJSTrackSection.EndpointID base;
+    final RJSTrackSection.EndpointID left;
+    final RJSTrackSection.EndpointID right;
+
+    private RMLSwitchIS(RJSTrackSection.EndpointID base,
+                        RJSTrackSection.EndpointID left,
+                        RJSTrackSection.EndpointID right) {
+        this.base = base;
+        this.left = left;
+        this.right = right;
+    }
+
     private static RJSTrackSection.EndpointID parseSwitchBranch(
             Map<String, RJSTrackSectionLink> netRelations,
             RJSTrackSection.EndpointID baseBranch,
@@ -37,12 +51,12 @@ public final class RMLSwitchIS {
                 branchName, switchElement.attributeValue("id")));
     }
 
-    static ArrayList<RJSSwitch> parse(
+    static HashMap<String, RMLSwitchIS> parse(
             Map<String, NetElement> netElements,
             Map<String, RJSTrackSectionLink> netRelations,
             Document document
     ) throws InvalidInfraException {
-        var res = new ArrayList<RJSSwitch>();
+        var res = new HashMap<String, RMLSwitchIS>();
         var xpath = "/railML/infrastructure/functionalInfrastructure/switchesIS/switchIS";
         for (var switchISNode :  document.selectNodes(xpath)) {
             var switchIS = (Element) switchISNode;
@@ -50,7 +64,7 @@ public final class RMLSwitchIS {
             var baseBranch = ParsingUtils.parseLocationEndpointID(netElements, switchIS);
             var leftBranch = parseSwitchBranch(netRelations, baseBranch, switchIS, "leftBranch");
             var rightBranch = parseSwitchBranch(netRelations, baseBranch, switchIS, "rightBranch");
-            res.add(new RJSSwitch(id, baseBranch, leftBranch, rightBranch, 0));
+            res.put(id, new RMLSwitchIS(baseBranch, leftBranch, rightBranch));
         }
         return res;
     }
