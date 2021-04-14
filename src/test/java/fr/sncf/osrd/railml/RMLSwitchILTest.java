@@ -10,12 +10,16 @@ public class RMLSwitchILTest {
 
     @Test
     public void testRealData() {
-        String inputPath = "examples/tiny_infra/infra.xml";
         RJSInfra infra = null;
         try {
-            infra = RailMLParser.parse(inputPath);
+            ClassLoader classLoader = getClass().getClassLoader();
+            var resource = classLoader.getResource("tiny_infra/infra.xml");
+            if (resource == null)
+                fail("Can't load test resource");
+            var infraPath = resource.toString();
+            infra = RailMLParser.parse(infraPath);
         } catch (InvalidInfraException e) {
-            fail("XML reading should not have failed");
+            fail("XML reading should not have failed", e);
         }
         var switches = infra.switches;
         assertEquals(1, switches.size());
