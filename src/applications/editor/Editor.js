@@ -2,8 +2,8 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { GiArrowCursor, MdPhotoSizeSelectSmall, MdShowChart } from 'react-icons/all';
 import { LoaderState } from 'common/Loader';
+import { NotificationsState } from 'common/Notifications';
 import 'common/Map/Map.scss';
-
 /* Tools */
 import ButtonUseTool from './components/ButtonUseTool';
 import SelectItem from './components/tools/SelectItem';
@@ -67,6 +67,7 @@ const Editor = () => {
         ))}
       </div>
       <ToolComponent />
+      <NotificationsState />
     </main>
   );
 };

@@ -1,6 +1,6 @@
 /* eslint-disable default-case */
 import produce from 'immer';
-import { ThunkAction } from '../types';
+import { ThunkAction, Notification } from '../types';
 
 //
 // Actions
@@ -26,11 +26,12 @@ export function setLoading(): ThunkAction<ActionLoading> {
 }
 
 export const ACTION_SUCCESS = 'main/ACTION_SUCCESS';
-type ActionSuccess = { type: typeof ACTION_SUCCESS };
-export function setSuccess(): ThunkAction<ActionSuccess> {
-  return (dispatch: any) => {
+type ActionSuccess = { type: typeof ACTION_SUCCESS; message: Notification | null };
+export function setSuccess(msg?: Notification): ThunkAction<ActionSuccess> {
+  return (dispatch) => {
     dispatch({
       type: ACTION_SUCCESS,
+      message: msg || null,
     });
   };
 }
@@ -38,7 +39,7 @@ export function setSuccess(): ThunkAction<ActionSuccess> {
 export const ACTION_FAILURE = 'main/ACTION_FAILURE';
 type ActionFailure = { type: typeof ACTION_FAILURE; error: Error };
 export function setFailure(e: Error): ThunkAction<ActionFailure> {
-  return (dispatch: any) => {
+  return (dispatch) => {
     dispatch({
       type: ACTION_FAILURE,
       error: e,
@@ -46,7 +47,38 @@ export function setFailure(e: Error): ThunkAction<ActionFailure> {
   };
 }
 
-type Actions = ActionFailure | ActionSuccess | ActionLoading | ActionToggleFullscreen;
+export const ACTION_NOTIFICATION_ADD = 'main/ACTION_NOTIFICATION_ADD';
+type ActionNotificationAdd = { type: typeof ACTION_NOTIFICATION_ADD; notification: Notification };
+export function addNotification(n: Notification): ThunkAction<ActionNotificationAdd> {
+  return (dispatch) => {
+    dispatch({
+      type: ACTION_NOTIFICATION_ADD,
+      notification: { date: new Date(), ...n },
+    });
+  };
+}
+
+export const ACTION_NOTIFICATION_DELETE = 'main/ACTION_NOTIFICATION_DELETE';
+type ActionNotificationDelete = {
+  type: typeof ACTION_NOTIFICATION_DELETE;
+  notification: Notification;
+};
+export function deleteNotification(n: Notification): ThunkAction<ActionNotificationDelete> {
+  return (dispatch) => {
+    dispatch({
+      type: ACTION_NOTIFICATION_DELETE,
+      notification: n,
+    });
+  };
+}
+
+type Actions =
+  | ActionFailure
+  | ActionSuccess
+  | ActionLoading
+  | ActionToggleFullscreen
+  | ActionNotificationAdd
+  | ActionNotificationDelete;
 
 //
 // State definition
@@ -54,14 +86,14 @@ type Actions = ActionFailure | ActionSuccess | ActionLoading | ActionToggleFulls
 export interface MainState {
   fullscreen: boolean;
   loading: number;
-  error: Array<Error>;
+  notifications: Array<Notification>;
 }
 export const initialState: MainState = {
   fullscreen: false,
   // Number of running task
   loading: 0,
   // errors
-  error: [],
+  notifications: [],
 };
 
 //
@@ -77,11 +109,38 @@ export default function reducer(state = initialState, action: Actions) {
         draft.loading = state.loading + 1;
         break;
       case ACTION_SUCCESS:
-        draft.loading = state.loading - 1;
+        draft.loading = state.loading > 0 ? state.loading - 1 : 0;
+        if (action.message) {
+          draft.notifications.push({
+            type: action.message.type || 'success',
+            title: action.message.title,
+            text: action.message.text,
+            date: action.message.date || new Date(),
+          });
+        }
         break;
       case ACTION_FAILURE:
-        draft.loading = state.loading - 1;
-        draft.error.push(action.error);
+        draft.loading = state.loading > 0 ? state.loading - 1 : 0;
+        draft.notifications.push({
+          type: 'error',
+          title: action.error.name,
+          text: action.error.message,
+          date: new Date(),
+        });
+        break;
+      case ACTION_NOTIFICATION_ADD:
+        draft.notifications.push({ date: new Date(), ...action.notification });
+        break;
+      case ACTION_NOTIFICATION_DELETE:
+        draft.notifications = draft.notifications.filter(
+          (n: Notification) =>
+            !(
+              n.date === action.notification.date &&
+              n.text === action.notification.text &&
+              n.type === action.notification.type &&
+              n.title === action.notification.title
+            ),
+        );
         break;
     }
   });
