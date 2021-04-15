@@ -54,14 +54,11 @@ public final class SwitchState implements RSMatchable {
 
 
     /**
-     * Starts a switch change if needed
+     * Starts a switch change that will happen after the switch's delay
      */
-    public boolean requestPositionChange(Simulation sim, SwitchPosition position, RouteState requestingRoute) {
-        // if (this.position == position)
-            // return false;
+    public void requestPositionChange(Simulation sim, SwitchPosition position, RouteState requestingRoute) {
         var delay = switchRef.positionChangeDelay;
         SwitchMoveEvent.plan(sim, sim.getTime() + delay, position, this, requestingRoute);
-        return true;
     }
 
     @Override
