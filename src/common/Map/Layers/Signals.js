@@ -246,7 +246,7 @@ const Signals = (props) => {
     }
 
     return ({
-      minzoom: 11,
+      minzoom: 12,
       type: 'symbol',
       'source-layer': sourceTable,
       filter: ['==', 'TIF_mnemo', type],

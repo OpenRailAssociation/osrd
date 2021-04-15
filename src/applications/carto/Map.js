@@ -6,6 +6,7 @@ import colors from 'common/Map/Consts/colors';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateViewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
+import ThreeboxTest from 'common/Map/Layers/ThreeboxTest';
 
 import 'common/Map/Map.scss';
 
@@ -123,8 +124,10 @@ const Map = () => {
         attributionControl={false} // Defined below
         onClick={onFeatureClick}
         onHover={onFeatureHover}
+        interactiveLayerIds={mapTrackSources === 'geographic' ? ['geoMainLayer'] : ['schematicMainLayer']}
         touchRotate
         asyncRender
+        antialiasing
       >
         <AttributionControl
           className="attribution-control"
@@ -145,7 +148,7 @@ const Map = () => {
           </>
         )}
 
-        {/* Have to  duplicate objects with sourceLayer to avoid cache problems in mapbox */}
+        {/* Have to duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
             <Platform colors={colors[mapStyle]} />
@@ -155,14 +158,14 @@ const Map = () => {
           </>
         ) : (
           <>
-            <TracksSchematic colors={colors[mapStyle]} />
+            <TracksSchematic colors={colors[mapStyle]} idHover={idHover} />
             <JointsDeZones geomType="sch" />
             <Signals sourceTable="map_midi_signal" colors={colors[mapStyle]} sourceLayer="sch" />
           </>
         )}
 
         {/* <SignalBox /> */}
-
+        <ThreeboxTest mapInstance={{}} />
       </ReactMapGL>
     </main>
   );

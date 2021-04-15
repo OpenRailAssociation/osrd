@@ -50,6 +50,7 @@
     "redux-persist-transform-filter": "0.0.20",
     "redux-thunk": "^2.3.0",
     "seamless-immutable": "^7.1.4",
+    "three": "^0.127.0",
     "turf-point": "^2.0.1",
     "wellknown": "^0.5.0"
   },

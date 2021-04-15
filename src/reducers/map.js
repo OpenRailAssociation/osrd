@@ -24,9 +24,9 @@ export const initialState = {
   mapTrackSources: 'geographic',
   showOSM: true,
   viewport: {
-    latitude: 48.9,
-    longitude: 2.3322,
-    zoom: 11.4019,
+    latitude: 48.32,
+    longitude: 2.44,
+    zoom: 6.2,
     bearing: 0,
     pitch: 0,
     transformRequest: (url, resourceType) => transformRequest(url, resourceType, MAP_URL),

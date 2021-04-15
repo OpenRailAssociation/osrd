@@ -43,14 +43,32 @@ export default function MapSearchSignalBox(props) {
     }
   }, [debouncedSearchTerm, debouncedSearchLine]);
 
+  /*
+   * Convert data from signalboxes in geojson format
+  */
+  const cdv2geosjon = (data) => ({
+    type: 'FeatureCollection',
+    features: data.map((item) => ({
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'MultiLineString',
+        coordinates: item,
+      },
+    })),
+  });
+
   const onResultClick = (result) => {
     setDontSearch(true);
     setSearch(result.name);
     setSearchResults(undefined);
 
-    const latlon = map.mapTrackSources === 'schematic' ? result.coordinates.sch : result.coordinates.geo;
+    const geojson = map.mapTrackSources === 'schematic'
+      ? cdv2geosjon(result.coordinates.sch) : cdv2geosjon(result.coordinates.geo);
 
-    if (latlon !== null) {
+    console.log('geojson', geojson);
+
+    /* if (latlon !== null) {
       const newViewport = {
         ...map.viewport,
         longitude: latlon[0],
@@ -60,7 +78,7 @@ export default function MapSearchSignalBox(props) {
         transitionInterpolator: new FlyToInterpolator(),
       };
       updateExtViewport(newViewport);
-    }
+    } */
   };
 
   const formatSearchResults = () => {
@@ -74,7 +92,7 @@ export default function MapSearchSignalBox(props) {
         key={nextId()}
         onClick={() => onResultClick(result)}
       >
-        {`${result.stationname} - ${result.name}`}
+        {`${result.stationname} (${result.linecode})- ${result.name}`}
       </button>
     ));
   };
