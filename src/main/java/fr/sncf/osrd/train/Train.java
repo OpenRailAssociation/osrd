@@ -3,6 +3,7 @@ package fr.sncf.osrd.train;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Detector;
+import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
@@ -26,6 +27,7 @@ public class Train {
 
     private TrainState lastState;
     public final TrainSchedule schedule;
+    public TimelineEvent lastScheduledEvent = null;
 
     private Train(TrainSchedule schedule, TrainState initialState) {
         this.schedule = schedule;
@@ -81,7 +83,8 @@ public class Train {
         }
 
         logger.info("planning the next move for train {}", getName());
-        lastState.simulatePhase(this, sim);
+        var clonedState = lastState.clone();
+        lastScheduledEvent = clonedState.simulatePhase(this, sim);
     }
 
     /** Reserve routes when the train is in navigate phase */
@@ -108,16 +111,39 @@ public class Train {
 
     /** Make the train interact with a signal */
     public void interact(Simulation sim, Signal signal, InteractionType interactionType) {
-        if (lastState.currentPhaseState.getClass() != SignalNavigatePhase.State.class)
-            throw new RuntimeException("Unexpected phase while interacting with a signal");
+        var signalState = sim.infraState.getSignalState(signal.index);
 
-        var navigatePhaseState = (SignalNavigatePhase.State) lastState.currentPhaseState;
+        switch (interactionType) {
+            case SEEN:
+                signalState.subscribeTrain(this);
+                lastState.setAspectConstraints(signalState);
+                break;
+            case HEAD:
+                signalState.unsubscribeTrain();
+                break;
+            default:
+                throw new RuntimeException("Unexpected signal interaction type");
+        }
+    }
 
-        assert interactionType != InteractionType.TAIL;
-        if (interactionType == InteractionType.SEEN) {
-            navigatePhaseState.subscribeToSignal(sim, signal, lastState);
-        } else {
-            navigatePhaseState.unsubscribeToSignal(sim, signal, lastState);
+    /** Notify the train that a signal has change aspects and it have to re-evaluate its planned state */
+    public void reactNewAspects(Simulation sim, SignalState signalState) {
+        assert lastScheduledEvent.getState() == TimelineEvent.State.SCHEDULED;
+        try {
+            // 1) Cancel last scheduled event
+            sim.cancel(lastScheduledEvent);
+            // 2) Recompute the state until current simulation time
+            var newState = lastState.clone();
+            var stateChange = newState.evolveStateUntilNow(sim);
+            stateChange.apply(sim, this);
+            sim.publishChange(stateChange);
+            // 3) Change/Add aspect constraints
+            lastState.setAspectConstraints(signalState);
+            // 4) Schedule the next train state
+            scheduleStateChange(sim);
+
+        } catch (SimulationError simulationError) {
+            throw new RuntimeException(simulationError);
         }
     }
     // endregion
