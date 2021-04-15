@@ -42,7 +42,6 @@ const SELECTION_ZONE_STYLE = {
 const SelectZone = () => {
   const { mapStyle, viewport } = useSelector((state) => state.map);
   const editionData = useSelector((state) => state.editor.editionData);
-  console.log(editionData);
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
   const dispatch = useDispatch();
   const updateViewportChange = useCallback((value) => dispatch(updateViewport(value, '/editor')), [
@@ -153,14 +152,11 @@ const SelectZone = () => {
       )}
       {/* Data of the selected zone */}
       {editionData !== null &&
-        editionData.map((geojson, index) => {
-          console.log(geojson, index);
-          return (
-            <Source key={index} type="geojson" data={geojson}>
-              <Layer {...layerStyle} />
-            </Source>
-          );
-        })}
+        editionData.map((geojson, index) => (
+          <Source key={index} type="geojson" data={geojson}>
+            <Layer {...layerStyle} />
+          </Source>
+        ))}
     </ReactMapGL>
   );
 };
