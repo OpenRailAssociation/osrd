@@ -448,6 +448,14 @@
                 "argument_name": "right_route"
               }
             ]
+          },
+          "MOVING": {
+            "type": "aspect_set",
+            "members": [
+              {
+                "aspect": "RED"
+              }
+            ]
           }
         }
       }
