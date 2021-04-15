@@ -4,5 +4,6 @@ public enum RouteStatus {
    FREE,
    RESERVED,
    OCCUPIED,
-   CONFLICT
+   CONFLICT,
+   REQUESTED
 }

@@ -16,6 +16,7 @@ import fr.sncf.osrd.utils.SortedArraySet;
 public final class RouteState implements RSMatchable {
     public final Route route;
     public RouteStatus status;
+    private int movingSwitchesLeft;
 
     public RouteState(Route route) {
         this.route = route;
@@ -97,7 +98,7 @@ public final class RouteState implements RSMatchable {
     /** Reserve a route and his tvd sections. Routes that share tvd sections will have the status CONFLICT */
     public void reserve(Simulation sim) {
         assert status == RouteStatus.FREE;
-        var change = new RouteStatusChange(sim, this, RouteStatus.RESERVED);
+        var change = new RouteStatusChange(sim, this, RouteStatus.REQUESTED);
         change.apply(sim, this);
         sim.publishChange(change);
         notifySignals(sim);
@@ -108,10 +109,24 @@ public final class RouteState implements RSMatchable {
             tvdSection.reserve(sim);
         }
 
-        // Set the switches in the required position
+        // Set the switches in the moving position
+        movingSwitchesLeft = 0;
         for (var switchPos : route.switchesPosition.entrySet()) {
             var switchState = sim.infraState.getSwitchState(switchPos.getKey().switchIndex);
-            switchState.setPosition(sim, switchPos.getValue());
+            boolean isMoving = switchState.requestPositionChange(sim, switchPos.getValue(), this);
+            if (isMoving)
+                movingSwitchesLeft++;
+        }
+    }
+
+    public void notifySwitchHasMoved(Simulation sim) {
+        movingSwitchesLeft--;
+        if (movingSwitchesLeft == 0)
+        {
+            var change = new RouteStatusChange(sim, this, RouteStatus.RESERVED);
+            change.apply(sim, this);
+            sim.publishChange(change);
+            notifySignals(sim);
         }
     }
 
