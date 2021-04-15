@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 
 public class RailJSONParser {
     /**
@@ -69,7 +68,7 @@ public class RailJSONParser {
         var switchIndex = 0;
         for (var rjsSwitch : railJSON.switches) {
             var index = nodeIDs.get(rjsSwitch.base);
-            switchNames.put(rjsSwitch.id, trackGraph.makeSwitchNode(index, rjsSwitch.id, switchIndex++));
+            switchNames.put(rjsSwitch.id, trackGraph.makeSwitchNode(index, rjsSwitch.id, switchIndex++, rjsSwitch.positionChangeDelay));
         }
         final var switches = new ArrayList<>(switchNames.values());
 
