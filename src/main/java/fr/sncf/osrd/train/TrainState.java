@@ -1,7 +1,7 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.signaling.ActionPoint;
+import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
@@ -9,9 +9,7 @@ import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.train.phases.PhaseState;
-import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.DeepComparable;
-import fr.sncf.osrd.utils.PointValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,7 +97,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 new ArrayList<>(speedControllers),
                 trainSchedule,
                 currentPhaseIndex,
-                currentPhaseState,
+                currentPhaseState.clone(),
                 new ArrayDeque<>(actionPointsUnderTrain)
         );
     }
@@ -187,7 +185,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     }
 
     /**  Create a location change from the current state to the given position */
-    public Train.TrainStateChange evolveState(
+    public Train.TrainStateChange evolveStateUntilPosition(
             Simulation sim,
             double goalPathPosition
     ) throws SimulationError {
@@ -200,6 +198,17 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             var distanceStep = goalPathPosition - location.getPathPosition();
             step(locationChange, 1.0, distanceStep);
         }
+
+        return locationChange;
+    }
+
+    /**  Create a location change from the current state to current simulation time */
+    public Train.TrainStateChange evolveStateUntilNow(Simulation sim) {
+        var locationChange = new Train.TrainStateChange(sim, trainSchedule.trainID, this);
+
+        while (this.time + 1.0 < sim.getTime())
+            step(locationChange, 1.0, Double.POSITIVE_INFINITY);
+        step(locationChange, sim.getTime() - time, Double.POSITIVE_INFINITY);
 
         return locationChange;
     }
@@ -220,8 +229,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         return integrator.actionToTargetSpeed(directive.allowedSpeed, rollingStock);
     }
 
-    void simulatePhase(Train train, Simulation sim) throws SimulationError {
-        currentPhaseState.simulate(sim, train, this);
+    public TimelineEvent simulatePhase(Train train, Simulation sim) throws SimulationError {
+        return currentPhaseState.simulate(sim, train, this);
     }
 
     @SuppressFBWarnings({"UPM_UNCALLED_PRIVATE_METHOD"})
@@ -231,23 +240,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         return trainSchedule.rollingStock.comfortAcceleration;
     }
 
-    /** Notifies the train that the signal to which it is subscribed has changed its aspects */
-    public void notifySignalAspectsChange(Simulation sim) {
-        if (currentPhaseState.getClass() != SignalNavigatePhase.State.class)
-            throw new RuntimeException("Train should be in navigate phase when notified by signal aspects change");
-        var signalNavigatePhase = (SignalNavigatePhase.State) currentPhaseState;
-        var lastEvent = signalNavigatePhase.getLastEvent();
-        // If the last event has already occurred no need to cancel it
-        if (lastEvent.getState() == TimelineEvent.State.OCCURRED)
-            return;
-
-        // Cancel TrainReachesActionPoint
-        try {
-            sim.cancel(lastEvent);
-        } catch (SimulationError simulationError) {
-            throw new RuntimeException(simulationError);
-        }
-
-        // TODO: Evolve State until the new simulation time
+    public void setAspectConstraints(SignalState signalState) {
+        // TODO
     }
 }

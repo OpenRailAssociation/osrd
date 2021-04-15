@@ -21,7 +21,7 @@ public final class SignalState implements RSValue {
     public final Signal signal;
     public RSAspectSet aspects;
     public final RSExprState<RSAspectSet> exprState;
-    private final ArrayList<TrainState> trainSubscribers = new ArrayList<>();
+    private Train trainSubscribed = null;
 
     private SignalState(Signal signal, RSExprState<RSAspectSet> exprState) {
         this.signal = signal;
@@ -60,17 +60,19 @@ public final class SignalState implements RSValue {
                 var signalState = sim.infraState.getSignalState(signal.index);
                 signalState.notifyChange(sim);
             }
-            for (var train : trainSubscribers)
-                train.notifySignalAspectsChange(sim);
+            if (trainSubscribed != null)
+                trainSubscribed.reactNewAspects(sim, this);
         }
     }
 
-    public void subscribeTrain(TrainState train) {
-        trainSubscribers.add(train);
+    public void subscribeTrain(Train train) {
+        assert trainSubscribed == null;
+        trainSubscribed = train;
     }
 
-    public void unsubscribeTrain(TrainState train) {
-        trainSubscribers.remove(train);
+    public void unsubscribeTrain() {
+        assert trainSubscribed != null;
+        trainSubscribed = null;
     }
 
     @Override

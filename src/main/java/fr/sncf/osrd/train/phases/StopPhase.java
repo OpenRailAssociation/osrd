@@ -2,6 +2,7 @@ package fr.sncf.osrd.train.phases;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainState;
@@ -32,9 +33,14 @@ public class StopPhase extends PhaseState implements Phase {
     }
 
     @Override
-    public void simulate(Simulation sim, Train train, TrainState trainState) {
+    public TimelineEvent simulate(Simulation sim, Train train, TrainState trainState) {
         var nextState = new Train.TrainStateChange(sim, train.getName(), trainState.nextPhase());
-        TrainRestarts.plan(sim, sim.getTime() + duration, train, nextState);
+        return TrainRestarts.plan(sim, sim.getTime() + duration, train, nextState);
+    }
+
+    @Override
+    public PhaseState clone() {
+        return new StopPhase(duration);
     }
 
     @Override
