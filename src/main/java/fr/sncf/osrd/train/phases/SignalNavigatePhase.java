@@ -4,11 +4,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
-import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
-import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
@@ -136,8 +134,6 @@ public final class SignalNavigatePhase implements Phase {
         public final SignalNavigatePhase phase;
         private int routeIndex = 0;
         private int interactionsPathIndex = 0;
-        private SignalState signalSubscribed = null;
-        private TimelineEvent lastEvent = null;
 
         @Override
         @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
@@ -150,6 +146,12 @@ public final class SignalNavigatePhase implements Phase {
 
         public State(SignalNavigatePhase phase) {
             this.phase = phase;
+        }
+
+        State(SignalNavigatePhase phase, int routeIndex, int interactionsPathIndex) {
+            this.phase = phase;
+            this.routeIndex = routeIndex;
+            this.interactionsPathIndex = interactionsPathIndex;
         }
 
         private Interaction nextInteraction(TrainState trainState) {
@@ -168,15 +170,13 @@ public final class SignalNavigatePhase implements Phase {
         }
 
         @Override
-        public void simulate(Simulation sim, Train train, TrainState trainState) throws SimulationError {
+        public TimelineEvent simulate(Simulation sim, Train train, TrainState trainState) throws SimulationError {
             // Check if we reached our goal
             if (interactionsPathIndex == phase.interactionsPath.size()) {
-                if (signalSubscribed != null)
-                    unsubscribeToSignal(sim, signalSubscribed.signal, trainState);
                 var change = new Train.TrainStateChange(sim, train.getName(), trainState.nextPhase());
                 change.apply(sim, train);
                 sim.publishChange(change);
-                return;
+                return null;
             }
 
             // 1) find the next interaction event
@@ -186,11 +186,10 @@ public final class SignalNavigatePhase implements Phase {
             addInteractionUnderTrain(trainState, nextInteraction);
 
             // 3) simulate up to nextEventTrackPosition
-            var newTrainState = trainState.clone();
-            var simulationResult = newTrainState.evolveState(sim, nextInteraction.position);
+            var simulationResult = trainState.evolveStateUntilPosition(sim, nextInteraction.position);
 
             // 4) create an event with simulation data up to this point
-            lastEvent = TrainReachesActionPoint.plan(
+            return TrainReachesActionPoint.plan(
                     sim,
                     simulationResult.newState.time,
                     train,
@@ -287,30 +286,17 @@ public final class SignalNavigatePhase implements Phase {
             backwardTVDSection.unoccupy(sim);
         }
 
-        /** Subscribe to a signal */
-        public void subscribeToSignal(Simulation sim, Signal signal, TrainState train) {
-            assert signalSubscribed == null;
-            var signalState = sim.infraState.getSignalState(signal.index);
-            signalState.subscribeTrain(train);
-            signalSubscribed = signalState;
-
-        }
-
-        /** Unsubscribe to a signal */
-        public void unsubscribeToSignal(Simulation sim, Signal signal, TrainState train) {
-            assert signalSubscribed != null;
-            var signalState = sim.infraState.getSignalState(signal.index);
-            signalState.unsubscribeTrain(train);
-            signalSubscribed = null;
-
-        }
-
         public int getRouteIndex() {
             return routeIndex;
         }
 
-        public TimelineEvent getLastEvent() {
-            return lastEvent;
+        @Override
+        public SignalNavigatePhase.State clone() {
+            return new SignalNavigatePhase.State(
+                    phase,
+                    routeIndex,
+                    interactionsPathIndex
+            );
         }
     }
 }
