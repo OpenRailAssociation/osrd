@@ -33,6 +33,7 @@ export default class Loader extends React.Component {
 const stateToProps = (state) => ({
   loading: state.main.loading,
 });
-export const LoaderState = connect(stateToProps)(({ loading }) => (
-  <>{loading && loading > 0 && <Loader center />}</>
-));
+export const LoaderState = connect(stateToProps)(({ loading }) => {
+  if (loading && loading > 0) return <Loader center />;
+  return null;
+});
