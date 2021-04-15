@@ -467,6 +467,7 @@
         "section": "ne.micro.foo_to_bar"
       },
       "id": "il.switch_foo",
+      "position_change_delay": 6,
       "left": {
         "endpoint": "END",
         "section": "ne.micro.foo_b"
