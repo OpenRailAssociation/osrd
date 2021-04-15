@@ -24,7 +24,7 @@ public class RMLSwitchILTest {
         var switches = infra.switches;
         assertEquals(1, switches.size());
         var s = switches.iterator().next();
-        assertEquals(6000, s.positionChangeDelay);
+        assertEquals(6, s.positionChangeDelay);
         assertEquals("il.switch_foo", s.id);
     }
 }
