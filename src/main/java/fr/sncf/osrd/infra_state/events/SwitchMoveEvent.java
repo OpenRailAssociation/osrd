@@ -17,7 +17,10 @@ public class SwitchMoveEvent extends TimelineEvent {
     private final SwitchState switchState;
     private final RouteState routeState;
 
-    private SwitchMoveEvent(TimelineEventId eventId, SwitchPosition newPosition, SwitchState switchState, RouteState routeState) {
+    private SwitchMoveEvent(TimelineEventId eventId,
+                            SwitchPosition newPosition,
+                            SwitchState switchState,
+                            RouteState routeState) {
         super(eventId);
         this.newPosition = newPosition;
         this.switchState = switchState;
@@ -86,7 +89,8 @@ public class SwitchMoveEvent extends TimelineEvent {
 
         @Override
         public String toString() {
-            return String.format("SwitchChangePlanned { newPosition=%s, switchId=%s }", newPosition, switchState.switchRef.id);
+            return String.format("SwitchChangePlanned { newPosition=%s, switchId=%s }",
+                    newPosition, switchState.switchRef.id);
         }
     }
 }

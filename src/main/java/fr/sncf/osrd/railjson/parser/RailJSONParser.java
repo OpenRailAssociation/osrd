@@ -68,7 +68,8 @@ public class RailJSONParser {
         var switchIndex = 0;
         for (var rjsSwitch : railJSON.switches) {
             var index = nodeIDs.get(rjsSwitch.base);
-            switchNames.put(rjsSwitch.id, trackGraph.makeSwitchNode(index, rjsSwitch.id, switchIndex++, rjsSwitch.positionChangeDelay));
+            switchNames.put(rjsSwitch.id, trackGraph.makeSwitchNode(index, rjsSwitch.id, switchIndex++,
+                    rjsSwitch.positionChangeDelay));
         }
         final var switches = new ArrayList<>(switchNames.values());
 
