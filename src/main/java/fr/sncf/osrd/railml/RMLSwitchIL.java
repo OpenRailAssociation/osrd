@@ -19,9 +19,9 @@ public class RMLSwitchIL {
         var res = new ArrayList<RJSSwitch>();
         for (var switchNode : document.selectNodes(xpath)) {
             var switchIL = (Element) switchNode;
-            var throwTime_iso8601 = switchIL.attributeValue("typicalThrowTime", "PT0S");
-            double throwTime = java.time.Duration.parse(throwTime_iso8601).toMillis();
-            double throwTimeSeconds = throwTime / 1000;
+            var throwTimeIso8601 = switchIL.attributeValue("typicalThrowTime", "PT0S");
+            double throwTime = java.time.Duration.parse(throwTimeIso8601).toMillis();
+            double throwTimeSeconds = throwTime / 1000.;
             var id = switchIL.attributeValue("id");
             var switchIS = switchesIS.get(id);
             if (switchIS == null)
