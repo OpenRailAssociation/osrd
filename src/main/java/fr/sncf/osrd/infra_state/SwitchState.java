@@ -8,6 +8,7 @@ import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.simulation.EntityChange;
 import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.infra_state.events.SwitchMoveEvent;
 
 /**
  * The state of the route is the actual entity which interacts with the rest of the infrastructure
@@ -49,6 +50,17 @@ public final class SwitchState implements RSMatchable {
                 signalState.notifyChange(sim);
             }
         }
+    }
+
+
+    /**
+     * Starts a switch change if needed
+     */
+    public boolean requestPositionChange(Simulation sim, SwitchPosition position, RouteState requestingRoute) {
+        // if (this.position == position)
+            // return false;
+        SwitchMoveEvent.plan(sim, sim.getTime() + 6 /* FIXME */, position, this, requestingRoute);
+        return true;
     }
 
     @Override
