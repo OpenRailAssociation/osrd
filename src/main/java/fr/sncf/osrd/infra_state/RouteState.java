@@ -113,9 +113,11 @@ public final class RouteState implements RSMatchable {
         movingSwitchesLeft = 0;
         for (var switchPos : route.switchesPosition.entrySet()) {
             var switchState = sim.infraState.getSwitchState(switchPos.getKey().switchIndex);
-            boolean isMoving = switchState.requestPositionChange(sim, switchPos.getValue(), this);
-            if (isMoving)
+            boolean isRightPosition = switchState.getPosition().equals(switchPos.getValue());
+            if (!isRightPosition) {
                 movingSwitchesLeft++;
+                switchState.requestPositionChange(sim, switchPos.getValue(), this);
+            }
         }
     }
 
