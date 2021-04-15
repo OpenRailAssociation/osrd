@@ -20,12 +20,13 @@ public class RMLSwitchIL {
         for (var switchNode : document.selectNodes(xpath)) {
             var switchIL = (Element) switchNode;
             var throwTime_iso8601 = switchIL.attributeValue("typicalThrowTime", "PT0S");
-            var throwTime = java.time.Duration.parse(throwTime_iso8601).toMillis();
+            double throwTime = java.time.Duration.parse(throwTime_iso8601).toMillis();
+            double throwTimeSeconds = throwTime / 1000;
             var id = switchIL.attributeValue("id");
             var switchIS = switchesIS.get(id);
             if (switchIS == null)
                 throw new InvalidInfraException(String.format("Invalid XML, switchIL %s has no matching switchIS", id));
-            res.add(new RJSSwitch(id, switchIS.base, switchIS.left, switchIS.right, throwTime));
+            res.add(new RJSSwitch(id, switchIS.base, switchIS.left, switchIS.right, throwTimeSeconds));
         }
         return res;
     }
