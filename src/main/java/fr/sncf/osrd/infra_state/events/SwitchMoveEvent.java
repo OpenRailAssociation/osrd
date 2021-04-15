@@ -26,7 +26,7 @@ public class SwitchMoveEvent extends TimelineEvent {
 
     @Override
     protected void onOccurrence(Simulation sim) throws SimulationError {
-        logger.info(String.format("hello from %s, moving to %s", switchState.switchRef.id, newPosition));
+        switchState.setPosition(sim, newPosition);
         routeState.notifySwitchHasMoved(sim);
     }
 
