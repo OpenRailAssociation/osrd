@@ -5,7 +5,7 @@ import fr.sncf.osrd.utils.graph.ApplicableDirections;
 
 public class DirectionalRJSTrackRange extends RJSTrackRange {
     @Json(name = "applicable_direction")
-    public final ApplicableDirections applicableDirections;
+    public ApplicableDirections applicableDirections;
 
     DirectionalRJSTrackRange(ApplicableDirections applicableDirections, double begin, double end) {
         super(begin, end);

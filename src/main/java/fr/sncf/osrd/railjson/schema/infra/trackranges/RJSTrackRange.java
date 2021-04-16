@@ -6,8 +6,8 @@ import fr.sncf.osrd.utils.graph.ApplicableDirections;
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public abstract class RJSTrackRange {
     /** Positions from the beginning of the RJSTrackSection */
-    public final double begin;
-    public final double end;
+    public double begin;
+    public double end;
 
     /** What sides the object can be approached from */
     public abstract ApplicableDirections getNavigability();

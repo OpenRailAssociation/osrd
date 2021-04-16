@@ -8,7 +8,7 @@ import fr.sncf.osrd.utils.graph.IPointValue;
 public abstract class RJSRouteWaypoint
         extends DirectionalRJSTrackObject
         implements Identified, IPointValue<RJSRouteWaypoint> {
-    public final String id;
+    public String id;
 
     public static final PolymorphicJsonAdapterFactory<RJSRouteWaypoint> adapter =
             PolymorphicJsonAdapterFactory.of(RJSRouteWaypoint.class, "type")

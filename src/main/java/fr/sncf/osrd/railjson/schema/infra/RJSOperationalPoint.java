@@ -5,7 +5,7 @@ import fr.sncf.osrd.railjson.schema.common.Identified;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSOperationalPoint implements Identified {
-    public final String id;
+    public String id;
 
     public RJSOperationalPoint(String id) {
         this.id = id;

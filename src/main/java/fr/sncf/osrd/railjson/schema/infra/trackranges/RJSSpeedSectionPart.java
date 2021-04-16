@@ -7,7 +7,7 @@ import fr.sncf.osrd.railjson.schema.infra.RJSSpeedSection;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSSpeedSectionPart extends DirectionalRJSTrackRange {
-    public final ID<RJSSpeedSection> ref;
+    public ID<RJSSpeedSection> ref;
 
     public RJSSpeedSectionPart(
             ID<RJSSpeedSection> ref,

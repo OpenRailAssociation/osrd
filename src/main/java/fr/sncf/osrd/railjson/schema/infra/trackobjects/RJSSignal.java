@@ -8,16 +8,16 @@ import fr.sncf.osrd.utils.graph.ApplicableDirections;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSSignal extends RJSTrackObject implements Identified {
-    public final String id;
+    public String id;
 
     /** The track direction for which the signal applies */
-    public final ApplicableDirections navigability;
+    public ApplicableDirections navigability;
 
     /** The distance at which the signal becomes visible */
-    public final double sightDistance;
+    public double sightDistance;
 
     /** The behavior of the signal */
-    public final RJSRSExpr expr;
+    public RJSRSExpr expr;
 
     /** Instantiate RJSSignal */
     public RJSSignal(

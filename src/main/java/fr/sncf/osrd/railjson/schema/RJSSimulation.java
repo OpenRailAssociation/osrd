@@ -25,11 +25,11 @@ public final class RJSSimulation {
 
     /** A list of rolling stocks involved in this simulation */
     @Json(name = "rolling_stocks")
-    public final Collection<RJSRollingStock> rollingStocks;
+    public Collection<RJSRollingStock> rollingStocks;
 
     /** A list of trains plannings */
     @Json(name = "train_schedules")
-    public final Collection<RJSTrainSchedule> trainSchedules;
+    public Collection<RJSTrainSchedule> trainSchedules;
 
     public RJSSimulation(
             Collection<RJSRollingStock> rollingStocks,

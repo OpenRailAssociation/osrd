@@ -30,41 +30,41 @@ public class RJSInfra {
 
     /** A simple graph of track sections. */
     @Json(name = "track_sections")
-    public final Collection<RJSTrackSection> trackSections;
+    public Collection<RJSTrackSection> trackSections;
 
     @Json(name = "track_section_links")
-    public final Collection<RJSTrackSectionLink> trackSectionLinks;
+    public Collection<RJSTrackSectionLink> trackSectionLinks;
 
     /** Switches are at the ends of track sections, and link those together. */
-    public final Collection<RJSSwitch> switches;
+    public Collection<RJSSwitch> switches;
 
     /**
      * The list of all operational points.
      * Finding reverse dependencies is up to the user.
      */
     @Json(name = "operational_points")
-    public final Collection<RJSOperationalPoint> operationalPoints;
+    public Collection<RJSOperationalPoint> operationalPoints;
 
     /**
      * Track vacancy detection sections
      * Finding reverse dependencies is up to the user.
      */
     @Json(name = "tvd_sections")
-    public final Collection<RJSTVDSection> tvdSections;
+    public Collection<RJSTVDSection> tvdSections;
 
     /** The list of routes */
-    public final Collection<RJSRoute> routes;
+    public Collection<RJSRoute> routes;
 
     /** The list of speed sections */
     @Json(name = "speed_sections")
-    public final Collection<RJSSpeedSection> speedSections;
+    public Collection<RJSSpeedSection> speedSections;
 
     /** The list of all the aspects signals can take */
-    public final Collection<RJSAspect> aspects;
+    public Collection<RJSAspect> aspects;
 
     /** The list of function definitions */
     @Json(name = "script_functions")
-    public final List<RJSRSFunction> scriptFunctions;
+    public List<RJSRSFunction> scriptFunctions;
 
     /** Create a new serialized RailJSON file */
     public RJSInfra(
