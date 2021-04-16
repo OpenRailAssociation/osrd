@@ -17,7 +17,7 @@ public class RJSSwitch implements Identified {
     public final RJSTrackSection.EndpointID right;
     /** The time it takes for the switch to change position in seconds */
     @Json(name = "position_change_delay")
-    public final double positionChangeDelay;
+    public double positionChangeDelay;
 
     /**
      * Create a new serialized switch
