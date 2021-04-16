@@ -1,11 +1,9 @@
 package fr.sncf.osrd.infra.railscript;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.railscript.value.RSType;
 
-@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RSFunction<T extends RSValue> {
     public final String functionName;
 

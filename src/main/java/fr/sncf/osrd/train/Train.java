@@ -202,7 +202,6 @@ public class Train {
             return speedDirectivesUpdates.equals(o.speedDirectivesUpdates);
         }
 
-        @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
         public static final class PathValue<T> {
             public final double pathPosition;
             public final T value;

@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSInfra {
     /** Moshi adapter used to serialize and deserialize RJSInfra */
     public static final JsonAdapter<RJSInfra> adapter = new Moshi

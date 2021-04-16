@@ -161,9 +161,9 @@ public class ChangeSerializer {
         return adapterFactory;
     }
 
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+    @SuppressFBWarnings("URF_UNREAD_FIELD")
     public static final class IdentifiedObject {
-        public final String id;
+        final String id;
 
         public IdentifiedObject(String id) {
             this.id = id;
