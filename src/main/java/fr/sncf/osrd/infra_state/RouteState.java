@@ -98,10 +98,6 @@ public final class RouteState implements RSMatchable {
     /** Reserve a route and his tvd sections. Routes that share tvd sections will have the status CONFLICT */
     public void reserve(Simulation sim) {
         assert status == RouteStatus.FREE;
-        var change = new RouteStatusChange(sim, this, RouteStatus.REQUESTED);
-        change.apply(sim, this);
-        sim.publishChange(change);
-        notifySignals(sim);
 
         // Reserve the tvd sections
         for (var tvdSectionPath : route.tvdSectionsPaths) {
@@ -119,6 +115,14 @@ public final class RouteState implements RSMatchable {
                 switchState.requestPositionChange(sim, switchPos.getValue(), this);
             }
         }
+
+        RouteStatus newStatus = movingSwitchesLeft > 0 ? RouteStatus.REQUESTED : RouteStatus.RESERVED;
+
+        var change = new RouteStatusChange(sim, this, newStatus);
+        change.apply(sim, this);
+        sim.publishChange(change);
+        notifySignals(sim);
+
     }
 
     /** Should be called when a switch is done moving and is in the position we requested */
