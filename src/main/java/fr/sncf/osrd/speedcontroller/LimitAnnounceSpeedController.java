@@ -25,12 +25,12 @@ public final class LimitAnnounceSpeedController extends SpeedController {
 
     @Override
     public SpeedDirective getDirective(
-            double headPosition
+            double pathPosition
     ) {
-        var distance = endPosition - headPosition;
+        var distance = endPosition - pathPosition;
         assert distance >= 0;
         var currentLimit = Math.sqrt(targetSpeedLimit * targetSpeedLimit + 2 * distance * gamma);
-        return SpeedDirective.allowedOnly(currentLimit);
+        return new SpeedDirective(currentLimit);
     }
 
     @Override

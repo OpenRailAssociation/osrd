@@ -1,6 +1,7 @@
 package fr.sncf.osrd.train;
 
 import fr.sncf.osrd.RollingStock;
+import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.utils.Constants;
 
 /**
@@ -77,19 +78,15 @@ public class TrainPhysicsIntegrator {
         return computeTotalForce(rollingResistance, actionTractionForce) / inertia;
     }
 
-    /**
-     * Computes the force required to keep some speed.
-     * @param maxSpeed the maximum speed, which we'd like to achieve
-     * @return the traction force
-     */
-    public Action actionToTargetSpeed(Double maxSpeed, RollingStock rollingStock) {
+    /** Computes the force required to keep some speed. */
+    public Action actionToTargetSpeed(SpeedDirective speedDirective, RollingStock rollingStock) {
         // the force we'd need to apply to reach the target speed at the next step
         // F= m*a
         // a<0 dec force<0
         // a>0 acc force>0
         // normally the train speed should be positive
         assert currentSpeed >= 0;
-        var targetForce = (maxSpeed - currentSpeed) / timeStep * inertia;
+        var targetForce = (speedDirective.allowedSpeed - currentSpeed) / timeStep * inertia;
         // limited the possible acceleration for reasons of travel comfort
         if (targetForce > rollingStock.comfortAcceleration * inertia)
             targetForce = rollingStock.comfortAcceleration * inertia;
@@ -133,10 +130,11 @@ public class TrainPhysicsIntegrator {
 
     private static double computeTimeDelta(double currentSpeed, double acceleration, double positionDelta) {
         // Solve: acceleration / 2 * t^2 + currentSpeed * t - positionDelta = 0
-        if (acceleration == 0)
+        if (acceleration < 0.00001)
             return positionDelta / currentSpeed;
         var numerator = -currentSpeed + Math.sqrt(currentSpeed * currentSpeed + 2 * positionDelta * acceleration);
-        return numerator / (2 * acceleration);
+        var res = numerator / acceleration;
+        return res;
     }
 
     /**

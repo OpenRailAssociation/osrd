@@ -12,9 +12,9 @@ public class MaxSpeedController extends SpeedController {
 
     @Override
     public SpeedDirective getDirective(
-            double headPosition
+            double pathPosition
     ) {
-        return new SpeedDirective(speedLimit, speedLimit, speedLimit, false);
+        return new SpeedDirective(speedLimit);
     }
 
     @Override

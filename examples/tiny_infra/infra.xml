@@ -536,7 +536,7 @@
             +—————————————————+————————————————————————————————————+——————————————+
             -->
             <speeds>
-                <speedSection id="speedsection.mid_limit" maxSpeed="60" isTemporary="false" isSignalized="true">
+                <speedSection id="speedsection.mid_limit" maxSpeed="60" isTemporary="false" isSignalized="false">
                     <linearLocation id="speedsection.mid_limit.loc" applicationDirection="both">
                         <associatedNetElement netElementRef="ne.micro.foo_to_bar" keepsOrientation="true">
                             <linearCoordinateBegin positioningSystemRef="lps_foo_to_bar" measure="2200.0"/>

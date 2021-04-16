@@ -7,11 +7,13 @@ import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.utils.CryoList;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TrainCreatedEvent extends TimelineEvent {
@@ -90,7 +92,7 @@ public class TrainCreatedEvent extends TimelineEvent {
         var trainPath = schedule.fullPath;
         var rollingStock = schedule.rollingStock;
 
-        var controllers = new CryoList<SpeedController>();
+        var controllers = new ArrayList<SpeedController>();
 
         // add a limit for the maximum speed the hardware is rated for
         controllers.add(new MaxSpeedController(
@@ -102,8 +104,18 @@ public class TrainCreatedEvent extends TimelineEvent {
         var offset = 0;
         for (var trackSectionRange : trainPath) {
             var edge = trackSectionRange.edge;
+            var absBegin = Double.min(trackSectionRange.getBeginPosition(), trackSectionRange.getEndPosition());
+            var absEnd = Double.max(trackSectionRange.getBeginPosition(), trackSectionRange.getEndPosition());
             for (var speedRange : TrackSection.getSpeedSections(edge, trackSectionRange.direction)) {
                 var speedSection = speedRange.value;
+                var speedTrackRange = new TrackSectionRange(
+                        edge,
+                        EdgeDirection.START_TO_STOP,
+                        Double.max(speedRange.begin, absBegin),
+                        Double.min(speedRange.end, absEnd)
+                );
+                if (trackSectionRange.direction == EdgeDirection.STOP_TO_START)
+                    speedTrackRange = speedTrackRange.opposite();
 
                 // signalized speed sections are handled dynamically
                 if (speedSection.isSignalized)
@@ -114,8 +126,8 @@ public class TrainCreatedEvent extends TimelineEvent {
                     continue;
 
                 // compute where this limit is active from and to
-                var begin = offset + speedRange.begin;
-                var end = offset + speedRange.end;
+                var begin = offset + speedTrackRange.getBeginPosition() - trackSectionRange.getBeginPosition();
+                var end = begin + speedTrackRange.length();
 
                 // we need to add two speed controllers:
                 // the first is in charge of slowing down the train as it approaches the restricted zone
@@ -140,7 +152,7 @@ public class TrainCreatedEvent extends TimelineEvent {
 
                 controllers.add(new MaxSpeedController(speedSection.speedLimit, begin, end));
             }
-            offset += trackSectionRange.edge.length;
+            offset += trackSectionRange.length();
         }
 
         logger.trace("created initial speed controllers:");

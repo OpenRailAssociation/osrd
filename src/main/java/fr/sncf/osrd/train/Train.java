@@ -244,7 +244,7 @@ public class Train {
             }
 
             public double interpolatePosition(double nextTime) {
-                double delta = time - nextTime;
+                double delta = nextTime - time;
                 return pathPosition + delta * speed;
             }
 
