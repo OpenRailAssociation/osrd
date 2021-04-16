@@ -18,7 +18,6 @@ import java.util.List;
 /**
  * An edge in the topological graph.
  */
-@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public final class TrackSection extends BiNEdge<TrackSection> {
     public final String id;
 

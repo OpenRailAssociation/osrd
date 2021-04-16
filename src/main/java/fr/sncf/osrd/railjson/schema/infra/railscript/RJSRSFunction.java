@@ -4,7 +4,6 @@ import com.squareup.moshi.*;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 
-@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSRSFunction implements Identified {
     /** Name of the function */
     public String name;
