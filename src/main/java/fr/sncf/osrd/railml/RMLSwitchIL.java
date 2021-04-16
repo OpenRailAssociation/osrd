@@ -23,9 +23,11 @@ public class RMLSwitchIL {
             double throwTime = java.time.Duration.parse(throwTimeIso8601).toMillis();
             double throwTimeSeconds = throwTime / 1000.;
             var id = switchIL.attributeValue("id");
-            var switchIS = switchesIS.get(id);
+            var refSwitchIS = switchIL.element("refersTo").attributeValue("ref");
+            var switchIS = switchesIS.get(refSwitchIS);
             if (switchIS == null)
-                throw new InvalidInfraException(String.format("Invalid XML, switchIL %s has no matching switchIS", id));
+                throw new InvalidInfraException(
+                        String.format("Invalid XML, switchIL %s has no matching switchIS %s", id, refSwitchIS));
             res.add(new RJSSwitch(id, switchIS.base, switchIS.left, switchIS.right, throwTimeSeconds));
         }
         return res;
