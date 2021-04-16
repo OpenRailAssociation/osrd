@@ -1,6 +1,5 @@
 package fr.sncf.osrd.infra.signaling;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.*;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
@@ -13,7 +12,6 @@ import fr.sncf.osrd.utils.graph.ApplicableDirections;
 
 import java.util.ArrayList;
 
-@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class Signal implements ActionPoint {
     public final int index;
     public final double sightDistance;

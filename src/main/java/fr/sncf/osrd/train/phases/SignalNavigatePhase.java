@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public final class SignalNavigatePhase implements Phase {
-    @SuppressFBWarnings({"URF_UNREAD_FIELD"})
     public final List<Route> routePath;
     public final TrackSectionLocation endLocation;
     private final ArrayList<TrackSectionRange> trackSectionPath;
@@ -129,7 +128,6 @@ public final class SignalNavigatePhase implements Phase {
         }
     }
 
-    @SuppressFBWarnings({"URF_UNREAD_FIELD"})
     public static final class State extends PhaseState {
         public final SignalNavigatePhase phase;
         private int routeIndex = 0;

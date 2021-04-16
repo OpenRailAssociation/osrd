@@ -13,7 +13,6 @@ import fr.sncf.osrd.utils.SortedArraySet;
 /**
  * The state of the route is the actual entity which interacts with the rest of the infrastructure
  */
-@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public final class RouteState implements RSMatchable {
     public final Route route;
     public RouteStatus status;

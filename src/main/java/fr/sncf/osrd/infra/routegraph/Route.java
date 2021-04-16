@@ -22,7 +22,6 @@ public class Route extends DirNEdge {
     public final String id;
     /** List of tvdSectionPath forming the route */
     public final List<TVDSectionPath> tvdSectionsPaths;
-    @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public final List<EdgeDirection> tvdSectionsPathDirections;
     public final List<SortedArraySet<TVDSection>> releaseGroups;
     public final HashMap<Switch, SwitchPosition> switchesPosition;

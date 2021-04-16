@@ -86,7 +86,6 @@ import java.util.Map;
  * }
  * </pre>
  */
-@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public abstract class RJSRSExpr {
     public static final PolymorphicJsonAdapterFactory<RJSRSExpr> adapter = (
             PolymorphicJsonAdapterFactory.of(RJSRSExpr.class, "type")

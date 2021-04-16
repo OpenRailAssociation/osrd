@@ -13,7 +13,6 @@ import fr.sncf.osrd.infra_state.events.SwitchMoveEvent;
 /**
  * The state of the route is the actual entity which interacts with the rest of the infrastructure
  */
-@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public final class SwitchState implements RSMatchable {
     public final Switch switchRef;
 
