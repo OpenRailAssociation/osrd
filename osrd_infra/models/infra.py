@@ -22,22 +22,6 @@ class TrackSectionLocation(Component):
 class TrackSectionLocationEntity(models.Model):
     location = models.OneToOneField("TrackSectionLocation", on_delete=models.CASCADE)
 
-    @property
-    def track_section(self):
-        return self.location.track_section_id
-
-    @track_section.setter
-    def set_track_section(self, value):
-        self.location.track_section_id = value
-
-    @property
-    def offset(self):
-        return self.location.offset
-
-    @offset.setter
-    def set_offset(self, value):
-        self.location.offset = value
-
     class Meta:
         abstract = True
 
@@ -53,15 +37,7 @@ class Identifier(Component):
 
 
 class IdentifiedEntity(models.Model):
-    identifier = models.OneToOneField("Identifier", on_delete=models.CASCADE)
-
-    @property
-    def name(self):
-        return self.identifier.name
-
-    @name.setter
-    def set_name(self, value):
-        self.identifier.name = value
+    identity = models.OneToOneField("Identifier", on_delete=models.CASCADE)
 
     class Meta:
         abstract = True
@@ -117,7 +93,7 @@ class OperationalPoint(Entity, IdentifiedEntity):
 
 class OperationalPointPart(Entity):
     track_range = models.OneToOneField("TrackSectionRange", on_delete=models.CASCADE)
-    operational_point = models.OneToOneField("OperationalPoint", on_delete=models.CASCADE)
+    operational_point = models.ForeignKey("OperationalPoint", related_name="parts", on_delete=models.CASCADE)
 
 
 class Signal(Entity, IdentifiedEntity, TrackSectionLocationEntity):

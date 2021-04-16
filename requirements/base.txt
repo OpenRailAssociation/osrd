@@ -1,6 +1,7 @@
 django==3.1.6
 psycopg2-binary==2.8.6
 djangorestframework==3.12.2
+djangorestframework-gis==0.17
 celery==4.4.7
 django-redis==4.12.1
 

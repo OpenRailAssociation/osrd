@@ -1,10 +1,10 @@
-from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 
-from .models import Infra, TrackSection, Signal
-from .serializers import InfraSerializer, TrackSectionSerializer, SignalSerializer
+from .models import Infra, TrackSection, Signal, OperationalPoint, Switch
+from .serializers import InfraSerializer, TrackSectionSerializer, SignalSerializer, OperationalPointSerializer, SwitchSerializer
 
 
-class InfraViewSet(ReadOnlyModelViewSet):
+class InfraViewSet(ModelViewSet):
     serializer_class = InfraSerializer
 
     def get_queryset(self):
@@ -12,7 +12,7 @@ class InfraViewSet(ReadOnlyModelViewSet):
         return Infra.objects.all()
 
 
-class TrackSectionViewSet(ReadOnlyModelViewSet):
+class TrackSectionViewSet(ModelViewSet):
     serializer_class = TrackSectionSerializer
 
     def get_queryset(self):
@@ -20,9 +20,24 @@ class TrackSectionViewSet(ReadOnlyModelViewSet):
         return TrackSection.objects.all()
 
 
-class SignalViewSet(ReadOnlyModelViewSet):
+class SignalViewSet(ModelViewSet):
     serializer_class = SignalSerializer
 
     def get_queryset(self):
         # return Infra.objects.filter(owner=self.request.user.sub)
         return Signal.objects.all()
+
+
+class OperationalPointViewSet(ModelViewSet):
+    serializer_class = OperationalPointSerializer
+
+    def get_queryset(self):
+        # return Infra.objects.filter(owner=self.request.user.sub)
+        return OperationalPoint.objects.all()
+
+
+class SwitchViewSet(ModelViewSet):
+    serializer_class = SwitchSerializer
+
+    def get_queryset(self):
+        return Switch.objects.all()

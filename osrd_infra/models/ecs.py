@@ -7,7 +7,15 @@ class EntityID(models.Model):
         TRACK_SECTION = 0
         TRACK_SECTION_LINK = 1
         SIGNAL = 2
+        OPERATIONAL_POINT = 3
+        SWITCH = 4
     type_id = models.IntegerField(choices=Type.choices)
+
+    def type_repr(self):
+        return self.Type.names[self.type_id]
+
+    def __repr__(self):
+        return f"EntityID(id={self.id}, type_id={self.type_repr()})"
 
 
 class Component(models.Model):
