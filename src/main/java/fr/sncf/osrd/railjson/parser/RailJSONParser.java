@@ -3,10 +3,7 @@ package fr.sncf.osrd.railjson.parser;
 import static fr.sncf.osrd.infra.trackgraph.TrackSection.linkEdges;
 
 import com.squareup.moshi.*;
-import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.OperationalPoint;
-import fr.sncf.osrd.infra.TVDSection;
+import fr.sncf.osrd.infra.*;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
@@ -17,6 +14,7 @@ import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.signaling.*;
 import fr.sncf.osrd.infra.railscript.RSExprVisitor;
 import fr.sncf.osrd.infra.railscript.RSFunction;
+import fr.sncf.osrd.utils.RangeValue;
 import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.infra.railscript.RSExpr;
@@ -97,6 +95,13 @@ public class RailJSONParser {
             scriptFunctions.put(scriptFunction.functionName, scriptFunction);
         }
 
+        // parse speed sections
+        var speedSections = new HashMap<String, SpeedSection>();
+        for (var rjsSpeedSection : railJSON.speedSections) {
+            var speedSection = new SpeedSection(rjsSpeedSection.isSignalized, rjsSpeedSection.speed);
+            speedSections.put(rjsSpeedSection.id, speedSection);
+        }
+
         var waypointsMap = new HashMap<String, Waypoint>();
 
         // create track sections
@@ -111,11 +116,22 @@ public class RailJSONParser {
                     trackSection.length);
             infraTrackSections.put(trackSection.id, infraTrackSection);
 
+            // Parse operational points
             for (var rjsOp : trackSection.operationalPoints) {
                 var op = trackGraph.operationalPoints.get(rjsOp.ref.id);
                 // add the reference from the OperationalPoint to the TrackSection,
                 // add from the TrackSection to the OperationalPoint
                 op.addRef(infraTrackSection, rjsOp.begin, rjsOp.end);
+            }
+
+            // Parse speed limits
+            for (var rjsSpeedLimits : trackSection.speedSections) {
+                var speedSection = speedSections.get(rjsSpeedLimits.ref.id);
+                var rangeSpeedLimit = new RangeValue<>(rjsSpeedLimits.begin, rjsSpeedLimits.end, speedSection);
+                if (rjsSpeedLimits.applicableDirections.appliesToNormal())
+                    infraTrackSection.forwardSpeedSections.add(rangeSpeedLimit);
+                if (rjsSpeedLimits.applicableDirections.appliesToReverse())
+                    infraTrackSection.backwardSpeedSections.add(rangeSpeedLimit);
             }
 
             // Parse waypoints

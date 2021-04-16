@@ -49,8 +49,8 @@ public final class TrackSection extends BiNEdge<TrackSection> {
 
     // the data structure used for the slope automatically negates it when iterated on backwards
     public final DoubleOrientedRangeSequence slope = new DoubleOrientedRangeSequence();
-    public final ArrayList<RangeValue<SpeedSection>> speedSectionsForward = new ArrayList<>();
-    public final ArrayList<RangeValue<SpeedSection>> speedSectionsBackward = new ArrayList<>();
+    public final ArrayList<RangeValue<SpeedSection>> forwardSpeedSections = new ArrayList<>();
+    public final ArrayList<RangeValue<SpeedSection>> backwardSpeedSections = new ArrayList<>();
     public final IntervalTree<OperationalPoint.Ref> operationalPoints = new IntervalTree<>();
     public final PointSequence<Waypoint> waypoints = new PointSequence<>();
     public final PointSequence<Signal> signals = new PointSequence<>();
@@ -181,8 +181,8 @@ public final class TrackSection extends BiNEdge<TrackSection> {
      */
     public static ArrayList<RangeValue<SpeedSection>> getSpeedSections(TrackSection edge, EdgeDirection direction) {
         if (direction == EdgeDirection.START_TO_STOP)
-            return edge.speedSectionsForward;
-        return edge.speedSectionsBackward;
+            return edge.forwardSpeedSections;
+        return edge.backwardSpeedSections;
     }
 
     /**

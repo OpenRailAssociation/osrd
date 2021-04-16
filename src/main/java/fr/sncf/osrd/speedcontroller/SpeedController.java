@@ -30,10 +30,10 @@ public abstract class SpeedController implements DeepComparable<SpeedController>
     /**
      * Returns the speed instructed by this controller.
      * Nan means coasting
-     * @param trackPosition the position of the train relative to the beginning of the track
+     * @param pathPosition the position of the train relative to the beginning of the track
      * @return the speed limits at this point
      */
-    public abstract SpeedDirective getDirective(double trackPosition);
+    public abstract SpeedDirective getDirective(double pathPosition);
 
     /**
      * Get and merge the speed directives of a given list of speed controllers.
@@ -42,7 +42,7 @@ public abstract class SpeedController implements DeepComparable<SpeedController>
      * @return the merged speed directive
      */
     public static SpeedDirective getDirective(SpeedController[] controllers, double pathPosition) {
-        var profile = SpeedDirective.maxLimits();
+        var profile = SpeedDirective.getMax();
         for (var controller : controllers)
             profile.mergeWith(controller.getDirective(pathPosition));
         return profile;
