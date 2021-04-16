@@ -476,7 +476,7 @@
   "speed_sections": [
     {
       "id": "speedsection.mid_limit",
-      "is_signalized": true,
+      "is_signalized": false,
       "speed": 16.666666666666668
     }
   ],

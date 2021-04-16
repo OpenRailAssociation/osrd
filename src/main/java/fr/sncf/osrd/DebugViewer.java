@@ -312,7 +312,7 @@ public class DebugViewer extends ChangeConsumer {
             if (currentTime > nextEventTime)
                 currentTime = nextEventTime;
 
-            Thread.sleep((long) (interpolationStep * 1000));
+            Thread.sleep((long) (interpolationStep * 1000 * stepPause));
             for (var trainData : trains.values())
                 updateTrain(trainData);
         }

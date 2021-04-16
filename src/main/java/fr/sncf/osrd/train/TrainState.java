@@ -166,13 +166,13 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         assert action.type != Action.ActionType.EMERGENCY_BRAKING;
 
         // compute and limit the traction force
-        var traction = action.tractionForce();
+        var tractionForce = action.tractionForce();
 
         // compute and limit the braking force
         var brakingForce = action.brakingForce();
 
         // run the physics sim
-        var update = integrator.computeUpdate(traction, brakingForce, distanceStep);
+        var update = integrator.computeUpdate(tractionForce, brakingForce, distanceStep);
 
         // update location
         location.updatePosition(rollingStock.length, update.positionDelta);
@@ -226,18 +226,11 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
     private Action driverDecision(SpeedDirective directive, TrainPhysicsIntegrator integrator) {
         var rollingStock = trainSchedule.rollingStock;
-        return integrator.actionToTargetSpeed(directive.allowedSpeed, rollingStock);
+        return integrator.actionToTargetSpeed(directive, rollingStock);
     }
 
     public TimelineEvent simulatePhase(Train train, Simulation sim) throws SimulationError {
         return currentPhaseState.simulate(sim, train, this);
-    }
-
-    @SuppressFBWarnings({"UPM_UNCALLED_PRIVATE_METHOD"})
-    private double getMaxAcceleration() {
-        if (status == TrainStatus.STARTING_UP)
-            return trainSchedule.rollingStock.startUpAcceleration;
-        return trainSchedule.rollingStock.comfortAcceleration;
     }
 
     public void setAspectConstraints(SignalState signalState) {
