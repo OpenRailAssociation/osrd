@@ -16,23 +16,23 @@ import java.util.Objects;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSTrackSection implements Identified {
-    public final String id;
-    public final double length;
+    public String id;
+    public double length;
 
     /** List of waypoints (detectors and buffer stops) on the track section */
     @Json(name = "route_waypoints")
-    public final List<RJSRouteWaypoint> routeWaypoints;
+    public List<RJSRouteWaypoint> routeWaypoints;
 
     /** List of signals on the track section */
-    public final List<RJSSignal> signals;
+    public List<RJSSignal> signals;
 
     /** List of operational points on the track section */
     @Json(name = "operational_points")
-    public final List<RJSOperationalPointPart> operationalPoints;
+    public List<RJSOperationalPointPart> operationalPoints;
 
     /** List of speed sections on the track section */
     @Json(name = "speed_sections")
-    public final List<RJSSpeedSectionPart> speedSections;
+    public List<RJSSpeedSectionPart> speedSections;
 
     /** Creates a new track section */
     public RJSTrackSection(
@@ -73,8 +73,8 @@ public class RJSTrackSection implements Identified {
 
     /** An identifier for a side of a specific track section */
     public static final class EndpointID {
-        public final ID<RJSTrackSection> section;
-        public final EdgeEndpoint endpoint;
+        public ID<RJSTrackSection> section;
+        public EdgeEndpoint endpoint;
 
         public EndpointID(ID<RJSTrackSection> section, EdgeEndpoint endpoint) {
             this.section = section;

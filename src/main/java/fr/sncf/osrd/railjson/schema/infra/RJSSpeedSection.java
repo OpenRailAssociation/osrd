@@ -6,14 +6,14 @@ import fr.sncf.osrd.railjson.schema.common.Identified;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSSpeedSection implements Identified {
-    public final String id;
+    public String id;
 
     /** If the speed limit is signalized on the track */
     @Json(name = "is_signalized")
-    public final boolean isSignalized;
+    public boolean isSignalized;
 
     /** The speed limit */
-    public final double speed;
+    public double speed;
 
     /**
      * Create a RailJSON speed section

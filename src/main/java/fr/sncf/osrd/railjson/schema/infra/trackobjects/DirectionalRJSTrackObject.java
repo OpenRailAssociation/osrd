@@ -5,7 +5,7 @@ import fr.sncf.osrd.utils.graph.ApplicableDirections;
 
 public class DirectionalRJSTrackObject extends RJSTrackObject {
     @Json(name = "application_directions")
-    public final ApplicableDirections applicableDirections;
+    public ApplicableDirections applicableDirections;
 
     DirectionalRJSTrackObject(ApplicableDirections applicableDirections, double position) {
         super(position);

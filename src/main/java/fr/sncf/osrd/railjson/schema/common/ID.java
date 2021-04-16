@@ -9,7 +9,7 @@ import java.lang.reflect.Type;
 import java.util.Set;
 
 public final class ID<T extends Identified> implements Comparable<T> {
-    public final String id;
+    public String id;
 
     public ID(String id) {
         this.id = id;

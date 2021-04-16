@@ -14,19 +14,19 @@ import java.util.HashSet;
 /** The train detectors reference the TVDSection sections they're part of. */
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSTVDSection implements Identified {
-    public final String id;
+    public String id;
 
     /** If a train can turn around when it is in this section */
     @Json(name = "is_berthing_track")
-    public final boolean isBerthingTrack;
+    public boolean isBerthingTrack;
 
     /** List of train detectors in the tvd section */
     @Json(name = "train_detectors")
-    public final Collection<ID<RJSTrainDetector>> trainDetectors;
+    public Collection<ID<RJSTrainDetector>> trainDetectors;
 
     /** List of buffer stops in the tvd section */
     @Json(name = "buffer_stops")
-    public final Collection<ID<RJSBufferStop>> bufferStops;
+    public Collection<ID<RJSBufferStop>> bufferStops;
 
     /**
      * Create a serialized tvd section

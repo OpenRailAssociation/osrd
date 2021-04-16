@@ -117,7 +117,7 @@ public abstract class RJSRSExpr {
     // region BOOLEAN_LOGIC
 
     public abstract static class InfixOp extends RJSRSExpr {
-        public final RJSRSExpr[] exprs;
+        public RJSRSExpr[] exprs;
 
         public InfixOp(RJSRSExpr[] exprs) {
             this.exprs = exprs;
@@ -137,7 +137,7 @@ public abstract class RJSRSExpr {
     }
 
     public static final class Not extends RJSRSExpr {
-        public final RJSRSExpr expr;
+        public RJSRSExpr expr;
 
         public Not(RJSRSExpr expr) {
             this.expr = expr;
@@ -160,9 +160,9 @@ public abstract class RJSRSExpr {
 
     public static final class AspectSet extends RJSRSExpr {
         public static final class AspectSetMember {
-            public final ID<RJSAspect> aspect;
+            public ID<RJSAspect> aspect;
 
-            public final RJSRSExpr condition;
+            public RJSRSExpr condition;
 
             public AspectSetMember(ID<RJSAspect> aspect, RJSRSExpr condition) {
                 this.aspect = aspect;
@@ -170,7 +170,7 @@ public abstract class RJSRSExpr {
             }
         }
 
-        public final AspectSetMember[] members;
+        public AspectSetMember[] members;
 
         public AspectSet(AspectSetMember[] members) {
             this.members = members;
@@ -178,7 +178,7 @@ public abstract class RJSRSExpr {
     }
 
     public static final class SignalRef extends RJSRSExpr {
-        public final ID<RJSSignal> signal;
+        public ID<RJSSignal> signal;
 
         public SignalRef(ID<RJSSignal> signal) {
             this.signal = signal;
@@ -186,7 +186,7 @@ public abstract class RJSRSExpr {
     }
 
     public static final class RouteRef extends RJSRSExpr {
-        public final ID<RJSRoute> route;
+        public ID<RJSRoute> route;
 
         public RouteRef(ID<RJSRoute> route) {
             this.route = route;
@@ -195,7 +195,7 @@ public abstract class RJSRSExpr {
 
     public static final class SwitchRef extends RJSRSExpr {
         @Json(name = "switch")
-        public final ID<RJSSwitch> switchRef;
+        public ID<RJSSwitch> switchRef;
 
         public SwitchRef(ID<RJSSwitch> switchRef) {
             this.switchRef = switchRef;
@@ -207,13 +207,13 @@ public abstract class RJSRSExpr {
 
     public static final class If extends RJSRSExpr {
         @Json(name = "if")
-        public final RJSRSExpr condition;
+        public RJSRSExpr condition;
 
         @Json(name = "then")
-        public final RJSRSExpr branchTrue;
+        public RJSRSExpr branchTrue;
 
         @Json(name = "else")
-        public final RJSRSExpr branchFalse;
+        public RJSRSExpr branchFalse;
 
         /** If the "if" expression returns true, run the "then" branch. Otherwise, run the "else" branch. */
         public If(RJSRSExpr condition, RJSRSExpr branchTrue, RJSRSExpr branchFalse) {
@@ -224,9 +224,9 @@ public abstract class RJSRSExpr {
     }
 
     public static final class Call extends RJSRSExpr {
-        public final ID<RJSRSFunction> function;
+        public ID<RJSRSFunction> function;
 
-        public final RJSRSExpr[] arguments;
+        public RJSRSExpr[] arguments;
 
         Call(ID<RJSRSFunction> function, RJSRSExpr[] arguments) {
             this.function = function;
@@ -235,9 +235,9 @@ public abstract class RJSRSExpr {
     }
 
     public static final class EnumMatch extends RJSRSExpr {
-        public final RJSRSExpr expr;
+        public RJSRSExpr expr;
 
-        public final Map<String, RJSRSExpr> branches;
+        public Map<String, RJSRSExpr> branches;
 
         public EnumMatch(
                 RJSRSExpr expr,
@@ -254,7 +254,7 @@ public abstract class RJSRSExpr {
 
     public static final class ArgumentRef extends RJSRSExpr {
         @Json(name = "argument_name")
-        public final String argumentName;
+        public String argumentName;
 
         public ArgumentRef(String argumentName) {
             this.argumentName = argumentName;
@@ -267,10 +267,10 @@ public abstract class RJSRSExpr {
 
     public static final class Delay extends RJSRSExpr {
         /** The expression to delay the propagation of */
-        public final RJSRSExpr expr;
+        public RJSRSExpr expr;
 
         /** The duration of the delay */
-        public final double duration;
+        public double duration;
 
         public Delay(double duration, RJSRSExpr expr) {
             this.duration = duration;
@@ -285,10 +285,10 @@ public abstract class RJSRSExpr {
         /**
          * The signal the condition checks for.
          */
-        public final RJSRSExpr signal;
+        public RJSRSExpr signal;
 
         /** The condition is true when the signal has the following aspect */
-        public final ID<RJSAspect> aspect;
+        public ID<RJSAspect> aspect;
 
         public SignalAspectCheck(RJSRSExpr signal, ID<RJSAspect> aspect) {
             this.signal = signal;
@@ -303,10 +303,10 @@ public abstract class RJSRSExpr {
         /**
          * The signal the condition checks for.
          */
-        public final RJSRSExpr route;
+        public RJSRSExpr route;
 
         /** The condition is true when the signal has the following aspect */
-        public final RJSRoute.State state;
+        public RJSRoute.State state;
 
         public RouteStateCheck(RJSRSExpr route, RJSRoute.State state) {
             this.route = route;
@@ -322,10 +322,10 @@ public abstract class RJSRSExpr {
          * The signal the condition checks for.
          */
         @Json(name = "aspect_set")
-        public final RJSRSExpr aspectSet;
+        public RJSRSExpr aspectSet;
 
         /** The condition is true when the signal has the following aspect */
-        public final ID<RJSAspect> aspect;
+        public ID<RJSAspect> aspect;
 
         public AspectSetContains(RJSRSExpr aspectSet, ID<RJSAspect> aspect) {
             this.aspectSet = aspectSet;

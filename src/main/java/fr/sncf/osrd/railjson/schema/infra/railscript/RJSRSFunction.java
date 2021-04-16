@@ -7,16 +7,16 @@ import fr.sncf.osrd.railjson.schema.common.Identified;
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSRSFunction implements Identified {
     /** Name of the function */
-    public final String name;
+    public String name;
 
     /** The list of the names of the argument of the function. Types are deduced from the AST */
-    public final Argument[] arguments;
+    public Argument[] arguments;
 
     @Json(name = "return_type")
-    public final RJSRSType returnType;
+    public RJSRSType returnType;
 
     /** The expression to evaluate */
-    public final RJSRSExpr body;
+    public RJSRSExpr body;
 
     /** A mathematical function for the signal expression language */
     public RJSRSFunction(String name, Argument[] arguments, RJSRSType returnType, RJSRSExpr body) {
@@ -32,8 +32,8 @@ public class RJSRSFunction implements Identified {
     }
 
     public static final class Argument {
-        public final String name;
-        public final RJSRSType type;
+        public String name;
+        public RJSRSType type;
 
         public Argument(String name, RJSRSType type) {
             this.name = name;

@@ -9,25 +9,25 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 
 public class RJSTrainSchedule implements Identified {
     /** The identifier of this train */
-    public final String id;
+    public String id;
 
     /** The identifier of the rolling stock for this train */
     @Json(name = "rolling_stock")
-    public final ID<RJSRollingStock> rollingStock;
+    public ID<RJSRollingStock> rollingStock;
 
     /** The time at which the train should start, in seconds */
     @Json(name = "departure_time")
-    public final double departureTime;
+    public double departureTime;
 
     /** The initial state of the train */
     @Json(name = "initial_head_location")
-    public final RJSTrackLocation initialHeadLocation;
+    public RJSTrackLocation initialHeadLocation;
     @Json(name = "initial_route")
-    public final ID<RJSRoute> initialRoute;
+    public ID<RJSRoute> initialRoute;
     @Json(name = "initial_speed")
-    public final double initialSpeed;
+    public double initialSpeed;
 
-    public final RJSTrainPhase[] phases;
+    public RJSTrainPhase[] phases;
 
     /** Create a new train schedule */
     public RJSTrainSchedule(

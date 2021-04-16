@@ -28,13 +28,13 @@ public abstract class RJSRollingResistance {
     */
     public static final class Davis extends RJSRollingResistance {
         /** in newtons */
-        public final double A;
+        public double A;
 
         /** in newtons / (m/s) */
-        public final double B;
+        public double B;
 
         /** in newtons / (m/s^2) */
-        public final double C;
+        public double C;
 
         /** Creates a Davis rolling resistance formula */
         public Davis(double a, double b, double c) {

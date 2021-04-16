@@ -7,14 +7,14 @@ import fr.sncf.osrd.railjson.schema.common.Identified;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSSwitch implements Identified {
-    public final String id;
+    public String id;
 
     /** The base track section of the switch */
-    public final RJSTrackSection.EndpointID base;
+    public RJSTrackSection.EndpointID base;
     /** The track section linked to the base if the switch is in LEFT position */
-    public final RJSTrackSection.EndpointID left;
+    public RJSTrackSection.EndpointID left;
     /** The track section linked to the base if the switch is in RIGHT position */
-    public final RJSTrackSection.EndpointID right;
+    public RJSTrackSection.EndpointID right;
     /** The time it takes for the switch to change position in seconds */
     @Json(name = "position_change_delay")
     public double positionChangeDelay;

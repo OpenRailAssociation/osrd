@@ -23,15 +23,15 @@ public abstract class RJSTrainPhase {
     public static final class Navigate extends RJSTrainPhase {
         /** The sequence of routes the train should take.
          * The train must be on the first route when it enters this phase. */
-        public final ID<RJSRoute>[] routes;
+        public ID<RJSRoute>[] routes;
 
         /** The location of the head of the train when it exits this phase */
         @Json(name = "end_location")
-        public final RJSTrackLocation endLocation;
+        public RJSTrackLocation endLocation;
 
         /** The distance at which the driver can see objects on the tracks */
         @Json(name = "driver_sight_distance")
-        public final double driverSightDistance;
+        public double driverSightDistance;
 
         /** Create a navigation phase */
         public Navigate(ID<RJSRoute>[] routes, RJSTrackLocation endLocation, double driverSightDistance) {
@@ -50,7 +50,7 @@ public abstract class RJSTrainPhase {
 
     public static final class Stop extends RJSTrainPhase {
         /** The duration of the stop */
-        public final double duration;
+        public double duration;
 
         public Stop(double duration) {
             this.duration = duration;

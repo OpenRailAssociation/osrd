@@ -14,21 +14,21 @@ import java.util.Set;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSRoute implements Identified {
-    public final String id;
+    public String id;
 
     /** List of TVD sections through which the route transits */
     @Json(name = "tvd_sections")
-    public final List<ID<RJSTVDSection>> tvdSections;
+    public List<ID<RJSTVDSection>> tvdSections;
 
     /** List of waypoints that define the route. */
-    public final List<ID<RJSRouteWaypoint>> waypoints;
+    public List<ID<RJSRouteWaypoint>> waypoints;
 
     /** List of the switches and their position through which the route transits */
     @Json(name = "switches_position")
-    public final Map<ID<RJSSwitch>, RJSSwitch.Position> switchesPosition;
+    public Map<ID<RJSSwitch>, RJSSwitch.Position> switchesPosition;
 
     @Json(name = "release_groups")
-    public final List<Set<ID<RJSTVDSection>>> releaseGroups;
+    public List<Set<ID<RJSTVDSection>>> releaseGroups;
 
     /** Routes are described as a list of waypoints, TVD Sections and Switches in specific positions */
     public RJSRoute(
