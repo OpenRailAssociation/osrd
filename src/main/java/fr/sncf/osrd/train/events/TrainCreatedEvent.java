@@ -129,31 +129,27 @@ public class TrainCreatedEvent extends TimelineEvent {
                 var begin = offset + speedTrackRange.getBeginPosition() - trackSectionRange.getBeginPosition();
                 var end = begin + speedTrackRange.length();
 
-                // we need to add two speed controllers:
-                // the first is in charge of slowing down the train as it approaches the restricted zone
-                var targetSpeed = speedSection.speedLimit;
-                var initialSpeed = rollingStock.maxSpeed;
+                // Add the speed controller corresponding to the approach to the restricted speed section
+                controllers.add(LimitAnnounceSpeedController.create(
+                        rollingStock.maxSpeed,
+                        speedSection.speedLimit,
+                        begin,
+                        rollingStock.timetableGamma
+                ));
 
-                // compute the speed controller corresponding to the approach to the restricted speed section
-                if (targetSpeed < initialSpeed) {
-                    var requiredBrakingDistance = (
-                            (initialSpeed * initialSpeed - targetSpeed * targetSpeed)
-                                    / 2 * rollingStock.timetableGamma
-                    );
-
-                    var brakingStart = begin - requiredBrakingDistance;
-                    controllers.add(new LimitAnnounceSpeedController(
-                            targetSpeed,
-                            brakingStart,
-                            begin,
-                            rollingStock.timetableGamma
-                    ));
-                }
-
+                // Add the speed controller corresponding to the restricted speed section
                 controllers.add(new MaxSpeedController(speedSection.speedLimit, begin, end));
             }
             offset += trackSectionRange.length();
         }
+
+        // Add the speed controller corresponding to the end of the path
+        controllers.add(LimitAnnounceSpeedController.create(
+                rollingStock.maxSpeed,
+                0,
+                offset,
+                rollingStock.timetableGamma
+        ));
 
         logger.trace("created initial speed controllers:");
         for (var controller : controllers)
