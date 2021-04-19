@@ -1,5 +1,6 @@
 from django.contrib.gis.db import models
 
+
 class EntityID(models.Model):
     id = models.BigAutoField(primary_key=True)
 
@@ -9,6 +10,7 @@ class EntityID(models.Model):
         SIGNAL = 2
         OPERATIONAL_POINT = 3
         SWITCH = 4
+
     type_id = models.IntegerField(choices=Type.choices)
 
     def type_repr(self):
@@ -26,7 +28,9 @@ class Component(models.Model):
 
 
 class Entity(models.Model):
-    entity_id = models.OneToOneField("EntityID", on_delete=models.CASCADE, primary_key=True)
+    entity_id = models.OneToOneField(
+        "EntityID", on_delete=models.CASCADE, primary_key=True
+    )
 
     class Meta:
         abstract = True

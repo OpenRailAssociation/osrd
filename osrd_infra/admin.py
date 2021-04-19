@@ -8,11 +8,13 @@ from osrd_infra.models import *
 class ECSModelAdmin(ModelAdmin):
     pass
 
+
 @admin.register(TrackSectionLocation)
 @admin.register(TrackSectionRange)
 @admin.register(Identifier)
 class ComponentsModelAdmin(ModelAdmin):
     pass
+
 
 @admin.register(Infra)
 @admin.register(TrackSection)

@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class OsrdInfraConfig(AppConfig):
-    name = 'osrd_infra'
-    label = 'infra'
+    name = "osrd_infra"
+    label = "infra"

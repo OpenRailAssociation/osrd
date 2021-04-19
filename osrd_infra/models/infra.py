@@ -50,39 +50,29 @@ class TrackSection(Entity, IdentifiedEntity):
 
 class Switch(Entity, IdentifiedEntity):
     base_track_section = models.ForeignKey(
-        "TrackSection",
-        on_delete=models.CASCADE,
-        related_name="switch_base_branches"
+        "TrackSection", on_delete=models.CASCADE, related_name="switch_base_branches"
     )
     base_endpoint = EndpointField()
 
     left_track_section = models.ForeignKey(
-        "TrackSection",
-        on_delete=models.CASCADE,
-        related_name="switch_left_branches"
+        "TrackSection", on_delete=models.CASCADE, related_name="switch_left_branches"
     )
     left_endpoint = EndpointField()
 
     right_track_section = models.ForeignKey(
-        "TrackSection",
-        on_delete=models.CASCADE,
-        related_name="switch_right_branches"
+        "TrackSection", on_delete=models.CASCADE, related_name="switch_right_branches"
     )
     right_endpoint = EndpointField()
 
 
 class TrackSectionLink(Entity, IdentifiedEntity):
     begin_track_section = models.ForeignKey(
-        "TrackSection",
-        on_delete=models.CASCADE,
-        related_name="link_begin_branches"
+        "TrackSection", on_delete=models.CASCADE, related_name="link_begin_branches"
     )
     begin_endpoint = EndpointField()
 
     end_track_section = models.ForeignKey(
-        "TrackSection",
-        on_delete=models.CASCADE,
-        related_name="link_end_branches"
+        "TrackSection", on_delete=models.CASCADE, related_name="link_end_branches"
     )
     end_endpoint = EndpointField()
 
@@ -93,7 +83,9 @@ class OperationalPoint(Entity, IdentifiedEntity):
 
 class OperationalPointPart(Entity):
     track_range = models.OneToOneField("TrackSectionRange", on_delete=models.CASCADE)
-    operational_point = models.ForeignKey("OperationalPoint", related_name="parts", on_delete=models.CASCADE)
+    operational_point = models.ForeignKey(
+        "OperationalPoint", related_name="parts", on_delete=models.CASCADE
+    )
 
 
 class Signal(Entity, IdentifiedEntity, TrackSectionLocationEntity):

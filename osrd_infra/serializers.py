@@ -1,6 +1,21 @@
-from rest_framework.serializers import ModelSerializer, CharField, FloatField, PrimaryKeyRelatedField
+from rest_framework.serializers import (
+    ModelSerializer,
+    CharField,
+    FloatField,
+    PrimaryKeyRelatedField,
+)
 
-from osrd_infra.models import Infra, TrackSection, Signal, Identifier, TrackSectionLocation, OperationalPoint, OperationalPointPart, TrackSectionRange, Switch
+from osrd_infra.models import (
+    Infra,
+    TrackSection,
+    Signal,
+    Identifier,
+    TrackSectionLocation,
+    OperationalPoint,
+    OperationalPointPart,
+    TrackSectionRange,
+    Switch,
+)
 
 from osrd_infra.models.common import Endpoint, EnumSerializer
 
@@ -8,7 +23,7 @@ from osrd_infra.models.common import Endpoint, EnumSerializer
 class InfraSerializer(ModelSerializer):
     class Meta:
         model = Infra
-        fields = '__all__'
+        fields = "__all__"
 
 
 class IdentitySerializer(ModelSerializer):
@@ -31,6 +46,7 @@ class TrackSectionRangeSerializer(ModelSerializer):
 
 class TrackSectionSerializer(ModelSerializer):
     identity = IdentitySerializer()
+
     class Meta:
         model = TrackSection
         exclude = ["infra"]

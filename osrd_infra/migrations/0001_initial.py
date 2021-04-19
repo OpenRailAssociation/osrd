@@ -9,147 +9,360 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='EntityID',
+            name="EntityID",
             fields=[
-                ('id', models.BigAutoField(primary_key=True, serialize=False)),
-                ('type_id', models.IntegerField(choices=[(0, 'Track Section'), (1, 'Track Section Link'), (2, 'Signal'), (3, 'Operational Point'), (4, 'Switch')])),
+                ("id", models.BigAutoField(primary_key=True, serialize=False)),
+                (
+                    "type_id",
+                    models.IntegerField(
+                        choices=[
+                            (0, "Track Section"),
+                            (1, "Track Section Link"),
+                            (2, "Signal"),
+                            (3, "Operational Point"),
+                            (4, "Switch"),
+                        ]
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Infra',
+            name="Infra",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=128)),
-                ('owner', models.UUIDField()),
-                ('created', models.DateTimeField(auto_now_add=True)),
-                ('modified', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=128)),
+                ("owner", models.UUIDField()),
+                ("created", models.DateTimeField(auto_now_add=True)),
+                ("modified", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='OperationalPoint',
+            name="OperationalPoint",
             fields=[
-                ('entity_id', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to='infra.entityid')),
+                (
+                    "entity_id",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        primary_key=True,
+                        serialize=False,
+                        to="infra.entityid",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='TrackSection',
+            name="TrackSection",
             fields=[
-                ('entity_id', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to='infra.entityid')),
-                ('path', django.contrib.gis.db.models.fields.LineStringField(srid=3857)),
+                (
+                    "entity_id",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        primary_key=True,
+                        serialize=False,
+                        to="infra.entityid",
+                    ),
+                ),
+                (
+                    "path",
+                    django.contrib.gis.db.models.fields.LineStringField(srid=3857),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Identifier',
+            name="Identifier",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255)),
-                ('entity_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='infra.entityid')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255)),
+                (
+                    "entity_id",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="infra.entityid"
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='TrackSectionRange',
+            name="TrackSectionRange",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('start_offset', models.FloatField()),
-                ('end_offset', models.FloatField()),
-                ('entity_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='infra.entityid')),
-                ('track_section', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='infra.tracksection')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("start_offset", models.FloatField()),
+                ("end_offset", models.FloatField()),
+                (
+                    "entity_id",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="infra.entityid"
+                    ),
+                ),
+                (
+                    "track_section",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="infra.tracksection",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='TrackSectionLocation',
+            name="TrackSectionLocation",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('offset', models.FloatField()),
-                ('entity_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='infra.entityid')),
-                ('track_section', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='infra.tracksection')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("offset", models.FloatField()),
+                (
+                    "entity_id",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="infra.entityid"
+                    ),
+                ),
+                (
+                    "track_section",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="infra.tracksection",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='TrackSectionLink',
+            name="TrackSectionLink",
             fields=[
-                ('entity_id', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to='infra.entityid')),
-                ('begin_endpoint', models.IntegerField(choices=[(0, 'Begin'), (1, 'End')])),
-                ('end_endpoint', models.IntegerField(choices=[(0, 'Begin'), (1, 'End')])),
-                ('begin_track_section', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='link_begin_branches', to='infra.tracksection')),
-                ('end_track_section', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='link_end_branches', to='infra.tracksection')),
-                ('identity', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='infra.identifier')),
+                (
+                    "entity_id",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        primary_key=True,
+                        serialize=False,
+                        to="infra.entityid",
+                    ),
+                ),
+                (
+                    "begin_endpoint",
+                    models.IntegerField(choices=[(0, "Begin"), (1, "End")]),
+                ),
+                (
+                    "end_endpoint",
+                    models.IntegerField(choices=[(0, "Begin"), (1, "End")]),
+                ),
+                (
+                    "begin_track_section",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="link_begin_branches",
+                        to="infra.tracksection",
+                    ),
+                ),
+                (
+                    "end_track_section",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="link_end_branches",
+                        to="infra.tracksection",
+                    ),
+                ),
+                (
+                    "identity",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="infra.identifier",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.AddField(
-            model_name='tracksection',
-            name='identity',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='infra.identifier'),
+            model_name="tracksection",
+            name="identity",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE, to="infra.identifier"
+            ),
         ),
         migrations.AddField(
-            model_name='tracksection',
-            name='infra',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='infra.infra'),
+            model_name="tracksection",
+            name="infra",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="infra.infra"
+            ),
         ),
         migrations.CreateModel(
-            name='Switch',
+            name="Switch",
             fields=[
-                ('entity_id', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to='infra.entityid')),
-                ('base_endpoint', models.IntegerField(choices=[(0, 'Begin'), (1, 'End')])),
-                ('left_endpoint', models.IntegerField(choices=[(0, 'Begin'), (1, 'End')])),
-                ('right_endpoint', models.IntegerField(choices=[(0, 'Begin'), (1, 'End')])),
-                ('base_track_section', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='switch_base_branches', to='infra.tracksection')),
-                ('identity', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='infra.identifier')),
-                ('left_track_section', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='switch_left_branches', to='infra.tracksection')),
-                ('right_track_section', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='switch_right_branches', to='infra.tracksection')),
+                (
+                    "entity_id",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        primary_key=True,
+                        serialize=False,
+                        to="infra.entityid",
+                    ),
+                ),
+                (
+                    "base_endpoint",
+                    models.IntegerField(choices=[(0, "Begin"), (1, "End")]),
+                ),
+                (
+                    "left_endpoint",
+                    models.IntegerField(choices=[(0, "Begin"), (1, "End")]),
+                ),
+                (
+                    "right_endpoint",
+                    models.IntegerField(choices=[(0, "Begin"), (1, "End")]),
+                ),
+                (
+                    "base_track_section",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="switch_base_branches",
+                        to="infra.tracksection",
+                    ),
+                ),
+                (
+                    "identity",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="infra.identifier",
+                    ),
+                ),
+                (
+                    "left_track_section",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="switch_left_branches",
+                        to="infra.tracksection",
+                    ),
+                ),
+                (
+                    "right_track_section",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="switch_right_branches",
+                        to="infra.tracksection",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Signal',
+            name="Signal",
             fields=[
-                ('entity_id', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to='infra.entityid')),
-                ('identity', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='infra.identifier')),
-                ('location', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='infra.tracksectionlocation')),
+                (
+                    "entity_id",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        primary_key=True,
+                        serialize=False,
+                        to="infra.entityid",
+                    ),
+                ),
+                (
+                    "identity",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="infra.identifier",
+                    ),
+                ),
+                (
+                    "location",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="infra.tracksectionlocation",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='OperationalPointPart',
+            name="OperationalPointPart",
             fields=[
-                ('entity_id', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to='infra.entityid')),
-                ('operational_point', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='parts', to='infra.operationalpoint')),
-                ('track_range', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='infra.tracksectionrange')),
+                (
+                    "entity_id",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        primary_key=True,
+                        serialize=False,
+                        to="infra.entityid",
+                    ),
+                ),
+                (
+                    "operational_point",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="parts",
+                        to="infra.operationalpoint",
+                    ),
+                ),
+                (
+                    "track_range",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="infra.tracksectionrange",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.AddField(
-            model_name='operationalpoint',
-            name='identity',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='infra.identifier'),
+            model_name="operationalpoint",
+            name="identity",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE, to="infra.identifier"
+            ),
         ),
     ]
