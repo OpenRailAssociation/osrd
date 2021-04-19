@@ -18,7 +18,7 @@ public class SignalDelayedUpdateEvent extends TimelineEvent {
     }
 
     @Override
-    protected void onOccurrence(Simulation sim) {
+    protected void onOccurrence(Simulation sim) throws SimulationError {
         var signal = sim.infraState.getSignalState(signalIndex);
         signal.notifyDelayChange(sim, delaySlot, value);
     }

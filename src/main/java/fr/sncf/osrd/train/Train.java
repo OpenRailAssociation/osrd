@@ -77,6 +77,8 @@ public class Train {
 
     /** Simulate the current state to schedule the next one */
     public void scheduleStateChange(Simulation sim) throws SimulationError {
+        if (lastScheduledEvent != null && lastScheduledEvent.getState() == TimelineEvent.State.SCHEDULED)
+            return;
         if (lastState.status == TrainStatus.REACHED_DESTINATION) {
             logger.info("train {} reached destination, aborting planning", getName());
             return;
@@ -84,11 +86,12 @@ public class Train {
 
         logger.info("planning the next move for train {}", getName());
         var clonedState = lastState.clone();
+        clonedState.time = sim.getTime();
         lastScheduledEvent = clonedState.simulatePhase(this, sim);
     }
 
     /** Reserve routes when the train is in navigate phase */
-    public void onEventOccurred(Simulation sim) {
+    public void onEventOccurred(Simulation sim) throws SimulationError {
         // TODO find a smarter way to do it and remove this method
         if (lastState.currentPhaseState.getClass() == SignalNavigatePhase.State.class) {
             var navigateState = (SignalNavigatePhase.State) lastState.currentPhaseState;
@@ -127,24 +130,20 @@ public class Train {
     }
 
     /** Notify the train that a signal has change aspects and it have to re-evaluate its planned state */
-    public void reactNewAspects(Simulation sim, SignalState signalState) {
-        assert lastScheduledEvent.getState() == TimelineEvent.State.SCHEDULED;
-        try {
-            // 1) Cancel last scheduled event
+    public void reactNewAspects(Simulation sim, SignalState signalState) throws SimulationError {
+        if (lastScheduledEvent.getState() == TimelineEvent.State.SCHEDULED) {
+            // Cancel last scheduled event
             sim.cancel(lastScheduledEvent);
-            // 2) Recompute the state until current simulation time
+            // Recompute the state until current simulation time
             var newState = lastState.clone();
             var stateChange = newState.evolveStateUntilNow(sim);
             stateChange.apply(sim, this);
             sim.publishChange(stateChange);
-            // 3) Change/Add aspect constraints
-            lastState.setAspectConstraints(signalState);
-            // 4) Schedule the next train state
-            scheduleStateChange(sim);
-
-        } catch (SimulationError simulationError) {
-            throw new RuntimeException(simulationError);
         }
+        // Change/Add aspect constraints
+        lastState.setAspectConstraints(signalState);
+        // Schedule the next train state
+        scheduleStateChange(sim);
     }
     // endregion
 
@@ -314,7 +313,6 @@ public class Train {
                     break;
                 lastUpdate = update;
             }
-            assert lastUpdate != null;
             return lastUpdate;
         }
 

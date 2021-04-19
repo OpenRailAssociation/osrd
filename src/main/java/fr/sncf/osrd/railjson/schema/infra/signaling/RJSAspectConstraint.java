@@ -12,9 +12,9 @@ public abstract class RJSAspectConstraint {
         public final RJSElement element;
 
         public enum RJSElement {
-            CURRENT_SIGNAL_SEEN,
             CURRENT_SIGNAL,
-            NEXT_SIGNAL
+            NEXT_SIGNAL,
+            END
         }
 
         public ConstraintPosition(double offset, RJSElement element) {
@@ -26,8 +26,8 @@ public abstract class RJSAspectConstraint {
             switch (element) {
                 case CURRENT_SIGNAL:
                     return new AspectConstraint.ConstraintPosition(offset, Element.CURRENT_SIGNAL);
-                case CURRENT_SIGNAL_SEEN:
-                    return new AspectConstraint.ConstraintPosition(offset, Element.CURRENT_SIGNAL_SEEN);
+                case END:
+                    return new AspectConstraint.ConstraintPosition(offset, Element.END);
                 default:
                     return new AspectConstraint.ConstraintPosition(offset, Element.NEXT_SIGNAL);
             }
@@ -45,15 +45,17 @@ public abstract class RJSAspectConstraint {
         public final double speed;
         @Json(name = "applies_at")
         public final ConstraintPosition appliesAt;
+        public final ConstraintPosition until;
 
-        public SpeedLimit(double speed, ConstraintPosition appliesAt) {
+        SpeedLimit(double speed, ConstraintPosition appliesAt, ConstraintPosition until) {
             this.speed = speed;
             this.appliesAt = appliesAt;
+            this.until = until;
         }
 
         @Override
         public AspectConstraint parse() {
-            return new AspectConstraint.SpeedLimit(speed, appliesAt.parse());
+            return new AspectConstraint.SpeedLimit(speed, appliesAt.parse(), until.parse());
         }
     }
 }

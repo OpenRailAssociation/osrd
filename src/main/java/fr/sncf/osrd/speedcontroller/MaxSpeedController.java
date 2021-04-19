@@ -34,5 +34,4 @@ public class MaxSpeedController extends SpeedController {
             return false;
         return ((MaxSpeedController) other).speedLimit == speedLimit;
     }
-
 }

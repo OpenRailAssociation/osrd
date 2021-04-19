@@ -147,9 +147,10 @@ public class TrainCreatedEvent extends TimelineEvent {
         controllers.add(LimitAnnounceSpeedController.create(
                 rollingStock.maxSpeed,
                 0,
-                offset,
+                offset - 10,
                 rollingStock.timetableGamma
         ));
+        controllers.add(new MaxSpeedController(0, offset - 10, Double.POSITIVE_INFINITY));
 
         logger.trace("created initial speed controllers:");
         for (var controller : controllers)

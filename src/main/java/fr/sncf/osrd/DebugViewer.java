@@ -9,6 +9,7 @@ import fr.sncf.osrd.simulation.Change;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.events.TrainMove;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import org.graphstream.graph.Edge;
@@ -263,9 +264,13 @@ public class DebugViewer extends ChangeConsumer {
         var nextMove = trainData.nextMove;
 
         var lastUpdate = nextMove.findLastSpeedUpdate(currentTime);
+        if (lastUpdate == null)
+            return;
         var pathHeadPosition = lastUpdate.interpolatePosition(currentTime);
         var pathTailPosition = Double.max(0, pathHeadPosition - trainData.schedule.rollingStock.length);
         var headLocation = trainData.schedule.findLocation(pathHeadPosition);
+        if (headLocation == null)
+            return;
         var tailLocation = trainData.schedule.findLocation(pathTailPosition);
         var speed = lastUpdate.speed;
         spriteHead.setAttribute("ui.label", String.format("%s (%.2f m/s)", trainData.name, speed));
@@ -335,6 +340,11 @@ public class DebugViewer extends ChangeConsumer {
         if (change.getClass() == TrainReachesActionPoint.TrainPlannedMoveToActionPoint.class) {
             var trainReachesAction = (TrainReachesActionPoint.TrainPlannedMoveToActionPoint) change;
             trains.get(trainReachesAction.trainId).nextMove = trainReachesAction.stateChange;
+        }
+
+        if (change.getClass() == TrainMove.TrainPlannedMove.class) {
+            var trainMove = (TrainMove.TrainPlannedMove) change;
+            trains.get(trainMove.trainId).nextMove = trainMove.stateChange;
         }
         // endregion
 
