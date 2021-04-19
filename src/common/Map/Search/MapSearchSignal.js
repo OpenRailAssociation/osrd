@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FlyToInterpolator } from 'react-map-gl';
 import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { updateMapSearchMarker } from 'reducers/map';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -18,6 +19,7 @@ export default function MapSearchSignal(props) {
   const [searchLineState, setSearchLine] = useState('');
   const [dontSearch, setDontSearch] = useState(false);
   const [searchResults, setSearchResults] = useState(undefined);
+  const dispatch = useDispatch();
 
   const { t } = useTranslation(['translation', 'map-search']);
 
@@ -48,18 +50,19 @@ export default function MapSearchSignal(props) {
     setSearch(result.name);
     setSearchResults(undefined);
 
-    const latlon = map.mapTrackSources === 'schematic' ? result.coordinates.sch : result.coordinates.geo;
+    const lonlat = map.mapTrackSources === 'schematic' ? result.coordinates.sch : result.coordinates.geo;
 
-    if (latlon !== null) {
+    if (lonlat !== null) {
       const newViewport = {
         ...map.viewport,
-        longitude: latlon[0],
-        latitude: latlon[1],
+        longitude: lonlat[0],
+        latitude: lonlat[1],
         zoom: 16,
         transitionDuration: 1000,
         transitionInterpolator: new FlyToInterpolator(),
       };
       updateExtViewport(newViewport);
+      dispatch(updateMapSearchMarker({ title: result.name, lonlat }));
     }
   };
 

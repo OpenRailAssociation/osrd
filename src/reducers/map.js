@@ -11,6 +11,7 @@ export const UPDATE_VIEWPORT = 'map/UPDATE_VIEWPORT';
 export const UPDATE_TRANSFORM_REQUEST = 'map/UPDATE_TRANSFORM_REQUEST';
 export const UPDATE_MAPSTYLE = 'map/UPDATE_MAPSTYLE';
 export const UPDATE_MAP_TRACK_SOURCES = 'map/UPDATE_MAP_TRACK_SOURCES';
+export const UPDATE_MAP_SEARCH_MARKER = 'map/UPDATE_MAP_SEARCH_MARKER';
 export const UPDATE_SHOW_OSM = 'map/UPDATE_SHOW_OSM';
 export const UPDATE_FEATURE_INFO_HOVER = 'map/UPDATE_FEATURE_INFO_HOVER';
 export const UPDATE_FEATURE_INFO_CLICK = 'map/UPDATE_FEATURE_INFO_CLICK';
@@ -40,6 +41,7 @@ export const initialState = {
     lights: false,
     tivs: false,
   },
+  mapSearchMarker: undefined,
 };
 
 export default function reducer(state = initialState, action) {
@@ -67,6 +69,9 @@ export default function reducer(state = initialState, action) {
         break;
       case UPDATE_MAP_TRACK_SOURCES:
         draft.mapTrackSources = action.mapTrackSources;
+        break;
+      case UPDATE_MAP_SEARCH_MARKER:
+        draft.mapSearchMarker = action.mapSearchMarker;
         break;
       case UPDATE_SHOW_OSM:
         draft.showOSM = action.showOSM;
@@ -117,6 +122,15 @@ export function updateMapTrackSources(mapTrackSources) {
     dispatch({
       type: UPDATE_MAP_TRACK_SOURCES,
       mapTrackSources,
+    });
+  };
+}
+
+export function updateMapSearchMarker(mapSearchMarker) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_MAP_SEARCH_MARKER,
+      mapSearchMarker,
     });
   };
 }

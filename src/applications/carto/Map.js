@@ -34,10 +34,11 @@ import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import JointsDeZones from 'common/Map/Layers/JointsDeZones';
 import Signals from 'common/Map/Layers/Signals';
 import SignalBox from 'common/Map/Layers/SignalBox';
+import SearchMarker from 'common/Map/Layers/SearchMarker';
 
 const Map = () => {
   const {
-    viewport, mapStyle, mapTrackSources, showOSM,
+    viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM,
   } = useSelector((state) => state.map);
   const [showSettings, setShowSettings] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -164,8 +165,11 @@ const Map = () => {
           </>
         )}
 
-        {/* <SignalBox /> */}
-        <ThreeboxTest mapInstance={{}} />
+        {/* <SignalBox />
+        <ThreeboxTest mapInstance={{}} /> */}
+        {mapSearchMarker !== undefined ? (
+          <SearchMarker data={mapSearchMarker} />
+        ) : null}
       </ReactMapGL>
     </main>
   );

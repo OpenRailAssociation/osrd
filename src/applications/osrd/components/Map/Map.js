@@ -37,10 +37,11 @@ import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 /* Objects & various */
 import JointsDeZones from 'common/Map/Layers/JointsDeZones';
 import Signals from 'common/Map/Layers/Signals';
+import SearchMarker from 'common/Map/Layers/SearchMarker';
 
 const Map = () => {
   const {
-    viewport, mapStyle, mapTrackSources, showOSM,
+    viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM,
   } = useSelector((state) => state.map);
   const [showSearch, setShowSearch] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -183,6 +184,9 @@ const Map = () => {
         <RenderPopup />
         <RenderItinerary />
         <RenderItineraryMarkers />
+        {mapSearchMarker !== undefined ? (
+          <SearchMarker data={mapSearchMarker} />
+        ) : null}
 
       </ReactMapGL>
     </>

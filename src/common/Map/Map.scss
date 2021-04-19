@@ -115,3 +115,12 @@
     }
   }
 }
+.map-search-marker {
+  position: absolute;
+  .map-search-marker-title {
+    font-weight: bold;
+    color: #0088cf;
+    border-radius: 4px;
+    padding: 0 .5rem;
+  }
+}
