@@ -30,7 +30,7 @@ public class SwitchMoveEvent extends TimelineEvent {
     @Override
     protected void onOccurrence(Simulation sim) throws SimulationError {
         switchState.setPosition(sim, newPosition);
-        routeState.notifySwitchHasMoved(sim);
+        routeState.onSwitchMove(sim);
     }
 
     @Override
