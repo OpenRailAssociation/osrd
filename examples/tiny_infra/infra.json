@@ -11,10 +11,14 @@
       "constraints": [
         {
           "type": "speed_limit",
-          "speed": 30,
+          "speed": 8.33333333333333,
           "applies_at": {
             "element": "NEXT_SIGNAL",
-            "offset": -200
+            "offset": -100
+          },
+          "until": {
+            "element": "NEXT_SIGNAL",
+            "offset": 0
           }
         }
       ]
@@ -29,6 +33,10 @@
           "applies_at": {
             "element": "CURRENT_SIGNAL",
             "offset": -5
+          },
+          "until": {
+            "element": "END",
+            "offset": 0
           }
         }
       ]

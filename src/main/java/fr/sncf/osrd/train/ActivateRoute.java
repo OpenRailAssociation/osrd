@@ -9,7 +9,10 @@ import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 
 public class ActivateRoute {
     /** This function try to reserve forwarding routes */
-    public static void reserveRoutes(Simulation sim, SignalNavigatePhase.State navigatePhaseState) {
+    public static void reserveRoutes(
+            Simulation sim,
+            SignalNavigatePhase.State navigatePhaseState
+    ) throws SimulationError {
         // TODO have a smarter way to reserve routes
         if (navigatePhaseState.getRouteIndex() + 1 >= navigatePhaseState.phase.routePath.size())
             return;
@@ -56,7 +59,7 @@ public class ActivateRoute {
         tvdSection.occupy(sim);
     }
 
-    private static void freeTvdSectionPath(Simulation sim, TVDSectionPath tvdSectionPath) {
+    private static void freeTvdSectionPath(Simulation sim, TVDSectionPath tvdSectionPath) throws SimulationError {
         var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
         tvdSection.free(sim);
     }
