@@ -116,7 +116,8 @@
   }
 }
 .map-search-marker {
-  position: absolute;
+  margin-left: -16px;
+  margin-top: -16px;
   .map-search-marker-title {
     font-weight: bold;
     color: #0088cf;
