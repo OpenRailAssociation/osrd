@@ -211,26 +211,6 @@ public final class SignalNavigatePhase implements Phase {
             trainState.actionPointsUnderTrain.addLast(underTrainInteraction);
         }
 
-        /**
-         * A function called by signals when a new limit is announced
-         * @param distanceToAnnounce distance to the place the announce starts
-         * @param distanceToExecution distance to the place the limit must be enforced
-         */
-        public void onLimitAnnounce(
-                TrainState trainState,
-                double distanceToAnnounce,
-                double distanceToExecution,
-                double speedLimit
-        ) {
-            var currentPos = trainState.location.getPathPosition();
-            trainState.speedControllers.add(new LimitAnnounceSpeedController(
-                    speedLimit,
-                    currentPos + distanceToAnnounce,
-                    currentPos + distanceToExecution,
-                    trainState.trainSchedule.rollingStock.timetableGamma
-            ));
-        }
-
         private TVDSection findForwardTVDSection(Waypoint waypoint) {
             // TODO: Find a faster and smarter way to do it
             for (var route : phase.routePath) {

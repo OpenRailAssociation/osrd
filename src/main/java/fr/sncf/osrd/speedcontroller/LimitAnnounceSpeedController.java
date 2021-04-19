@@ -9,9 +9,7 @@ public final class LimitAnnounceSpeedController extends SpeedController {
     public final double targetSpeedLimit;
     public final double gamma;
 
-    /**
-     * Creates a speed controller meant to slow down the train before a speed limit.
-     */
+    /** Creates a speed controller meant to slow down the train before a speed limit. */
     public LimitAnnounceSpeedController(
             double targetSpeedLimit,
             double startPosition,
@@ -21,6 +19,22 @@ public final class LimitAnnounceSpeedController extends SpeedController {
         super(startPosition, endPosition);
         this.targetSpeedLimit = targetSpeedLimit;
         this.gamma = gamma;
+    }
+
+    /** Create LimitannouceSpeedController from initial speed */
+    public static LimitAnnounceSpeedController create(
+            double initialSpeed,
+            double targetSpeed,
+            double targetPosition,
+            double gamma
+    ) {
+        var requiredBrakingDistance = (initialSpeed * initialSpeed - targetSpeed * targetSpeed) / 2 * gamma;
+        return new LimitAnnounceSpeedController(
+                targetSpeed,
+                targetPosition - requiredBrakingDistance,
+                targetPosition,
+                gamma
+        );
     }
 
     @Override
