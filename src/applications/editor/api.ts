@@ -8,7 +8,7 @@ import { ChartisAction } from '../../types';
  */
 export async function getChartisLayers(
   bbox: [Position, Position],
-  layers: Array<String>,
+  layers: Array<String>
 ): Promise<Array<GeoJSON>> {
   const geoJson = bboxPolygon(bbox.flat() as any);
   const result = await Promise.all(
@@ -20,9 +20,9 @@ export async function getChartisLayers(
           no_pagination: true,
           srid: 4326,
         },
-        true,
-      ),
-    ),
+        true
+      )
+    )
   );
   return result;
 }
@@ -35,7 +35,7 @@ export async function getChartisLayers(
 export async function saveChartisActions(action: ChartisAction): Promise<void> {
   return await new Promise((resolve, reject) => {
     setTimeout(() => {
-      Math.random() < 0.5 ? reject(new Error('A random error')) : resolve();
+      /*Math.random() < 0.5 ? reject(new Error('A random error')) : */ resolve();
     }, 3000);
   });
 }

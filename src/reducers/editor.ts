@@ -1,7 +1,7 @@
 /* eslint-disable default-case */
 import produce from 'immer';
-import { GeoJSON } from 'geojson';
-import { ThunkAction, Path, Point, Bbox, ChartisAction } from '../types';
+import { Feature, FeatureCollection, GeoJSON } from 'geojson';
+import { ThunkAction, Path, Point, Bbox, ChartisAction, LineProperties } from '../types';
 import { setLoading, setSuccess, setFailure } from './main';
 import { getChartisLayers, saveChartisActions } from '../applications/editor/api';
 
@@ -56,22 +56,30 @@ export function setEditionData(geojsons: Array<GeoJSON>): ThunkAction<ActionSele
 }
 
 const CREATE_LINE = 'editor/CREATE_LINE';
-type ActionCreateLine = { type: typeof CREATE_LINE; line: Path };
-export function createLine(line: Path): ThunkAction<ActionCreateLine> {
+type ActionCreateLine = { type: typeof CREATE_LINE; feature: Feature };
+export function createLine(line: Path, properties: LineProperties): ThunkAction<ActionCreateLine> {
   return (dispatch) => {
     dispatch({
       type: CREATE_LINE,
-      line,
-    });
-    dispatch(
-      createModificationAction({
-        type: 'insert',
-        layer: 'map_midi_circuitdevoie',
+      feature: {
+        type: 'Feature',
+        properties,
         geometry: {
           type: 'LineString',
           coordinates: line,
         },
-      }),
+      },
+    });
+    dispatch(
+      createModificationAction({
+        layer: 'map_midi_circuitdevoie',
+        type: 'insert',
+        properties,
+        geometry: {
+          type: 'LineString',
+          coordinates: line,
+        },
+      })
     );
   };
 }
@@ -82,7 +90,7 @@ type ActionCreateModificationAction = {
   action: ChartisAction;
 };
 export function createModificationAction(
-  action: ChartisAction,
+  action: ChartisAction
 ): ThunkAction<ActionCreateModificationAction> {
   return (dispatch) => {
     dispatch({
@@ -121,7 +129,7 @@ export function saveModificationActions(): ThunkAction<ActionSaveModificationAct
         setSuccess({
           title: 'Modifications enregistrées',
           text: `Vos ${state.editor.editionActions.length} modifications ont été publiées`,
-        }),
+        })
       );
       dispatch(clearModificationActions());
     } catch (e) {
@@ -147,7 +155,6 @@ export interface EditorState {
   editionZone: Bbox | null;
   editionData: Array<GeoJSON> | null;
   editionActions: Array<ChartisAction>;
-  lines: Array<Path>;
 }
 
 export const initialState: EditorState = {
@@ -160,8 +167,6 @@ export const initialState: EditorState = {
   editionData: null,
   // List of modification actions
   editionActions: [],
-  // New items:
-  lines: [], // an array of paths (arrays of [lng, lat] points)
 };
 
 //
@@ -187,9 +192,22 @@ export default function reducer(state = initialState, action: Actions) {
       case SELECTED_ZONE_LOADED:
         draft.editionData = action.data;
         break;
-      case CREATE_LINE:
-        draft.lines = state.lines.concat([action.line]);
+      case CREATE_LINE: {
+        const layers = state.editionData || [];
+        const layer = layers[0] as FeatureCollection | null;
+        draft.editionData = layer
+          ? [
+              {
+                ...layer,
+                features: layer.features.concat([action.feature]),
+                // @ts-ignore
+                count: layer.count + 1,
+              },
+              ...layers.slice(1),
+            ]
+          : [{ type: 'FeatureCollection', count: 1, features: action.feature }];
         break;
+      }
       case CREATE_MODIFICATION_ACTION:
         draft.editionActions = state.editionActions.concat([action.action]);
         break;

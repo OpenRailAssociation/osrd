@@ -44,12 +44,10 @@ export const getSignalLayerId = (type) => `signal_${type.toLowerCase().replace(/
 
 export const convertLayerVariables = (data) => {
   const dataConverted = {};
-  Object.entries(data).forEach(
-    ([key, value]) => {
-      const newKey = LAYER_VARIABLES[key] ? LAYER_VARIABLES[key] : key;
-      dataConverted[newKey] = value;
-    },
-  );
+  Object.entries(data).forEach(([key, value]) => {
+    const newKey = LAYER_VARIABLES[key] ? LAYER_VARIABLES[key] : key;
+    dataConverted[newKey] = value;
+  });
   return dataConverted;
 };
 
@@ -216,7 +214,7 @@ export const findPathsToKey = (obj, key) => {
         }
       });
     }
-  }(obj, key));
+  })(obj, key);
 
   // const results = findKey(obj, key, undefined, []);
 
@@ -230,7 +228,11 @@ export const findPathsToKey = (obj, key) => {
  * @param {string} str - Raw string to normalize
  * @returns {string} Normalized string
  */
-export const normalizeString = (str) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+export const normalizeString = (str) =>
+  str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 
 /**
  * Soft compare 2 strings, not taking into account case and accents
@@ -363,7 +365,7 @@ export const updateChildElementSelect = (draft, action, selected) => {
         };
       }
       return element;
-    },
+    }
   );
 };
 
@@ -375,10 +377,9 @@ export const exportToJson = (obj) => {
   const filename = 'export.json';
   const contentType = 'application/json;charset=utf-8;';
   if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-    const blob = new Blob(
-      [decodeURIComponent(encodeURI(JSON.stringify(obj)))],
-      { type: contentType },
-    );
+    const blob = new Blob([decodeURIComponent(encodeURI(JSON.stringify(obj)))], {
+      type: contentType,
+    });
     navigator.msSaveOrOpenBlob(blob, filename);
   } else {
     const a = document.createElement('a');
@@ -393,17 +394,31 @@ export const exportToJson = (obj) => {
 
 /**
  * Given two corners (as [lng, lat] point coordinates), returns the proper GeoJSON object to draw
- * the related rectangle
+ * the related selection zone feature
  * @param {array} c1 - The first corner
  * @param {array} c2 - The corner at the opposite of c1
  */
-export const getGeoJSONRectangle = (c1, c2) => ({
-  type: 'Feature',
-  properties: {},
-  geometry: {
-    type: 'Polygon',
-    coordinates: [[c1, [c1[0], c2[1]], c2, [c2[0], c1[1]], c1]],
-  },
+export const getSelectionGeoJSON = (c1, c2) => ({
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      geometry: {
+        type: 'Polygon',
+        coordinates: [[c1, [c1[0], c2[1]], c2, [c2[0], c1[1]], c1]],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        label: "Zone d'édition",
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: c1,
+      },
+    },
+  ],
 });
 
 /**
@@ -411,7 +426,7 @@ export const getGeoJSONRectangle = (c1, c2) => ({
  * draw a line joining them
  * @param {array} points - An array of [lng, lat] points
  */
-export const getGeoJSONPolyline = (points) => ({
+export const getLineGeoJSON = (points) => ({
   type: 'Feature',
   properties: {},
   geometry: {

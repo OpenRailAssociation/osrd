@@ -6,7 +6,7 @@ import { isEqual } from 'lodash';
 
 import { selectZone } from 'reducers/editor';
 import { updateViewport } from 'reducers/map';
-import { getGeoJSONRectangle } from 'utils/helpers';
+import { getSelectionGeoJSON } from 'utils/helpers';
 import { KeyDownMapController } from 'utils/mapboxHelper';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 
@@ -19,17 +19,7 @@ import OSM from 'common/Map/Layers/OSM';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import Platform from 'common/Map/Layers/Platform';
 import EditorZone from 'common/Map/Layers/EditorZone';
-import CustomLines from 'common/Map/Layers/CustomLines';
-import SignalBox from 'common/Map/Layers/SignalBox';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
-
-const layerStyle = {
-  type: 'line',
-  paint: {
-    'line-color': '#FF0000',
-    'line-width': 1,
-  },
-};
 
 const SELECTION_ZONE_STYLE = {
   type: 'line',
@@ -41,7 +31,6 @@ const SELECTION_ZONE_STYLE = {
 
 const SelectZone = () => {
   const { mapStyle, viewport } = useSelector((state) => state.map);
-  const editionData = useSelector((state) => state.editor.editionData);
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
   const dispatch = useDispatch();
   const updateViewportChange = useCallback((value) => dispatch(updateViewport(value, '/editor')), [
@@ -51,7 +40,7 @@ const SelectZone = () => {
   const [state, setState] = useState({ firstCorner: null, secondCorner: null });
   const { firstCorner, secondCorner } = state;
   const geoJSON =
-    firstCorner && secondCorner ? getGeoJSONRectangle(firstCorner, secondCorner) : null;
+    firstCorner && secondCorner ? getSelectionGeoJSON(firstCorner, secondCorner) : null;
 
   /* Interactions */
   const getCursor = (params) => (params.isDragging ? 'grabbing' : 'crosshair');
@@ -68,7 +57,7 @@ const SelectZone = () => {
         dispatch(selectZone(...zone));
       }
     },
-    [firstCorner],
+    [firstCorner]
   );
   const onMove = useCallback(
     (event) => {
@@ -76,7 +65,7 @@ const SelectZone = () => {
         setState({ ...state, secondCorner: event.lngLat });
       }
     },
-    [firstCorner],
+    [firstCorner]
   );
   const onKeyDown = useCallback(
     (event) => {
@@ -84,7 +73,7 @@ const SelectZone = () => {
         setState({ ...state, firstCorner: null, secondCorner: null });
       }
     },
-    [firstCorner],
+    [firstCorner]
   );
 
   /* Custom controller for keyboard handling */
@@ -140,23 +129,17 @@ const SelectZone = () => {
       <OSM mapStyle={mapStyle} />
       <Hillshade mapStyle={mapStyle} />
       <Platform colors={colors[mapStyle]} />
+
       {/* Chartis layers */}
       <TracksGeographic colors={colors[mapStyle]} />
+
       {/* Editor layers */}
       <EditorZone />
-      <CustomLines />
       {geoJSON && (
         <Source type="geojson" data={geoJSON}>
           <Layer {...SELECTION_ZONE_STYLE} />
         </Source>
       )}
-      {/* Data of the selected zone */}
-      {editionData !== null &&
-        editionData.map((geojson, index) => (
-          <Source key={index} type="geojson" data={geojson}>
-            <Layer {...layerStyle} />
-          </Source>
-        ))}
     </ReactMapGL>
   );
 };

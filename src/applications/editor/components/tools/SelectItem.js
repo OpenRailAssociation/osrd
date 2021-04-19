@@ -14,11 +14,10 @@ import Background from 'common/Map/Layers/Background';
 import OSM from 'common/Map/Layers/OSM';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import Platform from 'common/Map/Layers/Platform';
+import GeoJSONs from 'common/Map/Layers/GeoJSONs';
 import EditorZone from 'common/Map/Layers/EditorZone';
-import CustomLines from 'common/Map/Layers/CustomLines';
-import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 
-const INTERACTIVE_LAYER_IDS = ['chartis/tracks-geo/main', 'chartis/tracks-geo/service'];
+const INTERACTIVE_LAYER_IDS = ['editor/geo-main-layer'];
 
 const SelectItem = () => {
   const { mapStyle, viewport } = useSelector((state) => state.map);
@@ -104,8 +103,9 @@ const SelectItem = () => {
       <Hillshade mapStyle={mapStyle} />
       <Platform colors={colors[mapStyle]} />
 
-      {/* Chartis layers */}
-      <TracksGeographic
+      {/* Editor layers */}
+      <EditorZone />
+      <GeoJSONs
         colors={colors[mapStyle]}
         idHover={
           hoveredItem && hoveredItem.layer.match(/^chartis\/tracks-geo/)
@@ -113,10 +113,6 @@ const SelectItem = () => {
             : undefined
         }
       />
-
-      {/* Editor layers */}
-      <EditorZone />
-      <CustomLines />
     </ReactMapGL>
   );
 };
