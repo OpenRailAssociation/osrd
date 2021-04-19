@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.simulation.EntityChange;
 import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.utils.DeepComparable;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
@@ -45,7 +46,7 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
     /**
      * Create an event to notify route that the tvd section is occupied
      */
-    public void occupy(Simulation sim) {
+    public void occupy(Simulation sim) throws SimulationError {
         assert reserved;
         for (var route : tvdSection.routeSubscribers) {
             var routeState = sim.infraState.getRouteState(route.index);

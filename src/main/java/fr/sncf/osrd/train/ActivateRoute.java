@@ -30,7 +30,7 @@ public class ActivateRoute {
         if (routeState.status != RouteStatus.FREE)
             throw new SimulationError(String.format(
                     "Impossible to reserve the route '%s' since it is not available.", routeState.route.id));
-        routeState.reserve(sim);
+        routeState.initialReserve(sim);
 
         // Reserve the tvdSection where the train is created
         var trainPosition = trainState.location.trackSectionRanges.getFirst();
@@ -51,7 +51,7 @@ public class ActivateRoute {
         }
     }
 
-    private static void occupyTvdSectionPath(Simulation sim, TVDSectionPath tvdSectionPath) {
+    private static void occupyTvdSectionPath(Simulation sim, TVDSectionPath tvdSectionPath) throws SimulationError {
         var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
         tvdSection.occupy(sim);
     }

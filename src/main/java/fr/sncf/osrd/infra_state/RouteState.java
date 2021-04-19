@@ -7,6 +7,7 @@ import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.simulation.EntityChange;
 import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.utils.SortedArraySet;
 
 /**
@@ -79,7 +80,11 @@ public final class RouteState implements RSMatchable {
     }
 
     /** Notify the route that one of his tvd section is occupied */
-    public void onTvdSectionOccupied(Simulation sim) {
+    public void onTvdSectionOccupied(Simulation sim) throws SimulationError {
+
+        if (status == RouteStatus.REQUESTED) {
+            throw new SimulationError("The TVD section we try to occupy isn't reserved yet");
+        }
         if (status != RouteStatus.RESERVED)
             return;
         var change = new RouteStatusChange(sim, this, RouteStatus.OCCUPIED);
@@ -123,6 +128,30 @@ public final class RouteState implements RSMatchable {
         sim.publishChange(change);
         notifySignals(sim);
 
+    }
+
+    /** Reserve a route and his tvd sections *when creating a train*.
+     * We set the switches position without waiting
+     * */
+    public void initialReserve(Simulation sim) {
+        assert status == RouteStatus.FREE;
+
+        // Reserve the tvd sections
+        for (var tvdSectionPath : route.tvdSectionsPaths) {
+            var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
+            tvdSection.reserve(sim);
+        }
+
+        // Set the switches, no delay and waiting this time
+        for (var switchPos : route.switchesPosition.entrySet()) {
+            var switchState = sim.infraState.getSwitchState(switchPos.getKey().switchIndex);
+            switchState.setPosition(sim, switchPos.getValue());
+        }
+
+        var change = new RouteStatusChange(sim, this, RouteStatus.RESERVED);
+        change.apply(sim, this);
+        sim.publishChange(change);
+        notifySignals(sim);
     }
 
     /** Should be called when a switch is done moving and is in the position we requested */

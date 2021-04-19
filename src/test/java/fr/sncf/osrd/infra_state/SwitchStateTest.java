@@ -11,14 +11,14 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.infra_state.events.SwitchMoveEvent;
 import org.junit.jupiter.api.Test;
 
-public class SwitchEventsTest {
+public class SwitchStateTest {
     @Test
     public void testSwitchNoMove() throws InvalidInfraException {
         var infra = getBaseInfra();
         assert infra != null;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         RouteState routeState = sim.infraState.getRouteState(3);
-        makeAssertEvent(sim, 21, (s) -> routeState.status == RouteStatus.RESERVED);
+        makeAssertEvent(sim, 21, () -> routeState.status == RouteStatus.RESERVED);
         var events = run(sim);
         assert events != null;
 
@@ -32,6 +32,10 @@ public class SwitchEventsTest {
     public void testSimpleSwitch() throws InvalidInfraException {
         var infra = getBaseInfra();
         assert infra != null;
+        var config = getBaseConfig();
+        assert config != null;
+
+        config.trainSchedules.clear();
 
         // Set all the switch expected positions to RIGHT, to trigger a change
         infra.routes.forEach((route) -> {
@@ -45,17 +49,18 @@ public class SwitchEventsTest {
 
         SwitchState switchState = sim.infraState.getSwitchState(0);
         RouteState routeState = sim.infraState.getRouteState(3);
-        makeAssertEvent(sim, 19, (s) -> switchState.getPosition() == SwitchPosition.LEFT);
-        makeAssertEvent(sim, 21, (s) -> switchState.getPosition() == SwitchPosition.MOVING);
-        makeAssertEvent(sim, 21, (s) -> routeState.status == RouteStatus.REQUESTED);
-        makeAssertEvent(sim, 27, (s) -> switchState.getPosition() == SwitchPosition.RIGHT);
-        makeAssertEvent(sim, 27, (s) -> routeState.status == RouteStatus.RESERVED);
+        double requestTime = 42;
+        makeFunctionEvent(sim, requestTime, () -> routeState.reserve(sim));
+        makeAssertEvent(sim, requestTime + 1, () -> switchState.getPosition() == SwitchPosition.MOVING);
+        makeAssertEvent(sim, requestTime + 1, () -> routeState.status == RouteStatus.REQUESTED);
+        makeAssertEvent(sim, requestTime + 7, () -> switchState.getPosition() == SwitchPosition.RIGHT);
+        makeAssertEvent(sim, requestTime + 7, () -> routeState.status == RouteStatus.RESERVED);
 
-        run(sim);
+        run(sim, config);
     }
 
     @Test
-    public void testSwitchLongerDelay() throws InvalidInfraException {
+    public void testSwitchShorterDelay() throws InvalidInfraException {
         var infra = getBaseInfra();
         assert infra != null;
 
@@ -65,17 +70,17 @@ public class SwitchEventsTest {
             positions.replaceAll((k, v) -> RJSSwitch.Position.RIGHT);
         });
 
-        infra.switches.iterator().next().positionChangeDelay = 10;
+        infra.switches.iterator().next().positionChangeDelay = 2;
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
         SwitchState switchState = sim.infraState.getSwitchState(0);
         RouteState routeState = sim.infraState.getRouteState(3);
-        makeAssertEvent(sim, 19, (s) -> switchState.getPosition() == SwitchPosition.LEFT);
-        makeAssertEvent(sim, 25, (s) -> switchState.getPosition() == SwitchPosition.MOVING);
-        makeAssertEvent(sim, 25, (s) -> routeState.status == RouteStatus.REQUESTED);
-        makeAssertEvent(sim, 31, (s) -> switchState.getPosition() == SwitchPosition.RIGHT);
-        makeAssertEvent(sim, 31, (s) -> routeState.status == RouteStatus.RESERVED);
+        makeAssertEvent(sim, 19, () -> switchState.getPosition() == SwitchPosition.LEFT);
+        makeAssertEvent(sim, 21, () -> switchState.getPosition() == SwitchPosition.MOVING);
+        makeAssertEvent(sim, 21, () -> routeState.status == RouteStatus.REQUESTED);
+        makeAssertEvent(sim, 23, () -> switchState.getPosition() == SwitchPosition.RIGHT);
+        makeAssertEvent(sim, 23, () -> routeState.status == RouteStatus.RESERVED);
 
         run(sim);
     }

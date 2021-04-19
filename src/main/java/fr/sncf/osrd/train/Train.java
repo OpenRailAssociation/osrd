@@ -96,7 +96,8 @@ public class Train {
 
     // region INTERACTIONS
     /** Make the train interact with a detector */
-    public void interact(Simulation sim, Detector detector, TrainInteractionType interactionType) {
+    public void interact(Simulation sim, Detector detector, TrainInteractionType interactionType)
+            throws SimulationError {
         if (lastState.currentPhaseState.getClass() == SignalNavigatePhase.State.class) {
             var navigatePhaseState = (SignalNavigatePhase.State) lastState.currentPhaseState;
             navigatePhaseState.updateTVDSections(sim, detector, interactionType);
