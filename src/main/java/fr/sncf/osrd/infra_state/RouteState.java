@@ -24,7 +24,7 @@ public final class RouteState implements RSMatchable {
     }
 
     /** Notify the route that one of his tvd section isn't occupied anymore */
-    public void onTvdSectionUnoccupied(Simulation sim, TVDSectionState tvdSectionUnoccupied) {
+    public void onTvdSectionUnoccupied(Simulation sim, TVDSectionState tvdSectionUnoccupied) throws SimulationError {
         if (status != RouteStatus.OCCUPIED)
             return;
 
@@ -51,7 +51,7 @@ public final class RouteState implements RSMatchable {
     }
 
     /** Notify the route that one of his tvd section was freed */
-    public void onTvdSectionFreed(Simulation sim) {
+    public void onTvdSectionFreed(Simulation sim) throws SimulationError {
         if (status == RouteStatus.FREE)
             return;
 
@@ -69,7 +69,7 @@ public final class RouteState implements RSMatchable {
     }
 
     /** Notify the route that one of his tvd section is reserved */
-    public void onTvdSectionReserved(Simulation sim) {
+    public void onTvdSectionReserved(Simulation sim) throws SimulationError {
         if (status != RouteStatus.FREE)
             return;
         var change = new RouteStatusChange(sim, this, RouteStatus.CONFLICT);
@@ -92,7 +92,7 @@ public final class RouteState implements RSMatchable {
         notifySignals(sim);
     }
 
-    private void notifySignals(Simulation sim) {
+    private void notifySignals(Simulation sim) throws SimulationError {
         for (var signal : route.signalSubscribers) {
             var signalState = sim.infraState.getSignalState(signal.index);
             signalState.notifyChange(sim);
@@ -100,7 +100,7 @@ public final class RouteState implements RSMatchable {
     }
 
     /** Reserve a route and his tvd sections. Routes that share tvd sections will have the status CONFLICT */
-    public void reserve(Simulation sim) {
+    public void reserve(Simulation sim) throws SimulationError {
         assert status == RouteStatus.FREE;
 
         // Reserve the tvd sections
@@ -132,7 +132,7 @@ public final class RouteState implements RSMatchable {
     /** Reserve a route and his tvd sections *when creating a train*.
      * We set the switches position without waiting
      * */
-    public void initialReserve(Simulation sim) {
+    public void initialReserve(Simulation sim) throws SimulationError {
         assert status == RouteStatus.FREE;
 
         // Reserve the tvd sections
@@ -154,7 +154,7 @@ public final class RouteState implements RSMatchable {
     }
 
     /** Should be called when a switch is done moving and is in the position we requested */
-    public void notifySwitchHasMoved(Simulation sim) {
+    public void notifySwitchHasMoved(Simulation sim) throws SimulationError {
         movingSwitchesLeft--;
         if (movingSwitchesLeft == 0) {
             var change = new RouteStatusChange(sim, this, RouteStatus.RESERVED);

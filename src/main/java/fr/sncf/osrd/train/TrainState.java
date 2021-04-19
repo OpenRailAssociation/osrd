@@ -9,6 +9,7 @@ import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.train.phases.PhaseState;
+import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.DeepComparable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,7 +98,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 new ArrayList<>(speedControllers),
                 trainSchedule,
                 currentPhaseIndex,
-                currentPhaseState.clone(),
+                currentPhaseState,
                 new ArrayDeque<>(actionPointsUnderTrain)
         );
     }
@@ -138,9 +139,6 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             @SuppressWarnings("SameParameterValue") double timeStep,
             double distanceStep
     ) {
-
-        // TODO: find out the actual max braking / acceleration force
-
         var rollingStock = trainSchedule.rollingStock;
         var integrator = TrainPhysicsIntegrator.make(
                 timeStep,
@@ -184,7 +182,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         speed = update.speed;
     }
 
-    /**  Create a location change from the current state to the given position */
+    /**  Create a location change from the current state to the given position.
+     * If the train stops during the simulation then the function returns its new state where it stopped. */
     public Train.TrainStateChange evolveStateUntilPosition(
             Simulation sim,
             double goalPathPosition
@@ -197,6 +196,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 throw new SimulationError("train physics numerical integration doesn't seem to stop");
             var distanceStep = goalPathPosition - location.getPathPosition();
             step(locationChange, 1.0, distanceStep);
+            if (speed == 0.)
+                break;
         }
 
         return locationChange;
@@ -215,10 +216,16 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
     private SpeedController[] getActiveSpeedControllers() {
         var activeControllers = new ArrayList<SpeedController>();
+        // Add train speed controllers
         for (var controller : speedControllers) {
             if (!controller.isActive(this))
                 continue;
-
+            activeControllers.add(controller);
+        }
+        // Add phase speed controllers
+        for (var controller : currentPhaseState.getSpeedControllers()) {
+            if (!controller.isActive(this))
+                continue;
             activeControllers.add(controller);
         }
         return activeControllers.toArray(new SpeedController[0]);
@@ -233,7 +240,11 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         return currentPhaseState.simulate(sim, train, this);
     }
 
+    /** Add or update aspects constraint of a signal */
     public void setAspectConstraints(SignalState signalState) {
-        // TODO
+        if (currentPhaseState.getClass() != SignalNavigatePhase.State.class)
+            throw new RuntimeException("Expected SignalNavigatePhase state");
+        var navigatePhase = (SignalNavigatePhase.State) currentPhaseState;
+        navigatePhase.setAspectConstraints(signalState, this);
     }
 }

@@ -20,7 +20,7 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
     /**
      * Create an event to reserve the tvd section
      */
-    public void reserve(Simulation sim) {
+    public void reserve(Simulation sim) throws SimulationError {
         var change = new TVDSectionReservationChange(sim, this, true);
         change.apply(sim, this);
         sim.publishChange(change);
@@ -30,10 +30,8 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
         }
     }
 
-    /**
-     * Create an event to free the tvd section
-     */
-    public void free(Simulation sim) {
+    /** Create an event to free the tvd section */
+    public void free(Simulation sim) throws SimulationError {
         var change = new TVDSectionReservationChange(sim, this, false);
         change.apply(sim, this);
         sim.publishChange(change);
@@ -43,9 +41,7 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
         }
     }
 
-    /**
-     * Create an event to notify route that the tvd section is occupied
-     */
+    /** Create an event to notify route that the tvd section is occupied */
     public void occupy(Simulation sim) throws SimulationError {
         assert reserved;
         for (var route : tvdSection.routeSubscribers) {
@@ -54,10 +50,8 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
         }
     }
 
-    /**
-     * Create an event to notify route that the tvd section is not occupied anymore
-     */
-    public void unoccupy(Simulation sim) {
+    /** Create an event to notify route that the tvd section is not occupied anymore */
+    public void unoccupy(Simulation sim) throws SimulationError {
         assert reserved;
         for (var route : tvdSection.routeSubscribers) {
             var routeState = sim.infraState.getRouteState(route.index);

@@ -158,6 +158,7 @@ public class StaticSpeedLimitTest {
                 // SignAnalyzer.SignProfile.CONSTANT,
                 SignAnalyzer.SignProfile.INCREASING,
                 // SignAnalyzer.SignProfile.CONSTANT
+                SignAnalyzer.SignProfile.DECREASING,
         };
 
         assertArrayEquals(expectedProfileChanges, profile.stream().map(p -> p.profile).toArray());

@@ -9,6 +9,7 @@ import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.simulation.EntityChange;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.infra_state.events.SwitchMoveEvent;
+import fr.sncf.osrd.simulation.SimulationError;
 
 /**
  * The state of the route is the actual entity which interacts with the rest of the infrastructure
@@ -39,7 +40,7 @@ public final class SwitchState implements RSMatchable {
     /**
      * Change position of the switch
      */
-    public void setPosition(Simulation sim, SwitchPosition position) {
+    public void setPosition(Simulation sim, SwitchPosition position) throws SimulationError {
         if (this.position != position) {
             var change = new SwitchPositionChange(sim, this, position);
             change.apply(sim, this);
@@ -55,7 +56,11 @@ public final class SwitchState implements RSMatchable {
     /**
      * Starts a switch change that will happen after the switch's delay
      */
-    public void requestPositionChange(Simulation sim, SwitchPosition position, RouteState requestingRoute) {
+    public void requestPositionChange(
+            Simulation sim,
+            SwitchPosition position,
+            RouteState requestingRoute
+    ) throws SimulationError {
         if (this.position != position) {
             var delay = switchRef.positionChangeDelay;
             SwitchMoveEvent.plan(sim, sim.getTime() + delay, position, this, requestingRoute);

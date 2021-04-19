@@ -9,6 +9,7 @@ import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra_state.events.SignalDelayedUpdateEvent;
 import fr.sncf.osrd.simulation.EntityChange;
 import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainState;
 
@@ -36,7 +37,7 @@ public final class SignalState implements RSValue {
     /**
      * Eval aspect when a dependency changed
      */
-    public void notifyChange(Simulation sim) {
+    public void notifyChange(Simulation sim) throws SimulationError {
         var delayHandler = new DelayHandler(sim, this);
         var newAspects = exprState.evalInputChange(sim.infraState, delayHandler);
         updateAspect(sim, newAspects);
@@ -45,13 +46,13 @@ public final class SignalState implements RSValue {
     /**
      * Notify the signal when a SignalDelayUpdateEvent occurred
      */
-    public void notifyDelayChange(Simulation sim, int delaySlot, RSValue value) {
+    public void notifyDelayChange(Simulation sim, int delaySlot, RSValue value) throws SimulationError {
         var delayHandler = new DelayHandler(sim, this);
         var newAspects = exprState.evalDelayUpdate(sim.infraState, delayHandler, delaySlot, value);
         updateAspect(sim, newAspects);
     }
 
-    private void updateAspect(Simulation sim, RSAspectSet newAspects) {
+    private void updateAspect(Simulation sim, RSAspectSet newAspects) throws SimulationError {
         if (newAspects != null && !newAspects.equals(aspects)) {
             var change = new SignalAspectChange(sim, this, newAspects);
             change.apply(sim, this);
