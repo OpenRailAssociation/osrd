@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin
 
-from .models import *
+from osrd_infra.models import *
 
 
 @admin.register(EntityID)

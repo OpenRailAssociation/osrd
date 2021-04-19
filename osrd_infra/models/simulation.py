@@ -1,5 +1,5 @@
 from django.contrib.gis.db import models
-from .infra import Infra
+from osrd_infra.models.infra import Infra
 
 class Timetable(models.Model):
     infra = models.ForeignKey('Infra', on_delete=models.DO_NOTHING)

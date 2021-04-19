@@ -1,6 +1,6 @@
 from rest_framework.routers import SimpleRouter
 
-from .views import InfraViewSet, TrackSectionViewSet, SignalViewSet, OperationalPointViewSet, SwitchViewSet
+from osrd_infra.views import InfraViewSet, TrackSectionViewSet, SignalViewSet, OperationalPointViewSet, SwitchViewSet
 
 
 router = SimpleRouter()

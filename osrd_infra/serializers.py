@@ -1,8 +1,8 @@
 from rest_framework.serializers import ModelSerializer, CharField, FloatField, PrimaryKeyRelatedField
 
-from .models import Infra, TrackSection, Signal, Identifier, TrackSectionLocation, OperationalPoint, OperationalPointPart, TrackSectionRange, Switch
+from osrd_infra.models import Infra, TrackSection, Signal, Identifier, TrackSectionLocation, OperationalPoint, OperationalPointPart, TrackSectionRange, Switch
 
-from .models.common import Endpoint, EnumSerializer
+from osrd_infra.models.common import Endpoint, EnumSerializer
 
 
 class InfraSerializer(ModelSerializer):
