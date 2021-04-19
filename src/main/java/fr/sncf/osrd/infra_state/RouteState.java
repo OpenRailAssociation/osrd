@@ -154,7 +154,7 @@ public final class RouteState implements RSMatchable {
     }
 
     /** Should be called when a switch is done moving and is in the position we requested */
-    public void notifySwitchHasMoved(Simulation sim) throws SimulationError {
+    public void onSwitchMove(Simulation sim) {
         movingSwitchesLeft--;
         if (movingSwitchesLeft == 0) {
             var change = new RouteStatusChange(sim, this, RouteStatus.RESERVED);
