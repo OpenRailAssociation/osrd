@@ -1,6 +1,7 @@
 package fr.sncf.osrd.infra_state;
 
 import static fr.sncf.osrd.infra_state.Helpers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
@@ -9,7 +10,11 @@ import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import org.junit.jupiter.api.Test;
+
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class RouteStateTest {
     @Test
@@ -119,5 +124,38 @@ public class RouteStateTest {
         makeAssertEvent(sim, 20, () -> routeState.status == RouteStatus.FREE);
 
         run(sim);
+    }
+
+    @Test
+    public void testReserveStatusChanges() throws InvalidInfraException {
+        var infra = getBaseInfra();
+        assert infra != null;
+        var config = getBaseConfig();
+        assert config != null;
+
+        var changelog = new ArrayChangeLog();
+
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, changelog);
+
+        config.trainSchedules.clear();
+
+        RouteState routeState = sim.infraState.getRouteState(3);
+        makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
+        run(sim, config);
+
+        var changesSet = changelog.publishedChanges.stream()
+                .filter(x -> x instanceof RouteState.RouteStatusChange)
+                .collect(Collectors.toSet());
+
+        var expectedChanges = Stream.of(
+                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(2), RouteStatus.CONFLICT),
+                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(6), RouteStatus.CONFLICT),
+                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(7), RouteStatus.CONFLICT),
+                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(8), RouteStatus.CONFLICT),
+
+                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(3), RouteStatus.RESERVED)
+        )
+                .collect(Collectors.toSet());
+        assertEquals(expectedChanges, changesSet);
     }
 }
