@@ -145,6 +145,7 @@ public class RouteStateTest {
 
         var changesSet = changelog.publishedChanges.stream()
                 .filter(x -> x instanceof RouteState.RouteStatusChange)
+                .map(Object::toString)
                 .collect(Collectors.toSet());
 
         var expectedChanges = Stream.of(
@@ -155,6 +156,7 @@ public class RouteStateTest {
 
                 new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(3), RouteStatus.RESERVED)
         )
+                .map(Object::toString)
                 .collect(Collectors.toSet());
         assertEquals(expectedChanges, changesSet);
     }
