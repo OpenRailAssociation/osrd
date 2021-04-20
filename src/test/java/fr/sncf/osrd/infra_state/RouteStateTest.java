@@ -140,7 +140,7 @@ public class RouteStateTest {
         config.trainSchedules.clear();
 
         RouteState routeState = sim.infraState.getRouteState(3);
-        makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
+        routeState.reserve(sim);
         run(sim, config);
 
         var changesSet = changelog.publishedChanges.stream()
