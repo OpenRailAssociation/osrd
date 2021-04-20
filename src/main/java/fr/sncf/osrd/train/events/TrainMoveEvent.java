@@ -5,15 +5,18 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.simulation.TimelineEventId;
-import fr.sncf.osrd.train.Interaction;
 import fr.sncf.osrd.train.Train;
 
-public final class TrainMove extends TimelineEvent {
+/**
+ * This event represents a regular train move.
+ * Use this event when you want to move a train without interacting with an action point.
+ */
+public final class TrainMoveEvent extends TimelineEvent {
     public final Train train;
     public final Train.TrainStateChange trainStateChange;
 
-    /** Event that represents a train's interaction with an action point */
-    private TrainMove(
+    /** Create a train move event */
+    private TrainMoveEvent(
             TimelineEventId eventId,
             Train train,
             Train.TrainStateChange trainStateChange
@@ -40,15 +43,15 @@ public final class TrainMove extends TimelineEvent {
     @Override
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
     public boolean deepEquals(TimelineEvent other) {
-        if (other.getClass() != TrainMove.class)
+        if (other.getClass() != TrainMoveEvent.class)
             return false;
-        var o = (TrainMove) other;
+        var o = (TrainMoveEvent) other;
         return o.train.getName().equals(train.getName())
                 && o.trainStateChange.deepEquals(trainStateChange);
     }
 
     /** Plan a move to an action point */
-    public static TrainMove plan(
+    public static TrainMoveEvent plan(
             Simulation sim,
             double actionTime,
             Train train,
@@ -75,8 +78,8 @@ public final class TrainMove extends TimelineEvent {
             this.stateChange = stateChange;
         }
 
-        private TrainMove apply(Simulation sim, Train train) {
-            var event = new TrainMove(eventId, train, stateChange);
+        private TrainMoveEvent apply(Simulation sim, Train train) {
+            var event = new TrainMoveEvent(eventId, train, stateChange);
             super.scheduleEvent(sim, event);
             return event;
         }

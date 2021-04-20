@@ -17,7 +17,7 @@ import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.train.*;
-import fr.sncf.osrd.train.events.TrainMove;
+import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
@@ -115,8 +115,8 @@ public final class SignalNavigatePhase implements Phase {
     public static final class VirtualActionPoint implements ActionPoint {
 
         @Override
-        public InteractionsType getInteractionsType() {
-            return new InteractionsType();
+        public InteractionTypeSet getInteractionsType() {
+            return new InteractionTypeSet();
         }
 
         @Override
@@ -228,7 +228,7 @@ public final class SignalNavigatePhase implements Phase {
                 return TrainReachesActionPoint.plan(sim, trainState.time, train, simulationResult, nextInteraction);
             }
             // The train didn't reached the action point
-            return TrainMove.plan(sim, trainState.time, train, simulationResult);
+            return TrainMoveEvent.plan(sim, trainState.time, train, simulationResult);
         }
 
         private static void addInteractionUnderTrain(TrainState trainState, Interaction interaction) {

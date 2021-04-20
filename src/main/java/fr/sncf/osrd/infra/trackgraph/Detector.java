@@ -4,20 +4,20 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.InteractionType;
 import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.InteractionsType;
+import fr.sncf.osrd.train.InteractionTypeSet;
 
 public class Detector extends Waypoint {
 
-    private static final InteractionsType interactionsType =
-            new InteractionsType(new InteractionType[]{InteractionType.HEAD, InteractionType.TAIL});
+    private static final InteractionTypeSet interactionTypeSet =
+            new InteractionTypeSet(new InteractionType[]{InteractionType.HEAD, InteractionType.TAIL});
 
     public Detector(int index, String id) {
         super(index, id);
     }
 
     @Override
-    public InteractionsType getInteractionsType() {
-        return interactionsType;
+    public InteractionTypeSet getInteractionsType() {
+        return interactionTypeSet;
     }
 
     @Override

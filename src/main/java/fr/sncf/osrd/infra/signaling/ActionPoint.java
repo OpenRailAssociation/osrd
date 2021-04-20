@@ -4,10 +4,10 @@ import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.InteractionType;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.simulation.Simulation;
-import fr.sncf.osrd.train.InteractionsType;
+import fr.sncf.osrd.train.InteractionTypeSet;
 
 public interface ActionPoint {
-    InteractionsType getInteractionsType();
+    InteractionTypeSet getInteractionsType();
 
     /** Gets the distance from the object at which the action occurs */
     double getActionDistance();
