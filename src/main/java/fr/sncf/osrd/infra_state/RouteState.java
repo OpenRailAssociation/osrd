@@ -103,12 +103,6 @@ public final class RouteState implements RSMatchable {
     public void reserve(Simulation sim) throws SimulationError {
         assert status == RouteStatus.FREE;
 
-        // Reserve the tvd sections
-        for (var tvdSectionPath : route.tvdSectionsPaths) {
-            var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
-            tvdSection.reserve(sim);
-        }
-
         // Set the switches in the moving position
         movingSwitchesLeft = 0;
         for (var switchPos : route.switchesPosition.entrySet()) {
@@ -127,6 +121,11 @@ public final class RouteState implements RSMatchable {
         sim.publishChange(change);
         notifySignals(sim);
 
+        // Reserve the tvd sections
+        for (var tvdSectionPath : route.tvdSectionsPaths) {
+            var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
+            tvdSection.reserve(sim);
+        }
     }
 
     /** Reserve a route and his tvd sections *when creating a train*.
@@ -134,12 +133,6 @@ public final class RouteState implements RSMatchable {
      * */
     public void initialReserve(Simulation sim) throws SimulationError {
         assert status == RouteStatus.FREE;
-
-        // Reserve the tvd sections
-        for (var tvdSectionPath : route.tvdSectionsPaths) {
-            var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
-            tvdSection.reserve(sim);
-        }
 
         // Set the switches, no delay and waiting this time
         for (var switchPos : route.switchesPosition.entrySet()) {
@@ -151,6 +144,12 @@ public final class RouteState implements RSMatchable {
         change.apply(sim, this);
         sim.publishChange(change);
         notifySignals(sim);
+
+        // Reserve the tvd sections
+        for (var tvdSectionPath : route.tvdSectionsPaths) {
+            var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
+            tvdSection.reserve(sim);
+        }
     }
 
     /** Should be called when a switch is done moving and is in the position we requested */
