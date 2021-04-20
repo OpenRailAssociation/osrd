@@ -42,9 +42,7 @@ export default function MapSearchStation(props) {
   }, [debouncedSearchTerm]);
 
   const onResultClick = (result) => {
-    setDontSearch(true);
     setSearch(result.name);
-    setSearchResults(undefined);
 
     const lonlat = map.mapTrackSources === 'schematic' ? result.coordinates.sch : result.coordinates.geo;
 

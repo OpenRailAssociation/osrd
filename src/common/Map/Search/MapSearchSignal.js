@@ -9,7 +9,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { get } from 'common/requests';
 import { useDebounce } from 'utils/helpers';
 
-const searchURI = '/gaia/osrd/signal/'; // '/matgaia/search_station';
+const searchURI = '/gaia/osrd/signal/';
 
 export default function MapSearchSignal(props) {
   const { updateExtViewport } = props;
@@ -19,6 +19,8 @@ export default function MapSearchSignal(props) {
   const [searchLineState, setSearchLine] = useState('');
   const [dontSearch, setDontSearch] = useState(false);
   const [searchResults, setSearchResults] = useState(undefined);
+  // Sort by, and order 0 = ASC, 1 = DESC
+  const [sortFilter, setSortFilter] = useState({ name: 'name', order: 0 });
   const dispatch = useDispatch();
 
   const { t } = useTranslation(['translation', 'map-search']);
@@ -45,11 +47,15 @@ export default function MapSearchSignal(props) {
     }
   }, [debouncedSearchTerm, debouncedSearchLine]);
 
-  const onResultClick = (result) => {
-    setDontSearch(true);
-    setSearch(result.name);
-    setSearchResults(undefined);
+  const setSortName = (name) => {
+    if (name === sortFilter.name) {
+      setSortFilter({ name, order: 1 - sortFilter.order });
+    } else {
+      setSortFilter({ name, order: 0 });
+    }
+  };
 
+  const onResultClick = (result) => {
     const lonlat = map.mapTrackSources === 'schematic' ? result.coordinates.sch : result.coordinates.geo;
 
     if (lonlat !== null) {
@@ -62,29 +68,43 @@ export default function MapSearchSignal(props) {
         transitionInterpolator: new FlyToInterpolator(),
       };
       updateExtViewport(newViewport);
-      dispatch(updateMapSearchMarker({ title: result.name, lonlat }));
+      dispatch(updateMapSearchMarker({ title: result.name, subtitle: result.stationname, lonlat }));
     }
+  };
+
+  const orderDisplay = (name) => {
+    if (name === sortFilter.name) {
+      return sortFilter.order === 0
+        ? <i className="icons-arrow-down icons-size-x5 ml-1" />
+        : <i className="icons-arrow-up icons-size-x5 ml-1" />;
+    }
+    return null;
   };
 
   const formatSearchResults = () => {
     let searchResultsContent = searchResults.results.filter((result) => result.name !== null);
-    searchResultsContent = searchResultsContent.sort(
-      (a, b) => a.name.localeCompare(b.name),
-    );
+    searchResultsContent = searchResultsContent.sort((a, b) => {
+      if (!a.[sortFilter.name]) { return -1; } // To avoid null values
+      if (!b.[sortFilter.name]) { return 1; }
+      return sortFilter.order === 0
+        ? a.[sortFilter.name].localeCompare(b.[sortFilter.name])
+        : b.[sortFilter.name].localeCompare(a.[sortFilter.name]);
+    });
     return searchResultsContent.map((result) => (
-      <tr
+      <div
         role="button"
-        className="search-result-table-item"
+        tabIndex={-1}
+        className="row search-result-table-item align-items-center"
         key={nextId()}
         onClick={() => onResultClick(result)}
       >
-        <td><img src={`/signalsSVG/${result.type.replace(/ /g, '_')}.svg`} alt={result.type} /></td>
-        <td>{result.name}</td>
-        <td>{result.stationname}</td>
-        <td>{result.linecode}</td>
-        <td>{result.trackname}</td>
-        <td><small>{result.pk}</small></td>
-      </tr>
+        <div className="col-1"><img src={`/signalsSVG/${result.type.replace(/ /g, '_')}.svg`} alt={result.type} /></div>
+        <div className="col-1 small">{result.name}</div>
+        <div className="col-3">{result.stationname}</div>
+        <div className="col-2">{result.linecode}</div>
+        <div className="col-3 small">{result.trackname}</div>
+        <div className="col-2"><small>{result.pk}</small></div>
+      </div>
     ));
   };
 
@@ -134,13 +154,37 @@ export default function MapSearchSignal(props) {
       <div>
         {searchResults !== undefined && searchResults.results !== undefined
           ? (
-            <div className="search-results">
-              <table>
-                <tbody>
-                  {formatSearchResults()}
-                </tbody>
-              </table>
-            </div>
+            <>
+              <div className="row mt-3 px-3 small no-gutters">
+                <div className="col-1" role="button" onClick={() => setSortName('type')} tabIndex={-1}>
+                  {t('map-search:type')}
+                  {orderDisplay('type')}
+                </div>
+                <div className="col-1" role="button" onClick={() => setSortName('name')} tabIndex={-1}>
+                  {t('map-search:name')}
+                  {orderDisplay('name')}
+                </div>
+                <div className="col-3" role="button" onClick={() => setSortName('stationname')} tabIndex={-1}>
+                  {t('map-search:station')}
+                  {orderDisplay('stationname')}
+                </div>
+                <div className="col-2" role="button" onClick={() => setSortName('linecode')} tabIndex={-1}>
+                  {t('map-search:linecode')}
+                  {orderDisplay('linecode')}
+                </div>
+                <div className="col-3" role="button" onClick={() => setSortName('trackname')} tabIndex={-1}>
+                  {t('map-search:trackname')}
+                  {orderDisplay('trackname')}
+                </div>
+                <div className="col-2" role="button" onClick={() => setSortName('pk')} tabIndex={-1}>
+                  {t('map-search:pk')}
+                  {orderDisplay('pk')}
+                </div>
+              </div>
+              <div className="search-results">
+                {formatSearchResults()}
+              </div>
+            </>
           ) : (
             <h2 className="text-center mt-3">
               {t('map-search:noresult')}
