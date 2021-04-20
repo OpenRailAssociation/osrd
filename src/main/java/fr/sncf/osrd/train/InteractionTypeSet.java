@@ -4,10 +4,10 @@ import fr.sncf.osrd.utils.SortedArraySet;
 
 import java.util.Arrays;
 
-public class InteractionsType extends SortedArraySet<InteractionType> {
-    public InteractionsType() {}
+public class InteractionTypeSet extends SortedArraySet<InteractionType> {
+    public InteractionTypeSet() {}
 
-    public InteractionsType(InteractionType[] interactionsType) {
+    public InteractionTypeSet(InteractionType[] interactionsType) {
         this.addAll(Arrays.asList(interactionsType));
     }
 

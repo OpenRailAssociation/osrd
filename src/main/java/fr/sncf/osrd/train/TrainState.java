@@ -196,7 +196,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 throw new SimulationError("train physics numerical integration doesn't seem to stop");
             var distanceStep = goalPathPosition - location.getPathPosition();
             step(locationChange, 1.0, distanceStep);
-            if (speed == 0.)
+            // Stop the evolution if the train has stopped
+            if (speed < 0.0000001)
                 break;
         }
 

@@ -1,19 +1,17 @@
 package fr.sncf.osrd.train.events;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.train.Interaction;
-import fr.sncf.osrd.train.InteractionType;
 import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.InteractionsType;
 
+/** This event represents a train's interaction with an action point. */
 public final class TrainReachesActionPoint extends TimelineEvent {
     public final Train train;
     public final Train.TrainStateChange trainStateChange;
     public final Interaction interaction;
 
-    /** Event that represents a train's interaction with an action point */
+    /** Create a train reaches action point */
     private TrainReachesActionPoint(
             TimelineEventId eventId,
             Train train,
