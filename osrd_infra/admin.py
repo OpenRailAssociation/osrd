@@ -4,24 +4,41 @@ from django.contrib.admin import ModelAdmin
 from osrd_infra.models import *
 
 
-@admin.register(EntityID)
-class ECSModelAdmin(ModelAdmin):
-    pass
+class TrackSectionInline(admin.TabularInline):
+    model = TrackSectionComponent
+    max_num = 1
+    extra = 1
 
 
-@admin.register(TrackSectionLocation)
-@admin.register(TrackSectionRange)
-@admin.register(Identifier)
-class ComponentsModelAdmin(ModelAdmin):
-    pass
+class IdentifierInline(admin.TabularInline):
+    model = IdentifierComponent
+    extra = 1
 
 
-@admin.register(Infra)
-@admin.register(TrackSection)
-@admin.register(Switch)
-@admin.register(TrackSectionLink)
-@admin.register(Signal)
-@admin.register(OperationalPoint)
-@admin.register(OperationalPointPart)
-class InfraModelAdmin(ModelAdmin):
-    pass
+class TrackSectionLinkInline(admin.TabularInline):
+    model = TrackSectionLinkComponent
+    extra = 1
+
+
+@admin.register(TrackSectionEntity)
+class TrackSectionAdmin(ModelAdmin):
+    inlines = (IdentifierInline, TrackSectionInline)
+
+
+@admin.register(SwitchEntity)
+class SwitchAdmin(ModelAdmin):
+    inlines = (IdentifierInline, TrackSectionLinkInline)
+
+
+admin.site.register(
+    [
+        # generic components
+        TrackSectionLocationComponent,
+        TrackSectionRangeComponent,
+        IdentifierComponent,
+        TrackSectionLinkComponent,
+        # misc
+        Infra,
+        IdentifierDatabase,
+    ]
+)

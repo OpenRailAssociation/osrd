@@ -1,12 +1,17 @@
 from django.contrib.gis.db import models
-from osrd_infra.models.ecs import Component, Entity
+from osrd_infra.models.ecs import (
+    Component,
+    UniqueComponent,
+    Entity,
+    EntityManager,
+)
 from osrd_infra.models.common import EndpointField
 from django.conf import settings
 
 
 class Infra(models.Model):
     name = models.CharField(max_length=128)
-    owner = models.UUIDField()
+    owner = models.UUIDField(default="00000000-0000-0000-0000-000000000000")
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -14,79 +19,128 @@ class Infra(models.Model):
         return self.name
 
 
-class TrackSectionLocation(Component):
-    track_section = models.ForeignKey("TrackSection", on_delete=models.CASCADE)
-    offset = models.FloatField()
+class IdentifierDatabase(models.Model):
+    """A database mapping identifiers to objects"""
 
+    name = models.CharField(max_length=255)
 
-class TrackSectionLocationEntity(models.Model):
-    location = models.OneToOneField("TrackSectionLocation", on_delete=models.CASCADE)
+    def __str__(self):
+        return self.name
 
     class Meta:
-        abstract = True
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name"], name="identifier_database_unique_name"
+            )
+        ]
 
 
-class TrackSectionRange(Component):
-    track_section = models.ForeignKey("TrackSection", on_delete=models.CASCADE)
+class TrackSectionLocationComponent(Component):
+    """The component holding location information for point objects on track sections"""
+
+    track_section = models.ForeignKey(
+        "TrackSectionEntity", on_delete=models.CASCADE, related_name="point_objects"
+    )
+    offset = models.FloatField()
+
+    class Meta:
+        component_name = "point_location"
+
+
+class TrackSectionRangeComponent(Component):
+    """A component for entities which are ranges on a track section"""
+
+    track_section = models.ForeignKey(
+        "TrackSectionEntity", on_delete=models.CASCADE, related_name="range_objects"
+    )
     start_offset = models.FloatField()
     end_offset = models.FloatField()
 
+    class Meta:
+        component_name = "range_location"
 
-class Identifier(Component):
+
+class IdentifierComponent(Component):
+    database = models.ForeignKey("IdentifierDatabase", on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
 
-
-class IdentifiedEntity(models.Model):
-    identity = models.OneToOneField("Identifier", on_delete=models.CASCADE)
+    def __repr__(self):
+        return f"<IdentifierComponent database={self.database}, name={self.name}>"
 
     class Meta:
-        abstract = True
+        component_name = "identifiers"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["database", "name"], name="identifier_unique_in_database"
+            )
+        ]
 
 
-class TrackSection(Entity, IdentifiedEntity):
+class TrackSectionComponent(UniqueComponent):
     infra = models.ForeignKey("Infra", on_delete=models.CASCADE)
     path = models.LineStringField(srid=settings.OSRD_INFRA_SRID)
 
-
-class Switch(Entity, IdentifiedEntity):
-    base_track_section = models.ForeignKey(
-        "TrackSection", on_delete=models.CASCADE, related_name="switch_base_branches"
-    )
-    base_endpoint = EndpointField()
-
-    left_track_section = models.ForeignKey(
-        "TrackSection", on_delete=models.CASCADE, related_name="switch_left_branches"
-    )
-    left_endpoint = EndpointField()
-
-    right_track_section = models.ForeignKey(
-        "TrackSection", on_delete=models.CASCADE, related_name="switch_right_branches"
-    )
-    right_endpoint = EndpointField()
+    class Meta:
+        component_name = "track_section"
 
 
-class TrackSectionLink(Entity, IdentifiedEntity):
+class TrackSectionLinkComponent(Component):
     begin_track_section = models.ForeignKey(
-        "TrackSection", on_delete=models.CASCADE, related_name="link_begin_branches"
+        "TrackSectionEntity",
+        on_delete=models.CASCADE,
+        related_name="link_begin_branches",
     )
     begin_endpoint = EndpointField()
 
     end_track_section = models.ForeignKey(
-        "TrackSection", on_delete=models.CASCADE, related_name="link_end_branches"
+        "TrackSectionEntity", on_delete=models.CASCADE, related_name="link_end_branches"
     )
     end_endpoint = EndpointField()
 
-
-class OperationalPoint(Entity, IdentifiedEntity):
-    pass
-
-
-class OperationalPointPart(Entity):
-    track_range = models.OneToOneField("TrackSectionRange", on_delete=models.CASCADE)
-    operational_point = models.ForeignKey(
-        "OperationalPoint", related_name="parts", on_delete=models.CASCADE
-    )
+    class Meta:
+        component_name = "track_section_link"
 
 
-class Signal(Entity, IdentifiedEntity, TrackSectionLocationEntity):
-    pass
+class TrackSectionEntity(Entity):
+    name = "track_section"
+    type_id = Entity.Type.TRACK_SECTION
+    components = {
+        TrackSectionComponent: 1,
+        IdentifierComponent: 1,
+    }
+
+
+class SwitchEntity(Entity):
+    name = "switch"
+    type_id = Entity.Type.SWITCH
+    components = {
+        IdentifierComponent: 1,
+        TrackSectionLinkComponent: ...,
+    }
+
+
+class TrackSectionLinkEntity(Entity):
+    name = "track_section_link"
+    type_id = Entity.Type.TRACK_SECTION_LINK
+    components = {
+        IdentifierComponent: 1,
+        TrackSectionLinkComponent: 1,
+    }
+
+
+class OperationalPointEntity(Entity):
+    name = "operational_point"
+    type_id = Entity.Type.OPERATIONAL_POINT
+    components = {
+        IdentifierComponent: 1,
+        TrackSectionRangeComponent: ...,
+    }
+
+
+class SignalEntity(Entity):
+    name = "signal"
+    type_id = Entity.Type.SIGNAL
+    components = {
+        IdentifierComponent: 1,
+        TrackSectionLocationComponent: ...,
+    }

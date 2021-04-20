@@ -1,4 +1,5 @@
 from rest_framework.routers import SimpleRouter
+from django.urls import path, include
 
 from osrd_infra.views import (
     InfraViewSet,
@@ -9,18 +10,14 @@ from osrd_infra.views import (
 )
 
 
-router = SimpleRouter()
-router.register("infra", InfraViewSet, basename="infra")
-router.register("track_section", TrackSectionViewSet, basename="track_section")
-router.register("signal", SignalViewSet, basename="signal")
-router.register(
-    "operational_point", OperationalPointViewSet, basename="operational_point"
-)
-router.register("switch", SwitchViewSet, basename="switch")
+entity_router = SimpleRouter()
+entity_router.register("infra", InfraViewSet)
+entity_router.register("track_section", TrackSectionViewSet)
+entity_router.register("switch", SwitchViewSet)
+entity_router.register("signal", SignalViewSet)
+entity_router.register("operational_point", OperationalPointViewSet)
 
-
-urlpatterns = [] + router.urls
-
-
-# lister les objets dans une infra
-# faire les CRUD par objet
+urlpatterns = [
+    path('entity/', include(entity_router.urls)),
+    # path('component/', include(component_router.urls)),
+]
