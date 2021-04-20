@@ -9,7 +9,7 @@ import fr.sncf.osrd.simulation.Change;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.events.TrainMove;
+import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import org.graphstream.graph.Edge;
@@ -342,8 +342,8 @@ public class DebugViewer extends ChangeConsumer {
             trains.get(trainReachesAction.trainId).nextMove = trainReachesAction.stateChange;
         }
 
-        if (change.getClass() == TrainMove.TrainPlannedMove.class) {
-            var trainMove = (TrainMove.TrainPlannedMove) change;
+        if (change.getClass() == TrainMoveEvent.TrainPlannedMove.class) {
+            var trainMove = (TrainMoveEvent.TrainPlannedMove) change;
             trains.get(trainMove.trainId).nextMove = trainMove.stateChange;
         }
         // endregion

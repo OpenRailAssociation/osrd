@@ -7,7 +7,7 @@ import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.train.InteractionType;
 import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.InteractionsType;
+import fr.sncf.osrd.train.InteractionTypeSet;
 import fr.sncf.osrd.utils.graph.ApplicableDirections;
 
 import java.util.ArrayList;
@@ -21,8 +21,8 @@ public class Signal implements ActionPoint {
     public final ApplicableDirections direction;
 
     private RSAspectSet initialAspects = new RSAspectSet();
-    private static final InteractionsType interactionsType =
-            new InteractionsType(new InteractionType[]{InteractionType.HEAD, InteractionType.SEEN});
+    private static final InteractionTypeSet interactionTypeSet =
+            new InteractionTypeSet(new InteractionType[]{InteractionType.HEAD, InteractionType.SEEN});
 
     /** The static data describing a signal */
     public Signal(
@@ -44,8 +44,8 @@ public class Signal implements ActionPoint {
     }
 
     @Override
-    public InteractionsType getInteractionsType() {
-        return interactionsType;
+    public InteractionTypeSet getInteractionsType() {
+        return interactionTypeSet;
     }
 
     @Override

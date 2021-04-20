@@ -3,7 +3,7 @@
   "infra_path": "infra.json",
   "simulation_path": "simulation.json",
   "show_viewer": true,
-  "realtime_viewer": false,
+  "realtime_viewer": true,
   "change_replay_check": true,
   "simulation_step_pause": 0.2
 }
