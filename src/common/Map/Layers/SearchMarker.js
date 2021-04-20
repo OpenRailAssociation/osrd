@@ -12,9 +12,16 @@ const SearchMarker = (props) => {
       latitude={data.lonlat[1]}
     >
       <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-        <circle style={{ fill: '#0088ce', fillOpacity: '0.5' }} cx="16" cy="16" r="16" />
+        <circle style={{ fill: colors.mapmarker.circle, fillOpacity: '0.5' }} cx="16" cy="16" r="16" />
       </svg>
-      <span className="map-search-marker-title">{ data.title }</span>
+      <span className="map-search-marker-title" style={{ color: colors.mapmarker.text }}>
+        { data.title }
+      </span>
+      { data.subtitle !== null ? (
+        <span className="map-search-marker-subtitle" style={{ color: colors.mapmarker.text }}>
+          { data.subtitle}
+        </span>
+      ) : null }
     </Marker>
   );
 };

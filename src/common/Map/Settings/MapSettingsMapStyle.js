@@ -11,7 +11,7 @@ export default function MapSettingsMapStyle() {
   const { mapStyle } = useSelector((state) => state.map);
   const dispatch = useDispatch();
   return (
-    <div className="row">
+    <div className="row ml-1">
       <button
         className={`col-xs-4 mb-2 mapstyle-style-select ${mapStyle === 'normal' ? 'active' : null}`}
         type="button"

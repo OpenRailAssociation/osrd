@@ -168,7 +168,7 @@ const Map = () => {
         {/* <SignalBox />
         <ThreeboxTest mapInstance={{}} /> */}
         {mapSearchMarker !== undefined ? (
-          <SearchMarker data={mapSearchMarker} />
+          <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         ) : null}
       </ReactMapGL>
     </main>

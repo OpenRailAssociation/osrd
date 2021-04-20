@@ -29,6 +29,10 @@ const colors = {
       text: '#555555',
       halo: '#f9f5f5',
     },
+    mapmarker: {
+      text: '#0088ce',
+      circle: '#0088ce',
+    },
     panel: {
       text: '#333333',
       halo: '#ffffff',
@@ -131,6 +135,10 @@ const colors = {
       text: '#4895ef',
       halo: '#0b011d',
     },
+    mapmarker: {
+      text: '#ffaa39',
+      circle: '#ffaa39',
+    },
     panel: {
       text: '#eeeeee',
       halo: '#333333',
@@ -232,6 +240,10 @@ const colors = {
     linename: {
       text: bpLight,
       halo: bpBg,
+    },
+    mapmarker: {
+      text: bpMedium,
+      circle: bpLight,
     },
     panel: {
       text: bpLight,
