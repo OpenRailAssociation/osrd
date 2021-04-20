@@ -1,19 +1,26 @@
 package fr.sncf.osrd;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
+import com.squareup.moshi.JsonReader;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.config.Config;
+import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
+import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
+import fr.sncf.osrd.train.events.TrainCreatedEvent;
+import okio.Okio;
 
-import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
-import org.junit.jupiter.api.Test;
-
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
-@SuppressWarnings("MissingJavadocMethod")
-public class SimulationTest {
+public class Helpers {
     public static final class TestEvent extends TimelineEvent {
         public final String data;
         private final BiConsumer<Simulation, TestEvent> onOccurrenceCallback;
@@ -126,47 +133,67 @@ public class SimulationTest {
         }
     }
 
-    @Test
-    public void timerTest() throws SimulationError {
-        var sim = Simulation.createWithoutInfra(1.0, null);
-        var event = TestEvent.plan(sim, sim.getTime() + 42, null);
-        assertSame(event, sim.step());
-        assertEquals(event.getState(), TimelineEvent.State.OCCURRED);
-        assertTrue(sim.isSimulationOver());
-        assertEquals(sim.getTime(), 1.0 + 42.0, 0.00001);
+
+    /** Generates the defaults infra from tiny_infra/infra.json, to be edited for each test */
+    public static RJSInfra getBaseInfra() {
+        try {
+            ClassLoader classLoader = Helpers.class.getClassLoader();
+            var infraPath = classLoader.getResource("tiny_infra/infra.json");
+            assert infraPath != null;
+            var fileSource = Okio.source(Path.of(infraPath.getFile()));
+            var bufferedSource = Okio.buffer(fileSource);
+            var jsonReader = JsonReader.of(bufferedSource);
+            return RJSInfra.adapter.fromJson(jsonReader);
+        } catch (IOException e) {
+            fail(e);
+            return null;
+        }
     }
 
-    @Test
-    @SuppressFBWarnings(value = {"SIC_INNER_SHOULD_BE_STATIC_ANON", "DLS_DEAD_LOCAL_STORE"})
-    public void testEventOrder() throws SimulationError {
-        var multiplexer = new ChangeConsumerMultiplexer(new ArrayList<>());
-        var sim = Simulation.createWithoutInfra(0.0, multiplexer);
-        multiplexer.add(ChangeReplayChecker.from(sim));
-
-        BiConsumer<Simulation, TestEvent> onEventOccurred = (_sim, event) -> {
-            var curTime = _sim.getTime();
-            TestEvent.plan(_sim, curTime + 0.5, event.toString() + " response");
-            if (curTime > 2.7)
-                TestEvent.plan(_sim, curTime, event.toString() + " simultaneous event");
-        };
-
-        TestEvent.plan(sim, 1.0, "a", onEventOccurred);
-        TestEvent.plan(sim, 2.0, "b", onEventOccurred);
-        TestEvent.plan(sim, 3.0, "c", onEventOccurred);
-        TestEvent.plan(sim, 4.0, "d", onEventOccurred);
-
-        assertFalse(sim.isSimulationOver());
-        assertEquals("a", sim.step().toString());
-        assertEquals("a response", sim.step().toString());
-        assertEquals("b", sim.step().toString());
-        assertEquals("b response", sim.step().toString());
-        assertEquals("c", sim.step().toString());
-        assertEquals("c simultaneous event", sim.step().toString());
-        assertEquals("c response", sim.step().toString());
-        assertEquals("d", sim.step().toString());
-        assertEquals("d simultaneous event", sim.step().toString());
-        assertEquals("d response", sim.step().toString());
-        assertEquals(sim.getTime(), 4.5, 0.0);
-        assertTrue(sim.isSimulationOver());
+    /** Generates the defaults config from tiny_infra/config_railjson.json */
+    public static Config getBaseConfig() {
+        ClassLoader classLoader = Helpers.class.getClassLoader();
+        var configPath = classLoader.getResource("tiny_infra/config_railjson.json");
+        assert configPath != null;
+        try {
+            return Config.readFromFile(Path.of(configPath.getFile()));
+        } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule e) {
+            fail(e);
+            return null;
+        }
     }
+
+    /** Go through all the events in the simulation */
+    public static ArrayList<TimelineEvent> run(Simulation sim) {
+        var config = getBaseConfig();
+        return run(sim, config);
+    }
+
+    /** Go through all the events in the simulation with a specified config*/
+    public static ArrayList<TimelineEvent> run(Simulation sim, Config config) {
+        var events = new ArrayList<TimelineEvent>();
+        try {
+            for (var trainSchedule : config.trainSchedules)
+                TrainCreatedEvent.plan(sim, trainSchedule);
+            while (!sim.isSimulationOver())
+                events.add(sim.step());
+            return events;
+        } catch (SimulationError e) {
+            fail(e);
+            return null;
+        }
+    }
+
+    /** Generates an event that runs an assertion at a certain point in the simulation */
+    public static void makeAssertEvent(Simulation sim, double time, Supplier<Boolean> predicate) {
+        Runnable func = () -> assertTrue(predicate.get());
+        makeFunctionEvent(sim, time, func);
+    }
+
+    /** Generates an event that runs a function at a certain point in the simulation */
+    public static void makeFunctionEvent(Simulation sim, double time, Runnable func) {
+        BiConsumer<Simulation, TestEvent> consumer = (s, test) -> func.run();
+        TestEvent.plan(sim, time, null, consumer);
+    }
+
 }
