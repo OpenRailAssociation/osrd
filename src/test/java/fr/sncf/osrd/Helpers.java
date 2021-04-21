@@ -163,25 +163,38 @@ public class Helpers {
         }
     }
 
-    /** Go through all the events in the simulation */
+    /** Go through all the events in the simulation, fails if an exception is thrown */
     public static ArrayList<TimelineEvent> run(Simulation sim) {
         var config = getBaseConfig();
+        assert config != null;
         return run(sim, config);
     }
 
-    /** Go through all the events in the simulation with a specified config*/
+    /** Go through all the events in the simulation with a specified config, fails if an exception is thrown */
     public static ArrayList<TimelineEvent> run(Simulation sim, Config config) {
-        var events = new ArrayList<TimelineEvent>();
         try {
-            for (var trainSchedule : config.trainSchedules)
-                TrainCreatedEvent.plan(sim, trainSchedule);
-            while (!sim.isSimulationOver())
-                events.add(sim.step());
-            return events;
+            return runWithExceptions(sim, config);
         } catch (SimulationError e) {
             fail(e);
             return null;
         }
+    }
+
+    /** Go through all the events in the simulation, exceptions pass through */
+    public static ArrayList<TimelineEvent> runWithExceptions(Simulation sim) throws SimulationError {
+        var config = getBaseConfig();
+        assert config != null;
+        return runWithExceptions(sim, config);
+    }
+
+    /** Go through all the events in the simulation with a specified config, exceptions pass through */
+    public static ArrayList<TimelineEvent> runWithExceptions(Simulation sim, Config config) throws SimulationError {
+        var events = new ArrayList<TimelineEvent>();
+        for (var trainSchedule : config.trainSchedules)
+            TrainCreatedEvent.plan(sim, trainSchedule);
+        while (!sim.isSimulationOver())
+            events.add(sim.step());
+        return events;
     }
 
     /** Generates an event that runs an assertion at a certain point in the simulation */
