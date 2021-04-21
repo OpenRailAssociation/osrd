@@ -16,7 +16,7 @@ class HomeEditorUnplugged extends React.Component {
     const { t } = this.props;
     return (
       <>
-        <NavBarSNCF appName={t('Map.title')} logo={logo} />
+        <NavBarSNCF appName={t('Editor.title')} logo={logo} />
         <div className="no-mastnav">
           <Switch>
             <Route exact path="/editor">

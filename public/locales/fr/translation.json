@@ -150,6 +150,32 @@
       "label": "libellé"
     }
   },
+  "Editor": {
+    "title": "Éditeur",
+    "tool-help": "Voir la description de l'outil actif",
+    "tools": {
+      "select-zone": {
+        "label": "Sélection de la zone d'édition",
+        "description-1": "1er clic : Début de la sélection",
+        "description-2": "2nd clic : Fin de la sélection",
+        "description-3": "Touch Échap : Annulation de la sélection en cours"
+      },
+      "select-item": {
+        "label": "Sélection d'un élément",
+        "focus": "Focus sur un élément",
+        "description-1": "Clic sur un élément : Affichage de ses propriétés"
+      },
+      "create-line": {
+        "label": "Création d'une nouvelle ligne",
+        "properties": "Propriétés",
+        "description-1": "1er clic : Début de la création de la ligne",
+        "description-2": "Clics suivants : Ajout de points dans le chemin de la ligne",
+        "description-3": "Double-click : Ajout du dernier point de la ligne, validation du chemin",
+        "description-4": "Touch Échap : Annulation du dernier point",
+        "description-5": "Touch Entrée : Validation du chemin"
+      }
+    }
+  },
   "Logs": {
     "titleLogs": "Zones de travail et historique",
     "titleAdmin": "Administration",
@@ -343,6 +369,7 @@
     "asc": "Ascendant",
     "dsc": "Descendant",
     "itinerary": "Itinéraire",
+    "description": "Description",
     "loading": "Chargement...",
     "error": "Une erreur est survenue",
     "cancel": "Annuler",

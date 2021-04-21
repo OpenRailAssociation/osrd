@@ -1,4 +1,4 @@
-import React, { FC, PropsWithChildren, useCallback, useState, useEffect } from 'react';
+import React, { FC, useCallback, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import ToastSNCF from './BootstrapSNCF/ToastSNCF';
 import { MainState, deleteNotification } from '../reducers/main';

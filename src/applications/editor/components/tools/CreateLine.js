@@ -246,7 +246,7 @@ const CreateLineUnplugged = ({ t }) => {
 
       {/* Metadata edition */}
       {modal && (
-        <Modal onClose={() => setState({ ...state, modal: false })} title="Création d'une ligne">
+        <Modal onClose={() => setState({ ...state, modal: false })} title={t('Editor.tools.create-line.label')}>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -254,7 +254,7 @@ const CreateLineUnplugged = ({ t }) => {
             }}
           >
             <div className="form-group">
-              <label htmlFor="new-line-properties">Propriétés de la nouvelle ligne :</label>
+              <label htmlFor="new-line-properties">{t('Editor.tools.create-line.properties')} :</label>
               <div className="form-control-container">
                 <textarea
                   id="new-line-properties"

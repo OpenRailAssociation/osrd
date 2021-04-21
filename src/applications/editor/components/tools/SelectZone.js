@@ -124,6 +124,7 @@ const SelectZone = () => {
           bottom: 20,
         }}
       />
+
       {/* OSM layers */}
       <Background colors={colors[mapStyle]} />
       <OSM mapStyle={mapStyle} />

@@ -31,6 +31,7 @@ class ButtonUseTool extends React.Component {
         className={`btn-rounded ${activeTool === tool ? 'btn-rounded-white' : ''}`}
         onClick={() => actions.updateActiveTool(tool)}
         disabled={disabled}
+        title={label}
       >
         <span className="sr-only">{label}</span>
         <IconComponent />
