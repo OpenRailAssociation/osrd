@@ -191,8 +191,14 @@ public class Helpers {
     }
 
     /** Generates an event that runs a function at a certain point in the simulation */
-    public static void makeFunctionEvent(Simulation sim, double time, Runnable func) {
-        BiConsumer<Simulation, TestEvent> consumer = (s, test) -> func.run();
+    public static void makeFunctionEvent(Simulation sim, double time, Procedure func) {
+        BiConsumer<Simulation, TestEvent> consumer = (s, test) -> {
+            try {
+                func.run();
+            } catch (Exception e) {
+                fail(e);
+            }
+        };
         TestEvent.plan(sim, time, null, consumer);
     }
 

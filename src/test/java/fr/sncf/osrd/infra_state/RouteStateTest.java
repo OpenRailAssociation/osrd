@@ -109,13 +109,7 @@ public class RouteStateTest {
         RouteState routeState = sim.infraState.getRouteState(3);
         makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
         makeAssertEvent(sim, 10, () -> routeState.status == RouteStatus.RESERVED);
-        makeFunctionEvent(sim, 15, () -> {
-            try {
-                routeState.onTvdSectionOccupied(sim);
-            } catch (SimulationError e) {
-                fail(e);
-            }
-        });
+        makeFunctionEvent(sim, 15, () -> routeState.onTvdSectionOccupied(sim));
         makeAssertEvent(sim, 15, () -> routeState.status == RouteStatus.OCCUPIED);
         makeFunctionEvent(sim, 20, () -> {
             for (var section : routeState.route.tvdSectionsPaths)
