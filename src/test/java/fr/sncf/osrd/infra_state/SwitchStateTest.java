@@ -108,20 +108,15 @@ public class SwitchStateTest {
 
         infra.switches.iterator().next().positionChangeDelay = 42;
 
-        DebugViewer viewer = null;
-        if (true)
-            viewer = DebugViewer.from(config.infra, config.realTimeViewer, config.simulationStepPause * 5);
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, viewer);
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
         SwitchState switchState = sim.infraState.getSwitchState(0);
         RouteState routeState = sim.infraState.getRouteState(3);
-        /*
         makeAssertEvent(sim, 0, () -> switchState.getPosition() == SwitchPosition.LEFT);
         makeAssertEvent(sim, 41, () -> switchState.getPosition() == SwitchPosition.MOVING);
         makeAssertEvent(sim, 41, () -> routeState.status == RouteStatus.REQUESTED);
         makeAssertEvent(sim, 43, () -> switchState.getPosition() == SwitchPosition.RIGHT);
         makeAssertEvent(sim, 43, () -> routeState.status == RouteStatus.RESERVED);
-        */
 
         run(sim, config);
     }

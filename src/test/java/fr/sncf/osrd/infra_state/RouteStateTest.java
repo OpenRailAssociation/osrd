@@ -123,7 +123,7 @@ public class RouteStateTest {
         });
         makeAssertEvent(sim, 20, () -> routeState.status == RouteStatus.FREE);
 
-        run(sim);
+        run(sim, config);
     }
 
     @Test
