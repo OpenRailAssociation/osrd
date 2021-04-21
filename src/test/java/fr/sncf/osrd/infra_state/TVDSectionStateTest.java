@@ -52,13 +52,7 @@ public class TVDSectionStateTest {
 
         route.reserve(sim);
 
-        makeFunctionEvent(sim, 1, () -> {
-            try {
-                tvd.occupy(sim);
-            } catch (SimulationError simulationError) {
-                fail(simulationError);
-            }
-        });
+        makeFunctionEvent(sim, 1, () -> tvd.occupy(sim));
         makeFunctionEvent(sim, 2, () -> tvd.unoccupy(sim));
 
         makeAssertEvent(sim, 1.1, () -> sim.infraState.getRouteState(0).status == RouteStatus.OCCUPIED);

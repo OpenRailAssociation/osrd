@@ -52,13 +52,7 @@ public class SwitchStateTest {
         SwitchState switchState = sim.infraState.getSwitchState(0);
         RouteState routeState = sim.infraState.getRouteState(3);
         double requestTime = 42;
-        makeFunctionEvent(sim, requestTime, () -> {
-            try {
-                routeState.reserve(sim);
-            } catch (SimulationError simulationError) {
-                throw new RuntimeException(simulationError);
-            }
-        });
+        makeFunctionEvent(sim, requestTime, () -> routeState.reserve(sim));
         makeAssertEvent(sim, requestTime + 1, () -> switchState.getPosition() == SwitchPosition.MOVING);
         makeAssertEvent(sim, requestTime + 1, () -> routeState.status == RouteStatus.REQUESTED);
         makeAssertEvent(sim, requestTime + 7, () -> switchState.getPosition() == SwitchPosition.RIGHT);
