@@ -137,7 +137,7 @@ public final class SignalNavigatePhase implements Phase {
         public final SignalNavigatePhase phase;
         private int routeIndex = 0;
         private int interactionsPathIndex = 0;
-        private final transient HashMap<Signal, ArrayList<SpeedController>> signalControllers = new HashMap<>();
+        private final transient HashMap<Signal, ArrayList<SpeedController>> signalControllers;
 
         @Override
         @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
@@ -148,8 +148,21 @@ public final class SignalNavigatePhase implements Phase {
             return o.phase == phase && o.routeIndex == routeIndex && o.interactionsPathIndex == interactionsPathIndex;
         }
 
+        @Override
+        public PhaseState clone() {
+            return new SignalNavigatePhase.State(this);
+        }
+
         public State(SignalNavigatePhase phase) {
             this.phase = phase;
+            this.signalControllers = new HashMap<>();
+        }
+
+        State(SignalNavigatePhase.State state) {
+            this.phase = state.phase;
+            this.routeIndex = state.routeIndex;
+            this.interactionsPathIndex = state.interactionsPathIndex;
+            this.signalControllers = state.signalControllers;
         }
 
         private boolean isInteractionUnderTrain(TrainState trainState) {

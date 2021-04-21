@@ -98,7 +98,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 new ArrayList<>(speedControllers),
                 trainSchedule,
                 currentPhaseIndex,
-                currentPhaseState,
+                currentPhaseState.clone(),
                 new ArrayDeque<>(actionPointsUnderTrain)
         );
     }
