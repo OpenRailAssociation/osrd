@@ -250,6 +250,8 @@ public class RailScriptExprParser {
                 return RouteStatus.OCCUPIED;
             case CONFLICT:
                 return RouteStatus.CONFLICT;
+            case REQUESTED:
+                return RouteStatus.REQUESTED;
         }
         throw new RuntimeException("unsupported RailJSON route state");
     }
