@@ -16,4 +16,7 @@ public abstract class PhaseState implements DeepComparable<PhaseState> {
     public ArrayList<SpeedController> getSpeedControllers() {
         return new ArrayList<>();
     }
+
+    @Override
+    public abstract PhaseState clone();
 }

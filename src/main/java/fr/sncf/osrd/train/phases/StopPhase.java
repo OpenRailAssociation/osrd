@@ -39,6 +39,11 @@ public class StopPhase extends PhaseState implements Phase {
     }
 
     @Override
+    public PhaseState clone() {
+        return new StopPhase(duration);
+    }
+
+    @Override
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST", "FE_FLOATING_POINT_EQUALITY"})
     public boolean deepEquals(PhaseState other) {
         if (other.getClass() != StopPhase.class)
