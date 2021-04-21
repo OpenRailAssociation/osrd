@@ -50,6 +50,7 @@ public class RJSRoute implements Identified {
         FREE,
         RESERVED,
         OCCUPIED,
-        CONFLICT
+        CONFLICT,
+        REQUESTED
     }
 }

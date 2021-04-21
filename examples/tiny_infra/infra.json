@@ -340,6 +340,14 @@
                 "type": "argument_ref",
                 "argument_name": "route"
               },
+              "state": "REQUESTED"
+            },
+            {
+              "type": "route_has_state",
+              "route": {
+                "type": "argument_ref",
+                "argument_name": "route"
+              },
               "state": "CONFLICT"
             }
           ]
@@ -385,25 +393,15 @@
               {
                 "aspect": "RED",
                 "condition": {
-                  "type": "or",
-                  "exprs": [
-                    {
-                      "type": "route_has_state",
-                      "route": {
-                        "type": "argument_ref",
-                        "argument_name": "route"
-                      },
-                      "state": "OCCUPIED"
+                  "type": "not",
+                  "expr": {
+                    "type": "route_has_state",
+                    "route": {
+                      "type": "argument_ref",
+                      "argument_name": "route"
                     },
-                    {
-                      "type": "route_has_state",
-                      "route": {
-                        "type": "argument_ref",
-                        "argument_name": "route"
-                      },
-                      "state": "CONFLICT"
-                    }
-                  ]
+                    "state": "RESERVED"
+                  }
                 }
               },
               {
