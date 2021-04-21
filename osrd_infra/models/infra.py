@@ -68,7 +68,7 @@ class IdentifierComponent(Component):
         return f"<IdentifierComponent database={self.database}, name={self.name}>"
 
     class Meta:
-        component_name = "identifiers"
+        component_name = "identifier"
         constraints = [
             models.UniqueConstraint(
                 fields=["database", "name"], name="identifier_unique_in_database"
@@ -79,6 +79,9 @@ class IdentifierComponent(Component):
 class TrackSectionComponent(UniqueComponent):
     infra = models.ForeignKey("Infra", on_delete=models.CASCADE)
     path = models.LineStringField(srid=settings.OSRD_INFRA_SRID)
+
+    # the length of the track section, in meters
+    length = models.FloatField()
 
     class Meta:
         component_name = "track_section"
