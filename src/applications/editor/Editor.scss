@@ -1,0 +1,9 @@
+.editor-root {
+  .modal {
+    z-index: 1060;
+
+    .modal-backdrop {
+      pointer-events: all;
+    }
+  }
+}

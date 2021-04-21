@@ -7,6 +7,8 @@ import { NotificationsState } from 'common/Notifications';
 import ToolDescription from './components/ToolDescription';
 
 import 'common/Map/Map.scss';
+import './Editor.scss';
+
 /* Tools */
 import { TOOLS } from './tools';
 import ButtonUseTool from './components/ButtonUseTool';
@@ -19,7 +21,7 @@ const EditorUnplugged = ({ t }) => {
   const ToolComponent = activeTool.mapComponent;
 
   return (
-    <main className={`mastcontainer mastcontainer-map${fullscreen ? ' fullscreen' : ''}`}>
+    <main className={`editor-root mastcontainer mastcontainer-map${fullscreen ? ' fullscreen' : ''}`}>
       <LoaderState />
       <div className="toolbox">
         {TOOLS.map(({ tool, icon, labelTranslationKey, isEnabled }) => (

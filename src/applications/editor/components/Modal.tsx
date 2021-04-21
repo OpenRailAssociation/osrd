@@ -18,7 +18,10 @@ const ModalUnplugged: FC<{ onClose: () => void; id?: string; title?: string; t: 
     aria-labelledby={id}
     style={{ display: 'block' }}
   >
-    <div className="modal-dialog modal-dialog-centered" role="document">
+    <div
+      className="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg"
+      role="document"
+    >
       <div
         className="modal-backdrop"
         style={{ background: '#0003', zIndex: 'unset' }}

@@ -9,6 +9,8 @@ import { geoMainLayer } from 'common/Map/Layers/geographiclayers';
 const COLLECTION_TYPE = 'FeatureCollection';
 const CLIPPABLE_TYPE = 'Feature';
 
+const HOVERED_COLOR = '#2DD1FF';
+
 function clip(tree, bbox) {
   if (tree.type === COLLECTION_TYPE) {
     return {
@@ -29,6 +31,7 @@ const GeoJSONs = ({ colors, idHover }) => {
   if (!editionData || !editionZone) return null;
 
   const bbox = flatten(editionZone);
+
   return editionData.map((geoJSON, index) => {
     const clippedGeoJSON = clip(geoJSON, bbox);
     return (
@@ -37,7 +40,7 @@ const GeoJSONs = ({ colors, idHover }) => {
         {idHover !== undefined ? (
           <Layer
             type="line"
-            paint={{ 'line-color': '#ffb612', 'line-width': 3 }}
+            paint={{ 'line-color': HOVERED_COLOR, 'line-width': 3 }}
             filter={['==', 'OP_id', idHover]}
           />
         ) : null}
