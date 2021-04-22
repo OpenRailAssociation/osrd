@@ -1,5 +1,7 @@
 package fr.sncf.osrd.railjson.schema.infra.railscript;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.RSExprState;
@@ -10,8 +12,6 @@ import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.RailScriptExprParser;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr.*;
-import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspect;
-import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.simulation.Simulation;
 import net.jqwik.api.*;
 
@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.fail;
 
 
 public class RailScriptTests {
@@ -28,23 +27,23 @@ public class RailScriptTests {
     @Property
     boolean testNot(@ForAll("booleanExpression") RJSRSExpr expr) {
         var notExpr = new Not(expr);
-        return eval(expr) == RSBool.from(!valueToBool(eval(notExpr)));
+        return eval(expr) == !eval(notExpr);
     }
 
     @Property
     boolean testAnd(@ForAll("booleanExpressions") RJSRSExpr[] exprs) {
         var res = eval(new And(exprs));
         boolean expected = Arrays.stream(exprs)
-                .allMatch(x -> valueToBool(eval(x)));
-        return valueToBool(res) == expected;
+                .allMatch(RailScriptTests::eval);
+        return res == expected;
     }
 
     @Property
     boolean testOr(@ForAll("booleanExpressions") RJSRSExpr[] exprs) {
         var res = eval(new Or(exprs));
         boolean expected = Arrays.stream(exprs)
-            .anyMatch(x -> valueToBool(eval(x)));
-        return valueToBool(res) == expected;
+                .anyMatch(RailScriptTests::eval);
+        return res == expected;
     }
 
     @Property
@@ -52,7 +51,7 @@ public class RailScriptTests {
                    @ForAll("booleanExpression") RJSRSExpr trueBranch,
                    @ForAll("booleanExpression") RJSRSExpr falseBranch) {
         var res = eval(new If(condition, trueBranch, falseBranch));
-        var conditionResult = valueToBool(eval(condition));
+        var conditionResult = eval(condition);
         var expected = conditionResult ? eval(trueBranch) : eval(falseBranch);
         return res == expected;
     }
@@ -68,19 +67,23 @@ public class RailScriptTests {
     }
 
 
-    static public RSValue eval(RJSRSExpr expr) {
+    /** Evaluates a boolean expression */
+    public static boolean eval(RJSRSExpr expr) {
         var m = RJSGenerator.sim.infra.aspects;
         try {
             var rsExpr = new RailScriptExprParser(m, new HashMap<>()).parse(expr);
             var state = new RSExprState<>(rsExpr, 5, 5);
-            return state.evalInit(RJSGenerator.sim.infraState);
+            return valueToBool(state.evalInit(RJSGenerator.sim.infraState));
         } catch (InvalidInfraException e) {
             fail(e);
-            return null;
+            return false;
         }
     }
 
-    static public boolean valueToBool(RSValue v) {
+    /** Converts an RSValue (assumed to be RSBool) to boolean */
+    public static boolean valueToBool(RSValue v) {
+        if (! (v instanceof RSBool))
+            fail("Value should be boolean");
         return ((RSBool) v).value;
     }
 
@@ -103,6 +106,8 @@ public class RailScriptTests {
             this.random = random;
         }
 
+        /** Randomly generates a boolean expression
+         * maxDepth is here to avoid infinite recursions */
         public RJSRSExpr generateBoolExpr(int maxDepth) {
             if (maxDepth > 1) {
                 switch (random.nextInt(5)) {
@@ -121,6 +126,7 @@ public class RailScriptTests {
             return random.nextBoolean() ? new True() : new False();
         }
 
+        /** Generates an array of 0 to 5 boolean expression */
         public RJSRSExpr[] generateBoolExprs(int maxDepth) {
             int n = random.nextInt(5);
             var res = new RJSRSExpr[n];
@@ -130,24 +136,29 @@ public class RailScriptTests {
             return res;
         }
 
+        /** Generates a random Or expression */
         public Or generateOr(int maxDepth) {
             return new Or(generateBoolExprs(maxDepth - 1));
         }
 
+        /** Generates a random And expression */
         public And generateAnd(int maxDepth) {
             return new And(generateBoolExprs(maxDepth - 1));
         }
 
+        /** Generates a random Not expression */
         public Not generateNot(int maxDepth) {
             return new Not(generateBoolExpr(maxDepth - 1));
         }
 
+        /** Get a random aspect from the infra */
         public Aspect getRandomAspect() {
             var keys = new ArrayList<>(sim.infra.aspects.keySet());
             var key = keys.get(random.nextInt(keys.size()));
             return sim.infra.aspects.get(key);
         }
 
+        /** Generates a random aspect set */
         public AspectSet generateAspectSet(int maxDepth) {
             int n = random.nextInt(5);
             var members = new AspectSet.AspectSetMember[n];
@@ -158,10 +169,6 @@ public class RailScriptTests {
                 );
             }
             return new AspectSet(members);
-        }
-
-        public SignalRef generateSignalRef() {
-            return new SignalRef(new ID<>(String.valueOf(random.nextInt())));
         }
     }
 }
