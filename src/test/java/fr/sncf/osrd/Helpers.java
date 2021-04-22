@@ -67,6 +67,7 @@ public class Helpers {
                     && o.onCancellationCallback == onCancellationCallback;
         }
 
+        /** Plan a test event at a given time with no callbacks */
         public static TestEvent plan(
                 Simulation sim,
                 double eventTime,
@@ -75,6 +76,7 @@ public class Helpers {
             return plan(sim, eventTime, data, null);
         }
 
+        /** Plan a test event at a given time with the specified callbacks on occurence */
         public static TestEvent plan(
                 Simulation sim,
                 double eventTime,
@@ -84,6 +86,7 @@ public class Helpers {
             return plan(sim, eventTime, data, onOccurrenceCallback, null);
         }
 
+        /** Plan a test event at a given time with the specified callbacks */
         public static TestEvent plan(
                 Simulation sim,
                 double eventTime,
