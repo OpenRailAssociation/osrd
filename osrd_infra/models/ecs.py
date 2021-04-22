@@ -1,6 +1,7 @@
 from django.contrib.gis.db import models
 from typing import List, Any, Type, Union, Mapping, Optional
 from django.db.models.base import ModelBase
+from django.contrib.contenttypes.models import ContentType
 from dataclasses import dataclass
 
 
@@ -65,7 +66,6 @@ class EntityBase(ModelBase):
 
         # parse all entity attributes
         entity_name = attrs.pop("name")
-        type_id = attrs.pop("type_id")
         components = attrs.pop("components")
         module = attrs.pop("__module__")
         qualname = attrs.pop("__qualname__")
@@ -79,15 +79,23 @@ class EntityBase(ModelBase):
             ), f"{comp} isn't a Component, and thus can't be part of {class_name}"
             parsed_components[comp] = Arity.parse(arity)
 
+        # create a constructor which injects the entity_type value
+        # that's the whole point of creating a proxy model in the first place:
+        # to able to seamlessly work with the entities of a given type only,
+        # creating new entities must assign the correct type
         def dj_init(self, *args, **kwargs):
-            assert "type_id" not in kwargs
-            kwargs["type_id"] = type_id
-            super(res_cls, self).__init__(*args, **kwargs)
+            assert "entity_type" not in kwargs
+            kwargs["entity_type"] = ContentType.objects.get_for_model(entity_type)
+            super(entity_type, self).__init__(*args, **kwargs)
+
+        # create the manager, but don't fill the entity_type field yet:
+        # the model isn't yet created
+        entity_manager = EntityManager()
 
         # build the django model
         dj_bases = (Entity,)
         dj_attrs = {
-            "objects": EntityManager(type_id),
+            "objects": entity_manager,
             "Meta": type("Meta", (), {"proxy": True}),
             "__init__": dj_init,
             "__module__": module,
@@ -96,8 +104,8 @@ class EntityBase(ModelBase):
         }
 
         # this local variable is used by the dj_init closure above
-        res_cls = super().__new__(cls, class_name, dj_bases, dj_attrs, **kwargs)
-        return res_cls
+        entity_type = super().__new__(cls, class_name, dj_bases, dj_attrs, **kwargs)
+        return entity_type
 
 
 class Entity(models.Model, metaclass=EntityBase, entity_base_passthrough=True):
@@ -105,34 +113,18 @@ class Entity(models.Model, metaclass=EntityBase, entity_base_passthrough=True):
 
     entity_id = models.BigAutoField(primary_key=True)
 
-    class Type(models.IntegerChoices):
-        TRACK_SECTION = 0
-        TRACK_SECTION_LINK = 1
-        SIGNAL = 2
-        OPERATIONAL_POINT = 3
-        SWITCH = 4
-
-    # TODO: switch to a more flexible foreign key to an EntityType instance
-    type_id = models.IntegerField(choices=Type.choices, db_index=True, editable=False)
-
-    def type_repr(self):
-        return self.Type.names[self.type_id]
+    entity_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"Entity(id={self.entity_id}, type_id={self.type_repr()})"
+        return f"Entity(id={self.entity_id}, entity_type={self.entity_type})"
 
 
 class EntityManager(models.Manager):
     """A manager which only lists entities of a given type"""
 
-    __slots__ = ("type_id",)
-
-    def __init__(self, type_id: Entity.Type):
-        self.type_id = type_id
-        super().__init__()
-
     def get_queryset(self):
-        return super().get_queryset().filter(type_id=self.type_id)
+        entity_type = ContentType.objects.get_for_model(self.model)
+        return super().get_queryset().filter(entity_type=entity_type)
 
 
 class ComponentMeta:
