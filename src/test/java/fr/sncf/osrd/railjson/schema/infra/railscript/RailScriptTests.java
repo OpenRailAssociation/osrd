@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.RSExprState;
+import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
 import fr.sncf.osrd.infra.railscript.value.RSBool;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.signaling.Aspect;
@@ -27,22 +28,22 @@ public class RailScriptTests {
     @Property
     boolean testNot(@ForAll("booleanExpression") RJSRSExpr expr) {
         var notExpr = new Not(expr);
-        return eval(expr) == !eval(notExpr);
+        return evalBool(expr) == !evalBool(notExpr);
     }
 
     @Property
     boolean testAnd(@ForAll("booleanExpressions") RJSRSExpr[] exprs) {
-        var res = eval(new And(exprs));
+        var res = evalBool(new And(exprs));
         boolean expected = Arrays.stream(exprs)
-                .allMatch(RailScriptTests::eval);
+                .allMatch(RailScriptTests::evalBool);
         return res == expected;
     }
 
     @Property
     boolean testOr(@ForAll("booleanExpressions") RJSRSExpr[] exprs) {
-        var res = eval(new Or(exprs));
+        var res = evalBool(new Or(exprs));
         boolean expected = Arrays.stream(exprs)
-                .anyMatch(RailScriptTests::eval);
+                .anyMatch(RailScriptTests::evalBool);
         return res == expected;
     }
 
@@ -51,9 +52,26 @@ public class RailScriptTests {
                    @ForAll("booleanExpression") RJSRSExpr trueBranch,
                    @ForAll("booleanExpression") RJSRSExpr falseBranch) {
         var res = eval(new If(condition, trueBranch, falseBranch));
-        var conditionResult = eval(condition);
+        var conditionResult = evalBool(condition);
         var expected = conditionResult ? eval(trueBranch) : eval(falseBranch);
         return res == expected;
+    }
+
+    @Property
+    boolean testAspectSet(@ForAll("aspectSet") AspectSet aspects) {
+        var res = eval(aspects);
+        if (! (res instanceof RSAspectSet))
+            fail("Value should be an aspect set");
+        var resAspects = (RSAspectSet) res;
+        var allAspects = RJSGenerator.sim.infra.aspects.values();
+        for (var aspect : allAspects) {
+            boolean hasAspect = resAspects.stream().anyMatch(x -> x.id.equals(aspect.id));
+            boolean shouldHaveAspect = Arrays.stream(aspects.members)
+                    .anyMatch(x -> x.aspect.id.equals(aspect.id) && evalBool(x.condition));
+            if (hasAspect != shouldHaveAspect)
+                return false;
+        }
+        return true;
     }
 
     @Provide
@@ -66,25 +84,30 @@ public class RailScriptTests {
         return booleanExpression().array(RJSRSExpr[].class).ofMinSize(1).ofMaxSize(10);
     }
 
+    @Provide
+    Arbitrary<AspectSet> aspectSet() {
+        return Arbitraries.randomValue(random -> new RJSGenerator(random).generateAspectSet(5));
+    }
 
-    /** Evaluates a boolean expression */
-    public static boolean eval(RJSRSExpr expr) {
+    /** Evaluates an expression */
+    public static RSValue eval(RJSRSExpr expr) {
         var m = RJSGenerator.sim.infra.aspects;
         try {
             var rsExpr = new RailScriptExprParser(m, new HashMap<>()).parse(expr);
             var state = new RSExprState<>(rsExpr, 5, 5);
-            return valueToBool(state.evalInit(RJSGenerator.sim.infraState));
+            return state.evalInit(RJSGenerator.sim.infraState);
         } catch (InvalidInfraException e) {
             fail(e);
-            return false;
+            return null;
         }
     }
 
-    /** Converts an RSValue (assumed to be RSBool) to boolean */
-    public static boolean valueToBool(RSValue v) {
-        if (! (v instanceof RSBool))
+    /** Evaluates a boolean expression */
+    public static boolean evalBool(RJSRSExpr expr) {
+        var res = eval(expr);
+        if (! (res instanceof RSBool))
             fail("Value should be boolean");
-        return ((RSBool) v).value;
+        return ((RSBool) res).value;
     }
 
     public static class RJSGenerator {
