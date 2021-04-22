@@ -87,7 +87,7 @@ public class RSExprState<T extends RSValue> implements DeepComparable<RSExprStat
         return argScopeOffset + index == lastUpdatedDelaySlot;
     }
 
-    RSExprState(RSExpr<T> rootExpr, int argSlotCount, int delaySlotCount) {
+    public RSExprState(RSExpr<T> rootExpr, int argSlotCount, int delaySlotCount) {
         this.rootExpr = rootExpr;
         this.argStates = new RSValue[argSlotCount];
         this.delayCurrentStates = new RSValue[delaySlotCount];

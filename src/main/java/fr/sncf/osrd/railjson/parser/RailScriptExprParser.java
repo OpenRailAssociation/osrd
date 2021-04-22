@@ -60,7 +60,7 @@ public class RailScriptExprParser {
         this.argTypes = argTypes;
     }
 
-    private RailScriptExprParser(HashMap<String, Aspect> aspectsMap, HashMap<String, RSFunction<?>> scriptFunctions) {
+    public RailScriptExprParser(HashMap<String, Aspect> aspectsMap, HashMap<String, RSFunction<?>> scriptFunctions) {
         this(aspectsMap, scriptFunctions, null, null);
     }
 
@@ -134,7 +134,7 @@ public class RailScriptExprParser {
 
     /** Turns a Json serialized expression into its runnable counterpart */
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-    private RSExpr<?> parse(RJSRSExpr expr) throws InvalidInfraException {
+    public RSExpr<?> parse(RJSRSExpr expr) throws InvalidInfraException {
         var type = expr.getClass();
 
         // boolean operators
