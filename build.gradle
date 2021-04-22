@@ -48,6 +48,8 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7'
     // Use JUnit Jupiter Engine for testing.
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7'
+    // jqwik for property based testing
+    testImplementation "net.jqwik:jqwik:1.5.1"
 
     // for linter annotations
     compileOnly 'net.jcip:jcip-annotations:1.0'
@@ -69,7 +71,9 @@ run {
 }
 
 test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        includeEngines 'jqwik', 'junit-jupiter'
+    }
 }
 
 checkstyle {
