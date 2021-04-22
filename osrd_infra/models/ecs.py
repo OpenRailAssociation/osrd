@@ -1,5 +1,5 @@
 from django.contrib.gis.db import models
-from typing import List, Any, Type, Union, Mapping
+from typing import List, Any, Type, Union, Mapping, Optional
 from django.db.models.base import ModelBase
 from dataclasses import dataclass
 
@@ -10,12 +10,49 @@ https://en.wikipedia.org/wiki/Entity_component_system
 """
 
 
-class EntityMeta:
-    __slots__ = ("name", "components")
+@dataclass(frozen=True)
+class Arity:
+    # included low bound
+    low_bound: int
+    # included high bound, or +infinity
+    high_bound: Optional[int]
 
-    def __init__(self, name, components):
-        self.name = name
-        self.components = components
+    @property
+    def is_many(self):
+        high_bound = self.high_bound
+        if high_bound is None:
+            return True
+        if high_bound > 1:
+            return True
+        return False
+
+    @staticmethod
+    def parse(arity: Any) -> "Arity":
+        if arity == "*" or arity is ...:
+            return Arity(0, None)
+
+        # single arity
+        if isinstance(arity, int):
+            assert arity > 0
+            return Arity(arity, arity)
+
+        # range arity
+        if isinstance(arity, tuple):
+            low_bound, high_bound = arity
+            if low_bound is ...:
+                low_bound = 0
+            if high_bound is ...:
+                high_bound = None
+            assert low_bound != 0 or high_bound != 0
+            return Arity(low_bound, high_bound)
+
+        raise ValueError(f"invalid arity: {arity}")
+
+
+@dataclass
+class EntityMeta:
+    name: str
+    components: Mapping[Type["Component"], Arity]
 
     def __repr__(self):
         return f"<EntityMeta name={self.name}>"
@@ -34,21 +71,33 @@ class EntityBase(ModelBase):
         qualname = attrs.pop("__qualname__")
         assert not attrs, "unknown entity attributes: {}".format(", ".join(attrs))
 
-        def _save(self, *args, **kwargs):
-            self.type_id = type_id
-            return Entity.save(self, *args, **kwargs)
+        # parse the list of available components for the entity
+        parsed_components = {}
+        for comp, arity in components.items():
+            assert issubclass(
+                comp, Component
+            ), f"{comp} isn't a Component, and thus can't be part of {class_name}"
+            parsed_components[comp] = Arity.parse(arity)
 
+        def dj_init(self, *args, **kwargs):
+            assert "type_id" not in kwargs
+            kwargs["type_id"] = type_id
+            super(res_cls, self).__init__(*args, **kwargs)
+
+        # build the django model
+        dj_bases = (Entity,)
         dj_attrs = {
             "objects": EntityManager(type_id),
-            "save": _save,
             "Meta": type("Meta", (), {"proxy": True}),
+            "__init__": dj_init,
             "__module__": module,
             "__qualname__": qualname,
-            "_entity_meta": EntityMeta(entity_name, components),
+            "_entity_meta": EntityMeta(entity_name, parsed_components),
         }
-        dj_bases = (Entity,)
 
-        return super().__new__(cls, class_name, dj_bases, dj_attrs, **kwargs)
+        # this local variable is used by the dj_init closure above
+        res_cls = super().__new__(cls, class_name, dj_bases, dj_attrs, **kwargs)
+        return res_cls
 
 
 class Entity(models.Model, metaclass=EntityBase, entity_base_passthrough=True):
@@ -113,7 +162,9 @@ class ComponentBase(ModelBase):
         if not is_abstract:
             # extract component_specific meta
             component_name = getattr(meta, "component_name", None)
-            assert component_name is not None, f"{name}'s Meta is missing a component_name"
+            assert (
+                component_name is not None
+            ), f"{name}'s Meta is missing a component_name"
             del meta.component_name
 
             attrs["_component_meta"] = ComponentMeta(component_name)
@@ -136,10 +187,7 @@ class Component(models.Model, metaclass=ComponentBase):
         abstract = True
 
 
-class UniqueComponent(models.Model, metaclass=ComponentBase):
-    component_id = models.BigAutoField(primary_key=True)
-    entity = models.OneToOneField("Entity", on_delete=models.CASCADE, db_index=True)
-
+class UniqueComponent(Component):
     class Meta:
         abstract = True
         constraints = [

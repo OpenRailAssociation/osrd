@@ -19,15 +19,23 @@ from osrd_infra.models import (
     SwitchEntity,
     OperationalPointEntity,
     SignalEntity,
-
     # ecs
-    Entity
+    Entity,
+    Component,
 )
 
 from osrd_infra.models.common import Endpoint, EnumSerializer
 
 
 class ComponentSerializer(ModelSerializer):
+    _registry = {}
+
+    def __init_subclass__(cls, **kwargs):
+        model = cls.Meta.model
+        assert issubclass(model, Component), f"{model} isn't a subclass of Component"
+        cls._registry[cls.Meta.model] = cls
+        super().__init_subclass__(**kwargs)
+
     def __init__(self, *args, omit_entity_id=False, omit_component_id=False, **kwargs):
         # Instantiate the superclass normally
         super().__init__(*args, **kwargs)
@@ -40,6 +48,46 @@ class ComponentSerializer(ModelSerializer):
 
         if omit_component_id:
             self.fields.pop("component_id")
+
+
+class EntitySerializerBase(type(ModelSerializer)):
+    def __new__(cls, name, bases, attrs, entity_serializer_passthrough=False):
+        meta = attrs.get("Meta", None)
+        if meta is None or entity_serializer_passthrough:
+            return super().__new__(cls, name, bases, attrs)
+
+        model = meta.model
+        entity_meta = getattr(model, "_entity_meta", None)
+        assert (
+            entity_meta is not None
+        ), "the model of the EntitySerializer isn't an entity"
+        components = entity_meta.components
+
+        if not hasattr(meta, "fields"):
+            meta.fields = ["entity_id"] + [
+                comp._component_meta.name for comp in components
+            ]
+
+        # create serializers for all components
+        for comp, arity in components.items():
+            comp_name = comp._component_meta.name
+            # skip components which already have a serializer
+            if comp_name in attrs:
+                continue
+            field_kwargs = {"read_only": True, "omit_entity_id": True}
+            if arity.is_many:
+                field_kwargs["many"] = True
+            # find the component serializer in the global registry
+            attrs[comp_name] = ComponentSerializer._registry[comp](**field_kwargs)
+
+        # call the model serializer superclass
+        return super().__new__(cls, name, bases, attrs)
+
+
+class EntitySerializer(
+    ModelSerializer, metaclass=EntitySerializerBase, entity_serializer_passthrough=True
+):
+    pass
 
 
 class InfraSerializer(ModelSerializer):
@@ -86,65 +134,21 @@ class TrackSectionLinkComponentSerializer(ComponentSerializer):
         fields = "__all__"
 
 
-# entity serializers
-
-
-class EntitySerializer(type(ModelSerializer)):
-    def __new__(cls, name, bases, attrs):
-        meta = attrs.get("Meta", None)
-        if meta is None:
-            return super().__new__(cls, name, bases, attrs)
-
-        model = meta.model
-        entity_meta = getattr(model, "_entity_meta", None)
-        assert entity_meta is not None, "the model of the EntitySerializer isn't an entity"
-        components = entity_meta.components
-
-        if not hasattr(meta, "fields"):
-            meta.fields = ["entity_id"]
-            for component_name in components:
-                meta.fields.append(component_name)
-
-        # extract component_specific meta
-        component_name = getattr(meta, "component_name", None)
-        assert component_name is not None, f"{name}'s Meta is missing a component_name"
-        del meta.component_name
-
-        # call the model serializer superclass
-        return super().__new__(cls, name, bases, attrs)
-
-
-class TrackSectionSerializer(ModelSerializer):
-    identifiers = IdentifierComponentSerializer(many=True, omit_entity_id=True, read_only=True)
-    track_section = TrackSectionComponentSerializer(omit_entity_id=True, read_only=True)
-
+class TrackSectionSerializer(EntitySerializer):
     class Meta:
         model = TrackSectionEntity
-        fields = ["entity_id", "identifiers", "track_section"]
 
 
-class SwitchSerializer(ModelSerializer):
-    identifiers = IdentifierComponentSerializer(many=True, omit_entity_id=True, read_only=True)
-    track_section_link = TrackSectionLinkComponentSerializer(omit_entity_id=True, many=True, read_only=True)
-
+class SwitchSerializer(EntitySerializer):
     class Meta:
         model = SwitchEntity
-        fields = ["entity_id", "identifiers", "track_section_link"]
 
 
-class OperationalPointSerializer(ModelSerializer):
-    identifiers = IdentifierComponentSerializer(many=True, omit_entity_id=True, read_only=True)
-    track_section_link = TrackSectionLinkComponentSerializer(omit_entity_id=True, many=True, read_only=True)
-
+class OperationalPointSerializer(EntitySerializer):
     class Meta:
         model = OperationalPointEntity
-        fields = "__all__"
 
 
-class SignalSerializer(ModelSerializer):
-    identifiers = IdentifierComponentSerializer(many=True, omit_entity_id=True, read_only=True)
-    location = TrackSectionLocationComponentSerializer(omit_entity_id=True)
-
+class SignalSerializer(EntitySerializer):
     class Meta:
         model = SignalEntity
-        fields = "__all__"

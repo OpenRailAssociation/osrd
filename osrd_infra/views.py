@@ -1,6 +1,12 @@
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 
-from osrd_infra.models import Infra, TrackSectionEntity, SwitchEntity, SignalEntity, OperationalPointEntity
+from osrd_infra.models import (
+    Infra,
+    TrackSectionEntity,
+    SwitchEntity,
+    SignalEntity,
+    OperationalPointEntity,
+)
 from osrd_infra.serializers import (
     InfraSerializer,
     TrackSectionSerializer,

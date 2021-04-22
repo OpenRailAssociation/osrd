@@ -18,6 +18,6 @@ entity_router.register("signal", SignalViewSet)
 entity_router.register("operational_point", OperationalPointViewSet)
 
 urlpatterns = [
-    path('entity/', include(entity_router.urls)),
+    path("entity/", include(entity_router.urls)),
     # path('component/', include(component_router.urls)),
 ]
