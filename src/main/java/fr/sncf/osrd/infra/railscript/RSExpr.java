@@ -69,8 +69,8 @@ public abstract class RSExpr<T extends RSValue> {
         public RSBool evaluate(RSExprState<?> state) {
             for (var expr : expressions)
                 if (!expr.evaluate(state).value)
-                    return RSBool.True;
-            return RSBool.False;
+                    return RSBool.False;
+            return RSBool.True;
         }
 
         @Override
