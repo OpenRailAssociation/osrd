@@ -13,6 +13,7 @@ import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra_state.RouteState;
+import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
@@ -22,11 +23,7 @@ import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr.*;
 import fr.sncf.osrd.simulation.Simulation;
 import net.jqwik.api.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Random;
-
+import java.util.*;
 
 
 public class RailScriptTests {
@@ -98,8 +95,7 @@ public class RailScriptTests {
     }
 
     @Property
-    boolean testRouteRef(@ForAll Random random) throws InvalidInfraException {
-        var routeRef = new RJSGenerator(random).generateRouteRef();
+    boolean testRouteRef(@ForAll("routeRef") RouteRef routeRef) throws InvalidInfraException {
         var m = RJSGenerator.sim.infra.aspects;
         RSExpr<?> rsExpr = new RailScriptExprParser(m, new HashMap<>()).parse(routeRef);
         assert rsExpr instanceof RSExpr.RouteRef;
@@ -127,6 +123,36 @@ public class RailScriptTests {
         return switchState.switchRef.id.equals(switchRef.switchRef.id);
     }
 
+    @Property
+    boolean testEnum(@ForAll("routeRef") RouteRef routeRef,
+                     @ForAll Random random,
+                     @ForAll RouteStatus status)
+            throws InvalidInfraException {
+        var branches = new HashMap<String, RJSRSExpr>();
+        boolean expected = false;
+        var matchingRoute = RJSGenerator.sim.infra.routeGraph.routeMap.get(routeRef.route.id);
+        var routeState = RJSGenerator.sim.infraState.getRouteState(matchingRoute.index);
+        var generator = new RJSGenerator(random);
+        routeState.status = status;
+        for (var i = 0; i < RouteStatus.values().length; i++) {
+            var branchExpression = generator.generateBoolExpr(5);
+            branches.put(RouteStatus.values()[i].name(), branchExpression);
+            if (routeState.status == RouteStatus.values()[i])
+                expected = evalBool(branchExpression);
+        }
+        var match = new EnumMatch(routeRef, branches);
+
+        var m = RJSGenerator.sim.infra.aspects;
+        RSExpr<?> rsEnum = new RailScriptExprParser(m, new HashMap<>()).parse(match);
+        assert rsEnum instanceof RSExpr.EnumMatch;
+        var rsExpr = ((RSExpr.EnumMatch<?, ?>) rsEnum).expr;
+        assert rsExpr instanceof RSExpr.RouteRef;
+        ((RSExpr.RouteRef) rsExpr).resolve(RJSGenerator.sim.infra.routeGraph.routeMap);
+
+        var res = evalBool(rsEnum);
+        return expected == res;
+    }
+
     @Provide
     Arbitrary<RJSRSExpr> booleanExpression() {
         return Arbitraries.randomValue(random -> new RJSGenerator(random).generateBoolExpr(5));
@@ -140,6 +166,11 @@ public class RailScriptTests {
     @Provide
     Arbitrary<AspectSet> aspectSet() {
         return Arbitraries.randomValue(random -> new RJSGenerator(random).generateAspectSet(5));
+    }
+
+    @Provide
+    Arbitrary<RouteRef> routeRef() {
+        return Arbitraries.randomValue(random -> new RJSGenerator(random).generateRouteRef());
     }
 
     /** Evaluates an expression */
@@ -158,6 +189,14 @@ public class RailScriptTests {
     public static RSValue eval(RSExpr<?> rsExpr) {
         var state = new RSExprState<>(rsExpr, 5, 5);
         return state.evalInit(RJSGenerator.sim.infraState);
+    }
+
+    /** Evaluates a boolean expression */
+    public static boolean evalBool(RSExpr<?> expr) {
+        var res = eval(expr);
+        if (! (res instanceof RSBool))
+            fail("Value should be boolean");
+        return ((RSBool) res).value;
     }
 
     /** Evaluates a boolean expression */
@@ -271,6 +310,16 @@ public class RailScriptTests {
             var switches = sim.infra.switches;
             var i = random.nextInt(switches.size());
             return new SwitchRef(new ID<>(switches.get(i).id));
+        }
+
+        /** Generates a random enum match, matching a RouteRef */
+        public EnumMatch generateEnumMatch() {
+            var expr = generateRouteRef();
+            var branches = new HashMap<String, RJSRSExpr>();
+            for (var status : RouteStatus.values()) {
+                branches.put(status.name(), generateBoolExpr(5));
+            }
+            return new EnumMatch(expr, branches);
         }
     }
 }
