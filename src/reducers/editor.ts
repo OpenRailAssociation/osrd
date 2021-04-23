@@ -4,6 +4,10 @@ import { Feature, FeatureCollection, GeoJSON } from 'geojson';
 import { ThunkAction, Path, Point, Bbox, ChartisAction, LineProperties } from '../types';
 import { setLoading, setSuccess, setFailure } from './main';
 import { getChartisLayers, saveChartisActions } from '../applications/editor/api';
+import { clip, extractPoints } from '../utils/mapboxHelper';
+import { flatten } from 'lodash';
+import { BBox } from '@turf/helpers';
+import { createSelector } from 'reselect';
 
 //
 // Actions
@@ -217,3 +221,26 @@ export default function reducer(state = initialState, action: Actions) {
     }
   });
 }
+
+//
+// Derived data selector
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+export const dataSelector = (state: EditorState) => state.editionData;
+export const zoneSelector = (state: EditorState) => state.editionZone;
+export const pointsSelector = createSelector(dataSelector, (data) =>
+  (data || []).map((geoJSON) => ({
+    ...(geoJSON as FeatureCollection),
+    features: extractPoints(geoJSON as FeatureCollection),
+  }))
+);
+
+export const bboxSelector = createSelector(zoneSelector, (zone) => flatten(zone) as BBox);
+export const clippedDataSelector = createSelector(dataSelector, bboxSelector, (data, bbox) =>
+  (data || []).map((geoJSON) => clip(geoJSON as FeatureCollection, bbox) as FeatureCollection)
+);
+export const clippedPointsSelector = createSelector(
+  pointsSelector,
+  bboxSelector,
+  (pointsCollections, bbox) =>
+    pointsCollections.map((pointsCollection) => clip(pointsCollection, bbox) as FeatureCollection)
+);

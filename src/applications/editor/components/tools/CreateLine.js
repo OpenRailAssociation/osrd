@@ -23,6 +23,7 @@ import Hillshade from 'common/Map/Layers/Hillshade';
 import Platform from 'common/Map/Layers/Platform';
 import GeoJSONs from 'common/Map/Layers/GeoJSONs';
 import EditorZone from 'common/Map/Layers/EditorZone';
+import GeoJSONPoints, { GEOJSON_POINTS_LAYER_ID } from 'common/Map/Layers/GeoJSONPoints';
 
 const NEW_LINE_STYLE = {
   type: 'line',
@@ -38,6 +39,8 @@ const LAST_LINE_STYLE = {
     'line-dasharray': [3, 3],
   },
 };
+
+const INTERACTIVE_LAYER_IDS = [GEOJSON_POINTS_LAYER_ID];
 
 function getFakeProperties() {
   return {
@@ -99,7 +102,7 @@ function getFakeProperties() {
     isValidGeo: true,
     flagInvalidSch: '0000000',
     flagInvalidGeo: '0000000',
-    OP_id: v1(), //'xxxxxxxx-xxxx-1xxx-yxxx-xxxxxxxxxxxx',
+    OP_id: v1(), // 'xxxxxxxx-xxxx-1xxx-yxxx-xxxxxxxxxxxx',
     isGeomSchFromLRS: false,
     isGeomGeoFromLRS: false,
     extremites_agg: null,
@@ -122,9 +125,10 @@ const CreateLineUnplugged = ({ t }) => {
     points: [],
     mousePoint: null,
     propertiesString: null,
+    hovered: null,
     modal: false,
   });
-  const { points, mousePoint, modal, propertiesString } = state;
+  const { points, mousePoint, modal, propertiesString, hovered } = state;
   let isConfirmEnabled = true;
 
   try {
@@ -150,11 +154,22 @@ const CreateLineUnplugged = ({ t }) => {
   const getCursor = (params) => (params.isDragging ? 'grabbing' : 'crosshair');
   const onClick = useCallback(
     (event) => {
-      const point = event.lngLat;
+      const point = hovered ? hovered.geometry.coordinates : event.lngLat;
       if (isEqual(point, points[points.length - 1]) && points.length > 1) {
         actionOpenModal();
       } else {
         setState({ ...state, points: points.concat([point]), mousePoint: point });
+      }
+    },
+    [state]
+  );
+  const onFeatureHover = useCallback(
+    (event) => {
+      const feature = event.features[0];
+      if (feature) {
+        setState({ ...state, hovered: feature });
+      } else if (hovered) {
+        setState({ ...state, hovered: null });
       }
     },
     [state]
@@ -206,6 +221,9 @@ const CreateLineUnplugged = ({ t }) => {
         onMouseMove={onMove}
         controller={mapController}
         doubleClickZoom={false}
+        clickRadius={15}
+        interactiveLayerIds={INTERACTIVE_LAYER_IDS}
+        onHover={onFeatureHover}
         touchRotate
         asyncRender
       >
@@ -230,7 +248,11 @@ const CreateLineUnplugged = ({ t }) => {
 
         {/* Editor layers */}
         <EditorZone />
-        <GeoJSONs colors={colors[mapStyle]} />
+        <GeoJSONs
+          idHover={hovered ? hovered.properties.parentID : undefined}
+          colors={colors[mapStyle]}
+        />
+        <GeoJSONPoints idHover={hovered ? hovered.properties.pointID : undefined} />
 
         {points.length > 1 ? (
           <Source type="geojson" data={getLineGeoJSON(points)}>
@@ -238,7 +260,13 @@ const CreateLineUnplugged = ({ t }) => {
           </Source>
         ) : null}
         {points.length && (
-          <Source type="geojson" data={getLineGeoJSON([points[points.length - 1], mousePoint])}>
+          <Source
+            type="geojson"
+            data={getLineGeoJSON([
+              points[points.length - 1],
+              hovered ? hovered.geometry.coordinates : mousePoint,
+            ])}
+          >
             <Layer {...LAST_LINE_STYLE} />
           </Source>
         )}
@@ -246,7 +274,10 @@ const CreateLineUnplugged = ({ t }) => {
 
       {/* Metadata edition */}
       {modal && (
-        <Modal onClose={() => setState({ ...state, modal: false })} title={t('Editor.tools.create-line.label')}>
+        <Modal
+          onClose={() => setState({ ...state, modal: false })}
+          title={t('Editor.tools.create-line.label')}
+        >
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -254,7 +285,9 @@ const CreateLineUnplugged = ({ t }) => {
             }}
           >
             <div className="form-group">
-              <label htmlFor="new-line-properties">{t('Editor.tools.create-line.properties')} :</label>
+              <label htmlFor="new-line-properties">
+                {t('Editor.tools.create-line.properties')} :
+              </label>
               <div className="form-control-container">
                 <textarea
                   id="new-line-properties"

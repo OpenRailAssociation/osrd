@@ -82,9 +82,9 @@ const SelectItemUnplugged = ({ t }) => {
         getCursor={getCursor}
         mapStyle={osmBlankStyle}
         onViewportChange={updateViewportChange}
-        interactiveLayerIds={INTERACTIVE_LAYER_IDS}
-        clickRadius={4}
         attributionControl={false} // Defined below
+        clickRadius={4}
+        interactiveLayerIds={INTERACTIVE_LAYER_IDS}
         onClick={onFeatureClick}
         onHover={onFeatureHover}
         touchRotate
