@@ -47,8 +47,8 @@ public class RSExprState<T extends RSValue> implements DeepComparable<RSExprStat
     }
 
     void popScope(int argScopeOffset, int delayScopeOffset) {
-        assert argScopeOffset >= this.argScopeOffset;
-        assert delayScopeOffset >= this.delayScopeOffset;
+        assert argScopeOffset <= this.argScopeOffset;
+        assert delayScopeOffset <= this.delayScopeOffset;
         this.argScopeOffset -= argScopeOffset;
         this.delayScopeOffset -= delayScopeOffset;
     }
