@@ -6,6 +6,7 @@ import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.RSExpr;
 import fr.sncf.osrd.infra.railscript.RSExprState;
+import fr.sncf.osrd.infra.railscript.RSFunction;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
 import fr.sncf.osrd.infra.railscript.value.RSBool;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
@@ -22,6 +23,7 @@ import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr.*;
 import fr.sncf.osrd.simulation.Simulation;
 import net.jqwik.api.*;
+import net.jqwik.api.lifecycle.AfterTry;
 
 import java.util.*;
 
@@ -81,7 +83,7 @@ public class RailScriptTests {
     boolean testSignalRef(@ForAll Random random) throws InvalidInfraException {
         var signalRef = new RJSGenerator(random).generateSignalRef();
         var m = RJSGenerator.sim.infra.aspects;
-        RSExpr<?> rsExpr = new RailScriptExprParser(m, new HashMap<>()).parse(signalRef);
+        RSExpr<?> rsExpr = new RailScriptExprParser(m, RJSGenerator.functions).parse(signalRef);
         assert rsExpr instanceof RSExpr.SignalRef;
         var signalNames = new HashMap<String, Signal>();
         for (var signal : RJSGenerator.sim.infra.signals) {
@@ -97,7 +99,7 @@ public class RailScriptTests {
     @Property
     boolean testRouteRef(@ForAll("routeRef") RouteRef routeRef) throws InvalidInfraException {
         var m = RJSGenerator.sim.infra.aspects;
-        RSExpr<?> rsExpr = new RailScriptExprParser(m, new HashMap<>()).parse(routeRef);
+        RSExpr<?> rsExpr = new RailScriptExprParser(m, RJSGenerator.functions).parse(routeRef);
         assert rsExpr instanceof RSExpr.RouteRef;
         ((RSExpr.RouteRef) rsExpr).resolve(RJSGenerator.sim.infra.routeGraph.routeMap);
         var res = eval(rsExpr);
@@ -110,7 +112,7 @@ public class RailScriptTests {
     boolean testSwitchRef(@ForAll Random random) throws InvalidInfraException {
         var switchRef = new RJSGenerator(random).generateSwitchRef();
         var m = RJSGenerator.sim.infra.aspects;
-        RSExpr<?> rsExpr = new RailScriptExprParser(m, new HashMap<>()).parse(switchRef);
+        RSExpr<?> rsExpr = new RailScriptExprParser(m, RJSGenerator.functions).parse(switchRef);
         assert rsExpr instanceof RSExpr.SwitchRef;
         var switchNames = new HashMap<String, Switch>();
         for (var s : RJSGenerator.sim.infra.switches) {
@@ -143,7 +145,7 @@ public class RailScriptTests {
         var match = new EnumMatch(routeRef, branches);
 
         var m = RJSGenerator.sim.infra.aspects;
-        RSExpr<?> rsEnum = new RailScriptExprParser(m, new HashMap<>()).parse(match);
+        RSExpr<?> rsEnum = new RailScriptExprParser(m, RJSGenerator.functions).parse(match);
         assert rsEnum instanceof RSExpr.EnumMatch;
         var rsExpr = ((RSExpr.EnumMatch<?, ?>) rsEnum).expr;
         assert rsExpr instanceof RSExpr.RouteRef;
@@ -155,7 +157,7 @@ public class RailScriptTests {
 
     @Provide
     Arbitrary<RJSRSExpr> booleanExpression() {
-        return Arbitraries.randomValue(random -> new RJSGenerator(random).generateBoolExpr(5));
+        return Arbitraries.randomValue(random -> new RJSGenerator(random).generateBoolExpr(4));
     }
 
     @Provide
@@ -177,7 +179,7 @@ public class RailScriptTests {
     public static RSValue eval(RJSRSExpr expr) {
         var m = RJSGenerator.sim.infra.aspects;
         try {
-            var rsExpr = new RailScriptExprParser(m, new HashMap<>()).parse(expr);
+            var rsExpr = new RailScriptExprParser(m, RJSGenerator.functions).parse(expr);
             return eval(rsExpr);
         } catch (InvalidInfraException e) {
             fail(e);
@@ -187,7 +189,7 @@ public class RailScriptTests {
 
     /** Evaluates an expression */
     public static RSValue eval(RSExpr<?> rsExpr) {
-        var state = new RSExprState<>(rsExpr, 5, 5);
+        var state = new RSExprState<>(rsExpr, 50, 50);
         return state.evalInit(RJSGenerator.sim.infraState);
     }
 
@@ -207,9 +209,20 @@ public class RailScriptTests {
         return ((RSBool) res).value;
     }
 
+    @AfterTry
+    public void init() {
+        RJSGenerator.init();
+    }
+
     public static class RJSGenerator {
         Random random;
         static Simulation sim = genSimulation();
+        static HashMap<String, RSFunction<?>> functions = new HashMap<>();
+
+        static void init() {
+            sim = genSimulation();
+            functions = new HashMap<>();
+        }
 
         static Simulation genSimulation() {
             var infra = Helpers.getBaseInfra();
@@ -230,7 +243,7 @@ public class RailScriptTests {
          * maxDepth is here to avoid infinite recursions */
         public RJSRSExpr generateBoolExpr(int maxDepth) {
             if (maxDepth > 1) {
-                switch (random.nextInt(5)) {
+                switch (random.nextInt(6)) {
                     case 0:
                         return generateOr(maxDepth);
                     case 1:
@@ -241,6 +254,8 @@ public class RailScriptTests {
                         return new True();
                     case 4:
                         return new False();
+                    case 5:
+                        return generateFunctionCall(maxDepth);
                 }
             }
             return random.nextBoolean() ? new True() : new False();
@@ -320,6 +335,36 @@ public class RailScriptTests {
                 branches.put(status.name(), generateBoolExpr(5));
             }
             return new EnumMatch(expr, branches);
+        }
+
+        /** Generates a random function body */
+        public RJSRSFunction generateFunction(String name, int nArgs, int maxDepth) {
+            var args = new RJSRSFunction.Argument[nArgs];
+            for (int i = 0; i < nArgs; i++)
+                args[i] = new RJSRSFunction.Argument(String.valueOf(random.nextInt()), RJSRSType.BOOLEAN);
+            var rjsrsFunction = new RJSRSFunction(name,
+                    args,
+                    RJSRSType.BOOLEAN,
+                    generateBoolExpr(maxDepth - 1));
+            try {
+                var f = RailScriptExprParser.parseFunction(sim.infra.aspects, functions, rjsrsFunction);
+                functions.put(name, f);
+                return rjsrsFunction;
+            } catch (InvalidInfraException e) {
+                fail(e);
+                return null;
+            }
+        }
+
+        /** Generates a function call, add its new body to the function map */
+        public Call generateFunctionCall(int maxDepth) {
+            var name = String.valueOf(random.nextInt());
+            int nArgs = random.nextInt(5);
+            var f = generateFunction(name, nArgs, maxDepth - 1);
+            var args = new RJSRSExpr[nArgs];
+            for (int i = 0; i < nArgs; i++)
+                args[i] = generateBoolExpr(maxDepth - 1);
+            return new Call(new ID<>(f.getID()), args);
         }
     }
 }
