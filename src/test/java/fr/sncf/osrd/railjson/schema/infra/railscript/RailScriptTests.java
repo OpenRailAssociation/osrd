@@ -11,7 +11,10 @@ import fr.sncf.osrd.infra.railscript.value.RSBool;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.signaling.Signal;
+import fr.sncf.osrd.infra.trackgraph.Switch;
+import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.SignalState;
+import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.RailScriptExprParser;
 import fr.sncf.osrd.railjson.schema.common.ID;
@@ -78,10 +81,10 @@ public class RailScriptTests {
     }
 
     @Property
-    boolean testSignalRef(@ForAll("signalRef") SignalRef signalRef) throws InvalidInfraException {
+    boolean testSignalRef(@ForAll Random random) throws InvalidInfraException {
+        var signalRef = new RJSGenerator(random).generateSignalRef();
         var m = RJSGenerator.sim.infra.aspects;
-        RSExpr<?> rsExpr = null;
-        rsExpr = new RailScriptExprParser(m, new HashMap<>()).parse(signalRef);
+        RSExpr<?> rsExpr = new RailScriptExprParser(m, new HashMap<>()).parse(signalRef);
         assert rsExpr instanceof RSExpr.SignalRef;
         var signalNames = new HashMap<String, Signal>();
         for (var signal : RJSGenerator.sim.infra.signals) {
@@ -94,6 +97,36 @@ public class RailScriptTests {
         return signalState.signal.id.equals(signalRef.signal.id);
     }
 
+    @Property
+    boolean testRouteRef(@ForAll Random random) throws InvalidInfraException {
+        var routeRef = new RJSGenerator(random).generateRouteRef();
+        var m = RJSGenerator.sim.infra.aspects;
+        RSExpr<?> rsExpr = new RailScriptExprParser(m, new HashMap<>()).parse(routeRef);
+        assert rsExpr instanceof RSExpr.RouteRef;
+        ((RSExpr.RouteRef) rsExpr).resolve(RJSGenerator.sim.infra.routeGraph.routeMap);
+        var res = eval(rsExpr);
+        assert res instanceof RouteState;
+        var routeState = (RouteState) res;
+        return routeState.route.id.equals(routeRef.route.id);
+    }
+
+    @Property
+    boolean testSwitchRef(@ForAll Random random) throws InvalidInfraException {
+        var switchRef = new RJSGenerator(random).generateSwitchRef();
+        var m = RJSGenerator.sim.infra.aspects;
+        RSExpr<?> rsExpr = new RailScriptExprParser(m, new HashMap<>()).parse(switchRef);
+        assert rsExpr instanceof RSExpr.SwitchRef;
+        var switchNames = new HashMap<String, Switch>();
+        for (var s : RJSGenerator.sim.infra.switches) {
+            switchNames.put(s.id, s);
+        }
+        ((RSExpr.SwitchRef) rsExpr).resolve(switchNames);
+        var res = eval(rsExpr);
+        assert res instanceof SwitchState;
+        var switchState = (SwitchState) res;
+        return switchState.switchRef.id.equals(switchRef.switchRef.id);
+    }
+
     @Provide
     Arbitrary<RJSRSExpr> booleanExpression() {
         return Arbitraries.randomValue(random -> new RJSGenerator(random).generateBoolExpr(5));
@@ -101,17 +134,12 @@ public class RailScriptTests {
 
     @Provide
     Arbitrary<RJSRSExpr[]> booleanExpressions() {
-        return booleanExpression().array(RJSRSExpr[].class).ofMinSize(1).ofMaxSize(10);
+        return booleanExpression().array(RJSRSExpr[].class).ofMinSize(0).ofMaxSize(10);
     }
 
     @Provide
     Arbitrary<AspectSet> aspectSet() {
         return Arbitraries.randomValue(random -> new RJSGenerator(random).generateAspectSet(5));
-    }
-
-    @Provide
-    Arbitrary<SignalRef> signalRef() {
-        return Arbitraries.randomValue(random -> new RJSGenerator(random).generateSignalRef());
     }
 
     /** Evaluates an expression */
@@ -229,6 +257,20 @@ public class RailScriptTests {
             var signals = sim.infra.signals;
             var i = random.nextInt(signals.size());
             return new SignalRef(new ID<>(signals.get(i).id));
+        }
+
+        /** Get a ref to a random route from the infra */
+        public RouteRef generateRouteRef() {
+            var routeNames = new ArrayList<>(sim.infra.routeGraph.routeMap.keySet());
+            var i = random.nextInt(routeNames.size());
+            return new RouteRef(new ID<>(routeNames.get(i)));
+        }
+
+        /** Get a ref to a random signal from the infra */
+        public SwitchRef generateSwitchRef() {
+            var switches = sim.infra.switches;
+            var i = random.nextInt(switches.size());
+            return new SwitchRef(new ID<>(switches.get(i).id));
         }
     }
 }
