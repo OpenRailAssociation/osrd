@@ -4,11 +4,14 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.railscript.RSExpr;
 import fr.sncf.osrd.infra.railscript.RSExprState;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
 import fr.sncf.osrd.infra.railscript.value.RSBool;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.signaling.Aspect;
+import fr.sncf.osrd.infra.signaling.Signal;
+import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.RailScriptExprParser;
 import fr.sncf.osrd.railjson.schema.common.ID;
@@ -74,6 +77,23 @@ public class RailScriptTests {
         return true;
     }
 
+    @Property
+    boolean testSignalRef(@ForAll("signalRef") SignalRef signalRef) throws InvalidInfraException {
+        var m = RJSGenerator.sim.infra.aspects;
+        RSExpr<?> rsExpr = null;
+        rsExpr = new RailScriptExprParser(m, new HashMap<>()).parse(signalRef);
+        assert rsExpr instanceof RSExpr.SignalRef;
+        var signalNames = new HashMap<String, Signal>();
+        for (var signal : RJSGenerator.sim.infra.signals) {
+            signalNames.put(signal.id, signal);
+        }
+        ((RSExpr.SignalRef) rsExpr).resolve(signalNames);
+        var res = eval(rsExpr);
+        assert res instanceof SignalState;
+        var signalState = (SignalState) res;
+        return signalState.signal.id.equals(signalRef.signal.id);
+    }
+
     @Provide
     Arbitrary<RJSRSExpr> booleanExpression() {
         return Arbitraries.randomValue(random -> new RJSGenerator(random).generateBoolExpr(5));
@@ -89,17 +109,27 @@ public class RailScriptTests {
         return Arbitraries.randomValue(random -> new RJSGenerator(random).generateAspectSet(5));
     }
 
+    @Provide
+    Arbitrary<SignalRef> signalRef() {
+        return Arbitraries.randomValue(random -> new RJSGenerator(random).generateSignalRef());
+    }
+
     /** Evaluates an expression */
     public static RSValue eval(RJSRSExpr expr) {
         var m = RJSGenerator.sim.infra.aspects;
         try {
             var rsExpr = new RailScriptExprParser(m, new HashMap<>()).parse(expr);
-            var state = new RSExprState<>(rsExpr, 5, 5);
-            return state.evalInit(RJSGenerator.sim.infraState);
+            return eval(rsExpr);
         } catch (InvalidInfraException e) {
             fail(e);
             return null;
         }
+    }
+
+    /** Evaluates an expression */
+    public static RSValue eval(RSExpr<?> rsExpr) {
+        var state = new RSExprState<>(rsExpr, 5, 5);
+        return state.evalInit(RJSGenerator.sim.infraState);
     }
 
     /** Evaluates a boolean expression */
@@ -192,6 +222,13 @@ public class RailScriptTests {
                 );
             }
             return new AspectSet(members);
+        }
+
+        /** Get a ref to a random signal from the infra */
+        public SignalRef generateSignalRef() {
+            var signals = sim.infra.signals;
+            var i = random.nextInt(signals.size());
+            return new SignalRef(new ID<>(signals.get(i).id));
         }
     }
 }
