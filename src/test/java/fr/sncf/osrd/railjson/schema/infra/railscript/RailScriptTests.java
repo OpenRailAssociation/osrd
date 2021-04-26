@@ -21,6 +21,7 @@ import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.RailScriptExprParser;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr.*;
+import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSFunction.Argument;
 import fr.sncf.osrd.simulation.Simulation;
 import net.jqwik.api.*;
 import net.jqwik.api.lifecycle.AfterTry;
@@ -137,7 +138,7 @@ public class RailScriptTests {
         var generator = new RJSGenerator(random);
         routeState.status = status;
         for (var i = 0; i < RouteStatus.values().length; i++) {
-            var branchExpression = generator.generateBoolExpr(5);
+            var branchExpression = generator.generateBoolExpr();
             branches.put(RouteStatus.values()[i].name(), branchExpression);
             if (routeState.status == RouteStatus.values()[i])
                 expected = evalBool(branchExpression);
@@ -157,7 +158,7 @@ public class RailScriptTests {
 
     @Provide
     Arbitrary<RJSRSExpr> booleanExpression() {
-        return Arbitraries.randomValue(random -> new RJSGenerator(random).generateBoolExpr(4));
+        return Arbitraries.randomValue(random -> new RJSGenerator(random).generateBoolExpr());
     }
 
     @Provide
@@ -167,7 +168,8 @@ public class RailScriptTests {
 
     @Provide
     Arbitrary<AspectSet> aspectSet() {
-        return Arbitraries.randomValue(random -> new RJSGenerator(random).generateAspectSet(5));
+        return Arbitraries.randomValue(random
+                -> new RJSGenerator(random).generateAspectSet(5, new Argument[0]));
     }
 
     @Provide
@@ -241,49 +243,69 @@ public class RailScriptTests {
 
         /** Randomly generates a boolean expression
          * maxDepth is here to avoid infinite recursions */
-        public RJSRSExpr generateBoolExpr(int maxDepth) {
+        public RJSRSExpr generateBoolExpr(int maxDepth, Argument[] args) {
             if (maxDepth > 1) {
-                switch (random.nextInt(6)) {
+                switch (random.nextInt(7)) {
                     case 0:
-                        return generateOr(maxDepth);
+                        return generateOr(maxDepth, args);
                     case 1:
-                        return generateAnd(maxDepth);
+                        return generateAnd(maxDepth, args);
                     case 2:
-                        return generateNot(maxDepth);
+                        return generateNot(maxDepth, args);
                     case 3:
                         return new True();
                     case 4:
                         return new False();
                     case 5:
-                        return generateFunctionCall(maxDepth);
+                        return generateFunctionCall(maxDepth, args);
+                    case 6:
+                        if (args.length > 0)
+                            return generateArgRef(args);
+                        else
+                            return generateBoolExpr(maxDepth, args);
                 }
             }
             return random.nextBoolean() ? new True() : new False();
         }
 
+        /** Randomly generates a boolean expression */
+        public RJSRSExpr generateBoolExpr() {
+            return generateBoolExpr(5, new Argument[0]);
+        }
+
         /** Generates an array of 0 to 5 boolean expression */
-        public RJSRSExpr[] generateBoolExprs(int maxDepth) {
+        public RJSRSExpr[] generateBoolExprs(int maxDepth, Argument[] args) {
             int n = random.nextInt(5);
             var res = new RJSRSExpr[n];
             for (int i = 0; i < n; i++) {
-                res[i] = generateBoolExpr(maxDepth - 1);
+                res[i] = generateBoolExpr(maxDepth - 1, args);
             }
             return res;
         }
 
+        /** Generates an array of 0 to 5 boolean expression */
+        public RJSRSExpr[] generateBoolExprs(int maxDepth) {
+            return generateBoolExprs(maxDepth, new Argument[0]);
+        }
+
+        /** Generates an array of 0 to 5 boolean expression */
+        public RJSRSExpr[] generateBoolExprs() {
+            return generateBoolExprs(0);
+        }
+
         /** Generates a random Or expression */
-        public Or generateOr(int maxDepth) {
-            return new Or(generateBoolExprs(maxDepth - 1));
+        public Or generateOr(int maxDepth, Argument[] args) {
+            return new Or(generateBoolExprs(maxDepth - 1, args));
         }
 
         /** Generates a random And expression */
-        public And generateAnd(int maxDepth) {
-            return new And(generateBoolExprs(maxDepth - 1));
+        public And generateAnd(int maxDepth, Argument[] args) {
+            return new And(generateBoolExprs(maxDepth - 1, args));
         }
 
         /** Generates a random Not expression */
-        public Not generateNot(int maxDepth) {
-            return new Not(generateBoolExpr(maxDepth - 1));
+        public Not generateNot(int maxDepth, Argument[] args) {
+            return new Not(generateBoolExpr(maxDepth - 1, args));
         }
 
         /** Get a random aspect from the infra */
@@ -294,13 +316,13 @@ public class RailScriptTests {
         }
 
         /** Generates a random aspect set */
-        public AspectSet generateAspectSet(int maxDepth) {
+        public AspectSet generateAspectSet(int maxDepth, Argument[] args) {
             int n = random.nextInt(5);
             var members = new AspectSet.AspectSetMember[n];
             for (int i = 0; i < n; i++) {
                 members[i] = new AspectSet.AspectSetMember(
                         new ID<>(getRandomAspect().id),
-                        generateBoolExpr(maxDepth - 1)
+                        generateBoolExpr(maxDepth - 1, args)
                 );
             }
             return new AspectSet(members);
@@ -328,11 +350,11 @@ public class RailScriptTests {
         }
 
         /** Generates a random enum match, matching a RouteRef */
-        public EnumMatch generateEnumMatch() {
+        public EnumMatch generateEnumMatch(int maxDepth, Argument[] args) {
             var expr = generateRouteRef();
             var branches = new HashMap<String, RJSRSExpr>();
             for (var status : RouteStatus.values()) {
-                branches.put(status.name(), generateBoolExpr(5));
+                branches.put(status.name(), generateBoolExpr(maxDepth - 1, args));
             }
             return new EnumMatch(expr, branches);
         }
@@ -345,7 +367,7 @@ public class RailScriptTests {
             var rjsrsFunction = new RJSRSFunction(name,
                     args,
                     RJSRSType.BOOLEAN,
-                    generateBoolExpr(maxDepth - 1));
+                    generateBoolExpr(maxDepth - 1, args));
             try {
                 var f = RailScriptExprParser.parseFunction(sim.infra.aspects, functions, rjsrsFunction);
                 functions.put(name, f);
@@ -357,14 +379,20 @@ public class RailScriptTests {
         }
 
         /** Generates a function call, add its new body to the function map */
-        public Call generateFunctionCall(int maxDepth) {
+        public Call generateFunctionCall(int maxDepth, Argument[] args) {
             var name = String.valueOf(random.nextInt());
             int nArgs = random.nextInt(5);
             var f = generateFunction(name, nArgs, maxDepth - 1);
-            var args = new RJSRSExpr[nArgs];
+            var newArgs = new RJSRSExpr[nArgs];
             for (int i = 0; i < nArgs; i++)
-                args[i] = generateBoolExpr(maxDepth - 1);
-            return new Call(new ID<>(f.getID()), args);
+                newArgs[i] = generateBoolExpr(maxDepth - 1, args);
+            return new Call(new ID<>(f.getID()), newArgs);
+        }
+
+        /** Generates a function call, add its new body to the function map */
+        public ArgumentRef generateArgRef(Argument[] args) {
+            int i = random.nextInt(args.length);
+            return new ArgumentRef(args[i].name);
         }
     }
 }
