@@ -29,7 +29,25 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Waypoints'
+              type: array
+              minItems: 2
+              items:
+                type: array
+                minItems: 1
+                items:
+                  $ref: '#/components/schemas/Waypoint'
+            example:
+            -
+              - track_section: "track_departure"
+                direction: "START_TO_STOP"
+                offset: 4.2
+              - track_section: "track_departure_bis"
+                direction: "START_TO_STOP"
+                offset: 14.2
+            -
+              - track_section: "track_destination"
+                direction: "STOP_TO_START"
+                offset: 138.32
         required: true
       responses:
         200:
@@ -41,33 +59,31 @@ paths:
                   $ref: '#/components/schemas/PathfindingResult'
         400:
           description: Missing request body
+  /simulation:
+    post:
+      tags:
+      - simulation
+      summary: Simulate a scenario.
+      operationId: simulation
+      requestBody:
+        description: Train rolling stocks and schedules.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Simulation'
+        required: true
+      responses:
+        200:
+          description: List of infrastructure changes and train movements.
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/SimulationResult'
+        400:
+          description: Missing request body
 components:
   schemas:
-    Waypoints:
-      required:
-      - waypoints
-      type: object
-      properties:
-        waypoints:
-          type: array
-          minItems: 2
-          items:
-            type: array
-            minItems: 1
-            items:
-              $ref: '#/components/schemas/Waypoint'
-      example:
-        -
-          - track_section: "track_departure"
-            direction: "START_TO_STOP"
-            offset: 4.2
-          - track_section: "track_departure_bis"
-            direction: "START_TO_STOP"
-            offset: 14.2
-        -
-          - track_section: "track_destination"
-            direction: "STOP_TO_START"
-            offset: 138.32
     Waypoint:
       required:
       - track_section
@@ -103,20 +119,31 @@ components:
             $ref: '#/components/schemas/TrackSectionRange'
       example:
        routes:
-        -  track_section: "route_foo"
-           offset: 4.2
-        -  track_section: "route_foo"
-           offset: 178.3
+       -  track_section: "route_foo"
+          offset: 4.2
+       -  track_section: "route_foo"
+          offset: 178.3
        track_sections:
-        -  track_section: "track_foo"
-           begin_position: 4.2
-           end_position: 178.3
+       -  track_section: "track_foo"
+          begin_position: 4.2
+          end_position: 178.3
     RouteLocation:
       required:
       - route
       - offset
       properties:
         route:
+          type: string
+        offset:
+          type: number
+          format: double
+          minimum: 0
+    TrackLocation:
+      required:
+      - track_section
+      - offset
+      properties:
+        track_section:
           type: string
         offset:
           type: number
@@ -138,5 +165,281 @@ components:
           type: number
           format: double
           minimum: 0
-
-        
+    Simulation:
+      required:
+      - rolling_stocks
+      - train_schedules
+      properties:
+        rolling_stocks:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/RollingStock'
+        train_schedules:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/TrainSchedule'
+    RollingStock:
+      required:
+      - id
+      - length
+      - mass
+      - inertia_coefficient
+      - rolling_resistance
+      - capabilities
+      - max_speed
+      - startup_time
+      - startup_acceleration
+      - comfort_acceleration
+      - timetable_gamma
+      - tractive_effort_curve
+      properties:
+        id:
+          type: string
+        length:
+          type: number
+          format: double
+          minimum: 0
+          example: 400
+        mass:
+          type: number
+          format: double
+          minimum: 0
+          example: 900000
+        inertia_coefficient:
+          type: number
+          format: double
+          minimum: 0
+          example: 1.05
+        rolling_resistance:
+          oneOf:
+          - $ref: '#/components/schemas/RollingResistanceDavis'
+          discriminator:
+            propertyName: type
+            mapping:
+              davis: '#/components/schemas/RollingResistanceDavis'
+        capabilities:
+          type: array
+          items:
+            type: string
+            enum:
+            - TVM300
+            - TVM430
+            - ETCS1
+            - ETCS2
+            - ETCS3
+            - KVB
+        max_speed:
+          type: number
+          format: double
+          minimum: 0
+          example: 80
+        startup_time:
+          type: number
+          format: double
+        startup_acceleration:
+          type: number
+          format: double
+          example: 0.05
+        comfort_acceleration:
+          type: number
+          format: double
+          example: 0.25
+        timetable_gamma:
+          type: number
+          format: double
+          example: 0.5
+        tractive_effort_curve:
+          type: array
+          items:
+            type: object
+            properties:
+              speed:
+                type: number
+                format: double
+                minimum: 0
+              max_effort:
+                type: number
+                format: double
+                minimum: 0
+            example:
+              speed: 20
+              max_effort: 400000
+    RollingResistanceDavis:
+      required:
+      - type
+      - A
+      - B
+      - C
+      properties:
+        type:
+          type: string
+        A:
+           type: number
+           format: double
+        B:
+           type: number
+           format: double
+        C:
+           type: number
+           format: double
+      example:
+        type: "davis"
+        A: 5400
+        B: 200
+        C: 12
+    TrainSchedule:
+      required:
+      - id
+      - rolling_stock
+      - departure_time
+      - initial_head_location
+      - initial_route
+      - initial_speed
+      - phases
+      properties:
+        id:
+          type: string
+          example: "TrainID"
+        rolling_stock:
+          type: string
+          example: "RollingStockID"
+        departure_time:
+          type: number
+          format: double
+          minimum: 0
+        initial_head_location:
+          $ref: '#/components/schemas/TrackLocation'
+        initial_route:
+          type: string
+        initial_speed:
+          type: number
+          format: double
+        phases:
+          type: array
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/NavigatePhase'
+            - $ref: '#/components/schemas/StopPhase'
+            discriminator:
+              propertyName: type
+              mapping:
+                navigate: '#/components/schemas/NavigatePhase'
+                stop: '#/components/schemas/StopPhase'
+    NavigatePhase:
+      required:
+      - type
+      - routes
+      - end_location
+      - driver_sight_distance
+      properties:
+        type:
+          type: string
+          example: "navigate"
+        routes:
+          type: array
+          items:
+            type: string
+          example: ["route1", "route2", "route3"]
+        end_location:
+          $ref: '#/components/schemas/TrackLocation'
+        driver_sight_distance:
+          type: number
+          format: double
+          minimum: 0
+          example: 400
+    StopPhase:
+      required:
+      - type
+      - duration
+      properties:
+        type:
+          type: string
+          example: "stop"
+        duration:
+          type: number
+          format: double
+          minimum: 0
+          example: 600
+    SimulationResult:
+      oneOf:
+      - $ref: '#/components/schemas/SimulationResultRouteStatus'
+      - $ref: '#/components/schemas/SimulationResultTrainLocation'
+      - $ref: '#/components/schemas/SimulationResultSignalChange'
+      discriminator:
+        propertyName: type
+        mapping:
+          route_status: '#/components/schemas/SimulationResultRouteStatus'
+          train_location: '#/components/schemas/SimulationResultTrainLocation'
+          signal_change: '#/components/schemas/SimulationResultSignalChange'
+    SimulationResultRouteStatus:
+      required:
+      - type
+      - time
+      - id
+      - status
+      properties:
+        type:
+          type: string
+          example: "route_status"
+        time:
+          type: number
+          format: double
+        id:
+          type: string
+          example: "routeID"
+        status:
+          type: string
+          enum:
+          - FREE
+          - RESERVED
+          - OCCUPIED
+          - CONFLICT
+          - REQUESTED
+    SimulationResultTrainLocation:
+      required:
+      - type
+      - time
+      - train_name
+      - track_section
+      - offset
+      properties:
+        type:
+          type: string
+          example: "train_location"
+        time:
+          type: number
+          format: double
+        train_name:
+          type: string
+          example: "trainID"
+        track_section:
+          type: string
+          example: "trackSectionID"
+        offset:
+          type: number
+          format: double
+          minimum: 0
+          example: 42
+    SimulationResultSignalChange:
+      required:
+      - type
+      - time
+      - signal
+      - aspects
+      properties:
+        type:
+          type: string
+          example: "signal_change"
+        time:
+          type: number
+          format: double
+        signal:
+          type: string
+          example: "signalID"
+        aspects:
+          type: array
+          items:
+            type: string
+            example: "AspectID"
