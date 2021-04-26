@@ -23,24 +23,34 @@ class InfraViewSet(ModelViewSet):
 
 class TrackSectionViewSet(ModelViewSet):
     serializer_class = TrackSectionSerializer
-    queryset = TrackSectionEntity.objects.all()
+
+    def get_queryset(self):
+        return TrackSectionEntity.objects.all()
 
 
 class SwitchViewSet(ModelViewSet):
     serializer_class = SwitchSerializer
-    queryset = SwitchEntity.objects.all()
+
+    def get_queryset(self):
+        return SwitchEntity.objects.all()
 
 
 class SignalViewSet(ModelViewSet):
     serializer_class = SignalSerializer
-    queryset = SignalEntity.objects.all()
+
+    def get_queryset(self):
+        return SignalEntity.objects.all()
 
 
 class OperationalPointViewSet(ModelViewSet):
     serializer_class = OperationalPointSerializer
-    queryset = OperationalPointEntity.objects.all()
+
+    def get_queryset(self):
+        return OperationalPointEntity.objects.all()
 
 
 class SwitchViewSet(ModelViewSet):
     serializer_class = SwitchSerializer
-    queryset = SwitchEntity.objects.all()
+
+    def get_queryset(self):
+        return SwitchEntity.objects.all()

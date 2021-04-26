@@ -11,6 +11,14 @@ https://en.wikipedia.org/wiki/Entity_component_system
 """
 
 
+class EntityNamespace(models.Model):
+    """
+    A group of entities.
+    This enables having multiple ecs instances running at the same time.
+    """
+    pass
+
+
 @dataclass(frozen=True)
 class Arity:
     # included low bound
@@ -85,7 +93,7 @@ class EntityBase(ModelBase):
         # creating new entities must assign the correct type
         def dj_init(self, *args, **kwargs):
             assert "entity_type" not in kwargs
-            kwargs["entity_type"] = ContentType.objects.get_for_model(entity_type)
+            kwargs["entity_type"] = ContentType.objects.get_for_model(entity_type, for_concrete_model=False)
             super(entity_type, self).__init__(*args, **kwargs)
 
         # create the manager, but don't fill the entity_type field yet:
@@ -113,17 +121,19 @@ class Entity(models.Model, metaclass=EntityBase, entity_base_passthrough=True):
 
     entity_id = models.BigAutoField(primary_key=True)
 
-    entity_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    namespace = models.ForeignKey(EntityNamespace, on_delete=models.CASCADE)
+
+    entity_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, editable=False)
 
     def __str__(self):
-        return f"Entity(id={self.entity_id}, entity_type={self.entity_type})"
+        return f"Entity(entity_id={self.entity_id}, entity_type={self.entity_type})"
 
 
 class EntityManager(models.Manager):
     """A manager which only lists entities of a given type"""
 
     def get_queryset(self):
-        entity_type = ContentType.objects.get_for_model(self.model)
+        entity_type = ContentType.objects.get_for_model(self.model, for_concrete_model=False)
         return super().get_queryset().filter(entity_type=entity_type)
 
 

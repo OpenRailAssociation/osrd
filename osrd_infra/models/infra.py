@@ -4,6 +4,7 @@ from osrd_infra.models.ecs import (
     UniqueComponent,
     Entity,
     EntityManager,
+    EntityNamespace,
 )
 from osrd_infra.models.common import EndpointField
 from django.conf import settings
@@ -14,6 +15,8 @@ class Infra(models.Model):
     owner = models.UUIDField(default="00000000-0000-0000-0000-000000000000")
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+    # the namespace is the container for all the entities in the infrastructure
+    namespace = models.ForeignKey(EntityNamespace, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -77,7 +80,6 @@ class IdentifierComponent(Component):
 
 
 class TrackSectionComponent(UniqueComponent):
-    infra = models.ForeignKey("Infra", on_delete=models.CASCADE)
     path = models.LineStringField(srid=settings.OSRD_INFRA_SRID)
 
     # the length of the track section, in meters

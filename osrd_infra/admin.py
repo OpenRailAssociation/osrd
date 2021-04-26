@@ -32,6 +32,8 @@ class SwitchAdmin(ModelAdmin):
 
 admin.site.register(
     [
+        # ecs
+        EntityNamespace,
         # generic components
         TrackSectionLocationComponent,
         TrackSectionRangeComponent,

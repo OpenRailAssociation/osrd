@@ -122,7 +122,7 @@ class TrackSectionRangeComponentSerializer(ComponentSerializer):
 class TrackSectionComponentSerializer(ComponentSerializer):
     class Meta:
         model = TrackSectionComponent
-        exclude = ["infra"]
+        fields = "__all__"
 
 
 class TrackSectionLinkComponentSerializer(ComponentSerializer):
