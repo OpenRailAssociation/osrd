@@ -14,14 +14,13 @@ import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.railjson.parser.RailScriptExprParser;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr.*;
-import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSFunction.Argument;
 import net.jqwik.api.*;
 import net.jqwik.api.lifecycle.AfterTry;
 
 import java.util.*;
 
 
-public class RailScriptTests {
+public class RailScriptTests extends RSHelpers{
 
     @Property
     boolean testNot(@ForAll("booleanExpression") RJSRSExpr expr) {
@@ -147,28 +146,6 @@ public class RailScriptTests {
         var res = evalBool(rsEnum);
         return expected == res;
     }
-
-    @Provide
-    Arbitrary<RJSRSExpr> booleanExpression() {
-        return Arbitraries.randomValue(random -> new RJSGenerator(random).generateBoolExpr());
-    }
-
-    @Provide
-    Arbitrary<RJSRSExpr[]> booleanExpressions() {
-        return booleanExpression().array(RJSRSExpr[].class).ofMinSize(0).ofMaxSize(10);
-    }
-
-    @Provide
-    Arbitrary<AspectSet> aspectSet() {
-        return Arbitraries.randomValue(random
-                -> new RJSGenerator(random).generateAspectSet(5, new Argument[0]));
-    }
-
-    @Provide
-    Arbitrary<RouteRef> routeRef() {
-        return Arbitraries.randomValue(random -> new RJSGenerator(random).generateRouteRef());
-    }
-
     @AfterTry
     public void init() {
         RJSGenerator.init();

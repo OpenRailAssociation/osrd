@@ -12,7 +12,9 @@ import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.RailScriptExprParser;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.simulation.Simulation;
-import net.jqwik.api.lifecycle.AfterTry;
+import net.jqwik.api.Arbitraries;
+import net.jqwik.api.Arbitrary;
+import net.jqwik.api.Provide;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +23,28 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class RSHelpers {
+
+    @Provide
+    Arbitrary<RJSRSExpr> booleanExpression() {
+        return Arbitraries.randomValue(random -> new RJSGenerator(random).generateBoolExpr());
+    }
+
+    @Provide
+    Arbitrary<RJSRSExpr[]> booleanExpressions() {
+        return booleanExpression().array(RJSRSExpr[].class).ofMinSize(0).ofMaxSize(10);
+    }
+
+    @Provide
+    Arbitrary<RJSRSExpr.AspectSet> aspectSet() {
+        return Arbitraries.randomValue(random
+                -> new RJSGenerator(random).generateAspectSet(5, new RJSRSFunction.Argument[0]));
+    }
+
+    @Provide
+    Arbitrary<RJSRSExpr.RouteRef> routeRef() {
+        return Arbitraries.randomValue(random -> new RJSGenerator(random).generateRouteRef());
+    }
+
     public static class RJSGenerator {
         Random random;
         static Simulation sim = genSimulation();
