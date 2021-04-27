@@ -39,6 +39,7 @@ public class StopPhase extends PhaseState implements Phase {
     }
 
     @Override
+    @SuppressFBWarnings({"CN_IDIOM_NO_SUPER_CALL"})
     public PhaseState clone() {
         return new StopPhase(duration);
     }

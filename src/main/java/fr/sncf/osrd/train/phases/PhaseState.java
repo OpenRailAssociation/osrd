@@ -10,7 +10,7 @@ import fr.sncf.osrd.utils.DeepComparable;
 
 import java.util.ArrayList;
 
-public abstract class PhaseState implements DeepComparable<PhaseState> {
+public abstract class PhaseState implements DeepComparable<PhaseState>, Cloneable {
     public abstract TimelineEvent simulate(Simulation sim, Train train, TrainState trainState) throws SimulationError;
 
     public ArrayList<SpeedController> getSpeedControllers() {
