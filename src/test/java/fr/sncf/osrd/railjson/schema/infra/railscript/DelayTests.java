@@ -3,10 +3,7 @@ package fr.sncf.osrd.railjson.schema.infra.railscript;
 import static fr.sncf.osrd.Helpers.*;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.railscript.RSDelayHandler;
-import fr.sncf.osrd.infra.railscript.RSExpr;
-import fr.sncf.osrd.infra.railscript.RSExprState;
-import fr.sncf.osrd.infra.railscript.RSExprVisitor;
+import fr.sncf.osrd.infra.railscript.*;
 import fr.sncf.osrd.infra.railscript.value.RSBool;
 import fr.sncf.osrd.infra.railscript.value.RSType;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
@@ -25,7 +22,7 @@ public class DelayTests {
         config.trainSchedules.clear();
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
-        var expr = new UpdateableBool();
+        var expr = new UpdatableBool();
         var time = 10;
         var delay = new RSExpr.Delay<>(time, expr, 0);
         var state = new RSExprState<>(delay, 50, 50);
@@ -62,7 +59,7 @@ public class DelayTests {
         config.trainSchedules.clear();
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
-        var expr = new UpdateableBool();
+        var expr = new UpdatableBool();
         var time = 10;
         var delay1 = new RSExpr.Delay<>(time, expr, 0);
         var delay2 = new RSExpr.Delay<>(time, delay1, 1);
@@ -90,8 +87,8 @@ public class DelayTests {
         config.trainSchedules.clear();
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
-        var expr1 = new UpdateableBool();
-        var expr2 = new UpdateableBool();
+        var expr1 = new UpdatableBool();
+        var expr2 = new UpdatableBool();
         var delay = new RSExpr.Delay<>(10, expr1, 0);
         var shorterDelay = new RSExpr.Delay<>(5, expr2, 1);
         @SuppressWarnings({"unchecked"})
@@ -110,6 +107,78 @@ public class DelayTests {
         makeAssertEvent(sim, 9, () -> !state.evalInputChange(sim.infraState, delayHandler).value);
         makeAssertEvent(sim, 11, () -> state.evalInputChange(sim.infraState, delayHandler).value);
 
+        run(sim, config);
+    }
+
+    @Test
+    public void testFunctionDelay() throws InvalidInfraException {
+        var infra = getBaseInfra();
+        assert infra != null;
+        var config = getBaseConfig();
+        assert config != null;
+        config.trainSchedules.clear();
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+
+        var delayFunc = new RSFunction<RSBool>("delayFunc",
+                new String[]{"arg1"},
+                new RSType[]{RSType.BOOLEAN},
+                RSType.BOOLEAN,
+                new RSExpr.Delay<>(10, new RSExpr.ArgumentRef<>(0), 0),
+                1,
+                1);
+        var updatableBool = new UpdatableBool();
+
+        var call = new RSExpr.Call<>(delayFunc,
+                new RSExpr<?>[]{updatableBool},
+                1,
+                1);
+        var state = new RSExprState<>(call, 50, 50);
+        final var delayHandler = new CustomDelayHandler(state, sim);
+
+        assert !state.evalInit(sim.infraState).value;
+        updatableBool.setValue(true);
+        assert !state.evalInputChange(sim.infraState, delayHandler).value;
+        makeAssertEvent(sim, 9, () -> !state.evalInputChange(sim.infraState, delayHandler).value);
+        makeAssertEvent(sim, 11, () -> state.evalInputChange(sim.infraState, delayHandler).value);
+        run(sim, config);
+    }
+
+    @Test
+    public void testDoubleFunctionDelay() throws InvalidInfraException {
+        var infra = getBaseInfra();
+        assert infra != null;
+        var config = getBaseConfig();
+        assert config != null;
+        config.trainSchedules.clear();
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+
+        var delayFunc = new RSFunction<RSBool>("delayFunc",
+                new String[]{"arg1"},
+                new RSType[]{RSType.BOOLEAN},
+                RSType.BOOLEAN,
+                new RSExpr.Delay<>(10, new RSExpr.ArgumentRef<>(0), 0),
+                1,
+                1);
+        var updatableBool = new UpdatableBool();
+
+        var call1 = new RSExpr.Call<>(delayFunc,
+                new RSExpr<?>[]{updatableBool},
+                0,
+                0);
+        var call2 = new RSExpr.Call<>(delayFunc,
+                new RSExpr<?>[]{call1},
+                1,
+                1);
+        var state = new RSExprState<>(call2, 50, 50);
+        final var delayHandler = new CustomDelayHandler(state, sim);
+
+        assert !state.evalInit(sim.infraState).value;
+        updatableBool.setValue(true);
+        assert !state.evalInputChange(sim.infraState, delayHandler).value;
+        makeAssertEvent(sim, 9, () -> !state.evalInputChange(sim.infraState, delayHandler).value);
+        makeAssertEvent(sim, 15, () -> !state.evalInputChange(sim.infraState, delayHandler).value);
+
+        makeAssertEvent(sim, 21, () -> state.evalInputChange(sim.infraState, delayHandler).value);
         run(sim, config);
     }
 
@@ -132,7 +201,7 @@ public class DelayTests {
     }
 
 
-    public static class UpdateableBool extends RSExpr<RSBool> {
+    public static class UpdatableBool extends RSExpr<RSBool> {
 
         boolean value = false;
 
