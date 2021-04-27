@@ -18,11 +18,11 @@ tags:
 - name: simulation
   description: Simulate a schedule on the infrastructure
 paths:
-  /pathfinding:
+  /pathfinding/routes:
     post:
       tags:
       - pathfinding
-      summary: Find a path that passes through waypoints.
+      summary: Find a path in the route graph that passes through waypoints.
       operationId: pathfinding
       requestBody:
         description: Waypoints

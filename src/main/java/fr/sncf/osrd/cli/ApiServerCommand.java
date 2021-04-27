@@ -2,7 +2,8 @@ package fr.sncf.osrd.cli;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import fr.sncf.osrd.api.PathfindingEndpoint;
+import fr.sncf.osrd.api.PathfindingRoutesEndpoint;
+import fr.sncf.osrd.api.PathfindingTracksEndpoint;
 import fr.sncf.osrd.api.SimulationEndpoint;
 import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.Infra;
@@ -16,7 +17,6 @@ import org.takes.facets.fork.FkRegex;
 import org.takes.facets.fork.TkFork;
 import org.takes.http.Exit;
 import org.takes.http.FtBasic;
-import org.takes.rs.RsText;
 import org.takes.rs.RsWithStatus;
 import org.takes.tk.TkSlf4j;
 
@@ -48,7 +48,8 @@ public final class ApiServerCommand implements CliCommand {
             // the list of endpoints
             var routes = new TkFork(
                     new FkRegex("/health", ""),
-                    new FkRegex("/pathfinding", new PathfindingEndpoint(infra)),
+                    new FkRegex("/pathfinding/routes", new PathfindingRoutesEndpoint(infra)),
+                    new FkRegex("/pathfinding/tracks", new PathfindingTracksEndpoint(infra)),
                     new FkRegex("/simulation", new SimulationEndpoint(infra))
             );
 
