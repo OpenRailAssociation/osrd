@@ -48,10 +48,12 @@ public abstract class RSExpr<T extends RSValue> {
 
         @Override
         public RSBool evaluate(RSExprState<?> state) {
+            var result = RSBool.False;
+            // We cannot do lazy evaluation because of sides effects when evaluating delays
             for (var expr : expressions)
                 if (expr.evaluate(state).value)
-                    return RSBool.True;
-            return RSBool.False;
+                    result = RSBool.True;
+            return result;
         }
 
         @Override
@@ -67,10 +69,11 @@ public abstract class RSExpr<T extends RSValue> {
 
         @Override
         public RSBool evaluate(RSExprState<?> state) {
+            var result = RSBool.True;
             for (var expr : expressions)
                 if (!expr.evaluate(state).value)
-                    return RSBool.False;
-            return RSBool.True;
+                    result = RSBool.False;
+            return result;
         }
 
         @Override
@@ -297,10 +300,12 @@ public abstract class RSExpr<T extends RSValue> {
 
         @Override
         public T evaluate(RSExprState<?> state) {
+            var thenExprResult = thenExpr.evaluate(state);
+            var elseExprResult = elseExpr.evaluate(state);
             if (ifExpr.evaluate(state).value) {
-                return thenExpr.evaluate(state);
+                return thenExprResult;
             } else {
-                return elseExpr.evaluate(state);
+                return elseExprResult;
             }
         }
 
@@ -365,7 +370,13 @@ public abstract class RSExpr<T extends RSValue> {
         @Override
         public T evaluate(RSExprState<?> state) {
             var branchIndex = expr.evaluate(state).getEnumValue();
-            return branches[branchIndex].evaluate(state);
+            T result = null;
+            for (int i = 0; i < branches.length; i++) {
+                var branchResult = branches[i].evaluate(state);
+                if (i == branchIndex)
+                    result = branchResult;
+            }
+            return result;
         }
 
         @Override
