@@ -1,5 +1,7 @@
 package fr.sncf.osrd.railjson.schema.infra.railscript;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.RSExpr;
 import fr.sncf.osrd.infra.railscript.RSExprState;
@@ -19,8 +21,6 @@ import net.jqwik.api.Provide;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
-
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class RSHelpers {
 

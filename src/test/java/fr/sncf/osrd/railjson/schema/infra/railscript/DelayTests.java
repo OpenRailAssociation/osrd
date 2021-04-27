@@ -67,7 +67,7 @@ public class DelayTests {
         var delay1 = new RSExpr.Delay<>(time, expr, 0);
         var delay2 = new RSExpr.Delay<>(time, delay1, 1);
         var state = new RSExprState<>(delay2, 50, 50);
-        var delayHandler = new CustomDelayHandler(state, sim);
+        final var delayHandler = new CustomDelayHandler(state, sim);
 
         var initResult = state.evalInit(sim.infraState);
         assert !initResult.value;
@@ -77,7 +77,6 @@ public class DelayTests {
         makeAssertEvent(sim, 9, () -> !state.evalInputChange(sim.infraState, delayHandler).value);
         makeAssertEvent(sim, 12, () -> !state.evalInputChange(sim.infraState, delayHandler).value);
         makeAssertEvent(sim, 21, () -> state.evalInputChange(sim.infraState, delayHandler).value);
-
 
         run(sim, config);
     }
@@ -101,7 +100,7 @@ public class DelayTests {
         array[1] = shorterDelay;
         var and = new RSExpr.And(array);
         var state = new RSExprState<>(and, 50, 50);
-        var delayHandler = new CustomDelayHandler(state, sim);
+        final var delayHandler = new CustomDelayHandler(state, sim);
 
         assert !state.evalInit(sim.infraState).value;
         expr1.setValue(true);
@@ -110,7 +109,6 @@ public class DelayTests {
 
         makeAssertEvent(sim, 9, () -> !state.evalInputChange(sim.infraState, delayHandler).value);
         makeAssertEvent(sim, 11, () -> state.evalInputChange(sim.infraState, delayHandler).value);
-
 
         run(sim, config);
     }
@@ -129,7 +127,7 @@ public class DelayTests {
         @Override
         public void planDelayedUpdate(int index, RSValue value, double delay) {
             makeFunctionEvent(sim, sim.getTime() + delay, () ->
-                state.evalDelayUpdate(sim.infraState, this, index, value));
+                    state.evalDelayUpdate(sim.infraState, this, index, value));
         }
     }
 
