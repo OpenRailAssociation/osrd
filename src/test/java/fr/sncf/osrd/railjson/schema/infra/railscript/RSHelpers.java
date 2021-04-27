@@ -239,7 +239,7 @@ public class RSHelpers {
 
     /** Evaluates an expression */
     public static RSValue eval(RSExpr<?> rsExpr) {
-        var state = new RSExprState<>(rsExpr, 50, 50);
+        var state = new RSExprState<>(rsExpr, 200, 100);
         return state.evalInit(RJSGenerator.sim.infraState);
     }
 
