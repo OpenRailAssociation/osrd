@@ -16,6 +16,7 @@ class EntityNamespace(models.Model):
     A group of entities.
     This enables having multiple ecs instances running at the same time.
     """
+
     pass
 
 
@@ -66,11 +67,27 @@ class EntityMeta:
     def __repr__(self):
         return f"<EntityMeta name={self.name}>"
 
+    def component_names(self):
+        return (component._component_meta.name for component in self.components)
+
+
+# these attributes are forwarded from the entity declaration to the django Meta
+PASSTHROUGH_ATTR_NAMES = (
+    "verbose_name",
+    "verbose_name_plural",
+)
+
 
 class EntityBase(ModelBase):
     def __new__(cls, class_name, bases, attrs, entity_base_passthrough=False, **kwargs):
         if entity_base_passthrough:
             return super().__new__(cls, class_name, bases, attrs, **kwargs)
+
+        passthrough_attrs = {}
+        for attr_name in PASSTHROUGH_ATTR_NAMES:
+            attr = attrs.pop(attr_name, None)
+            if attr is not None:
+                passthrough_attrs[attr_name] = attr
 
         # parse all entity attributes
         entity_name = attrs.pop("name")
@@ -93,7 +110,9 @@ class EntityBase(ModelBase):
         # creating new entities must assign the correct type
         def dj_init(self, *args, **kwargs):
             assert "entity_type" not in kwargs
-            kwargs["entity_type"] = ContentType.objects.get_for_model(entity_type, for_concrete_model=False)
+            kwargs["entity_type"] = ContentType.objects.get_for_model(
+                entity_type, for_concrete_model=False
+            )
             super(entity_type, self).__init__(*args, **kwargs)
 
         # create the manager, but don't fill the entity_type field yet:
@@ -104,7 +123,7 @@ class EntityBase(ModelBase):
         dj_bases = (Entity,)
         dj_attrs = {
             "objects": entity_manager,
-            "Meta": type("Meta", (), {"proxy": True}),
+            "Meta": type("Meta", (), {**passthrough_attrs, "proxy": True}),
             "__init__": dj_init,
             "__module__": module,
             "__qualname__": qualname,
@@ -123,7 +142,9 @@ class Entity(models.Model, metaclass=EntityBase, entity_base_passthrough=True):
 
     namespace = models.ForeignKey(EntityNamespace, on_delete=models.CASCADE)
 
-    entity_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, editable=False)
+    entity_type = models.ForeignKey(
+        ContentType, on_delete=models.CASCADE, editable=False
+    )
 
     def __str__(self):
         return f"Entity(entity_id={self.entity_id}, entity_type={self.entity_type})"
@@ -133,7 +154,9 @@ class EntityManager(models.Manager):
     """A manager which only lists entities of a given type"""
 
     def get_queryset(self):
-        entity_type = ContentType.objects.get_for_model(self.model, for_concrete_model=False)
+        entity_type = ContentType.objects.get_for_model(
+            self.model, for_concrete_model=False
+        )
         return super().get_queryset().filter(entity_type=entity_type)
 
 

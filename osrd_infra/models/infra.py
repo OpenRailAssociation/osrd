@@ -108,6 +108,7 @@ class TrackSectionLinkComponent(Component):
 
 class TrackSectionEntity(Entity):
     name = "track_section"
+    verbose_name_plural = "track section entities"
     components = {
         TrackSectionComponent: 1,
         IdentifierComponent: 1,
@@ -116,6 +117,7 @@ class TrackSectionEntity(Entity):
 
 class SwitchEntity(Entity):
     name = "switch"
+    verbose_name_plural = "switch entities"
     components = {
         IdentifierComponent: 1,
         TrackSectionLinkComponent: ...,
@@ -124,6 +126,7 @@ class SwitchEntity(Entity):
 
 class TrackSectionLinkEntity(Entity):
     name = "track_section_link"
+    verbose_name_plural = "track section link entities"
     components = {
         IdentifierComponent: 1,
         TrackSectionLinkComponent: 1,
@@ -132,6 +135,7 @@ class TrackSectionLinkEntity(Entity):
 
 class OperationalPointEntity(Entity):
     name = "operational_point"
+    verbose_name_plural = "operational point entities"
     components = {
         IdentifierComponent: 1,
         TrackSectionRangeComponent: ...,
@@ -140,6 +144,7 @@ class OperationalPointEntity(Entity):
 
 class SignalEntity(Entity):
     name = "signal"
+    verbose_name_plural = "signal entities"
     components = {
         IdentifierComponent: 1,
         TrackSectionLocationComponent: ...,
