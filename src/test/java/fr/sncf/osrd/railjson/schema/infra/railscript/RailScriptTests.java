@@ -20,7 +20,7 @@ import net.jqwik.api.lifecycle.AfterTry;
 import java.util.*;
 
 
-public class RailScriptTests extends RSHelpers{
+public class RailScriptTests extends RSHelpers {
 
     @Property
     boolean testNot(@ForAll("booleanExpression") RJSRSExpr expr) {
@@ -146,6 +146,7 @@ public class RailScriptTests extends RSHelpers{
         var res = evalBool(rsEnum);
         return expected == res;
     }
+
     @AfterTry
     public void init() {
         RJSGenerator.init();
