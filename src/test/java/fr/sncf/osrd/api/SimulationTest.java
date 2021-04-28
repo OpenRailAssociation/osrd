@@ -1,27 +1,25 @@
 package fr.sncf.osrd.api;
 
-import fr.sncf.osrd.config.JsonConfig;
-import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.railjson.schema.RJSSimulation;
+import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import org.junit.jupiter.api.Test;
 import org.takes.rq.RqFake;
 import org.takes.rs.RsPrint;
 
-import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class SimulationTest {
+public class SimulationTest extends ApiTest {
     @Test
     public void simple() throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
-        var infraPath = classLoader.getResource("tiny_infra/infra.json");
-        assert infraPath != null;
-        var infra = Infra.parseFromFile(JsonConfig.InfraType.UNKNOWN, infraPath.getFile());
         var simulationPath = classLoader.getResource("tiny_infra/simulation.json");
         assert simulationPath != null;
 
-        var requestBody = Files.readString(Paths.get(simulationPath.getPath()));
+        var simulation = MoshiUtils.deserialize(RJSSimulation.adapter, Paths.get(simulationPath.toURI()));
+        var requestBody = SimulationEndpoint.adapterRequest.toJson(
+                new SimulationEndpoint.SimulationRequest(simulation, "tiny_infra/infra.json"));
         var result = new RsPrint(
-                new SimulationEndpoint(infra).act(new RqFake("POST", "/simulation", requestBody))
+                new SimulationEndpoint(infraHandlerMock).act(new RqFake("POST", "/simulation", requestBody))
         ).printBody();
 
         var simResultChanges =  SimulationEndpoint.adapterResult.fromJson(result);
