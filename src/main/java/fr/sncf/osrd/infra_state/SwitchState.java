@@ -1,5 +1,7 @@
 package fr.sncf.osrd.infra_state;
 
+import static fr.sncf.osrd.infra.trackgraph.SwitchPosition.*;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.railscript.value.RSMatchable;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
@@ -21,7 +23,7 @@ public final class SwitchState implements RSMatchable {
 
     public SwitchState(Switch switchRef) {
         this.switchRef = switchRef;
-        this.position = SwitchPosition.LEFT;
+        this.position = LEFT;
     }
 
     public SwitchPosition getPosition() {
@@ -32,9 +34,14 @@ public final class SwitchState implements RSMatchable {
      * Return currently active branch
      */
     public TrackSection getBranch() {
-        if (position == SwitchPosition.LEFT)
-            return switchRef.leftTrackSection;
-        return switchRef.rightTrackSection;
+        switch (position) {
+            case LEFT:
+                return switchRef.leftTrackSection;
+            case RIGHT:
+                return switchRef.rightTrackSection;
+            default:
+                return null;
+        }
     }
 
     /**
@@ -64,7 +71,7 @@ public final class SwitchState implements RSMatchable {
         if (this.position != position) {
             var delay = switchRef.positionChangeDelay;
             SwitchMoveEvent.plan(sim, sim.getTime() + delay, position, this, requestingRoute);
-            setPosition(sim, SwitchPosition.MOVING);
+            setPosition(sim, MOVING);
         }
     }
 
