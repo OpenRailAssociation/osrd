@@ -121,7 +121,7 @@ public class RouteStateTest {
     }
 
     @Test
-    public void testReserveStatusChanges() throws InvalidInfraException {
+    public void testReserveStatusChanges() throws InvalidInfraException, SimulationError {
         var infra = getBaseInfra();
         assert infra != null;
         var config = getBaseConfig();

@@ -131,7 +131,7 @@ public final class RouteState implements RSMatchable {
     /** Reserve a route and his tvd sections *when creating a train*.
      * We set the switches position without waiting
      * */
-    public void initialReserve(Simulation sim) {
+    public void initialReserve(Simulation sim) throws SimulationError {
         // Set the switches, no delay and waiting this time
         for (var switchPos : route.switchesPosition.entrySet()) {
             var switchState = sim.infraState.getSwitchState(switchPos.getKey().switchIndex);
@@ -141,7 +141,7 @@ public final class RouteState implements RSMatchable {
     }
 
     /** Should be called when a switch is done moving and is in the position we requested */
-    public void onSwitchMove(Simulation sim) {
+    public void onSwitchMove(Simulation sim) throws SimulationError {
         movingSwitchesLeft--;
         if (movingSwitchesLeft == 0) {
             var change = new RouteStatusChange(sim, this, RouteStatus.RESERVED);
