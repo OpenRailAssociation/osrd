@@ -2,6 +2,7 @@ package fr.sncf.osrd.cli;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import fr.sncf.osrd.api.InfraHandler;
 import fr.sncf.osrd.api.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.PathfindingTracksEndpoint;
 import fr.sncf.osrd.api.SimulationEndpoint;
@@ -32,25 +33,17 @@ public final class ApiServerCommand implements CliCommand {
     )
     private int port = 8000;
 
-    @Parameter(
-            names = { "-i", "--input" },
-            description = "The infra input file (supports RailML and RailJSON)",
-            required = true
-    )
-    private String inputPath;
+    private InfraHandler infraHandler = new InfraHandler();
 
     /** Run the Api Server */
     public int run() {
         try {
-            logger.info("parsing the input infrastructure");
-            var infra = Infra.parseFromFile(JsonConfig.InfraType.UNKNOWN, inputPath);
-
             // the list of endpoints
             var routes = new TkFork(
                     new FkRegex("/health", ""),
-                    new FkRegex("/pathfinding/routes", new PathfindingRoutesEndpoint(infra)),
-                    new FkRegex("/pathfinding/tracks", new PathfindingTracksEndpoint(infra)),
-                    new FkRegex("/simulation", new SimulationEndpoint(infra))
+                    new FkRegex("/pathfinding/routes", new PathfindingRoutesEndpoint(infraHandler)),
+                    new FkRegex("/pathfinding/tracks", new PathfindingTracksEndpoint(infraHandler)),
+                    new FkRegex("/simulation", new SimulationEndpoint(infraHandler))
             );
 
             // the list of pages which should be displayed on error
@@ -65,9 +58,6 @@ public final class ApiServerCommand implements CliCommand {
             return 0;
         } catch (IOException ioException) {
             logger.error("IO error", ioException);
-            return 1;
-        } catch (InvalidInfraException infraException) {
-            logger.error("Infra exception", infraException);
             return 1;
         }
     }

@@ -14,6 +14,8 @@ import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.simulation.Change;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -36,7 +38,14 @@ import java.util.HashMap;
 import java.util.List;
 
 public class SimulationEndpoint implements Take {
-    private final Infra infra;
+    private final InfraHandler infraHandler;
+
+    public static final JsonAdapter<SimulationRequest> adapterRequest = new Moshi
+            .Builder()
+            .add(RJSRollingResistance.adapter)
+            .add(RJSTrainPhase.adapter)
+            .build()
+            .adapter(SimulationRequest.class);
 
     public static final JsonAdapter<SimulationResultChange[]> adapterResult = new Moshi
             .Builder()
@@ -44,8 +53,8 @@ public class SimulationEndpoint implements Take {
             .build()
             .adapter(SimulationResultChange[].class);
 
-    public SimulationEndpoint(Infra infra) {
-        this.infra = infra;
+    public SimulationEndpoint(InfraHandler infraHandler) {
+        this.infraHandler = infraHandler;
     }
 
     @Override
@@ -54,10 +63,11 @@ public class SimulationEndpoint implements Take {
         buffer.write(req.body().readAllBytes());
 
         // Parse request input
-        var rjsSimulation = RJSSimulation.adapter.fromJson(buffer);
-        if (rjsSimulation == null)
+        var request = adapterRequest.fromJson(buffer);
+        if (request == null)
             return new RsWithStatus(new RsText("missing request body"), 400);
-        var trainSchedules = RJSSimulationParser.parse(infra, rjsSimulation);
+        var infra = infraHandler.load(request.infra);
+        var trainSchedules = RJSSimulationParser.parse(infra, request.simulation);
 
         // create the simulation and his changelog
         var changeConsumers = new ArrayList<ChangeConsumer>();
@@ -77,6 +87,21 @@ public class SimulationEndpoint implements Take {
         var simulationResponse = resultLog.getResults();
         return new RsJson(new RsWithBody(adapterResult.toJson(simulationResponse)));
     }
+
+    public static final class SimulationRequest {
+        /**
+         * A list of points the train must to through
+         * [[starting_point_a, starting_point_b], [waypoint], [end_a, end_b]]
+         */
+        public final RJSSimulation simulation;
+        public final String infra;
+
+        public SimulationRequest(RJSSimulation simulation, String infra) {
+            this.simulation = simulation;
+            this.infra = infra;
+        }
+    }
+
 
     private static final class ArrayResultLog extends ChangeConsumer {
         private final ArrayList<SimulationResultChange> changes = new ArrayList<>();

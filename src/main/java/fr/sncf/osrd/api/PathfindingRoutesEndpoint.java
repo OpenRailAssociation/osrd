@@ -4,7 +4,6 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteLocation;
 import fr.sncf.osrd.train.TrackSectionRange;
@@ -30,8 +29,8 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             .failOnUnknown();
 
 
-    public PathfindingRoutesEndpoint(Infra infra) {
-        super(infra);
+    public PathfindingRoutesEndpoint(InfraHandler infraHandler) {
+        super(infraHandler);
     }
 
     @Override
@@ -43,6 +42,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             return new RsWithStatus(new RsText("missing request body"), 400);
 
         var reqWaypoints = jsonRequest.waypoints;
+        var infra = infraHandler.load(jsonRequest.infra);
 
         // parse the waypoints
         @SuppressWarnings({"unchecked", "rawtypes"})
