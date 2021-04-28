@@ -37,7 +37,7 @@ public class TVDSectionStateTest {
     }
 
     @Test
-    public void testOccupy() throws InvalidInfraException {
+    public void testOccupy() throws InvalidInfraException, SimulationError {
         var infra = getBaseInfra();
         assert infra != null;
         var config = getBaseConfig();

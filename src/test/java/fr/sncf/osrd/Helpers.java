@@ -202,7 +202,7 @@ public class Helpers {
 
     /** Generates an event that runs an assertion at a certain point in the simulation */
     public static void makeAssertEvent(Simulation sim, double time, Supplier<Boolean> predicate) {
-        Runnable func = () -> assertTrue(predicate.get());
+        Procedure func = () -> assertTrue(predicate.get());
         makeFunctionEvent(sim, time, func);
     }
 
@@ -218,4 +218,8 @@ public class Helpers {
         TestEvent.plan(sim, time, null, consumer);
     }
 
+    /** Simple class similar to java Runnable, but with exceptions */
+    public interface Procedure {
+        void run() throws Exception;
+    }
 }
