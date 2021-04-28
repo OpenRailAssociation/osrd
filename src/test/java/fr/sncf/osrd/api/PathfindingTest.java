@@ -1,30 +1,16 @@
 package fr.sncf.osrd.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-import fr.sncf.osrd.config.JsonConfig;
-import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
 import org.takes.rq.RqFake;
 import org.takes.rs.RsPrint;
 
-import java.io.IOException;
-
-public class PathfindingTest {
-    private Infra getInfra(String infra) throws InvalidInfraException, IOException {
-        ClassLoader classLoader = getClass().getClassLoader();
-        var infraPath = classLoader.getResource(infra);
-        assert infraPath != null;
-        return Infra.parseFromFile(JsonConfig.InfraType.UNKNOWN, infraPath.getFile());
-    }
+public class PathfindingTest extends ApiTest{
 
     @Test
     public void simpleRoutes() throws Exception {
-        var infra = getInfra("tiny_infra/infra.json");
-
         var waypointStart = new PathfindingEndpoint.PathfindingWaypoint(
                 "ne.micro.foo_b",
                 100,
@@ -41,10 +27,10 @@ public class PathfindingTest {
         waypoints[0] = waypointsStart;
         waypoints[1] = waypointsEnd;
         var requestBody = PathfindingEndpoint.adapterRequest.toJson(
-                new PathfindingEndpoint.PathfindingRequest(waypoints));
+                new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json"));
 
         var result = new RsPrint(
-                new PathfindingRoutesEndpoint(infra).act(new RqFake("POST", "/pathfinding/routes", requestBody))
+                new PathfindingRoutesEndpoint(infraHandlerMock).act(new RqFake("POST", "/pathfinding/routes", requestBody))
         ).printBody();
 
         var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
@@ -56,8 +42,6 @@ public class PathfindingTest {
 
     @Test
     public void simpleTracks() throws Exception {
-        var infra = getInfra("tiny_infra/infra.json");
-
         var waypointStart = new PathfindingEndpoint.PathfindingWaypoint(
                 "ne.micro.foo_b",
                 100,
@@ -74,10 +58,10 @@ public class PathfindingTest {
         waypoints[0] = waypointsStart;
         waypoints[1] = waypointsEnd;
         var requestBody = PathfindingRoutesEndpoint.adapterRequest.toJson(
-                new PathfindingRoutesEndpoint.PathfindingRequest(waypoints));
+                new PathfindingRoutesEndpoint.PathfindingRequest(waypoints,"tiny_infra/infra.json"));
 
         var result = new RsPrint(
-                new PathfindingTracksEndpoint(infra).act(new RqFake("POST", "/pathfinding/tracks", requestBody))
+                new PathfindingTracksEndpoint(infraHandlerMock).act(new RqFake("POST", "/pathfinding/tracks", requestBody))
         ).printBody();
 
         var response = PathfindingTracksEndpoint.adapterResult.fromJson(result);

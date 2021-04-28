@@ -50,6 +50,9 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7'
     // jqwik for property based testing
     testImplementation "net.jqwik:jqwik:1.5.1"
+    // mockito for mocking
+    testImplementation 'org.mockito:mockito-inline:3.9.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:3.9.0'
 
     // for linter annotations
     compileOnly 'net.jcip:jcip-annotations:1.0'
