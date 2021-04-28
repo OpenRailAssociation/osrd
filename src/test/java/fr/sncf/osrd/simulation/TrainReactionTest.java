@@ -34,7 +34,7 @@ public class TrainReactionTest {
         infra.switches.iterator().next().positionChangeDelay = 42;
         var functions = infra.scriptFunctions;
         var aspect = new RJSRSExpr.AspectSet.AspectSetMember(
-                new ID<>(infra.aspects.iterator().next().id),
+                new ID<>("GREEN"),
                 new RJSRSExpr.True());
         for (var f : functions) {
             f.body = new RJSRSExpr.AspectSet(new RJSRSExpr.AspectSet.AspectSetMember[]{aspect});
@@ -59,9 +59,8 @@ public class TrainReactionTest {
         var infra = getBaseInfra();
         assert infra != null;
         var functions = infra.scriptFunctions;
-        var aspects = new ArrayList<RJSAspect>(infra.aspects);
         var aspect = new RJSRSExpr.AspectSet.AspectSetMember(
-                new ID<>(aspects.get(2).id),
+                new ID<>("RED"),
                 new RJSRSExpr.True());
         for (var f : functions) {
             f.body = new RJSRSExpr.AspectSet(new RJSRSExpr.AspectSet.AspectSetMember[]{aspect});
