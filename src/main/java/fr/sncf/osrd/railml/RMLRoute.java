@@ -62,7 +62,8 @@ public class RMLRoute {
             var rmlRouteWaypoints = computeRouteWaypoints(entryWaypoint, exitWaypoint, rmlRouteGraph);
             var routeWaypoints = rmlToRjsWaypoints(rmlRouteWaypoints, rjsWaypointsMap);
 
-            res.add(new RJSRoute(id, tvdSections, switchesPosition, routeWaypoints, releaseGroups));
+            res.add(new RJSRoute(id, tvdSections, switchesPosition, routeWaypoints, releaseGroups,
+                    null, new ArrayList<>()));
         }
         return res;
     }

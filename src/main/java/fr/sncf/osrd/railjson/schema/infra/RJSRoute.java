@@ -4,6 +4,7 @@ import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 
 import java.util.Map;
 import java.util.List;
@@ -26,19 +27,31 @@ public class RJSRoute implements Identified {
     @Json(name = "release_groups")
     public List<Set<ID<RJSTVDSection>>> releaseGroups;
 
+    /** Signal placed just before the route, may be empty if no entry signal */
+    @Json(name = "entry_signal")
+    public ID<RJSSignal> entrySignal;
+
+    /** List of the signals placed on the route, does not include entrySignal */
+    @Json(name = "signals")
+    public List<ID<RJSSignal>> signals;
+
     /** Routes are described as a list of waypoints, TVD Sections and Switches in specific positions */
     public RJSRoute(
             String id,
             List<ID<RJSTVDSection>> tvdSections,
             Map<ID<RJSSwitch>, RJSSwitch.Position> switchesPosition,
             List<ID<RJSRouteWaypoint>> waypoints,
-            List<Set<ID<RJSTVDSection>>> releaseGroups
+            List<Set<ID<RJSTVDSection>>> releaseGroups,
+            ID<RJSSignal> entrySignal,
+            List<ID<RJSSignal>> signals
     ) {
         this.id = id;
         this.tvdSections = tvdSections;
         this.switchesPosition = switchesPosition;
         this.waypoints = waypoints;
         this.releaseGroups = releaseGroups;
+        this.entrySignal = entrySignal;
+        this.signals = signals;
     }
 
     @Override
