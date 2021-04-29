@@ -6,13 +6,23 @@ from django.conf import settings
 
 from service_core.internal_views import HealthView
 
+
+root_path = ""
+if settings.ROOT_PATH:
+    root_path = f"{settings.ROOT_PATH}/"
+
+
+def prefix_path(path):
+    return root_path + path
+
+
 service_urlpatterns = [
     path('', include('osrd.urls')),
-    path('infra/', include('infra.urls')),
+    path('', include('osrd_infra.urls')),
 ]
 
 urlpatterns = [
-    path('admin/' if not settings.WORKSPACE else f'{settings.ROOT_PATH}/admin/', admin.site.urls),
+    path('admin/' if not settings.WORKSPACE else prefix_path('admin/'), admin.site.urls),
     path('health/', HealthView.as_view()),
-    path(f'{settings.ROOT_PATH}/', include(service_urlpatterns)),
+    path(root_path, include(service_urlpatterns)),
 ]

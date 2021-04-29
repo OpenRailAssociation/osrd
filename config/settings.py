@@ -28,6 +28,9 @@ DEBUG = False
 ALLOWED_HOSTS = []
 
 
+OSRD_INFRA_SRID = 3857
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -38,13 +41,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
 
     # vendor
     'rest_framework',
+    'rest_framework_gis',
 
     # osrd apps
-    'infra.apps.InfraConfig',
     'osrd.apps.MainServiceAppConfig',
+    'osrd_infra.apps.OsrdInfraConfig',
 ]
 
 MIDDLEWARE = [
