@@ -10,9 +10,7 @@ import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSOperationalPointPart;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSectionPart;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class RJSTrackSection implements Identified {
     public String id;

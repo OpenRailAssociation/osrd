@@ -3,7 +3,6 @@ package fr.sncf.osrd.railjson.schema.infra;
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspect;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr;
