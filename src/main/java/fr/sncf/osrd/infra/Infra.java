@@ -230,7 +230,10 @@ public final class Infra {
     }
 
     /** Load an infra from a given RailML or RailJSON file */
-    @SuppressFBWarnings({"RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"})
+    @SuppressFBWarnings(
+            value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+            justification = "that's a spotbugs bug :)"
+    )
     public static Infra parseFromFile(
             JsonConfig.InfraType infraType,
             String path

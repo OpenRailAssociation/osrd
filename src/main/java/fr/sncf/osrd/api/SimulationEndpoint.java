@@ -7,6 +7,7 @@ import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.infra_state.SignalState;
@@ -66,7 +67,16 @@ public class SimulationEndpoint implements Take {
         var request = adapterRequest.fromJson(buffer);
         if (request == null)
             return new RsWithStatus(new RsText("missing request body"), 400);
-        var infra = infraHandler.load(request.infra);
+
+        // load infra
+        Infra infra;
+        try {
+            infra = infraHandler.load(request.infra);
+        } catch (InvalidInfraException | IOException e) {
+            return new RsWithStatus(new RsText(
+                    String.format("Error loading infrastructure '%s'%n%s", request.infra, e.getMessage())), 400);
+        }
+
         var trainSchedules = RJSSimulationParser.parse(infra, request.simulation);
 
         // create the simulation and his changelog

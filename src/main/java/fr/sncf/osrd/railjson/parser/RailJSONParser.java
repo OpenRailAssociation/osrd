@@ -117,6 +117,8 @@ public class RailJSONParser {
             infraTrackSections.put(trackSection.id, infraTrackSection);
 
             // Parse operational points
+            if (trackSection.operationalPoints == null)
+                trackSection.operationalPoints = new ArrayList<>();
             for (var rjsOp : trackSection.operationalPoints) {
                 var op = trackGraph.operationalPoints.get(rjsOp.ref.id);
                 // add the reference from the OperationalPoint to the TrackSection,
@@ -125,6 +127,8 @@ public class RailJSONParser {
             }
 
             // Parse speed limits
+            if (trackSection.speedSections == null)
+                trackSection.speedSections = new ArrayList<>();
             for (var rjsSpeedLimits : trackSection.speedSections) {
                 var speedSection = speedSections.get(rjsSpeedLimits.ref.id);
                 var rangeSpeedLimit = new RangeValue<>(rjsSpeedLimits.begin, rjsSpeedLimits.end, speedSection);
@@ -136,6 +140,8 @@ public class RailJSONParser {
 
             // Parse waypoints
             var waypointsBuilder = infraTrackSection.waypoints.builder();
+            if (trackSection.routeWaypoints == null)
+                trackSection.routeWaypoints = new ArrayList<>();
             for (var rjsRouteWaypoint : trackSection.routeWaypoints) {
                 if (rjsRouteWaypoint.getClass() == RJSTrainDetector.class) {
                     var detector = new Detector(waypointIndex, rjsRouteWaypoint.id);
@@ -152,6 +158,8 @@ public class RailJSONParser {
 
             // Parse signals
             var signalsBuilder = infraTrackSection.signals.builder();
+            if (trackSection.signals == null)
+                trackSection.signals = new ArrayList<>();
             for (var rjsSignal : trackSection.signals) {
                 var expr = RailScriptExprParser.parseStatefulSignalExpr(aspectsMap, scriptFunctions, rjsSignal.expr);
                 var signal = new Signal(

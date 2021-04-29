@@ -4,6 +4,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.utils.graph.BiDijkstra;
 import fr.sncf.osrd.utils.graph.DistCostFunction;
@@ -12,6 +13,7 @@ import fr.sncf.osrd.utils.graph.path.BasicDirPathNode;
 import fr.sncf.osrd.utils.graph.path.FullPathArray;
 import org.takes.Request;
 import org.takes.Response;
+import org.takes.rq.RqPrint;
 import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
@@ -34,14 +36,21 @@ public class PathfindingTracksEndpoint extends PathfindingEndpoint {
 
     @Override
     public Response act(Request req) throws IOException {
-        var buffer = new okio.Buffer();
-        buffer.write(req.body().readAllBytes());
-        var jsonRequest = adapterRequest.fromJson(buffer);
-        if (jsonRequest == null)
-            return new RsWithStatus(new RsText("missing request body"), 400);
+        var body = new RqPrint(req).printBody();
+        var request = adapterRequest.fromJson(body);
+        if (request == null)
+            return new RsWithStatus(new RsText("Missing request body"), 400);
 
-        var reqWaypoints = jsonRequest.waypoints;
-        var infra = infraHandler.load(jsonRequest.infra);
+        var reqWaypoints = request.waypoints;
+
+        // load infra
+        Infra infra;
+        try {
+            infra = infraHandler.load(request.infra);
+        } catch (InvalidInfraException | IOException e) {
+            return new RsWithStatus(new RsText(
+                    String.format("Error loading infrastructure '%s'%n%s", request.infra, e.getMessage())), 400);
+        }
 
         // parse the waypoints
         @SuppressWarnings({"unchecked", "rawtypes"})
