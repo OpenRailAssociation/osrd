@@ -11,7 +11,7 @@ import java.nio.file.Path;
 public class MoshiUtils {
     /** Serialize the given object to some file */
     @SuppressFBWarnings(
-            value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
             justification = "that's a spotbugs bug :)"
     )
     public static <T> void serialize(JsonAdapter<T> adapter, T obj, Path outputPath) throws IOException {
@@ -25,7 +25,7 @@ public class MoshiUtils {
 
     /** Deserialize from some file */
     @SuppressFBWarnings(
-            value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
             justification = "that's a spotbugs bug :)"
     )
     public static <T> T deserialize(JsonAdapter<T> adapter, Path inputPath) throws IOException {

@@ -382,7 +382,7 @@ public class ChangeSerializer {
      * @throws IOException {@inheritDoc}
      */
     @SuppressFBWarnings(
-            value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
             justification = "that's a spotbugs bug :)"
     )
     public static void serializeChangeLog(ChangeLog changeLog, Path file) throws IOException {

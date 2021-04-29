@@ -7,8 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.takes.rq.RqFake;
 import org.takes.rs.RsPrint;
 
-public class PathfindingTest extends ApiTest{
-
+public class PathfindingTest extends ApiTest {
     @Test
     public void simpleRoutes() throws Exception {
         var waypointStart = new PathfindingEndpoint.PathfindingWaypoint(
@@ -30,7 +29,8 @@ public class PathfindingTest extends ApiTest{
                 new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json"));
 
         var result = new RsPrint(
-                new PathfindingRoutesEndpoint(infraHandlerMock).act(new RqFake("POST", "/pathfinding/routes", requestBody))
+                new PathfindingRoutesEndpoint(infraHandlerMock).act(
+                        new RqFake("POST", "/pathfinding/routes", requestBody))
         ).printBody();
 
         var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
@@ -58,10 +58,11 @@ public class PathfindingTest extends ApiTest{
         waypoints[0] = waypointsStart;
         waypoints[1] = waypointsEnd;
         var requestBody = PathfindingRoutesEndpoint.adapterRequest.toJson(
-                new PathfindingRoutesEndpoint.PathfindingRequest(waypoints,"tiny_infra/infra.json"));
+                new PathfindingRoutesEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json"));
 
         var result = new RsPrint(
-                new PathfindingTracksEndpoint(infraHandlerMock).act(new RqFake("POST", "/pathfinding/tracks", requestBody))
+                new PathfindingTracksEndpoint(infraHandlerMock).act(
+                        new RqFake("POST", "/pathfinding/tracks", requestBody))
         ).printBody();
 
         var response = PathfindingTracksEndpoint.adapterResult.fromJson(result);

@@ -6,9 +6,6 @@ import fr.sncf.osrd.api.InfraHandler;
 import fr.sncf.osrd.api.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.PathfindingTracksEndpoint;
 import fr.sncf.osrd.api.SimulationEndpoint;
-import fr.sncf.osrd.config.JsonConfig;
-import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.InvalidInfraException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.takes.facets.fallback.FbChain;
@@ -33,10 +30,30 @@ public final class ApiServerCommand implements CliCommand {
     )
     private int port = 8000;
 
-    private InfraHandler infraHandler = new InfraHandler();
+    @Parameter(
+            names = {"--url" },
+            description = "The base URL used to query infrastructures"
+    )
+    private String middlewareBaseUrl;
+
+    private String getMiddlewareBaseUrl() {
+        if (middlewareBaseUrl == null)
+            middlewareBaseUrl = System.getenv("MIDDLEWARE_BASE_URL");
+
+        if (middlewareBaseUrl.isEmpty())
+            throw new RuntimeException(
+                "No middleware base url specified. Use '--url' option or 'MIDDLEWARE_BASE_URL' environment variable");
+
+        if (!middlewareBaseUrl.endsWith("/"))
+            return middlewareBaseUrl + "/";
+        return middlewareBaseUrl;
+    }
+
 
     /** Run the Api Server */
     public int run() {
+        var infraHandler = new InfraHandler(getMiddlewareBaseUrl());
+
         try {
             // the list of endpoints
             var routes = new TkFork(

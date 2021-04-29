@@ -4,6 +4,8 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteLocation;
 import fr.sncf.osrd.train.TrackSectionRange;
@@ -37,12 +39,20 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     public Response act(Request req) throws IOException {
         var buffer = new okio.Buffer();
         buffer.write(req.body().readAllBytes());
-        var jsonRequest = adapterRequest.fromJson(buffer);
-        if (jsonRequest == null)
+        var request = adapterRequest.fromJson(buffer);
+        if (request == null)
             return new RsWithStatus(new RsText("missing request body"), 400);
 
-        var reqWaypoints = jsonRequest.waypoints;
-        var infra = infraHandler.load(jsonRequest.infra);
+        var reqWaypoints = request.waypoints;
+
+        // load infra
+        Infra infra;
+        try {
+            infra = infraHandler.load(request.infra);
+        } catch (InvalidInfraException | IOException e) {
+            return new RsWithStatus(new RsText(
+                    String.format("Error loading infrastructure '%s'%n%s", request.infra, e.getMessage())), 400);
+        }
 
         // parse the waypoints
         @SuppressWarnings({"unchecked", "rawtypes"})
