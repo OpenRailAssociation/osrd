@@ -4,6 +4,7 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.ID;
+import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspect;
@@ -104,8 +105,10 @@ public abstract class RJSRSExpr {
                     .withSubtype(If.class, "condition")
                     .withSubtype(Call.class, "call")
                     .withSubtype(EnumMatch.class, "match")
-                    // function-specific
+                    .withSubtype(OptionalMatch.class, "optional_match")
+                    // references
                     .withSubtype(ArgumentRef.class, "argument_ref")
+                    .withSubtype(OptionalMatchRef.class, "optional_match_ref")
                     // primitives
                     .withSubtype(Delay.class, "delay")
                     .withSubtype(SignalAspectCheck.class, "signal_has_aspect")
@@ -247,9 +250,38 @@ public abstract class RJSRSExpr {
         }
     }
 
+    public static final class OptionalMatch extends RJSRSExpr implements Identified {
+        public RJSRSExpr expr;
+
+        @Json(name="case_none")
+        public RJSRSExpr caseNone;
+
+        @Json(name="case_some")
+        public RJSRSExpr caseSome;
+
+        public String name;
+
+        public OptionalMatch(
+                RJSRSExpr expr,
+                RJSRSExpr caseNone,
+                RJSRSExpr caseSome,
+                String name
+        ) {
+            this.expr = expr;
+            this.caseNone = caseNone;
+            this.caseSome = caseSome;
+            this.name = name;
+        }
+
+        @Override
+        public String getID() {
+            return name;
+        }
+    }
+
     // endregion
 
-    // region FUNCTION_SPECIFIC
+    // region REFERENCES
 
     public static final class ArgumentRef extends RJSRSExpr {
         @Json(name = "argument_name")
@@ -257,6 +289,15 @@ public abstract class RJSRSExpr {
 
         public ArgumentRef(String argumentName) {
             this.argumentName = argumentName;
+        }
+    }
+
+    public static final class OptionalMatchRef extends RJSRSExpr {
+        @Json(name="optional_match_name")
+        public ID<OptionalMatch> optionalMatchName;
+
+        public OptionalMatchRef(ID<OptionalMatch> optionalMatchName) {
+            this.optionalMatchName = optionalMatchName;
         }
     }
 
