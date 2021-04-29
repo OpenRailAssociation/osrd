@@ -2,6 +2,7 @@ package fr.sncf.osrd.infra.routegraph;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.TVDSection;
+import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
@@ -14,6 +15,7 @@ import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 public class RouteGraph extends DirNGraph<Route, Waypoint> {
     public final HashMap<String, Route> routeMap = new HashMap<>();
@@ -48,8 +50,9 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 List<Waypoint> waypoints,
                 SortedArraySet<TVDSection> tvdSections,
                 List<SortedArraySet<TVDSection>> releaseGroups,
-                HashMap<Switch, SwitchPosition> switchesPosition
-        ) throws InvalidInfraException {
+                HashMap<Switch, SwitchPosition> switchesPosition,
+                Signal entrySignal,
+                List<Signal> signals) throws InvalidInfraException {
             if (waypoints.size() < 2) {
                 throw new InvalidInfraException(String.format("Route '%s' doesn't contains enough waypoints", id));
             }
@@ -101,8 +104,9 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                     releaseGroups,
                     tvdSectionsPath,
                     tvdSectionsPathDirection,
-                    switchesPosition
-            );
+                    switchesPosition,
+                    entrySignal,
+                    signals);
 
             routeGraph.routeMap.put(id, route);
 
