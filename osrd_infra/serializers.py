@@ -16,6 +16,7 @@ from osrd_infra.models import (
     TrackSectionComponent,
     TrackSectionLinkComponent,
     TrackSectionEntity,
+    TrackSectionLinkEntity,
     SwitchEntity,
     OperationalPointEntity,
     SignalEntity,
@@ -36,7 +37,7 @@ class ComponentSerializer(ModelSerializer):
         cls._registry[cls.Meta.model] = cls
         super().__init_subclass__(**kwargs)
 
-    def __init__(self, *args, omit_entity_id=False, omit_component_id=False, **kwargs):
+    def __init__(self, *args, omit_entity_id=False, **kwargs):
         # Instantiate the superclass normally
         super().__init__(*args, **kwargs)
 
@@ -45,9 +46,6 @@ class ComponentSerializer(ModelSerializer):
 
         if omit_entity_id:
             self.fields.pop("entity")
-
-        if omit_component_id:
-            self.fields.pop("component_id")
 
 
 class EntitySerializerBase(type(ModelSerializer)):
@@ -64,21 +62,22 @@ class EntitySerializerBase(type(ModelSerializer)):
         components = entity_meta.components
 
         if not hasattr(meta, "fields"):
-            meta.fields = ["entity_id"] + [
-                comp._component_meta.name for comp in components
-            ]
+            field_names = ["entity_id"]
+            field_names.extend(entity_meta.component_related_names())
+            meta.fields = field_names
 
         # create serializers for all components
-        for comp, arity in components.items():
-            comp_name = comp._component_meta.name
+        for comp in components:
+            comp_meta = comp._component_meta
+            comp_rel_name = comp_meta.related_name
             # skip components which already have a serializer
-            if comp_name in attrs:
+            if comp_rel_name in attrs:
                 continue
             field_kwargs = {"read_only": True, "omit_entity_id": True}
-            if arity.is_many:
+            if not comp_meta.unique:
                 field_kwargs["many"] = True
             # find the component serializer in the global registry
-            attrs[comp_name] = ComponentSerializer._registry[comp](**field_kwargs)
+            attrs[comp_rel_name] = ComponentSerializer._registry[comp](**field_kwargs)
 
         # call the model serializer superclass
         return super().__new__(cls, name, bases, attrs)
@@ -137,6 +136,11 @@ class TrackSectionLinkComponentSerializer(ComponentSerializer):
 class TrackSectionSerializer(EntitySerializer):
     class Meta:
         model = TrackSectionEntity
+
+
+class TrackSectionLinkSerializer(EntitySerializer):
+    class Meta:
+        model = TrackSectionLinkEntity
 
 
 class SwitchSerializer(EntitySerializer):

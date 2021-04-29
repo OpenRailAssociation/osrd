@@ -1,7 +1,6 @@
 from django.contrib.gis.db import models
 from osrd_infra.models.ecs import (
     Component,
-    UniqueComponent,
     Entity,
     EntityManager,
     EntityNamespace,
@@ -46,8 +45,8 @@ class TrackSectionLocationComponent(Component):
     )
     offset = models.FloatField()
 
-    class Meta:
-        component_name = "point_location"
+    class ComponentMeta:
+        name = "point_location"
 
 
 class TrackSectionRangeComponent(Component):
@@ -59,8 +58,8 @@ class TrackSectionRangeComponent(Component):
     start_offset = models.FloatField()
     end_offset = models.FloatField()
 
-    class Meta:
-        component_name = "range_location"
+    class ComponentMeta:
+        name = "range_location"
 
 
 class IdentifierComponent(Component):
@@ -71,22 +70,25 @@ class IdentifierComponent(Component):
         return f"<IdentifierComponent database={self.database}, name={self.name}>"
 
     class Meta:
-        component_name = "identifier"
         constraints = [
             models.UniqueConstraint(
                 fields=["database", "name"], name="identifier_unique_in_database"
             )
         ]
 
+    class ComponentMeta:
+        name = "identifier"
 
-class TrackSectionComponent(UniqueComponent):
+
+class TrackSectionComponent(Component):
     path = models.LineStringField(srid=settings.OSRD_INFRA_SRID)
 
     # the length of the track section, in meters
     length = models.FloatField()
 
-    class Meta:
-        component_name = "track_section"
+    class ComponentMeta:
+        name = "track_section"
+        unique = True
 
 
 class TrackSectionLinkComponent(Component):
@@ -102,50 +104,50 @@ class TrackSectionLinkComponent(Component):
     )
     end_endpoint = EndpointField()
 
-    class Meta:
-        component_name = "track_section_link"
+    class ComponentMeta:
+        name = "track_section_link"
 
 
 class TrackSectionEntity(Entity):
     name = "track_section"
     verbose_name_plural = "track section entities"
-    components = {
-        TrackSectionComponent: 1,
-        IdentifierComponent: 1,
-    }
+    components = [
+        TrackSectionComponent,
+        IdentifierComponent,
+    ]
 
 
 class SwitchEntity(Entity):
     name = "switch"
     verbose_name_plural = "switch entities"
-    components = {
-        IdentifierComponent: 1,
-        TrackSectionLinkComponent: ...,
-    }
+    components = [
+        IdentifierComponent,
+        TrackSectionLinkComponent,
+    ]
 
 
 class TrackSectionLinkEntity(Entity):
     name = "track_section_link"
     verbose_name_plural = "track section link entities"
-    components = {
-        IdentifierComponent: 1,
-        TrackSectionLinkComponent: 1,
-    }
+    components = [
+        IdentifierComponent,
+        TrackSectionLinkComponent,
+    ]
 
 
 class OperationalPointEntity(Entity):
     name = "operational_point"
     verbose_name_plural = "operational point entities"
-    components = {
-        IdentifierComponent: 1,
-        TrackSectionRangeComponent: ...,
-    }
+    components = [
+        IdentifierComponent,
+        TrackSectionRangeComponent,
+    ]
 
 
 class SignalEntity(Entity):
     name = "signal"
     verbose_name_plural = "signal entities"
-    components = {
-        IdentifierComponent: 1,
-        TrackSectionLocationComponent: ...,
-    }
+    components = [
+        IdentifierComponent,
+        TrackSectionLocationComponent,
+    ]

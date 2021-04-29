@@ -4,6 +4,7 @@ from django.urls import path, include
 from osrd_infra.views import (
     InfraViewSet,
     TrackSectionViewSet,
+    TrackSectionLinkViewSet,
     SignalViewSet,
     OperationalPointViewSet,
     SwitchViewSet,
@@ -14,6 +15,9 @@ from osrd_infra.views import (
 entity_router = SimpleRouter()
 entity_router.register("infra", InfraViewSet)
 entity_router.register("track_section", TrackSectionViewSet, basename="track_section")
+entity_router.register(
+    "track_section_link", TrackSectionLinkViewSet, basename="track_section_link"
+)
 entity_router.register("switch", SwitchViewSet, basename="switch")
 entity_router.register("signal", SignalViewSet, basename="signal")
 entity_router.register(

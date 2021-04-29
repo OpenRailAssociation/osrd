@@ -1,6 +1,5 @@
 from django.contrib.gis.db import models
 from typing import List, Any, Type, Union, Mapping, Optional
-from django.db.models.base import ModelBase
 from django.contrib.contenttypes.models import ContentType
 from dataclasses import dataclass
 
@@ -20,55 +19,19 @@ class EntityNamespace(models.Model):
     pass
 
 
-@dataclass(frozen=True)
-class Arity:
-    # included low bound
-    low_bound: int
-    # included high bound, or +infinity
-    high_bound: Optional[int]
-
-    @property
-    def is_many(self):
-        high_bound = self.high_bound
-        if high_bound is None:
-            return True
-        if high_bound > 1:
-            return True
-        return False
-
-    @staticmethod
-    def parse(arity: Any) -> "Arity":
-        if arity == "*" or arity is ...:
-            return Arity(0, None)
-
-        # single arity
-        if isinstance(arity, int):
-            assert arity > 0
-            return Arity(arity, arity)
-
-        # range arity
-        if isinstance(arity, tuple):
-            low_bound, high_bound = arity
-            if low_bound is ...:
-                low_bound = 0
-            if high_bound is ...:
-                high_bound = None
-            assert low_bound != 0 or high_bound != 0
-            return Arity(low_bound, high_bound)
-
-        raise ValueError(f"invalid arity: {arity}")
-
-
 @dataclass
 class EntityMeta:
     name: str
-    components: Mapping[Type["Component"], Arity]
+    components: List[Type["Component"]]
 
     def __repr__(self):
         return f"<EntityMeta name={self.name}>"
 
     def component_names(self):
         return (component._component_meta.name for component in self.components)
+
+    def component_related_names(self):
+        return (component._component_meta.related_name for component in self.components)
 
 
 # these attributes are forwarded from the entity declaration to the django Meta
@@ -78,7 +41,7 @@ PASSTHROUGH_ATTR_NAMES = (
 )
 
 
-class EntityBase(ModelBase):
+class EntityBase(type(models.Model)):
     def __new__(cls, class_name, bases, attrs, entity_base_passthrough=False, **kwargs):
         if entity_base_passthrough:
             return super().__new__(cls, class_name, bases, attrs, **kwargs)
@@ -97,12 +60,10 @@ class EntityBase(ModelBase):
         assert not attrs, "unknown entity attributes: {}".format(", ".join(attrs))
 
         # parse the list of available components for the entity
-        parsed_components = {}
-        for comp, arity in components.items():
+        for comp in components:
             assert issubclass(
                 comp, Component
             ), f"{comp} isn't a Component, and thus can't be part of {class_name}"
-            parsed_components[comp] = Arity.parse(arity)
 
         # create a constructor which injects the entity_type value
         # that's the whole point of creating a proxy model in the first place:
@@ -127,7 +88,7 @@ class EntityBase(ModelBase):
             "__init__": dj_init,
             "__module__": module,
             "__qualname__": qualname,
-            "_entity_meta": EntityMeta(entity_name, parsed_components),
+            "_entity_meta": EntityMeta(entity_name, components),
         }
 
         # this local variable is used by the dj_init closure above
@@ -163,40 +124,87 @@ class EntityManager(models.Manager):
 class ComponentMeta:
     """Holds all component type specific metadata"""
 
-    __slots__ = ("name",)
+    __slots__ = ("name", "related_name", "unique")
 
-    def __init__(self, name):
+    name: str
+    related_name: str
+    unique: bool
+
+    def __init__(self, name, related_name, unique):
         self.name = name
+        self.related_name = related_name
+        self.unique = unique
+
+    @staticmethod
+    def from_meta_class(class_name, meta_class):
+        assert meta_class is not None, f"{class_name} has no ComponentMeta"
+
+        # make a dict we can pop items off
+        meta = dict(
+            ((k, v) for k, v in meta_class.__dict__.items() if not k.startswith("__"))
+        )
+
+        name = meta.pop("name", None)
+        assert name is not None, f"{class_name}'s ComponentMeta has no name"
+
+        unique = meta.pop("unique", False)
+
+        related_name = meta.pop("related_name", None)
+        if related_name is None:
+            related_name = name if unique else f"{name}_set"
+
+        assert (
+            not meta
+        ), f"{class_name} has unknown ComponentMeta settings: {','.join(meta)}"
+        return ComponentMeta(name, related_name, unique)
 
     def __repr__(self):
-        return f"<ComponentMeta name={self.name}>"
+        return (
+            f"<ComponentMeta name={self.name} "
+            f"related_name={self.related_name} "
+            f"unique={self.unique}>"
+        )
 
 
-class ComponentBase(ModelBase):
+class ComponentBase(type(models.Model)):
     """
     This metaclass preprocesses component classes before passing them on to django.
     It adds a component_meta attribute to the class, and setups a sane default related_name
     from the component name.
     """
 
-    def __new__(cls, name, bases, attrs):
-        meta = attrs.get("Meta", None)
-        assert meta is not None, "Component is missing its Meta attribute"
+    def __new__(cls, name, bases, attrs, component_base_passthrough=False):
+        if component_base_passthrough:
+            return super().__new__(cls, name, bases, attrs)
 
-        is_abstract = getattr(meta, "abstract", False)
-        if not is_abstract:
-            # extract component_specific meta
-            component_name = getattr(meta, "component_name", None)
-            assert (
-                component_name is not None
-            ), f"{name}'s Meta is missing a component_name"
-            del meta.component_name
+        django_meta = attrs.get("Meta", None)
+        if django_meta is None:
+            django_meta = type("Meta", (), {})
 
-            attrs["_component_meta"] = ComponentMeta(component_name)
+        assert not getattr(
+            django_meta, "abstract", False
+        ), "abstract components aren't supported"
 
-            # synthesize relevant django meta
-            if getattr(meta, "default_related_name", None) is None:
-                meta.default_related_name = component_name
+        component_meta = ComponentMeta.from_meta_class(
+            name, attrs.get("ComponentMeta", None)
+        )
+        attrs["_component_meta"] = component_meta
+
+        # synthesize relevant django meta
+        if getattr(django_meta, "default_related_name", None) is None:
+            django_meta.default_related_name = f"{component_meta.name}_set"
+
+        # add the relation to the entity
+        assert "entity" not in attrs, "entity is a reserved component field name"
+        field_type = (
+            models.OneToOneField if component_meta.unique else models.ForeignKey
+        )
+        attrs["entity"] = field_type(
+            "Entity",
+            on_delete=models.CASCADE,
+            db_index=True,
+            related_name=component_meta.related_name,
+        )
 
         # call the django metaclass
         clsobj = super().__new__(cls, name, bases, attrs)
@@ -204,19 +212,8 @@ class ComponentBase(ModelBase):
         return clsobj
 
 
-class Component(models.Model, metaclass=ComponentBase):
+class Component(models.Model, metaclass=ComponentBase, component_base_passthrough=True):
     component_id = models.BigAutoField(primary_key=True)
-    entity = models.ForeignKey("Entity", on_delete=models.CASCADE, db_index=True)
 
     class Meta:
         abstract = True
-
-
-class UniqueComponent(Component):
-    class Meta:
-        abstract = True
-        constraints = [
-            models.UniqueConstraint(
-                fields=["entity"], name="%(app_label)s_unique_%(class)s"
-            )
-        ]

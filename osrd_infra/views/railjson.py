@@ -29,7 +29,7 @@ def serialize_endpoint(endpoint: int, track_section_id: int):
 
 
 def serialize_track_section(track_section_entity):
-    track_section = next(iter(track_section_entity.track_section.all()))
+    track_section = track_section_entity.track_section
     return {
         "length": track_section.length,
         "id": format_track_section_id(track_section_entity.entity_id),
@@ -37,7 +37,7 @@ def serialize_track_section(track_section_entity):
 
 
 def serialize_track_section_link(track_section_link_entity):
-    track_section_link = next(iter(track_section_link_entity.track_section_link.all()))
+    track_section_link = track_section_link_entity.track_section_link_set.get()
     return {
         "id": f"track_section_link.{track_section_link_entity.entity_id}",
         "begin": serialize_endpoint(
@@ -51,7 +51,7 @@ def serialize_track_section_link(track_section_link_entity):
 
 
 def serialize_switch(switch_entity):
-    links = list(switch_entity.track_section_link.all())
+    links = list(switch_entity.track_section_link_set.all())
 
     # for now, a switch can only have two links
     assert len(links) == 2
@@ -84,7 +84,7 @@ def fetch_entities(model, namespace):
     return (
         getattr(model, "objects")
         .filter(namespace=namespace)
-        .prefetch_related(*model._entity_meta.component_names())
+        .prefetch_related(*model._entity_meta.component_related_names())
     )
 
 
