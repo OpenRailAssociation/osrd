@@ -231,7 +231,21 @@ public class RailJSONParser {
                 switchesPosition.put(switchRef, position);
             }
 
-            routeGraph.makeRoute(rjsRoute.id, waypoints, tvdSections, releaseGroups, switchesPosition);
+            var entrySignal = signals.stream()
+                    .filter(x -> x.id.equals(rjsRoute.entrySignal.id))
+                    .findFirst()
+                    .orElse(null);
+            var signalsOnRoute = new ArrayList<Signal>();
+            for (var signalId : rjsRoute.signals) {
+                var signal = signals.stream()
+                        .filter(x -> x.id.equals(signalId.id))
+                        .findFirst()
+                        .orElseThrow(() -> new InvalidInfraException("Invalid signal reference " + signalId.id));
+                signalsOnRoute.add(signal);
+            }
+
+            routeGraph.makeRoute(rjsRoute.id, waypoints, tvdSections, releaseGroups, switchesPosition,
+                    entrySignal, signalsOnRoute);
         }
 
         // build name maps to prepare resolving names in expressions

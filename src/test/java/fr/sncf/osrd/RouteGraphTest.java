@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Optional;
 
 public class RouteGraphTest {
 
@@ -59,7 +60,8 @@ public class RouteGraphTest {
             releaseGroups.add(releaseGroup);
         }
 
-        return builder.makeRoute(id, waypoints, tvdSections, releaseGroups, null);
+        return builder.makeRoute(id, waypoints, tvdSections, releaseGroups, null, null,
+                new ArrayList<>());
     }
 
     /**
