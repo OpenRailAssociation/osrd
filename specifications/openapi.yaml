@@ -13,41 +13,34 @@ servers:
 - url: http://gateway.staging.dgexsol.fr/osrd/
   description: Staging server
 tags:
+- name: health
+  description: Check server health
 - name: pathfinding
   description: Execute pathfinding on the infrastructure
 - name: simulation
   description: Simulate a schedule on the infrastructure
 paths:
+  /health:
+    get:
+      tags:
+      - health
+      summary: Check server health
+      operationId: health
+      responses:
+        200:
+          description: The server is responding
   /pathfinding/routes:
     post:
       tags:
       - pathfinding
       summary: Find a path in the route graph that passes through waypoints.
-      operationId: pathfinding
+      operationId: pathfinding_routes
       requestBody:
-        description: Waypoints
+        description: Infrastructure id and waypoints
         content:
           application/json:
             schema:
-              type: array
-              minItems: 2
-              items:
-                type: array
-                minItems: 1
-                items:
-                  $ref: '#/components/schemas/Waypoint'
-            example:
-            -
-              - track_section: "track_departure"
-                direction: "START_TO_STOP"
-                offset: 4.2
-              - track_section: "track_departure_bis"
-                direction: "START_TO_STOP"
-                offset: 14.2
-            -
-              - track_section: "track_destination"
-                direction: "STOP_TO_START"
-                offset: 138.32
+              $ref: '#/components/schemas/PathfindingRequest'
         required: true
       responses:
         200:
@@ -56,9 +49,32 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/PathfindingResult'
+                  $ref: '#/components/schemas/PathfindingRoutesResult'
         400:
-          description: Missing request body
+          description: The request body is invalid
+  /pathfinding/tracks:
+    post:
+      tags:
+      - pathfinding
+      summary: Find a path in the track section graph that passes through waypoints.
+      operationId: pathfinding_tracks
+      requestBody:
+        description: Infrastructure id and waypoints
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PathfindingRequest'
+        required: true
+      responses:
+        200:
+          description: Path found
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PathfindingTracksResult'
+        400:
+          description: The request body is invalid
   /simulation:
     post:
       tags:
@@ -66,11 +82,11 @@ paths:
       summary: Simulate a scenario.
       operationId: simulation
       requestBody:
-        description: Train rolling stocks and schedules.
+        description: Infra id, train rolling stocks and schedules.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Simulation'
+              $ref: '#/components/schemas/SimulationRequest'
         required: true
       responses:
         200:
@@ -81,7 +97,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SimulationResult'
         400:
-          description: Missing request body
+          description: The request body is invalid
 components:
   schemas:
     Waypoint:
@@ -101,7 +117,7 @@ components:
           type: number
           format: double
           minimum: 0
-    PathfindingResult:
+    PathfindingRoutesResult:
       required:
       - track_sections
       - routes
@@ -111,7 +127,6 @@ components:
           minItems: 2
           items:
             $ref: '#/components/schemas/RouteLocation'
-
         track_sections:
           type: array
           minItems: 1
@@ -123,6 +138,20 @@ components:
           offset: 4.2
        -  track_section: "route_foo"
           offset: 178.3
+       track_sections:
+       -  track_section: "track_foo"
+          begin_position: 4.2
+          end_position: 178.3
+    PathfindingTracksResult:
+      required:
+      - track_sections
+      properties:
+        track_sections:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/TrackSectionRange'
+      example:
        track_sections:
        -  track_section: "track_foo"
           begin_position: 4.2
@@ -165,21 +194,6 @@ components:
           type: number
           format: double
           minimum: 0
-    Simulation:
-      required:
-      - rolling_stocks
-      - train_schedules
-      properties:
-        rolling_stocks:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/RollingStock'
-        train_schedules:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/TrainSchedule'
     RollingStock:
       required:
       - id
@@ -443,3 +457,50 @@ components:
           items:
             type: string
             example: "AspectID"
+    PathfindingRequest:
+      required:
+      - infra
+      - waypoints
+      properties:
+        infra:
+          type: string
+          example: "infraID"
+        waypoints:
+          type: array
+          minItems: 2
+          items:
+            type: array
+            minItems: 1
+            items:
+              $ref: '#/components/schemas/Waypoint'
+          example:
+            -
+              - track_section: "track_departure"
+                direction: "START_TO_STOP"
+                offset: 4.2
+              - track_section: "track_departure_bis"
+                direction: "START_TO_STOP"
+                offset: 14.2
+            -
+              - track_section: "track_destination"
+                direction: "STOP_TO_START"
+                offset: 138.32
+    SimulationRequest:
+      required:
+      - infra
+      - rolling_stocks
+      - train_schedules
+      properties:
+        infra:
+          type: string
+          example: "infraID"
+        rolling_stocks:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/RollingStock'
+        train_schedules:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/TrainSchedule'
