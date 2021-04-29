@@ -1,6 +1,5 @@
 package fr.sncf.osrd.infra.routegraph;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Switch;
@@ -9,14 +8,10 @@ import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.TrackSectionLocation;
-import fr.sncf.osrd.utils.graph.BiNEdge;
 import fr.sncf.osrd.utils.graph.DirNEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class Route extends DirNEdge {
     public final String id;
@@ -25,6 +20,8 @@ public class Route extends DirNEdge {
     public final List<EdgeDirection> tvdSectionsPathDirections;
     public final List<SortedArraySet<TVDSection>> releaseGroups;
     public final HashMap<Switch, SwitchPosition> switchesPosition;
+    public final Signal entrySignal;
+    public final List<Signal> signals;
     public ArrayList<Signal> signalSubscribers;
 
     Route(
@@ -34,8 +31,8 @@ public class Route extends DirNEdge {
             List<SortedArraySet<TVDSection>> releaseGroups,
             List<TVDSectionPath> tvdSectionsPaths,
             List<EdgeDirection> tvdSectionsPathDirections,
-            HashMap<Switch, SwitchPosition> switchesPosition
-    ) {
+            HashMap<Switch, SwitchPosition> switchesPosition,
+            Signal entrySignal, List<Signal> signals) {
         super(
                 graph.nextEdgeIndex(),
                 tvdSectionsPaths.get(0).getStartNode(tvdSectionsPathDirections.get(0)),
@@ -47,6 +44,8 @@ public class Route extends DirNEdge {
         this.releaseGroups = releaseGroups;
         this.tvdSectionsPathDirections = tvdSectionsPathDirections;
         this.switchesPosition = switchesPosition;
+        this.entrySignal = entrySignal;
+        this.signals = signals;
         graph.registerEdge(this);
         this.tvdSectionsPaths = tvdSectionsPaths;
         this.signalSubscribers = new ArrayList<>();
