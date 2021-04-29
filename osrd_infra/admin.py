@@ -1,7 +1,21 @@
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin
 
-from osrd_infra.models import *
+from osrd_infra.models import (
+    # components
+    TrackSectionComponent,
+    IdentifierComponent,
+    TrackSectionLinkComponent,
+    # entities
+    TrackSectionEntity,
+    SwitchEntity,
+    TrackSectionLinkEntity,
+    # ecs
+    EntityNamespace,
+    # misc
+    Infra,
+    IdentifierDatabase,
+)
 
 
 class TrackSectionInline(admin.TabularInline):

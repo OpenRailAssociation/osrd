@@ -1,6 +1,6 @@
-from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.generics import get_object_or_404
 
 from osrd_infra.models import (
     Infra,
@@ -93,11 +93,8 @@ def serialize_infra_railjson(request, pk):
     """
     Retrieve, update or delete a code snippet.
     """
-    try:
-        infra = Infra.objects.get(pk=pk)
-    except Infra.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
 
+    infra = get_object_or_404(Infra, pk=pk)
     namespace = infra.namespace
 
     return Response(

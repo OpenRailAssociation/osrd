@@ -1,8 +1,4 @@
-from os import getenv, system
-from sys import stderr
-from subprocess import check_output
-
-from config.settings import *
+from config.settings import *  # noqa
 
 DATABASES = {
     'default': {
@@ -18,16 +14,15 @@ ROOT_PATH = ''
 
 STATIC_URL = ROOT_PATH + '/static/'
 
-INSTALLED_APPS += [
+
+INSTALLED_APPS += [  # noqa
     'debug_toolbar',
-#    'debug_toolbar_line_profiler'
 ]
 
 ROOT_URLCONF = 'config.workspace_urls'
 
-MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
+MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']  # noqa
 MIDDLEWARE += ['config.test_middleware.LocalUserMiddleware']
-# MIDDLEWARE += ['service_core.gateway_auth.GatewayUserMiddleware']
 
 DEBUG = True
 
@@ -48,6 +43,4 @@ DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.logging.LoggingPanel',
     'debug_toolbar.panels.redirects.RedirectsPanel',
     'debug_toolbar.panels.profiling.ProfilingPanel',
-
-#    'debug_toolbar_line_profiler.panel.ProfilingPanel',
 ]

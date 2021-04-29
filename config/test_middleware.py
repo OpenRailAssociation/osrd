@@ -1,5 +1,6 @@
 from service_core.gateway_auth import GatewayUser
 
+
 class LocalUserMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response

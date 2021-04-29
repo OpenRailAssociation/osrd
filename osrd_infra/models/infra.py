@@ -2,7 +2,6 @@ from django.contrib.gis.db import models
 from osrd_infra.models.ecs import (
     Component,
     Entity,
-    EntityManager,
     EntityNamespace,
 )
 from osrd_infra.models.common import EndpointField

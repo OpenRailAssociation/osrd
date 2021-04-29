@@ -1,5 +1,4 @@
 from django.db import models
-from dataclasses import dataclass
 from rest_framework import serializers
 
 

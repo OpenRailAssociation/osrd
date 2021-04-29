@@ -1,4 +1,4 @@
-from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from osrd_infra.models import (
     Infra,
@@ -18,48 +18,41 @@ from osrd_infra.serializers import (
 )
 
 
-class InfraViewSet(ModelViewSet):
+class InfraViewSet(ReadOnlyModelViewSet):
     serializer_class = InfraSerializer
     queryset = Infra.objects.all()
 
 
-class TrackSectionViewSet(ModelViewSet):
+class TrackSectionViewSet(ReadOnlyModelViewSet):
     serializer_class = TrackSectionSerializer
 
     def get_queryset(self):
         return TrackSectionEntity.objects.all()
 
 
-class TrackSectionLinkViewSet(ModelViewSet):
+class TrackSectionLinkViewSet(ReadOnlyModelViewSet):
     serializer_class = TrackSectionLinkSerializer
 
     def get_queryset(self):
         return TrackSectionLinkEntity.objects.all()
 
 
-class SwitchViewSet(ModelViewSet):
+class SwitchViewSet(ReadOnlyModelViewSet):
     serializer_class = SwitchSerializer
 
     def get_queryset(self):
         return SwitchEntity.objects.all()
 
 
-class SignalViewSet(ModelViewSet):
+class SignalViewSet(ReadOnlyModelViewSet):
     serializer_class = SignalSerializer
 
     def get_queryset(self):
         return SignalEntity.objects.all()
 
 
-class OperationalPointViewSet(ModelViewSet):
+class OperationalPointViewSet(ReadOnlyModelViewSet):
     serializer_class = OperationalPointSerializer
 
     def get_queryset(self):
         return OperationalPointEntity.objects.all()
-
-
-class SwitchViewSet(ModelViewSet):
-    serializer_class = SwitchSerializer
-
-    def get_queryset(self):
-        return SwitchEntity.objects.all()

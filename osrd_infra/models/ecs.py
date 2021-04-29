@@ -1,5 +1,5 @@
 from django.contrib.gis.db import models
-from typing import List, Any, Type, Union, Mapping, Optional
+from typing import List, Type
 from django.contrib.contenttypes.models import ContentType
 from dataclasses import dataclass
 

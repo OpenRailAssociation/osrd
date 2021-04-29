@@ -1,10 +1,6 @@
 from rest_framework.serializers import (
     ModelSerializer,
-    CharField,
-    FloatField,
-    PrimaryKeyRelatedField,
     StringRelatedField,
-    ChoiceField,
 )
 
 from osrd_infra.models import (
@@ -21,7 +17,6 @@ from osrd_infra.models import (
     OperationalPointEntity,
     SignalEntity,
     # ecs
-    Entity,
     Component,
 )
 
