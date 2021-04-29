@@ -40,7 +40,7 @@ public final class ApiServerCommand implements CliCommand {
         if (middlewareBaseUrl == null)
             middlewareBaseUrl = System.getenv("MIDDLEWARE_BASE_URL");
 
-        if (middlewareBaseUrl.isEmpty())
+        if (middlewareBaseUrl == null)
             throw new RuntimeException(
                 "No middleware base url specified. Use '--url' option or 'MIDDLEWARE_BASE_URL' environment variable");
 

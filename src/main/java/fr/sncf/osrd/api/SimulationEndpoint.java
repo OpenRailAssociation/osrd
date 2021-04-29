@@ -16,7 +16,9 @@ import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.simulation.Change;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -33,10 +35,7 @@ import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class SimulationEndpoint implements Take {
     private final InfraHandler infraHandler;
@@ -77,7 +76,8 @@ public class SimulationEndpoint implements Take {
                     String.format("Error loading infrastructure '%s'%n%s", request.infra, e.getMessage())), 400);
         }
 
-        var trainSchedules = RJSSimulationParser.parse(infra, request.simulation);
+        var rjsSimulation = new RJSSimulation(request.rollingStocks, request.trainSchedules);
+        var trainSchedules = RJSSimulationParser.parse(infra, rjsSimulation);
 
         // create the simulation and his changelog
         var changeConsumers = new ArrayList<ChangeConsumer>();
@@ -99,16 +99,26 @@ public class SimulationEndpoint implements Take {
     }
 
     public static final class SimulationRequest {
-        /**
-         * A list of points the train must to through
-         * [[starting_point_a, starting_point_b], [waypoint], [end_a, end_b]]
-         */
-        public final RJSSimulation simulation;
+        /** Infra id */
         public final String infra;
 
-        public SimulationRequest(RJSSimulation simulation, String infra) {
-            this.simulation = simulation;
+        /** A list of rolling stocks involved in this simulation */
+        @Json(name = "rolling_stocks")
+        public Collection<RJSRollingStock> rollingStocks;
+
+        /** A list of trains plannings */
+        @Json(name = "train_schedules")
+        public Collection<RJSTrainSchedule> trainSchedules;
+
+        /** Create SimulationRequest */
+        public SimulationRequest(
+                String infra,
+                Collection<RJSRollingStock> rollingStocks,
+                Collection<RJSTrainSchedule> trainSchedules
+        ) {
             this.infra = infra;
+            this.rollingStocks = rollingStocks;
+            this.trainSchedules = trainSchedules;
         }
     }
 

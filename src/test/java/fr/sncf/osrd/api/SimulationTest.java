@@ -15,9 +15,12 @@ public class SimulationTest extends ApiTest {
         var simulationPath = classLoader.getResource("tiny_infra/simulation.json");
         assert simulationPath != null;
 
-        var simulation = MoshiUtils.deserialize(RJSSimulation.adapter, Paths.get(simulationPath.toURI()));
-        var requestBody = SimulationEndpoint.adapterRequest.toJson(
-                new SimulationEndpoint.SimulationRequest(simulation, "tiny_infra/infra.json"));
+        var rjsSimulation = MoshiUtils.deserialize(RJSSimulation.adapter, Paths.get(simulationPath.toURI()));
+        var requestBody = SimulationEndpoint.adapterRequest.toJson(new SimulationEndpoint.SimulationRequest(
+                        "tiny_infra/infra.json",
+                        rjsSimulation.rollingStocks,
+                        rjsSimulation.trainSchedules
+                ));
         var result = new RsPrint(
                 new SimulationEndpoint(infraHandlerMock).act(new RqFake("POST", "/simulation", requestBody))
         ).printBody();
