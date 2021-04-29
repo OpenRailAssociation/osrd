@@ -53,6 +53,9 @@
   "routes": [
     {
       "id": "rt.buffer_stop_a-C1",
+      "entry_signal": "",
+      "signals": [
+      ],
       "switches_position": {},
       "tvd_sections": [
         "tvd.foo_a"
@@ -69,6 +72,9 @@
     },
     {
       "id": "rt.buffer_stop_b-C3",
+      "entry_signal": "",
+      "signals": [
+      ],
       "switches_position": {},
       "tvd_sections": [
         "tvd.foo_b"
@@ -85,6 +91,13 @@
     },
     {
       "id": "rt.C1-S7",
+      "entry_signal": "il.sig.C1",
+      "signals": [
+        "il.sig.C6",
+        "il.sig.W4",
+        "il.sig.W5",
+        "il.sig.S7"
+      ],
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
@@ -108,6 +121,9 @@
     },
     {
       "id": "rt.C3-S7",
+      "entry_signal": "il.sig.C3",
+      "signals": [
+      ],
       "switches_position": {
         "il.switch_foo": "LEFT"
       },
@@ -131,6 +147,9 @@
     },
     {
       "id": "rt.S7-buffer_stop_c",
+      "entry_signal": "il.sig.S7",
+      "signals": [
+      ],
       "switches_position": {},
       "tvd_sections": [
         "tvd.bar_a"
@@ -147,6 +166,9 @@
     },
     {
       "id": "rt.buffer_stop_c-C2",
+      "entry_signal": "",
+      "signals": [
+      ],
       "switches_position": {},
       "tvd_sections": [
         "tvd.bar_a"
@@ -163,6 +185,9 @@
     },
     {
       "id": "rt.C2-C6",
+      "entry_signal": "il.sig.C2",
+      "signals": [
+      ],
       "switches_position": {},
       "tvd_sections": [
         "tvd.track"
@@ -179,6 +204,9 @@
     },
     {
       "id": "rt.C6-buffer_stop_a",
+      "entry_signal": "il.sig.C6",
+      "signals": [
+      ],
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
@@ -202,6 +230,9 @@
     },
     {
       "id": "rt.C6-buffer_stop_b",
+      "entry_signal": "il.sig.C6",
+      "signals": [
+      ],
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
