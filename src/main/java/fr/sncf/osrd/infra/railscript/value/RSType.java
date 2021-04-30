@@ -12,6 +12,7 @@ public enum RSType {
     SWITCH(SwitchPosition.class);
 
     public final Class<? extends Enum<?>> enumClass;
+    public RSType optionalContentType = null;
 
     RSType(Class<? extends Enum<?>> enumClass) {
         this.enumClass = enumClass;
