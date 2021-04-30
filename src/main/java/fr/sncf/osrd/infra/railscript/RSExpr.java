@@ -390,9 +390,45 @@ public abstract class RSExpr<T extends RSValue> {
         }
     }
 
+    public static final class OptionalMatch<T extends RSValue> extends RSExpr<T> {
+        public final RSExpr<RSOptional<T>> expr;
+        public final RSExpr<T> caseNone;
+        public final RSExpr<T> caseSome;
+        public final String name;
+
+        public OptionalMatch(RSExpr<RSOptional<T>> expr, RSExpr<T> caseNone, RSExpr<T> caseSome, String name) {
+            this.expr = expr;
+            this.caseNone = caseNone;
+            this.caseSome = caseSome;
+            this.name = name;
+        }
+
+        @Override
+        public T evaluate(RSExprState<?> state) {
+            var optional = expr.evaluate(state);
+            // TODO somehow bind everything
+            var caseNoneResult = caseNone.evaluate(state);
+            if (optional.value == null)
+                return caseNoneResult;
+            else
+                // NOTE: we can't run this branch in all cases, so delays here will not work
+                return caseSome.evaluate(state);
+        }
+
+        @Override
+        public RSType getType(RSType[] argumentTypes) {
+            return caseNone.getType(argumentTypes);
+        }
+
+        @Override
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+        }
+    }
+
     // endregion
 
-    // region FUNCTION_SPECIFIC
+    // region REFERENCES
 
     public static final class ArgumentRef<T extends RSValue> extends RSExpr<T> {
         public final int slotIndex;
@@ -410,6 +446,31 @@ public abstract class RSExpr<T extends RSValue> {
         @Override
         public RSType getType(RSType[] argumentTypes) {
             return argumentTypes[slotIndex];
+        }
+
+        @Override
+        public void accept(RSExprVisitor visitor) {
+            visitor.visit(this);
+        }
+    }
+
+    public static final class OptionalMatchRef<T extends RSValue> extends RSExpr<T> {
+        public final String name;
+
+        public OptionalMatchRef(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public T evaluate(RSExprState<?> state) {
+            // TODO
+            return null;
+        }
+
+        @Override
+        public RSType getType(RSType[] argumentTypes) {
+            // TODO
+            return RSType.BOOLEAN;
         }
 
         @Override

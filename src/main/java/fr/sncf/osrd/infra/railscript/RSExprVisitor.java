@@ -1,6 +1,7 @@
 package fr.sncf.osrd.infra.railscript;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.railscript.value.RSValue;
 
 public class RSExprVisitor {
 
@@ -77,5 +78,14 @@ public class RSExprVisitor {
 
     public void visit(RSExpr.AspectSetContains expr) throws InvalidInfraException {
         expr.expr.accept(this);
+    }
+
+    public void visit(RSExpr.OptionalMatch<?> expr) throws InvalidInfraException {
+        expr.caseSome.accept(this);
+        expr.caseNone.accept(this);
+        expr.expr.accept(this);
+    }
+
+    public void visit(RSExpr.OptionalMatchRef<?> tOptionalMatchRef) {
     }
 }
