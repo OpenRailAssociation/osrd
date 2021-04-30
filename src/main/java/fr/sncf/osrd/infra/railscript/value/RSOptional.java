@@ -4,6 +4,10 @@ public class RSOptional<T extends RSValue> implements RSValue{
 
     public T value;
 
+    public RSOptional(T value) {
+        this.value = value;
+    }
+
     @Override
     public boolean deepEquals(RSValue other) {
         if (other.getClass() != RSOptional.class)
