@@ -72,7 +72,9 @@ class EntitySerializerBase(type(ModelSerializer)):
             if not comp_meta.unique:
                 field_kwargs["many"] = True
             # find the component serializer in the global registry
-            attrs[comp_rel_name] = ComponentSerializer._registry[comp](**field_kwargs)
+            serializer = ComponentSerializer._registry.get(comp, None)
+            assert serializer is not None, f"{comp} has no registered serializer"
+            attrs[comp_rel_name] = serializer(**field_kwargs)
 
         # call the model serializer superclass
         return super().__new__(cls, name, bases, attrs)
