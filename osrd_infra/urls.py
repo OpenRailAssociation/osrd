@@ -9,6 +9,7 @@ from osrd_infra.views import (
     OperationalPointViewSet,
     SwitchViewSet,
     InfraRailJSONSerializer,
+    InfraEdition,
 )
 
 
@@ -27,4 +28,5 @@ entity_router.register(
 urlpatterns = [
     path("entity/", include(entity_router.urls)),
     path("railjson/infra/<int:pk>/", InfraRailJSONSerializer.as_view()),
+    path("edit/infra/<int:pk>/", InfraEdition.as_view()),
 ]
