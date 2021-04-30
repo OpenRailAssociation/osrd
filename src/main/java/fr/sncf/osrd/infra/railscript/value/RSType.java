@@ -19,6 +19,7 @@ public enum RSType {
         this.enumClass = enumClass;
     }
 
+    /** Converts the value to the matching string */
     public String toString() {
         switch (this) {
             case BOOLEAN:
@@ -40,6 +41,7 @@ public enum RSType {
         }
     }
 
+    /** Returns the subtype if this is an optional */
     public RSType subType() throws InvalidInfraException {
         switch (this) {
             case OPTIONAL_ROUTE:
