@@ -267,8 +267,7 @@ public class RailScriptExprParser {
         var noneExpr = parse(optionalMatchExpr.caseNone);
         var contentExpr = parseOptionalExpr(optionalMatchExpr.expr);
         var type = contentExpr.getType(argTypes);
-        assert type == RSType.OPTIONAL;
-        var subType = type.optionalContentType;
+        var subType = type.subType();
         varTypes.put(name, subType);
         var someExpr = parse(optionalMatchExpr.caseSome);
         varTypes.remove(name);
@@ -358,7 +357,10 @@ public class RailScriptExprParser {
     @SuppressWarnings("unchecked")
     private RSExpr<RSOptional<?>> parseOptionalExpr(RJSRSExpr rjsExpr) throws InvalidInfraException {
         var expr = parse(rjsExpr);
-        checkExprType(RSType.OPTIONAL, expr);
+        var exprType = expr.getType(argTypes);
+        if (exprType != RSType.OPTIONAL_ROUTE && exprType != RSType.OPTIONAL_SIGNAL)
+            throw new InvalidInfraException(String.format(
+                    "type mismatch: expected an optional, got %s", exprType.toString()));
         return (RSExpr<RSOptional<?>>) expr;
     }
 
