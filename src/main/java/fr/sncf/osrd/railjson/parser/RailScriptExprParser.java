@@ -2,6 +2,7 @@ package fr.sncf.osrd.railjson.parser;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.railscript.value.*;
 import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
@@ -11,9 +12,6 @@ import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSType;
 import fr.sncf.osrd.infra.railscript.RSExpr;
 import fr.sncf.osrd.infra.railscript.RSFunction;
 import fr.sncf.osrd.infra.railscript.RSStatefulExpr;
-import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
-import fr.sncf.osrd.infra.railscript.value.RSBool;
-import fr.sncf.osrd.infra.railscript.value.RSType;
 import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.infra.signaling.Aspect;
 
@@ -201,6 +199,21 @@ public class RailScriptExprParser {
             var aspect = aspectsMap.get(aspectSetContainsExpr.aspect.id);
             return new RSExpr.AspectSetContains(aspectSet, aspect);
         }
+        if (type == RJSRSExpr.OptionalMatch.class) {
+            var optionalMatchExpr = (RJSRSExpr.OptionalMatch) expr;
+            var contentExpr = parseOptionalExpr(optionalMatchExpr.expr);
+            var someExpr = parse(optionalMatchExpr.caseSome);
+            var noneExpr = parse(optionalMatchExpr.caseNone);
+            var name = optionalMatchExpr.name;
+
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            var res = new RSExpr.OptionalMatch(contentExpr, noneExpr, someExpr, name);
+            return res;
+        }
+        if (type == RJSRSExpr.OptionalMatchRef.class) {
+            var refExpr = (RJSRSExpr.OptionalMatchRef) expr;
+            return new RSExpr.OptionalMatchRef<>(refExpr.optionalMatchName.id);
+        }
 
         throw new InvalidInfraException(String.format("'%s' unsupported signal expression", type));
     }
@@ -281,6 +294,7 @@ public class RailScriptExprParser {
 
         // get the function
         var function = scriptFunctions.get(expr.function.id);
+        // TODO check that it exists
 
         // reserve enough slots for the function, and store the slot offset
         var res = new RSExpr.Call<>(function, args, this.argSlotCount, this.delaySlotCount);
@@ -314,6 +328,13 @@ public class RailScriptExprParser {
         if (exprType != expectedType)
             throw new InvalidInfraException(String.format(
                     "type mismatch: expected %s, got %s", expectedType.toString(), exprType.toString()));
+    }
+
+    @SuppressWarnings("unchecked")
+    private RSExpr<RSOptional<?>> parseOptionalExpr(RJSRSExpr rjsExpr) throws InvalidInfraException {
+        var expr = parse(rjsExpr);
+        checkExprType(RSType.OPTIONAL, expr);
+        return (RSExpr<RSOptional<?>>) expr;
     }
 
     @SuppressWarnings("unchecked")
