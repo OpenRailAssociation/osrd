@@ -11,7 +11,6 @@ import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.infra_state.SwitchState;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -398,6 +397,7 @@ public abstract class RSExpr<T extends RSValue> {
         public final RSExpr<T> caseSome;
         public final String name;
 
+        /** Matches an optional expression with an expression depending on its content */
         public OptionalMatch(RSExpr<RSOptional<T>> expr, RSExpr<T> caseNone, RSExpr<T> caseSome, String name) {
             this.expr = expr;
             this.caseNone = caseNone;
@@ -466,6 +466,7 @@ public abstract class RSExpr<T extends RSValue> {
         public final String name;
         public final RSType type;
 
+        /** Refers to the content of an optional, in a "some" expression */
         public OptionalMatchRef(String name, HashMap<String, RSType> varTypes) throws InvalidInfraException {
             this.name = name;
             if (! varTypes.containsKey(name))
