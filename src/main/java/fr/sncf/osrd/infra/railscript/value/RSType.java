@@ -8,6 +8,7 @@ public enum RSType {
     ASPECT_SET(null),
     SIGNAL(null),
     ROUTE(RouteStatus.class),
+    OPTIONAL(null),
     SWITCH(SwitchPosition.class);
 
     public final Class<? extends Enum<?>> enumClass;
