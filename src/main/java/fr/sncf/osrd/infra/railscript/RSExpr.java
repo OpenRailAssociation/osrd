@@ -407,13 +407,19 @@ public abstract class RSExpr<T extends RSValue> {
         @Override
         public T evaluate(RSExprState<?> state) {
             var optional = expr.evaluate(state);
-            // TODO somehow bind everything
             var caseNoneResult = caseNone.evaluate(state);
             if (optional.value == null)
                 return caseNoneResult;
-            else
+            else {
+                state.variablesInScope.put(name, optional);
+
                 // NOTE: we can't run this branch in all cases, so delays here will not work
-                return caseSome.evaluate(state);
+                // TODO validate the absence of delays here at init
+                var res = caseSome.evaluate(state);
+
+                state.variablesInScope.remove(name);
+                return res;
+            }
         }
 
         @Override
@@ -467,9 +473,9 @@ public abstract class RSExpr<T extends RSValue> {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public T evaluate(RSExprState<?> state) {
-            // TODO
-            return null;
+            return (T) state.variablesInScope.get(name);
         }
 
         @Override
