@@ -4,6 +4,7 @@ from rest_framework.serializers import (
 )
 
 from osrd_infra.models import (
+    Endpoint,
     Infra,
     # explicitly declared serialiers
     TrackSectionLinkComponent,
@@ -15,7 +16,7 @@ from osrd_infra.models import (
     ALL_ENTITY_TYPES,
 )
 
-from osrd_infra.models.common import Endpoint, EnumSerializer
+from osrd_infra.models.common import EnumSerializer
 
 
 class ComponentSerializer(ModelSerializer):

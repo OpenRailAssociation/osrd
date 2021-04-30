@@ -5,8 +5,16 @@ from osrd_infra.models.ecs import (
     EntityNamespace,
 )
 from django.core.validators import MaxValueValidator
-from osrd_infra.models.common import EndpointField
 from django.conf import settings
+
+
+class Endpoint(models.IntegerChoices):
+    BEGIN = 0
+    END = 1
+
+
+def EndpointField():
+    return models.IntegerField(choices=Endpoint.choices)
 
 
 class Infra(models.Model):
