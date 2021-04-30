@@ -20,8 +20,6 @@ public class Route extends DirNEdge {
     public final List<EdgeDirection> tvdSectionsPathDirections;
     public final List<SortedArraySet<TVDSection>> releaseGroups;
     public final HashMap<Switch, SwitchPosition> switchesPosition;
-    public final Signal entrySignal;
-    public final List<Signal> signals;
     public final List<Signal> signalsWithEntry;
     public ArrayList<Signal> signalSubscribers;
 
@@ -45,8 +43,6 @@ public class Route extends DirNEdge {
         this.releaseGroups = releaseGroups;
         this.tvdSectionsPathDirections = tvdSectionsPathDirections;
         this.switchesPosition = switchesPosition;
-        this.entrySignal = entrySignal;
-        this.signals = signals;
         graph.registerEdge(this);
         this.tvdSectionsPaths = tvdSectionsPaths;
         this.signalSubscribers = new ArrayList<>();
