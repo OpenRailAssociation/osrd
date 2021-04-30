@@ -11,6 +11,7 @@ import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.infra_state.SwitchState;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -634,8 +635,13 @@ public abstract class RSExpr<T extends RSValue> {
 
         @Override
         public RSOptional<RouteState> evaluate(RSExprState<?> state) {
-            // TODO
-            return new RSOptional<>(null);
+            var currentSignal = signal.evaluate(state).signal;
+            var route = state.infraState.getRoutesStream()
+                    .filter(x -> x.status == RouteStatus.RESERVED)
+                    .filter(x -> x.route.signalsWithEntry.contains(currentSignal))
+                    .findFirst()
+                    .orElse(null);
+            return new RSOptional<>(route);
         }
 
         @Override
@@ -662,7 +668,16 @@ public abstract class RSExpr<T extends RSValue> {
 
         @Override
         public RSOptional<SignalState> evaluate(RSExprState<?> state) {
-            // TODO
+            var currentRoute = route.evaluate(state).route;
+            var currentSignal = signal.evaluate(state).signal;
+            for (int i = 0; i < currentRoute.signalsWithEntry.size() - 1; i++) {
+                if (currentRoute.signalsWithEntry.get(i).equals(currentSignal)) {
+                    var resSignal = currentRoute.signalsWithEntry.get(i + 1);
+                    var resSignalState = state.infraState.getSignalState(resSignal.index);
+                    return new RSOptional<>(resSignalState);
+
+                }
+            }
             return new RSOptional<>(null);
         }
 

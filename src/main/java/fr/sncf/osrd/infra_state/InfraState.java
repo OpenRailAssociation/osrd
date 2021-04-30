@@ -5,6 +5,9 @@ import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.DeepEqualsUtils;
 
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 public final class InfraState implements DeepComparable<InfraState> {
     private final SignalState[] signalSignalStates;
     private final RouteState[] routeStates;
@@ -30,6 +33,10 @@ public final class InfraState implements DeepComparable<InfraState> {
 
     public RouteState getRouteState(int routeIndex) {
         return routeStates[routeIndex];
+    }
+
+    public Stream<RouteState> getRoutesStream() {
+        return Arrays.stream(routeStates);
     }
 
     public SwitchState getSwitchState(int switchIndex) {
