@@ -11,6 +11,7 @@ import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.infra_state.SwitchState;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public abstract class RSExpr<T extends RSValue> {
@@ -456,9 +457,13 @@ public abstract class RSExpr<T extends RSValue> {
 
     public static final class OptionalMatchRef<T extends RSValue> extends RSExpr<T> {
         public final String name;
+        public final RSType type;
 
-        public OptionalMatchRef(String name) {
+        public OptionalMatchRef(String name, HashMap<String, RSType> varTypes) throws InvalidInfraException {
             this.name = name;
+            if (! varTypes.containsKey(name))
+                throw new InvalidInfraException("can't find matching optional for name " + name);
+            type = varTypes.get(name);
         }
 
         @Override
@@ -469,8 +474,7 @@ public abstract class RSExpr<T extends RSValue> {
 
         @Override
         public RSType getType(RSType[] argumentTypes) {
-            // TODO
-            return RSType.BOOLEAN;
+            return type;
         }
 
         @Override
@@ -630,7 +634,9 @@ public abstract class RSExpr<T extends RSValue> {
 
         @Override
         public RSType getType(RSType[] argumentTypes) {
-            return RSType.OPTIONAL;
+            var res = RSType.OPTIONAL;
+            res.optionalContentType = RSType.ROUTE;
+            return res;
         }
 
         @Override
@@ -656,7 +662,9 @@ public abstract class RSExpr<T extends RSValue> {
 
         @Override
         public RSType getType(RSType[] argumentTypes) {
-            return RSType.OPTIONAL;
+            var res = RSType.OPTIONAL;
+            res.optionalContentType = RSType.SIGNAL;
+            return res;
         }
 
         @Override
