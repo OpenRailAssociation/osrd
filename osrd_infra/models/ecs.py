@@ -41,6 +41,9 @@ PASSTHROUGH_ATTR_NAMES = (
 )
 
 
+ALL_ENTITY_TYPES = []
+
+
 class EntityBase(type(models.Model)):
     def __new__(cls, class_name, bases, attrs, entity_base_passthrough=False, **kwargs):
         if entity_base_passthrough:
@@ -93,6 +96,7 @@ class EntityBase(type(models.Model)):
 
         # this local variable is used by the dj_init closure above
         entity_type = super().__new__(cls, class_name, dj_bases, dj_attrs, **kwargs)
+        ALL_ENTITY_TYPES.append(entity_type)
         return entity_type
 
 
@@ -166,6 +170,9 @@ class ComponentMeta:
         )
 
 
+ALL_COMPONENT_TYPES = []
+
+
 class ComponentBase(type(models.Model)):
     """
     This metaclass preprocesses component classes before passing them on to django.
@@ -206,10 +213,11 @@ class ComponentBase(type(models.Model)):
             related_name=component_meta.related_name,
         )
 
-        # call the django metaclass
-        clsobj = super().__new__(cls, name, bases, attrs)
-        assert getattr(clsobj, "_meta", None) is not None
-        return clsobj
+        # call the django model metaclass
+        component_type = super().__new__(cls, name, bases, attrs)
+        assert getattr(component_type, "_meta", None) is not None
+        ALL_COMPONENT_TYPES.append(component_type)
+        return component_type
 
 
 class Component(models.Model, metaclass=ComponentBase, component_base_passthrough=True):

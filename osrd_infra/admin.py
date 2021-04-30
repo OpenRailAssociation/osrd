@@ -1,8 +1,6 @@
-import inspect
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin
 from typing import Type
-import osrd_infra.models
 from osrd_infra.models import (
     # ecs
     Entity,
@@ -10,6 +8,7 @@ from osrd_infra.models import (
     get_entity_meta,
     get_component_meta,
     EntityNamespace,
+    ALL_ENTITY_TYPES,
     # misc
     Infra,
     IdentifierDatabase,
@@ -26,8 +25,7 @@ def generate_inline(component: Type[Component]):
 
 def generate_inlines(model: Type[Entity]):
     return tuple(
-        generate_inline(component)
-        for component in get_entity_meta(model).components
+        generate_inline(component) for component in get_entity_meta(model).components
     )
 
 
@@ -36,11 +34,9 @@ def generate_entity_admin(model: Type[Entity]):
     return type(model.__name__ + "GeneratedAdmin", (ModelAdmin,), attrs)
 
 
-for attr_name, attr in inspect.getmembers(osrd_infra.models):
-    if not hasattr(attr, "_entity_meta"):
-        continue
-    entity_admin = generate_entity_admin(attr)
-    admin.register(attr)(entity_admin)
+for entity_type in ALL_ENTITY_TYPES:
+    entity_admin = generate_entity_admin(entity_type)
+    admin.register(entity_type)(entity_admin)
 
 
 admin.site.register(
