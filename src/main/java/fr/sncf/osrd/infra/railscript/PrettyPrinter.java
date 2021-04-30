@@ -77,23 +77,7 @@ public class PrettyPrinter extends RSExprVisitor {
     }
 
     private void print(RSType type) {
-        switch (type) {
-            case BOOLEAN:
-                out.print("bool");
-                break;
-            case ASPECT_SET:
-                out.print("AspectSet");
-                break;
-            case SIGNAL:
-                out.print("Signal");
-                break;
-            case ROUTE:
-                out.print("Route");
-                break;
-            case SWITCH:
-                out.print("Switch");
-                break;
-        }
+        out.print(type);
     }
 
     /** Display the tab matching the current indentation */
@@ -162,6 +146,36 @@ public class PrettyPrinter extends RSExprVisitor {
             expr.expressions[i].accept(this);
         }
         out.print(")");
+    }
+
+    @Override
+    public void visit(RSExpr.OptionalMatch<?> expr) throws InvalidInfraException {
+        out.print("match ");
+        expr.expr.accept(this);
+        out.println(" {");
+        inctab();
+
+        out.print("Some(");
+        out.print(expr.name);
+        out.println("): ");
+        inctab();
+        expr.caseSome.accept(this);
+        out.println();
+        dectab();
+
+        out.print("None: ");
+        out.println();
+        inctab();
+        expr.caseNone.accept(this);
+        dectab();
+        out.println();
+        dectab();
+        out.println("}");
+    }
+
+    @Override
+    public void visit(RSExpr.OptionalMatchRef<?> expr) {
+        out.print(expr.name);
     }
 
     @Override
@@ -295,5 +309,21 @@ public class PrettyPrinter extends RSExprVisitor {
             functions.put(expr.function.functionName, expr.function);
             expr.function.body.accept(this);
         }
+    }
+
+    @Override
+    public void visit(RSExpr.ReservedRoute reservedRoute) throws InvalidInfraException {
+        out.print("reserved_route(");
+        reservedRoute.signal.accept(this);
+        out.print(")");
+    }
+
+    @Override
+    public void visit(RSExpr.NextSignal nextSignal) throws InvalidInfraException {
+        out.print("next_signal(");
+        nextSignal.route.accept(this);
+        out.print(", ");
+        nextSignal.signal.accept(this);
+        out.print(")");
     }
 }

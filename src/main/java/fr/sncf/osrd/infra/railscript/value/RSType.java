@@ -17,4 +17,23 @@ public enum RSType {
     RSType(Class<? extends Enum<?>> enumClass) {
         this.enumClass = enumClass;
     }
+
+    public String toString() {
+        switch (this) {
+            case BOOLEAN:
+                return "bool";
+            case ASPECT_SET:
+                return "AspectSet";
+            case SIGNAL:
+                return "Signal";
+            case ROUTE:
+                return "Route";
+            case SWITCH:
+                return "Switch";
+            case OPTIONAL:
+                return String.format("Optional<%s>", optionalContentType);
+            default:
+                return "";
+        }
+    }
 }
