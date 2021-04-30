@@ -412,7 +412,7 @@
       "return_type": "ASPECT_SET",
       "body": {
         "type": "optional_match",
-        "name": "reserved_route",
+        "name": "route",
         "expr": {
           "type": "reserved_route",
           "signal": {
@@ -430,12 +430,12 @@
         },
         "case_some": {
           "type": "optional_match",
-          "name": "next_signal",
+          "name": "signal",
           "expr": {
             "type": "next_signal",
             "route": {
               "type": "optional_match_ref",
-              "match_name": "reserved_route"
+              "match_name": "route"
             },
             "signal": {
               "type": "argument_ref",
@@ -456,7 +456,7 @@
               "type": "signal_has_aspect",
               "signal": {
                 "type": "optional_match_ref",
-                "match_name": "next_signal"
+                "match_name": "signal"
               },
               "aspect": "RED"
             },
