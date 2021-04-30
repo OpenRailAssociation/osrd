@@ -15,7 +15,6 @@ import fr.sncf.osrd.infra.railscript.RSStatefulExpr;
 import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.infra.signaling.Aspect;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class RailScriptExprParser {

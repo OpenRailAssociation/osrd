@@ -254,14 +254,15 @@ public abstract class RJSRSExpr {
     public static final class OptionalMatch extends RJSRSExpr implements Identified {
         public RJSRSExpr expr;
 
-        @Json(name="case_none")
+        @Json(name = "case_none")
         public RJSRSExpr caseNone;
 
-        @Json(name="case_some")
+        @Json(name = "case_some")
         public RJSRSExpr caseSome;
 
         public String name;
 
+        /** Matches an optional with an expression, depending on its content */
         public OptionalMatch(
                 RJSRSExpr expr,
                 RJSRSExpr caseNone,
@@ -294,7 +295,7 @@ public abstract class RJSRSExpr {
     }
 
     public static final class OptionalMatchRef extends RJSRSExpr {
-        @Json(name="match_name")
+        @Json(name = "match_name")
         public ID<OptionalMatch> optionalMatchName;
 
         public OptionalMatchRef(ID<OptionalMatch> optionalMatchName) {

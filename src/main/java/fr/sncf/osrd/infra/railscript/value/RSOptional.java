@@ -2,7 +2,7 @@ package fr.sncf.osrd.infra.railscript.value;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-public class RSOptional<T extends RSValue> implements RSValue{
+public class RSOptional<T extends RSValue> implements RSValue {
 
     public T value;
 
