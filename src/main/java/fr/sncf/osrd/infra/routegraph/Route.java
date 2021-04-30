@@ -22,6 +22,7 @@ public class Route extends DirNEdge {
     public final HashMap<Switch, SwitchPosition> switchesPosition;
     public final Signal entrySignal;
     public final List<Signal> signals;
+    public final List<Signal> signalsWithEntry;
     public ArrayList<Signal> signalSubscribers;
 
     Route(
@@ -49,6 +50,11 @@ public class Route extends DirNEdge {
         graph.registerEdge(this);
         this.tvdSectionsPaths = tvdSectionsPaths;
         this.signalSubscribers = new ArrayList<>();
+
+        signalsWithEntry = new ArrayList<>();
+        if (entrySignal != null)
+            signalsWithEntry.add(entrySignal);
+        signalsWithEntry.addAll(signals);
     }
 
     /** Build track section path. Need to concatenate all track section of all TvdSectionPath.
