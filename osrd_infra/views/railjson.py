@@ -8,6 +8,7 @@ from osrd_infra.models import (
     TrackSectionEntity,
     TrackSectionLinkEntity,
     Endpoint,
+    fetch_entities,
 )
 
 from collections import Counter
@@ -78,15 +79,6 @@ def serialize_switch(switch_entity):
         "left": serialize_endpoint(*left_endpoint),
         "right": serialize_endpoint(*right_endpoint),
     }
-
-
-def fetch_entities(model, namespace):
-    return (
-        getattr(model, "objects")
-        .filter(namespace=namespace)
-        .prefetch_related(*model._entity_meta.component_related_names())
-    )
-
 
 
 class InfraRailJSONSerializer(APIView):

@@ -217,3 +217,14 @@ class Component(models.Model, metaclass=ComponentBase, component_base_passthroug
 
     class Meta:
         abstract = True
+
+
+# UTILITIES
+
+
+def fetch_entities(model, namespace):
+    return (
+        getattr(model, "objects")
+        .filter(namespace=namespace)
+        .prefetch_related(*model._entity_meta.component_related_names())
+    )
