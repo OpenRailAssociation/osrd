@@ -89,9 +89,12 @@ public class RSExprVisitor {
     public void visit(RSExpr.OptionalMatchRef<?> tOptionalMatchRef) {
     }
 
-    public void visit(RSExpr.ReservedRoute reservedRoute) {
+    public void visit(RSExpr.ReservedRoute reservedRoute) throws InvalidInfraException {
+        reservedRoute.signal.accept(this);
     }
 
-    public void visit(RSExpr.NextSignal nextSignal) {
+    public void visit(RSExpr.NextSignal nextSignal) throws InvalidInfraException {
+        nextSignal.signal.accept(this);
+        nextSignal.route.accept(this);
     }
 }
