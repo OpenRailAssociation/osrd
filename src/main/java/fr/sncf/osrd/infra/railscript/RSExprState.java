@@ -5,6 +5,7 @@ import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.utils.DeepComparable;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class RSExprState<T extends RSValue> implements DeepComparable<RSExprState<?>> {
     @Override
@@ -33,6 +34,7 @@ public class RSExprState<T extends RSValue> implements DeepComparable<RSExprStat
     transient InfraState infraState;
     transient RSExprEvalMode evalMode = RSExprEvalMode.INITIALIZE;
     final transient RSValue[] argStates;
+    final transient HashMap<String, RSValue> variablesInScope;
     transient int argScopeOffset = 0;
     transient int delayScopeOffset = 0;
     private transient int lastUpdatedDelaySlot = -1;
@@ -93,6 +95,7 @@ public class RSExprState<T extends RSValue> implements DeepComparable<RSExprStat
         this.argStates = new RSValue[argSlotCount];
         this.delayCurrentStates = new RSValue[delaySlotCount];
         this.delayLaggingStates = new RSValue[delaySlotCount];
+        variablesInScope = new HashMap<>();
     }
 
     private T eval(InfraState infraState, RSDelayHandler delayHandler, RSExprEvalMode evalMode) {
