@@ -228,3 +228,15 @@ def fetch_entities(model, namespace):
         .filter(namespace=namespace)
         .prefetch_related(*model._entity_meta.component_related_names())
     )
+
+
+def get_entity_meta(model: Type[Entity]) -> EntityMeta:
+    entity_meta: EntityMeta = getattr(model, "_entity_meta", None)
+    assert entity_meta is not None
+    return entity_meta
+
+
+def get_component_meta(model: Type[Component]) -> ComponentMeta:
+    component_meta: ComponentMeta = getattr(model, "_component_meta", None)
+    assert component_meta is not None
+    return component_meta

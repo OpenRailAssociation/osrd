@@ -1,16 +1,14 @@
+import inspect
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin
-
+from typing import Type
+import osrd_infra.models
 from osrd_infra.models import (
-    # components
-    TrackSectionComponent,
-    IdentifierComponent,
-    TrackSectionLinkComponent,
-    # entities
-    TrackSectionEntity,
-    SwitchEntity,
-    TrackSectionLinkEntity,
     # ecs
+    Entity,
+    Component,
+    get_entity_meta,
+    get_component_meta,
     EntityNamespace,
     # misc
     Infra,
@@ -18,41 +16,31 @@ from osrd_infra.models import (
 )
 
 
-class TrackSectionInline(admin.TabularInline):
-    model = TrackSectionComponent
-    max_num = 1
-    extra = 1
+def generate_inline(component: Type[Component]):
+    component_meta = get_component_meta(component)
+    attrs = {"model": component, "extra": 1}
+    if component_meta.unique:
+        attrs["max_num"] = 1
+    return type(component.__name__ + "GeneratedInline", (admin.TabularInline,), attrs)
 
 
-class IdentifierInline(admin.TabularInline):
-    model = IdentifierComponent
-    extra = 1
+def generate_inlines(model: Type[Entity]):
+    return tuple(
+        generate_inline(component)
+        for component in get_entity_meta(model).components
+    )
 
 
-class TrackSectionLinkInline(admin.TabularInline):
-    model = TrackSectionLinkComponent
-    extra = 1
+def generate_entity_admin(model: Type[Entity]):
+    attrs = {"inlines": generate_inlines(model)}
+    return type(model.__name__ + "GeneratedAdmin", (ModelAdmin,), attrs)
 
 
-class SingleTrackSectionLinkInline(admin.TabularInline):
-    model = TrackSectionLinkComponent
-    max_num = 1
-    extra = 1
-
-
-@admin.register(TrackSectionEntity)
-class TrackSectionAdmin(ModelAdmin):
-    inlines = (IdentifierInline, TrackSectionInline)
-
-
-@admin.register(SwitchEntity)
-class SwitchAdmin(ModelAdmin):
-    inlines = (IdentifierInline, TrackSectionLinkInline)
-
-
-@admin.register(TrackSectionLinkEntity)
-class TrackSectionLinkAdmin(ModelAdmin):
-    inlines = (IdentifierInline, SingleTrackSectionLinkInline)
+for attr_name, attr in inspect.getmembers(osrd_infra.models):
+    if not hasattr(attr, "_entity_meta"):
+        continue
+    entity_admin = generate_entity_admin(attr)
+    admin.register(attr)(entity_admin)
 
 
 admin.site.register(

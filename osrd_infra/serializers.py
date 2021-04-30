@@ -18,6 +18,7 @@ from osrd_infra.models import (
     SignalEntity,
     # ecs
     Component,
+    get_entity_meta,
 )
 
 from osrd_infra.models.common import Endpoint, EnumSerializer
@@ -49,8 +50,7 @@ class EntitySerializerBase(type(ModelSerializer)):
         if meta is None or entity_serializer_passthrough:
             return super().__new__(cls, name, bases, attrs)
 
-        model = meta.model
-        entity_meta = getattr(model, "_entity_meta", None)
+        entity_meta = get_entity_meta(meta.model)
         assert (
             entity_meta is not None
         ), "the model of the EntitySerializer isn't an entity"
