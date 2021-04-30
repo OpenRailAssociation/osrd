@@ -1,6 +1,6 @@
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
+from rest_framework.views import APIView
 
 from osrd_infra.models import (
     Infra,
@@ -88,28 +88,25 @@ def fetch_entities(model, namespace):
     )
 
 
-@api_view(["GET"])
-def serialize_infra_railjson(request, pk):
-    """
-    Retrieve, update or delete a code snippet.
-    """
 
-    infra = get_object_or_404(Infra, pk=pk)
-    namespace = infra.namespace
+class InfraRailJSONSerializer(APIView):
+    def get(self, request, pk):
+        infra = get_object_or_404(Infra, pk=pk)
+        namespace = infra.namespace
 
-    return Response(
-        {
-            "track_sections": [
-                serialize_track_section(entity)
-                for entity in fetch_entities(TrackSectionEntity, namespace)
-            ],
-            "track_section_links": [
-                serialize_track_section_link(entity)
-                for entity in fetch_entities(TrackSectionLinkEntity, namespace)
-            ],
-            "switches": [
-                serialize_switch(entity)
-                for entity in fetch_entities(SwitchEntity, namespace)
-            ],
-        }
-    )
+        return Response(
+            {
+                "track_sections": [
+                    serialize_track_section(entity)
+                    for entity in fetch_entities(TrackSectionEntity, namespace)
+                ],
+                "track_section_links": [
+                    serialize_track_section_link(entity)
+                    for entity in fetch_entities(TrackSectionLinkEntity, namespace)
+                ],
+                "switches": [
+                    serialize_switch(entity)
+                    for entity in fetch_entities(SwitchEntity, namespace)
+                ],
+            }
+        )
