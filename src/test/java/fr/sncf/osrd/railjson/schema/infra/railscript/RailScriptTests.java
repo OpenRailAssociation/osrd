@@ -1,11 +1,12 @@
 package fr.sncf.osrd.railjson.schema.infra.railscript;
 
+import static fr.sncf.osrd.railjson.schema.infra.railscript.RSHelpers.RJSGenerator.sim;
 import static org.junit.jupiter.api.Assertions.fail;
-import static fr.sncf.osrd.railjson.schema.infra.railscript.RSHelpers.*;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.RSExpr;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
+import fr.sncf.osrd.infra.railscript.value.RSOptional;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra_state.RouteState;
@@ -14,6 +15,7 @@ import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.railjson.parser.RailScriptExprParser;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr.*;
+import fr.sncf.osrd.simulation.SimulationError;
 import net.jqwik.api.*;
 import net.jqwik.api.lifecycle.AfterTry;
 
@@ -145,6 +147,48 @@ public class RailScriptTests extends RSHelpers {
 
         var res = evalBool(rsEnum);
         return expected == res;
+    }
+
+    @Property
+    boolean testOptional(@ForAll Random random) throws InvalidInfraException, SimulationError {
+
+        int nRoutes = sim.infra.routeGraph.routeMap.size();
+        var route = sim.infraState.getRouteState(random.nextInt(nRoutes));
+        route.reserve(sim);
+
+        var generator = new RJSGenerator(random);
+        var optionalExpr = new RJSRSExpr.ReservedRoute(generator.generateSignalRef());
+        var some = generator.generateBoolExpr();
+        var none = generator.generateBoolExpr();
+        var matchExpr = new RJSRSExpr.OptionalMatch(optionalExpr, none, some, "foo");
+
+        var m = sim.infra.aspects;
+        RSExpr<?> rsMatch = new RailScriptExprParser(m, RJSGenerator.functions).parse(matchExpr);
+        assert rsMatch instanceof RSExpr.OptionalMatch;
+        var rsExpr = ((RSExpr.OptionalMatch<?>) rsMatch).expr;
+        assert rsExpr instanceof RSExpr.ReservedRoute;
+        var signalRef = ((RSExpr.ReservedRoute) rsExpr).signal;
+        assert signalRef instanceof RSExpr.SignalRef;
+        var signalNames = new HashMap<String, Signal>();
+        for (var signal : sim.infra.signals) {
+            signalNames.put(signal.id, signal);
+        }
+        ((RSExpr.SignalRef) signalRef).resolve(signalNames);
+
+        var optionalResult = eval(rsExpr);
+        var result = evalBool(rsMatch);
+
+        assert optionalResult != null;
+        assert optionalResult.getClass() == RSOptional.class;
+        @SuppressWarnings({"unchecked"})
+        var casted = (RSOptional<RouteState>) optionalResult;
+        var isEmpty = casted.value == null;
+
+        var someResult = evalBool(some);
+        var noneResult = evalBool(none);
+
+        var expected = isEmpty ? noneResult : someResult;
+        return expected == result;
     }
 
     @AfterTry
