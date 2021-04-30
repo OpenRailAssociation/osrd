@@ -166,13 +166,28 @@ public class RailScriptExprParser {
             return parseCallExpr((RJSRSExpr.Call) expr);
         if (type == RJSRSExpr.EnumMatch.class)
             return parseEnumMatch((RJSRSExpr.EnumMatch) expr);
+        if (type == RJSRSExpr.OptionalMatch.class) {
+            var optionalMatchExpr = (RJSRSExpr.OptionalMatch) expr;
+            var contentExpr = parseOptionalExpr(optionalMatchExpr.expr);
+            var someExpr = parse(optionalMatchExpr.caseSome);
+            var noneExpr = parse(optionalMatchExpr.caseNone);
+            var name = optionalMatchExpr.name;
 
-        // function-specific
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            var res = new RSExpr.OptionalMatch(contentExpr, noneExpr, someExpr, name);
+            return res;
+        }
+
+        // references
         if (type == RJSRSExpr.ArgumentRef.class) {
             var argumentExpr = (RJSRSExpr.ArgumentRef) expr;
             // if the function has arguments, its argument slots are the first in line
             var argIndex = findArgIndex(argumentExpr.argumentName);
             return new RSExpr.ArgumentRef<>(argIndex);
+        }
+        if (type == RJSRSExpr.OptionalMatchRef.class) {
+            var refExpr = (RJSRSExpr.OptionalMatchRef) expr;
+            return new RSExpr.OptionalMatchRef<>(refExpr.optionalMatchName.id);
         }
 
         // primitives
@@ -199,20 +214,16 @@ public class RailScriptExprParser {
             var aspect = aspectsMap.get(aspectSetContainsExpr.aspect.id);
             return new RSExpr.AspectSetContains(aspectSet, aspect);
         }
-        if (type == RJSRSExpr.OptionalMatch.class) {
-            var optionalMatchExpr = (RJSRSExpr.OptionalMatch) expr;
-            var contentExpr = parseOptionalExpr(optionalMatchExpr.expr);
-            var someExpr = parse(optionalMatchExpr.caseSome);
-            var noneExpr = parse(optionalMatchExpr.caseNone);
-            var name = optionalMatchExpr.name;
-
-            @SuppressWarnings({"unchecked", "rawtypes"})
-            var res = new RSExpr.OptionalMatch(contentExpr, noneExpr, someExpr, name);
-            return res;
+        if (type == RJSRSExpr.ReservedRoute.class) {
+            var reservedRouteExpr = (RJSRSExpr.ReservedRoute) expr;
+            var signalExpr = parseSignalExpr(reservedRouteExpr.signal);
+            return new RSExpr.ReservedRoute(signalExpr);
         }
-        if (type == RJSRSExpr.OptionalMatchRef.class) {
-            var refExpr = (RJSRSExpr.OptionalMatchRef) expr;
-            return new RSExpr.OptionalMatchRef<>(refExpr.optionalMatchName.id);
+        if (type == RJSRSExpr.NextSignal.class) {
+            var nextSignalExpr = (RJSRSExpr.NextSignal) expr;
+            var signalExpr = parseSignalExpr(nextSignalExpr.signal);
+            var routeExpr = parseRouteExpr(nextSignalExpr.route);
+            return new RSExpr.NextSignal(signalExpr, routeExpr);
         }
 
         throw new InvalidInfraException(String.format("'%s' unsupported signal expression", type));

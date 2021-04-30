@@ -88,4 +88,10 @@ public class RSExprVisitor {
 
     public void visit(RSExpr.OptionalMatchRef<?> tOptionalMatchRef) {
     }
+
+    public void visit(RSExpr.ReservedRoute reservedRoute) {
+    }
+
+    public void visit(RSExpr.NextSignal nextSignal) {
+    }
 }

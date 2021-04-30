@@ -414,14 +414,11 @@
         "type": "optional_match",
         "name": "reserved_route",
         "expr": {
-          "type": "call",
-          "function": "reserved_route",
-          "arguments": [
-            {
-              "type": "argument_ref",
-              "argument_name": "master_signal"
-            }
-          ]
+          "type": "reserved_route",
+          "signal": {
+            "type": "argument_ref",
+            "argument_name": "master_signal"
+          }
         },
         "case_none": {
           "type": "aspect_set",
@@ -435,18 +432,15 @@
           "type": "optional_match",
           "name": "next_signal",
           "expr": {
-            "type": "call",
-            "function": "next_signal",
-            "arguments": [
-              {
-                "type": "optional_match_ref",
-                "match_name": "reserved_route"
-              },
-              {
-                "type": "argument_ref",
-                "argument_name": "master_signal"
-              }
-            ]
+            "type": "next_signal",
+            "route": {
+              "type": "optional_match_ref",
+              "match_name": "reserved_route"
+            },
+            "signal": {
+              "type": "argument_ref",
+              "argument_name": "master_signal"
+            }
           },
           "case_none": {
             "type": "aspect_set",

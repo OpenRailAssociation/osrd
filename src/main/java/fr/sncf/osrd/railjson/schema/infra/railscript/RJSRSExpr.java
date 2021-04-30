@@ -2,7 +2,6 @@ package fr.sncf.osrd.railjson.schema.infra.railscript;
 
 import com.squareup.moshi.Json;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
@@ -114,6 +113,8 @@ public abstract class RJSRSExpr {
                     .withSubtype(SignalAspectCheck.class, "signal_has_aspect")
                     .withSubtype(RouteStateCheck.class, "route_has_state")
                     .withSubtype(AspectSetContains.class, "aspect_set_contains")
+                    .withSubtype(ReservedRoute.class, "reserved_route")
+                    .withSubtype(NextSignal.class, "next_signal")
     );
 
     // region BOOLEAN_LOGIC
@@ -293,7 +294,7 @@ public abstract class RJSRSExpr {
     }
 
     public static final class OptionalMatchRef extends RJSRSExpr {
-        @Json(name="optional_match_name")
+        @Json(name="match_name")
         public ID<OptionalMatch> optionalMatchName;
 
         public OptionalMatchRef(ID<OptionalMatch> optionalMatchName) {
@@ -370,6 +371,40 @@ public abstract class RJSRSExpr {
         public AspectSetContains(RJSRSExpr aspectSet, ID<RJSAspect> aspect) {
             this.aspectSet = aspectSet;
             this.aspect = aspect;
+        }
+    }
+
+    /**
+     * Returns the current reserved route containing the signal, if any
+     */
+    public static final class ReservedRoute extends RJSRSExpr {
+        /**
+         * The expression giving the signal to look for.
+         */
+        public RJSRSExpr signal;
+
+        public ReservedRoute(RJSRSExpr signal) {
+            this.signal = signal;
+        }
+    }
+
+    /**
+     * Returns the next signal on the given route, if any
+     */
+    public static final class NextSignal extends RJSRSExpr {
+        /**
+         * The expression giving the signal used as reference, assumed to be on the route.
+         */
+        public RJSRSExpr signal;
+
+        /**
+         * The expression giving the route to follow.
+         */
+        public RJSRSExpr route;
+
+        public NextSignal(RJSRSExpr signal, RJSRSExpr route) {
+            this.signal = signal;
+            this.route = route;
         }
     }
     // endregion

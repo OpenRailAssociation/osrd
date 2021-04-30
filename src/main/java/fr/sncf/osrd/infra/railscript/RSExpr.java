@@ -615,5 +615,55 @@ public abstract class RSExpr<T extends RSValue> {
         }
     }
 
+    public static final class ReservedRoute extends RSExpr<RSOptional<RouteState>> {
+        public final RSExpr<SignalState> signal;
+
+        public ReservedRoute(RSExpr<SignalState> signal) {
+            this.signal = signal;
+        }
+
+        @Override
+        public RSOptional<RouteState> evaluate(RSExprState<?> state) {
+            // TODO
+            return new RSOptional<>(null);
+        }
+
+        @Override
+        public RSType getType(RSType[] argumentTypes) {
+            return RSType.OPTIONAL;
+        }
+
+        @Override
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+        }
+    }
+
+    public static final class NextSignal extends RSExpr<RSOptional<SignalState>> {
+        public final RSExpr<SignalState> signal;
+        public final RSExpr<RouteState> route;
+
+        public NextSignal(RSExpr<SignalState> signal, RSExpr<RouteState> route) {
+            this.signal = signal;
+            this.route = route;
+        }
+
+        @Override
+        public RSOptional<SignalState> evaluate(RSExprState<?> state) {
+            // TODO
+            return new RSOptional<>(null);
+        }
+
+        @Override
+        public RSType getType(RSType[] argumentTypes) {
+            return RSType.OPTIONAL;
+        }
+
+        @Override
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+        }
+    }
+
     // endregion
 }
