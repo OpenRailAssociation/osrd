@@ -7,6 +7,9 @@ from osrd_infra.models import (
     # infra
     Infra,
     IdentifierComponent,
+    GeoPointLocationComponent,
+    GeoLineLocationComponent,
+    GeoAreaLocationComponent,
     TrackSectionLocationComponent,
     TrackSectionRangeComponent,
     TrackSectionComponent,
@@ -118,6 +121,24 @@ class TrackSectionRangeComponentSerializer(ComponentSerializer):
 class TrackSectionComponentSerializer(ComponentSerializer):
     class Meta:
         model = TrackSectionComponent
+        fields = "__all__"
+
+
+class GeoPointLocationComponentSerializer(ComponentSerializer):
+    class Meta:
+        model = GeoPointLocationComponent
+        fields = "__all__"
+
+
+class GeoLineLocationComponentSerializer(ComponentSerializer):
+    class Meta:
+        model = GeoLineLocationComponent
+        fields = "__all__"
+
+
+class GeoAreaLocationComponentSerializer(ComponentSerializer):
+    class Meta:
+        model = GeoAreaLocationComponent
         fields = "__all__"
 
 

@@ -36,6 +36,33 @@ class IdentifierDatabase(models.Model):
         ]
 
 
+class GeoPointLocationComponent(Component):
+    geographic = models.PointField(srid=settings.OSRD_INFRA_SRID)
+    schematic = models.PointField(srid=settings.OSRD_INFRA_SRID)
+
+    class ComponentMeta:
+        name = "geo_point_location"
+        unique = True
+
+
+class GeoAreaLocationComponent(Component):
+    geographic = models.PolygonField(srid=settings.OSRD_INFRA_SRID)
+    schematic = models.PolygonField(srid=settings.OSRD_INFRA_SRID)
+
+    class ComponentMeta:
+        name = "geo_area_location"
+        unique = True
+
+
+class GeoLineLocationComponent(Component):
+    geographic = models.LineStringField(srid=settings.OSRD_INFRA_SRID)
+    schematic = models.LineStringField(srid=settings.OSRD_INFRA_SRID)
+
+    class ComponentMeta:
+        name = "geo_line_location"
+        unique = True
+
+
 class TrackSectionLocationComponent(Component):
     """The component holding location information for point objects on track sections"""
 
@@ -80,8 +107,6 @@ class IdentifierComponent(Component):
 
 
 class TrackSectionComponent(Component):
-    path = models.LineStringField(srid=settings.OSRD_INFRA_SRID)
-
     # the length of the track section, in meters
     length = models.FloatField()
 
@@ -112,6 +137,7 @@ class TrackSectionEntity(Entity):
     verbose_name_plural = "track section entities"
     components = [
         TrackSectionComponent,
+        GeoLineLocationComponent,
         IdentifierComponent,
     ]
 
@@ -121,6 +147,7 @@ class SwitchEntity(Entity):
     verbose_name_plural = "switch entities"
     components = [
         IdentifierComponent,
+        GeoPointLocationComponent,
         TrackSectionLinkComponent,
     ]
 
@@ -130,6 +157,7 @@ class TrackSectionLinkEntity(Entity):
     verbose_name_plural = "track section link entities"
     components = [
         IdentifierComponent,
+        GeoPointLocationComponent,
         TrackSectionLinkComponent,
     ]
 
@@ -139,6 +167,23 @@ class OperationalPointEntity(Entity):
     verbose_name_plural = "operational point entities"
     components = [
         IdentifierComponent,
+        GeoAreaLocationComponent,
+    ]
+
+
+class OperationalPointPartComponent(Component):
+    operational_point = models.ForeignKey(OperationalPointEntity, on_delete=models.CASCADE)
+
+    class ComponentMeta:
+        name = "operational_point_part"
+
+
+class OperationalPointPartEntity(Entity):
+    name = "operational_point"
+    verbose_name_plural = "operational point part entities"
+    components = [
+        OperationalPointPartComponent,
+        GeoLineLocationComponent,
         TrackSectionRangeComponent,
     ]
 
@@ -148,5 +193,6 @@ class SignalEntity(Entity):
     verbose_name_plural = "signal entities"
     components = [
         IdentifierComponent,
+        GeoPointLocationComponent,
         TrackSectionLocationComponent,
     ]
