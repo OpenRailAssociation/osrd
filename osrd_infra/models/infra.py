@@ -4,6 +4,7 @@ from osrd_infra.models.ecs import (
     Entity,
     EntityNamespace,
 )
+from django.core.validators import MaxValueValidator
 from osrd_infra.models.common import EndpointField
 from django.conf import settings
 
@@ -60,6 +61,27 @@ class GeoLineLocationComponent(Component):
 
     class ComponentMeta:
         name = "geo_line_location"
+        unique = True
+
+
+class TrackAngleComponent(Component):
+    geographic = models.PositiveSmallIntegerField(validators=[MaxValueValidator(379)])
+    schematic = models.PositiveSmallIntegerField(validators=[MaxValueValidator(379)])
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(geographic__lte=379),
+                name="geographic__lte=379",
+            ),
+            models.CheckConstraint(
+                check=models.Q(schematic__lte=379),
+                name="schematic__lte=379",
+            ),
+        ]
+
+    class ComponentMeta:
+        name = "track_angle"
         unique = True
 
 
@@ -172,7 +194,9 @@ class OperationalPointEntity(Entity):
 
 
 class OperationalPointPartComponent(Component):
-    operational_point = models.ForeignKey(OperationalPointEntity, on_delete=models.CASCADE)
+    operational_point = models.ForeignKey(
+        OperationalPointEntity, on_delete=models.CASCADE
+    )
 
     class ComponentMeta:
         name = "operational_point_part"
@@ -195,4 +219,5 @@ class SignalEntity(Entity):
         IdentifierComponent,
         GeoPointLocationComponent,
         TrackSectionLocationComponent,
+        TrackAngleComponent,
     ]
