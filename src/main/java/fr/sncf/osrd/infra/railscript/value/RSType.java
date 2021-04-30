@@ -1,5 +1,6 @@
 package fr.sncf.osrd.infra.railscript.value;
 
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 
@@ -8,11 +9,11 @@ public enum RSType {
     ASPECT_SET(null),
     SIGNAL(null),
     ROUTE(RouteStatus.class),
-    OPTIONAL(null),
+    OPTIONAL_SIGNAL(null),
+    OPTIONAL_ROUTE(null),
     SWITCH(SwitchPosition.class);
 
     public final Class<? extends Enum<?>> enumClass;
-    public RSType optionalContentType = null;
 
     RSType(Class<? extends Enum<?>> enumClass) {
         this.enumClass = enumClass;
@@ -30,10 +31,22 @@ public enum RSType {
                 return "Route";
             case SWITCH:
                 return "Switch";
-            case OPTIONAL:
-                return String.format("Optional<%s>", optionalContentType);
+            case OPTIONAL_ROUTE:
+                return "Optional route";
+            case OPTIONAL_SIGNAL:
+                return "Optional signal";
             default:
                 return "";
         }
+    }
+
+    public RSType subType() throws InvalidInfraException {
+        switch (this) {
+            case OPTIONAL_ROUTE:
+                return ROUTE;
+            case OPTIONAL_SIGNAL:
+                return SIGNAL;
+        }
+        throw new InvalidInfraException("Can't call subtype on a type that is not an optional");
     }
 }

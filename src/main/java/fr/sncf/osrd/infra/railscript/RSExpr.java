@@ -646,9 +646,7 @@ public abstract class RSExpr<T extends RSValue> {
 
         @Override
         public RSType getType(RSType[] argumentTypes) {
-            var res = RSType.OPTIONAL;
-            res.optionalContentType = RSType.ROUTE;
-            return res;
+            return RSType.OPTIONAL_ROUTE;
         }
 
         @Override
@@ -683,9 +681,7 @@ public abstract class RSExpr<T extends RSValue> {
 
         @Override
         public RSType getType(RSType[] argumentTypes) {
-            var res = RSType.OPTIONAL;
-            res.optionalContentType = RSType.SIGNAL;
-            return res;
+            return RSType.OPTIONAL_SIGNAL;
         }
 
         @Override
