@@ -4,24 +4,15 @@ from rest_framework.serializers import (
 )
 
 from osrd_infra.models import (
-    # infra
     Infra,
-    IdentifierComponent,
-    GeoPointLocationComponent,
-    GeoLineLocationComponent,
-    GeoAreaLocationComponent,
-    TrackSectionLocationComponent,
-    TrackSectionRangeComponent,
-    TrackSectionComponent,
+    # explicitly declared serialiers
     TrackSectionLinkComponent,
-    TrackSectionEntity,
-    TrackSectionLinkEntity,
-    SwitchEntity,
-    OperationalPointEntity,
-    SignalEntity,
+    IdentifierComponent,
     # ecs
     Component,
     get_entity_meta,
+    ALL_COMPONENT_TYPES,
+    ALL_ENTITY_TYPES,
 )
 
 from osrd_infra.models.common import Endpoint, EnumSerializer
@@ -95,7 +86,7 @@ class InfraSerializer(ModelSerializer):
         fields = "__all__"
 
 
-# component serializers
+# COMPONENT SERIALIZERS
 
 
 class IdentifierComponentSerializer(ComponentSerializer):
@@ -103,42 +94,6 @@ class IdentifierComponentSerializer(ComponentSerializer):
 
     class Meta:
         model = IdentifierComponent
-        fields = "__all__"
-
-
-class TrackSectionLocationComponentSerializer(ComponentSerializer):
-    class Meta:
-        model = TrackSectionLocationComponent
-        fields = "__all__"
-
-
-class TrackSectionRangeComponentSerializer(ComponentSerializer):
-    class Meta:
-        model = TrackSectionRangeComponent
-        fields = "__all__"
-
-
-class TrackSectionComponentSerializer(ComponentSerializer):
-    class Meta:
-        model = TrackSectionComponent
-        fields = "__all__"
-
-
-class GeoPointLocationComponentSerializer(ComponentSerializer):
-    class Meta:
-        model = GeoPointLocationComponent
-        fields = "__all__"
-
-
-class GeoLineLocationComponentSerializer(ComponentSerializer):
-    class Meta:
-        model = GeoLineLocationComponent
-        fields = "__all__"
-
-
-class GeoAreaLocationComponentSerializer(ComponentSerializer):
-    class Meta:
-        model = GeoAreaLocationComponent
         fields = "__all__"
 
 
@@ -151,26 +106,34 @@ class TrackSectionLinkComponentSerializer(ComponentSerializer):
         fields = "__all__"
 
 
-class TrackSectionSerializer(EntitySerializer):
-    class Meta:
-        model = TrackSectionEntity
+# generate component serializers which weren't explicitly declared
 
 
-class TrackSectionLinkSerializer(EntitySerializer):
-    class Meta:
-        model = TrackSectionLinkEntity
+def generate_serializer(model, parent_class, extra_meta={}):
+    meta_attrs = {
+        "model": model,
+        **extra_meta,
+    }
+    meta = type("Meta", (), meta_attrs)
+    attrs = {"Meta": meta}
+    serializer_name = model.__name__ + "Serializer"
+    return type(serializer_name, (parent_class,), attrs)
 
 
-class SwitchSerializer(EntitySerializer):
-    class Meta:
-        model = SwitchEntity
+for component_type in ALL_COMPONENT_TYPES:
+    if component_type in ComponentSerializer._registry:
+        continue
+    serializer = generate_serializer(
+        component_type, ComponentSerializer, {"fields": "__all__"}
+    )
+    globals()[serializer.__name__] = serializer
 
 
-class OperationalPointSerializer(EntitySerializer):
-    class Meta:
-        model = OperationalPointEntity
+# ENTITY SERIALIZERS
 
+ALL_ENTITY_SERIALIZERS = []
 
-class SignalSerializer(EntitySerializer):
-    class Meta:
-        model = SignalEntity
+for entity_type in ALL_ENTITY_TYPES:
+    serializer = generate_serializer(entity_type, EntitySerializer)
+    ALL_ENTITY_SERIALIZERS.append(serializer)
+    globals()[serializer.__name__] = serializer

@@ -1,21 +1,8 @@
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from osrd_infra.models import (
-    Infra,
-    TrackSectionEntity,
-    TrackSectionLinkEntity,
-    SwitchEntity,
-    SignalEntity,
-    OperationalPointEntity,
-)
-from osrd_infra.serializers import (
-    InfraSerializer,
-    TrackSectionSerializer,
-    TrackSectionLinkSerializer,
-    SignalSerializer,
-    OperationalPointSerializer,
-    SwitchSerializer,
-)
+from osrd_infra.models import Infra
+
+from osrd_infra.serializers import InfraSerializer, ALL_ENTITY_SERIALIZERS
 
 
 class InfraViewSet(ReadOnlyModelViewSet):
@@ -23,36 +10,32 @@ class InfraViewSet(ReadOnlyModelViewSet):
     queryset = Infra.objects.all()
 
 
-class TrackSectionViewSet(ReadOnlyModelViewSet):
-    serializer_class = TrackSectionSerializer
-
-    def get_queryset(self):
-        return TrackSectionEntity.objects.all()
+ALL_ENTITY_VIEWSETS = []
 
 
-class TrackSectionLinkViewSet(ReadOnlyModelViewSet):
-    serializer_class = TrackSectionLinkSerializer
+for entity_serializer in ALL_ENTITY_SERIALIZERS:
+    model = entity_serializer.Meta.model
 
-    def get_queryset(self):
-        return TrackSectionLinkEntity.objects.all()
+    def make_get_queryset(model):
+        """
+        the model local variable needs to be captured:
+        the one in the loop changes
+        """
 
+        def _get_queryset(self):
+            return model.objects.all()
 
-class SwitchViewSet(ReadOnlyModelViewSet):
-    serializer_class = SwitchSerializer
+        return _get_queryset
 
-    def get_queryset(self):
-        return SwitchEntity.objects.all()
-
-
-class SignalViewSet(ReadOnlyModelViewSet):
-    serializer_class = SignalSerializer
-
-    def get_queryset(self):
-        return SignalEntity.objects.all()
-
-
-class OperationalPointViewSet(ReadOnlyModelViewSet):
-    serializer_class = OperationalPointSerializer
-
-    def get_queryset(self):
-        return OperationalPointEntity.objects.all()
+    viewset_attrs = {
+        "serializer_class": entity_serializer,
+        "get_queryset": make_get_queryset(model),
+    }
+    viewset_name = model.__name__ + "ViewSet"
+    entity_viewset = type(
+        viewset_name,
+        (ReadOnlyModelViewSet,),
+        viewset_attrs,
+    )
+    globals()[viewset_name] = entity_viewset
+    ALL_ENTITY_VIEWSETS.append((model, entity_viewset))
