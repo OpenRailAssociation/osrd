@@ -172,6 +172,13 @@ class TrackSectionLinkComponent(Component):
         name = "track_section_link"
 
 
+class KilometricPointComponent(Component):
+    value = models.CharField(max_length=255)
+
+    class ComponentMeta:
+        name = "kilometric_point"
+
+
 class TrackSectionEntity(Entity):
     name = "track_section"
     verbose_name_plural = "track section entities"
@@ -209,6 +216,7 @@ class OperationalPointEntity(Entity):
     components = [
         IdentifierComponent,
         GeoAreaLocationComponent,
+        KilometricPointComponent,
     ]
 
 
