@@ -15,6 +15,7 @@ import fr.sncf.osrd.infra.railscript.RSStatefulExpr;
 import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.infra.signaling.Aspect;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class RailScriptExprParser {
@@ -22,6 +23,7 @@ public class RailScriptExprParser {
     private final HashMap<String, RSFunction<?>> scriptFunctions;
     private final String[] argNames;
     private final RSType[] argTypes;
+    private final HashMap<String, RSType> varTypes;
 
     /** The number of slots required to evaluate the function */
     public int argSlotCount = 0;
@@ -56,6 +58,7 @@ public class RailScriptExprParser {
         this.scriptFunctions = scriptFunctions;
         this.argNames = argNames;
         this.argTypes = argTypes;
+        varTypes = new HashMap<>();
     }
 
     public RailScriptExprParser(HashMap<String, Aspect> aspectsMap, HashMap<String, RSFunction<?>> scriptFunctions) {
@@ -167,15 +170,7 @@ public class RailScriptExprParser {
         if (type == RJSRSExpr.EnumMatch.class)
             return parseEnumMatch((RJSRSExpr.EnumMatch) expr);
         if (type == RJSRSExpr.OptionalMatch.class) {
-            var optionalMatchExpr = (RJSRSExpr.OptionalMatch) expr;
-            var contentExpr = parseOptionalExpr(optionalMatchExpr.expr);
-            var someExpr = parse(optionalMatchExpr.caseSome);
-            var noneExpr = parse(optionalMatchExpr.caseNone);
-            var name = optionalMatchExpr.name;
-
-            @SuppressWarnings({"unchecked", "rawtypes"})
-            var res = new RSExpr.OptionalMatch(contentExpr, noneExpr, someExpr, name);
-            return res;
+            return parseOptionalMatch(expr);
         }
 
         // references
@@ -187,7 +182,7 @@ public class RailScriptExprParser {
         }
         if (type == RJSRSExpr.OptionalMatchRef.class) {
             var refExpr = (RJSRSExpr.OptionalMatchRef) expr;
-            return new RSExpr.OptionalMatchRef<>(refExpr.optionalMatchName.id);
+            return new RSExpr.OptionalMatchRef<>(refExpr.optionalMatchName.id, varTypes);
         }
 
         // primitives
@@ -262,6 +257,25 @@ public class RailScriptExprParser {
                 return enumVal.ordinal();
         }
         throw new InvalidInfraException("unknown enum value: " + val);
+    }
+
+    private RSExpr.OptionalMatch<?> parseOptionalMatch(RJSRSExpr expr) throws InvalidInfraException {
+        var optionalMatchExpr = (RJSRSExpr.OptionalMatch) expr;
+        var name = optionalMatchExpr.name;
+        if (varTypes.containsKey(name))
+            throw new InvalidInfraException("Duplicate optional match name " + name);
+        var noneExpr = parse(optionalMatchExpr.caseNone);
+        var contentExpr = parseOptionalExpr(optionalMatchExpr.expr);
+        var type = contentExpr.getType(argTypes);
+        assert type == RSType.OPTIONAL;
+        var subType = type.optionalContentType;
+        varTypes.put(name, subType);
+        var someExpr = parse(optionalMatchExpr.caseSome);
+        varTypes.remove(name);
+
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        var res = new RSExpr.OptionalMatch(contentExpr, noneExpr, someExpr, name);
+        return res;
     }
 
     private static RouteStatus parseRouteState(RJSRoute.State state) {

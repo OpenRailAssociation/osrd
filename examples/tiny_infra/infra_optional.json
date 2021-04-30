@@ -630,10 +630,6 @@
               {
                 "type": "signal",
                 "signal": "il.sig.W5"
-              },
-              {
-                "type": "route",
-                "route": "rt.C3-S7"
               }
             ]
           },
@@ -773,10 +769,6 @@
               {
                 "type": "signal",
                 "signal": "il.sig.W5"
-              },
-              {
-                "type": "route",
-                "route": "rt.C1-S7"
               }
             ]
           },
@@ -821,10 +813,6 @@
               {
                 "type": "signal",
                 "signal": "il.sig.W4"
-              },
-              {
-                "type": "route",
-                "route": "rt.C2-C6"
               }
             ]
           },
