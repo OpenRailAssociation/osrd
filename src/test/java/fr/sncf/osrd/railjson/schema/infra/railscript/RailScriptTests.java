@@ -165,7 +165,9 @@ public class RailScriptTests extends RSHelpers {
         var m = sim.infra.aspects;
         RSExpr<?> rsMatch = new RailScriptExprParser(m, RJSGenerator.functions).parse(matchExpr);
         assert rsMatch instanceof RSExpr.OptionalMatch;
-        var rsExpr = ((RSExpr.OptionalMatch<?>) rsMatch).expr;
+
+        @SuppressWarnings("unchecked")
+        RSExpr<RSOptional<RouteState>> rsExpr = ((RSExpr.OptionalMatch<RouteState>) rsMatch).expr;
         assert rsExpr instanceof RSExpr.ReservedRoute;
         var signalRef = ((RSExpr.ReservedRoute) rsExpr).signal;
         assert signalRef instanceof RSExpr.SignalRef;
