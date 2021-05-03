@@ -139,9 +139,14 @@ public class Helpers {
 
     /** Generates the defaults infra from tiny_infra/infra.json, to be edited for each test */
     public static RJSInfra getBaseInfra() {
+        return getBaseInfra("tiny_infra/infra.json");
+    }
+
+    /** Generates the defaults infra from the specified path */
+    public static RJSInfra getBaseInfra(String path) {
         try {
             ClassLoader classLoader = Helpers.class.getClassLoader();
-            var infraPath = classLoader.getResource("tiny_infra/infra.json");
+            var infraPath = classLoader.getResource(path);
             assert infraPath != null;
             var fileSource = Okio.source(Path.of(infraPath.getFile()));
             var bufferedSource = Okio.buffer(fileSource);
