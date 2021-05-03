@@ -398,11 +398,14 @@ public abstract class RSExpr<T extends RSValue> {
         public final String name;
 
         /** Matches an optional expression with an expression depending on its content */
-        public OptionalMatch(RSExpr<RSOptional<T>> expr, RSExpr<T> caseNone, RSExpr<T> caseSome, String name) {
+        public OptionalMatch(RSExpr<RSOptional<T>> expr, RSExpr<T> caseNone, RSExpr<T> caseSome, String name) throws InvalidInfraException {
             this.expr = expr;
             this.caseNone = caseNone;
             this.caseSome = caseSome;
             this.name = name;
+
+            var visitor = new NoDelayChecker();
+            caseSome.accept(visitor);
         }
 
         @Override
@@ -413,13 +416,15 @@ public abstract class RSExpr<T extends RSValue> {
                 return caseNoneResult;
             else {
                 state.variablesInScope.put(name, optional);
-
-                // NOTE: we can't run this branch in all cases, so delays here will not work
-                // TODO validate the absence of delays here at init
                 var res = caseSome.evaluate(state);
-
                 state.variablesInScope.remove(name);
                 return res;
+            }
+        }
+
+        private static class NoDelayChecker extends RSExprVisitor {
+            public void visit(RSExpr.Delay<?> expr) throws InvalidInfraException {
+                throw new InvalidInfraException("Delays cannot be used here");
             }
         }
 
