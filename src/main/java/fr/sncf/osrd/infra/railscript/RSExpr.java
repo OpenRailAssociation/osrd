@@ -398,7 +398,8 @@ public abstract class RSExpr<T extends RSValue> {
         public final String name;
 
         /** Matches an optional expression with an expression depending on its content */
-        public OptionalMatch(RSExpr<RSOptional<T>> expr, RSExpr<T> caseNone, RSExpr<T> caseSome, String name) throws InvalidInfraException {
+        public OptionalMatch(RSExpr<RSOptional<T>> expr, RSExpr<T> caseNone, RSExpr<T> caseSome, String name)
+                throws InvalidInfraException {
             this.expr = expr;
             this.caseNone = caseNone;
             this.caseSome = caseSome;
