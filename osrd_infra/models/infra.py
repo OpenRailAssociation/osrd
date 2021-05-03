@@ -17,6 +17,15 @@ def EndpointField():
     return models.IntegerField(choices=Endpoint.choices)
 
 
+class ApplicableDirection(models.IntegerChoices):
+    NORMAL = 0  # from BEGIN to END
+    REVERSE = 1  # from END to BEGIN
+
+
+def ApplicableDirectionField():
+    return models.IntegerField(choices=ApplicableDirection.choices)
+
+
 class Infra(models.Model):
     name = models.CharField(max_length=128)
     owner = models.UUIDField(default="00000000-0000-0000-0000-000000000000")
@@ -187,6 +196,13 @@ class KilometricPointComponent(Component):
         name = "kilometric_point"
 
 
+class ApplicableDirectionComponent(Component):
+    applicable_direction = ApplicableDirectionField()
+
+    class ComponentMeta:
+        name = "applicable_direction"
+
+
 class TrackSectionEntity(Entity):
     name = "track_section"
     verbose_name_plural = "track section entities"
@@ -255,6 +271,7 @@ class SignalEntity(Entity):
         GeoPointLocationComponent,
         TrackSectionLocationComponent,
         TrackAngleComponent,
+        ApplicableDirectionComponent,
     ]
 
 
