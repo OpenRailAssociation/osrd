@@ -6,19 +6,25 @@ from django.db import transaction
 
 from osrd_infra.models import (
     Infra,
+    get_entity_meta,
+    ALL_ENTITY_TYPES,
 )
 
 
 def status_missing_field_keyerror(key_error: KeyError):
     (key,) = key_error.args
-    return {"type": "error", "message": f"missing field: {key}"}
+    raise ParseError(f"missing field: {key}")
 
 
 def status_unknown_manifest_fields(manifest):
-    return {
-        "type": "error",
-        "message": f"unknown manifest fields: {', '.join(manifest)}",
-    }
+    raise ParseError(f"unknown manifest fields: {', '.join(manifest)}")
+
+
+def get_entity_type(entity_name):
+    entity_type = ALL_ENTITY_TYPES.get(entity_name)
+    if entity_type is None:
+        raise ParseError(f"unknown entity type: {entity_name}")
+    return entity_type
 
 
 def status_success():
@@ -31,13 +37,16 @@ def status_placeholder():
 
 def create_entity(namespace, manifest):
     try:
-        entity_type = manifest.pop("entity_type")
+        entity_type_name = manifest.pop("entity_type")
         components = manifest.pop("components")
     except KeyError as e:
         return status_missing_field_keyerror(e)
 
     if manifest:
         return status_unknown_manifest_fields(manifest)
+
+    entity_type = get_entity_type(entity_type_name)
+    meta = get_entity_meta(entity_type)
 
     print((entity_type, components))
     return status_success()

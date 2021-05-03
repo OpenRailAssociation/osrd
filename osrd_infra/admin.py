@@ -34,7 +34,7 @@ def generate_entity_admin(model: Type[Entity]):
     return type(model.__name__ + "GeneratedAdmin", (ModelAdmin,), attrs)
 
 
-for entity_type in ALL_ENTITY_TYPES:
+for entity_type in ALL_ENTITY_TYPES.values():
     entity_admin = generate_entity_admin(entity_type)
     admin.register(entity_type)(entity_admin)
 

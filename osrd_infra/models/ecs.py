@@ -41,7 +41,7 @@ PASSTHROUGH_ATTR_NAMES = (
 )
 
 
-ALL_ENTITY_TYPES = []
+ALL_ENTITY_TYPES = {}
 
 
 class EntityBase(type(models.Model)):
@@ -60,13 +60,13 @@ class EntityBase(type(models.Model)):
         components = attrs.pop("components")
         module = attrs.pop("__module__")
         qualname = attrs.pop("__qualname__")
-        assert not attrs, "unknown entity attributes: {}".format(", ".join(attrs))
+        if attrs:
+            raise ValueError(f"unknown entity attributes: {', '.join(attrs)}")
 
         # parse the list of available components for the entity
         for comp in components:
-            assert issubclass(
-                comp, Component
-            ), f"{comp} isn't a Component, and thus can't be part of {class_name}"
+            if not issubclass(comp, Component):
+                raise ValueError(f"{comp} isn't a Component, and thus can't be part of {class_name}")
 
         # create a constructor which injects the entity_type value
         # that's the whole point of creating a proxy model in the first place:
@@ -96,7 +96,15 @@ class EntityBase(type(models.Model)):
 
         # this local variable is used by the dj_init closure above
         entity_type = super().__new__(cls, class_name, dj_bases, dj_attrs, **kwargs)
-        ALL_ENTITY_TYPES.append(entity_type)
+
+        # register the entity type
+        prev_entity_type = ALL_ENTITY_TYPES.setdefault(entity_name, entity_type)
+        if prev_entity_type is not entity_type:
+            raise ValueError(
+                f"conflicting entity name {entity_name}: "
+                f"{entity_type} conflicts with {prev_entity_type}"
+            )
+
         return entity_type
 
 
@@ -141,7 +149,8 @@ class ComponentMeta:
 
     @staticmethod
     def from_meta_class(class_name, meta_class):
-        assert meta_class is not None, f"{class_name} has no ComponentMeta"
+        if meta_class is None:
+            raise ValueError(f"{class_name} has no ComponentMeta")
 
         # make a dict we can pop items off
         meta = dict(
@@ -149,17 +158,17 @@ class ComponentMeta:
         )
 
         name = meta.pop("name", None)
-        assert name is not None, f"{class_name}'s ComponentMeta has no name"
-
         unique = meta.pop("unique", False)
+
+        if name is None:
+            raise ValueError(f"{class_name}'s ComponentMeta has no name")
 
         related_name = meta.pop("related_name", None)
         if related_name is None:
             related_name = name if unique else f"{name}_set"
 
-        assert (
-            not meta
-        ), f"{class_name} has unknown ComponentMeta settings: {','.join(meta)}"
+        if meta:
+            raise ValueError(f"{class_name} has unknown ComponentMeta settings: {','.join(meta)}")
         return ComponentMeta(name, related_name, unique)
 
     def __repr__(self):

@@ -4,11 +4,14 @@ from rest_framework.serializers import (
 )
 
 from osrd_infra.models import (
-    Endpoint,
     Infra,
+    # enums
+    Endpoint,
+    ApplicableDirection,
     # explicitly declared serialiers
     TrackSectionLinkComponent,
     IdentifierComponent,
+    ApplicableDirectionComponent,
     # ecs
     Component,
     get_entity_meta,
@@ -107,6 +110,14 @@ class TrackSectionLinkComponentSerializer(ComponentSerializer):
         fields = "__all__"
 
 
+class ApplicableDirectionComponentSerializer(ComponentSerializer):
+    applicable_direction = EnumSerializer(ApplicableDirection)
+
+    class Meta:
+        model = ApplicableDirectionComponent
+        fields = "__all__"
+
+
 # generate component serializers which weren't explicitly declared
 
 
@@ -134,7 +145,7 @@ for component_type in ALL_COMPONENT_TYPES:
 
 ALL_ENTITY_SERIALIZERS = []
 
-for entity_type in ALL_ENTITY_TYPES:
+for entity_type in ALL_ENTITY_TYPES.values():
     serializer = generate_serializer(entity_type, EntitySerializer)
     ALL_ENTITY_SERIALIZERS.append(serializer)
     globals()[serializer.__name__] = serializer
