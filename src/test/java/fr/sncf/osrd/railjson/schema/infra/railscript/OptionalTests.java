@@ -44,7 +44,6 @@ public class OptionalTests {
         var signalId = new ID<RJSSignal>(sim.infraState.getSignalState(0).signal.id);
         var optional = new RJSRSExpr.ReservedRoute(new RJSRSExpr.SignalRef(signalId));
 
-
         assertThrows(InvalidInfraException.class,
                 () -> tryInstanciate(sim, new RJSRSExpr.OptionalMatch(optional, trueExpr, delay, "foo")),
                 "Expected an invalid infra because of the delay in the match expression"
