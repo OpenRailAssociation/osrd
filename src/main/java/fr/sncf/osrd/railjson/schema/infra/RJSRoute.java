@@ -38,8 +38,7 @@ public class RJSRoute implements Identified {
             Map<ID<RJSSwitch>, RJSSwitch.Position> switchesPosition,
             List<ID<RJSRouteWaypoint>> waypoints,
             List<Set<ID<RJSTVDSection>>> releaseGroups,
-            ID<RJSSignal> entrySignal,
-            List<ID<RJSSignal>> signals
+            ID<RJSSignal> entrySignal
     ) {
         this.id = id;
         this.tvdSections = tvdSections;
