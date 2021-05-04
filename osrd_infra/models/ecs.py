@@ -122,7 +122,7 @@ class Entity(models.Model, metaclass=EntityBase, entity_base_passthrough=True):
     )
 
     def get_concrete_type(self):
-        content_type = ContentType.objects.get_for_id(self.entity_type)
+        content_type = ContentType.objects.get_for_id(self.entity_type_id)
         return content_type.model_class()
 
     def __str__(self):

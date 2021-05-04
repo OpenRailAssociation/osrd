@@ -46,9 +46,19 @@ def try_extract_field(manifest, field):
 
 def try_save_component(component, **kwargs):
     try:
-        component.save(**kwargs)
+        return component.save(**kwargs)
     except IntegrityError as e:
         raise IntegrityException(e)
+
+
+def get_entity(entity_id):
+    try:
+        return Entity.objects.get(pk=entity_id)
+    except ObjectDoesNotExist:
+        raise IntegrityException(f"Entity with id '{entity_id}' doesn't exist")
+    except (TypeError, ValueError):
+        data_type = type(entity_id).__name__
+        raise ParseError(f"Incorrect type. Expected 'int', got '{data_type}'.")
 
 
 def status_success():
@@ -96,27 +106,53 @@ def create_entity(namespace, manifest):
     entity.save()
 
     # Create components
+    component_ids = []
     for component in deserialized_components:
-        try_save_component(component, entity_id=entity.entity_id)
+        component_ids.append(
+            try_save_component(component, entity_id=entity.entity_id).component_id
+        )
 
-    return status_success()
+    return {
+        **status_success(),
+        "entity_id": entity.entity_id,
+        "component_ids": component_ids,
+    }
 
 
 def delete_entity(namespace, manifest):
     entity_id = try_extract_field(manifest, "entity_id")
-    try:
-        Entity.objects.get(pk=entity_id).delete()
-    except ObjectDoesNotExist:
-        raise IntegrityException(f"Entity with id '{entity_id}' doesn't exist")
-    except (TypeError, ValueError):
-        data_type = type(entity_id).__name__
-        raise ParseError(f"Incorrect type. Expected 'int', got '{data_type}'.")
-
+    entity = get_entity(entity_id)
+    entity.delete()
     return status_success()
 
 
 def add_component(namespace, manifest):
-    return status_placeholder()
+    entity_id = try_extract_field(manifest, "entity_id")
+    entity = get_entity(entity_id)
+    entity_type = entity.get_concrete_type()
+
+    allowed_components = {}
+    for component in get_entity_meta(entity_type).components:
+        component_name = get_component_meta(component).name
+        allowed_components[component_name] = component
+
+    # Get component type
+    component_type_name = try_extract_field(manifest, "component_type")
+    component_type = allowed_components.get(component_type_name)
+    if component_type is None:
+        raise ParseError(
+            f"'Entity '{entity_id}' has no '{component_type_name}' component'"
+        )
+
+    # Deserialize component payload
+    component_payload = try_extract_field(manifest, "component")
+    serializer = ComponentSerializer.registry[component_type]
+    assert serializer is not None
+    deserialized = serializer(data=component_payload, omit_entity_id=True)
+    deserialized.is_valid(raise_exception=True)
+    component = try_save_component(deserialized, entity_id=entity_id)
+
+    return {**status_success(), "component_id": component.component_id}
 
 
 def update_component(namespace, manifest):
