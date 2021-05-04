@@ -1,14 +1,24 @@
-from rest_framework.response import Response
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction, IntegrityError
+from osrd_infra.models.ecs import get_component_meta, Entity
+from osrd_infra.serializers import ComponentSerializer
+from rest_framework.exceptions import ParseError, APIException
 from rest_framework.generics import get_object_or_404
+from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.exceptions import ParseError
-from django.db import transaction
+
 
 from osrd_infra.models import (
     Infra,
     get_entity_meta,
     ALL_ENTITY_TYPES,
 )
+
+
+class IntegrityException(APIException):
+    status_code = 400
+    default_detail = "Database integrity exception"
+    default_code = "bad_request"
 
 
 def status_missing_field_keyerror(key_error: KeyError):
@@ -27,6 +37,20 @@ def get_entity_type(entity_name):
     return entity_type
 
 
+def try_extract_field(manifest, field):
+    try:
+        return manifest.pop(field)
+    except KeyError as e:
+        return status_missing_field_keyerror(e)
+
+
+def try_save_component(component, **kwargs):
+    try:
+        component.save(**kwargs)
+    except IntegrityError as e:
+        raise IntegrityException(e)
+
+
 def status_success():
     return {"type": "success"}
 
@@ -36,24 +60,59 @@ def status_placeholder():
 
 
 def create_entity(namespace, manifest):
-    try:
-        entity_type_name = manifest.pop("entity_type")
-        components = manifest.pop("components")
-    except KeyError as e:
-        return status_missing_field_keyerror(e)
+    entity_type_name = try_extract_field(manifest, "entity_type")
+    components = try_extract_field(manifest, "components")
 
     if manifest:
         return status_unknown_manifest_fields(manifest)
 
     entity_type = get_entity_type(entity_type_name)
-    meta = get_entity_meta(entity_type)
 
-    print((entity_type, components))
+    allowed_components = {}
+    for component in get_entity_meta(entity_type).components:
+        component_name = get_component_meta(component).name
+        allowed_components[component_name] = component
+
+    deserialized_components = []
+    for component in components:
+        # Get component type
+        component_type_name = try_extract_field(component, "component_type")
+        component_type = allowed_components.get(component_type_name)
+        if component_type is None:
+            raise ParseError(
+                f"'{entity_type_name}' has no '{component_type_name}' component'"
+            )
+
+        # Deserialize component payload
+        component_payload = try_extract_field(component, "component")
+        serializer = ComponentSerializer.registry[component_type]
+        assert serializer is not None
+        deserialized = serializer(data=component_payload, omit_entity_id=True)
+        deserialized.is_valid(raise_exception=True)
+        deserialized_components.append(deserialized)
+
+    # Create entity
+    entity = entity_type(namespace_id=namespace.id)
+    entity.save()
+
+    # Create components
+    for component in deserialized_components:
+        try_save_component(component, entity_id=entity.entity_id)
+
     return status_success()
 
 
 def delete_entity(namespace, manifest):
-    return status_placeholder()
+    entity_id = try_extract_field(manifest, "entity_id")
+    try:
+        Entity.objects.get(pk=entity_id).delete()
+    except ObjectDoesNotExist:
+        raise IntegrityException(f"Entity with id '{entity_id}' doesn't exist")
+    except (TypeError, ValueError):
+        data_type = type(entity_id).__name__
+        raise ParseError(f"Incorrect type. Expected 'int', got '{data_type}'.")
+
+    return status_success()
 
 
 def add_component(namespace, manifest):

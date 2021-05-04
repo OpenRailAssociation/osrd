@@ -254,7 +254,7 @@ class OperationalPointPartComponent(Component):
 
 
 class OperationalPointPartEntity(Entity):
-    name = "operational_point"
+    name = "operational_point_part"
     verbose_name_plural = "operational point part entities"
     components = [
         OperationalPointPartComponent,

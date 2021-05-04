@@ -1,6 +1,6 @@
 from rest_framework.serializers import (
     ModelSerializer,
-    StringRelatedField,
+    RelatedField,
 )
 
 from osrd_infra.models import (
@@ -11,6 +11,7 @@ from osrd_infra.models import (
     # explicitly declared serialiers
     TrackSectionLinkComponent,
     IdentifierComponent,
+    IdentifierDatabase,
     ApplicableDirectionComponent,
     # ecs
     Component,
@@ -19,16 +20,18 @@ from osrd_infra.models import (
     ALL_ENTITY_TYPES,
 )
 
+from django.core.exceptions import ObjectDoesNotExist
+from django.utils.translation import gettext_lazy as _
 from osrd_infra.models.common import EnumSerializer
 
 
 class ComponentSerializer(ModelSerializer):
-    _registry = {}
+    registry = {}
 
     def __init_subclass__(cls, **kwargs):
         model = cls.Meta.model
         assert issubclass(model, Component), f"{model} isn't a subclass of Component"
-        cls._registry[cls.Meta.model] = cls
+        cls.registry[cls.Meta.model] = cls
         super().__init_subclass__(**kwargs)
 
     def __init__(self, *args, omit_entity_id=False, **kwargs):
@@ -70,7 +73,7 @@ class EntitySerializerBase(type(ModelSerializer)):
             if not comp_meta.unique:
                 field_kwargs["many"] = True
             # find the component serializer in the global registry
-            serializer = ComponentSerializer._registry.get(comp, None)
+            serializer = ComponentSerializer.registry.get(comp, None)
             assert serializer is not None, f"{comp} has no registered serializer"
             attrs[comp_rel_name] = serializer(**field_kwargs)
 
@@ -90,11 +93,40 @@ class InfraSerializer(ModelSerializer):
         fields = "__all__"
 
 
+# CUSTOM SERIALIZER FIELDS
+class IdentifierDatabaseField(RelatedField):
+    default_error_messages = {
+        "required": _("This field is required."),
+        "does_not_exist": _("Invalid database '{database}' - object does not exist."),
+        "incorrect_type": _(
+            "Incorrect type. Expected 'str' value, received '{data_type}'."
+        ),
+    }
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def get_queryset(self):
+        return IdentifierDatabase.objects.all()
+
+    def to_internal_value(self, data):
+        queryset = self.get_queryset()
+        try:
+            return queryset.get(name=data)
+        except ObjectDoesNotExist:
+            self.fail("does_not_exist", database=data)
+        except (TypeError, ValueError):
+            self.fail("incorrect_type", data_type=type(data).__name__)
+
+    def to_representation(self, value):
+        return str(value)
+
+
 # COMPONENT SERIALIZERS
 
 
 class IdentifierComponentSerializer(ComponentSerializer):
-    database = StringRelatedField()
+    database = IdentifierDatabaseField()
 
     class Meta:
         model = IdentifierComponent
@@ -133,7 +165,7 @@ def generate_serializer(model, parent_class, extra_meta={}):
 
 
 for component_type in ALL_COMPONENT_TYPES:
-    if component_type in ComponentSerializer._registry:
+    if component_type in ComponentSerializer.registry:
         continue
     serializer = generate_serializer(
         component_type, ComponentSerializer, {"fields": "__all__"}

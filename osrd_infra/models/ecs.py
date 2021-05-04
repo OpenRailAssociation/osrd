@@ -66,7 +66,9 @@ class EntityBase(type(models.Model)):
         # parse the list of available components for the entity
         for comp in components:
             if not issubclass(comp, Component):
-                raise ValueError(f"{comp} isn't a Component, and thus can't be part of {class_name}")
+                raise ValueError(
+                    f"{comp} isn't a Component, and thus can't be part of {class_name}"
+                )
 
         # create a constructor which injects the entity_type value
         # that's the whole point of creating a proxy model in the first place:
@@ -168,7 +170,9 @@ class ComponentMeta:
             related_name = name if unique else f"{name}_set"
 
         if meta:
-            raise ValueError(f"{class_name} has unknown ComponentMeta settings: {','.join(meta)}")
+            raise ValueError(
+                f"{class_name} has unknown ComponentMeta settings: {','.join(meta)}"
+            )
         return ComponentMeta(name, related_name, unique)
 
     def __repr__(self):
