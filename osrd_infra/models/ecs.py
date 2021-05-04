@@ -121,6 +121,10 @@ class Entity(models.Model, metaclass=EntityBase, entity_base_passthrough=True):
         ContentType, on_delete=models.CASCADE, editable=False
     )
 
+    def get_concrete_type(self):
+        content_type = ContentType.objects.get_for_id(self.entity_type)
+        return content_type.model_class()
+
     def __str__(self):
         return f"Entity(entity_id={self.entity_id}, entity_type={self.entity_type})"
 
