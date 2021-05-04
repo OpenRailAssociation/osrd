@@ -86,7 +86,10 @@ public abstract class SortedSequence<E> {
                 throw new NoSuchElementException();
 
             var res = data.get(i);
-            return new PointValue<E>(translator.applyAsDouble(res.position), res.value);
+            var position = res.position;
+            if (translator != null)
+                position = translator.applyAsDouble(position);
+            return new PointValue<E>(position, res.value);
         }
 
         @Override
@@ -120,7 +123,10 @@ public abstract class SortedSequence<E> {
                 throw new NoSuchElementException();
 
             var res = data.get(i);
-            return new PointValue<E>(translator.applyAsDouble(res.position), res.value);
+            var position = res.position;
+            if (translator != null)
+                position = translator.applyAsDouble(position);
+            return new PointValue<E>(position, res.value);
         }
 
         @Override

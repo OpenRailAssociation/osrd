@@ -31,10 +31,6 @@ public class RJSRoute implements Identified {
     @Json(name = "entry_signal")
     public ID<RJSSignal> entrySignal;
 
-    /** List of the signals placed on the route, does not include entrySignal */
-    @Json(name = "signals")
-    public List<ID<RJSSignal>> signals;
-
     /** Routes are described as a list of waypoints, TVD Sections and Switches in specific positions */
     public RJSRoute(
             String id,
@@ -51,7 +47,6 @@ public class RJSRoute implements Identified {
         this.waypoints = waypoints;
         this.releaseGroups = releaseGroups;
         this.entrySignal = entrySignal;
-        this.signals = signals;
     }
 
     @Override

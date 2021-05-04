@@ -88,8 +88,7 @@ public class StaticSpeedLimitTest {
         releaseGroup.add(tvdSection);
         releaseGroups.add(releaseGroup);
         var route = routeGraphBuilder.makeRoute(
-                "R1", waypointsAB, tvdSectionsR1, releaseGroups, new HashMap<>(), null,
-                new ArrayList<>());
+                "R1", waypointsAB, tvdSectionsR1, releaseGroups, new HashMap<>(), null);
 
         final var infra = Infra.build(trackGraph, waypointGraph, routeGraphBuilder.build(),
                 tvdSections, new HashMap<>(), new ArrayList<>(), new ArrayList<>());
