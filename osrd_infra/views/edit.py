@@ -9,12 +9,12 @@ from rest_framework.views import APIView
 
 from osrd_infra.models import (
     Infra,
-    get_entity_meta,
-    ALL_ENTITY_TYPES,
     # ecs
     Entity,
+    get_component_meta,
     get_entity_meta,
     ALL_COMPONENT_TYPES,
+    ALL_ENTITY_TYPES,
 )
 
 
@@ -72,22 +72,23 @@ def get_component(component_type, component_id):
             f"Component '{component_type._component_meta.name}' with id '{component_id}' doesn't exist"
         )
     except (TypeError, ValueError):
-        data_type = type(entity_id).__name__
+        data_type = type(component_id).__name__
         raise ParseError(f"Incorrect type. Expected 'int', got '{data_type}'.")
 
 
-def status_success():
-    return {"type": "success"}
+def get_component_type(component_type_name):
+    component_type = ALL_COMPONENT_TYPES.get(component_type_name)
+    if component_type is None:
+        raise ParseError(f"'Invalid component type '{component_type_name}'")
+    return component_type
 
 
-def status_placeholder():
-    return {"type": "placeholder"}
+# Editions operations
 
 
 def create_entity(namespace, manifest):
     entity_type_name = try_extract_field(manifest, "entity_type")
     components = try_extract_field(manifest, "components")
-
     if manifest:
         return status_unknown_manifest_fields(manifest)
 
@@ -128,7 +129,7 @@ def create_entity(namespace, manifest):
         )
 
     return {
-        **status_success(),
+        "type": "success",
         "entity_id": entity.entity_id,
         "component_ids": component_ids,
     }
@@ -136,13 +137,21 @@ def create_entity(namespace, manifest):
 
 def delete_entity(namespace, manifest):
     entity_id = try_extract_field(manifest, "entity_id")
+    if manifest:
+        return status_unknown_manifest_fields(manifest)
+
     entity = get_entity(entity_id)
     entity.delete()
-    return status_success()
+    return {"type": "success"}
 
 
 def add_component(namespace, manifest):
     entity_id = try_extract_field(manifest, "entity_id")
+    component_type_name = try_extract_field(manifest, "component_type")
+    component_payload = try_extract_field(manifest, "component")
+    if manifest:
+        return status_unknown_manifest_fields(manifest)
+
     entity = get_entity(entity_id)
     entity_type = entity.get_concrete_type()
 
@@ -152,7 +161,6 @@ def add_component(namespace, manifest):
         allowed_components[component_name] = component
 
     # Get component type
-    component_type_name = try_extract_field(manifest, "component_type")
     component_type = allowed_components.get(component_type_name)
     if component_type is None:
         raise ParseError(
@@ -160,7 +168,6 @@ def add_component(namespace, manifest):
         )
 
     # Deserialize component payload
-    component_payload = try_extract_field(manifest, "component")
     serializer = ComponentSerializer.registry[component_type]
     assert serializer is not None
     deserialized = serializer(data=component_payload, omit_entity_id=True)
@@ -169,18 +176,18 @@ def add_component(namespace, manifest):
     # Create component
     component = try_save_component(deserialized, entity_id=entity_id)
 
-    return {**status_success(), "component_id": component.component_id}
+    return {"type": "success", "component_id": component.component_id}
 
 
 def update_component(namespace, manifest):
     component_id = try_extract_field(manifest, "component_id")
     component_type_name = try_extract_field(manifest, "component_type")
     component_payload = try_extract_field(manifest, "update")
+    if manifest:
+        return status_unknown_manifest_fields(manifest)
 
     # Get component
-    component_type = ALL_COMPONENT_TYPES.get(component_type_name)
-    if component_type is None:
-        raise ParseError(f"'Invalid component type '{component_type_name}'")
+    component_type = get_component_type(component_type_name)
     component = get_component(component_type, component_id)
 
     # Deserialize component payload update
@@ -192,11 +199,23 @@ def update_component(namespace, manifest):
     # Update component
     try_save_component(deserialized)
 
-    return status_success()
+    return {"type": "success"}
 
 
 def delete_component(namespace, manifest):
-    return status_placeholder()
+    component_id = try_extract_field(manifest, "component_id")
+    component_type_name = try_extract_field(manifest, "component_type")
+    if manifest:
+        return status_unknown_manifest_fields(manifest)
+
+    # Get component
+    component_type = get_component_type(component_type_name)
+    component = get_component(component_type, component_id)
+
+    # Delete component
+    component.delete()
+
+    return {"type": "success"}
 
 
 EDITION_OPERATIONS = {
