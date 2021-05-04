@@ -2,6 +2,7 @@ package fr.sncf.osrd.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.config.JsonConfig;
+import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
@@ -134,6 +135,8 @@ public final class Infra {
             forwardBuilder.build();
             backwardBuilder.build();
         }
+
+        routeGraph.routeMap.values().forEach(Route::resolveSignals);
 
         // Evaluate initial aspects of signals
         var topologicalSignalOrder = buildTopologicalSignalOrder(signals);

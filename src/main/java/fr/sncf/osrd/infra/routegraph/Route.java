@@ -1,9 +1,11 @@
 package fr.sncf.osrd.infra.routegraph;
 
 import fr.sncf.osrd.infra.TVDSection;
+import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.SortedArraySet;
@@ -20,7 +22,8 @@ public class Route extends DirNEdge {
     public final List<EdgeDirection> tvdSectionsPathDirections;
     public final List<SortedArraySet<TVDSection>> releaseGroups;
     public final HashMap<Switch, SwitchPosition> switchesPosition;
-    public final List<Signal> signalsWithEntry;
+    public final Signal entrySignal;
+    public List<Signal> signalsWithEntry;
     public ArrayList<Signal> signalSubscribers;
 
     Route(
@@ -31,7 +34,7 @@ public class Route extends DirNEdge {
             List<TVDSectionPath> tvdSectionsPaths,
             List<EdgeDirection> tvdSectionsPathDirections,
             HashMap<Switch, SwitchPosition> switchesPosition,
-            Signal entrySignal, List<Signal> signals) {
+            Signal entrySignal) {
         super(
                 graph.nextEdgeIndex(),
                 tvdSectionsPaths.get(0).getStartNode(tvdSectionsPathDirections.get(0)),
@@ -46,11 +49,46 @@ public class Route extends DirNEdge {
         graph.registerEdge(this);
         this.tvdSectionsPaths = tvdSectionsPaths;
         this.signalSubscribers = new ArrayList<>();
+        this.entrySignal = entrySignal;
 
+        assert tvdSectionsPathDirections.size() == tvdSectionsPaths.size();
+    }
+
+    private ArrayList<TrackSectionRange> getTrackSectionRanges() {
+        var res = new ArrayList<TrackSectionRange>();
+        for (int i = 0; i < tvdSectionsPaths.size(); i++) {
+            var sectionPath = tvdSectionsPaths.get(i);
+            var direction = tvdSectionsPathDirections.get(i);
+            res.addAll(Arrays.asList(sectionPath.getTrackSections(direction)));
+        }
+        return res;
+    }
+
+    private ArrayList<ActionPoint> getActionPoints() {
+        var res = new ArrayList<ActionPoint>();
+        for (var range : getTrackSectionRanges()) {
+            var pointSequence = TrackSection.getInteractables(range.edge, range.direction);
+            var it = pointSequence.iterate(range.direction, range.getBeginPosition(), range.getEndPosition(), null);
+            while (it.hasNext()) {
+                var point = it.next();
+                var location = new TrackSectionLocation(range.edge, point.position);
+                if (range.containsLocation(location)) {
+                    res.add(point.value);
+                }
+            }
+        }
+        return res;
+    }
+
+    /** Builds the list of signals present on the route.
+     * This cannot be done in the constructor because the track sections are empty, it has to be done later. */
+    public void resolveSignals() {
         signalsWithEntry = new ArrayList<>();
         if (entrySignal != null)
             signalsWithEntry.add(entrySignal);
-        signalsWithEntry.addAll(signals);
+        for (var actionPoint : getActionPoints())
+            if (actionPoint instanceof Signal)
+                signalsWithEntry.add((Signal) actionPoint);
     }
 
     /** Build track section path. Need to concatenate all track section of all TvdSectionPath.
