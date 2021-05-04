@@ -51,8 +51,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 SortedArraySet<TVDSection> tvdSections,
                 List<SortedArraySet<TVDSection>> releaseGroups,
                 HashMap<Switch, SwitchPosition> switchesPosition,
-                Signal entrySignal,
-                List<Signal> signals) throws InvalidInfraException {
+                Signal entrySignal) throws InvalidInfraException {
             if (waypoints.size() < 2) {
                 throw new InvalidInfraException(String.format("Route '%s' doesn't contains enough waypoints", id));
             }
@@ -105,8 +104,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                     tvdSectionsPath,
                     tvdSectionsPathDirection,
                     switchesPosition,
-                    entrySignal,
-                    signals);
+                    entrySignal);
 
             routeGraph.routeMap.put(id, route);
 
