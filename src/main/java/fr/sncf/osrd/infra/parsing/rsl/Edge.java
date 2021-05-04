@@ -40,9 +40,7 @@ public class Edge extends RJSTrackSection {
      * Check the direction of the edge
      */
     public Boolean isBidirectional() {
-        if (!bidirectional.equals("true"))
-            return false;
-        return true;
+        return (bidirectional == null || bidirectional.equals("true"));
     }
 
     /**
