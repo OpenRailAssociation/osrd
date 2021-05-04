@@ -61,11 +61,20 @@ public class RMLRoute {
                     false, route, rmlRouteGraph, rjsTrackSections, graph, signalTrackNetElementMap);
             var rmlRouteWaypoints = computeRouteWaypoints(entryWaypoint, exitWaypoint, rmlRouteGraph);
             var routeWaypoints = rmlToRjsWaypoints(rmlRouteWaypoints, rjsWaypointsMap);
+            var entrySignal = parseEntrySignal(route, signalTrackNetElementMap);
 
-            res.add(new RJSRoute(id, tvdSections, switchesPosition, routeWaypoints, releaseGroups,
-                    null, new ArrayList<>()));
+            res.add(new RJSRoute(id, tvdSections, switchesPosition, routeWaypoints, releaseGroups, entrySignal));
         }
         return res;
+    }
+
+    private static ID<RJSSignal> parseEntrySignal(Element route, HashMap<String, TrackNetElement> signalTrackNets) {
+        var entryElement = route.element("routeEntry").element("refersTo").attributeValue("ref");
+        var isSignal = signalTrackNets.keySet().contains(entryElement);
+        if (isSignal)
+            return new ID<>(entryElement);
+        else
+            return new ID<>("");
     }
 
     private static List<Set<ID<RJSTVDSection>>> parseReleaseGroups(
