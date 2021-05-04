@@ -1,35 +1,37 @@
 from rest_framework.serializers import (
     ModelSerializer,
-    StringRelatedField,
+    RelatedField,
 )
 
 from osrd_infra.models import (
-    # infra
     Infra,
-    IdentifierComponent,
-    TrackSectionLocationComponent,
-    TrackSectionRangeComponent,
-    TrackSectionComponent,
+    # enums
+    Endpoint,
+    ApplicableDirection,
+    # explicitly declared serialiers
     TrackSectionLinkComponent,
-    TrackSectionEntity,
-    TrackSectionLinkEntity,
-    SwitchEntity,
-    OperationalPointEntity,
-    SignalEntity,
+    IdentifierComponent,
+    IdentifierDatabase,
+    ApplicableDirectionComponent,
     # ecs
     Component,
+    get_entity_meta,
+    ALL_COMPONENT_TYPES,
+    ALL_ENTITY_TYPES,
 )
 
-from osrd_infra.models.common import Endpoint, EnumSerializer
+from django.core.exceptions import ObjectDoesNotExist
+from django.utils.translation import gettext_lazy as _
+from osrd_infra.models.common import EnumSerializer
 
 
 class ComponentSerializer(ModelSerializer):
-    _registry = {}
+    registry = {}
 
     def __init_subclass__(cls, **kwargs):
         model = cls.Meta.model
         assert issubclass(model, Component), f"{model} isn't a subclass of Component"
-        cls._registry[cls.Meta.model] = cls
+        cls.registry[cls.Meta.model] = cls
         super().__init_subclass__(**kwargs)
 
     def __init__(self, *args, omit_entity_id=False, **kwargs):
@@ -49,8 +51,7 @@ class EntitySerializerBase(type(ModelSerializer)):
         if meta is None or entity_serializer_passthrough:
             return super().__new__(cls, name, bases, attrs)
 
-        model = meta.model
-        entity_meta = getattr(model, "_entity_meta", None)
+        entity_meta = get_entity_meta(meta.model)
         assert (
             entity_meta is not None
         ), "the model of the EntitySerializer isn't an entity"
@@ -72,7 +73,9 @@ class EntitySerializerBase(type(ModelSerializer)):
             if not comp_meta.unique:
                 field_kwargs["many"] = True
             # find the component serializer in the global registry
-            attrs[comp_rel_name] = ComponentSerializer._registry[comp](**field_kwargs)
+            serializer = ComponentSerializer.registry.get(comp, None)
+            assert serializer is not None, f"{comp} has no registered serializer"
+            attrs[comp_rel_name] = serializer(**field_kwargs)
 
         # call the model serializer superclass
         return super().__new__(cls, name, bases, attrs)
@@ -90,32 +93,43 @@ class InfraSerializer(ModelSerializer):
         fields = "__all__"
 
 
-# component serializers
+# CUSTOM SERIALIZER FIELDS
+class IdentifierDatabaseField(RelatedField):
+    default_error_messages = {
+        "required": _("This field is required."),
+        "does_not_exist": _("Invalid database '{database}' - object does not exist."),
+        "incorrect_type": _(
+            "Incorrect type. Expected 'str' value, received '{data_type}'."
+        ),
+    }
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def get_queryset(self):
+        return IdentifierDatabase.objects.all()
+
+    def to_internal_value(self, data):
+        queryset = self.get_queryset()
+        try:
+            return queryset.get(name=data)
+        except ObjectDoesNotExist:
+            self.fail("does_not_exist", database=data)
+        except (TypeError, ValueError):
+            self.fail("incorrect_type", data_type=type(data).__name__)
+
+    def to_representation(self, value):
+        return str(value)
+
+
+# COMPONENT SERIALIZERS
 
 
 class IdentifierComponentSerializer(ComponentSerializer):
-    database = StringRelatedField()
+    database = IdentifierDatabaseField()
 
     class Meta:
         model = IdentifierComponent
-        fields = "__all__"
-
-
-class TrackSectionLocationComponentSerializer(ComponentSerializer):
-    class Meta:
-        model = TrackSectionLocationComponent
-        fields = "__all__"
-
-
-class TrackSectionRangeComponentSerializer(ComponentSerializer):
-    class Meta:
-        model = TrackSectionRangeComponent
-        fields = "__all__"
-
-
-class TrackSectionComponentSerializer(ComponentSerializer):
-    class Meta:
-        model = TrackSectionComponent
         fields = "__all__"
 
 
@@ -128,26 +142,42 @@ class TrackSectionLinkComponentSerializer(ComponentSerializer):
         fields = "__all__"
 
 
-class TrackSectionSerializer(EntitySerializer):
+class ApplicableDirectionComponentSerializer(ComponentSerializer):
+    applicable_direction = EnumSerializer(ApplicableDirection)
+
     class Meta:
-        model = TrackSectionEntity
+        model = ApplicableDirectionComponent
+        fields = "__all__"
 
 
-class TrackSectionLinkSerializer(EntitySerializer):
-    class Meta:
-        model = TrackSectionLinkEntity
+# generate component serializers which weren't explicitly declared
 
 
-class SwitchSerializer(EntitySerializer):
-    class Meta:
-        model = SwitchEntity
+def generate_serializer(model, parent_class, extra_meta={}):
+    meta_attrs = {
+        "model": model,
+        **extra_meta,
+    }
+    meta = type("Meta", (), meta_attrs)
+    attrs = {"Meta": meta}
+    serializer_name = model.__name__ + "Serializer"
+    return type(serializer_name, (parent_class,), attrs)
 
 
-class OperationalPointSerializer(EntitySerializer):
-    class Meta:
-        model = OperationalPointEntity
+for component_type in ALL_COMPONENT_TYPES.values():
+    if component_type in ComponentSerializer.registry:
+        continue
+    serializer = generate_serializer(
+        component_type, ComponentSerializer, {"fields": "__all__"}
+    )
+    globals()[serializer.__name__] = serializer
 
 
-class SignalSerializer(EntitySerializer):
-    class Meta:
-        model = SignalEntity
+# ENTITY SERIALIZERS
+
+ALL_ENTITY_SERIALIZERS = []
+
+for entity_type in ALL_ENTITY_TYPES.values():
+    serializer = generate_serializer(entity_type, EntitySerializer)
+    ALL_ENTITY_SERIALIZERS.append(serializer)
+    globals()[serializer.__name__] = serializer

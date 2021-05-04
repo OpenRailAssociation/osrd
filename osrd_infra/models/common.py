@@ -2,15 +2,6 @@ from django.db import models
 from rest_framework import serializers
 
 
-class Endpoint(models.IntegerChoices):
-    BEGIN = 0
-    END = 1
-
-
-def EndpointField():
-    return models.IntegerField(choices=Endpoint.choices)
-
-
 class EnumSerializer(serializers.Field):
     __slots__ = ("enum",)
 

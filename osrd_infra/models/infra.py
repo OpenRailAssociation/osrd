@@ -4,8 +4,26 @@ from osrd_infra.models.ecs import (
     Entity,
     EntityNamespace,
 )
-from osrd_infra.models.common import EndpointField
+from django.core.validators import MaxValueValidator
 from django.conf import settings
+
+
+class Endpoint(models.IntegerChoices):
+    BEGIN = 0
+    END = 1
+
+
+def EndpointField():
+    return models.IntegerField(choices=Endpoint.choices)
+
+
+class ApplicableDirection(models.IntegerChoices):
+    NORMAL = 0  # from BEGIN to END
+    REVERSE = 1  # from END to BEGIN
+
+
+def ApplicableDirectionField():
+    return models.IntegerField(choices=ApplicableDirection.choices)
 
 
 class Infra(models.Model):
@@ -36,6 +54,54 @@ class IdentifierDatabase(models.Model):
         ]
 
 
+class GeoPointLocationComponent(Component):
+    geographic = models.PointField(srid=settings.OSRD_INFRA_SRID)
+    schematic = models.PointField(srid=settings.OSRD_INFRA_SRID)
+
+    class ComponentMeta:
+        name = "geo_point_location"
+        unique = True
+
+
+class GeoAreaLocationComponent(Component):
+    geographic = models.PolygonField(srid=settings.OSRD_INFRA_SRID)
+    schematic = models.PolygonField(srid=settings.OSRD_INFRA_SRID)
+
+    class ComponentMeta:
+        name = "geo_area_location"
+        unique = True
+
+
+class GeoLineLocationComponent(Component):
+    geographic = models.LineStringField(srid=settings.OSRD_INFRA_SRID)
+    schematic = models.LineStringField(srid=settings.OSRD_INFRA_SRID)
+
+    class ComponentMeta:
+        name = "geo_line_location"
+        unique = True
+
+
+class TrackAngleComponent(Component):
+    geographic = models.PositiveSmallIntegerField(validators=[MaxValueValidator(379)])
+    schematic = models.PositiveSmallIntegerField(validators=[MaxValueValidator(379)])
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(geographic__lte=379),
+                name="geographic__lte=379",
+            ),
+            models.CheckConstraint(
+                check=models.Q(schematic__lte=379),
+                name="schematic__lte=379",
+            ),
+        ]
+
+    class ComponentMeta:
+        name = "track_angle"
+        unique = True
+
+
 class TrackSectionLocationComponent(Component):
     """The component holding location information for point objects on track sections"""
 
@@ -46,6 +112,24 @@ class TrackSectionLocationComponent(Component):
 
     class ComponentMeta:
         name = "point_location"
+
+
+class BelongsToTrackComponent(Component):
+    track = models.ForeignKey(
+        "TrackEntity", on_delete=models.CASCADE, related_name="track_components"
+    )
+
+    class ComponentMeta:
+        name = "belong_to_track"
+
+
+class BelongsToLineComponent(Component):
+    line = models.ForeignKey(
+        "LineEntity", on_delete=models.CASCADE, related_name="line_components"
+    )
+
+    class ComponentMeta:
+        name = "belong_to_line"
 
 
 class TrackSectionRangeComponent(Component):
@@ -80,8 +164,6 @@ class IdentifierComponent(Component):
 
 
 class TrackSectionComponent(Component):
-    path = models.LineStringField(srid=settings.OSRD_INFRA_SRID)
-
     # the length of the track section, in meters
     length = models.FloatField()
 
@@ -107,12 +189,28 @@ class TrackSectionLinkComponent(Component):
         name = "track_section_link"
 
 
+class KilometricPointComponent(Component):
+    value = models.CharField(max_length=255)
+
+    class ComponentMeta:
+        name = "kilometric_point"
+
+
+class ApplicableDirectionComponent(Component):
+    applicable_direction = ApplicableDirectionField()
+
+    class ComponentMeta:
+        name = "applicable_direction"
+
+
 class TrackSectionEntity(Entity):
     name = "track_section"
     verbose_name_plural = "track section entities"
     components = [
         TrackSectionComponent,
+        GeoLineLocationComponent,
         IdentifierComponent,
+        BelongsToTrackComponent,
     ]
 
 
@@ -121,6 +219,7 @@ class SwitchEntity(Entity):
     verbose_name_plural = "switch entities"
     components = [
         IdentifierComponent,
+        GeoPointLocationComponent,
         TrackSectionLinkComponent,
     ]
 
@@ -130,6 +229,7 @@ class TrackSectionLinkEntity(Entity):
     verbose_name_plural = "track section link entities"
     components = [
         IdentifierComponent,
+        GeoPointLocationComponent,
         TrackSectionLinkComponent,
     ]
 
@@ -139,6 +239,26 @@ class OperationalPointEntity(Entity):
     verbose_name_plural = "operational point entities"
     components = [
         IdentifierComponent,
+        GeoAreaLocationComponent,
+        KilometricPointComponent,
+    ]
+
+
+class OperationalPointPartComponent(Component):
+    operational_point = models.ForeignKey(
+        OperationalPointEntity, on_delete=models.CASCADE
+    )
+
+    class ComponentMeta:
+        name = "operational_point_part"
+
+
+class OperationalPointPartEntity(Entity):
+    name = "operational_point_part"
+    verbose_name_plural = "operational point part entities"
+    components = [
+        OperationalPointPartComponent,
+        GeoLineLocationComponent,
         TrackSectionRangeComponent,
     ]
 
@@ -148,5 +268,25 @@ class SignalEntity(Entity):
     verbose_name_plural = "signal entities"
     components = [
         IdentifierComponent,
+        GeoPointLocationComponent,
         TrackSectionLocationComponent,
+        TrackAngleComponent,
+        ApplicableDirectionComponent,
+    ]
+
+
+class TrackEntity(Entity):
+    name = "track"
+    verbose_name_plural = "tracks"
+    components = [
+        IdentifierComponent,
+        BelongsToLineComponent,
+    ]
+
+
+class LineEntity(Entity):
+    name = "line"
+    verbose_name_plural = "lines"
+    components = [
+        IdentifierComponent,
     ]

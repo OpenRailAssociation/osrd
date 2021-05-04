@@ -1,30 +1,24 @@
 from rest_framework.routers import SimpleRouter
 from django.urls import path, include
 
+from osrd_infra.models import get_entity_meta
 from osrd_infra.views import (
     InfraViewSet,
-    TrackSectionViewSet,
-    TrackSectionLinkViewSet,
-    SignalViewSet,
-    OperationalPointViewSet,
-    SwitchViewSet,
-    serialize_infra_railjson,
+    ALL_ENTITY_VIEWSETS,
+    InfraRailJSONSerializer,
+    InfraEdition,
 )
 
 
 entity_router = SimpleRouter()
 entity_router.register("infra", InfraViewSet)
-entity_router.register("track_section", TrackSectionViewSet, basename="track_section")
-entity_router.register(
-    "track_section_link", TrackSectionLinkViewSet, basename="track_section_link"
-)
-entity_router.register("switch", SwitchViewSet, basename="switch")
-entity_router.register("signal", SignalViewSet, basename="signal")
-entity_router.register(
-    "operational_point", OperationalPointViewSet, basename="operational_point"
-)
+
+for entity_type, entity_viewset in ALL_ENTITY_VIEWSETS:
+    entity_name = get_entity_meta(entity_type).name
+    entity_router.register(entity_name, entity_viewset, basename=entity_name)
 
 urlpatterns = [
     path("entity/", include(entity_router.urls)),
-    path("railjson/infra/<int:pk>/", serialize_infra_railjson),
+    path("railjson/infra/<int:pk>/", InfraRailJSONSerializer.as_view()),
+    path("edit/infra/<int:pk>/", InfraEdition.as_view()),
 ]
