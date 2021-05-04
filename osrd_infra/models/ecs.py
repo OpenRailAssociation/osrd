@@ -104,7 +104,7 @@ class EntityBase(type(models.Model)):
         if prev_entity_type is not entity_type:
             raise ValueError(
                 f"conflicting entity name {entity_name}: "
-                f"{entity_type} conflicts with {prev_entity_type}"
+                f"{entity_type.__name__} conflicts with {prev_entity_type.__name__}"
             )
 
         return entity_type
@@ -187,7 +187,7 @@ class ComponentMeta:
         )
 
 
-ALL_COMPONENT_TYPES = []
+ALL_COMPONENT_TYPES = {}
 
 
 class ComponentBase(type(models.Model)):
@@ -233,7 +233,14 @@ class ComponentBase(type(models.Model)):
         # call the django model metaclass
         component_type = super().__new__(cls, name, bases, attrs)
         assert getattr(component_type, "_meta", None) is not None
-        ALL_COMPONENT_TYPES.append(component_type)
+        prev_component_type = ALL_COMPONENT_TYPES.setdefault(
+            component_meta.name, component_type
+        )
+        if prev_component_type is not component_type:
+            raise ValueError(
+                f"conflicting component name {component_meta.name}: "
+                f"{component_type.__name__} conflicts with {prev_component_type.__name__}"
+            )
         return component_type
 
 

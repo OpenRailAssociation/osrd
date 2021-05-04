@@ -1,6 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction, IntegrityError
-from osrd_infra.models.ecs import get_component_meta, Entity
 from osrd_infra.serializers import ComponentSerializer
 from rest_framework.exceptions import ParseError, APIException
 from rest_framework.generics import get_object_or_404
@@ -12,6 +11,10 @@ from osrd_infra.models import (
     Infra,
     get_entity_meta,
     ALL_ENTITY_TYPES,
+    # ecs
+    Entity,
+    get_entity_meta,
+    ALL_COMPONENT_TYPES,
 )
 
 
@@ -56,6 +59,18 @@ def get_entity(entity_id):
         return Entity.objects.get(pk=entity_id)
     except ObjectDoesNotExist:
         raise IntegrityException(f"Entity with id '{entity_id}' doesn't exist")
+    except (TypeError, ValueError):
+        data_type = type(entity_id).__name__
+        raise ParseError(f"Incorrect type. Expected 'int', got '{data_type}'.")
+
+
+def get_component(component_type, component_id):
+    try:
+        return component_type.objects.get(pk=component_id)
+    except ObjectDoesNotExist:
+        raise IntegrityException(
+            f"Component '{component_type._component_meta.name}' with id '{component_id}' doesn't exist"
+        )
     except (TypeError, ValueError):
         data_type = type(entity_id).__name__
         raise ParseError(f"Incorrect type. Expected 'int', got '{data_type}'.")
@@ -150,13 +165,34 @@ def add_component(namespace, manifest):
     assert serializer is not None
     deserialized = serializer(data=component_payload, omit_entity_id=True)
     deserialized.is_valid(raise_exception=True)
+
+    # Create component
     component = try_save_component(deserialized, entity_id=entity_id)
 
     return {**status_success(), "component_id": component.component_id}
 
 
 def update_component(namespace, manifest):
-    return status_placeholder()
+    component_id = try_extract_field(manifest, "component_id")
+    component_type_name = try_extract_field(manifest, "component_type")
+    component_payload = try_extract_field(manifest, "update")
+
+    # Get component
+    component_type = ALL_COMPONENT_TYPES.get(component_type_name)
+    if component_type is None:
+        raise ParseError(f"'Invalid component type '{component_type_name}'")
+    component = get_component(component_type, component_id)
+
+    # Deserialize component payload update
+    serializer = ComponentSerializer.registry[component_type]
+    assert serializer is not None
+    deserialized = serializer(component, data=component_payload, partial=True)
+    deserialized.is_valid(raise_exception=True)
+
+    # Update component
+    try_save_component(deserialized)
+
+    return status_success()
 
 
 def delete_component(namespace, manifest):

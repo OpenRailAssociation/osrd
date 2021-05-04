@@ -164,7 +164,7 @@ def generate_serializer(model, parent_class, extra_meta={}):
     return type(serializer_name, (parent_class,), attrs)
 
 
-for component_type in ALL_COMPONENT_TYPES:
+for component_type in ALL_COMPONENT_TYPES.values():
     if component_type in ComponentSerializer.registry:
         continue
     serializer = generate_serializer(
