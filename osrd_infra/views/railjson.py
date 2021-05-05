@@ -67,7 +67,7 @@ def serialize_signal(entity):
     position = entity.point_location_set.get().offset
     return {
         "id": format_signal_id(entity.entity_id),
-        "navigability": serialize_applicable_direction(applicable_direction),
+        "applicable_direction": serialize_applicable_direction(applicable_direction),
         "position": position,
         "sight_distance": entity.sight_distance.distance,
         "expr": entity.rail_script.script,
