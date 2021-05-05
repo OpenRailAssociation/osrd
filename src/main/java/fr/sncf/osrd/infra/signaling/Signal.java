@@ -9,7 +9,7 @@ import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.train.InteractionType;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.InteractionTypeSet;
-import fr.sncf.osrd.utils.graph.ApplicableDirections;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,7 +22,7 @@ public class Signal implements ActionPoint {
     public final String id;
     public final RSStatefulExpr<RSAspectSet> expr;
     public final ArrayList<Signal> signalSubscribers = new ArrayList<>();
-    public final ApplicableDirections direction;
+    public final ApplicableDirection direction;
 
     private RSAspectSet initialAspects = new RSAspectSet();
     private static final InteractionTypeSet interactionTypeSet =
@@ -33,7 +33,7 @@ public class Signal implements ActionPoint {
             int index,
             String id,
             RSStatefulExpr<RSAspectSet> expr,
-            ApplicableDirections direction,
+            ApplicableDirection direction,
             double sightDistance
     ) {
         this.index = index;

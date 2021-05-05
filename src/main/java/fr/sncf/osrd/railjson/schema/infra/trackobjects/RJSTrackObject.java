@@ -1,7 +1,6 @@
 package fr.sncf.osrd.railjson.schema.infra.trackobjects;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.utils.graph.ApplicableDirections;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
 
 /** An object on a RJSTrackSection. It's meant to be referenced from the section itself. */
 public abstract class RJSTrackObject {
@@ -9,7 +8,7 @@ public abstract class RJSTrackObject {
     public double position;
 
     /** What sides the object can be approached from */
-    public abstract ApplicableDirections getNavigability();
+    public abstract ApplicableDirection getApplicableDirection();
 
     RJSTrackObject(double position) {
         this.position = position;

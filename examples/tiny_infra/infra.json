@@ -55,9 +55,6 @@
       "id": "rt.buffer_stop_a-C1",
       "entry_signal": "",
       "switches_position": {},
-      "tvd_sections": [
-        "tvd.foo_a"
-      ],
       "release_groups": [
         [
           "tvd.foo_a"
@@ -72,9 +69,6 @@
       "id": "rt.buffer_stop_b-C3",
       "entry_signal": "",
       "switches_position": {},
-      "tvd_sections": [
-        "tvd.foo_b"
-      ],
       "release_groups": [
         [
           "tvd.foo_b"
@@ -91,10 +85,6 @@
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
-      "tvd_sections": [
-        "tvd.switch_foo",
-        "tvd.track"
-      ],
       "release_groups": [
         [
           "tvd.track"
@@ -115,10 +105,6 @@
       "switches_position": {
         "il.switch_foo": "LEFT"
       },
-      "tvd_sections": [
-        "tvd.switch_foo",
-        "tvd.track"
-      ],
       "release_groups": [
         [
           "tvd.track"
@@ -137,9 +123,6 @@
       "id": "rt.S7-buffer_stop_c",
       "entry_signal": "il.sig.S7",
       "switches_position": {},
-      "tvd_sections": [
-        "tvd.bar_a"
-      ],
       "release_groups": [
         [
           "tvd.bar_a"
@@ -154,9 +137,6 @@
       "id": "rt.buffer_stop_c-C2",
       "entry_signal": "",
       "switches_position": {},
-      "tvd_sections": [
-        "tvd.bar_a"
-      ],
       "release_groups": [
         [
           "tvd.bar_a"
@@ -171,9 +151,6 @@
       "id": "rt.C2-C6",
       "entry_signal": "il.sig.C2",
       "switches_position": {},
-      "tvd_sections": [
-        "tvd.track"
-      ],
       "release_groups": [
         [
           "tvd.track"
@@ -190,10 +167,6 @@
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
-      "tvd_sections": [
-        "tvd.switch_foo",
-        "tvd.foo_a"
-      ],
       "release_groups": [
         [
           "tvd.switch_foo"
@@ -214,10 +187,6 @@
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
-      "tvd_sections": [
-        "tvd.switch_foo",
-        "tvd.foo_b"
-      ],
       "release_groups": [
         [
           "tvd.switch_foo"
@@ -491,7 +460,7 @@
   "speed_sections": [
     {
       "id": "speedsection.mid_limit",
-      "is_signalized": false,
+      "is_signalized": true,
       "speed": 16.666666666666668
     }
   ],
@@ -590,9 +559,9 @@
             ]
           },
           "id": "il.sig.C3",
-          "navigability": "NORMAL",
+          "applicable_direction": "NORMAL",
           "position": 150,
-          "sightDistance": 400
+          "sight_distance": 400
         }
       ],
       "speed_sections": []
@@ -622,9 +591,9 @@
             ]
           },
           "id": "il.sig.W4",
-          "navigability": "REVERSE",
+          "applicable_direction": "REVERSE",
           "position": 1025,
-          "sightDistance": 400
+          "sight_distance": 400
         },
         {
           "expr": {
@@ -638,9 +607,9 @@
             ]
           },
           "id": "il.sig.W5",
-          "navigability": "NORMAL",
+          "applicable_direction": "NORMAL",
           "position": 8975,
-          "sightDistance": 400
+          "sight_distance": 400
         },
         {
           "expr": {
@@ -662,9 +631,9 @@
             ]
           },
           "id": "il.sig.C6",
-          "navigability": "REVERSE",
+          "applicable_direction": "REVERSE",
           "position": 50,
-          "sightDistance": 400
+          "sight_distance": 400
         },
         {
           "expr": {
@@ -678,9 +647,9 @@
             ]
           },
           "id": "il.sig.S7",
-          "navigability": "NORMAL",
+          "applicable_direction": "NORMAL",
           "position": 9975,
-          "sightDistance": 400
+          "sight_distance": 400
         }
       ],
       "speed_sections": [
@@ -733,9 +702,9 @@
             ]
           },
           "id": "il.sig.C1",
-          "navigability": "NORMAL",
+          "applicable_direction": "NORMAL",
           "position": 150,
-          "sightDistance": 400
+          "sight_distance": 400
         }
       ],
       "speed_sections": []
@@ -781,9 +750,9 @@
             ]
           },
           "id": "il.sig.C2",
-          "navigability": "REVERSE",
+          "applicable_direction": "REVERSE",
           "position": 25,
-          "sightDistance": 400
+          "sight_distance": 400
         }
       ],
       "speed_sections": []

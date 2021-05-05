@@ -5,6 +5,7 @@ build
 gradlew*
 *.iml
 *.jar
+.jqwik-database
 
 # avoid mistakenly adding proprietary files
 *.rsl

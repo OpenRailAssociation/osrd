@@ -117,10 +117,6 @@ public class TrainCreatedEvent extends TimelineEvent {
                 if (trackSectionRange.direction == EdgeDirection.STOP_TO_START)
                     speedTrackRange = speedTrackRange.opposite();
 
-                // signalized speed sections are handled dynamically
-                if (speedSection.isSignalized)
-                    continue;
-
                 // ignore the speed limit if it doesn't apply to our train
                 if (!speedSection.isValidFor(rollingStock))
                     continue;
