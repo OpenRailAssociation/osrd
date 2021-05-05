@@ -13,6 +13,8 @@ from osrd_infra.models import (
     Endpoint,
     OperationalPointEntity,
     OperationalPointPartEntity,
+    SpeedSectionEntity,
+    SpeedSectionPartEntity,
     fetch_entities,
 )
 
@@ -35,6 +37,10 @@ def format_operation_point_id(entity_id: int) -> str:
     return f"operational_point.{entity_id}"
 
 
+def format_speed_section_id(entity_id: int) -> str:
+    return f"speed_section.{entity_id}"
+
+
 def serialize_endpoint(endpoint: int, track_section_id: int):
     return {
         "endpoint": Endpoint(endpoint).name,
@@ -46,17 +52,15 @@ def serialize_applicable_direction(applicable_direction: int):
     return ApplicableDirection(applicable_direction).name
 
 
-def serialize_signal(signal_entity):
-    applicable_direction = (
-        signal_entity.applicable_direction_set.get().applicable_direction
-    )
-    position = signal_entity.point_location_set.get().offset
+def serialize_signal(entity):
+    applicable_direction = entity.applicable_direction_set.get().applicable_direction
+    position = entity.point_location_set.get().offset
     return {
-        "id": format_signal_id(signal_entity.entity_id),
+        "id": format_signal_id(entity.entity_id),
         "navigability": serialize_applicable_direction(applicable_direction),
         "position": position,
-        "sight_distance": signal_entity.sight_distance.distance,
-        "expr": signal_entity.rail_script.script,
+        "sight_distance": entity.sight_distance.distance,
+        "expr": entity.rail_script.script,
     }
 
 
@@ -70,7 +74,19 @@ def serialize_op_part(op_part_entity):
     }
 
 
-def serialize_track_section(track_section_entity, signals, op_parts):
+def serialize_speed_section_part(entity):
+    speed_section = entity.speed_section_part_set.get().speed_section
+    range_loc = entity.range_location_set.get()
+    applicable_direction = entity.applicable_direction_set.get().applicable_direction
+    return {
+        "applicable_direction": serialize_applicable_direction(applicable_direction),
+        "begin": range_loc.start_offset,
+        "end": range_loc.end_offset,
+        "ref": format_speed_section_id(speed_section.entity_id),
+    }
+
+
+def serialize_track_section(track_section_entity, signals, op_parts, speed_sections):
     track_section = track_section_entity.track_section
 
     point_objects = track_section_entity.point_objects.all()
@@ -82,10 +98,17 @@ def serialize_track_section(track_section_entity, signals, op_parts):
         "signals": [
             serialize_signal(signals[point_object.entity_id])
             for point_object in point_objects
+            if point_object.entity_id in signals
         ],
         "operational_points": [
             serialize_op_part(op_parts[range_object.entity_id])
             for range_object in range_objects
+            if range_object.entity_id in op_parts
+        ],
+        "speed_sections": [
+            serialize_speed_section_part(speed_sections[range_object.entity_id])
+            for range_object in range_objects
+            if range_object.entity_id in speed_sections
         ],
     }
 
@@ -138,8 +161,16 @@ def serialize_script_function(function_entity):
     return function_entity.rail_script.script
 
 
-def serialize_op(op_entity):
-    return {"id": format_operation_point_id(op_entity.entity_id)}
+def serialize_operational_point(entity):
+    return {"id": format_operation_point_id(entity.entity_id)}
+
+
+def serialize_speed_section(entity):
+    return {
+        "id": format_speed_section_id(entity.entity_id),
+        "is_signalized": entity.speed_section.is_signalized,
+        "speed": entity.speed_section.speed,
+    }
 
 
 class InfraRailJSONView(APIView):
@@ -151,18 +182,21 @@ class InfraRailJSONView(APIView):
             signal.entity_id: signal
             for signal in fetch_entities(SignalEntity, namespace)
         }
-        operational_points = {
-            op.entity_id: op for op in fetch_entities(OperationalPointEntity, namespace)
-        }
         operational_point_parts = {
             op_part.entity_id: op_part
             for op_part in fetch_entities(OperationalPointPartEntity, namespace)
+        }
+        speed_section_parts = {
+            speed_section_part.entity_id: speed_section_part
+            for speed_section_part in fetch_entities(SpeedSectionPartEntity, namespace)
         }
 
         return Response(
             {
                 "track_sections": [
-                    serialize_track_section(entity, signals, operational_point_parts)
+                    serialize_track_section(
+                        entity, signals, operational_point_parts, speed_section_parts
+                    )
                     for entity in fetch_entities(TrackSectionEntity, namespace)
                 ],
                 "track_section_links": [
@@ -178,7 +212,12 @@ class InfraRailJSONView(APIView):
                     for entity in fetch_entities(ScriptFunctionEntity, namespace)
                 ],
                 "operational_points": [
-                    serialize_op(entity) for entity in operational_points.values()
+                    serialize_operational_point(entity)
+                    for entity in fetch_entities(OperationalPointEntity, namespace)
+                ],
+                "speed_sections": [
+                    serialize_speed_section(entity)
+                    for entity in fetch_entities(SpeedSectionEntity, namespace)
                 ],
             }
         )

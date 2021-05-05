@@ -20,6 +20,7 @@ def EndpointField():
 class ApplicableDirection(models.IntegerChoices):
     NORMAL = 0  # from BEGIN to END
     REVERSE = 1  # from END to BEGIN
+    BOTH = 2
 
 
 def ApplicableDirectionField():
@@ -227,6 +228,23 @@ class SightDistanceComponent(Component):
         unique = True
 
 
+class SpeedSectionComponent(Component):
+    speed = models.FloatField()
+    is_signalized = models.BooleanField()
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(speed__gte=0),
+                name="speed__gte=0",
+            ),
+        ]
+
+    class ComponentMeta:
+        name = "speed_section"
+        unique = True
+
+
 class TrackSectionEntity(Entity):
     name = "track_section"
     verbose_name_plural = "track section entities"
@@ -322,3 +340,32 @@ class ScriptFunctionEntity(Entity):
     name = "script_function"
     verbose_name_plural = "script functions"
     components = [RailScriptComponent]
+
+
+class SpeedSectionEntity(Entity):
+    name = "speed_section"
+    verbose_name_plural = "speed section entities"
+    components = [
+        IdentifierComponent,
+        GeoAreaLocationComponent,
+        KilometricPointComponent,
+        SpeedSectionComponent,
+    ]
+
+
+class SpeedSectionPartComponent(Component):
+    speed_section = models.ForeignKey(SpeedSectionEntity, on_delete=models.CASCADE)
+
+    class ComponentMeta:
+        name = "speed_section_part"
+
+
+class SpeedSectionPartEntity(Entity):
+    name = "speed_section_part"
+    verbose_name_plural = "speed section part entities"
+    components = [
+        SpeedSectionPartComponent,
+        GeoLineLocationComponent,
+        TrackSectionRangeComponent,
+        ApplicableDirectionComponent,
+    ]
