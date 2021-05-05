@@ -11,6 +11,8 @@ from osrd_infra.models import (
     TrackSectionEntity,
     TrackSectionLinkEntity,
     Endpoint,
+    OperationalPointEntity,
+    OperationalPointPartEntity,
     fetch_entities,
 )
 
@@ -27,6 +29,10 @@ def format_switch_id(entity_id: int) -> str:
 
 def format_signal_id(entity_id: int) -> str:
     return f"signal.{entity_id}"
+
+
+def format_operation_point_id(entity_id: int) -> str:
+    return f"operational_point.{entity_id}"
 
 
 def serialize_endpoint(endpoint: int, track_section_id: int):
@@ -54,11 +60,21 @@ def serialize_signal(signal_entity):
     }
 
 
-def serialize_track_section(track_section_entity, signals):
+def serialize_op_part(op_part_entity):
+    op = op_part_entity.operational_point_part_set.get().operational_point
+    range_loc = op_part_entity.range_location_set.get()
+    return {
+        "begin": range_loc.start_offset,
+        "end": range_loc.end_offset,
+        "ref": format_operation_point_id(op.entity_id),
+    }
+
+
+def serialize_track_section(track_section_entity, signals, op_parts):
     track_section = track_section_entity.track_section
 
-    # fetch point_objects
     point_objects = track_section_entity.point_objects.all()
+    range_objects = track_section_entity.range_objects.all()
 
     return {
         "length": track_section.length,
@@ -66,6 +82,10 @@ def serialize_track_section(track_section_entity, signals):
         "signals": [
             serialize_signal(signals[point_object.entity_id])
             for point_object in point_objects
+        ],
+        "operational_points": [
+            serialize_op_part(op_parts[range_object.entity_id])
+            for range_object in range_objects
         ],
     }
 
@@ -118,6 +138,10 @@ def serialize_script_function(function_entity):
     return function_entity.rail_script.script
 
 
+def serialize_op(op_entity):
+    return {"id": format_operation_point_id(op_entity.entity_id)}
+
+
 class InfraRailJSONView(APIView):
     def get(self, request, pk):
         infra = get_object_or_404(Infra, pk=pk)
@@ -127,11 +151,18 @@ class InfraRailJSONView(APIView):
             signal.entity_id: signal
             for signal in fetch_entities(SignalEntity, namespace)
         }
+        operational_points = {
+            op.entity_id: op for op in fetch_entities(OperationalPointEntity, namespace)
+        }
+        operational_point_parts = {
+            op_part.entity_id: op_part
+            for op_part in fetch_entities(OperationalPointPartEntity, namespace)
+        }
 
         return Response(
             {
                 "track_sections": [
-                    serialize_track_section(entity, signals)
+                    serialize_track_section(entity, signals, operational_point_parts)
                     for entity in fetch_entities(TrackSectionEntity, namespace)
                 ],
                 "track_section_links": [
@@ -145,6 +176,9 @@ class InfraRailJSONView(APIView):
                 "script_functions": [
                     serialize_script_function(entity)
                     for entity in fetch_entities(ScriptFunctionEntity, namespace)
+                ],
+                "operational_points": [
+                    serialize_op(entity) for entity in operational_points.values()
                 ],
             }
         )
