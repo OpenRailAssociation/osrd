@@ -3,7 +3,7 @@ package fr.sncf.osrd.railml;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
 import fr.sncf.osrd.railml.tracksectiongraph.TrackNetElement;
-import fr.sncf.osrd.utils.graph.ApplicableDirections;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,12 +36,12 @@ public final class LinearLocation {
     static final Logger logger = LoggerFactory.getLogger(LinearLocation.class);
 
     public interface LinearLocationCallback {
-        void acceptLocation(TrackNetElement element, ApplicableDirections direction, double begin, double end);
+        void acceptLocation(TrackNetElement element, ApplicableDirection direction, double begin, double end);
     }
 
-    static ApplicableDirections mergeApplicationDirection(
+    static ApplicableDirection mergeApplicationDirection(
             Element element,
-            ApplicableDirections linearLocationDirection
+            ApplicableDirection linearLocationDirection
     ) {
         var keepsOrientation = Boolean.parseBoolean(element.attributeValue("keepsOrientation"));
         if (keepsOrientation)

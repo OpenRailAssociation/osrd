@@ -3,7 +3,7 @@ package fr.sncf.osrd.railml;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
-import fr.sncf.osrd.utils.graph.ApplicableDirections;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
@@ -13,11 +13,11 @@ import java.util.Map;
 public class RMLSignalIS {
     final RJSTrackSection rjsTrackSection;
     final double position;
-    final ApplicableDirections navigability;
+    final ApplicableDirection navigability;
 
     private RMLSignalIS(
             RJSTrackSection rjsTrackSection,
-            ApplicableDirections navigability,
+            ApplicableDirection navigability,
             double position
     ) {
         this.rjsTrackSection = rjsTrackSection;

@@ -51,7 +51,6 @@ public class RMLRoute {
             var route = (Element) routeNode;
             var id = route.attributeValue("id");
 
-            var tvdSections = parseTVDSections(route);
             var switchesPosition = parseSwitchesPosition(route);
             var releaseGroups = parseReleaseGroups(route, releaseGroupsRear);
 
@@ -63,7 +62,7 @@ public class RMLRoute {
             var routeWaypoints = rmlToRjsWaypoints(rmlRouteWaypoints, rjsWaypointsMap);
             var entrySignal = parseEntrySignal(route, signalTrackNetElementMap);
 
-            res.add(new RJSRoute(id, tvdSections, switchesPosition, routeWaypoints, releaseGroups, entrySignal));
+            res.add(new RJSRoute(id, switchesPosition, routeWaypoints, releaseGroups, entrySignal));
         }
         return res;
     }
@@ -199,7 +198,7 @@ public class RMLRoute {
         var signal = findSignal(elementID, trackNetElement, rjsTrackSections);
 
         var direction = EdgeDirection.START_TO_STOP;
-        if (signal.navigability == ApplicableDirections.REVERSE) {
+        if (signal.applicableDirection == ApplicableDirection.REVERSE) {
             direction = EdgeDirection.STOP_TO_START;
         }
 
@@ -266,15 +265,6 @@ public class RMLRoute {
                 return signal;
         }
         return null;
-    }
-
-    private static ArrayList<ID<RJSTVDSection>> parseTVDSections(Element route) {
-        var tvdSections = new ArrayList<ID<RJSTVDSection>>();
-        for (var tvdSection : route.elements("hasTvdSection")) {
-            var tvdSectionID = new ID<RJSTVDSection>(tvdSection.attributeValue("ref"));
-            tvdSections.add(tvdSectionID);
-        }
-        return tvdSections;
     }
 
     private static Map<ID<RJSSwitch>, RJSSwitch.Position> parseSwitchesPosition(Element route) {

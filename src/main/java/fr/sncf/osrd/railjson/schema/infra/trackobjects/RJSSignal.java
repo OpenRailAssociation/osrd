@@ -1,17 +1,20 @@
 package fr.sncf.osrd.railjson.schema.infra.trackobjects;
 
+import com.squareup.moshi.Json;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr;
-import fr.sncf.osrd.utils.graph.ApplicableDirections;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
 
 public class RJSSignal extends RJSTrackObject implements Identified {
     public String id;
 
     /** The track direction for which the signal applies */
-    public ApplicableDirections navigability;
+    @Json(name = "applicable_direction")
+    public ApplicableDirection applicableDirection;
 
     /** The distance at which the signal becomes visible */
+    @Json(name = "sight_distance")
     public double sightDistance;
 
     /** The behavior of the signal */
@@ -20,7 +23,7 @@ public class RJSSignal extends RJSTrackObject implements Identified {
     /** Instantiate RJSSignal */
     public RJSSignal(
             String id,
-            ApplicableDirections navigability,
+            ApplicableDirection applicableDirection,
             double position,
             double sightDistance,
             RJSRSExpr expr
@@ -29,14 +32,14 @@ public class RJSSignal extends RJSTrackObject implements Identified {
         this.id = id;
         this.sightDistance = sightDistance;
         this.expr = expr;
-        this.navigability = navigability;
-        if (navigability == ApplicableDirections.BOTH)
+        this.applicableDirection = applicableDirection;
+        if (applicableDirection == ApplicableDirection.BOTH)
             throw new InvalidInfraException(String.format("Signal '%s' can't apply for both directions", id));
     }
 
     @Override
-    public ApplicableDirections getNavigability() {
-        return navigability;
+    public ApplicableDirection getApplicableDirection() {
+        return applicableDirection;
     }
 
     @Override

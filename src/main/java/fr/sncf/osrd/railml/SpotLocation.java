@@ -3,7 +3,7 @@ package fr.sncf.osrd.railml;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
 import fr.sncf.osrd.railml.tracksectiongraph.TrackNetElement;
-import fr.sncf.osrd.utils.graph.ApplicableDirections;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import org.dom4j.Element;
 
 import java.util.Map;
@@ -24,12 +24,12 @@ import java.util.Map;
  */
 public final class SpotLocation {
     public final TrackNetElement netElement;
-    public final ApplicableDirections appliesTo;
+    public final ApplicableDirection appliesTo;
     public final double position;
 
     SpotLocation(
             TrackNetElement netElement,
-            ApplicableDirections appliesTo,
+            ApplicableDirection appliesTo,
             double position
     ) {
         this.netElement = netElement;
@@ -81,7 +81,7 @@ public final class SpotLocation {
     }
 
     public interface SpotLocationCallback {
-        void acceptLocation(TrackNetElement netElement, ApplicableDirections appliesTo, double pos);
+        void acceptLocation(TrackNetElement netElement, ApplicableDirection appliesTo, double pos);
     }
 
     static boolean parse(

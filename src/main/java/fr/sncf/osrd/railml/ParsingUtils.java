@@ -2,9 +2,9 @@ package fr.sncf.osrd.railml;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.common.ID;
-import fr.sncf.osrd.utils.graph.ApplicableDirections;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.utils.FloatCompare;
 import org.dom4j.Element;
@@ -13,9 +13,9 @@ import java.util.Locale;
 import java.util.Map;
 
 public class ParsingUtils {
-    static ApplicableDirections parseNavigability(Element element) {
+    static ApplicableDirection parseNavigability(Element element) {
         var navigabilityStr = element.attributeValue("navigability").toUpperCase(Locale.ENGLISH);
-        return ApplicableDirections.valueOf(navigabilityStr);
+        return ApplicableDirection.valueOf(navigabilityStr);
     }
 
 
@@ -46,13 +46,13 @@ public class ParsingUtils {
      * @return the application direction
      * @throws InvalidInfraException {@inheritDoc}
      */
-    static ApplicableDirections parseApplicationDirection(Element element) throws InvalidInfraException {
+    static ApplicableDirection parseApplicationDirection(Element element) throws InvalidInfraException {
         var directionString = element.attributeValue("applicationDirection");
         if (directionString == null)
-            return ApplicableDirections.BOTH;
+            return ApplicableDirection.BOTH;
 
         try {
-            return ApplicableDirections.valueOf(directionString.toUpperCase(Locale.ENGLISH));
+            return ApplicableDirection.valueOf(directionString.toUpperCase(Locale.ENGLISH));
         } catch (IllegalArgumentException e) {
             throw new InvalidInfraException(String.format("invalid applicationDirection: %s", directionString));
         }
