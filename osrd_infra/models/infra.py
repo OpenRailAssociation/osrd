@@ -203,6 +203,30 @@ class ApplicableDirectionComponent(Component):
         name = "applicable_direction"
 
 
+class RailScriptComponent(Component):
+    script = models.JSONField()
+
+    class ComponentMeta:
+        name = "rail_script"
+        unique = True
+
+
+class SightDistanceComponent(Component):
+    distance = models.FloatField()
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(distance__gte=0),
+                name="distance__gte=0",
+            ),
+        ]
+
+    class ComponentMeta:
+        name = "sight_distance"
+        unique = True
+
+
 class TrackSectionEntity(Entity):
     name = "track_section"
     verbose_name_plural = "track section entities"
@@ -272,6 +296,8 @@ class SignalEntity(Entity):
         TrackSectionLocationComponent,
         TrackAngleComponent,
         ApplicableDirectionComponent,
+        RailScriptComponent,
+        SightDistanceComponent,
     ]
 
 
@@ -290,3 +316,9 @@ class LineEntity(Entity):
     components = [
         IdentifierComponent,
     ]
+
+
+class ScriptFunctionEntity(Entity):
+    name = "script_function"
+    verbose_name_plural = "script functions"
+    components = [RailScriptComponent]
