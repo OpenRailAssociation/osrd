@@ -6,7 +6,7 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railml.DescriptionLevel;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-import fr.sncf.osrd.utils.graph.ApplicableDirections;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection.EndpointID;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSectionLink;
@@ -20,14 +20,14 @@ import java.util.Map;
 
 public class NetRelation implements IBiNeighborRel<TrackNetElement> {
 
-    public final ApplicableDirections navigability;
+    public final ApplicableDirection navigability;
     public final EdgeEndpoint beginEndpoint;
     public final TrackNetElement begin;
     public final EdgeEndpoint endEndpoint;
     public final TrackNetElement end;
 
     protected NetRelation(
-            ApplicableDirections navigability,
+            ApplicableDirection navigability,
             TrackNetElement begin,
             EdgeEndpoint beginEndpoint,
             TrackNetElement end,
@@ -74,7 +74,7 @@ public class NetRelation implements IBiNeighborRel<TrackNetElement> {
     }
 
     static RJSTrackSectionLink from(
-            ApplicableDirections navigability,
+            ApplicableDirection navigability,
             String positionOnA,
             String elementA,
             String positionOnB,
@@ -97,7 +97,7 @@ public class NetRelation implements IBiNeighborRel<TrackNetElement> {
             if (navigabilityStr.equals("NONE"))
                 continue;
 
-            var navigability = ApplicableDirections.valueOf(navigabilityStr);
+            var navigability = ApplicableDirection.valueOf(navigabilityStr);
 
             var id = netRelation.attributeValue("id");
             if (descLevels.get(id) != DescriptionLevel.MICRO)
@@ -130,6 +130,6 @@ public class NetRelation implements IBiNeighborRel<TrackNetElement> {
 
     @Override
     public boolean isBidirectional() {
-        return navigability == ApplicableDirections.BOTH;
+        return navigability == ApplicableDirection.BOTH;
     }
 }

@@ -129,9 +129,9 @@ public class RailJSONParser {
             for (var rjsSpeedLimits : trackSection.speedSections) {
                 var speedSection = speedSections.get(rjsSpeedLimits.ref.id);
                 var rangeSpeedLimit = new RangeValue<>(rjsSpeedLimits.begin, rjsSpeedLimits.end, speedSection);
-                if (rjsSpeedLimits.applicableDirections.appliesToNormal())
+                if (rjsSpeedLimits.applicableDirection.appliesToNormal())
                     infraTrackSection.forwardSpeedSections.add(rangeSpeedLimit);
-                if (rjsSpeedLimits.applicableDirections.appliesToReverse())
+                if (rjsSpeedLimits.applicableDirection.appliesToReverse())
                     infraTrackSection.backwardSpeedSections.add(rangeSpeedLimit);
             }
 
@@ -159,7 +159,7 @@ public class RailJSONParser {
                         signals.size(),
                         rjsSignal.id,
                         expr,
-                        rjsSignal.navigability,
+                        rjsSignal.applicableDirection,
                         rjsSignal.sightDistance
                 );
                 signalsBuilder.add(rjsSignal.position, signal);
@@ -210,16 +210,15 @@ public class RailJSONParser {
             var waypoints = new ArrayList<Waypoint>();
             for (var waypoint : rjsRoute.waypoints)
                 waypoints.add(waypointsMap.get(waypoint.id));
-            var tvdSections = new SortedArraySet<TVDSection>();
-            for (var tvdSection : rjsRoute.tvdSections)
-                tvdSections.add(tvdSectionsMap.get(tvdSection.id));
 
             // Parse release groups
             var releaseGroups = new ArrayList<SortedArraySet<TVDSection>>();
+            var tvdSections = new SortedArraySet<TVDSection>();
             for (var rjsReleaseGroup : rjsRoute.releaseGroups) {
                 var releaseGroup = new SortedArraySet<TVDSection>();
                 for (var rjsTvdSection : rjsReleaseGroup) {
                     var tvdSection = tvdSectionsMap.get(rjsTvdSection.id);
+                    tvdSections.add(tvdSection);
                     if (tvdSection == null)
                         throw new InvalidInfraException(String.format(
                                 "A release group contains an unknown tvd section (%s)",

@@ -1,13 +1,13 @@
 package fr.sncf.osrd.railjson.schema.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.utils.graph.ApplicableDirections;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
 
 /** This class represents a link between two track sections */
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSTrackSectionLink {
     /** The navigability between the two track sections. In most cases it's BOTH way. */
-    public ApplicableDirections navigability;
+    public ApplicableDirection navigability;
     public RJSTrackSection.EndpointID begin;
     public RJSTrackSection.EndpointID end;
 
@@ -18,7 +18,7 @@ public class RJSTrackSectionLink {
      * @param end end end of the link
      */
     public RJSTrackSectionLink(
-            ApplicableDirections navigability,
+            ApplicableDirection navigability,
             RJSTrackSection.EndpointID begin,
             RJSTrackSection.EndpointID end
     ) {

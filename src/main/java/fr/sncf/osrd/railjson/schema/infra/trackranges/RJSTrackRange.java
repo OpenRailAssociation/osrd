@@ -1,7 +1,7 @@
 package fr.sncf.osrd.railjson.schema.infra.trackranges;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.utils.graph.ApplicableDirections;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public abstract class RJSTrackRange {
@@ -10,7 +10,7 @@ public abstract class RJSTrackRange {
     public double end;
 
     /** What sides the object can be approached from */
-    public abstract ApplicableDirections getNavigability();
+    public abstract ApplicableDirection getNavigability();
 
     RJSTrackRange(double begin, double end) {
         this.begin = begin;

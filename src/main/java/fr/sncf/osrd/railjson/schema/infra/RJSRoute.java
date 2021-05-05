@@ -13,10 +13,6 @@ import java.util.Set;
 public class RJSRoute implements Identified {
     public String id;
 
-    /** List of TVD sections through which the route transits */
-    @Json(name = "tvd_sections")
-    public List<ID<RJSTVDSection>> tvdSections;
-
     /** List of waypoints that define the route. */
     public List<ID<RJSRouteWaypoint>> waypoints;
 
@@ -34,14 +30,12 @@ public class RJSRoute implements Identified {
     /** Routes are described as a list of waypoints, TVD Sections and Switches in specific positions */
     public RJSRoute(
             String id,
-            List<ID<RJSTVDSection>> tvdSections,
             Map<ID<RJSSwitch>, RJSSwitch.Position> switchesPosition,
             List<ID<RJSRouteWaypoint>> waypoints,
             List<Set<ID<RJSTVDSection>>> releaseGroups,
             ID<RJSSignal> entrySignal
     ) {
         this.id = id;
-        this.tvdSections = tvdSections;
         this.switchesPosition = switchesPosition;
         this.waypoints = waypoints;
         this.releaseGroups = releaseGroups;

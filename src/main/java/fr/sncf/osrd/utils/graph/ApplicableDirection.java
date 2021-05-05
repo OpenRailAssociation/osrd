@@ -1,13 +1,13 @@
 package fr.sncf.osrd.utils.graph;
 
-public enum ApplicableDirections {
+public enum ApplicableDirection {
     NORMAL(new EdgeDirection[]{EdgeDirection.START_TO_STOP}),
     REVERSE(new EdgeDirection[]{EdgeDirection.STOP_TO_START}),
     BOTH(new EdgeDirection[]{EdgeDirection.START_TO_STOP, EdgeDirection.STOP_TO_START});
 
     public final EdgeDirection[] directionSet;
 
-    ApplicableDirections(EdgeDirection[] directionSet) {
+    ApplicableDirection(EdgeDirection[] directionSet) {
         this.directionSet = directionSet;
     }
 
@@ -15,7 +15,7 @@ public enum ApplicableDirections {
      * Returns the opposite applicable directions
      * @return The opposite applicable directions
      */
-    public ApplicableDirections opposite() {
+    public ApplicableDirection opposite() {
         switch (this) {
             case NORMAL:
                 return REVERSE;

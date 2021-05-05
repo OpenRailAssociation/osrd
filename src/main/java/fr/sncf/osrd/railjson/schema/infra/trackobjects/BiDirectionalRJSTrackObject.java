@@ -1,6 +1,6 @@
 package fr.sncf.osrd.railjson.schema.infra.trackobjects;
 
-import fr.sncf.osrd.utils.graph.ApplicableDirections;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
 
 public class BiDirectionalRJSTrackObject extends RJSTrackObject {
     BiDirectionalRJSTrackObject(double position) {
@@ -8,7 +8,7 @@ public class BiDirectionalRJSTrackObject extends RJSTrackObject {
     }
 
     @Override
-    public ApplicableDirections getNavigability() {
-        return ApplicableDirections.BOTH;
+    public ApplicableDirection getApplicableDirection() {
+        return ApplicableDirection.BOTH;
     }
 }

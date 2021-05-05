@@ -2,7 +2,7 @@ package fr.sncf.osrd.railjson.schema.infra.trackobjects;
 
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import fr.sncf.osrd.railjson.schema.common.Identified;
-import fr.sncf.osrd.utils.graph.ApplicableDirections;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.utils.graph.IPointValue;
 
 public abstract class RJSRouteWaypoint
@@ -15,8 +15,8 @@ public abstract class RJSRouteWaypoint
                     .withSubtype(RJSTrainDetector.class, "detector")
                     .withSubtype(RJSBufferStop.class, "buffer_stop");
 
-    RJSRouteWaypoint(String id, ApplicableDirections applicableDirections, double position) {
-        super(applicableDirections, position);
+    RJSRouteWaypoint(String id, ApplicableDirection applicableDirection, double position) {
+        super(applicableDirection, position);
         this.id = id;
     }
 
