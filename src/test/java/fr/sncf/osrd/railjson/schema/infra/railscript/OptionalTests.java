@@ -10,6 +10,7 @@ import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.SimulationError;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -32,6 +33,34 @@ public class OptionalTests {
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim, config);
+    }
+
+    @Test
+    public void testSignalsFunctionWithOptionalsForcedGreen() throws InvalidInfraException {
+        // Other half the test above: we check that invalid signals would have failed
+        var infra = getBaseInfra("tiny_infra/infra_optional.json");
+        assert infra != null;
+        var config = getBaseConfig();
+        assert config != null;
+
+        var functions = infra.scriptFunctions;
+        var aspect = new RJSRSExpr.AspectSet.AspectSetMember(
+                new ID<>("GREEN"),
+                new RJSRSExpr.True());
+        for (var f : functions) {
+            f.body = new RJSRSExpr.AspectSet(new RJSRSExpr.AspectSet.AspectSetMember[]{aspect});
+        }
+        infra.routes.forEach((route) -> {
+            var positions = route.switchesPosition;
+            positions.replaceAll((k, v) -> RJSSwitch.Position.RIGHT);
+        });
+        infra.switches.iterator().next().positionChangeDelay = 42;
+
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        assertThrows(SimulationError.class,
+                () -> runWithExceptions(sim, config),
+                "Expected a simulation error once the train goes through the switch"
+        );
     }
 
     @Test
