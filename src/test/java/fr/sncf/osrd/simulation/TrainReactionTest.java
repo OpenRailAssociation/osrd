@@ -1,6 +1,7 @@
 package fr.sncf.osrd.simulation;
 
 import static fr.sncf.osrd.Helpers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
@@ -46,12 +47,10 @@ public class TrainReactionTest {
             var train = sim.trains.values().iterator().next();
             assert train.lastScheduledEvent == null;
         });
-        try {
-            runWithExceptions(sim);
-        } catch (SimulationError e) {
-            return;
-        }
-        fail("With all lights green, we expected a simulation error (train didn't wait for the switch)");
+        assertThrows(SimulationError.class,
+                () -> runWithExceptions(sim),
+                "Expected a simulation error once the train goes through the switch"
+        );
     }
 
     @Test
