@@ -369,3 +369,25 @@ class SpeedSectionPartEntity(Entity):
         TrackSectionRangeComponent,
         ApplicableDirectionComponent,
     ]
+
+
+class DetectorEntity(Entity):
+    name = "detector"
+    verbose_name_plural = "detector entities"
+    components = [
+        IdentifierComponent,
+        GeoPointLocationComponent,
+        TrackSectionLocationComponent,
+        ApplicableDirectionComponent,
+    ]
+
+
+class BufferStopEntity(Entity):
+    name = "buffer_stop"
+    verbose_name_plural = "buffer stop entities"
+    components = [
+        IdentifierComponent,
+        GeoPointLocationComponent,
+        TrackSectionLocationComponent,
+        ApplicableDirectionComponent,
+    ]

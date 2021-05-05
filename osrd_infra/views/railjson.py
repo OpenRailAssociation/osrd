@@ -5,6 +5,8 @@ from rest_framework.views import APIView
 from osrd_infra.models import (
     Infra,
     ApplicableDirection,
+    BufferStopEntity,
+    DetectorEntity,
     SwitchEntity,
     ScriptFunctionEntity,
     SignalEntity,
@@ -41,6 +43,14 @@ def format_speed_section_id(entity_id: int) -> str:
     return f"speed_section.{entity_id}"
 
 
+def format_detector_id(entity_id: int) -> str:
+    return f"detector.{entity_id}"
+
+
+def format_buffer_stop_id(entity_id: int) -> str:
+    return f"buffer_stop.{entity_id}"
+
+
 def serialize_endpoint(endpoint: int, track_section_id: int):
     return {
         "endpoint": Endpoint(endpoint).name,
@@ -61,6 +71,28 @@ def serialize_signal(entity):
         "position": position,
         "sight_distance": entity.sight_distance.distance,
         "expr": entity.rail_script.script,
+    }
+
+
+def serialize_detector(entity):
+    applicable_direction = entity.applicable_direction_set.get().applicable_direction
+    position = entity.point_location_set.get().offset
+    return {
+        "id": format_detector_id(entity.entity_id),
+        "applicable_direction": serialize_applicable_direction(applicable_direction),
+        "position": position,
+        "type": "detector",
+    }
+
+
+def serialize_buffer_stop(entity):
+    applicable_direction = entity.applicable_direction_set.get().applicable_direction
+    position = entity.point_location_set.get().offset
+    return {
+        "id": format_buffer_stop_id(entity.entity_id),
+        "applicable_direction": serialize_applicable_direction(applicable_direction),
+        "position": position,
+        "type": "buffer_stop",
     }
 
 
@@ -86,11 +118,16 @@ def serialize_speed_section_part(entity):
     }
 
 
-def serialize_track_section(track_section_entity, signals, op_parts, speed_sections):
+def serialize_track_section(track_section_entity, **cached_entities):
     track_section = track_section_entity.track_section
 
     point_objects = track_section_entity.point_objects.all()
     range_objects = track_section_entity.range_objects.all()
+    signals = cached_entities["signals"]
+    detectors = cached_entities["detectors"]
+    buffer_stops = cached_entities["buffer_stops"]
+    op_parts = cached_entities["op_parts"]
+    speed_sections = cached_entities["speed_section_parts"]
 
     return {
         "length": track_section.length,
@@ -99,6 +136,16 @@ def serialize_track_section(track_section_entity, signals, op_parts, speed_secti
             serialize_signal(signals[point_object.entity_id])
             for point_object in point_objects
             if point_object.entity_id in signals
+        ],
+        "route_waypoints": [
+            serialize_detector(detectors[point_object.entity_id])
+            for point_object in point_objects
+            if point_object.entity_id in detectors
+        ]
+        + [
+            serialize_buffer_stop(buffer_stops[point_object.entity_id])
+            for point_object in point_objects
+            if point_object.entity_id in buffer_stops
         ],
         "operational_points": [
             serialize_op_part(op_parts[range_object.entity_id])
@@ -173,30 +220,29 @@ def serialize_speed_section(entity):
     }
 
 
+def fetch_and_map(entity_type, namespace):
+    return {
+        entity.entity_id: entity for entity in fetch_entities(entity_type, namespace)
+    }
+
+
 class InfraRailJSONView(APIView):
     def get(self, request, pk):
         infra = get_object_or_404(Infra, pk=pk)
         namespace = infra.namespace
 
-        signals = {
-            signal.entity_id: signal
-            for signal in fetch_entities(SignalEntity, namespace)
-        }
-        operational_point_parts = {
-            op_part.entity_id: op_part
-            for op_part in fetch_entities(OperationalPointPartEntity, namespace)
-        }
-        speed_section_parts = {
-            speed_section_part.entity_id: speed_section_part
-            for speed_section_part in fetch_entities(SpeedSectionPartEntity, namespace)
+        cached_entities = {
+            "signals": fetch_and_map(SignalEntity, namespace),
+            "detectors": fetch_and_map(DetectorEntity, namespace),
+            "buffer_stops": fetch_and_map(BufferStopEntity, namespace),
+            "op_parts": fetch_and_map(OperationalPointPartEntity, namespace),
+            "speed_section_parts": fetch_and_map(SpeedSectionPartEntity, namespace),
         }
 
         return Response(
             {
                 "track_sections": [
-                    serialize_track_section(
-                        entity, signals, operational_point_parts, speed_section_parts
-                    )
+                    serialize_track_section(entity, **cached_entities)
                     for entity in fetch_entities(TrackSectionEntity, namespace)
                 ],
                 "track_section_links": [
