@@ -4,6 +4,7 @@ import static fr.sncf.osrd.infra.trackgraph.TrackSection.linkEdges;
 
 import com.squareup.moshi.*;
 import fr.sncf.osrd.infra.*;
+import fr.sncf.osrd.infra.railscript.DependencyBinder;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
@@ -269,12 +270,6 @@ public class RailJSONParser {
             function.body.accept(nameResolver);
         for (var signal : signals)
             signal.expr.accept(nameResolver);
-
-        // Fill signals dependencies
-        for (var signal : signals) {
-            var dependenciesFinder = new Signal.DependenciesFinder(signal);
-            signal.expr.accept(dependenciesFinder);
-        }
 
         return Infra.build(trackGraph, waypointGraph, routeGraph.build(),
                 tvdSectionsMap, aspectsMap, signals, switches);
