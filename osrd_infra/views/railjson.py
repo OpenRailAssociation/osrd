@@ -12,6 +12,7 @@ from osrd_infra.models import (
     SignalEntity,
     TrackSectionEntity,
     TrackSectionLinkEntity,
+    TVDSectionEntity,
     Endpoint,
     OperationalPointEntity,
     OperationalPointPartEntity,
@@ -49,6 +50,10 @@ def format_detector_id(entity_id: int) -> str:
 
 def format_buffer_stop_id(entity_id: int) -> str:
     return f"buffer_stop.{entity_id}"
+
+
+def format_tvd_section_id(entity_id: int) -> str:
+    return f"tvd_section.{entity_id}"
 
 
 def serialize_endpoint(endpoint: int, track_section_id: int):
@@ -220,6 +225,28 @@ def serialize_speed_section(entity):
     }
 
 
+def serialize_tvd_section(tvd_section_entity, **cached_entities):
+    tvd_section_components = tvd_section_entity.tvd_section_components.all()
+
+    cached_detectors = cached_entities["detectors"]
+
+    detectors = []
+    buffer_stops = []
+
+    for component in tvd_section_components:
+        if component.entity_id in cached_detectors:
+            detectors.append(format_detector_id(component.entity_id))
+        else:
+            buffer_stops.append(format_buffer_stop_id(component.entity_id))
+
+    return {
+        "id": format_tvd_section_id(tvd_section_entity.entity_id),
+        "is_berthing_track": tvd_section_entity.berthing.is_berthing,
+        "buffer_stops": buffer_stops,
+        "train_detectors": detectors,
+    }
+
+
 def fetch_and_map(entity_type, namespace):
     return {
         entity.entity_id: entity for entity in fetch_entities(entity_type, namespace)
@@ -264,6 +291,10 @@ class InfraRailJSONView(APIView):
                 "speed_sections": [
                     serialize_speed_section(entity)
                     for entity in fetch_entities(SpeedSectionEntity, namespace)
+                ],
+                "tvd_sections": [
+                    serialize_tvd_section(entity, **cached_entities)
+                    for entity in fetch_entities(TVDSectionEntity, namespace)
                 ],
             }
         )

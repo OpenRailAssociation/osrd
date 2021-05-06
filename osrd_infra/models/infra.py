@@ -245,6 +245,25 @@ class SpeedSectionComponent(Component):
         unique = True
 
 
+class BelongsToTVDSectionComponent(Component):
+    tvd_section = models.ForeignKey(
+        "TVDSectionEntity",
+        on_delete=models.CASCADE,
+        related_name="tvd_section_components",
+    )
+
+    class ComponentMeta:
+        name = "belong_to_tvd_section"
+
+
+class BerthingComponent(Component):
+    is_berthing = models.BooleanField()
+
+    class ComponentMeta:
+        name = "berthing"
+        unique = True
+
+
 class TrackSectionEntity(Entity):
     name = "track_section"
     verbose_name_plural = "track section entities"
@@ -379,6 +398,7 @@ class DetectorEntity(Entity):
         GeoPointLocationComponent,
         TrackSectionLocationComponent,
         ApplicableDirectionComponent,
+        BelongsToTVDSectionComponent,
     ]
 
 
@@ -390,4 +410,14 @@ class BufferStopEntity(Entity):
         GeoPointLocationComponent,
         TrackSectionLocationComponent,
         ApplicableDirectionComponent,
+        BelongsToTVDSectionComponent,
+    ]
+
+
+class TVDSectionEntity(Entity):
+    name = "tvd_section"
+    verbose_name_plural = "TVD section entities"
+    components = [
+        IdentifierComponent,
+        BerthingComponent,
     ]
