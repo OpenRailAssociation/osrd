@@ -23,8 +23,7 @@ public class DependencyBinder extends RSExprVisitor {
     /** The set of all routes used to evaluate the visited expression. */
     public final Set<Route> routeDependencies = new HashSet<>();
 
-    /** The set of all switches used to evaluate the visited expression.
-     * NOTE: For now, this is always empty. No expression takes a switch state as input.*/
+    /** The set of all switches used to evaluate the visited expression. */
     public final Set<Switch> switchDependencies = new HashSet<>();
 
     /** Contains the possible values of arguments of each function calls before visiting its body */
@@ -127,6 +126,14 @@ public class DependencyBinder extends RSExprVisitor {
     /** Visit method */
     public void visit(RSExpr.EnumMatch<?, ?> expr) throws InvalidInfraException {
         expr.expr.accept(this);
+        for (var possibleValue : lastExprPossibleValues) {
+            if (possibleValue instanceof Switch) {
+                switchDependencies.add((Switch) possibleValue);
+            }
+            else if (possibleValue instanceof Route) {
+                routeDependencies.add((Route) possibleValue);
+            }
+        }
         var possibleValues = new HashSet<>();
         for (var branch : expr.branches) {
             branch.accept(this);
