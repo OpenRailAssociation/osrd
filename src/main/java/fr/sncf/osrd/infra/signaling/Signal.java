@@ -3,6 +3,7 @@ package fr.sncf.osrd.infra.signaling;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.*;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
+import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.train.InteractionType;
@@ -11,6 +12,9 @@ import fr.sncf.osrd.train.InteractionTypeSet;
 import fr.sncf.osrd.utils.graph.ApplicableDirections;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Stack;
 
 public class Signal implements ActionPoint {
     public final int index;
@@ -65,31 +69,5 @@ public class Signal implements ActionPoint {
     @Override
     public String toString() {
         return String.format("Signal { id=%s }", id);
-    }
-
-    public static class DependenciesFinder extends RSExprVisitor {
-        final Signal signal;
-
-        public DependenciesFinder(Signal signal) {
-            this.signal = signal;
-        }
-
-        @Override
-        public void visit(RSExpr.SignalRef expr) throws InvalidInfraException {
-            expr.signal.signalSubscribers.add(signal);
-            super.visit(expr);
-        }
-
-        @Override
-        public void visit(RSExpr.RouteRef expr) throws InvalidInfraException {
-            expr.route.signalSubscribers.add(signal);
-            super.visit(expr);
-        }
-
-        @Override
-        public void visit(RSExpr.SwitchRef expr) throws InvalidInfraException {
-            expr.switchRef.signalSubscribers.add(signal);
-            super.visit(expr);
-        }
     }
 }
