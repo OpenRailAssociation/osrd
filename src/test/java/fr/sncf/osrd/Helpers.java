@@ -159,9 +159,9 @@ public class Helpers {
     }
 
     /** Generates the defaults config from tiny_infra/config_railjson.json */
-    public static Config getBaseConfig() {
+    public static Config getBaseConfig(String path) {
         ClassLoader classLoader = Helpers.class.getClassLoader();
-        var configPath = classLoader.getResource("tiny_infra/config_railjson.json");
+        var configPath = classLoader.getResource(path);
         assert configPath != null;
         try {
             return Config.readFromFile(Path.of(configPath.getFile()));
@@ -169,6 +169,11 @@ public class Helpers {
             fail(e);
             return null;
         }
+    }
+
+    /** Generates the defaults config from tiny_infra/config_railjson.json */
+    public static Config getBaseConfig() {
+        return getBaseConfig("tiny_infra/config_railjson.json");
     }
 
     /** Go through all the events in the simulation, fails if an exception is thrown */

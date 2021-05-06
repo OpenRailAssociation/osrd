@@ -607,7 +607,7 @@
             "arguments": [
               {
                 "type": "signal",
-                "signal": "il.sig.W5"
+                "signal": "il.sig.C3"
               }
             ]
           },
@@ -746,7 +746,7 @@
             "arguments": [
               {
                 "type": "signal",
-                "signal": "il.sig.W5"
+                "signal": "il.sig.C1"
               }
             ]
           },
@@ -790,7 +790,7 @@
             "arguments": [
               {
                 "type": "signal",
-                "signal": "il.sig.W4"
+                "signal": "il.sig.C2"
               }
             ]
           },

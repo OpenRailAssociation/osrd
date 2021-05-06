@@ -416,7 +416,7 @@ public abstract class RSExpr<T extends RSValue> {
             if (optional.value == null)
                 return caseNoneResult;
             else {
-                state.variablesInScope.put(name, optional);
+                state.variablesInScope.put(name, optional.value);
                 var res = caseSome.evaluate(state);
                 state.variablesInScope.remove(name);
                 return res;
@@ -648,6 +648,7 @@ public abstract class RSExpr<T extends RSValue> {
                     .filter(x -> x.route.signalsWithEntry.contains(currentSignal))
                     .findFirst()
                     .orElse(null);
+            System.out.println(currentSignal.id);
             return new RSOptional<>(route);
         }
 

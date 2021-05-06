@@ -87,8 +87,10 @@ public class Route extends DirNEdge {
         if (entrySignal != null)
             signalsWithEntry.add(entrySignal);
         for (var actionPoint : getActionPoints())
-            if (actionPoint instanceof Signal)
-                signalsWithEntry.add((Signal) actionPoint);
+            if (actionPoint instanceof Signal) {
+                var signal = (Signal) actionPoint;
+                signalsWithEntry.add(signal);
+            }
     }
 
     /** Build track section path. Need to concatenate all track section of all TvdSectionPath.

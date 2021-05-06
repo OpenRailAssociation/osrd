@@ -21,7 +21,7 @@ public class OptionalTests {
     public void testSignalsFunctionWithOptionals() throws InvalidInfraException {
         var infra = getBaseInfra("tiny_infra/infra_optional.json");
         assert infra != null;
-        var config = getBaseConfig();
+        var config = getBaseConfig("tiny_infra/config_railjson_optional.json");
         assert config != null;
 
         // We force a (very long) switch change, to make sure signals are necessary
@@ -40,7 +40,7 @@ public class OptionalTests {
         // Other half the test above: we check that invalid signals would have failed
         var infra = getBaseInfra("tiny_infra/infra_optional.json");
         assert infra != null;
-        var config = getBaseConfig();
+        var config = getBaseConfig("tiny_infra/config_railjson_optional.json");
         assert config != null;
 
         var functions = infra.scriptFunctions;
