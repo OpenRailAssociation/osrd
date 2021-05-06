@@ -648,7 +648,6 @@ public abstract class RSExpr<T extends RSValue> {
                     .filter(x -> x.route.signalsWithEntry.contains(currentSignal))
                     .findFirst()
                     .orElse(null);
-            System.out.println(currentSignal.id);
             return new RSOptional<>(route);
         }
 
