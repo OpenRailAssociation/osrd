@@ -8,19 +8,39 @@ import fr.sncf.osrd.infra.trackgraph.Switch;
 
 import java.util.*;
 
+/** This visitor evaluates all the possible return values of the (non-boolean) expressions
+ * For now it is used for dependency resolution that works with primitives like NextSignal,
+ * but it can also be used for better delay management.*/
 public class DependencyBinder extends RSExprVisitor {
+
+    /** This attributes emulates a return value, which can't be done normally in a visitor.
+    * It contains the possible return values of the expression we visited last. */
     private Set<Object> lastExprPossibleValues;
+
+    /** The set of all signal used to evaluate the visited expression. */
     public final Set<Signal> signalDependencies = new HashSet<>();
+
+    /** The set of all routes used to evaluate the visited expression. */
     public final Set<Route> routeDependencies = new HashSet<>();
+
+    /** The set of all switches used to evaluate the visited expression.
+     * NOTE: For now, this is always empty. No expression takes a switch state as input.*/
     public final Set<Switch> switchDependencies = new HashSet<>();
+
+    /** Contains the possible values of arguments of each function calls before visiting its body */
     private final Stack<ArrayList<Set<Object>>> argsPossibleValues = new Stack<>();
+
+    /** Contains the possible values of match expressions (excluding empty) */
     private final HashMap<String, Set<Object>> matchRefPossibleValues = new HashMap<>();
+
+    /** Reference to the infra, used to evaluate primitives */
     private final Infra infra;
 
     public DependencyBinder(Infra infra) {
         this.infra = infra;
     }
 
+    /** Adds the given signal as dependency to all the relevant signals, routes and switches. */
     public static void bind(Signal signal, Infra infra) {
         var visitor = new DependencyBinder(infra);
         var expr = signal.expr.rootExpr;
@@ -37,6 +57,7 @@ public class DependencyBinder extends RSExprVisitor {
             s.signalSubscribers.add(signal);
     }
 
+    /** Visit method */
     public void visit(RSExpr.Or expr) throws InvalidInfraException {
         var possibleValues = new HashSet<>();
         for (var e : expr.expressions) {
@@ -84,7 +105,9 @@ public class DependencyBinder extends RSExprVisitor {
         lastExprPossibleValues = possibleValues;
     }
 
-    /** Visit method */
+    /** Visit method
+     * We store the possible values of each argument in a stack, then eval the body.
+     * A pair of functions calling each other would cause infinite recursion, but we don't support this. */
     public void visit(RSExpr.Call<?> expr) throws InvalidInfraException {
         var argValues = new ArrayList<Set<Object>>();
         for (var arg : expr.arguments) {
@@ -112,7 +135,8 @@ public class DependencyBinder extends RSExprVisitor {
         lastExprPossibleValues = possibleValues;
     }
 
-    /** Visit method */
+    /** Visit method
+     * All signals that may be an input are added to the dependencies. */
     public void visit(RSExpr.SignalAspectCheck expr) throws InvalidInfraException {
         expr.signalExpr.accept(this);
         for (var possibleValue : lastExprPossibleValues) {
@@ -121,7 +145,8 @@ public class DependencyBinder extends RSExprVisitor {
         }
     }
 
-    /** Visit method */
+    /** Visit method
+     * All routes that may be an input are added to the dependencies. */
     public void visit(RSExpr.RouteStateCheck expr) throws InvalidInfraException {
         expr.routeExpr.accept(this);
         for (var possibleValue : lastExprPossibleValues) {
@@ -146,7 +171,8 @@ public class DependencyBinder extends RSExprVisitor {
         lastExprPossibleValues = matchRefPossibleValues.get(expr.name);
     }
 
-    /** Visit method */
+    /** Visit method
+     * We do *not* add the input signal(s) because what matters is its position, not its state. */
     public void visit(RSExpr.ReservedRoute reservedRoute) throws InvalidInfraException {
         var possibleValues = new HashSet<>();
         reservedRoute.signal.accept(this);
@@ -161,7 +187,10 @@ public class DependencyBinder extends RSExprVisitor {
         lastExprPossibleValues = possibleValues;
     }
 
-    /** Visit method */
+    /** Visit method
+     * We add the routes to the dependencies and "return" the possible signals.
+     * The double loop implies an explosion of results, but we expect a lot of overlap and a small
+     * resulting set. Most routes share their next signals. */
     public void visit(RSExpr.NextSignal nextSignal) throws InvalidInfraException {
         var possibleValues = new HashSet<>();
         nextSignal.signal.accept(this);
