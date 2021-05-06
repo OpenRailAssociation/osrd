@@ -5,8 +5,6 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Switch;
-import fr.sncf.osrd.infra_state.RouteState;
-import fr.sncf.osrd.infra_state.SignalState;
 
 import java.util.*;
 
@@ -156,7 +154,6 @@ public class DependencyBinder extends RSExprVisitor {
         for (var val : possibleSignals) {
             assert val instanceof Signal;
             var signal = (Signal) val;
-            signalDependencies.add(signal);
             infra.routeGraph.routeMap.values().stream()
                     .filter(x -> x.signalsWithEntry.contains(signal))
                     .forEach(possibleValues::add);
