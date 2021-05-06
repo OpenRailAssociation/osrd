@@ -68,7 +68,7 @@ def serialize_applicable_direction(applicable_direction: int):
 
 
 def serialize_signal(entity):
-    applicable_direction = entity.applicable_direction_set.get().applicable_direction
+    applicable_direction = entity.applicable_direction.applicable_direction
     position = entity.point_location_set.get().offset
     return {
         "id": format_signal_id(entity.entity_id),
@@ -80,7 +80,7 @@ def serialize_signal(entity):
 
 
 def serialize_detector(entity):
-    applicable_direction = entity.applicable_direction_set.get().applicable_direction
+    applicable_direction = entity.applicable_direction.applicable_direction
     position = entity.point_location_set.get().offset
     return {
         "id": format_detector_id(entity.entity_id),
@@ -91,7 +91,7 @@ def serialize_detector(entity):
 
 
 def serialize_buffer_stop(entity):
-    applicable_direction = entity.applicable_direction_set.get().applicable_direction
+    applicable_direction = entity.applicable_direction.applicable_direction
     position = entity.point_location_set.get().offset
     return {
         "id": format_buffer_stop_id(entity.entity_id),
@@ -114,7 +114,7 @@ def serialize_op_part(op_part_entity):
 def serialize_speed_section_part(entity):
     speed_section = entity.speed_section_part_set.get().speed_section
     range_loc = entity.range_location_set.get()
-    applicable_direction = entity.applicable_direction_set.get().applicable_direction
+    applicable_direction = entity.applicable_direction.applicable_direction
     return {
         "applicable_direction": serialize_applicable_direction(applicable_direction),
         "begin": range_loc.start_offset,

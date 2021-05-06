@@ -202,6 +202,7 @@ class ApplicableDirectionComponent(Component):
 
     class ComponentMeta:
         name = "applicable_direction"
+        unique = True
 
 
 class RailScriptComponent(Component):
