@@ -296,5 +296,6 @@ class InfraRailJSONView(APIView):
                     serialize_tvd_section(entity, **cached_entities)
                     for entity in fetch_entities(TVDSectionEntity, namespace)
                 ],
+                "version": "0.1.0",
             }
         )
