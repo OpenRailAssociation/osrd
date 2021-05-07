@@ -187,9 +187,12 @@ public class DependencyBinder extends RSExprVisitor {
         for (var val : possibleSignals) {
             assert val instanceof Signal;
             var signal = (Signal) val;
-            infra.routeGraph.routeMap.values().stream()
-                    .filter(x -> x.signalsWithEntry.contains(signal))
-                    .forEach(possibleValues::add);
+            for (Route route : infra.routeGraph.routeMap.values()) {
+                if (route.signalsWithEntry.contains(signal)) {
+                    possibleValues.add(route);
+                    reservedRoute.routeCandidates.add(route);
+                }
+            }
         }
         lastExprPossibleValues = possibleValues;
     }

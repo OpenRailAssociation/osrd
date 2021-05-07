@@ -12,6 +12,7 @@ import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.infra_state.SwitchState;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 public abstract class RSExpr<T extends RSValue> {
@@ -636,6 +637,9 @@ public abstract class RSExpr<T extends RSValue> {
     public static final class ReservedRoute extends RSExpr<RSOptional<RouteState>> {
         public final RSExpr<SignalState> signal;
 
+        /** Contains all routes to test */
+        final HashSet<Route> routeCandidates = new HashSet<>();
+
         public ReservedRoute(RSExpr<SignalState> signal) {
             this.signal = signal;
         }
@@ -643,7 +647,8 @@ public abstract class RSExpr<T extends RSValue> {
         @Override
         public RSOptional<RouteState> evaluate(RSExprState<?> state) {
             var currentSignal = signal.evaluate(state).signal;
-            var route = state.infraState.getRoutesStream()
+            var route = routeCandidates.stream()
+                    .map(x -> state.infraState.getRouteState(x.index))
                     .filter(x -> x.status == RouteStatus.RESERVED)
                     .filter(x -> x.route.signalsWithEntry.contains(currentSignal))
                     .findFirst()
