@@ -1,9 +1,11 @@
 package fr.sncf.osrd.infra.parsing.rsl;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.railjson.schema.railscript.RJSRSExpr;
 import fr.sncf.osrd.infra.railjson.schema.railscript.RJSRSFunction;
 import fr.sncf.osrd.infra.railjson.schema.signaling.RJSAspect;
 import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
+import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSSignal;
 import fr.sncf.osrd.utils.UnionFind;
 import fr.sncf.osrd.utils.graph.ApplicableDirections;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
@@ -44,11 +46,15 @@ public final class RslParser {
         var rjsTrackSections = new HashMap<String, RJSTrackSection>();
         var rjsSpeedSections = new ArrayList<RJSSpeedSection>();
         var nodeMap = new HashMap<String, ArrayList<Edge>>();
+        // parse the speed indicators
+        var speedIndicators = speedIndicatorsParse(document);
         for (var edge : edges) {
             rjsTrackSections.put(edge.id, edge);
-            speedSectionParse(rjsSpeedSections, rjsTrackSections, edge);
+            speedSectionParse(rjsSpeedSections, rjsTrackSections, edge, speedIndicators);
             createNodeMap(nodeMap, edge);
         }
+        // parse the signals
+        var signalsNodesMap = signalsParse(document, nodeMap);
 
         // create RailJSON switches and track section links
         var rjsTrackSectionLinks = new HashMap<String, RJSTrackSectionLink>();
@@ -85,6 +91,43 @@ public final class RslParser {
         );
     }
 
+    private static HashMap<String, RJSSignal> signalsParse(Document document,
+                                                           HashMap<String, ArrayList<Edge>> nodeMap)
+            throws InvalidInfraException {
+        var signalsMap = new HashMap<String, RJSSignal>();
+        var nodes = document.selectNodes("/line/nodes/signal");
+        for (var node : nodes) {
+            var signal = (Element) node;
+            var signalNodeID = signal.attributeValue("nodeID");
+            var signaltype = signal.attributeValue("type");
+            var signalID = signal.attributeValue("name");
+            RJSRSExpr exp = null;
+            var rjsSignal = new RJSSignal(signalID, null, 0, exp);
+            signalsMap.put(signalNodeID, rjsSignal);
+
+            // link tracks sections back to signal
+            for (var edge : nodeMap.get(signalNodeID)) {
+                var endSigPoint = findEndpoint(edge, signalNodeID);
+                if (endSigPoint.endpoint == EdgeEndpoint.BEGIN) {
+                    edge.signals.add(rjsSignal);
+                    break;
+                }
+            }
+        }
+        return signalsMap;
+    }
+
+    private static ArrayList<String> speedIndicatorsParse(Document document) {
+        var speedIndicatorsList = new ArrayList<String>();
+        var nodes = document.selectNodes("/line/nodes/speedIndicator");
+        for (var node : nodes) {
+            var speedIndicator = (Element) node;
+            var speedIndicatorID = speedIndicator.attributeValue("nodeID");
+            speedIndicatorsList.add(speedIndicatorID);
+        }
+        return speedIndicatorsList;
+    }
+
     /**
      * Create the route from the tvd sections
      */
@@ -106,7 +149,7 @@ public final class RslParser {
             var transitType = RJSRoute.TransitType.FLEXIBLE;
             var nodesId = blockSection.getnodesId();
             var switchPosition = parseSwitchPosition(rjsSwitches, nodesId);
-            var trackSections = findTrackSections(nodesId, nodeMap);
+            var trackSections = findTrackSectionsFromNodeList(nodesId, nodeMap);
             // Find the Tvd Sections and the waypoints (train detectors) into the route
             var tvdSections = new ArrayList<ID<RJSTVDSection>>();
             List<ID<RJSRouteWaypoint>> waypoints = new ArrayList<>();
@@ -134,7 +177,7 @@ public final class RslParser {
         for (var blockSection : blockSections) {
             // pass from nodes to TrackSections
             var nodesId = blockSection.getnodesId();
-            var trackSections = findTrackSections(nodesId, nodeMap);
+            var trackSections = findTrackSectionsFromNodeList(nodesId, nodeMap);
             // create an union find group for all the track sections in the BS
             for (int i = 0; i < trackSections.size(); i++) {
                 Edge edge = (Edge) trackSections.get(i);
@@ -237,7 +280,7 @@ public final class RslParser {
         // Put attributes into TVD sections
         for (var blockSection : blockSections) {
             var nodesId = blockSection.getnodesId();
-            var trackSections = findTrackSections(nodesId, nodeMap);
+            var trackSections = findTrackSectionsFromNodeList(nodesId, nodeMap);
 
             //find in witch TVD section EACH edge is
             for (var trackSection : trackSections) {
@@ -252,7 +295,7 @@ public final class RslParser {
                 var beginEdgeNodeID = edge.getStartNodeID();
                 var tdeBeginID = new ID<RJSTrainDetector>("tde_" + beginEdgeNodeID);
                 if (trainDetectorsMap.get(beginEdgeNodeID) != null
-                     &&  ! rjsTvdSections.get(itsTvdSectionID).trainDetectors.contains(tdeBeginID))
+                        &&  ! rjsTvdSections.get(itsTvdSectionID).trainDetectors.contains(tdeBeginID))
                     rjsTvdSections.get(itsTvdSectionID).trainDetectors.add(tdeBeginID);
                 var endEdgeNodeID = edge.getEndNodeID();
                 var tdeEndID = new ID<RJSTrainDetector>("tde_" + endEdgeNodeID);
@@ -279,6 +322,14 @@ public final class RslParser {
             if (isReleaseContact == true) {
                 var trainDetector = new RJSTrainDetector("tde_" + id, ApplicableDirections.BOTH, 0);
                 trainDetectorsMap.put(id, trainDetector);
+                // link tracks sections back to release contact
+                for (var edge : nodeMap.get(id)) {
+                    var endReleasePoint = findEndpoint(edge, id);
+                    if (endReleasePoint.endpoint == EdgeEndpoint.BEGIN) {
+                        edge.routeWaypoints.add(trainDetector);
+                        break;
+                    }
+                }
             }
         }
         // Create the tde at the begin and the end of the BS
@@ -298,8 +349,8 @@ public final class RslParser {
         return trainDetectorsMap;
     }
 
-    private static ArrayList<RJSTrackSection> findTrackSections(String[] nodesID,
-                                                                HashMap<String, ArrayList<Edge>> nodeMap) {
+    private static ArrayList<RJSTrackSection> findTrackSectionsFromNodeList(String[] nodesID,
+                                                                            HashMap<String, ArrayList<Edge>> nodeMap) {
         var trackSections = new ArrayList<RJSTrackSection>();
         for (int i = 0; i < nodesID.length - 1; i++) {
             var thisNodeID = nodesID[i];
@@ -336,6 +387,8 @@ public final class RslParser {
             RJSTrainDetector trainDetector;
             if (endTdePoint.endpoint == EdgeEndpoint.BEGIN) {
                 trainDetector = new RJSTrainDetector("tde_" + nodeId, ApplicableDirections.BOTH, 0);
+                // link tracks sections back to train detector
+                edge.routeWaypoints.add(trainDetector);
             } else {
                 trainDetector = new RJSTrainDetector("tde_" + nodeId, ApplicableDirections.BOTH, edge.length);
             }
@@ -347,18 +400,31 @@ public final class RslParser {
      * Create the speed sections for normal and reverse direction and add to the corresponding track section
      * */
     private static void speedSectionParse(ArrayList<RJSSpeedSection> rjsSpeedSections,
-                                           HashMap<String, RJSTrackSection> rjsTrackSections, Edge edge) {
+                                          HashMap<String, RJSTrackSection> rjsTrackSections,
+                                          Edge edge,
+                                          ArrayList<String> speedIndicators) {
         var ssID = "speed_section_" + edge.id;
-        var speedSection = new RJSSpeedSection(ssID, false, edge.getSpeed());
+        var isSignalised = checkIfIsSignalised(speedIndicators, edge.getStartNodeID());
+        var speedSection = new RJSSpeedSection(ssID, isSignalised, edge.getSpeed());
         var speedSectionPart = new RJSSpeedSectionPart(
                 ID.from(speedSection), ApplicableDirections.NORMAL, 0, edge.length);
         addSpeedSection(rjsSpeedSections, rjsTrackSections.get(edge.id), speedSection, speedSectionPart);
         // speed limit in the opposite direction
         var ssReverseID = "speed_section_" + edge.id + "_reverse";
-        var speedSectionReverse = new RJSSpeedSection(ssReverseID, false, edge.getSpeedReverse());
+        isSignalised = checkIfIsSignalised(speedIndicators, edge.getEndNodeID());
+        var speedSectionReverse = new RJSSpeedSection(ssReverseID, isSignalised, edge.getSpeedReverse());
         var speedSectionPartReverse = new RJSSpeedSectionPart(ID.from(speedSectionReverse),
                 ApplicableDirections.REVERSE, 0, edge.length);
         addSpeedSection(rjsSpeedSections, rjsTrackSections.get(edge.id), speedSectionReverse, speedSectionPartReverse);
+    }
+
+    private static boolean checkIfIsSignalised(ArrayList<String> speedIndicators, String edgeNode) {
+        boolean isSignalised = false;
+        for (var sI : speedIndicators) {
+            if (sI.equals(edgeNode))
+                isSignalised = true;
+        }
+        return isSignalised;
     }
 
     /**
