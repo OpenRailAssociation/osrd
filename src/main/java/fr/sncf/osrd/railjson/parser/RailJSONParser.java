@@ -195,6 +195,11 @@ public class RailJSONParser {
             tvdSectionsMap.put(tvd.id, tvd);
         }
 
+        // build name maps to prepare resolving names in expressions
+        var signalNames = new HashMap<String, Signal>();
+        for (var signal : signals)
+            signalNames.put(signal.id, signal);
+
         // Build waypoint Graph
         var waypointGraph = Infra.buildWaypointGraph(trackGraph, tvdSectionsMap);
 
@@ -232,18 +237,10 @@ public class RailJSONParser {
                 switchesPosition.put(switchRef, position);
             }
 
-            var entrySignal = signals.stream()
-                    .filter(x -> x.id.equals(rjsRoute.entrySignal.id))
-                    .findFirst()
-                    .orElse(null);
+            var entrySignal = signalNames.getOrDefault(rjsRoute.entrySignal.id, null);
 
             routeGraph.makeRoute(rjsRoute.id, waypoints, tvdSections, releaseGroups, switchesPosition, entrySignal);
         }
-
-        // build name maps to prepare resolving names in expressions
-        var signalNames = new HashMap<String, Signal>();
-        for (var signal : signals)
-            signalNames.put(signal.id, signal);
 
         var routeNames = new HashMap<String, Route>();
         for (var route : routeGraph.routeGraph.iterEdges())
