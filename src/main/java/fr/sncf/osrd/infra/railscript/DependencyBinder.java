@@ -129,8 +129,7 @@ public class DependencyBinder extends RSExprVisitor {
         for (var possibleValue : lastExprPossibleValues) {
             if (possibleValue instanceof Switch) {
                 switchDependencies.add((Switch) possibleValue);
-            }
-            else if (possibleValue instanceof Route) {
+            } else if (possibleValue instanceof Route) {
                 routeDependencies.add((Route) possibleValue);
             }
         }

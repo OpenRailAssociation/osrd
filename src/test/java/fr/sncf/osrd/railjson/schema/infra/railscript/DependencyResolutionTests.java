@@ -32,5 +32,4 @@ public class DependencyResolutionTests {
             assertEquals(expectedMap.get(s.id), res);
         }
     }
-
 }
