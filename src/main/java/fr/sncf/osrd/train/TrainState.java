@@ -31,6 +31,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     public TrainStatus status;
 
     public final transient TrainSchedule trainSchedule;
+    public final transient TrainDecisionMaker decisionMaker;
     public final int currentPhaseIndex;
     public final PhaseState currentPhaseState;
 
@@ -74,17 +75,20 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             TrainSchedule trainSchedule,
             int currentPhaseIndex,
             PhaseState currentPhaseState,
-            ArrayDeque<Interaction> actionPointsUnderTrain
+            ArrayDeque<Interaction> actionPointsUnderTrain,
+            TrainDecisionMaker decisionMaker
     ) {
         this.time = time;
         this.location = location;
         this.speed = speed;
         this.status = status;
+        this.decisionMaker = decisionMaker;
         this.speedControllers = speedControllers;
         this.trainSchedule = trainSchedule;
         this.currentPhaseIndex = currentPhaseIndex;
         this.currentPhaseState = currentPhaseState;
         this.actionPointsUnderTrain = actionPointsUnderTrain;
+        decisionMaker.setTrainState(this);
     }
 
     /** Create a clone */
@@ -99,7 +103,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 trainSchedule,
                 currentPhaseIndex,
                 currentPhaseState.clone(),
-                new ArrayDeque<>(actionPointsUnderTrain)
+                new ArrayDeque<>(actionPointsUnderTrain),
+                decisionMaker
         );
     }
 
@@ -117,7 +122,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                     trainSchedule,
                     currentPhaseIndex,
                     currentPhaseState,
-                    new ArrayDeque<>(actionPointsUnderTrain)
+                    new ArrayDeque<>(actionPointsUnderTrain),
+                    decisionMaker
                     );
 
         var nextPhaseState = trainSchedule.phases.get(nextPhase).getState();
@@ -130,7 +136,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 trainSchedule,
                 nextPhase,
                 nextPhaseState,
-                new ArrayDeque<>(actionPointsUnderTrain)
+                new ArrayDeque<>(actionPointsUnderTrain),
+                decisionMaker
         );
     }
 
@@ -146,18 +153,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 speed,
                 location.maxTrainGrade());
 
-        var prevLocation = location.getPathPosition();
-
-        // get the list of active speed controllers
-        var activeSpeedControllers = getActiveSpeedControllers();
-        locationChange.speedControllersUpdates.dedupAdd(prevLocation, activeSpeedControllers);
-
-        // get the current speed directives mandated by the speed controllers
-        var speedDirective = SpeedController.getDirective(activeSpeedControllers, prevLocation);
-        locationChange.speedDirectivesUpdates.dedupAdd(prevLocation, speedDirective);
-
-        // get the action the driver
-        Action action = driverDecision(speedDirective, integrator);
+        Action action = decisionMaker.getNextAction(locationChange, integrator);
 
         logger.trace("train took action {}", action);
         assert action != null;
@@ -213,28 +209,6 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         step(locationChange, sim.getTime() - time, Double.POSITIVE_INFINITY);
 
         return locationChange;
-    }
-
-    private SpeedController[] getActiveSpeedControllers() {
-        var activeControllers = new ArrayList<SpeedController>();
-        // Add train speed controllers
-        for (var controller : speedControllers) {
-            if (!controller.isActive(this))
-                continue;
-            activeControllers.add(controller);
-        }
-        // Add phase speed controllers
-        for (var controller : currentPhaseState.getSpeedControllers()) {
-            if (!controller.isActive(this))
-                continue;
-            activeControllers.add(controller);
-        }
-        return activeControllers.toArray(new SpeedController[0]);
-    }
-
-    private Action driverDecision(SpeedDirective directive, TrainPhysicsIntegrator integrator) {
-        var rollingStock = trainSchedule.rollingStock;
-        return integrator.actionToTargetSpeed(directive, rollingStock);
     }
 
     public TimelineEvent simulatePhase(Train train, Simulation sim) throws SimulationError {

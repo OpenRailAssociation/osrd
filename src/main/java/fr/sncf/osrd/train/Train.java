@@ -61,7 +61,8 @@ public class Train {
                 schedule,
                 0,
                 phaseState,
-                new ArrayDeque<>()
+                new ArrayDeque<>(),
+                new TrainDecisionMaker.DefaultTrainDecisionMaker()
         );
 
         ActivateRoute.trainCreation(sim, initialState);
