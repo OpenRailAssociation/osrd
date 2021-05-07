@@ -1,19 +1,20 @@
 package fr.sncf.osrd.infra.parsing.rsl;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.railjson.schema.railscript.RJSRSExpr;
-import fr.sncf.osrd.infra.railjson.schema.railscript.RJSRSFunction;
-import fr.sncf.osrd.infra.railjson.schema.signaling.RJSAspect;
-import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSRouteWaypoint;
-import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSSignal;
+import fr.sncf.osrd.railjson.schema.common.ID;
+import fr.sncf.osrd.railjson.schema.infra.*;
+import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr;
+import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSFunction;
+import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspect;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSOperationalPointPart;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSectionPart;
 import fr.sncf.osrd.utils.UnionFind;
-import fr.sncf.osrd.utils.graph.ApplicableDirections;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-import fr.sncf.osrd.infra.railjson.schema.*;
-import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSBufferStop;
-import fr.sncf.osrd.infra.railjson.schema.trackobjects.RJSTrainDetector;
-import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSOperationalPointPart;
-import fr.sncf.osrd.infra.railjson.schema.trackranges.RJSSpeedSectionPart;
 import fr.sncf.osrd.utils.XmlNamespaceCleaner;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -26,7 +27,7 @@ public final class RslParser {
      * Initialises a new infrastructure from a Rsl file.
      * @return the parsed infrastructure
      */
-    public static RJSRoot parse(String inputPath) throws InvalidInfraException {
+    public static RJSInfra parse(String inputPath) throws InvalidInfraException {
         Document document;
         try {
             document = new SAXReader().read(inputPath);
@@ -78,7 +79,7 @@ public final class RslParser {
         List<RJSAspect> rjsAspects = null;
         List<RJSRSFunction> rjsSignalFunctions = null;
 
-        return new RJSRoot(
+        return new RJSInfra(
                 rjsTrackSections.values(),
                 rjsTrackSectionLinks.values(),
                 rjsSwitches,
@@ -102,7 +103,7 @@ public final class RslParser {
             var signaltype = signal.attributeValue("type");
             var signalID = signal.attributeValue("name");
             RJSRSExpr exp = null;
-            var rjsSignal = new RJSSignal(signalID, null, 0, exp);
+            var rjsSignal = new RJSSignal(signalID, null, 0, 400, exp);
             signalsMap.put(signalNodeID, rjsSignal);
 
             // link tracks sections back to signal
@@ -146,24 +147,28 @@ public final class RslParser {
         // Create the route end put attributes into
         for (var blockSection : blockSections) {
             var routeID = blockSection.getid();
-            var transitType = RJSRoute.TransitType.FLEXIBLE;
             var nodesId = blockSection.getnodesId();
             var switchPosition = parseSwitchPosition(rjsSwitches, nodesId);
             var trackSections = findTrackSectionsFromNodeList(nodesId, nodeMap);
             // Find the Tvd Sections and the waypoints (train detectors) into the route
-            var tvdSections = new ArrayList<ID<RJSTVDSection>>();
+            var releaseGroups = new ArrayList<Set<ID<RJSTVDSection>>>();
             List<ID<RJSRouteWaypoint>> waypoints = new ArrayList<>();
+            var tvdSections = new HashSet<ID<RJSTVDSection>>();
             for (var trackSection : trackSections) {
                 // Find in witch TVD section EACH edge is
                 Edge edge = (Edge) trackSection;
                 var ufparent = edgesMap.get(edge);
                 var itsTvdSectionID = trackSectionToGroup.get(ufparent);
                 var tvdSection = new ID<RJSTVDSection>(String.valueOf(itsTvdSectionID));
-                if (! tvdSections.contains(tvdSection))
+                if (! tvdSections.contains(tvdSection)) {
                     tvdSections.add(tvdSection);
+                    var releasedGroup = new HashSet<ID<RJSTVDSection>>();
+                    releasedGroup.add(tvdSection);
+                    releaseGroups.add(releasedGroup);
+                }
                 waypointsParse(waypoints, edge, rjsTvdSections.get(itsTvdSectionID).trainDetectors);
             }
-            var rjsRoute = new RJSRoute(routeID, tvdSections, switchPosition, waypoints, transitType);
+            var rjsRoute = new RJSRoute(routeID, switchPosition, waypoints, releaseGroups, null);
             rjsRoutes.add(rjsRoute);
         }
         return rjsRoutes;
@@ -320,7 +325,7 @@ public final class RslParser {
             var id = releaseContactNode.attributeValue("nodeID");
             var isReleaseContact = Boolean.parseBoolean(releaseContactNode.attributeValue("releaseContact"));
             if (isReleaseContact == true) {
-                var trainDetector = new RJSTrainDetector("tde_" + id, ApplicableDirections.BOTH, 0);
+                var trainDetector = new RJSTrainDetector("tde_" + id, ApplicableDirection.BOTH, 0);
                 trainDetectorsMap.put(id, trainDetector);
                 // link tracks sections back to release contact
                 for (var edge : nodeMap.get(id)) {
@@ -386,11 +391,11 @@ public final class RslParser {
             var endTdePoint = findEndpoint(edge, nodeId);
             RJSTrainDetector trainDetector;
             if (endTdePoint.endpoint == EdgeEndpoint.BEGIN) {
-                trainDetector = new RJSTrainDetector("tde_" + nodeId, ApplicableDirections.BOTH, 0);
+                trainDetector = new RJSTrainDetector("tde_" + nodeId, ApplicableDirection.BOTH, 0);
                 // link tracks sections back to train detector
                 edge.routeWaypoints.add(trainDetector);
             } else {
-                trainDetector = new RJSTrainDetector("tde_" + nodeId, ApplicableDirections.BOTH, edge.length);
+                trainDetector = new RJSTrainDetector("tde_" + nodeId, ApplicableDirection.BOTH, edge.length);
             }
             trainDetectorsMap.put(nodeId, trainDetector);
         }
@@ -407,14 +412,14 @@ public final class RslParser {
         var isSignalised = checkIfIsSignalised(speedIndicators, edge.getStartNodeID());
         var speedSection = new RJSSpeedSection(ssID, isSignalised, edge.getSpeed());
         var speedSectionPart = new RJSSpeedSectionPart(
-                ID.from(speedSection), ApplicableDirections.NORMAL, 0, edge.length);
+                ID.from(speedSection), ApplicableDirection.NORMAL, 0, edge.length);
         addSpeedSection(rjsSpeedSections, rjsTrackSections.get(edge.id), speedSection, speedSectionPart);
         // speed limit in the opposite direction
         var ssReverseID = "speed_section_" + edge.id + "_reverse";
         isSignalised = checkIfIsSignalised(speedIndicators, edge.getEndNodeID());
         var speedSectionReverse = new RJSSpeedSection(ssReverseID, isSignalised, edge.getSpeedReverse());
         var speedSectionPartReverse = new RJSSpeedSectionPart(ID.from(speedSectionReverse),
-                ApplicableDirections.REVERSE, 0, edge.length);
+                ApplicableDirection.REVERSE, 0, edge.length);
         addSpeedSection(rjsSpeedSections, rjsTrackSections.get(edge.id), speedSectionReverse, speedSectionPartReverse);
     }
 
@@ -503,7 +508,7 @@ public final class RslParser {
             var base = findEndpoint(baseTrackSection, id);
             var left = findEndpoint(otherTrackSections.get(0), id);
             var right = findEndpoint(otherTrackSections.get(1), id);
-            var rjsSwitch = new RJSSwitch(id, base, left, right);
+            var rjsSwitch = new RJSSwitch(id, base, left, right, 0);
             switches.add(rjsSwitch);
 
             //create 2 track section links for each switch: base/right, base/left
@@ -517,10 +522,10 @@ public final class RslParser {
      * Check if one of the tracks sections is not bidirectional
      * @return the navigability of the link
      */
-    private static ApplicableDirections findLinkNavigability(Edge section, Edge section1) {
-        ApplicableDirections navigability = ApplicableDirections.BOTH;
+    private static ApplicableDirection findLinkNavigability(Edge section, Edge section1) {
+        ApplicableDirection navigability = ApplicableDirection.BOTH;
         if ((!section.isBidirectional()) || (!section1.isBidirectional()))
-            navigability = ApplicableDirections.NORMAL;
+            navigability = ApplicableDirection.NORMAL;
         return navigability;
     }
 

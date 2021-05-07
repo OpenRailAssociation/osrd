@@ -1,6 +1,6 @@
 package fr.sncf.osrd.infra.parsing.rsl;
 
-import fr.sncf.osrd.infra.railjson.schema.RJSTrackSection;
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import java.util.ArrayList;
