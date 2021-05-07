@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models
+from django.contrib.postgres.fields import ArrayField
 from osrd_infra.models.ecs import (
     Component,
     Entity,
@@ -25,6 +26,15 @@ class ApplicableDirection(models.IntegerChoices):
 
 def ApplicableDirectionField():
     return models.IntegerField(choices=ApplicableDirection.choices)
+
+
+class SwitchPosition(models.IntegerChoices):
+    LEFT = 0
+    RIGHT = 1
+
+
+def SwitchPositionField():
+    return models.IntegerField(choices=SwitchPosition.choices)
 
 
 class Infra(models.Model):
@@ -213,6 +223,13 @@ class RailScriptComponent(Component):
         unique = True
 
 
+class AspectConstraintComponent(Component):
+    constraint = models.JSONField()
+
+    class ComponentMeta:
+        name = "constraint"
+
+
 class SightDistanceComponent(Component):
     distance = models.FloatField()
 
@@ -263,6 +280,21 @@ class BerthingComponent(Component):
     class ComponentMeta:
         name = "berthing"
         unique = True
+
+
+class SwitchPositionComponent(Component):
+    switch = models.ForeignKey("SwitchEntity", on_delete=models.CASCADE)
+    position = SwitchPositionField()
+
+    class ComponentMeta:
+        name = "switch_position"
+
+
+class ReleaseGroupComponent(Component):
+    tvd_sections = models.ManyToManyField("TVDSectionEntity")
+
+    class ComponentMeta:
+        name = "release_group"
 
 
 class TrackSectionEntity(Entity):
@@ -421,4 +453,24 @@ class TVDSectionEntity(Entity):
     components = [
         IdentifierComponent,
         BerthingComponent,
+    ]
+
+
+class RouteEntity(Entity):
+    name = "route"
+    verbose_name_plural = "routes"
+    components = [
+        IdentifierComponent,
+        SwitchPositionComponent,
+        ReleaseGroupComponent,
+        # TODO add waypoints
+    ]
+
+
+class AspectEntity(Entity):
+    name = "aspect"
+    verbose_name_plural = "aspects"
+    components = [
+        IdentifierComponent,
+        AspectConstraintComponent,
     ]

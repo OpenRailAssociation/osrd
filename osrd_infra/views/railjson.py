@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from osrd_infra.models import (
     Infra,
     ApplicableDirection,
+    AspectEntity,
     BufferStopEntity,
     DetectorEntity,
     SwitchEntity,
@@ -16,8 +17,10 @@ from osrd_infra.models import (
     Endpoint,
     OperationalPointEntity,
     OperationalPointPartEntity,
+    RouteEntity,
     SpeedSectionEntity,
     SpeedSectionPartEntity,
+    SwitchPosition,
     fetch_entities,
 )
 
@@ -54,6 +57,14 @@ def format_buffer_stop_id(entity_id: int) -> str:
 
 def format_tvd_section_id(entity_id: int) -> str:
     return f"tvd_section.{entity_id}"
+
+
+def format_route_id(entity_id: int) -> str:
+    return f"route.{entity_id}"
+
+
+def format_aspect_id(entity_id: int) -> str:
+    return f"aspect.{entity_id}"
 
 
 def serialize_endpoint(endpoint: int, track_section_id: int):
@@ -209,10 +220,6 @@ def serialize_switch(switch_entity):
     }
 
 
-def serialize_script_function(function_entity):
-    return function_entity.rail_script.script
-
-
 def serialize_operational_point(entity):
     return {"id": format_operation_point_id(entity.entity_id)}
 
@@ -244,6 +251,37 @@ def serialize_tvd_section(tvd_section_entity, **cached_entities):
         "is_berthing_track": tvd_section_entity.berthing.is_berthing,
         "buffer_stops": buffer_stops,
         "train_detectors": detectors,
+    }
+
+
+def serialize_route(route_entity, **cached_entities):
+    switches_position = route_entity.switch_position_set.all()
+    release_groups = route_entity.release_group_set.all()
+
+    return {
+        "id": format_route_id(route_entity.entity_id),
+        "switches_position": {
+            format_switch_id(switch.switch.entity_id): SwitchPosition(
+                switch.position
+            ).name
+            for switch in switches_position
+        },
+        "release_groups": [
+            [
+                format_tvd_section_id(tvd_section.entity_id)
+                for tvd_section in release_group.tvd_sections.all()
+            ]
+            for release_group in release_groups
+        ],
+        "waypoints": [],  # TODO
+    }
+
+
+def serialize_aspect(aspect_entity):
+    constraints = aspect_entity.constraint_set.all()
+    return {
+        "id": format_aspect_id(aspect_entity.entity_id),
+        "constraints": [constraint.constraint for constraint in constraints],
     }
 
 
@@ -281,7 +319,7 @@ class InfraRailJSONView(APIView):
                     for entity in fetch_entities(SwitchEntity, namespace)
                 ],
                 "script_functions": [
-                    serialize_script_function(entity)
+                    entity.rail_script.script
                     for entity in fetch_entities(ScriptFunctionEntity, namespace)
                 ],
                 "operational_points": [
@@ -296,6 +334,14 @@ class InfraRailJSONView(APIView):
                     serialize_tvd_section(entity, **cached_entities)
                     for entity in fetch_entities(TVDSectionEntity, namespace)
                 ],
-                "version": "0.1.0",
+                "routes": [
+                    serialize_route(entity, **cached_entities)
+                    for entity in fetch_entities(RouteEntity, namespace)
+                ],
+                "aspects": [
+                    serialize_aspect(entity)
+                    for entity in fetch_entities(AspectEntity, namespace)
+                ],
+                "version": 1,
             }
         )
