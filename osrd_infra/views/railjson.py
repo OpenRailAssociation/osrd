@@ -81,7 +81,7 @@ def serialize_switch(switch_entity):
     }
 
 
-class InfraRailJSONSerializer(APIView):
+class InfraRailJSONView(APIView):
     def get(self, request, pk):
         infra = get_object_or_404(Infra, pk=pk)
         namespace = infra.namespace
