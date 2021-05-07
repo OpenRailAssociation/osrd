@@ -5,8 +5,9 @@ from osrd_infra.models import get_entity_meta
 from osrd_infra.views import (
     InfraViewSet,
     ALL_ENTITY_VIEWSETS,
-    InfraRailJSONSerializer,
-    InfraEdition,
+    InfraRailJSONView,
+    InfraEditionView,
+    GeoJsonView,
 )
 
 
@@ -18,7 +19,8 @@ for entity_type, entity_viewset in ALL_ENTITY_VIEWSETS:
     entity_router.register(entity_name, entity_viewset, basename=entity_name)
 
 urlpatterns = [
-    path("entity/", include(entity_router.urls)),
-    path("railjson/infra/<int:pk>/", InfraRailJSONSerializer.as_view()),
-    path("edit/infra/<int:pk>/", InfraEdition.as_view()),
+    path("ecs/entity/", include(entity_router.urls)),
+    path("railjson/infra/<int:pk>/", InfraRailJSONView.as_view()),
+    path("edit/infra/<int:pk>/", InfraEditionView.as_view()),
+    path("geojson/infra/<int:pk>/", GeoJsonView.as_view()),
 ]

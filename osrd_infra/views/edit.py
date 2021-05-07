@@ -227,7 +227,7 @@ EDITION_OPERATIONS = {
 }
 
 
-class InfraEdition(APIView):
+class InfraEditionView(APIView):
     @transaction.atomic
     def post(self, request, pk):
         infra = get_object_or_404(Infra, pk=pk)

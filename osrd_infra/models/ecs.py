@@ -254,11 +254,14 @@ class Component(models.Model, metaclass=ComponentBase, component_base_passthroug
 # UTILITIES
 
 
+def entities_prefetch_components(model, qs):
+    related_names = model._entity_meta.component_related_names()
+    return qs.prefetch_related(*related_names)
+
+
 def fetch_entities(model, namespace):
-    return (
-        getattr(model, "objects")
-        .filter(namespace=namespace)
-        .prefetch_related(*model._entity_meta.component_related_names())
+    return entities_prefetch_components(
+        model, model.objects.filter(namespace=namespace)
     )
 
 
