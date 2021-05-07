@@ -47,9 +47,6 @@
     {
       "id": "rt.12",
       "switches_position": {},
-      "tvd_sections": [
-        "tvd.12"
-      ],
       "release_groups": [
         [
           "tvd.12"
@@ -63,9 +60,6 @@
     {
       "id": "rt.23",
       "switches_position": {},
-      "tvd_sections": [
-        "tvd.23"
-      ],
       "release_groups": [
         [
           "tvd.23"
@@ -79,9 +73,6 @@
     {
       "id": "rt.34",
       "switches_position": {},
-      "tvd_sections": [
-        "tvd.34"
-      ],
       "release_groups": [
         [
           "tvd.34"
@@ -95,9 +86,6 @@
     {
       "id": "rt.45",
       "switches_position": {},
-      "tvd_sections": [
-        "tvd.45"
-      ],
       "release_groups": [
         [
           "tvd.45"
@@ -111,9 +99,6 @@
     {
       "id": "rt.56",
       "switches_position": {},
-      "tvd_sections": [
-        "tvd.56"
-      ],
       "release_groups": [
         [
           "tvd.56"
@@ -127,9 +112,6 @@
     {
       "id": "rt.67",
       "switches_position": {},
-      "tvd_sections": [
-        "tvd.67"
-      ],
       "release_groups": [
         [
           "tvd.67"
@@ -143,9 +125,6 @@
     {
       "id": "rt.78",
       "switches_position": {},
-      "tvd_sections": [
-        "tvd.78"
-      ],
       "release_groups": [
         [
           "tvd.78"
@@ -159,9 +138,6 @@
     {
       "id": "rt.81",
       "switches_position": {},
-      "tvd_sections": [
-        "tvd.81"
-      ],
       "release_groups": [
         [
           "tvd.81"
@@ -418,7 +394,7 @@
       "route_waypoints": [
         {
           "type": "detector",
-          "application_directions": "BOTH",
+          "applicable_direction": "BOTH",
           "id": "tde.1",
           "position": 25
         }
@@ -440,9 +416,9 @@
             ]
           },
           "id": "sig.1",
-          "navigability": "NORMAL",
+          "applicable_direction": "NORMAL",
           "position": 0,
-          "sightDistance": 200
+          "sight_distance": 200
         }
       ],
       "speed_sections": [
@@ -461,7 +437,7 @@
       "route_waypoints": [
         {
           "type": "detector",
-          "application_directions": "BOTH",
+          "applicable_direction": "BOTH",
           "id": "tde.2",
           "position": 25
         }
@@ -483,9 +459,9 @@
             ]
           },
           "id": "sig.2",
-          "navigability": "NORMAL",
+          "applicable_direction": "NORMAL",
           "position": 0,
-          "sightDistance": 200
+          "sight_distance": 200
         }
       ],
       "speed_sections": [
@@ -504,7 +480,7 @@
       "route_waypoints": [
         {
           "type": "detector",
-          "application_directions": "BOTH",
+          "applicable_direction": "BOTH",
           "id": "tde.3",
           "position": 25
         }
@@ -526,9 +502,9 @@
             ]
           },
           "id": "sig.3",
-          "navigability": "NORMAL",
+          "applicable_direction": "NORMAL",
           "position": 0,
-          "sightDistance": 200
+          "sight_distance": 200
         }
       ],
       "speed_sections": [
@@ -547,7 +523,7 @@
       "route_waypoints": [
         {
           "type": "detector",
-          "application_directions": "BOTH",
+          "applicable_direction": "BOTH",
           "id": "tde.4",
           "position": 25
         }
@@ -569,9 +545,9 @@
             ]
           },
           "id": "sig.4",
-          "navigability": "NORMAL",
+          "applicable_direction": "NORMAL",
           "position": 0,
-          "sightDistance": 200
+          "sight_distance": 200
         }
       ],
       "speed_sections": [
@@ -590,7 +566,7 @@
       "route_waypoints": [
         {
           "type": "detector",
-          "application_directions": "BOTH",
+          "applicable_direction": "BOTH",
           "id": "tde.5",
           "position": 25
         }
@@ -612,9 +588,9 @@
             ]
           },
           "id": "sig.5",
-          "navigability": "NORMAL",
+          "applicable_direction": "NORMAL",
           "position": 0,
-          "sightDistance": 200
+          "sight_distance": 200
         }
       ],
       "speed_sections": [
@@ -633,7 +609,7 @@
       "route_waypoints": [
         {
           "type": "detector",
-          "application_directions": "BOTH",
+          "applicable_direction": "BOTH",
           "id": "tde.6",
           "position": 25
         }
@@ -655,9 +631,9 @@
             ]
           },
           "id": "sig.6",
-          "navigability": "NORMAL",
+          "applicable_direction": "NORMAL",
           "position": 0,
-          "sightDistance": 200
+          "sight_distance": 200
         }
       ],
       "speed_sections": [
@@ -676,7 +652,7 @@
       "route_waypoints": [
         {
           "type": "detector",
-          "application_directions": "BOTH",
+          "applicable_direction": "BOTH",
           "id": "tde.7",
           "position": 25
         }
@@ -698,9 +674,9 @@
             ]
           },
           "id": "sig.7",
-          "navigability": "NORMAL",
+          "applicable_direction": "NORMAL",
           "position": 0,
-          "sightDistance": 200
+          "sight_distance": 200
         }
       ],
       "speed_sections": [
@@ -719,7 +695,7 @@
       "route_waypoints": [
         {
           "type": "detector",
-          "application_directions": "BOTH",
+          "applicable_direction": "BOTH",
           "id": "tde.8",
           "position": 25
         }
@@ -737,9 +713,9 @@
             ]
           },
           "id": "sig.8",
-          "navigability": "NORMAL",
+          "applicable_direction": "NORMAL",
           "position": 0,
-          "sightDistance": 200
+          "sight_distance": 200
         }
       ],
       "speed_sections": [
