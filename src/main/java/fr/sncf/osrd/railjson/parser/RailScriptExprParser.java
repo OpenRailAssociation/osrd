@@ -271,6 +271,9 @@ public class RailScriptExprParser {
         var someExpr = parse(optionalMatchExpr.caseSome);
         varTypes.remove(name);
 
+        if (noneExpr.getType(argTypes) != someExpr.getType(argTypes))
+            throw new InvalidInfraException("Mismatched types in optional branches");
+
         @SuppressWarnings({"unchecked", "rawtypes"})
         var res = new RSExpr.OptionalMatch(contentExpr, noneExpr, someExpr, name);
         return res;
