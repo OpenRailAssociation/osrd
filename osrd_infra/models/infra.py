@@ -1,5 +1,4 @@
 from django.contrib.gis.db import models
-from django.contrib.postgres.fields import ArrayField
 from osrd_infra.models.ecs import (
     Component,
     Entity,
