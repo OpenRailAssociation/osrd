@@ -81,7 +81,7 @@ class EntitySerializer(ModelSerializer):
 class InfraSerializer(ModelSerializer):
     class Meta:
         model = Infra
-        fields = "__all__"
+        exclude = ["namespace"]
 
 
 # CUSTOM SERIALIZER FIELDS

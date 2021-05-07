@@ -38,11 +38,15 @@ def SwitchPositionField():
 
 class Infra(models.Model):
     name = models.CharField(max_length=128)
-    owner = models.UUIDField(default="00000000-0000-0000-0000-000000000000")
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
+    owner = models.UUIDField(
+        editable=False, default="00000000-0000-0000-0000-000000000000"
+    )
+    created = models.DateTimeField(editable=False, auto_now_add=True)
+    modified = models.DateTimeField(editable=False, auto_now=True)
     # the namespace is the container for all the entities in the infrastructure
-    namespace = models.ForeignKey(EntityNamespace, on_delete=models.CASCADE)
+    namespace = models.ForeignKey(
+        EntityNamespace, on_delete=models.CASCADE, editable=False
+    )
 
     def __str__(self):
         return self.name

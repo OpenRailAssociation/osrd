@@ -7,6 +7,7 @@ from osrd_infra.views import (
     ALL_ENTITY_VIEWSETS,
     InfraRailJSONView,
     InfraEditionView,
+    InfraView,
     GeoJsonView,
 )
 
@@ -23,4 +24,5 @@ urlpatterns = [
     path("railjson/infra/<int:pk>/", InfraRailJSONView.as_view()),
     path("edit/infra/<int:pk>/", InfraEditionView.as_view()),
     path("geojson/infra/<int:pk>/", GeoJsonView.as_view()),
+    path("infra/", InfraView.as_view()),
 ]
