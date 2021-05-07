@@ -41,14 +41,14 @@ public enum RSType {
         }
     }
 
-    /** Returns the subtype if this is an optional */
-    public RSType subType() throws InvalidInfraException {
+    /** Returns the content type if this is an optional */
+    public RSType contentType() throws InvalidInfraException {
         switch (this) {
             case OPTIONAL_ROUTE:
                 return ROUTE;
             case OPTIONAL_SIGNAL:
                 return SIGNAL;
         }
-        throw new InvalidInfraException("Can't call subtype on a type that is not an optional");
+        throw new InvalidInfraException("Can't call contained type on a type that is not an optional");
     }
 }

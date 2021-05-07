@@ -266,8 +266,8 @@ public class RailScriptExprParser {
         var noneExpr = parse(optionalMatchExpr.caseNone);
         var contentExpr = parseOptionalExpr(optionalMatchExpr.expr);
         var type = contentExpr.getType(argTypes);
-        var subType = type.subType();
-        varTypes.put(name, subType);
+        var contentType = type.contentType();
+        varTypes.put(name, contentType);
         var someExpr = parse(optionalMatchExpr.caseSome);
         varTypes.remove(name);
 
