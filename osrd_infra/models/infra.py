@@ -36,6 +36,15 @@ def SwitchPositionField():
     return models.IntegerField(choices=SwitchPosition.choices)
 
 
+class WaypointType(models.IntegerChoices):
+    BUFFER_STOP = 0
+    DETECTOR = 1
+
+
+def WaypointTypeField():
+    return models.IntegerField(choices=WaypointType.choices)
+
+
 class Infra(models.Model):
     name = models.CharField(max_length=128)
     owner = models.UUIDField(
@@ -233,22 +242,6 @@ class AspectConstraintComponent(Component):
         name = "constraint"
 
 
-class SightDistanceComponent(Component):
-    distance = models.FloatField()
-
-    class Meta:
-        constraints = [
-            models.CheckConstraint(
-                check=models.Q(distance__gte=0),
-                name="distance__gte=0",
-            ),
-        ]
-
-    class ComponentMeta:
-        name = "sight_distance"
-        unique = True
-
-
 class SpeedSectionComponent(Component):
     speed = models.FloatField()
     is_signalized = models.BooleanField()
@@ -293,11 +286,51 @@ class SwitchPositionComponent(Component):
         name = "switch_position"
 
 
+class WaypointComponent(Component):
+    waypoint_type = WaypointTypeField()
+
+    class ComponentMeta:
+        name = "waypoint"
+        unique = True
+
+
+class SignalComponent(Component):
+    linked_detector = models.ForeignKey(
+        "WaypointEntity",
+        on_delete=models.CASCADE,
+        related_name="linked_detector",
+        default=None,
+        blank=True,
+        null=True,
+    )
+    sight_distance = models.FloatField()
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(sight_distance__gte=0),
+                name="sight_distance__gte=0",
+            ),
+        ]
+
+    class ComponentMeta:
+        name = "signal"
+        unique = True
+
+
 class ReleaseGroupComponent(Component):
     tvd_sections = models.ManyToManyField("TVDSectionEntity")
 
     class ComponentMeta:
         name = "release_group"
+
+
+class RouteComponent(Component):
+    entry_point = models.ForeignKey("WaypointEntity", on_delete=models.CASCADE)
+
+    class ComponentMeta:
+        name = "route"
+        unique = True
 
 
 class TrackSectionEntity(Entity):
@@ -370,7 +403,7 @@ class SignalEntity(Entity):
         TrackAngleComponent,
         ApplicableDirectionComponent,
         RailScriptComponent,
-        SightDistanceComponent,
+        SignalComponent,
     ]
 
 
@@ -426,27 +459,16 @@ class SpeedSectionPartEntity(Entity):
     ]
 
 
-class DetectorEntity(Entity):
-    name = "detector"
-    verbose_name_plural = "detector entities"
+class WaypointEntity(Entity):
+    name = "waypoint"
+    verbose_name_plural = "waypoint entities"
     components = [
         IdentifierComponent,
         GeoPointLocationComponent,
         TrackSectionLocationComponent,
         ApplicableDirectionComponent,
         BelongsToTVDSectionComponent,
-    ]
-
-
-class BufferStopEntity(Entity):
-    name = "buffer_stop"
-    verbose_name_plural = "buffer stop entities"
-    components = [
-        IdentifierComponent,
-        GeoPointLocationComponent,
-        TrackSectionLocationComponent,
-        ApplicableDirectionComponent,
-        BelongsToTVDSectionComponent,
+        WaypointComponent,
     ]
 
 
@@ -466,7 +488,7 @@ class RouteEntity(Entity):
         IdentifierComponent,
         SwitchPositionComponent,
         ReleaseGroupComponent,
-        # TODO add waypoints
+        RouteComponent,
     ]
 
 

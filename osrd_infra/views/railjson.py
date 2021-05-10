@@ -6,8 +6,6 @@ from osrd_infra.models import (
     Infra,
     ApplicableDirection,
     AspectEntity,
-    BufferStopEntity,
-    DetectorEntity,
     SwitchEntity,
     ScriptFunctionEntity,
     SignalEntity,
@@ -21,6 +19,8 @@ from osrd_infra.models import (
     SpeedSectionEntity,
     SpeedSectionPartEntity,
     SwitchPosition,
+    WaypointEntity,
+    WaypointType,
     fetch_entities,
 )
 
@@ -67,6 +67,12 @@ def format_aspect_id(entity_id: int) -> str:
     return f"aspect.{entity_id}"
 
 
+def format_waypoint_id(waypoint: WaypointEntity) -> str:
+    if waypoint.waypoint.waypoint_type == WaypointType.BUFFER_STOP:
+        return format_buffer_stop_id(waypoint.entity_id)
+    return format_detector_id(waypoint.entity_id)
+
+
 def serialize_endpoint(endpoint: int, track_section_id: int):
     return {
         "endpoint": Endpoint(endpoint).name,
@@ -81,34 +87,33 @@ def serialize_applicable_direction(applicable_direction: int):
 def serialize_signal(entity):
     applicable_direction = entity.applicable_direction.applicable_direction
     position = entity.point_location_set.get().offset
+    linked_detector = None
+    if entity.signal.linked_detector:
+        linked_detector = format_waypoint_id(entity.signal.linked_detector)
+
     return {
         "id": format_signal_id(entity.entity_id),
         "applicable_direction": serialize_applicable_direction(applicable_direction),
         "position": position,
-        "sight_distance": entity.sight_distance.distance,
+        "sight_distance": entity.signal.sight_distance,
         "expr": entity.rail_script.script,
+        "linked_detector": linked_detector,
     }
 
 
-def serialize_detector(entity):
+def serialize_waypoint(entity):
     applicable_direction = entity.applicable_direction.applicable_direction
     position = entity.point_location_set.get().offset
+    entity_type = (
+        "detector"
+        if entity.waypoint.waypoint_type == WaypointType.DETECTOR
+        else "buffer_stop"
+    )
     return {
-        "id": format_detector_id(entity.entity_id),
+        "id": format_waypoint_id(entity),
         "applicable_direction": serialize_applicable_direction(applicable_direction),
         "position": position,
-        "type": "detector",
-    }
-
-
-def serialize_buffer_stop(entity):
-    applicable_direction = entity.applicable_direction.applicable_direction
-    position = entity.point_location_set.get().offset
-    return {
-        "id": format_buffer_stop_id(entity.entity_id),
-        "applicable_direction": serialize_applicable_direction(applicable_direction),
-        "position": position,
-        "type": "buffer_stop",
+        "type": entity_type,
     }
 
 
@@ -140,8 +145,7 @@ def serialize_track_section(track_section_entity, **cached_entities):
     point_objects = track_section_entity.point_objects.all()
     range_objects = track_section_entity.range_objects.all()
     signals = cached_entities["signals"]
-    detectors = cached_entities["detectors"]
-    buffer_stops = cached_entities["buffer_stops"]
+    waypoints = cached_entities["waypoints"]
     op_parts = cached_entities["op_parts"]
     speed_sections = cached_entities["speed_section_parts"]
 
@@ -154,14 +158,9 @@ def serialize_track_section(track_section_entity, **cached_entities):
             if point_object.entity_id in signals
         ],
         "route_waypoints": [
-            serialize_detector(detectors[point_object.entity_id])
+            serialize_waypoint(waypoints[point_object.entity_id])
             for point_object in point_objects
-            if point_object.entity_id in detectors
-        ]
-        + [
-            serialize_buffer_stop(buffer_stops[point_object.entity_id])
-            for point_object in point_objects
-            if point_object.entity_id in buffer_stops
+            if point_object.entity_id in waypoints
         ],
         "operational_points": [
             serialize_op_part(op_parts[range_object.entity_id])
@@ -235,16 +234,15 @@ def serialize_speed_section(entity):
 def serialize_tvd_section(tvd_section_entity, **cached_entities):
     tvd_section_components = tvd_section_entity.tvd_section_components.all()
 
-    cached_detectors = cached_entities["detectors"]
-
+    cached_waypoints = cached_entities["waypoints"]
     detectors = []
     buffer_stops = []
-
     for component in tvd_section_components:
-        if component.entity_id in cached_detectors:
-            detectors.append(format_detector_id(component.entity_id))
+        waypoint = cached_waypoints[component.entity_id]
+        if waypoint.waypoint.waypoint_type == WaypointType.DETECTOR:
+            detectors.append(format_detector_id(waypoint.entity_id))
         else:
-            buffer_stops.append(format_buffer_stop_id(component.entity_id))
+            buffer_stops.append(format_buffer_stop_id(waypoint.entity_id))
 
     return {
         "id": format_tvd_section_id(tvd_section_entity.entity_id),
@@ -254,9 +252,10 @@ def serialize_tvd_section(tvd_section_entity, **cached_entities):
     }
 
 
-def serialize_route(route_entity, **cached_entities):
+def serialize_route(route_entity):
     switches_position = route_entity.switch_position_set.all()
     release_groups = route_entity.release_group_set.all()
+    entry_point = route_entity.route.entry_point
 
     return {
         "id": format_route_id(route_entity.entity_id),
@@ -273,7 +272,7 @@ def serialize_route(route_entity, **cached_entities):
             ]
             for release_group in release_groups
         ],
-        "waypoints": [],  # TODO
+        "entry_point": format_waypoint_id(entry_point),
     }
 
 
@@ -298,8 +297,7 @@ class InfraRailJSONView(APIView):
 
         cached_entities = {
             "signals": fetch_and_map(SignalEntity, namespace),
-            "detectors": fetch_and_map(DetectorEntity, namespace),
-            "buffer_stops": fetch_and_map(BufferStopEntity, namespace),
+            "waypoints": fetch_and_map(WaypointEntity, namespace),
             "op_parts": fetch_and_map(OperationalPointPartEntity, namespace),
             "speed_section_parts": fetch_and_map(SpeedSectionPartEntity, namespace),
         }
@@ -335,7 +333,7 @@ class InfraRailJSONView(APIView):
                     for entity in fetch_entities(TVDSectionEntity, namespace)
                 ],
                 "routes": [
-                    serialize_route(entity, **cached_entities)
+                    serialize_route(entity)
                     for entity in fetch_entities(RouteEntity, namespace)
                 ],
                 "aspects": [
