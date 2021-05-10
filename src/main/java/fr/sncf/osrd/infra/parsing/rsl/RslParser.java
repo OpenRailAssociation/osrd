@@ -168,7 +168,10 @@ public final class RslParser {
                 }
                 waypointsParse(waypoints, edge, rjsTvdSections.get(itsTvdSectionID).trainDetectors);
             }
-            var rjsRoute = new RJSRoute(routeID, switchPosition, waypoints, releaseGroups, null);
+            var firstEdge = trackSections.get(0);
+            var entrysignal = firstEdge.signals.get(0);
+            var entrysignalID = new ID<RJSSignal>(entrysignal.id);
+            var rjsRoute = new RJSRoute(routeID, switchPosition, waypoints, releaseGroups, entrysignalID);
             rjsRoutes.add(rjsRoute);
         }
         return rjsRoutes;
