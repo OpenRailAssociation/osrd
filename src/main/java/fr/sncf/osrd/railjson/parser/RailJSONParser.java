@@ -215,10 +215,6 @@ public class RailJSONParser {
         var routeGraph = new RouteGraph.Builder(waypointGraph);
 
         for (var rjsRoute : railJSON.routes) {
-            var waypoints = new ArrayList<Waypoint>();
-            for (var waypoint : rjsRoute.waypoints)
-                waypoints.add(waypointsMap.get(waypoint.id));
-
             // Parse release groups
             var releaseGroups = new ArrayList<SortedArraySet<TVDSection>>();
             var tvdSections = new SortedArraySet<TVDSection>();
@@ -244,9 +240,9 @@ public class RailJSONParser {
                 switchesPosition.put(switchRef, position);
             }
 
-            var entrySignal = signalNames.getOrDefault(rjsRoute.entrySignal.id, null);
+            var entryPoint = waypointsMap.get(rjsRoute.entryPoint.id);
 
-            routeGraph.makeRoute(rjsRoute.id, waypoints, tvdSections, releaseGroups, switchesPosition, entrySignal);
+            routeGraph.makeRoute(rjsRoute.id, tvdSections, releaseGroups, switchesPosition, entryPoint);
         }
 
         var routeNames = new HashMap<String, Route>();

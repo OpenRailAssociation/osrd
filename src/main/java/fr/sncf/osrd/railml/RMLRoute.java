@@ -54,26 +54,12 @@ public class RMLRoute {
             var switchesPosition = parseSwitchesPosition(route);
             var releaseGroups = parseReleaseGroups(route, releaseGroupsRear);
 
-            var entryWaypoint = parseEntryExitWaypoint(
-                    true, route, rmlRouteGraph, rjsTrackSections, graph, signalTrackNetElementMap);
-            var exitWaypoint = parseEntryExitWaypoint(
-                    false, route, rmlRouteGraph, rjsTrackSections, graph, signalTrackNetElementMap);
-            var rmlRouteWaypoints = computeRouteWaypoints(entryWaypoint, exitWaypoint, rmlRouteGraph);
-            var routeWaypoints = rmlToRjsWaypoints(rmlRouteWaypoints, rjsWaypointsMap);
-            var entrySignal = parseEntrySignal(route, signalTrackNetElementMap);
+            var entryWaypoint = parseEntryWaypoint(route,
+                    rmlRouteGraph, rjsTrackSections, graph, signalTrackNetElementMap);
 
-            res.add(new RJSRoute(id, switchesPosition, routeWaypoints, releaseGroups, entrySignal));
+            res.add(new RJSRoute(id, switchesPosition, releaseGroups, entryWaypoint));
         }
         return res;
-    }
-
-    private static ID<RJSSignal> parseEntrySignal(Element route, HashMap<String, TrackNetElement> signalTrackNets) {
-        var entryElement = route.element("routeEntry").element("refersTo").attributeValue("ref");
-        var isSignal = signalTrackNets.keySet().contains(entryElement);
-        if (isSignal)
-            return new ID<>(entryElement);
-        else
-            return new ID<>("");
     }
 
     private static List<Set<ID<RJSTVDSection>>> parseReleaseGroups(
@@ -87,94 +73,23 @@ public class RMLRoute {
         }
         return res;
     }
-
-    private static ArrayList<ID<RJSRouteWaypoint>> rmlToRjsWaypoints(
-            List<RMLRouteWaypoint> rmlRouteWaypoints,
-            HashMap<String, ID<RJSRouteWaypoint>> rjsWaypointsMap
-    ) {
-        var waypoints = new ArrayList<ID<RJSRouteWaypoint>>();
-        for (var rmlWaypoint : rmlRouteWaypoints)
-            waypoints.add(rjsWaypointsMap.get(rmlWaypoint.id));
-        return waypoints;
-    }
-
-    @SuppressFBWarnings(value = {"BC_UNCONFIRMED_CAST"}, justification = "it's a linter bug, there's no cast")
-    private static ArrayList<RMLRouteWaypoint> computeRouteWaypoints(
-            RMLRouteWaypoint entryWaypoint,
-            RMLRouteWaypoint exitWaypoint,
-            RMLRouteGraph rmlRouteGraph
-    ) throws InvalidInfraException {
-        var waypoints = new ArrayList<RMLRouteWaypoint>();
-        var goalEdges = rmlRouteGraph.waypointToTvdSectionPath.get(exitWaypoint.index);
-        var startingPoints = new ArrayList<BasicDirPathNode<RMLTVDSectionPath>>();
-        // Find starting edges
-        for (var edge : rmlRouteGraph.waypointToTvdSectionPath.get(entryWaypoint.index)) {
-            if (edge.startNode == entryWaypoint.index)
-                startingPoints.add(new BasicDirPathNode<>(edge, 0, EdgeDirection.START_TO_STOP));
-            else
-                startingPoints.add(new BasicDirPathNode<>(edge, edge.length, EdgeDirection.STOP_TO_START));
-        }
-        // Prepare for dijkstra
-        var costFunction = new DistCostFunction<RMLTVDSectionPath>();
-        var availablePaths = new ArrayList<FullPathArray<RMLTVDSectionPath, BasicDirPathNode<RMLTVDSectionPath>>>();
-
-        // Compute the paths from the entry waypoint to the exit waypoint
-        BiDijkstra.findPaths(
-                rmlRouteGraph,
-                BiDijkstra.makePriorityQueue(startingPoints),
-                costFunction,
-                (pathNode) -> {
-                    for (var goalEdge : goalEdges) {
-                        if (goalEdge == pathNode.edge) {
-                            var addedCost = costFunction.evaluate(goalEdge, pathNode.position, goalEdge.length);
-                            return pathNode.end(addedCost, goalEdge, 0, pathNode.direction);
-                        }
-                    }
-                    return null;
-                },
-                (pathToGoal) -> {
-                    availablePaths.add(FullPathArray.from(pathToGoal));
-                    return false;
-                });
-
-        // If multiple or none path is found then throw an error
-        if (availablePaths.isEmpty())
-            throw new InvalidInfraException(String.format(
-                    "No path found to construct the route from '%s' to '%s'",
-                    entryWaypoint.id, exitWaypoint.id));
-
-        // Convert path nodes to a list of waypoints
-        // Ignore last node since it's a duplicated edge of the second last.
-        var nodes = availablePaths.get(0).pathNodes;
-        for (var i = 0; i < nodes.size() - 1; i++) {
-            var node = nodes.get(i);
-            if (node.direction == EdgeDirection.START_TO_STOP)
-                waypoints.add(rmlRouteGraph.getNode(node.edge.startNode));
-            else
-                waypoints.add(rmlRouteGraph.getNode(node.edge.endNode));
-        }
-        waypoints.add(exitWaypoint);
-
-        return waypoints;
-    }
-
-    private static RMLRouteWaypoint parseEntryExitWaypoint(
-            boolean isEntry,
+    private static ID<RJSRouteWaypoint> parseEntryWaypoint(
             Element route,
             RMLRouteGraph rmlRouteGraph,
             HashMap<String, RJSTrackSection> rjsTrackSections,
             RMLTrackSectionGraph rmlTrackSectionGraph,
             HashMap<String, TrackNetElement> signalTrackNetElementMap
     ) throws InvalidInfraException {
-        var element = isEntry ? "routeEntry" : "routeExit";
+        var element = "routeEntry";
         var entryElement = route.element(element).element("refersTo").attributeValue("ref");
-        return findAssociatedWaypoint(
+        var waypoint = findAssociatedWaypoint(
                 entryElement,
                 rmlRouteGraph,
                 rjsTrackSections,
                 rmlTrackSectionGraph,
                 signalTrackNetElementMap
         );
+        return new ID<>(waypoint.id);
     }
 
     private static RMLRouteWaypoint findAssociatedWaypoint(
