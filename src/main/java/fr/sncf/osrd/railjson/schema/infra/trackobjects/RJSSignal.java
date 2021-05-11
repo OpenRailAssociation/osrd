@@ -2,6 +2,9 @@ package fr.sncf.osrd.railjson.schema.infra.trackobjects;
 
 import com.squareup.moshi.Json;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.trackgraph.Detector;
+import fr.sncf.osrd.infra.trackgraph.Waypoint;
+import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
@@ -19,6 +22,10 @@ public class RJSSignal extends RJSTrackObject implements Identified {
 
     /** The behavior of the signal */
     public RJSRSExpr expr;
+
+    /** Detector linked with the signal, may be empty if the signal doesn't protect a route */
+    @Json(name = "linked_detector")
+    public ID<RJSTrainDetector> linkedDetector = new ID<>("");
 
     /** Instantiate RJSSignal */
     public RJSSignal(

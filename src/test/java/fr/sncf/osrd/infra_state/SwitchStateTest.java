@@ -39,7 +39,6 @@ public class SwitchStateTest {
 
         config.trainSchedules.clear();
 
-
         infra.switches.iterator().next().positionChangeDelay = 6;
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
