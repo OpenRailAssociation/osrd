@@ -144,6 +144,7 @@ const Map = () => {
         attributionControl={false} // Defined below
         onClick={onFeatureClick}
         onHover={onFeatureHover}
+        interactiveLayerIds={mapTrackSources === 'geographic' ? ['geoMainLayer'] : ['schematicMainLayer']}
         touchRotate
         asyncRender
       >

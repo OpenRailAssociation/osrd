@@ -79,6 +79,9 @@
     margin: 0 0 1rem;
     height: auto;
   }
+  .search-results-label {
+    cursor: pointer;
+  }
   .search-results {
     background-color: #f2f2f2;
     padding: 1rem;
@@ -89,6 +92,8 @@
     cursor: pointer;
     .search-result-item {
       display: block;
+      background-color: inherit;
+      border: none;
       width: 100%;
       text-align: left;
       &:hover {

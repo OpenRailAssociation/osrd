@@ -68,7 +68,11 @@ export default function MapSearchSignal(props) {
         transitionInterpolator: new FlyToInterpolator(),
       };
       updateExtViewport(newViewport);
-      dispatch(updateMapSearchMarker({ title: result.name, subtitle: result.stationname, lonlat }));
+      dispatch(updateMapSearchMarker({
+        title: `${result.type} ${result.name}`,
+        subtitle: result.stationname,
+        lonlat,
+      }));
     }
   };
 
@@ -84,8 +88,8 @@ export default function MapSearchSignal(props) {
   const formatSearchResults = () => {
     let searchResultsContent = searchResults.results.filter((result) => result.name !== null);
     searchResultsContent = searchResultsContent.sort((a, b) => {
-      if (!a.[sortFilter.name]) { return -1; } // To avoid null values
-      if (!b.[sortFilter.name]) { return 1; }
+      if (!a.[sortFilter.name]) { return sortFilter.order === 0 ? -1 : 1; } // To avoid null values
+      if (!b.[sortFilter.name]) { return sortFilter.order === 0 ? 1 : -1; }
       return sortFilter.order === 0
         ? a.[sortFilter.name].localeCompare(b.[sortFilter.name])
         : b.[sortFilter.name].localeCompare(a.[sortFilter.name]);
@@ -156,27 +160,27 @@ export default function MapSearchSignal(props) {
           ? (
             <>
               <div className="row mt-3 px-3 small no-gutters">
-                <div className="col-1" role="button" onClick={() => setSortName('type')} tabIndex={-1}>
+                <div className="col-1 search-results-label" role="button" onClick={() => setSortName('type')} tabIndex={-1}>
                   {t('map-search:type')}
                   {orderDisplay('type')}
                 </div>
-                <div className="col-1" role="button" onClick={() => setSortName('name')} tabIndex={-1}>
+                <div className="col-1 search-results-label" role="button" onClick={() => setSortName('name')} tabIndex={-1}>
                   {t('map-search:name')}
                   {orderDisplay('name')}
                 </div>
-                <div className="col-3" role="button" onClick={() => setSortName('stationname')} tabIndex={-1}>
+                <div className="col-3 search-results-label" role="button" onClick={() => setSortName('stationname')} tabIndex={-1}>
                   {t('map-search:station')}
                   {orderDisplay('stationname')}
                 </div>
-                <div className="col-2" role="button" onClick={() => setSortName('linecode')} tabIndex={-1}>
+                <div className="col-2 search-results-label" role="button" onClick={() => setSortName('linecode')} tabIndex={-1}>
                   {t('map-search:linecode')}
                   {orderDisplay('linecode')}
                 </div>
-                <div className="col-3" role="button" onClick={() => setSortName('trackname')} tabIndex={-1}>
+                <div className="col-3 search-results-label" role="button" onClick={() => setSortName('trackname')} tabIndex={-1}>
                   {t('map-search:trackname')}
                   {orderDisplay('trackname')}
                 </div>
-                <div className="col-2" role="button" onClick={() => setSortName('pk')} tabIndex={-1}>
+                <div className="col-2 search-results-label" role="button" onClick={() => setSortName('pk')} tabIndex={-1}>
                   {t('map-search:pk')}
                   {orderDisplay('pk')}
                 </div>
