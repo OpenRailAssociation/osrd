@@ -4,6 +4,7 @@ import static fr.sncf.osrd.Helpers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.RailScriptExprParser;
 import fr.sncf.osrd.railjson.schema.common.ID;
@@ -18,25 +19,22 @@ import java.util.HashMap;
 public class OptionalTests {
 
     @Test
-    public void testSignalsFunctionWithOptionals() throws InvalidInfraException {
+    public void testSignalsFunctionWithOptionals() throws InvalidInfraException, SimulationError {
         var infra = getBaseInfra("tiny_infra/infra_optional.json");
         assert infra != null;
         var config = getBaseConfig("tiny_infra/config_railjson_optional.json");
         assert config != null;
 
         // We force a (very long) switch change, to make sure signals are necessary
-        infra.routes.forEach((route) -> {
-            var positions = route.switchesPosition;
-            positions.replaceAll((k, v) -> RJSSwitch.Position.RIGHT);
-        });
         infra.switches.iterator().next().positionChangeDelay = 42;
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
         run(sim, config);
     }
 
     @Test
-    public void testSignalsFunctionWithOptionalsForcedGreen() throws InvalidInfraException {
+    public void testSignalsFunctionWithOptionalsForcedGreen() throws InvalidInfraException, SimulationError {
         // Other half the test above: we check that invalid signals would have failed
         var infra = getBaseInfra("tiny_infra/infra_optional.json");
         assert infra != null;
@@ -50,13 +48,10 @@ public class OptionalTests {
         for (var f : functions) {
             f.body = new RJSRSExpr.AspectSet(new RJSRSExpr.AspectSet.AspectSetMember[]{aspect});
         }
-        infra.routes.forEach((route) -> {
-            var positions = route.switchesPosition;
-            positions.replaceAll((k, v) -> RJSSwitch.Position.RIGHT);
-        });
         infra.switches.iterator().next().positionChangeDelay = 42;
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
         assertThrows(SimulationError.class,
                 () -> runWithExceptions(sim, config),
                 "Expected a simulation error once the train goes through the switch"
