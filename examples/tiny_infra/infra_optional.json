@@ -574,7 +574,6 @@
             ]
           },
           "id": "il.sig.W4",
-          "linked_detector": "",
           "applicable_direction": "REVERSE",
           "position": 1025,
           "sight_distance": 400
@@ -591,7 +590,6 @@
             ]
           },
           "id": "il.sig.W5",
-          "linked_detector": "",
           "applicable_direction": "NORMAL",
           "position": 8975,
           "sight_distance": 400
