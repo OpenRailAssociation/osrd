@@ -1,9 +1,37 @@
 .editor-root {
+  padding-top: 3.75rem; // Header height
+
+  .layout {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+  }
+
   .modal {
     z-index: 1060;
 
     .modal-backdrop {
       pointer-events: all;
     }
+  }
+
+  .tool-box,
+  .actions-box {
+    padding: 1rem;
+
+    display: flex;
+    flex-direction: column;
+
+    & > button {
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  .tool-box {
+    background: #0088ce;
+  }
+  .actions-box {
+    background: white;
   }
 }

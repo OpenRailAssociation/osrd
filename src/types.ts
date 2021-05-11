@@ -13,6 +13,16 @@ export type Point = Position;
 export type Bbox = [Point, Point];
 export type Path = Array<Point>;
 
+export interface RectangleZone {
+  type: 'rectangle';
+  points: [Point, Point];
+}
+export interface PolygonZone {
+  type: 'polygon';
+  points: Point[];
+}
+export type Zone = RectangleZone | PolygonZone;
+
 //
 //  Metadata types
 //
@@ -64,6 +74,14 @@ export type LineProperties = Partial<{
   table_responsable: string | null;
   last_midi_update: string; // ISO 8601 date
 }>;
+export interface Item {
+  layer: string;
+  id: string;
+}
+export type PositionnedItem = Item & {
+  lng: number;
+  lat: number;
+};
 
 // Notification type
 export interface Notification {

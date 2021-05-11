@@ -5,7 +5,7 @@ import { Route, Switch } from 'react-router-dom';
 import config from 'config/config';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/logo_osrd_seul_blanc.svg';
-import Editor from './Editor';
+import Editor from './Editor.tsx';
 
 class HomeEditorUnplugged extends React.Component {
   static propTypes = {

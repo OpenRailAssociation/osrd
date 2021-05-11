@@ -1,63 +1,38 @@
-import { ComponentType } from 'react';
+import { Dispatch } from 'redux';
 import { IconType } from 'react-icons/lib/esm/iconBase';
-import { GiArrowCursor, MdPhotoSizeSelectSmall, MdShowChart } from 'react-icons/all';
 
-import SelectZone from './components/tools/SelectZone';
-import SelectItem from './components/tools/SelectItem';
-import CreateLine from './components/tools/CreateLine';
 import { EditorState } from '../../reducers/editor';
+import { SelectZone } from './tools/SelectZone';
+import { CreateLine } from './tools/CreateLine';
+import { SelectItems } from './tools/SelectItems';
 
-export interface Tool {
-  tool: string;
+export interface ToolAction<S> {
+  id: string;
   icon: IconType;
-  mapComponent: ComponentType;
   labelTranslationKey: string;
-  descriptionTranslationKeys: string[];
-  isEnabled: (editorState: EditorState) => boolean;
+  descriptionTranslationKeys?: string[];
+  // Tool appearance:
+  isActive?: (toolState: S, editorState: EditorState) => boolean;
+  isHidden?: (toolState: S, editorState: EditorState) => boolean;
+  isDisabled?: (state: S, editorState: EditorState) => boolean;
+  // On click button:
+  onClick?: (
+    context: { setState(state: S): void; dispatch: Dispatch },
+    toolState: S,
+    editorState: EditorState
+  ) => void;
 }
 
-export const TOOLS: Tool[] = [
-  {
-    // Zone selection:
-    tool: 'select-zone',
-    icon: MdPhotoSizeSelectSmall,
-    labelTranslationKey: 'Editor.tools.select-zone.label',
-    descriptionTranslationKeys: [
-      'Editor.tools.select-zone.description-1',
-      'Editor.tools.select-zone.description-2',
-      'Editor.tools.select-zone.description-3',
-    ],
-    mapComponent: SelectZone,
-    isEnabled() {
-      return true;
-    },
-  },
-  {
-    // Item selection:
-    tool: 'select-item',
-    icon: GiArrowCursor,
-    labelTranslationKey: 'Editor.tools.select-item.label',
-    descriptionTranslationKeys: ['Editor.tools.select-item.description-1'],
-    mapComponent: SelectItem,
-    isEnabled(editorState: EditorState) {
-      return !!editorState.editionZone;
-    },
-  },
-  {
-    // Create rails:
-    tool: 'create-line',
-    icon: MdShowChart,
-    labelTranslationKey: 'Editor.tools.create-line.label',
-    descriptionTranslationKeys: [
-      'Editor.tools.create-line.description-1',
-      'Editor.tools.create-line.description-2',
-      'Editor.tools.create-line.description-3',
-      'Editor.tools.create-line.description-4',
-      'Editor.tools.create-line.description-5',
-    ],
-    mapComponent: CreateLine,
-    isEnabled(editorState: EditorState) {
-      return !!editorState.editionZone;
-    },
-  },
-];
+export type ToolId = 'select-zone' | 'select-item' | 'create-line';
+
+export interface Tool<S> {
+  id: ToolId;
+  icon: IconType;
+  labelTranslationKey: string;
+  descriptionTranslationKeys: string[];
+  actions: ToolAction<S>[][];
+  getInitialState: () => S;
+  isDisabled?: (editorState: EditorState) => boolean;
+}
+
+export const Tools: Tool<any>[] = [SelectZone, CreateLine, SelectItems];

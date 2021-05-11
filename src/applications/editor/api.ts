@@ -7,7 +7,7 @@ import { ChartisAction } from '../../types';
  * Call the chartis API for geojson.
  */
 export async function getChartisLayers(
-  bbox: [Position, Position],
+  bbox: Position[],
   layers: Array<String>
 ): Promise<Array<GeoJSON>> {
   const geoJson = bboxPolygon(bbox.flat() as any);

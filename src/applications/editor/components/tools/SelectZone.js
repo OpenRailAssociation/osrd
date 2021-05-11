@@ -54,7 +54,7 @@ const SelectZone = () => {
       } else {
         const zone = [firstCorner, corner];
         setState({ ...state, firstCorner: null, secondCorner: null });
-        dispatch(selectZone(...zone));
+        dispatch(selectZone(zone));
       }
     },
     [firstCorner]

@@ -1,41 +1,32 @@
 /* eslint-disable default-case */
 import produce from 'immer';
-import { Feature, FeatureCollection, GeoJSON } from 'geojson';
-import { ThunkAction, Path, Point, Bbox, ChartisAction, LineProperties } from '../types';
-import { setLoading, setSuccess, setFailure } from './main';
-import { getChartisLayers, saveChartisActions } from '../applications/editor/api';
-import { clip, extractPoints } from '../utils/mapboxHelper';
 import { flatten } from 'lodash';
 import { BBox } from '@turf/helpers';
 import { createSelector } from 'reselect';
+import { Feature, FeatureCollection, GeoJSON } from 'geojson';
+
+import { ThunkAction, Path, ChartisAction, LineProperties, Zone } from '../types';
+import { setLoading, setSuccess, setFailure } from './main';
+import { getChartisLayers, saveChartisActions } from '../applications/editor/api';
+import { clip, extractPoints } from '../utils/mapboxHelper';
 
 //
 // Actions
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-const SELECT_TOOL = 'editor/SELECT_TOOL';
-type ActionSelectTool = { type: typeof SELECT_TOOL; tool: string };
-export function selectTool(tool: string): ThunkAction<ActionSelectTool> {
-  return (dispatch: any) => {
-    dispatch({
-      type: SELECT_TOOL,
-      tool,
-    });
-  };
-}
-
 const SELECT_ZONE = 'editor/SELECT_ZONE';
-type ActionSelectZone = { type: typeof SELECT_ZONE; corners: [Point, Point] };
-export function selectZone(topLeft: Point, bottomRight: Point): ThunkAction<ActionSelectZone> {
+type ActionSelectZone = { type: typeof SELECT_ZONE; zone: Zone | null };
+export function selectZone(zone: Zone | null): ThunkAction<ActionSelectZone> {
   return async (dispatch: any) => {
     dispatch({
       type: SELECT_ZONE,
-      corners: [topLeft, bottomRight],
+      zone,
     });
+
     // load the data
-    if (topLeft && bottomRight) {
+    if (zone) {
       dispatch(setLoading());
       try {
-        const data = await getChartisLayers([topLeft, bottomRight], ['map_midi_circuitdevoie']);
+        const data = await getChartisLayers(zone.points, ['map_midi_circuitdevoie']);
         dispatch(setSuccess());
         dispatch(setEditionData(data));
       } catch (e) {
@@ -143,7 +134,6 @@ export function saveModificationActions(): ThunkAction<ActionSaveModificationAct
 }
 
 type Actions =
-  | ActionSelectTool
   | ActionSelectZone
   | ActionSelectedZoneLoaded
   | ActionCreateLine
@@ -155,19 +145,16 @@ type Actions =
 // State definition
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 export interface EditorState {
-  activeTool: string;
-  editionZone: Bbox | null;
+  editionZone: Zone | null;
   editionData: Array<GeoJSON> | null;
   editionActions: Array<ChartisAction>;
 }
 
 export const initialState: EditorState = {
-  // Tool state:
-  activeTool: 'select-zone',
   // Edition zone:
-  editionZone: null, // null or [[topLeftLng, topLeftLat], [bottomRightLng, bottomRightLat]]
+  editionZone: null,
   // Data of the edition zone
-  // An array of geojson (one per layer)
+  // An array of GeoJSONs (one per layer)
   editionData: null,
   // List of modification actions
   editionActions: [],
@@ -179,19 +166,8 @@ export const initialState: EditorState = {
 export default function reducer(state = initialState, action: Actions) {
   return produce(state, (draft) => {
     switch (action.type) {
-      case SELECT_TOOL:
-        draft.activeTool = action.tool;
-        break;
       case SELECT_ZONE:
-        if (action.corners) {
-          const [c1, c2] = action.corners;
-          draft.editionZone = [
-            [Math.min(c1[0], c2[0]), Math.min(c1[1], c2[1])],
-            [Math.max(c1[0], c2[0]), Math.max(c1[1], c2[1])],
-          ];
-        } else {
-          draft.editionZone = null;
-        }
+        draft.editionZone = action.zone;
         break;
       case SELECTED_ZONE_LOADED:
         draft.editionData = action.data;
@@ -234,7 +210,7 @@ export const pointsSelector = createSelector(dataSelector, (data) =>
   }))
 );
 
-export const bboxSelector = createSelector(zoneSelector, (zone) => flatten(zone) as BBox);
+export const bboxSelector = createSelector(zoneSelector, (zone) => flatten(zone as any) as BBox);
 export const clippedDataSelector = createSelector(dataSelector, bboxSelector, (data, bbox) =>
   (data || []).map((geoJSON) => clip(geoJSON as FeatureCollection, bbox) as FeatureCollection)
 );

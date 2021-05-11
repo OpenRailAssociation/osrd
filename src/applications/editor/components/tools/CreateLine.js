@@ -3,8 +3,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
 import ReactMapGL, { AttributionControl, Layer, ScaleControl, Source } from 'react-map-gl';
-import { isEqual } from 'lodash';
+import { isEqual, sortBy } from 'lodash';
 import { v1 } from 'uuid';
+import distance from '@turf/distance';
 
 import { createLine } from 'reducers/editor';
 import { updateViewport } from 'reducers/map';
@@ -165,7 +166,11 @@ const CreateLineUnplugged = ({ t }) => {
   );
   const onFeatureHover = useCallback(
     (event) => {
-      const feature = event.features[0];
+      const features = sortBy(event.features, (feature) => {
+        return distance(event.lngLat, feature.geometry.coordinates);
+      });
+      const feature = features[0];
+
       if (feature) {
         setState({ ...state, hovered: feature });
       } else if (hovered) {

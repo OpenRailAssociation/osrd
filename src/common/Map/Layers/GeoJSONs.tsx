@@ -5,7 +5,7 @@ import { Layer, LayerProps, Source } from 'react-map-gl';
 import { geoMainLayer } from 'common/Map/Layers/geographiclayers';
 import { clippedDataSelector, EditorState } from 'reducers/editor';
 
-const HOVERED_COLOR = '#2DD1FF';
+const HOVERED_COLOR = '#009EED';
 
 export const GEOJSON_LAYER_ID = 'editor/geo-main-layer';
 

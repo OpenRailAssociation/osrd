@@ -40,6 +40,7 @@ module.exports = {
     "linebreak-style": ["error", "unix"],
     "jsx-a11y/click-events-have-key-events": "off",
   },
+  ignorePatterns: ["**/*.tsx", "**/*.ts"],
   settings: {
     "import/resolver": {
       node: {
