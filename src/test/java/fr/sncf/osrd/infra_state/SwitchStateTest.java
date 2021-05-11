@@ -31,7 +31,7 @@ public class SwitchStateTest {
     }
 
     @Test
-    public void testSimpleSwitch() throws InvalidInfraException {
+    public void testSimpleSwitch() throws InvalidInfraException, SimulationError {
         var infra = getBaseInfra();
         assert infra != null;
         var config = getBaseConfig();
@@ -39,15 +39,11 @@ public class SwitchStateTest {
 
         config.trainSchedules.clear();
 
-        // Set all the switch expected positions to RIGHT, to trigger a change
-        infra.routes.forEach((route) -> {
-            var positions = route.switchesPosition;
-            positions.replaceAll((k, v) -> RJSSwitch.Position.RIGHT);
-        });
 
         infra.switches.iterator().next().positionChangeDelay = 6;
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
 
         SwitchState switchState = sim.infraState.getSwitchState(0);
         RouteState routeState = sim.infraState.getRouteState(3);
@@ -55,61 +51,51 @@ public class SwitchStateTest {
         makeFunctionEvent(sim, requestTime, () -> routeState.reserve(sim));
         makeAssertEvent(sim, requestTime + 1, () -> switchState.getPosition() == SwitchPosition.MOVING);
         makeAssertEvent(sim, requestTime + 1, () -> routeState.status == RouteStatus.REQUESTED);
-        makeAssertEvent(sim, requestTime + 7, () -> switchState.getPosition() == SwitchPosition.RIGHT);
+        makeAssertEvent(sim, requestTime + 7, () -> switchState.getPosition() == SwitchPosition.LEFT);
         makeAssertEvent(sim, requestTime + 7, () -> routeState.status == RouteStatus.RESERVED);
 
         run(sim, config);
     }
 
     @Test
-    public void testSwitchShorterDelay() throws InvalidInfraException {
+    public void testSwitchShorterDelay() throws InvalidInfraException, SimulationError {
         var infra = getBaseInfra();
         assert infra != null;
-
-        // Set all the switch expected positions to RIGHT, to trigger a change
-        infra.routes.forEach((route) -> {
-            var positions = route.switchesPosition;
-            positions.replaceAll((k, v) -> RJSSwitch.Position.RIGHT);
-        });
 
         infra.switches.iterator().next().positionChangeDelay = 2;
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
 
         SwitchState switchState = sim.infraState.getSwitchState(0);
         RouteState routeState = sim.infraState.getRouteState(3);
-        makeAssertEvent(sim, 0, () -> switchState.getPosition() == SwitchPosition.LEFT);
+        makeAssertEvent(sim, 0, () -> switchState.getPosition() == SwitchPosition.RIGHT);
         makeAssertEvent(sim, 2, () -> switchState.getPosition() == SwitchPosition.MOVING);
         makeAssertEvent(sim, 2, () -> routeState.status == RouteStatus.REQUESTED);
-        makeAssertEvent(sim, 3, () -> switchState.getPosition() == SwitchPosition.RIGHT);
+        makeAssertEvent(sim, 3, () -> switchState.getPosition() == SwitchPosition.LEFT);
         makeAssertEvent(sim, 3, () -> routeState.status == RouteStatus.RESERVED);
 
         run(sim);
     }
 
     @Test
-    public void testSwitchLongerDelay() throws InvalidInfraException {
+    public void testSwitchLongerDelay() throws InvalidInfraException, SimulationError {
         var infra = getBaseInfra();
         assert infra != null;
         var config = getBaseConfig();
         assert config != null;
 
-        // Set all the switch expected positions to RIGHT, to trigger a change
-        infra.routes.forEach((route) -> {
-            var positions = route.switchesPosition;
-            positions.replaceAll((k, v) -> RJSSwitch.Position.RIGHT);
-        });
-
         infra.switches.iterator().next().positionChangeDelay = 42;
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
 
         SwitchState switchState = sim.infraState.getSwitchState(0);
         RouteState routeState = sim.infraState.getRouteState(3);
-        makeAssertEvent(sim, 0, () -> switchState.getPosition() == SwitchPosition.LEFT);
+        makeAssertEvent(sim, 0, () -> switchState.getPosition() == SwitchPosition.RIGHT);
         makeAssertEvent(sim, 41, () -> switchState.getPosition() == SwitchPosition.MOVING);
         makeAssertEvent(sim, 41, () -> routeState.status == RouteStatus.REQUESTED);
-        makeAssertEvent(sim, 43, () -> switchState.getPosition() == SwitchPosition.RIGHT);
+        makeAssertEvent(sim, 43, () -> switchState.getPosition() == SwitchPosition.LEFT);
         makeAssertEvent(sim, 43, () -> routeState.status == RouteStatus.RESERVED);
 
         run(sim, config);

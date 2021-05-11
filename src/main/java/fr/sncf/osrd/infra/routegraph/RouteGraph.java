@@ -2,13 +2,11 @@ package fr.sncf.osrd.infra.routegraph;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.TVDSection;
-import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
-import fr.sncf.osrd.utils.PointValue;
 import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.*;
 import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
@@ -46,18 +44,20 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                                                   HashMap<Switch, SwitchPosition> switchesPosition) {
             var res = new HashSet<Waypoint>();
             tvdSections.forEach(x -> res.addAll(x.waypoints));
-            for (var k : switchesPosition.keySet()) {
-                switch (switchesPosition.get(k)) {
-                    case LEFT:
-                        k.rightTrackSection.waypoints.stream()
-                                .map(x -> x.value)
-                                .forEach(res::remove);
-                        break;
-                    case RIGHT:
-                        k.leftTrackSection.waypoints.stream()
-                                .map(x -> x.value)
-                                .forEach(res::remove);
-                        break;
+            if (switchesPosition != null) {
+                for (var k : switchesPosition.keySet()) {
+                    switch (switchesPosition.get(k)) {
+                        case LEFT:
+                            k.rightTrackSection.waypoints.stream()
+                                    .map(x -> x.value)
+                                    .forEach(res::remove);
+                            break;
+                        case RIGHT:
+                            k.leftTrackSection.waypoints.stream()
+                                    .map(x -> x.value)
+                                    .forEach(res::remove);
+                            break;
+                    }
                 }
             }
             return res;
@@ -94,20 +94,15 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
         /** Add a route to the Route Graph */
         public Route makeRoute(
                 String id,
-                List<Waypoint> waypoints,
                 SortedArraySet<TVDSection> tvdSections,
                 List<SortedArraySet<TVDSection>> releaseGroups,
                 HashMap<Switch, SwitchPosition> switchesPosition,
-                Signal entrySignal) throws InvalidInfraException {
-            if (waypoints.size() < 2) {
-                throw new InvalidInfraException(String.format("Route '%s' doesn't contains enough waypoints", id));
-            }
+                Waypoint entryPoint) throws InvalidInfraException {
             var length = 0;
             var tvdSectionsPath = new ArrayList<TVDSectionPath>();
             var tvdSectionsPathDirection = new ArrayList<EdgeDirection>();
 
-            var newWaypoints = generateWaypointList(waypoints.get(0), tvdSections, switchesPosition);
-            assert newWaypoints.equals(waypoints);
+            var waypoints = generateWaypointList(entryPoint, tvdSections, switchesPosition);
 
             // Find the list of tvd section path
             for (var i = 1; i < waypoints.size(); i++) {
@@ -154,7 +149,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                     tvdSectionsPath,
                     tvdSectionsPathDirection,
                     switchesPosition,
-                    entrySignal);
+                    null /*TODO*/);
 
             routeGraph.routeMap.put(id, route);
 
@@ -187,5 +182,6 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
         public RouteGraph build() {
             return routeGraph;
         }
+
     }
 }

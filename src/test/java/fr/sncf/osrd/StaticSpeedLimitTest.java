@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.*;
+import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.trackgraph.BufferStop;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
@@ -23,10 +24,7 @@ import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -88,7 +86,7 @@ public class StaticSpeedLimitTest {
         releaseGroup.add(tvdSection);
         releaseGroups.add(releaseGroup);
         var route = routeGraphBuilder.makeRoute(
-                "R1", waypointsAB, tvdSectionsR1, releaseGroups, new HashMap<>(), null);
+                "R1", tvdSectionsR1, releaseGroups, new HashMap<>(), waypointsAB.get(0));
 
         final var infra = Infra.build(trackGraph, waypointGraph, routeGraphBuilder.build(),
                 tvdSections, new HashMap<>(), new ArrayList<>(), new ArrayList<>());
@@ -100,7 +98,8 @@ public class StaticSpeedLimitTest {
         var startLocation = new TrackSectionLocation(edge, 0);
         var phases = new ArrayList<Phase>();
         phases.add(SignalNavigatePhase.from(
-                Arrays.asList(route), 400, startLocation, new TrackSectionLocation(edge, 10000)));
+                Collections.singletonList(route), 400, startLocation,
+                new TrackSectionLocation(edge, 10000)));
 
         var schedule = new TrainSchedule(
                 "test_train",
