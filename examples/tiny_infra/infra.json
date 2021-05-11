@@ -150,7 +150,7 @@
       "id": "rt.C6-buffer_stop_b",
       "entry_point": "il.sig.C6",
       "switches_position": {
-        "il.switch_foo": "RIGHT"
+        "il.switch_foo": "LEFT"
       },
       "release_groups": [
         [
