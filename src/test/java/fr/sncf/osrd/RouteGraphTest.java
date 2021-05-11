@@ -60,7 +60,7 @@ public class RouteGraphTest {
             releaseGroups.add(releaseGroup);
         }
 
-        return builder.makeRoute(id, tvdSections, releaseGroups, null, waypoints.get(0));
+        return builder.makeRoute(id, tvdSections, releaseGroups, null, waypoints.get(0), null);
     }
 
     /**

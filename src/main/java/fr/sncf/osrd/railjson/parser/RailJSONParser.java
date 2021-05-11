@@ -104,6 +104,7 @@ public class RailJSONParser {
         }
 
         var waypointsMap = new HashMap<String, Waypoint>();
+        var detectorIdToSignalMap = new HashMap<String, Signal>();
 
         // create track sections
         var infraTrackSections = new HashMap<String, TrackSection>();
@@ -172,6 +173,8 @@ public class RailJSONParser {
                 );
                 signalsBuilder.add(rjsSignal.position, signal);
                 signals.add(signal);
+                if (!rjsSignal.linkedDetector.id.equals(""))
+                    detectorIdToSignalMap.put(rjsSignal.linkedDetector.id, signal);
             }
             signalsBuilder.build();
         }
@@ -241,8 +244,9 @@ public class RailJSONParser {
             }
 
             var entryPoint = waypointsMap.get(rjsRoute.entryPoint.id);
+            var entrySignal = detectorIdToSignalMap.getOrDefault(entryPoint.id, null);
 
-            routeGraph.makeRoute(rjsRoute.id, tvdSections, releaseGroups, switchesPosition, entryPoint);
+            routeGraph.makeRoute(rjsRoute.id, tvdSections, releaseGroups, switchesPosition, entryPoint, entrySignal);
         }
 
         var routeNames = new HashMap<String, Route>();

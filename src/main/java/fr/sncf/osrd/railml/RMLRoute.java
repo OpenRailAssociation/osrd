@@ -57,6 +57,11 @@ public class RMLRoute {
             var entryWaypoint = parseEntryWaypoint(route,
                     rmlRouteGraph, rjsTrackSections, graph, signalTrackNetElementMap);
 
+            var entrySignal = parseEntrySignal(route, signalTrackNetElementMap,
+                    signalTrackNetElementMap, rjsTrackSections);
+            if (entrySignal != null)
+                entrySignal.linkedDetector = new ID<>(entryWaypoint.id);
+
             res.add(new RJSRoute(id, switchesPosition, releaseGroups, entryWaypoint));
         }
         return res;
@@ -73,6 +78,7 @@ public class RMLRoute {
         }
         return res;
     }
+
     private static ID<RJSRouteWaypoint> parseEntryWaypoint(
             Element route,
             RMLRouteGraph rmlRouteGraph,
@@ -167,6 +173,22 @@ public class RMLRoute {
                 rjsTrackSections,
                 rmlTrackSectionGraph
         );
+    }
+
+    private static RJSSignal parseEntrySignal(Element route, HashMap<String, TrackNetElement> signalTrackNets,
+                                              HashMap<String, TrackNetElement> signalTrackNetElementMap,
+                                              HashMap<String, RJSTrackSection> rjsTrackSections)
+            throws InvalidInfraException {
+        var entryElement = route.element("routeEntry").element("refersTo").attributeValue("ref");
+        var isSignal = signalTrackNets.containsKey(entryElement);
+        if (!isSignal)
+            return null;
+        var trackNetElement = signalTrackNetElementMap.get(entryElement);
+        if (trackNetElement == null)
+            throw new InvalidInfraException(
+                    String.format("ElementID '%s' not found, should refer a buffer stop or signal", entryElement));
+
+        return findSignal(entryElement, trackNetElement, rjsTrackSections);
     }
 
     private static RJSSignal findSignal(
