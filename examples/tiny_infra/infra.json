@@ -73,7 +73,7 @@
     },
     {
       "id": "rt.C1-S7",
-      "entry_point": "il.sig.C1",
+      "entry_point": "tde.foo_a-switch_foo",
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
@@ -88,7 +88,7 @@
     },
     {
       "id": "rt.C3-S7",
-      "entry_point": "il.sig.C3",
+      "entry_point": "tde.foo_b-switch_foo",
       "switches_position": {
         "il.switch_foo": "LEFT"
       },
@@ -103,7 +103,7 @@
     },
     {
       "id": "rt.S7-buffer_stop_c",
-      "entry_point": "il.sig.S7",
+      "entry_point": "tde.track-bar",
       "switches_position": {},
       "release_groups": [
         [
@@ -123,7 +123,7 @@
     },
     {
       "id": "rt.C2-C6",
-      "entry_point": "il.sig.C2",
+      "entry_point": "tde.track-bar",
       "switches_position": {},
       "release_groups": [
         [
@@ -133,7 +133,7 @@
     },
     {
       "id": "rt.C6-buffer_stop_a",
-      "entry_point": "il.sig.C6",
+      "entry_point": "tde.switch_foo-track",
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
@@ -148,7 +148,7 @@
     },
     {
       "id": "rt.C6-buffer_stop_b",
-      "entry_point": "il.sig.C6",
+      "entry_point": "tde.switch_foo-track",
       "switches_position": {
         "il.switch_foo": "LEFT"
       },
