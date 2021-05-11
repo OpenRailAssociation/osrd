@@ -173,7 +173,7 @@ public class RailJSONParser {
                 );
                 signalsBuilder.add(rjsSignal.position, signal);
                 signals.add(signal);
-                if (!rjsSignal.linkedDetector.id.equals(""))
+                if (rjsSignal.linkedDetector != null && !rjsSignal.linkedDetector.id.equals(""))
                     detectorIdToSignalMap.put(rjsSignal.linkedDetector.id, signal);
             }
             signalsBuilder.build();
