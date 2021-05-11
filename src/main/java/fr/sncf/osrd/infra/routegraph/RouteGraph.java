@@ -41,61 +41,6 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 routeGraph.registerNode(node);
         }
 
-        private Set<Waypoint> getWaypointsOnRoute(Set<TVDSection> tvdSections,
-                                                  HashMap<Switch, SwitchPosition> switchesPosition)
-                throws InvalidInfraException {
-            var res = new HashSet<Waypoint>();
-            tvdSections.forEach(x -> res.addAll(x.waypoints));
-            if (switchesPosition != null) {
-                for (var entry : switchesPosition.entrySet()) {
-                    var aSwitch = entry.getKey();
-                    switch (entry.getValue()) {
-                        case LEFT:
-                            aSwitch.rightTrackSection.waypoints.stream()
-                                    .map(x -> x.value)
-                                    .forEach(res::remove);
-                            break;
-                        case RIGHT:
-                            aSwitch.leftTrackSection.waypoints.stream()
-                                    .map(x -> x.value)
-                                    .forEach(res::remove);
-                            break;
-                        case MOVING:
-                            throw new InvalidInfraException("route: switch required position cannot be MOVING");
-                    }
-                }
-            }
-            return res;
-        }
-
-        private List<Waypoint> generateWaypointList(
-                Waypoint startPoint,
-                Set<TVDSection> tvdSections,
-                HashMap<Switch, SwitchPosition> switchesPosition) throws InvalidInfraException {
-
-            var currentPoint = startPoint;
-            var waypoints = new ArrayList<Waypoint>();
-            var waypointsToVisit = getWaypointsOnRoute(tvdSections, switchesPosition);
-            while (true) {
-                waypointsToVisit.remove(currentPoint);
-                waypoints.add(currentPoint);
-                if (waypointsToVisit.isEmpty())
-                    return waypoints;
-                for (var waypoint : waypointsToVisit) {
-                    var pair = UndirectedBiEdgeID.from(waypoint.index, currentPoint.index);
-                    if (waypointGraph.tvdSectionPathMap.containsKey(pair)) {
-                        currentPoint = waypoint;
-                        break;
-                    }
-                }
-                if (!waypointsToVisit.contains(currentPoint)) {
-                    // we didn't find a pair
-                    var errorMsg = "Route: can't find a waypoint list, are the tvd sections connected?";
-                    throw new InvalidInfraException(errorMsg);
-                }
-            }
-        }
-
         /** Add a route to the Route Graph */
         public Route makeRoute(
                 String id,
@@ -187,6 +132,68 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
 
         public RouteGraph build() {
             return routeGraph;
+        }
+
+        /** Generates a set of waypoints on the route, based on its tvd sections and switch positions
+         * We accumulate all the waypoints in all the tvd sections, then remove the ones in the other switch branches */
+        private Set<Waypoint> getWaypointsOnRoute(Set<TVDSection> tvdSections,
+                                                  HashMap<Switch, SwitchPosition> switchesPosition)
+                throws InvalidInfraException {
+            var res = new HashSet<Waypoint>();
+            tvdSections.forEach(x -> res.addAll(x.waypoints));
+            if (switchesPosition != null) {
+                for (var entry : switchesPosition.entrySet()) {
+                    var aSwitch = entry.getKey();
+                    switch (entry.getValue()) {
+                        case LEFT:
+                            aSwitch.rightTrackSection.waypoints.stream()
+                                    .map(x -> x.value)
+                                    .forEach(res::remove);
+                            break;
+                        case RIGHT:
+                            aSwitch.leftTrackSection.waypoints.stream()
+                                    .map(x -> x.value)
+                                    .forEach(res::remove);
+                            break;
+                        case MOVING:
+                            throw new InvalidInfraException("route: switch required position cannot be MOVING");
+                    }
+                }
+            }
+            return res;
+        }
+
+        /** Generates a list of waypoints present on the route in the right order */
+        private List<Waypoint> generateWaypointList(
+                Waypoint startPoint,
+                Set<TVDSection> tvdSections,
+                HashMap<Switch, SwitchPosition> switchesPosition) throws InvalidInfraException {
+
+            var currentPoint = startPoint;
+            var waypoints = new ArrayList<Waypoint>();
+
+            var waypointsToVisit = getWaypointsOnRoute(tvdSections, switchesPosition);
+
+            // We order the points by finding which one is adjacent to the previous point
+            // until there is no more point to visit
+            while (true) {
+                waypointsToVisit.remove(currentPoint);
+                waypoints.add(currentPoint);
+                if (waypointsToVisit.isEmpty())
+                    return waypoints;
+                for (var waypoint : waypointsToVisit) {
+                    var pair = UndirectedBiEdgeID.from(waypoint.index, currentPoint.index);
+                    if (waypointGraph.tvdSectionPathMap.containsKey(pair)) {
+                        currentPoint = waypoint;
+                        break;
+                    }
+                }
+                if (!waypointsToVisit.contains(currentPoint)) {
+                    // we didn't find a pair
+                    var errorMsg = "Route: can't find a waypoint list, are the tvd sections connected?";
+                    throw new InvalidInfraException(errorMsg);
+                }
+            }
         }
 
     }
