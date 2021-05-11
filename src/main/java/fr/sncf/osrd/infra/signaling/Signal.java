@@ -4,6 +4,7 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.*;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
 import fr.sncf.osrd.infra.routegraph.Route;
+import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.train.InteractionType;

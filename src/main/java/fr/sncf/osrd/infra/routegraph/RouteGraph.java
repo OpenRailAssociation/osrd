@@ -2,6 +2,7 @@ package fr.sncf.osrd.infra.routegraph;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.TVDSection;
+import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
@@ -97,7 +98,8 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 SortedArraySet<TVDSection> tvdSections,
                 List<SortedArraySet<TVDSection>> releaseGroups,
                 HashMap<Switch, SwitchPosition> switchesPosition,
-                Waypoint entryPoint) throws InvalidInfraException {
+                Waypoint entryPoint,
+                Signal entrySignal) throws InvalidInfraException {
             var length = 0;
             var tvdSectionsPath = new ArrayList<TVDSectionPath>();
             var tvdSectionsPathDirection = new ArrayList<EdgeDirection>();
@@ -149,7 +151,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                     tvdSectionsPath,
                     tvdSectionsPathDirection,
                     switchesPosition,
-                    null /*TODO*/);
+                    entrySignal);
 
             routeGraph.routeMap.put(id, route);
 
