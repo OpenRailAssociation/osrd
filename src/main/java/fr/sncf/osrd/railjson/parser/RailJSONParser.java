@@ -4,7 +4,6 @@ import static fr.sncf.osrd.infra.trackgraph.TrackSection.linkEdges;
 
 import com.squareup.moshi.*;
 import fr.sncf.osrd.infra.*;
-import fr.sncf.osrd.infra.railscript.DependencyBinder;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;

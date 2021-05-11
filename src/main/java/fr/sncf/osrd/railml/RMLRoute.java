@@ -1,6 +1,5 @@
 package fr.sncf.osrd.railml;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.*;
@@ -9,12 +8,10 @@ import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.railml.routegraph.RMLRouteGraph;
 import fr.sncf.osrd.railml.routegraph.RMLRouteGraphBuilder;
 import fr.sncf.osrd.railml.routegraph.RMLRouteWaypoint;
-import fr.sncf.osrd.railml.routegraph.RMLTVDSectionPath;
 import fr.sncf.osrd.railml.tracksectiongraph.RMLTrackSectionGraph;
 
 import fr.sncf.osrd.railml.tracksectiongraph.TrackNetElement;
 import fr.sncf.osrd.utils.graph.*;
-import fr.sncf.osrd.utils.graph.path.*;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
@@ -30,13 +27,6 @@ public class RMLRoute {
         var rmlRouteGraph = new RMLRouteGraph();
         var overlayBuilder = new RMLRouteGraphBuilder(rjsTrackSections, graph, rmlRouteGraph);
         overlayBuilder.build();
-
-        // Create Map : waypoint id ==> rjsWaypoints
-        var rjsWaypointsMap = new HashMap<String, ID<RJSRouteWaypoint>>();
-        for (var rjsTrackSection : rjsTrackSections.values()) {
-            for (var rjsWaypoint  : rjsTrackSection.routeWaypoints)
-                rjsWaypointsMap.put(rjsWaypoint.id, ID.from(rjsWaypoint));
-        }
 
         // Create Map : signal id ==> TrackNetElement the signal is on
         var signalTrackNetElementMap = new HashMap<String, TrackNetElement>();
@@ -119,6 +109,7 @@ public class RMLRoute {
         var signal = findSignal(elementID, trackNetElement, rjsTrackSections);
 
         var direction = EdgeDirection.START_TO_STOP;
+        assert signal != null;
         if (signal.applicableDirection == ApplicableDirection.REVERSE) {
             direction = EdgeDirection.STOP_TO_START;
         }

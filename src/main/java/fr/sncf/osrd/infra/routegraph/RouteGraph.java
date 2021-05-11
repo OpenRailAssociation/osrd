@@ -42,22 +42,26 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
         }
 
         private Set<Waypoint> getWaypointsOnRoute(Set<TVDSection> tvdSections,
-                                                  HashMap<Switch, SwitchPosition> switchesPosition) {
+                                                  HashMap<Switch, SwitchPosition> switchesPosition)
+                throws InvalidInfraException {
             var res = new HashSet<Waypoint>();
             tvdSections.forEach(x -> res.addAll(x.waypoints));
             if (switchesPosition != null) {
-                for (var k : switchesPosition.keySet()) {
-                    switch (switchesPosition.get(k)) {
+                for (var entry : switchesPosition.entrySet()) {
+                    var aSwitch = entry.getKey();
+                    switch (entry.getValue()) {
                         case LEFT:
-                            k.rightTrackSection.waypoints.stream()
+                            aSwitch.rightTrackSection.waypoints.stream()
                                     .map(x -> x.value)
                                     .forEach(res::remove);
                             break;
                         case RIGHT:
-                            k.leftTrackSection.waypoints.stream()
+                            aSwitch.leftTrackSection.waypoints.stream()
                                     .map(x -> x.value)
                                     .forEach(res::remove);
                             break;
+                        case MOVING:
+                            throw new InvalidInfraException("route: switch required position cannot be MOVING");
                     }
                 }
             }
