@@ -8,14 +8,12 @@ import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
+import fr.sncf.osrd.utils.PointValue;
 import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.*;
 import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class RouteGraph extends DirNGraph<Route, Waypoint> {
     public final HashMap<String, Route> routeMap = new HashMap<>();
@@ -44,6 +42,55 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 routeGraph.registerNode(node);
         }
 
+        private Set<Waypoint> getWaypointsOnRoute(Set<TVDSection> tvdSections,
+                                                  HashMap<Switch, SwitchPosition> switchesPosition) {
+            var res = new HashSet<Waypoint>();
+            tvdSections.forEach(x -> res.addAll(x.waypoints));
+            for (var k : switchesPosition.keySet()) {
+                switch (switchesPosition.get(k)) {
+                    case LEFT:
+                        k.rightTrackSection.waypoints.stream()
+                                .map(x -> x.value)
+                                .forEach(res::remove);
+                        break;
+                    case RIGHT:
+                        k.leftTrackSection.waypoints.stream()
+                                .map(x -> x.value)
+                                .forEach(res::remove);
+                        break;
+                }
+            }
+            return res;
+        }
+
+        private List<Waypoint> generateWaypointList(
+                Waypoint startPoint,
+                Set<TVDSection> tvdSections,
+                HashMap<Switch, SwitchPosition> switchesPosition) throws InvalidInfraException {
+
+            var currentPoint = startPoint;
+            var waypoints = new ArrayList<Waypoint>();
+            var waypointsToVisit = getWaypointsOnRoute(tvdSections, switchesPosition);
+            while (true) {
+                waypointsToVisit.remove(currentPoint);
+                waypoints.add(currentPoint);
+                if (waypointsToVisit.isEmpty())
+                    return waypoints;
+                for (var waypoint : waypointsToVisit) {
+                    var pair = UndirectedBiEdgeID.from(waypoint.index, currentPoint.index);
+                    if (waypointGraph.tvdSectionPathMap.containsKey(pair)) {
+                        currentPoint = waypoint;
+                        break;
+                    }
+                }
+                if (!waypointsToVisit.contains(currentPoint)) {
+                    // we didn't find a pair
+                    var errorMsg = "Route: can't find a waypoint list, are the tvd sections connected?";
+                    throw new InvalidInfraException(errorMsg);
+                }
+            }
+        }
+
         /** Add a route to the Route Graph */
         public Route makeRoute(
                 String id,
@@ -58,6 +105,9 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
             var length = 0;
             var tvdSectionsPath = new ArrayList<TVDSectionPath>();
             var tvdSectionsPathDirection = new ArrayList<EdgeDirection>();
+
+            var newWaypoints = generateWaypointList(waypoints.get(0), tvdSections, switchesPosition);
+            assert newWaypoints.equals(waypoints);
 
             // Find the list of tvd section path
             for (var i = 1; i < waypoints.size(); i++) {
