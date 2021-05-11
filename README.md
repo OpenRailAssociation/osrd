@@ -35,13 +35,13 @@ Many of these goals currently aren't _yet_ fulfilled: the simulation is pretty s
  - [x] Static speed restrictions
  - [x] Full history of internal simulation events
  - [x] Basic interlocking / signaling support
- - [ ] Make the train react to signals
- - [ ] pathfinding in the route graph
+ - [X] Make the train react to signals
+ - [X] pathfinding in the route graph
+ - [X] API server mode
  - [ ] ERTMS support
  - [ ] Parallel integration of train movement
  - [ ] Variable step integration
  - [ ] Driver behavior model
- - [ ] API server mode
  - [ ] ~~Rewrite everything in Rust~~
 
 ## Getting Started
@@ -73,3 +73,7 @@ We would like to thank:
  - Bjørnar Steinnes Luteberget, who wrote a very interesting thesis on the matter,
    as well as a [pretty impressive prototype](https://github.com/luteberget/junction)
  - The [railML](https://www.railml.org/) organisation, for making the namesake file format
+
+## Contact
+
+You are interested in the project, and you want to know more? Contact us at <contact@osrd.fr>.
