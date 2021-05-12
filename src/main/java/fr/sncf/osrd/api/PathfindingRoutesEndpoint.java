@@ -14,6 +14,7 @@ import fr.sncf.osrd.utils.graph.DistCostFunction;
 import fr.sncf.osrd.utils.graph.path.*;
 import org.takes.Request;
 import org.takes.Response;
+import org.takes.rq.RqPrint;
 import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
@@ -37,9 +38,8 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
 
     @Override
     public Response act(Request req) throws IOException {
-        var buffer = new okio.Buffer();
-        buffer.write(req.body().readAllBytes());
-        var request = adapterRequest.fromJson(buffer);
+        var body = new RqPrint(req).printBody();
+        var request = adapterRequest.fromJson(body);
         if (request == null)
             return new RsWithStatus(new RsText("missing request body"), 400);
 
