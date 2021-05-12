@@ -29,6 +29,7 @@ import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
+import org.takes.rq.RqPrint;
 import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
@@ -59,11 +60,9 @@ public class SimulationEndpoint implements Take {
 
     @Override
     public Response act(Request req) throws IOException, InvalidRollingStock, InvalidSchedule, SimulationError {
-        var buffer = new okio.Buffer();
-        buffer.write(req.body().readAllBytes());
-
         // Parse request input
-        var request = adapterRequest.fromJson(buffer);
+        var body = new RqPrint(req).printBody();
+        var request = adapterRequest.fromJson(body);
         if (request == null)
             return new RsWithStatus(new RsText("missing request body"), 400);
 
