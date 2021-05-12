@@ -39,6 +39,9 @@ spec:
             limits:
               cpu: "500m"
               memory: "500Mi"
+          envFrom:
+          - configMapRef:
+              name: osrd-core-env-vars
           ports:
             - name: http
               containerPort: 8000
