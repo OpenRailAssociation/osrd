@@ -8,7 +8,7 @@ from osrd_infra.models import (
     # enums
     Endpoint,
     ApplicableDirection,
-    # explicitly declared serialiers
+    # explicitly declared serializers
     TrackSectionLinkComponent,
     IdentifierComponent,
     IdentifierDatabase,
