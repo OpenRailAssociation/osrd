@@ -40,6 +40,8 @@ spec:
               cpu: "500m"
               memory: "500Mi"
           envFrom:
+          - secretRef:
+              name: osrd-core-secrets
           - configMapRef:
               name: osrd-core-env-vars
           ports:
