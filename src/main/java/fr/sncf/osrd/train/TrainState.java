@@ -6,8 +6,8 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.train.phases.PhaseState;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.DeepComparable;
@@ -159,14 +159,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         assert action != null;
         assert action.type != Action.ActionType.EMERGENCY_BRAKING;
 
-        // compute and limit the traction force
-        var tractionForce = action.tractionForce();
-
-        // compute and limit the braking force
-        var brakingForce = action.brakingForce();
-
         // run the physics sim
-        var update = integrator.computeUpdate(tractionForce, brakingForce, distanceStep);
+        var update = integrator.applyActionAndUpdate(action, distanceStep);
 
         // update location
         location.updatePosition(rollingStock.length, update.positionDelta);

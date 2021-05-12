@@ -8,6 +8,7 @@ import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.train.decisions.KeyboardInput;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.CryoList;
 import fr.sncf.osrd.utils.DeepComparable;
@@ -62,7 +63,7 @@ public class Train {
                 0,
                 phaseState,
                 new ArrayDeque<>(),
-                new TrainDecisionMaker.DefaultTrainDecisionMaker()
+                new KeyboardInput()
         );
 
         ActivateRoute.trainCreation(sim, initialState);

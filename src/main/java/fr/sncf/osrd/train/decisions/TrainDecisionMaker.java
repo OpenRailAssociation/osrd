@@ -1,8 +1,11 @@
-package fr.sncf.osrd.train;
+package fr.sncf.osrd.train.decisions;
 
-import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
+import fr.sncf.osrd.train.Action;
+import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.TrainPhysicsIntegrator;
+import fr.sncf.osrd.train.TrainState;
 
 import java.util.ArrayList;
 
@@ -49,7 +52,7 @@ public abstract class TrainDecisionMaker {
 
     protected abstract Action makeDecision(SpeedDirective directive, TrainPhysicsIntegrator integrator);
 
-    static class DefaultTrainDecisionMaker extends TrainDecisionMaker {
+    public static class DefaultTrainDecisionMaker extends TrainDecisionMaker {
 
         @Override
         protected Action makeDecision(SpeedDirective directive, TrainPhysicsIntegrator integrator) {
