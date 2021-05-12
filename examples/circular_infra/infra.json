@@ -52,10 +52,7 @@
           "tvd.12"
         ]
       ],
-      "waypoints": [
-        "tde.1",
-        "tde.2"
-      ]
+      "entry_point": "tde.1"
     },
     {
       "id": "rt.23",
@@ -65,10 +62,7 @@
           "tvd.23"
         ]
       ],
-      "waypoints": [
-        "tde.2",
-        "tde.3"
-      ]
+      "entry_point": "tde.2"
     },
     {
       "id": "rt.34",
@@ -78,10 +72,7 @@
           "tvd.34"
         ]
       ],
-      "waypoints": [
-        "tde.3",
-        "tde.4"
-      ]
+      "entry_point": "tde.3"
     },
     {
       "id": "rt.45",
@@ -91,10 +82,7 @@
           "tvd.45"
         ]
       ],
-      "waypoints": [
-        "tde.4",
-        "tde.5"
-      ]
+      "entry_point": "tde.4"
     },
     {
       "id": "rt.56",
@@ -104,10 +92,7 @@
           "tvd.56"
         ]
       ],
-      "waypoints": [
-        "tde.5",
-        "tde.6"
-      ]
+      "entry_point": "tde.5"
     },
     {
       "id": "rt.67",
@@ -117,10 +102,7 @@
           "tvd.67"
         ]
       ],
-      "waypoints": [
-        "tde.6",
-        "tde.7"
-      ]
+      "entry_point": "tde.6"
     },
     {
       "id": "rt.78",
@@ -130,10 +112,7 @@
           "tvd.78"
         ]
       ],
-      "waypoints": [
-        "tde.7",
-        "tde.8"
-      ]
+      "entry_point": "tde.7"
     },
     {
       "id": "rt.81",
@@ -143,10 +122,7 @@
           "tvd.81"
         ]
       ],
-      "waypoints": [
-        "tde.8",
-        "tde.1"
-      ]
+      "entry_point": "tde.8"
     }
   ],
   "script_functions": [
