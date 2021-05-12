@@ -1,10 +1,7 @@
 package fr.sncf.osrd.infra.signaling;
 
-import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.*;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
-import fr.sncf.osrd.infra.routegraph.Route;
-import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.train.InteractionType;
@@ -13,9 +10,6 @@ import fr.sncf.osrd.train.InteractionTypeSet;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Stack;
 
 public class Signal implements ActionPoint {
     public final int index;
