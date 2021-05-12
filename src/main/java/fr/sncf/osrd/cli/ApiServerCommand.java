@@ -52,7 +52,8 @@ public final class ApiServerCommand implements CliCommand {
 
     /** Run the Api Server */
     public int run() {
-        var infraHandler = new InfraHandler(getMiddlewareBaseUrl());
+        var authorizationToken = System.getenv("FETCH_INFRA_AUTHORIZATION");
+        var infraHandler = new InfraHandler(getMiddlewareBaseUrl(), authorizationToken);
 
         try {
             // the list of endpoints
