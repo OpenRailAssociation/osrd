@@ -53,6 +53,7 @@ public class Train {
 
         var location = new TrainPositionTracker(sim.infra, sim.infraState, initialPosition);
         var phaseState = schedule.phases.get(0).getState();
+        var input = new KeyboardInput(sim);
         var initialState = new TrainState(
                 sim.getTime(),
                 location,
@@ -63,7 +64,7 @@ public class Train {
                 0,
                 phaseState,
                 new ArrayDeque<>(),
-                new KeyboardInput()
+                input
         );
 
         ActivateRoute.trainCreation(sim, initialState);
@@ -72,6 +73,7 @@ public class Train {
         var train = trainCreatedChange.apply(sim);
         sim.publishChange(trainCreatedChange);
         train.scheduleStateChange(sim);
+        input.setTrain(train);
         return train;
     }
 
