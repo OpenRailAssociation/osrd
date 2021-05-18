@@ -83,7 +83,7 @@ public class PathfindingTracksEndpoint extends PathfindingEndpoint {
         for (int i = 1; i < waypoints.length; i++) {
             var destinationWaypoints = waypoints[i];
 
-            BiDijkstra.findPaths(
+            var found = BiDijkstra.findPaths(
                     infra.trackGraph,
                     candidatePaths,
                     costFunction,
@@ -104,6 +104,9 @@ public class PathfindingTracksEndpoint extends PathfindingEndpoint {
                         pathsToGoal.add(pathToGoal);
                         return false;
                     });
+
+            if (found == 0)
+                return new RsWithStatus(new RsText("Not path could be found"), 400);
 
             candidatePaths.clear();
             candidatePaths.add(pathsToGoal.get(pathsToGoal.size() - 1));
