@@ -172,6 +172,23 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         speed = update.speed;
     }
 
+    public SpeedController[] getActiveSpeedControllers() {
+        var activeControllers = new ArrayList<SpeedController>();
+        // Add train speed controllers
+        for (var controller : speedControllers) {
+            if (!controller.isActive(this))
+                continue;
+            activeControllers.add(controller);
+        }
+        // Add phase speed controllers
+        for (var controller : currentPhaseState.getSpeedControllers()) {
+            if (!controller.isActive(this))
+                continue;
+            activeControllers.add(controller);
+        }
+        return activeControllers.toArray(new SpeedController[0]);
+    }
+
     /**  Create a location change from the current state to the given position.
      * If the train stops during the simulation then the function returns its new state where it stopped. */
     public Train.TrainStateChange evolveStateUntilPosition(
@@ -196,9 +213,14 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
     /**  Create a location change from the current state to current simulation time */
     public Train.TrainStateChange evolveStateUntilNow(Simulation sim) {
+        return evolveStateUntilTime(sim, sim.getTime());
+    }
+
+    /**  Create a location change from the current state to the given time */
+    public Train.TrainStateChange evolveStateUntilTime(Simulation sim, double time) {
         var locationChange = new Train.TrainStateChange(sim, trainSchedule.trainID, this);
 
-        while (this.time + 1.0 < sim.getTime())
+        while (this.time + 1.0 < time)
             step(locationChange, 1.0, Double.POSITIVE_INFINITY);
         step(locationChange, sim.getTime() - time, Double.POSITIVE_INFINITY);
 
@@ -206,7 +228,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     }
 
     public TimelineEvent simulatePhase(Train train, Simulation sim) throws SimulationError {
-        return currentPhaseState.simulate(sim, train, this);
+        return decisionMaker.simulatePhase(train, sim);
     }
 
     /** Add or update aspects constraint of a signal */
