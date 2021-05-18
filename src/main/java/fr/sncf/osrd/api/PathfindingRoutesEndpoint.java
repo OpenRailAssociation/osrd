@@ -61,6 +61,15 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             var stopWaypoints = new ArrayList<RouteLocation>();
             for (var stopWaypoint : reqWaypoints[i]) {
                 var edge = infra.trackGraph.trackSectionMap.get(stopWaypoint.trackSection);
+                if (edge == null)
+                    return new RsWithStatus(new RsText(
+                            String.format("Couldn't find track section '%s'", stopWaypoint.trackSection)), 400);
+                if (stopWaypoint.offset < 0 || stopWaypoint.offset > edge.length)
+                    return new RsWithStatus(new RsText(String.format(
+                            "'%f' is an invalid offset for the track section '%s'",
+                            stopWaypoint.offset,
+                            stopWaypoint.trackSection)),
+                            400);
                 edge.getRoutes(stopWaypoint.direction).findOverlappingIntervals(
                         routeFragment -> {
                             var trackOffset = stopWaypoint.offset - routeFragment.begin;
