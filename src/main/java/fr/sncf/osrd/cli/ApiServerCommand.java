@@ -8,13 +8,12 @@ import fr.sncf.osrd.api.PathfindingTracksEndpoint;
 import fr.sncf.osrd.api.SimulationEndpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.takes.facets.fallback.FbChain;
-import org.takes.facets.fallback.FbStatus;
-import org.takes.facets.fallback.TkFallback;
+import org.takes.facets.fallback.*;
 import org.takes.facets.fork.FkRegex;
 import org.takes.facets.fork.TkFork;
 import org.takes.http.Exit;
 import org.takes.http.FtBasic;
+import org.takes.rs.RsText;
 import org.takes.rs.RsWithStatus;
 import org.takes.tk.TkSlf4j;
 
@@ -67,7 +66,7 @@ public final class ApiServerCommand implements CliCommand {
             // the list of pages which should be displayed on error
             var fallbacks = new FbChain(
                     // if a page isn't found, just return a 404
-                    new FbStatus(404, new RsWithStatus(404))
+                    new FbStatus(404, new RsWithStatus(new RsText("Not found"), 404))
             );
 
             var serverConfig = new TkSlf4j(new TkFallback(routes, fallbacks));
