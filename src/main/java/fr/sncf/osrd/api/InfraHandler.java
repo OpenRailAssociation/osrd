@@ -24,10 +24,10 @@ public class InfraHandler {
 
     private Infra queryInfra(String infraId) throws IOException, InvalidInfraException {
         // create a request
-        var request = new Request.Builder()
-                .header("Authorization", authorizationToken)
-                .url(String.format("%srailjson/infra/%s/", baseUrl, infraId))
-                .build();
+        var builder = new Request.Builder();
+        if (authorizationToken != null)
+                builder = builder.header("Authorization", authorizationToken);
+        var request = builder.url(String.format("%srailjson/infra/%s/", baseUrl, infraId)).build();
 
         // use the client to send the request
         var response = client.newCall(request).execute();
