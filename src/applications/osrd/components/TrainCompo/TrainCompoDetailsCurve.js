@@ -2,6 +2,8 @@ import React from 'react';
 import { ResponsiveLine } from '@nivo/line';
 import PropTypes from 'prop-types';
 
+const COLORS = ['#0088ce', '#6e1e78', '#a1006b', '#cd0037', '#e05206', '#ffb612', '#82be00', '#d2e100', '#009aa6', '#333'];
+
 // Format GOC Curves to NIVO format
 const parseCourbeGOC = (label, color, data) => {
   const regex = /'/g;
@@ -22,11 +24,16 @@ const parseCourbeGOC = (label, color, data) => {
   };
 };
 
+// Choose cyclic color for curves
+const curveColor = (index) => {
+  const indexShort = index <= COLORS.length - 1 ? index : index % COLORS.length;
+  return COLORS[indexShort];
+};
+
 export default function TrainCompoDetailsCurve(props) {
   const { data } = props;
-  const colors = ['#0088ce', '#6e1e78', '#a1006b', '#cd0037', '#e05206', '#ffb612', '#82be00', '#d2e100', '#009aa6', '#fff', '#333', '#343a40'];
   const curves = data.map((curve, index) => parseCourbeGOC(
-    curve.profil_mode, colors[index], curve.referencegoc.courbeeffortvitesse,
+    curve.profil_mode, curveColor(index), curve.referencegoc.courbeeffortvitesse,
   ));
 
   return (
