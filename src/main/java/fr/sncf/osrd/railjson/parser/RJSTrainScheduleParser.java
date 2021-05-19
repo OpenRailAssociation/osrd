@@ -82,7 +82,8 @@ public class RJSTrainScheduleParser {
                 initialDirection,
                 initialRoute,
                 initialSpeed,
-                phases
+                phases,
+                null //TODO
         );
     }
 

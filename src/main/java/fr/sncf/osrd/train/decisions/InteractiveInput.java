@@ -64,7 +64,8 @@ public abstract class InteractiveInput extends TrainDecisionMaker {
             private final InteractiveInput input;
             private final Train train;
 
-            protected CheckInputEventPlanned(Simulation sim, double scheduledTime, InteractiveInput input, Train train) {
+            protected CheckInputEventPlanned(Simulation sim, double scheduledTime,
+                                             InteractiveInput input, Train train) {
                 super(sim, scheduledTime);
                 this.input = input;
                 this.train = train;
@@ -86,5 +87,5 @@ public abstract class InteractiveInput extends TrainDecisionMaker {
                 return String.format("CheckInputEventPlanned { input=%s }", input);
             }
         }
-    };
+    }
 }

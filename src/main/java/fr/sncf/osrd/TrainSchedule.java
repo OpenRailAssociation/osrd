@@ -2,6 +2,7 @@ package fr.sncf.osrd;
 
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.train.TrackSectionRange;
+import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -22,6 +23,8 @@ public final class TrainSchedule {
     public final ArrayList<Phase> phases;
     public final ArrayList<TrackSectionRange> fullPath;
 
+    public final TrainDecisionMaker trainDecisionMaker;
+
     /** Create a new train schedule */
     public TrainSchedule(
             String trainID,
@@ -30,7 +33,8 @@ public final class TrainSchedule {
             TrackSectionLocation initialLocation,
             EdgeDirection initialDirection, Route initialRoute,
             double initialSpeed,
-            ArrayList<Phase> phases
+            ArrayList<Phase> phases,
+            TrainDecisionMaker trainDecisionMaker
     ) {
         this.trainID = trainID;
         this.rollingStock = rollingStock;
@@ -43,6 +47,10 @@ public final class TrainSchedule {
         this.fullPath = new ArrayList<>();
         for (var phase : phases)
             phase.forEachPathSection(fullPath::add);
+        if (trainDecisionMaker == null)
+            this.trainDecisionMaker = new TrainDecisionMaker.DefaultTrainDecisionMaker();
+        else
+            this.trainDecisionMaker = trainDecisionMaker;
     }
 
     /** Find location on track given a distance from the start.

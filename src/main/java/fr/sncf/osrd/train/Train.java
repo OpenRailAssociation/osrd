@@ -9,6 +9,7 @@ import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.train.decisions.KeyboardInput;
+import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.CryoList;
 import fr.sncf.osrd.utils.DeepComparable;
@@ -53,7 +54,6 @@ public class Train {
 
         var location = new TrainPositionTracker(sim.infra, sim.infraState, initialPosition);
         var phaseState = schedule.phases.get(0).getState();
-        var input = new KeyboardInput(2);
         var initialState = new TrainState(
                 sim.getTime(),
                 location,
@@ -63,8 +63,7 @@ public class Train {
                 schedule,
                 0,
                 phaseState,
-                new ArrayDeque<>(),
-                input
+                new ArrayDeque<>()
         );
 
         ActivateRoute.trainCreation(sim, initialState);

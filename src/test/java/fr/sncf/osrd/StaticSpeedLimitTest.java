@@ -110,7 +110,8 @@ public class StaticSpeedLimitTest {
                 EdgeDirection.START_TO_STOP,
                 route,
                 0,
-                phases
+                phases,
+                null
         );
         TrainCreatedEvent.plan(sim, schedule);
 

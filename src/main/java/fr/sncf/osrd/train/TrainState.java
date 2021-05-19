@@ -31,7 +31,6 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     public TrainStatus status;
 
     public final transient TrainSchedule trainSchedule;
-    public final transient TrainDecisionMaker decisionMaker;
     public final int currentPhaseIndex;
     public final PhaseState currentPhaseState;
 
@@ -75,20 +74,18 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             TrainSchedule trainSchedule,
             int currentPhaseIndex,
             PhaseState currentPhaseState,
-            ArrayDeque<Interaction> actionPointsUnderTrain,
-            TrainDecisionMaker decisionMaker
+            ArrayDeque<Interaction> actionPointsUnderTrain
     ) {
         this.time = time;
         this.location = location;
         this.speed = speed;
         this.status = status;
-        this.decisionMaker = decisionMaker;
         this.speedControllers = speedControllers;
         this.trainSchedule = trainSchedule;
         this.currentPhaseIndex = currentPhaseIndex;
         this.currentPhaseState = currentPhaseState;
         this.actionPointsUnderTrain = actionPointsUnderTrain;
-        decisionMaker.setTrainState(this);
+        trainSchedule.trainDecisionMaker.setTrainState(this);
     }
 
     /** Create a clone */
@@ -103,8 +100,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 trainSchedule,
                 currentPhaseIndex,
                 currentPhaseState.clone(),
-                new ArrayDeque<>(actionPointsUnderTrain),
-                decisionMaker
+                new ArrayDeque<>(actionPointsUnderTrain)
         );
     }
 
@@ -122,8 +118,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                     trainSchedule,
                     currentPhaseIndex,
                     currentPhaseState,
-                    new ArrayDeque<>(actionPointsUnderTrain),
-                    decisionMaker
+                    new ArrayDeque<>(actionPointsUnderTrain)
                     );
 
         var nextPhaseState = trainSchedule.phases.get(nextPhase).getState();
@@ -136,8 +131,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 trainSchedule,
                 nextPhase,
                 nextPhaseState,
-                new ArrayDeque<>(actionPointsUnderTrain),
-                decisionMaker
+                new ArrayDeque<>(actionPointsUnderTrain)
         );
     }
 
@@ -153,7 +147,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 speed,
                 location.maxTrainGrade());
 
-        Action action = decisionMaker.getNextAction(locationChange, integrator);
+        Action action = trainSchedule.trainDecisionMaker.getNextAction(locationChange, integrator);
 
         logger.trace("train took action {}", action);
         assert action != null;
@@ -228,7 +222,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     }
 
     public TimelineEvent simulatePhase(Train train, Simulation sim) throws SimulationError {
-        return decisionMaker.simulatePhase(train, sim);
+        return trainSchedule.trainDecisionMaker.simulatePhase(train, sim);
     }
 
     /** Add or update aspects constraint of a signal */
