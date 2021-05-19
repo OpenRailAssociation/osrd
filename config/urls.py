@@ -19,6 +19,7 @@ def prefix_path(path):
 service_urlpatterns = [
     path('', include('osrd.urls')),
     path('', include('osrd_infra.urls')),
+    path('', include('matr.urls')),
 ]
 
 urlpatterns = [
