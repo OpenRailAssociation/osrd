@@ -21,9 +21,7 @@ public class KeyboardInput extends InteractiveInput implements KeyListener {
 
     public KeyboardInput(double dt) {
         super(dt);
-        if (DebugViewer.instance == null)
-            throw new RuntimeException("Can't use KeyboardInput without a DebugViewer");
-        DebugViewer.instance.addKeyListener(this);
+        DebugViewer.keyListenersToAdd.add(this);
     }
 
     @Override

@@ -48,9 +48,8 @@ public final class TrainSchedule {
         for (var phase : phases)
             phase.forEachPathSection(fullPath::add);
         if (trainDecisionMaker == null)
-            this.trainDecisionMaker = new TrainDecisionMaker.DefaultTrainDecisionMaker();
-        else
-            this.trainDecisionMaker = trainDecisionMaker;
+            trainDecisionMaker = new TrainDecisionMaker.DefaultTrainDecisionMaker();
+        this.trainDecisionMaker = trainDecisionMaker;
     }
 
     /** Find location on track given a distance from the start.

@@ -11,6 +11,8 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.train.decisions.KeyboardInput;
+import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.train.phases.StopPhase;
@@ -83,8 +85,18 @@ public class RJSTrainScheduleParser {
                 initialRoute,
                 initialSpeed,
                 phases,
-                null //TODO
+                parseDecisionMaker(rjsTrainSchedule.trainControlMethod)
         );
+    }
+
+    private static TrainDecisionMaker parseDecisionMaker(String decisionMakerType) throws InvalidSchedule {
+        if (decisionMakerType == null || decisionMakerType.equals("default")) {
+            return new TrainDecisionMaker.DefaultTrainDecisionMaker();
+        } else if (decisionMakerType.equals("keyboard")) {
+            return new KeyboardInput(2);
+        } else {
+            throw new InvalidSchedule(String.format("Unknown decision maker type: %s", decisionMakerType));
+        }
     }
 
     private static Phase parsePhase(

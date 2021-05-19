@@ -33,6 +33,7 @@ import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +43,7 @@ import java.util.Map;
 public class DebugViewer extends ChangeConsumer {
     static final Logger logger = LoggerFactory.getLogger(DebugViewer.class);
 
-    public static DebugViewer instance = null;
+    public static ArrayList<KeyListener> keyListenersToAdd = new ArrayList<>();
 
     private final Infra infra;
     private final boolean realTime;
@@ -53,8 +54,6 @@ public class DebugViewer extends ChangeConsumer {
     private final Map<String, TrainData> trains = new HashMap<>();
     private final Map<Signal, Sprite> signalSprites = new HashMap<>();
     private double currentTime = Double.NaN;
-
-    private JFrame frame;
 
     static final class TrainData {
         final String name;
@@ -93,14 +92,6 @@ public class DebugViewer extends ChangeConsumer {
         this.stepPause = stepPause;
         this.spriteManager = spriteManager;
         this.graph = graph;
-
-        assert instance == null;
-        instance = this;
-    }
-
-    /** Adds a key listener to the current frame */
-    public void addKeyListener(KeyListener keyListener) {
-        frame.addKeyListener(keyListener);
     }
 
     /**
@@ -187,7 +178,7 @@ public class DebugViewer extends ChangeConsumer {
             }
         });
 
-        frame = new JFrame("OSRD");
+        var frame = new JFrame("OSRD");
         frame.setLayout(new BorderLayout());
         frame.setSize(800, 600);
         frame.setLocationRelativeTo(null);
@@ -244,6 +235,7 @@ public class DebugViewer extends ChangeConsumer {
 
         view.addMouseMotionListener(dragHandler);
         view.addMouseListener(dragHandler);
+        keyListenersToAdd.forEach(frame::addKeyListener);
 
         frame.setVisible(true);
     }
