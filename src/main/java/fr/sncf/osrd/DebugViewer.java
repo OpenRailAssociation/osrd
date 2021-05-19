@@ -43,7 +43,7 @@ import java.util.Map;
 public class DebugViewer extends ChangeConsumer {
     static final Logger logger = LoggerFactory.getLogger(DebugViewer.class);
 
-    public static ArrayList<KeyListener> keyListenersToAdd = new ArrayList<>();
+    private static final ArrayList<KeyListener> keyListenersToAdd = new ArrayList<>();
 
     private final Infra infra;
     private final boolean realTime;
@@ -69,6 +69,10 @@ public class DebugViewer extends ChangeConsumer {
             this.spriteHead = spriteHead;
             this.spriteTail = spriteTail;
         }
+    }
+
+    public static void addKeyListener(KeyListener keyListener) {
+        keyListenersToAdd.add(keyListener);
     }
 
     private static String encodeSpriteId(String id) {

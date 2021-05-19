@@ -21,7 +21,7 @@ public class KeyboardInput extends InteractiveInput implements KeyListener {
 
     public KeyboardInput(double dt) {
         super(dt);
-        DebugViewer.keyListenersToAdd.add(this);
+        DebugViewer.addKeyListener(this);
     }
 
     @Override
