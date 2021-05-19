@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     # osrd apps
     'osrd.apps.MainServiceAppConfig',
     'osrd_infra.apps.OsrdInfraConfig',
+    'matr.apps.MatrConfig',
 ]
 
 MIDDLEWARE = [
