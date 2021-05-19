@@ -208,6 +208,24 @@ class TrackSectionLinkComponent(Component):
 
     class ComponentMeta:
         name = "track_section_link"
+        unique = True
+
+
+class SwitchComponent(Component):
+    left = models.ForeignKey(
+        "TrackSectionLinkEntity",
+        on_delete=models.CASCADE,
+        related_name="left_switch",
+    )
+    right = models.ForeignKey(
+        "TrackSectionLinkEntity",
+        on_delete=models.CASCADE,
+        related_name="right_switch",
+    )
+
+    class ComponentMeta:
+        name = "switch"
+        unique = True
 
 
 class KilometricPointComponent(Component):
@@ -348,7 +366,7 @@ class SwitchEntity(Entity):
     components = [
         IdentifierComponent,
         GeoPointLocationComponent,
-        TrackSectionLinkComponent,
+        SwitchComponent,
     ]
 
 

@@ -176,7 +176,7 @@ def serialize_track_section(track_section_entity, **cached_entities):
 
 
 def serialize_track_section_link(track_section_link_entity):
-    track_section_link = track_section_link_entity.track_section_link_set.get()
+    track_section_link = track_section_link_entity.track_section_link
     return {
         "id": f"track_section_link.{track_section_link_entity.entity_id}",
         "begin": serialize_endpoint(
@@ -190,14 +190,12 @@ def serialize_track_section_link(track_section_link_entity):
 
 
 def serialize_switch(switch_entity):
-    links = list(switch_entity.track_section_link_set.all())
-
-    # for now, a switch can only have two links
-    assert len(links) == 2
+    left_link = switch_entity.switch.left.track_section_link
+    right_link = switch_entity.switch.right.track_section_link
 
     # amongst these two links, there has to be a single common base and no more
     endpoints = []
-    for link in links:
+    for link in (left_link, right_link):
         endpoints.append((link.begin_endpoint, link.begin_track_section_id))
         endpoints.append((link.end_endpoint, link.end_track_section_id))
     endpoint_counter = Counter(endpoints)
