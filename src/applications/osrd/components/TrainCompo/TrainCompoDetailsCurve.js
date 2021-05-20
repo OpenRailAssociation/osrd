@@ -26,7 +26,7 @@ const parseCourbeGOC = (label, color, data) => {
 
 // Choose cyclic color for curves
 const curveColor = (index) => {
-  const indexShort = index <= COLORS.length - 1 ? index : index % COLORS.length;
+  const indexShort = index % COLORS.length;
   return COLORS[indexShort];
 };
 
@@ -85,5 +85,5 @@ export default function TrainCompoDetailsCurve(props) {
 }
 
 TrainCompoDetailsCurve.propTypes = {
-  data: PropTypes.string.isRequired,
+  data: PropTypes.array.isRequired,
 };
