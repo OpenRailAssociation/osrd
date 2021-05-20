@@ -1,10 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useEffect } from 'react';
 import Loader from 'common/Loader';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import * as allTrainCompoActions from 'reducers/traincompo';
-import { withTranslation } from 'react-i18next';
+import { useSelector, useDispatch } from 'react-redux';
+import { getBaseGoc, getMateriel } from 'reducers/traincompo';
+import { useTranslation } from 'react-i18next';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import TrainCompoCard from 'applications/osrd/components/TrainCompo/TrainCompoCard';
@@ -15,61 +13,31 @@ import 'applications/osrd/components/TrainCompo/TrainCompo.scss';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
-class TrainCompo extends React.Component {
-  static propTypes = {
-    t: PropTypes.func.isRequired,
-    traincompo: PropTypes.object.isRequired,
-    traincompoActions: PropTypes.object.isRequired,
-  }
+export default function TrainCompo() {
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const traincompo = useSelector((state) => state.traincompo);
 
-  constructor(props) {
-    super(props);
-    const { traincompo } = this.props;
+  const [resultContent, setResultContent] = useState(traincompo.materiel.results);
+  const [detailsContent, setDetailsContent] = useState(undefined);
+  const [filters, setFilters] = useState({
+    text: '',
+    thor: true,
+    cim: true,
+    elec: true,
+    diesel: true,
+    sort: true, // true for ASC, false for DESC
+  });
+  const [isFiltering, setIsFiltering] = useState(false);
 
-    this.state = {
-      resultContent: traincompo.materiel.results,
-      detailsContent: undefined,
-      filters: {
-        text: '',
-        thor: true,
-        cim: true,
-        elec: true,
-        diesel: true,
-        sort: true, // true for ASC, false for DESC
-      },
-      isFiltering: false,
-    };
-  }
+  const searchMateriel = (e) => {
+    setFilters({ ...filters, text: e.target.value.toLowerCase() });
+    setIsFiltering(true);
+  };
 
-  componentDidMount = async () => {
-    const { traincompo, traincompoActions } = this.props;
-    if (traincompo.materiel.results === undefined) {
-      const data = await traincompoActions.getMateriel();
-      this.setState({ resultContent: data.results });
-    }
-  }
-
-  componentDidUpdate = (prevProps, prevState) => {
-    const { filters } = this.state;
-    if (filters !== prevState.filters) {
-      this.updateSearch();
-    }
-  }
-
-  searchMateriel = (e) => {
-    const { filters } = this.state;
-    this.setState({
-      filters: { ...filters, text: e.target.value.toLowerCase() },
-      isFiltering: true,
-    });
-  }
-
-  updateSearch = () => {
-    const { traincompo } = this.props;
-    const { filters } = this.state;
-
+  const updateSearch = () => {
     // Text filter
-    let resultContent = traincompo.materiel.results.filter(
+    let resultContentNew = traincompo.materiel.results.filter(
       (el) => el.enginref.toLowerCase().includes(filters.text)
         || el.materielanalyse.toLowerCase().includes(filters.text)
         || el.codeengin.toLowerCase().includes(filters.text),
@@ -77,156 +45,151 @@ class TrainCompo extends React.Component {
 
     // checkbox filters
     if (!filters.thor) {
-      resultContent = resultContent.filter((el) => el.source !== 'THOR');
+      resultContentNew = resultContentNew.filter((el) => el.source !== 'THOR');
     }
     if (!filters.cim) {
-      resultContent = resultContent.filter((el) => el.source !== 'CIM');
+      resultContentNew = resultContentNew.filter((el) => el.source !== 'CIM');
     }
     if (!filters.elec) {
-      resultContent = resultContent.filter((el) => el.modetraction !== 'E');
+      resultContentNew = resultContentNew.filter((el) => el.modetraction !== 'E');
     }
     if (!filters.diesel) {
-      resultContent = resultContent.filter((el) => el.modetraction !== 'D');
+      resultContentNew = resultContentNew.filter((el) => el.modetraction !== 'D');
     }
 
-    resultContent = (filters.sort)
-      ? resultContent.sort((a, b) => a.enginref.localeCompare(b.enginref))
-      : resultContent.sort((a, b) => b.enginref.localeCompare(a.enginref));
+    resultContentNew = (filters.sort)
+      ? resultContentNew.sort((a, b) => a.enginref.localeCompare(b.enginref))
+      : resultContentNew.sort((a, b) => b.enginref.localeCompare(a.enginref));
 
     setTimeout(() => {
-      this.setState({
-        resultContent,
-        isFiltering: false,
-      });
+      setResultContent(resultContentNew);
+      setIsFiltering(false);
     }, 0);
-  }
+  };
 
-  displayMateriel = (result) => {
-    const { detailsContent } = this.state;
+  const displayDetails = async (codenbengin) => {
+    const detailsContentNew = await dispatch(getBaseGoc(codenbengin));
+    setDetailsContent(detailsContentNew);
+  };
+
+  const displayMateriel = (result) => {
     const active = (detailsContent !== undefined
       && detailsContent.codenbengin === result.codenbengin);
     return (
       <TrainCompoCard
         data={result}
-        displayDetails={this.displayDetails}
+        displayDetails={displayDetails}
         active={active}
         key={result.codenbengin}
       />
     );
-  }
+  };
 
-  displayDetails = async (codenbengin) => {
-    const { traincompoActions } = this.props;
-    const detailsContent = await traincompoActions.getBaseGoc(codenbengin);
-    this.setState({ detailsContent });
-  }
+  const toggleFilter = (e) => {
+    setFilters({ ...filters, [e.target.name]: !filters[e.target.name] });
+    setIsFiltering(true);
+  };
 
-  toggleFilter = (e) => {
-    const { filters } = this.state;
-    this.setState({
-      filters: { ...filters, [e.target.name]: !filters[e.target.name] },
-      isFiltering: true,
-    });
-  }
+  const optionsSort = [
+    { id: 'asc', name: t('common.asc') },
+    { id: 'dsc', name: t('common.dsc') },
+  ];
 
-  render() {
-    const { resultContent, detailsContent, isFiltering } = this.state;
-    const { t } = this.props;
+  const getAllMateriel = async () => {
+    if (traincompo.materiel.results === undefined) {
+      const data = await dispatch(getMateriel());
+      setResultContent(data.results);
+    }
+  };
 
-    const optionsSort = [
-      { id: 'asc', name: t('common.asc') },
-      { id: 'dsc', name: t('common.dsc') },
-    ];
+  useEffect(() => {
+    getAllMateriel();
+  }, []);
 
-    return (
-      <>
-        <div className="row m-0 h-100">
-          <div className="col-lg-5 h-100">
-            <div className="traincompo-search p-2">
-              <div className="traincompo-search-filters">
-                <div className="row">
-                  <div className="col-md-6 mb-3">
-                    <InputSNCF
-                      id="searchfilter"
-                      label={t('common.filter')}
-                      type="text"
-                      onChange={this.searchMateriel}
-                      placeholder={t('common.search')}
-                      noMargin
-                      sm
-                    />
-                  </div>
-                  <div className="col-md-6 mb-3 select-osrd-sm">
-                    <SelectSNCF
-                      id="sortfilter"
-                      name="sort"
-                      title={t('common.sort')}
-                      options={optionsSort}
-                      selectedValue={{ id: 'asc', name: t('common.asc') }}
-                      onChange={this.toggleFilter}
-                    />
-                  </div>
+  useEffect(() => {
+    if (traincompo.materiel.results !== undefined) {
+      updateSearch();
+    }
+  }, [filters]);
+
+  return (
+    <>
+      <div className="row m-0 h-100">
+        <div className="col-lg-5 h-100">
+          <div className="traincompo-search p-2">
+            <div className="traincompo-search-filters">
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <InputSNCF
+                    id="searchfilter"
+                    label={t('common.filter')}
+                    type="text"
+                    onChange={searchMateriel}
+                    placeholder={t('common.search')}
+                    noMargin
+                    sm
+                  />
                 </div>
-                <div className="row">
-                  <div className="col-6">
-                    <CheckboxRadioSNCF onChange={this.toggleFilter} name="thor" id="thor" label="Source THOR" type="checkbox" checked />
-                    <CheckboxRadioSNCF onChange={this.toggleFilter} name="cim" id="cim" label="Source CIM" type="checkbox" checked />
-                  </div>
-                  <div className="col-6">
-                    <CheckboxRadioSNCF
-                      onChange={this.toggleFilter}
-                      name="elec"
-                      id="elec"
-                      label={(
-                        <>
-                          <span className="text-primary mr-1"><BsLightningFill /></span>
-                          Électrique
-                        </>
-                      )}
-                      type="checkbox"
-                      checked
-                    />
-                    <CheckboxRadioSNCF
-                      onChange={this.toggleFilter}
-                      name="diesel"
-                      id="diesel"
-                      label={(
-                        <>
-                          <span className="text-pink mr-1"><MdLocalGasStation /></span>
-                          Diesel
-                        </>
-                      )}
-                      type="checkbox"
-                      checked
-                    />
-                  </div>
-                </div>
-                <div className="text-center w-100 mt-3">
-                  {resultContent !== undefined && resultContent.length > 0 ? `${resultContent.length} ${t('osrd.trainCompo.resultsFound')}` : t('osrd.trainCompo.noResultFound')}
+                <div className="col-md-6 mb-3 select-osrd-sm">
+                  <SelectSNCF
+                    id="sortfilter"
+                    name="sort"
+                    title={t('common.sort')}
+                    options={optionsSort}
+                    selectedValue={{ id: 'asc', name: t('common.asc') }}
+                    onChange={toggleFilter}
+                  />
                 </div>
               </div>
-              <div className="traincompo-search-list">
-                {resultContent !== undefined && !isFiltering
-                  ? resultContent.map((result) => this.displayMateriel(result))
-                  : <Loader msg={t('osrd.trainCompo.waitingLoader')} /> }
+              <div className="row">
+                <div className="col-6">
+                  <CheckboxRadioSNCF onChange={toggleFilter} name="thor" id="thor" label="Source THOR" type="checkbox" checked />
+                  <CheckboxRadioSNCF onChange={toggleFilter} name="cim" id="cim" label="Source CIM" type="checkbox" checked />
+                </div>
+                <div className="col-6">
+                  <CheckboxRadioSNCF
+                    onChange={toggleFilter}
+                    name="elec"
+                    id="elec"
+                    label={(
+                      <>
+                        <span className="text-primary mr-1"><BsLightningFill /></span>
+                        Électrique
+                      </>
+                    )}
+                    type="checkbox"
+                    checked
+                  />
+                  <CheckboxRadioSNCF
+                    onChange={toggleFilter}
+                    name="diesel"
+                    id="diesel"
+                    label={(
+                      <>
+                        <span className="text-pink mr-1"><MdLocalGasStation /></span>
+                        Diesel
+                      </>
+                    )}
+                    type="checkbox"
+                    checked
+                  />
+                </div>
+              </div>
+              <div className="text-center w-100 mt-3">
+                {resultContent !== undefined && resultContent.length > 0 ? `${resultContent.length} ${t('osrd.trainCompo.resultsFound')}` : t('osrd.trainCompo.noResultFound')}
               </div>
             </div>
-          </div>
-          <div className="col-lg-7 h-100">
-            {detailsContent !== undefined ? <TrainCompoDetails data={detailsContent} /> : null}
+            <div className="traincompo-search-list">
+              {resultContent !== undefined && !isFiltering
+                ? resultContent.map((result) => displayMateriel(result))
+                : <Loader msg={t('osrd.trainCompo.waitingLoader')} /> }
+            </div>
           </div>
         </div>
-      </>
-    );
-  }
+        <div className="col-lg-7 h-100">
+          {detailsContent !== undefined ? <TrainCompoDetails data={detailsContent} /> : null}
+        </div>
+      </div>
+    </>
+  );
 }
-
-const mapStateToProps = (state) => ({
-  traincompo: state.traincompo,
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  traincompoActions: bindActionCreators(allTrainCompoActions, dispatch),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(withTranslation()(TrainCompo));
