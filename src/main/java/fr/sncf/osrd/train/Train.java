@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
-import java.util.List;
+import java.util.Set;
 
 public class Train {
     static final Logger logger = LoggerFactory.getLogger(Train.class);
@@ -38,7 +38,7 @@ public class Train {
     public static Train create(
             Simulation sim,
             TrainSchedule schedule,
-            List<SpeedController> controllers
+            Set<SpeedController> controllers
     ) throws SimulationError {
         // the train starts out as a point like object on the beginning of the route
         var initialPosition = new ArrayDeque<TrackSectionRange>();
