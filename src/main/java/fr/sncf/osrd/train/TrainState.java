@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     static final Logger logger = LoggerFactory.getLogger(TrainState.class);
@@ -215,8 +217,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         return locationChange;
     }
 
-    private SpeedController[] getActiveSpeedControllers() {
-        var activeControllers = new ArrayList<SpeedController>();
+    private Set<SpeedController> getActiveSpeedControllers() {
+        var activeControllers = new HashSet<SpeedController>();
         // Add train speed controllers
         for (var controller : speedControllers.desiredSpeedControllers) {
             if (!controller.isActive(this))
@@ -229,7 +231,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 continue;
             activeControllers.add(controller);
         }
-        return activeControllers.toArray(new SpeedController[0]);
+        return activeControllers;
     }
 
     private Action driverDecision(SpeedDirective directive, TrainPhysicsIntegrator integrator) {
