@@ -15,6 +15,7 @@ import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
+import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
@@ -43,6 +44,7 @@ public class SimulationEndpoint implements Take {
 
     public static final JsonAdapter<SimulationRequest> adapterRequest = new Moshi
             .Builder()
+            .add(ID.Adapter.FACTORY)
             .add(RJSRollingResistance.adapter)
             .add(RJSTrainPhase.adapter)
             .build()
