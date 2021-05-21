@@ -190,7 +190,8 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 }
                 if (!waypointsToVisit.contains(currentPoint)) {
                     // we didn't find a pair
-                    var errorMsg = "Route: can't find a waypoint list, are the tvd sections connected?";
+                    var errorMsg = "Route: can't find a waypoint list, are the tvd sections connected "
+                            + "and the switches set to the right positions?";
                     throw new InvalidInfraException(errorMsg);
                 }
             }
