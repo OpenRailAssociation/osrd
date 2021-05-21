@@ -4,22 +4,18 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.speedcontroller.generators.MaxSpeedGenerator;
-import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
+import fr.sncf.osrd.speedcontroller.SpeedControllerSet;
 import fr.sncf.osrd.train.Train;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashSet;
-import java.util.Set;
 
 public class TrainCreatedEvent extends TimelineEvent {
     static final Logger logger = LoggerFactory.getLogger(TrainCreatedEvent.class);
 
     public final TrainSchedule schedule;
-    public final Set<SpeedController> controllers;
+    public final SpeedControllerSet controllers;
 
-    private TrainCreatedEvent(TimelineEventId eventId, TrainSchedule schedule, Set<SpeedController> controllers) {
+    private TrainCreatedEvent(TimelineEventId eventId, TrainSchedule schedule, SpeedControllerSet controllers) {
         super(eventId);
         this.schedule = schedule;
         this.controllers = controllers;
@@ -48,7 +44,7 @@ public class TrainCreatedEvent extends TimelineEvent {
     }
 
     /** Plan a TrainCreatedEvent creating a change that schedule it and return the created train */
-    public static TrainCreatedEvent plan(Simulation sim, TrainSchedule schedule, Set<SpeedController> controllers) {
+    public static TrainCreatedEvent plan(Simulation sim, TrainSchedule schedule, SpeedControllerSet controllers) {
         var change = new TrainCreationPlanned(sim, schedule, controllers);
         var event = change.apply(sim);
         sim.publishChange(change);
@@ -57,10 +53,10 @@ public class TrainCreatedEvent extends TimelineEvent {
 
     public static class TrainCreationPlanned extends Simulation.TimelineEventCreated {
         public final TrainSchedule schedule;
-        public final Set<SpeedController> controllers;
+        public final SpeedControllerSet controllers;
 
         /** Plans the creation of some train */
-        private TrainCreationPlanned(Simulation sim, TrainSchedule schedule, Set<SpeedController> controllers) {
+        private TrainCreationPlanned(Simulation sim, TrainSchedule schedule, SpeedControllerSet controllers) {
             super(sim, schedule.departureTime);
             this.schedule = schedule;
             this.controllers = controllers;
@@ -86,16 +82,10 @@ public class TrainCreatedEvent extends TimelineEvent {
     /** Plans to start a train from a given schedule */
     public static void plan(Simulation sim, TrainSchedule schedule) {
 
-        // TODO
-        var generators = new SpeedControllerGenerator[]{new MaxSpeedGenerator()};
+        // TODO read everything from config files
+        var controllers = new SpeedControllerSet(schedule);
 
-        var controllers = new HashSet<SpeedController>();
-        for (var gen : generators)
-            controllers.addAll(gen.generate(schedule));
-
-        logger.trace("created initial speed controllers:");
-        for (var controller : controllers)
-            logger.trace("{}", controller);
+        logger.trace(String.format("created initial speed controllers: %s", controllers));
 
         TrainCreatedEvent.plan(sim, schedule, controllers);
     }
