@@ -8,8 +8,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class SpeedControllerSet {
-    private final Set<SpeedController> maxSpeedControllers;
-    private final Set<SpeedController> desiredSpeedControllers;
+    public final Set<SpeedController> maxSpeedControllers;
+    public final Set<SpeedController> desiredSpeedControllers;
 
     public SpeedControllerSet(TrainSchedule schedule) {
         this(schedule, new HashSet<>());
@@ -22,11 +22,25 @@ public class SpeedControllerSet {
             desiredSpeedControllers.addAll(gen.generate(schedule));
     }
 
-    public SpeedDirective getMaxSpeedDirective(double position) {
-        return SpeedController.getDirective(maxSpeedControllers.toArray(SpeedController[]::new), position);
+    public SpeedControllerSet(SpeedControllerSet other) {
+        this.maxSpeedControllers = new HashSet<>(other.maxSpeedControllers);
+        this.desiredSpeedControllers = new HashSet<>(other.desiredSpeedControllers);
     }
 
-    public SpeedDirective getDesiredSpeedDirective(double position) {
-        return SpeedController.getDirective(desiredSpeedControllers.toArray(SpeedController[]::new), position);
+    @Override
+    public String toString() {
+        var res = new StringBuilder();
+        res.append("max speed controllers: {");
+        for (var controller: maxSpeedControllers) {
+            res.append(controller);
+            res.append(", ");
+        }
+        res.append("}, desired speed controllers: {");
+        for (var controller: desiredSpeedControllers) {
+            res.append(controller);
+            res.append(", ");
+        }
+        res.append("}");
+        return res.toString();
     }
 }

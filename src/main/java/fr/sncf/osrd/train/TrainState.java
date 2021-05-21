@@ -6,6 +6,7 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.speedcontroller.SpeedControllerSet;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.train.phases.PhaseState;
@@ -16,8 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     static final Logger logger = LoggerFactory.getLogger(TrainState.class);
@@ -40,7 +39,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     // the simulated location
     public final TrainPositionTracker location;
 
-    public final transient Set<SpeedController> speedControllers;
+    public final transient SpeedControllerSet speedControllers;
 
     public final ArrayDeque<Interaction> actionPointsUnderTrain;
 
@@ -71,7 +70,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             TrainPositionTracker location,
             double speed,
             TrainStatus status,
-            Set<SpeedController> speedControllers,
+            SpeedControllerSet speedControllers,
             TrainSchedule trainSchedule,
             int currentPhaseIndex,
             PhaseState currentPhaseState,
@@ -96,7 +95,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 location.clone(),
                 speed,
                 status,
-                new HashSet<>(speedControllers),
+                new SpeedControllerSet(speedControllers),
                 trainSchedule,
                 currentPhaseIndex,
                 currentPhaseState.clone(),
@@ -114,7 +113,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                     location.clone(),
                     speed,
                     TrainStatus.REACHED_DESTINATION,
-                    new HashSet<>(speedControllers),
+                    new SpeedControllerSet(speedControllers),
                     trainSchedule,
                     currentPhaseIndex,
                     currentPhaseState,
@@ -127,7 +126,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 location.clone(),
                 speed,
                 status,
-                new HashSet<>(speedControllers),
+                new SpeedControllerSet(speedControllers),
                 trainSchedule,
                 nextPhase,
                 nextPhaseState,
@@ -219,7 +218,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     private SpeedController[] getActiveSpeedControllers() {
         var activeControllers = new ArrayList<SpeedController>();
         // Add train speed controllers
-        for (var controller : speedControllers) {
+        for (var controller : speedControllers.desiredSpeedControllers) {
             if (!controller.isActive(this))
                 continue;
             activeControllers.add(controller);

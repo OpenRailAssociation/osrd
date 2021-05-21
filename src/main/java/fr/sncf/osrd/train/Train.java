@@ -6,6 +6,7 @@ import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.speedcontroller.SpeedControllerSet;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
@@ -16,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
-import java.util.Set;
 
 public class Train {
     static final Logger logger = LoggerFactory.getLogger(Train.class);
@@ -38,7 +38,7 @@ public class Train {
     public static Train create(
             Simulation sim,
             TrainSchedule schedule,
-            Set<SpeedController> controllers
+            SpeedControllerSet controllers
     ) throws SimulationError {
         // the train starts out as a point like object on the beginning of the route
         var initialPosition = new ArrayDeque<TrackSectionRange>();
