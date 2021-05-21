@@ -81,6 +81,9 @@ const Signals = (props) => {
           ['==', ['get', 'S_valeur'], `${prefix}SIGNAUX A DROITE`], `${prefix}SIG A DROITE`,
           '',
         ];
+      case 'TECS':
+      case 'TSCS':
+        return ['concat', prefix, type, ' ', ['get', 'LP_positionLocalisation']];
       default:
         return `${prefix}${type}`;
     }
