@@ -1,12 +1,18 @@
 package fr.sncf.osrd.infra;
 
+import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.simulation.ChangeOperationalPoint;
+import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.train.InteractionType;
+import fr.sncf.osrd.train.InteractionTypeSet;
+import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.utils.IntervalNode;
 
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class OperationalPoint {
+public class OperationalPoint implements ActionPoint {
     public final String id;
     public final transient ArrayList<TrackSection> refs = new ArrayList<>();
 
@@ -24,6 +30,22 @@ public class OperationalPoint {
         var ref = new Ref(begin, end, this);
         this.refs.add(section);
         section.operationalPoints.insert(ref);
+    }
+
+    @Override
+    public InteractionTypeSet getInteractionsType() {
+        return new InteractionTypeSet(new InteractionType[]{InteractionType.HEAD});
+    }
+
+    @Override
+    public double getActionDistance() {
+        return 0;
+    }
+
+    @Override
+    public void interact(Simulation sim, Train train, InteractionType interactionType) {
+        var change = new ChangeOperationalPoint(sim, train, this);
+        sim.publishChange(change);
     }
 
 
