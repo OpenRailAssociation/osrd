@@ -83,7 +83,7 @@ public class TrainCreatedEvent extends TimelineEvent {
     public static void plan(Simulation sim, TrainSchedule schedule) {
 
         // TODO read everything from config files
-        var controllers = new SpeedControllerSet(schedule);
+        var controllers = new SpeedControllerSet(sim, schedule);
 
         logger.trace(String.format("created initial speed controllers: %s", controllers));
 

@@ -5,6 +5,8 @@ import fr.sncf.osrd.simulation.ChangeSerializer.SerializableDouble;
 import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.utils.DeepComparable;
 
+import java.util.Set;
+
 public abstract class SpeedController implements DeepComparable<SpeedController> {
     @SerializableDouble
     public final double beginPosition;
@@ -17,9 +19,13 @@ public abstract class SpeedController implements DeepComparable<SpeedController>
         this.endPosition = endPosition;
     }
 
-    public boolean isActive(TrainState state) {
-        var position = state.location.getPathPosition();
+    public boolean isActive(TrainPositionTracker positionTracker) {
+        var position = positionTracker.getPathPosition();
         return (position >= beginPosition && position < endPosition);
+    }
+
+    public boolean isActive(TrainState state) {
+        return isActive(state.location);
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST", "FE_FLOATING_POINT_EQUALITY"})
@@ -41,7 +47,7 @@ public abstract class SpeedController implements DeepComparable<SpeedController>
      * @param pathPosition a position on the train's path
      * @return the merged speed directive
      */
-    public static SpeedDirective getDirective(SpeedController[] controllers, double pathPosition) {
+    public static SpeedDirective getDirective(Set<SpeedController> controllers, double pathPosition) {
         var profile = SpeedDirective.getMax();
         for (var controller : controllers)
             profile.mergeWith(controller.getDirective(pathPosition));
