@@ -14,7 +14,9 @@ import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import okio.Okio;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.function.BiConsumer;
@@ -145,10 +147,7 @@ public class Helpers {
     /** Generates the defaults infra from the specified path */
     public static RJSInfra getBaseInfra(String path) {
         try {
-            ClassLoader classLoader = Helpers.class.getClassLoader();
-            var infraPath = classLoader.getResource(path);
-            assert infraPath != null;
-            var fileSource = Okio.source(Path.of(infraPath.getFile()));
+            var fileSource = Okio.source(getResourcePath(path));
             var bufferedSource = Okio.buffer(fileSource);
             var jsonReader = JsonReader.of(bufferedSource);
             return RJSInfra.adapter.fromJson(jsonReader);
@@ -160,11 +159,8 @@ public class Helpers {
 
     /** Generates the defaults config from tiny_infra/config_railjson.json */
     public static Config getBaseConfig(String path) {
-        ClassLoader classLoader = Helpers.class.getClassLoader();
-        var configPath = classLoader.getResource(path);
-        assert configPath != null;
         try {
-            return Config.readFromFile(Path.of(configPath.getFile()));
+            return Config.readFromFile(getResourcePath(path));
         } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule e) {
             fail(e);
             return null;
@@ -190,6 +186,18 @@ public class Helpers {
         } catch (SimulationError e) {
             fail(e);
             return null;
+        }
+    }
+
+    /** Given a resource path find the full path (works cross platform) */
+    public static Path getResourcePath(String resourcePath) {
+        ClassLoader classLoader = Helpers.class.getClassLoader();
+        var url = classLoader.getResource(resourcePath);
+        assert url != null;
+        try {
+            return new File(url.toURI()).toPath();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
     }
 
