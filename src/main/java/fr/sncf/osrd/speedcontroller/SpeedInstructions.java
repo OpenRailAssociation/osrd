@@ -11,34 +11,36 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /** Contains all the pre-computed speed controller and indications.
- * For now it contains data about desired speed (with margin or mareco), and max speed for when the train is
+ * For now it contains data about target speed (with margin or mareco), and max speed for when the train is
  * running late. Later on, we may add other indications such as when to coast. */
-public class SpeedControllerSet {
-    public final Set<SpeedController> maxSpeedControllers;
-    public final Set<SpeedController> desiredSpeedControllers;
-    public transient final NavigableMap<Double, Double> expectedTimes;
+public class SpeedInstructions {
+    public final transient SpeedControllerGenerator targetSpeedGenerator;
+    public Set<SpeedController> maxSpeedControllers;
+    public Set<SpeedController> targetSpeedControllers;
+    public transient NavigableMap<Double, Double> expectedTimes;
 
-    /** Generates the base speed controllers, where desired speed = max speed
-     * @param schedule train schedule */
-    public SpeedControllerSet(Simulation sim, TrainSchedule schedule) {
-        this(sim, schedule, new MaxSpeedGenerator());
+    /** Generates the target speed controllers from the given generators. Max speed is always determined
+     * from a `new MaxSpeedGenerator`.
+     * @param targetSpeedGenerator generator used for target speed controllers */
+    public SpeedInstructions(SpeedControllerGenerator targetSpeedGenerator) {
+        if (targetSpeedGenerator == null)
+            targetSpeedGenerator = new MaxSpeedGenerator();
+        this.targetSpeedGenerator = targetSpeedGenerator;
     }
 
-    /** Generates the desired speed controllers from the given generators. Max speed is always determined
-     * from a `new MaxSpeedGenerator`.
-     * @param schedule train schedule
-     * @param desiredSpeedGenerator generator used for desired speed controllers */
-    public SpeedControllerSet(Simulation sim, TrainSchedule schedule, SpeedControllerGenerator desiredSpeedGenerator) {
+    /** Generates all the instructions, expected to be called when a new phase starts */
+    public void generate(Simulation sim, TrainSchedule schedule) {
         maxSpeedControllers = new MaxSpeedGenerator().generate(schedule);
-        desiredSpeedControllers = desiredSpeedGenerator.generate(schedule);
-        expectedTimes = desiredSpeedGenerator.getExpectedTimes(sim, schedule, desiredSpeedControllers, 1);
+        targetSpeedControllers = targetSpeedGenerator.generate(schedule);
+        expectedTimes = targetSpeedGenerator.getExpectedTimes(sim, schedule, targetSpeedControllers, 1);
     }
 
     /** Copy constructor */
-    public SpeedControllerSet(SpeedControllerSet other) {
+    public SpeedInstructions(SpeedInstructions other) {
         this.maxSpeedControllers = new HashSet<>(other.maxSpeedControllers);
-        this.desiredSpeedControllers = new HashSet<>(other.desiredSpeedControllers);
+        this.targetSpeedControllers = new HashSet<>(other.targetSpeedControllers);
         this.expectedTimes = new TreeMap<>(other.expectedTimes);
+        this.targetSpeedGenerator = other.targetSpeedGenerator;
     }
 
     public double secondsLate(double position, double time) {
@@ -54,7 +56,6 @@ public class SpeedControllerSet {
         var positionBefore = entryBefore.getKey();
         var timeAfter = entryAfter.getValue();
         var positionAfter = entryAfter.getKey();
-        System.out.println(time + " " + timeBefore);
         if (Math.abs(positionAfter - positionBefore) < 1e-5)
             return time - timeBefore;
         var slope = (timeAfter - timeBefore) / (positionAfter - positionBefore);
@@ -70,8 +71,8 @@ public class SpeedControllerSet {
             res.append(controller);
             res.append(", ");
         }
-        res.append("}, desired speed controllers: {");
-        for (var controller: desiredSpeedControllers) {
+        res.append("}, target speed controllers: {");
+        for (var controller: targetSpeedControllers) {
             res.append(controller);
             res.append(", ");
         }

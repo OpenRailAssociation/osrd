@@ -6,7 +6,7 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.speedcontroller.SpeedControllerSet;
+import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.train.phases.PhaseState;
@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,8 +40,6 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     // the simulated location
     public final TrainPositionTracker location;
 
-    public final transient SpeedControllerSet speedControllers;
-
     public final ArrayDeque<Interaction> actionPointsUnderTrain;
 
     @Override
@@ -62,8 +59,6 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             return false;
         if (!location.deepEquals(o.location))
             return false;
-        if (!speedControllers.equals(o.speedControllers))
-            return false;
         return actionPointsUnderTrain.equals(o.actionPointsUnderTrain);
     }
 
@@ -72,7 +67,6 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             TrainPositionTracker location,
             double speed,
             TrainStatus status,
-            SpeedControllerSet speedControllers,
             TrainSchedule trainSchedule,
             int currentPhaseIndex,
             PhaseState currentPhaseState,
@@ -82,7 +76,6 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         this.location = location;
         this.speed = speed;
         this.status = status;
-        this.speedControllers = speedControllers;
         this.trainSchedule = trainSchedule;
         this.currentPhaseIndex = currentPhaseIndex;
         this.currentPhaseState = currentPhaseState;
@@ -97,7 +90,6 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 location.clone(),
                 speed,
                 status,
-                new SpeedControllerSet(speedControllers),
                 trainSchedule,
                 currentPhaseIndex,
                 currentPhaseState.clone(),
@@ -106,7 +98,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     }
 
     /** Create a new TrainState pointing at the next phase */
-    public TrainState nextPhase() {
+    public TrainState nextPhase(Simulation sim) {
         var nextPhase = currentPhaseIndex + 1;
 
         if (nextPhase == trainSchedule.phases.size())
@@ -115,20 +107,18 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                     location.clone(),
                     speed,
                     TrainStatus.REACHED_DESTINATION,
-                    new SpeedControllerSet(speedControllers),
                     trainSchedule,
                     currentPhaseIndex,
                     currentPhaseState,
                     new ArrayDeque<>(actionPointsUnderTrain)
                     );
 
-        var nextPhaseState = trainSchedule.phases.get(nextPhase).getState();
+        var nextPhaseState = trainSchedule.phases.get(nextPhase).getState(sim, trainSchedule);
         return new TrainState(
                 time,
                 location.clone(),
                 speed,
                 status,
-                new SpeedControllerSet(speedControllers),
                 trainSchedule,
                 nextPhase,
                 nextPhaseState,
@@ -151,7 +141,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         var prevLocation = location.getPathPosition();
 
         // get the list of active speed controllers
-        var isLate = speedControllers.secondsLate(prevLocation, time) > 0;
+        var isLate = currentPhaseState.speedInstructions.secondsLate(prevLocation, time) > 0;
         var activeSpeedControllers = getActiveSpeedControllers(isLate);
         locationChange.speedControllersUpdates.dedupAdd(prevLocation, activeSpeedControllers);
 
@@ -223,9 +213,9 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         // Add train speed controllers
         Set<SpeedController> targetControllers;
         if (isLate)
-            targetControllers = speedControllers.maxSpeedControllers;
+            targetControllers = currentPhaseState.speedInstructions.maxSpeedControllers;
         else
-            targetControllers = speedControllers.desiredSpeedControllers;
+            targetControllers = currentPhaseState.speedInstructions.targetSpeedControllers;
         for (var controller : targetControllers) {
             if (!controller.isActive(this))
                 continue;
