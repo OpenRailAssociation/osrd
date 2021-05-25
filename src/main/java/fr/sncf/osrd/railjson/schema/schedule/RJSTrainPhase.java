@@ -20,8 +20,9 @@ public abstract class RJSTrainPhase {
                     .withSubtype(RJSTrainPhase.Stop.class, "stop")
     );
 
-    @Json(name = "target_speed_generator")
-    public String targetSpeedGenerator;
+    /** What generator to use to generate the target speed */
+    @Json(name = "target_speed_generator_type")
+    public String targetSpeedGeneratorType;
 
     public static final class Navigate extends RJSTrainPhase {
         /** The sequence of routes the train should take.
