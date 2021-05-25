@@ -3,7 +3,6 @@ package fr.sncf.osrd.train.events;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.simulation.*;
-import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedControllerSet;
 import fr.sncf.osrd.train.Train;
 import org.slf4j.Logger;

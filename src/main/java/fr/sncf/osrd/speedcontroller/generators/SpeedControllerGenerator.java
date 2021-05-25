@@ -9,6 +9,7 @@ import fr.sncf.osrd.train.TrainPhysicsIntegrator;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 public interface SpeedControllerGenerator {
     Set<SpeedController> generate(TrainSchedule schedule);
@@ -29,7 +30,10 @@ public interface SpeedControllerGenerator {
         double speed = 1;
         while (location.getPathPosition() < totalLength && speed > 0) {
             res.put(location.getPathPosition(), time);
-            var directive = SpeedController.getDirective(controllers, location.getPathPosition());
+            var activeControllers = controllers.stream()
+                    .filter(x -> x.isActive(location))
+                    .collect(Collectors.toSet());
+            var directive = SpeedController.getDirective(activeControllers, location.getPathPosition());
             speed = directive.allowedSpeed;
             time += timestep;
             location.updatePosition(schedule.rollingStock.length, speed * timestep);
