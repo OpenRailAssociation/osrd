@@ -6,7 +6,6 @@ COPY . /app
 
 ENV PATH /app/node_modules/.bin:$PATH
 
-RUN apk add --no-cache python make g++
 RUN yarn
 RUN yarn build
 
