@@ -1,6 +1,7 @@
 package fr.sncf.osrd.train.phases;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
@@ -16,6 +17,7 @@ import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
@@ -30,17 +32,19 @@ public final class SignalNavigatePhase implements Phase {
     public final TrackSectionLocation endLocation;
     private final ArrayList<TrackSectionRange> trackSectionPath;
     private final ArrayList<Interaction> interactionsPath;
+    private final transient SpeedControllerGenerator targetSpeedGenerator;
 
     private SignalNavigatePhase(
             List<Route> routePath,
             TrackSectionLocation endLocation,
             ArrayList<TrackSectionRange> trackSectionPath,
-            ArrayList<Interaction> interactionsPath
-    ) {
+            ArrayList<Interaction> interactionsPath,
+            SpeedControllerGenerator targetSpeedGenerator) {
         this.routePath = routePath;
         this.endLocation = endLocation;
         this.trackSectionPath = trackSectionPath;
         this.interactionsPath = interactionsPath;
+        this.targetSpeedGenerator = targetSpeedGenerator;
     }
 
 
@@ -50,11 +54,12 @@ public final class SignalNavigatePhase implements Phase {
             List<Route> routes,
             double driverSightDistance,
             TrackSectionLocation startLocation,
-            TrackSectionLocation endLocation
+            TrackSectionLocation endLocation,
+            SpeedControllerGenerator targetSpeedGenerator
     ) {
         var trackSectionPath = Route.routesToTrackSectionRange(routes, startLocation, endLocation);
         var actionPointPath = trackSectionToActionPointPath(driverSightDistance, trackSectionPath);
-        return new SignalNavigatePhase(routes, endLocation, trackSectionPath, actionPointPath);
+        return new SignalNavigatePhase(routes, endLocation, trackSectionPath, actionPointPath, targetSpeedGenerator);
     }
 
     private static ArrayList<Interaction> trackSectionToActionPointPath(
@@ -97,8 +102,8 @@ public final class SignalNavigatePhase implements Phase {
     }
 
     @Override
-    public PhaseState getState() {
-        return new State(this);
+    public PhaseState getState(Simulation sim, TrainSchedule schedule) {
+        return new State(this, sim, schedule);
     }
 
     @Override
@@ -137,6 +142,8 @@ public final class SignalNavigatePhase implements Phase {
         public final SignalNavigatePhase phase;
         private int routeIndex = 0;
         private int interactionsPathIndex = 0;
+        private final transient Simulation sim;
+        private final transient TrainSchedule schedule;
         private final transient HashMap<Signal, ArrayList<SpeedController>> signalControllers;
 
         @Override
@@ -153,16 +160,24 @@ public final class SignalNavigatePhase implements Phase {
             return new SignalNavigatePhase.State(this);
         }
 
-        public State(SignalNavigatePhase phase) {
+        public State(SignalNavigatePhase phase, Simulation sim, TrainSchedule schedule) {
+            super(phase.targetSpeedGenerator);
+            this.sim = sim;
+            this.schedule = schedule;
+            speedInstructions.generate(sim, schedule);
             this.phase = phase;
             this.signalControllers = new HashMap<>();
         }
 
         State(SignalNavigatePhase.State state) {
+            super(state.speedInstructions.targetSpeedGenerator);
             this.phase = state.phase;
             this.routeIndex = state.routeIndex;
             this.interactionsPathIndex = state.interactionsPathIndex;
             this.signalControllers = state.signalControllers;
+            this.schedule = state.schedule;
+            this.sim = state.sim;
+            speedInstructions.generate(sim, schedule);
         }
 
         private boolean isInteractionUnderTrain(TrainState trainState) {
@@ -219,7 +234,7 @@ public final class SignalNavigatePhase implements Phase {
         public TimelineEvent simulate(Simulation sim, Train train, TrainState trainState) throws SimulationError {
             // Check if we reached our goal
             if (interactionsPathIndex == phase.interactionsPath.size()) {
-                var change = new Train.TrainStateChange(sim, train.getName(), trainState.nextPhase());
+                var change = new Train.TrainStateChange(sim, train.getName(), trainState.nextPhase(sim));
                 change.apply(sim, train);
                 sim.publishChange(change);
                 return null;
