@@ -47,6 +47,8 @@ export function getMateriel() {
   return async (dispatch) => {
     try {
       const materiel = await get('/matr/index/');
+      // const materielNEW = await get('/osrd/matr/index/', undefined, true);
+      // console.log(materielNEW);
       dispatch(setMateriel(materiel));
       return materiel;
     } catch (e) {
