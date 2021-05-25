@@ -16,7 +16,7 @@ import java.util.TreeMap;
 public class SpeedControllerSet {
     public final Set<SpeedController> maxSpeedControllers;
     public final Set<SpeedController> desiredSpeedControllers;
-    public final NavigableMap<Double, Double> expectedTimes;
+    public transient final NavigableMap<Double, Double> expectedTimes;
 
     /** Generates the base speed controllers, where desired speed = max speed
      * @param schedule train schedule */
@@ -39,6 +39,27 @@ public class SpeedControllerSet {
         this.maxSpeedControllers = new HashSet<>(other.maxSpeedControllers);
         this.desiredSpeedControllers = new HashSet<>(other.desiredSpeedControllers);
         this.expectedTimes = new TreeMap<>(other.expectedTimes);
+    }
+
+    public double secondsLate(double position, double time) {
+        var entryBefore = expectedTimes.floorEntry(position);
+        var entryAfter = expectedTimes.ceilingEntry(position);
+        if (entryBefore == null)
+            entryBefore = entryAfter;
+        if (entryAfter == null)
+            entryAfter = entryBefore;
+        if (entryAfter == null)
+            throw new RuntimeException("Missing pre-computed expected times");
+        var timeBefore = entryBefore.getValue();
+        var positionBefore = entryBefore.getKey();
+        var timeAfter = entryAfter.getValue();
+        var positionAfter = entryAfter.getKey();
+        System.out.println(time + " " + timeBefore);
+        if (Math.abs(positionAfter - positionBefore) < 1e-5)
+            return time - timeBefore;
+        var slope = (timeAfter - timeBefore) / (positionAfter - positionBefore);
+        var expectedTime = timeBefore + (position - positionBefore) * slope;
+        return time - expectedTime;
     }
 
     @Override
