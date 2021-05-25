@@ -3,12 +3,12 @@ package fr.sncf.osrd.simulation;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.train.Train;
 
-public class ChangeOperationalPoint extends Change {
-    final Train train;
-    final OperationalPoint op;
+public class OperationalPointChange extends Change {
+    public final Train train;
+    public final OperationalPoint op;
 
     /** Create a change to notify that a train is over an operational point */
-    public ChangeOperationalPoint(Simulation sim, Train train, OperationalPoint op) {
+    public OperationalPointChange(Simulation sim, Train train, OperationalPoint op) {
         super(sim);
         this.train = train;
         this.op = op;
