@@ -55,7 +55,7 @@ public class RouteGraphTest {
             releaseGroups.add(releaseGroup);
         }
 
-        return builder.makeRoute(id, tvdSections, releaseGroups, switchPositions, waypoints.get(0), null);
+        return builder.makeRoute(id, tvdSections, releaseGroups, switchPositions, waypoints.get(0), null, null);
     }
 
     private static Route makeRoute(
@@ -81,7 +81,7 @@ public class RouteGraphTest {
         var trackGraph = new TrackGraph();
         var nodeA = trackGraph.makePlaceholderNode("A");
         var nodeB = trackGraph.makePlaceholderNode("B");
-        var trackSection = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "e1", 100);
+        var trackSection = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "e1", 100, null);
         var detectorBuilder = trackSection.waypoints.builder();
         var d1 = new Detector(0, "D1");
         var d2 = new Detector(1, "D2");
@@ -141,9 +141,9 @@ public class RouteGraphTest {
         var nodeB = trackGraph.makePlaceholderNode("B");
         var nodeC = trackGraph.makePlaceholderNode("C");
         var nodeD = trackGraph.makePlaceholderNode("D");
-        var fooA = trackGraph.makeTrackSection(nodeA.index, nodeC.index, "foo_a", 75);
-        var fooB = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "foo_b", 75);
-        var track = trackGraph.makeTrackSection(nodeC.index, nodeD.index, "track", 100);
+        var fooA = trackGraph.makeTrackSection(nodeA.index, nodeC.index, "foo_a", 75, null);
+        var fooB = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "foo_b", 75, null);
+        var track = trackGraph.makeTrackSection(nodeC.index, nodeD.index, "track", 100, null);
 
         linkEdges(fooA, EdgeEndpoint.END, track, EdgeEndpoint.BEGIN);
         linkEdges(fooB, EdgeEndpoint.END, track, EdgeEndpoint.BEGIN);
