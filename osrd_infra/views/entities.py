@@ -1,13 +1,6 @@
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from osrd_infra.models import Infra
-
-from osrd_infra.serializers import InfraSerializer, ALL_ENTITY_SERIALIZERS
-
-
-class InfraViewSet(ReadOnlyModelViewSet):
-    serializer_class = InfraSerializer
-    queryset = Infra.objects.all()
+from osrd_infra.serializers import ALL_ENTITY_SERIALIZERS
 
 
 ALL_ENTITY_VIEWSETS = []

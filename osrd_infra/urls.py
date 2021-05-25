@@ -3,7 +3,6 @@ from django.urls import path, include
 
 from osrd_infra.models import get_entity_meta
 from osrd_infra.views import (
-    InfraViewSet,
     ALL_ENTITY_VIEWSETS,
     InfraRailJSONView,
     InfraEditionView,
@@ -13,7 +12,6 @@ from osrd_infra.views import (
 
 
 entity_router = SimpleRouter()
-entity_router.register("infra", InfraViewSet)
 
 for entity_type, entity_viewset in ALL_ENTITY_VIEWSETS:
     entity_name = get_entity_meta(entity_type).name
