@@ -27,18 +27,18 @@ public class PrettyPrinter extends RSExprVisitor {
         for (var signal: infra.signals)
             signal.expr.accept(functionsFinder);
 
-        out.println("// SCRIPT FUNCTIONS\n");
+        out.print("// SCRIPT FUNCTIONS\n\n");
         // Pretty print functions found
         for (var function : functionsFinder.functions.values()) {
             print(function);
-            out.println();
+            out.print("\n");
         }
 
-        out.println("\n// SIGNAL EXPRESSIONS\n");
+        out.print("\n// SIGNAL EXPRESSIONS\n\n");
         for (var signal: infra.signals) {
             out.printf("%s: ", signal.id);
             signal.expr.accept(this);
-            out.println("\n");
+            out.print("\n\n");
         }
     }
 
@@ -48,18 +48,18 @@ public class PrettyPrinter extends RSExprVisitor {
         out.printf("fn %s(", fct.functionName);
         // Arguments
         if (fct.argNames.length > 0) {
-            out.println();
+            out.print("\n");
             inc();
             inctab();
             for (var i = 0; i < fct.argNames.length; i++) {
                 out.printf("%s: ", fct.argNames[i]);
                 print(fct.argTypes[i]);
                 if (i < fct.argNames.length - 1) {
-                    out.println(",");
+                    out.print(",\n");
                     tab();
                 }
             }
-            out.println();
+            out.print("\n");
             dec();
             dectab();
         }
@@ -70,7 +70,7 @@ public class PrettyPrinter extends RSExprVisitor {
         // Body
         inctab();
         fct.body.accept(this);
-        out.println();
+        out.print("\n");
         dectab();
         out.print("}\n");
         currentFct = null;
@@ -152,25 +152,25 @@ public class PrettyPrinter extends RSExprVisitor {
     public void visit(RSExpr.OptionalMatch<?> expr) throws InvalidInfraException {
         out.print("match ");
         expr.expr.accept(this);
-        out.println(" {");
+        out.print(" {\n");
         inctab();
 
         out.print("Some(");
         out.print(expr.name);
-        out.println("): ");
+        out.print("): \n");
         inctab();
         expr.caseSome.accept(this);
-        out.println();
+        out.print("\n");
         dectab();
 
         out.print("None: ");
-        out.println();
+        out.print("\n");
         inctab();
         expr.caseNone.accept(this);
         dectab();
-        out.println();
+        out.print("\n");
         dectab();
-        out.println("}");
+        out.print("}\n");
     }
 
     @Override
@@ -206,11 +206,11 @@ public class PrettyPrinter extends RSExprVisitor {
             }
             if (i < expr.conditions.length - 1) {
                 out.print(",");
-                out.println();
+                out.print("\n");
                 tab();
             }
         }
-        out.println();
+        out.print("\n");
         dectab();
         out.print("}");
     }
@@ -219,15 +219,15 @@ public class PrettyPrinter extends RSExprVisitor {
     public void visit(RSExpr.If<?> expr) throws InvalidInfraException {
         out.print("if ");
         expr.ifExpr.accept(this);
-        out.println(" {");
+        out.print(" {\n");
         inctab();
         expr.thenExpr.accept(this);
-        out.println();
+        out.print("\n");
         dectab();
         out.print("} else {\n");
         inctab();
         expr.elseExpr.accept(this);
-        out.println();
+        out.print("\n");
         dectab();
         out.print("}");
     }
@@ -262,7 +262,7 @@ public class PrettyPrinter extends RSExprVisitor {
             expr.branches[i].accept(this);
             if (i < expr.branches.length - 1)
                 out.print(",");
-            out.println();
+            out.print("\n");
         }
         dectab();
         out.print("}");
