@@ -11,16 +11,20 @@ import SpeedSpaceChart from 'applications/osrd/views/OSRDSimulation/SpeedSpaceCh
 import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
 import { simplifyData, timeShiftTrain, timeShiftStops } from 'applications/osrd/components/Helpers/ChartHelpers';
 import './OSRDSimulation.scss';
-// import testData from './test-data.json';
+
+// For testdata
+import testData from './test-data.json';
+
+let isWorking = true;
+const simulationRaw = testData;
 
 const OSRDSimulation = () => {
   const { t } = useTranslation();
   const { fullscreen } = useSelector((state) => state.main);
   const [hoverPosition, setHoverPosition] = useState(undefined);
   const [selectedTrain, setSelectedTrain] = useState(0);
-  const { isWorking, simulationRaw } = useSelector((state) => state.osrdsimulation);
+  // const { isWorking, simulationRaw } = useSelector((state) => state.osrdsimulation);
   const [simulation, setSimulation] = useState(undefined);
-  // const isWorking = false;
 
   // Test data simulated
   // TO REMOVE IN PRODUCTION
@@ -39,8 +43,9 @@ const OSRDSimulation = () => {
         );
       }
       setSimulation(simulationLocal);
+      isWorking = false;
     }
-  }, [simulationRaw]);
+  }, []);
 
   /* useEffect(() => {
     c

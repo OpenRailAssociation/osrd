@@ -23,6 +23,7 @@ module.exports = {
     'react',
     'babel',
     'react-hooks',
+    'only-warn',
   ],
   parser: 'babel-eslint',
   rules: {

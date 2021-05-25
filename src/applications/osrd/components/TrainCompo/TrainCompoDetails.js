@@ -13,6 +13,7 @@ import { FaWeightHanging } from 'react-icons/fa';
 import { AiOutlineColumnWidth } from 'react-icons/ai';
 import { imageCompo, displayCompo } from 'applications/osrd/components/TrainCompo/Helpers';
 import TrainCompoDetailsCurve from 'applications/osrd/components/TrainCompo/TrainCompoDetailsCurve';
+import TrainCompoDetails3D from 'applications/osrd/components/TrainCompo/TrainCompoDetails3D';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 
 const INITIAL_STATE = {
@@ -196,6 +197,8 @@ export default function TrainCompoDetails(props) {
           </span>
         </div>
       </div>
+
+      <TrainCompoDetails3D />
 
       <div className="traincompo-details-carousel">
         <div className={`traincompo-details-carousel-container ${carouselState === INITIAL_STATE.carouselState ? null : 'second'}`}>
