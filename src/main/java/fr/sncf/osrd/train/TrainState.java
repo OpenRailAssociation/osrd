@@ -151,7 +151,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         var prevLocation = location.getPathPosition();
 
         // get the list of active speed controllers
-        var activeSpeedControllers = getActiveSpeedControllers();
+        var isLate = speedControllers.secondsLate(prevLocation, time) > 0;
+        var activeSpeedControllers = getActiveSpeedControllers(isLate);
         locationChange.speedControllersUpdates.dedupAdd(prevLocation, activeSpeedControllers);
 
         // get the current speed directives mandated by the speed controllers
@@ -217,10 +218,15 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         return locationChange;
     }
 
-    private Set<SpeedController> getActiveSpeedControllers() {
+    private Set<SpeedController> getActiveSpeedControllers(boolean isLate) {
         var activeControllers = new HashSet<SpeedController>();
         // Add train speed controllers
-        for (var controller : speedControllers.desiredSpeedControllers) {
+        Set<SpeedController> targetControllers;
+        if (isLate)
+            targetControllers = speedControllers.maxSpeedControllers;
+        else
+            targetControllers = speedControllers.desiredSpeedControllers;
+        for (var controller : targetControllers) {
             if (!controller.isActive(this))
                 continue;
             activeControllers.add(controller);
