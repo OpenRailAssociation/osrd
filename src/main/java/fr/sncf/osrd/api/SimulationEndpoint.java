@@ -8,6 +8,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.infra_state.SignalState;
@@ -21,6 +22,7 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.simulation.Change;
+import fr.sncf.osrd.simulation.OperationalPointChange;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
@@ -162,6 +164,11 @@ public class SimulationEndpoint implements Take {
                 for (var aspect : aspectChange.aspects)
                     aspects.add(aspect.id);
                 changes.add(new SimulationResultChange.ResponseSignalChange(signal, aspects, sim.getTime()));
+            } else if (change.getClass() == OperationalPointChange.class) {
+                var opChange = (OperationalPointChange) change;
+                var train = opChange.train.schedule;
+                var op = opChange.op;
+                changes.add(new SimulationResultChange.ResponseOperationalPointUpdate(train, op, sim.getTime()));
             }
         }
 
@@ -179,6 +186,7 @@ public class SimulationEndpoint implements Take {
                         .withSubtype(SimulationResultChange.ResponseRouteStatus.class, "route_status")
                         .withSubtype(SimulationResultChange.ResponseTrainLocationUpdate.class, "train_location")
                         .withSubtype(SimulationResultChange.ResponseSignalChange.class, "signal_change")
+                        .withSubtype(SimulationResultChange.ResponseOperationalPointUpdate.class, "operational_point")
         );
 
         public final double time;
@@ -218,6 +226,19 @@ public class SimulationEndpoint implements Take {
                 this.trainName = trainSchedule.trainID;
                 this.trackSection = location.edge.id;
                 this.offset = location.offset;
+            }
+        }
+
+        private static final class ResponseOperationalPointUpdate extends SimulationResultChange {
+            @Json(name = "train_name")
+            private final String trainName;
+            @Json(name = "operational_point")
+            private final String operationalPoint;
+
+            public ResponseOperationalPointUpdate(TrainSchedule trainSchedule, OperationalPoint op, double time) {
+                super(time);
+                this.trainName = trainSchedule.trainID;
+                this.operationalPoint = op.id;
             }
         }
 

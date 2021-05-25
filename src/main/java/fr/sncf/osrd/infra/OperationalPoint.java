@@ -2,7 +2,7 @@ package fr.sncf.osrd.infra;
 
 import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.simulation.ChangeOperationalPoint;
+import fr.sncf.osrd.simulation.OperationalPointChange;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.train.InteractionType;
 import fr.sncf.osrd.train.InteractionTypeSet;
@@ -44,7 +44,7 @@ public class OperationalPoint implements ActionPoint {
 
     @Override
     public void interact(Simulation sim, Train train, InteractionType interactionType) {
-        var change = new ChangeOperationalPoint(sim, train, this);
+        var change = new OperationalPointChange(sim, train, this);
         sim.publishChange(change);
     }
 
