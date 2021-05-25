@@ -11,6 +11,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.speedcontroller.generators.MaxSpeedGenerator;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.train.phases.StopPhase;
@@ -91,9 +92,13 @@ public class RJSTrainScheduleParser {
             TrackSectionLocation startLocation,
             RJSTrainPhase rjsPhase
     ) throws InvalidSchedule {
+
+        // TODO new ways to generate target speed will be added here, using rjsPhase.targetSpeedGenerator
+        var targetSpeedGenerator = new MaxSpeedGenerator();
+
         if (rjsPhase.getClass() == RJSTrainPhase.Stop.class) {
             var rjsStop = (RJSTrainPhase.Stop) rjsPhase;
-            return new StopPhase(rjsStop.duration);
+            return new StopPhase(rjsStop.duration, targetSpeedGenerator);
         }
         if (rjsPhase.getClass() == RJSTrainPhase.Navigate.class) {
             var rjsNavigate = (RJSTrainPhase.Navigate) rjsPhase;
@@ -110,7 +115,8 @@ public class RJSTrainScheduleParser {
                 throw new InvalidSchedule("invalid driver sight distance");
 
             var endLocation = parseLocation(infra, rjsNavigate.endLocation);
-            return SignalNavigatePhase.from(routes, driverSightDistance, startLocation, endLocation);
+            return SignalNavigatePhase.from(routes, driverSightDistance, startLocation,
+                    endLocation, targetSpeedGenerator);
         }
         throw new RuntimeException("unknown train phase");
     }

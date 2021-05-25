@@ -6,7 +6,7 @@ import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.speedcontroller.SpeedControllerSet;
+import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
@@ -38,17 +38,15 @@ public class Train {
     /** Create a train */
     public static Train create(
             Simulation sim,
-            TrainSchedule schedule,
-            SpeedControllerSet controllers
+            TrainSchedule schedule
     ) throws SimulationError {
-        var phaseState = schedule.phases.get(0).getState();
+        var phaseState = schedule.phases.get(0).getState(sim, schedule);
         var location = getInitialLocation(schedule, sim);
         var initialState = new TrainState(
                 sim.getTime(),
                 location,
                 schedule.initialSpeed,
                 TrainStatus.STARTING_UP,
-                controllers,
                 schedule,
                 0,
                 phaseState,

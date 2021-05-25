@@ -20,6 +20,9 @@ public abstract class RJSTrainPhase {
                     .withSubtype(RJSTrainPhase.Stop.class, "stop")
     );
 
+    @Json(name = "target_speed_generator")
+    public String targetSpeedGenerator;
+
     public static final class Navigate extends RJSTrainPhase {
         /** The sequence of routes the train should take.
          * The train must be on the first route when it enters this phase. */
