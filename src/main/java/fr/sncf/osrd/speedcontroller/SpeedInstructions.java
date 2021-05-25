@@ -12,16 +12,24 @@ import java.util.TreeMap;
 
 /** Contains all the pre-computed speed controller and indications.
  * For now it contains data about target speed (with margin or mareco), and max speed for when the train is
- * running late. Later on, we may add other indications such as when to coast. */
+ * running late. It also contains the expected time at each point to know if we're running late.
+ * Later on, we may add other indications such as when to coast. */
 public class SpeedInstructions {
+
+    /** Generator for the target speeds */
     public final transient SpeedControllerGenerator targetSpeedGenerator;
+
+    /** Set of speed controllers indicating the maximum speed at each point */
     public Set<SpeedController> maxSpeedControllers;
+
+    /** Set of speed controllers indicating the target speed at each point */
     public Set<SpeedController> targetSpeedControllers;
     public transient NavigableMap<Double, Double> expectedTimes;
 
-    /** Generates the target speed controllers from the given generators. Max speed is always determined
-     * from a `new MaxSpeedGenerator`.
-     * @param targetSpeedGenerator generator used for target speed controllers */
+    /** Creates an instance from a target speed generator. Max speed is always determined
+     * from a `new MaxSpeedGenerator()`.
+     * @param targetSpeedGenerator generator used for target speed controllers. If null, a MaxSpeedGenerator is
+     * used instead. */
     public SpeedInstructions(SpeedControllerGenerator targetSpeedGenerator) {
         if (targetSpeedGenerator == null)
             targetSpeedGenerator = new MaxSpeedGenerator();
@@ -43,6 +51,8 @@ public class SpeedInstructions {
         this.targetSpeedGenerator = other.targetSpeedGenerator;
     }
 
+    /** Returns how late we are compared to the expected time, in seconds. The result may be negative if we are
+     * ahead of schedule. */
     public double secondsLate(double position, double time) {
         var entryBefore = expectedTimes.floorEntry(position);
         var entryAfter = expectedTimes.ceilingEntry(position);
