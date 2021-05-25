@@ -132,16 +132,19 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
         for (int i = 0; i < pathsToGoal.size(); i++) {
             var path = FullPathArray.from(pathsToGoal.get(i));
             resRoutes[i] = fullPathToRoutes(path);
+            /* TODO fix and uncomment
             var beginLoc = resRoutes[i].get(0).getTrackSectionLocation();
             var endLoc = resRoutes[i].get(resRoutes[i].size() - 1).getTrackSectionLocation();
             var routes = new ArrayList<Route>();
             for (var routeLoc : resRoutes[i])
                 routes.add(routeLoc.route);
             resTrackSections[i] = Route.routesToTrackSectionRange(routes, beginLoc, endLoc);
+            */
         }
         var result = new PathfindingResult[resRoutes.length];
         for (int i = 0; i < resRoutes.length; i++)
-            result[i] = PathfindingResult.from(resRoutes[i], resTrackSections[i]);
+            // TODO fix result[i] = PathfindingResult.from(resRoutes[i], resTrackSections[i]);
+            result[i] = PathfindingResult.from(resRoutes[i], null);
         return new RsJson(new RsWithBody(adapterResult.toJson(result)));
     }
 
@@ -169,9 +172,11 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             var resTrackSections = new ArrayList<TrackSectionRangeResult>();
             for (var route : routes)
                 resRoutes.add(new RouteLocationResult(route.route.id, route.offset));
+            /* TODO fix and uncomment
             for (var track : trackSections)
                 resTrackSections.add(new TrackSectionRangeResult(
                         track.edge.id, track.getBeginPosition(), track.getEndPosition()));
+             */
             return new PathfindingResult(resRoutes, resTrackSections);
         }
     }

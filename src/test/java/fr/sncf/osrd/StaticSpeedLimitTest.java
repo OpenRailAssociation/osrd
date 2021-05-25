@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.*;
-import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.trackgraph.BufferStop;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
@@ -50,7 +49,7 @@ public class StaticSpeedLimitTest {
         var nodeA = trackGraph.makePlaceholderNode("A");
         var nodeB = trackGraph.makePlaceholderNode("B");
         var edgeLength = 10000.0;
-        var edge = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "e1", edgeLength);
+        var edge = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "e1", edgeLength, null);
         var waypointsBuilder = edge.waypoints.builder();
         var bufferStopA = new BufferStop(0, "BufferStopA");
         waypointsBuilder.add(0, bufferStopA);
@@ -86,7 +85,7 @@ public class StaticSpeedLimitTest {
         releaseGroup.add(tvdSection);
         releaseGroups.add(releaseGroup);
         var route = routeGraphBuilder.makeRoute(
-                "R1", tvdSectionsR1, releaseGroups, new HashMap<>(), waypointsAB.get(0), null);
+                "R1", tvdSectionsR1, releaseGroups, new HashMap<>(), waypointsAB.get(0), null, null);
 
         final var infra = Infra.build(trackGraph, waypointGraph, routeGraphBuilder.build(),
                 tvdSections, new HashMap<>(), new ArrayList<>(), new ArrayList<>());
