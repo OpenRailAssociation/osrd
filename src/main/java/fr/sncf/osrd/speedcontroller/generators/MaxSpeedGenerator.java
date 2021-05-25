@@ -11,6 +11,7 @@ import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.HashSet;
 import java.util.Set;
 
+/** This is a SpeedControllerGenerator that generates the maximum allowed speed at any given point. */
 public class MaxSpeedGenerator implements SpeedControllerGenerator {
     @Override
     public Set<SpeedController> generate(TrainSchedule schedule) {

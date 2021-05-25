@@ -11,7 +11,10 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+/** This interface is used to generate a set of SpeedController (similar to a speed at any given point). */
 public interface SpeedControllerGenerator {
+
+    /** Generates the set of SpeedController */
     Set<SpeedController> generate(TrainSchedule schedule);
 
     /** Generates a map of location -> expected time if we follow the given controllers.
