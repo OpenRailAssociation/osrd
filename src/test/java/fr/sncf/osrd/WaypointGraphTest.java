@@ -44,7 +44,7 @@ public class WaypointGraphTest {
         var trackGraph = new TrackGraph();
         var nodeA = trackGraph.makePlaceholderNode("A");
         var nodeB = trackGraph.makePlaceholderNode("B");
-        var trackSection = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "e1", 100);
+        var trackSection = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "e1", 100, null);
         var detectorBuilder = trackSection.waypoints.builder();
         detectorBuilder.add(40, new Detector(0, "D1"));
         detectorBuilder.add(50, new Detector(1, "D2"));
@@ -93,21 +93,21 @@ public class WaypointGraphTest {
         var nodeD = trackGraph.makePlaceholderNode("D");
 
         // forward
-        var fooA = trackGraph.makeTrackSection(nodeA.index, nodeC.index, "foo_a", 100);
+        var fooA = trackGraph.makeTrackSection(nodeA.index, nodeC.index, "foo_a", 100, null);
         var detectorsFooA = fooA.waypoints.builder();
         detectorsFooA.add(75, new Detector(0, "D1"));
         detectorsFooA.add(0, new BufferStop(1, "BS_1"));
         detectorsFooA.build();
 
         // forward
-        var fooB = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "foo_b", 100);
+        var fooB = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "foo_b", 100, null);
         var detectorsFooB = fooB.waypoints.builder();
         detectorsFooB.add(50, new Detector(2, "D2"));
         detectorsFooB.add(0, new BufferStop(3, "BS_2"));
         detectorsFooB.build();
 
         // backward
-        var track = trackGraph.makeTrackSection(nodeD.index, nodeC.index, "track", 500);
+        var track = trackGraph.makeTrackSection(nodeD.index, nodeC.index, "track", 500, null);
         var detectorsTrack = track.waypoints.builder();
         detectorsTrack.add(50, new Detector(4, "D4"));
         detectorsTrack.add(450, new Detector(5, "D3"));
@@ -198,17 +198,17 @@ public class WaypointGraphTest {
         var nodeB = trackGraph.makePlaceholderNode("B");
         var nodeC = trackGraph.makePlaceholderNode("C");
 
-        var trackAB = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "track_a_b", 100);
+        var trackAB = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "track_a_b", 100, null);
         var detectorsAB = trackAB.waypoints.builder();
         detectorsAB.add(50, new Detector(0, "D1"));
         detectorsAB.build();
 
-        var trackBC = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "track_b_c", 100);
+        var trackBC = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "track_b_c", 100, null);
         var detectorsBC = trackBC.waypoints.builder();
         detectorsBC.add(50, new Detector(1, "D2"));
         detectorsBC.build();
 
-        var trackCA = trackGraph.makeTrackSection(nodeC.index, nodeA.index, "track_c_a", 100);
+        var trackCA = trackGraph.makeTrackSection(nodeC.index, nodeA.index, "track_c_a", 100, null);
         var detectorsCA = trackCA.waypoints.builder();
         detectorsCA.add(50, new Detector(2, "D3"));
         detectorsCA.build();
@@ -261,9 +261,9 @@ public class WaypointGraphTest {
         var nodeB = trackGraph.makePlaceholderNode("B");
         var nodeC = trackGraph.makePlaceholderNode("C");
 
-        var trackAB = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "track_a_b", 100);
-        var trackBC = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "track_b_c", 100);
-        var trackCA = trackGraph.makeTrackSection(nodeC.index, nodeA.index, "track_c_a", 100);
+        var trackAB = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "track_a_b", 100, null);
+        var trackBC = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "track_b_c", 100, null);
+        var trackCA = trackGraph.makeTrackSection(nodeC.index, nodeA.index, "track_c_a", 100, null);
 
         linkEdges(trackAB, EdgeEndpoint.END, trackBC, EdgeEndpoint.BEGIN);
         linkEdges(trackBC, EdgeEndpoint.END, trackCA, EdgeEndpoint.BEGIN);
@@ -309,10 +309,10 @@ public class WaypointGraphTest {
         var nodeC = trackGraph.makePlaceholderNode("C");
         var nodeD = trackGraph.makePlaceholderNode("D");
 
-        final var trackAB = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "track_a_b", 100);
-        final var trackCA = trackGraph.makeTrackSection(nodeC.index, nodeA.index, "track_c_a", 100);
-        final var trackBC = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "track_b_c", 100);
-        final var trackCD = trackGraph.makeTrackSection(nodeC.index, nodeD.index, "track_c_d", 100);
+        final var trackAB = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "track_a_b", 100, null);
+        final var trackCA = trackGraph.makeTrackSection(nodeC.index, nodeA.index, "track_c_a", 100, null);
+        final var trackBC = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "track_b_c", 100, null);
+        final var trackCD = trackGraph.makeTrackSection(nodeC.index, nodeD.index, "track_c_d", 100, null);
 
         linkEdges(trackAB, EdgeEndpoint.END, trackBC, EdgeEndpoint.BEGIN);
         linkEdges(trackCA, EdgeEndpoint.END, trackAB, EdgeEndpoint.BEGIN);

@@ -48,12 +48,13 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 List<SortedArraySet<TVDSection>> releaseGroups,
                 HashMap<Switch, SwitchPosition> switchesPosition,
                 Waypoint entryPoint,
-                Signal entrySignal) throws InvalidInfraException {
+                Signal entrySignal,
+                List<Waypoint> tmpWaypointList) throws InvalidInfraException {
             var length = 0;
             var tvdSectionsPath = new ArrayList<TVDSectionPath>();
             var tvdSectionsPathDirection = new ArrayList<EdgeDirection>();
 
-            var waypoints = generateWaypointList(entryPoint, tvdSections, switchesPosition);
+            var waypoints = generateWaypointList(entryPoint, tvdSections, switchesPosition, tmpWaypointList);
 
             // Find the list of tvd section path
             for (var i = 1; i < waypoints.size(); i++) {
@@ -167,12 +168,13 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
         private List<Waypoint> generateWaypointList(
                 Waypoint startPoint,
                 Set<TVDSection> tvdSections,
-                HashMap<Switch, SwitchPosition> switchesPosition) throws InvalidInfraException {
+                HashMap<Switch, SwitchPosition> switchesPosition,
+                List<Waypoint> tmpWaypointList) throws InvalidInfraException {
 
-            var currentPoint = startPoint;
+                var currentPoint = startPoint;
             var waypoints = new ArrayList<Waypoint>();
 
-            var waypointsToVisit = getWaypointsOnRoute(tvdSections, switchesPosition);
+            var waypointsToVisit = tmpWaypointList != null ? tmpWaypointList : getWaypointsOnRoute(tvdSections, switchesPosition);
 
             // We order the points by finding which one is adjacent to the previous point
             // until there is no more point to visit

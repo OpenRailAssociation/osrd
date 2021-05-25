@@ -24,6 +24,10 @@ public class RJSRoute implements Identified {
     @Json(name = "entry_point")
     public ID<RJSRouteWaypoint> entryPoint;
 
+    // TODO remove when generateWaypointList is fixed
+    @Json(name="tmp_waypoint_list")
+    public List<ID<RJSRouteWaypoint>> tmpWaypointList;
+
     /** Routes are described as a list of TVD Sections, Switches in specific positions, and an entry point */
     public RJSRoute(
             String id,
