@@ -61,22 +61,6 @@ class Infra(models.Model):
         return self.name
 
 
-class IdentifierDatabase(models.Model):
-    """A database mapping identifiers to objects"""
-
-    name = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["name"], name="identifier_database_unique_name"
-            )
-        ]
-
-
 class GeoPointLocationComponent(Component):
     geographic = models.PointField(srid=settings.OSRD_INFRA_SRID)
     schematic = models.PointField(srid=settings.OSRD_INFRA_SRID)
@@ -169,7 +153,7 @@ class TrackSectionRangeComponent(Component):
 
 
 class IdentifierComponent(Component):
-    database = models.ForeignKey("IdentifierDatabase", on_delete=models.CASCADE)
+    database = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
 
     def __repr__(self):

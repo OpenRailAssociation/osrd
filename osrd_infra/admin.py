@@ -11,7 +11,6 @@ from osrd_infra.models import (
     ALL_ENTITY_TYPES,
     # misc
     Infra,
-    IdentifierDatabase,
 )
 
 
@@ -45,6 +44,5 @@ admin.site.register(
         EntityNamespace,
         # misc
         Infra,
-        IdentifierDatabase,
     ]
 )

@@ -10,8 +10,6 @@ from osrd_infra.models import (
     ApplicableDirection,
     # explicitly declared serializers
     TrackSectionLinkComponent,
-    IdentifierComponent,
-    IdentifierDatabase,
     ApplicableDirectionComponent,
     # ecs
     Component,
@@ -84,25 +82,7 @@ class InfraSerializer(ModelSerializer):
         exclude = ["namespace"]
 
 
-# CUSTOM SERIALIZER FIELDS
-
-
-class IdentifierDatabaseSerializer(ModelSerializer):
-    class Meta:
-        model = IdentifierDatabase
-        fields = "__all__"
-
-
 # COMPONENT SERIALIZERS
-
-
-class IdentifierComponentSerializer(ComponentSerializer):
-    database = IdentifierDatabaseSerializer()
-
-    class Meta:
-        model = IdentifierComponent
-        fields = "__all__"
-
 
 class TrackSectionLinkComponentSerializer(ComponentSerializer):
     begin_endpoint = EnumSerializer(Endpoint)
