@@ -76,6 +76,11 @@ public class Train {
         return new TrainPositionTracker(sim.infra, sim.infraState, initialPosition);
     }
 
+    /** Returns the last TrainState */
+    public TrainState getLastState() {
+        return lastState;
+    }
+
     // region ENTITY_REACTOR
 
     /** Simulate the current state to schedule the next one */

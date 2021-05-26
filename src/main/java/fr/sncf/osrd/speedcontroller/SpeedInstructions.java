@@ -29,7 +29,7 @@ public class SpeedInstructions {
     /** Creates an instance from a target speed generator. Max speed is always determined
      * from a `new MaxSpeedGenerator()`.
      * @param targetSpeedGenerator generator used for target speed controllers. If null, a MaxSpeedGenerator is
-     * used instead. */
+     *      used instead. */
     public SpeedInstructions(SpeedControllerGenerator targetSpeedGenerator) {
         if (targetSpeedGenerator == null)
             targetSpeedGenerator = new MaxSpeedGenerator();
@@ -40,6 +40,7 @@ public class SpeedInstructions {
     public void generate(Simulation sim, TrainSchedule schedule) {
         maxSpeedControllers = new MaxSpeedGenerator().generate(schedule);
         targetSpeedControllers = targetSpeedGenerator.generate(schedule);
+        targetSpeedControllers.addAll(maxSpeedControllers);
         expectedTimes = targetSpeedGenerator.getExpectedTimes(sim, schedule, targetSpeedControllers, 1);
     }
 
