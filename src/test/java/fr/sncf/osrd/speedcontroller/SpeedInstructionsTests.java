@@ -47,7 +47,7 @@ public class SpeedInstructionsTests {
         var phase = config.trainSchedules.get(0).phases.get(0);
         assert phase instanceof SignalNavigatePhase;
         ((SignalNavigatePhase) phase).targetSpeedGenerator =
-                schedule -> new HashSet<>(Collections.singletonList(new StaticSpeedController(0)));
+                (schedule, tmp) -> new HashSet<>(Collections.singletonList(new StaticSpeedController(0)));
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
