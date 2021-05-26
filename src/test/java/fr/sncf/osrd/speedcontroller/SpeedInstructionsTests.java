@@ -1,13 +1,14 @@
 package fr.sncf.osrd.speedcontroller;
 
 import static fr.sncf.osrd.Helpers.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.infra.*;
+import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.train.events.TrainMoveEvent;
+import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import org.junit.jupiter.api.Test;
 
@@ -38,7 +39,7 @@ public class SpeedInstructionsTests {
     }
 
     @Test
-    public void testFollowTargetSpeed() throws InvalidInfraException, SimulationError {
+    public void testFollowTargetSpeed() throws InvalidInfraException {
         var infra = getBaseInfra();
         assert infra != null;
         var config = getBaseConfig();
@@ -47,16 +48,49 @@ public class SpeedInstructionsTests {
         var phase = config.trainSchedules.get(0).phases.get(0);
         assert phase instanceof SignalNavigatePhase;
         ((SignalNavigatePhase) phase).targetSpeedGenerator =
-                (schedule, tmp) -> new HashSet<>(Collections.singletonList(new StaticSpeedController(0)));
+                (schedule, tmp) -> new HashSet<>(Collections.singletonList(new StaticSpeedController(5)));
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
-        Helpers.Procedure assertNoSpeed = () ->
-                assertEquals(sim.trains.get("Test.").getLastState().location.getPathPosition(), 0, 1e-5);
-
-        makeFunctionEvent(sim, 1, assertNoSpeed);
-        makeFunctionEvent(sim, 10, assertNoSpeed);
-        makeFunctionEvent(sim, 100, assertNoSpeed);
+        for (int i = 10; i < 150; i++)
+            makeAssertEvent(sim, i, () -> getLastTrainSpeed(sim) < 5.5);
         run(sim, config);
+    }
+
+    @Test
+    public void testCatchup() throws InvalidInfraException, SimulationError {
+        var infra = getBaseInfra();
+        assert infra != null;
+        var config = getBaseConfig();
+        assert config != null;
+
+        var phase = config.trainSchedules.get(0).phases.get(0);
+        assert phase instanceof SignalNavigatePhase;
+        ((SignalNavigatePhase) phase).targetSpeedGenerator =
+                (schedule, tmp) -> new HashSet<>(Collections.singletonList(new StaticSpeedController(5)));
+
+        infra.switches.iterator().next().positionChangeDelay = 42;
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+
+        makeAssertEvent(sim, 1, () -> getLastTrainSpeed(sim) < 5);
+        makeAssertEvent(sim, 10, () -> getLastTrainSpeed(sim) < 5);
+        makeAssertEvent(sim, 100, () -> getLastTrainSpeed(sim) > 10);
+        run(sim, config);
+    }
+
+    private static double getLastTrainSpeed(Simulation sim) {
+        return getLastTrainSpeed(sim, "Test.");
+    }
+
+    private static double getLastTrainSpeed(Simulation sim, String id) {
+        var train = sim.trains.get(id);
+        var lastEvent = train.lastScheduledEvent;
+        if (lastEvent instanceof TrainReachesActionPoint) {
+            var trainReachesActionPoint = (TrainReachesActionPoint) lastEvent;
+            return trainReachesActionPoint.trainStateChange.positionUpdates.last().speed;
+        }
+        var trainReachesActionPoint = (TrainMoveEvent) lastEvent;
+        return trainReachesActionPoint.trainStateChange.positionUpdates.last().speed;
     }
 }
