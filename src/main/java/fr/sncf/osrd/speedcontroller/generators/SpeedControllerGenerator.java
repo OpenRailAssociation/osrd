@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public interface SpeedControllerGenerator {
 
     /** Generates the set of SpeedController */
-    Set<SpeedController> generate(TrainSchedule schedule);
+    Set<SpeedController> generate(TrainSchedule schedule, Set<SpeedController> maxSpeed);
 
     /** Generates a map of location -> expected time if we follow the given controllers.
      * This may be overridden in scenarios when it is already computed when computing the controllers */
