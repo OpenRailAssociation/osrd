@@ -55,7 +55,7 @@ public class RouteGraphTest {
             releaseGroups.add(releaseGroup);
         }
 
-        return builder.makeRoute(id, tvdSections, releaseGroups, switchPositions, waypoints.get(0), null, null);
+        return builder.makeRoute(id, tvdSections, releaseGroups, switchPositions, waypoints.get(0), null);
     }
 
     private static Route makeRoute(
@@ -150,7 +150,7 @@ public class RouteGraphTest {
 
         var index = 0;
 
-        var middleSwitch = trackGraph.makeSwitchNode(0, "switch", 0, 0);
+        var middleSwitch = trackGraph.makeSwitchNode(nodeC.index, "switch", 0, 0);
         middleSwitch.leftTrackSection = fooA;
         middleSwitch.rightTrackSection = fooB;
 
