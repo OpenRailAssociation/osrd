@@ -245,14 +245,7 @@ public class RailJSONParser {
             var entryPoint = waypointsMap.get(rjsRoute.entryPoint.id);
             var entrySignal = detectorIdToSignalMap.getOrDefault(entryPoint.id, null);
 
-            var tmpWaypointList = rjsRoute.tmpWaypointList != null ? new ArrayList<Waypoint>() : null;
-            if (rjsRoute.tmpWaypointList != null) {
-                for (var waypointId : rjsRoute.tmpWaypointList) {
-                    tmpWaypointList.add(waypointsMap.get(waypointId.id));
-                }
-            }
-
-            routeGraph.makeRoute(rjsRoute.id, tvdSections, releaseGroups, switchesPosition, entryPoint, entrySignal, tmpWaypointList);
+            routeGraph.makeRoute(rjsRoute.id, tvdSections, releaseGroups, switchesPosition, entryPoint, entrySignal);
         }
 
         var routeNames = new HashMap<String, Route>();
