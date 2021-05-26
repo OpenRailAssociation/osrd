@@ -160,7 +160,7 @@ public final class SignalNavigatePhase implements Phase {
             return new SignalNavigatePhase.State(this);
         }
 
-        public State(SignalNavigatePhase phase, Simulation sim, TrainSchedule schedule) {
+        State(SignalNavigatePhase phase, Simulation sim, TrainSchedule schedule) {
             super(phase.targetSpeedGenerator);
             this.sim = sim;
             this.schedule = schedule;

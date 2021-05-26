@@ -138,6 +138,16 @@ public class TrainPhysicsIntegrator {
     }
 
     /**
+     * Compute the train's acceleration given an action
+     * @param action the action made by the driver
+     * @param maxDistance the maximum distance the train can go
+     * @return the new speed of the train
+     */
+    public PositionUpdate computeUpdate(Action action, double maxDistance) {
+        return computeUpdate(action.tractionForce(), action.brakingForce(), maxDistance);
+    }
+
+    /**
      * Compute the train's acceleration given an action force
      * @param actionTractionForce the force indirectly applied by the driver
      * @param actionBrakingForce the braking force indirectly applied by the driver

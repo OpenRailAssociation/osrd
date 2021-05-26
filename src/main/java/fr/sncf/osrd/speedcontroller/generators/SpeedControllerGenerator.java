@@ -27,6 +27,7 @@ public interface SpeedControllerGenerator {
         var totalLength = 0;
         for (var range : schedule.fullPath)
             totalLength += Math.abs(range.getBeginPosition() - range.getEndPosition());
+
         var res = new TreeMap<Double, Double>();
 
         double time = schedule.departureTime;
@@ -37,9 +38,16 @@ public interface SpeedControllerGenerator {
                     .filter(x -> x.isActive(location))
                     .collect(Collectors.toSet());
             var directive = SpeedController.getDirective(activeControllers, location.getPathPosition());
-            speed = directive.allowedSpeed;
-            time += timestep;
-            location.updatePosition(schedule.rollingStock.length, speed * timestep);
+
+            var integrator = TrainPhysicsIntegrator.make(timestep, schedule.rollingStock,
+                    speed, location.maxTrainGrade());
+            var action = integrator.actionToTargetSpeed(directive, schedule.rollingStock);
+            var distanceLeft = totalLength - location.getPathPosition();
+            var update =  integrator.computeUpdate(action, distanceLeft);
+            speed = update.speed;
+
+            location.updatePosition(schedule.rollingStock.length, update.positionDelta);
+            time += update.timeDelta;
         }
         return res;
     }
