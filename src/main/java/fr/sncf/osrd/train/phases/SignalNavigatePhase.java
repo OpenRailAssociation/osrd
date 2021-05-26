@@ -32,7 +32,7 @@ public final class SignalNavigatePhase implements Phase {
     public final TrackSectionLocation endLocation;
     private final ArrayList<TrackSectionRange> trackSectionPath;
     private final ArrayList<Interaction> interactionsPath;
-    private final transient SpeedControllerGenerator targetSpeedGenerator;
+    public transient SpeedControllerGenerator targetSpeedGenerator;
 
     private SignalNavigatePhase(
             List<Route> routePath,
