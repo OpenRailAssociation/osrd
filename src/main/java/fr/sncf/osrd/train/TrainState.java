@@ -156,14 +156,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         assert action != null;
         assert action.type != Action.ActionType.EMERGENCY_BRAKING;
 
-        // compute and limit the traction force
-        var tractionForce = action.tractionForce();
-
-        // compute and limit the braking force
-        var brakingForce = action.brakingForce();
-
         // run the physics sim
-        var update = integrator.computeUpdate(tractionForce, brakingForce, distanceStep);
+        var update = integrator.computeUpdate(action, distanceStep);
 
         // update location
         location.updatePosition(rollingStock.length, update.positionDelta);
