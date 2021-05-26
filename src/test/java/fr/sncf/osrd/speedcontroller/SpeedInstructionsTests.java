@@ -1,36 +1,17 @@
 package fr.sncf.osrd.speedcontroller;
 
-import fr.sncf.osrd.StaticSpeedLimitTest;
-import fr.sncf.osrd.TrainSchedule;
+import static fr.sncf.osrd.Helpers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.infra.*;
-import fr.sncf.osrd.infra.routegraph.RouteGraph;
-import fr.sncf.osrd.infra.trackgraph.BufferStop;
-import fr.sncf.osrd.infra.trackgraph.TrackGraph;
-import fr.sncf.osrd.infra.trackgraph.Waypoint;
-import fr.sncf.osrd.infra_state.RouteState;
-import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
-import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
-import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
-import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.events.TrainCreatedEvent;
-import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
-import fr.sncf.osrd.utils.RangeValue;
-import fr.sncf.osrd.utils.SignAnalyzer;
-import fr.sncf.osrd.utils.SortedArraySet;
-import fr.sncf.osrd.utils.TrackSectionLocation;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static fr.sncf.osrd.TestTrains.FAST_NO_FRICTION_TRAIN;
-import static org.junit.jupiter.api.Assertions.*;
-import static fr.sncf.osrd.Helpers.*;
 
 public class SpeedInstructionsTests {
 
@@ -51,7 +32,7 @@ public class SpeedInstructionsTests {
         @Override
         public boolean deepEquals(SpeedController other) {
             if (other instanceof StaticSpeedController)
-                return ((StaticSpeedController) other).speed == speed;
+                return Math.abs(((StaticSpeedController) other).speed - speed) < 1e-5;
             return false;
         }
     }
@@ -70,9 +51,12 @@ public class SpeedInstructionsTests {
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
-        makeAssertEvent(sim, 1, () -> sim.trains.get("Test.").getLastState().location.getPathPosition() == 0);
-        makeAssertEvent(sim, 10, () -> sim.trains.get("Test.").getLastState().location.getPathPosition() == 0);
-        makeAssertEvent(sim, 100, () -> sim.trains.get("Test.").getLastState().location.getPathPosition() == 0);
+        Helpers.Procedure assertNoSpeed = () ->
+                assertEquals(sim.trains.get("Test.").getLastState().location.getPathPosition(), 0, 1e-5);
+
+        makeFunctionEvent(sim, 1, assertNoSpeed);
+        makeFunctionEvent(sim, 10, assertNoSpeed);
+        makeFunctionEvent(sim, 100, assertNoSpeed);
         run(sim, config);
     }
 }
