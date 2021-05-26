@@ -6,7 +6,6 @@ import colors from 'common/Map/Consts/colors';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateViewport } from 'reducers/map';
 import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';
-import { useTranslation } from 'react-i18next';
 
 import 'common/Map/Map.scss';
 
@@ -35,7 +34,6 @@ import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 
 /* Objects & various */
-import JointsDeZones from 'common/Map/Layers/JointsDeZones';
 import Signals from 'common/Map/Layers/Signals';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 
@@ -49,7 +47,6 @@ const Map = () => {
   const {
     urlLat, urlLon, urlZoom, urlBearing, urlPitch,
   } = useParams();
-  const { t } = useTranslation();
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
     (value) => dispatch(updateViewport(value, undefined)), [dispatch],
@@ -82,14 +79,13 @@ const Map = () => {
       && e.features.length > 0
       && e.features[0].properties.OP_id !== undefined
       && e.features[0].properties.type_voie === 'VP') {
-      console.log('coucou', 'OK');
+      console.log('coucou', e.features);
       dispatch(updateFeatureInfoClickOSRD({
         displayPopup: true,
         feature: e.features[0],
         lngLat: e.lngLat,
       }));
     } else {
-      console.log('coucou', 'NOK');
       dispatch(updateFeatureInfoClickOSRD({
         displayPopup: false,
         feature: undefined,

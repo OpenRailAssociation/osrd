@@ -5,8 +5,6 @@ import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import colors from 'common/Map/Consts/colors';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateViewport } from 'reducers/map';
-import { useTranslation } from 'react-i18next';
-import ThreeboxTest from 'common/Map/Layers/ThreeboxTest';
 
 import 'common/Map/Map.scss';
 
@@ -33,7 +31,6 @@ import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 /* Objects & various */
 import JointsDeZones from 'common/Map/Layers/JointsDeZones';
 import Signals from 'common/Map/Layers/Signals';
-import SignalBox from 'common/Map/Layers/SignalBox';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 
 const Map = () => {
@@ -47,7 +44,6 @@ const Map = () => {
     urlLat, urlLon, urlZoom, urlBearing, urlPitch,
   } = useParams();
   const { fullscreen } = useSelector((state) => state.main);
-  const { t } = useTranslation();
   const dispatch = useDispatch();
   const updateViewportChange = useCallback((value) => dispatch(updateViewport(value, '/carto')), [dispatch]);
 
@@ -165,8 +161,6 @@ const Map = () => {
           </>
         )}
 
-        {/* <SignalBox />
-        <ThreeboxTest mapInstance={{}} /> */}
         {mapSearchMarker !== undefined ? (
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         ) : null}
