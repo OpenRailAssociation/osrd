@@ -9,6 +9,8 @@ import CenterLoader from 'common/CenterLoader/CenterLoader';
 import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
 import SpeedSpaceChart from 'applications/osrd/views/OSRDSimulation/SpeedSpaceChart';
 import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
+import TrainDetails from 'applications/osrd/views/OSRDSimulation/TrainDetails';
+import TrainsList from 'applications/osrd/views/OSRDSimulation/TrainsList';
 import { simplifyData, timeShiftTrain, timeShiftStops } from 'applications/osrd/components/Helpers/ChartHelpers';
 import './OSRDSimulation.scss';
 
@@ -23,6 +25,7 @@ const OSRDSimulation = () => {
   const { fullscreen } = useSelector((state) => state.main);
   const [hoverPosition, setHoverPosition] = useState(undefined);
   const [selectedTrain, setSelectedTrain] = useState(0);
+  const [mustRedraw, setMustRedraw] = useState(true);
   // const { isWorking, simulationRaw } = useSelector((state) => state.osrdsimulation);
   const [simulation, setSimulation] = useState(undefined);
 
@@ -30,9 +33,9 @@ const OSRDSimulation = () => {
   // TO REMOVE IN PRODUCTION
   useEffect(() => {
     if (simulationRaw !== undefined) {
-      const shiftValue = 1500;
+      const shiftValue = 2500;
       const simulationLocal = { ...simulationRaw, trains: simplifyData(simulationRaw.trains, 25) };
-      for (let idx = 1; idx < 2; idx += 1) {
+      for (let idx = 1; idx < 5; idx += 1) {
         simulationLocal.trains.push(
           {
             ...simulationLocal.trains[0],
@@ -96,24 +99,56 @@ const OSRDSimulation = () => {
               <TimeTable data={simulation.trains[selectedTrain].stops} />
             </div>
             <div className="osrd-simulation-container mb-2">
-              <button type="button" onClick={play} className="btn btn-secondary btn-sm">PLAY</button>
-              <SpaceTimeChart
-                simulation={simulation}
-                hoverPosition={hoverPosition}
-                setHoverPosition={setHoverPosition}
-                selectedTrain={selectedTrain}
-                setSelectedTrain={setSelectedTrain}
-                offsetTimeByDragging={offsetTimeByDragging}
-              />
+              {/* <button
+                  type="button"
+                  onClick={play}
+                  className="btn btn-secondary btn-sm">
+                    PLAY
+                  </button> */}
+              <div className="row">
+                <div className="col-md-4">
+                  <TrainsList
+                    simulation={simulation}
+                    selectedTrain={selectedTrain}
+                    setSelectedTrain={setSelectedTrain}
+                    setMustRedraw={setMustRedraw}
+                  />
+                </div>
+                <div className="col-md-8">
+                  <SpaceTimeChart
+                    simulation={simulation}
+                    hoverPosition={hoverPosition}
+                    setHoverPosition={setHoverPosition}
+                    selectedTrain={selectedTrain}
+                    setSelectedTrain={setSelectedTrain}
+                    offsetTimeByDragging={offsetTimeByDragging}
+                    mustRedraw={mustRedraw}
+                    setMustRedraw={setMustRedraw}
+                  />
+                </div>
+              </div>
             </div>
             <div className="osrd-simulation-container mb-2">
-              <SpeedSpaceChart
-                simulation={simulation}
-                hoverPosition={hoverPosition}
-                setHoverPosition={setHoverPosition}
-                selectedTrain={selectedTrain}
-                setSelectedTrain={setSelectedTrain}
-              />
+              <div className="row">
+                <div className="col-md-4">
+                  <TrainDetails
+                    simulation={simulation}
+                    hoverPosition={hoverPosition}
+                    selectedTrain={selectedTrain}
+                  />
+                </div>
+                <div className="col-md-8">
+                  <SpeedSpaceChart
+                    simulation={simulation}
+                    hoverPosition={hoverPosition}
+                    setHoverPosition={setHoverPosition}
+                    selectedTrain={selectedTrain}
+                    setSelectedTrain={setSelectedTrain}
+                    mustRedraw={mustRedraw}
+                    setMustRedraw={setMustRedraw}
+                  />
+                </div>
+              </div>
             </div>
             <ButtonFullscreen />
           </div>

@@ -1,7 +1,6 @@
 const drawPoints = (
   chart, color, data, groupID, keyValues, rotate,
 ) => {
-  console.log(data);
   chart.drawZone.append('g')
     .selectAll('conflictsPoints')
     .attr('id', 'conflictsZone')

@@ -103,8 +103,8 @@ const createTrain = (keyValues, simulationTrains) => {
 
 const SpaceTimeChart = (props) => {
   const {
-    hoverPosition, offsetTimeByDragging, selectedTrain,
-    setHoverPosition, setSelectedTrain, simulation,
+    hoverPosition, mustRedraw, offsetTimeByDragging, selectedTrain,
+    setHoverPosition, setMustRedraw, setSelectedTrain, simulation,
   } = props;
   const ref = useRef();
   const keyValues = ['time', 'value'];
@@ -112,7 +112,6 @@ const SpaceTimeChart = (props) => {
   const [isResizeActive, setResizeActive] = useState(false);
   const [dataSimulation, setDataSimulation] = useState(createTrain(keyValues, simulation.trains));
   const [chart, setChart] = useState(undefined);
-  const [mustRedraw, setMustRedraw] = useState(true);
   const [showModal, setShowModal] = useState('');
 
   const handleKey = ({ key }) => {
@@ -170,85 +169,26 @@ const SpaceTimeChart = (props) => {
   }, []);
 
   return (
-    <div className="row w-100">
-      <div className="col-9 w-100">
-        <div id={`container-${CHART_ID}`}>
-          {showModal !== ''
-            ? (
-              <ChartModal
-                type={showModal}
-                setShowModal={setShowModal}
-                trainName={dataSimulation[selectedTrain].name}
-                offsetTimeByDragging={offsetTimeByDragging}
-                setMustRedraw={setMustRedraw}
-              />
-            )
-            : null}
-          <div ref={ref} />
-        </div>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => toggleRotation(rotate, setRotate)}
-        >
-          Rotation
-        </button>
-      </div>
-      <div className="col-3">
-        <p className="font-weight-bold lead">
-          {dataSimulation[selectedTrain].name}
-        </p>
-        { hoverPosition !== undefined
-          && dataSimulation[selectedTrain].headPosition[hoverPosition] !== undefined
-          ? (
-            <>
-              <p className="font-weight-bold lead">
-                <i className="icons-clock mr-2" />
-                {dataSimulation[selectedTrain].headPosition[hoverPosition].time.toLocaleTimeString('fr-FR')}
-              </p>
-              <div>
-                <span className="small font-weight-bold text-blue mr-2">TÊTE</span>
-                {Math.round(dataSimulation[selectedTrain].headPosition[hoverPosition].value) / 1000}
-                km
-              </div>
-              <div>
-                <span className="small font-weight-bold text-cyan mr-2">QUEUE</span>
-                {Math.round(dataSimulation[selectedTrain].tailPosition[hoverPosition].value) / 1000}
-                km
-              </div>
-              <div>
-                <span className="small font-weight-bold text-danger mr-2">FREINAGE</span>
-                {Math.round(
-                  dataSimulation[selectedTrain].brakingDistance[hoverPosition].value,
-                ) / 1000}
-                km
-              </div>
-              <div>
-                <span className="small font-weight-bold text-orange mr-2">BLOCK</span>
-                {Math.round(
-                  dataSimulation[selectedTrain].currentBlocksection[hoverPosition].value,
-                ) / 1000}
-                km
-              </div>
-              <div>
-                <span className="small font-weight-bold text-secondary mr-2">CANTON</span>
-                {Math.round(
-                  dataSimulation[selectedTrain].brakingDistance[hoverPosition].value
-                  - dataSimulation[selectedTrain].currentBlocksection[hoverPosition].value,
-                ) / 1000}
-                km
-              </div>
-              <p>
-                <span className="small font-weight-bold text-pink mr-2">VITESSE</span>
-                {Math.round(simulation.trains[selectedTrain].steps[hoverPosition].speed * 3.6)}
-                km/h
-              </p>
-              <p>
-                {simulation.trains[selectedTrain].steps[hoverPosition].state}
-              </p>
-            </>
-          ) : null }
-      </div>
+    <div id={`container-${CHART_ID}`} className="spacetime-chart w-100">
+      {showModal !== ''
+        ? (
+          <ChartModal
+            type={showModal}
+            setShowModal={setShowModal}
+            trainName={dataSimulation[selectedTrain].name}
+            offsetTimeByDragging={offsetTimeByDragging}
+            setMustRedraw={setMustRedraw}
+          />
+        )
+        : null}
+      <div ref={ref} />
+      <button
+        type="button"
+        className="btn-rounded btn-rounded-white box-shadow btn-rotate"
+        onClick={() => toggleRotation(rotate, setRotate)}
+      >
+        <i className="icons-refresh" />
+      </button>
     </div>
   );
 };
@@ -256,8 +196,10 @@ const SpaceTimeChart = (props) => {
 SpaceTimeChart.propTypes = {
   simulation: PropTypes.object.isRequired,
   hoverPosition: PropTypes.number,
+  mustRedraw: PropTypes.bool.isRequired,
   setHoverPosition: PropTypes.func.isRequired,
   selectedTrain: PropTypes.number.isRequired,
+  setMustRedraw: PropTypes.func.isRequired,
   setSelectedTrain: PropTypes.func.isRequired,
   offsetTimeByDragging: PropTypes.func.isRequired,
 };

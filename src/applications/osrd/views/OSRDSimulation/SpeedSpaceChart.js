@@ -14,10 +14,12 @@ import enableInteractivity, { traceVerticalLine } from 'applications/osrd/compon
 const CHART_ID = 'SpeedSpaceChart';
 
 const SpeedSpaceChart = (props) => {
-  const { hoverPosition, setHoverPosition, simulation } = props;
+  const {
+    hoverPosition, mustRedraw, setHoverPosition,
+    setMustRedraw, simulation,
+  } = props;
   const [rotate, setRotate] = useState(false);
   const [chart, setChart] = useState(undefined);
-  const [mustRedraw, setMustRedraw] = useState(true);
   const [isResizeActive, setResizeActive] = useState(false);
   const ref = useRef();
   const trainNumber = 0;
@@ -87,25 +89,25 @@ const SpeedSpaceChart = (props) => {
   }, [chart, mustRedraw, hoverPosition]);
 
   return (
-    <div className="w-100">
-      <div id={`container-${CHART_ID}`}>
-        <div ref={ref} style={{ width: '100%', height: '100%' }} />
-      </div>
+    <div id={`container-${CHART_ID}`} className="speedspace-chart w-100">
+      <div ref={ref} style={{ width: '100%', height: '100%' }} />
       <button
         type="button"
-        className="btn btn-primary"
+        className="btn-rounded btn-rounded-white box-shadow btn-rotate"
         onClick={() => toggleRotation(rotate, setRotate)}
       >
-        Rotation
+        <i className="icons-refresh" />
       </button>
     </div>
   );
 };
 
 SpeedSpaceChart.propTypes = {
-  simulation: PropTypes.object.isRequired,
   hoverPosition: PropTypes.number,
+  mustRedraw: PropTypes.bool.isRequired,
   setHoverPosition: PropTypes.func.isRequired,
+  setMustRedraw: PropTypes.func.isRequired,
+  simulation: PropTypes.object.isRequired,
 };
 SpeedSpaceChart.defaultProps = {
   hoverPosition: undefined,

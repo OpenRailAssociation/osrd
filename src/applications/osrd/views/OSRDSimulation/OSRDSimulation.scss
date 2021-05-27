@@ -27,3 +27,21 @@
   fill: #333;
   font-size: .75rem;
 }
+
+.spacetime-chart {
+  position: relative;
+  .btn-rotate {
+    position: absolute;
+    right: 3rem;
+    bottom: 2.5rem;
+  }
+}
+
+.speedspace-chart {
+  position: relative;
+  .btn-rotate {
+    position: absolute;
+    right: 4.5rem;
+    bottom: 2.5rem;
+  }
+}
