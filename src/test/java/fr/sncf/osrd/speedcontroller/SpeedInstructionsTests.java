@@ -67,7 +67,7 @@ public class SpeedInstructionsTests {
         var phase = config.trainSchedules.get(0).phases.get(0);
         assert phase instanceof SignalNavigatePhase;
         ((SignalNavigatePhase) phase).targetSpeedGenerator =
-                (schedule, tmp) -> new HashSet<>(Collections.singletonList(new StaticSpeedController(5)));
+                (schedule, tmp) -> new HashSet<>(Collections.singletonList(new StaticSpeedController(1)));
 
         infra.switches.iterator().next().positionChangeDelay = 42;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
@@ -75,16 +75,49 @@ public class SpeedInstructionsTests {
 
         makeAssertEvent(sim, 1, () -> getLastTrainSpeed(sim) < 5);
         makeAssertEvent(sim, 10, () -> getLastTrainSpeed(sim) < 5);
-        makeAssertEvent(sim, 100, () -> getLastTrainSpeed(sim) > 10);
+        makeAssertEvent(sim, 60, () -> isLate(sim));
+        makeAssertEvent(sim, 150, () -> !isLate(sim));
         run(sim, config);
     }
 
-    private static double getLastTrainSpeed(Simulation sim) {
-        return getLastTrainSpeed(sim, "Test.");
+    @Test
+    public void testIsLate() throws InvalidInfraException, SimulationError {
+        var infra = getBaseInfra();
+        assert infra != null;
+        var config = getBaseConfig();
+        assert config != null;
+
+        infra.switches.iterator().next().positionChangeDelay = 20;
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+
+        makeAssertEvent(sim, 30, () -> isLate(sim));
+        run(sim, config);
     }
 
-    private static double getLastTrainSpeed(Simulation sim, String id) {
-        var train = sim.trains.get(id);
+    @Test
+    public void testIsNotLate() throws InvalidInfraException, SimulationError {
+        var infra = getBaseInfra();
+        assert infra != null;
+        var config = getBaseConfig();
+        assert config != null;
+
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+
+        for (int i = 1; i < 150; i++)
+        makeAssertEvent(sim, i, () -> !isLate(sim));
+        run(sim, config);
+    }
+
+    private static boolean isLate(Simulation sim) {
+        var trainState = sim.trains.get("Test.").getLastState();
+        var secondsLate = trainState.currentPhaseState.speedInstructions.secondsLate(
+                trainState.location.getPathPosition(), trainState.time);
+        return secondsLate > 0.1;
+    }
+
+    private static double getLastTrainSpeed(Simulation sim) {
+        var train = sim.trains.get("Test.");
         var lastEvent = train.lastScheduledEvent;
         if (lastEvent instanceof TrainReachesActionPoint) {
             var trainReachesActionPoint = (TrainReachesActionPoint) lastEvent;
