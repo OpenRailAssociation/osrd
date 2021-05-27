@@ -47,7 +47,7 @@ public final class TrackGraph extends BiNGraph<TrackSection, TrackNode> {
      * @param endNodeIndex   end end node of the track
      * @param id             the track section ID
      * @param length         the length of the track
-     * @param endpointCoords
+     * @param endpointCoords endpoint coordinates
      * @return the new track section
      */
     public TrackSection makeTrackSection(
@@ -55,7 +55,8 @@ public final class TrackGraph extends BiNGraph<TrackSection, TrackNode> {
             int endNodeIndex,
             String id,
             double length,
-            List<List<Double>> endpointCoords) {
+            List<List<Double>> endpointCoords
+    ) {
         var edge = new TrackSection(this, nextEdgeIndex(), id, startNodeIndex, endNodeIndex, length, endpointCoords);
         trackSectionMap.put(edge.id, edge);
         return edge;

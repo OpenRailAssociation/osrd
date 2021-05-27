@@ -78,6 +78,14 @@ public final class TrackSectionRange implements DeepComparable<TrackSectionRange
         this.endPosition = endPosition;
     }
 
+    /** Clone a track section range */
+    public TrackSectionRange(TrackSectionRange original) {
+        this.edge = original.edge;
+        this.direction = original.direction;
+        this.beginPosition = original.beginPosition;
+        this.endPosition = original.endPosition;
+    }
+
     /** Creates the opposite track section range */
     public  TrackSectionRange opposite() {
         return new TrackSectionRange(

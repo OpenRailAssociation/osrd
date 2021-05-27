@@ -145,16 +145,16 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                     res.add(waypoints.data.get(waypoints.data.size() - 1).value);
                 return res;
             }
-            var endpoint = direction == EdgeDirection.START_TO_STOP ? EdgeEndpoint.END : EdgeEndpoint.BEGIN;
-            var neighbors = trackSection.getNeighbors(endpoint);
+            var neighbors = trackSection.getForwardNeighbors(direction);
             for (var neighbor : neighbors) {
                 var neighborDirection = neighbor.getDirection(trackSection, direction);
                 res.addAll(findTvdWaypoints(neighbor, neighborDirection));
-                var backEndpoint = neighborDirection == EdgeDirection.START_TO_STOP ? EdgeEndpoint.BEGIN : EdgeEndpoint.END;
-                var backNeighbors = neighbor.getNeighbors(backEndpoint);
+                var backNeighbors = neighbor.getBackwardNeighbors(neighborDirection);
                 for (var backNeighbor : backNeighbors) {
-                    if (backNeighbor != trackSection)
-                        res.addAll(findTvdWaypoints(backNeighbor, backNeighbor.getDirection(neighbor, neighborDirection.opposite())));
+                    if (backNeighbor != trackSection) {
+                        var backNeighborDirection = backNeighbor.getDirection(neighbor, neighborDirection.opposite());
+                        res.addAll(findTvdWaypoints(backNeighbor, backNeighborDirection));
+                    }
                 }
             }
             return res;
