@@ -12,11 +12,11 @@ from osrd_infra.views.edit import edit_infra
 
 
 class InfraView(
-        mixins.CreateModelMixin,
-        mixins.RetrieveModelMixin,
-        mixins.DestroyModelMixin,
-        mixins.ListModelMixin,
-        GenericViewSet
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet,
 ):
     queryset = Infra.objects.all()
     serializer_class = InfraSerializer

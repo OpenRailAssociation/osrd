@@ -1,4 +1,5 @@
 from config.settings import *  # noqa
+from os import getenv
 
 DATABASES = {
     'default': {
@@ -46,3 +47,5 @@ DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.redirects.RedirectsPanel',
     'debug_toolbar.panels.profiling.ProfilingPanel',
 ]
+
+BACKEND_URL = getenv("BACKEND_URL", "http://localhost:8080/")

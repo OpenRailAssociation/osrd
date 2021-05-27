@@ -19,6 +19,8 @@ from osrd_infra.models import (
     ALL_ENTITY_TYPES,
     # rolling stock
     RollingStock,
+    # pathfinding
+    Path,
 )
 
 from osrd_infra.models.common import EnumSerializer
@@ -115,7 +117,17 @@ class LightRollingStockSerializer(ModelSerializer):
         exclude = ["tractive_effort_curve", "rolling_resistance"]
 
 
+# PATH FINDING
+
+
+class PathSerializer(ModelSerializer):
+    class Meta:
+        model = Path
+        exclude = ["namespace", "payload"]
+
+
 # COMPONENT SERIALIZERS
+
 
 class TrackSectionLinkComponentSerializer(ComponentSerializer):
     begin_endpoint = EnumSerializer(Endpoint)
