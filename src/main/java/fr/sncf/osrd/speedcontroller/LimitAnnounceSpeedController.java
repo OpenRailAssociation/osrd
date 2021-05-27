@@ -49,6 +49,7 @@ public final class LimitAnnounceSpeedController extends SpeedController {
 
     @Override
     public SpeedController scaled(double scalingFactor) {
+        // TODO fix this
         return new LimitAnnounceSpeedController(targetSpeedLimit * scalingFactor,
                 beginPosition, endPosition, gamma);
     }
