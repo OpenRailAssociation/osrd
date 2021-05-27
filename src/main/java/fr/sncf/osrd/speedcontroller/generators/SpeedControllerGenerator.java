@@ -5,6 +5,7 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator;
+import fr.sncf.osrd.train.TrainPhysicsIntegrator.PositionUpdate;
 
 import java.util.NavigableMap;
 import java.util.Set;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 public interface SpeedControllerGenerator {
 
     /** Generates the set of SpeedController */
-    Set<SpeedController> generate(TrainSchedule schedule, Set<SpeedController> maxSpeed);
+    Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed);
 
     /** Generates a map of location -> expected time if we follow the given controllers.
      * This may be overridden in scenarios when it is already computed when computing the controllers */
@@ -23,17 +24,44 @@ public interface SpeedControllerGenerator {
                                                           TrainSchedule schedule,
                                                           Set<SpeedController> controllers,
                                                           double timestep) {
+        var updatesMap
+                = getUpdatesAtPositions(sim, schedule, controllers, timestep);
+        var res = new TreeMap<Double, Double>();
+        double time = schedule.departureTime;
+        for (var k : updatesMap.keySet()) {
+            time += updatesMap.get(k).timeDelta;
+            res.put(k, time);
+        }
+        return res;
+    }
+
+    /** TODO doc */
+    default NavigableMap<Double, Double> getExpectedSpeeds(Simulation sim,
+                                                           TrainSchedule schedule,
+                                                           Set<SpeedController> controllers,
+                                                           double timestep) {
+        var updatesMap
+                = getUpdatesAtPositions(sim, schedule, controllers, timestep);
+        var res = new TreeMap<Double, Double>();
+        for (var k : updatesMap.keySet()) {
+            res.put(k, updatesMap.get(k).speed);
+        }
+        return res;
+    }
+
+    default NavigableMap<Double, PositionUpdate> getUpdatesAtPositions(Simulation sim,
+                                                                       TrainSchedule schedule,
+                                                                       Set<SpeedController> controllers,
+                                                                       double timestep) {
         var location = Train.getInitialLocation(schedule, sim);
         var totalLength = 0;
         for (var range : schedule.fullPath)
             totalLength += Math.abs(range.getBeginPosition() - range.getEndPosition());
 
-        var res = new TreeMap<Double, Double>();
+        var res = new TreeMap<Double, PositionUpdate>();
 
-        double time = schedule.departureTime;
         double speed = 0;
         do {
-            res.put(location.getPathPosition(), time);
             var activeControllers = controllers.stream()
                     .filter(x -> x.isActive(location))
                     .collect(Collectors.toSet());
@@ -47,7 +75,7 @@ public interface SpeedControllerGenerator {
             speed = update.speed;
 
             location.updatePosition(schedule.rollingStock.length, update.positionDelta);
-            time += update.timeDelta;
+            res.put(location.getPathPosition(), update);
         } while (location.getPathPosition() < totalLength && speed > 0);
         return res;
     }
