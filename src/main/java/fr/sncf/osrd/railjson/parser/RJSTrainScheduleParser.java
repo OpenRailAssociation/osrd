@@ -7,11 +7,13 @@ import fr.sncf.osrd.railjson.parser.exceptions.UnknownRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.UnknownRoute;
 import fr.sncf.osrd.railjson.parser.exceptions.UnknownTrackSection;
 import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
+import fr.sncf.osrd.railjson.schema.schedule.RJSRunningTimeParameters;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.speedcontroller.generators.MaxSpeedGenerator;
+import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.train.phases.StopPhase;
@@ -87,14 +89,26 @@ public class RJSTrainScheduleParser {
         );
     }
 
+    private static SpeedControllerGenerator parseSpeedControllerGenerator(RJSRunningTimeParameters parameters)
+            throws InvalidSchedule {
+        if (parameters == null)
+            return new MaxSpeedGenerator();
+        else if (parameters instanceof RJSRunningTimeParameters.Typical) {
+            var typicalParameters = (RJSRunningTimeParameters.Typical) parameters;
+            // TODO create a new interface implementing SpeedControllerGenerator and instantiate it here
+            return null;
+        } else {
+            throw new InvalidSchedule("Unimplemented running type");
+        }
+    }
+
     private static Phase parsePhase(
             Infra infra,
             TrackSectionLocation startLocation,
             RJSTrainPhase rjsPhase
     ) throws InvalidSchedule {
 
-        // TODO new ways to generate target speed will be added here, using rjsPhase.targetSpeedGenerator
-        var targetSpeedGenerator = new MaxSpeedGenerator();
+        var targetSpeedGenerator = parseSpeedControllerGenerator(rjsPhase.runningTimeParameters);
 
         if (rjsPhase.getClass() == RJSTrainPhase.Stop.class) {
             var rjsStop = (RJSTrainPhase.Stop) rjsPhase;
