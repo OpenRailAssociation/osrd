@@ -22,7 +22,7 @@ public abstract class RJSTrainPhase {
 
     /** What generator to use to generate the target speed */
     @Json(name = "running_time_parameters")
-    public RJSRunningTimeParameters runTPar;
+    public RJSRunningTimeParameters runningTimeParameters;
 
     public static final class Navigate extends RJSTrainPhase {
         /** The sequence of routes the train should take.
