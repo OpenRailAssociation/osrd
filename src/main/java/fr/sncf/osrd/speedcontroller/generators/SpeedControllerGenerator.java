@@ -31,8 +31,8 @@ public interface SpeedControllerGenerator {
         var res = new TreeMap<Double, Double>();
 
         double time = schedule.departureTime;
-        double speed = 1;
-        while (location.getPathPosition() < totalLength && speed > 0) {
+        double speed = 0;
+        do {
             res.put(location.getPathPosition(), time);
             var activeControllers = controllers.stream()
                     .filter(x -> x.isActive(location))
@@ -48,7 +48,7 @@ public interface SpeedControllerGenerator {
 
             location.updatePosition(schedule.rollingStock.length, update.positionDelta);
             time += update.timeDelta;
-        }
+        } while (location.getPathPosition() < totalLength && speed > 0);
         return res;
     }
 }
