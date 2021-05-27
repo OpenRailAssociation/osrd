@@ -36,7 +36,7 @@ public class PathfindingTest extends ApiTest {
         var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
         assert response != null;
         assertEquals(1, response.length);
-        assertEquals(4, response[0].routes.size());
+        assertEquals(3, response[0].routes.size());
         assertEquals(3, response[0].trackSections.size());
     }
 

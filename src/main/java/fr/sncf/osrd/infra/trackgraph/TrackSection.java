@@ -77,6 +77,26 @@ public final class TrackSection extends BiNEdge<TrackSection> {
         return endNeighbors;
     }
 
+    /**
+     * Given a direction of the edge, return the list of forward neighbors
+     * @param direction the direction of the edge to consider
+     * @return the list of neighbors forward
+     */
+    public List<TrackSection> getForwardNeighbors(EdgeDirection direction) {
+        if (direction == EdgeDirection.START_TO_STOP)
+            return endNeighbors;
+        return startNeighbors;
+    }
+
+    /**
+     * Given a direction of the edge, return the list of backward neighbors
+     * @param direction the direction of the edge to consider
+     * @return the list of neighbors backward
+     */
+    public List<TrackSection> getBackwardNeighbors(EdgeDirection direction) {
+        return getForwardNeighbors(direction.opposite());
+    }
+
     @Override
     public String toString() {
         return String.format("TrackSection { id=%s }", id);
