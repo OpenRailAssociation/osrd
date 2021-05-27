@@ -18,6 +18,11 @@ public class MaxSpeedController extends SpeedController {
     }
 
     @Override
+    public SpeedController scaled(double scalingFactor) {
+        return new MaxSpeedController(speedLimit * scalingFactor, beginPosition, endPosition);
+    }
+
+    @Override
     public String toString() {
         return String.format(
                 "MaxSpeedController { targetSpeed=%.3f, begin=%.3f, end=%.3f}",

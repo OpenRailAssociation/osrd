@@ -31,6 +31,11 @@ public class SpeedInstructionsTests {
         }
 
         @Override
+        public SpeedController scaled(double scalingFactor) {
+            return new StaticSpeedController(speed * scalingFactor);
+        }
+
+        @Override
         public boolean deepEquals(SpeedController other) {
             if (other instanceof StaticSpeedController)
                 return Math.abs(((StaticSpeedController) other).speed - speed) < 1e-5;
