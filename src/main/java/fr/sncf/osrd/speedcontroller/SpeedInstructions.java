@@ -67,10 +67,14 @@ public class SpeedInstructions {
         var positionBefore = entryBefore.getKey();
         var timeAfter = entryAfter.getValue();
         var positionAfter = entryAfter.getKey();
+        double expectedTime;
         if (Math.abs(positionAfter - positionBefore) < 1e-5)
-            return time - timeBefore;
-        var slope = (timeAfter - timeBefore) / (positionAfter - positionBefore);
-        var expectedTime = timeBefore + (position - positionBefore) * slope;
+            expectedTime = timeBefore;
+        else {
+            var slope = (timeAfter - timeBefore) / (positionAfter - positionBefore);
+            expectedTime = timeBefore + (position - positionBefore) * slope;
+        }
+        System.out.println(time + " " + expectedTime);
         return time - expectedTime;
     }
 
