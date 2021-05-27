@@ -61,7 +61,7 @@
             "rt.S7-buffer_stop_c"
           ],
           "running_time_parameters": {
-            "running_time_type": "type",
+            "type": "margin",
             "margin_type": "T",
             "margin_value": 5
           },
