@@ -7,6 +7,7 @@ import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
@@ -67,15 +68,13 @@ public class SpeedInstructionsTests {
         var phase = config.trainSchedules.get(0).phases.get(0);
         assert phase instanceof SignalNavigatePhase;
         ((SignalNavigatePhase) phase).targetSpeedGenerator =
-                (schedule, tmp) -> new HashSet<>(Collections.singletonList(new StaticSpeedController(1)));
+                (schedule, tmp) -> new HashSet<>(Collections.singletonList(new StaticSpeedController(10)));
 
         infra.switches.iterator().next().positionChangeDelay = 42;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
 
-        makeAssertEvent(sim, 1, () -> getLastTrainSpeed(sim) < 5);
-        makeAssertEvent(sim, 10, () -> getLastTrainSpeed(sim) < 5);
-        makeAssertEvent(sim, 60, () -> isLate(sim));
+        makeAssertEvent(sim, 43, () -> isLate(sim));
         makeAssertEvent(sim, 150, () -> !isLate(sim));
         run(sim, config);
     }
@@ -105,25 +104,36 @@ public class SpeedInstructionsTests {
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
         for (int i = 1; i < 150; i++)
-        makeAssertEvent(sim, i, () -> !isLate(sim));
+            makeAssertEvent(sim, i, () -> !isLate(sim));
         run(sim, config);
     }
 
     private static boolean isLate(Simulation sim) {
+        var event = getLastTrainEvent(sim);
         var trainState = sim.trains.get("Test.").getLastState();
         var secondsLate = trainState.currentPhaseState.speedInstructions.secondsLate(
-                trainState.location.getPathPosition(), trainState.time);
+                event.pathPosition, sim.getTime());
         return secondsLate > 0.1;
     }
 
-    private static double getLastTrainSpeed(Simulation sim) {
+    private static Train.TrainStateChange.SpeedUpdate getLastTrainEvent(Simulation sim) {
         var train = sim.trains.get("Test.");
         var lastEvent = train.lastScheduledEvent;
+        Train.TrainStateChange.SpeedUpdates updates;
         if (lastEvent instanceof TrainReachesActionPoint) {
             var trainReachesActionPoint = (TrainReachesActionPoint) lastEvent;
-            return trainReachesActionPoint.trainStateChange.positionUpdates.last().speed;
+            updates = trainReachesActionPoint.trainStateChange.positionUpdates;
+        } else {
+            var trainReachesActionPoint = (TrainMoveEvent) lastEvent;
+            updates = trainReachesActionPoint.trainStateChange.positionUpdates;
         }
-        var trainReachesActionPoint = (TrainMoveEvent) lastEvent;
-        return trainReachesActionPoint.trainStateChange.positionUpdates.last().speed;
+        for (int i = updates.size() - 1; i >= 0; i--)
+            if (updates.get(i).time <= sim.getTime())
+                return updates.get(i);
+        return updates.get(0);
+    }
+
+    private static double getLastTrainSpeed(Simulation sim) {
+        return getLastTrainEvent(sim).speed;
     }
 }
