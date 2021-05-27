@@ -135,8 +135,8 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
             return routeGraph;
         }
 
-        private List<Waypoint> findTvdWaypoints(TrackSection trackSection, EdgeDirection direction) {
-            var res = new ArrayList<Waypoint>();
+        private Set<Waypoint> findTvdWaypoints(TrackSection trackSection, EdgeDirection direction) {
+            var res = new HashSet<Waypoint>();
             var waypoints = trackSection.waypoints;
             if (waypoints.size() > 0) {
                 if (direction == EdgeDirection.START_TO_STOP)
