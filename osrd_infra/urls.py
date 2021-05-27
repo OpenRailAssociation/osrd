@@ -1,26 +1,17 @@
-from rest_framework.routers import SimpleRouter
-from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
 from osrd_infra.models import get_entity_meta
 from osrd_infra.views import (
     ALL_ENTITY_VIEWSETS,
-    InfraRailJSONView,
-    InfraEditionView,
     InfraView,
-    GeoJsonView,
 )
 
 
-entity_router = SimpleRouter()
+router = DefaultRouter(trailing_slash=False)
+router.register("infra", InfraView, basename="infra")
 
 for entity_type, entity_viewset in ALL_ENTITY_VIEWSETS:
     entity_name = get_entity_meta(entity_type).name
-    entity_router.register(entity_name, entity_viewset, basename=entity_name)
+    router.register("ecs/entity/" + entity_name, entity_viewset, basename=entity_name)
 
-urlpatterns = [
-    path("ecs/entity/", include(entity_router.urls)),
-    path("railjson/infra/<int:pk>/", InfraRailJSONView.as_view()),
-    path("edit/infra/<int:pk>/", InfraEditionView.as_view()),
-    path("geojson/infra/<int:pk>/", GeoJsonView.as_view()),
-    path("infra/", InfraView.as_view()),
-]
+urlpatterns = router.urls

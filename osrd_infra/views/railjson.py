@@ -1,9 +1,6 @@
 from rest_framework.response import Response
-from rest_framework.generics import get_object_or_404
-from rest_framework.views import APIView
 
 from osrd_infra.models import (
-    Infra,
     ApplicableDirection,
     AspectEntity,
     SwitchEntity,
@@ -288,56 +285,54 @@ def fetch_and_map(entity_type, namespace):
     }
 
 
-class InfraRailJSONView(APIView):
-    def get(self, request, pk):
-        infra = get_object_or_404(Infra, pk=pk)
-        namespace = infra.namespace
+def railjson_serialize_infra(infra):
+    namespace = infra.namespace
 
-        cached_entities = {
-            "signals": fetch_and_map(SignalEntity, namespace),
-            "waypoints": fetch_and_map(WaypointEntity, namespace),
-            "op_parts": fetch_and_map(OperationalPointPartEntity, namespace),
-            "speed_section_parts": fetch_and_map(SpeedSectionPartEntity, namespace),
+    cached_entities = {
+        "signals": fetch_and_map(SignalEntity, namespace),
+        "waypoints": fetch_and_map(WaypointEntity, namespace),
+        "op_parts": fetch_and_map(OperationalPointPartEntity, namespace),
+        "speed_section_parts": fetch_and_map(SpeedSectionPartEntity, namespace),
+    }
+
+    return Response(
+        {
+            "track_sections": [
+                serialize_track_section(entity, **cached_entities)
+                for entity in fetch_entities(TrackSectionEntity, namespace)
+            ],
+            "track_section_links": [
+                serialize_track_section_link(entity)
+                for entity in fetch_entities(TrackSectionLinkEntity, namespace)
+            ],
+            "switches": [
+                serialize_switch(entity)
+                for entity in fetch_entities(SwitchEntity, namespace)
+            ],
+            "script_functions": [
+                entity.rail_script.script
+                for entity in fetch_entities(ScriptFunctionEntity, namespace)
+            ],
+            "operational_points": [
+                serialize_operational_point(entity)
+                for entity in fetch_entities(OperationalPointEntity, namespace)
+            ],
+            "speed_sections": [
+                serialize_speed_section(entity)
+                for entity in fetch_entities(SpeedSectionEntity, namespace)
+            ],
+            "tvd_sections": [
+                serialize_tvd_section(entity, **cached_entities)
+                for entity in fetch_entities(TVDSectionEntity, namespace)
+            ],
+            "routes": [
+                serialize_route(entity)
+                for entity in fetch_entities(RouteEntity, namespace)
+            ],
+            "aspects": [
+                serialize_aspect(entity)
+                for entity in fetch_entities(AspectEntity, namespace)
+            ],
+            "version": 1,
         }
-
-        return Response(
-            {
-                "track_sections": [
-                    serialize_track_section(entity, **cached_entities)
-                    for entity in fetch_entities(TrackSectionEntity, namespace)
-                ],
-                "track_section_links": [
-                    serialize_track_section_link(entity)
-                    for entity in fetch_entities(TrackSectionLinkEntity, namespace)
-                ],
-                "switches": [
-                    serialize_switch(entity)
-                    for entity in fetch_entities(SwitchEntity, namespace)
-                ],
-                "script_functions": [
-                    entity.rail_script.script
-                    for entity in fetch_entities(ScriptFunctionEntity, namespace)
-                ],
-                "operational_points": [
-                    serialize_operational_point(entity)
-                    for entity in fetch_entities(OperationalPointEntity, namespace)
-                ],
-                "speed_sections": [
-                    serialize_speed_section(entity)
-                    for entity in fetch_entities(SpeedSectionEntity, namespace)
-                ],
-                "tvd_sections": [
-                    serialize_tvd_section(entity, **cached_entities)
-                    for entity in fetch_entities(TVDSectionEntity, namespace)
-                ],
-                "routes": [
-                    serialize_route(entity)
-                    for entity in fetch_entities(RouteEntity, namespace)
-                ],
-                "aspects": [
-                    serialize_aspect(entity)
-                    for entity in fetch_entities(AspectEntity, namespace)
-                ],
-                "version": 1,
-            }
-        )
+    )

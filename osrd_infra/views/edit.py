@@ -2,13 +2,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction, IntegrityError
 from osrd_infra.serializers import ComponentSerializer
 from rest_framework.exceptions import ParseError, APIException
-from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 
 from osrd_infra.models import (
-    Infra,
     # ecs
     Entity,
     get_component_meta,
@@ -227,29 +224,26 @@ EDITION_OPERATIONS = {
 }
 
 
-class InfraEditionView(APIView):
-    @transaction.atomic
-    def post(self, request, pk):
-        infra = get_object_or_404(Infra, pk=pk)
-        namespace = infra.namespace
+@transaction.atomic
+def edit_infra(infra, operations):
+    namespace = infra.namespace
 
-        operations = request.data
-        if not isinstance(operations, list):
-            raise ParseError("expected a list of operations")
+    if not isinstance(operations, list):
+        raise ParseError("expected a list of operations")
 
-        result = []
-        for i, manifest in enumerate(operations):
-            if not isinstance(manifest, dict):
-                raise ParseError(f"{i}th manifest isn't a dict")
+    result = []
+    for i, manifest in enumerate(operations):
+        if not isinstance(manifest, dict):
+            raise ParseError(f"{i}th manifest isn't a dict")
 
-            operation_id = manifest.pop("operation", None)
-            if operation_id is None:
-                raise ParseError(f"{i}th manifest doesn't have an operation field")
+        operation_id = manifest.pop("operation", None)
+        if operation_id is None:
+            raise ParseError(f"{i}th manifest doesn't have an operation field")
 
-            operation = EDITION_OPERATIONS.get(operation_id)
-            if operation is None:
-                raise ParseError(f"unknown operation: {operation_id}")
+        operation = EDITION_OPERATIONS.get(operation_id)
+        if operation is None:
+            raise ParseError(f"unknown operation: {operation_id}")
 
-            result.append(operation(namespace, manifest))
+        result.append(operation(namespace, manifest))
 
-        return Response(result)
+    return Response(result)
