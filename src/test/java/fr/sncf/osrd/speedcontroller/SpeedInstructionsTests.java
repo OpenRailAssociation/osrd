@@ -110,7 +110,7 @@ public class SpeedInstructionsTests {
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
         for (int i = 1; i < 150; i++)
-        makeAssertEvent(sim, i, () -> !isLate(sim));
+            makeAssertEvent(sim, i, () -> !isLate(sim));
         run(sim, config);
     }
 
