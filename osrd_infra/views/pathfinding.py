@@ -7,6 +7,7 @@ from rest_framework import mixins
 from rest_framework.exceptions import ParseError
 import requests
 from django.conf import settings
+from osrd_infra.views.railjson import format_track_section_id
 
 
 from osrd_infra.models import (
@@ -35,10 +36,13 @@ def request_pathfinding(payload):
     return response.json()
 
 
-def fetch_track_section(formated_id):
-    pk = int(formated_id.split(".")[1])
+def fetch_track_sections(formated_ids):
+    ids = [int(f_id.split(".")[1]) for f_id in formated_ids]
     related_names = ["geo_line_location", "track_section"]
-    return TrackSectionEntity.objects.prefetch_related(*related_names).get(pk=pk)
+    tracks = TrackSectionEntity.objects.prefetch_related(*related_names).filter(
+        pk__in=ids
+    )
+    return {format_track_section_id(track.pk): track for track in tracks}
 
 
 def line_string_slice(line_string, begin_normalized, end_normalized):
@@ -56,9 +60,16 @@ def line_string_slice(line_string, begin_normalized, end_normalized):
 
 def get_geojson_path(payload):
     geographic, schematic = [], []
+    track_section_ids = []
     for step in payload:
         for track in step["track_sections"]:
-            track_entity = fetch_track_section(track["track_section"])
+            track_section_ids.append(track["track_section"])
+
+    track_map = fetch_track_sections(track_section_ids)
+
+    for step in payload:
+        for track in step["track_sections"]:
+            track_entity = track_map[track["track_section"]]
             geo = track_entity.geo_line_location.geographic
             schema = track_entity.geo_line_location.schematic
             track_length = track_entity.track_section.length
