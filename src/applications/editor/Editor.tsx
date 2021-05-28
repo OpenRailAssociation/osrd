@@ -2,6 +2,7 @@ import React, { FC, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { TFunction } from 'i18next';
 import { withTranslation } from 'react-i18next';
+import cx from 'classnames';
 
 import { LoaderState } from 'common/Loader';
 import { NotificationsState } from 'common/Notifications';
@@ -13,6 +14,7 @@ import { Tool, Tools } from './tools';
 import { EditorState } from '../../reducers/editor';
 import { MainState } from '../../reducers/main';
 import Map from './Map';
+import Tipped from './components/Tipped';
 
 const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const dispatch = useDispatch();
@@ -23,7 +25,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const [toolState, setToolState] = useState<any>(activeTool.getInitialState());
   const actionsGroups = activeTool.actions
     .map((group) =>
-      group.filter((action) => !action.isDisabled || !action.isDisabled(toolState, editorState))
+      group.filter((action) => !action.isHidden || !action.isHidden(toolState, editorState))
     )
     .filter((group) => group.length);
 
@@ -38,43 +40,58 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
             const label = t(labelTranslationKey);
 
             return (
-              <button
-                type="button"
-                className={`btn-rounded ${id === activeTool.id ? 'btn-rounded-white' : ''}`}
-                onClick={() => {
-                  activateTool(tool);
-                  setToolState(tool.getInitialState());
-                }}
-                disabled={isDisabled && isDisabled(editorState)}
-                title={label}
-              >
-                <span className="sr-only">{label}</span>
-                <IconComponent />
-              </button>
+              <Tipped key={id} mode="right">
+                <button
+                  type="button"
+                  className={`btn-rounded ${id === activeTool.id ? 'active' : ''}`}
+                  onClick={() => {
+                    activateTool(tool);
+                    setToolState(tool.getInitialState());
+                  }}
+                  disabled={isDisabled && isDisabled(editorState)}
+                >
+                  <span className="sr-only">{label}</span>
+                  <IconComponent />
+                </button>
+                <span>{label}</span>
+              </Tipped>
             );
           })}
         </div>
         <div className="actions-box">
           {actionsGroups.flatMap((actionsGroup, i, a) => {
             const actions = actionsGroup.map((action) => {
-              const { id, icon: IconComponent, labelTranslationKey, isDisabled, onClick } = action;
+              const {
+                id,
+                icon: IconComponent,
+                labelTranslationKey,
+                isDisabled,
+                isActive,
+                onClick,
+              } = action;
               const label = t(labelTranslationKey);
 
               return (
-                <button
-                  type="button"
-                  className={`btn-rounded ${id === activeTool.id ? 'btn-rounded-white' : ''}`}
-                  onClick={() => {
-                    if (onClick) {
-                      onClick({ setState: setToolState, dispatch }, toolState, editorState);
-                    }
-                  }}
-                  disabled={isDisabled && isDisabled(toolState, editorState)}
-                  title={label}
-                >
-                  <span className="sr-only">{label}</span>
-                  <IconComponent />
-                </button>
+                <Tipped key={id} mode="right">
+                  <button
+                    key={id}
+                    type="button"
+                    className={cx(
+                      'btn-rounded',
+                      isActive && isActive(toolState, editorState) ? 'active' : ''
+                    )}
+                    onClick={() => {
+                      if (onClick) {
+                        onClick({ setState: setToolState, dispatch }, toolState, editorState);
+                      }
+                    }}
+                    disabled={isDisabled && isDisabled(toolState, editorState)}
+                  >
+                    <span className="sr-only">{label}</span>
+                    <IconComponent />
+                  </button>
+                  <span>{label}</span>
+                </Tipped>
               );
             });
 
@@ -84,7 +101,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
           })}
         </div>
         <div className="map">
-          {/*<Map selection={} getCursor={} onClickFeature={} />*/}
+          <Map toolState={toolState} setToolState={setToolState} activeTool={activeTool} />
         </div>
       </div>
 

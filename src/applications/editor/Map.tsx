@@ -19,6 +19,7 @@ import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 
 import { Item, PositionnedItem } from '../../types';
 import { EditorState } from '../../reducers/editor';
+import { Tool } from './tools';
 
 const INTERACTIVE_LAYER_IDS = ['editor/geo-main-layer'];
 
@@ -29,20 +30,45 @@ type Colors = DeepStruct<Colors>;
 const COLORS = colors as Record<string, Colors>;
 
 interface MapProps {
-  selection: Item[] | null;
-  getCursor: (state: { isLoaded: boolean; isDragging: boolean; isHovering: boolean }) => string;
-  onClickFeature: (feature: Item) => void | null;
+  toolState: any;
+  setToolState: (newState: any) => void;
+  activeTool: Tool<any>;
 }
 
-const Map: FC<MapProps> = ({ getCursor, selection, onClickFeature }) => {
+const Map: FC<MapProps> = ({ toolState, setToolState, activeTool }) => {
+  const dispatch = useDispatch();
   const { mapStyle, viewport } = useSelector((state: { map: any }) => state.map);
-  const [hovered, setHovered] = useState<PositionnedItem | null>(null);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
-  const dispatch = useDispatch();
   const updateViewportChange = useCallback((value) => dispatch(updateViewport(value, '/editor')), [
     dispatch,
   ]);
+
+  const [hovered, setHovered] = useState<PositionnedItem | null>(null);
+  const getCursor = useCallback(
+    (mapState: { isLoaded: boolean; isDragging: boolean; isHovering: boolean }): string => {
+      if (activeTool.getCursor) {
+        return activeTool.getCursor(toolState, editorState, mapState);
+      } else {
+        return 'default';
+      }
+    },
+    [toolState, activeTool]
+  );
+  const onClick = useCallback((e: MapEvent): void => {
+    if (hovered && activeTool.onClickFeature) {
+      activeTool.onClickFeature(
+        hovered,
+        e,
+        { dispatch, setState: setToolState },
+        toolState,
+        editorState
+      );
+    }
+    if (activeTool.onClickMap) {
+      activeTool.onClickMap(e, { dispatch, setState: setToolState }, toolState, editorState);
+    }
+  }, []);
 
   /* Interactions */
   const onFeatureHover = useCallback(
@@ -87,8 +113,8 @@ const Map: FC<MapProps> = ({ getCursor, selection, onClickFeature }) => {
         onViewportChange={updateViewportChange}
         attributionControl={false} // Defined below
         clickRadius={4}
-        interactiveLayerIds={INTERACTIVE_LAYER_IDS}
-        onClick={onClickFeature}
+        // interactiveLayerIds={INTERACTIVE_LAYER_IDS}
+        onClick={onClick}
         onHover={onFeatureHover}
         touchRotate
         asyncRender

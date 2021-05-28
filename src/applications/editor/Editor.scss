@@ -1,4 +1,8 @@
 .editor-root {
+  $blue: var(--blue);
+  $white: white;
+  $grey: #d0d0d0;
+
   padding-top: 3.75rem; // Header height
 
   .layout {
@@ -23,15 +27,56 @@
     display: flex;
     flex-direction: column;
 
-    & > button {
+    button {
+      box-sizing: border-box;
+
       margin-bottom: 0.5rem;
+      color: $blue;
+      background: $white;
+
+      &.active:not(:disabled) {
+        color: $white;
+        background: $blue;
+      }
+
+      &:disabled {
+        color: $grey;
+      }
+    }
+
+    .tooltip {
+      white-space: nowrap;
+
+      .tooltip-inner {
+        max-width: unset;
+      }
+    }
+
+    .separator {
+      border-bottom: 2px solid $grey;
+      margin: 0 5px 0.5rem;
     }
   }
 
   .tool-box {
     background: #0088ce;
+
+    button.active:not(:disabled) {
+      border: 3px solid $white;
+    }
   }
   .actions-box {
     background: white;
+
+    button:not(.active):not(:disabled) {
+      border: 3px solid $blue;
+    }
+    button:disabled {
+      border: 3px solid grey;
+    }
+  }
+
+  .map {
+    flex-grow: 1;
   }
 }

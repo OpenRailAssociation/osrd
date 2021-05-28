@@ -1,10 +1,12 @@
 import { Dispatch } from 'redux';
+import { MapEvent } from 'react-map-gl';
 import { IconType } from 'react-icons/lib/esm/iconBase';
 
 import { EditorState } from '../../reducers/editor';
 import { SelectZone } from './tools/SelectZone';
 import { CreateLine } from './tools/CreateLine';
 import { SelectItems } from './tools/SelectItems';
+import { Item } from '../../types';
 
 export interface ToolAction<S> {
   id: string;
@@ -33,6 +35,25 @@ export interface Tool<S> {
   actions: ToolAction<S>[][];
   getInitialState: () => S;
   isDisabled?: (editorState: EditorState) => boolean;
+  // Interactions with Mapbox:
+  onClickMap?: (
+    e: MapEvent,
+    context: { setState(state: S): void; dispatch: Dispatch },
+    toolState: S,
+    editorState: EditorState
+  ) => void;
+  onClickFeature?: (
+    feature: Item,
+    e: MapEvent,
+    context: { setState(state: S): void; dispatch: Dispatch },
+    toolState: S,
+    editorState: EditorState
+  ) => void;
+  getCursor?: (
+    toolState: S,
+    editorState: EditorState,
+    mapState: { isLoaded: boolean; isDragging: boolean; isHovering: boolean }
+  ) => string;
 }
 
 export const Tools: Tool<any>[] = [SelectZone, CreateLine, SelectItems];

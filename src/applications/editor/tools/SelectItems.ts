@@ -8,14 +8,18 @@ import {
   FiEdit,
   MdSelectAll,
 } from 'react-icons/all';
+import { isEqual } from 'lodash';
 
 import { Tool } from '../tools';
 import { Item } from '../../../types';
 import { EditorState } from '../../../reducers/editor';
+import { selectInZone } from '../../../utils/mapboxHelper';
 
 export interface SelectItemsState {
-  mode: 'rectangle' | 'single' | 'lasso';
+  mode: 'rectangle' | 'single' | 'polygon';
   selection: Item[];
+  polygonPoints: [number, number][];
+  rectangleTopLeft: [number, number] | null;
   showModal: 'info' | 'edit' | null;
 }
 
@@ -31,6 +35,8 @@ export const SelectItems: Tool<SelectItemsState> = {
     return {
       mode: 'single',
       selection: [],
+      polygonPoints: [],
+      rectangleTopLeft: null,
       showModal: null,
     };
   },
@@ -43,9 +49,7 @@ export const SelectItems: Tool<SelectItemsState> = {
         onClick({ setState }, state, editorState) {
           setState({
             ...state,
-            // TODO:
-            // Read all items on screen from editorState, and get their layer and IDs
-            selection: [],
+            selection: selectInZone(editorState.editionData || []),
           });
         },
       },
@@ -126,12 +130,12 @@ export const SelectItems: Tool<SelectItemsState> = {
         icon: FaDrawPolygon,
         labelTranslationKey: 'Editor.tools.select-items.actions.lasso.label',
         isActive(state) {
-          return state.mode === 'lasso';
+          return state.mode === 'polygon';
         },
         onClick({ setState }, state) {
           setState({
             ...state,
-            mode: 'lasso',
+            mode: 'polygon',
           });
         },
       },
@@ -145,10 +149,86 @@ export const SelectItems: Tool<SelectItemsState> = {
         onClick({ setState }, state) {
           setState({
             ...state,
-            mode: 'lasso',
+            mode: 'polygon',
           });
         },
       },
     ],
   ],
+
+  // Interactions:
+  onClickFeature(feature, e, { setState }, toolState) {
+    if (toolState.mode !== 'single') return;
+
+    let selection: Item[] = toolState.selection;
+    const isAlreadySelected = selection.find(
+      (item) => item.layer === feature.layer && item.id === feature.id
+    );
+
+    if (!isAlreadySelected) {
+      if (e.srcEvent.ctrlKey) {
+        selection = selection.concat([feature]);
+      } else {
+        selection = [feature];
+      }
+    } else {
+      if (e.srcEvent.ctrlKey) {
+        selection = selection.filter(
+          (item) => !(item.layer === feature.layer && item.id === feature.id)
+        );
+      } else if (selection.length === 1) {
+        selection = [];
+      } else {
+        selection = [feature];
+      }
+    }
+
+    setState({
+      ...toolState,
+      selection,
+    });
+  },
+  onClickMap(e, { setState }, toolState, editorState) {
+    const position = e.lngLat;
+
+    if (toolState.mode === 'rectangle') {
+      if (toolState.rectangleTopLeft) {
+        if (isEqual(toolState.rectangleTopLeft, position)) {
+          setState({ ...toolState, rectangleTopLeft: null });
+        } else {
+          setState({
+            ...toolState,
+            rectangleTopLeft: null,
+            selection: selectInZone(editorState.editionData || [], {
+              type: 'rectangle',
+              points: [toolState.rectangleTopLeft, position],
+            }),
+          });
+        }
+      } else {
+        setState({
+          ...toolState,
+          rectangleTopLeft: position,
+        });
+      }
+    } else if (toolState.mode === 'polygon') {
+      const points = toolState.polygonPoints;
+      const lastPoint = points[points.length - 1];
+
+      if (isEqual(lastPoint, position)) {
+        if (points.length >= 3) {
+          setState({
+            ...toolState,
+            polygonPoints: [],
+            selection: selectInZone(editorState.editionData || [], {
+              type: 'polygon',
+              points: points,
+            }),
+          });
+        }
+      } else {
+        setState({ ...toolState, polygonPoints: points.concat([position]) });
+      }
+    }
+  },
 };

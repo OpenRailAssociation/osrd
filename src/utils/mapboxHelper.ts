@@ -1,11 +1,13 @@
 import bboxClip from '@turf/bbox-clip';
+import { flatten } from 'lodash';
+import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
+import booleanIntersects from '@turf/boolean-intersects';
+import bboxPolygon from '@turf/bbox-polygon';
 
 /* Types */
 import { MapController } from 'react-map-gl';
 import { MjolnirEvent } from 'react-map-gl/dist/es5/utils/map-controller';
 import { BBox } from '@turf/helpers';
-import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
-import bboxPolygon from '@turf/bbox-polygon';
 import {
   Feature,
   FeatureCollection,
@@ -14,8 +16,9 @@ import {
   Point,
   MultiPoint,
   Position,
+  GeoJSON,
 } from 'geojson';
-import { flatten } from 'lodash';
+import { Item, Zone } from '../types';
 
 /**
  * This class allows binding keyboard events to react-map-gl. Since those events are not supported
@@ -133,4 +136,69 @@ export function extractPoints<T extends Feature | FeatureCollection>(tree: T): F
         },
       }))
     : [];
+}
+
+/**
+ * This helpers transforms a given Zone object to the related Feature object (mainly to use with
+ * Turf).
+ */
+export function zoneToFeature(zone: Zone): Feature {
+  switch (zone.type) {
+    case 'rectangle': {
+      const [[lat1, lon1], [lat2, lon2]] = zone.points;
+
+      return {
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [lat1, lon1],
+              [lat2, lon1],
+              [lat2, lon2],
+              [lat1, lon2],
+              [lat1, lon1],
+            ],
+          ],
+        },
+      };
+    }
+    case 'polygon': {
+      return {
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'Polygon',
+          coordinates: [zone.points.concat([zone.points[0]])],
+        },
+      };
+    }
+  }
+}
+
+/**
+ * This helpers takes an array of GeoJSON objects (as the editor data we use) and a zone, and
+ * returns a selection of all items in the given dataset intersecting with the given zone. If no
+ * zone is given, selects everything instead.
+ */
+export function selectInZone(data: GeoJSON[], zone?: Zone): Item[] {
+  const items: Item[] = [];
+  const zoneFeature = zone && zoneToFeature(zone);
+
+  data.forEach((geojson) => {
+    if (geojson.type === 'FeatureCollection') {
+      geojson.features.forEach((feature) => {
+        if (!zoneFeature || booleanIntersects(feature, zoneFeature)) {
+          items.push({ id: feature.properties?.OP_id, layer: feature.properties?.layer });
+        }
+      });
+    } else if (geojson.type === 'Feature') {
+      if (!zoneFeature || booleanIntersects(geojson, zoneFeature)) {
+        items.push({ id: geojson.properties?.OP_id, layer: geojson.properties?.layer });
+      }
+    }
+  });
+
+  return items;
 }
