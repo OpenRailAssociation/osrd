@@ -38,8 +38,8 @@ public class SpeedInstructions {
 
     /** Generates all the instructions, expected to be called when a new phase starts */
     public void generate(Simulation sim, TrainSchedule schedule) {
-        maxSpeedControllers = new MaxSpeedGenerator().generate(schedule, null);
-        targetSpeedControllers = targetSpeedGenerator.generate(schedule, maxSpeedControllers);
+        maxSpeedControllers = new MaxSpeedGenerator().generate(sim, schedule, null);
+        targetSpeedControllers = targetSpeedGenerator.generate(sim, schedule, maxSpeedControllers);
         targetSpeedControllers.addAll(maxSpeedControllers);
         expectedTimes = targetSpeedGenerator.getExpectedTimes(sim, schedule, targetSpeedControllers, 1);
     }

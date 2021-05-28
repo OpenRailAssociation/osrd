@@ -48,6 +48,13 @@ public final class LimitAnnounceSpeedController extends SpeedController {
     }
 
     @Override
+    public SpeedController scaled(double scalingFactor) {
+        // TODO fix this
+        return new LimitAnnounceSpeedController(targetSpeedLimit * scalingFactor,
+                beginPosition, endPosition, gamma);
+    }
+
+    @Override
     public String toString() {
         return String.format(
                 "LimitAnnounceSpeedController { targetSpeed=%.3f, begin=%.3f, end=%.3f, gamma=%.3f }",

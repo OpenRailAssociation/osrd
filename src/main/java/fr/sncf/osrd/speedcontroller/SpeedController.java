@@ -53,4 +53,7 @@ public abstract class SpeedController implements DeepComparable<SpeedController>
             profile.mergeWith(controller.getDirective(pathPosition));
         return profile;
     }
+
+    /** Returns a copy of the speed controller, with every speed scaled by scalingFactor*/
+    public abstract SpeedController scaled(double scalingFactor);
 }
