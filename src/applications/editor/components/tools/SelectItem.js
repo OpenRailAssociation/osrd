@@ -137,7 +137,7 @@ const SelectItemUnplugged = ({ t }) => {
 
       {/* Selected element modal */}
       {selectedFeature && (
-        <Modal onClose={() => setSelectedFeature(null)} title={t('Editor.tools.select-item.focus')}>
+        <Modal onClose={() => setSelectedFeature(null)} title={t('Editor.tools.select-items.focus')}>
           <pre>
             <code>{JSON.stringify(selectedFeature, null, '  ')}</code>
           </pre>

@@ -10,29 +10,30 @@ import {
 } from 'react-icons/all';
 import { isEqual } from 'lodash';
 
-import { Tool } from '../tools';
+import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
 import { Item } from '../../../types';
 import { EditorState } from '../../../reducers/editor';
 import { selectInZone } from '../../../utils/mapboxHelper';
 
-export interface SelectItemsState {
+export type SelectItemsState = CommonToolState & {
   mode: 'rectangle' | 'single' | 'polygon';
   selection: Item[];
   polygonPoints: [number, number][];
   rectangleTopLeft: [number, number] | null;
   showModal: 'info' | 'edit' | null;
-}
+};
 
 export const SelectItems: Tool<SelectItemsState> = {
-  id: 'select-item',
+  id: 'select-items',
   icon: BsCursor,
-  labelTranslationKey: 'Editor.tools.select-item.label',
-  descriptionTranslationKeys: ['Editor.tools.select-item.description-1'],
+  labelTranslationKey: 'Editor.tools.select-items.label',
+  descriptionTranslationKeys: ['Editor.tools.select-items.description-1'],
   isDisabled(editorState: EditorState) {
     return !editorState.editionZone;
   },
   getInitialState() {
     return {
+      ...DEFAULT_COMMON_TOOL_STATE,
       mode: 'single',
       selection: [],
       polygonPoints: [],
@@ -126,9 +127,9 @@ export const SelectItems: Tool<SelectItemsState> = {
         },
       },
       {
-        id: 'mode-lasso',
+        id: 'mode-polygon',
         icon: FaDrawPolygon,
-        labelTranslationKey: 'Editor.tools.select-items.actions.lasso.label',
+        labelTranslationKey: 'Editor.tools.select-items.actions.polygon.label',
         isActive(state) {
           return state.mode === 'polygon';
         },

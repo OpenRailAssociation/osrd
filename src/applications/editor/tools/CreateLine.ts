@@ -5,13 +5,13 @@ import {
   MdShowChart,
 } from 'react-icons/all';
 
-import { Tool } from '../tools';
+import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
 import { EditorState } from '../../../reducers/editor';
 
-export interface CreateLineState {
+export type CreateLineState = CommonToolState & {
   linePoints: [number, number][];
   showPropertiesModal: boolean;
-}
+};
 
 export const CreateLine: Tool<CreateLineState> = {
   // Zone selection:
@@ -30,6 +30,7 @@ export const CreateLine: Tool<CreateLineState> = {
   },
   getInitialState() {
     return {
+      ...DEFAULT_COMMON_TOOL_STATE,
       linePoints: [],
       showPropertiesModal: false,
     };

@@ -8,6 +8,16 @@ import { CreateLine } from './tools/CreateLine';
 import { SelectItems } from './tools/SelectItems';
 import { Item, PositionnedItem } from '../../types';
 
+export interface CommonToolState {
+  mousePosition: [number, number];
+  hovered: PositionnedItem | null;
+}
+
+export const DEFAULT_COMMON_TOOL_STATE: CommonToolState = {
+  mousePosition: [NaN, NaN],
+  hovered: null,
+};
+
 export interface ToolAction<S> {
   id: string;
   icon: IconType;
@@ -25,9 +35,9 @@ export interface ToolAction<S> {
   ) => void;
 }
 
-export type ToolId = 'select-zone' | 'select-item' | 'create-line';
+export type ToolId = 'select-zone' | 'select-items' | 'create-line';
 
-export interface Tool<S> {
+export interface Tool<S extends CommonToolState> {
   id: ToolId;
   icon: IconType;
   labelTranslationKey: string;
@@ -56,7 +66,7 @@ export interface Tool<S> {
   ) => string;
   // Layers:
   getLayers?: (
-    context: { mapStyle: any; hovered?: PositionnedItem; mousePosition: [number, number] },
+    context: { mapStyle: any },
     toolState: S,
     editorState: EditorState
   ) => JSX.Element;

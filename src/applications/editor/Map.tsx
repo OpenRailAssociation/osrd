@@ -15,9 +15,8 @@ import Hillshade from 'common/Map/Layers/Hillshade';
 import Platform from 'common/Map/Layers/Platform';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 
-import { PositionnedItem } from '../../types';
 import { EditorState } from '../../reducers/editor';
-import { Tool } from './tools';
+import { CommonToolState, Tool } from './tools';
 
 interface DeepStruct<T> {
   [key: string]: string | T;
@@ -25,10 +24,10 @@ interface DeepStruct<T> {
 type Colors = DeepStruct<Colors>;
 const COLORS = colors as Record<string, Colors>;
 
-interface MapProps {
-  toolState: any;
-  setToolState: (newState: any) => void;
-  activeTool: Tool<any>;
+interface MapProps<S extends CommonToolState = CommonToolState> {
+  toolState: S;
+  setToolState: (newState: S) => void;
+  activeTool: Tool<S>;
 }
 
 const Map: FC<MapProps> = ({ toolState, setToolState, activeTool }) => {
@@ -53,89 +52,65 @@ const Map: FC<MapProps> = ({ toolState, setToolState, activeTool }) => {
     }
   }, []);
 
-  /* Interactions */
-  const [hovered, setHovered] = useState<PositionnedItem | null>(null);
-  const [mousePosition, setMousePosition] = useState<[number, number]>([0, 0]);
-  const getCursor = useCallback(
-    (mapState: { isLoaded: boolean; isDragging: boolean; isHovering: boolean }): string => {
-      if (activeTool.getCursor) {
-        return activeTool.getCursor(toolState, editorState, mapState);
-      } else {
-        return 'default';
-      }
-    },
-    [toolState, editorState, activeTool]
-  );
-  const onClick = useCallback(
-    (e: MapEvent): void => {
-      if (hovered && activeTool.onClickFeature) {
-        activeTool.onClickFeature(
-          hovered,
-          e,
-          { dispatch, setState: setToolState },
-          toolState,
-          editorState
-        );
-      }
-      if (activeTool.onClickMap) {
-        activeTool.onClickMap(e, { dispatch, setState: setToolState }, toolState, editorState);
-      }
-    },
-    [toolState, editorState, activeTool, setToolState, hovered, dispatch]
-  );
-  const onMove = useCallback(
-    (e: MapEvent): void => {
-      setMousePosition(e.lngLat);
-    },
-    [setMousePosition]
-  );
-  const onFeatureHover = useCallback(
-    (event: MapEvent) => {
-      const feature = (event.features || [])[0];
-
-      if (feature) {
-        setHovered({
-          id: feature.properties.OP_id as string,
-          layer: feature.layer.id as string,
-          lng: event.lngLat[0],
-          lat: event.lngLat[1],
-        });
-      } else {
-        setHovered(null);
-      }
-    },
-    [editorState]
-  );
-
-  /* Layers: */
-  const layers = useMemo(() => {
-    return (
-      activeTool.getLayers &&
-      activeTool.getLayers(
-        { mapStyle, hovered: hovered || undefined, mousePosition },
-        toolState,
-        editorState
-      )
-    );
-  }, [activeTool, mapStyle, toolState, editorState, mousePosition]);
-
   return (
     <>
       <ReactMapGL
         {...viewport}
         width="100%"
         height="100%"
-        getCursor={getCursor}
         mapStyle={osmBlankStyle}
         onViewportChange={updateViewportChange}
         attributionControl={false} // Defined below
         clickRadius={4}
-        // interactiveLayerIds={INTERACTIVE_LAYER_IDS}
-        onClick={onClick}
-        onHover={onFeatureHover}
-        onMouseMove={onMove}
         touchRotate
         asyncRender
+        doubleClickZoom={false}
+        // interactiveLayerIds={INTERACTIVE_LAYER_IDS}
+        getCursor={(mapState: {
+          isLoaded: boolean;
+          isDragging: boolean;
+          isHovering: boolean;
+        }): string => {
+          if (activeTool.getCursor) {
+            return activeTool.getCursor(toolState, editorState, mapState);
+          } else {
+            return 'default';
+          }
+        }}
+        onClick={(e) => {
+          if (toolState.hovered && activeTool.onClickFeature) {
+            activeTool.onClickFeature(
+              toolState.hovered,
+              e,
+              { dispatch, setState: setToolState },
+              toolState,
+              editorState
+            );
+          }
+          if (activeTool.onClickMap) {
+            activeTool.onClickMap(e, { dispatch, setState: setToolState }, toolState, editorState);
+          }
+        }}
+        onHover={(e) => {
+          const feature = (e.features || [])[0];
+
+          if (feature) {
+            setToolState({
+              ...toolState,
+              hovered: {
+                id: feature.properties.OP_id as string,
+                layer: feature.layer.id as string,
+                lng: e.lngLat[0],
+                lat: e.lngLat[1],
+              },
+            });
+          } else {
+            setToolState({ ...toolState, hovered: null });
+          }
+        }}
+        onMouseMove={(e) => {
+          setToolState({ ...toolState, mousePosition: e.lngLat });
+        }}
       >
         <AttributionControl
           className="attribution-control"
@@ -157,7 +132,7 @@ const Map: FC<MapProps> = ({ toolState, setToolState, activeTool }) => {
         <Platform colors={COLORS[mapStyle]} />
 
         {/* Tool specific layers */}
-        {layers}
+        {activeTool.getLayers && activeTool.getLayers({ mapStyle }, toolState, editorState)}
       </ReactMapGL>
     </>
   );

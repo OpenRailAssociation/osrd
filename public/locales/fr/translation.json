@@ -165,13 +165,51 @@
           },
           "polygon": {
             "label": "Sélection Polygône"
+          },
+          "unselect": {
+            "label": "Désélectionner la zone d'édition"
+          },
+          "validate-polygon": {
+            "label": "Valider le polygône d'édition"
+          },
+          "cancel-last-point": {
+            "label": "Annuler le dernier point saisi"
+          },
+          "cancel-polygon": {
+            "label": "Annuler le polygône"
           }
         }
       },
-      "select-item": {
+      "select-items": {
         "label": "Sélection d'un élément",
         "focus": "Focus sur un élément",
-        "description-1": "Clic sur un élément : Affichage de ses propriétés"
+        "description-1": "Clic sur un élément : Affichage de ses propriétés",
+        "actions": {
+          "select-all": {
+            "label": "Tout sélectionner"
+          },
+          "unselect-all": {
+            "label": "Tout désélectionner"
+          },
+          "show-info": {
+            "label": "Voir les informations sur la sélection"
+          },
+          "edit-info": {
+            "label": "Modifier les métadonnées de l'élément sélectionné"
+          },
+          "single": {
+            "label": "Sélection Simple"
+          },
+          "rectangle": {
+            "label": "Sélection Rectangle"
+          },
+          "polygon": {
+            "label": "Sélection Polygône"
+          },
+          "delete-selection": {
+            "label": "Supprimer les éléments sélectionnés"
+          }
+        }
       },
       "create-line": {
         "label": "Création d'une nouvelle ligne",
@@ -180,7 +218,18 @@
         "description-2": "Clics suivants : Ajout de points dans le chemin de la ligne",
         "description-3": "Double-click : Ajout du dernier point de la ligne, validation du chemin",
         "description-4": "Touch Échap : Annulation du dernier point",
-        "description-5": "Touch Entrée : Validation du chemin"
+        "description-5": "Touch Entrée : Validation du chemin",
+        "actions": {
+          "validate-line": {
+            "label": "Valider la ligne"
+          },
+          "cancel-last-point": {
+            "label": "Annuler le dernier point saisi"
+          },
+          "cancel-line": {
+            "label": "Annuler toute la ligne saisie"
+          }
+        }
       }
     }
   },
