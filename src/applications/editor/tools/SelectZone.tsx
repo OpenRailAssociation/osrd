@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   AiOutlineCheckCircle,
   AiOutlineCloseCircle,
@@ -11,7 +12,13 @@ import { MapEvent } from 'react-map-gl';
 import { isEqual } from 'lodash';
 
 import { Tool } from '../tools';
+import { ColorsType, Zone } from '../../../types';
 import { selectZone } from '../../../reducers/editor';
+import EditorZone from '../../../common/Map/Layers/EditorZone';
+import GeoJSONs from '../../../common/Map/Layers/GeoJSONs';
+import colors from '../../../common/Map/Consts/colors';
+
+const COLORS = colors as Record<string, ColorsType>;
 
 export interface SelectZoneState {
   mode: 'rectangle' | 'polygon';
@@ -174,5 +181,34 @@ export const SelectZone: Tool<SelectZoneState> = {
         setState({ ...toolState, polygonPoints: points.concat([position]) });
       }
     }
+  },
+
+  // Layers:
+  getLayers({ mapStyle, hovered, mousePosition }, toolState, editorState) {
+    let newZone: Zone | undefined;
+
+    if (toolState.mode === 'rectangle' && toolState.rectangleTopLeft) {
+      newZone = {
+        type: 'rectangle',
+        points: [toolState.rectangleTopLeft, mousePosition],
+      };
+    }
+
+    if (toolState.mode === 'polygon' && toolState.polygonPoints.length) {
+      newZone = {
+        type: 'polygon',
+        points: [...toolState.polygonPoints, mousePosition],
+      };
+    }
+
+    return (
+      <>
+        <EditorZone newZone={newZone} />
+        <GeoJSONs
+          colors={COLORS[mapStyle]}
+          idHover={hovered && hovered.layer === 'editor/geo-main-layer' ? hovered.id : undefined}
+        />
+      </>
+    );
   },
 };

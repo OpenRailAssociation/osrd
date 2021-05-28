@@ -6,7 +6,7 @@ import { EditorState } from '../../reducers/editor';
 import { SelectZone } from './tools/SelectZone';
 import { CreateLine } from './tools/CreateLine';
 import { SelectItems } from './tools/SelectItems';
-import { Item } from '../../types';
+import { Item, PositionnedItem } from '../../types';
 
 export interface ToolAction<S> {
   id: string;
@@ -54,6 +54,12 @@ export interface Tool<S> {
     editorState: EditorState,
     mapState: { isLoaded: boolean; isDragging: boolean; isHovering: boolean }
   ) => string;
+  // Layers:
+  getLayers?: (
+    context: { mapStyle: any; hovered?: PositionnedItem; mousePosition: [number, number] },
+    toolState: S,
+    editorState: EditorState
+  ) => JSX.Element;
 }
 
 export const Tools: Tool<any>[] = [SelectZone, CreateLine, SelectItems];

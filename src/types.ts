@@ -4,6 +4,7 @@ import { GeoJSON, Position } from 'geojson';
 
 //
 //  Redux types
+//
 export type ThunkAction<T extends Action> = ReduxThunkAction<void, any, unknown, T>;
 
 //
@@ -113,3 +114,11 @@ export interface ChartisActionDelete {
 }
 
 export type ChartisAction = ChartisActionInsert | ChartisActionUpdate | ChartisActionDelete;
+
+//
+//  Misc
+//
+interface DeepStruct<T> {
+  [key: string]: string | T;
+}
+export type ColorsType = DeepStruct<ColorsType>;

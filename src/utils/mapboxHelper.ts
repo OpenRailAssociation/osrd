@@ -142,7 +142,7 @@ export function extractPoints<T extends Feature | FeatureCollection>(tree: T): F
  * This helpers transforms a given Zone object to the related Feature object (mainly to use with
  * Turf).
  */
-export function zoneToFeature(zone: Zone): Feature {
+export function zoneToFeature(zone: Zone, close = false): Feature {
   switch (zone.type) {
     case 'rectangle': {
       const [[lat1, lon1], [lat2, lon2]] = zone.points;
@@ -168,10 +168,15 @@ export function zoneToFeature(zone: Zone): Feature {
       return {
         type: 'Feature',
         properties: {},
-        geometry: {
-          type: 'Polygon',
-          coordinates: [zone.points.concat([zone.points[0]])],
-        },
+        geometry: close
+          ? {
+              type: 'Polygon',
+              coordinates: [[...zone.points, zone.points[0]]],
+            }
+          : {
+              type: 'LineString',
+              coordinates: zone.points,
+            },
       };
     }
   }
@@ -201,4 +206,19 @@ export function selectInZone(data: GeoJSON[], zone?: Zone): Item[] {
   });
 
   return items;
+}
+
+/**
+ * Given a list of points (as [lng, lat] point coordinates), returns the proper GeoJSON object to
+ * draw a line joining them
+ */
+export function getLineGeoJSON(points: Position[]): Feature {
+  return {
+    type: 'Feature',
+    properties: {},
+    geometry: {
+      type: 'LineString',
+      coordinates: points,
+    },
+  };
 }

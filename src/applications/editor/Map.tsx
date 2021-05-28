@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useState } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import ReactMapGL, { AttributionControl, MapEvent, ScaleControl } from 'react-map-gl';
@@ -13,15 +13,11 @@ import Background from 'common/Map/Layers/Background';
 import OSM from 'common/Map/Layers/OSM';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import Platform from 'common/Map/Layers/Platform';
-import GeoJSONs from 'common/Map/Layers/GeoJSONs';
-import EditorZone from 'common/Map/Layers/EditorZone';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 
-import { Item, PositionnedItem } from '../../types';
+import { PositionnedItem } from '../../types';
 import { EditorState } from '../../reducers/editor';
 import { Tool } from './tools';
-
-const INTERACTIVE_LAYER_IDS = ['editor/geo-main-layer'];
 
 interface DeepStruct<T> {
   [key: string]: string | T;
@@ -44,7 +40,22 @@ const Map: FC<MapProps> = ({ toolState, setToolState, activeTool }) => {
     dispatch,
   ]);
 
+  useEffect(() => {
+    if (urlLat) {
+      updateViewportChange({
+        ...viewport,
+        latitude: parseFloat(urlLat),
+        longitude: parseFloat(urlLon),
+        zoom: parseFloat(urlZoom),
+        bearing: parseFloat(urlBearing),
+        pitch: parseFloat(urlPitch),
+      });
+    }
+  }, []);
+
+  /* Interactions */
   const [hovered, setHovered] = useState<PositionnedItem | null>(null);
+  const [mousePosition, setMousePosition] = useState<[number, number]>([0, 0]);
   const getCursor = useCallback(
     (mapState: { isLoaded: boolean; isDragging: boolean; isHovering: boolean }): string => {
       if (activeTool.getCursor) {
@@ -53,24 +64,31 @@ const Map: FC<MapProps> = ({ toolState, setToolState, activeTool }) => {
         return 'default';
       }
     },
-    [toolState, activeTool]
+    [toolState, editorState, activeTool]
   );
-  const onClick = useCallback((e: MapEvent): void => {
-    if (hovered && activeTool.onClickFeature) {
-      activeTool.onClickFeature(
-        hovered,
-        e,
-        { dispatch, setState: setToolState },
-        toolState,
-        editorState
-      );
-    }
-    if (activeTool.onClickMap) {
-      activeTool.onClickMap(e, { dispatch, setState: setToolState }, toolState, editorState);
-    }
-  }, []);
-
-  /* Interactions */
+  const onClick = useCallback(
+    (e: MapEvent): void => {
+      if (hovered && activeTool.onClickFeature) {
+        activeTool.onClickFeature(
+          hovered,
+          e,
+          { dispatch, setState: setToolState },
+          toolState,
+          editorState
+        );
+      }
+      if (activeTool.onClickMap) {
+        activeTool.onClickMap(e, { dispatch, setState: setToolState }, toolState, editorState);
+      }
+    },
+    [toolState, editorState, activeTool, setToolState, hovered, dispatch]
+  );
+  const onMove = useCallback(
+    (e: MapEvent): void => {
+      setMousePosition(e.lngLat);
+    },
+    [setMousePosition]
+  );
   const onFeatureHover = useCallback(
     (event: MapEvent) => {
       const feature = (event.features || [])[0];
@@ -89,18 +107,17 @@ const Map: FC<MapProps> = ({ toolState, setToolState, activeTool }) => {
     [editorState]
   );
 
-  useEffect(() => {
-    if (urlLat) {
-      updateViewportChange({
-        ...viewport,
-        latitude: parseFloat(urlLat),
-        longitude: parseFloat(urlLon),
-        zoom: parseFloat(urlZoom),
-        bearing: parseFloat(urlBearing),
-        pitch: parseFloat(urlPitch),
-      });
-    }
-  }, []);
+  /* Layers: */
+  const layers = useMemo(() => {
+    return (
+      activeTool.getLayers &&
+      activeTool.getLayers(
+        { mapStyle, hovered: hovered || undefined, mousePosition },
+        toolState,
+        editorState
+      )
+    );
+  }, [activeTool, mapStyle, toolState, editorState, mousePosition]);
 
   return (
     <>
@@ -116,6 +133,7 @@ const Map: FC<MapProps> = ({ toolState, setToolState, activeTool }) => {
         // interactiveLayerIds={INTERACTIVE_LAYER_IDS}
         onClick={onClick}
         onHover={onFeatureHover}
+        onMouseMove={onMove}
         touchRotate
         asyncRender
       >
@@ -132,18 +150,14 @@ const Map: FC<MapProps> = ({ toolState, setToolState, activeTool }) => {
           }}
         />
 
-        {/* OSM layers */}
+        {/* Common layers */}
         <Background colors={COLORS[mapStyle]} />
         <OSM mapStyle={mapStyle} />
         <Hillshade mapStyle={mapStyle} />
         <Platform colors={COLORS[mapStyle]} />
 
-        {/* Editor layers */}
-        <EditorZone />
-        <GeoJSONs
-          colors={COLORS[mapStyle]}
-          idHover={hovered && hovered.layer === 'editor/geo-main-layer' ? hovered.id : undefined}
-        />
+        {/* Tool specific layers */}
+        {layers}
       </ReactMapGL>
     </>
   );
