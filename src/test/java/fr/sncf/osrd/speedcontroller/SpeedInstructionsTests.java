@@ -54,7 +54,7 @@ public class SpeedInstructionsTests {
         var phase = config.trainSchedules.get(0).phases.get(0);
         assert phase instanceof SignalNavigatePhase;
         ((SignalNavigatePhase) phase).targetSpeedGenerator =
-                (schedule, tmp) -> new HashSet<>(Collections.singletonList(new StaticSpeedController(5)));
+                (a, b, c) -> new HashSet<>(Collections.singletonList(new StaticSpeedController(5)));
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
@@ -73,7 +73,7 @@ public class SpeedInstructionsTests {
         var phase = config.trainSchedules.get(0).phases.get(0);
         assert phase instanceof SignalNavigatePhase;
         ((SignalNavigatePhase) phase).targetSpeedGenerator =
-                (schedule, tmp) -> new HashSet<>(Collections.singletonList(new StaticSpeedController(10)));
+                (a, b, c) -> new HashSet<>(Collections.singletonList(new StaticSpeedController(10)));
 
         infra.switches.iterator().next().positionChangeDelay = 42;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
@@ -88,7 +88,7 @@ public class SpeedInstructionsTests {
     public void testIsLate() throws InvalidInfraException, SimulationError {
         var infra = getBaseInfra();
         assert infra != null;
-        var config = getBaseConfig();
+        var config = makeConfigWithSpeedParams(null);
         assert config != null;
 
         infra.switches.iterator().next().positionChangeDelay = 20;
