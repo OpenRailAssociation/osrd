@@ -14,7 +14,7 @@ import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.speedcontroller.generators.MaxSpeedGenerator;
 import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
-import fr.sncf.osrd.speedcontroller.generators.MarginGenerator;
+import fr.sncf.osrd.speedcontroller.generators.AllowanceGenerator;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.train.phases.StopPhase;
@@ -94,9 +94,9 @@ public class RJSTrainScheduleParser {
             throws InvalidSchedule {
         if (parameters == null)
             return new MaxSpeedGenerator();
-        else if (parameters instanceof RJSRunningTimeParameters.Margin) {
-            var typicalParameters = (RJSRunningTimeParameters.Margin) parameters;
-            return new MarginGenerator(typicalParameters.marginValue, typicalParameters.marginType);
+        else if (parameters instanceof RJSRunningTimeParameters.Allowance) {
+            var typicalParameters = (RJSRunningTimeParameters.Allowance) parameters;
+            return new AllowanceGenerator(typicalParameters.allowanceValue, typicalParameters.allowanceType);
         } else {
             throw new InvalidSchedule("Unimplemented running type");
         }

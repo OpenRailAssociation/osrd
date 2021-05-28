@@ -7,19 +7,19 @@ public abstract class RJSRunningTimeParameters {
     public static final PolymorphicJsonAdapterFactory<RJSRunningTimeParameters> adapter = (
             PolymorphicJsonAdapterFactory.of(RJSRunningTimeParameters.class, "type")
                     .withSubtype(RJSRunningTimeParameters.Eco.class, "eco")
-                    .withSubtype(RJSRunningTimeParameters.Margin.class, "margin")
+                    .withSubtype(Allowance.class, "allowance")
     );
 
     public static final class Eco extends RJSRunningTimeParameters {
 
     }
 
-    public static final class Margin extends RJSRunningTimeParameters {
-        @Json(name = "margin_type")
-        public String marginType;
+    public static final class Allowance extends RJSRunningTimeParameters {
+        @Json(name = "allowance_type")
+        public String allowanceType;
 
-        @Json(name = "margin_value")
-        public double marginValue;
+        @Json(name = "allowance_value")
+        public double allowanceValue;
     }
 
 }

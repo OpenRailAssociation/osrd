@@ -7,21 +7,20 @@ import fr.sncf.osrd.speedcontroller.SpeedController;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-public class MarginGenerator implements SpeedControllerGenerator {
+public class AllowanceGenerator implements SpeedControllerGenerator {
 
-    private final String marginType;
+    private final String allowanceType;
     private final double value;
 
-    public MarginGenerator(double marginValue, String marginType) {
-        this.marginType = marginType;
-        this.value = marginValue;
+    public AllowanceGenerator(double allowanceValue, String allowanceType) {
+        this.allowanceType = allowanceType;
+        this.value = allowanceValue;
     }
 
     @Override
     public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed) {
-        if (marginType.equals("T")) {
+        if (allowanceType.equals("T")) {
             var expectedSpeeds = getExpectedSpeeds(sim, schedule, maxSpeed, 1);
             double scaleFactor = 1 / (1 + value / 100);
             SpeedController speedController = new MapSpeedController(expectedSpeeds).scaled(scaleFactor);
@@ -29,7 +28,7 @@ public class MarginGenerator implements SpeedControllerGenerator {
             res.add(speedController);
             return res;
         } else {
-            throw new RuntimeException(String.format("Margin type %s is not implemented", marginType));
+            throw new RuntimeException(String.format("Allowance type %s is not implemented", allowanceType));
         }
     }
 }
