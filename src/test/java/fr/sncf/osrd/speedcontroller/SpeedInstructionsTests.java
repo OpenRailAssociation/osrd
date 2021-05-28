@@ -1,10 +1,12 @@
 package fr.sncf.osrd.speedcontroller;
 
 import static fr.sncf.osrd.Helpers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.infra.*;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
+import fr.sncf.osrd.railjson.schema.schedule.RJSRunningTimeParameters;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.Train;
@@ -111,6 +113,80 @@ public class SpeedInstructionsTests {
         for (int i = 1; i < 150; i++)
             makeAssertEvent(sim, i, () -> !isLate(sim));
         run(sim, config);
+    }
+
+    @Test
+    public void testMargin50() throws InvalidInfraException {
+        var infra = getBaseInfra();
+        assert infra != null;
+        var params = new RJSRunningTimeParameters.Margin();
+        params.marginType = "T";
+        params.marginValue = 50;
+
+        // base run, no margin
+        var config = makeConfigWithSpeedParams(null);
+        assert config != null;
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        run(sim, config);
+        var baseSimTime = sim.getTime();
+
+        // Run with 50% margins
+        var configMargins = makeConfigWithSpeedParams(params);
+        assert configMargins != null;
+        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        run(sim2, configMargins);
+        var marginsSimTime = sim2.getTime();
+        var expected = baseSimTime * 1.5;
+        assertEquals(expected, marginsSimTime, expected * 0.01);
+    }
+
+    @Test
+    public void testMargin200() throws InvalidInfraException {
+        var infra = getBaseInfra();
+        assert infra != null;
+        var params = new RJSRunningTimeParameters.Margin();
+        params.marginType = "T";
+        params.marginValue = 200;
+
+        // base run, no margin
+        var config = makeConfigWithSpeedParams(null);
+        assert config != null;
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        run(sim, config);
+        var baseSimTime = sim.getTime();
+
+        // Run with 200% margins
+        var configMargins = makeConfigWithSpeedParams(params);
+        assert configMargins != null;
+        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        run(sim2, configMargins);
+        var marginsSimTime = sim2.getTime();
+        var expected = baseSimTime * 3;
+        assertEquals(expected, marginsSimTime, expected * 0.01);
+    }
+
+    @Test
+    public void testMargin0() throws InvalidInfraException {
+        var infra = getBaseInfra();
+        assert infra != null;
+        var params = new RJSRunningTimeParameters.Margin();
+        params.marginType = "T";
+        params.marginValue = 0;
+
+        // base run, no margin
+        var config = makeConfigWithSpeedParams(null);
+        assert config != null;
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        run(sim, config);
+        var baseSimTime = sim.getTime();
+
+        // Run with 0% margins
+        var configMargins = makeConfigWithSpeedParams(params);
+        assert configMargins != null;
+        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        run(sim2, configMargins);
+        var marginsSimTime = sim2.getTime();
+        assertEquals(baseSimTime, marginsSimTime, baseSimTime * 0.01);
     }
 
     private static boolean isLate(Simulation sim) {
