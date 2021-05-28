@@ -1,4 +1,5 @@
 from osrd_infra.serializers import PathSerializer
+from django.contrib.gis.geos import LineString, Point
 from django.db import transaction
 from rest_framework.generics import get_object_or_404
 from rest_framework.viewsets import GenericViewSet
@@ -11,6 +12,7 @@ from django.conf import settings
 from osrd_infra.models import (
     Path,
     Infra,
+    TrackSectionEntity,
 )
 
 
@@ -31,6 +33,45 @@ def request_pathfinding(payload):
     if not response:
         raise ParseError(response.content)
     return response.json()
+
+
+def fetch_track_section(formated_id):
+    pk = int(formated_id.split(".")[1])
+    related_names = ["geo_line_location", "track_section"]
+    return TrackSectionEntity.objects.prefetch_related(*related_names).get(pk=pk)
+
+
+def line_string_slice(line_string, begin_normalized, end_normalized):
+    positions = [begin_normalized]
+    for point in line_string.tuple:
+        projection = line_string.project_normalized(Point(point))
+        if projection <= begin_normalized:
+            continue
+        elif projection >= end_normalized:
+            break
+        positions.append(projection)
+    positions.append(end_normalized)
+    return [line_string.interpolate_normalized(pos) for pos in positions]
+
+
+def get_geojson_path(payload):
+    geographic, schematic = [], []
+    for step in payload:
+        for track in step["track_sections"]:
+            track_entity = fetch_track_section(track["track_section"])
+            geo = track_entity.geo_line_location.geographic
+            schema = track_entity.geo_line_location.schematic
+            track_length = track_entity.track_section.length
+
+            # normalize positions
+            begin = track["begin_position"] / track_length
+            end = track["end_position"] / track_length
+            assert begin >= 0.0 and begin <= 1.0
+            assert end >= 0.0 and end <= 1.0
+
+            geographic += line_string_slice(geo, begin, end)
+            schematic += line_string_slice(schema, begin, end)
+    return LineString(geographic).json, LineString(schematic).json
 
 
 class PathfindingView(
@@ -61,9 +102,12 @@ class PathfindingView(
                         raise ParseError(f"waypoint missing field: {key}")
 
         payload = request_pathfinding({"infra": infra_id, "waypoints": waypoints})
+        geographic, schematic = get_geojson_path(payload)
 
         serializer.save(
             owner=self.request.user.sub,
             namespace=infra.namespace,
             payload=payload,
+            geographic=geographic,
+            schematic=schematic,
         )

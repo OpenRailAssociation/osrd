@@ -1,5 +1,6 @@
 from django.contrib.gis.db import models
 from osrd_infra.models import EntityNamespace
+from django.conf import settings
 
 
 class Path(models.Model):
@@ -12,6 +13,8 @@ class Path(models.Model):
     )
     created = models.DateTimeField(editable=False, auto_now_add=True)
     payload = models.JSONField()
+    geographic = models.LineStringField(editable=False, srid=settings.OSRD_INFRA_SRID)
+    schematic = models.LineStringField(editable=False, srid=settings.OSRD_INFRA_SRID)
 
     def __str__(self):
         return self.name
