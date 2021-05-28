@@ -74,7 +74,6 @@ public class SpeedInstructions {
             var slope = (timeAfter - timeBefore) / (positionAfter - positionBefore);
             expectedTime = timeBefore + (position - positionBefore) * slope;
         }
-        System.out.println(time + " " + expectedTime);
         return time - expectedTime;
     }
 

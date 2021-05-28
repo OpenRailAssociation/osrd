@@ -112,8 +112,8 @@ public class SpeedInstructionsTests {
         var event = getLastTrainEvent(sim);
         var trainState = sim.trains.get("Test.").getLastState();
         var secondsLate = trainState.currentPhaseState.speedInstructions.secondsLate(
-                event.pathPosition, sim.getTime());
-        return secondsLate > 0.1;
+                event.pathPosition, event.time);
+        return secondsLate > 1;
     }
 
     private static Train.TrainStateChange.SpeedUpdate getLastTrainEvent(Simulation sim) {
