@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import {
   formatStepsWithTime, mergeDatasArea,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
@@ -19,7 +20,6 @@ const createTrain = (keyValues, simulationTrains) => {
     );
     return dataSimulationTrain;
   });
-  console.log('coucou');
   return dataSimulation;
 };
 
@@ -30,15 +30,18 @@ const TrainDetails = (props) => {
   const keyValues = ['time', 'value'];
   const [dataSimulation, setDataSimulation] = useState(undefined);
 
+  const { t } = useTranslation(['simulation']);
+
   useEffect(() => {
     setDataSimulation(createTrain(keyValues, simulation.trains));
   }, [simulation, selectedTrain]);
 
   return dataSimulation !== undefined ? (
     <>
-      <p className="font-weight-bold lead">
-        {dataSimulation[selectedTrain].name}
-      </p>
+      <div className="mb-2">
+        <span className="h2 mr-2">{t('simulation:train')}</span>
+        <span className="font-weight-bold">{dataSimulation[selectedTrain].name}</span>
+      </div>
       { hoverPosition !== undefined
         && dataSimulation[selectedTrain].headPosition[hoverPosition] !== undefined
         ? (

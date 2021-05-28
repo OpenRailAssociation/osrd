@@ -21,9 +21,10 @@ let isWorking = true;
 const simulationRaw = testData;
 
 const OSRDSimulation = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['translation', 'simulation']);
   const { fullscreen } = useSelector((state) => state.main);
   const [hoverPosition, setHoverPosition] = useState(undefined);
+  const [hoverStop, setHoverStop] = useState(undefined);
   const [selectedTrain, setSelectedTrain] = useState(0);
   const [mustRedraw, setMustRedraw] = useState(true);
   // const { isWorking, simulationRaw } = useSelector((state) => state.osrdsimulation);
@@ -50,21 +51,13 @@ const OSRDSimulation = () => {
     }
   }, []);
 
-  /* useEffect(() => {
-    c
-    if (!isWorking && simulation !== undefined && simulation.trains.length === 1) {
-      for (let idx = 1; idx < 2; idx += 1) {
-        simulation.trains.push(
-          {
-            ...simulation.trains[0],
-            steps: timeShiftTrain(simulation.trains[0].steps, idx * shiftValue),
-            stops: timeShiftStops(simulation.trains[0].stops, idx * shiftValue),
-            name: `${simulation.trains[0].name}${idx}`,
-          },
-        );
-      }
+  useEffect(() => {
+    if (simulation !== undefined
+      && simulation.trains[selectedTrain].steps[hoverPosition] !== undefined) {
+      const hoverTime = simulation.trains[selectedTrain].steps[hoverPosition].time;
+      console.log(hoverTime);
     }
-  }, []); */
+  }, [hoverPosition]);
 
   store.dispatch(redirectToGraph(false));
 
@@ -92,11 +85,13 @@ const OSRDSimulation = () => {
         ? <Redirect to="/osrd/settings" /> : null}
       <main className={`mastcontainer ${fullscreen ? ' fullscreen' : ''}`}>
         {isWorking || simulation === undefined ? (
-          <CenterLoader message={t('osrd.simulation.isWorking')} />
+          <CenterLoader message={t('simulation:isWorking')} />
         ) : (
           <div className="m-0 p-3">
             <div className="osrd-simulation-container mb-2">
-              <TimeTable data={simulation.trains[selectedTrain].stops} />
+              <TimeTable
+                data={simulation.trains[selectedTrain].stops}
+              />
             </div>
             <div className="osrd-simulation-container mb-2">
               {/* <button

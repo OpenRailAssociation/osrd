@@ -45,3 +45,13 @@
     bottom: 2.5rem;
   }
 }
+
+.table-cell-selected {
+  color: #0088ce;
+  font-weight: bold;
+}
+.table-shrink {
+  .cell-inner {
+    padding: 0;
+  }
+}

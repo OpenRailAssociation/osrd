@@ -1,5 +1,4 @@
 import React from 'react';
-import './TimeTable.scss';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
@@ -11,52 +10,50 @@ const addSeconds = (time, seconds) => {
 };
 
 const FormatStops = (props) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['simulation']);
   const { stop } = props;
   const departureTime = (stop.stop_time > 0) ? addSeconds(stop.time, stop.stop_time) : '';
   return (
-    <div className="row osrd-simulation-timetable-line no-gutters">
-      <div className={`col-4 ${stop.name === 'null' ? 'text-muted' : 'font-weight-bold'}`}>
-        <span className="osrd-simulation-timetable-elem">
-          {stop.name === 'start' || stop.name === 'stop' ? t(`osrd.simulation.${stop.name}`) : stop.name}
-        </span>
-      </div>
-      <div className="col-3">
-        <span className="osrd-simulation-timetable-elem">
-          {stop.time}
-        </span>
-      </div>
-      <div className="col-3">
-        {departureTime !== '' ? (
-          <span className="osrd-simulation-timetable-elem">
-            {departureTime}
-          </span>
-        ) : null}
-      </div>
-      <div className="col-2">
-        {stop.stop_time > 0 ? (
-          <span className="osrd-simulation-timetable-elem">
-            {`${stop.stop_time}s`}
-          </span>
-        ) : null}
-      </div>
-    </div>
+    <tr>
+      <td>
+        <div className="cell-inner font-weight-bold">
+          {stop.name === 'start' || stop.name === 'stop' ? t(`simulation:${stop.name}`) : stop.name}
+        </div>
+      </td>
+      <td><div className="cell-inner">{stop.time}</div></td>
+      <td><div className="cell-inner">{departureTime}</div></td>
+      <td>
+        <div className="cell-inner">
+          {stop.stop_time > 0 ? `${stop.stop_time}s` : null}
+        </div>
+      </td>
+    </tr>
   );
 };
 
 const TimeTable = (props) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['simulation']);
   const { data } = props;
   return (
     <>
-      <div className="h2">{t('osrd.simulation.timetable')}</div>
-      <div className="row">
-        <div className="col-4 small text-uppercase text-muted">{t('osrd.simulation.stopPlace')}</div>
-        <div className="col-3 small text-uppercase text-muted">{t('osrd.simulation.stopTime')}</div>
-        <div className="col-3 small text-uppercase text-muted">{t('osrd.simulation.departureTime')}</div>
-        <div className="col-2 small text-uppercase text-muted">{t('osrd.simulation.stopStopTime')}</div>
+      <div className="h2">{t('simulation:timetable')}</div>
+      <div className="table-wrapper">
+        <div className="table-scroller dragscroll">
+          <table className="table table-hover table-shrink">
+            <thead className="thead thead-light">
+              <tr>
+                <th scope="col"><div className="cell-inner">{t('simulation:stopPlace')}</div></th>
+                <th scope="col"><div className="cell-inner">{t('simulation:stopTime')}</div></th>
+                <th scope="col"><div className="cell-inner">{t('simulation:departureTime')}</div></th>
+                <th scope="col"><div className="cell-inner">{t('simulation:stopStopTime')}</div></th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((stop) => <FormatStops stop={stop} key={nextId()} />)}
+            </tbody>
+          </table>
+        </div>
       </div>
-      {data.map((stop) => <FormatStops stop={stop} key={nextId()} />)}
     </>
   );
 };

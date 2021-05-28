@@ -334,36 +334,6 @@
       "restrictions": "Restrictions",
       "profilMode": "Profil",
       "noCurve": "Aucune courbe"
-    },
-    "simulation": {
-      "isWorking": "Calcul de la simulation en cours...",
-      "start": "Départ",
-      "stop": "Arrivée",
-      "null": "Lieu non renseigné",
-      "timetable": "Tableau horaire",
-      "stopPlace": "Arrêt",
-      "stopTime": "Arrivée/Passage",
-      "departureTime": "Départ",
-      "stopStopTime": "Durée d'arrêt",
-      "ManualOffset": "Ajout de secondes au train"
-    },
-    "graph": {
-      "space-time": "Graphique Espace-temps",
-      "space-speed": "Graphique Espace-vitesse",
-      "space": "Espace",
-      "speed": "Vitesse",
-      "time": "Temps",
-      "train": "Train",
-      "curves": {
-        "tailspace": "Espace queue",
-        "headspace": "Espace tête",
-        "canton": "Canton",
-        "braking": "Freinage"
-      },
-      "conflict": "Conflit",
-      "between": "Conflit entre Train",
-      "seconds": "secondes",
-      "option": "Option"
     }
   },
   "common": {

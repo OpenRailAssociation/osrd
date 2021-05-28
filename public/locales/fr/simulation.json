@@ -1,0 +1,14 @@
+{
+  "departureTime": "Départ",
+  "isWorking": "Calcul de la simulation en cours...",
+  "ManualOffset": "Ajout de secondes au train",
+  "null": "Lieu non renseigné",
+  "start": "Départ",
+  "stop": "Arrivée",
+  "stopPlace": "Arrêt",
+  "stopTime": "Arrivée/Passage",
+  "stopStopTime": "Durée d'arrêt",
+  "timetable": "Tableau horaire",
+  "train": "Train",
+  "trainList": "Liste des trains"
+}
