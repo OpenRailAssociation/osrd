@@ -119,6 +119,7 @@ class TrackSectionLocationComponent(Component):
 
     class ComponentMeta:
         name = "point_location"
+        unique = True
 
 
 class BelongsToTrackComponent(Component):
@@ -181,7 +182,9 @@ class TrackSectionComponent(Component):
 
 class TrackSectionLinkComponent(Component):
     begin_track_section = models.ForeignKey(
-        "TrackSectionEntity", on_delete=models.CASCADE, related_name="link_begin_branches",
+        "TrackSectionEntity",
+        on_delete=models.CASCADE,
+        related_name="link_begin_branches",
     )
     begin_endpoint = EndpointField()
 
