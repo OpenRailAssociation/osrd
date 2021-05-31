@@ -7,7 +7,7 @@ const ChartModal = (props) => {
   const {
     type, setShowModal, trainName, offsetTimeByDragging, setMustRedraw,
   } = props;
-  const { t } = useTranslation();
+  const { t } = useTranslation(['simulation']);
   const [offset, setOffset] = useState('');
 
   const sendOffset = ({ key }) => {
@@ -30,7 +30,7 @@ const ChartModal = (props) => {
     <div className="osrd-simulation-chart-modal">
       <div className="chart-modal-box">
         <div className="chart-modal-type-title">
-          <span className="mr-1">{t('osrd.simulation.ManualOffset')}</span>
+          <span className="mr-1">{t('simulation:ManualOffset')}</span>
           {trainName}
         </div>
         <div className="chart-modal-input">

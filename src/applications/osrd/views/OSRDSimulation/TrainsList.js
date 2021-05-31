@@ -52,9 +52,9 @@ const TrainsList = (props) => {
           <table className="table table-hover">
             <thead className="thead thead-light">
               <tr>
-                <th scope="col"><div className="cell-inner">Name</div></th>
-                <th scope="col"><div className="cell-inner">Start</div></th>
-                <th scope="col"><div className="cell-inner">Stop</div></th>
+                <th scope="col"><div className="cell-inner">{t('simulation:name')}</div></th>
+                <th scope="col"><div className="cell-inner">{t('simulation:start')}</div></th>
+                <th scope="col"><div className="cell-inner">{t('simulation:stop')}</div></th>
               </tr>
             </thead>
             <tbody>

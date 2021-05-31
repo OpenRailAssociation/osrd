@@ -56,7 +56,7 @@ const SpeedSpaceChart = (props) => {
       : chart.y;
 
     const width = parseInt(d3.select(`#container-${CHART_ID}`).style('width'), 10);
-    return defineChart(width, 300, defineX, defineY, ref, CHART_ID);
+    return defineChart(width, 250, defineX, defineY, ref, CHART_ID);
   };
 
   const drawTrain = () => {

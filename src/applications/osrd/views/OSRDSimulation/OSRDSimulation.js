@@ -89,11 +89,6 @@ const OSRDSimulation = () => {
         ) : (
           <div className="m-0 p-3">
             <div className="osrd-simulation-container mb-2">
-              <TimeTable
-                data={simulation.trains[selectedTrain].stops}
-              />
-            </div>
-            <div className="osrd-simulation-container mb-2">
               {/* <button
                   type="button"
                   onClick={play}
@@ -144,6 +139,11 @@ const OSRDSimulation = () => {
                   />
                 </div>
               </div>
+            </div>
+            <div className="osrd-simulation-container mb-2">
+              <TimeTable
+                data={simulation.trains[selectedTrain].stops}
+              />
             </div>
             <ButtonFullscreen />
           </div>

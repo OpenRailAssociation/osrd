@@ -49,7 +49,7 @@ const createChart = (chart, dataSimulation, keyValues, ref) => {
     : chart.y;
 
   const width = parseInt(d3.select(`#container-${CHART_ID}`).style('width'), 10);
-  const chartLocal = defineChart(width, 400, defineX, defineY, ref, CHART_ID);
+  const chartLocal = defineChart(width, 300, defineX, defineY, ref, CHART_ID);
   return (chart === undefined)
     ? chartLocal
     : { ...chartLocal, x: chart.x, y: chart.y };

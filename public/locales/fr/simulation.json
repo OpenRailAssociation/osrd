@@ -2,6 +2,7 @@
   "departureTime": "Départ",
   "isWorking": "Calcul de la simulation en cours...",
   "ManualOffset": "Ajout de secondes au train",
+  "name": "Nom",
   "null": "Lieu non renseigné",
   "start": "Départ",
   "stop": "Arrivée",
