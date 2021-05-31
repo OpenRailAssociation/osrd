@@ -1,5 +1,8 @@
 from rest_framework.exceptions import ParseError
-from osrd_infra.models import TrackSectionEntity
+from osrd_infra.models import (
+    SignalEntity,
+    entities_prefetch_components,
+)
 
 
 def validate_path(path):
@@ -13,6 +16,8 @@ def validate_path(path):
         for key in ("track_section", "begin", "end"):
             if key not in track_range:
                 raise ParseError(f"tracksection range: doesn't contain '{key}' key")
+            if not isinstance(track_range[key], (int, float)):
+                raise ParseError(f"tracksection range: '{key}' expected a number")
 
 
 class Projection:
@@ -27,30 +32,35 @@ class Projection:
         for track_range in path:
             begin = track_range["begin"]
             end = track_range["end"]
-            self.tracks.put(
-                track_range["tracksection"],
-                (begin, end, offset),
-            )
+            track_id = track_range["track_section"]
+            self.tracks[track_id] = (begin, end, offset)
             offset += abs(end - begin)
 
     def init_signals(self):
-        ids = [track for track in self.tracks]
-        related_names = ["point_location"]
-        track_entities = TrackSectionEntity.objects.prefetch_related(
-            *related_names
-        ).filter(pk__in=ids)
+        self.signals = {}
+        track_section_ids = [track for track in self.tracks]
+        qs = SignalEntity.objects.filter(
+            point_location__track_section__in=track_section_ids
+        )
+        signals = entities_prefetch_components(SignalEntity, qs)
+        for signal in signals:
+            location = signal.point_location
+            track = location.track_section
+            pos = location.offset
+            if track.entity_id not in self.tracks:
+                continue
 
-        for entity in track_entities:
-            import pdb
-
-            pdb.set_trace()
+            (begin, end, offset) = self.tracks[track.entity_id]
+            if (pos < begin and pos < end) or (pos > begin and pos > end):
+                continue
+            self.signals[signal.entity_id] = offset + abs(pos - begin)
 
     def track_position(self, track_position):
         """
         Returns the position projected in the path.
         If the tracksection position isn't contained in the path then return `None`.
         """
-        track = track_position.track_section
+        track = track_position.track_section.entity_id
         pos = track_position.offset
 
         if track not in self.tracks:
@@ -61,3 +71,12 @@ class Projection:
             return None
 
         return abs(pos - begin) + offset
+
+    def signal(self, signal):
+        """
+        Returns the position of a signal projected in the path.
+        If the signal position isn't contained in the path then return `None`.
+        """
+        if signal.entity_id not in self.signals:
+            return None
+        return self.signals[signal.entity_id]
