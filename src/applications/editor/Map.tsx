@@ -1,7 +1,7 @@
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { FC, useCallback, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import ReactMapGL, { AttributionControl, MapEvent, ScaleControl } from 'react-map-gl';
+import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl';
 
 import { updateViewport } from 'reducers/map';
 
@@ -17,12 +17,6 @@ import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 
 import { EditorState } from '../../reducers/editor';
 import { CommonToolState, Tool } from './tools';
-
-interface DeepStruct<T> {
-  [key: string]: string | T;
-}
-type Colors = DeepStruct<Colors>;
-const COLORS = colors as Record<string, Colors>;
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
   toolState: S;
@@ -126,10 +120,10 @@ const Map: FC<MapProps> = ({ toolState, setToolState, activeTool }) => {
         />
 
         {/* Common layers */}
-        <Background colors={COLORS[mapStyle]} />
+        <Background colors={colors[mapStyle]} />
         <OSM mapStyle={mapStyle} />
         <Hillshade mapStyle={mapStyle} />
-        <Platform colors={COLORS[mapStyle]} />
+        <Platform colors={colors[mapStyle]} />
 
         {/* Tool specific layers */}
         {activeTool.getLayers && activeTool.getLayers({ mapStyle }, toolState, editorState)}

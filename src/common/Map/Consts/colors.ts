@@ -1,8 +1,10 @@
+import { ColorsType } from '../../../types';
+
 const bpBg = '#405cb1';
 const bpMedium = '#98aedd';
 const bpLight = '#e4eaf6';
 
-const colors = {
+const colors: Record<string, ColorsType> = {
   normal: {
     background: '#eeeeee',
     chantier: {

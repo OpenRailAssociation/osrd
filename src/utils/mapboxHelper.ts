@@ -2,7 +2,6 @@ import bboxClip from '@turf/bbox-clip';
 import { flatten } from 'lodash';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import booleanIntersects from '@turf/boolean-intersects';
-import bboxPolygon from '@turf/bbox-polygon';
 
 /* Types */
 import { MapController } from 'react-map-gl';
@@ -16,9 +15,12 @@ import {
   Point,
   MultiPoint,
   Position,
+  Polygon,
   GeoJSON,
 } from 'geojson';
 import { Item, Zone } from '../types';
+import bbox from '@turf/bbox';
+import bboxPolygon from '@turf/bbox-polygon';
 
 /**
  * This class allows binding keyboard events to react-map-gl. Since those events are not supported
@@ -48,16 +50,16 @@ export class KeyDownMapController extends MapController {
 }
 
 /**
- * This helper takes a Feature *or* a FeatureCollection and a bounding box, and returns the input
- * Feature or FeatureCollection, but clipped inside the bounding box. It filters out Points and
- * MultiPoints, and clips LineStrings and MultiLineStrings using @turf/bboxClip.
+ * This helper takes a Feature *or* a FeatureCollection and a bounding zone, and returns the input
+ * Feature or FeatureCollection, but clipped inside the bounding zone. It filters out Points and
+ * MultiPoints, and clips LineStrings and MultiLineStrings using @turf/bboxClip (when possible).
  */
-export function clip<T extends Feature | FeatureCollection>(tree: T, bbox: BBox): T | null {
+export function clip<T extends Feature | FeatureCollection>(tree: T, zone: Zone): T | null {
   if (tree.type === 'FeatureCollection') {
     return {
       ...tree,
       features: (tree as FeatureCollection).features.flatMap((f) => {
-        const res = clip(f, bbox);
+        const res = clip(f, zone);
         if (!res) return [];
         return [res];
       }),
@@ -68,10 +70,18 @@ export function clip<T extends Feature | FeatureCollection>(tree: T, bbox: BBox)
     const feature = tree as Feature;
 
     if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
-      return bboxClip(feature as Feature<LineString | MultiLineString>, bbox) as T;
+      // TODO
+      // Find how to clip lines / multilines to a polygon
+      if (zone.type !== 'rectangle') return feature as T;
+
+      const clipped = bboxClip(
+        feature as Feature<LineString | MultiLineString>,
+        zoneToBBox(zone)
+      ) as Feature<LineString | MultiLineString>;
+      return clipped.geometry.coordinates.length ? (clipped as T) : null;
     }
 
-    const polygon = bboxPolygon(bbox);
+    const polygon = zoneToFeature(zone).geometry as Polygon;
 
     if (feature.geometry.type === 'Point') {
       return booleanPointInPolygon((feature as Feature<Point>).geometry.coordinates, polygon)
@@ -85,7 +95,7 @@ export function clip<T extends Feature | FeatureCollection>(tree: T, bbox: BBox)
         geometry: {
           ...feature.geometry,
           coordinates: feature.geometry.coordinates.filter((position) =>
-            booleanPointInPolygon((feature as Feature<Point>).geometry.coordinates, polygon)
+            booleanPointInPolygon(position, polygon)
           ),
         },
       };
@@ -180,6 +190,18 @@ export function zoneToFeature(zone: Zone, close = false): Feature {
       };
     }
   }
+}
+
+/**
+ * Returns the BBox containing a given zone.
+ */
+export function zoneToBBox(zone: Zone): BBox {
+  if (zone.type === 'rectangle') {
+    const [[x1, y1], [x2, y2]] = zone.points;
+    return [Math.min(x1, x2), Math.min(y1, y2), Math.max(x1, x2), Math.max(y1, y2)];
+  }
+
+  return bbox(zoneToFeature(zone, true));
 }
 
 /**

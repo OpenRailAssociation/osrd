@@ -12,14 +12,12 @@ import { MapEvent } from 'react-map-gl';
 import { isEqual } from 'lodash';
 
 import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
-import { ColorsType, Zone } from '../../../types';
+import { Zone } from '../../../types';
 import { selectZone } from '../../../reducers/editor';
 import EditorZone from '../../../common/Map/Layers/EditorZone';
 import GeoJSONs from '../../../common/Map/Layers/GeoJSONs';
-import colors from '../../../common/Map/Consts/colors';
 import TracksGeographic from '../../../common/Map/Layers/TracksGeographic';
-
-const COLORS = colors as Record<string, ColorsType>;
+import colors from '../../../common/Map/Consts/colors';
 
 export type SelectZoneState = CommonToolState & {
   mode: 'rectangle' | 'polygon';
@@ -205,16 +203,8 @@ export const SelectZone: Tool<SelectZoneState> = {
 
     return (
       <>
-        <TracksGeographic colors={COLORS[mapStyle]} />
+        <TracksGeographic colors={colors[mapStyle]} />
         <EditorZone newZone={newZone} />
-        <GeoJSONs
-          colors={COLORS[mapStyle]}
-          idHover={
-            toolState.hovered && toolState.hovered.layer === 'editor/geo-main-layer'
-              ? toolState.hovered.id
-              : undefined
-          }
-        />
       </>
     );
   },

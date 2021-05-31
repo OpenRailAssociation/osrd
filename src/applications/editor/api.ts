@@ -1,17 +1,14 @@
-import bboxPolygon from '@turf/bbox-polygon';
-import { GeoJSON, Position } from 'geojson';
+import { GeoJSON } from 'geojson';
 import { get } from '../../common/requests';
-import { ChartisAction } from '../../types';
+import { ChartisAction, Zone } from '../../types';
+import { zoneToFeature } from '../../utils/mapboxHelper';
 
 /**
  * Call the chartis API for geojson.
  */
-export async function getChartisLayers(
-  bbox: Position[],
-  layers: Array<String>
-): Promise<Array<GeoJSON>> {
-  const geoJson = bboxPolygon(bbox.flat() as any);
-  const result = await Promise.all(
+export async function getChartisLayers(zone: Zone, layers: Array<String>): Promise<Array<GeoJSON>> {
+  const geoJson = zoneToFeature(zone, true);
+  return await Promise.all(
     layers.map((layer) =>
       get(
         `/chartis/layer/${layer}/geojson/geo`,
@@ -24,7 +21,6 @@ export async function getChartisLayers(
       )
     )
   );
-  return result;
 }
 
 /**

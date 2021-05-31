@@ -26,7 +26,7 @@ export function selectZone(zone: Zone | null): ThunkAction<ActionSelectZone> {
     if (zone) {
       dispatch(setLoading());
       try {
-        const data = await getChartisLayers(zone.points, ['map_midi_circuitdevoie']);
+        const data = await getChartisLayers(zone, ['map_midi_circuitdevoie']);
         dispatch(setSuccess());
         dispatch(setEditionData(data));
       } catch (e) {
@@ -210,13 +210,19 @@ export const pointsSelector = createSelector(dataSelector, (data) =>
   }))
 );
 
-export const bboxSelector = createSelector(zoneSelector, (zone) => flatten(zone as any) as BBox);
-export const clippedDataSelector = createSelector(dataSelector, bboxSelector, (data, bbox) =>
-  (data || []).map((geoJSON) => clip(geoJSON as FeatureCollection, bbox) as FeatureCollection)
-);
+export const clippedDataSelector = createSelector(dataSelector, zoneSelector, (data, zone) => {
+  return zone && data
+    ? data.map((geoJSON) => clip(geoJSON as FeatureCollection, zone) as FeatureCollection)
+    : [];
+});
 export const clippedPointsSelector = createSelector(
   pointsSelector,
-  bboxSelector,
-  (pointsCollections, bbox) =>
-    pointsCollections.map((pointsCollection) => clip(pointsCollection, bbox) as FeatureCollection)
+  zoneSelector,
+  (pointsCollections, zone) => {
+    return zone && pointsCollections
+      ? pointsCollections.map(
+          (pointsCollection) => clip(pointsCollection, zone) as FeatureCollection
+        )
+      : [];
+  }
 );

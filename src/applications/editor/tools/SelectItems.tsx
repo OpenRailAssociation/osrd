@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   BiLoader,
   BiSelection,
@@ -14,6 +15,10 @@ import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
 import { Item } from '../../../types';
 import { EditorState } from '../../../reducers/editor';
 import { selectInZone } from '../../../utils/mapboxHelper';
+import TracksGeographic from '../../../common/Map/Layers/TracksGeographic';
+import EditorZone from '../../../common/Map/Layers/EditorZone';
+import GeoJSONs from '../../../common/Map/Layers/GeoJSONs';
+import colors from '../../../common/Map/Consts/colors';
 
 export type SelectItemsState = CommonToolState & {
   mode: 'rectangle' | 'single' | 'polygon';
@@ -231,5 +236,22 @@ export const SelectItems: Tool<SelectItemsState> = {
         setState({ ...toolState, polygonPoints: points.concat([position]) });
       }
     }
+  },
+
+  // Layers:
+  getLayers({ mapStyle }, toolState) {
+    return (
+      <>
+        <EditorZone />
+        <GeoJSONs
+          colors={colors[mapStyle]}
+          idHover={
+            toolState.hovered && toolState.hovered.layer === 'editor/geo-main-layer'
+              ? toolState.hovered.id
+              : undefined
+          }
+        />
+      </>
+    );
   },
 };
