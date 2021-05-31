@@ -6,6 +6,7 @@ import './Tipped.scss';
 interface TippedProps extends HTMLAttributes<any> {
   children: [JSX.Element, JSX.Element];
   tag?: keyof JSX.IntrinsicElements;
+  rootTag?: keyof JSX.IntrinsicElements;
   mode?: 'bottom' | 'right' | 'left' | 'top';
 }
 
@@ -13,11 +14,12 @@ const TOLERANCE = 0.005;
 const RATIO = 0.2;
 
 const Tipped: FC<TippedProps> = (props) => {
-  const { children, tag, mode = 'bottom', ...attributes } = props;
+  const { children, tag, rootTag, mode = 'bottom', ...attributes } = props;
   const [target, tooltip] = children;
   const [showTip, setShowTip] = useState<boolean>(false);
   const [opacity, setOpacity] = useState<number>(0);
   const Tag = tag || 'div';
+  const RootTag = rootTag || 'div';
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -32,17 +34,17 @@ const Tipped: FC<TippedProps> = (props) => {
   }, [showTip, opacity, setOpacity]);
 
   return (
-    <Tag
+    <RootTag
       {...(attributes || {})}
-      onMouseEnter={() => setShowTip(true)}
-      onMouseLeave={() => setShowTip(false)}
       className={cx(attributes?.className, 'tooltip-container')}
       style={{
         ...(attributes.style || {}),
         position: 'relative',
       }}
     >
-      {target}
+      <Tag onMouseEnter={() => setShowTip(true)} onMouseLeave={() => setShowTip(false)}>
+        {target}
+      </Tag>
       {!!opacity && (
         <div
           role="tooltip"
@@ -53,7 +55,7 @@ const Tipped: FC<TippedProps> = (props) => {
           <div className="tooltip-inner">{tooltip}</div>
         </div>
       )}
-    </Tag>
+    </RootTag>
   );
 };
 

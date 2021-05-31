@@ -27,10 +27,13 @@
     display: flex;
     flex-direction: column;
 
+    & > * {
+      margin-bottom: 0.5rem;
+    }
+
     button {
       box-sizing: border-box;
 
-      margin-bottom: 0.5rem;
       color: $blue;
       background: $white;
 
@@ -63,6 +66,22 @@
 
     button.active:not(:disabled) {
       border: 3px solid $white;
+
+      &::after {
+        content: ' ';
+
+        width: 0;
+        height: 0;
+        border-top: 10px solid transparent;
+        border-bottom: 10px solid transparent;
+        border-right: 10px solid $white;
+
+        position: absolute;
+        top: 50%;
+        left: 100%;
+        margin-top: -10px;
+        margin-left: 6px;
+      }
     }
   }
   .actions-box {
