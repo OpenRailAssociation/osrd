@@ -17,6 +17,8 @@ from osrd_infra.models import (
     get_component_meta,
     ALL_COMPONENT_TYPES,
     ALL_ENTITY_TYPES,
+    # rolling stock
+    RollingStock,
 )
 
 from osrd_infra.models.common import EnumSerializer
@@ -80,6 +82,18 @@ class InfraSerializer(ModelSerializer):
     class Meta:
         model = Infra
         exclude = ["namespace"]
+
+
+class RollingStockSerializer(ModelSerializer):
+    class Meta:
+        model = RollingStock
+        fields = "__all__"
+
+
+class LightRollingStockSerializer(ModelSerializer):
+    class Meta:
+        model = RollingStock
+        exclude = ["tractive_effort_curve", "rolling_resistance"]
 
 
 # COMPONENT SERIALIZERS

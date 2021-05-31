@@ -24,7 +24,6 @@ ROOT_URLCONF = 'config.workspace_urls'
 MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']  # noqa
 MIDDLEWARE += ['config.test_middleware.LocalUserMiddleware']
 
-REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = ['rest_framework.renderers.JSONRenderer']  # noqa
 REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'] = ['config.test_middleware.TestGatewayAuth']  # noqa
 
 DEBUG = True
