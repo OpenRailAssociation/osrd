@@ -28,7 +28,6 @@ MapSettings.propTypes = {
   toggleMapSettings: PropTypes.func.isRequired,
 };
 
-
 MapSettings.defaultProps = {
   active: false,
 };

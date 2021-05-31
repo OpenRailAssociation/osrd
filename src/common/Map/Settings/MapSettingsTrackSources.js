@@ -11,7 +11,7 @@ export default function MapSettingsTrackSources() {
   const dispatch = useDispatch();
 
   const switchTrackSourceOptions = [];
-  Object.entries(MAP_TRACK_SOURCES).forEach(([key, label]) => {
+  Object.entries(MAP_TRACK_SOURCES).forEach(([key]) => {
     switchTrackSourceOptions.push({
       value: key,
       label: t(`Map.tracksources.${key}`),

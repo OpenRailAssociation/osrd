@@ -40,7 +40,9 @@ export const formatStepsWithSpace = (
 export const formatData = (trains, trainNumber, dataName) => trains[trainNumber][dataName]
   .map((step) => ({ space: step.space, value: step.speed }));
 
-export const handleWindowResize = (chartID, drawTrain, isResizeActive, setResizeActive, setMustRedraw) => {
+export const handleWindowResize = (
+  chartID, drawTrain, isResizeActive, setResizeActive, setMustRedraw,
+) => {
   if (!isResizeActive) {
     let timeOutFunctionId;
     const resizeDrawTrain = () => {

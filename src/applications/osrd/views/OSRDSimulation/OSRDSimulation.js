@@ -24,7 +24,7 @@ const OSRDSimulation = () => {
   const { t } = useTranslation(['translation', 'simulation']);
   const { fullscreen } = useSelector((state) => state.main);
   const [hoverPosition, setHoverPosition] = useState(undefined);
-  const [hoverStop, setHoverStop] = useState(undefined);
+  // const [hoverStop, setHoverStop] = useState(undefined);
   const [selectedTrain, setSelectedTrain] = useState(0);
   const [mustRedraw, setMustRedraw] = useState(true);
   // const { isWorking, simulationRaw } = useSelector((state) => state.osrdsimulation);
@@ -54,20 +54,19 @@ const OSRDSimulation = () => {
   useEffect(() => {
     if (simulation !== undefined
       && simulation.trains[selectedTrain].steps[hoverPosition] !== undefined) {
-      const hoverTime = simulation.trains[selectedTrain].steps[hoverPosition].time;
-      console.log(hoverTime);
+      // const hoverTime = simulation.trains[selectedTrain].steps[hoverPosition].time;
     }
   }, [hoverPosition]);
 
   store.dispatch(redirectToGraph(false));
 
-  const play = () => {
+  /* const play = () => {
     for (let i = 0; i < simulation.trains[0].steps.length; i += 10) {
       setTimeout(() => {
         setHoverPosition(i);
       }, 500);
     }
-  };
+  }; */
 
   const offsetTimeByDragging = (offset) => {
     const { trains } = simulation;

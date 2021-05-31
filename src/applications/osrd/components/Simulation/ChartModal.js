@@ -39,7 +39,7 @@ const ChartModal = (props) => {
           </div>
           <input
             type="string"
-            autoFocus
+            autoFocus // eslint-disable-line jsx-a11y/no-autofocus
             onBlur={() => setShowModal('')}
             onChange={(e) => setOffset(e.target.value.replace(/\D/g, ''))} // Filter non digit chars
             value={offset}

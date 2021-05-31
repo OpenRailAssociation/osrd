@@ -53,7 +53,6 @@ class HomeOSRD extends React.Component {
   }
 }
 
-
 const mapStateToProps = (state) => ({
   osrdsimulation: state.osrdsimulation,
 });
