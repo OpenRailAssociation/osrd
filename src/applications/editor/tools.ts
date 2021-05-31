@@ -7,6 +7,7 @@ import { SelectZone } from './tools/SelectZone';
 import { CreateLine } from './tools/CreateLine';
 import { SelectItems } from './tools/SelectItems';
 import { Item, PositionnedItem } from '../../types';
+import { TFunction } from 'i18next';
 
 export interface CommonToolState {
   mousePosition: [number, number];
@@ -64,12 +65,17 @@ export interface Tool<S extends CommonToolState> {
     editorState: EditorState,
     mapState: { isLoaded: boolean; isDragging: boolean; isHovering: boolean }
   ) => string;
-  // Layers:
+  // Display:
   getLayers?: (
-    context: { mapStyle: any },
+    context: { setState(state: S): void; dispatch: Dispatch; t: TFunction; mapStyle: any },
     toolState: S,
     editorState: EditorState
-  ) => JSX.Element;
+  ) => JSX.Element | null;
+  getDOM?: (
+    context: { setState(state: S): void; dispatch: Dispatch; t: TFunction },
+    toolState: S,
+    editorState: EditorState
+  ) => JSX.Element | null;
 }
 
 export const Tools: Tool<any>[] = [SelectZone, CreateLine, SelectItems];

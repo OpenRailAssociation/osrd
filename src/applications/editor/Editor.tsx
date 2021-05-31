@@ -107,6 +107,9 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
 
       <LoaderState />
       <NotificationsState />
+
+      {activeTool.getDOM &&
+        activeTool.getDOM({ dispatch, setState: setToolState, t }, toolState, editorState)}
     </main>
   );
 };

@@ -12,7 +12,7 @@ import {
 import { isEqual } from 'lodash';
 
 import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
-import { Item } from '../../../types';
+import { Item, Zone } from '../../../types';
 import { EditorState } from '../../../reducers/editor';
 import { selectInZone } from '../../../utils/mapboxHelper';
 import TracksGeographic from '../../../common/Map/Layers/TracksGeographic';
@@ -240,9 +240,23 @@ export const SelectItems: Tool<SelectItemsState> = {
 
   // Layers:
   getLayers({ mapStyle }, toolState) {
+    let selectionZone: Zone | undefined;
+
+    if (toolState.mode === 'rectangle' && toolState.rectangleTopLeft) {
+      selectionZone = {
+        type: 'rectangle',
+        points: [toolState.rectangleTopLeft, toolState.mousePosition],
+      };
+    } else if (toolState.mode === 'polygon' && toolState.polygonPoints.length) {
+      selectionZone = {
+        type: 'polygon',
+        points: toolState.polygonPoints.concat([toolState.mousePosition]),
+      };
+    }
+
     return (
       <>
-        <EditorZone />
+        <EditorZone newZone={selectionZone} />
         <GeoJSONs
           colors={colors[mapStyle]}
           idHover={

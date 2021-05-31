@@ -1,3 +1,5 @@
+import React from 'react';
+import { isEqual } from 'lodash';
 import {
   AiOutlineCheckCircle,
   AiOutlineCloseCircle,
@@ -6,11 +8,16 @@ import {
 } from 'react-icons/all';
 
 import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
-import { EditorState } from '../../../reducers/editor';
+import { EditorState, createLine } from '../../../reducers/editor';
+import EditorZone from '../../../common/Map/Layers/EditorZone';
+import GeoJSONs from '../../../common/Map/Layers/GeoJSONs';
+import colors from '../../../common/Map/Consts/colors';
+import Modal from '../components/Modal';
 
 export type CreateLineState = CommonToolState & {
   linePoints: [number, number][];
   showPropertiesModal: boolean;
+  lineProperties: string;
 };
 
 export const CreateLine: Tool<CreateLineState> = {
@@ -33,6 +40,7 @@ export const CreateLine: Tool<CreateLineState> = {
       ...DEFAULT_COMMON_TOOL_STATE,
       linePoints: [],
       showPropertiesModal: false,
+      lineProperties: '{}',
     };
   },
   actions: [
@@ -87,4 +95,89 @@ export const CreateLine: Tool<CreateLineState> = {
       },
     ],
   ],
+
+  // Interactions:
+  onClickMap(e, { setState }, toolState) {
+    const position = e.lngLat;
+
+    const points = toolState.linePoints;
+    const lastPoint = points[points.length - 1];
+
+    if (isEqual(lastPoint, position)) {
+      if (points.length >= 3) {
+        setState({
+          ...toolState,
+          showPropertiesModal: true,
+        });
+      }
+    } else {
+      setState({ ...toolState, linePoints: points.concat([position]) });
+    }
+  },
+
+  // Display:
+  getLayers({ mapStyle }, toolState) {
+    return (
+      <>
+        <EditorZone
+          newZone={
+            toolState.linePoints.length
+              ? { type: 'polygon', points: toolState.linePoints.concat([toolState.mousePosition]) }
+              : undefined
+          }
+        />
+        <GeoJSONs
+          colors={colors[mapStyle]}
+          idHover={
+            toolState.hovered && toolState.hovered.layer === 'editor/geo-main-layer'
+              ? toolState.hovered.id
+              : undefined
+          }
+        />
+      </>
+    );
+  },
+  getDOM({ setState, dispatch, t }, toolState) {
+    let isConfirmEnabled = true;
+
+    try {
+      JSON.parse(toolState.lineProperties);
+    } catch (e) {
+      isConfirmEnabled = false;
+    }
+
+    return toolState.showPropertiesModal ? (
+      <Modal
+        onClose={() => setState({ ...toolState, showPropertiesModal: false, linePoints: [] })}
+        title={t('Editor.tools.create-line.label')}
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            dispatch<any>(createLine(toolState.linePoints, JSON.parse(toolState.lineProperties)));
+            setState({ ...toolState, linePoints: [], showPropertiesModal: false });
+          }}
+        >
+          <div className="form-group">
+            <label htmlFor="new-line-properties">
+              {t('Editor.tools.create-line.properties')} :
+            </label>
+            <div className="form-control-container">
+              <textarea
+                id="new-line-properties"
+                className="form-control "
+                value={toolState.lineProperties}
+                onChange={(e) => setState({ ...toolState, lineProperties: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="text-right">
+            <button type="submit" className="btn btn-primary" disabled={!isConfirmEnabled}>
+              {t('common.confirm')}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    ) : null;
+  },
 };

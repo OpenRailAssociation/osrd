@@ -2,6 +2,8 @@ import React, { FC, useCallback, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl';
+import { withTranslation } from 'react-i18next';
+import { TFunction } from 'i18next';
 
 import { updateViewport } from 'reducers/map';
 
@@ -22,9 +24,10 @@ interface MapProps<S extends CommonToolState = CommonToolState> {
   toolState: S;
   setToolState: (newState: S) => void;
   activeTool: Tool<S>;
+  t: TFunction;
 }
 
-const Map: FC<MapProps> = ({ toolState, setToolState, activeTool }) => {
+const MapUnplugged: FC<MapProps> = ({ toolState, setToolState, activeTool, t }) => {
   const dispatch = useDispatch();
   const { mapStyle, viewport } = useSelector((state: { map: any }) => state.map);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
@@ -126,10 +129,17 @@ const Map: FC<MapProps> = ({ toolState, setToolState, activeTool }) => {
         <Platform colors={colors[mapStyle]} />
 
         {/* Tool specific layers */}
-        {activeTool.getLayers && activeTool.getLayers({ mapStyle }, toolState, editorState)}
+        {activeTool.getLayers &&
+          activeTool.getLayers(
+            { mapStyle, dispatch, setState: setToolState, t },
+            toolState,
+            editorState
+          )}
       </ReactMapGL>
     </>
   );
 };
+
+const Map = withTranslation()(MapUnplugged);
 
 export default Map;
