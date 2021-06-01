@@ -118,7 +118,6 @@ export type ChartisAction = ChartisActionInsert | ChartisActionUpdate | ChartisA
 //
 //  Misc
 //
-interface DeepStruct<T> {
-  [key: string]: string | T;
-}
-export type ColorsType = DeepStruct<ColorsType>;
+export type Theme = {
+  [key: string]: { [key: string]: string };
+};

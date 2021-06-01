@@ -12,7 +12,7 @@ const Background = (props) => {
       visibility: 'visible',
     },
     paint: {
-      'background-color': colors.background,
+      'background-color': colors.background.color,
     },
   };
 

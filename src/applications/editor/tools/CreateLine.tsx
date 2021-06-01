@@ -10,7 +10,7 @@ import {
 import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
 import { EditorState, createLine } from '../../../reducers/editor';
 import EditorZone from '../../../common/Map/Layers/EditorZone';
-import GeoJSONs from '../../../common/Map/Layers/GeoJSONs';
+import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../common/Map/Consts/colors';
 import Modal from '../components/Modal';
 
@@ -126,14 +126,7 @@ export const CreateLine: Tool<CreateLineState> = {
               : undefined
           }
         />
-        <GeoJSONs
-          colors={colors[mapStyle]}
-          idHover={
-            toolState.hovered && toolState.hovered.layer === 'editor/geo-main-layer'
-              ? toolState.hovered.id
-              : undefined
-          }
-        />
+        <GeoJSONs colors={colors[mapStyle]} />
       </>
     );
   },
@@ -179,5 +172,8 @@ export const CreateLine: Tool<CreateLineState> = {
         </form>
       </Modal>
     ) : null;
+  },
+  getInteractiveLayers() {
+    return [];
   },
 };

@@ -207,4 +207,7 @@ export const SelectZone: Tool<SelectZoneState> = {
       </>
     );
   },
+  getInteractiveLayers() {
+    return [];
+  },
 };

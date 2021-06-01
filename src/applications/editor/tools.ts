@@ -66,6 +66,11 @@ export interface Tool<S extends CommonToolState> {
     mapState: { isLoaded: boolean; isDragging: boolean; isHovering: boolean }
   ) => string;
   // Display:
+  getInteractiveLayers?: (
+    context: { setState(state: S): void; dispatch: Dispatch; t: TFunction; mapStyle: any },
+    toolState: S,
+    editorState: EditorState
+  ) => string[];
   getLayers?: (
     context: { setState(state: S): void; dispatch: Dispatch; t: TFunction; mapStyle: any },
     toolState: S,

@@ -58,11 +58,19 @@ const MapUnplugged: FC<MapProps> = ({ toolState, setToolState, activeTool, t }) 
         mapStyle={osmBlankStyle}
         onViewportChange={updateViewportChange}
         attributionControl={false} // Defined below
-        clickRadius={4}
+        clickRadius={6}
         touchRotate
         asyncRender
         doubleClickZoom={false}
-        // interactiveLayerIds={INTERACTIVE_LAYER_IDS}
+        interactiveLayerIds={
+          activeTool.getInteractiveLayers
+            ? activeTool.getInteractiveLayers(
+                { mapStyle, dispatch, setState: setToolState, t },
+                toolState,
+                editorState
+              )
+            : []
+        }
         getCursor={(mapState: {
           isLoaded: boolean;
           isDragging: boolean;

@@ -13,7 +13,10 @@ const EditorZone: FC<{ newZone?: Zone }> = ({ newZone }) => {
     <>
       {editionZone ? (
         <Source type="geojson" data={zoneToFeature(editionZone, true)}>
-          <Layer type="line" paint={{ 'line-color': '#333', 'line-width': 2 }} />
+          <Layer
+            type="line"
+            paint={{ 'line-color': '#333', 'line-width': 2, 'line-dasharray': [3, 3] }}
+          />
         </Source>
       ) : null}
       {newZone ? (

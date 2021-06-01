@@ -15,9 +15,8 @@ import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
 import { Item, Zone } from '../../../types';
 import { EditorState } from '../../../reducers/editor';
 import { selectInZone } from '../../../utils/mapboxHelper';
-import TracksGeographic from '../../../common/Map/Layers/TracksGeographic';
 import EditorZone from '../../../common/Map/Layers/EditorZone';
-import GeoJSONs from '../../../common/Map/Layers/GeoJSONs';
+import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../common/Map/Consts/colors';
 
 export type SelectItemsState = CommonToolState & {
@@ -256,16 +255,16 @@ export const SelectItems: Tool<SelectItemsState> = {
 
     return (
       <>
-        <EditorZone newZone={selectionZone} />
         <GeoJSONs
           colors={colors[mapStyle]}
-          idHover={
-            toolState.hovered && toolState.hovered.layer === 'editor/geo-main-layer'
-              ? toolState.hovered.id
-              : undefined
-          }
+          hoveredIDs={(toolState.hovered && !selectionZone) ? [toolState.hovered] : []}
+          selectionIDs={toolState.selection}
         />
+        <EditorZone newZone={selectionZone} />
       </>
     );
+  },
+  getInteractiveLayers() {
+    return [GEOJSON_LAYER_ID];
   },
 };
