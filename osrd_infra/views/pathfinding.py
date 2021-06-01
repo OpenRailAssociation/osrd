@@ -22,15 +22,19 @@ def status_missing_field_keyerror(key_error: KeyError):
     raise ParseError(f"missing field: {key}")
 
 
-def try_extract_field(manifest, field):
+def try_get_field(manifest, field):
     try:
-        return manifest.pop(field)
+        return manifest[field]
     except KeyError as e:
         return status_missing_field_keyerror(e)
 
 
 def request_pathfinding(payload):
-    response = requests.post(settings.BACKEND_URL + "pathfinding/routes", json=payload)
+    response = requests.post(
+        settings.OSRD_BACKEND_URL + "pathfinding/routes",
+        headers={"Authorization": "Bearer " + settings.OSRD_BACKEND_TOKEN},
+        json=payload,
+    )
     if not response:
         raise ParseError(response.content)
     return response.json()
@@ -97,8 +101,8 @@ class PathfindingView(
 
     @transaction.atomic
     def perform_create(self, serializer):
-        waypoints = try_extract_field(self.request.data, "waypoints")
-        infra_id = try_extract_field(self.request.data, "infra")
+        waypoints = try_get_field(self.request.data, "waypoints")
+        infra_id = try_get_field(self.request.data, "infra")
         infra = get_object_or_404(Infra, pk=infra_id)
         if not isinstance(waypoints, list):
             raise ParseError("waypoints: expected a list of list")

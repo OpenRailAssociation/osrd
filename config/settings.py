@@ -151,3 +151,8 @@ WORKSPACE = False
 BROKER_URL = f'rediss://:{getenv("REDIS_PASSWORD")}@{getenv("REDIS_HOST")}:6379/{getenv("REDIS_DB_NUMBER")}'
 BACKEND_URL = BROKER_URL
 CELERY_DEFAULT_QUEUE = 'service.osrd'
+
+# OSRD Backend
+
+OSRD_BACKEND_URL = getenv("OSRD_BACKEND_URL", "https://gateway.dev.dgexsol.fr/osrd_core/")
+OSRD_BACKEND_TOKEN = getenv("OSRD_BACKEND_TOKEN", "")

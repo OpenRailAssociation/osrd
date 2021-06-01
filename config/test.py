@@ -48,4 +48,4 @@ DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.profiling.ProfilingPanel',
 ]
 
-BACKEND_URL = getenv("BACKEND_URL", "http://localhost:8080/")
+OSRD_BACKEND_URL = getenv("OSRD_BACKEND_URL", "http://localhost:8080/")

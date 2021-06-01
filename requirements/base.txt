@@ -10,3 +10,4 @@ service-core==0.0.13
 
 Pillow==8.1.0
 jsonschema==3.2.0
+requests==2.25.1

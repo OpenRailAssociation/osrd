@@ -100,7 +100,7 @@ def serialize_signal(entity):
 
 def serialize_waypoint(entity):
     applicable_direction = entity.applicable_direction.applicable_direction
-    position = entity.point_location_set.get().offset
+    position = entity.point_location.offset
     entity_type = (
         "detector"
         if entity.waypoint.waypoint_type == WaypointType.DETECTOR
