@@ -60,10 +60,10 @@
             "rt.C3-S7",
             "rt.S7-buffer_stop_c"
           ],
-          "running_time_parameters": {
-            "type": "allowance",
-            "allowance_type": "T",
-            "allowance_value": 5
+          "allowance": {
+            "type": "linear",
+            "allowance_type": "D",
+            "allowance_value": 270
           },
           "type": "navigate"
         }

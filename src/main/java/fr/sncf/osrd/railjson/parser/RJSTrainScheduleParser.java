@@ -7,7 +7,7 @@ import fr.sncf.osrd.railjson.parser.exceptions.UnknownRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.UnknownRoute;
 import fr.sncf.osrd.railjson.parser.exceptions.UnknownTrackSection;
 import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
-import fr.sncf.osrd.railjson.schema.schedule.RJSRunningTimeParameters;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.RollingStock;
@@ -90,15 +90,15 @@ public class RJSTrainScheduleParser {
         );
     }
 
-    private static SpeedControllerGenerator parseSpeedControllerGenerator(RJSRunningTimeParameters parameters)
+    private static SpeedControllerGenerator parseSpeedControllerGenerator(RJSAllowance allowance)
             throws InvalidSchedule {
-        if (parameters == null)
+        if (allowance == null)
             return new MaxSpeedGenerator();
-        else if (parameters instanceof RJSRunningTimeParameters.Allowance) {
-            var typicalParameters = (RJSRunningTimeParameters.Allowance) parameters;
-            return new AllowanceGenerator(typicalParameters.allowanceValue, typicalParameters.allowanceType);
+        else if (allowance instanceof RJSAllowance.LinearAllowance) {
+            var linearAllowance = (RJSAllowance.LinearAllowance) allowance;
+            return new AllowanceGenerator(linearAllowance.allowanceValue, linearAllowance.allowanceType);
         } else {
-            throw new InvalidSchedule("Unimplemented running type");
+            throw new InvalidSchedule("Unimplemented allowance type");
         }
     }
 
@@ -108,7 +108,7 @@ public class RJSTrainScheduleParser {
             RJSTrainPhase rjsPhase
     ) throws InvalidSchedule {
 
-        var targetSpeedGenerator = parseSpeedControllerGenerator(rjsPhase.runningTimeParameters);
+        var targetSpeedGenerator = parseSpeedControllerGenerator(rjsPhase.allowance);
 
         if (rjsPhase.getClass() == RJSTrainPhase.Stop.class) {
             var rjsStop = (RJSTrainPhase.Stop) rjsPhase;

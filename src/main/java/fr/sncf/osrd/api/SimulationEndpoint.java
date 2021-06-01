@@ -17,7 +17,7 @@ import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
-import fr.sncf.osrd.railjson.schema.schedule.RJSRunningTimeParameters;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.simulation.Change;
@@ -46,7 +46,7 @@ public class SimulationEndpoint implements Take {
             .Builder()
             .add(RJSRollingResistance.adapter)
             .add(RJSTrainPhase.adapter)
-            .add(RJSRunningTimeParameters.adapter)
+            .add(RJSAllowance.adapter)
             .build()
             .adapter(SimulationRequest.class);
 
