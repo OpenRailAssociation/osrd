@@ -6,21 +6,13 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from osrd_infra.models import (
     Infra,
-    IdentifierDatabase,
     TrackSectionEntity,
 )
 
 
 def new_infra(client):
-    url = reverse("infra")
+    url = reverse("infra-list")
     data = {"name": "my-infra"}
-    response = client.post(url, data, format="json")
-    return response.data["id"]
-
-
-def new_identifier(client):
-    url = reverse("identifier")
-    data = {"name": "gaia"}
     response = client.post(url, data, format="json")
     return response.data["id"]
 
@@ -42,7 +34,7 @@ def track_section_payload(identifier, name, length):
 
 
 class InfraTests(APITestCase):
-    url = reverse("infra")
+    url = reverse("infra-list")
 
     def test_create_infra(self):
         data = {"name": "my-infra"}
@@ -60,36 +52,11 @@ class InfraTests(APITestCase):
         self.assertEqual(response.data["results"][0]["name"], "my-infra")
 
 
-class IdentifierTests(APITestCase):
-    url = reverse("identifier")
-
-    def test_create_identifier(self):
-        data = {"name": "gaia"}
-        response = self.client.post(self.url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(IdentifierDatabase.objects.count(), 1)
-        self.assertEqual(IdentifierDatabase.objects.get().name, "gaia")
-
-    def test_get_infra(self):
-        data = {"name": "gaia"}
-        self.client.post(self.url, data, format="json")
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["count"], 1)
-        self.assertEqual(response.data["results"][0]["name"], "gaia")
-
-    def test_duplicate_name(self):
-        data = {"name": "gaia"}
-        self.client.post(self.url, data, format="json")
-        response = self.client.post(self.url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-
 class EditionTests(APITestCase):
     def test_create_entity(self):
         infra = new_infra(self.client)
-        identifier = new_identifier(self.client)
-        url = reverse("edition", kwargs={"pk": infra})
+        identifier = "gaia"
+        url = reverse("infra-edit", kwargs={"pk": infra})
         data = track_section_payload(identifier, "foobar", 200)
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -98,8 +65,8 @@ class EditionTests(APITestCase):
 
     def test_delete_entity(self):
         infra = new_infra(self.client)
-        identifier = new_identifier(self.client)
-        url = reverse("edition", kwargs={"pk": infra})
+        identifier = "gaia"
+        url = reverse("infra-edit", kwargs={"pk": infra})
         data = track_section_payload(identifier, "foobar", 200)
         response = self.client.post(url, data, format="json")
         entity_id = response.data[0]["entity_id"]
@@ -111,8 +78,8 @@ class EditionTests(APITestCase):
 
     def test_add_component(self):
         infra = new_infra(self.client)
-        identifier = new_identifier(self.client)
-        url = reverse("edition", kwargs={"pk": infra})
+        identifier = "gaia"
+        url = reverse("infra-edit", kwargs={"pk": infra})
         data = track_section_payload(identifier, "foobar", 200)
         response = self.client.post(url, data, format="json")
         entity_id = response.data[0]["entity_id"]
@@ -132,8 +99,8 @@ class EditionTests(APITestCase):
 
     def test_update_component(self):
         infra = new_infra(self.client)
-        identifier = new_identifier(self.client)
-        url = reverse("edition", kwargs={"pk": infra})
+        identifier = "gaia"
+        url = reverse("infra-edit", kwargs={"pk": infra})
         data = track_section_payload(identifier, "foobar", 200)
         response = self.client.post(url, data, format="json")
         component_id = response.data[0]["component_ids"][0]
@@ -154,8 +121,8 @@ class EditionTests(APITestCase):
 
     def test_delete_component(self):
         infra = new_infra(self.client)
-        identifier = new_identifier(self.client)
-        url = reverse("edition", kwargs={"pk": infra})
+        identifier = "gaia"
+        url = reverse("infra-edit", kwargs={"pk": infra})
         data = track_section_payload(identifier, "foobar", 200)
         response = self.client.post(url, data, format="json")
         component_id = response.data[0]["component_ids"][0]
