@@ -46,6 +46,7 @@ export interface Tool<S extends CommonToolState> {
   actions: ToolAction<S>[][];
   getInitialState: () => S;
   isDisabled?: (editorState: EditorState) => boolean;
+  getRadius?: (toolState: S, editorState: EditorState) => number;
   // Interactions with Mapbox:
   onClickMap?: (
     e: MapEvent,
@@ -81,6 +82,11 @@ export interface Tool<S extends CommonToolState> {
     toolState: S,
     editorState: EditorState
   ) => JSX.Element | null;
+  getMessages?: (
+    context: { t: TFunction },
+    toolState: S,
+    editorState: EditorState
+  ) => JSX.Element | null | undefined;
 }
 
 export const Tools: Tool<any>[] = [SelectZone, CreateLine, SelectItems];

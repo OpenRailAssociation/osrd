@@ -95,7 +95,27 @@
     }
   }
 
-  .map {
+  .map-wrapper {
     flex-grow: 1;
+
+    display: flex;
+    flex-direction: column;
+
+    & > .map {
+      flex-grow: 1;
+    }
+
+    .messages-bar {
+      height: 2em;
+      line-height: 2em;
+      background: white;
+      color: grey;
+      font-style: italic;
+      padding-right: 1em;
+
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+    }
   }
 }

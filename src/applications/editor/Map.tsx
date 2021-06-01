@@ -20,6 +20,8 @@ import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { EditorState } from '../../reducers/editor';
 import { CommonToolState, Tool } from './tools';
 
+const DEFAULT_RADIUS = 6;
+
 interface MapProps<S extends CommonToolState = CommonToolState> {
   toolState: S;
   setToolState: (newState: S) => void;
@@ -58,7 +60,9 @@ const MapUnplugged: FC<MapProps> = ({ toolState, setToolState, activeTool, t }) 
         mapStyle={osmBlankStyle}
         onViewportChange={updateViewportChange}
         attributionControl={false} // Defined below
-        clickRadius={6}
+        clickRadius={
+          activeTool.getRadius ? activeTool.getRadius(toolState, editorState) : DEFAULT_RADIUS
+        }
         touchRotate
         asyncRender
         doubleClickZoom={false}
@@ -105,8 +109,8 @@ const MapUnplugged: FC<MapProps> = ({ toolState, setToolState, activeTool, t }) 
               hovered: {
                 id: feature.properties.OP_id as string,
                 layer: feature.layer.id as string,
-                lng: e.lngLat[0],
-                lat: e.lngLat[1],
+                lng: feature.properties.lng,
+                lat: feature.properties.lat,
               },
             });
           } else {

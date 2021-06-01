@@ -4,20 +4,23 @@ import {
   AiOutlineCheckCircle,
   AiOutlineCloseCircle,
   AiOutlineLeftCircle,
+  BiAnchor,
   MdShowChart,
 } from 'react-icons/all';
 
 import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
 import { EditorState, createLine } from '../../../reducers/editor';
 import EditorZone from '../../../common/Map/Layers/EditorZone';
-import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs';
+import GeoJSONs from '../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../common/Map/Consts/colors';
 import Modal from '../components/Modal';
+import GeoJSONPoints, { GEOJSON_POINTS_LAYER_ID } from '../../../common/Map/Layers/GeoJSONPoints';
 
 export type CreateLineState = CommonToolState & {
   linePoints: [number, number][];
-  showPropertiesModal: boolean;
   lineProperties: string;
+  showPropertiesModal: boolean;
+  anchorLinePoints: boolean;
 };
 
 export const CreateLine: Tool<CreateLineState> = {
@@ -35,15 +38,35 @@ export const CreateLine: Tool<CreateLineState> = {
   isDisabled(editorState: EditorState) {
     return !editorState.editionZone;
   },
+  getRadius() {
+    return 12;
+  },
   getInitialState() {
     return {
       ...DEFAULT_COMMON_TOOL_STATE,
       linePoints: [],
-      showPropertiesModal: false,
       lineProperties: '{}',
+      showPropertiesModal: false,
+      anchorLinePoints: true,
     };
   },
   actions: [
+    [
+      {
+        id: 'toggle-anchoring',
+        icon: BiAnchor,
+        labelTranslationKey: 'Editor.tools.create-line.actions.toggle-anchoring.label',
+        onClick({ setState }, state) {
+          setState({
+            ...state,
+            anchorLinePoints: !state.anchorLinePoints,
+          });
+        },
+        isActive(toolState) {
+          return toolState.anchorLinePoints;
+        },
+      },
+    ],
     [
       {
         id: 'validate-line',
@@ -98,7 +121,10 @@ export const CreateLine: Tool<CreateLineState> = {
 
   // Interactions:
   onClickMap(e, { setState }, toolState) {
-    const position = e.lngLat;
+    const position: [number, number] =
+      toolState.anchorLinePoints && toolState.hovered
+        ? [toolState.hovered.lng, toolState.hovered.lat]
+        : e.lngLat;
 
     const points = toolState.linePoints;
     const lastPoint = points[points.length - 1];
@@ -117,16 +143,22 @@ export const CreateLine: Tool<CreateLineState> = {
 
   // Display:
   getLayers({ mapStyle }, toolState) {
+    const lastPosition: [number, number] =
+      toolState.anchorLinePoints && toolState.hovered
+        ? [toolState.hovered.lng, toolState.hovered.lat]
+        : toolState.mousePosition;
+
     return (
       <>
         <EditorZone
           newZone={
             toolState.linePoints.length
-              ? { type: 'polygon', points: toolState.linePoints.concat([toolState.mousePosition]) }
+              ? { type: 'polygon', points: toolState.linePoints.concat([lastPosition]) }
               : undefined
           }
         />
         <GeoJSONs colors={colors[mapStyle]} />
+        <GeoJSONPoints hovered={toolState.anchorLinePoints ? toolState.hovered : null} />
       </>
     );
   },
@@ -174,6 +206,6 @@ export const CreateLine: Tool<CreateLineState> = {
     ) : null;
   },
   getInteractiveLayers() {
-    return [];
+    return [GEOJSON_POINTS_LAYER_ID];
   },
 };

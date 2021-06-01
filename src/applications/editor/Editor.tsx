@@ -100,8 +100,14 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
               : actions;
           })}
         </div>
-        <div className="map">
-          <Map toolState={toolState} setToolState={setToolState} activeTool={activeTool} />
+        <div className="map-wrapper">
+          <div className="map">
+            <Map toolState={toolState} setToolState={setToolState} activeTool={activeTool} />
+          </div>
+          <div className="messages-bar">
+            {(activeTool.getMessages && activeTool.getMessages({ t }, toolState, editorState)) ||
+              null}
+          </div>
         </div>
       </div>
 

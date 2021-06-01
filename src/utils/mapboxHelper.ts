@@ -20,7 +20,6 @@ import {
 } from 'geojson';
 import { Item, Zone } from '../types';
 import bbox from '@turf/bbox';
-import bboxPolygon from '@turf/bbox-polygon';
 
 /**
  * This class allows binding keyboard events to react-map-gl. Since those events are not supported
@@ -81,7 +80,7 @@ export function clip<T extends Feature | FeatureCollection>(tree: T, zone: Zone)
       return clipped.geometry.coordinates.length ? (clipped as T) : null;
     }
 
-    const polygon = zoneToFeature(zone).geometry as Polygon;
+    const polygon = zoneToFeature(zone, true).geometry as Polygon;
 
     if (feature.geometry.type === 'Point') {
       return booleanPointInPolygon((feature as Feature<Point>).geometry.coordinates, polygon)
@@ -140,9 +139,11 @@ export function extractPoints<T extends Feature | FeatureCollection>(tree: T): F
           coordinates: position,
         },
         properties: {
-          parentID: parentID,
           index: i,
-          pointID: `${parentID}/${i}`,
+          lng: position[0],
+          lat: position[1],
+          parentID: parentID,
+          OP_id: `${parentID}/${i}`,
         },
       }))
     : [];

@@ -184,6 +184,9 @@
         "label": "Sélection d'un élément",
         "focus": "Focus sur un élément",
         "description-1": "Clic sur un élément : Affichage de ses propriétés",
+        "no-selection": "Aucun élément sélectionné",
+        "selection": "{{count}} élément sélectionné",
+        "selection_plural": "{{count}} éléments sélectionnés",
         "actions": {
           "select-all": {
             "label": "Tout sélectionner"
@@ -220,6 +223,9 @@
         "description-4": "Touch Échap : Annulation du dernier point",
         "description-5": "Touch Entrée : Validation du chemin",
         "actions": {
+          "toggle-anchoring": {
+            "label": "Permettre d'ancrer les points sur les lignes existantes"
+          },
           "validate-line": {
             "label": "Valider la ligne"
           },

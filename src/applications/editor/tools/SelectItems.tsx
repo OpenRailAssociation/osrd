@@ -166,9 +166,7 @@ export const SelectItems: Tool<SelectItemsState> = {
     if (toolState.mode !== 'single') return;
 
     let selection: Item[] = toolState.selection;
-    const isAlreadySelected = selection.find(
-      (item) => item.layer === feature.layer && item.id === feature.id
-    );
+    const isAlreadySelected = selection.find((item) => item.id === feature.id);
 
     if (!isAlreadySelected) {
       if (e.srcEvent.ctrlKey) {
@@ -178,9 +176,7 @@ export const SelectItems: Tool<SelectItemsState> = {
       }
     } else {
       if (e.srcEvent.ctrlKey) {
-        selection = selection.filter(
-          (item) => !(item.layer === feature.layer && item.id === feature.id)
-        );
+        selection = selection.filter((item) => item.id !== feature.id);
       } else if (selection.length === 1) {
         selection = [];
       } else {
@@ -257,7 +253,7 @@ export const SelectItems: Tool<SelectItemsState> = {
       <>
         <GeoJSONs
           colors={colors[mapStyle]}
-          hoveredIDs={(toolState.hovered && !selectionZone) ? [toolState.hovered] : []}
+          hoveredIDs={toolState.hovered && !selectionZone ? [toolState.hovered] : []}
           selectionIDs={toolState.selection}
         />
         <EditorZone newZone={selectionZone} />
@@ -266,5 +262,10 @@ export const SelectItems: Tool<SelectItemsState> = {
   },
   getInteractiveLayers() {
     return [GEOJSON_LAYER_ID];
+  },
+
+  getMessages({ t }, toolState) {
+    if (!toolState.selection.length) return t('Editor.tools.select-items.no-selection');
+    return t('Editor.tools.select-items.selection', { count: toolState.selection.length });
   },
 };

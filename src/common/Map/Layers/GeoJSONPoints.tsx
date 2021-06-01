@@ -4,6 +4,7 @@ import { Layer, Source } from 'react-map-gl';
 import { FeatureCollection } from 'geojson';
 
 import { clippedPointsSelector, EditorState } from 'reducers/editor';
+import { Item } from '../../../types';
 
 export const GEOJSON_POINTS_LAYER_ID = 'editor/geo-main-layer-points';
 
@@ -14,7 +15,7 @@ const HOVERED_RADIUS = 4;
 const BASE_RADIUS = 1;
 const HOVERED_THICKNESS = 1;
 
-const GeoJSONPoints: FC<{ idHover?: string }> = ({ idHover }) => {
+const GeoJSONPoints: FC<{ hovered?: Item | null }> = ({ hovered }) => {
   const pointsCollections = useSelector((state: { editor: EditorState }) => {
     return clippedPointsSelector(state.editor);
   });
@@ -31,7 +32,7 @@ const GeoJSONPoints: FC<{ idHover?: string }> = ({ idHover }) => {
               'circle-color': BASE_COLOR,
             }}
           />
-          {idHover !== undefined ? (
+          {hovered && (
             <Layer
               type="circle"
               paint={{
@@ -40,9 +41,9 @@ const GeoJSONPoints: FC<{ idHover?: string }> = ({ idHover }) => {
                 'circle-stroke-color': HOVERED_COLOR,
                 'circle-stroke-width': HOVERED_THICKNESS,
               }}
-              filter={['==', 'pointID', idHover]}
+              filter={['==', 'OP_id', hovered.id]}
             />
-          ) : null}
+          )}
         </Source>
       ))}
     </>
