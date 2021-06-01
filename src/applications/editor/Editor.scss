@@ -103,6 +103,14 @@
 
     & > .map {
       flex-grow: 1;
+
+      .popup {
+        text-align: center;
+
+        .mapboxgl-popup-content > *:first-child {
+          font-weight: bold;
+        }
+      }
     }
 
     .messages-bar {

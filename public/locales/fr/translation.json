@@ -184,6 +184,7 @@
         "label": "Sélection d'un élément",
         "focus": "Focus sur un élément",
         "description-1": "Clic sur un élément : Affichage de ses propriétés",
+        "edit-line": "Édition des métadonnées d'un élément",
         "no-selection": "Aucun élément sélectionné",
         "selection": "{{count}} élément sélectionné",
         "selection_plural": "{{count}} éléments sélectionnés",

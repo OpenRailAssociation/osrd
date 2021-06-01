@@ -81,7 +81,7 @@ export interface Tool<S extends CommonToolState> {
     context: { setState(state: S): void; dispatch: Dispatch; t: TFunction },
     toolState: S,
     editorState: EditorState
-  ) => JSX.Element | null;
+  ) => JSX.Element | null | undefined;
   getMessages?: (
     context: { t: TFunction },
     toolState: S,

@@ -18,6 +18,8 @@ import { selectInZone } from '../../../utils/mapboxHelper';
 import EditorZone from '../../../common/Map/Layers/EditorZone';
 import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../common/Map/Consts/colors';
+import { Popup } from 'react-map-gl';
+import Modal from '../components/Modal';
 
 export type SelectItemsState = CommonToolState & {
   mode: 'rectangle' | 'single' | 'polygon';
@@ -25,6 +27,7 @@ export type SelectItemsState = CommonToolState & {
   polygonPoints: [number, number][];
   rectangleTopLeft: [number, number] | null;
   showModal: 'info' | 'edit' | null;
+  editProperties: string | null;
 };
 
 export const SelectItems: Tool<SelectItemsState> = {
@@ -43,6 +46,7 @@ export const SelectItems: Tool<SelectItemsState> = {
       polygonPoints: [],
       rectangleTopLeft: null,
       showModal: null,
+      editProperties: null,
     };
   },
   actions: [
@@ -97,6 +101,7 @@ export const SelectItems: Tool<SelectItemsState> = {
           setState({
             ...state,
             showModal: 'edit',
+            editProperties: JSON.stringify(state.selection[0].properties, null, '  '),
           });
         },
       },
@@ -144,6 +149,8 @@ export const SelectItems: Tool<SelectItemsState> = {
           });
         },
       },
+    ],
+    [
       {
         id: 'delete-selection',
         icon: BsTrash,
@@ -249,6 +256,19 @@ export const SelectItems: Tool<SelectItemsState> = {
       };
     }
 
+    let labelParts =
+      toolState.hovered &&
+      [
+        toolState.hovered.properties.RA_libelle_gare,
+        toolState.hovered.properties.RA_libelle_poste,
+        toolState.hovered.properties.RA_libelle_poste_metier,
+        toolState.hovered.properties.OP_id_poste_metier,
+      ].filter((s) => !!s && s !== 'null');
+
+    if (toolState.hovered && !labelParts?.length) {
+      labelParts = [toolState.hovered.id];
+    }
+
     return (
       <>
         <GeoJSONs
@@ -257,11 +277,81 @@ export const SelectItems: Tool<SelectItemsState> = {
           selectionIDs={toolState.selection}
         />
         <EditorZone newZone={selectionZone} />
+        {toolState.hovered && (
+          <Popup
+            className="popup"
+            anchor="bottom"
+            longitude={toolState.mousePosition[0]}
+            latitude={toolState.mousePosition[1]}
+            closeButton={false}
+          >
+            {labelParts && labelParts.map((s, i) => <div key={i}>{s}</div>)}
+          </Popup>
+        )}
       </>
     );
   },
   getInteractiveLayers() {
     return [GEOJSON_LAYER_ID];
+  },
+  getDOM({ setState, t }, toolState) {
+    switch (toolState.showModal) {
+      case 'info':
+        return (
+          <Modal onClose={() => setState({ ...toolState, showModal: null })}>
+            {toolState.selection.length === 1 ? (
+              <pre>{JSON.stringify(toolState.selection[0], null, '  ')}</pre>
+            ) : (
+              <div>
+                {t('Editor.tools.select-items.selection', { count: toolState.selection.length })}
+              </div>
+            )}
+          </Modal>
+        );
+      case 'edit':
+        let isConfirmEnabled = true;
+
+        try {
+          JSON.parse(toolState.editProperties || '');
+        } catch (e) {
+          isConfirmEnabled = false;
+        }
+
+        return (
+          <Modal
+            onClose={() => setState({ ...toolState, showModal: null })}
+            title={t('Editor.tools.select-items.edit-line')}
+          >
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                // TODO:
+                // Save changes in editor state
+                setState({ ...toolState, showModal: null, editProperties: null });
+              }}
+            >
+              <div className="form-group">
+                <label htmlFor="new-line-properties">
+                  {t('Editor.tools.create-line.properties')} :
+                </label>
+                <div className="form-control-container">
+                  <textarea
+                    id="new-line-properties"
+                    className="form-control "
+                    value={toolState.editProperties || ''}
+                    onChange={(e) => setState({ ...toolState, editProperties: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="text-right">
+                <button type="submit" className="btn btn-primary" disabled={!isConfirmEnabled}>
+                  {t('common.confirm')}
+                </button>
+              </div>
+            </form>
+          </Modal>
+        );
+    }
   },
 
   getMessages({ t }, toolState) {

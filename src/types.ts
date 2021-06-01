@@ -76,8 +76,8 @@ export type LineProperties = Partial<{
   last_midi_update: string; // ISO 8601 date
 }>;
 export interface Item {
-  layer: string;
   id: string;
+  properties: Record<string, any>;
 }
 export type PositionnedItem = Item & {
   lng: number;

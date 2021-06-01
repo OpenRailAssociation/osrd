@@ -218,12 +218,12 @@ export function selectInZone(data: GeoJSON[], zone?: Zone): Item[] {
     if (geojson.type === 'FeatureCollection') {
       geojson.features.forEach((feature) => {
         if (!zoneFeature || booleanIntersects(feature, zoneFeature)) {
-          items.push({ id: feature.properties?.OP_id, layer: feature.properties?.layer });
+          items.push({ id: feature.properties?.OP_id, properties: feature.properties || {} });
         }
       });
     } else if (geojson.type === 'Feature') {
       if (!zoneFeature || booleanIntersects(geojson, zoneFeature)) {
-        items.push({ id: geojson.properties?.OP_id, layer: geojson.properties?.layer });
+        items.push({ id: geojson.properties?.OP_id, properties: geojson.properties || {} });
       }
     }
   });
