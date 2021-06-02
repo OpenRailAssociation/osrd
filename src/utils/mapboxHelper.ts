@@ -1,12 +1,12 @@
 import bboxClip from '@turf/bbox-clip';
-import { flatten } from 'lodash';
+import { flatten, chunk } from 'lodash';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import booleanIntersects from '@turf/boolean-intersects';
 
 /* Types */
 import { MapController } from 'react-map-gl';
 import { MjolnirEvent } from 'react-map-gl/dist/es5/utils/map-controller';
-import { BBox } from '@turf/helpers';
+import { BBox, feature, point } from '@turf/helpers';
 import {
   Feature,
   FeatureCollection,
@@ -20,6 +20,8 @@ import {
 } from 'geojson';
 import { Item, Zone } from '../types';
 import bbox from '@turf/bbox';
+import lineIntersect from '@turf/line-intersect';
+import lineSlice from '@turf/line-slice';
 
 /**
  * This class allows binding keyboard events to react-map-gl. Since those events are not supported
@@ -69,9 +71,13 @@ export function clip<T extends Feature | FeatureCollection>(tree: T, zone: Zone)
     const feature = tree as Feature;
 
     if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
-      // TODO
-      // Find how to clip lines / multilines to a polygon
-      if (zone.type !== 'rectangle') return feature as T;
+      if (zone.type === 'polygon') {
+        const clipped = intersectPolygonLine(
+          zoneToFeature(zone, true) as Feature<Polygon>,
+          feature as Feature<LineString | MultiLineString>
+        );
+        return clipped.geometry.coordinates.length ? (clipped as T) : null;
+      }
 
       const clipped = bboxClip(
         feature as Feature<LineString | MultiLineString>,
@@ -203,6 +209,55 @@ export function zoneToBBox(zone: Zone): BBox {
   }
 
   return bbox(zoneToFeature(zone, true));
+}
+
+/**
+ * Helper to clip a line on a polygon.
+ */
+export function intersectPolygonLine(
+  poly: Feature<Polygon>,
+  line: Feature<LineString | MultiLineString>
+): Feature<MultiLineString> {
+  const lines: Position[][] =
+    line.geometry.type === 'MultiLineString'
+      ? line.geometry.coordinates
+      : [line.geometry.coordinates];
+  const res: Feature<MultiLineString> = {
+    type: 'Feature',
+    properties: line.properties,
+    geometry: {
+      type: 'MultiLineString',
+      coordinates: [],
+    },
+  };
+
+  lines.forEach((l) => {
+    if (l.length < 2) return;
+
+    const firstPoint: Point = { type: 'Point', coordinates: l[0] };
+    const lastPoint: Point = { type: 'Point', coordinates: l[l.length - 1] };
+    let intersections: Point[] = lineIntersect(
+      { type: 'LineString', coordinates: l },
+      poly
+    ).features.map((f) => f.geometry);
+
+    if (booleanPointInPolygon(firstPoint, poly)) intersections = [firstPoint].concat(intersections);
+    if (booleanPointInPolygon(lastPoint, poly)) intersections.push(lastPoint);
+
+    const splitters = chunk(intersections, 2).filter((pair) => pair.length === 2) as [
+      Point,
+      Point
+    ][];
+
+    splitters.forEach(([start, end]) => {
+      res.geometry.coordinates.push(
+        lineSlice(start.coordinates, end.coordinates, { type: 'LineString', coordinates: l })
+          .geometry.coordinates
+      );
+    });
+  });
+
+  return res;
 }
 
 /**

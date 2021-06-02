@@ -208,4 +208,8 @@ export const CreateLine: Tool<CreateLineState> = {
   getInteractiveLayers() {
     return [GEOJSON_POINTS_LAYER_ID];
   },
+  getCursor(toolState, editorState, {isDragging}) {
+    if (isDragging) return 'move';
+    return 'copy';
+  },
 };

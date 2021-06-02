@@ -277,7 +277,7 @@ export const SelectItems: Tool<SelectItemsState> = {
           selectionIDs={toolState.selection}
         />
         <EditorZone newZone={selectionZone} />
-        {toolState.hovered && (
+        {toolState.mode === 'single' && toolState.hovered && (
           <Popup
             className="popup"
             anchor="bottom"
@@ -357,5 +357,11 @@ export const SelectItems: Tool<SelectItemsState> = {
   getMessages({ t }, toolState) {
     if (!toolState.selection.length) return t('Editor.tools.select-items.no-selection');
     return t('Editor.tools.select-items.selection', { count: toolState.selection.length });
+  },
+  getCursor(toolState, editorState, { isDragging }) {
+    if (isDragging) return 'move';
+    if (toolState.mode === 'single' && toolState.hovered) return 'pointer';
+    if (toolState.mode !== 'single') return 'crosshair';
+    return 'default';
   },
 };

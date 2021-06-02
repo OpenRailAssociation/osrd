@@ -210,4 +210,9 @@ export const SelectZone: Tool<SelectZoneState> = {
   getInteractiveLayers() {
     return [];
   },
+
+  getCursor(toolState, editorState, {isDragging}) {
+    if (isDragging) return 'move';
+    return 'crosshair';
+  },
 };
