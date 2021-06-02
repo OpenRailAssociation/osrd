@@ -1,11 +1,9 @@
-import React, { FC, useCallback, useEffect } from 'react';
+import React, { FC } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl';
+import ReactMapGL, { AttributionControl, ScaleControl, ViewportProps } from 'react-map-gl';
 import { withTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
-
-import { updateViewport } from 'reducers/map';
 
 import colors from 'common/Map/Consts/colors';
 import 'common/Map/Map.scss';
@@ -23,33 +21,26 @@ import { CommonToolState, Tool } from './tools';
 const DEFAULT_RADIUS = 6;
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
+  t: TFunction;
   toolState: S;
   setToolState: (newState: S) => void;
   activeTool: Tool<S>;
-  t: TFunction;
+  mapStyle: string;
+  viewport: ViewportProps;
+  setViewport: (newViewport: ViewportProps) => void;
 }
 
-const MapUnplugged: FC<MapProps> = ({ toolState, setToolState, activeTool, t }) => {
+const MapUnplugged: FC<MapProps> = ({
+  t,
+  toolState,
+  setToolState,
+  activeTool,
+  mapStyle,
+  viewport,
+  setViewport,
+}) => {
   const dispatch = useDispatch();
-  const { mapStyle, viewport } = useSelector((state: { map: any }) => state.map);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
-  const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
-  const updateViewportChange = useCallback((value) => dispatch(updateViewport(value, '/editor')), [
-    dispatch,
-  ]);
-
-  useEffect(() => {
-    if (urlLat) {
-      updateViewportChange({
-        ...viewport,
-        latitude: parseFloat(urlLat),
-        longitude: parseFloat(urlLon),
-        zoom: parseFloat(urlZoom),
-        bearing: parseFloat(urlBearing),
-        pitch: parseFloat(urlPitch),
-      });
-    }
-  }, []);
 
   return (
     <>
@@ -58,7 +49,7 @@ const MapUnplugged: FC<MapProps> = ({ toolState, setToolState, activeTool, t }) 
         width="100%"
         height="100%"
         mapStyle={osmBlankStyle}
-        onViewportChange={updateViewportChange}
+        onViewportChange={(newViewport: ViewportProps) => setViewport(newViewport)}
         attributionControl={false} // Defined below
         clickRadius={
           activeTool.getRadius ? activeTool.getRadius(toolState, editorState) : DEFAULT_RADIUS

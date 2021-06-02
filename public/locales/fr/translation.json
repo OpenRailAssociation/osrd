@@ -153,6 +153,11 @@
   "Editor": {
     "title": "Éditeur",
     "tool-help": "Voir la description de l'outil actif",
+    "nav": {
+      "zoom-in": "Zoomer",
+      "zoom-out": "Dézoomer",
+      "recenter": "Recentrer la carte"
+    },
     "tools": {
       "select-zone": {
         "label": "Sélection de la zone d'édition",

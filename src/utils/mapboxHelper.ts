@@ -4,7 +4,7 @@ import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import booleanIntersects from '@turf/boolean-intersects';
 
 /* Types */
-import { MapController } from 'react-map-gl';
+import { MapController, ViewportProps } from 'react-map-gl';
 import { MjolnirEvent } from 'react-map-gl/dist/es5/utils/map-controller';
 import { BBox, feature, point } from '@turf/helpers';
 import {
@@ -284,6 +284,20 @@ export function selectInZone(data: GeoJSON[], zone?: Zone): Item[] {
   });
 
   return items;
+}
+
+/**
+ * This helpers takes a zone a returns the smallest viewport that contains the zone.
+ */
+export function getZoneViewport(zone: Zone): ViewportProps {
+  // TODO
+  return {
+    latitude: 47.3,
+    longitude: 2.0,
+    zoom: 10.0,
+    bearing: 0,
+    pitch: 0,
+  };
 }
 
 /**

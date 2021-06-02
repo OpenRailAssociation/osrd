@@ -20,6 +20,31 @@
     }
   }
 
+  button.editor-btn {
+    box-sizing: border-box;
+    font-size: 1.3em;
+
+    color: $blue;
+    background: $white;
+
+    &.active:not(:disabled) {
+      color: $white;
+      background: $blue;
+    }
+
+    &:disabled {
+      color: $grey;
+    }
+  }
+
+  .tooltip {
+    white-space: nowrap;
+
+    .tooltip-inner {
+      max-width: unset;
+    }
+  }
+
   .tool-box,
   .actions-box {
     padding: 1rem;
@@ -29,31 +54,6 @@
 
     & > * {
       margin-bottom: 0.5rem;
-    }
-
-    button {
-      box-sizing: border-box;
-      font-size: 1.3em;
-
-      color: $blue;
-      background: $white;
-
-      &.active:not(:disabled) {
-        color: $white;
-        background: $blue;
-      }
-
-      &:disabled {
-        color: $grey;
-      }
-    }
-
-    .tooltip {
-      white-space: nowrap;
-
-      .tooltip-inner {
-        max-width: unset;
-      }
     }
 
     .separator {
@@ -96,9 +96,24 @@
     }
   }
 
+  .nav-box {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 1rem;
+
+    display: flex;
+    flex-direction: column;
+
+    & > * {
+      margin-bottom: 0.5rem;
+    }
+  }
+
   .map-wrapper {
     flex-grow: 1;
 
+    position: relative;
     display: flex;
     flex-direction: column;
 

@@ -68,12 +68,12 @@ export interface Tool<S extends CommonToolState> {
   ) => string;
   // Display:
   getInteractiveLayers?: (
-    context: { setState(state: S): void; dispatch: Dispatch; t: TFunction; mapStyle: any },
+    context: { setState(state: S): void; dispatch: Dispatch; t: TFunction; mapStyle: string },
     toolState: S,
     editorState: EditorState
   ) => string[];
   getLayers?: (
-    context: { setState(state: S): void; dispatch: Dispatch; t: TFunction; mapStyle: any },
+    context: { setState(state: S): void; dispatch: Dispatch; t: TFunction; mapStyle: string },
     toolState: S,
     editorState: EditorState
   ) => JSX.Element | null;
