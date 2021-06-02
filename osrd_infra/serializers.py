@@ -24,6 +24,25 @@ from osrd_infra.models import (
 from osrd_infra.models.common import EnumSerializer
 
 
+# monkey patch rest_framework_gis so that it properly converts
+# geojson geometries when serializing
+
+from rest_framework_gis.fields import GeometryField
+
+
+def wrap_to_representation(original_to_representation):
+    def _wrapper(self, value):
+        if value is None or isinstance(value, dict):
+            return value
+        # geojson only supports this srid
+        value = value.transform(4326, clone=True)
+        return original_to_representation(self, value)
+    return _wrapper
+
+
+GeometryField.to_representation = wrap_to_representation(GeometryField.to_representation)
+
+
 class ComponentSerializer(ModelSerializer):
     registry = {}
 
