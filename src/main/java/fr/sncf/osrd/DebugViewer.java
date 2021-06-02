@@ -128,6 +128,16 @@ public class DebugViewer extends ChangeConsumer {
             graphEdge.setAttribute("ui.label", edge.id + "(index = " + edge.index + ")");
             graphEdge.setAttribute("layout.weight", edge.length / referenceEdgeSize);
 
+            if (edge.endpointCoords != null) {
+                assert edge.endpointCoords.size() == 2;
+                assert edge.endpointCoords.get(0).size() == 2;
+                assert edge.endpointCoords.get(1).size() == 2;
+                graph.getNode(startId).setAttribute("x", edge.endpointCoords.get(0).get(0));
+                graph.getNode(startId).setAttribute("y", edge.endpointCoords.get(0).get(1));
+                graph.getNode(endId).setAttribute("x", edge.endpointCoords.get(1).get(0));
+                graph.getNode(endId).setAttribute("y", edge.endpointCoords.get(1).get(1));
+            }
+
             edge.operationalPoints.getAll((opRef) -> {
                 // operational points can be point-like objects, or ranges
                 // !! this check causes a linter warning, which has to be waived for the whole class
@@ -166,7 +176,7 @@ public class DebugViewer extends ChangeConsumer {
         // create the graphstream swing infrastructure needed
         SwingViewer viewer = new SwingViewer(graph, SwingViewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
         var view = (DefaultView) viewer.addDefaultView(false);
-        viewer.enableAutoLayout(Layouts.newLayoutAlgorithm());
+        viewer.disableAutoLayout();
         view.setMouseManager(new MouseManager() {
             @Override
             public void init(GraphicGraph graph, View view) {

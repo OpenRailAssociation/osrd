@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
@@ -37,7 +38,7 @@ public class RouteStateTest {
     }
 
     @Test
-    public void testAwaitSwitchChange() throws InvalidInfraException {
+    public void testAwaitSwitchChange() throws InvalidInfraException, SimulationError {
         var infra = getBaseInfra();
         assert infra != null;
         var config = getBaseConfig();
@@ -45,14 +46,10 @@ public class RouteStateTest {
 
         config.trainSchedules.clear();
 
-        infra.routes.forEach((route) -> {
-            var positions = route.switchesPosition;
-            positions.replaceAll((k, v) -> RJSSwitch.Position.RIGHT);
-        });
-
         infra.switches.iterator().next().positionChangeDelay = 10;
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
 
         RouteState routeState = sim.infraState.getRouteState(3);
         makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
@@ -64,7 +61,7 @@ public class RouteStateTest {
     }
 
     @Test
-    public void testSeveralSwitches() throws InvalidInfraException {
+    public void testSeveralSwitches() throws InvalidInfraException, SimulationError {
         var infra = getBaseInfra();
         assert infra != null;
         var config = getBaseConfig();
@@ -76,13 +73,13 @@ public class RouteStateTest {
         var newSwitch = new RJSSwitch("switch-foo-42", oldSwitch.base, oldSwitch.left,
                 oldSwitch.right, 42);
         infra.switches.add(newSwitch);
-        infra.routes.forEach((route) -> {
-            var positions = route.switchesPosition;
-            positions.replaceAll((k, v) -> RJSSwitch.Position.RIGHT);
-            positions.put(new ID<>(newSwitch.id), RJSSwitch.Position.RIGHT);
-        });
+        for (var route : infra.routes)
+            if (route.id.equals("rt.C3-S7"))
+                route.switchesPosition.put(new ID<>(newSwitch.id), RJSSwitch.Position.LEFT);
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+        sim.infraState.getSwitchState(1).setPosition(sim, SwitchPosition.RIGHT);
 
         RouteState routeState = sim.infraState.getRouteState(3);
         makeFunctionEvent(sim, 0, () -> routeState.reserve(sim));

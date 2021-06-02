@@ -25,7 +25,7 @@ public class KeyboardInput extends InteractiveInput implements KeyListener {
     }
 
     @Override
-    protected Action makeDecision(SpeedDirective directive, TrainPhysicsIntegrator integrator) {
+    public Action getNextAction(SpeedDirective speedDirective, TrainPhysicsIntegrator integrator) {
         if (accelerating && !braking)
             return Action.accelerate(trainState.trainSchedule.rollingStock.getMaxEffort(trainState.speed));
         if (!accelerating && braking)

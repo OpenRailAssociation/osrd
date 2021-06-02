@@ -50,13 +50,22 @@
       "initial_speed": 0,
       "phases": [
         {
-          "type": "navigate",
           "driver_sight_distance": 400,
-          "routes": ["rt.buffer_stop_b-C3", "rt.C3-S7", "rt.S7-buffer_stop_c"],
           "end_location": {
             "track_section": "ne.micro.bar_a",
             "offset": 100
-          }
+          },
+          "routes": [
+            "rt.buffer_stop_b-C3",
+            "rt.C3-S7",
+            "rt.S7-buffer_stop_c"
+          ],
+          "running_time_parameters": {
+            "type": "margin",
+            "margin_type": "TIME",
+            "margin_value": 5
+          },
+          "type": "navigate"
         }
       ]
     }

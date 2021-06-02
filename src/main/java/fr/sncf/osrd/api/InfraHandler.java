@@ -4,7 +4,6 @@ import fr.sncf.osrd.infra.Infra;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Objects;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
@@ -16,16 +15,19 @@ public class InfraHandler {
     private final HashMap<String, Infra> cache = new HashMap<>();
     private final OkHttpClient client = new OkHttpClient();
     private final String baseUrl;
+    private final String authorizationToken;
 
-    public InfraHandler(String baseUrl) {
+    public InfraHandler(String baseUrl, String authorizationToken) {
         this.baseUrl = baseUrl;
+        this.authorizationToken = authorizationToken;
     }
 
     private Infra queryInfra(String infraId) throws IOException, InvalidInfraException {
         // create a request
-        var request = new Request.Builder()
-                .url(String.format("%srailjson/infra/%s/", baseUrl, infraId))
-                .build();
+        var builder = new Request.Builder();
+        if (authorizationToken != null)
+                builder = builder.header("Authorization", authorizationToken);
+        var request = builder.url(String.format("%sinfra/%s/railjson", baseUrl, infraId)).build();
 
         // use the client to send the request
         var response = client.newCall(request).execute();

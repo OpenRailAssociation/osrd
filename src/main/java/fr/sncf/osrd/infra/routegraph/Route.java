@@ -19,11 +19,22 @@ public class Route extends DirNEdge {
     public final String id;
     /** List of tvdSectionPath forming the route */
     public final List<TVDSectionPath> tvdSectionsPaths;
+
+    /** Directions associated with the TVD section paths */
     public final List<EdgeDirection> tvdSectionsPathDirections;
+
     public final List<SortedArraySet<TVDSection>> releaseGroups;
+
+    /** Map between each switch on the route and its required position for this route */
     public final HashMap<Switch, SwitchPosition> switchesPosition;
+
+    /** Signal placed before the route and reflecting its state*/
     public final Signal entrySignal;
+
+    /** List of all signals on the route, including the entry signal. Used to determine the next signal in railscript */
     public List<Signal> signalsWithEntry;
+
+    /** Set of signals to be updated on route change */
     public ArrayList<Signal> signalSubscribers;
 
     Route(

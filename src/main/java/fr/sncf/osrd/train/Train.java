@@ -6,6 +6,7 @@ import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.train.decisions.KeyboardInput;
@@ -18,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
-import java.util.List;
+import java.util.Set;
 
 public class Train {
     static final Logger logger = LoggerFactory.getLogger(Train.class);
@@ -39,27 +40,15 @@ public class Train {
     /** Create a train */
     public static Train create(
             Simulation sim,
-            TrainSchedule schedule,
-            List<SpeedController> controllers
+            TrainSchedule schedule
     ) throws SimulationError {
-        // the train starts out as a point like object on the beginning of the route
-        var initialPosition = new ArrayDeque<TrackSectionRange>();
-        var initialLocation = schedule.initialLocation;
-        initialPosition.addFirst(new TrackSectionRange(
-                initialLocation.edge,
-                schedule.initialDirection,
-                initialLocation.offset,
-                initialLocation.offset
-        ));
-
-        var location = new TrainPositionTracker(sim.infra, sim.infraState, initialPosition);
-        var phaseState = schedule.phases.get(0).getState();
+        var phaseState = schedule.phases.get(0).getState(sim, schedule);
+        var location = getInitialLocation(schedule, sim);
         var initialState = new TrainState(
                 sim.getTime(),
                 location,
                 schedule.initialSpeed,
                 TrainStatus.STARTING_UP,
-                controllers,
                 schedule,
                 0,
                 phaseState,
@@ -73,6 +62,25 @@ public class Train {
         sim.publishChange(trainCreatedChange);
         train.scheduleStateChange(sim);
         return train;
+    }
+
+    /** Generates the initial location object of a train given its schedule */
+    public static TrainPositionTracker getInitialLocation(TrainSchedule schedule, Simulation sim) {
+        // the train starts out as a point like object on the beginning of the route
+        var initialPosition = new ArrayDeque<TrackSectionRange>();
+        var initialLocation = schedule.initialLocation;
+        initialPosition.addFirst(new TrackSectionRange(
+                initialLocation.edge,
+                schedule.initialDirection,
+                initialLocation.offset,
+                initialLocation.offset
+        ));
+        return new TrainPositionTracker(sim.infra, sim.infraState, initialPosition);
+    }
+
+    /** Returns the last TrainState */
+    public TrainState getLastState() {
+        return lastState;
     }
 
     // region ENTITY_REACTOR
@@ -183,7 +191,7 @@ public class Train {
         public final String trainID;
         public final TrainState newState;
         public final SpeedUpdates positionUpdates = new SpeedUpdates();
-        public final PathUpdates<SpeedController[]> speedControllersUpdates = new PathUpdates<>();
+        public final PathUpdates<Set<SpeedController>> speedControllersUpdates = new PathUpdates<>();
         public final PathUpdates<SpeedDirective> speedDirectivesUpdates = new PathUpdates<>();
 
         /** Creates a change corresponding to the movement of a train */

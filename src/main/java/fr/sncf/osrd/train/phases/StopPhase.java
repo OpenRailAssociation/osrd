@@ -1,8 +1,10 @@
 package fr.sncf.osrd.train.phases;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.TimelineEvent;
+import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainState;
@@ -14,12 +16,14 @@ import java.util.function.Consumer;
 public class StopPhase extends PhaseState implements Phase {
     public final double duration;
 
-    public StopPhase(double duration) {
+    public StopPhase(double duration, SpeedControllerGenerator targetSpeedGenerator) {
+        super(targetSpeedGenerator);
         this.duration = duration;
     }
 
     @Override
-    public PhaseState getState() {
+    public PhaseState getState(Simulation sim, TrainSchedule schedule) {
+        speedInstructions.generate(sim, schedule);
         return this;
     }
 
@@ -34,14 +38,14 @@ public class StopPhase extends PhaseState implements Phase {
 
     @Override
     public TimelineEvent simulate(Simulation sim, Train train, TrainState trainState) {
-        var nextState = new Train.TrainStateChange(sim, train.getName(), trainState.nextPhase());
+        var nextState = new Train.TrainStateChange(sim, train.getName(), trainState.nextPhase(sim));
         return TrainRestarts.plan(sim, sim.getTime() + duration, train, nextState);
     }
 
     @Override
     @SuppressFBWarnings({"CN_IDIOM_NO_SUPER_CALL"})
     public PhaseState clone() {
-        return new StopPhase(duration);
+        return new StopPhase(duration, speedInstructions.targetSpeedGenerator);
     }
 
     @Override

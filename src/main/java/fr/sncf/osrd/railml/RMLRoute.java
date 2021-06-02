@@ -1,6 +1,5 @@
 package fr.sncf.osrd.railml;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.*;
@@ -9,12 +8,10 @@ import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.railml.routegraph.RMLRouteGraph;
 import fr.sncf.osrd.railml.routegraph.RMLRouteGraphBuilder;
 import fr.sncf.osrd.railml.routegraph.RMLRouteWaypoint;
-import fr.sncf.osrd.railml.routegraph.RMLTVDSectionPath;
 import fr.sncf.osrd.railml.tracksectiongraph.RMLTrackSectionGraph;
 
 import fr.sncf.osrd.railml.tracksectiongraph.TrackNetElement;
 import fr.sncf.osrd.utils.graph.*;
-import fr.sncf.osrd.utils.graph.path.*;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
@@ -30,13 +27,6 @@ public class RMLRoute {
         var rmlRouteGraph = new RMLRouteGraph();
         var overlayBuilder = new RMLRouteGraphBuilder(rjsTrackSections, graph, rmlRouteGraph);
         overlayBuilder.build();
-
-        // Create Map : waypoint id ==> rjsWaypoints
-        var rjsWaypointsMap = new HashMap<String, ID<RJSRouteWaypoint>>();
-        for (var rjsTrackSection : rjsTrackSections.values()) {
-            for (var rjsWaypoint  : rjsTrackSection.routeWaypoints)
-                rjsWaypointsMap.put(rjsWaypoint.id, ID.from(rjsWaypoint));
-        }
 
         // Create Map : signal id ==> TrackNetElement the signal is on
         var signalTrackNetElementMap = new HashMap<String, TrackNetElement>();
@@ -54,26 +44,17 @@ public class RMLRoute {
             var switchesPosition = parseSwitchesPosition(route);
             var releaseGroups = parseReleaseGroups(route, releaseGroupsRear);
 
-            var entryWaypoint = parseEntryExitWaypoint(
-                    true, route, rmlRouteGraph, rjsTrackSections, graph, signalTrackNetElementMap);
-            var exitWaypoint = parseEntryExitWaypoint(
-                    false, route, rmlRouteGraph, rjsTrackSections, graph, signalTrackNetElementMap);
-            var rmlRouteWaypoints = computeRouteWaypoints(entryWaypoint, exitWaypoint, rmlRouteGraph);
-            var routeWaypoints = rmlToRjsWaypoints(rmlRouteWaypoints, rjsWaypointsMap);
-            var entrySignal = parseEntrySignal(route, signalTrackNetElementMap);
+            var entryWaypoint = parseEntryWaypoint(route,
+                    rmlRouteGraph, rjsTrackSections, graph, signalTrackNetElementMap);
 
-            res.add(new RJSRoute(id, switchesPosition, routeWaypoints, releaseGroups, entrySignal));
+            var entrySignal = parseEntrySignal(route, signalTrackNetElementMap,
+                    signalTrackNetElementMap, rjsTrackSections);
+            if (entrySignal != null)
+                entrySignal.linkedDetector = new ID<>(entryWaypoint.id);
+
+            res.add(new RJSRoute(id, switchesPosition, releaseGroups, entryWaypoint));
         }
         return res;
-    }
-
-    private static ID<RJSSignal> parseEntrySignal(Element route, HashMap<String, TrackNetElement> signalTrackNets) {
-        var entryElement = route.element("routeEntry").element("refersTo").attributeValue("ref");
-        var isSignal = signalTrackNets.keySet().contains(entryElement);
-        if (isSignal)
-            return new ID<>(entryElement);
-        else
-            return new ID<>("");
     }
 
     private static List<Set<ID<RJSTVDSection>>> parseReleaseGroups(
@@ -88,93 +69,23 @@ public class RMLRoute {
         return res;
     }
 
-    private static ArrayList<ID<RJSRouteWaypoint>> rmlToRjsWaypoints(
-            List<RMLRouteWaypoint> rmlRouteWaypoints,
-            HashMap<String, ID<RJSRouteWaypoint>> rjsWaypointsMap
-    ) {
-        var waypoints = new ArrayList<ID<RJSRouteWaypoint>>();
-        for (var rmlWaypoint : rmlRouteWaypoints)
-            waypoints.add(rjsWaypointsMap.get(rmlWaypoint.id));
-        return waypoints;
-    }
-
-    @SuppressFBWarnings(value = {"BC_UNCONFIRMED_CAST"}, justification = "it's a linter bug, there's no cast")
-    private static ArrayList<RMLRouteWaypoint> computeRouteWaypoints(
-            RMLRouteWaypoint entryWaypoint,
-            RMLRouteWaypoint exitWaypoint,
-            RMLRouteGraph rmlRouteGraph
-    ) throws InvalidInfraException {
-        var waypoints = new ArrayList<RMLRouteWaypoint>();
-        var goalEdges = rmlRouteGraph.waypointToTvdSectionPath.get(exitWaypoint.index);
-        var startingPoints = new ArrayList<BasicDirPathNode<RMLTVDSectionPath>>();
-        // Find starting edges
-        for (var edge : rmlRouteGraph.waypointToTvdSectionPath.get(entryWaypoint.index)) {
-            if (edge.startNode == entryWaypoint.index)
-                startingPoints.add(new BasicDirPathNode<>(edge, 0, EdgeDirection.START_TO_STOP));
-            else
-                startingPoints.add(new BasicDirPathNode<>(edge, edge.length, EdgeDirection.STOP_TO_START));
-        }
-        // Prepare for dijkstra
-        var costFunction = new DistCostFunction<RMLTVDSectionPath>();
-        var availablePaths = new ArrayList<FullPathArray<RMLTVDSectionPath, BasicDirPathNode<RMLTVDSectionPath>>>();
-
-        // Compute the paths from the entry waypoint to the exit waypoint
-        BiDijkstra.findPaths(
-                rmlRouteGraph,
-                BiDijkstra.makePriorityQueue(startingPoints),
-                costFunction,
-                (pathNode) -> {
-                    for (var goalEdge : goalEdges) {
-                        if (goalEdge == pathNode.edge) {
-                            var addedCost = costFunction.evaluate(goalEdge, pathNode.position, goalEdge.length);
-                            return pathNode.end(addedCost, goalEdge, 0, pathNode.direction);
-                        }
-                    }
-                    return null;
-                },
-                (pathToGoal) -> {
-                    availablePaths.add(FullPathArray.from(pathToGoal));
-                    return false;
-                });
-
-        // If multiple or none path is found then throw an error
-        if (availablePaths.isEmpty())
-            throw new InvalidInfraException(String.format(
-                    "No path found to construct the route from '%s' to '%s'",
-                    entryWaypoint.id, exitWaypoint.id));
-
-        // Convert path nodes to a list of waypoints
-        // Ignore last node since it's a duplicated edge of the second last.
-        var nodes = availablePaths.get(0).pathNodes;
-        for (var i = 0; i < nodes.size() - 1; i++) {
-            var node = nodes.get(i);
-            if (node.direction == EdgeDirection.START_TO_STOP)
-                waypoints.add(rmlRouteGraph.getNode(node.edge.startNode));
-            else
-                waypoints.add(rmlRouteGraph.getNode(node.edge.endNode));
-        }
-        waypoints.add(exitWaypoint);
-
-        return waypoints;
-    }
-
-    private static RMLRouteWaypoint parseEntryExitWaypoint(
-            boolean isEntry,
+    private static ID<RJSRouteWaypoint> parseEntryWaypoint(
             Element route,
             RMLRouteGraph rmlRouteGraph,
             HashMap<String, RJSTrackSection> rjsTrackSections,
             RMLTrackSectionGraph rmlTrackSectionGraph,
             HashMap<String, TrackNetElement> signalTrackNetElementMap
     ) throws InvalidInfraException {
-        var element = isEntry ? "routeEntry" : "routeExit";
+        var element = "routeEntry";
         var entryElement = route.element(element).element("refersTo").attributeValue("ref");
-        return findAssociatedWaypoint(
+        var waypoint = findAssociatedWaypoint(
                 entryElement,
                 rmlRouteGraph,
                 rjsTrackSections,
                 rmlTrackSectionGraph,
                 signalTrackNetElementMap
         );
+        return new ID<>(waypoint.id);
     }
 
     private static RMLRouteWaypoint findAssociatedWaypoint(
@@ -198,6 +109,7 @@ public class RMLRoute {
         var signal = findSignal(elementID, trackNetElement, rjsTrackSections);
 
         var direction = EdgeDirection.START_TO_STOP;
+        assert signal != null;
         if (signal.applicableDirection == ApplicableDirection.REVERSE) {
             direction = EdgeDirection.STOP_TO_START;
         }
@@ -252,6 +164,22 @@ public class RMLRoute {
                 rjsTrackSections,
                 rmlTrackSectionGraph
         );
+    }
+
+    private static RJSSignal parseEntrySignal(Element route, HashMap<String, TrackNetElement> signalTrackNets,
+                                              HashMap<String, TrackNetElement> signalTrackNetElementMap,
+                                              HashMap<String, RJSTrackSection> rjsTrackSections)
+            throws InvalidInfraException {
+        var entryElement = route.element("routeEntry").element("refersTo").attributeValue("ref");
+        var isSignal = signalTrackNets.containsKey(entryElement);
+        if (!isSignal)
+            return null;
+        var trackNetElement = signalTrackNetElementMap.get(entryElement);
+        if (trackNetElement == null)
+            throw new InvalidInfraException(
+                    String.format("ElementID '%s' not found, should refer a buffer stop or signal", entryElement));
+
+        return findSignal(entryElement, trackNetElement, rjsTrackSections);
     }
 
     private static RJSSignal findSignal(

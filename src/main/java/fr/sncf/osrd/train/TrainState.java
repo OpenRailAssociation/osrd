@@ -5,9 +5,8 @@ import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
-import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.TrainSchedule;
-import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.train.phases.PhaseState;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.DeepComparable;
@@ -15,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
 
 public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     static final Logger logger = LoggerFactory.getLogger(TrainState.class);
@@ -39,8 +36,6 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     // the simulated location
     public final TrainPositionTracker location;
 
-    public final transient List<SpeedController> speedControllers;
-
     public final ArrayDeque<Interaction> actionPointsUnderTrain;
 
     @Override
@@ -60,8 +55,6 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             return false;
         if (!location.deepEquals(o.location))
             return false;
-        if (!speedControllers.equals(o.speedControllers))
-            return false;
         return actionPointsUnderTrain.equals(o.actionPointsUnderTrain);
     }
 
@@ -70,7 +63,6 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             TrainPositionTracker location,
             double speed,
             TrainStatus status,
-            List<SpeedController> speedControllers,
             TrainSchedule trainSchedule,
             int currentPhaseIndex,
             PhaseState currentPhaseState,
@@ -80,7 +72,6 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         this.location = location;
         this.speed = speed;
         this.status = status;
-        this.speedControllers = speedControllers;
         this.trainSchedule = trainSchedule;
         this.currentPhaseIndex = currentPhaseIndex;
         this.currentPhaseState = currentPhaseState;
@@ -96,7 +87,6 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 location.clone(),
                 speed,
                 status,
-                new ArrayList<>(speedControllers),
                 trainSchedule,
                 currentPhaseIndex,
                 currentPhaseState.clone(),
@@ -105,7 +95,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     }
 
     /** Create a new TrainState pointing at the next phase */
-    public TrainState nextPhase() {
+    public TrainState nextPhase(Simulation sim) {
         var nextPhase = currentPhaseIndex + 1;
 
         if (nextPhase == trainSchedule.phases.size())
@@ -114,20 +104,18 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                     location.clone(),
                     speed,
                     TrainStatus.REACHED_DESTINATION,
-                    new ArrayList<>(speedControllers),
                     trainSchedule,
                     currentPhaseIndex,
                     currentPhaseState,
                     new ArrayDeque<>(actionPointsUnderTrain)
                     );
 
-        var nextPhaseState = trainSchedule.phases.get(nextPhase).getState();
+        var nextPhaseState = trainSchedule.phases.get(nextPhase).getState(sim, trainSchedule);
         return new TrainState(
                 time,
                 location.clone(),
                 speed,
                 status,
-                new ArrayList<>(speedControllers),
                 trainSchedule,
                 nextPhase,
                 nextPhaseState,
@@ -147,7 +135,19 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 speed,
                 location.maxTrainGrade());
 
-        Action action = trainSchedule.trainDecisionMaker.getNextAction(locationChange, integrator);
+        var prevLocation = location.getPathPosition();
+
+        // get the list of active speed controllers
+        var isLate = currentPhaseState.speedInstructions.secondsLate(prevLocation, time) > 0;
+        var activeSpeedControllers = trainSchedule.trainDecisionMaker.getActiveSpeedControllers(isLate);
+        locationChange.speedControllersUpdates.dedupAdd(prevLocation, activeSpeedControllers);
+
+        // get the speed directive
+        var speedDirective = new SpeedDirective(Double.POSITIVE_INFINITY);
+        for (var controller : activeSpeedControllers)
+            speedDirective.mergeWith(controller.getDirective(location.getPathPosition()));
+        // get the action the driver
+        Action action = trainSchedule.trainDecisionMaker.getNextAction(speedDirective, integrator);
 
         logger.trace("train took action {}", action);
         assert action != null;
@@ -164,23 +164,6 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         logger.trace("speed changed from {} to {}", speed, update.speed);
         locationChange.positionUpdates.addSpeedUpdate(newLocation, time, update.speed);
         speed = update.speed;
-    }
-
-    public SpeedController[] getActiveSpeedControllers() {
-        var activeControllers = new ArrayList<SpeedController>();
-        // Add train speed controllers
-        for (var controller : speedControllers) {
-            if (!controller.isActive(this))
-                continue;
-            activeControllers.add(controller);
-        }
-        // Add phase speed controllers
-        for (var controller : currentPhaseState.getSpeedControllers()) {
-            if (!controller.isActive(this))
-                continue;
-            activeControllers.add(controller);
-        }
-        return activeControllers.toArray(new SpeedController[0]);
     }
 
     /**  Create a location change from the current state to the given position.

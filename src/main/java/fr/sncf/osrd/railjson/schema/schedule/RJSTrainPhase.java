@@ -20,6 +20,10 @@ public abstract class RJSTrainPhase {
                     .withSubtype(RJSTrainPhase.Stop.class, "stop")
     );
 
+    /** What generator to use to generate the target speed */
+    @Json(name = "running_time_parameters")
+    public RJSRunningTimeParameters runningTimeParameters;
+
     public static final class Navigate extends RJSTrainPhase {
         /** The sequence of routes the train should take.
          * The train must be on the first route when it enters this phase. */

@@ -4,7 +4,6 @@ import static fr.sncf.osrd.infra.trackgraph.TrackSection.linkEdges;
 
 import com.squareup.moshi.*;
 import fr.sncf.osrd.infra.*;
-import fr.sncf.osrd.infra.railscript.DependencyBinder;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
@@ -104,6 +103,7 @@ public class RailJSONParser {
         }
 
         var waypointsMap = new HashMap<String, Waypoint>();
+        var detectorIdToSignalMap = new HashMap<String, Signal>();
 
         // create track sections
         var infraTrackSections = new HashMap<String, TrackSection>();
@@ -114,7 +114,7 @@ public class RailJSONParser {
             var beginID = nodeIDs.get(trackSection.beginEndpoint());
             var endID = nodeIDs.get(trackSection.endEndpoint());
             var infraTrackSection = trackGraph.makeTrackSection(beginID, endID, trackSection.id,
-                    trackSection.length);
+                    trackSection.length, trackSection.endpointCoords);
             infraTrackSections.put(trackSection.id, infraTrackSection);
 
             // Parse operational points
@@ -172,6 +172,8 @@ public class RailJSONParser {
                 );
                 signalsBuilder.add(rjsSignal.position, signal);
                 signals.add(signal);
+                if (rjsSignal.linkedDetector != null && !rjsSignal.linkedDetector.id.equals(""))
+                    detectorIdToSignalMap.put(rjsSignal.linkedDetector.id, signal);
             }
             signalsBuilder.build();
         }
@@ -215,10 +217,6 @@ public class RailJSONParser {
         var routeGraph = new RouteGraph.Builder(waypointGraph);
 
         for (var rjsRoute : railJSON.routes) {
-            var waypoints = new ArrayList<Waypoint>();
-            for (var waypoint : rjsRoute.waypoints)
-                waypoints.add(waypointsMap.get(waypoint.id));
-
             // Parse release groups
             var releaseGroups = new ArrayList<SortedArraySet<TVDSection>>();
             var tvdSections = new SortedArraySet<TVDSection>();
@@ -244,9 +242,10 @@ public class RailJSONParser {
                 switchesPosition.put(switchRef, position);
             }
 
-            var entrySignal = signalNames.getOrDefault(rjsRoute.entrySignal.id, null);
+            var entryPoint = waypointsMap.get(rjsRoute.entryPoint.id);
+            var entrySignal = detectorIdToSignalMap.getOrDefault(entryPoint.id, null);
 
-            routeGraph.makeRoute(rjsRoute.id, waypoints, tvdSections, releaseGroups, switchesPosition, entrySignal);
+            routeGraph.makeRoute(rjsRoute.id, tvdSections, releaseGroups, switchesPosition, entryPoint, entrySignal);
         }
 
         var routeNames = new HashMap<String, Route>();

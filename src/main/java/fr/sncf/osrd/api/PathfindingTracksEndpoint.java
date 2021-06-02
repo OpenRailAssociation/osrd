@@ -59,6 +59,15 @@ public class PathfindingTracksEndpoint extends PathfindingEndpoint {
             var stopWaypoints = new ArrayList<BasicDirPathNode<TrackSection>>();
             for (var stopWaypoint : reqWaypoints[i]) {
                 var edge = infra.trackGraph.trackSectionMap.get(stopWaypoint.trackSection);
+                if (edge == null)
+                    return new RsWithStatus(new RsText(
+                            String.format("Couldn't find track section '%s'", stopWaypoint.trackSection)), 400);
+                if (stopWaypoint.offset < 0 || stopWaypoint.offset > edge.length)
+                    return new RsWithStatus(new RsText(String.format(
+                            "'%f' is an invalid offset for the track section '%s'",
+                            stopWaypoint.offset,
+                            stopWaypoint.trackSection)),
+                            400);
                 stopWaypoints.add(new BasicDirPathNode<>(edge, stopWaypoint.offset, stopWaypoint.direction));
             }
             waypoints[i] = stopWaypoints;
@@ -74,7 +83,7 @@ public class PathfindingTracksEndpoint extends PathfindingEndpoint {
         for (int i = 1; i < waypoints.length; i++) {
             var destinationWaypoints = waypoints[i];
 
-            BiDijkstra.findPaths(
+            var found = BiDijkstra.findPaths(
                     infra.trackGraph,
                     candidatePaths,
                     costFunction,
@@ -95,6 +104,9 @@ public class PathfindingTracksEndpoint extends PathfindingEndpoint {
                         pathsToGoal.add(pathToGoal);
                         return false;
                     });
+
+            if (found == 0)
+                return new RsWithStatus(new RsText("Not path could be found"), 400);
 
             candidatePaths.clear();
             candidatePaths.add(pathsToGoal.get(pathsToGoal.size() - 1));

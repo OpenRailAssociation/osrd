@@ -13,9 +13,6 @@ import java.util.Set;
 public class RJSRoute implements Identified {
     public String id;
 
-    /** List of waypoints that define the route. */
-    public List<ID<RJSRouteWaypoint>> waypoints;
-
     /** List of the switches and their position through which the route transits */
     @Json(name = "switches_position")
     public Map<ID<RJSSwitch>, RJSSwitch.Position> switchesPosition;
@@ -23,23 +20,21 @@ public class RJSRoute implements Identified {
     @Json(name = "release_groups")
     public List<Set<ID<RJSTVDSection>>> releaseGroups;
 
-    /** Signal placed just before the route, may be empty if no entry signal */
-    @Json(name = "entry_signal")
-    public ID<RJSSignal> entrySignal;
+    /** Waypoint placed just before the route, either a buffer stop or a detector attached to a signal */
+    @Json(name = "entry_point")
+    public ID<RJSRouteWaypoint> entryPoint;
 
-    /** Routes are described as a list of waypoints, TVD Sections and Switches in specific positions */
+    /** Routes are described as a list of TVD Sections, Switches in specific positions, and an entry point */
     public RJSRoute(
             String id,
             Map<ID<RJSSwitch>, RJSSwitch.Position> switchesPosition,
-            List<ID<RJSRouteWaypoint>> waypoints,
             List<Set<ID<RJSTVDSection>>> releaseGroups,
-            ID<RJSSignal> entrySignal
+            ID<RJSRouteWaypoint> entryPoint
     ) {
         this.id = id;
         this.switchesPosition = switchesPosition;
-        this.waypoints = waypoints;
         this.releaseGroups = releaseGroups;
-        this.entrySignal = entrySignal;
+        this.entryPoint = entryPoint;
     }
 
     @Override

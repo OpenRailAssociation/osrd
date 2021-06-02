@@ -11,9 +11,11 @@ import fr.sncf.osrd.infra.routegraph.RouteLocation;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.graph.Dijkstra;
 import fr.sncf.osrd.utils.graph.DistCostFunction;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.path.*;
 import org.takes.Request;
 import org.takes.Response;
+import org.takes.rq.RqPrint;
 import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
@@ -36,10 +38,11 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     }
 
     @Override
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
     public Response act(Request req) throws IOException {
-        var buffer = new okio.Buffer();
-        buffer.write(req.body().readAllBytes());
-        var request = adapterRequest.fromJson(buffer);
+        var body = new RqPrint(req).printBody();
+        var request = adapterRequest.fromJson(body);
         if (request == null)
             return new RsWithStatus(new RsText("missing request body"), 400);
 
@@ -55,16 +58,25 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
         }
 
         // parse the waypoints
-        @SuppressWarnings({"unchecked", "rawtypes"})
         var waypoints = (ArrayList<RouteLocation>[]) new ArrayList[reqWaypoints.length];
         for (int i = 0; i < waypoints.length; i++) {
             var stopWaypoints = new ArrayList<RouteLocation>();
             for (var stopWaypoint : reqWaypoints[i]) {
                 var edge = infra.trackGraph.trackSectionMap.get(stopWaypoint.trackSection);
+                if (edge == null)
+                    return new RsWithStatus(new RsText(
+                            String.format("Couldn't find track section '%s'", stopWaypoint.trackSection)), 400);
+                if (stopWaypoint.offset < 0 || stopWaypoint.offset > edge.length)
+                    return new RsWithStatus(new RsText(String.format(
+                            "'%f' is an invalid offset for the track section '%s'",
+                            stopWaypoint.offset,
+                            stopWaypoint.trackSection)),
+                            400);
                 edge.getRoutes(stopWaypoint.direction).findOverlappingIntervals(
                         routeFragment -> {
                             var trackOffset = stopWaypoint.offset - routeFragment.begin;
-                            trackOffset = edge.position(routeFragment.direction, trackOffset);
+                            if (routeFragment.direction == EdgeDirection.STOP_TO_START)
+                                trackOffset = routeFragment.end - stopWaypoint.offset;
                             var offset = routeFragment.routeOffset + trackOffset;
                             stopWaypoints.add(new RouteLocation(routeFragment.route, offset));
                         },
@@ -86,7 +98,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
         for (int i = 1; i < waypoints.length; i++) {
             var destinationWaypoints = waypoints[i];
 
-            Dijkstra.findPaths(
+            var found = Dijkstra.findPaths(
                     infra.routeGraph,
                     candidatePaths,
                     costFunction,
@@ -108,23 +120,31 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                         return false;
                     });
 
+            if (found == 0)
+                return new RsWithStatus(new RsText("Not path could be found"), 400);
+
             candidatePaths.clear();
             candidatePaths.add(pathsToGoal.get(pathsToGoal.size() - 1));
         }
 
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        var resRoutes = (ArrayList<RouteLocation>[]) new ArrayList[reqWaypoints.length - 1];
-        @SuppressWarnings({"unchecked", "rawtypes"})
+        var resRoutes = (ArrayList<Route>[]) new ArrayList[reqWaypoints.length - 1];
         var resTrackSections = (ArrayList<TrackSectionRange>[]) new ArrayList[reqWaypoints.length - 1];
 
         for (int i = 0; i < pathsToGoal.size(); i++) {
             var path = FullPathArray.from(pathsToGoal.get(i));
-            resRoutes[i] = fullPathToRoutes(path);
-            var beginLoc = resRoutes[i].get(0).getTrackSectionLocation();
-            var endLoc = resRoutes[i].get(resRoutes[i].size() - 1).getTrackSectionLocation();
+
+            var routeBeginLoc = pathNodeToRouteLocation(path.pathNodes.get(0));
+            var beginLoc = routeBeginLoc.getTrackSectionLocation();
+            var routeEndLoc = pathNodeToRouteLocation(path.pathNodes.get(path.pathNodes.size() - 1));
+            var endLoc = routeEndLoc.getTrackSectionLocation();
+
             var routes = new ArrayList<Route>();
-            for (var routeLoc : resRoutes[i])
-                routes.add(routeLoc.route);
+            for (var node : path.pathNodes) {
+                if (routes.isEmpty() || routes.get(routes.size() - 1) != node.edge)
+                    routes.add(node.edge);
+            }
+
+            resRoutes[i] = routes;
             resTrackSections[i] = Route.routesToTrackSectionRange(routes, beginLoc, endLoc);
         }
         var result = new PathfindingResult[resRoutes.length];
@@ -134,44 +154,30 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-    private ArrayList<RouteLocation> fullPathToRoutes(FullPathArray<Route, BasicPathNode<Route>> path) {
-        var routes = new ArrayList<RouteLocation>();
-        for (var node : path.pathNodes)
-            routes.add(new RouteLocation(node.edge, node.position));
-        return  routes;
+    private RouteLocation pathNodeToRouteLocation(BasicPathNode<Route> node) {
+        return new RouteLocation(node.edge, node.position);
     }
 
     @SuppressFBWarnings({"URF_UNREAD_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static class PathfindingResult {
-        public final List<RouteLocationResult> routes;
+        public final List<String> routes;
         @Json(name = "track_sections")
         public final List<TrackSectionRangeResult> trackSections;
 
-        private PathfindingResult(List<RouteLocationResult> routes, List<TrackSectionRangeResult> trackSections) {
+        private PathfindingResult(List<String> routes, List<TrackSectionRangeResult> trackSections) {
             this.routes = routes;
             this.trackSections = trackSections;
         }
 
-        static PathfindingResult from(List<RouteLocation> routes, List<TrackSectionRange> trackSections) {
-            var resRoutes = new ArrayList<RouteLocationResult>();
+        static PathfindingResult from(List<Route> routes, List<TrackSectionRange> trackSections) {
+            var resRoutes = new ArrayList<String>();
             var resTrackSections = new ArrayList<TrackSectionRangeResult>();
             for (var route : routes)
-                resRoutes.add(new RouteLocationResult(route.route.id, route.offset));
+                resRoutes.add(route.id);
             for (var track : trackSections)
                 resTrackSections.add(new TrackSectionRangeResult(
                         track.edge.id, track.getBeginPosition(), track.getEndPosition()));
             return new PathfindingResult(resRoutes, resTrackSections);
-        }
-    }
-
-    @SuppressFBWarnings({"URF_UNREAD_FIELD"})
-    private static class RouteLocationResult {
-        private final String route;
-        private final double offset;
-
-        private RouteLocationResult(String route, double offset) {
-            this.route = route;
-            this.offset = offset;
         }
     }
 }

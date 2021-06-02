@@ -126,18 +126,14 @@ components:
           type: array
           minItems: 2
           items:
-            $ref: '#/components/schemas/RouteLocation'
+            type: string
         track_sections:
           type: array
           minItems: 1
           items:
             $ref: '#/components/schemas/TrackSectionRange'
       example:
-       routes:
-       -  track_section: "route_foo"
-          offset: 4.2
-       -  track_section: "route_foo"
-          offset: 178.3
+       routes: ["route_foo", "route_bar"]
        track_sections:
        -  track_section: "track_foo"
           begin_position: 4.2
@@ -156,17 +152,6 @@ components:
        -  track_section: "track_foo"
           begin_position: 4.2
           end_position: 178.3
-    RouteLocation:
-      required:
-      - route
-      - offset
-      properties:
-        route:
-          type: string
-        offset:
-          type: number
-          format: double
-          minimum: 0
     TrackLocation:
       required:
       - track_section

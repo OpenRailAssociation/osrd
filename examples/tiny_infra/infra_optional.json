@@ -53,35 +53,27 @@
   "routes": [
     {
       "id": "rt.buffer_stop_a-C1",
-      "entry_signal": "",
+      "entry_point": "buffer_stop_a",
       "switches_position": {},
       "release_groups": [
         [
           "tvd.foo_a"
         ]
-      ],
-      "waypoints": [
-        "buffer_stop_a",
-        "tde.foo_a-switch_foo"
       ]
     },
     {
       "id": "rt.buffer_stop_b-C3",
-      "entry_signal": "",
+      "entry_point": "buffer_stop_b",
       "switches_position": {},
       "release_groups": [
         [
           "tvd.foo_b"
         ]
-      ],
-      "waypoints": [
-        "buffer_stop_b",
-        "tde.foo_b-switch_foo"
       ]
     },
     {
       "id": "rt.C1-S7",
-      "entry_signal": "il.sig.C1",
+      "entry_point": "tde.foo_a-switch_foo",
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
@@ -92,16 +84,11 @@
         [
           "tvd.switch_foo"
         ]
-      ],
-      "waypoints": [
-        "tde.foo_a-switch_foo",
-        "tde.switch_foo-track",
-        "tde.track-bar"
       ]
     },
     {
       "id": "rt.C3-S7",
-      "entry_signal": "il.sig.C3",
+      "entry_point": "tde.foo_b-switch_foo",
       "switches_position": {
         "il.switch_foo": "LEFT"
       },
@@ -112,58 +99,41 @@
         [
           "tvd.switch_foo"
         ]
-      ],
-      "waypoints": [
-        "tde.foo_b-switch_foo",
-        "tde.switch_foo-track",
-        "tde.track-bar"
       ]
     },
     {
       "id": "rt.S7-buffer_stop_c",
-      "entry_signal": "il.sig.S7",
+      "entry_point": "tde.track-bar",
       "switches_position": {},
       "release_groups": [
         [
           "tvd.bar_a"
         ]
-      ],
-      "waypoints": [
-        "tde.track-bar",
-        "buffer_stop_c"
       ]
     },
     {
       "id": "rt.buffer_stop_c-C2",
-      "entry_signal": "",
+      "entry_point": "buffer_stop_c",
       "switches_position": {},
       "release_groups": [
         [
           "tvd.bar_a"
         ]
-      ],
-      "waypoints": [
-        "buffer_stop_c",
-        "tde.track-bar"
       ]
     },
     {
       "id": "rt.C2-C6",
-      "entry_signal": "il.sig.C2",
+      "entry_point": "tde.track-bar",
       "switches_position": {},
       "release_groups": [
         [
           "tvd.track"
         ]
-      ],
-      "waypoints": [
-        "tde.track-bar",
-        "tde.switch_foo-track"
       ]
     },
     {
       "id": "rt.C6-buffer_stop_a",
-      "entry_signal": "il.sig.C6",
+      "entry_point": "tde.switch_foo-track",
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
@@ -174,18 +144,13 @@
         [
           "tvd.foo_a"
         ]
-      ],
-      "waypoints": [
-        "tde.switch_foo-track",
-        "tde.foo_a-switch_foo",
-        "buffer_stop_a"
       ]
     },
     {
       "id": "rt.C6-buffer_stop_b",
-      "entry_signal": "il.sig.C6",
+      "entry_point": "tde.switch_foo-track",
       "switches_position": {
-        "il.switch_foo": "RIGHT"
+        "il.switch_foo": "LEFT"
       },
       "release_groups": [
         [
@@ -194,11 +159,6 @@
         [
           "tvd.foo_b"
         ]
-      ],
-      "waypoints": [
-        "tde.switch_foo-track",
-        "tde.foo_b-switch_foo",
-        "buffer_stop_b"
       ]
     }
   ],
@@ -581,6 +541,7 @@
             ]
           },
           "id": "il.sig.C3",
+          "linked_detector": "tde.foo_b-switch_foo",
           "applicable_direction": "NORMAL",
           "position": 150,
           "sight_distance": 400
@@ -653,6 +614,7 @@
             ]
           },
           "id": "il.sig.C6",
+          "linked_detector": "tde.switch_foo-track",
           "applicable_direction": "REVERSE",
           "position": 50,
           "sight_distance": 400
@@ -669,6 +631,7 @@
             ]
           },
           "id": "il.sig.S7",
+          "linked_detector": "tde.track-bar",
           "applicable_direction": "NORMAL",
           "position": 9975,
           "sight_distance": 400
@@ -720,6 +683,7 @@
             ]
           },
           "id": "il.sig.C1",
+          "linked_detector": "tde.foo_a-switch_foo",
           "applicable_direction": "NORMAL",
           "position": 150,
           "sight_distance": 400
@@ -764,6 +728,7 @@
             ]
           },
           "id": "il.sig.C2",
+          "linked_detector": "tde.track-bar",
           "applicable_direction": "REVERSE",
           "position": 25,
           "sight_distance": 400
