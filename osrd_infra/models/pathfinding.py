@@ -16,3 +16,22 @@ class Path(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_initial_location(self):
+        path = self.payload["path"]
+        track = path[0]["track_sections"][0]
+        return {
+            "track_section": track["track_section"],
+            "offset": track["begin"],
+        }
+
+    def get_end_location(self):
+        path = self.payload["path"]
+        track = path[-1]["track_sections"][-1]
+        return {
+            "track_section": track["track_section"],
+            "offset": track["end"],
+        }
+
+    def get_initial_route(self):
+        return self.payload["path"][0]["route"]
