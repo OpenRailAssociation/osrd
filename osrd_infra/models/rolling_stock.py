@@ -3,7 +3,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
 import jsonschema
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 
 
 class JSONSchemaValidator(BaseValidator):
@@ -74,21 +74,35 @@ class RollingStock(models.Model):
         validators=[JSONSchemaValidator(limit_value=ROLLING_RESISTANCE_SCHEMA)]
     )
 
-    capabilities = ArrayField(models.CharField(max_length=255))
+    capabilities = ArrayField(
+        models.CharField(max_length=255),
+        help_text=_("A list of features the train exhibits, such as ERTMS support"),
+    )
 
-    max_speed = models.FloatField()
+    max_speed = models.FloatField(
+        help_text=_("The maximum operational speed, in m/s"),
+    )
 
-    startup_time = models.FloatField()
+    startup_time = models.FloatField(
+        help_text=_("The time the train takes before it can start accelerating"),
+    )
 
-    startup_acceleration = models.FloatField()
+    startup_acceleration = models.FloatField(
+        help_text=_("The maximum acceleration during startup, in m/s^2"),
+    )
 
-    comfort_acceleration = models.FloatField()
+    comfort_acceleration = models.FloatField(
+        help_text=_("The maximum operational acceleration, in m/s^2"),
+    )
 
-    timetable_gamma = models.FloatField()
+    timetable_gamma = models.FloatField(
+        help_text=_("The maximum braking coefficient, for timetabling purposes, in m/s^2"),
+    )
 
-    tractive_effort_curve = models.JSONField(validators=[
-        JSONSchemaValidator(limit_value=EFFORT_CURVE_SCHEMA)
-    ])
+    tractive_effort_curve = models.JSONField(
+        help_text=_("A curve mapping speed (in m/s) to maximum traction (in newtons)"),
+        validators=[JSONSchemaValidator(limit_value=EFFORT_CURVE_SCHEMA)],
+    )
 
     def to_railjson(self):
         return {
