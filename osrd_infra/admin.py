@@ -12,6 +12,7 @@ from osrd_infra.models import (
     # misc
     Infra,
     Path,
+    RollingStock,
 )
 
 
@@ -46,5 +47,6 @@ admin.site.register(
         # misc
         Infra,
         Path,
+        RollingStock,
     ]
 )
