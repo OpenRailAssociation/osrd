@@ -68,12 +68,12 @@ const OSRDSimulation = () => {
     }
   }; */
 
-  const offsetTimeByDragging = (offset) => {
+  const offsetTimeByDragging = (offset, selectedTrainLocal) => {
     const { trains } = simulation;
-    trains[selectedTrain] = {
-      ...simulation.trains[selectedTrain],
-      steps: timeShiftTrain(simulation.trains[selectedTrain].steps, offset),
-      stops: timeShiftStops(simulation.trains[selectedTrain].stops, offset),
+    trains[selectedTrainLocal] = {
+      ...simulation.trains[selectedTrainLocal],
+      steps: timeShiftTrain(simulation.trains[selectedTrainLocal].steps, offset),
+      stops: timeShiftStops(simulation.trains[selectedTrainLocal].stops, offset),
     };
     setSimulation({ ...simulation, trains });
   };

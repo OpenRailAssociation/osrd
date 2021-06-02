@@ -67,10 +67,37 @@ const drawTrain = (
   const tailPositionColor = isSelected ? SNCFCOLORS.cyan : SNCFCOLORS.coolgray3;
   const headPositionColor = isSelected ? SNCFCOLORS.blue : SNCFCOLORS.coolgray7;
 
-  chart.drawZone.append('g').attr('id', groupID).attr('class', 'chartTrain');
+  const initialDrag = rotate
+    ? chart.y.invert(0)
+    : chart.x.invert(0);
+  let dragValue = 0;
+
+  const drag = d3.drag()
+    .on('end', () => {
+      setMustRedraw(true);
+    })
+    .on('start', () => {
+      setSelectedTrain(dataSimulation.trainNumber);
+    })
+    .on('drag', () => {
+      dragValue += rotate ? d3.event.dy : d3.event.dx;
+      const translation = rotate ? `0,${dragValue}` : `${dragValue},0`;
+      d3.select(`#${groupID}`)
+        .attr('transform', `translate(${translation})`);
+      const value = rotate
+        ? Math.floor((chart.y.invert(d3.event.dy) - initialDrag) / 1000)
+        : Math.floor((chart.x.invert(d3.event.dx) - initialDrag) / 1000);
+      offsetTimeByDragging(value, dataSimulation.trainNumber);
+    });
+
+  chart.drawZone.append('g')
+    .attr('id', groupID)
+    .attr('class', 'chartTrain')
+    .call(drag);
+
   drawArea(
     chart, areaColor, dataSimulation, groupID, 'curveStepAfter', keyValues,
-    'areaBlock', offsetTimeByDragging, rotate, setMustRedraw, setSelectedTrain,
+    'areaBlock', rotate, setMustRedraw, setSelectedTrain,
   );
   drawCurve(chart, brakingDistanceColor, dataSimulation, groupID,
     'curveStepAfter', keyValues, 'brakingDistance', rotate, isSelected);
@@ -177,6 +204,7 @@ const SpaceTimeChart = (props) => {
             setShowModal={setShowModal}
             trainName={dataSimulation[selectedTrain].name}
             offsetTimeByDragging={offsetTimeByDragging}
+            selectedTrain={selectedTrain}
             setMustRedraw={setMustRedraw}
           />
         )

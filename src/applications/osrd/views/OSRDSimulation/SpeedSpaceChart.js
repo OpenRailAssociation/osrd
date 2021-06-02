@@ -63,7 +63,7 @@ const SpeedSpaceChart = (props) => {
     if (mustRedraw) {
       const chartLocal = createChart();
       chartLocal.drawZone.append('g').attr('id', 'speedSpaceChart').attr('class', 'chartTrain');
-      drawArea(chartLocal, 'rgba(0, 136, 207, 0.3)', dataSimulation, 'speedSpaceChart', 'curveLinear', keyValues, 'areaBlock', () => {}, rotate);
+      drawArea(chartLocal, 'rgba(0, 136, 207, 0.3)', dataSimulation, 'speedSpaceChart', 'curveLinear', keyValues, 'areaBlock', rotate);
       drawCurve(chartLocal, SNCFCOLORS.blue, dataSimulation, 'speedSpaceChart', 'curveLinear', keyValues, 'speed', rotate);
       drawCurve(chartLocal, SNCFCOLORS.red, dataSimulation, 'speedSpaceChart', 'curveStepAfter', keyValues, 'emergency', rotate);
       drawCurve(chartLocal, SNCFCOLORS.yellow, dataSimulation, 'speedSpaceChart', 'curveStepAfter', keyValues, 'indication', rotate);
