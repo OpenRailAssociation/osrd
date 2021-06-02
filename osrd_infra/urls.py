@@ -8,6 +8,8 @@ from osrd_infra.views import (
     RollingStockView,
     LightRollingStockView,
     PathfindingView,
+    TimetableView,
+    TrainScheduleView,
 )
 from osrd_infra.views.schema import SchemaView
 
@@ -18,6 +20,8 @@ router.register(
     "light_rolling_stock", LightRollingStockView, basename="light_rolling_stock"
 )
 router.register("pathfinding", PathfindingView, basename="pathfinding")
+router.register("timetable", TimetableView, basename="timetable")
+router.register("train_schedule", TrainScheduleView, basename="train_schedule")
 
 for entity_type, entity_viewset in ALL_ENTITY_VIEWSETS:
     entity_name = get_entity_meta(entity_type).name

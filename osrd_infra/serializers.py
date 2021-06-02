@@ -23,6 +23,9 @@ from osrd_infra.models import (
     RollingStock,
     # pathfinding
     Path,
+    # Simulation
+    Timetable,
+    TrainSchedule,
 )
 
 from osrd_infra.models.common import EnumSerializer
@@ -139,6 +142,21 @@ class PathSerializer(ModelSerializer):
     class Meta:
         model = Path
         exclude = ["namespace", "payload"]
+
+
+# TIMETABLE
+
+
+class TimetableSerializer(ModelSerializer):
+    class Meta:
+        model = Timetable
+        fields = "__all__"
+
+
+class TrainScheduleSerializer(ModelSerializer):
+    class Meta:
+        model = TrainSchedule
+        fields = "__all__"
 
 
 # COMPONENT SERIALIZERS
