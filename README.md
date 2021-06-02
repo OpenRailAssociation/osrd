@@ -29,7 +29,7 @@ EOF
 Entities live in a given infrastructure, which must be given as a URL parameter
 
 ```sh
-curl -X POST -H 'Content-Type: application/json' -d @- ${BASE}/edit/infra/${INFRA_ID}/ <<EOF
+curl -X POST -H 'Content-Type: application/json' -d @- ${BASE}/infra/${INFRA_ID}/edit/ <<EOF
 [
     {
         "operation": "create_entity",
@@ -69,7 +69,7 @@ curl ${BASE}/ecs/entity/track_section/${TRACK_SECTION_ENTITY_ID}/
 ### Adding components
 
 ```sh
-curl -X POST -H 'Content-Type: application/json' -d @- ${BASE}/edit/infra/${INFRA_ID}/ <<EOF
+curl -X POST -H 'Content-Type: application/json' -d @- ${BASE}/infra/${INFRA_ID}/edit/ <<EOF
 [
     {
         "operation": "add_component",
@@ -87,7 +87,7 @@ EOF
 This is a test endpoint, a cached version is provided by chartis. Any geojson object can be used as a bounding box:
 
 ```sh
-curl "${BASE}/geojson/infra/1/?query=%7B%0A%22type%22%3A%22Polygon%22%2C%0A%22coordinates%22%3A%5B%0A%5B%0A%5B-27.303581%2C-48.458352%5D%2C%0A%5B106.373722%2C-48.458352%5D%2C%0A%5B106.373722%2C55.776573%5D%2C%0A%5B-27.303581%2C55.776573%5D%2C%0A%5B-27.303581%2C-48.458352%5D%0A%5D%0A%5D%0A%7D"
+curl "${BASE}/infra/1/geojson/?query=%7B%0A%22type%22%3A%22Polygon%22%2C%0A%22coordinates%22%3A%5B%0A%5B%0A%5B-27.303581%2C-48.458352%5D%2C%0A%5B106.373722%2C-48.458352%5D%2C%0A%5B106.373722%2C55.776573%5D%2C%0A%5B-27.303581%2C55.776573%5D%2C%0A%5B-27.303581%2C-48.458352%5D%0A%5D%0A%5D%0A%7D"
 ```
 
 ## Running osrd on workspace
