@@ -27,7 +27,7 @@ public class InfraHandler {
         var builder = new Request.Builder();
         if (authorizationToken != null)
                 builder = builder.header("Authorization", authorizationToken);
-        var request = builder.url(String.format("%sinfra/%s/railjson", baseUrl, infraId)).build();
+        var request = builder.url(String.format("%sinfra/%s/railjson/", baseUrl, infraId)).build();
 
         // use the client to send the request
         var response = client.newCall(request).execute();
