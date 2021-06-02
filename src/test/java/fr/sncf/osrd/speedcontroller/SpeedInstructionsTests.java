@@ -7,6 +7,7 @@ import fr.sncf.osrd.infra.*;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.schedule.RJSRunningTimeParameters;
+import fr.sncf.osrd.railjson.schema.schedule.RJSRunningTimeParameters.Margin.MarginType;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.Train;
@@ -120,7 +121,7 @@ public class SpeedInstructionsTests {
         var infra = getBaseInfra();
         assert infra != null;
         var params = new RJSRunningTimeParameters.Margin();
-        params.marginType = "T";
+        params.marginType = MarginType.TIME;
         params.marginValue = 50;
 
         // base run, no margin
@@ -145,7 +146,7 @@ public class SpeedInstructionsTests {
         var infra = getBaseInfra();
         assert infra != null;
         var params = new RJSRunningTimeParameters.Margin();
-        params.marginType = "T";
+        params.marginType = MarginType.TIME;
         params.marginValue = 200;
 
         // base run, no margin
@@ -170,7 +171,7 @@ public class SpeedInstructionsTests {
         var infra = getBaseInfra();
         assert infra != null;
         var params = new RJSRunningTimeParameters.Margin();
-        params.marginType = "T";
+        params.marginType = MarginType.TIME;
         params.marginValue = 0;
 
         // base run, no margin

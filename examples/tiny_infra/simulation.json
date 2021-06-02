@@ -62,7 +62,7 @@
           ],
           "running_time_parameters": {
             "type": "margin",
-            "margin_type": "T",
+            "margin_type": "TIME",
             "margin_value": 5
           },
           "type": "navigate"

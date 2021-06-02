@@ -18,10 +18,15 @@ public abstract class RJSRunningTimeParameters {
 
     public static final class Margin extends RJSRunningTimeParameters {
         @Json(name = "margin_type")
-        public String marginType;
+        public MarginType marginType;
 
         @Json(name = "margin_value")
         public double marginValue;
+
+        public enum MarginType {
+            TIME,
+        }
     }
+
 
 }
