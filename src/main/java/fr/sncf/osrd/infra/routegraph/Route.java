@@ -123,28 +123,32 @@ public class Route extends DirNEdge {
         }
 
         // Drop first track sections until the begin location
-        while (true) {
-            if (flattenSections.isEmpty())
-                throw new RuntimeException("Begin position not contained in the route path");
-            var firstTrack = flattenSections.removeFirst();
-            if (firstTrack.containsLocation(beginLocation)) {
-                var newTrackSection = new TrackSectionRange(firstTrack.edge, firstTrack.direction,
-                        beginLocation.offset, firstTrack.getEndPosition());
-                flattenSections.addFirst(newTrackSection);
-                break;
+        if (beginLocation != null) {
+            while (true) {
+                if (flattenSections.isEmpty())
+                    throw new RuntimeException("Begin position not contained in the route path");
+                var firstTrack = flattenSections.removeFirst();
+                if (firstTrack.containsLocation(beginLocation)) {
+                    var newTrackSection = new TrackSectionRange(firstTrack.edge, firstTrack.direction,
+                            beginLocation.offset, firstTrack.getEndPosition());
+                    flattenSections.addFirst(newTrackSection);
+                    break;
+                }
             }
         }
 
         // Drop lasts track sections until the end location
-        while (true) {
-            if (flattenSections.isEmpty())
-                throw new RuntimeException("End position not contained in the route path");
-            var lastTrack = flattenSections.removeLast();
-            if (lastTrack.containsLocation(endLocation)) {
-                var newTrackSection = new TrackSectionRange(lastTrack.edge, lastTrack.direction,
-                        lastTrack.getBeginPosition(), endLocation.offset);
-                flattenSections.addLast(newTrackSection);
-                break;
+        if (endLocation != null) {
+            while (true) {
+                if (flattenSections.isEmpty())
+                    throw new RuntimeException("End position not contained in the route path");
+                var lastTrack = flattenSections.removeLast();
+                if (lastTrack.containsLocation(endLocation)) {
+                    var newTrackSection = new TrackSectionRange(lastTrack.edge, lastTrack.direction,
+                            lastTrack.getBeginPosition(), endLocation.offset);
+                    flattenSections.addLast(newTrackSection);
+                    break;
+                }
             }
         }
 

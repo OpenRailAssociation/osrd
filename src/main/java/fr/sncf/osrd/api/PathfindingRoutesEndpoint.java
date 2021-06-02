@@ -6,9 +6,12 @@ import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteLocation;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.train.TrackSectionRange;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.Dijkstra;
 import fr.sncf.osrd.utils.graph.DistCostFunction;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -23,6 +26,7 @@ import org.takes.rs.RsWithStatus;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
@@ -127,8 +131,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             candidatePaths.add(pathsToGoal.get(pathsToGoal.size() - 1));
         }
 
-        var resRoutes = (ArrayList<Route>[]) new ArrayList[reqWaypoints.length - 1];
-        var resTrackSections = (ArrayList<TrackSectionRange>[]) new ArrayList[reqWaypoints.length - 1];
+        var res = new PathfindingResult[reqWaypoints.length - 1];
 
         for (int i = 0; i < pathsToGoal.size(); i++) {
             var path = FullPathArray.from(pathsToGoal.get(i));
@@ -144,13 +147,22 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                     routes.add(node.edge);
             }
 
-            resRoutes[i] = routes;
-            resTrackSections[i] = Route.routesToTrackSectionRange(routes, beginLoc, endLoc);
+            var entry = new PathfindingResult();
+            for (int j = 0; j < routes.size(); j++) {
+                TrackSectionLocation begin = null;
+                TrackSectionLocation end = null;
+                if (j == 0)
+                    begin = beginLoc;
+                if (j == routes.size() - 1)
+                    end = endLoc;
+                var route = routes.get(i);
+                var trackSections = Route.routesToTrackSectionRange(
+                        Collections.singletonList(route), begin, end);
+                entry.add(route, trackSections);
+            }
+            res[i] = entry;
         }
-        var result = new PathfindingResult[resRoutes.length];
-        for (int i = 0; i < resRoutes.length; i++)
-            result[i] = PathfindingResult.from(resRoutes[i], resTrackSections[i]);
-        return new RsJson(new RsWithBody(adapterResult.toJson(result)));
+        return new RsJson(new RsWithBody(adapterResult.toJson(res)));
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
@@ -160,24 +172,55 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
 
     @SuppressFBWarnings({"URF_UNREAD_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static class PathfindingResult {
-        public final List<String> routes;
-        @Json(name = "track_sections")
-        public final List<TrackSectionRangeResult> trackSections;
+        public final List<RouteResult> routes;
+        public final List<OperationalPointResult> operationalPoints;
 
-        private PathfindingResult(List<String> routes, List<TrackSectionRangeResult> trackSections) {
-            this.routes = routes;
-            this.trackSections = trackSections;
+        private PathfindingResult() {
+            routes = new ArrayList<>();
+            operationalPoints = new ArrayList<>();
         }
 
-        static PathfindingResult from(List<Route> routes, List<TrackSectionRange> trackSections) {
-            var resRoutes = new ArrayList<String>();
-            var resTrackSections = new ArrayList<TrackSectionRangeResult>();
-            for (var route : routes)
-                resRoutes.add(route.id);
-            for (var track : trackSections)
-                resTrackSections.add(new TrackSectionRangeResult(
-                        track.edge.id, track.getBeginPosition(), track.getEndPosition()));
-            return new PathfindingResult(resRoutes, resTrackSections);
+        public void add(Route route, List<TrackSectionRange> trackSections) {
+            var routeResult = new RouteResult();
+            routeResult.route = route.id;
+            routeResult.trackSections = new ArrayList<>();
+            for (var trackSection : trackSections) {
+                var trackSectionResult = new TrackSectionRangeResult(trackSection.edge.id,
+                        trackSection.getBeginPosition(),
+                        trackSection.getEndPosition());
+                routeResult.trackSections.add(trackSectionResult);
+                trackSection.edge.operationalPoints.getAll(
+                        op -> operationalPoints.add(new OperationalPointResult(op, trackSection.edge))
+                );
+            }
+            routes.add(routeResult);
+        }
+
+        public static class RouteResult {
+            public String route;
+            @Json(name = "track_sections")
+            public List<TrackSectionRangeResult> trackSections;
+        }
+
+        public static class OperationalPointResult {
+            public String op;
+            public PositionResult position;
+            public OperationalPointResult(OperationalPoint.Ref op, TrackSection trackSection) {
+                this.op = op.op.id;
+                this.position = new PositionResult(trackSection.id, op.begin); // TODO ech: remove op.end
+            }
+        }
+
+        public static class PositionResult {
+            @Json(name = "track_section")
+            public String trackSection;
+
+            public double offset;
+
+            public PositionResult(String trackSection, double offset) {
+                this.offset = offset;
+                this.trackSection = trackSection;
+            }
         }
     }
 }
