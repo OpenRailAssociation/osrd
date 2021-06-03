@@ -155,7 +155,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                     begin = beginLoc;
                 if (j == routes.size() - 1)
                     end = endLoc;
-                var route = routes.get(i);
+                var route = routes.get(j);
                 var trackSections = Route.routesToTrackSectionRange(
                         Collections.singletonList(route), begin, end);
                 entry.add(route, trackSections);
