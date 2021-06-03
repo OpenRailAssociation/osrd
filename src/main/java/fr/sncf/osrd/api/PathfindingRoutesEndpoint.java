@@ -11,6 +11,7 @@ import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteLocation;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.train.TrackSectionRange;
+import fr.sncf.osrd.utils.PointValue;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.Dijkstra;
 import fr.sncf.osrd.utils.graph.DistCostFunction;
@@ -189,8 +190,8 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                         trackSection.getBeginPosition(),
                         trackSection.getEndPosition());
                 routeResult.trackSections.add(trackSectionResult);
-                trackSection.edge.operationalPoints.getAll(op -> {
-                    if (trackSection.containsPosition(op.begin))
+                trackSection.edge.operationalPoints.forEach(op -> {
+                    if (trackSection.containsPosition(op.position))
                         operationalPoints.add(new OperationalPointResult(op, trackSection.edge));
                 });
             }
@@ -206,9 +207,9 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
         public static class OperationalPointResult {
             public String op;
             public PositionResult position;
-            public OperationalPointResult(OperationalPoint.Ref op, TrackSection trackSection) {
-                this.op = op.op.id;
-                this.position = new PositionResult(trackSection.id, op.begin); // TODO ech: remove op.end
+            public OperationalPointResult(PointValue<OperationalPoint> op, TrackSection trackSection) {
+                this.op = op.value.id;
+                this.position = new PositionResult(trackSection.id, op.position);
             }
         }
 

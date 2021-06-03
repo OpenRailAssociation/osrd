@@ -53,7 +53,7 @@ public final class TrackSection extends BiNEdge<TrackSection> {
     public final DoubleOrientedRangeSequence slope = new DoubleOrientedRangeSequence();
     public final ArrayList<RangeValue<SpeedSection>> forwardSpeedSections = new ArrayList<>();
     public final ArrayList<RangeValue<SpeedSection>> backwardSpeedSections = new ArrayList<>();
-    public final IntervalTree<OperationalPoint.Ref> operationalPoints = new IntervalTree<>();
+    public final PointSequence<OperationalPoint> operationalPoints = new PointSequence<>();
     public final PointSequence<Waypoint> waypoints = new PointSequence<>();
     public final PointSequence<Signal> signals = new PointSequence<>();
     public final PointSequence<ActionPoint> forwardActionPoints = new PointSequence<>();
