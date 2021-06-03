@@ -190,10 +190,10 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                         trackSection.getBeginPosition(),
                         trackSection.getEndPosition());
                 routeResult.trackSections.add(trackSectionResult);
-                trackSection.edge.operationalPoints.forEach(op -> {
+                for (var op : trackSection.edge.operationalPoints) {
                     if (trackSection.containsPosition(op.position))
                         operationalPoints.add(new OperationalPointResult(op, trackSection.edge));
-                });
+                }
             }
             routes.add(routeResult);
         }
