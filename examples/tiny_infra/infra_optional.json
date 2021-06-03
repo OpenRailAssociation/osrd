@@ -509,8 +509,7 @@
       "length": 200,
       "operational_points": [
         {
-          "begin": 100,
-          "end": 100,
+          "position": 100,
           "ref": "op.station_foo"
         }
       ],
@@ -651,8 +650,7 @@
       "length": 200,
       "operational_points": [
         {
-          "begin": 100,
-          "end": 100,
+          "position": 100,
           "ref": "op.station_foo"
         }
       ],
@@ -696,8 +694,7 @@
       "length": 200,
       "operational_points": [
         {
-          "begin": 100,
-          "end": 100,
+          "position": 100,
           "ref": "op.station_bar"
         }
       ],
