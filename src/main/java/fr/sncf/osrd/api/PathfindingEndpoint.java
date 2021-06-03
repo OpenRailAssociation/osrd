@@ -52,15 +52,13 @@ public abstract class PathfindingEndpoint implements Take {
     protected static class TrackSectionRangeResult {
         @Json(name = "track_section")
         private final String trackSection;
-        @Json(name = "begin_position")
-        private final double beginPosition;
-        @Json(name = "end_position")
-        private final double endPosition;
+        private final double begin;
+        private final double end;
 
         protected TrackSectionRangeResult(String trackSection, double beginPosition, double endPosition) {
             this.trackSection = trackSection;
-            this.beginPosition = beginPosition;
-            this.endPosition = endPosition;
+            this.begin = beginPosition;
+            this.end = endPosition;
         }
     }
 }
