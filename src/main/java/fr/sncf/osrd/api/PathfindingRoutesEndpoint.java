@@ -173,11 +173,11 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
 
     @SuppressFBWarnings({"URF_UNREAD_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static class PathfindingResult {
-        public final List<RouteResult> routes;
+        public final List<RouteResult> path;
         public final List<OperationalPointResult> operationalPoints;
 
         private PathfindingResult() {
-            routes = new ArrayList<>();
+            path = new ArrayList<>();
             operationalPoints = new ArrayList<>();
         }
 
@@ -195,7 +195,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                         operationalPoints.add(new OperationalPointResult(op, trackSection.edge));
                 }
             }
-            routes.add(routeResult);
+            path.add(routeResult);
         }
 
         public static class RouteResult {
