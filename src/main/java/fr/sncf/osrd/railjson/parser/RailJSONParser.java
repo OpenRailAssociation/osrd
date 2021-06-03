@@ -120,12 +120,14 @@ public class RailJSONParser {
             // Parse operational points
             if (trackSection.operationalPoints == null)
                 trackSection.operationalPoints = new ArrayList<>();
+            var opBuilder = infraTrackSection.operationalPoints.builder();
             for (var rjsOp : trackSection.operationalPoints) {
                 var op = trackGraph.operationalPoints.get(rjsOp.ref.id);
                 // add the reference from the OperationalPoint to the TrackSection,
                 // add from the TrackSection to the OperationalPoint
-                op.addRef(infraTrackSection, rjsOp.begin, rjsOp.end);
+                op.addRef(infraTrackSection, rjsOp.position, opBuilder);
             }
+            opBuilder.build();
 
             // Parse speed limits
             if (trackSection.speedSections == null)
