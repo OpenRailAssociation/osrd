@@ -392,7 +392,7 @@ class OperationalPointPartEntity(Entity):
     components = [
         OperationalPointPartComponent,
         GeoLineLocationComponent,
-        TrackSectionRangeComponent,
+        TrackSectionLocationComponent,
     ]
 
 

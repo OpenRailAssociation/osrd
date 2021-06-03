@@ -116,10 +116,9 @@ def serialize_waypoint(entity):
 
 def serialize_op_part(op_part_entity):
     op = op_part_entity.operational_point_part_set.get().operational_point
-    range_loc = op_part_entity.range_location_set.get()
+    position = op_part_entity.point_location_set.get().offset
     return {
-        "begin": range_loc.start_offset,
-        "end": range_loc.end_offset,
+        "location": position,
         "ref": format_operation_point_id(op.entity_id),
     }
 
