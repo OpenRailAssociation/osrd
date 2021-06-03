@@ -8,7 +8,6 @@ import org.takes.rq.RqFake;
 import org.takes.rs.RsPrint;
 
 public class PathfindingTest extends ApiTest {
-    /* TODO ech
     @Test
     public void simpleRoutes() throws Exception {
         var waypointStart = new PathfindingEndpoint.PathfindingWaypoint(
@@ -37,10 +36,16 @@ public class PathfindingTest extends ApiTest {
         var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
         assert response != null;
         assertEquals(1, response.length);
+
         assertEquals(3, response[0].routes.size());
-        assertEquals(3, response[0].trackSections.size());
+        assertEquals("rt.buffer_stop_b-C3", response[0].routes.get(0).route);
+        assertEquals("rt.C3-S7", response[0].routes.get(1).route);
+        assertEquals("rt.S7-buffer_stop_c", response[0].routes.get(2).route);
+
+        assertEquals(2, response[0].operationalPoints.size());
+        assertEquals("op.station_foo", response[0].operationalPoints.get(0).op);
+        assertEquals("op.station_bar", response[0].operationalPoints.get(1).op);
     }
-     */
 
     @Test
     public void simpleTracks() throws Exception {
