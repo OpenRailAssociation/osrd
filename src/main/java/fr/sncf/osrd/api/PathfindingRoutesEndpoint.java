@@ -31,10 +31,10 @@ import java.util.Collections;
 import java.util.List;
 
 public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
-    public static final JsonAdapter<PathfindingResult[]> adapterResult = new Moshi
+    public static final JsonAdapter<PathfindingResult> adapterResult = new Moshi
             .Builder()
             .build()
-            .adapter(PathfindingResult[].class)
+            .adapter(PathfindingResult.class)
             .failOnUnknown();
 
 
@@ -132,10 +132,10 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             candidatePaths.add(pathsToGoal.get(pathsToGoal.size() - 1));
         }
 
-        var res = new PathfindingResult[reqWaypoints.length - 1];
+        var res = new PathfindingResult();
 
-        for (int i = 0; i < pathsToGoal.size(); i++) {
-            var path = FullPathArray.from(pathsToGoal.get(i));
+        for (var routeBasicPathNode : pathsToGoal) {
+            var path = FullPathArray.from(routeBasicPathNode);
 
             var routeBeginLoc = pathNodeToRouteLocation(path.pathNodes.get(0));
             var beginLoc = routeBeginLoc.getTrackSectionLocation();
@@ -148,7 +148,6 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                     routes.add(node.edge);
             }
 
-            var entry = new PathfindingResult();
             for (int j = 0; j < routes.size(); j++) {
                 TrackSectionLocation begin = null;
                 TrackSectionLocation end = null;
@@ -159,9 +158,8 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                 var route = routes.get(j);
                 var trackSections = Route.routesToTrackSectionRange(
                         Collections.singletonList(route), begin, end);
-                entry.add(route, trackSections);
+                res.add(route, trackSections);
             }
-            res[i] = entry;
         }
         return new RsJson(new RsWithBody(adapterResult.toJson(res)));
     }

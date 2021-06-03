@@ -36,16 +36,15 @@ public class PathfindingTest extends ApiTest {
 
         var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
         assert response != null;
-        assertEquals(1, response.length);
 
-        assertEquals(3, response[0].path.size());
-        assertEquals("rt.buffer_stop_b-C3", response[0].path.get(0).route);
-        assertEquals("rt.C3-S7", response[0].path.get(1).route);
-        assertEquals("rt.S7-buffer_stop_c", response[0].path.get(2).route);
+        assertEquals(3, response.path.size());
+        assertEquals("rt.buffer_stop_b-C3", response.path.get(0).route);
+        assertEquals("rt.C3-S7", response.path.get(1).route);
+        assertEquals("rt.S7-buffer_stop_c", response.path.get(2).route);
 
-        assertEquals(2, response[0].operationalPoints.size());
-        assertEquals("op.station_foo", response[0].operationalPoints.get(0).op);
-        assertEquals("op.station_bar", response[0].operationalPoints.get(1).op);
+        assertEquals(2, response.operationalPoints.size());
+        assertEquals("op.station_foo", response.operationalPoints.get(0).op);
+        assertEquals("op.station_bar", response.operationalPoints.get(1).op);
     }
 
     @Test
