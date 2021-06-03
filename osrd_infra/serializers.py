@@ -1,4 +1,6 @@
+from rest_framework import serializers
 from rest_framework.serializers import (
+    Serializer,
     ModelSerializer,
     SerializerMethodField,
 )
@@ -118,6 +120,19 @@ class LightRollingStockSerializer(ModelSerializer):
 
 
 # PATH FINDING
+
+
+class PathInputSerializer(Serializer):
+    class WaypointInputSerializer(Serializer):
+        track_section = serializers.IntegerField(min_value=0)
+        geo_coordinate = serializers.JSONField()
+
+    infra = serializers.IntegerField(min_value=0)
+    name = serializers.CharField(max_length=256)
+    waypoints = serializers.ListField(
+        min_length=2,
+        child=serializers.ListField(child=WaypointInputSerializer(), allow_empty=False),
+    )
 
 
 class PathSerializer(ModelSerializer):

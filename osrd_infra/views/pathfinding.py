@@ -1,6 +1,4 @@
-from osrd_infra.serializers import PathSerializer
 from django.contrib.gis.geos import LineString, Point
-from django.db import transaction
 from rest_framework.generics import get_object_or_404
 from rest_framework.viewsets import GenericViewSet
 from rest_framework import mixins
@@ -8,7 +6,12 @@ from rest_framework.exceptions import ParseError
 import requests
 from django.conf import settings
 from osrd_infra.views.railjson import format_track_section_id
+from rest_framework.response import Response
 
+from osrd_infra.serializers import (
+    PathSerializer,
+    PathInputSerializer,
+)
 
 from osrd_infra.models import (
     Path,
@@ -29,6 +32,11 @@ def try_get_field(manifest, field):
         return status_missing_field_keyerror(e)
 
 
+def geo_transform(gis_object):
+    gis_object.transform(4326)
+    return gis_object
+
+
 def request_pathfinding(payload):
     response = requests.post(
         settings.OSRD_BACKEND_URL + "pathfinding/routes",
@@ -40,13 +48,21 @@ def request_pathfinding(payload):
     return response.json()
 
 
-def fetch_track_sections(formated_ids):
+def fetch_formated_track_sections(formated_ids):
     ids = [int(f_id.split(".")[1]) for f_id in formated_ids]
     related_names = ["geo_line_location", "track_section"]
     tracks = TrackSectionEntity.objects.prefetch_related(*related_names).filter(
         pk__in=ids
     )
     return {format_track_section_id(track.pk): track for track in tracks}
+
+
+def fetch_track_sections(ids):
+    related_names = ["geo_line_location", "track_section"]
+    tracks = TrackSectionEntity.objects.prefetch_related(*related_names).filter(
+        pk__in=ids
+    )
+    return {track.pk: track for track in tracks}
 
 
 def line_string_slice(line_string, begin_normalized, end_normalized):
@@ -65,28 +81,59 @@ def line_string_slice(line_string, begin_normalized, end_normalized):
 def get_geojson_path(payload):
     geographic, schematic = [], []
     track_section_ids = []
-    for step in payload:
-        for track in step["track_sections"]:
+    for route in payload["path"]:
+        for track in route["track_sections"]:
             track_section_ids.append(track["track_section"])
 
-    track_map = fetch_track_sections(track_section_ids)
+    track_map = fetch_formated_track_sections(track_section_ids)
 
-    for step in payload:
-        for track in step["track_sections"]:
+    for route in payload["path"]:
+        for track in route["track_sections"]:
             track_entity = track_map[track["track_section"]]
-            geo = track_entity.geo_line_location.geographic
-            schema = track_entity.geo_line_location.schematic
+            geo = geo_transform(track_entity.geo_line_location.geographic)
+            schema = geo_transform(track_entity.geo_line_location.schematic)
             track_length = track_entity.track_section.length
 
             # normalize positions
-            begin = track["begin_position"] / track_length
-            end = track["end_position"] / track_length
+            begin = track["begin"] / track_length
+            end = track["end"] / track_length
             assert begin >= 0.0 and begin <= 1.0
             assert end >= 0.0 and end <= 1.0
 
             geographic += line_string_slice(geo, begin, end)
             schematic += line_string_slice(schema, begin, end)
     return LineString(geographic).json, LineString(schematic).json
+
+
+def parse_waypoint_input(waypoints):
+    track_ids = []
+    for step in waypoints:
+        [track_ids.append(waypoint["track_section"]) for waypoint in step]
+    track_map = fetch_track_sections(track_ids)
+    result = []
+    for step in waypoints:
+        step_result = []
+        for waypoint in step:
+            try:
+                track = track_map[waypoint["track_section"]]
+            except KeyError:
+                raise ParseError(
+                    f"Track section '{waypoint['track_section']}' doesn't exists"
+                )
+
+            geo = geo_transform(track.geo_line_location.geographic)
+            offset = geo.project_normalized(Point(waypoint["geo_coordinate"]))
+            offset = max(min(offset, 1), 0) * track.track_section.length
+            parsed_waypoint = {
+                "track_section": format_track_section_id(track.pk),
+                "offset": offset,
+            }
+            # Allow both direction
+            step_result.append({**parsed_waypoint, "direction": "START_TO_STOP"})
+            step_result.append({**parsed_waypoint, "direction": "STOP_TO_START"})
+        result.append(step_result)
+
+    return result
 
 
 class PathfindingView(
@@ -99,30 +146,24 @@ class PathfindingView(
     serializer_class = PathSerializer
     queryset = Path.objects.order_by("-created")
 
-    @transaction.atomic
-    def perform_create(self, serializer):
-        waypoints = try_get_field(self.request.data, "waypoints")
-        infra_id = try_get_field(self.request.data, "infra")
-        infra = get_object_or_404(Infra, pk=infra_id)
-        if not isinstance(waypoints, list):
-            raise ParseError("waypoints: expected a list of list")
-        for stop in waypoints:
-            if not isinstance(stop, list):
-                raise ParseError("waypoints: expected a list of list")
-            for waypoint in stop:
-                if not isinstance(waypoint, dict):
-                    raise ParseError("waypoint: expected a dict")
-                for key in ("track_section", "direction", "offset"):
-                    if key not in waypoint:
-                        raise ParseError(f"waypoint missing field: {key}")
+    def create(self, request):
+        input_serializer = PathInputSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+        data = input_serializer.validated_data
 
-        payload = request_pathfinding({"infra": infra_id, "waypoints": waypoints})
+        infra = get_object_or_404(Infra, pk=data["infra"])
+
+        waypoints = parse_waypoint_input(data["waypoints"])
+        payload = request_pathfinding({"infra": infra.pk, "waypoints": waypoints})
         geographic, schematic = get_geojson_path(payload)
 
-        serializer.save(
+        path = Path(
+            name=data["name"],
             owner=self.request.user.sub,
             namespace=infra.namespace,
             payload=payload,
             geographic=geographic,
             schematic=schematic,
         )
+        path.save()
+        return Response(PathSerializer(path).data)
