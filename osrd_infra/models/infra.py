@@ -372,7 +372,7 @@ class OperationalPointEntity(Entity):
     verbose_name_plural = "operational point entities"
     components = [
         IdentifierComponent,
-        GeoAreaLocationComponent,
+        GeoPointLocationComponent,
         KilometricPointComponent,
     ]
 
@@ -391,7 +391,7 @@ class OperationalPointPartEntity(Entity):
     verbose_name_plural = "operational point part entities"
     components = [
         OperationalPointPartComponent,
-        GeoLineLocationComponent,
+        GeoPointLocationComponent,
         TrackSectionLocationComponent,
     ]
 
