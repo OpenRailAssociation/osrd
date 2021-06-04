@@ -8,6 +8,6 @@ django-redis==4.12.1
 --extra-index-url https://gitlab+deploy-token-215547:tneDsrg6in6tG_wM8N9B@gitlab.com/api/v4/projects/24487626/packages/pypi/simple
 service-core==0.0.18
 
-Pillow==8.1.0
+Pillow==8.1.2
 jsonschema==3.2.0
 requests==2.25.1
