@@ -114,7 +114,7 @@ public class RailJSONParser {
             var beginID = nodeIDs.get(trackSection.beginEndpoint());
             var endID = nodeIDs.get(trackSection.endEndpoint());
             var infraTrackSection = trackGraph.makeTrackSection(beginID, endID, trackSection.id,
-                    trackSection.length);
+                    trackSection.length, trackSection.endpointCoords);
             infraTrackSections.put(trackSection.id, infraTrackSection);
 
             // Parse operational points

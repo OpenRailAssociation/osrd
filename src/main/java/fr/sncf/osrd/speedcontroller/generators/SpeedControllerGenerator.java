@@ -35,7 +35,7 @@ public interface SpeedControllerGenerator {
         return res;
     }
 
-    /** TODO doc */
+    /** Generates a map of location -> expected speed if we follow the given controllers */
     default NavigableMap<Double, Double> getExpectedSpeeds(Simulation sim,
                                                            TrainSchedule schedule,
                                                            Set<SpeedController> controllers,
@@ -49,6 +49,8 @@ public interface SpeedControllerGenerator {
         return res;
     }
 
+    /** Generates a map of location -> updates if we follow the given controllers.
+     * This may be overridden in scenarios when it is already computed when computing the controllers */
     default NavigableMap<Double, PositionUpdate> getUpdatesAtPositions(Simulation sim,
                                                                        TrainSchedule schedule,
                                                                        Set<SpeedController> controllers,

@@ -16,10 +16,15 @@ public abstract class RJSAllowance {
 
     public static final class LinearAllowance extends RJSAllowance {
         @Json(name = "allowance_type")
-        public String allowanceType;
+        public MarginType allowanceType;
 
         @Json(name = "allowance_value")
         public double allowanceValue;
+
+        public enum MarginType {
+            TIME,
+            DISTANCE,
+        }
     }
 
 }

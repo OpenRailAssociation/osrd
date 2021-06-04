@@ -31,6 +31,9 @@ public class RJSTrackSection implements Identified {
     @Json(name = "speed_sections")
     public List<RJSSpeedSectionPart> speedSections;
 
+    @Json(name = "endpoints_coords")
+    public List<List<Double>> endpointCoords;
+
     /** Creates a new track section */
     public RJSTrackSection(
             String id,

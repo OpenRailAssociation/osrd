@@ -62,7 +62,7 @@
           ],
           "allowance": {
             "type": "linear",
-            "allowance_type": "D",
+            "allowance_type": "DISTANCE",
             "allowance_value": 270
           },
           "type": "navigate"

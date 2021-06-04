@@ -48,7 +48,8 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 List<SortedArraySet<TVDSection>> releaseGroups,
                 HashMap<Switch, SwitchPosition> switchesPosition,
                 Waypoint entryPoint,
-                Signal entrySignal) throws InvalidInfraException {
+                Signal entrySignal
+        ) throws InvalidInfraException {
             var length = 0;
             var tvdSectionsPath = new ArrayList<TVDSectionPath>();
             var tvdSectionsPathDirection = new ArrayList<EdgeDirection>();
@@ -134,11 +135,37 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
             return routeGraph;
         }
 
+        private Set<Waypoint> findTvdWaypoints(TrackSection trackSection, EdgeDirection direction) {
+            var res = new HashSet<Waypoint>();
+            var waypoints = trackSection.waypoints;
+            if (waypoints.size() > 0) {
+                if (direction == EdgeDirection.START_TO_STOP)
+                    res.add(waypoints.data.get(0).value);
+                else
+                    res.add(waypoints.data.get(waypoints.data.size() - 1).value);
+                return res;
+            }
+            var neighbors = trackSection.getForwardNeighbors(direction);
+            for (var neighbor : neighbors) {
+                var neighborDirection = neighbor.getDirection(trackSection, direction);
+                res.addAll(findTvdWaypoints(neighbor, neighborDirection));
+                var backNeighbors = neighbor.getBackwardNeighbors(neighborDirection);
+                for (var backNeighbor : backNeighbors) {
+                    if (backNeighbor != trackSection) {
+                        var backNeighborDirection = backNeighbor.getDirection(neighbor, neighborDirection.opposite());
+                        res.addAll(findTvdWaypoints(backNeighbor, backNeighborDirection));
+                    }
+                }
+            }
+            return res;
+        }
+
         /** Generates a set of waypoints on the route, based on its tvd sections and switch positions
          * We accumulate all the waypoints in all the tvd sections, then remove the ones in the other switch branches */
-        private Set<Waypoint> getWaypointsOnRoute(Set<TVDSection> tvdSections,
-                                                  HashMap<Switch, SwitchPosition> switchesPosition)
-                throws InvalidInfraException {
+        private Set<Waypoint> getWaypointsOnRoute(
+                Set<TVDSection> tvdSections,
+                HashMap<Switch, SwitchPosition> switchesPosition
+        ) throws InvalidInfraException {
             var res = new HashSet<Waypoint>();
             tvdSections.forEach(x -> res.addAll(x.waypoints));
             if (switchesPosition != null) {
@@ -146,14 +173,16 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                     var aSwitch = entry.getKey();
                     switch (entry.getValue()) {
                         case LEFT:
-                            aSwitch.rightTrackSection.waypoints.stream()
-                                    .map(x -> x.value)
-                                    .forEach(res::remove);
+                            if (aSwitch.rightTrackSection.startNode == aSwitch.index)
+                                res.removeAll(findTvdWaypoints(aSwitch.rightTrackSection, EdgeDirection.START_TO_STOP));
+                            else
+                                res.removeAll(findTvdWaypoints(aSwitch.rightTrackSection, EdgeDirection.STOP_TO_START));
                             break;
                         case RIGHT:
-                            aSwitch.leftTrackSection.waypoints.stream()
-                                    .map(x -> x.value)
-                                    .forEach(res::remove);
+                            if (aSwitch.leftTrackSection.startNode == aSwitch.index)
+                                res.removeAll(findTvdWaypoints(aSwitch.leftTrackSection, EdgeDirection.START_TO_STOP));
+                            else
+                                res.removeAll(findTvdWaypoints(aSwitch.leftTrackSection, EdgeDirection.STOP_TO_START));
                             break;
                         case MOVING:
                             throw new InvalidInfraException("route: switch required position cannot be MOVING");
@@ -167,8 +196,8 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
         private List<Waypoint> generateWaypointList(
                 Waypoint startPoint,
                 Set<TVDSection> tvdSections,
-                HashMap<Switch, SwitchPosition> switchesPosition) throws InvalidInfraException {
-
+                HashMap<Switch, SwitchPosition> switchesPosition
+        ) throws InvalidInfraException {
             var currentPoint = startPoint;
             var waypoints = new ArrayList<Waypoint>();
 
@@ -190,7 +219,8 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 }
                 if (!waypointsToVisit.contains(currentPoint)) {
                     // we didn't find a pair
-                    var errorMsg = "Route: can't find a waypoint list, are the tvd sections connected?";
+                    var errorMsg = "Route: can't find a waypoint list, are the tvd sections connected "
+                            + "and the switches set to the right positions?";
                     throw new InvalidInfraException(errorMsg);
                 }
             }

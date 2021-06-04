@@ -1,6 +1,9 @@
 package fr.sncf.osrd.infra.routegraph;
 
+import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.TrackSectionLocation;
+
+import java.util.Arrays;
 
 public class RouteLocation {
     public final Route route;
@@ -18,8 +21,11 @@ public class RouteLocation {
             var tvdSectionPath = route.tvdSectionsPaths.get(i);
             var tvdSectionPathDir = route.tvdSectionsPathDirections.get(i);
             for (var trackSection : tvdSectionPath.getTrackSections(tvdSectionPathDir)) {
-                if (trackSection.length() >= offsetLeft)
-                    return new TrackSectionLocation(trackSection.edge, offsetLeft);
+                if (trackSection.length() >= offsetLeft) {
+                    var track = new TrackSectionRange(trackSection);
+                    track.shrinkForward(offsetLeft);
+                    return new TrackSectionLocation(track.edge, track.getBeginPosition());
+                }
                 offsetLeft -= trackSection.length();
             }
         }
