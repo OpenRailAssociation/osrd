@@ -1,2 +1,2 @@
 --extra-index-url https://gitlab+deploy-token-215547:tneDsrg6in6tG_wM8N9B@gitlab.com/api/v4/projects/20981537/packages/pypi/simple
-osrdata-railway-utils==0.0.10
+osrdata-railway-utils
