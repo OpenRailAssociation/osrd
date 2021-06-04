@@ -1,7 +1,6 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
 import fr.sncf.osrd.TrainSchedule;
-import fr.sncf.osrd.railjson.schema.schedule.RJSRunningTimeParameters;
 import fr.sncf.osrd.railjson.schema.schedule.RJSRunningTimeParameters.Margin.MarginType;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.MapSpeedController;
@@ -9,9 +8,6 @@ import fr.sncf.osrd.speedcontroller.SpeedController;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import static fr.sncf.osrd.railjson.schema.schedule.RJSRunningTimeParameters.Margin.MarginType.*;
 
 public class MarginGenerator implements SpeedControllerGenerator {
 

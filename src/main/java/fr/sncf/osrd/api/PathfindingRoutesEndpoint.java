@@ -179,7 +179,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             operationalPoints = new ArrayList<>();
         }
 
-        public void add(Route route, List<TrackSectionRange> trackSections) {
+        void add(Route route, List<TrackSectionRange> trackSections) {
             var routeResult = new RouteResult();
             routeResult.route = route.id;
             routeResult.trackSections = new ArrayList<>();
@@ -205,7 +205,8 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
         public static class OperationalPointResult {
             public String op;
             public PositionResult position;
-            public OperationalPointResult(PointValue<OperationalPoint> op, TrackSection trackSection) {
+
+            OperationalPointResult(PointValue<OperationalPoint> op, TrackSection trackSection) {
                 this.op = op.value.id;
                 this.position = new PositionResult(trackSection.id, op.position);
             }
