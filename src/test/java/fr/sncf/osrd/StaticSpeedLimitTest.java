@@ -61,8 +61,10 @@ public class StaticSpeedLimitTest {
         var opStart = new OperationalPoint("start id");
         var opEnd = new OperationalPoint("end id");
 
-        opStart.addRef(edge, 0, 0);
-        opEnd.addRef(edge, edgeLength, edgeLength);
+        var opBuilder = edge.operationalPoints.builder();
+        opStart.addRef(edge, 0, opBuilder);
+        opEnd.addRef(edge, edgeLength, opBuilder);
+        opBuilder.build();
 
         // add the speed limits
         var limits = edge.forwardSpeedSections;

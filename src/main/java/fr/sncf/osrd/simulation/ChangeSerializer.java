@@ -6,6 +6,7 @@ import com.squareup.moshi.*;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
 import fr.sncf.osrd.infra.railscript.value.RSBool;
@@ -37,7 +38,6 @@ import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
-import java.sql.Time;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -76,6 +76,7 @@ public class ChangeSerializer {
                     .withSubtype(BufferStop.class, "bufferStop")
                     .withSubtype(Detector.class, "detector")
                     .withSubtype(Signal.class, "signal")
+                    .withSubtype(OperationalPoint.class, "operationalPoint")
                     .withSubtype(SignalNavigatePhase.VirtualActionPoint.class, "virtualActionPoint")
             )
             .add(PolymorphicJsonAdapterFactory.of(RSValue.class, "valueType")

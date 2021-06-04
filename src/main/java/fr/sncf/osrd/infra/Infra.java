@@ -133,9 +133,9 @@ public final class Infra {
                 forwardBuilder.add(waypoint.position, waypoint.value);
                 backwardBuilder.add(waypoint.position, waypoint.value);
             }
-            trackSection.operationalPoints.getAll(op -> {
-                        forwardBuilder.add(op.begin, op.op);
-                        backwardBuilder.add(op.end, op.op);
+            trackSection.operationalPoints.forEach(op -> {
+                        forwardBuilder.add(op.position, op.value);
+                        backwardBuilder.add(op.position, op.value);
                     }
             );
             forwardBuilder.build();
