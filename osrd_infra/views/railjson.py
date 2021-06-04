@@ -116,7 +116,7 @@ def serialize_waypoint(entity):
 
 def serialize_op_part(op_part_entity):
     op = op_part_entity.operational_point_part_set.get().operational_point
-    position = op_part_entity.point_location_set.get().offset
+    position = op_part_entity.point_location.offset
     return {
         "location": position,
         "ref": format_operation_point_id(op.entity_id),
@@ -159,9 +159,9 @@ def serialize_track_section(track_section_entity, **cached_entities):
             if point_object.entity_id in waypoints
         ],
         "operational_points": [
-            serialize_op_part(op_parts[range_object.entity_id])
-            for range_object in range_objects
-            if range_object.entity_id in op_parts
+            serialize_op_part(op_parts[point_object.entity_id])
+            for point_object in point_objects
+            if point_object.entity_id in op_parts
         ],
         "speed_sections": [
             serialize_speed_section_part(speed_sections[range_object.entity_id])
