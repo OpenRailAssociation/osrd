@@ -22,12 +22,12 @@ public class AllowanceGenerator implements SpeedControllerGenerator {
     public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed) {
         if (allowanceType.equals("T") || allowanceType.equals("D")) {
             // find the percentage of the allowance to add to the whole path
-            double percentage = 0;
+            double percentage;
             if (allowanceType.equals("T"))
                 percentage = value;
             else {
                 var expectedTime = getExpectedTimes(sim, schedule, maxSpeed, 1);
-                var totalTime = expectedTime.lastEntry().getValue();
+                var totalTime = expectedTime.lastEntry().getValue() - expectedTime.firstEntry().getValue();
                 var schemaLength = expectedTime.lastEntry().getKey() - expectedTime.firstEntry().getKey();
                 var n = schemaLength / 100000;
                 var totalAllowance = n * value;
