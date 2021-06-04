@@ -237,6 +237,7 @@ public final class SignalNavigatePhase implements Phase {
                 var change = new Train.TrainStateChange(sim, train.getName(), trainState.nextPhase(sim));
                 change.apply(sim, train);
                 sim.publishChange(change);
+                System.out.println("next phase at " + sim.getTime());
                 return null;
             }
 

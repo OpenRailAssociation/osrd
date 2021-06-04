@@ -190,7 +190,7 @@ public class SpeedInstructionsTests {
         assertEquals(baseSimTime, marginsSimTime, baseSimTime * 0.01);
     }
 
-    private static boolean isLate(Simulation sim) {
+    public static boolean isLate(Simulation sim) {
         var event = getLastTrainEvent(sim);
         var trainState = sim.trains.get("Test.").getLastState();
         var secondsLate = trainState.currentPhaseState.speedInstructions.secondsLate(
@@ -198,7 +198,7 @@ public class SpeedInstructionsTests {
         return secondsLate > 1;
     }
 
-    private static Train.TrainStateChange.SpeedUpdate getLastTrainEvent(Simulation sim) {
+    public  static Train.TrainStateChange.SpeedUpdate getLastTrainEvent(Simulation sim) {
         var train = sim.trains.get("Test.");
         var lastEvent = train.lastScheduledEvent;
         Train.TrainStateChange.SpeedUpdates updates;
@@ -215,7 +215,7 @@ public class SpeedInstructionsTests {
         return updates.get(0);
     }
 
-    private static double getLastTrainSpeed(Simulation sim) {
+    public static double getLastTrainSpeed(Simulation sim) {
         return getLastTrainEvent(sim).speed;
     }
 }
