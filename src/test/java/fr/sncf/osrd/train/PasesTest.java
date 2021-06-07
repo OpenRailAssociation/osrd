@@ -19,6 +19,7 @@ import java.util.HashSet;
 
 import static fr.sncf.osrd.Helpers.*;
 import static fr.sncf.osrd.speedcontroller.SpeedInstructionsTests.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PasesTest {
 
@@ -26,10 +27,17 @@ public class PasesTest {
     public void testSimplePhases() throws InvalidInfraException {
         var infra = getBaseInfra();
         assert infra != null;
+        var config_base = getBaseConfig();
+        assert config_base != null;
+        var sim_base = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        run(sim_base, config_base);
+        var base_end_time = sim_base.getTime();
+
         var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
         assert config != null;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim, config);
+        assertEquals(base_end_time, sim.getTime(), base_end_time * 0.1);
     }
 
     @Test
