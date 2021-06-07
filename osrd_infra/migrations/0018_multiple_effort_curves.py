@@ -16,7 +16,7 @@ def migrate_curve_schema(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osrd_infra', '0016_rolling_stock_doc'),
+        ('osrd_infra', '0017_rolling_stock_doc'),
     ]
 
     operations = [

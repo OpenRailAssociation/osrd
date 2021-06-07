@@ -8,7 +8,7 @@ import osrd_infra.models.rolling_stock
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osrd_infra', '0015_alter_track_location_component'),
+        ('osrd_infra', '0016_path'),
     ]
 
     operations = [
