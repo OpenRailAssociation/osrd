@@ -28,6 +28,12 @@ EFFORT_CURVE_SCHEMA = {
 }
 
 
+EFFORT_CURVE_MAP_SCHEMA = {
+    "type": "object",
+    "additionalProperties": EFFORT_CURVE_SCHEMA,
+}
+
+
 ROLLING_RESISTANCE_SCHEMA = {
     "type": "object",
     "properties": {
@@ -99,9 +105,9 @@ class RollingStock(models.Model):
         help_text=_("The maximum braking coefficient, for timetabling purposes, in m/s^2"),
     )
 
-    tractive_effort_curve = models.JSONField(
-        help_text=_("A curve mapping speed (in m/s) to maximum traction (in newtons)"),
-        validators=[JSONSchemaValidator(limit_value=EFFORT_CURVE_SCHEMA)],
+    tractive_effort_curves = models.JSONField(
+        help_text=_("A set of curves mapping speed (in m/s) to maximum traction (in newtons)"),
+        validators=[JSONSchemaValidator(limit_value=EFFORT_CURVE_MAP_SCHEMA)],
     )
 
     def to_railjson(self):
@@ -117,5 +123,5 @@ class RollingStock(models.Model):
             "startup_acceleration": self.startup_acceleration,
             "comfort_acceleration": self.comfort_acceleration,
             "timetable_gamma": self.timetable_gamma,
-            "tractive_effort_curve": self.tractive_effort_curve,
+            "tractive_effort_curves": self.tractive_effort_curves,
         }

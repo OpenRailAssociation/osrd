@@ -116,7 +116,7 @@ class RollingStockSerializer(ModelSerializer):
 class LightRollingStockSerializer(ModelSerializer):
     class Meta:
         model = RollingStock
-        exclude = ["tractive_effort_curve", "rolling_resistance"]
+        exclude = ["tractive_effort_curves", "rolling_resistance"]
 
 
 # PATH FINDING
