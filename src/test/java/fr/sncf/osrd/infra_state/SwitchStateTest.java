@@ -22,7 +22,6 @@ public class SwitchStateTest {
         RouteState routeState = sim.infraState.getRouteState(3);
         makeAssertEvent(sim, 21, () -> routeState.status == RouteStatus.RESERVED);
         var events = run(sim);
-        assert events != null;
 
         // The switch starts in the correct position, no switch move event should happen
         for (var e : events) {
@@ -35,7 +34,6 @@ public class SwitchStateTest {
         var infra = getBaseInfra();
         assert infra != null;
         var config = getBaseConfig();
-        assert config != null;
 
         config.trainSchedules.clear();
 
@@ -80,9 +78,7 @@ public class SwitchStateTest {
     @Test
     public void testSwitchLongerDelay() throws InvalidInfraException, SimulationError {
         var infra = getBaseInfra();
-        assert infra != null;
         var config = getBaseConfig();
-        assert config != null;
 
         infra.switches.iterator().next().positionChangeDelay = 42;
 

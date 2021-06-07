@@ -9,6 +9,7 @@ import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.speedcontroller.SpeedInstructionsTests;
+import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +19,7 @@ import java.util.HashSet;
 import static fr.sncf.osrd.Helpers.*;
 import static fr.sncf.osrd.speedcontroller.SpeedInstructionsTests.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class PasesTest {
 
@@ -36,6 +38,41 @@ public class PasesTest {
         var base_end_time = sim_base.getTime();
 
         assertEquals(base_end_time, actual_end_time, base_end_time * 0.1);
+    }
+
+    @Test
+    public void testSameEventTimes() throws InvalidInfraException {
+        var infra = getBaseInfra();
+
+        var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var events = run(sim, config);
+
+        var configBase = getBaseConfig();
+        var simBase = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var eventsRef = run(simBase, configBase);
+
+        assertEquals(eventsRef.size() + 1, events.size());
+
+        int i = 0;
+        int iRef = 0;
+        while (i < events.size()) {
+            System.out.println(events.get(i).toString());
+            if (events.get(i) instanceof TrainReachesActionPoint) {
+                if (((TrainReachesActionPoint) events.get(i)).interaction.actionPoint
+                        instanceof SignalNavigatePhase.VirtualActionPoint) {
+                    i++;
+                }
+            }
+
+            var event = events.get(i);
+            var eventRef = eventsRef.get(iRef);
+
+            assertEquals(eventRef.eventId.scheduledTime, event.eventId.scheduledTime);
+
+            i++;
+            iRef++;
+        }
     }
 
     @Test
