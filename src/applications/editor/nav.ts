@@ -70,7 +70,10 @@ const NavButtons: NavButton[] = [
     labelTranslationKey: 'Editor.nav.recenter',
     onClick({ setViewport, viewport }, editorState) {
       const newViewport = editorState.editionZone
-        ? getZoneViewport(editorState.editionZone)
+        ? getZoneViewport(editorState.editionZone, {
+            width: +(viewport.width || 1),
+            height: +(viewport.height || 1),
+          })
         : DEFAULT_VIEWPORT;
 
       setViewport({

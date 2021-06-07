@@ -2,11 +2,14 @@ import bboxClip from '@turf/bbox-clip';
 import { flatten, chunk } from 'lodash';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import booleanIntersects from '@turf/boolean-intersects';
+import bbox from '@turf/bbox';
+import lineIntersect from '@turf/line-intersect';
+import lineSlice from '@turf/line-slice';
 
 /* Types */
-import { MapController, ViewportProps } from 'react-map-gl';
+import { MapController, ViewportProps, WebMercatorViewport } from 'react-map-gl';
 import { MjolnirEvent } from 'react-map-gl/dist/es5/utils/map-controller';
-import { BBox, feature, point } from '@turf/helpers';
+import { BBox } from '@turf/helpers';
 import {
   Feature,
   FeatureCollection,
@@ -19,9 +22,6 @@ import {
   GeoJSON,
 } from 'geojson';
 import { Item, Zone } from '../types';
-import bbox from '@turf/bbox';
-import lineIntersect from '@turf/line-intersect';
-import lineSlice from '@turf/line-slice';
 
 /**
  * This class allows binding keyboard events to react-map-gl. Since those events are not supported
@@ -287,14 +287,29 @@ export function selectInZone(data: GeoJSON[], zone?: Zone): Item[] {
 }
 
 /**
- * This helpers takes a zone a returns the smallest viewport that contains the zone.
+ * This helpers takes a zone and a screen size and returns the smallest viewport that contains the
+ * zone.
  */
-export function getZoneViewport(zone: Zone): ViewportProps {
-  // TODO
+export function getZoneViewport(
+  zone: Zone,
+  viewport: { width: number; height: number }
+): ViewportProps {
+  const [minLng, minLat, maxLng, maxLat] = zoneToBBox(zone);
+  const vp = new WebMercatorViewport(viewport);
+  const { longitude, latitude, zoom } = vp.fitBounds(
+    [
+      [minLng, minLat],
+      [maxLng, maxLat],
+    ],
+    {
+      padding: 40,
+    }
+  );
+
   return {
-    latitude: 47.3,
-    longitude: 2.0,
-    zoom: 10.0,
+    latitude,
+    longitude,
+    zoom,
     bearing: 0,
     pitch: 0,
   };
