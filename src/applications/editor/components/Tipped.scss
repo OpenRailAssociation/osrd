@@ -4,6 +4,7 @@
   & > .tooltip {
     position: absolute;
 
+    // Layout
     &.bs-tooltip-left,
     &.bs-tooltip-right,
     &.bs-tooltip-left > .arrow,
@@ -34,6 +35,22 @@
     &.bs-tooltip-bottom {
       top: 100%;
       margin-top: 5px;
+    }
+
+    // Transition:
+    &.transition-enter {
+      opacity: 0;
+    }
+    &.transition-enter-active {
+      opacity: 1;
+      transition: opacity 400ms;
+    }
+    &.transition-exit {
+      opacity: 1;
+    }
+    &.transition-exit-active {
+      opacity: 0;
+      transition: opacity 400ms;
     }
   }
 }
