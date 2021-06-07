@@ -234,11 +234,14 @@ public final class SignalNavigatePhase implements Phase {
         public TimelineEvent simulate(Simulation sim, Train train, TrainState trainState) throws SimulationError {
             // Check if we reached our goal
             if (interactionsPathIndex == phase.interactionsPath.size()) {
-                var change = new Train.TrainStateChange(sim, train.getName(), trainState.nextPhase(sim));
+                var nextState = trainState.nextPhase(sim);
+                var change = new Train.TrainStateChange(sim, train.getName(), nextState);
                 change.apply(sim, train);
                 sim.publishChange(change);
-                System.out.println("next phase at " + sim.getTime());
-                return null;
+                if (trainState.isDuringLastPhase())
+                    return null;
+                else
+                    return nextState.simulatePhase(train, sim);
             }
 
             // 1) find the next interaction event

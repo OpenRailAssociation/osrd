@@ -10,8 +10,6 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.speedcontroller.SpeedInstructionsTests;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
-import fr.sncf.osrd.utils.TrackSectionLocation;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -26,15 +24,18 @@ public class PasesTest {
     @Test
     public void testSimplePhases() throws InvalidInfraException {
         var infra = getBaseInfra();
+
+        var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        run(sim, config);
+        var actual_end_time = sim.getTime();
+
         var config_base = getBaseConfig();
         var sim_base = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim_base, config_base);
         var base_end_time = sim_base.getTime();
 
-        var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        run(sim, config);
-        assertEquals(base_end_time, sim.getTime(), base_end_time * 0.1);
+        assertEquals(base_end_time, actual_end_time, base_end_time * 0.1);
     }
 
     @Test
