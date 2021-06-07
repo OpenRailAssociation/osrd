@@ -26,15 +26,12 @@ public class PasesTest {
     @Test
     public void testSimplePhases() throws InvalidInfraException {
         var infra = getBaseInfra();
-        assert infra != null;
         var config_base = getBaseConfig();
-        assert config_base != null;
         var sim_base = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim_base, config_base);
         var base_end_time = sim_base.getTime();
 
         var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
-        assert config != null;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim, config);
         assertEquals(base_end_time, sim.getTime(), base_end_time * 0.1);
@@ -43,9 +40,7 @@ public class PasesTest {
     @Test
     public void testReactSignal() throws InvalidInfraException, SimulationError {
         var infra = getBaseInfra();
-        assert infra != null;
         var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
-        assert config != null;
 
         infra.switches.iterator().next().positionChangeDelay = 42;
 
@@ -67,9 +62,7 @@ public class PasesTest {
     @Test
     public void testDifferentSpeedLimits() throws InvalidInfraException {
         var infra = getBaseInfra();
-        assert infra != null;
         var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
-        assert config != null;
 
         var phases = config.trainSchedules.get(0).phases;
         assert phases.get(0) instanceof SignalNavigatePhase;

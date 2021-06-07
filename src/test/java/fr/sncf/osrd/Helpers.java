@@ -160,7 +160,7 @@ public class Helpers {
             return RJSInfra.adapter.fromJson(jsonReader);
         } catch (IOException e) {
             fail(e);
-            return null;
+            throw new RuntimeException();
         }
     }
 
@@ -170,7 +170,7 @@ public class Helpers {
             return Config.readFromFile(getResourcePath(path));
         } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule e) {
             fail(e);
-            return null;
+            throw new RuntimeException();
         }
     }
 
@@ -207,14 +207,13 @@ public class Helpers {
             );
         } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule e) {
             fail(e);
-            return null;
+            throw new RuntimeException();
         }
     }
 
     /** Go through all the events in the simulation, fails if an exception is thrown */
     public static ArrayList<TimelineEvent> run(Simulation sim) {
         var config = getBaseConfig();
-        assert config != null;
         return run(sim, config);
     }
 
@@ -224,7 +223,7 @@ public class Helpers {
             return runWithExceptions(sim, config);
         } catch (SimulationError e) {
             fail(e);
-            return null;
+            throw new RuntimeException();
         }
     }
 
@@ -243,7 +242,6 @@ public class Helpers {
     /** Go through all the events in the simulation, exceptions pass through */
     public static ArrayList<TimelineEvent> runWithExceptions(Simulation sim) throws SimulationError {
         var config = getBaseConfig();
-        assert config != null;
         return runWithExceptions(sim, config);
     }
 

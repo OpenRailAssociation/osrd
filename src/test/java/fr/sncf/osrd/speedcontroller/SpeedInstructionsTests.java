@@ -50,9 +50,7 @@ public class SpeedInstructionsTests {
     @Test
     public void testFollowTargetSpeed() throws InvalidInfraException {
         var infra = getBaseInfra();
-        assert infra != null;
         var config = getBaseConfig();
-        assert config != null;
 
         var phase = config.trainSchedules.get(0).phases.get(0);
         assert phase instanceof SignalNavigatePhase;
@@ -69,9 +67,7 @@ public class SpeedInstructionsTests {
     @Test
     public void testCatchup() throws InvalidInfraException, SimulationError {
         var infra = getBaseInfra();
-        assert infra != null;
         var config = getBaseConfig();
-        assert config != null;
 
         var phase = config.trainSchedules.get(0).phases.get(0);
         assert phase instanceof SignalNavigatePhase;
@@ -90,9 +86,7 @@ public class SpeedInstructionsTests {
     @Test
     public void testIsLate() throws InvalidInfraException, SimulationError {
         var infra = getBaseInfra();
-        assert infra != null;
         var config = makeConfigWithSpeedParams(null);
-        assert config != null;
 
         infra.switches.iterator().next().positionChangeDelay = 20;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
@@ -105,9 +99,7 @@ public class SpeedInstructionsTests {
     @Test
     public void testIsNotLate() throws InvalidInfraException, SimulationError {
         var infra = getBaseInfra();
-        assert infra != null;
         var config = getBaseConfig();
-        assert config != null;
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
@@ -119,21 +111,18 @@ public class SpeedInstructionsTests {
     @Test
     public void testMargin50() throws InvalidInfraException {
         var infra = getBaseInfra();
-        assert infra != null;
         var params = new RJSRunningTimeParameters.Margin();
         params.marginType = MarginType.TIME;
         params.marginValue = 50;
 
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
-        assert config != null;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with 50% margins
         var configMargins = makeConfigWithSpeedParams(params);
-        assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
@@ -151,14 +140,12 @@ public class SpeedInstructionsTests {
 
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
-        assert config != null;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with 200% margins
         var configMargins = makeConfigWithSpeedParams(params);
-        assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
@@ -169,21 +156,18 @@ public class SpeedInstructionsTests {
     @Test
     public void testMargin0() throws InvalidInfraException {
         var infra = getBaseInfra();
-        assert infra != null;
         var params = new RJSRunningTimeParameters.Margin();
         params.marginType = MarginType.TIME;
         params.marginValue = 0;
 
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
-        assert config != null;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with 0% margins
         var configMargins = makeConfigWithSpeedParams(params);
-        assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
