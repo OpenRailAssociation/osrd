@@ -218,18 +218,27 @@ public class SimulationEndpoint implements Take {
         private static final class ResponseTrainLocationUpdate extends SimulationResultChange {
             @Json(name = "train_name")
             private final String trainName;
-            @Json(name = "track_section")
-            private final String trackSection;
+            @Json(name = "head_track_section")
+            private final String headTrackSection;
+            @Json(name = "head_offset")
+            private final double headOffset;
+            @Json(name = "tail_track_section")
+            private final String tailTrackSection;
+            @Json(name = "tail_offset")
+            private final double tailOffset;
             private final double speed;
-            private final double offset;
 
             public ResponseTrainLocationUpdate(TrainSchedule trainSchedule, double pathOffset,
                                                double time, double speed) {
                 super(time);
-                var location = trainSchedule.findLocation(pathOffset);
+                var headLocation = trainSchedule.findLocation(pathOffset);
                 this.trainName = trainSchedule.trainID;
-                this.trackSection = location.edge.id;
-                this.offset = location.offset;
+                this.headTrackSection = headLocation.edge.id;
+                this.headOffset = headLocation.offset;
+                var tailLocation = trainSchedule.findLocation(
+                        Math.max(0, pathOffset - trainSchedule.rollingStock.length));
+                this.tailTrackSection = tailLocation.edge.id;
+                this.tailOffset = tailLocation.offset;
                 this.speed = speed;
             }
         }
