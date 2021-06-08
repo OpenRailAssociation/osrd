@@ -172,6 +172,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     @SuppressFBWarnings({"URF_UNREAD_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static class PathfindingResult {
         public final List<RouteResult> path;
+        @Json(name = "operational_points")
         public final List<OperationalPointResult> operationalPoints;
 
         private PathfindingResult() {
