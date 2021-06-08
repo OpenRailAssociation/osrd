@@ -32,5 +32,5 @@ CACHES = {
     }
 }
 
-OSRD_BACKEND_TOKEN = back_link.host
-OSRD_BACKEND_URL = back_link.password
+OSRD_BACKEND_URL = back_link.host
+OSRD_BACKEND_TOKEN = back_link.password
