@@ -7,6 +7,7 @@ public abstract class RJSAllowance {
     public static final PolymorphicJsonAdapterFactory<RJSAllowance> adapter = (
             PolymorphicJsonAdapterFactory.of(RJSAllowance.class, "type")
                     .withSubtype(Eco.class, "eco")
+                    .withSubtype(ConstructionAllowance.class, "construction")
                     .withSubtype(LinearAllowance.class, "linear")
     );
 
@@ -27,4 +28,9 @@ public abstract class RJSAllowance {
         }
     }
 
+    public static final class ConstructionAllowance extends RJSAllowance {
+        @Json(name = "allowance_value")
+        public double allowanceValue;
+
+    }
 }

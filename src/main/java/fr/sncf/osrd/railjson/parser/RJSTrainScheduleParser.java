@@ -12,9 +12,10 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.speedcontroller.generators.ConstructionAllowanceGenerator;
 import fr.sncf.osrd.speedcontroller.generators.MaxSpeedGenerator;
 import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
-import fr.sncf.osrd.speedcontroller.generators.AllowanceGenerator;
+import fr.sncf.osrd.speedcontroller.generators.LinearAllowanceGenerator;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.train.phases.StopPhase;
@@ -90,13 +91,18 @@ public class RJSTrainScheduleParser {
         );
     }
 
-    private static SpeedControllerGenerator parseSpeedControllerGenerator(RJSAllowance allowance)
+    private static SpeedControllerGenerator parseSpeedControllerGenerator(RJSTrainPhase phase)
             throws InvalidSchedule {
+        var allowance = phase.allowance;
         if (allowance == null)
             return new MaxSpeedGenerator();
         else if (allowance instanceof RJSAllowance.LinearAllowance) {
             var linearAllowance = (RJSAllowance.LinearAllowance) allowance;
-            return new AllowanceGenerator(linearAllowance.allowanceValue, linearAllowance.allowanceType);
+            return new LinearAllowanceGenerator(linearAllowance.allowanceValue, linearAllowance.allowanceType);
+        }
+        else if (allowance instanceof RJSAllowance.ConstructionAllowance) {
+            var constructionAllowance = (RJSAllowance.ConstructionAllowance) allowance;
+            return new ConstructionAllowanceGenerator(constructionAllowance.allowanceValue, phase);
         } else {
             throw new InvalidSchedule("Unimplemented allowance type");
         }
@@ -108,7 +114,7 @@ public class RJSTrainScheduleParser {
             RJSTrainPhase rjsPhase
     ) throws InvalidSchedule {
 
-        var targetSpeedGenerator = parseSpeedControllerGenerator(rjsPhase.allowance);
+        var targetSpeedGenerator = parseSpeedControllerGenerator(rjsPhase);
 
         if (rjsPhase.getClass() == RJSTrainPhase.Stop.class) {
             var rjsStop = (RJSTrainPhase.Stop) rjsPhase;

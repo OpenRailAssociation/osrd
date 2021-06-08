@@ -9,12 +9,12 @@ import fr.sncf.osrd.speedcontroller.SpeedController;
 import java.util.HashSet;
 import java.util.Set;
 
-public class AllowanceGenerator implements SpeedControllerGenerator {
+public class LinearAllowanceGenerator implements SpeedControllerGenerator {
 
     private final MarginType allowanceType;
     private final double value;
 
-    public AllowanceGenerator(double allowanceValue, MarginType allowanceType) {
+    public LinearAllowanceGenerator(double allowanceValue, MarginType allowanceType) {
         this.allowanceType = allowanceType;
         this.value = allowanceValue;
     }
