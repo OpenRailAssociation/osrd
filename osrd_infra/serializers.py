@@ -44,10 +44,13 @@ def wrap_to_representation(original_to_representation):
         # geojson only supports this srid
         value = value.transform(4326, clone=True)
         return original_to_representation(self, value)
+
     return _wrapper
 
 
-GeometryField.to_representation = wrap_to_representation(GeometryField.to_representation)
+GeometryField.to_representation = wrap_to_representation(
+    GeometryField.to_representation
+)
 
 
 class ComponentSerializer(ModelSerializer):
@@ -130,7 +133,7 @@ class PathInputSerializer(Serializer):
         track_section = serializers.IntegerField(min_value=0)
         geo_coordinate = serializers.JSONField()
 
-    infra = serializers.IntegerField(min_value=0)
+    infra = serializers.PrimaryKeyRelatedField(queryset=Infra.objects.all())
     name = serializers.CharField(max_length=256)
     waypoints = serializers.ListField(
         min_length=2,

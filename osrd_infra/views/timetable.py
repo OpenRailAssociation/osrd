@@ -1,6 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.exceptions import ParseError
+from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.viewsets import GenericViewSet
 from rest_framework import mixins
 from django.core.exceptions import ObjectDoesNotExist
@@ -82,9 +82,34 @@ class TrainScheduleView(
     queryset = TrainSchedule.objects.all()
     serializer_class = TrainScheduleSerializer
 
+    def format_result(train_schedule_result):
+        phases = train_schedule_result.train_schedule.phases
+        res = []
+        op_times = {}
+        for log in train_schedule_result.log:
+            if log["type"] == "operational_point":
+                op_id = int(log["operational_point"].split(".")[1])
+                op_times[op_id] = log["time"]
+        for phase in phases:
+            res.append(
+                {
+                    "operational_point": phase["operational_point"],
+                    "time": op_times.get(phase["operational_point"], float("nan")),
+                }
+            )
+
+        return res
+
     @action(detail=True, methods=["get"])
     def result(self, request, pk=None):
-        pass
+        train_schedule = self.get_object()
+        try:
+            result = TrainScheduleResult.objects.get(train_schedule=train_schedule)
+        except ObjectDoesNotExist:
+            raise NotFound(
+                f"The train schedule '{pk}' has no result. You should run it first."
+            )
+        return Response(TrainScheduleView.format_result(result))
 
     @action(detail=True, methods=["post"])
     def run(self, request, pk=None):
@@ -110,5 +135,6 @@ class TrainScheduleView(
             result = TrainScheduleResult.objects.get(train_schedule=train_schedule)
         except ObjectDoesNotExist:
             result = TrainScheduleResult(train_schedule=train_schedule)
-        result.save(log=response.json())
-        return self.result(request, pk)
+        result.log = response.json()
+        result.save()
+        return Response(TrainScheduleView.format_result(result))

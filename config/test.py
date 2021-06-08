@@ -49,3 +49,4 @@ DEBUG_TOOLBAR_PANELS = [
 ]
 
 OSRD_BACKEND_URL = getenv("OSRD_BACKEND_URL", "http://localhost:8080/")
+OSRD_BACKEND_TOKEN = getenv("OSRD_BACKEND_TOKEN", "")

@@ -146,12 +146,34 @@ class PathfindingView(
     serializer_class = PathSerializer
     queryset = Path.objects.order_by("-created")
 
+    def format_response(self, path):
+        serializer = self.serializer_class(path)
+        operational_points = []
+        for op in path.payload["operational_points"]:
+            operational_points.append(
+                {
+                    "position": {
+                        "offset": op["position"]["offset"],
+                        "track_section": int(
+                            op["position"]["track_section"].split(".")[1]
+                        ),
+                    },
+                    "operational_point": int(op["op"].split(".")[1]),
+                }
+            )
+        return {**serializer.data, "operational_points": operational_points}
+
+    def retrieve(self, request, pk=None):
+        queryset = self.get_queryset().all()
+        path = get_object_or_404(queryset, pk=pk)
+        return Response(self.format_response(path))
+
     def create(self, request):
         input_serializer = PathInputSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
         data = input_serializer.validated_data
 
-        infra = get_object_or_404(Infra, pk=data["infra"])
+        infra = data["infra"]
 
         waypoints = parse_waypoint_input(data["waypoints"])
         payload = request_pathfinding({"infra": infra.pk, "waypoints": waypoints})
@@ -166,4 +188,4 @@ class PathfindingView(
             schematic=schematic,
         )
         path.save()
-        return Response(PathSerializer(path).data)
+        return Response(self.format_response(path))

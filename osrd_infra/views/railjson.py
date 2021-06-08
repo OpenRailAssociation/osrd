@@ -118,7 +118,7 @@ def serialize_op_part(op_part_entity):
     op = op_part_entity.operational_point_part_set.get().operational_point
     position = op_part_entity.point_location.offset
     return {
-        "location": position,
+        "position": position,
         "ref": format_operation_point_id(op.entity_id),
     }
 
