@@ -80,6 +80,9 @@ export const SelectZone: Tool<SelectZoneState> = {
         id: 'unselect-zone',
         icon: TiTimesOutline,
         labelTranslationKey: 'Editor.tools.select-zone.actions.unselect.label',
+        isDisabled(state, editorState) {
+          return !editorState.editionZone;
+        },
         onClick({ dispatch }) {
           dispatch<any>(selectZone(null));
         },
