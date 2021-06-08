@@ -155,7 +155,7 @@ public class SimulationEndpoint implements Take {
                 var train = trainSchedules.get(trainStateChange.trainID);
                 for (var pos : trainStateChange.positionUpdates)
                     changes.add(new SimulationResultChange.ResponseTrainLocationUpdate(
-                            train, pos.pathPosition, pos.time));
+                            train, pos.pathPosition, pos.time, pos.speed));
             } else if (change.getClass() == TrainCreatedEvent.TrainCreationPlanned.class) {
                 var trainCreationPlanned = (TrainCreatedEvent.TrainCreationPlanned) change;
                 trainSchedules.put(trainCreationPlanned.schedule.trainID, trainCreationPlanned.schedule);
@@ -220,14 +220,17 @@ public class SimulationEndpoint implements Take {
             private final String trainName;
             @Json(name = "track_section")
             private final String trackSection;
+            private final double speed;
             private final double offset;
 
-            public ResponseTrainLocationUpdate(TrainSchedule trainSchedule, double pathOffset, double time) {
+            public ResponseTrainLocationUpdate(TrainSchedule trainSchedule, double pathOffset,
+                                               double time, double speed) {
                 super(time);
                 var location = trainSchedule.findLocation(pathOffset);
                 this.trainName = trainSchedule.trainID;
                 this.trackSection = location.edge.id;
                 this.offset = location.offset;
+                this.speed = speed;
             }
         }
 
