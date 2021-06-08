@@ -23,10 +23,10 @@ def validate_path(path):
 class Projection:
     def __init__(self, path):
         validate_path(path)
-        self.init_tracks(path)
-        self.init_signals()
+        self._init_tracks(path)
+        self._init_signals()
 
-    def init_tracks(self, path):
+    def _init_tracks(self, path):
         self.tracks = {}
         offset = 0
         for track_range in path:
@@ -36,7 +36,7 @@ class Projection:
             self.tracks[track_id] = (begin, end, offset)
             offset += abs(end - begin)
 
-    def init_signals(self):
+    def _init_signals(self):
         self.signals = {}
         track_section_ids = [track for track in self.tracks]
         qs = SignalEntity.objects.filter(
@@ -55,18 +55,15 @@ class Projection:
                 continue
             self.signals[signal.entity_id] = offset + abs(pos - begin)
 
-    def track_position(self, track_position):
+    def track_position(self, track_id, pos):
         """
         Returns the position projected in the path.
         If the tracksection position isn't contained in the path then return `None`.
         """
-        track = track_position.track_section.entity_id
-        pos = track_position.offset
-
-        if track not in self.tracks:
+        if track_id not in self.tracks:
             return None
 
-        (begin, end, offset) = self.tracks[track]
+        (begin, end, offset) = self.tracks[track_id]
         if (pos < begin and pos < end) or (pos > begin and pos > end):
             return None
 

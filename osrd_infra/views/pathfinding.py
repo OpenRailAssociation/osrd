@@ -37,6 +37,19 @@ def geo_transform(gis_object):
     return gis_object
 
 
+def post_treatment(payload):
+    for route in payload["path"]:
+        route["route"] = int(route["route"].split(".")[1])
+        for track in route["track_sections"]:
+            track["track_section"] = int(track["track_section"].split(".")[1])
+    for op in payload["operational_points"]:
+        op["op"] = int(op["op"].split(".")[1])
+        op["position"]["track_section"] = int(
+            op["position"]["track_section"].split(".")[1]
+        )
+    return payload
+
+
 def request_pathfinding(payload):
     response = requests.post(
         settings.OSRD_BACKEND_URL + "pathfinding/routes",
@@ -45,16 +58,7 @@ def request_pathfinding(payload):
     )
     if not response:
         raise ParseError(response.content)
-    return response.json()
-
-
-def fetch_formated_track_sections(formated_ids):
-    ids = [int(f_id.split(".")[1]) for f_id in formated_ids]
-    related_names = ["geo_line_location", "track_section"]
-    tracks = TrackSectionEntity.objects.prefetch_related(*related_names).filter(
-        pk__in=ids
-    )
-    return {format_track_section_id(track.pk): track for track in tracks}
+    return post_treatment(response.json())
 
 
 def fetch_track_sections(ids):
@@ -85,7 +89,7 @@ def get_geojson_path(payload):
         for track in route["track_sections"]:
             track_section_ids.append(track["track_section"])
 
-    track_map = fetch_formated_track_sections(track_section_ids)
+    track_map = fetch_track_sections(track_section_ids)
 
     for route in payload["path"]:
         for track in route["track_sections"]:
@@ -148,20 +152,10 @@ class PathfindingView(
 
     def format_response(self, path):
         serializer = self.serializer_class(path)
-        operational_points = []
-        for op in path.payload["operational_points"]:
-            operational_points.append(
-                {
-                    "position": {
-                        "offset": op["position"]["offset"],
-                        "track_section": int(
-                            op["position"]["track_section"].split(".")[1]
-                        ),
-                    },
-                    "operational_point": int(op["op"].split(".")[1]),
-                }
-            )
-        return {**serializer.data, "operational_points": operational_points}
+        return {
+            **serializer.data,
+            "operational_points": path.payload["operational_points"],
+        }
 
     def retrieve(self, request, pk=None):
         queryset = self.get_queryset().all()
