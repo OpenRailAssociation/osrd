@@ -76,7 +76,7 @@ export function clip<T extends Feature | FeatureCollection>(tree: T, zone: Zone)
           zoneToFeature(zone, true) as Feature<Polygon>,
           feature as Feature<LineString | MultiLineString>
         );
-        return clipped.geometry.coordinates.length ? (clipped as T) : null;
+        return clipped ? (clipped as T) : null;
       }
 
       const clipped = bboxClip(
@@ -217,7 +217,7 @@ export function zoneToBBox(zone: Zone): BBox {
 export function intersectPolygonLine(
   poly: Feature<Polygon>,
   line: Feature<LineString | MultiLineString>
-): Feature<MultiLineString> {
+): Feature<MultiLineString> | null {
   const lines: Position[][] =
     line.geometry.type === 'MultiLineString'
       ? line.geometry.coordinates
@@ -257,7 +257,7 @@ export function intersectPolygonLine(
     });
   });
 
-  return res;
+  return res.geometry.coordinates.length ? res : null;
 }
 
 /**

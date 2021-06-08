@@ -13,7 +13,7 @@ import { isEqual } from 'lodash';
 
 import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
 import { Item, Zone } from '../../../types';
-import { EditorState } from '../../../reducers/editor';
+import { clippedDataSelector, EditorState } from '../../../reducers/editor';
 import { selectInZone } from '../../../utils/mapboxHelper';
 import EditorZone from '../../../common/Map/Layers/EditorZone';
 import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs';
@@ -58,7 +58,7 @@ export const SelectItems: Tool<SelectItemsState> = {
         onClick({ setState }, state, editorState) {
           setState({
             ...state,
-            selection: selectInZone(editorState.editionData || []),
+            selection: selectInZone(clippedDataSelector(editorState)),
           });
         },
       },
