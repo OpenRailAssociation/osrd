@@ -15,7 +15,6 @@ from osrd_infra.serializers import (
 
 from osrd_infra.models import (
     Path,
-    Infra,
     TrackSectionEntity,
 )
 
