@@ -129,40 +129,46 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
             <Map {...{ toolState, setToolState, viewport, setViewport, activeTool, mapStyle }} />
 
             <div className="nav-box">
-              {NavButtons.map((navButton) => {
-                const {
-                  id,
-                  icon: IconComponent,
-                  labelTranslationKey,
-                  isDisabled,
-                  isActive,
-                  onClick,
-                } = navButton;
-                const label = t(labelTranslationKey);
+              {NavButtons.flatMap((navButtons, i, a) => {
+                const buttons = navButtons.map((navButton) => {
+                  const {
+                    id,
+                    icon: IconComponent,
+                    labelTranslationKey,
+                    isDisabled,
+                    isActive,
+                    onClick,
+                  } = navButton;
+                  const label = t(labelTranslationKey);
 
-                return (
-                  <Tipped key={id} mode="left">
-                    <button
-                      key={id}
-                      type="button"
-                      className={cx(
-                        'editor-btn',
-                        'btn-rounded',
-                        isActive && isActive(editorState) ? 'active' : ''
-                      )}
-                      onClick={() => {
-                        if (onClick) {
-                          onClick({ dispatch, setViewport, viewport }, editorState);
-                        }
-                      }}
-                      disabled={isDisabled && isDisabled(editorState)}
-                    >
-                      <span className="sr-only">{label}</span>
-                      <IconComponent />
-                    </button>
-                    <span>{label}</span>
-                  </Tipped>
-                );
+                  return (
+                    <Tipped key={id} mode="left">
+                      <button
+                        key={id}
+                        type="button"
+                        className={cx(
+                          'editor-btn',
+                          'btn-rounded',
+                          isActive && isActive(editorState) ? 'active' : ''
+                        )}
+                        onClick={() => {
+                          if (onClick) {
+                            onClick({ dispatch, setViewport, viewport }, editorState);
+                          }
+                        }}
+                        disabled={isDisabled && isDisabled(editorState)}
+                      >
+                        <span className="sr-only">{label}</span>
+                        <IconComponent />
+                      </button>
+                      <span>{label}</span>
+                    </Tipped>
+                  );
+                });
+
+                if (i < a.length - 1)
+                  return buttons.concat([<div key={`separator-${i}`} className="separator" />]);
+                return buttons;
               })}
             </div>
           </div>

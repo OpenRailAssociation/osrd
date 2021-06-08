@@ -1,6 +1,6 @@
 import { Dispatch } from 'redux';
 import { IconType } from 'react-icons/lib/esm/iconBase';
-import { BiTargetLock, FiZoomIn, FiZoomOut } from 'react-icons/all';
+import { BiTargetLock, FiLayers, FiZoomIn, FiZoomOut } from 'react-icons/all';
 import { LinearInterpolator, ViewportProps } from 'react-map-gl';
 
 import { EditorState } from '../../reducers/editor';
@@ -35,56 +35,68 @@ export interface NavButton {
   ) => void;
 }
 
-const NavButtons: NavButton[] = [
-  {
-    id: 'zoom-in',
-    icon: FiZoomIn,
-    labelTranslationKey: 'Editor.nav.zoom-in',
-    onClick({ setViewport, viewport }) {
-      setViewport({
-        ...viewport,
-        zoom: (viewport.zoom || ZOOM_DEFAULT) + ZOOM_DELTA,
+const NavButtons: NavButton[][] = [
+  [
+    {
+      id: 'zoom-in',
+      icon: FiZoomIn,
+      labelTranslationKey: 'Editor.nav.zoom-in',
+      onClick({ setViewport, viewport }) {
+        setViewport({
+          ...viewport,
+          zoom: (viewport.zoom || ZOOM_DEFAULT) + ZOOM_DELTA,
 
-        transitionInterpolator: new LinearInterpolator(),
-        transitionDuration: 400,
-      });
+          transitionInterpolator: new LinearInterpolator(),
+          transitionDuration: 400,
+        });
+      },
     },
-  },
-  {
-    id: 'zoom-out',
-    icon: FiZoomOut,
-    labelTranslationKey: 'Editor.nav.zoom-out',
-    onClick({ setViewport, viewport }) {
-      setViewport({
-        ...viewport,
-        zoom: (viewport.zoom || ZOOM_DEFAULT) - ZOOM_DELTA,
+    {
+      id: 'zoom-out',
+      icon: FiZoomOut,
+      labelTranslationKey: 'Editor.nav.zoom-out',
+      onClick({ setViewport, viewport }) {
+        setViewport({
+          ...viewport,
+          zoom: (viewport.zoom || ZOOM_DEFAULT) - ZOOM_DELTA,
 
-        transitionInterpolator: new LinearInterpolator(),
-        transitionDuration: 400,
-      });
+          transitionInterpolator: new LinearInterpolator(),
+          transitionDuration: 400,
+        });
+      },
     },
-  },
-  {
-    id: 'recenter',
-    icon: BiTargetLock,
-    labelTranslationKey: 'Editor.nav.recenter',
-    onClick({ setViewport, viewport }, editorState) {
-      const newViewport = editorState.editionZone
-        ? getZoneViewport(editorState.editionZone, {
-            width: +(viewport.width || 1),
-            height: +(viewport.height || 1),
-          })
-        : DEFAULT_VIEWPORT;
+    {
+      id: 'recenter',
+      icon: BiTargetLock,
+      labelTranslationKey: 'Editor.nav.recenter',
+      onClick({ setViewport, viewport }, editorState) {
+        const newViewport = editorState.editionZone
+          ? getZoneViewport(editorState.editionZone, {
+              width: +(viewport.width || 1),
+              height: +(viewport.height || 1),
+            })
+          : DEFAULT_VIEWPORT;
 
-      setViewport({
-        ...viewport,
-        ...newViewport,
+        setViewport({
+          ...viewport,
+          ...newViewport,
 
-        transitionInterpolator: new LinearInterpolator(),
-        transitionDuration: 400,
-      });
+          transitionInterpolator: new LinearInterpolator(),
+          transitionDuration: 400,
+        });
+      },
     },
-  },
+  ],
+  [
+    {
+      id: 'layers',
+      icon: FiLayers,
+      labelTranslationKey: 'Editor.nav.toggle-layers',
+      onClick({}, editorState) {
+        // TODO
+      },
+    },
+  ],
 ];
 
 export default NavButtons;

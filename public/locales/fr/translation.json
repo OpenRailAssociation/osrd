@@ -156,7 +156,8 @@
     "nav": {
       "zoom-in": "Zoomer",
       "zoom-out": "Dézoomer",
-      "recenter": "Recentrer la carte"
+      "recenter": "Recentrer la carte",
+      "toggle-layers": "Choisir les couches à afficher"
     },
     "tools": {
       "select-zone": {
