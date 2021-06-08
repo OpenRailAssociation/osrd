@@ -1,5 +1,5 @@
 import bboxClip from '@turf/bbox-clip';
-import { flatten, chunk } from 'lodash';
+import { chunk } from 'lodash';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import booleanIntersects from '@turf/boolean-intersects';
 import bbox from '@turf/bbox';
@@ -9,7 +9,7 @@ import lineSlice from '@turf/line-slice';
 /* Types */
 import { MapController, ViewportProps, WebMercatorViewport } from 'react-map-gl';
 import { MjolnirEvent } from 'react-map-gl/dist/es5/utils/map-controller';
-import { BBox } from '@turf/helpers';
+import { BBox, Coord, featureCollection } from '@turf/helpers';
 import {
   Feature,
   FeatureCollection,
@@ -22,6 +22,8 @@ import {
   GeoJSON,
 } from 'geojson';
 import { Item, Zone } from '../types';
+import nearestPointOnLine from '@turf/nearest-point-on-line';
+import nearestPoint from '@turf/nearest-point';
 
 /**
  * This class allows binding keyboard events to react-map-gl. Since those events are not supported
@@ -110,49 +112,6 @@ export function clip<T extends Feature | FeatureCollection>(tree: T, zone: Zone)
   }
 
   return tree;
-}
-
-/**
- * This helper takes a Feature or a FeatureCollection as input, and extracts all positions from each
- * LineString and MultiLineString in it, and return them as a Point Features array.
- */
-export function extractPoints<T extends Feature | FeatureCollection>(tree: T): Feature<Point>[] {
-  if (tree.type === 'FeatureCollection') {
-    return (tree as FeatureCollection).features.flatMap((f) => extractPoints(f));
-  }
-
-  let positions: Position[] = [];
-  let parentID: string = '';
-  if (tree.type === 'Feature') {
-    const feature = tree as Feature;
-
-    if (feature.geometry.type === 'LineString') {
-      parentID = feature.properties?.OP_id;
-      positions = feature.geometry.coordinates;
-    }
-
-    if (feature.geometry.type === 'MultiLineString') {
-      parentID = feature.properties?.OP_id;
-      positions = flatten(feature.geometry.coordinates);
-    }
-  }
-
-  return parentID
-    ? positions.map((position, i) => ({
-        type: 'Feature',
-        geometry: {
-          type: 'Point',
-          coordinates: position,
-        },
-        properties: {
-          index: i,
-          lng: position[0],
-          lat: position[1],
-          parentID: parentID,
-          OP_id: `${parentID}/${i}`,
-        },
-      }))
-    : [];
 }
 
 /**
@@ -328,4 +287,20 @@ export function getLineGeoJSON(points: Position[]): Feature {
       coordinates: points,
     },
   };
+}
+
+/**
+ * Give a list of lines or multilines and a specific position, returns the nearest point to that
+ * position on any of those lines.
+ */
+export function getNearestPoint(
+  lines: Feature<LineString | MultiLineString>[],
+  coord: Coord
+): Feature<Point> {
+  const nearestPoints: Feature<Point>[] = lines.map((line) => ({
+    ...nearestPointOnLine(line, coord),
+    properties: line.properties,
+  }));
+
+  return nearestPoint(coord, featureCollection(nearestPoints));
 }

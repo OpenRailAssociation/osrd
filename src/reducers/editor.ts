@@ -1,14 +1,11 @@
-/* eslint-disable default-case */
 import produce from 'immer';
-import { flatten } from 'lodash';
-import { BBox } from '@turf/helpers';
 import { createSelector } from 'reselect';
 import { Feature, FeatureCollection, GeoJSON } from 'geojson';
 
 import { ThunkAction, Path, ChartisAction, LineProperties, Zone } from '../types';
 import { setLoading, setSuccess, setFailure } from './main';
 import { getChartisLayers, saveChartisActions } from '../applications/editor/api';
-import { clip, extractPoints } from '../utils/mapboxHelper';
+import { clip } from '../utils/mapboxHelper';
 
 //
 // Actions
@@ -203,26 +200,8 @@ export default function reducer(state = initialState, action: Actions) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 export const dataSelector = (state: EditorState) => state.editionData;
 export const zoneSelector = (state: EditorState) => state.editionZone;
-export const pointsSelector = createSelector(dataSelector, (data) =>
-  (data || []).map((geoJSON) => ({
-    ...(geoJSON as FeatureCollection),
-    features: extractPoints(geoJSON as FeatureCollection),
-  }))
-);
-
 export const clippedDataSelector = createSelector(dataSelector, zoneSelector, (data, zone) => {
   return zone && data
     ? data.map((geoJSON) => clip(geoJSON as FeatureCollection, zone) as FeatureCollection)
     : [];
 });
-export const clippedPointsSelector = createSelector(
-  pointsSelector,
-  zoneSelector,
-  (pointsCollections, zone) => {
-    return zone && pointsCollections
-      ? pointsCollections.map(
-          (pointsCollection) => clip(pointsCollection, zone) as FeatureCollection
-        )
-      : [];
-  }
-);

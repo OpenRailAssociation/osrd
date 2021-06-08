@@ -1,5 +1,4 @@
 import React, { FC } from 'react';
-import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import ReactMapGL, { AttributionControl, ScaleControl, ViewportProps } from 'react-map-gl';
 import { withTranslation } from 'react-i18next';
@@ -94,7 +93,9 @@ const MapUnplugged: FC<MapProps> = ({
         onHover={(e) => {
           const feature = (e.features || [])[0];
 
-          if (feature) {
+          if (activeTool.onHover) {
+            activeTool.onHover(e, { dispatch, setState: setToolState }, toolState, editorState);
+          } else if (feature) {
             setToolState({
               ...toolState,
               hovered: {

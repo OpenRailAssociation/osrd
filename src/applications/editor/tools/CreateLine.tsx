@@ -7,20 +7,23 @@ import {
   BiAnchor,
   MdShowChart,
 } from 'react-icons/all';
+import { Feature, LineString, MultiLineString, Point } from '@turf/helpers';
+import { Layer, Source } from 'react-map-gl';
 
 import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
 import { EditorState, createLine } from '../../../reducers/editor';
 import EditorZone from '../../../common/Map/Layers/EditorZone';
-import GeoJSONs from '../../../common/Map/Layers/GeoJSONs';
+import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../common/Map/Consts/colors';
 import Modal from '../components/Modal';
-import GeoJSONPoints, { GEOJSON_POINTS_LAYER_ID } from '../../../common/Map/Layers/GeoJSONPoints';
+import { getNearestPoint } from '../../../utils/mapboxHelper';
 
 export type CreateLineState = CommonToolState & {
   linePoints: [number, number][];
   lineProperties: string;
   showPropertiesModal: boolean;
   anchorLinePoints: boolean;
+  nearestPoint: Feature<Point> | null;
 };
 
 export const CreateLine: Tool<CreateLineState> = {
@@ -39,7 +42,7 @@ export const CreateLine: Tool<CreateLineState> = {
     return !editorState.editionZone;
   },
   getRadius() {
-    return 12;
+    return 50;
   },
   getInitialState() {
     return {
@@ -48,6 +51,7 @@ export const CreateLine: Tool<CreateLineState> = {
       lineProperties: '{}',
       showPropertiesModal: false,
       anchorLinePoints: true,
+      nearestPoint: null,
     };
   },
   actions: [
@@ -60,6 +64,7 @@ export const CreateLine: Tool<CreateLineState> = {
           setState({
             ...state,
             anchorLinePoints: !state.anchorLinePoints,
+            nearestPoint: null,
           });
         },
         isActive(toolState) {
@@ -122,8 +127,8 @@ export const CreateLine: Tool<CreateLineState> = {
   // Interactions:
   onClickMap(e, { setState }, toolState) {
     const position: [number, number] =
-      toolState.anchorLinePoints && toolState.hovered
-        ? [toolState.hovered.lng, toolState.hovered.lat]
+      toolState.anchorLinePoints && toolState.nearestPoint
+        ? (toolState.nearestPoint.geometry.coordinates as [number, number])
         : e.lngLat;
 
     const points = toolState.linePoints;
@@ -140,12 +145,27 @@ export const CreateLine: Tool<CreateLineState> = {
       setState({ ...toolState, linePoints: points.concat([position]) });
     }
   },
+  onHover(e, { setState }, toolState) {
+    if (!toolState.anchorLinePoints) {
+      return;
+    }
+
+    if (e.features && e.features.length) {
+      const nearestPoint = getNearestPoint(
+        e.features as Feature<LineString | MultiLineString>[],
+        e.lngLat
+      );
+      setState({ ...toolState, nearestPoint });
+    } else {
+      setState({ ...toolState, nearestPoint: null });
+    }
+  },
 
   // Display:
   getLayers({ mapStyle }, toolState) {
     const lastPosition: [number, number] =
-      toolState.anchorLinePoints && toolState.hovered
-        ? [toolState.hovered.lng, toolState.hovered.lat]
+      toolState.anchorLinePoints && toolState.nearestPoint
+        ? (toolState.nearestPoint.geometry.coordinates as [number, number])
         : toolState.mousePosition;
 
     return (
@@ -158,7 +178,20 @@ export const CreateLine: Tool<CreateLineState> = {
           }
         />
         <GeoJSONs colors={colors[mapStyle]} />
-        <GeoJSONPoints hovered={toolState.anchorLinePoints ? toolState.hovered : null} />
+
+        {toolState.nearestPoint && (
+          <Source type="geojson" data={toolState.nearestPoint}>
+            <Layer
+              type="circle"
+              paint={{
+                'circle-radius': 4,
+                'circle-color': '#ffffff',
+                'circle-stroke-color': '#009EED',
+                'circle-stroke-width': 1,
+              }}
+            />
+          </Source>
+        )}
       </>
     );
   },
@@ -190,7 +223,7 @@ export const CreateLine: Tool<CreateLineState> = {
             <div className="form-control-container">
               <textarea
                 id="new-line-properties"
-                className="form-control "
+                className="form-control"
                 value={toolState.lineProperties}
                 onChange={(e) => setState({ ...toolState, lineProperties: e.target.value })}
               />
@@ -206,9 +239,9 @@ export const CreateLine: Tool<CreateLineState> = {
     ) : null;
   },
   getInteractiveLayers() {
-    return [GEOJSON_POINTS_LAYER_ID];
+    return [GEOJSON_LAYER_ID];
   },
-  getCursor(toolState, editorState, {isDragging}) {
+  getCursor(toolState, editorState, { isDragging }) {
     if (isDragging) return 'move';
     return 'copy';
   },

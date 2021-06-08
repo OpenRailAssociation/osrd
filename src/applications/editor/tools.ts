@@ -61,6 +61,12 @@ export interface Tool<S extends CommonToolState> {
     toolState: S,
     editorState: EditorState
   ) => void;
+  onHover?: (
+    e: MapEvent,
+    context: { setState(state: S): void; dispatch: Dispatch },
+    toolState: S,
+    editorState: EditorState
+  ) => void;
   getCursor?: (
     toolState: S,
     editorState: EditorState,

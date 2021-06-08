@@ -184,6 +184,9 @@ export const SelectZone: Tool<SelectZoneState> = {
       }
     }
   },
+  onHover() {
+    // Nothing here (to prevent the default Map to update the `hovered` state for no purpose)
+  },
 
   // Layers:
   getLayers({ mapStyle }, toolState, editorState) {
