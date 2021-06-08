@@ -3,10 +3,14 @@
     "allowSyntheticDefaultImports": true,
     "module": "esnext",
     "target": "es2018",
-    "jsx": "react",
+    "jsx": "react-jsx",
     "checkJs": false,
     "baseUrl": "./src",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -18,6 +22,11 @@
     "noEmit": true,
     "noFallthroughCasesInSwitch": true
   },
-  "exclude": ["./node_modules", "**/node_modules/*"],
-  "include": ["src"]
+  "exclude": [
+    "./node_modules",
+    "**/node_modules/*"
+  ],
+  "include": [
+    "src"
+  ]
 }

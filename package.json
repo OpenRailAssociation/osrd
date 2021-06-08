@@ -118,7 +118,7 @@
     "eslint-plugin-react-hooks": "^1.7.0",
     "jsdoc": "^3.6.3",
     "react-test-renderer": "^16.13.1",
-    "typescript": "^3.8.2"
+    "typescript": "^4.3.2"
   },
   "resolutions": {
     "@turf/difference": "6.0.1",
