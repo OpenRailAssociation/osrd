@@ -157,7 +157,7 @@
       "zoom-in": "Zoomer",
       "zoom-out": "Dézoomer",
       "recenter": "Recentrer la carte",
-      "toggle-layers": "Choisir les couches à afficher"
+      "toggle-layers": "[TODO] Choisir les couches à afficher"
     },
     "tools": {
       "select-zone": {
@@ -205,7 +205,7 @@
             "label": "Voir les informations sur la sélection"
           },
           "edit-info": {
-            "label": "Modifier les métadonnées de l'élément sélectionné"
+            "label": "[TODO] Modifier les métadonnées de l'élément sélectionné"
           },
           "single": {
             "label": "Sélection Simple"
@@ -217,7 +217,7 @@
             "label": "Sélection Polygône"
           },
           "delete-selection": {
-            "label": "Supprimer les éléments sélectionnés"
+            "label": "[TODO] Supprimer les éléments sélectionnés"
           }
         }
       },

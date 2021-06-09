@@ -345,7 +345,7 @@ export const SelectItems: Tool<SelectItemsState> = {
               </div>
               <div className="text-right">
                 <button type="submit" className="btn btn-primary" disabled={!isConfirmEnabled}>
-                  {t('common.confirm')}
+                  [TODO] {t('common.confirm')}
                 </button>
               </div>
             </form>
