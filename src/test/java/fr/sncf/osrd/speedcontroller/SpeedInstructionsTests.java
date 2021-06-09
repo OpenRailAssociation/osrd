@@ -10,10 +10,12 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType;
+import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
+import org.jaxen.util.SingletonList;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -56,8 +58,9 @@ public class SpeedInstructionsTests {
 
         var phase = config.trainSchedules.get(0).phases.get(0);
         assert phase instanceof SignalNavigatePhase;
-        ((SignalNavigatePhase) phase).targetSpeedGenerator =
+        SpeedControllerGenerator generator =
                 (a, b, c) -> new HashSet<>(Collections.singletonList(new StaticSpeedController(5)));
+        ((SignalNavigatePhase) phase).targetSpeedGenerators = Collections.singletonList(generator);
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
@@ -75,8 +78,9 @@ public class SpeedInstructionsTests {
 
         var phase = config.trainSchedules.get(0).phases.get(0);
         assert phase instanceof SignalNavigatePhase;
-        ((SignalNavigatePhase) phase).targetSpeedGenerator =
+        SpeedControllerGenerator generator =
                 (a, b, c) -> new HashSet<>(Collections.singletonList(new StaticSpeedController(10)));
+        ((SignalNavigatePhase) phase).targetSpeedGenerators = Collections.singletonList(generator);
 
         infra.switches.iterator().next().positionChangeDelay = 42;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
@@ -132,7 +136,7 @@ public class SpeedInstructionsTests {
         var baseSimTime = sim.getTime();
 
         // Run with 50% margins
-        var configMargins = makeConfigWithSpeedParams(params);
+        var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
         assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim2, configMargins);
@@ -157,7 +161,7 @@ public class SpeedInstructionsTests {
         var baseSimTime = sim.getTime();
 
         // Run with 200% margins
-        var configMargins = makeConfigWithSpeedParams(params);
+        var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
         assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim2, configMargins);
@@ -182,7 +186,7 @@ public class SpeedInstructionsTests {
         var baseSimTime = sim.getTime();
 
         // Run with 0% margins
-        var configMargins = makeConfigWithSpeedParams(params);
+        var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
         assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim2, configMargins);

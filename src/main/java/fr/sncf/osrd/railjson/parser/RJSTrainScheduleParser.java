@@ -23,7 +23,10 @@ import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class RJSTrainScheduleParser {
     /** Parses a RailJSON train schedule */
@@ -91,9 +94,8 @@ public class RJSTrainScheduleParser {
         );
     }
 
-    private static SpeedControllerGenerator parseSpeedControllerGenerator(RJSTrainPhase phase)
+    private static SpeedControllerGenerator parseSpeedControllerGenerator(RJSAllowance allowance, RJSTrainPhase phase)
             throws InvalidSchedule {
-        var allowance = phase.allowance;
         if (allowance == null)
             return new MaxSpeedGenerator();
         else if (allowance instanceof RJSAllowance.LinearAllowance) {
@@ -108,17 +110,28 @@ public class RJSTrainScheduleParser {
         }
     }
 
+    private static List<SpeedControllerGenerator> parseSpeedControllerGenerators(RJSTrainPhase phase)
+            throws InvalidSchedule {
+        List<SpeedControllerGenerator> list = new ArrayList<>();
+        if (phase.allowances == null)
+            return list;
+        for (var allowance : phase.allowances) {
+            list.add(parseSpeedControllerGenerator(allowance, phase));
+        }
+        return list;
+    }
+
     private static Phase parsePhase(
             Infra infra,
             TrackSectionLocation startLocation,
             RJSTrainPhase rjsPhase
     ) throws InvalidSchedule {
 
-        var targetSpeedGenerator = parseSpeedControllerGenerator(rjsPhase);
+        var targetSpeedGenerators = parseSpeedControllerGenerators(rjsPhase);
 
         if (rjsPhase.getClass() == RJSTrainPhase.Stop.class) {
             var rjsStop = (RJSTrainPhase.Stop) rjsPhase;
-            return new StopPhase(rjsStop.duration, targetSpeedGenerator);
+            return new StopPhase(rjsStop.duration, targetSpeedGenerators);
         }
         if (rjsPhase.getClass() == RJSTrainPhase.Navigate.class) {
             var rjsNavigate = (RJSTrainPhase.Navigate) rjsPhase;
@@ -136,7 +149,7 @@ public class RJSTrainScheduleParser {
 
             var endLocation = parseLocation(infra, rjsNavigate.endLocation);
             return SignalNavigatePhase.from(routes, driverSightDistance, startLocation,
-                    endLocation, targetSpeedGenerator);
+                    endLocation, targetSpeedGenerators);
         }
         throw new RuntimeException("unknown train phase");
     }

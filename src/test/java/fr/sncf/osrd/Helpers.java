@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
@@ -180,7 +181,7 @@ public class Helpers {
     }
 
     /** Generates a config where all the RJSRunningTieParameters have been replaced by the one given */
-    public static Config makeConfigWithSpeedParams(RJSAllowance params) {
+    public static Config makeConfigWithSpeedParams(List<RJSAllowance> params) {
         ClassLoader classLoader = Helpers.class.getClassLoader();
         var configPath = classLoader.getResource("tiny_infra/config_railjson.json");
         assert configPath != null;
@@ -194,7 +195,7 @@ public class Helpers {
             var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
             for (var trainSchedule : schedule.trainSchedules)
                 for (var phase : trainSchedule.phases)
-                    phase.allowance = params;
+                    phase.allowances = params == null ? null : params.toArray(new RJSAllowance[0]);
             var trainSchedules = RJSSimulationParser.parse(infra, schedule);
             return new Config(
                     jsonConfig.simulationTimeStep,

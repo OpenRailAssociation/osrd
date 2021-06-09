@@ -1,5 +1,6 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
@@ -51,6 +52,7 @@ public class ConstructionAllowanceGenerator implements SpeedControllerGenerator 
         return res;
     }
 
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     private TrackSectionLocation findPhaseEndLocation(TrainSchedule schedule) {
         for (var schedulePhase : schedule.phases) {
             var endPhase = schedulePhase.getEndLocation();
@@ -62,6 +64,7 @@ public class ConstructionAllowanceGenerator implements SpeedControllerGenerator 
         throw new RuntimeException("Can't find phase in schedule");
     }
 
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     private TrackSectionLocation findPhaseInitialPoint(TrainSchedule schedule) {
         for (int index = 0; index < schedule.phases.size(); index++) {
             var endPhase = schedule.phases.get(index).getEndLocation();

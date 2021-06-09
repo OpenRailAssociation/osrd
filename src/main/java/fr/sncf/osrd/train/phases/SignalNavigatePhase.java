@@ -32,19 +32,19 @@ public final class SignalNavigatePhase implements Phase {
     public final TrackSectionLocation endLocation;
     private final ArrayList<TrackSectionRange> trackSectionPath;
     private final ArrayList<Interaction> interactionsPath;
-    public transient SpeedControllerGenerator targetSpeedGenerator;
+    public transient List<SpeedControllerGenerator> targetSpeedGenerators;
 
     private SignalNavigatePhase(
             List<Route> routePath,
             TrackSectionLocation endLocation,
             ArrayList<TrackSectionRange> trackSectionPath,
             ArrayList<Interaction> interactionsPath,
-            SpeedControllerGenerator targetSpeedGenerator) {
+            List<SpeedControllerGenerator> targetSpeedGenerators) {
         this.routePath = routePath;
         this.endLocation = endLocation;
         this.trackSectionPath = trackSectionPath;
         this.interactionsPath = interactionsPath;
-        this.targetSpeedGenerator = targetSpeedGenerator;
+        this.targetSpeedGenerators = targetSpeedGenerators;
     }
 
 
@@ -55,11 +55,11 @@ public final class SignalNavigatePhase implements Phase {
             double driverSightDistance,
             TrackSectionLocation startLocation,
             TrackSectionLocation endLocation,
-            SpeedControllerGenerator targetSpeedGenerator
+            List<SpeedControllerGenerator> targetSpeedGenerators
     ) {
         var trackSectionPath = Route.routesToTrackSectionRange(routes, startLocation, endLocation);
         var actionPointPath = trackSectionToActionPointPath(driverSightDistance, trackSectionPath);
-        return new SignalNavigatePhase(routes, endLocation, trackSectionPath, actionPointPath, targetSpeedGenerator);
+        return new SignalNavigatePhase(routes, endLocation, trackSectionPath, actionPointPath, targetSpeedGenerators);
     }
 
     private static ArrayList<Interaction> trackSectionToActionPointPath(
@@ -161,7 +161,7 @@ public final class SignalNavigatePhase implements Phase {
         }
 
         State(SignalNavigatePhase phase, Simulation sim, TrainSchedule schedule) {
-            super(phase.targetSpeedGenerator);
+            super(phase.targetSpeedGenerators);
             this.sim = sim;
             this.schedule = schedule;
             speedInstructions.generate(sim, schedule);
@@ -170,7 +170,7 @@ public final class SignalNavigatePhase implements Phase {
         }
 
         State(SignalNavigatePhase.State state) {
-            super(state.speedInstructions.targetSpeedGenerator);
+            super(state.speedInstructions.targetSpeedGenerators);
             this.phase = state.phase;
             this.routeIndex = state.routeIndex;
             this.interactionsPathIndex = state.interactionsPathIndex;
