@@ -1,18 +1,8 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
-from django.core.exceptions import ValidationError
-from django.core.validators import BaseValidator
-import jsonschema
 from django.utils.translation import gettext_lazy as _
 
-
-class JSONSchemaValidator(BaseValidator):
-    def compare(self, data, schema):
-        try:
-            jsonschema.validate(data, schema)
-        except jsonschema.exceptions.ValidationError as e:
-            raise ValidationError(e.message, code="invalid")
-
+from osrd_infra.utils import JSONSchemaValidator
 
 EFFORT_CURVE_SCHEMA = {
     "type": "array",

@@ -182,10 +182,7 @@ class TrainScheduleView(
 
         if not response:
             raise ParseError(response.content)
-        try:
-            result = TrainScheduleResult.objects.get(train_schedule=train_schedule)
-        except ObjectDoesNotExist:
-            result = TrainScheduleResult(train_schedule=train_schedule)
+        result, _ = TrainScheduleResult.objects.get_or_create(train_schedule=train_schedule)
         result.log = response.json()
         result.save()
         return Response(TrainScheduleView.format_result(result))

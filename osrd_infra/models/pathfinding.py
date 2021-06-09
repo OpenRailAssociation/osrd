@@ -1,8 +1,8 @@
 from django.contrib.gis.db import models
 from osrd_infra.models import EntityNamespace
 from django.conf import settings
-from osrd_infra.models.rolling_stock import JSONSchemaValidator
 
+from osrd_infra.utils import JSONSchemaValidator
 
 PAYLOAD_SCHEMA = {
     "type": "object",
