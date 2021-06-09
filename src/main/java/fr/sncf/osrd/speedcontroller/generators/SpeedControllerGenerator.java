@@ -3,6 +3,7 @@ package fr.sncf.osrd.speedcontroller.generators;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.train.Action;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator.PositionUpdate;

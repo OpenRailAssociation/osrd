@@ -26,6 +26,7 @@ public class LinearAllowanceGenerator implements SpeedControllerGenerator {
         if (allowanceType.equals(MarginType.TIME))
             percentage = value;
         else {
+            // TODO compute the margin only on the phase range
             var expectedTime = getExpectedTimes(sim, schedule, maxSpeed, 1);
             var totalTime = expectedTime.lastEntry().getValue() - expectedTime.firstEntry().getValue();
             var schemaLength = expectedTime.lastEntry().getKey() - expectedTime.firstEntry().getKey();

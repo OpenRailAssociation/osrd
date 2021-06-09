@@ -40,9 +40,10 @@ public class ConstructionAllowanceGenerator implements SpeedControllerGenerator 
         // the goal is to find a new allowed speed to create a MaxSpeedController
 
         // perform the whole running time calculation
-        var expectedSpeeds = getExpectedSpeeds(sim, schedule, maxSpeed, 1);
         double initialPosition = convertTrackLocation(findPhaseInitialPoint(schedule), schedule);
         double endPosition = convertTrackLocation(findPhaseEndLocation(schedule), schedule);
+        var expectedSpeeds = getExpectedSpeeds(sim, schedule, maxSpeed, 1,
+                initialPosition, endPosition, schedule.initialSpeed);
         var initialSpeed = Interpolation.interpolate(expectedSpeeds, initialPosition);
 
         // lunch the binary search algorithm into the phase
@@ -97,7 +98,8 @@ public class ConstructionAllowanceGenerator implements SpeedControllerGenerator 
                                          TrainSchedule schedule, Set<SpeedController> maxSpeed) {
         var totalTime = getExpectedTimes(sim, schedule, maxSpeed, 1, initialPosition, finalPosition, initialSpeed);
         var time = Double.POSITIVE_INFINITY;
-        var targetTime = totalTime.lastEntry().getValue() + value;
+        var totalTimeBase = totalTime.lastEntry().getValue();
+        var targetTime = totalTimeBase + value;
 
         var vMinus = 0.0;
         var vPlus = getMaxSpeed(maxSpeed, initialPosition, finalPosition);
@@ -105,8 +107,9 @@ public class ConstructionAllowanceGenerator implements SpeedControllerGenerator 
         var scaleFactor = 1 / (1 + percentage / 100);
         vPlus = vPlus * scaleFactor;
 
+        double allowedSpeed = 0;
         while( Math.abs(time - targetTime) > precision ) {
-            double allowedSpeed = (vPlus + vMinus) / 2;
+            allowedSpeed = (vPlus + vMinus) / 2;
             var currentMaxSpeed = createSpeedControllerWith(maxSpeed, allowedSpeed);
             var expectedTimes = getExpectedTimes(sim, schedule, currentMaxSpeed, 1, initialPosition, finalPosition, initialSpeed);
             time = expectedTimes.lastEntry().getValue();
@@ -115,7 +118,7 @@ public class ConstructionAllowanceGenerator implements SpeedControllerGenerator 
             else
                 vPlus = allowedSpeed;
         }
-        return new MaxSpeedController((vMinus + vPlus) / 2, initialPosition, finalPosition);
+        return new MaxSpeedController(allowedSpeed, initialPosition, finalPosition);
     }
 
     private Set<SpeedController> createSpeedControllerWith(Set<SpeedController> maxSpeed, double newLimit) {

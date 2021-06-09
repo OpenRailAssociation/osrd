@@ -10,6 +10,11 @@ public class Interpolation {
         // first pair of (position, speed) after the given position
         var entryAfter = map.ceilingEntry(x);
 
+        if (entryAfter == null)
+            entryAfter = map.lastEntry();
+        if (entryBefore == null)
+            entryBefore = map.firstEntry();
+
         var speedBefore = entryBefore.getValue();
         var positionBefore = entryBefore.getKey();
         var speedAfter = entryAfter.getValue();
