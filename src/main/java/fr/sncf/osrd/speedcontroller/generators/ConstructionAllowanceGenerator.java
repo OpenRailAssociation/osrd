@@ -98,7 +98,7 @@ public class ConstructionAllowanceGenerator implements SpeedControllerGenerator 
                                          TrainSchedule schedule, Set<SpeedController> maxSpeed) {
         var totalTime = getExpectedTimes(sim, schedule, maxSpeed, 1, initialPosition, finalPosition, initialSpeed);
         var time = Double.POSITIVE_INFINITY;
-        var totalTimeBase = totalTime.lastEntry().getValue();
+        var totalTimeBase = totalTime.lastEntry().getValue() - totalTime.firstEntry().getValue();
         var targetTime = totalTimeBase + value;
 
         var vMinus = 0.0;
@@ -112,7 +112,7 @@ public class ConstructionAllowanceGenerator implements SpeedControllerGenerator 
             allowedSpeed = (vPlus + vMinus) / 2;
             var currentMaxSpeed = createSpeedControllerWith(maxSpeed, allowedSpeed);
             var expectedTimes = getExpectedTimes(sim, schedule, currentMaxSpeed, 1, initialPosition, finalPosition, initialSpeed);
-            time = expectedTimes.lastEntry().getValue();
+            time = expectedTimes.lastEntry().getValue() - expectedTimes.firstEntry().getValue();
             if (time > targetTime)
                 vMinus = allowedSpeed;
             else
