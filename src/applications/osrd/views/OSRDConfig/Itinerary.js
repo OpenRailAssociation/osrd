@@ -3,12 +3,12 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateItinerary, updateItineraryParams } from 'reducers/osrdconf';
 import { updateFeatureInfoClick } from 'reducers/map';
-import { get } from 'common/requests';
+import { post } from 'common/requests';
 import bbox from '@turf/bbox';
 import { WebMercatorViewport } from 'react-map-gl';
 import DisplayItinerary from 'applications/osrd/components/Itinerary/DisplayItinerary';
 
-const itineraryURI = '/osrd/path';
+const itineraryURI = '/osrd_core/pathfinding/routes';
 
 const Itinerary = (props) => {
   const [vias, setVias] = useState([]);
@@ -59,13 +59,36 @@ const Itinerary = (props) => {
         params.via = osrdconf.vias.map((via) => via.idGaia).join(',');
       }
 
+      // Test data
+      const lngLatOrigin = [-1.0593625645204738, 49.22786580743227];
+      const lngLatDestination = [-1.4417009074235136, 49.042230041852456];
+      const paramTest = {
+        infra: 1,
+        name: 'Test path',
+        waypoints: [
+          [
+            {
+              track_section: 1,
+              geo_coordinate: lngLatOrigin,
+            },
+          ],
+          [
+            {
+              track_section: 1,
+              geo_coordinate: lngLatDestination,
+            },
+          ],
+        ],
+      };
+
       try {
-        const geojson = await get(itineraryURI, params);
-        dispatch(updateItinerary(geojson));
-        dispatch(updateItineraryParams({ ...params, uri: itineraryURI }));
-        if (zoom) zoomToFeature(bbox(geojson));
+        const geojson = await post(itineraryURI, paramTest, {}, true);
+        // dispatch(updateItinerary(geojson));
+        // dispatch(updateItineraryParams({ ...params, uri: itineraryURI }));
+        // if (zoom) zoomToFeature(bbox(geojson));
+        console.log('coucou', geojson);
       } catch (e) {
-        console.log(e);
+        console.log('ERROR', e);
       }
     }
   };

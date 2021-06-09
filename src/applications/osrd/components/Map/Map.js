@@ -79,7 +79,7 @@ const Map = () => {
       && e.features.length > 0
       && e.features[0].properties.OP_id !== undefined
       && e.features[0].properties.type_voie === 'VP') {
-      console.log('coucou', e.features);
+      console.log('coucou', e);
       dispatch(updateFeatureInfoClickOSRD({
         displayPopup: true,
         feature: e.features[0],
