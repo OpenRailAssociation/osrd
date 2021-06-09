@@ -9,9 +9,9 @@ from osrd_infra.views import (
     LightRollingStockView,
     PathfindingView,
     TimetableView,
-    TrainScheduleView,
 )
 from osrd_infra.views.schema import SchemaView
+from osrd_infra.views.train_schedule import TrainScheduleView
 
 router = DefaultRouter(trailing_slash=True)
 router.register("infra", InfraView, basename="infra")
