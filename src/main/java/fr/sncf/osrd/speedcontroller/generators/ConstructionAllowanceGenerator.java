@@ -48,7 +48,7 @@ public class ConstructionAllowanceGenerator implements SpeedControllerGenerator 
 
         // lunch the binary search algorithm into the phase
         var speedController = binarySearch(0.5, initialPosition, initialSpeed, endPosition, sim, schedule, maxSpeed);
-        var res = new HashSet<SpeedController>();
+        var res = new HashSet<>(maxSpeed);
         res.add(speedController);
         return res;
     }
