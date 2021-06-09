@@ -41,7 +41,7 @@ public class ConstructionAllowanceGenerator implements SpeedControllerGenerator 
         // perform the whole running time calculation
         var expectedSpeeds = getExpectedSpeeds(sim, schedule, maxSpeed, 1);
         double initialPosition = convertTrackLocation(findPhaseInitialPoint(schedule), schedule);
-        double endPosition = convertTrackLocation(phase.endLocation, schedule);
+        double endPosition = convertTrackLocation(findPhaseEndLocation(schedule), schedule);
         var initialSpeed = Interpolation.interpolate(expectedSpeeds, initialPosition);
 
         // lunch the binary search algorithm into the phase
@@ -49,6 +49,17 @@ public class ConstructionAllowanceGenerator implements SpeedControllerGenerator 
         var res = new HashSet<SpeedController>();
         res.add(speedController);
         return res;
+    }
+
+    private TrackSectionLocation findPhaseEndLocation(TrainSchedule schedule) {
+        for (var schedulePhase : schedule.phases) {
+            var endPhase = schedulePhase.getEndLocation();
+            if (endPhase.edge.id.equals(phase.endLocation.trackSection.id)
+                    && endPhase.offset == phase.endLocation.offset) {
+                return endPhase;
+            }
+        }
+        throw new RuntimeException("Can't find phase in schedule");
     }
 
     private TrackSectionLocation findPhaseInitialPoint(TrainSchedule schedule) {
