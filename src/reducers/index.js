@@ -6,6 +6,7 @@ import storage from 'redux-persist/lib/storage'; // defaults to localStorage
 import mainReducer from './main';
 import userReducer from './user';
 import mapReducer from './map';
+import editorReducer from './editor';
 import osrdconfReducer from './osrdconf';
 import osrdsimulationReducer from './osrdsimulation';
 import trainCompoReducer from './traincompo';
@@ -57,6 +58,7 @@ const persistConfig = {
 const rootReducer = {
   user: userReducer,
   map: mapReducer,
+  editor: editorReducer,
   main: mainReducer,
   osrdconf: persistReducer(osrdconfPersistConfig, osrdconfReducer),
   osrdsimulation: osrdsimulationReducer,

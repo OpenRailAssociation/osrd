@@ -1,22 +1,22 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import './Loader.scss';
 
 export default class Loader extends React.Component {
   static propTypes = {
     msg: PropTypes.string,
-    center: PropTypes.bool,
-  }
+    position: PropTypes.string, // center, top-left, top-right, bottom-right, bottom-left
+  };
 
   static defaultProps = {
     msg: '',
-    center: false,
-  }
+  };
 
   render() {
-    const { msg, center } = this.props;
-    const className = center ? 'loader center' : 'loader';
+    const { msg, position } = this.props;
     return (
-      <div className={className}>
+      <div className={`loader ${position}`}>
         <div className="spinner-border" role="status">
           <span className="sr-only">Loading...</span>
         </div>
@@ -25,3 +25,14 @@ export default class Loader extends React.Component {
     );
   }
 }
+
+/**
+ * Same loader but plugged on the state.
+ */
+const stateToProps = (state) => ({
+  loading: state.main.loading,
+});
+export const LoaderState = connect(stateToProps)(({ loading }) => {
+  if (loading && loading > 0) return <Loader position="top-right" />;
+  return null;
+});

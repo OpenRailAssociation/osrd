@@ -42,7 +42,7 @@ const JointsDeZones = (props) => {
       type="vector"
       url={`${MAP_URL}/chartis/layer/map_midi_jointdezone/mvt/${geomType}/`}
     >
-      <Layer {...layerdef} />
+      <Layer {...layerdef} id={`chartis/joint-de-zone/${geomType}`} />
     </Source>
   );
 };

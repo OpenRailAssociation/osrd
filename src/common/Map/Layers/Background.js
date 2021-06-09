@@ -6,13 +6,13 @@ const Background = (props) => {
   const { colors } = props;
 
   const backgroundParams = {
-    id: 'backgroundParams',
+    id: 'osm/background',
     type: 'background',
     layout: {
       visibility: 'visible',
     },
     paint: {
-      'background-color': colors.background,
+      'background-color': colors.background.color,
     },
   };
 

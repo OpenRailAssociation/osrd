@@ -44,12 +44,10 @@ export const getSignalLayerId = (type) => `signal_${type.toLowerCase().replace(/
 
 export const convertLayerVariables = (data) => {
   const dataConverted = {};
-  Object.entries(data).forEach(
-    ([key, value]) => {
-      const newKey = LAYER_VARIABLES[key] ? LAYER_VARIABLES[key] : key;
-      dataConverted[newKey] = value;
-    },
-  );
+  Object.entries(data).forEach(([key, value]) => {
+    const newKey = LAYER_VARIABLES[key] ? LAYER_VARIABLES[key] : key;
+    dataConverted[newKey] = value;
+  });
   return dataConverted;
 };
 
@@ -216,7 +214,7 @@ export const findPathsToKey = (obj, key) => {
         }
       });
     }
-  }(obj, key));
+  })(obj, key);
 
   // const results = findKey(obj, key, undefined, []);
 
@@ -230,7 +228,11 @@ export const findPathsToKey = (obj, key) => {
  * @param {string} str - Raw string to normalize
  * @returns {string} Normalized string
  */
-export const normalizeString = (str) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+export const normalizeString = (str) =>
+  str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 
 /**
  * Soft compare 2 strings, not taking into account case and accents
@@ -363,7 +365,7 @@ export const updateChildElementSelect = (draft, action, selected) => {
         };
       }
       return element;
-    },
+    }
   );
 };
 
@@ -375,10 +377,9 @@ export const exportToJson = (obj) => {
   const filename = 'export.json';
   const contentType = 'application/json;charset=utf-8;';
   if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-    const blob = new Blob(
-      [decodeURIComponent(encodeURI(JSON.stringify(obj)))],
-      { type: contentType },
-    );
+    const blob = new Blob([decodeURIComponent(encodeURI(JSON.stringify(obj)))], {
+      type: contentType,
+    });
     navigator.msSaveOrOpenBlob(blob, filename);
   } else {
     const a = document.createElement('a');

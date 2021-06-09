@@ -15,7 +15,7 @@ import {
 const Signals = (props) => {
   const { mapStyle, signalsSettings } = useSelector((state) => state.map);
   const {
-    colors, sourceTable, sourceLayer,
+    colors, sourceTable, sourceLayer, hovered,
   } = props;
 
   let prefix;
@@ -296,24 +296,41 @@ const Signals = (props) => {
 
   return (
     <Source type="vector" url={`${MAP_URL}/chartis/layer/${sourceTable}/mvt/${sourceLayer}/`}>
-      <Layer {...signalMat()} />
-      <Layer {...point()} />
-      {
-        signalList.map((sig) => (
+      <Layer {...signalMat()} id="chartis/signal/mat" />
+      <Layer {...point()} id="chartis/signal/point" />
+      {signalList.map((sig) => {
+        const layerId = `chartis/signal/${sourceLayer}/${sig}`;
+        const isHovered = hovered && hovered.layer === layerId;
+        const signalDef = signal(sig);
+        const opacity = (signalDef.paint || {})['icon-opacity'] || 1;
+
+        return (
           <Layer
             key={sig}
-            {...signal(sig)}
+            {...signalDef}
+            id={layerId}
+            paint={{
+              ...signalDef.paint,
+              'icon-opacity': isHovered
+                ? ['case', ['==', ['get', 'OP_id'], hovered.id], opacity * 0.6, opacity]
+                : opacity,
+            }}
           />
-        ))
-      }
+        );
+      })}
     </Source>
   );
 };
 
 Signals.propTypes = {
+  hovered: PropTypes.object,
   colors: PropTypes.object.isRequired,
   sourceTable: PropTypes.string.isRequired,
   sourceLayer: PropTypes.string.isRequired,
+};
+
+Signals.defaultProps = {
+  hovered: null,
 };
 
 export default Signals;

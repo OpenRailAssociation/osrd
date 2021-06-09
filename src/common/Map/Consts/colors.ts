@@ -1,10 +1,12 @@
+import { Theme } from '../../../types';
+
 const bpBg = '#405cb1';
 const bpMedium = '#98aedd';
 const bpLight = '#e4eaf6';
 
-const colors = {
+const colors: Record<string, Theme> = {
   normal: {
-    background: '#eeeeee',
+    background: { color: '#eeeeee' },
     chantier: {
       text: '#2c457a',
       halo: '#ffffff',
@@ -105,12 +107,12 @@ const colors = {
     },
   },
   /* ***************************************************************************
-  *
-  * DARK
-  *
-  **************************************************************************** */
+   *
+   * DARK
+   *
+   **************************************************************************** */
   dark: {
-    background: '#0b011d',
+    background: { color: '#0b011d' },
     chantier: {
       text: '#aacc00',
       halo: 'rgba(255, 255, 255, 0)',
@@ -211,12 +213,12 @@ const colors = {
     },
   },
   /* ***************************************************************************
-  *
-  * BLUEPRINT
-  *
-  **************************************************************************** */
+   *
+   * BLUEPRINT
+   *
+   **************************************************************************** */
   blueprint: {
-    background: bpBg,
+    background: { color: bpBg },
     chantier: {
       text: bpLight,
       halo: bpBg,

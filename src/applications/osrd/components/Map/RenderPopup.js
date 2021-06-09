@@ -17,7 +17,7 @@ export default function RenderPopup() {
     let backgroundColor;
     switch (properties.typeVoie) {
       case 'VP':
-        backgroundColor = (properties.categVoie === 'VS') ? 'bg-danger' : 'bg-primary';
+        backgroundColor = properties.categVoie === 'VS' ? 'bg-danger' : 'bg-primary';
         break;
       default:
         backgroundColor = 'bg-secondary';
@@ -29,8 +29,10 @@ export default function RenderPopup() {
     /* eslint prefer-destructuring: ["error", {AssignmentExpression: {array: false}}] */
     /* eslint no-underscore-dangle: ["error", { "allow": ["_geometry"] }] */
     properties.startLonLat = featureInfoClick.feature._geometry.coordinates[0];
-    properties.endLonLat = featureInfoClick.feature._geometry
-      .coordinates[featureInfoClick.feature._geometry.coordinates.length - 1];
+    properties.endLonLat =
+      featureInfoClick.feature._geometry.coordinates[
+        featureInfoClick.feature._geometry.coordinates.length - 1
+      ];
 
     return (
       <Popup
@@ -40,7 +42,7 @@ export default function RenderPopup() {
         className="mapboxgl-hover-custom-popup"
       >
         <PopupInfos
-          title=<PopupInfosCustomTitle properties={properties} />
+          title={<PopupInfosCustomTitle properties={properties} />}
           content={<PopupInfosCustomContent data={properties} />}
           backgroundColor={backgroundColor}
         />

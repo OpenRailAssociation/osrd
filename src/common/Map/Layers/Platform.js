@@ -7,7 +7,7 @@ const Platform = (props) => {
   const { colors } = props;
 
   const platformParams = {
-    id: 'platformParams',
+    id: 'osm/platform',
     type: 'fill-extrusion',
     source: 'openmaptiles',
     'source-layer': 'transportation',

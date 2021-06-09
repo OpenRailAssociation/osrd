@@ -16,10 +16,12 @@ const TracksGeographic = (props) => {
     >
       <Layer
         {...geoMainLayer(colors)}
+        id="chartis/tracks-geo/main"
         source-layer={MAP_TRACK_SOURCES.geographic}
       />
       <Layer
         {...geoServiceLayer(colors)}
+        id="chartis/tracks-geo/service"
         source-layer={MAP_TRACK_SOURCES.geographic}
       />
       <Layer
@@ -31,6 +33,7 @@ const TracksGeographic = (props) => {
             'text-size': 11,
           },
         }}
+        id="chartis/tracks-geo/name"
         source-layer={MAP_TRACK_SOURCES.geographic}
         filter={['==', 'type_voie', 'VP']}
       />
@@ -43,6 +46,7 @@ const TracksGeographic = (props) => {
             'text-size': 10,
           },
         }}
+        id="chartis/tracks-geo/name"
         source-layer={MAP_TRACK_SOURCES.geographic}
         filter={['!=', 'type_voie', 'VP']}
       />
@@ -54,6 +58,7 @@ const TracksGeographic = (props) => {
             'text-field': '{L_code}',
           },
         }}
+        id="chartis/tracks-geo/number"
         source-layer={MAP_TRACK_SOURCES.geographic}
       />
       <Layer
@@ -63,6 +68,7 @@ const TracksGeographic = (props) => {
 
       {idHover !== undefined ? (
         <Layer
+          id="chartis/tracks-geo/hover"
           type="line"
           paint={{ 'line-color': '#ffb612', 'line-width': 3 }}
           filter={['==', 'OP_id', idHover]}

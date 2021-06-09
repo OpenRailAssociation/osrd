@@ -13,7 +13,7 @@ const Hillshade = (props) => {
 
   return mapStyle !== 'normal' ? null : (
     <Source id="hillshade" type="raster-dem" url="https://osm.osrd.fr/data/hillshade.json" source-layer="transportation">
-      <Layer {...hillshadeParams} />
+      <Layer id="osm/hillshade" {...hillshadeParams} />
     </Source>
   );
 };

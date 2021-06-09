@@ -1,0 +1,149 @@
+.editor-root {
+  $blue: var(--blue);
+  $white: white;
+  $grey: #d0d0d0;
+
+  padding-top: 3.75rem; // Header height
+
+  .layout {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+  }
+
+  .modal {
+    z-index: 1060;
+
+    .modal-backdrop {
+      pointer-events: all;
+    }
+  }
+
+  button.editor-btn {
+    box-sizing: border-box;
+    font-size: 1.3em;
+
+    color: $blue;
+    background: $white;
+
+    &.active:not(:disabled) {
+      color: $white;
+      background: $blue;
+    }
+
+    &:disabled {
+      color: $grey;
+    }
+  }
+
+  .tooltip {
+    white-space: nowrap;
+
+    .tooltip-inner {
+      max-width: unset;
+    }
+  }
+
+  .tool-box,
+  .actions-box {
+    padding: 1rem;
+
+    display: flex;
+    flex-direction: column;
+
+    & > * {
+      margin-bottom: 0.5rem;
+    }
+
+    .separator {
+      border-bottom: 2px solid $grey;
+      margin: 0 5px 0.5rem;
+    }
+  }
+
+  .tool-box {
+    background: #0088ce;
+
+    button.active:not(:disabled) {
+      border: 3px solid $white;
+
+      &::after {
+        content: ' ';
+
+        width: 0;
+        height: 0;
+        border-top: 10px solid transparent;
+        border-bottom: 10px solid transparent;
+        border-right: 10px solid $white;
+
+        position: absolute;
+        top: 50%;
+        left: 100%;
+        margin-top: -10px;
+        margin-left: 6px;
+      }
+    }
+  }
+  .actions-box {
+    background: white;
+
+    button:not(.active):not(:disabled) {
+      border: 3px solid $blue;
+    }
+    button:disabled {
+      border: 3px solid grey;
+    }
+  }
+
+  .nav-box {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 1rem;
+
+    display: flex;
+    flex-direction: column;
+
+    & > * {
+      margin-bottom: 0.5rem;
+    }
+
+    & > .separator {
+      margin-bottom: 1rem;
+    }
+  }
+
+  .map-wrapper {
+    flex-grow: 1;
+
+    position: relative;
+    display: flex;
+    flex-direction: column;
+
+    & > .map {
+      flex-grow: 1;
+
+      .popup {
+        text-align: center;
+
+        .mapboxgl-popup-content > *:first-child {
+          font-weight: bold;
+        }
+      }
+    }
+
+    .messages-bar {
+      height: 2em;
+      line-height: 2em;
+      background: white;
+      color: grey;
+      font-style: italic;
+      padding-right: 1em;
+
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+    }
+  }
+}
