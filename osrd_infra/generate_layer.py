@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
 from requests import post
 
-from osrd_infra.models import Infra, TrackSectionEntity, EntityNamespace
+from osrd_infra.models import Infra, TrackSectionEntity
 
 
 def geom_to_geosjon_dict(geom: GEOSGeometry) -> Dict:
