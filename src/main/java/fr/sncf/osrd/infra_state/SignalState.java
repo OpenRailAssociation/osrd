@@ -67,12 +67,10 @@ public final class SignalState implements RSValue {
     }
 
     public void subscribeTrain(Train train) {
-        assert trainSubscribed == null;
         trainSubscribed = train;
     }
 
     public void unsubscribeTrain() {
-        assert trainSubscribed != null;
         trainSubscribed = null;
     }
 

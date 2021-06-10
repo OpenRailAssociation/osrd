@@ -24,6 +24,7 @@ import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -32,6 +33,7 @@ public final class SignalNavigatePhase implements Phase {
     public final TrackSectionLocation endLocation;
     private final ArrayList<TrackSectionRange> trackSectionPath;
     private final ArrayList<Interaction> interactionsPath;
+    private final double driverSightDistance;
     public transient SpeedControllerGenerator targetSpeedGenerator;
 
     private SignalNavigatePhase(
@@ -39,11 +41,12 @@ public final class SignalNavigatePhase implements Phase {
             TrackSectionLocation endLocation,
             ArrayList<TrackSectionRange> trackSectionPath,
             ArrayList<Interaction> interactionsPath,
-            SpeedControllerGenerator targetSpeedGenerator) {
+            double driverSightDistance, SpeedControllerGenerator targetSpeedGenerator) {
         this.routePath = routePath;
         this.endLocation = endLocation;
         this.trackSectionPath = trackSectionPath;
         this.interactionsPath = interactionsPath;
+        this.driverSightDistance = driverSightDistance;
         this.targetSpeedGenerator = targetSpeedGenerator;
     }
 
@@ -59,7 +62,7 @@ public final class SignalNavigatePhase implements Phase {
     ) {
         var trackSectionPath = Route.routesToTrackSectionRange(routes, startLocation, endLocation);
         var actionPointPath = trackSectionToActionPointPath(driverSightDistance, trackSectionPath);
-        return new SignalNavigatePhase(routes, endLocation, trackSectionPath, actionPointPath, targetSpeedGenerator);
+        return new SignalNavigatePhase(routes, endLocation, trackSectionPath, actionPointPath, driverSightDistance, targetSpeedGenerator);
     }
 
     private static ArrayList<Interaction> trackSectionToActionPointPath(
@@ -69,25 +72,7 @@ public final class SignalNavigatePhase implements Phase {
         var eventPath = new ArrayList<Interaction>();
         double pathLength = 0;
         for (var trackRange : trackSectionRanges) {
-            for (var interactablePoint : TrackSection.getInteractables(trackRange.edge, trackRange.direction)) {
-                if (!trackRange.containsPosition(interactablePoint.position))
-                    continue;
-
-                var interactable = interactablePoint.value;
-                var edgeDistToObj = Math.abs(interactablePoint.position - trackRange.getBeginPosition());
-
-                if (interactable.getInteractionsType().interactWithHead()) {
-                    var distance = pathLength + edgeDistToObj;
-                    eventPath.add(new Interaction(InteractionType.HEAD, distance, interactable));
-                }
-                if (interactable.getInteractionsType().interactWhenSeen()) {
-                    var sightDistance = Double.min(interactable.getActionDistance(), driverSightDistance);
-                    var distance = pathLength + edgeDistToObj - sightDistance;
-                    if (distance < 0)
-                        distance = 0;
-                    eventPath.add(new Interaction(InteractionType.SEEN, distance, interactable));
-                }
-            }
+            registerRange(eventPath, trackRange, pathLength, driverSightDistance);
             pathLength += trackRange.length();
         }
 
@@ -99,6 +84,53 @@ public final class SignalNavigatePhase implements Phase {
             eventPath.add(new Interaction(InteractionType.HEAD, pathLength, virtualActionPoint));
         }
         return eventPath;
+    }
+
+    private static void registerRange(ArrayList<Interaction> eventPath, TrackSectionRange trackRange,
+                                      double pathLength, double driverSightDistance) {
+        for (var interactablePoint : TrackSection.getInteractables(trackRange.edge, trackRange.direction)) {
+            if (!trackRange.containsPosition(interactablePoint.position))
+                continue;
+
+            var interactable = interactablePoint.value;
+            var edgeDistToObj = Math.abs(interactablePoint.position - trackRange.getBeginPosition());
+
+            if (interactable.getInteractionsType().interactWithHead()) {
+                var distance = pathLength + edgeDistToObj;
+                eventPath.add(new Interaction(InteractionType.HEAD, distance, interactable));
+            }
+            if (interactable.getInteractionsType().interactWhenSeen()) {
+                var sightDistance = Double.min(interactable.getActionDistance(), driverSightDistance);
+                var distance = pathLength + edgeDistToObj - sightDistance;
+                if (distance < 0)
+                    distance = 0;
+                eventPath.add(new Interaction(InteractionType.SEEN, distance, interactable));
+            }
+        }
+    }
+
+    @Override
+    public void resolvePhases(Iterable<Phase> phases) {
+        var newInteractions = new ArrayList<Interaction>();
+        boolean seenSelf = false;
+        double phaseLength = trackSectionPath.stream()
+                .mapToDouble(TrackSectionRange::length)
+                .sum();
+        AtomicReference<Double> currentPosition = new AtomicReference<>(phaseLength);
+        for (var phase : phases) {
+            if (phase == this)
+                seenSelf = true;
+            else if (seenSelf) {
+                phase.forEachPathSection(pathSection -> {
+                    registerRange(newInteractions, pathSection, currentPosition.get(), driverSightDistance);
+                    currentPosition.updateAndGet(v -> v + pathSection.length());
+                });
+            }
+        }
+        for (var interaction : newInteractions)
+            if (interaction.position <= phaseLength)
+                interactionsPath.add(interaction);
+        interactionsPath.sort(Comparator.comparingDouble(i -> i.position));
     }
 
     @Override

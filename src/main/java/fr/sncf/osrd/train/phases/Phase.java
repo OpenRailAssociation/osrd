@@ -14,4 +14,6 @@ public interface Phase {
     TrackSectionLocation getEndLocation();
 
     void forEachPathSection(Consumer<TrackSectionRange> consumer);
+
+    default void resolvePhases(Iterable<Phase> phases) {}
 }

@@ -39,15 +39,11 @@ public class PasesTest {
         assertEquals(base_end_time, actual_end_time, base_end_time * 0.1);
     }
 
-    // TODO this test fails because we can't "see" signals in a separate phase
-    // This bug is not a priority at the moment
-    @Disabled
     @Test
     public void testSameEventTimes() throws InvalidInfraException {
         var infra = getBaseInfra();
 
-        var config = getBaseConfig();
-        //var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
+        var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim, config);
 
@@ -55,16 +51,23 @@ public class PasesTest {
         var simBase = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsRef = run(simBase, configBase);
 
-        assertEquals(eventsRef.size() + 1, events.size());
+        assertEquals(eventsRef.size() + 2, events.size());
 
         int i = 0;
         int iRef = 0;
         while (i < events.size()) {
             System.out.println(events.get(i).toString());
             if (events.get(i) instanceof TrainReachesActionPoint) {
-                if (((TrainReachesActionPoint) events.get(i)).interaction.actionPoint
-                        instanceof SignalNavigatePhase.VirtualActionPoint) {
+                var casted = (TrainReachesActionPoint) events.get(i);
+                if (casted.interaction.actionPoint instanceof SignalNavigatePhase.VirtualActionPoint) {
                     i++;
+                    continue;
+                }
+                if (casted.interaction.interactionType == InteractionType.SEEN && casted.eventId.scheduledTime > 10 &&
+                        casted.eventId.scheduledTime < 12) {
+
+                    i++;
+                    continue;
                 }
             }
 
