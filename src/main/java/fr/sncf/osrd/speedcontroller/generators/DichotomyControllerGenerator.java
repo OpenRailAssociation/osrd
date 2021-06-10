@@ -8,19 +8,30 @@ import fr.sncf.osrd.utils.Interpolation;
 
 import java.util.Set;
 
-/** TODO comments */
+/** Generates a set of speed controller using a generic dichotomy */
 public abstract class DichotomyControllerGenerator extends SpeedControllerGenerator {
 
+    /** Expected speed at the beginning of the phase */
     private double initialSpeed;
+
+    /** We stop the dichotomy when the result is this close to the target (in seconds) */
     private final double precision;
+
+    /** Set of speed controllers describing the max speed */
     protected Set<SpeedController> maxSpeedControllers;
+
+    /** Train schedule */
     protected TrainSchedule schedule;
 
+    /** Constructor
+     * @param phase given rjs train phase
+     * @param precision how close we need to be to the target time (in seconds) */
     protected DichotomyControllerGenerator(RJSTrainPhase phase, double precision) {
         super(phase);
         this.precision = precision;
     }
 
+    /** Generates a set of speed controller using dichotomy */
     @Override
     public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> speedControllers) {
         double beginPosition = findPhaseInitialLocation(schedule);
@@ -33,20 +44,26 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         return binarySearch(sim, schedule);
     }
 
+    /** Evaluates the run time of the phase if we follow the given speed controllers */
     protected double evalRunTime(Simulation sim, TrainSchedule schedule, Set<SpeedController> speedControllers) {
         var totalTime = getExpectedTimes(sim, schedule, speedControllers, 1,
                 findPhaseInitialLocation(schedule), findPhaseEndLocation(schedule), initialSpeed);
         return totalTime.lastEntry().getValue() - totalTime.firstEntry().getValue();
     }
 
+    /** Gives the target run time for the phase, given the one if we follow max speeds */
     protected abstract double getTargetTime(double baseTime);
 
+    /** Returns the first lower bound for the dichotomy */
     protected abstract double getFirstLowEstimate();
 
+    /** Returns the first higher bound for the dichotomy */
     protected abstract double getFirstHighEstimate();
 
+    /** Generates a set of speed controllers given the dichotomy value */
     protected abstract Set<SpeedController> getSpeedControllers(double value);
 
+    /** Runs the dichotomy */
     private Set<SpeedController> binarySearch(Simulation sim, TrainSchedule schedule) {
         var lowerBound = getFirstLowEstimate();
         var higherBound = getFirstHighEstimate();

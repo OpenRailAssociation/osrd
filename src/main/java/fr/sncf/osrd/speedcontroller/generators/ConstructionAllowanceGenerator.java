@@ -7,6 +7,8 @@ import fr.sncf.osrd.speedcontroller.SpeedController;
 import java.util.HashSet;
 import java.util.Set;
 
+/** Adds a construction margin to the given speed limits
+ * The allowanceValue is in seconds, added over the whole phase */
 public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator {
 
     private final double value;

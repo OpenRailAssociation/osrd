@@ -125,6 +125,7 @@ public abstract class SpeedControllerGenerator {
         return res;
     }
 
+    /** Finds the position (as a double) corresponding to the beginning of the phase */
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     protected double findPhaseEndLocation(TrainSchedule schedule) {
         for (var schedulePhase : schedule.phases) {
@@ -137,6 +138,7 @@ public abstract class SpeedControllerGenerator {
         throw new RuntimeException("Can't find phase in schedule");
     }
 
+    /** Finds the position (as a double) corresponding to the end of the phase */
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     protected double findPhaseInitialLocation(TrainSchedule schedule) {
         for (int index = 0; index < schedule.phases.size(); index++) {
@@ -154,6 +156,7 @@ public abstract class SpeedControllerGenerator {
         throw new RuntimeException("Can't find phase in schedule");
     }
 
+    /** Converts a TrackSectionLocation into a distance on the track (double) */
     private double convertTrackLocation(TrackSectionLocation location, TrainSchedule schedule) {
         double sumPreviousSections = 0;
         for (var edge : schedule.fullPath) {
