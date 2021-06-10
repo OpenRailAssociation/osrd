@@ -4,6 +4,7 @@ import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.utils.Interpolation;
 
 import java.util.Set;
 
@@ -11,7 +12,7 @@ import java.util.Set;
 public abstract class DichotomyControllerGenerator extends SpeedControllerGenerator {
 
     private double initialSpeed;
-    private double precision;
+    private final double precision;
     protected Set<SpeedController> maxSpeedControllers;
     protected TrainSchedule schedule;
 
@@ -22,8 +23,11 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
 
     @Override
     public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> speedControllers) {
-        // TODO fix this if this isn't the first phase
-        initialSpeed = schedule.initialSpeed;
+        double beginPosition = findPhaseInitialLocation(schedule);
+        double endPosition = findPhaseEndLocation(schedule);
+        var initialSpeeds = getExpectedSpeeds(sim, schedule, speedControllers, 1,
+                beginPosition, endPosition, schedule.initialSpeed);
+        initialSpeed = Interpolation.interpolate(initialSpeeds, beginPosition);
         this.schedule = schedule;
         this.maxSpeedControllers = speedControllers;
         return binarySearch(sim, schedule);
