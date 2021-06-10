@@ -7,6 +7,7 @@ import requests
 from django.conf import settings
 from osrd_infra.views.railjson import format_track_section_id
 from rest_framework.response import Response
+from osrd_infra.utils import geo_transform
 
 from osrd_infra.serializers import (
     PathSerializer,
@@ -29,11 +30,6 @@ def try_get_field(manifest, field):
         return manifest[field]
     except KeyError as e:
         return status_missing_field_keyerror(e)
-
-
-def geo_transform(gis_object):
-    gis_object.transform(4326)
-    return gis_object
 
 
 def post_treatment(payload):

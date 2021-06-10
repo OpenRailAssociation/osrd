@@ -7,10 +7,17 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from osrd_infra.models import TrainSchedule, TrainScheduleResult
 from osrd_infra.serializers import TrainScheduleSerializer
 from osrd_infra.views import get_rolling_stock_payload, get_train_schedule_payload
 from osrd_infra.views.projection import Projection
+from osrd_infra.utils import geo_transform
+
+from osrd_infra.models import (
+    TrackSectionEntity,
+    TrainSchedule,
+    TrainScheduleResult,
+    entities_prefetch_components,
+)
 
 
 def format_result(train_schedule_result):
@@ -25,15 +32,24 @@ def format_result(train_schedule_result):
 def format_steps(train_schedule_result):
     routes = train_schedule_result.train_schedule.path.payload["path"]
     path = []
+    tracks = set()
     for route in routes:
         path += route["track_sections"]
+        [tracks.add(track["track_section"]) for track in route["track_sections"]]
     projection = Projection(path)
     res = []
+    qs = TrackSectionEntity.objects.filter(pk__in=list(tracks))
+    prefetch_tracks = entities_prefetch_components(TrackSectionEntity, qs)
+    tracks = {track.pk: track for track in prefetch_tracks}
     for log in train_schedule_result.log:
         if log["type"] != "train_location":
             continue
         head_track_id = int(log["head_track_section"].split(".")[1])
         tail_track_id = int(log["tail_track_section"].split(".")[1])
+        head_track = tracks[head_track_id]
+        geo_line = geo_transform(head_track.geo_line_location.geographic)
+        schema_line = geo_transform(head_track.geo_line_location.schematic)
+        head_offset_normalized = log["head_offset"] / head_track.track_section.length
         res.append(
             {
                 "time": log["time"],
@@ -44,6 +60,10 @@ def format_steps(train_schedule_result):
                 "tail_position": projection.track_position(
                     tail_track_id, log["tail_offset"]
                 ),
+                "geo_position": geo_line.interpolate_normalized(head_offset_normalized).json,
+                "schema_position": schema_line.interpolate_normalized(
+                    head_offset_normalized
+                ).json,
             }
         )
     return res
@@ -116,7 +136,8 @@ class TrainScheduleView(
 
         if not response:
             raise ParseError(response.content)
-        result, _ = TrainScheduleResult.objects.get_or_create(train_schedule=train_schedule)
-        result.log = response.json()
+        result, _ = TrainScheduleResult.objects.get_or_create(
+            train_schedule=train_schedule, log=response.json()
+        )
         result.save()
         return Response(format_result(result))

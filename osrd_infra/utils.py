@@ -9,3 +9,8 @@ class JSONSchemaValidator(BaseValidator):
             jsonschema.validate(data, schema)
         except jsonschema.exceptions.ValidationError as e:
             raise ValidationError(e.message, code="invalid")
+
+
+def geo_transform(gis_object):
+    gis_object.transform(4326)
+    return gis_object
