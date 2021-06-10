@@ -100,7 +100,7 @@ public class RJSTrainScheduleParser {
             return new MaxSpeedGenerator();
         else if (allowance instanceof RJSAllowance.LinearAllowance) {
             var linearAllowance = (RJSAllowance.LinearAllowance) allowance;
-            return new LinearAllowanceGenerator(linearAllowance.allowanceValue, linearAllowance.allowanceType);
+            return new LinearAllowanceGenerator(linearAllowance.allowanceValue, linearAllowance.allowanceType, phase);
         }
         else if (allowance instanceof RJSAllowance.ConstructionAllowance) {
             var constructionAllowance = (RJSAllowance.ConstructionAllowance) allowance;

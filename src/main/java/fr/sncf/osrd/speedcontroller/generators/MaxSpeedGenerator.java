@@ -2,6 +2,7 @@ package fr.sncf.osrd.speedcontroller.generators;
 
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
@@ -13,7 +14,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /** This is a SpeedControllerGenerator that generates the maximum allowed speed at any given point. */
-public class MaxSpeedGenerator implements SpeedControllerGenerator {
+public class MaxSpeedGenerator extends SpeedControllerGenerator {
+    public MaxSpeedGenerator() {
+        super(null);
+    }
+
     @Override
     public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed) {
         // the path is computed at the beginning of the simulation, as it is (for now) part of the event

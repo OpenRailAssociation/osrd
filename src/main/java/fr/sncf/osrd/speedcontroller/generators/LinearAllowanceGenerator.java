@@ -2,6 +2,7 @@ package fr.sncf.osrd.speedcontroller.generators;
 
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.MapSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
@@ -9,12 +10,13 @@ import fr.sncf.osrd.speedcontroller.SpeedController;
 import java.util.HashSet;
 import java.util.Set;
 
-public class LinearAllowanceGenerator implements SpeedControllerGenerator {
+public class LinearAllowanceGenerator extends SpeedControllerGenerator {
 
     private final MarginType allowanceType;
     private final double value;
 
-    public LinearAllowanceGenerator(double allowanceValue, MarginType allowanceType) {
+    public LinearAllowanceGenerator(double allowanceValue, MarginType allowanceType, RJSTrainPhase phase) {
+        super(phase);
         this.allowanceType = allowanceType;
         this.value = allowanceValue;
     }

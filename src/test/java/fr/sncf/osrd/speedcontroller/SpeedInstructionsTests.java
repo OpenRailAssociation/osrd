@@ -3,6 +3,7 @@ package fr.sncf.osrd.speedcontroller;
 import static fr.sncf.osrd.Helpers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra.*;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
@@ -49,6 +50,15 @@ public class SpeedInstructionsTests {
         }
     }
 
+    public static SpeedControllerGenerator getStaticGenerator(double maxSpeed) {
+        return new SpeedControllerGenerator(null) {
+            @Override
+            public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> controllers) {
+                return new HashSet<>(Collections.singletonList(new StaticSpeedController(maxSpeed)));
+            }
+        };
+    }
+
     @Test
     public void testFollowTargetSpeed() throws InvalidInfraException {
         var infra = getBaseInfra();
@@ -58,8 +68,7 @@ public class SpeedInstructionsTests {
 
         var phase = config.trainSchedules.get(0).phases.get(0);
         assert phase instanceof SignalNavigatePhase;
-        SpeedControllerGenerator generator =
-                (a, b, c) -> new HashSet<>(Collections.singletonList(new StaticSpeedController(5)));
+        SpeedControllerGenerator generator = getStaticGenerator(5);
         ((SignalNavigatePhase) phase).targetSpeedGenerators = Collections.singletonList(generator);
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
@@ -78,8 +87,7 @@ public class SpeedInstructionsTests {
 
         var phase = config.trainSchedules.get(0).phases.get(0);
         assert phase instanceof SignalNavigatePhase;
-        SpeedControllerGenerator generator =
-                (a, b, c) -> new HashSet<>(Collections.singletonList(new StaticSpeedController(10)));
+        SpeedControllerGenerator generator = getStaticGenerator(10);
         ((SignalNavigatePhase) phase).targetSpeedGenerators = Collections.singletonList(generator);
 
         infra.switches.iterator().next().positionChangeDelay = 42;
