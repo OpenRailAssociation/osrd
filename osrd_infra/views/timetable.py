@@ -22,7 +22,7 @@ class TimetableView(
     queryset = Timetable.objects.all()
     serializer_class = TimetableSerializer
 
-    def retrieve(request, *args, **kwargs):
+    def retrieve(self, request, *args, **kwargs):
         qs = Timetable.objects.prefetch_related("train_schedules").get(pk=kwargs["pk"])
         serializer = TimetableSerializer(qs)
         train_schedules = [train.pk for train in qs.train_schedules.all()]
