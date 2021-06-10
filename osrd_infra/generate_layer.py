@@ -12,8 +12,9 @@ def geom_to_geosjon_dict(geom: GEOSGeometry) -> Dict:
 
 
 def push_layer(layer_slug: str, version: int, payload: List[Dict]):
-    response = post(f'{settings.CHARTIS_BASE_URL}/push/{layer_slug}/truncate_and_insert/?version={version}',
-                    json=payload)
+    response = post(f'{settings.CHARTIS_URL}push/{layer_slug}/truncate_and_insert/?version={version}',
+                    json=payload,
+                    headers={"Authorization": "Bearer " + settings.CHARTIS_TOKEN})
     assert response.status_code == 201
 
 

@@ -6,6 +6,7 @@ from airflow.hooks.base_hook import BaseHook
 db_link = BaseHook.get_connection('osrd_db_link')
 cache_link = BaseHook.get_connection('osrd_cache_link')
 back_link = BaseHook.get_connection('osrd_back')
+chartis_link = BaseHook.get_connection('osrd_to_chartis')
 
 DEBUG = False
 
@@ -34,3 +35,6 @@ CACHES = {
 
 OSRD_BACKEND_URL = back_link.host
 OSRD_BACKEND_TOKEN = back_link.password
+
+CHARTIS_URL = chartis_link.host
+CHARTIS_TOKEN = chartis_link.password
