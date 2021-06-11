@@ -3,17 +3,20 @@ package fr.sncf.osrd.speedcontroller;
 import static fr.sncf.osrd.Helpers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra.*;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
-import fr.sncf.osrd.railjson.schema.schedule.RJSRunningTimeParameters;
-import fr.sncf.osrd.railjson.schema.schedule.RJSRunningTimeParameters.Margin.MarginType;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType;
+import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
+import org.jaxen.util.SingletonList;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -47,6 +50,15 @@ public class SpeedInstructionsTests {
         }
     }
 
+    public static SpeedControllerGenerator getStaticGenerator(double maxSpeed) {
+        return new SpeedControllerGenerator(null) {
+            @Override
+            public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> controllers) {
+                return new HashSet<>(Collections.singletonList(new StaticSpeedController(maxSpeed)));
+            }
+        };
+    }
+
     @Test
     public void testFollowTargetSpeed() throws InvalidInfraException {
         var infra = getBaseInfra();
@@ -54,8 +66,8 @@ public class SpeedInstructionsTests {
 
         var phase = config.trainSchedules.get(0).phases.get(0);
         assert phase instanceof SignalNavigatePhase;
-        ((SignalNavigatePhase) phase).targetSpeedGenerator =
-                (a, b, c) -> new HashSet<>(Collections.singletonList(new StaticSpeedController(5)));
+        SpeedControllerGenerator generator = getStaticGenerator(5);
+        ((SignalNavigatePhase) phase).targetSpeedGenerators = Collections.singletonList(generator);
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
@@ -71,8 +83,8 @@ public class SpeedInstructionsTests {
 
         var phase = config.trainSchedules.get(0).phases.get(0);
         assert phase instanceof SignalNavigatePhase;
-        ((SignalNavigatePhase) phase).targetSpeedGenerator =
-                (a, b, c) -> new HashSet<>(Collections.singletonList(new StaticSpeedController(10)));
+        SpeedControllerGenerator generator = getStaticGenerator(10);
+        ((SignalNavigatePhase) phase).targetSpeedGenerators = Collections.singletonList(generator);
 
         infra.switches.iterator().next().positionChangeDelay = 42;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
@@ -111,9 +123,10 @@ public class SpeedInstructionsTests {
     @Test
     public void testMargin50() throws InvalidInfraException {
         var infra = getBaseInfra();
-        var params = new RJSRunningTimeParameters.Margin();
-        params.marginType = MarginType.TIME;
-        params.marginValue = 50;
+        assert infra != null;
+        var params = new RJSAllowance.LinearAllowance();
+        params.allowanceType = MarginType.TIME;
+        params.allowanceValue = 50;
 
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
@@ -122,7 +135,8 @@ public class SpeedInstructionsTests {
         var baseSimTime = sim.getTime();
 
         // Run with 50% margins
-        var configMargins = makeConfigWithSpeedParams(params);
+        var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
+        assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
@@ -134,9 +148,9 @@ public class SpeedInstructionsTests {
     public void testMargin200() throws InvalidInfraException {
         var infra = getBaseInfra();
         assert infra != null;
-        var params = new RJSRunningTimeParameters.Margin();
-        params.marginType = MarginType.TIME;
-        params.marginValue = 200;
+        var params = new RJSAllowance.LinearAllowance();
+        params.allowanceType = MarginType.TIME;
+        params.allowanceValue = 200;
 
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
@@ -145,7 +159,7 @@ public class SpeedInstructionsTests {
         var baseSimTime = sim.getTime();
 
         // Run with 200% margins
-        var configMargins = makeConfigWithSpeedParams(params);
+        var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
@@ -156,9 +170,10 @@ public class SpeedInstructionsTests {
     @Test
     public void testMargin0() throws InvalidInfraException {
         var infra = getBaseInfra();
-        var params = new RJSRunningTimeParameters.Margin();
-        params.marginType = MarginType.TIME;
-        params.marginValue = 0;
+        assert infra != null;
+        var params = new RJSAllowance.LinearAllowance();
+        params.allowanceType = MarginType.TIME;
+        params.allowanceValue = 0;
 
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
@@ -167,7 +182,8 @@ public class SpeedInstructionsTests {
         var baseSimTime = sim.getTime();
 
         // Run with 0% margins
-        var configMargins = makeConfigWithSpeedParams(params);
+        var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
+        assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();

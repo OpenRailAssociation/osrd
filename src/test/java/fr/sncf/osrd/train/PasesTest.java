@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import static fr.sncf.osrd.Helpers.*;
+import static fr.sncf.osrd.speedcontroller.SpeedInstructionsTests.getStaticGenerator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PasesTest {
@@ -46,6 +47,7 @@ public class PasesTest {
         var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim, config);
+
 
         var configBase = getBaseConfig();
         var simBase = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
@@ -115,11 +117,9 @@ public class PasesTest {
         var phase1 = (SignalNavigatePhase) phases.get(0);
         assert phases.get(1) instanceof SignalNavigatePhase;
         var phase2 = (SignalNavigatePhase) phases.get(1);
-        phase1.targetSpeedGenerator =
-                (a, b, c) -> new HashSet<>(Collections.singletonList(new SpeedInstructionsTests.StaticSpeedController(2)));
+        phase1.targetSpeedGenerators = Collections.singletonList(getStaticGenerator(2));
 
-        phase2.targetSpeedGenerator =
-                (a, b, c) -> new HashSet<>(Collections.singletonList(new SpeedInstructionsTests.StaticSpeedController(Double.POSITIVE_INFINITY)));
+        phase2.targetSpeedGenerators = Collections.singletonList(getStaticGenerator(Double.POSITIVE_INFINITY));
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim, config);

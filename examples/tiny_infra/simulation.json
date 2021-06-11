@@ -60,11 +60,13 @@
             "rt.C3-S7",
             "rt.S7-buffer_stop_c"
           ],
-          "running_time_parameters": {
-            "type": "margin",
-            "margin_type": "TIME",
-            "margin_value": 5
-          },
+          "allowances": [
+            {
+              "type": "linear",
+              "allowance_type": "DISTANCE",
+              "allowance_value": 270
+            }
+          ],
           "type": "navigate"
         }
       ]

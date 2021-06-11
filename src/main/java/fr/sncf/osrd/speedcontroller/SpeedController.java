@@ -19,9 +19,13 @@ public abstract class SpeedController implements DeepComparable<SpeedController>
         this.endPosition = endPosition;
     }
 
+    public boolean isActive(double position) {
+        return (position >= beginPosition && position < endPosition);
+    }
+
     public boolean isActive(TrainPositionTracker positionTracker) {
         var position = positionTracker.getPathPosition();
-        return (position >= beginPosition && position < endPosition);
+        return isActive(position);
     }
 
     public boolean isActive(TrainState state) {
@@ -50,7 +54,8 @@ public abstract class SpeedController implements DeepComparable<SpeedController>
     public static SpeedDirective getDirective(Set<SpeedController> controllers, double pathPosition) {
         var profile = SpeedDirective.getMax();
         for (var controller : controllers)
-            profile.mergeWith(controller.getDirective(pathPosition));
+            if (controller.isActive(pathPosition))
+                profile.mergeWith(controller.getDirective(pathPosition));
         return profile;
     }
 

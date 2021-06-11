@@ -5,10 +5,7 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.generators.MaxSpeedGenerator;
 import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 
-import java.util.HashSet;
-import java.util.NavigableMap;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 /** Contains all the pre-computed speed controller and indications.
  * For now it contains data about target speed (with margin or mareco), and max speed for when the train is
@@ -17,7 +14,7 @@ import java.util.TreeMap;
 public class SpeedInstructions {
 
     /** Generator for the target speeds */
-    public final transient SpeedControllerGenerator targetSpeedGenerator;
+    public final transient List<SpeedControllerGenerator> targetSpeedGenerators;
 
     /** Set of speed controllers indicating the maximum speed at each point */
     public Set<SpeedController> maxSpeedControllers;
@@ -28,20 +25,24 @@ public class SpeedInstructions {
 
     /** Creates an instance from a target speed generator. Max speed is always determined
      * from a `new MaxSpeedGenerator()`.
-     * @param targetSpeedGenerator generator used for target speed controllers. If null, a MaxSpeedGenerator is
-     *      used instead. */
-    public SpeedInstructions(SpeedControllerGenerator targetSpeedGenerator) {
-        if (targetSpeedGenerator == null)
-            targetSpeedGenerator = new MaxSpeedGenerator();
-        this.targetSpeedGenerator = targetSpeedGenerator;
+     * @param targetSpeedGenerators generators used for target speed controllers. If null, a MaxSpeedGenerator is
+     *      used instead. If several controllers are given, we give the result of the previous one as reference. */
+    public SpeedInstructions(List<SpeedControllerGenerator> targetSpeedGenerators) {
+        if (targetSpeedGenerators == null || targetSpeedGenerators.size() == 0)
+            targetSpeedGenerators = Collections.singletonList(new MaxSpeedGenerator());
+        this.targetSpeedGenerators = targetSpeedGenerators;
     }
 
     /** Generates all the instructions, expected to be called when a new phase starts */
     public void generate(Simulation sim, TrainSchedule schedule) {
         maxSpeedControllers = new MaxSpeedGenerator().generate(sim, schedule, null);
-        targetSpeedControllers = targetSpeedGenerator.generate(sim, schedule, maxSpeedControllers);
+        targetSpeedControllers = maxSpeedControllers;
+        for (var generator : targetSpeedGenerators)
+            targetSpeedControllers = generator.generate(sim, schedule, targetSpeedControllers);
         targetSpeedControllers.addAll(maxSpeedControllers);
-        expectedTimes = targetSpeedGenerator.getExpectedTimes(sim, schedule, targetSpeedControllers, 1);
+
+        var lastGenerator = targetSpeedGenerators.get(targetSpeedGenerators.size() - 1);
+        expectedTimes = lastGenerator.getExpectedTimes(sim, schedule, targetSpeedControllers, 1);
     }
 
     /** Copy constructor */
@@ -49,7 +50,7 @@ public class SpeedInstructions {
         this.maxSpeedControllers = new HashSet<>(other.maxSpeedControllers);
         this.targetSpeedControllers = new HashSet<>(other.targetSpeedControllers);
         this.expectedTimes = new TreeMap<>(other.expectedTimes);
-        this.targetSpeedGenerator = other.targetSpeedGenerator;
+        this.targetSpeedGenerators = other.targetSpeedGenerators;
     }
 
     /** Returns how late we are compared to the expected time, in seconds. The result may be negative if we are

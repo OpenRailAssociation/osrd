@@ -71,7 +71,8 @@ public class Train {
                 initialLocation.edge,
                 schedule.initialDirection,
                 initialLocation.offset,
-                initialLocation.offset
+                initialLocation.offset // + schedule.rollingStock.length
+                // TODO figure out why every test fail when we change this from a point to an actual range
         ));
         return new TrainPositionTracker(sim.infra, sim.infraState, initialPosition);
     }
