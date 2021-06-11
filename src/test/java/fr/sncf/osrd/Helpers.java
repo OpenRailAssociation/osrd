@@ -180,10 +180,9 @@ public class Helpers {
         return getBaseConfig("tiny_infra/config_railjson.json");
     }
 
-    /** Generates a config where all the RJSRunningTieParameters have been replaced by the one given */
-    public static Config makeConfigWithSpeedParams(List<RJSAllowance> params) {
+    public static Config makeConfigWithSpeedParams(List<RJSAllowance> params, String baseConfigPath) {
         ClassLoader classLoader = Helpers.class.getClassLoader();
-        var configPath = classLoader.getResource("tiny_infra/config_railjson.json");
+        var configPath = classLoader.getResource(baseConfigPath);
         assert configPath != null;
         try {
             var path = Path.of(configPath.getFile());
@@ -210,6 +209,11 @@ public class Helpers {
             fail(e);
             throw new RuntimeException();
         }
+    }
+
+    /** Generates a config where all the RJSRunningTieParameters have been replaced by the one given */
+    public static Config makeConfigWithSpeedParams(List<RJSAllowance> params) {
+        return makeConfigWithSpeedParams(params, "tiny_infra/config_railjson.json");
     }
 
     /** Go through all the events in the simulation, fails if an exception is thrown */

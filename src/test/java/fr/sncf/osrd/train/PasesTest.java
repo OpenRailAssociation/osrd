@@ -6,16 +6,19 @@ import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.SpeedInstructionsTests;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
+import fr.sncf.osrd.utils.Interpolation;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
-import java.util.HashSet;
+import java.sql.Time;
+import java.util.*;
 
 import static fr.sncf.osrd.Helpers.*;
 import static fr.sncf.osrd.speedcontroller.SpeedInstructionsTests.getStaticGenerator;
@@ -40,6 +43,18 @@ public class PasesTest {
         assertEquals(base_end_time, actual_end_time, base_end_time * 0.1);
     }
 
+    public static NavigableMap<Double, Double> getTimePerPosition(Iterable<TimelineEvent> events) {
+        var res = new TreeMap<Double, Double>();
+        for (var event : events) {
+            if (event instanceof TrainReachesActionPoint) {
+                var trainReachesActionPoint = (TrainReachesActionPoint) event;
+                for (var update : trainReachesActionPoint.trainStateChange.positionUpdates)
+                    res.put(update.pathPosition, update.time);
+            }
+        }
+        return res;
+    }
+
     @Test
     public void testSameEventTimes() throws InvalidInfraException {
         var infra = getBaseInfra();
@@ -48,38 +63,19 @@ public class PasesTest {
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim, config);
 
-
-        var configBase = getBaseConfig();
+        var configBase = makeConfigWithSpeedParams(Collections.singletonList(null));
         var simBase = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsRef = run(simBase, configBase);
 
         assertEquals(eventsRef.size() + 2, events.size());
 
-        int i = 0;
-        int iRef = 0;
-        while (i < events.size()) {
-            System.out.println(events.get(i).toString());
-            if (events.get(i) instanceof TrainReachesActionPoint) {
-                var casted = (TrainReachesActionPoint) events.get(i);
-                if (casted.interaction.actionPoint instanceof SignalNavigatePhase.VirtualActionPoint) {
-                    i++;
-                    continue;
-                }
-                if (casted.interaction.interactionType == InteractionType.SEEN && casted.eventId.scheduledTime > 10 &&
-                        casted.eventId.scheduledTime < 12) {
+        var resultTimePerPosition = getTimePerPosition(events);
+        var expectedTimePerPosition = getTimePerPosition(eventsRef);
 
-                    i++;
-                    continue;
-                }
-            }
-
-            var event = events.get(i);
-            var eventRef = eventsRef.get(iRef);
-
-            assertEquals(eventRef.eventId.scheduledTime, event.eventId.scheduledTime);
-
-            i++;
-            iRef++;
+        for (double t = expectedTimePerPosition.firstKey(); t < expectedTimePerPosition.lastKey(); t += 1) {
+            var expected = Interpolation.interpolate(expectedTimePerPosition, t);
+            var result = Interpolation.interpolate(resultTimePerPosition, t);
+            assertEquals(expected, result, expected * 0.01);
         }
     }
 
