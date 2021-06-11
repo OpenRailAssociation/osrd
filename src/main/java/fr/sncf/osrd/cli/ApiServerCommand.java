@@ -8,14 +8,17 @@ import fr.sncf.osrd.api.PathfindingTracksEndpoint;
 import fr.sncf.osrd.api.SimulationEndpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.takes.Response;
 import org.takes.facets.fallback.*;
 import org.takes.facets.fork.FkRegex;
 import org.takes.facets.fork.TkFork;
 import org.takes.http.Exit;
 import org.takes.http.FtBasic;
+import org.takes.misc.Opt;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithStatus;
 import org.takes.tk.TkSlf4j;
+import io.sentry.Sentry;
 
 import java.io.IOException;
 
@@ -51,6 +54,7 @@ public final class ApiServerCommand implements CliCommand {
 
     /** Run the Api Server */
     public int run() {
+        FbSentry.init();
         var authorizationToken = System.getenv("FETCH_INFRA_AUTHORIZATION");
         var infraHandler = new InfraHandler(getMiddlewareBaseUrl(), authorizationToken);
 
@@ -66,7 +70,8 @@ public final class ApiServerCommand implements CliCommand {
             // the list of pages which should be displayed on error
             var fallbacks = new FbChain(
                     // if a page isn't found, just return a 404
-                    new FbStatus(404, new RsWithStatus(new RsText("Not found"), 404))
+                    new FbStatus(404, new RsWithStatus(new RsText("Not found"), 404)),
+                    new FbSentry()
             );
 
             var serverConfig = new TkSlf4j(new TkFallback(routes, fallbacks));
@@ -76,6 +81,20 @@ public final class ApiServerCommand implements CliCommand {
         } catch (IOException ioException) {
             logger.error("IO error", ioException);
             return 1;
+        }
+    }
+
+    private static final class FbSentry implements Fallback {
+        public static void init() {
+            var sentryDSN = System.getenv("SENTRY_DSN");
+            if (sentryDSN != null)
+                Sentry.init(options -> options.setDsn(sentryDSN));
+        }
+
+        @Override
+        public Opt<Response> route(RqFallback req) {
+            Sentry.captureException(req.throwable());
+            return new Opt.Single<>(new RsWithStatus(new RsText("An error occurred"), req.code()));
         }
     }
 }
