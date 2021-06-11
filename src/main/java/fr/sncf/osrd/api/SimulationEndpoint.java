@@ -9,6 +9,7 @@ import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
+import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.infra_state.SignalState;
@@ -147,9 +148,9 @@ public class SimulationEndpoint implements Take {
         public void changePublishedCallback(Change change) {
             if (change.getClass() == RouteState.RouteStatusChange.class) {
                 var routeStatusChange = (RouteState.RouteStatusChange) change;
-                var routeId = infra.routeGraph.getEdge(routeStatusChange.routeIndex).id;
+                var route = infra.routeGraph.getEdge(routeStatusChange.routeIndex);
                 changes.add(new SimulationResultChange.ResponseRouteStatus(
-                        routeId, routeStatusChange.newStatus, sim.getTime()));
+                        route, routeStatusChange.newStatus, sim.getTime()));
             } else if (change.getClass() == Train.TrainStateChange.class) {
                 var trainStateChange = (Train.TrainStateChange) change;
                 var train = trainSchedules.get(trainStateChange.trainID);
@@ -207,11 +208,29 @@ public class SimulationEndpoint implements Take {
         private static final class ResponseRouteStatus extends SimulationResultChange {
             private final String id;
             private final RouteStatus status;
+            @Json(name = "start_track_section")
+            private final String startTrackSection;
+            @Json(name = "start_offset")
+            private final double startOffset;
+            @Json(name = "end_track_section")
+            private final String endTrackSection;
+            @Json(name = "end_offset")
+            private final double endOffset;
 
-            public ResponseRouteStatus(String routeId, RouteStatus status, double time) {
+            public ResponseRouteStatus(Route route, RouteStatus status, double time) {
                 super(time);
-                this.id = routeId;
+                this.id = route.id;
                 this.status = status;
+                var firstTvdSectionPathDir = route.tvdSectionsPathDirections.get(0);
+                var start = route.tvdSectionsPaths.get(0).getTrackSections(firstTvdSectionPathDir)[0];
+                this.startTrackSection = start.edge.id;
+                this.startOffset = start.getBeginPosition();
+                var lastIndex = route.tvdSectionsPaths.size() - 1;
+                var lastTvdSectionPathDir = route.tvdSectionsPathDirections.get(lastIndex);
+                var lastTracks = route.tvdSectionsPaths.get(lastIndex).getTrackSections(lastTvdSectionPathDir);
+                var end = lastTracks[lastTracks.length - 1];
+                this.endTrackSection = end.edge.id;
+                this.endOffset = end.getEndPosition();
             }
         }
 
