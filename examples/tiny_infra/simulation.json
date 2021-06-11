@@ -62,9 +62,9 @@
           ],
           "allowances": [
             {
-              "type": "linear",
-              "allowance_type": "DISTANCE",
-              "allowance_value": 270
+              "type": "mareco",
+              "allowance_type": "time",
+              "allowance_value": 5
             }
           ],
           "type": "navigate"

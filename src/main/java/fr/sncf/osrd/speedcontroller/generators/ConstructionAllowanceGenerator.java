@@ -1,6 +1,8 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
+import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
+import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 
@@ -43,7 +45,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
     }
 
     @Override
-    protected Set<SpeedController> getSpeedControllers(double value) {
+    protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule, double value) {
         var res = new HashSet<>(maxSpeedControllers);
         res.add(new MaxSpeedController(value, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
         return res;
