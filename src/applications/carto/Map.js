@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ReactMapGL, { ScaleControl, AttributionControl, FlyToInterpolator } from 'react-map-gl';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
-import colors from 'common/Map/Consts/colors';
+import colors from 'common/Map/Consts/colors.ts';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateViewport } from 'reducers/map';
 
@@ -121,7 +121,7 @@ const Map = () => {
         attributionControl={false} // Defined below
         onClick={onFeatureClick}
         onHover={onFeatureHover}
-        interactiveLayerIds={mapTrackSources === 'geographic' ? ['geoMainLayer'] : ['schematicMainLayer']}
+        interactiveLayerIds={mapTrackSources === 'geographic' ? ['chartis/tracks-geo/main'] : ['schematicMainLayer']}
         touchRotate
         asyncRender
         antialiasing

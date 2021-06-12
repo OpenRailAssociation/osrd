@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ReactMapGL, { ScaleControl, AttributionControl, FlyToInterpolator } from 'react-map-gl';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
-import colors from 'common/Map/Consts/colors';
+import colors from 'common/Map/Consts/colors.ts';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateViewport } from 'reducers/map';
 import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';
@@ -77,9 +77,9 @@ const Map = () => {
   const onFeatureClick = (e) => {
     if (e.features
       && e.features.length > 0
-      && e.features[0].properties.OP_id !== undefined
-      && e.features[0].properties.type_voie === 'VP') {
-      console.log('coucou', e);
+      && e.features[0].properties.gaia_id !== undefined
+      // && e.features[0].properties.type_voie === 'VP') {
+    ) {
       dispatch(updateFeatureInfoClickOSRD({
         displayPopup: true,
         feature: e.features[0],
@@ -95,7 +95,7 @@ const Map = () => {
 
   const onFeatureHover = (e) => {
     if (e.features !== null && e.features[0] !== undefined) {
-      setIdHover(e.features[0].properties.OP_id);
+      setIdHover(e.features[0].properties.gaia_id);
     }
   };
 
@@ -140,7 +140,7 @@ const Map = () => {
         attributionControl={false} // Defined below
         onClick={onFeatureClick}
         onHover={onFeatureHover}
-        interactiveLayerIds={mapTrackSources === 'geographic' ? ['geoMainLayer'] : ['schematicMainLayer']}
+        interactiveLayerIds={mapTrackSources === 'geographic' ? ['chartis/tracks-geo/main'] : ['schematicMainLayer']}
         touchRotate
         asyncRender
       >

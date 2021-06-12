@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Source, Layer } from 'react-map-gl';
-import { geoMainLayer, geoServiceLayer } from 'common/Map/Layers/geographiclayers';
+import { geoMainLayer, geoServiceLayer } from 'common/Map/Layers/geographiclayers.ts';
 import { trackNameLayer, lineNumberLayer, lineNameLayer } from 'common/Map/Layers/commonlayers';
 import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
 
@@ -11,7 +11,8 @@ const TracksGeographic = (props) => {
     <Source
       id="tracksGeographic"
       type="vector"
-      url={`${MAP_URL}/chartis/layer/map_midi_tronconditinerairevoie/mvt/geo/`}
+      // url={`${MAP_URL}/chartis/layer/map_midi_tronconditinerairevoie/mvt/geo/`}
+      url={`${MAP_URL}/chartis/layer/osrd_track_section/mvt/geo/?version=27`}
       source-layer={MAP_TRACK_SOURCES.geographic}
     >
       <Layer
@@ -71,7 +72,7 @@ const TracksGeographic = (props) => {
           id="chartis/tracks-geo/hover"
           type="line"
           paint={{ 'line-color': '#ffb612', 'line-width': 3 }}
-          filter={['==', 'OP_id', idHover]}
+          filter={['==', 'gaia_id', idHover]}
           source-layer={MAP_TRACK_SOURCES.geographic}
         />
       ) : null}

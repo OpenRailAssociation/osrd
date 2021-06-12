@@ -25,6 +25,7 @@ export default function RenderPopup() {
     }
 
     properties.source = featureInfoClick.feature.source;
+    properties.clickLngLat = featureInfoClick.lngLat;
     properties.boundingBox = bbox(featureInfoClick.feature);
     /* eslint prefer-destructuring: ["error", {AssignmentExpression: {array: false}}] */
     /* eslint no-underscore-dangle: ["error", { "allow": ["_geometry"] }] */

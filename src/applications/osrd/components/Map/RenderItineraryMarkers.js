@@ -14,8 +14,8 @@ export default function RenderItineraryMarkers() {
   if (osrdconf.origin !== undefined) {
     markers.push(
       <Marker
-        longitude={osrdconf.origin.startLonLat[0]}
-        latitude={osrdconf.origin.startLonLat[1]}
+        longitude={osrdconf.origin.clickLngLat[0]}
+        latitude={osrdconf.origin.clickLngLat[1]}
         offsetLeft={-12}
         offsetTop={-24}
         key={nextId()}
@@ -27,8 +27,8 @@ export default function RenderItineraryMarkers() {
   if (osrdconf.destination !== undefined) {
     markers.push(
       <Marker
-        longitude={osrdconf.destination.endLonLat[0]}
-        latitude={osrdconf.destination.endLonLat[1]}
+        longitude={osrdconf.destination.clickLngLat[0]}
+        latitude={osrdconf.destination.clickLngLat[1]}
         offsetLeft={-12}
         offsetTop={-24}
         key={nextId()}
@@ -41,8 +41,8 @@ export default function RenderItineraryMarkers() {
     osrdconf.vias.forEach((via) => {
       markers.push(
         <Marker
-          longitude={via.startLonLat[0]}
-          latitude={via.startLonLat[1]}
+          longitude={via.clickLngLat[0]}
+          latitude={via.clickLngLat[1]}
           offsetLeft={-12}
           offsetTop={-24}
           key={nextId()}

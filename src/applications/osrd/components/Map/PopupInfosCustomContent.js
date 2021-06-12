@@ -11,9 +11,17 @@ export default function PopupInfosCustomContent(props) {
     <>
       {data.idGaia && (
         <>
-          <div className="labelvalue w-100 my-3">
+          <div className="labelvalue w-100 mt-3">
             <span className="labelvalue-label">idGAIA</span>
             {data.idGaia}
+          </div>
+          <div className="labelvalue w-100">
+            <span className="labelvalue-label">GPS</span>
+            {data.clickLngLat.join(' / ')}
+          </div>
+          <div className="labelvalue w-100 mb-3">
+            <span className="labelvalue-label">Entity</span>
+            {data.id}
           </div>
         </>
       )}

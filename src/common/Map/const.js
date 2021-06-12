@@ -15,7 +15,7 @@ export const MAP_MODES = {
 
 export const MAP_TRACK_SOURCES = {
   schematic: 'map_midi_tronconditinerairevoie',
-  geographic: 'map_midi_tronconditinerairevoie',
+  geographic: 'osrd_track_section',
 };
 
 export const ELEMENT_TYPES = {
