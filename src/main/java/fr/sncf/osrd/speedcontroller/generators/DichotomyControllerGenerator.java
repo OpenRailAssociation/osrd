@@ -6,6 +6,7 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.utils.Interpolation;
 
+import java.util.NavigableMap;
 import java.util.Set;
 
 /** Generates a set of speed controller using a generic dichotomy */
@@ -23,6 +24,12 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     /** Train schedule */
     protected TrainSchedule schedule;
 
+    /** Expected times from previous evaluation */
+    protected NavigableMap<Double, Double> expectedTimes;
+
+    /** Simulation state given in `generate` parameters */
+    protected Simulation sim;
+
     /** Constructor
      * @param phase given rjs train phase
      * @param precision how close we need to be to the target time (in seconds) */
@@ -34,6 +41,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     /** Generates a set of speed controller using dichotomy */
     @Override
     public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> speedControllers) {
+        this.sim = sim;
         double beginPosition = findPhaseInitialLocation(schedule);
         double endPosition = findPhaseEndLocation(schedule);
         var initialSpeeds = getExpectedSpeeds(sim, schedule, speedControllers, 1,
@@ -46,9 +54,9 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
 
     /** Evaluates the run time of the phase if we follow the given speed controllers */
     protected double evalRunTime(Simulation sim, TrainSchedule schedule, Set<SpeedController> speedControllers) {
-        var totalTime = getExpectedTimes(sim, schedule, speedControllers, 1,
+        expectedTimes = getExpectedTimes(sim, schedule, speedControllers, 1,
                 findPhaseInitialLocation(schedule), findPhaseEndLocation(schedule), initialSpeed);
-        return totalTime.lastEntry().getValue() - totalTime.firstEntry().getValue();
+        return expectedTimes.lastEntry().getValue() - expectedTimes.firstEntry().getValue();
     }
 
     /** Gives the target run time for the phase, given the one if we follow max speeds */

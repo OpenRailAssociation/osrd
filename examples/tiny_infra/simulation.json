@@ -62,7 +62,7 @@
           ],
           "allowances": [
             {
-              "type": "mareco",
+              "type": "eco",
               "allowance_type": "time",
               "allowance_value": 5
             }

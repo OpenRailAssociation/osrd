@@ -9,9 +9,16 @@ import fr.sncf.osrd.speedcontroller.CoastingSpeedController;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.train.Action;
+import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.TrainPhysicsIntegrator;
+import fr.sncf.osrd.utils.Interpolation;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static fr.sncf.osrd.utils.Interpolation.interpolate;
+import static java.lang.Math.min;
 
 public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
@@ -47,20 +54,52 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         return max*10;
     }
 
+    private List<Double> findPositionSameSpeedAsVF(NavigableMap<Double, Double> speeds, double vf) {
+        // TODO
+        return new ArrayList<>();
+    }
+
+    private List<Double> findDecelerationPhases(NavigableMap<Double, Double> speeds, double vf) {
+        // TODO
+        return new ArrayList<>();
+    }
+
+    private CoastingSpeedController generateCoastingSpeedControllerAtPosition(NavigableMap<Double, Double> speeds,
+                                                                              double endLocation, double timestep) {
+        double speed = interpolate(speeds, endLocation);
+        var location = Train.getInitialLocation(schedule, sim);
+        location.updatePosition(schedule.rollingStock.length, endLocation);
+        do {
+            var integrator = TrainPhysicsIntegrator.make(timestep, schedule.rollingStock,
+                    speed, location.maxTrainGrade());
+            var action = Action.coast();
+            var update =  integrator.computeUpdate(action, Double.POSITIVE_INFINITY,
+                    -1);
+            speed = update.speed;
+
+            location.updatePosition(schedule.rollingStock.length, -update.positionDelta);
+        } while(speed < interpolate(speeds, location.getPathPosition()));
+        return new CoastingSpeedController(location.getPathPosition(), endLocation);
+    }
+
     @Override
-    protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule, double value) {
-        var v1 = value;
+    protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule, double v1) {
+        double timestep = 1;
         var wle = (2 * schedule.rollingStock.C * v1 + schedule.rollingStock.B) * v1 * v1;
         var vf = wle * v1 / (wle + schedule.rollingStock.rollingResistance(v1) * v1);
         double startLocation = findPhaseInitialLocation(schedule);
         double endLocation = findPhaseEndLocation(schedule);
 
-        var NewMaxSpeedController = new MaxSpeedController(value, startLocation, endLocation);
-        //TODO implement CoastingSpeedController for not constant gamma
-        var NewCoastingSpeedController = new CoastingSpeedController(vf, startLocation, endLocation, 0.5);
-        var res = new HashSet<>(maxSpeedControllers);
-        res.add(NewMaxSpeedController);
-        res.add(NewCoastingSpeedController);
-        return res;
+        var currentSpeedControllers = new HashSet<>(maxSpeedControllers);
+        currentSpeedControllers.add(new MaxSpeedController(v1, startLocation, endLocation));
+        var expectedSpeeds = getExpectedSpeeds(sim, schedule, currentSpeedControllers, 1);
+
+        for (var location : findPositionSameSpeedAsVF(expectedSpeeds, vf)) {
+            currentSpeedControllers.add(generateCoastingSpeedControllerAtPosition(expectedSpeeds, location, timestep));
+        }
+        for (var location : findDecelerationPhases(expectedSpeeds, vf)) {
+            currentSpeedControllers.add(generateCoastingSpeedControllerAtPosition(expectedSpeeds, location, timestep));
+        }
+        return currentSpeedControllers;
     }
 }
