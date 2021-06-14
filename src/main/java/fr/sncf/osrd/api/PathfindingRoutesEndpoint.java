@@ -126,10 +126,12 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                     });
 
             if (found == 0)
-                return new RsWithStatus(new RsText("Not path could be found"), 400);
+                return new RsWithStatus(new RsText("No path could be found"), 400);
 
             candidatePaths.clear();
-            candidatePaths.add(pathsToGoal.get(pathsToGoal.size() - 1));
+            var lastStop = pathsToGoal.get(pathsToGoal.size() - 1);
+            var newCandidate = new BasicPathNode<>(lastStop.edge, lastStop.position);
+            candidatePaths.add(newCandidate);
         }
 
         var res = new PathfindingResult();
