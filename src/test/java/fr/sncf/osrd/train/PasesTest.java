@@ -10,15 +10,11 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
-import fr.sncf.osrd.speedcontroller.SpeedInstructionsTests;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.Interpolation;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.sql.Array;
-import java.sql.Time;
 import java.util.*;
 
 import static fr.sncf.osrd.Helpers.*;
@@ -152,6 +148,48 @@ public class PasesTest {
 
         var expected = baseEndTime + 30;
 
-        assertEquals(expected, actualEndTime, expected * 0.1);
+        assertEquals(expected, actualEndTime, expected * 0.01);
+    }
+
+    @Test
+    public void testDifferentMargins() throws InvalidInfraException {
+        var infra = getBaseInfra();
+        var param = new RJSAllowance.LinearAllowance();
+        param.allowanceValue = 0;
+        param.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
+        var params = new ArrayList<RJSAllowance>(Collections.singletonList(param));
+
+        var config = makeConfigWithSpeedParams(params, "tiny_infra/config_railjson_several_phases.json");
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var baseEvents = run(sim, config);
+        var basePhaseChange = findPhaseChangeTime(baseEvents);
+        var baseTime = sim.getTime();
+
+        var paramsSecondPhase = new RJSAllowance.LinearAllowance();
+        paramsSecondPhase.allowanceValue = 20;
+        paramsSecondPhase.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
+        var paramsBothPhases = new ArrayList<List<RJSAllowance>>();
+        paramsBothPhases.add(params);
+        paramsBothPhases.add(new ArrayList<>(Collections.singletonList(paramsSecondPhase)));
+        var config2 = makeConfigWithSpeedParamsList(paramsBothPhases, "tiny_infra/config_railjson_several_phases.json");
+        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var events = run(sim2, config2);
+        var phaseChangeTime = findPhaseChangeTime(events);
+        var time = sim.getTime();
+
+        var expected = baseTime + (baseTime - basePhaseChange) * 0.2;
+        assertEquals(expected, time, expected * 0.01);
+        assertEquals(basePhaseChange, phaseChangeTime, basePhaseChange * 0.01);
+    }
+
+    public static double findPhaseChangeTime(List<TimelineEvent> events) {
+        for (var e : events) {
+            if (e instanceof TrainReachesActionPoint) {
+                var point = ((TrainReachesActionPoint) e).interaction.actionPoint;
+                if (point instanceof SignalNavigatePhase.VirtualActionPoint)
+                    return e.eventId.scheduledTime;
+            }
+        }
+        throw new RuntimeException("Can't find phase change");
     }
 }

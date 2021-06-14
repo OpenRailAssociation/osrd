@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -181,6 +182,10 @@ public class Helpers {
     }
 
     public static Config makeConfigWithSpeedParams(List<RJSAllowance> params, String baseConfigPath) {
+        return makeConfigWithSpeedParamsList(Collections.singletonList(params), baseConfigPath);
+    }
+
+    public static Config makeConfigWithSpeedParamsList(List<List<RJSAllowance>> params, String baseConfigPath) {
         ClassLoader classLoader = Helpers.class.getClassLoader();
         var configPath = classLoader.getResource(baseConfigPath);
         assert configPath != null;
@@ -192,9 +197,12 @@ public class Helpers {
             var infra = Infra.parseFromFile(jsonConfig.infraType, infraPath.toString());
             var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
             var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
-            for (var trainSchedule : schedule.trainSchedules)
-                for (var phase : trainSchedule.phases)
-                    phase.allowances = params == null ? null : params.toArray(new RJSAllowance[0]);
+            for (var trainSchedule : schedule.trainSchedules) {
+                for (int i = 0; i < trainSchedule.phases.length; i++) {
+                    trainSchedule.phases[i].allowances = params == null ? null
+                            : params.get(i % params.size()).toArray(new RJSAllowance[0]);
+                }
+            }
             var trainSchedules = RJSSimulationParser.parse(infra, schedule);
             return new Config(
                     jsonConfig.simulationTimeStep,
