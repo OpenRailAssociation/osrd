@@ -79,10 +79,22 @@ public class PasesTest {
         }
     }
 
-    // TODO figure out why this test fails (probably for the same reason as the test above)
-    @Disabled
     @Test
-    public void testReactSignal() throws InvalidInfraException, SimulationError {
+    public void testReactToSignals() throws InvalidInfraException, SimulationError {
+        var infra = getBaseInfra();
+        var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
+
+        infra.switches.iterator().next().positionChangeDelay = 500;
+
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+
+        // If the train ignores the signals, an exception will be thrown when it runs over the moving switch
+        run(sim, config);
+    }
+
+    @Test
+    public void testTriggerSwitchChangeAtRightTime() throws InvalidInfraException, SimulationError {
         var infra = getBaseInfra();
         var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
 

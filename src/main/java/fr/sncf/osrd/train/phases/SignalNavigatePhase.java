@@ -111,7 +111,7 @@ public final class SignalNavigatePhase implements Phase {
     }
 
     @Override
-    public void resolvePhases(Iterable<Phase> phases) {
+    public void resolvePhases(List<Phase> phases) {
         var newInteractions = new ArrayList<Interaction>();
         boolean seenSelf = false;
         double phaseLength = trackSectionPath.stream()
@@ -119,19 +119,41 @@ public final class SignalNavigatePhase implements Phase {
                 .sum();
         AtomicReference<Double> currentPosition = new AtomicReference<>(phaseLength);
         for (var phase : phases) {
-            if (phase == this)
+            if (phase == this) {
                 seenSelf = true;
+            }
             else if (seenSelf) {
                 phase.forEachPathSection(pathSection -> {
                     registerRange(newInteractions, pathSection, currentPosition.get(), driverSightDistance);
                     currentPosition.updateAndGet(v -> v + pathSection.length());
                 });
+                // adds the routes in the next phases, to trigger reserves at the right time
+                if (phase instanceof SignalNavigatePhase)
+                    routePath.addAll(((SignalNavigatePhase) phase).routePath);
+            }
+        }
+        // Removes duplicate routes
+        for (int i = 1; i < routePath.size(); i++) {
+            if (routePath.get(i).id.equals(routePath.get(i - 1).id)) {
+                routePath.remove(i);
+                i--;
             }
         }
         for (var interaction : newInteractions)
             if (interaction.position <= phaseLength)
                 interactionsPath.add(interaction);
         interactionsPath.sort(Comparator.comparingDouble(i -> i.position));
+
+        var ownIndex = phases.indexOf(this);
+        if (ownIndex < phases.size() - 1) {
+            var nextPhase = phases.get(ownIndex + 1);
+            if (nextPhase instanceof SignalNavigatePhase) {
+                var nextRoutes = ((SignalNavigatePhase) nextPhase).routePath;
+                if (!nextRoutes.isEmpty()) {
+                    routePath.add(nextRoutes.get(0));
+                }
+            }
+        }
     }
 
     @Override
