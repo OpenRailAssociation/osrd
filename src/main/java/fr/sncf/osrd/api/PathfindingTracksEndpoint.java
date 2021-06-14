@@ -10,6 +10,7 @@ import fr.sncf.osrd.utils.graph.BiDijkstra;
 import fr.sncf.osrd.utils.graph.DistCostFunction;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.path.BasicDirPathNode;
+import fr.sncf.osrd.utils.graph.path.BasicPathNode;
 import fr.sncf.osrd.utils.graph.path.FullPathArray;
 import org.takes.Request;
 import org.takes.Response;
@@ -35,6 +36,7 @@ public class PathfindingTracksEndpoint extends PathfindingEndpoint {
     }
 
     @Override
+    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
     public Response act(Request req) throws IOException {
         var body = new RqPrint(req).printBody();
         var request = adapterRequest.fromJson(body);
@@ -106,10 +108,12 @@ public class PathfindingTracksEndpoint extends PathfindingEndpoint {
                     });
 
             if (found == 0)
-                return new RsWithStatus(new RsText("Not path could be found"), 400);
+                return new RsWithStatus(new RsText("No path could be found"), 400);
 
             candidatePaths.clear();
-            candidatePaths.add(pathsToGoal.get(pathsToGoal.size() - 1));
+            var lastStop = pathsToGoal.get(pathsToGoal.size() - 1);
+            var newCandidate = new BasicDirPathNode<>(lastStop.edge, lastStop.position, lastStop.direction);
+            candidatePaths.add(newCandidate);
         }
 
         var result = new TrackSectionRangeResult[reqWaypoints.length - 1][];
