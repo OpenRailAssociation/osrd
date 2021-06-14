@@ -121,7 +121,7 @@ public abstract class SpeedControllerGenerator {
 
             location.updatePosition(schedule.rollingStock.length, update.positionDelta);
             res.put(location.getPathPosition(), update);
-        } while (location.getPathPosition() < totalLength && location.getPathPosition() <= end && speed > 0);
+        } while (location.getPathPosition() < totalLength && location.getPathPosition() < end && speed > 0);
         return res;
     }
 

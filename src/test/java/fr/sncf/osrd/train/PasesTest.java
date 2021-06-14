@@ -17,6 +17,7 @@ import fr.sncf.osrd.utils.Interpolation;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Array;
 import java.sql.Time;
 import java.util.*;
 
@@ -33,14 +34,14 @@ public class PasesTest {
         var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim, config);
-        var actual_end_time = sim.getTime();
+        var actualEndTime = sim.getTime();
 
-        var config_base = getBaseConfig();
-        var sim_base = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        run(sim_base, config_base);
-        var base_end_time = sim_base.getTime();
+        var configBase = getBaseConfig();
+        var simBase = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        run(simBase, configBase);
+        var baseEndTime = simBase.getTime();
 
-        assertEquals(base_end_time, actual_end_time, base_end_time * 0.1);
+        assertEquals(baseEndTime, actualEndTime, baseEndTime * 0.1);
     }
 
     public static NavigableMap<Double, Double> getTimePerPosition(Iterable<TimelineEvent> events) {
@@ -114,7 +115,6 @@ public class PasesTest {
         run(sim, config);
     }
 
-
     @Test
     public void testDifferentSpeedLimits() throws InvalidInfraException {
         var infra = getBaseInfra();
@@ -131,5 +131,27 @@ public class PasesTest {
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim, config);
+    }
+
+    @Test
+    public void testSeveralConstructionMargins() throws InvalidInfraException {
+        var infra = getBaseInfra();
+        var param = new RJSAllowance.ConstructionAllowance();
+        param.allowanceValue = 15;
+        var params = new ArrayList<RJSAllowance>(Collections.singletonList(param));
+
+        var config = makeConfigWithSpeedParams(params, "tiny_infra/config_railjson_several_phases.json");
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        run(sim, config);
+        var actualEndTime = sim.getTime();
+
+        var config_base = getBaseConfig();
+        var sim_base = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        run(sim_base, config_base);
+        var baseEndTime = sim_base.getTime();
+
+        var expected = baseEndTime + 30;
+
+        assertEquals(expected, actualEndTime, expected * 0.1);
     }
 }
