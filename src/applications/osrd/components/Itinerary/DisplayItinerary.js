@@ -29,6 +29,7 @@ export default function DisplayItinerary(props) {
       <h2 className="d-flex align-items-center mb-0 pl-4 bg-white">
         <span className="mr-1 h2 text-success"><RiMapPin2Fill /></span>
         <span>{t('osrd.config.origin')}</span>
+        <small className="ml-1">{osrdconf.pathfindingID}</small>
       </h2>
       <div className="mb-3 d-flex align-items-center w-100 osrd-config-place">
         {osrdconf.origin !== undefined ? (
@@ -43,7 +44,7 @@ export default function DisplayItinerary(props) {
                 tabIndex={0}
               >
                 <strong className="mr-1 text-nowrap">
-                  {`${osrdconf.origin.codeLigne} ${osrdconf.origin.nomVoie}`}
+                  {`${osrdconf.origin.id} ${osrdconf.origin.nomVoie}`}
                 </strong>
                 <small className="text-nowrap">
                   {`${osrdconf.origin.pkSncfDe} • ${osrdconf.origin.pkSncfFi}`}
@@ -103,7 +104,7 @@ export default function DisplayItinerary(props) {
                 tabIndex={0}
               >
                 <strong className="mr-1 text-nowrap">
-                  {`${osrdconf.destination.codeLigne} ${osrdconf.destination.nomVoie}`}
+                  {`${osrdconf.destination.id} ${osrdconf.destination.nomVoie}`}
                 </strong>
                 <small className="text-nowrap">
                   {`${osrdconf.destination.pkSncfDe} • ${osrdconf.destination.pkSncfFi}`}

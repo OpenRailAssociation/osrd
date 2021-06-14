@@ -3,6 +3,8 @@ import produce from 'immer';
 
 // Action Types
 export const UPDATE_NAME = 'osrdconf/UPDATE_NAME';
+export const UPDATE_PATHFINDING_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
+export const UPDATE_TIMETABLE_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
 export const UPDATE_ORIGIN = 'osrdconf/UPDATE_ORIGIN';
 export const UPDATE_ORIGIN_TIME = 'osrdconf/UPDATE_ORIGIN_TIME';
 export const UPDATE_VIAS = 'osrdconf/UPDATE_VIAS';
@@ -14,15 +16,14 @@ export const UPDATE_DESTINATION = 'osrdconf/UPDATE_DESTINATION';
 export const UPDATE_DESTINATION_TIME = 'osrdconf/UPDATE_DESTINATION_TIME';
 export const UPDATE_TRAINCOMPO = 'osrdconf/UPDATE_TRAINCOMPO';
 export const UPDATE_ITINERARY = 'osrdconf/UPDATE_ITINERARY';
-export const UPDATE_ITINERARY_PARAMS = 'osrdconf/UPDATE_ITINERARY_PARAMS';
-export const UPDATE_ITINERARY_LINEAR = 'osrdconf/UPDATE_ITINERARY_LINEAR';
 export const UPDATE_FEATURE_INFO_CLICK_OSRD = 'osrdconf/UPDATE_FEATURE_INFO_CLICK_OSRD';
-export const UPDATE_SIGNALS_SETTINGS = 'osrdconf/UPDATE_SIGNALS_SETTINGS';
 export const ERASE_SIMULATION = 'osrdconf/ERASE_SIMULATION';
 
 // Reducer
 export const initialState = {
   name: '',
+  pathfindingID: undefined,
+  timetableID: undefined,
   origin: undefined,
   originTime: undefined,
   destination: undefined,
@@ -30,16 +31,7 @@ export const initialState = {
   vias: [],
   trainCompo: undefined,
   geojson: undefined,
-  geojsonParams: undefined,
-  itineraryLinear: undefined,
   featureInfoClick: { displayPopup: false },
-  signalsSettings: {
-    all: false,
-    stops: true,
-    lights: false,
-    tivs: false,
-    jdz: true,
-  },
 };
 
 export default function reducer(state = initialState, action) {
@@ -47,6 +39,12 @@ export default function reducer(state = initialState, action) {
     switch (action.type) {
       case UPDATE_NAME:
         draft.name = action.name;
+        break;
+      case UPDATE_PATHFINDING_ID:
+        draft.pathfindingID = action.pathfindingID;
+        break;
+      case UPDATE_TIMETABLE_ID:
+        draft.timetableID = action.timetableID;
         break;
       case UPDATE_ORIGIN:
         draft.origin = action.origin;
@@ -81,17 +79,8 @@ export default function reducer(state = initialState, action) {
       case UPDATE_ITINERARY:
         draft.geojson = action.geojson;
         break;
-      case UPDATE_ITINERARY_PARAMS:
-        draft.geojsonParams = action.geojsonParams;
-        break;
-      case UPDATE_ITINERARY_LINEAR:
-        draft.itineraryLinear = action.itineraryLinear;
-        break;
       case UPDATE_FEATURE_INFO_CLICK_OSRD:
         draft.featureInfoClick = action.featureInfoClick;
-        break;
-      case UPDATE_SIGNALS_SETTINGS:
-        draft.signalsSettings = action.signalsSettings;
         break;
       case ERASE_SIMULATION:
         draft.name = '';
@@ -102,7 +91,6 @@ export default function reducer(state = initialState, action) {
         draft.vias = [];
         draft.trainCompo = undefined;
         draft.geojson = undefined;
-        draft.geojsonParams = undefined;
         break;
     }
   });
@@ -114,6 +102,22 @@ export function updateName(name) {
     dispatch({
       type: UPDATE_NAME,
       name,
+    });
+  };
+}
+export function updatePathfindingID(pathfindingID) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_PATHFINDING_ID,
+      pathfindingID,
+    });
+  };
+}
+export function updateTimetableID(timetableID) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_TIMETABLE_ID,
+      timetableID,
     });
   };
 }
@@ -214,35 +218,11 @@ export function updateItinerary(geojson) {
     });
   };
 }
-export function updateItineraryParams(geojsonParams) {
-  return (dispatch) => {
-    dispatch({
-      type: UPDATE_ITINERARY_PARAMS,
-      geojsonParams,
-    });
-  };
-}
-export function updateItineraryLinear(itineraryLinear) {
-  return (dispatch) => {
-    dispatch({
-      type: UPDATE_ITINERARY_LINEAR,
-      itineraryLinear,
-    });
-  };
-}
 export function updateFeatureInfoClickOSRD(featureInfoClick) {
   return (dispatch) => {
     dispatch({
       type: UPDATE_FEATURE_INFO_CLICK_OSRD,
       featureInfoClick,
-    });
-  };
-}
-export function updateSignalsSettings(signalsSettings) {
-  return (dispatch) => {
-    dispatch({
-      type: UPDATE_SIGNALS_SETTINGS,
-      signalsSettings,
     });
   };
 }

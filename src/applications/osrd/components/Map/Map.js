@@ -96,6 +96,8 @@ const Map = () => {
   const onFeatureHover = (e) => {
     if (e.features !== null && e.features[0] !== undefined) {
       setIdHover(e.features[0].properties.gaia_id);
+    } else {
+      setIdHover(undefined);
     }
   };
 

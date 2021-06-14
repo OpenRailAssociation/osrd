@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateItinerary, updateItineraryParams } from 'reducers/osrdconf';
+import { updateItinerary, updatePathfindingID } from 'reducers/osrdconf';
 import { updateFeatureInfoClick } from 'reducers/map';
 import { post } from 'common/requests';
 import bbox from '@turf/bbox';
@@ -47,44 +47,45 @@ const Itinerary = (props) => {
   };
 
   const mapItinerary = async (zoom = true) => {
-    const geom = (map.mapTrackSources === 'schematic') ? 'sch' : 'geo';
+    // const geom = (map.mapTrackSources === 'schematic') ? 'sch' : 'geo';
+
     if (osrdconf.origin !== undefined && osrdconf.destination !== undefined) {
       const params = {
-        from: osrdconf.origin.idGaia,
-        to: osrdconf.destination.idGaia,
-        geom,
-      };
-
-      if (osrdconf.vias.length > 0) {
-        params.via = osrdconf.vias.map((via) => via.idGaia).join(',');
-      }
-
-      // Test data
-      const paramTest = {
         infra: 27,
         name: 'Test path',
-        waypoints: [
-          [
-            {
-              track_section: osrdconf.origin.id,
-              geo_coordinate: osrdconf.origin.clickLngLat,
-            },
-          ],
-          [
-            {
-              track_section: osrdconf.destination.id,
-              geo_coordinate: osrdconf.destination.clickLngLat,
-            },
-          ],
-        ],
+        waypoints: [],
       };
-      console.log(paramTest);
+
+      // Adding start point
+      params.waypoints.push([{
+        track_section: osrdconf.origin.id,
+        geo_coordinate: osrdconf.origin.clickLngLat,
+      }]);
+
+      // Adding via points if exist
+      if (osrdconf.vias.length > 0) {
+        osrdconf.vias.forEach((via) => {
+          params.waypoints.push([{
+            track_section: via.id,
+            geo_coordinate: via.clickLngLat,
+          }]);
+        });
+      }
+
+      // Adding end point
+      params.waypoints.push([{
+        track_section: osrdconf.destination.id,
+        geo_coordinate: osrdconf.destination.clickLngLat,
+      }]);
+
+      console.log(params);
+
       try {
-        const itineraryCreated = await post(itineraryURI, paramTest, {}, true);
+        const itineraryCreated = await post(itineraryURI, params, {}, true);
         dispatch(updateItinerary(itineraryCreated.geographic));
-        // dispatch(updateItineraryParams({ ...params, uri: itineraryURI }));
+        dispatch(updatePathfindingID(itineraryCreated.id));
         if (zoom) zoomToFeature(bbox(itineraryCreated.geographic));
-        console.log('coucou', itineraryCreated.geographic);
+        console.log('coucou', itineraryCreated.id);
       } catch (e) {
         console.log('ERROR', e);
       }
