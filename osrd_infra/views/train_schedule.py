@@ -16,6 +16,7 @@ from osrd_infra.models import (
     TrackSectionEntity,
     TrainSchedule,
     TrainScheduleResult,
+    SignalEntity,
     entities_prefetch_components,
 )
 
@@ -26,6 +27,7 @@ def format_result(train_schedule_result):
         "name": train_schedule_result.train_schedule.train_id,
         "steps": steps,
         "stops": format_stops(train_schedule_result, steps),
+        "signals": format_signals(train_schedule_result),
     }
 
 
@@ -60,7 +62,9 @@ def format_steps(train_schedule_result):
                 "tail_position": projection.track_position(
                     tail_track_id, log["tail_offset"]
                 ),
-                "geo_position": geo_line.interpolate_normalized(head_offset_normalized).json,
+                "geo_position": geo_line.interpolate_normalized(
+                    head_offset_normalized
+                ).json,
                 "schema_position": schema_line.interpolate_normalized(
                     head_offset_normalized
                 ).json,
@@ -98,6 +102,29 @@ def format_stops(train_schedule_result, steps):
         }
     )
     return stops
+
+
+def format_signals(train_schedule_result):
+    signals = {}
+    signals_id = []
+    for log in train_schedule_result.log:
+        if log["type"] == "signal_change":
+            signal_id = int(log["signal"].split(".")[1])
+            signals_id.append(signal_id)
+            aspects = [int(aspect.split(".")[1]) for aspect in log["aspects"]]
+            signals.append(
+                {
+                    "signal_id": signal_id,
+                    "aspects": aspects,
+                }
+            )
+    qs = SignalEntity.objects.filter(pk__in=signals_id)
+    prefetch_signals = {e.pk: e for e in entities_prefetch_components(SignalEntity, qs)}
+    for signal in signals:
+        location = prefetch_signals[signal["signal"]].geo_point_location
+        signal["geo_position"] = geo_transform(location.geographic).json
+        signal["schema_position"] = geo_transform(location.schematic).json
+    return signals
 
 
 class TrainScheduleView(
