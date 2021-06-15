@@ -94,7 +94,7 @@ public class RJSTrainScheduleParser {
             throws InvalidSchedule {
         if (allowance == null)
             return new MaxSpeedGenerator();
-        else if (allowance instanceof RJSAllowance.LinearAllowance) {
+        else if (allowance.getClass() == RJSAllowance.LinearAllowance.class) {
             var linearAllowance = (RJSAllowance.LinearAllowance) allowance;
             return new AllowanceGenerator(linearAllowance.allowanceValue, linearAllowance.allowanceType);
         } else {
