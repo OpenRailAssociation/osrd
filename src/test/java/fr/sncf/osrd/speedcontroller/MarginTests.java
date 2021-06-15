@@ -22,6 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MarginTests {
 
+    private static final boolean saveCSVFiles = true;
+
     @Test
     public void testConstructionMargins() throws InvalidInfraException {
         var infra = getBaseInfra();
@@ -33,19 +35,21 @@ public class MarginTests {
         var config = makeConfigWithSpeedParams(null);
         assert config != null;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        run(sim, config);
+        var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with construction margin
         var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
         assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        run(sim2, configMargins);
+        var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
         var expected = baseSimTime + params.allowanceValue;
 
         assertEquals(expected, marginsSimTime, expected * 0.01);
+        saveGraph(eventsBase, "construction-base.csv");
+        saveGraph(events, "construction-out.csv");
     }
 
     @Test
@@ -66,19 +70,22 @@ public class MarginTests {
         var configMargins = makeConfigWithSpeedParams(params);
         assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        run(sim2, configMargins);
+        var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
         assert config != null;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        run(sim, config);
+        var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         var expected = baseSimTime * 1.1 + 15;
 
         assertEquals(expected, marginsSimTime, expected * 0.01);
+
+        saveGraph(eventsBase, "linear-time-on-construction-base.csv");
+        saveGraph(events, "linear-time-on-construction-out.csv");
     }
 
     @Test
@@ -106,12 +113,8 @@ public class MarginTests {
         var expected = baseSimTime * (1 + params.allowanceValue / 100);
         assertEquals(expected, marginsSimTime, expected * 0.1);
 
-        try {
-            saveGraph(eventsBase, "base.csv");
-            saveGraph(events, "eco.csv");
-        } catch (FileNotFoundException | UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        saveGraph(eventsBase, "eco-base.csv");
+        saveGraph(events, "eco-out.csv");
     }
 
     @Test
@@ -139,26 +142,30 @@ public class MarginTests {
         var expected = baseSimTime * 1.1;
         assertEquals(expected, marginsSimTime, expected * 0.01);
 
+        saveGraph(eventsBase, "eco-base.csv");
+        saveGraph(events, "eco-out.csv");
+    }
+
+    public static void saveGraph(ArrayList<TimelineEvent> events, String path) {
+        if (!saveCSVFiles)
+            return;
+        if (events == null)
+            throw new RuntimeException();
         try {
-            saveGraph(eventsBase, "base.csv");
-            saveGraph(events, "eco.csv");
+            PrintWriter writer = new PrintWriter(path, "UTF-8");
+            writer.println("position,time,speed");
+            for (var event : events) {
+                if (event instanceof TrainReachesActionPoint) {
+                    var updates = ((TrainReachesActionPoint) event).trainStateChange.positionUpdates;
+                    for (var update : updates) {
+                        writer.println(String.format("%f,%f,%f", update.pathPosition, update.time, update.speed));
+                    }
+                }
+            }
+            writer.close();
         } catch (FileNotFoundException | UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-    }
-
-    public static void saveGraph(ArrayList<TimelineEvent> events, String path) throws FileNotFoundException, UnsupportedEncodingException {
-        PrintWriter writer = new PrintWriter(path, "UTF-8");
-        writer.println("position,time,speed");
-        for (var event : events) {
-            if (event instanceof TrainReachesActionPoint) {
-                var updates = ((TrainReachesActionPoint) event).trainStateChange.positionUpdates;
-                for (var update : updates) {
-                    writer.println(String.format("%f,%f,%f", update.pathPosition, update.time, update.speed));
-                }
-            }
-        }
-        writer.close();
     }
 
     @Test
@@ -186,6 +193,35 @@ public class MarginTests {
     }
 
     @Test
+    public void testTimeMargin() throws InvalidInfraException {
+        var infra = getBaseInfra();
+        assert infra != null;
+        var params = new RJSAllowance.LinearAllowance();
+        params.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
+        params.allowanceValue = 20; // percents
+
+        // base run, no margin
+        var config = makeConfigWithSpeedParams(null);
+        assert config != null;
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var eventsBase = run(sim, config);
+        var baseSimTime = sim.getTime();
+
+        // Run with 20% margins
+        var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
+        assert configMargins != null;
+        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var events = run(sim2, configMargins);
+        var marginsSimTime = sim2.getTime();
+
+        var expected = baseSimTime * 1.2;
+
+        assertEquals(expected, marginsSimTime, expected * 0.01);
+        saveGraph(eventsBase, "linear-time-base.csv");
+        saveGraph(events, "linear-time-out.csv");
+    }
+
+    @Test
     public void testDistanceMargin() throws InvalidInfraException {
         var infra = getBaseInfra();
         assert infra != null;
@@ -197,14 +233,14 @@ public class MarginTests {
         var config = makeConfigWithSpeedParams(null);
         assert config != null;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        run(sim, config);
+        var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with 50% margins
         var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
         assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        run(sim2, configMargins);
+        var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
         var schedule = configMargins.trainSchedules.get(0);
@@ -215,6 +251,8 @@ public class MarginTests {
         var expected = baseSimTime + expectedExtraTime;
 
         assertEquals(expected, marginsSimTime, expected * 0.01);
+        saveGraph(eventsBase, "linear-distance-base.csv");
+        saveGraph(events, "linear-distance-out.csv");
     }
 
     private double convertTrackLocation(TrackSectionLocation location, TrainSchedule schedule) {
