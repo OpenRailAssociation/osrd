@@ -21,7 +21,7 @@ public final class SpeedDirective {
      * @param directive the speed limit to merge into the current one
      */
     public void mergeWith(SpeedDirective directive) {
-        if (directive.allowedSpeed < allowedSpeed)
+        if (directive.allowedSpeed < allowedSpeed || Double.isNaN(directive.allowedSpeed))
             allowedSpeed = directive.allowedSpeed;
     }
 
