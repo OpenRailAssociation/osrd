@@ -11,6 +11,7 @@ import {
 } from 'react-icons/all';
 import { isEqual } from 'lodash';
 
+import { Popup } from 'react-map-gl';
 import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
 import { Item, Zone } from '../../../types';
 import { clippedDataSelector, EditorState } from '../../../reducers/editor';
@@ -18,7 +19,6 @@ import { selectInZone } from '../../../utils/mapboxHelper';
 import EditorZone from '../../../common/Map/Layers/EditorZone';
 import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../common/Map/Consts/colors';
-import { Popup } from 'react-map-gl';
 import Modal from '../components/Modal';
 
 export type SelectItemsState = CommonToolState & {
@@ -36,7 +36,7 @@ export const SelectItems: Tool<SelectItemsState> = {
   labelTranslationKey: 'Editor.tools.select-items.label',
   descriptionTranslationKeys: ['Editor.tools.select-items.description-1'],
   isDisabled(editorState: EditorState) {
-    return !editorState.editionZone;
+    return !editorState.editorZone;
   },
   getInitialState() {
     return {
@@ -172,7 +172,7 @@ export const SelectItems: Tool<SelectItemsState> = {
   onClickFeature(feature, e, { setState }, toolState) {
     if (toolState.mode !== 'single') return;
 
-    let selection: Item[] = toolState.selection;
+    let { selection } = toolState;
     const isAlreadySelected = selection.find((item) => item.id === feature.id);
 
     if (!isAlreadySelected) {
@@ -181,14 +181,12 @@ export const SelectItems: Tool<SelectItemsState> = {
       } else {
         selection = [feature];
       }
+    } else if (e.srcEvent.ctrlKey) {
+      selection = selection.filter((item) => item.id !== feature.id);
+    } else if (selection.length === 1) {
+      selection = [];
     } else {
-      if (e.srcEvent.ctrlKey) {
-        selection = selection.filter((item) => item.id !== feature.id);
-      } else if (selection.length === 1) {
-        selection = [];
-      } else {
-        selection = [feature];
-      }
+      selection = [feature];
     }
 
     setState({
@@ -207,7 +205,7 @@ export const SelectItems: Tool<SelectItemsState> = {
           setState({
             ...toolState,
             rectangleTopLeft: null,
-            selection: selectInZone(editorState.editionData || [], {
+            selection: selectInZone(editorState.editorData || [], {
               type: 'rectangle',
               points: [toolState.rectangleTopLeft, position],
             }),
@@ -228,9 +226,9 @@ export const SelectItems: Tool<SelectItemsState> = {
           setState({
             ...toolState,
             polygonPoints: [],
-            selection: selectInZone(editorState.editionData || [], {
+            selection: selectInZone(editorState.editorData || [], {
               type: 'polygon',
-              points: points,
+              points,
             }),
           });
         }

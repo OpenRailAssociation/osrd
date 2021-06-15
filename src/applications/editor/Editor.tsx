@@ -10,14 +10,14 @@ import { NotificationsState } from 'common/Notifications';
 import 'common/Map/Map.scss';
 import './Editor.scss';
 
+import { useParams } from 'react-router-dom';
 import { Tool, Tools } from './tools';
-import { EditorState } from '../../reducers/editor';
+import { EditorState, setInfrastructure } from '../../reducers/editor';
 import { MainState } from '../../reducers/main';
 import Map from './Map';
 import Tipped from './components/Tipped';
 import NavButtons from './nav';
 import { updateViewport } from '../../reducers/map';
-import { useParams } from 'react-router-dom';
 
 const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const dispatch = useDispatch();
@@ -27,16 +27,16 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const [toolState, setToolState] = useState<any>(activeTool.getInitialState());
   const actionsGroups = activeTool.actions
     .map((group) =>
-      group.filter((action) => !action.isHidden || !action.isHidden(toolState, editorState))
+      group.filter((action) => !action.isHidden || !action.isHidden(toolState, editorState)),
     )
     .filter((group) => group.length);
 
-  const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
+  const { infra, urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
   const { mapStyle, viewport } = useSelector((state: { map: any }) => state.map);
-  const setViewport = useCallback((value) => dispatch(updateViewport(value, '/editor')), [
-    dispatch,
-    updateViewport,
-  ]);
+  const setViewport = useCallback(
+    (value) => dispatch(updateViewport(value, `/editor/${editorState.editorInfrastructure}`)),
+    [dispatch, updateViewport, editorState.editorInfrastructure],
+  );
 
   // Initial viewport:
   useEffect(() => {
@@ -51,6 +51,12 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
       });
     }
   }, []);
+
+  // Update the infrastructure in state
+  useEffect(() => {
+    console.log(infra);
+    if (infra) dispatch(setInfrastructure(parseInt(infra)));
+  }, [infra]);
 
   return (
     <main
@@ -102,7 +108,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
                     className={cx(
                       'editor-btn',
                       'btn-rounded',
-                      isActive && isActive(toolState, editorState) ? 'active' : ''
+                      isActive && isActive(toolState, editorState) ? 'active' : '',
                     )}
                     onClick={() => {
                       if (onClick) {
@@ -126,7 +132,16 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
         </div>
         <div className="map-wrapper">
           <div className="map">
-            <Map {...{ toolState, setToolState, viewport, setViewport, activeTool, mapStyle }} />
+            <Map
+              {...{
+                toolState,
+                setToolState,
+                viewport,
+                setViewport,
+                activeTool,
+                mapStyle,
+              }}
+            />
 
             <div className="nav-box">
               {NavButtons.flatMap((navButtons, i, a) => {
@@ -149,7 +164,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
                         className={cx(
                           'editor-btn',
                           'btn-rounded',
-                          isActive && isActive(editorState) ? 'active' : ''
+                          isActive && isActive(editorState) ? 'active' : '',
                         )}
                         onClick={() => {
                           if (onClick) {

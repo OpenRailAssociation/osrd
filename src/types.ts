@@ -1,6 +1,7 @@
 import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
 import { Action } from 'redux';
 import { GeoJSON, Position } from 'geojson';
+import { JSONSchema7 } from 'json-schema';
 
 //
 //  Redux types
@@ -93,27 +94,31 @@ export interface Notification {
 }
 
 //
-// Chartis update
+// Editor actions
 //
-export interface ChartisActionInsert {
+export interface EditorActionInsert {
   type: 'insert';
   layer: string;
   geometry: GeoJSON;
   properties: LineProperties;
 }
-export interface ChartisActionUpdate {
+export interface EditorActionUpdate {
   type: 'update';
   layer: string;
   id: number;
   geometry: GeoJSON;
 }
-export interface ChartisActionDelete {
+export interface EditorActionDelete {
   type: 'delete';
   layer: string;
   id: number;
 }
 
-export type ChartisAction = ChartisActionInsert | ChartisActionUpdate | ChartisActionDelete;
+export type EditorAction = EditorActionInsert | EditorActionUpdate | EditorActionDelete;
+
+// Editor data model definition
+export type EditorComponentsDefintion = { [key: string]: JSONSchema7 };
+export type EditorEntitiesDefinition = { [key: string]: Array<keyof EditorComponentDefintion> };
 
 //
 //  Misc

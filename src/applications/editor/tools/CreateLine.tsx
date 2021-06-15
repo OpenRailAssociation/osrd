@@ -39,7 +39,7 @@ export const CreateLine: Tool<CreateLineState> = {
     'Editor.tools.create-line.description-5',
   ],
   isDisabled(editorState: EditorState) {
-    return !editorState.editionZone;
+    return !editorState.editorZone;
   },
   getRadius() {
     return 50;
@@ -153,7 +153,7 @@ export const CreateLine: Tool<CreateLineState> = {
     if (e.features && e.features.length) {
       const nearestPoint = getNearestPoint(
         e.features as Feature<LineString | MultiLineString>[],
-        e.lngLat
+        e.lngLat,
       );
       setState({ ...toolState, nearestPoint });
     } else {
