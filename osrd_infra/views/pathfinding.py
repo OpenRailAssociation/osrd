@@ -7,7 +7,7 @@ import requests
 from django.conf import settings
 from osrd_infra.views.railjson import format_track_section_id
 from rest_framework.response import Response
-from osrd_infra.utils import geo_transform
+from osrd_infra.utils import geo_transform, reverse_format
 
 from osrd_infra.serializers import (
     PathSerializer,
@@ -34,13 +34,13 @@ def try_get_field(manifest, field):
 
 def post_treatment(payload):
     for route in payload["path"]:
-        route["route"] = int(route["route"].split(".")[1])
+        route["route"] = reverse_format(route["route"])
         for track in route["track_sections"]:
-            track["track_section"] = int(track["track_section"].split(".")[1])
+            track["track_section"] = reverse_format(track["track_section"])
     for op in payload["operational_points"]:
-        op["op"] = int(op["op"].split(".")[1])
-        op["position"]["track_section"] = int(
-            op["position"]["track_section"].split(".")[1]
+        op["op"] = reverse_format(op["op"])
+        op["position"]["track_section"] = reverse_format(
+            op["position"]["track_section"]
         )
     return payload
 
