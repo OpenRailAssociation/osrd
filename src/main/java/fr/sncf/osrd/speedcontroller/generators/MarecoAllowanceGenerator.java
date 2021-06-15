@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static fr.sncf.osrd.utils.Interpolation.interpolate;
+import static java.lang.Math.exp;
 import static java.lang.Math.min;
 
 public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
@@ -54,7 +55,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             position += 1;
         }
         // TODO find better way to define it
-        return max*10;
+        return max*2;
     }
 
     private List<Double> findPositionSameSpeedAsVF(NavigableMap<Double, Double> speeds, double vf) {
@@ -72,7 +73,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         return res;
     }
 
-    private List<Double> findDecelerationPhases(double vf) {
+    private List<Double> findDecelerationPhases(double vf, NavigableMap<Double, Double> speeds) {
         var res = new ArrayList<Double>();
         for (var announcer : findLimitSpeedAnnouncers(maxSpeedControllers)) {
             if (announcer.targetSpeedLimit > vf)
@@ -102,7 +103,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             speed = update.speed;
 
             // We cannot just call updatePosition with a negative delta so we re-create the location object
-            // TODO : support negative delta
+            // TODO (optimization): support negative delta
             location = convertPosition(schedule, sim, location.getPathPosition() - update.positionDelta);
 
         } while(speed < interpolate(speeds, location.getPathPosition()));
@@ -130,7 +131,10 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
     @Override
     protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule, double v1) {
-        double timestep = 1;
+        System.out.println(v1);
+        if (v1 == 34.375)
+            System.out.println("");
+        double timestep = 0.1;
         var wle = (2 * schedule.rollingStock.C * v1 + schedule.rollingStock.B) * v1 * v1;
         var vf = wle * v1 / (wle + schedule.rollingStock.rollingResistance(v1) * v1);
         double startLocation = findPhaseInitialLocation(schedule);
@@ -143,7 +147,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         for (var location : findPositionSameSpeedAsVF(expectedSpeeds, vf)) {
             currentSpeedControllers.add(generateCoastingSpeedControllerAtPosition(expectedSpeeds, location, timestep));
         }
-        for (var location : findDecelerationPhases(vf)) {
+        for (var location : findDecelerationPhases(vf, expectedSpeeds)) {
             currentSpeedControllers.add(generateCoastingSpeedControllerAtPosition(expectedSpeeds, location, timestep));
         }
         return currentSpeedControllers;

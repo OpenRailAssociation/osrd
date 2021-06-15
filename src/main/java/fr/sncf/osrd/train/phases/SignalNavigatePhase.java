@@ -177,6 +177,8 @@ public final class SignalNavigatePhase implements Phase {
             this.signalControllers = state.signalControllers;
             this.schedule = state.schedule;
             this.sim = state.sim;
+
+            // TODO ech: see if we can avoid this generate call
             speedInstructions.generate(sim, schedule);
         }
 

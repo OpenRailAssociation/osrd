@@ -5,9 +5,15 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.TimelineEvent;
+import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import org.junit.jupiter.api.Test;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -76,6 +82,39 @@ public class MarginTests {
     }
 
     @Test
+    public void testLargerEcoMargin() throws InvalidInfraException {
+        var infra = getBaseInfra();
+        assert infra != null;
+        var params = new RJSAllowance.MarecoAllowance();
+        params.allowanceValue = 50;
+        params.allowanceType = RJSAllowance.MarecoAllowance.MarginType.TIME;
+
+        // Run with construction margin
+        var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
+        assert configMargins != null;
+        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var events = run(sim2, configMargins);
+        var marginsSimTime = sim2.getTime();
+
+        // base run, no margin
+        var config = makeConfigWithSpeedParams(null);
+        assert config != null;
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var eventsBase = run(sim, config);
+        var baseSimTime = sim.getTime();
+
+        var expected = baseSimTime * 1 + params.allowanceValue / 100;
+        assertEquals(expected, marginsSimTime, expected * 0.01);
+
+        try {
+            saveGraph(eventsBase, "base.csv");
+            saveGraph(events, "eco.csv");
+        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
     public void testEcoMargin() throws InvalidInfraException {
         var infra = getBaseInfra();
         assert infra != null;
@@ -83,22 +122,43 @@ public class MarginTests {
         params.allowanceValue = 10;
         params.allowanceType = RJSAllowance.MarecoAllowance.MarginType.TIME;
 
-        // base run, no margin
-        var config = makeConfigWithSpeedParams(null);
-        assert config != null;
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        run(sim, config);
-        var baseSimTime = sim.getTime();
-
         // Run with construction margin
         var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
         assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        run(sim2, configMargins);
+        var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
+
+        // base run, no margin
+        var config = makeConfigWithSpeedParams(null);
+        assert config != null;
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var eventsBase = run(sim, config);
+        var baseSimTime = sim.getTime();
 
         var expected = baseSimTime * 1.1;
         assertEquals(expected, marginsSimTime, expected * 0.01);
+
+        try {
+            saveGraph(eventsBase, "base.csv");
+            saveGraph(events, "eco.csv");
+        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void saveGraph(ArrayList<TimelineEvent> events, String path) throws FileNotFoundException, UnsupportedEncodingException {
+        PrintWriter writer = new PrintWriter(path, "UTF-8");
+        writer.println("position,time,speed");
+        for (var event : events) {
+            if (event instanceof TrainReachesActionPoint) {
+                var updates = ((TrainReachesActionPoint) event).trainStateChange.positionUpdates;
+                for (var update : updates) {
+                    writer.println(String.format("%f,%f,%f", update.pathPosition, update.time, update.speed));
+                }
+            }
+        }
+        writer.close();
     }
 
     @Test
