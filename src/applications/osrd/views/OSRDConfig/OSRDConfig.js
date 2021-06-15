@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { updateViewport } from 'reducers/map';
 import Itinerary from 'applications/osrd/views/OSRDConfig/Itinerary';
 import Map from 'applications/osrd/components/Map/Map';
+import InfraSelector from 'applications/osrd/views/OSRDConfig/InfraSelector';
 import TrainCompoSelector from 'applications/osrd/views/OSRDConfig/TrainCompoSelector';
 import SimulationLauncher from 'applications/osrd/views/OSRDConfig/SimulationLauncher';
 import 'applications/osrd/views/OSRDConfig/OSRDConfig.scss';
@@ -12,7 +13,7 @@ import 'applications/osrd/views/OSRDConfig/OSRDConfig.scss';
 export default function OSRDConfig() {
   const { fullscreen } = useSelector((state) => state.main);
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t } = useTranslation(['translation', 'osrdconf']);
   const [extViewport, setExtViewport] = useState(undefined);
 
   useEffect(() => {
@@ -29,10 +30,11 @@ export default function OSRDConfig() {
     <main className={`osrd-config-mastcontainer mastcontainer${fullscreen ? ' fullscreen' : ''}`}>
       <div className="row m-0 px-1 py-3 h-100">
         <div className="col-sm-6 h-100">
-          <SimulationLauncher title={t('osrd.config.simulation')} />
-          <TrainCompoSelector title={t('osrd.config.composition')} modalID="trainCompoModal" />
+          <SimulationLauncher title={t('osrdconf:simulation')} />
+          <InfraSelector />
+          {/* <TrainCompoSelector title={t('osrdconf:composition')} modalID="trainCompoModal" /> */}
           <Itinerary
-            title={t('common.itinerary')}
+            title={t('translation:common.itinerary')}
             updateExtViewport={setExtViewport}
           />
         </div>

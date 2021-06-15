@@ -1,0 +1,32 @@
+{
+  "blocktype": "Type de block",
+  "chooseOnMap": "Choisir sur la carte",
+  "chooseTrainCompo": "Choisir un matériel",
+  "composition": "Composition",
+  "destination": "Destination",
+  "displayItinerary": "Tracer l'itinéraire",
+  "eraseItinerary": "Effacer l'itinéraire",
+  "eraseSimulation": "Effacer",
+  "eraseSimulationConfirm": "Voulez-vous effacer tous les paramètres ?",
+  "errorMessages": {
+    "noDestination": "La destination n'est pas définie",
+    "noName": "Veuillez choisir un nom pour la simulation",
+    "noOrigin": "L'origine n'est pas définie",
+    "noOriginTime": "Veuillez renseignez au moins l'horaire de départ à l'origine",
+    "noTrainCompo": "La composition de train n'est pas renseignée"
+  },
+  "gare": "Gare, poste",
+  "infrachoose": "Choisissez une infrastructure",
+  "infrastructure": "Infrastructure",
+  "launchSimulation": "Démarrer",
+  "name": "Nom de la simulation",
+  "noplacechosen": "Aucun point défini",
+  "noTrainCompo": "Aucun matériel défini...",
+  "origin": "Origine",
+  "simulation": "Simulation",
+  "stopSimulation": "Stopper",
+  "title": "Configuration simulation",
+  "track": "Voie",
+  "via": "Étape",
+  "vias": "Points de passage, arrêts"
+}

@@ -23,8 +23,15 @@
 
 .osrd-config-item-container {
   background-color: white;
-  padding: 1rem;
+  padding: .5rem;
   border-radius: 4px;
+  &.osrd-config-item-clickable {
+    cursor: pointer;
+    transition: .2s;
+    &:hover {
+      background-color: #d7d7d7;
+    }
+  }
 }
 .osrd-config-item-container-map {
   border-radius: 0 0 4px 4px;
@@ -149,4 +156,20 @@
   padding: .40625rem 1.25rem;
   line-height: .9rem;
   font-size: .9rem;
+}
+
+.osrd-config-infraselector {
+  max-height: 50vh;
+  overflow: auto;
+  .osrd-config-infraselector-item {
+    background-color: #f2f2f2;
+    cursor: pointer;
+    padding: 0 .5rem;
+    margin-bottom: .5rem;
+    border-radius: 4px;
+    transition: .2s;
+    &:hover {
+      background-color: #d7d7d7;
+    }
+  }
 }

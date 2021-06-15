@@ -1,24 +1,20 @@
-import { store } from 'Store';
-import i18next from 'i18next';
-
-export default function formatConf(setErrorMessages) {
-  const { osrdconf } = store.getState();
+export default function formatConf(setErrorMessages, t, osrdconf) {
   const errorMessages = [];
 
   if (osrdconf.origin === undefined) {
-    errorMessages.push(i18next.t('osrd.config.errorMessages.noOrigin'));
+    errorMessages.push(t('osrdconf:errorMessages.noOrigin'));
   }
   if (osrdconf.originTime === undefined) {
-    errorMessages.push(i18next.t('osrd.config.errorMessages.noOriginTime'));
+    errorMessages.push(t('osrdconf:errorMessages.noOriginTime'));
   }
   if (osrdconf.destination === undefined) {
-    errorMessages.push(i18next.t('osrd.config.errorMessages.noDestination'));
+    errorMessages.push(t('osrdconf:errorMessages.noDestination'));
   }
   if (osrdconf.trainCompo === undefined) {
-    errorMessages.push(i18next.t('osrd.config.errorMessages.noTrainCompo'));
+    errorMessages.push(t('osrdconf:errorMessages.noTrainCompo'));
   }
   if (osrdconf.name === '') {
-    errorMessages.push(i18next.t('osrd.config.errorMessages.noName'));
+    errorMessages.push(t('osrdconf:errorMessages.noName'));
   }
 
   if (errorMessages.length === 0) {

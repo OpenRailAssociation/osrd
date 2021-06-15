@@ -85,7 +85,6 @@ const Itinerary = (props) => {
         dispatch(updateItinerary(itineraryCreated.geographic));
         dispatch(updatePathfindingID(itineraryCreated.id));
         if (zoom) zoomToFeature(bbox(itineraryCreated.geographic));
-        console.log('coucou', itineraryCreated.id);
       } catch (e) {
         console.log('ERROR', e);
       }

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import setPointIti from 'applications/osrd/components/Map/setPointIti';
 
 export default function PopupInfosCustomContent(props) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['osrdconf']);
   const { data } = props;
   return (
     <>
@@ -28,15 +28,15 @@ export default function PopupInfosCustomContent(props) {
       <div className="d-flex my-1">
         <button className="btn btn-success flex-fill" type="button" onClick={() => setPointIti('start', data)}>
           <RiMapPin2Fill />
-          <span className="ml-1">{t('osrd.config.origin')}</span>
+          <span className="ml-1">{t('origin')}</span>
         </button>
         <button className="btn btn-info flex-fill mx-1" type="button" onClick={() => setPointIti('via', data)}>
           <RiMapPin3Fill />
-          <span className="ml-1">{t('osrd.config.via')}</span>
+          <span className="ml-1">{t('via')}</span>
         </button>
         <button className="btn btn-warning flex-fill" type="button" onClick={() => setPointIti('end', data)}>
           <RiMapPin5Fill />
-          <span className="ml-1">{t('osrd.config.destination')}</span>
+          <span className="ml-1">{t('destination')}</span>
         </button>
       </div>
     </>

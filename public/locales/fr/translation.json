@@ -1,456 +1,427 @@
 {
-  "Login": {
-    "pleaseconnect": "Veuillez vous connecter",
-    "trying": "Tentative de reconnexion...",
-    "username": "Nom d'utilisateur",
-    "password": "Mot de passe",
-    "connect": "Se connecter",
-    "usernameErrorMsg": "Le nom d'utilisateur est probalement incorrect.",
-    "passwordErrorMsg": "Le mot de passe est probablement incorrect.",
-    "englishFlag": "drapeau anglais",
-    "frenchFlag": "drapeau français",
-    "serverError": "Erreur de connexion au serveur"
-  },
-  "NavBar": {
-    "disconnect": "Déconnexion"
-  },
-  "nav": {
-    "home": "Accueil",
-    "about": "A propos",
-    "map": "Cartographie",
-    "contact": "Contact",
-    "chart": "Graphiques",
-    "logs": "Zones de travail et Historique",
-    "library": "Bibliothèque",
-    "administration": "Administration",
-    "traincompo": "Matériel",
-    "events": "Incidents"
-  },
-  "Map": {
-    "title": "Cartographie",
-    "mapstyles": {
-      "normal": "Normal",
-      "darkmode": "Sombre",
-      "blueprint": "Blueprint"
-    },
-    "tracksources": {
-      "schematic": "Schématique",
-      "geographic": "Géographique"
-    },
-    "settings": {
-      "showOSM": "Afficher le fond de carte"
-    },
-    "filtersMenu": {
-      "title": "Filtres",
-      "tiles": {
-        "title": "Fonds de carte",
-        "osm": "OpenStreetMap",
-        "osmLight": "OpenStreetMap allégé",
-        "communes": "Communes"
-      },
-      "tracks": {
-        "title": "Voies",
-        "main": "Principales",
-        "secondary": "Secondaires",
-        "service": "Voies de service"
-      },
-      "elementsMenu": {
-        "title": "Objets",
-        "pointObject": "Objets ponctuels",
-        "noObjectMatch": "Aucun objet ne correspond à votre recherche",
-        "noGroupMatch": "Aucun groupe ne correspond à votre recherche"
-      },
-      "search": {
-        "placeholder": "Rechercher..."
-      }
-    },
-    "drawZone": {
-      "name": "Nom de la zone",
-      "namePlaceholder": "Entrer un nom pour cette zone",
-      "drawButton": "Dessiner une zone",
-      "deleteButton": "Supprimer la zone sélectionnée",
-      "saveButton": "Sauvegarder la zone",
-      "saveZoneNotice": "La zone a été enregistrée avec succès",
-      "modalHeader": "Paramètres de la zone",
-      "delete": "Supprimer",
-      "cancel": "Annuler",
-      "enterModal": {
-        "header": "Voulez-vous entrer en mode création de zone de travail ?",
-        "enterButton": "Entrer en mode création"
-      },
-      "deleteModal": {
-        "header": "Voulez-vous vraiment supprimer cette zone de travail ?"
-      },
-      "errorModal": {
-        "header": "Erreur",
-        "body": "Veuillez sélectionner une zone",
-        "footer": "OK"
-      }
-    },
-    "addObjectButton": "Créer un objet",
-    "elementsMenu": {
-      "title": "Objets",
-      "pointObject": "Objets ponctuels",
-      "noObjectMatch": "Aucun objet ne correspond à votre recherche",
-      "noGroupMatch": "Aucun groupe ne correspond à votre recherche"
-    },
-    "search": {
-      "placeholder": "Rechercher..."
-    },
-    "popupDetails": {
-      "validateButton": "Valider",
-      "createObject": "Créer un objet lié à la TIV",
-      "createButton": "Créer",
-      "addRowButton": "Ajouter un champ",
-      "addButton": "Ajouter",
-      "deleteButton": "Supprimer",
-      "discartButton": "Annuler",
-      "validateNotice": "Voulez-vous valider cet objet ?",
-      "creationNotice": "Voulez-vous créer cet objet ?",
-      "addExtremite": "Ajouter ext.",
-      "addAdv": "Ajouter aig.",
-      "addBranch": "Ajouter bra.",
-      "addIti": "Ajouter iti. inco.",
-      "addKey": "Ajouter clé",
-      "addForbiddenIti": "Ajouter iti.",
-      "addSignalOrigin": "Ajouter sig. or.",
-      "addSignalDestination": "Ajouter sig. dest.",
-      "delAdv": "Supprimer aig.",
-      "delExt": "Supprimer ext.",
-      "delBra": "Supprimer bra.",
-      "deleteNotice": {
-        "line": "Voulez-vous vraiment supprimer cette ligne ?",
-        "object": "Voulez-vous vraiment supprimer cet objet ?"
-      },
-      "tableHeader": {
-        "action": "Actions",
-        "property": "Propriété",
-        "value": "Valeur"
-      },
-      "createModal": {
-        "selectValue": "Choisir un objet à créer"
-      },
-      "errorModal": {
-        "header": "Erreur",
-        "body": "Le PK que vous avez entré est invalide. Il doit être de la forme 123 ou 001+234"
-      }
-    },
-    "multipopupitems": {
-      "adv": "Appareil de voie",
-      "itineraire": "Itinéraire",
-      "jdz": "Joint de zone",
-      "pn": "Passage à niveau",
-      "zep": "ZEP",
-      "sel": "SEL",
-      "itemundefined": "Élément indéterminé",
-      "itemsfounds": "élément(s) trouvé(s)",
-      "line": "ligne",
-      "track": "voie",
-      "signal": "signal",
-      "label": "libellé"
-    }
+  "common": {
+    "asc": "Ascendant",
+    "cancel": "Annuler",
+    "change": "Changer",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "description": "Description",
+    "dsc": "Descendant",
+    "erase": "Effacer",
+    "error": "Une erreur est survenue",
+    "filter": "Filtrer",
+    "itinerary": "Itinéraire",
+    "loading": "Chargement...",
+    "search": "Rechercher",
+    "settings": "Paramètres",
+    "sort": "Tri"
   },
   "Editor": {
+    "nav": {
+      "recenter": "Recentrer la carte",
+      "toggle-layers": "[TODO] Choisir les couches à afficher",
+      "zoom-in": "Zoomer",
+      "zoom-out": "Dézoomer"
+    },
     "title": "Éditeur",
     "tool-help": "Voir la description de l'outil actif",
-    "nav": {
-      "zoom-in": "Zoomer",
-      "zoom-out": "Dézoomer",
-      "recenter": "Recentrer la carte",
-      "toggle-layers": "[TODO] Choisir les couches à afficher"
-    },
     "tools": {
-      "select-zone": {
-        "label": "Sélection de la zone d'édition",
-        "description-1": "1er clic : Début de la sélection",
-        "description-2": "2nd clic : Fin de la sélection",
-        "description-3": "Touch Échap : Annulation de la sélection en cours",
+      "create-line": {
         "actions": {
-          "rectangle": {
-            "label": "Sélection Rectangle"
+          "cancel-last-point": {
+            "label": "Annuler le dernier point saisi"
+          },
+          "cancel-line": {
+            "label": "Annuler toute la ligne saisie"
+          },
+          "toggle-anchoring": {
+            "label": "Permettre d'ancrer les points sur les lignes existantes"
+          },
+          "validate-line": {
+            "label": "Valider la ligne"
+          }
+        },
+        "description-1": "1er clic : Début de la création de la ligne",
+        "description-2": "Clics suivants : Ajout de points dans le chemin de la ligne",
+        "description-3": "Double-click : Ajout du dernier point de la ligne, validation du chemin",
+        "description-4": "Touch Échap : Annulation du dernier point",
+        "description-5": "Touch Entrée : Validation du chemin",
+        "label": "Création d'une nouvelle ligne",
+        "properties": "Propriétés"
+      },
+      "select-items": {
+        "actions": {
+          "delete-selection": {
+            "label": "[TODO] Supprimer les éléments sélectionnés"
+          },
+          "edit-info": {
+            "label": "[TODO] Modifier les métadonnées de l'élément sélectionné"
           },
           "polygon": {
             "label": "Sélection Polygône"
+          },
+          "rectangle": {
+            "label": "Sélection Rectangle"
+          },
+          "select-all": {
+            "label": "Tout sélectionner"
+          },
+          "show-info": {
+            "label": "Voir les informations sur la sélection"
+          },
+          "single": {
+            "label": "Sélection Simple"
+          },
+          "unselect-all": {
+            "label": "Tout désélectionner"
+          }
+        },
+        "description-1": "Clic sur un élément : Affichage de ses propriétés",
+        "edit-line": "Édition des métadonnées d'un élément",
+        "focus": "Focus sur un élément",
+        "label": "Sélection d'un élément",
+        "no-selection": "Aucun élément sélectionné",
+        "selection": "{{count}} élément sélectionné",
+        "selection_plural": "{{count}} éléments sélectionnés"
+      },
+      "select-zone": {
+        "actions": {
+          "cancel-last-point": {
+            "label": "Annuler le dernier point saisi"
+          },
+          "cancel-polygon": {
+            "label": "Annuler le polygône"
+          },
+          "polygon": {
+            "label": "Sélection Polygône"
+          },
+          "rectangle": {
+            "label": "Sélection Rectangle"
           },
           "unselect": {
             "label": "Désélectionner la zone d'édition"
           },
           "validate-polygon": {
             "label": "Valider le polygône d'édition"
-          },
-          "cancel-last-point": {
-            "label": "Annuler le dernier point saisi"
-          },
-          "cancel-polygon": {
-            "label": "Annuler le polygône"
           }
-        }
-      },
-      "select-items": {
-        "label": "Sélection d'un élément",
-        "focus": "Focus sur un élément",
-        "description-1": "Clic sur un élément : Affichage de ses propriétés",
-        "edit-line": "Édition des métadonnées d'un élément",
-        "no-selection": "Aucun élément sélectionné",
-        "selection": "{{count}} élément sélectionné",
-        "selection_plural": "{{count}} éléments sélectionnés",
-        "actions": {
-          "select-all": {
-            "label": "Tout sélectionner"
-          },
-          "unselect-all": {
-            "label": "Tout désélectionner"
-          },
-          "show-info": {
-            "label": "Voir les informations sur la sélection"
-          },
-          "edit-info": {
-            "label": "[TODO] Modifier les métadonnées de l'élément sélectionné"
-          },
-          "single": {
-            "label": "Sélection Simple"
-          },
-          "rectangle": {
-            "label": "Sélection Rectangle"
-          },
-          "polygon": {
-            "label": "Sélection Polygône"
-          },
-          "delete-selection": {
-            "label": "[TODO] Supprimer les éléments sélectionnés"
-          }
-        }
-      },
-      "create-line": {
-        "label": "Création d'une nouvelle ligne",
-        "properties": "Propriétés",
-        "description-1": "1er clic : Début de la création de la ligne",
-        "description-2": "Clics suivants : Ajout de points dans le chemin de la ligne",
-        "description-3": "Double-click : Ajout du dernier point de la ligne, validation du chemin",
-        "description-4": "Touch Échap : Annulation du dernier point",
-        "description-5": "Touch Entrée : Validation du chemin",
-        "actions": {
-          "toggle-anchoring": {
-            "label": "Permettre d'ancrer les points sur les lignes existantes"
-          },
-          "validate-line": {
-            "label": "Valider la ligne"
-          },
-          "cancel-last-point": {
-            "label": "Annuler le dernier point saisi"
-          },
-          "cancel-line": {
-            "label": "Annuler toute la ligne saisie"
-          }
-        }
+        },
+        "description-1": "1er clic : Début de la sélection",
+        "description-2": "2nd clic : Fin de la sélection",
+        "description-3": "Touch Échap : Annulation de la sélection en cours",
+        "label": "Sélection de la zone d'édition"
       }
     }
   },
+  "errorBoundary": {
+    "feedbackButton": "Faire un retour",
+    "notice": "Nous rencontrons quelques problèmes ",
+    "reloadButton": "Rafraîchir"
+  },
+  "Login": {
+    "connect": "Se connecter",
+    "englishFlag": "drapeau anglais",
+    "frenchFlag": "drapeau français",
+    "password": "Mot de passe",
+    "passwordErrorMsg": "Le mot de passe est probablement incorrect.",
+    "pleaseconnect": "Veuillez vous connecter",
+    "serverError": "Erreur de connexion au serveur",
+    "trying": "Tentative de reconnexion...",
+    "username": "Nom d'utilisateur",
+    "usernameErrorMsg": "Le nom d'utilisateur est probalement incorrect."
+  },
   "Logs": {
-    "titleLogs": "Zones de travail et historique",
-    "titleAdmin": "Administration",
-    "tabs": {
-      "history": "Historique",
-      "zones": "Zones de travail",
-      "profile": "Gestion des profils"
+    "actionTypes": {
+      "deletion": "Suppression",
+      "insertion": "Insertion",
+      "modification": "Modification"
     },
-    "tableHeaders": {
-      "user": "Utilisateur",
-      "zone": "Zone de travail",
-      "object": "Objet",
-      "family": "Famille d'objet",
-      "action": "Action",
+    "filters": {
       "date": "Date",
-      "name": "Nom",
-      "group": "Groupe de travail",
-      "families": "Familles d'objets sélectionnés",
-      "nbObjectsTotal": "Nombres d'objets dans la zone",
-      "objectsVerifiedRatio": "Pourcentage d'objets mis en qualité",
-      "creationDate": "Date de création",
+      "datePickerPlaceholder": "Sélectionner une date...",
+      "defaultSelectAdminValue": "Choisir un utilisateur",
+      "defaultSelectObjectValue": "Choisir une famille d'objet",
+      "defaultSelectStatusValue": "Choisir un statut",
+      "family": "Famille d'objet",
+      "search": "Recherche",
+      "searchPlaceholder": "Rechercher...",
       "status": "Statut",
-      "supervisor": "Validateur",
-      "owner": "Vérificateur",
-      "firstName": "Prénom",
-      "lastName": "Nom",
-      "email": "Adresse e-mail",
-      "profile": "Profil"
+      "user": "Nom d'utilisateur"
+    },
+    "pagination": {
+      "end": "Fin",
+      "next": "Suivant",
+      "previous": "Précédent",
+      "start": "Début"
     },
     "popupDetails": {
       "cancel": "Annuler",
-      "confirmButton": "Restaurer",
       "confirmationNotice": "Voulez-vous vraiment restaurer cet objet ?",
+      "confirmButton": "Restaurer",
       "restoreNotice": "La restauration a été réalisée avec succès"
-    },
-    "filters": {
-      "search": "Recherche",
-      "family": "Famille d'objet",
-      "status": "Statut",
-      "date": "Date",
-      "defaultSelectObjectValue": "Choisir une famille d'objet",
-      "defaultSelectStatusValue": "Choisir un statut",
-      "defaultSelectAdminValue": "Choisir un utilisateur",
-      "datePickerPlaceholder": "Sélectionner une date...",
-      "user": "Nom d'utilisateur",
-      "searchPlaceholder": "Rechercher..."
-    },
-    "zones": {
-      "confirmDelete": "Voulez-vous vraiment supprimer cette zone ?",
-      "confirmValidation": "Voulez-vous vraiment valider cette zone et la soumettre pour vérification ?",
-      "validate": "Valider",
-      "validationNotice": "Voulez-vous vraiment valider cette zone ?",
-      "verify": "Affecter",
-      "verificationNotice": "Voulez-vous vraiment affecter cette zone à ce validateur ?",
-      "verificationSuccess": "La zone a été affectée avec succès",
-      "assign": "Assigner",
-      "assignNotice": "Voulez-vous vraiment assigner cette zone à ce vérificateur ?",
-      "assignSuccess": "La zone a été assignée avec succès",
-      "cancel": "Annuler",
-      "delete": "Supprimer",
-      "validating": "En mise en qualité",
-      "validated": "En attente de prise en charge",
-      "verifying": "En vérification",
-      "verified": "Approuvé",
-      "unassigned": "Non attribué",
-      "submit": "Soumettre"
-    },
-    "actionTypes": {
-      "modification": "Modification",
-      "deletion": "Suppression",
-      "insertion": "Insertion"
     },
     "profile": {
       "addUser": "Ajouter un nouveau utilisateur",
       "addUserButton": "Ajouter",
       "cancel": "Annuler",
+      "change": "Changer",
+      "creationNotice": "Les identifiants du nouveau utilisateur",
+      "defaultValue": "Choisir un profil",
+      "email": "Adresse e-mail",
       "firstName": "Prénom",
       "lastName": "Nom",
-      "email": "Adresse e-mail",
-      "profile": "Profil",
-      "creationNotice": "Les identifiants du nouveau utilisateur",
-      "userName": "Identifiant",
       "password": "Mot de passe",
-      "change": "Changer",
-      "updateProfile": "Changer le profil",
+      "profile": "Profil",
       "updateNotice": "Le changement du profil a été réalisé avec succès",
-      "defaultValue": "Choisir un profil"
+      "updateProfile": "Changer le profil",
+      "userName": "Identifiant"
     },
-    "pagination": {
-      "start": "Début",
-      "end": "Fin",
-      "previous": "Précédent",
-      "next": "Suivant"
+    "tableHeaders": {
+      "action": "Action",
+      "creationDate": "Date de création",
+      "date": "Date",
+      "email": "Adresse e-mail",
+      "families": "Familles d'objets sélectionnés",
+      "family": "Famille d'objet",
+      "firstName": "Prénom",
+      "group": "Groupe de travail",
+      "lastName": "Nom",
+      "name": "Nom",
+      "nbObjectsTotal": "Nombres d'objets dans la zone",
+      "object": "Objet",
+      "objectsVerifiedRatio": "Pourcentage d'objets mis en qualité",
+      "owner": "Vérificateur",
+      "profile": "Profil",
+      "status": "Statut",
+      "supervisor": "Validateur",
+      "user": "Utilisateur",
+      "zone": "Zone de travail"
+    },
+    "tabs": {
+      "history": "Historique",
+      "profile": "Gestion des profils",
+      "zones": "Zones de travail"
+    },
+    "titleAdmin": "Administration",
+    "titleLogs": "Zones de travail et historique",
+    "zones": {
+      "assign": "Assigner",
+      "assignNotice": "Voulez-vous vraiment assigner cette zone à ce vérificateur ?",
+      "assignSuccess": "La zone a été assignée avec succès",
+      "cancel": "Annuler",
+      "confirmDelete": "Voulez-vous vraiment supprimer cette zone ?",
+      "confirmValidation": "Voulez-vous vraiment valider cette zone et la soumettre pour vérification ?",
+      "delete": "Supprimer",
+      "submit": "Soumettre",
+      "unassigned": "Non attribué",
+      "validate": "Valider",
+      "validated": "En attente de prise en charge",
+      "validating": "En mise en qualité",
+      "validationNotice": "Voulez-vous vraiment valider cette zone ?",
+      "verificationNotice": "Voulez-vous vraiment affecter cette zone à ce validateur ?",
+      "verificationSuccess": "La zone a été affectée avec succès",
+      "verified": "Approuvé",
+      "verify": "Affecter",
+      "verifying": "En vérification"
     }
   },
-  "osrd": {
-    "nav": {
-      "home": "Accueil",
-      "about": "A propos",
-      "simulation": "Simulation",
-      "traincompo": "Matériel",
-      "contact": "Contact"
+  "Map": {
+    "addObjectButton": "Créer un objet",
+    "drawZone": {
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "deleteButton": "Supprimer la zone sélectionnée",
+      "deleteModal": {
+        "header": "Voulez-vous vraiment supprimer cette zone de travail ?"
+      },
+      "drawButton": "Dessiner une zone",
+      "enterModal": {
+        "enterButton": "Entrer en mode création",
+        "header": "Voulez-vous entrer en mode création de zone de travail ?"
+      },
+      "errorModal": {
+        "body": "Veuillez sélectionner une zone",
+        "footer": "OK",
+        "header": "Erreur"
+      },
+      "modalHeader": "Paramètres de la zone",
+      "name": "Nom de la zone",
+      "namePlaceholder": "Entrer un nom pour cette zone",
+      "saveButton": "Sauvegarder la zone",
+      "saveZoneNotice": "La zone a été enregistrée avec succès"
     },
-    "map": {
-      "mapSettings": "Paramètres cartographie",
-      "all": "Tous les signaux",
-      "stops": "Pancartes d'arrêt",
-      "tivs": "Limites de vitesse",
-      "lights": "Signaux lumineux",
-      "jdz": "Joints de zone"
+    "elementsMenu": {
+      "noGroupMatch": "Aucun groupe ne correspond à votre recherche",
+      "noObjectMatch": "Aucun objet ne correspond à votre recherche",
+      "pointObject": "Objets ponctuels",
+      "title": "Objets"
     },
-    "config": {
-      "name": "Nom de la simulation",
-      "title": "Configuration simulation",
-      "chooseOnMap": "Choisir sur la carte",
-      "chooseTrainCompo": "Choisir un matériel",
-      "noTrainCompo": "Aucun matériel défini...",
-      "blocktype": "Type de block",
-      "gare": "Gare, poste",
-      "track": "Voie",
-      "launchSimulation": "Démarrer",
-      "stopSimulation": "Stopper",
-      "eraseSimulation": "Effacer",
-      "eraseSimulationConfirm": "Voulez-vous effacer tous les paramètres ?",
-      "origin": "Origine",
-      "destination": "Destination",
-      "vias": "Points de passage, arrêts",
-      "composition": "Composition",
-      "simulation": "Simulation",
-      "via": "Étape",
-      "noplacechosen": "Aucun point défini",
-      "displayItinerary": "Tracer l'itinéraire",
-      "eraseItinerary": "Effacer l'itinéraire",
-      "errorMessages": {
-        "noOriginTime": "Veuillez renseignez au moins l'horaire de départ à l'origine",
-        "noTrainCompo": "La composition de train n'est pas renseignée",
-        "noOrigin": "L'origine n'est pas définie",
-        "noDestination": "La destination n'est pas définie",
-        "noName": "Veuillez choisir un nom pour la simulation"
+    "filtersMenu": {
+      "elementsMenu": {
+        "noGroupMatch": "Aucun groupe ne correspond à votre recherche",
+        "noObjectMatch": "Aucun objet ne correspond à votre recherche",
+        "pointObject": "Objets ponctuels",
+        "title": "Objets"
+      },
+      "search": {
+        "placeholder": "Rechercher..."
+      },
+      "tiles": {
+        "communes": "Communes",
+        "osm": "OpenStreetMap",
+        "osmLight": "OpenStreetMap allégé",
+        "title": "Fonds de carte"
+      },
+      "title": "Filtres",
+      "tracks": {
+        "main": "Principales",
+        "secondary": "Secondaires",
+        "service": "Voies de service",
+        "title": "Voies"
       }
     },
-    "trainCompo": {
-      "title": "Générateur de composition matériel train",
-      "powerClass": "Classe puissance",
-      "maxSpeed": "Vitesse maximale",
-      "weight": "Masse",
-      "size": "Longueur",
-      "startTime": "Temps de démarrage",
-      "tractionMode": "Mode de traction",
-      "electric": "Électrique",
-      "diesel": "Thermique",
-      "emCount": "Nombre d'éléments",
-      "source": "Source",
-      "dualMode": "Bimode",
-      "family": "Famille",
-      "equipement": "Équipement",
-      "serie": "Série",
-      "subSerie": "Sous-série",
-      "regrouping": "Regroupement",
-      "displayFound": "représentations existantes",
-      "noDisplayFound": "Aucune représentation disponible",
-      "resultsFound": "résultats trouvés",
-      "noResultFound": "Aucun résultat",
-      "waitingLoader": "Veuillez patienter, le chargement de la base de données matériel peut prendre plusieurs dizaines de secondes...",
-      "specdetail": "Plus de détail...",
-      "pmaxpantographe25000": "Puissance max pantographes 25kV",
-      "pmaxpantographe1500": "Puissance max pantographes 1500V",
-      "dureedemarrage": "Durée de démarrage",
-      "accdemarrage": "Accélération au démarrage",
-      "accconfort": "Accélération « confort »",
-      "masseadherente": "Masse adhérente",
-      "coeffadherence": "Coefficient d'adhérence",
-      "distpantographes": "Distance des pantographes",
-      "distextremeportes": "Distance max entre deux portes",
-      "distnezpremporte": "Distance nez / première porte",
-      "nombreporteaccesvoy": "Nombre de portes voyageurs",
-      "largeurportesaccesvoy": "Largeur des portes",
-      "dureeminouvportes": "Durée d'ouverture des portes",
-      "dureeminfermportes": "Durée de fermeture des portes",
-      "comfort": "Confort",
-      "nbengin": "Nombre",
-      "restrictions": "Restrictions",
-      "profilMode": "Profil",
-      "noCurve": "Aucune courbe"
+    "mapstyles": {
+      "blueprint": "Blueprint",
+      "darkmode": "Sombre",
+      "normal": "Normal"
+    },
+    "multipopupitems": {
+      "adv": "Appareil de voie",
+      "itemsfounds": "élément(s) trouvé(s)",
+      "itemundefined": "Élément indéterminé",
+      "itineraire": "Itinéraire",
+      "jdz": "Joint de zone",
+      "label": "libellé",
+      "line": "ligne",
+      "pn": "Passage à niveau",
+      "sel": "SEL",
+      "signal": "signal",
+      "track": "voie",
+      "zep": "ZEP"
+    },
+    "popupDetails": {
+      "addAdv": "Ajouter aig.",
+      "addBranch": "Ajouter bra.",
+      "addButton": "Ajouter",
+      "addExtremite": "Ajouter ext.",
+      "addForbiddenIti": "Ajouter iti.",
+      "addIti": "Ajouter iti. inco.",
+      "addKey": "Ajouter clé",
+      "addRowButton": "Ajouter un champ",
+      "addSignalDestination": "Ajouter sig. dest.",
+      "addSignalOrigin": "Ajouter sig. or.",
+      "createButton": "Créer",
+      "createModal": {
+        "selectValue": "Choisir un objet à créer"
+      },
+      "createObject": "Créer un objet lié à la TIV",
+      "creationNotice": "Voulez-vous créer cet objet ?",
+      "delAdv": "Supprimer aig.",
+      "delBra": "Supprimer bra.",
+      "deleteButton": "Supprimer",
+      "deleteNotice": {
+        "line": "Voulez-vous vraiment supprimer cette ligne ?",
+        "object": "Voulez-vous vraiment supprimer cet objet ?"
+      },
+      "delExt": "Supprimer ext.",
+      "discartButton": "Annuler",
+      "errorModal": {
+        "body": "Le PK que vous avez entré est invalide. Il doit être de la forme 123 ou 001+234",
+        "header": "Erreur"
+      },
+      "tableHeader": {
+        "action": "Actions",
+        "property": "Propriété",
+        "value": "Valeur"
+      },
+      "validateButton": "Valider",
+      "validateNotice": "Voulez-vous valider cet objet ?"
+    },
+    "search": {
+      "placeholder": "Rechercher..."
+    },
+    "settings": {
+      "showOSM": "Afficher le fond de carte"
+    },
+    "title": "Cartographie",
+    "tracksources": {
+      "geographic": "Géographique",
+      "schematic": "Schématique"
     }
   },
-  "common": {
-    "search": "Rechercher",
-    "sort": "Tri",
-    "filter": "Filtrer",
-    "asc": "Ascendant",
-    "dsc": "Descendant",
-    "itinerary": "Itinéraire",
-    "description": "Description",
-    "loading": "Chargement...",
-    "error": "Une erreur est survenue",
-    "cancel": "Annuler",
-    "confirm": "Confirmer",
-    "erase": "Effacer",
-    "close": "Fermer",
-    "settings": "Paramètres"
+  "nav": {
+    "about": "A propos",
+    "administration": "Administration",
+    "chart": "Graphiques",
+    "contact": "Contact",
+    "events": "Incidents",
+    "home": "Accueil",
+    "library": "Bibliothèque",
+    "logs": "Zones de travail et Historique",
+    "map": "Cartographie",
+    "traincompo": "Matériel"
   },
-  "errorBoundary": {
-    "notice": "Nous rencontrons quelques problèmes ",
-    "feedbackButton": "Faire un retour",
-    "reloadButton": "Rafraîchir"
+  "NavBar": {
+    "disconnect": "Déconnexion"
+  },
+  "osrd": {
+    "map": {
+      "all": "Tous les signaux",
+      "jdz": "Joints de zone",
+      "lights": "Signaux lumineux",
+      "mapSettings": "Paramètres cartographie",
+      "stops": "Pancartes d'arrêt",
+      "tivs": "Limites de vitesse"
+    },
+    "nav": {
+      "about": "A propos",
+      "contact": "Contact",
+      "home": "Accueil",
+      "simulation": "Simulation",
+      "traincompo": "Matériel"
+    },
+    "trainCompo": {
+      "accconfort": "Accélération « confort »",
+      "accdemarrage": "Accélération au démarrage",
+      "coeffadherence": "Coefficient d'adhérence",
+      "comfort": "Confort",
+      "diesel": "Thermique",
+      "displayFound": "représentations existantes",
+      "distextremeportes": "Distance max entre deux portes",
+      "distnezpremporte": "Distance nez / première porte",
+      "distpantographes": "Distance des pantographes",
+      "dualMode": "Bimode",
+      "dureedemarrage": "Durée de démarrage",
+      "dureeminfermportes": "Durée de fermeture des portes",
+      "dureeminouvportes": "Durée d'ouverture des portes",
+      "electric": "Électrique",
+      "emCount": "Nombre d'éléments",
+      "equipement": "Équipement",
+      "family": "Famille",
+      "largeurportesaccesvoy": "Largeur des portes",
+      "masseadherente": "Masse adhérente",
+      "maxSpeed": "Vitesse maximale",
+      "nbengin": "Nombre",
+      "noCurve": "Aucune courbe",
+      "noDisplayFound": "Aucune représentation disponible",
+      "nombreporteaccesvoy": "Nombre de portes voyageurs",
+      "noResultFound": "Aucun résultat",
+      "pmaxpantographe1500": "Puissance max pantographes 1500V",
+      "pmaxpantographe25000": "Puissance max pantographes 25kV",
+      "powerClass": "Classe puissance",
+      "profilMode": "Profil",
+      "regrouping": "Regroupement",
+      "restrictions": "Restrictions",
+      "resultsFound": "résultats trouvés",
+      "serie": "Série",
+      "size": "Longueur",
+      "source": "Source",
+      "specdetail": "Plus de détail...",
+      "startTime": "Temps de démarrage",
+      "subSerie": "Sous-série",
+      "title": "Générateur de composition matériel train",
+      "tractionMode": "Mode de traction",
+      "waitingLoader": "Veuillez patienter, le chargement de la base de données matériel peut prendre plusieurs dizaines de secondes...",
+      "weight": "Masse"
+    }
   }
 }

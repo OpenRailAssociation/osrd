@@ -3,6 +3,7 @@ import produce from 'immer';
 
 // Action Types
 export const UPDATE_NAME = 'osrdconf/UPDATE_NAME';
+export const UPDATE_INFRA_ID = 'osrdconf/UPDATE_INFRA_ID';
 export const UPDATE_PATHFINDING_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
 export const UPDATE_TIMETABLE_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
 export const UPDATE_ORIGIN = 'osrdconf/UPDATE_ORIGIN';
@@ -22,6 +23,7 @@ export const ERASE_SIMULATION = 'osrdconf/ERASE_SIMULATION';
 // Reducer
 export const initialState = {
   name: '',
+  infraID: undefined,
   pathfindingID: undefined,
   timetableID: undefined,
   origin: undefined,
@@ -39,6 +41,9 @@ export default function reducer(state = initialState, action) {
     switch (action.type) {
       case UPDATE_NAME:
         draft.name = action.name;
+        break;
+      case UPDATE_INFRA_ID:
+        draft.infraID = action.infraID;
         break;
       case UPDATE_PATHFINDING_ID:
         draft.pathfindingID = action.pathfindingID;
@@ -102,6 +107,14 @@ export function updateName(name) {
     dispatch({
       type: UPDATE_NAME,
       name,
+    });
+  };
+}
+export function updateInfraID(infraID) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_INFRA_ID,
+      infraID,
     });
   };
 }

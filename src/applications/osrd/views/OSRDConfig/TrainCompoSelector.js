@@ -11,7 +11,7 @@ import TrainCompoCard from 'applications/osrd/components/TrainCompo/TrainCompoCa
 export default function TrainCompoSelector(props) {
   const osrdconf = useSelector((state) => state.osrdconf);
   const { modalID } = props;
-  const { t } = useTranslation();
+  const { t } = useTranslation(['translation', 'osrdconf']);
 
   const displayChosenCompo = () => (
     <TrainCompoCard
@@ -29,11 +29,11 @@ export default function TrainCompoSelector(props) {
             displayChosenCompo()
           ) : (
             <span className="mr-2 text-muted text-italic">
-              {t('osrd.config.noTrainCompo')}
+              {t('osrdconf:noTrainCompo')}
             </span>
           )}
           <button type="button" className="btn btn-sm btn-secondary ml-auto" data-toggle="modal" data-target={`#${modalID}`}>
-            {t('osrd.config.chooseTrainCompo')}
+            {t('osrdconf:chooseTrainCompo')}
             <i className="icons-itinerary-train ml-2" />
           </button>
         </div>
@@ -45,7 +45,7 @@ export default function TrainCompoSelector(props) {
         <ModalFooterSNCF>
           <div className="d-flex flex-row-reverse w-100">
             <button className="btn btn-secondary btn-sm" type="button" data-dismiss="modal">
-              {t('common.close')}
+              {t('translation:common.close')}
             </button>
           </div>
         </ModalFooterSNCF>

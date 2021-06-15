@@ -15,7 +15,7 @@ import { updateOrigin, updateDestination } from 'reducers/osrdconf';
 
 export default function DisplayItinerary(props) {
   const osrdconf = useSelector((state) => state.osrdconf);
-  const { t } = useTranslation();
+  const { t } = useTranslation(['osrdconf']);
   const { zoomToFeature } = props;
 
   return (
@@ -28,7 +28,7 @@ export default function DisplayItinerary(props) {
     >
       <h2 className="d-flex align-items-center mb-0 pl-4 bg-white">
         <span className="mr-1 h2 text-success"><RiMapPin2Fill /></span>
-        <span>{t('osrd.config.origin')}</span>
+        <span>{t('osrdconf:origin')}</span>
         <small className="ml-1">{osrdconf.pathfindingID}</small>
       </h2>
       <div className="mb-3 d-flex align-items-center w-100 osrd-config-place">
@@ -68,26 +68,26 @@ export default function DisplayItinerary(props) {
             </div>
           </>
         ) : (
-          <small className="ml-4">{t('osrd.config.noplacechosen')}</small>
+          <small className="ml-4">{t('osrdconf:noplacechosen')}</small>
         )}
       </div>
 
       <h2 className="d-flex align-items-center mb-0 ml-4">
         <span className="mr-1 h2 text-info"><RiMapPin3Fill /></span>
-        <span>{t('osrd.config.vias')}</span>
+        <span>{t('osrdconf:vias')}</span>
       </h2>
       <div className="mb-3">
         {osrdconf.vias.length > 0 ? (
           <DisplayVias zoomToFeature={zoomToFeature} />
         ) : (
-          <small className="ml-4">{t('osrd.config.noplacechosen')}</small>
+          <small className="ml-4">{t('osrdconf:noplacechosen')}</small>
         )}
 
       </div>
 
       <h2 className="d-flex align-items-center mb-0 ml-4">
         <span className="mr-1 h2 text-warning"><RiMapPin5Fill /></span>
-        <span>{t('osrd.config.destination')}</span>
+        <span>{t('osrdconf:destination')}</span>
       </h2>
       <div className="mb-3 d-flex align-items-center w-100 osrd-config-place">
         {osrdconf.destination !== undefined ? (
@@ -128,7 +128,7 @@ export default function DisplayItinerary(props) {
             </div>
           </>
         ) : (
-          <small className="ml-4">{t('osrd.config.noplacechosen')}</small>
+          <small className="ml-4">{t('osrdconf:noplacechosen')}</small>
         )}
       </div>
     </div>

@@ -22,10 +22,10 @@ export default function SimulationLauncher() {
   const [errorMessagesState, setErrorMessages] = useState([]);
   const osrdconf = useSelector((state) => state.osrdconf);
   const osrdsimulation = useSelector((state) => state.osrdsimulation);
-  const { t } = useTranslation();
+  const { t } = useTranslation(['translation', 'osrdconf']);
 
   const submitConf = async () => {
-    const osrdConfig = formatConf(setErrorMessages);
+    const osrdConfig = formatConf(setErrorMessages, t, osrdconf);
 
     if (osrdConfig !== false) {
       try {
@@ -47,16 +47,16 @@ export default function SimulationLauncher() {
         <div className="osrd-config-item-container d-flex align-items-center mb-2 bg-gray">
           <div className="lead font-weight-bold text-white">{osrdconf.name}</div>
           <button className="btn btn-sm btn-danger ml-auto mr-2" type="button" data-toggle="modal" data-target="#modal-erase-simulation">
-            {t('osrd.config.eraseSimulation')}
+            {t('osrdconf:eraseSimulation')}
           </button>
           <button className="btn btn-sm btn-primary" type="button" onClick={submitConf}>
-            {t('osrd.config.launchSimulation')}
+            {t('osrdconf:launchSimulation')}
           </button>
         </div>
         <div className="osrd-config-item-container d-flex align-items-end mb-2">
           <InputSNCF
             type="text"
-            label={t('osrd.config.name')}
+            label={t('osrdconf:name')}
             id="osrdconf-name"
             onChange={(e) => store.dispatch(updateName(e.target.value))}
             value={osrdconf.name}
@@ -66,7 +66,7 @@ export default function SimulationLauncher() {
         </div>
         {errorMessagesState.length > 0
           ? (
-            <AlertSNCF title={t('common.error')}>
+            <AlertSNCF title={t('translation:common.error')}>
               <ul className="mt-1 mb-0">
                 {errorMessagesState.map((message) => <li key={nextId()}>{message}</li>)}
               </ul>
@@ -76,13 +76,13 @@ export default function SimulationLauncher() {
       <ModalSNCF htmlID="modal-erase-simulation" size="sm">
         <ModalBodySNCF>
           <>
-            <div className="mb-3 h1">{t('osrd.config.eraseSimulationConfirm')}</div>
+            <div className="mb-3 h1">{t('osrdconf:eraseSimulationConfirm')}</div>
             <div className="d-flex">
               <button className="btn btn-secondary flex-fill mr-2" type="button" data-dismiss="modal">
-                {t('common.cancel')}
+                {t('translation:common.cancel')}
               </button>
               <button className="btn btn-danger flex-fill" type="button" data-dismiss="modal" onClick={() => store.dispatch(eraseSimulation())}>
-                {t('common.erase')}
+                {t('translation:common.erase')}
               </button>
             </div>
           </>
