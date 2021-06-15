@@ -10,7 +10,7 @@ from rest_framework.viewsets import GenericViewSet
 from osrd_infra.serializers import TrainScheduleSerializer
 from osrd_infra.views import get_rolling_stock_payload, get_train_schedule_payload
 from osrd_infra.views.projection import Projection
-from osrd_infra.utils import geo_transform
+from osrd_infra.utils import geo_transform, reverse_format
 
 from osrd_infra.models import (
     TrackSectionEntity,
@@ -33,28 +33,59 @@ def format_result(train_schedule_result):
 
 def format_steps(train_schedule_result):
     routes = train_schedule_result.train_schedule.path.payload["path"]
+
+    # Compute projection
     path = []
     tracks = set()
     for route in routes:
         path += route["track_sections"]
         [tracks.add(track["track_section"]) for track in route["track_sections"]]
     projection = Projection(path)
+
+    # Compute block occupation
+    start_occupancy = []
+    end_occupancy = []
+    for log in train_schedule_result.log:
+        if log["type"] != "route_status":
+            continue
+        if log["status"] == "OCCUPIED":
+            track = reverse_format(log["end_track_section"])
+            pos = (
+                projection.track_position(track, log["end_offset"]) or projection.end()
+            )
+            start_occupancy.append((log["time"], pos))
+        elif log["status"] == "FREE":
+            track = reverse_format(log["end_track_section"])
+            pos = projection.track_position(track, log["end_offset"])
+            end_occupancy.append((log["time"], pos))
+    start_occupancy.append((float("inf"), float("inf")))
+    end_occupancy.append((float("inf"), float("inf")))
+
     res = []
+    start_block_occupation = 0
+    end_block_occupation = 0
     qs = TrackSectionEntity.objects.filter(pk__in=list(tracks))
     prefetch_tracks = entities_prefetch_components(TrackSectionEntity, qs)
     tracks = {track.pk: track for track in prefetch_tracks}
     for log in train_schedule_result.log:
         if log["type"] != "train_location":
             continue
-        head_track_id = int(log["head_track_section"].split(".")[1])
-        tail_track_id = int(log["tail_track_section"].split(".")[1])
+        time = log["time"]
+        head_track_id = reverse_format(log["head_track_section"])
+        tail_track_id = reverse_format(log["tail_track_section"])
         head_track = tracks[head_track_id]
         geo_line = geo_transform(head_track.geo_line_location.geographic)
         schema_line = geo_transform(head_track.geo_line_location.schematic)
         head_offset_normalized = log["head_offset"] / head_track.track_section.length
+
+        while time >= start_occupancy[0][0]:
+            end_block_occupation = start_occupancy.pop(0)[1]
+        while time >= end_occupancy[0][0]:
+            start_block_occupation = end_occupancy.pop(0)[1]
+
         res.append(
             {
-                "time": log["time"],
+                "time": time,
                 "speed": log["speed"],
                 "head_position": projection.track_position(
                     head_track_id, log["head_offset"]
@@ -68,6 +99,8 @@ def format_steps(train_schedule_result):
                 "schema_position": schema_line.interpolate_normalized(
                     head_offset_normalized
                 ).json,
+                "start_block_occupancy": start_block_occupation,
+                "end_block_occupancy": end_block_occupation,
             }
         )
     return res
@@ -77,7 +110,7 @@ def format_stops(train_schedule_result, steps):
     op_times = {}
     for log in train_schedule_result.log:
         if log["type"] == "operational_point":
-            op_id = int(log["operational_point"].split(".")[1])
+            op_id = reverse_format(log["operational_point"])
             op_times[op_id] = log["time"]
     stops = [
         {
@@ -109,9 +142,9 @@ def format_signals(train_schedule_result):
     signals_id = []
     for log in train_schedule_result.log:
         if log["type"] == "signal_change":
-            signal_id = int(log["signal"].split(".")[1])
+            signal_id = reverse_format(log["signal"])
             signals_id.append(signal_id)
-            aspects = [int(aspect.split(".")[1]) for aspect in log["aspects"]]
+            aspects = [reverse_format(aspect) for aspect in log["aspects"]]
             signals.append(
                 {
                     "signal_id": signal_id,

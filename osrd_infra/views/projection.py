@@ -28,6 +28,7 @@ class Projection:
 
     def _init_tracks(self, path):
         self.tracks = {}
+        self.length = 0
         offset = 0
         for track_range in path:
             begin = track_range["begin"]
@@ -35,6 +36,7 @@ class Projection:
             track_id = track_range["track_section"]
             self.tracks[track_id] = (begin, end, offset)
             offset += abs(end - begin)
+            self.length += abs(end - begin)
 
     def _init_signals(self):
         self.signals = {}
@@ -77,3 +79,9 @@ class Projection:
         if signal.entity_id not in self.signals:
             return None
         return self.signals[signal.entity_id]
+
+    def end(self):
+        """
+        Returns length of the path
+        """
+        return self.length

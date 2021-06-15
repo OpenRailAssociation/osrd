@@ -14,3 +14,7 @@ class JSONSchemaValidator(BaseValidator):
 def geo_transform(gis_object):
     gis_object.transform(4326)
     return gis_object
+
+
+def reverse_format(object_id):
+    return int(object_id.split(".")[1])
