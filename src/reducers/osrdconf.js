@@ -5,7 +5,7 @@ import produce from 'immer';
 export const UPDATE_NAME = 'osrdconf/UPDATE_NAME';
 export const UPDATE_INFRA_ID = 'osrdconf/UPDATE_INFRA_ID';
 export const UPDATE_PATHFINDING_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
-export const UPDATE_TIMETABLE_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
+export const UPDATE_TIMETABLE_ID = 'osrdconf/UPDATE_TIMETABLE_ID';
 export const UPDATE_ORIGIN = 'osrdconf/UPDATE_ORIGIN';
 export const UPDATE_ORIGIN_TIME = 'osrdconf/UPDATE_ORIGIN_TIME';
 export const UPDATE_VIAS = 'osrdconf/UPDATE_VIAS';

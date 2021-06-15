@@ -79,12 +79,17 @@ class InputSNCF extends React.Component {
   }
 
   // Appends a icon button right next to the input field
-  renderAppendButton = () => {
+  renderAppendButton = (sm = false) => {
     const { appendOptions } = this.props;
+    const formSize = sm ? 'btn-sm' : '';
     if (appendOptions) {
       return (
         <div className="input-group-append input-group-last">
-          <button type="button" className="btn btn-primary btn-only-icon active" onClick={appendOptions.onClick}>
+          <button
+            type="button"
+            className={`${formSize} btn btn-primary btn-only-icon active`}
+            onClick={appendOptions.onClick}
+          >
             <i className={appendOptions.iconName} aria-hidden="true" />
             <span className="sr-only">{appendOptions.name}</span>
           </button>
@@ -158,7 +163,7 @@ class InputSNCF extends React.Component {
             <span className="form-control-state" />
             {this.renderClearButton()}
           </div>
-          {this.renderAppendButton()}
+          {this.renderAppendButton(sm)}
           {invalidMsg}
         </div>
       </>

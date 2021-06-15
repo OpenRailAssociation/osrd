@@ -6,6 +6,7 @@ import { updateViewport } from 'reducers/map';
 import Itinerary from 'applications/osrd/views/OSRDConfig/Itinerary';
 import Map from 'applications/osrd/components/Map/Map';
 import InfraSelector from 'applications/osrd/views/OSRDConfig/InfraSelector';
+import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
 import TrainCompoSelector from 'applications/osrd/views/OSRDConfig/TrainCompoSelector';
 import SimulationLauncher from 'applications/osrd/views/OSRDConfig/SimulationLauncher';
 import 'applications/osrd/views/OSRDConfig/OSRDConfig.scss';
@@ -32,6 +33,7 @@ export default function OSRDConfig() {
         <div className="col-sm-6 h-100">
           <SimulationLauncher title={t('osrdconf:simulation')} />
           <InfraSelector />
+          <TimetableSelector />
           {/* <TrainCompoSelector title={t('osrdconf:composition')} modalID="trainCompoModal" /> */}
           <Itinerary
             title={t('translation:common.itinerary')}

@@ -28,7 +28,6 @@ export default function InfraSelector() {
     try {
       const infrasListQuery = await get(infraURL, {}, true);
       setInfrasList(infrasListQuery);
-      console.log(infrasListQuery);
     } catch (e) {
       console.log('ERROR', e);
     }
