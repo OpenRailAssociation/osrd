@@ -1,6 +1,7 @@
 package fr.sncf.osrd.speedcontroller;
 
 import static fr.sncf.osrd.Helpers.*;
+import static fr.sncf.osrd.speedcontroller.MarginTests.saveGraph;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.TrainSchedule;
@@ -178,15 +179,16 @@ public class SpeedInstructionsTests {
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        run(sim, config);
+        var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with 0% margins
         var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
-        assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        run(sim2, configMargins);
+        var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
+        saveGraph(events, "margin-0-out.csv");
+        saveGraph(eventsBase, "margin-0-base.csv");
         assertEquals(baseSimTime, marginsSimTime, baseSimTime * 0.01);
     }
 

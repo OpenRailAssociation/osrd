@@ -182,7 +182,8 @@ public class Helpers {
     }
 
     public static Config makeConfigWithSpeedParams(List<RJSAllowance> params, String baseConfigPath) {
-        return makeConfigWithSpeedParamsList(Collections.singletonList(params), baseConfigPath);
+        var paramsList = params == null ? null : Collections.singletonList(params);
+        return makeConfigWithSpeedParamsList(paramsList, baseConfigPath);
     }
 
     public static Config makeConfigWithSpeedParamsList(List<List<RJSAllowance>> params, String baseConfigPath) {
