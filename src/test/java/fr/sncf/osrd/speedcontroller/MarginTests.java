@@ -76,6 +76,32 @@ public class MarginTests {
     }
 
     @Test
+    public void testEcoMargin() throws InvalidInfraException {
+        var infra = getBaseInfra();
+        assert infra != null;
+        var params = new RJSAllowance.MarecoAllowance();
+        params.allowanceValue = 10;
+        params.allowanceType = RJSAllowance.MarecoAllowance.MarginType.TIME;
+
+        // base run, no margin
+        var config = makeConfigWithSpeedParams(null);
+        assert config != null;
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        run(sim, config);
+        var baseSimTime = sim.getTime();
+
+        // Run with construction margin
+        var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
+        assert configMargins != null;
+        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        run(sim2, configMargins);
+        var marginsSimTime = sim2.getTime();
+
+        var expected = baseSimTime * 1.1;
+        assertEquals(expected, marginsSimTime, expected * 0.01);
+    }
+
+    @Test
     public void testConstructionMarginsNoAllowance() throws InvalidInfraException {
         var infra = getBaseInfra();
         assert infra != null;

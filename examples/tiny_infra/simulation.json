@@ -62,8 +62,8 @@
           ],
           "allowances": [
             {
-              "type": "eco",
-              "allowance_type": "time",
+              "type": "linear",
+              "allowance_type": "TIME",
               "allowance_value": 5
             }
           ],

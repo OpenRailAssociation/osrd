@@ -12,10 +12,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.TrainSchedule;
-import fr.sncf.osrd.speedcontroller.generators.ConstructionAllowanceGenerator;
-import fr.sncf.osrd.speedcontroller.generators.MaxSpeedGenerator;
-import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
-import fr.sncf.osrd.speedcontroller.generators.LinearAllowanceGenerator;
+import fr.sncf.osrd.speedcontroller.generators.*;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.train.phases.StopPhase;
@@ -105,6 +102,10 @@ public class RJSTrainScheduleParser {
         else if (allowance instanceof RJSAllowance.ConstructionAllowance) {
             var constructionAllowance = (RJSAllowance.ConstructionAllowance) allowance;
             return new ConstructionAllowanceGenerator(constructionAllowance.allowanceValue, phase);
+        }
+        else if (allowance instanceof RJSAllowance.MarecoAllowance) {
+                var marecoAllowance = (RJSAllowance.MarecoAllowance) allowance;
+                return new MarecoAllowanceGenerator(marecoAllowance.allowanceValue, marecoAllowance.allowanceType, phase);
         } else {
             throw new InvalidSchedule("Unimplemented allowance type");
         }
