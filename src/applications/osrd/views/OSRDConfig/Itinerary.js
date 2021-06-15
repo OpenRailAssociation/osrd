@@ -12,6 +12,7 @@ const itineraryURI = '/osrd/pathfinding';
 
 const Itinerary = (props) => {
   const [vias, setVias] = useState([]);
+  const [firstRun, setFirstRun] = useState(true);
   const { updateExtViewport } = props;
   const dispatch = useDispatch();
   const map = useSelector((state) => state.map);
@@ -78,8 +79,6 @@ const Itinerary = (props) => {
         geo_coordinate: osrdconf.destination.clickLngLat,
       }]);
 
-      console.log(params);
-
       try {
         const itineraryCreated = await post(itineraryURI, params, {}, true);
         dispatch(updateItinerary(itineraryCreated.geographic));
@@ -92,23 +91,30 @@ const Itinerary = (props) => {
   };
 
   useEffect(() => {
-    osrdconf.vias.forEach((item) => {
-      vias.push({
-        time: item.time,
-        stoptime: item.stoptime,
+    if (osrdconf.pathfindingID === undefined) {
+      osrdconf.vias.forEach((item) => {
+        vias.push({
+          time: item.time,
+          stoptime: item.stoptime,
+        });
       });
-    });
 
-    setVias({ vias });
-    mapItinerary();
+      setVias({ vias });
+      mapItinerary();
+    } else {
+      zoomToFeature(bbox(osrdconf.geojson));
+    }
+    setFirstRun(false);
   }, []);
 
   useEffect(() => {
-    if (JSON.stringify(osrdconf.vias) !== JSON.stringify(vias)) {
-      mapItinerary(false);
-      viasRedux2state(osrdconf.vias);
-    } else {
-      mapItinerary();
+    if (!firstRun) {
+      if (JSON.stringify(osrdconf.vias) !== JSON.stringify(vias)) {
+        mapItinerary(false);
+        viasRedux2state(osrdconf.vias);
+      } else {
+        mapItinerary();
+      }
     }
   }, [osrdconf.origin, osrdconf.vias, osrdconf.destination, map.mapTrackSources]);
 
