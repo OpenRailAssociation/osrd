@@ -28,7 +28,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     private final double value;
 
     public MarecoAllowanceGenerator(double allowanceValue, MarginType allowanceType, RJSTrainPhase phase) {
-        super(phase, 0.5);
+        super(phase, 5);
         this.allowanceType = allowanceType;
         this.value = allowanceValue;
     }
@@ -131,10 +131,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
     @Override
     protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule, double v1) {
-        System.out.println(v1);
-        if (v1 == 34.375)
-            System.out.println("");
-        double timestep = 0.1;
+        double timestep = 0.01; // TODO: link this timestep to the rest of the simulation
         var wle = (2 * schedule.rollingStock.C * v1 + schedule.rollingStock.B) * v1 * v1;
         var vf = wle * v1 / (wle + schedule.rollingStock.rollingResistance(v1) * v1);
         double startLocation = findPhaseInitialLocation(schedule);
@@ -142,13 +139,15 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
         var currentSpeedControllers = new HashSet<>(maxSpeedControllers);
         currentSpeedControllers.add(new MaxSpeedController(v1, startLocation, endLocation));
-        var expectedSpeeds = getExpectedSpeeds(sim, schedule, currentSpeedControllers, 1);
+        var expectedSpeeds = getExpectedSpeeds(sim, schedule, currentSpeedControllers, timestep);
 
         for (var location : findPositionSameSpeedAsVF(expectedSpeeds, vf)) {
-            currentSpeedControllers.add(generateCoastingSpeedControllerAtPosition(expectedSpeeds, location, timestep));
+            var controller = generateCoastingSpeedControllerAtPosition(expectedSpeeds, location, timestep);
+            currentSpeedControllers.add(controller);
         }
         for (var location : findDecelerationPhases(vf, expectedSpeeds)) {
-            currentSpeedControllers.add(generateCoastingSpeedControllerAtPosition(expectedSpeeds, location, timestep));
+            var controller = generateCoastingSpeedControllerAtPosition(expectedSpeeds, location, timestep);
+            currentSpeedControllers.add(controller);
         }
         return currentSpeedControllers;
     }

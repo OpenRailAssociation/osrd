@@ -86,7 +86,7 @@ public class MarginTests {
         var infra = getBaseInfra();
         assert infra != null;
         var params = new RJSAllowance.MarecoAllowance();
-        params.allowanceValue = 50;
+        params.allowanceValue = 200;
         params.allowanceType = RJSAllowance.MarecoAllowance.MarginType.TIME;
 
         // Run with construction margin
@@ -103,8 +103,8 @@ public class MarginTests {
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
-        var expected = baseSimTime * 1 + params.allowanceValue / 100;
-        assertEquals(expected, marginsSimTime, expected * 0.01);
+        var expected = baseSimTime * (1 + params.allowanceValue / 100);
+        assertEquals(expected, marginsSimTime, expected * 0.1);
 
         try {
             saveGraph(eventsBase, "base.csv");
