@@ -22,10 +22,8 @@ public class AllowanceGenerator implements SpeedControllerGenerator {
     @Override
     public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed) {
         // find the percentage of the allowance to add to the whole path
-        double percentage;
-        if (allowanceType.equals(MarginType.TIME))
-            percentage = value;
-        else {
+        double percentage = value;
+        if (allowanceType == MarginType.DISTANCE) {
             var expectedTime = getExpectedTimes(sim, schedule, maxSpeed, 1);
             var totalTime = expectedTime.lastEntry().getValue() - expectedTime.firstEntry().getValue();
             var schemaLength = expectedTime.lastEntry().getKey() - expectedTime.firstEntry().getKey();
