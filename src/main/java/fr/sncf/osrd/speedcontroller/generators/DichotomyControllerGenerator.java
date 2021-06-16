@@ -60,8 +60,9 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
 
     /** Evaluates the run time of the phase if we follow the given speed controllers */
     protected double evalRunTime(Simulation sim, TrainSchedule schedule, Set<SpeedController> speedControllers) {
-        expectedTimes = getExpectedTimes(sim, schedule, speedControllers, 1,
-                findPhaseInitialLocation(schedule), findPhaseEndLocation(schedule), initialSpeed);
+        expectedTimes = getExpectedTimes(sim, schedule, speedControllers, 1);
+        //expectedTimes = getExpectedTimes(sim, schedule, speedControllers, 1,
+        //        findPhaseInitialLocation(schedule), findPhaseEndLocation(schedule), initialSpeed);
         return expectedTimes.lastEntry().getValue() - expectedTimes.firstEntry().getValue();
     }
 
@@ -82,6 +83,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         var lowerBound = getFirstLowEstimate();
         var higherBound = getFirstHighEstimate();
         // marche de base
+        // the binary search condition should be on the total time
         var time = evalRunTime(sim, schedule, maxSpeedControllers);
         var targetTime = getTargetTime(time);
         var beginLocation = findPhaseInitialLocation(schedule);
