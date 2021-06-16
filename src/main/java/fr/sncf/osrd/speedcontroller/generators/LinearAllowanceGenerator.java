@@ -25,18 +25,22 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
     public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed) {
         // find the percentage of the allowance to add to the whole path
         double percentage;
+        double startLocation = findPhaseInitialLocation(schedule);
+        double endLocation = findPhaseEndLocation(schedule);
+        double initialSpeed = findPhaseInitialSpeed(sim, schedule, maxSpeed);
         if (allowanceType.equals(MarginType.TIME))
             percentage = value;
         else {
-            // TODO compute the margin only on the phase range
-            var expectedTime = getExpectedTimes(sim, schedule, maxSpeed, 1);
+            var expectedTime = getExpectedTimes(sim, schedule, maxSpeed, 1,
+                    startLocation, endLocation, initialSpeed);
             var totalTime = expectedTime.lastEntry().getValue() - expectedTime.firstEntry().getValue();
             var schemaLength = expectedTime.lastEntry().getKey() - expectedTime.firstEntry().getKey();
             var n = schemaLength / 100000;
             var totalAllowance = n * value;
             percentage = 100.0 * totalAllowance / totalTime;
         }
-        var expectedSpeeds = getExpectedSpeeds(sim, schedule, maxSpeed, 1);
+        var expectedSpeeds = getExpectedSpeeds(sim, schedule, maxSpeed, 1,
+                startLocation, endLocation, initialSpeed);
         double scaleFactor = 1 / (1 + percentage / 100);
         SpeedController speedController = new MapSpeedController(expectedSpeeds).scaled(scaleFactor);
         var res = new HashSet<SpeedController>();
