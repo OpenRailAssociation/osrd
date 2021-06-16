@@ -7,6 +7,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import org.junit.jupiter.api.Test;
@@ -157,6 +158,12 @@ public class MarginTests {
             for (var event : events) {
                 if (event instanceof TrainReachesActionPoint) {
                     var updates = ((TrainReachesActionPoint) event).trainStateChange.positionUpdates;
+                    for (var update : updates) {
+                        writer.println(String.format("%f,%f,%f", update.pathPosition, update.time, update.speed));
+                    }
+                }
+                else if (event instanceof TrainMoveEvent) {
+                    var updates = ((TrainMoveEvent) event).trainStateChange.positionUpdates;
                     for (var update : updates) {
                         writer.println(String.format("%f,%f,%f", update.pathPosition, update.time, update.speed));
                     }
