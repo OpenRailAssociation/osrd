@@ -88,11 +88,11 @@ export async function getEditorModelDefinition(): Promise<{
  */
 export async function getEditorLayers(
   infra: number,
-  layers: Array<String>,
+  layers: Array<string>,
   zone: Zone,
 ): Promise<Array<GeoJSON>> {
   const geoJson = zoneToFeature(zone, true);
-  return await Promise.all(
+  return Promise.all(
     layers.map((layer) =>
       get(
         `/chartis/layer/${layer}/geojson/geo/`,
