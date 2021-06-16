@@ -5,7 +5,7 @@ import { MainState, deleteNotification } from '../reducers/main';
 import { Notification } from '../types';
 import './Notifications.scss';
 
-const TIMEOUT_MS = 2000;
+const TIMEOUT_MS = 4000;
 
 const NotificationWrapper: FC<Notification> = (notif) => {
   const [timeoutId, setTimeoutId] = useState<number | null>(null);
