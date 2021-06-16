@@ -30,7 +30,7 @@ export default function InfraSelectorModal(props) {
                   onClick={() => dispatch(updateInfraID(infra.id))}
                   key={nextId()}
                   data-dismiss="modal"
-                  className="osrd-config-infraselector-item"
+                  className="osrd-config-infraselector-item mb-2"
                 >
                   <div className="d-flex align-items-center">
                     <div className="text-primary small mr-2">
@@ -45,7 +45,11 @@ export default function InfraSelectorModal(props) {
               ))) : null }
           </div>
           <div className="d-flex">
-            <button className="btn btn-secondary flex-fill mr-2" type="button" data-dismiss="modal">
+            <button
+              className="btn btn-secondary flex-fill mr-2"
+              type="button"
+              data-dismiss="modal"
+            >
               {t('translation:common.cancel')}
             </button>
           </div>

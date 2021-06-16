@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { get, post } from 'common/requests';
+import { get, post, deleteRequest } from 'common/requests';
 import { updateTimetableID } from 'reducers/osrdconf';
 import nextId from 'react-id-generator';
-import { datetime2string } from 'utils/timeManipulation';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -23,7 +22,6 @@ export default function TimetableSelectorModal() {
     try {
       const timetablesListQuery = await get(timetableURL, {}, true);
       settimetablesList(timetablesListQuery);
-      console.log(timetablesListQuery);
     } catch (e) {
       console.log('ERROR', e);
     }
@@ -33,6 +31,15 @@ export default function TimetableSelectorModal() {
     getTimetablesList();
   }, []);
 
+  const deleteTimetable = async (id) => {
+    try {
+      await deleteRequest(`${timetableURL}/${id}`, true);
+      getTimetablesList();
+    } catch (e) {
+      console.log('ERROR', e);
+    }
+  };
+
   const createTimetable = async () => {
     const params = {
       name: newNameTimetable,
@@ -40,11 +47,11 @@ export default function TimetableSelectorModal() {
     };
 
     try {
-      const timetableCreation = await post(timetableURL, params, {}, true);
-      console.log(timetableCreation);
+      await post(timetableURL, params, {}, true);
     } catch (e) {
       console.log('ERROR', e);
     }
+    getTimetablesList();
     console.log(newNameTimetable);
   };
 
@@ -64,29 +71,33 @@ export default function TimetableSelectorModal() {
               iconName: 'icons-add',
               onClick: createTimetable,
             }}
-            noMargin
             sm
           />
-          <div className="mb-3 osrd-config-timetableselector">
+          <div className="mb-3 osrd-config-infraselector">
             {(timetablesList !== undefined) ? (
               timetablesList.results.map((timetable) => (
-                <div
-                  role="button"
-                  tabIndex="-1"
-                  onClick={() => dispatch(updateTimetableID(timetable.id))}
-                  key={nextId()}
-                  data-dismiss="modal"
-                  className="osrd-config-timetableselector-item"
-                >
-                  <div className="d-flex align-items-center">
-                    <div className="text-primary small mr-2">
-                      {timetable.id}
-                    </div>
-                    <div className="flex-grow-1">{timetable.name}</div>
-                    <div className="small">
-                      {datetime2string(timetable.modified)}
+                <div className="d-flex align-items-center" key={nextId()}>
+                  <div
+                    role="button"
+                    tabIndex="-1"
+                    onClick={() => dispatch(updateTimetableID(timetable.id))}
+                    data-dismiss="modal"
+                    className="flex-grow-1 osrd-config-infraselector-item"
+                  >
+                    <div className="d-flex align-items-center">
+                      <div className="text-primary small mr-2">
+                        {timetable.id}
+                      </div>
+                      <div className="flex-grow-1">{timetable.name}</div>
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => deleteTimetable(timetable.id)}
+                    className="btn btn-sm btn-only-icon btn-white"
+                  >
+                    <i className="icons-close" />
+                  </button>
                 </div>
               ))) : null }
           </div>

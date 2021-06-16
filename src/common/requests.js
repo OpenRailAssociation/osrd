@@ -39,8 +39,9 @@ export const put = async (path, payload, config = {}) => {
   return data;
 };
 
-export const deleteRequest = async (path) => {
+export const deleteRequest = async (path, proxyGateway = false) => {
   const config = getAuthConfig();
-  const { data } = await axios.delete(formatPath(path), config);
+  const formattedPath = proxyGateway ? formatPathGateway(path) : formatPath(path);
+  const { data } = await axios.delete(formattedPath, config);
   return data;
 };
