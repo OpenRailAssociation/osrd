@@ -83,19 +83,19 @@ def serialize_applicable_direction(applicable_direction: int):
 
 def serialize_signal(entity):
     applicable_direction = entity.applicable_direction.applicable_direction
-    position = entity.point_location_set.get().offset
-    linked_detector = None
-    if entity.signal.linked_detector:
-        linked_detector = format_waypoint_id(entity.signal.linked_detector)
-
-    return {
+    position = entity.point_location.offset
+    res = {
         "id": format_signal_id(entity.entity_id),
         "applicable_direction": serialize_applicable_direction(applicable_direction),
         "position": position,
         "sight_distance": entity.signal.sight_distance,
         "expr": entity.rail_script.script,
-        "linked_detector": linked_detector,
     }
+
+    if entity.signal.linked_detector:
+        res["linked_detector"] = format_waypoint_id(entity.signal.linked_detector)
+
+    return res
 
 
 def serialize_waypoint(entity):
