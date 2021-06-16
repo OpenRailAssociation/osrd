@@ -8,7 +8,6 @@ import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator.PositionUpdate;
-import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.util.NavigableMap;
@@ -16,7 +15,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import static fr.sncf.osrd.utils.Interpolation.interpolate;
 import static java.lang.Math.min;
 
 /** This class is used to generate a set of SpeedController (similar to a speed at any given point). */
@@ -123,7 +121,7 @@ public abstract class SpeedControllerGenerator {
 
             location.updatePosition(schedule.rollingStock.length, update.positionDelta);
             res.put(location.getPathPosition(), update);
-        } while (location.getPathPosition() < totalLength && location.getPathPosition() <= end && speed > 0);
+        } while (location.getPathPosition() < totalLength && location.getPathPosition() < end && speed > 0);
         return res;
     }
 
