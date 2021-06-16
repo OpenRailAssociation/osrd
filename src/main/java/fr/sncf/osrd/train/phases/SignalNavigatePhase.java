@@ -117,28 +117,24 @@ public final class SignalNavigatePhase implements Phase {
 
     @Override
     public void resolvePhases(List<Phase> phases) {
-        var newInteractions = new ArrayList<Interaction>();
         boolean seenSelf = false;
-        double phaseLength = trackSectionPath.stream()
-                .mapToDouble(TrackSectionRange::length)
-                .sum();
-        AtomicReference<Double> currentPosition = new AtomicReference<>(phaseLength);
+        AtomicReference<Double> currentPosition = new AtomicReference<>(0.);
         for (var phase : phases) {
+            if (seenSelf) {
+                // adds the routes in the next phases to the current route, to trigger reserves at the right time
+                if (phase instanceof SignalNavigatePhase)
+                    routePath.addAll(((SignalNavigatePhase) phase).routePath);
+            }
+            boolean finalSeenSelf = seenSelf;
             if (phase == this) {
                 seenSelf = true;
                 offset = currentPosition.get();
                 for (var ip : interactionsPath)
                     ip.position += offset;
             }
-            else if (seenSelf) {
-                // adds the routes in the next phases to the current route, to trigger reserves at the right time
-                if (phase instanceof SignalNavigatePhase)
-                    routePath.addAll(((SignalNavigatePhase) phase).routePath);
-            }
-            boolean finalSeenSelf = seenSelf;
             phase.forEachPathSection(pathSection -> {
                 if (finalSeenSelf)
-                    registerRange(newInteractions, pathSection, currentPosition.get(), driverSightDistance);
+                    registerRange(interactionsPath, pathSection, currentPosition.get(), driverSightDistance);
                 currentPosition.updateAndGet(v -> v + pathSection.length());
             });
         }
@@ -149,9 +145,6 @@ public final class SignalNavigatePhase implements Phase {
                 i--;
             }
         }
-        for (var interaction : newInteractions)
-            if (interaction.position <= phaseLength)
-                interactionsPath.add(interaction);
         interactionsPath.sort(Comparator.comparingDouble(i -> i.position));
 
         var ownIndex = phases.indexOf(this);
