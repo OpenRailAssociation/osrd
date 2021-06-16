@@ -10,6 +10,8 @@ import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.infra.InvalidInfraException;

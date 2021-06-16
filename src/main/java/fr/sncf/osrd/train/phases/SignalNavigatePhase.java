@@ -33,8 +33,12 @@ public final class SignalNavigatePhase implements Phase {
     public final TrackSectionLocation endLocation;
     private final ArrayList<TrackSectionRange> trackSectionPath;
     private final ArrayList<Interaction> interactionsPath;
+    private final Interaction lastInteractionOnPhase;
     private final double driverSightDistance;
     public transient List<SpeedControllerGenerator> targetSpeedGenerators;
+
+    /** Offset between the beginning of the global train path and the beginning of this phase */
+    public double offset;
 
     private SignalNavigatePhase(
             List<Route> routePath,
@@ -49,6 +53,7 @@ public final class SignalNavigatePhase implements Phase {
         this.interactionsPath = interactionsPath;
         this.driverSightDistance = driverSightDistance;
         this.targetSpeedGenerators = targetSpeedGenerators;
+        lastInteractionOnPhase = interactionsPath.get(interactionsPath.size() - 1);
     }
 
 
@@ -121,16 +126,21 @@ public final class SignalNavigatePhase implements Phase {
         for (var phase : phases) {
             if (phase == this) {
                 seenSelf = true;
+                offset = currentPosition.get();
+                for (var ip : interactionsPath)
+                    ip.position += offset;
             }
             else if (seenSelf) {
-                phase.forEachPathSection(pathSection -> {
-                    registerRange(newInteractions, pathSection, currentPosition.get(), driverSightDistance);
-                    currentPosition.updateAndGet(v -> v + pathSection.length());
-                });
-                // adds the routes in the next phases, to trigger reserves at the right time
+                // adds the routes in the next phases to the current route, to trigger reserves at the right time
                 if (phase instanceof SignalNavigatePhase)
                     routePath.addAll(((SignalNavigatePhase) phase).routePath);
             }
+            boolean finalSeenSelf = seenSelf;
+            phase.forEachPathSection(pathSection -> {
+                if (finalSeenSelf)
+                    registerRange(newInteractions, pathSection, currentPosition.get(), driverSightDistance);
+                currentPosition.updateAndGet(v -> v + pathSection.length());
+            });
         }
         // Removes duplicate routes
         for (int i = 1; i < routePath.size(); i++) {
@@ -287,10 +297,18 @@ public final class SignalNavigatePhase implements Phase {
                 interactionsPathIndex++;
         }
 
+        private boolean hasPhaseEnded() {
+            if (interactionsPathIndex == phase.interactionsPath.size())
+                return true;
+            if (interactionsPathIndex == 0)
+                return false;
+            return phase.interactionsPath.get(interactionsPathIndex - 1) == phase.lastInteractionOnPhase;
+        }
+
         @Override
         public TimelineEvent simulate(Simulation sim, Train train, TrainState trainState) throws SimulationError {
             // Check if we reached our goal
-            if (interactionsPathIndex == phase.interactionsPath.size()) {
+            if (hasPhaseEnded()) {
                 var nextState = trainState.nextPhase(sim);
                 var change = new Train.TrainStateChange(sim, train.getName(), nextState);
                 change.apply(sim, train);
