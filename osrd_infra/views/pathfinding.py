@@ -32,16 +32,36 @@ def try_get_field(manifest, field):
         return status_missing_field_keyerror(e)
 
 
-def post_treatment(payload):
+def payload_reverse_format(payload):
     for route in payload["path"]:
         route["route"] = reverse_format(route["route"])
         for track in route["track_sections"]:
             track["track_section"] = reverse_format(track["track_section"])
-    for op in payload["operational_points"]:
-        op["op"] = reverse_format(op["op"])
-        op["position"]["track_section"] = reverse_format(
-            op["position"]["track_section"]
+    for via in payload["via"]:
+        via["position"]["track_section"] = reverse_format(
+            via["position"]["track_section"]
         )
+    return payload
+
+
+def payload_fill_via(payload, step_stop_times, track_map):
+    stop_time_index = 0
+    for via in payload["via"]:
+        if not via["suggestion"]:
+            via["stop_time"] = step_stop_times[stop_time_index]
+            stop_time_index += 1
+        else:
+            via["stop_time"] = 0
+
+        track = track_map[via["position"]["track_section"]]
+        offset = via["position"]["offset"] / track.track_section.length
+
+        geo = geo_transform(track.geo_line_location.geographic)
+        via["geographic"] = geo.interpolate_normalized(offset).json
+
+        schema = geo_transform(track.geo_line_location.schematic)
+        via["schematic"] = schema.interpolate_normalized(offset).json
+
     return payload
 
 
@@ -53,15 +73,25 @@ def request_pathfinding(payload):
     )
     if not response:
         raise ParseError(response.content)
-    return post_treatment(response.json())
+    return response.json()
 
 
 def fetch_track_sections(ids):
+
     related_names = ["geo_line_location", "track_section"]
     tracks = TrackSectionEntity.objects.prefetch_related(*related_names).filter(
         pk__in=ids
     )
+
     return {track.pk: track for track in tracks}
+
+
+def fetch_track_sections_from_payload(payload):
+    ids = []
+    for route in payload["path"]:
+        for track in route["track_sections"]:
+            ids.append(track["track_section"])
+    return fetch_track_sections(ids)
 
 
 def line_string_slice(line_string, begin_normalized, end_normalized):
@@ -77,14 +107,8 @@ def line_string_slice(line_string, begin_normalized, end_normalized):
     return [line_string.interpolate_normalized(pos) for pos in positions]
 
 
-def get_geojson_path(payload):
+def get_geojson_path(payload, track_map):
     geographic, schematic = [], []
-    track_section_ids = []
-    for route in payload["path"]:
-        for track in route["track_sections"]:
-            track_section_ids.append(track["track_section"])
-
-    track_map = fetch_track_sections(track_section_ids)
 
     for route in payload["path"]:
         for track in route["track_sections"]:
@@ -104,15 +128,17 @@ def get_geojson_path(payload):
     return LineString(geographic).json, LineString(schematic).json
 
 
-def parse_waypoint_input(waypoints):
+def parse_steps_input(steps):
     track_ids = []
-    for step in waypoints:
-        [track_ids.append(waypoint["track_section"]) for waypoint in step]
+    for step in steps:
+        [track_ids.append(waypoint["track_section"]) for waypoint in step["waypoints"]]
     track_map = fetch_track_sections(track_ids)
-    result = []
-    for step in waypoints:
+    waypoints = []
+    step_stop_times = []
+    for step in steps:
         step_result = []
-        for waypoint in step:
+        step_stop_times.append(step["stop_time"])
+        for waypoint in step["waypoints"]:
             try:
                 track = track_map[waypoint["track_section"]]
             except KeyError:
@@ -122,7 +148,7 @@ def parse_waypoint_input(waypoints):
 
             geo = geo_transform(track.geo_line_location.geographic)
             offset = geo.project_normalized(Point(waypoint["geo_coordinate"]))
-            offset = max(min(offset, 1), 0) * track.track_section.length
+            offset = offset * track.track_section.length
             parsed_waypoint = {
                 "track_section": format_track_section_id(track.pk),
                 "offset": offset,
@@ -130,9 +156,9 @@ def parse_waypoint_input(waypoints):
             # Allow both direction
             step_result.append({**parsed_waypoint, "direction": "START_TO_STOP"})
             step_result.append({**parsed_waypoint, "direction": "STOP_TO_START"})
-        result.append(step_result)
+        waypoints.append(step_result)
 
-    return result
+    return waypoints, step_stop_times
 
 
 class PathfindingView(
@@ -149,7 +175,7 @@ class PathfindingView(
         serializer = self.serializer_class(path)
         return {
             **serializer.data,
-            "operational_points": path.payload["operational_points"],
+            "via": path.payload["via"],
         }
 
     def retrieve(self, request, pk=None):
@@ -164,9 +190,14 @@ class PathfindingView(
 
         infra = data["infra"]
 
-        waypoints = parse_waypoint_input(data["waypoints"])
+        waypoints, step_stop_times = parse_steps_input(data["steps"])
         payload = request_pathfinding({"infra": infra.pk, "waypoints": waypoints})
-        geographic, schematic = get_geojson_path(payload)
+
+        # Post treatment
+        payload = payload_reverse_format(payload)
+        track_map = fetch_track_sections_from_payload(payload)
+        payload = payload_fill_via(payload, step_stop_times, track_map)
+        geographic, schematic = get_geojson_path(payload, track_map)
 
         path = Path(
             name=data["name"],

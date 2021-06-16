@@ -129,15 +129,21 @@ class LightRollingStockSerializer(ModelSerializer):
 
 
 class PathInputSerializer(Serializer):
-    class WaypointInputSerializer(Serializer):
-        track_section = serializers.IntegerField(min_value=0)
-        geo_coordinate = serializers.JSONField()
+    class StepInputSerializer(Serializer):
+        class WaypointInputSerializer(Serializer):
+            track_section = serializers.IntegerField(min_value=0)
+            geo_coordinate = serializers.JSONField()
+
+        stop_time = serializers.FloatField()
+        waypoints = serializers.ListField(
+            child=WaypointInputSerializer(), allow_empty=False
+        )
 
     infra = serializers.PrimaryKeyRelatedField(queryset=Infra.objects.all())
     name = serializers.CharField(max_length=256)
-    waypoints = serializers.ListField(
+    steps = serializers.ListField(
         min_length=2,
-        child=serializers.ListField(child=WaypointInputSerializer(), allow_empty=False),
+        child=StepInputSerializer(),
     )
 
 

@@ -34,11 +34,11 @@ PAYLOAD_SCHEMA = {
             },
             "title": "schema",
         },
-        "operational_points": {
+        "via": {
             "type": "array",
             "items": {
                 "type": "object",
-                "required": ["op", "position"],
+                "required": ["name", "position", "suggestion", "stop_time"],
                 "additionalProperties": False,
                 "properties": {
                     "position": {
@@ -50,7 +50,11 @@ PAYLOAD_SCHEMA = {
                             "track_section": {"type": "number"},
                         },
                     },
-                    "op": {"type": "number"},
+                    "name": {"type": "string"},
+                    "suggestion": {"type": "bool"},
+                    "stop_time": {"type": "number"},
+                    "geographic": {"type": "string"},
+                    "schematic": {"type": "string"},
                 },
             },
             "title": "schema",
