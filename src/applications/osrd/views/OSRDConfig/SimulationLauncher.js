@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { store } from 'Store';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import nextId from 'react-id-generator';
 import { post } from 'common/requests';
 import { updateName, eraseSimulation } from 'reducers/osrdconf';
@@ -17,23 +16,26 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import formatConf from 'applications/osrd/components/SimulationLauncher/formatConf';
 
 const osrdURI = '/osrd/simulate';
+const scheduleURL = '/osrd/train_schedule'
 
 export default function SimulationLauncher() {
   const [errorMessagesState, setErrorMessages] = useState([]);
   const osrdconf = useSelector((state) => state.osrdconf);
   const osrdsimulation = useSelector((state) => state.osrdsimulation);
   const { t } = useTranslation(['translation', 'osrdconf']);
+  const dispatch = useDispatch();
 
   const submitConf = async () => {
     const osrdConfig = formatConf(setErrorMessages, t, osrdconf);
 
     if (osrdConfig !== false) {
       try {
-        store.dispatch(redirectToGraph(true));
-        store.dispatch(toggleWorkingStatus(true));
-        const osrdReturn = await post(osrdURI, osrdConfig);
-        store.dispatch(updateSimulation(osrdReturn));
-        store.dispatch(toggleWorkingStatus(false));
+        // store.dispatch(redirectToGraph(true));
+        // store.dispatch(toggleWorkingStatus(true));
+      //  const osrdReturn = await post(osrdURI, osrdConfig);
+        console.log(osrdConfig);
+        // store.dispatch(updateSimulation(osrdReturn));
+        // store.dispatch(toggleWorkingStatus(false));
       } catch (e) {
         console.log(e);
       }
@@ -58,7 +60,7 @@ export default function SimulationLauncher() {
             type="text"
             label={t('osrdconf:name')}
             id="osrdconf-name"
-            onChange={(e) => store.dispatch(updateName(e.target.value))}
+            onChange={(e) => dispatch(updateName(e.target.value))}
             value={osrdconf.name}
             noMargin
             sm

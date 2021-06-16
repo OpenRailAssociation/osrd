@@ -9,12 +9,10 @@ export const UPDATE_TIMETABLE_ID = 'osrdconf/UPDATE_TIMETABLE_ID';
 export const UPDATE_ORIGIN = 'osrdconf/UPDATE_ORIGIN';
 export const UPDATE_ORIGIN_TIME = 'osrdconf/UPDATE_ORIGIN_TIME';
 export const UPDATE_VIAS = 'osrdconf/UPDATE_VIAS';
-export const UPDATE_VIA_TIME = 'osrdconf/UPDATE_VIA_TIME';
 export const UPDATE_VIA_STOPTIME = 'osrdconf/UPDATE_VIA_STOPTIME';
 export const PERMUTE_VIAS = 'osrdconf/PERMUTE_VIAS';
 export const DELETE_VIAS = 'osrdconf/DELETE_VIAS';
 export const UPDATE_DESTINATION = 'osrdconf/UPDATE_DESTINATION';
-export const UPDATE_DESTINATION_TIME = 'osrdconf/UPDATE_DESTINATION_TIME';
 export const UPDATE_TRAINCOMPO = 'osrdconf/UPDATE_TRAINCOMPO';
 export const UPDATE_ITINERARY = 'osrdconf/UPDATE_ITINERARY';
 export const UPDATE_FEATURE_INFO_CLICK_OSRD = 'osrdconf/UPDATE_FEATURE_INFO_CLICK_OSRD';
@@ -29,7 +27,6 @@ export const initialState = {
   origin: undefined,
   originTime: undefined,
   destination: undefined,
-  destinationTime: undefined,
   vias: [],
   trainCompo: undefined,
   geojson: undefined,
@@ -60,9 +57,6 @@ export default function reducer(state = initialState, action) {
       case UPDATE_VIAS:
         draft.vias.push(action.vias);
         break;
-      case UPDATE_VIA_TIME:
-        draft.vias = action.vias;
-        break;
       case UPDATE_VIA_STOPTIME:
         draft.vias = action.vias;
         break;
@@ -74,9 +68,6 @@ export default function reducer(state = initialState, action) {
         break;
       case UPDATE_DESTINATION:
         draft.destination = action.destination;
-        break;
-      case UPDATE_DESTINATION_TIME:
-        draft.destinationTime = action.destinationTime;
         break;
       case UPDATE_TRAINCOMPO:
         draft.trainCompo = action.trainCompo;
@@ -171,16 +162,6 @@ export function permuteVias(vias, from, to) {
     });
   };
 }
-export function updateViaTime(vias, index, value) {
-  const newVias = Array.from(vias); // Copy of vias to permit modification
-  newVias[index] = { ...newVias[index], time: value };
-  return (dispatch) => {
-    dispatch({
-      type: UPDATE_VIA_TIME,
-      vias: newVias,
-    });
-  };
-}
 export function updateViaStopTime(vias, index, value) {
   const newVias = Array.from(vias); // Copy of vias to permit modification
   newVias[index] = { ...newVias[index], stoptime: value };
@@ -204,14 +185,6 @@ export function updateDestination(destination) {
     dispatch({
       type: UPDATE_DESTINATION,
       destination,
-    });
-  };
-}
-export function updateDestinationTime(destinationTime) {
-  return (dispatch) => {
-    dispatch({
-      type: UPDATE_DESTINATION_TIME,
-      destinationTime,
     });
   };
 }

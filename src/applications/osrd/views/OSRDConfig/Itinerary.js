@@ -21,7 +21,6 @@ const Itinerary = (props) => {
   const viasRedux2state = () => {
     setVias({
       vias: osrdconf.vias.map((item) => ({
-        time: item.time,
         stoptime: item.stoptime,
       })),
     });

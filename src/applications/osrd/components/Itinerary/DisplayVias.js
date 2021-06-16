@@ -4,7 +4,6 @@ import nextId from 'react-id-generator';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { useSelector } from 'react-redux';
 import {
-  updateViaTime,
   updateViaStopTime,
   permuteVias,
   deleteVias,
@@ -47,20 +46,6 @@ export default function DisplayVias(props) {
                         <small className="font-weight-bold text-muted mr-1">{index + 1}</small>
                         <small className="mr-1 text-nowrap">{`${place.id} ${place.nomVoie}`}</small>
                         <div className="small text-nowrap ml-3">{`${place.pkSncfDe} • ${place.pkSncfFi}`}</div>
-                      </div>
-                      <div className="mx-2 osrd-config-time">
-                        <InputSNCF
-                          type="time"
-                          id={`osrd-config-time-via-${nextId()}`}
-                          onChange={(e) => updateViaTime(index, e.target.value)}
-                          value={
-                            osrdconf.vias[index] !== undefined
-                              ? osrdconf.vias[index].time : ''
-                          }
-                          seconds
-                          sm
-                          noMargin
-                        />
                       </div>
                       <div className="osrd-config-stoptime">
                         <InputSNCF

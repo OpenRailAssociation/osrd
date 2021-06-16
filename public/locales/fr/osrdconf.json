@@ -13,6 +13,7 @@
     "noName": "Veuillez choisir un nom pour la simulation",
     "noOrigin": "L'origine n'est pas définie",
     "noOriginTime": "Veuillez renseignez au moins l'horaire de départ à l'origine",
+    "noTimetable": "Veuillez choisir ou créer une grille horaire",
     "noTrainCompo": "La composition de train n'est pas renseignée"
   },
   "gare": "Gare, poste",

@@ -10,7 +10,7 @@ import {
 } from 'react-icons/ri';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import DisplayVias from 'applications/osrd/components/Itinerary/DisplayVias';
-import { updateOriginTime, updateDestinationTime } from 'applications/osrd/components/Itinerary/helpers';
+import { updateOriginTime } from 'applications/osrd/components/Itinerary/helpers';
 import { updateOrigin, updateDestination } from 'reducers/osrdconf';
 
 export default function DisplayItinerary(props) {
@@ -102,6 +102,7 @@ export default function DisplayItinerary(props) {
                 )}
                 role="button"
                 tabIndex={0}
+                className="flex-grow-1"
               >
                 <strong className="mr-1 text-nowrap">
                   {`${osrdconf.destination.id} ${osrdconf.destination.nomVoie}`}
@@ -109,17 +110,6 @@ export default function DisplayItinerary(props) {
                 <small className="text-nowrap">
                   {`${osrdconf.destination.pkSncfDe} • ${osrdconf.destination.pkSncfFi}`}
                 </small>
-              </div>
-              <div className="ml-auto osrd-config-time">
-                <InputSNCF
-                  type="time"
-                  id="osrd-config-time-destination"
-                  onChange={(e) => updateDestinationTime(e.target.value)}
-                  value={osrdconf.destinationTime}
-                  seconds
-                  sm
-                  noMargin
-                />
               </div>
               <button className="btn btn-sm btn-only-icon btn-white" type="button" onClick={() => store.dispatch(updateDestination(undefined))}>
                 <i className="icons-circle-delete" />

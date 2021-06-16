@@ -1,8 +1,6 @@
 import { store } from 'Store';
 import {
   updateOriginTime as updateOriginTimeRedux,
-  updateDestinationTime as updateDestinationTimeRedux,
-  updateViaTime as updateViaTimeRedux,
   updateViaStopTime as updateViaStopTimeRedux,
   deleteVias as deleteViasRedux,
   permuteVias as permuteViasRedux,
@@ -10,15 +8,6 @@ import {
 
 export const updateOriginTime = (value) => {
   store.dispatch(updateOriginTimeRedux(value));
-};
-
-export const updateDestinationTime = (value) => {
-  store.dispatch(updateDestinationTimeRedux(value));
-};
-
-export const updateViaTime = (index, value) => {
-  const { osrdconf } = store.getState();
-  store.dispatch(updateViaTimeRedux(osrdconf.vias, index, value));
 };
 
 export const updateViaStopTime = (index, value) => {
