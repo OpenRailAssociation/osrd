@@ -85,7 +85,7 @@ export const SelectZone: Tool<SelectZoneState> = {
         },
         onClick({ dispatch }, toolState, editorState) {
           dispatch<any>(
-            selectZone(editorState.editorInfrastructure, editorState.editorLayers, null),
+            selectZone(editorState.editorInfrastructure.id, editorState.editorLayers, null),
           );
         },
       },
@@ -98,7 +98,7 @@ export const SelectZone: Tool<SelectZoneState> = {
         onClick({ dispatch, setState }, state, editorState) {
           if (state.polygonPoints) {
             dispatch<any>(
-              selectZone(editorState.editorInfrastructure, editorState.editorLayers, {
+              selectZone(editorState.editorInfrastructure.id, editorState.editorLayers, {
                 type: 'polygon',
                 points: state.polygonPoints,
               }),
@@ -167,7 +167,7 @@ export const SelectZone: Tool<SelectZoneState> = {
           setState({ ...toolState, rectangleTopLeft: null });
         } else {
           dispatch<any>(
-            selectZone(editorState.editorInfrastructure, editorState.editorLayers, {
+            selectZone(editorState.editorInfrastructure.id, editorState.editorLayers, {
               type: 'rectangle',
               points: [toolState.rectangleTopLeft, position],
             }),
@@ -187,7 +187,7 @@ export const SelectZone: Tool<SelectZoneState> = {
       if (isEqual(lastPoint, position)) {
         if (points.length >= 3) {
           dispatch<any>(
-            selectZone(editorState.editorInfrastructure, editorState.editorLayers, {
+            selectZone(editorState.editorInfrastructure.id, editorState.editorLayers, {
               type: 'polygon',
               points,
             }),

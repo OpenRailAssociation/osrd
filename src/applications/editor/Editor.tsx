@@ -13,11 +13,12 @@ import './Editor.scss';
 import { useParams } from 'react-router-dom';
 import { Tool, Tools } from './tools';
 import { EditorState, setInfrastructure } from '../../reducers/editor';
-import { MainState } from '../../reducers/main';
+import { MainState, setFailure } from '../../reducers/main';
 import Map from './Map';
 import Tipped from './components/Tipped';
 import NavButtons from './nav';
 import { updateViewport } from '../../reducers/map';
+import { getInfrastructure, getInfrastructures } from './api';
 
 const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const dispatch = useDispatch();
@@ -34,8 +35,16 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const { infra, urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
   const { mapStyle, viewport } = useSelector((state: { map: any }) => state.map);
   const setViewport = useCallback(
-    (value) => dispatch(updateViewport(value, `/editor/${editorState.editorInfrastructure}`)),
-    [dispatch, updateViewport, editorState.editorInfrastructure],
+    (value) =>
+      dispatch(
+        updateViewport(
+          value,
+          editorState.editorInfrastructure
+            ? `/editor/${editorState.editorInfrastructure.id}`
+            : '/editor/-1',
+        ),
+      ),
+    [dispatch, updateViewport, editorState.editorInfrastructure?.id],
   );
 
   // Initial viewport:
@@ -53,9 +62,32 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   }, []);
 
   // Update the infrastructure in state
+  // We take the one define in the url, and if it is absent or equals to '-1'
+  // we call the api to find the latest infrastructure modified
   useEffect(() => {
-    console.log(infra);
-    if (infra) dispatch(setInfrastructure(parseInt(infra)));
+    console.log('infra', infra);
+    if (infra && infra !== '-1') {
+      getInfrastructure(parseInt(infra))
+        .then((infrastructure) => dispatch(setInfrastructure(infrastructure)))
+        .catch((e) => {
+          dispatch(setFailure(new Error(t('Editor.errors.infra-not-found', { id: infra }))));
+          dispatch(updateViewport(viewport, `/editor/${infrastructure.id}`));
+        });
+    } else {
+      getInfrastructures()
+        .then((infras) => {
+          if (infras && infras.length > 0) {
+            const infra = infras.sort((a, b) => (a.modified < b.modified ? 1 : -1))[0];
+            dispatch(setInfrastructure(infra));
+            dispatch(updateViewport(viewport, `/editor/${infra.id}`));
+          } else {
+            dispatch(setFailure(new Error(t('Editor.errors.no-infra-available'))));
+          }
+        })
+        .catch((e) => {
+          dispatch(setFailure(new Error(t('Editor.errors.technical', { msg: e.message }))));
+        });
+    }
   }, [infra]);
 
   return (

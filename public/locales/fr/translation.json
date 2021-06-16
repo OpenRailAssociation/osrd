@@ -159,6 +159,11 @@
       "recenter": "Recentrer la carte",
       "toggle-layers": "[TODO] Choisir les couches à afficher"
     },
+    "errors": {
+      "infra-not-found": "L'infrastructure {{id}} non trouvée",
+      "no-infra-available": "Votre compte n'est lié à aucune infrastructure",
+      "technical": "Une erreur technique est survenue : {{msg}}"
+    },
     "tools": {
       "select-zone": {
         "label": "Sélection de la zone d'édition",

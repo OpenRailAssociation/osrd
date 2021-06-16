@@ -9,6 +9,7 @@ import {
   Zone,
   EditorComponentsDefintion,
   EditorEntitiesDefinition,
+  ApiInfrastructure,
 } from '../types';
 import { setLoading, setSuccess, setFailure } from './main';
 import {
@@ -78,11 +79,11 @@ type ActionSetInfra = {
   type: typeof SET_INFRASTRUCTURE;
   data: number;
 };
-export function setInfrastructure(id: number): ThunkAction<ActionSetInfra> {
+export function setInfrastructure(infra: ApiInfrastructure): ThunkAction<ActionSetInfra> {
   return (dispatch) => {
     dispatch({
       type: SET_INFRASTRUCTURE,
-      data: id,
+      data: infra,
     });
   };
 }
@@ -102,7 +103,7 @@ type ActionLoadDataModel = {
 export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
   return async (dispatch, getState) => {
     // check if we need to load the model
-
+    console.log(getState().editor);
     if (
       !getState().editor.editorEntitiesDefinintion ||
       !getState().editor.editorComponentsDefinintion
@@ -138,67 +139,85 @@ export function createLine(line: Path, properties: LineProperties): ThunkAction<
       },
     });
     dispatch(
-      createModificationAction({
-        layer: 'map_midi_circuitdevoie',
+      addAction({
         type: 'insert',
-        properties,
-        geometry: {
-          type: 'LineString',
-          coordinates: line,
-        },
+        entity: 'track_section',
+        data: [
+          {
+            component_type: 'identifier',
+            component: { database: 'gaia', name: 'track' },
+          },
+          {
+            component_type: 'track_section',
+            component: { length: 10 },
+          },
+          {
+            component_type: 'geo_line_location',
+            component: {
+              schematic: {
+                type: 'LineString',
+                coordinates: line,
+              },
+              geographic: {
+                type: 'LineString',
+                coordinates: line,
+              },
+            },
+          },
+        ],
       }),
     );
   };
 }
 
-const CREATE_MODIFICATION_ACTION = 'editor/CREATE_MODIFICATION_ACTION';
-type ActionCreateModificationAction = {
-  type: typeof CREATE_MODIFICATION_ACTION;
+const ADD_ACTION = 'editor/ADD_ACTION';
+type ActionAddAction = {
+  type: typeof ADD_ACTION;
   action: EditorAction;
 };
-export function createModificationAction(
-  action: EditorAction,
-): ThunkAction<ActionCreateModificationAction> {
+export function addAction(action: EditorAction): ThunkAction<ActionAddAction> {
   return (dispatch) => {
     dispatch({
-      type: CREATE_MODIFICATION_ACTION,
+      type: ADD_ACTION,
       action,
     });
     // TODO: need to be triggered from an other way
-    dispatch(saveModificationActions());
+    dispatch(saveActions());
   };
 }
 
-const CLEAR_MODIFICATION_ACTIONS = 'editor/CLEAR_MODIFICATION_ACTIONS';
-type ActionClearModificationActions = {
-  type: typeof CLEAR_MODIFICATION_ACTIONS;
+const CLEAR_ACTIONS = 'editor/CLEAR_ACTIONS';
+type ActionClearActions = {
+  type: typeof CLEAR_ACTIONS;
 };
-export function clearModificationActions(): ThunkAction<ActionClearModificationActions> {
+export function clearActions(): ThunkAction<ActionClearActions> {
   return (dispatch) => {
     dispatch({
-      type: CLEAR_MODIFICATION_ACTIONS,
+      type: CLEAR_ACTIONS,
     });
   };
 }
 
-const SAVE_MODIFICATION_ACTIONS = 'editor/SAVE_MODIFICATION_ACTIONS';
-type ActionSaveModificationActions = {
-  type: typeof SAVE_MODIFICATION_ACTIONS;
+const SAVE_ACTIONS = 'editor/SAVE_ACTIONS';
+type ActionSaveActions = {
+  type: typeof SAVE_ACTIONS;
 };
-export function saveModificationActions(): ThunkAction<ActionSaveModificationActions> {
+export function saveActions(): ThunkAction<ActionSaveActions> {
   return async (dispatch, getState) => {
     const state = getState();
-    console.log(state);
     dispatch(setLoading());
     try {
-      const data = await saveEditorActions(state.editor.editorActions);
+      const data = await saveEditorActions(
+        state.editor.editorInfrastructure.id,
+        state.editor.editorActions,
+      );
       dispatch(
         setSuccess({
           title: 'Modifications enregistrées',
           text: `Vos ${state.editor.editorActions.length} modifications ont été publiées`,
         }),
       );
-      dispatch(clearModificationActions());
+      dispatch(clearActions());
     } catch (e) {
       dispatch(setFailure(e));
     }
@@ -208,10 +227,12 @@ export function saveModificationActions(): ThunkAction<ActionSaveModificationAct
 type Actions =
   | ActionSelectZone
   | ActionSelectedZoneLoaded
+  | ActionLoadDataModel
+  | ActionSetInfra
   | ActionCreateLine
-  | ActionCreateModificationAction
-  | ActionSaveModificationActions
-  | ActionClearModificationActions;
+  | ActionAddAction
+  | ActionSaveActions
+  | ActionClearActions;
 
 //
 // State definition
@@ -219,7 +240,7 @@ type Actions =
 export interface EditorState {
   editorEntitiesDefinintion: EditorEntitiesDefinition | null;
   editorComponentsDefinition: EditorComponentsDefinition | null;
-  editorInfrastructure: number;
+  editorInfrastructure: ApiInfrastructure | null;
   editorLayers: Array<string>;
   editorZone: Zone | null;
   editorData: Array<GeoJSON> | null;
@@ -232,7 +253,7 @@ export const initialState: EditorState = {
   // Definition of component, ie. it's list of fields with theirs types, and if they are required
   editorComponentsDefinition: null,
   // ID of the infrastructure on which we are working
-  editorInfrastructure: 26,
+  editorInfrastructure: null,
   // ID of selected layers on which we are working
   editorLayers: ['map_midi_circuitdevoie'],
   // Edition zone:
@@ -273,15 +294,15 @@ export default function reducer(state = initialState, action: Actions) {
             ]
           : [{ type: 'FeatureCollection', count: 1, features: action.feature }];
         break;
-      case CREATE_MODIFICATION_ACTION:
+      case ADD_ACTION:
         draft.editorActions = state.editorActions.concat([action.action]);
         break;
-      case CLEAR_MODIFICATION_ACTIONS:
+      case CLEAR_ACTIONS:
         draft.editorActions = [];
         break;
       case LOAD_DATA_MODEL:
-        draft.editorEntitiesDefinintion = action.entities;
-        draft.editorComponentsDefinition = action.components;
+        draft.editorEntitiesDefinintion = action.data.entities;
+        draft.editorComponentsDefinition = action.data.components;
         break;
     }
   });

@@ -2,7 +2,8 @@ import axios from 'axios';
 import mainConfig from 'config/config';
 
 const formatPath = (path) => `${mainConfig.api}${path}${path.slice(-1) !== '/' ? '/' : ''}`;
-const formatPathGateway = (path) => `${mainConfig.proxy}${path}${path.slice(-1) !== '/' ? '/' : ''}`;
+const formatPathGateway = (path) =>
+  `${mainConfig.proxy}${path}${path.slice(-1) !== '/' ? '/' : ''}`;
 
 const getAuthConfig = () => ({
   headers: {
@@ -20,9 +21,10 @@ export const get = async (path, params = undefined, proxyGateway = false) => {
   return res.data;
 };
 
-export const post = async (path, payload, config = {}) => {
+export const post = async (path, payload, config = {}, proxyGateway = false) => {
   config = { ...getAuthConfig(), ...config };
-  const res = await axios.post(formatPath(path), payload, config);
+  const formattedPath = proxyGateway ? formatPathGateway(path) : formatPath(path);
+  const res = await axios.post(formattedPath, payload, config);
   return res.data;
 };
 

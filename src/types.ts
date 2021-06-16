@@ -98,19 +98,17 @@ export interface Notification {
 //
 export interface EditorActionInsert {
   type: 'insert';
-  layer: string;
-  geometry: GeoJSON;
-  properties: LineProperties;
+  entity: string;
+  data: any;
 }
 export interface EditorActionUpdate {
   type: 'update';
-  layer: string;
-  id: number;
-  geometry: GeoJSON;
+  entity: string;
+  data: any;
 }
 export interface EditorActionDelete {
   type: 'delete';
-  layer: string;
+  entity: string;
   id: number;
 }
 
