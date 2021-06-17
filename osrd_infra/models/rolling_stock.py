@@ -100,6 +100,8 @@ class RollingStock(models.Model):
         validators=[JSONSchemaValidator(limit_value=EFFORT_CURVE_MAP_SCHEMA)],
     )
 
+    image = models.ImageField(null=True, blank=True)
+
     def to_railjson(self):
         return {
             "id": self.name,
