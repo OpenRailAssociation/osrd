@@ -161,9 +161,32 @@ def parse_steps_input(steps):
     return waypoints, step_stop_times
 
 
+def compute_path(path, data, owner):
+    infra = data["infra"]
+
+    waypoints, step_stop_times = parse_steps_input(data["steps"])
+    payload = request_pathfinding({"infra": infra.pk, "waypoints": waypoints})
+
+    # Post treatment
+    payload = payload_reverse_format(payload)
+    track_map = fetch_track_sections_from_payload(payload)
+    payload = payload_fill_via(payload, step_stop_times, track_map)
+    geographic, schematic = get_geojson_path(payload, track_map)
+
+    path.name = data["name"]
+    path.owner = owner
+    path.namespace = infra.namespace
+    path.payload = payload
+    path.geographic = geographic
+    path.schematic = schematic
+
+    path.save()
+
+
 class PathfindingView(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
     mixins.ListModelMixin,
     GenericViewSet,
@@ -183,29 +206,20 @@ class PathfindingView(
         path = get_object_or_404(queryset, pk=pk)
         return Response(self.format_response(path))
 
+    def update(self, request, pk):
+        input_serializer = PathInputSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+        data = input_serializer.validated_data
+        path = self.get_object()
+
+        compute_path(path, data, self.request.user.sub)
+        return Response(self.format_response(path))
+
     def create(self, request):
         input_serializer = PathInputSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
         data = input_serializer.validated_data
 
-        infra = data["infra"]
-
-        waypoints, step_stop_times = parse_steps_input(data["steps"])
-        payload = request_pathfinding({"infra": infra.pk, "waypoints": waypoints})
-
-        # Post treatment
-        payload = payload_reverse_format(payload)
-        track_map = fetch_track_sections_from_payload(payload)
-        payload = payload_fill_via(payload, step_stop_times, track_map)
-        geographic, schematic = get_geojson_path(payload, track_map)
-
-        path = Path(
-            name=data["name"],
-            owner=self.request.user.sub,
-            namespace=infra.namespace,
-            payload=payload,
-            geographic=geographic,
-            schematic=schematic,
-        )
-        path.save()
+        path = Path()
+        compute_path(path, data, self.request.user.sub)
         return Response(self.format_response(path))
