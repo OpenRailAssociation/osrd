@@ -37,30 +37,30 @@ def payload_reverse_format(payload):
         route["route"] = reverse_format(route["route"])
         for track in route["track_sections"]:
             track["track_section"] = reverse_format(track["track_section"])
-    for via in payload["via"]:
-        via["position"]["track_section"] = reverse_format(
-            via["position"]["track_section"]
+    for step in payload["steps"]:
+        step["position"]["track_section"] = reverse_format(
+            step["position"]["track_section"]
         )
     return payload
 
 
-def payload_fill_via(payload, step_stop_times, track_map):
+def payload_fill_steps(payload, step_stop_times, track_map):
     stop_time_index = 0
-    for via in payload["via"]:
-        if not via["suggestion"]:
-            via["stop_time"] = step_stop_times[stop_time_index]
+    for step in payload["steps"]:
+        if not step["suggestion"]:
+            step["stop_time"] = step_stop_times[stop_time_index]
             stop_time_index += 1
         else:
-            via["stop_time"] = 0
+            step["stop_time"] = 0
 
-        track = track_map[via["position"]["track_section"]]
-        offset = via["position"]["offset"] / track.track_section.length
+        track = track_map[step["position"]["track_section"]]
+        offset = step["position"]["offset"] / track.track_section.length
 
         geo = geo_transform(track.geo_line_location.geographic)
-        via["geographic"] = geo.interpolate_normalized(offset).json
+        step["geographic"] = geo.interpolate_normalized(offset).coords
 
         schema = geo_transform(track.geo_line_location.schematic)
-        via["schematic"] = schema.interpolate_normalized(offset).json
+        step["schematic"] = schema.interpolate_normalized(offset).coords
 
     return payload
 
@@ -170,7 +170,7 @@ def compute_path(path, data, owner):
     # Post treatment
     payload = payload_reverse_format(payload)
     track_map = fetch_track_sections_from_payload(payload)
-    payload = payload_fill_via(payload, step_stop_times, track_map)
+    payload = payload_fill_steps(payload, step_stop_times, track_map)
     geographic, schematic = get_geojson_path(payload, track_map)
 
     path.name = data["name"]
@@ -198,7 +198,7 @@ class PathfindingView(
         serializer = self.serializer_class(path)
         return {
             **serializer.data,
-            "via": path.payload["via"],
+            "steps": path.payload["steps"],
         }
 
     def retrieve(self, request, pk=None):

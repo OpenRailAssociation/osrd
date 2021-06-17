@@ -6,7 +6,7 @@ from osrd_infra.utils import JSONSchemaValidator
 
 PAYLOAD_SCHEMA = {
     "type": "object",
-    "required": ["path", "operational_points"],
+    "required": ["path", "steps"],
     "additionalProperties": False,
     "properties": {
         "path": {
@@ -34,7 +34,7 @@ PAYLOAD_SCHEMA = {
             },
             "title": "schema",
         },
-        "via": {
+        "steps": {
             "type": "array",
             "items": {
                 "type": "object",
@@ -53,7 +53,12 @@ PAYLOAD_SCHEMA = {
                     "name": {"type": "string"},
                     "suggestion": {"type": "bool"},
                     "stop_time": {"type": "number"},
-                    "geographic": {"type": "string"},
+                    "geographic": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "minItems": 2,
+                        "maxItems": 2,
+                    },
                     "schematic": {"type": "string"},
                 },
             },
