@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 public final class ArrayChangeLog extends ChangeConsumer implements ChangeLog {
-    /** The list of all changes that occured so far in the simulation. */
+    /** The list of all changes that occurred so far in the simulation. */
     public final ArrayList<Change> publishedChanges = new ArrayList<>();
 
     @Override

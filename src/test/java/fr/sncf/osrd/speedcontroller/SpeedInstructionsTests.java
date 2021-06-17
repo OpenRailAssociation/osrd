@@ -15,7 +15,6 @@ import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
-import org.jaxen.util.SingletonList;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -107,7 +106,7 @@ public class SpeedInstructionsTests {
     }
 
     @Test
-    public void testIsNotLate() throws InvalidInfraException, SimulationError {
+    public void testIsNotLate() throws InvalidInfraException {
         var infra = getBaseInfra();
         assert infra != null;
         var config = getBaseConfig();

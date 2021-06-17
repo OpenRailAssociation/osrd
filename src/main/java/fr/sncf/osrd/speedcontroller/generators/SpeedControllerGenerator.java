@@ -3,7 +3,6 @@ package fr.sncf.osrd.speedcontroller.generators;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.train.Action;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator.PositionUpdate;
@@ -21,6 +20,8 @@ public interface SpeedControllerGenerator {
     /** Generates the set of SpeedController */
     Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed);
 
+    /** Generates a map of location -> expected time if we follow the given controllers.
+     * This may be overridden in scenarios when it is already computed when computing the controllers */
     default NavigableMap<Double, Double> getExpectedTimes(Simulation sim,
                                                           TrainSchedule schedule,
                                                           Set<SpeedController> controllers,

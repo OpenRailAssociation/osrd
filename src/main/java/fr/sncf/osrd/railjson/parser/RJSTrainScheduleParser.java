@@ -16,6 +16,7 @@ import fr.sncf.osrd.speedcontroller.generators.ConstructionAllowanceGenerator;
 import fr.sncf.osrd.speedcontroller.generators.MaxSpeedGenerator;
 import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.speedcontroller.generators.LinearAllowanceGenerator;
+import fr.sncf.osrd.speedcontroller.generators.AllowanceGenerator;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.train.phases.StopPhase;
@@ -23,10 +24,8 @@ import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class RJSTrainScheduleParser {
     /** Parses a RailJSON train schedule */
