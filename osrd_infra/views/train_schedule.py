@@ -24,7 +24,7 @@ from osrd_infra.models import (
 def format_result(train_schedule_result):
     steps = format_steps(train_schedule_result)
     return {
-        "name": train_schedule_result.train_schedule.train_id,
+        "name": train_schedule_result.train_schedule.train_name,
         "steps": steps,
         "stops": format_stops(train_schedule_result, steps),
         "signals": format_signals(train_schedule_result),
@@ -119,6 +119,7 @@ def format_stops(train_schedule_result, steps):
             "stop_time": 0,
         }
     ]
+    """ TODO: Add stops using path
     for phase in train_schedule_result.train_schedule.phases:
         stops.append(
             {
@@ -127,6 +128,7 @@ def format_stops(train_schedule_result, steps):
                 "stop_time": phase["stop_time"],
             }
         )
+    """
     stops.append(
         {
             "name": "stop",
@@ -176,9 +178,11 @@ class TrainScheduleView(
         result = get_object_or_404(TrainScheduleResult, train_schedule=train_schedule)
         return Response(format_result(result))
 
-    @action(detail=True, methods=["post"])
-    def run(self, request, pk=None):
-        train_schedule = self.get_object()
+    def create(self, request):
+        serializer = TrainScheduleSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        train_schedule = serializer.save()
+
         payload = {
             "infra": train_schedule.timetable.infra_id,
             "rolling_stocks": [get_rolling_stock_payload(train_schedule.rolling_stock)],

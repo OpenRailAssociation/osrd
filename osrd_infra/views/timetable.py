@@ -54,7 +54,7 @@ def get_train_schedule_payload(train_schedule):
         }
     )
     return {
-        "id": train_schedule.train_id,
+        "id": train_schedule.train_name,
         "rolling_stock": f"rolling_stock.{train_schedule.rolling_stock_id}",
         "departure_time": train_schedule.departure_time,
         "initial_head_location": path.get_initial_location(),
