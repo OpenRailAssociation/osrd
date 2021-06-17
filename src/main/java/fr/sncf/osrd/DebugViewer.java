@@ -31,7 +31,9 @@ import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +42,8 @@ import java.util.Map;
 @SuppressFBWarnings({"SIC_INNER_SHOULD_BE_STATIC_ANON"})
 public class DebugViewer extends ChangeConsumer {
     static final Logger logger = LoggerFactory.getLogger(DebugViewer.class);
+
+    private static final ArrayList<KeyListener> keyListenersToAdd = new ArrayList<>();
 
     private final Infra infra;
     private final boolean realTime;
@@ -65,6 +69,10 @@ public class DebugViewer extends ChangeConsumer {
             this.spriteHead = spriteHead;
             this.spriteTail = spriteTail;
         }
+    }
+
+    public static void addKeyListener(KeyListener keyListener) {
+        keyListenersToAdd.add(keyListener);
     }
 
     private static String encodeSpriteId(String id) {
@@ -235,6 +243,7 @@ public class DebugViewer extends ChangeConsumer {
 
         view.addMouseMotionListener(dragHandler);
         view.addMouseListener(dragHandler);
+        keyListenersToAdd.forEach(frame::addKeyListener);
 
         frame.setVisible(true);
     }

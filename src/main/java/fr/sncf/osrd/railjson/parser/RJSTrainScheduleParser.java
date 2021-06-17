@@ -12,6 +12,8 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.train.decisions.KeyboardInput;
+import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.speedcontroller.generators.MaxSpeedGenerator;
 import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.speedcontroller.generators.AllowanceGenerator;
@@ -86,8 +88,19 @@ public class RJSTrainScheduleParser {
                 initialDirection,
                 initialRoute,
                 initialSpeed,
-                phases
+                phases,
+                parseDecisionMaker(rjsTrainSchedule.trainControlMethod)
         );
+    }
+
+    private static TrainDecisionMaker parseDecisionMaker(String decisionMakerType) throws InvalidSchedule {
+        if (decisionMakerType == null || decisionMakerType.equals("default")) {
+            return new TrainDecisionMaker.DefaultTrainDecisionMaker();
+        } else if (decisionMakerType.equals("keyboard")) {
+            return new KeyboardInput(2);
+        } else {
+            throw new InvalidSchedule(String.format("Unknown decision maker type: %s", decisionMakerType));
+        }
     }
 
     private static SpeedControllerGenerator parseSpeedControllerGenerator(RJSAllowance allowance)
