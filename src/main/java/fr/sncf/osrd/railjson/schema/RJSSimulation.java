@@ -6,7 +6,7 @@ import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
-import fr.sncf.osrd.railjson.schema.schedule.RJSRunningTimeParameters;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 
@@ -18,7 +18,7 @@ public final class RJSSimulation {
             .add(ID.Adapter.FACTORY)
             .add(RJSRollingResistance.adapter)
             .add(RJSTrainPhase.adapter)
-            .add(RJSRunningTimeParameters.adapter)
+            .add(RJSAllowance.adapter)
             .build()
             .adapter(RJSSimulation.class);
 
