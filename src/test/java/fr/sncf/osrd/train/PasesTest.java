@@ -1,12 +1,17 @@
 package fr.sncf.osrd.train;
 
+import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
+import fr.sncf.osrd.railjson.schema.common.ID;
+import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
+import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
@@ -18,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import java.util.*;
 
 import static fr.sncf.osrd.Helpers.*;
+import static fr.sncf.osrd.speedcontroller.MarginTests.saveGraph;
 import static fr.sncf.osrd.speedcontroller.SpeedInstructionsTests.getStaticGenerator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -151,35 +157,72 @@ public class PasesTest {
         assertEquals(expected, actualEndTime, expected * 0.01);
     }
 
+    @SuppressWarnings("unchecked")
+    public static ID<RJSRoute>[] addToArray(ID<RJSRoute>[] array, ID<RJSRoute> val) {
+        var res = (ID<RJSRoute>[]) java.lang.reflect.Array.newInstance(ID.class, array.length + 1);
+        System.arraycopy(array, 0, res, 0, array.length);
+        res[res.length - 1] = val;
+        return res;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static ID<RJSRoute>[] removeFirstFromArray(ID<RJSRoute>[] array) {
+        var res = (ID<RJSRoute>[]) java.lang.reflect.Array.newInstance(ID.class, array.length - 1);
+        if (array.length - 1 >= 0) System.arraycopy(array, 1, res, 0, array.length - 1);
+        return res;
+    }
+
+    public static RJSTrainPhase[] loadPhasesLongerFirstPhase() {
+        var phases = loadRJSPhases("tiny_infra/simulation_several_phases.json");
+        phases[0].endLocation = new RJSTrackLocation(new ID<>("ne.micro.foo_to_bar"), 4000);
+        assert phases[0] instanceof RJSTrainPhase.Navigate;
+        assert phases[1] instanceof RJSTrainPhase.Navigate;
+        var navigate0 = (RJSTrainPhase.Navigate) phases[0];
+        var navigate1 = (RJSTrainPhase.Navigate) phases[1];
+        navigate0.routes = addToArray(navigate0.routes, new ID<>("rt.C3-S7"));
+        navigate1.routes = removeFirstFromArray(navigate1.routes);
+        return phases;
+    }
+
     @Test
     public void testDifferentMargins() throws InvalidInfraException {
         var infra = getBaseInfra();
-        var param = new RJSAllowance.LinearAllowance();
-        param.allowanceValue = 0;
-        param.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
-        var params = new ArrayList<RJSAllowance>(Collections.singletonList(param));
 
-        var config = makeConfigWithSpeedParams(params, "tiny_infra/config_railjson_several_phases.json");
+        var paramsFirstPhase = new RJSAllowance.LinearAllowance();
+        paramsFirstPhase.allowanceValue = 10;
+        paramsFirstPhase.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
+        var paramsSecondPhase = new RJSAllowance.LinearAllowance();
+        paramsSecondPhase.allowanceValue = 60;
+        paramsSecondPhase.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
+
+        var phases = loadPhasesLongerFirstPhase();
+
+        phases[0].allowances = new RJSAllowance[]{paramsFirstPhase};
+        phases[1].allowances = new RJSAllowance[]{paramsSecondPhase};
+
+        var configMargins = makeConfigWithGivenPhases(phases, "tiny_infra/config_railjson_several_phases.json");
+        var simMargins = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var eventsMargins = run(simMargins, configMargins);
+        var timeFirstPhaseMMargins = findPhaseChangeTime(eventsMargins);
+        var timeMargins = simMargins.getTime();
+
+        phases[0].allowances = null;
+        phases[1].allowances = null;
+
+        var config = makeConfigWithGivenPhases(phases, "tiny_infra/config_railjson_several_phases.json");
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var baseEvents = run(sim, config);
-        var basePhaseChange = findPhaseChangeTime(baseEvents);
+        var baseTimeFirstPhase = findPhaseChangeTime(baseEvents);
         var baseTime = sim.getTime();
 
-        var paramsSecondPhase = new RJSAllowance.LinearAllowance();
-        paramsSecondPhase.allowanceValue = 20;
-        paramsSecondPhase.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
-        var paramsBothPhases = new ArrayList<List<RJSAllowance>>();
-        paramsBothPhases.add(params);
-        paramsBothPhases.add(new ArrayList<>(Collections.singletonList(paramsSecondPhase)));
-        var config2 = makeConfigWithSpeedParamsList(paramsBothPhases, "tiny_infra/config_railjson_several_phases.json");
-        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim2, config2);
-        var phaseChangeTime = findPhaseChangeTime(events);
-        var time = sim.getTime();
-
-        var expected = baseTime + (baseTime - basePhaseChange) * 0.2;
-        assertEquals(expected, time, expected * 0.01);
-        assertEquals(basePhaseChange, phaseChangeTime, basePhaseChange * 0.01);
+        var baseTimeSecondPhase = baseTime - baseTimeFirstPhase;
+        var expected = baseTimeFirstPhase * (1 + paramsFirstPhase.allowanceValue / 100) +
+                baseTimeSecondPhase * (1 + paramsSecondPhase.allowanceValue / 100);
+        saveGraph(eventsMargins, "two-margins-out.csv");
+        saveGraph(baseEvents, "two-margins-base.csv");
+        assertEquals(expected, timeMargins, expected * 0.01);
+        assertEquals(baseTimeFirstPhase * (1 + paramsFirstPhase.allowanceValue / 100),
+                timeFirstPhaseMMargins, baseTimeFirstPhase * 0.05);
     }
 
     public static double findPhaseChangeTime(List<TimelineEvent> events) {

@@ -183,11 +183,14 @@ public class Helpers {
         return getBaseConfig("tiny_infra/config_railjson.json");
     }
 
+    /** Loads the given config file, but replaces the given allowance parameters in all the phases */
     public static Config makeConfigWithSpeedParams(List<RJSAllowance> params, String baseConfigPath) {
         var paramsList = params == null ? null : Collections.singletonList(params);
         return makeConfigWithSpeedParamsList(paramsList, baseConfigPath);
     }
 
+    /** Loads the given config file, but replaces the given allowance parameters in the phases
+     * the nth list of allowance is used for the nth phase */
     public static Config makeConfigWithSpeedParamsList(List<List<RJSAllowance>> params, String baseConfigPath) {
         ClassLoader classLoader = Helpers.class.getClassLoader();
         var configPath = classLoader.getResource(baseConfigPath);
@@ -205,6 +208,52 @@ public class Helpers {
                     trainSchedule.phases[i].allowances = params == null ? null
                             : params.get(i % params.size()).toArray(new RJSAllowance[0]);
                 }
+            }
+            var trainSchedules = RJSSimulationParser.parse(infra, schedule);
+            return new Config(
+                    jsonConfig.simulationTimeStep,
+                    infra,
+                    trainSchedules,
+                    jsonConfig.simulationStepPause,
+                    jsonConfig.showViewer,
+                    jsonConfig.realTimeViewer,
+                    jsonConfig.changeReplayCheck
+            );
+        } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule e) {
+            fail(e);
+            throw new RuntimeException();
+        }
+    }
+
+    /** Loads the phases in the given simulation file
+     * The purpose of this function is to edit the phases and call makeCOnfigWithGivenPhases afterwards */
+    public static RJSTrainPhase[] loadRJSPhases(String simulationPath) {
+        try {
+            ClassLoader classLoader = Helpers.class.getClassLoader();
+            var path = classLoader.getResource(simulationPath);
+            assert path != null;
+            var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, Path.of(path.getFile()));
+            return schedule.trainSchedules.stream().findAny().orElseThrow().phases;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /** Loads the given config, but replaces the given phases in the schedule */
+    public static Config makeConfigWithGivenPhases(RJSTrainPhase[] phases, String baseConfigPath) {
+        ClassLoader classLoader = Helpers.class.getClassLoader();
+        var configPath = classLoader.getResource(baseConfigPath);
+        assert configPath != null;
+        try {
+            var path = Path.of(configPath.getFile());
+            var baseDirPath = path.getParent();
+            var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, path);
+            var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
+            var infra = Infra.parseFromFile(jsonConfig.infraType, infraPath.toString());
+            var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
+            var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
+            for (var trainSchedule : schedule.trainSchedules) {
+                trainSchedule.phases = phases;
             }
             var trainSchedules = RJSSimulationParser.parse(infra, schedule);
             return new Config(
