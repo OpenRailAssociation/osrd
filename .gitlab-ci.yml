@@ -1,4 +1,4 @@
-image: gradle:jdk11-hotspot
+image: gradle:6-jdk11-hotspot
 
 stages:
   - build
