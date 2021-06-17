@@ -73,7 +73,7 @@ public interface SpeedControllerGenerator {
                     speed, location.maxTrainGrade());
             var action = integrator.actionToTargetSpeed(directive, schedule.rollingStock);
             var distanceLeft = totalLength - location.getPathPosition();
-            var update =  integrator.computeUpdate(action, distanceLeft);
+            var update =  integrator.applyActionAndUpdate(action, distanceLeft);
             speed = update.speed;
 
             location.updatePosition(schedule.rollingStock.length, update.positionDelta);
