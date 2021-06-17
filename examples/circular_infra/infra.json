@@ -42,7 +42,11 @@
       ]
     }
   ],
-  "operational_points": [],
+  "operational_points": [
+    {
+      "id": "op.station"
+    }
+  ],
   "routes": [
     {
       "id": "rt.12",
@@ -366,7 +370,12 @@
     {
       "id": "tr.12",
       "length": 200,
-      "operational_points": [],
+      "operational_points": [
+        {
+          "position": 100,
+          "ref": "op.station"
+        }
+      ],
       "route_waypoints": [
         {
           "type": "detector",

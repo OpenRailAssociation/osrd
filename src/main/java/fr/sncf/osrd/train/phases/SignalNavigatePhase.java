@@ -284,7 +284,8 @@ public final class SignalNavigatePhase implements Phase {
                         return tvdSectionPath.tvdSection;
                 }
             }
-            throw new RuntimeException("Can't find the waypoint in the planned route path");
+            // No tvd section could be found forward this waypoint
+            return null;
         }
 
         private TVDSection findBackwardTVDSection(Waypoint waypoint) {
@@ -297,7 +298,8 @@ public final class SignalNavigatePhase implements Phase {
                         return tvdSectionPath.tvdSection;
                 }
             }
-            throw new RuntimeException("Can't find the waypoint in the planned route path");
+            // No tvd section could be found behind this waypoint
+            return null;
         }
 
         /** Occupy and free tvd sections given a detector the train is interacting with. */
@@ -317,12 +319,16 @@ public final class SignalNavigatePhase implements Phase {
             // Occupy the next tvdSection
             if (interactionType == InteractionType.HEAD) {
                 var forwardTVDSectionPath = findForwardTVDSection(detector);
+                if (forwardTVDSectionPath == null)
+                    return;
                 var nextTVDSection = sim.infraState.getTvdSectionState(forwardTVDSectionPath.index);
                 nextTVDSection.occupy(sim);
                 return;
             }
             // Doesn't occupy the last tvdSection
             var backwardTVDSectionPath = findBackwardTVDSection(detector);
+            if (backwardTVDSectionPath == null)
+                return;
             var backwardTVDSection = sim.infraState.getTvdSectionState(backwardTVDSectionPath.index);
             backwardTVDSection.unoccupy(sim);
         }

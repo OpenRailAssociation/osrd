@@ -34,7 +34,7 @@ public final class RMLOperationalPoint {
             var hasSpotLocation = SpotLocation.parse(
                     (netElement, appliesTo, pos) -> {
                         var rjsTrackSection = rjsTrackSections.get(netElement.id);
-                        var opPart = new RJSOperationalPointPart(operationalPointID, pos, pos);
+                        var opPart = new RJSOperationalPointPart(operationalPointID, pos);
                         rjsTrackSection.operationalPoints.add(opPart);
                     },
                     netElementMap,
@@ -44,7 +44,10 @@ public final class RMLOperationalPoint {
             var hasLinearLocation = LinearLocation.parse(
                     (netElement, appliesTo, begin, end) -> {
                         var rjsTrackSection = rjsTrackSections.get(netElement.id);
-                        var opPart = new RJSOperationalPointPart(operationalPointID, begin, end);
+
+                        // We don't support range operational point, se we get the middle point
+                        var location = (begin + end) / 2;
+                        var opPart = new RJSOperationalPointPart(operationalPointID, location);
                         rjsTrackSection.operationalPoints.add(opPart);
                     },
                     netElementMap,

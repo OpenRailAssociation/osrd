@@ -6,9 +6,13 @@ import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteLocation;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.train.TrackSectionRange;
+import fr.sncf.osrd.utils.PointValue;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.Dijkstra;
 import fr.sncf.osrd.utils.graph.DistCostFunction;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -23,13 +27,14 @@ import org.takes.rs.RsWithStatus;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
-    public static final JsonAdapter<PathfindingResult[]> adapterResult = new Moshi
+    public static final JsonAdapter<PathfindingResult> adapterResult = new Moshi
             .Builder()
             .build()
-            .adapter(PathfindingResult[].class)
+            .adapter(PathfindingResult.class)
             .failOnUnknown();
 
 
@@ -121,17 +126,18 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                     });
 
             if (found == 0)
-                return new RsWithStatus(new RsText("Not path could be found"), 400);
+                return new RsWithStatus(new RsText("No path could be found"), 400);
 
             candidatePaths.clear();
-            candidatePaths.add(pathsToGoal.get(pathsToGoal.size() - 1));
+            var lastStop = pathsToGoal.get(pathsToGoal.size() - 1);
+            var newCandidate = new BasicPathNode<>(lastStop.edge, lastStop.position);
+            candidatePaths.add(newCandidate);
         }
 
-        var resRoutes = (ArrayList<Route>[]) new ArrayList[reqWaypoints.length - 1];
-        var resTrackSections = (ArrayList<TrackSectionRange>[]) new ArrayList[reqWaypoints.length - 1];
+        var res = new PathfindingResult();
 
-        for (int i = 0; i < pathsToGoal.size(); i++) {
-            var path = FullPathArray.from(pathsToGoal.get(i));
+        for (var routeBasicPathNode : pathsToGoal) {
+            var path = FullPathArray.from(routeBasicPathNode);
 
             var routeBeginLoc = pathNodeToRouteLocation(path.pathNodes.get(0));
             var beginLoc = routeBeginLoc.getTrackSectionLocation();
@@ -144,13 +150,32 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                     routes.add(node.edge);
             }
 
-            resRoutes[i] = routes;
-            resTrackSections[i] = Route.routesToTrackSectionRange(routes, beginLoc, endLoc);
+            for (int j = 0; j < routes.size(); j++) {
+                TrackSectionLocation begin = null;
+                TrackSectionLocation end = null;
+                if (j == 0)
+                    begin = beginLoc;
+                if (j == routes.size() - 1)
+                    end = endLoc;
+                var route = routes.get(j);
+                var trackSections = Route.routesToTrackSectionRange(
+                        Collections.singletonList(route), begin, end);
+                // Add given via to the via output
+                if (j == 0) {
+                    var firstTrack = trackSections.get(0);
+                    var newVia = new PathfindingResult.ViaResult(firstTrack.edge, firstTrack.getBeginPosition());
+                    res.addVia(newVia);
+                }
+                res.add(route, trackSections);
+                // Add given via to the via output
+                if (j == routes.size() - 1) {
+                    var lastTrack = trackSections.get(trackSections.size() - 1);
+                    var newVia = new PathfindingResult.ViaResult(lastTrack.edge, lastTrack.getEndPosition());
+                    res.addVia(newVia);
+                }
+            }
         }
-        var result = new PathfindingResult[resRoutes.length];
-        for (int i = 0; i < resRoutes.length; i++)
-            result[i] = PathfindingResult.from(resRoutes[i], resTrackSections[i]);
-        return new RsJson(new RsWithBody(adapterResult.toJson(result)));
+        return new RsJson(new RsWithBody(adapterResult.toJson(res)));
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
@@ -160,24 +185,98 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
 
     @SuppressFBWarnings({"URF_UNREAD_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static class PathfindingResult {
-        public final List<String> routes;
-        @Json(name = "track_sections")
-        public final List<TrackSectionRangeResult> trackSections;
+        public final List<RouteResult> path;
+        public final List<ViaResult> via;
 
-        private PathfindingResult(List<String> routes, List<TrackSectionRangeResult> trackSections) {
-            this.routes = routes;
-            this.trackSections = trackSections;
+        private PathfindingResult() {
+            path = new ArrayList<>();
+            via = new ArrayList<>();
         }
 
-        static PathfindingResult from(List<Route> routes, List<TrackSectionRange> trackSections) {
-            var resRoutes = new ArrayList<String>();
-            var resTrackSections = new ArrayList<TrackSectionRangeResult>();
-            for (var route : routes)
-                resRoutes.add(route.id);
-            for (var track : trackSections)
-                resTrackSections.add(new TrackSectionRangeResult(
-                        track.edge.id, track.getBeginPosition(), track.getEndPosition()));
-            return new PathfindingResult(resRoutes, resTrackSections);
+        void add(Route route, List<TrackSectionRange> trackSections) {
+            var routeResult = new RouteResult();
+            routeResult.route = route.id;
+            routeResult.trackSections = new ArrayList<>();
+            for (var trackSection : trackSections) {
+                var trackSectionResult = new TrackSectionRangeResult(trackSection.edge.id,
+                        trackSection.getBeginPosition(),
+                        trackSection.getEndPosition());
+                routeResult.trackSections.add(trackSectionResult);
+                for (var op : trackSection.edge.operationalPoints) {
+                    if (trackSection.containsPosition(op.position)) {
+                        var newVia = new ViaResult(op, trackSection.edge);
+                        addVia(newVia);
+                    }
+                }
+            }
+            path.add(routeResult);
+        }
+
+        void addVia(ViaResult newVia) {
+            if (via.isEmpty()) {
+                via.add(newVia);
+                return;
+            }
+            var lastVia = via.get(via.size() - 1);
+            if (lastVia.isDuplicate(newVia)) {
+                lastVia.merge(newVia);
+                return;
+            }
+            via.add(newVia);
+        }
+
+        public static class RouteResult {
+            public String route;
+            @Json(name = "track_sections")
+            public List<TrackSectionRangeResult> trackSections;
+        }
+
+        public static class ViaResult {
+            public String name;
+            public PositionResult position;
+            public boolean suggestion;
+
+            /** Suggested operational points */
+            ViaResult(PointValue<OperationalPoint> op, TrackSection trackSection) {
+                this.name = op.value.id;
+                this.position = new PositionResult(trackSection.id, op.position);
+                this.suggestion = true;
+            }
+
+            /** Given Via */
+            ViaResult(TrackSection trackSection, double offset) {
+                this.name = "Unknown";
+                this.position = new PositionResult(trackSection.id, offset);
+                this.suggestion = false;
+            }
+
+            /** Check if two via result are at the same location */
+            public boolean isDuplicate(ViaResult other) {
+                if (!position.trackSection.equals(other.position.trackSection))
+                    return false;
+                return Math.abs(position.offset - other.position.offset) < 0.001;
+            }
+
+            /** Merge a suggested with a give via */
+            public void merge(ViaResult other) {
+                suggestion &= other.suggestion;
+                if (!other.suggestion)
+                    return;
+                position = other.position;
+                name = other.name;
+            }
+        }
+
+        public static class PositionResult {
+            @Json(name = "track_section")
+            public String trackSection;
+
+            public double offset;
+
+            public PositionResult(String trackSection, double offset) {
+                this.offset = offset;
+                this.trackSection = trackSection;
+            }
         }
     }
 }

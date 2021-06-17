@@ -39,7 +39,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 // caused by the temporary opRef.begin == opRef.end
-@SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY", "SIC_INNER_SHOULD_BE_STATIC_ANON"})
+@SuppressFBWarnings({"SIC_INNER_SHOULD_BE_STATIC_ANON"})
 public class DebugViewer extends ChangeConsumer {
     static final Logger logger = LoggerFactory.getLogger(DebugViewer.class);
 
@@ -138,20 +138,14 @@ public class DebugViewer extends ChangeConsumer {
                 graph.getNode(endId).setAttribute("y", edge.endpointCoords.get(1).get(1));
             }
 
-            edge.operationalPoints.getAll((opRef) -> {
-                // operational points can be point-like objects, or ranges
-                // !! this check causes a linter warning, which has to be waived for the whole class
-                if (opRef.begin == opRef.end) {
-                    double pos = opRef.begin / edge.length;
-                    var opRefID = encodeSpriteId(opRef.op.id + "@" + edge.id);
-                    var sprite = spriteManager.addSprite(opRefID);
-                    sprite.attachToEdge(edge.id);
-                    sprite.setPosition(pos);
-                    sprite.setAttribute("ui.style", POINT_OP_CSS);
-                    sprite.setAttribute("ui.label", opRef.op.id);
-                } else {
-                    throw new RuntimeException("");
-                }
+            edge.operationalPoints.forEach((opRef) -> {
+                double pos = opRef.position / edge.length;
+                var opRefID = encodeSpriteId(opRef.value.id + "@" + edge.id);
+                var sprite = spriteManager.addSprite(opRefID);
+                sprite.attachToEdge(edge.id);
+                sprite.setPosition(pos);
+                sprite.setAttribute("ui.style", POINT_OP_CSS);
+                sprite.setAttribute("ui.label", opRef.value.id);
             });
 
             for (var signal : edge.signals) {

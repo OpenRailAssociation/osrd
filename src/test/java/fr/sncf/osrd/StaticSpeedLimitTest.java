@@ -61,8 +61,10 @@ public class StaticSpeedLimitTest {
         var opStart = new OperationalPoint("start id");
         var opEnd = new OperationalPoint("end id");
 
-        opStart.addRef(edge, 0, 0);
-        opEnd.addRef(edge, edgeLength, edgeLength);
+        var opBuilder = edge.operationalPoints.builder();
+        opStart.addRef(edge, 0, opBuilder);
+        opEnd.addRef(edge, edgeLength, opBuilder);
+        opBuilder.build();
 
         // add the speed limits
         var limits = edge.forwardSpeedSections;
@@ -122,10 +124,10 @@ public class StaticSpeedLimitTest {
                 .filter(change -> change.getClass() == Train.TrainStateChange.class)
                 .map(change -> (Train.TrainStateChange) change)
                 .collect(Collectors.toList());
-        // Expect 2 state change: Go to B -> Next phase
-        assertEquals(2, locationChanges.size());
+        // Expect 2 state change: Train over starting Operational Point -> Go A to B -> Next phase
+        assertEquals(3, locationChanges.size());
         // The second state change contain the movement of the train
-        var locationChange = locationChanges.get(0);
+        var locationChange = locationChanges.get(1);
 
         // create the list of all speed derivative sign changes
         var profile = new ArrayList<ProfileData>();

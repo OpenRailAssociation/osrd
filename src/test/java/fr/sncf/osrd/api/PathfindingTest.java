@@ -32,12 +32,19 @@ public class PathfindingTest extends ApiTest {
                 new PathfindingRoutesEndpoint(infraHandlerMock).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody))
         ).printBody();
+        System.out.println(result);
 
         var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
         assert response != null;
-        assertEquals(1, response.length);
-        assertEquals(3, response[0].routes.size());
-        assertEquals(3, response[0].trackSections.size());
+
+        assertEquals(3, response.path.size());
+        assertEquals("rt.buffer_stop_b-C3", response.path.get(0).route);
+        assertEquals("rt.C3-S7", response.path.get(1).route);
+        assertEquals("rt.S7-buffer_stop_c", response.path.get(2).route);
+
+        assertEquals(2, response.via.size());
+        assertEquals("op.station_foo", response.via.get(0).name);
+        assertEquals("op.station_bar", response.via.get(1).name);
     }
 
     @Test

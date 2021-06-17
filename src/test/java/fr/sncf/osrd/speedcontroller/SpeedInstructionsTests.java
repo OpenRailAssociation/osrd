@@ -6,10 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import fr.sncf.osrd.infra.*;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
-import fr.sncf.osrd.railjson.schema.schedule.RJSRunningTimeParameters;
-import fr.sncf.osrd.railjson.schema.schedule.RJSRunningTimeParameters.Margin.MarginType;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
@@ -120,9 +120,9 @@ public class SpeedInstructionsTests {
     public void testMargin50() throws InvalidInfraException {
         var infra = getBaseInfra();
         assert infra != null;
-        var params = new RJSRunningTimeParameters.Margin();
-        params.marginType = MarginType.TIME;
-        params.marginValue = 50;
+        var params = new RJSAllowance.LinearAllowance();
+        params.allowanceType = MarginType.TIME;
+        params.allowanceValue = 50;
 
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
@@ -145,9 +145,9 @@ public class SpeedInstructionsTests {
     public void testMargin200() throws InvalidInfraException {
         var infra = getBaseInfra();
         assert infra != null;
-        var params = new RJSRunningTimeParameters.Margin();
-        params.marginType = MarginType.TIME;
-        params.marginValue = 200;
+        var params = new RJSAllowance.LinearAllowance();
+        params.allowanceType = MarginType.TIME;
+        params.allowanceValue = 200;
 
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
@@ -170,9 +170,9 @@ public class SpeedInstructionsTests {
     public void testMargin0() throws InvalidInfraException {
         var infra = getBaseInfra();
         assert infra != null;
-        var params = new RJSRunningTimeParameters.Margin();
-        params.marginType = MarginType.TIME;
-        params.marginValue = 0;
+        var params = new RJSAllowance.LinearAllowance();
+        params.allowanceType = MarginType.TIME;
+        params.allowanceValue = 0;
 
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
