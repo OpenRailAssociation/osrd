@@ -136,23 +136,48 @@ public class PasesTest {
     }
 
     @Test
-    public void testSeveralConstructionMargins() throws InvalidInfraException {
+    public void testSeveralPhasesNoMargin() throws InvalidInfraException {
         var infra = getBaseInfra();
-        var param = new RJSAllowance.ConstructionAllowance();
-        param.allowanceValue = 15;
-        var params = new ArrayList<RJSAllowance>(Collections.singletonList(param));
 
-        var config = makeConfigWithSpeedParams(params, "tiny_infra/config_railjson_several_phases.json");
+        var phases = loadPhasesLongerFirstPhase();
+        var config = makeConfigWithGivenPhases(phases, "tiny_infra/config_railjson_several_phases.json");
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        run(sim, config);
+        saveGraph(run(sim, config), "double-construction-out.csv");
         var actualEndTime = sim.getTime();
 
-        var config_base = getBaseConfig();
+        var config_base = makeConfigWithSpeedParams(null);
         var sim_base = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        run(sim_base, config_base);
+        saveGraph(run(sim_base, config_base), "double-construction-base.csv");
         var baseEndTime = sim_base.getTime();
 
-        var expected = baseEndTime + 30;
+        var expected = baseEndTime + 0;
+
+        assertEquals(expected, actualEndTime, expected * 0.01);
+    }
+
+    @Test
+    public void testSeveralConstructionMargins() throws InvalidInfraException {
+        var infra = getBaseInfra();
+        var param1 = new RJSAllowance.ConstructionAllowance();
+        var param2 = new RJSAllowance.ConstructionAllowance();
+        param1.allowanceValue = 15;
+        param2.allowanceValue = 30;
+        var phases = loadPhasesLongerFirstPhase();
+
+        phases[0].allowances = new RJSAllowance[]{param1};
+        phases[1].allowances = new RJSAllowance[]{param2};
+
+        var config = makeConfigWithGivenPhases(phases, "tiny_infra/config_railjson_several_phases.json");
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        saveGraph(run(sim, config), "double-construction-out.csv");
+        var actualEndTime = sim.getTime();
+
+        var config_base = makeConfigWithSpeedParams(null);
+        var sim_base = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        saveGraph(run(sim_base, config_base), "double-construction-base.csv");
+        var baseEndTime = sim_base.getTime();
+
+        var expected = baseEndTime + param1.allowanceValue + param2.allowanceValue;
 
         assertEquals(expected, actualEndTime, expected * 0.01);
     }

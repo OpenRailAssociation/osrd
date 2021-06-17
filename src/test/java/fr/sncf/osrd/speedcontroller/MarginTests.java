@@ -34,14 +34,12 @@ public class MarginTests {
 
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
-        assert config != null;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with construction margin
         var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
-        assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
@@ -69,14 +67,12 @@ public class MarginTests {
 
         // Run with construction margin
         var configMargins = makeConfigWithSpeedParams(params);
-        assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
-        assert config != null;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
@@ -92,21 +88,18 @@ public class MarginTests {
     @Test
     public void testLargerEcoMargin() throws InvalidInfraException {
         var infra = getBaseInfra();
-        assert infra != null;
         var params = new RJSAllowance.MarecoAllowance();
         params.allowanceValue = 200;
         params.allowanceType = RJSAllowance.MarecoAllowance.MarginType.TIME;
 
         // Run with construction margin
         var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
-        assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
-        assert config != null;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
@@ -128,14 +121,12 @@ public class MarginTests {
 
         // Run with construction margin
         var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
-        assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
-        assert config != null;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
@@ -184,14 +175,12 @@ public class MarginTests {
 
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
-        assert config != null;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with construction margin
         var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
-        assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
@@ -209,14 +198,12 @@ public class MarginTests {
 
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
-        assert config != null;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with 20% margins
         var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
-        assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
@@ -238,14 +225,12 @@ public class MarginTests {
 
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
-        assert config != null;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with 50% margins
         var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
-        assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();

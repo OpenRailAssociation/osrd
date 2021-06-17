@@ -16,7 +16,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
     private final double value;
 
     public ConstructionAllowanceGenerator(double allowanceValue, RJSTrainPhase phase) {
-        super(phase, 0.5);
+        super(phase, 0.1);
         this.value = allowanceValue;
     }
 
