@@ -25,20 +25,20 @@ const convertPathfindingVias = (steps) => {
 };
 
 const Itinerary = (props) => {
-  const [vias, setVias] = useState([]);
+  // const [vias, setVias] = useState([]);
   const [launchPathfinding, setLaunchPathfinding] = useState(false);
   const { updateExtViewport } = props;
   const dispatch = useDispatch();
   const map = useSelector((state) => state.map);
   const osrdconf = useSelector((state) => state.osrdconf);
 
-  const viasRedux2state = () => {
+  /* const viasRedux2state = () => {
     setVias({
       vias: osrdconf.vias.map((item) => ({
         stoptime: item.stoptime,
       })),
     });
-  };
+  }; */
 
   const zoomToFeature = (boundingBox, id = undefined, source = undefined) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
@@ -124,12 +124,12 @@ const Itinerary = (props) => {
       });
 
       try {
-        console.log(params);
         const itineraryCreated = await post(itineraryURI, params, {}, true);
         correctWaypointsGPS(itineraryCreated);
         dispatch(updateItinerary(itineraryCreated.geographic));
         dispatch(updatePathfindingID(itineraryCreated.id));
         if (zoom) zoomToFeature(bbox(itineraryCreated.geographic));
+        console.log(params);
         console.log(itineraryCreated);
       } catch (e) {
         console.log('ERROR', e);
@@ -139,14 +139,14 @@ const Itinerary = (props) => {
 
   useEffect(() => {
     if (osrdconf.pathfindingID === undefined || osrdconf.geojson === undefined) {
-      osrdconf.vias.forEach((item) => {
+      /* osrdconf.vias.forEach((item) => {
         vias.push({
           time: item.time,
           stoptime: item.stoptime,
         });
       });
 
-      setVias({ vias });
+      setVias({ vias }); */
       mapItinerary();
     } else {
       zoomToFeature(bbox(osrdconf.geojson));
@@ -156,14 +156,15 @@ const Itinerary = (props) => {
 
   useEffect(() => {
     if (launchPathfinding) {
-      if (JSON.stringify(osrdconf.vias) !== JSON.stringify(vias)) {
-        mapItinerary(false);
-        viasRedux2state(osrdconf.vias);
-      } else {
-        mapItinerary();
-      }
+      mapItinerary();
     }
-  }, [osrdconf.origin, osrdconf.vias, osrdconf.destination, map.mapTrackSources]);
+  }, [osrdconf.origin, osrdconf.destination, map.mapTrackSources]);
+
+  useEffect(() => {
+    if (launchPathfinding) {
+      mapItinerary(false);
+    }
+  }, [osrdconf.vias]);
 
   return (
     <>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -9,6 +9,7 @@ import {
   deleteVias,
 } from 'applications/osrd/components/Itinerary/helpers';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { useDebounce } from 'utils/helpers';
 
 export default function DisplayVias(props) {
   const osrdconf = useSelector((state) => state.osrdconf);
@@ -50,14 +51,14 @@ export default function DisplayVias(props) {
                       <div className="osrd-config-stoptime">
                         <InputSNCF
                           type="number"
-                          id={`osrd-config-stoptime-via-${nextId()}`}
+                          id={`osrd-config-stoptime-via-${index}`}
                           onChange={
                             (e) => updateViaStopTime(index, e.target.value)
                           }
                           value={
                             osrdconf.vias[index] !== undefined
                             && osrdconf.vias[index].stoptime !== undefined
-                              ? Number(osrdconf.vias[index].stoptime) : 0
+                              ? osrdconf.vias[index].stoptime : 0
                           }
                           sm
                           noMargin
