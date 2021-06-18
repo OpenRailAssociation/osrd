@@ -95,6 +95,12 @@ def fetch_track_sections_from_payload(payload):
 
 
 def line_string_slice(line_string, begin_normalized, end_normalized):
+    if begin_normalized > end_normalized:
+        # Compute the line string from end to start then reverse the result
+        res = line_string_slice(line_string, end_normalized, begin_normalized)
+        res.reverse()
+        return res
+
     positions = [begin_normalized]
     for point in line_string.tuple:
         projection = line_string.project_normalized(Point(point))
