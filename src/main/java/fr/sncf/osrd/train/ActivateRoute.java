@@ -38,19 +38,15 @@ public class ActivateRoute {
         // Reserve the tvdSection where the train is created
         var trainPosition = trainState.location.trackSectionRanges.getFirst();
 
-        var lastTvdSectionPath = route.tvdSectionsPaths.get(0);
-        occupyTvdSectionPath(sim, lastTvdSectionPath);
-
         for (var i = 0; i < route.tvdSectionsPaths.size(); i++) {
             var currentTvdSectionPath = route.tvdSectionsPaths.get(i);
+            occupyTvdSectionPath(sim, currentTvdSectionPath);
             var currentTvdSectionPathDirection = route.tvdSectionsPathDirections.get(i);
             for (var trackSection : currentTvdSectionPath.getTrackSections(currentTvdSectionPathDirection)) {
                 if (trainPosition.intersect(trackSection))
                     return;
             }
-            freeTvdSectionPath(sim, lastTvdSectionPath);
-            occupyTvdSectionPath(sim, currentTvdSectionPath);
-            lastTvdSectionPath = currentTvdSectionPath;
+            freeTvdSectionPath(sim, currentTvdSectionPath);
         }
     }
 
