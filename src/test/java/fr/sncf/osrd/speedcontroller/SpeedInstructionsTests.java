@@ -137,12 +137,11 @@ public class SpeedInstructionsTests {
 
         // Run with 50% margins
         var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
-        assert configMargins != null;
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
         var expected = baseSimTime * 1.5;
-        assertEquals(expected, marginsSimTime, expected * 0.01);
+        assertEquals(expected, marginsSimTime, expected * 0.002);
     }
 
     @Test
@@ -156,16 +155,18 @@ public class SpeedInstructionsTests {
         // base run, no margin
         var config = makeConfigWithSpeedParams(null);
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        run(sim, config);
+        var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with 200% margins
         var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        run(sim2, configMargins);
+        var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
         var expected = baseSimTime * 3;
-        assertEquals(expected, marginsSimTime, expected * 0.01);
+        saveGraph(events, "margin-200-out.csv");
+        saveGraph(eventsBase, "margin-200-base.csv");
+        assertEquals(expected, marginsSimTime, expected * 0.001);
     }
 
     @Test
@@ -189,7 +190,7 @@ public class SpeedInstructionsTests {
         var marginsSimTime = sim2.getTime();
         saveGraph(events, "margin-0-out.csv");
         saveGraph(eventsBase, "margin-0-base.csv");
-        assertEquals(baseSimTime, marginsSimTime, baseSimTime * 0.01);
+        assertEquals(baseSimTime, marginsSimTime, baseSimTime * 0.002);
     }
 
     public static boolean isLate(Simulation sim) {
