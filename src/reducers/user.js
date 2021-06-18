@@ -120,9 +120,15 @@ export function login() {
       setTimeout(() => refreshToken()(dispatch), 60000);
 
       const decoded = jwtDecode(accessToken);
-      const account = await get(`/user/${decoded.sub}`);
+      const account = {
+        'id': decoded.id,
+        'username': decoded.preferred_username,
+        'firstName': decoded.given_name,
+        'lastName': decoded.family_name,
+        'email': decoded.email,
+      };
 
-      dispatch(updateAccount(account[0]));
+      dispatch(updateAccount(account));
       dispatch(loginSuccess(accessToken, username));
       console.log('Connecté');
     } catch (e) {
