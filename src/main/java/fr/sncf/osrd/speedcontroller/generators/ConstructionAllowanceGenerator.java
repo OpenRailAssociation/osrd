@@ -45,9 +45,10 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
     }
 
     @Override
-    protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule, double value) {
+    protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule, double value, double begin, double end) {
         var res = new HashSet<>(maxSpeedControllers);
-        res.add(new MaxSpeedController(value, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+        res.add(new MaxSpeedController(value, begin, end));
+        //res.add(new MaxSpeedController(value, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
         return res;
     }
 }

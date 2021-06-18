@@ -76,7 +76,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     protected abstract double getFirstHighEstimate();
 
     /** Generates a set of speed controllers given the dichotomy value */
-    protected abstract Set<SpeedController> getSpeedControllers(TrainSchedule schedule, double value);
+    protected abstract Set<SpeedController> getSpeedControllers(TrainSchedule schedule, double value, double begin, double end);
 
     /** Runs the dichotomy */
     private Set<SpeedController> binarySearch(Simulation sim, TrainSchedule schedule) {
@@ -94,9 +94,11 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         int i = 0;
         do {
             nextValue = (lowerBound + higherBound) / 2;
-            nextSpeedControllers = getSpeedControllers(schedule, nextValue);
+            nextSpeedControllers = getSpeedControllers(schedule, nextValue, beginLocation, endLocation);
             var expectedTimes = getExpectedTimes(sim, schedule,
-                    nextSpeedControllers, 1, beginLocation, endLocation, initialSpeed);
+                    nextSpeedControllers, 1);
+            //var expectedTimes = getExpectedTimes(sim, schedule,
+            //        nextSpeedControllers, 1, beginLocation, endLocation, initialSpeed);
             time = expectedTimes.lastEntry().getValue() - expectedTimes.firstEntry().getValue();
             if (time > targetTime)
                 lowerBound = nextValue;

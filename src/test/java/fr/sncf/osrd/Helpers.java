@@ -183,10 +183,8 @@ public class Helpers {
     /** Generates a config where all the RJSRunningTieParameters have been replaced by the one given */
     public static Config makeConfigWithSpeedParams(List<RJSAllowance> params) {
         ClassLoader classLoader = Helpers.class.getClassLoader();
-        var configPath = classLoader.getResource("tiny_infra/config_railjson.json");
-        assert configPath != null;
         try {
-            var path = Path.of(configPath.getFile());
+            var path = getResourcePath("tiny_infra/config_railjson.json");
             var baseDirPath = path.getParent();
             var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, path);
             var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
@@ -206,7 +204,7 @@ public class Helpers {
                     jsonConfig.realTimeViewer,
                     jsonConfig.changeReplayCheck
             );
-        } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule e) {
+        } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule  e) {
             fail(e);
             return null;
         }
