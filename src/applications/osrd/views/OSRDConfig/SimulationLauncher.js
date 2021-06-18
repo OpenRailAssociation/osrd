@@ -33,7 +33,8 @@ export default function SimulationLauncher() {
         // store.dispatch(redirectToGraph(true));
         // store.dispatch(toggleWorkingStatus(true));
       //  const osrdReturn = await post(osrdURI, osrdConfig);
-        console.log(osrdConfig);
+        const osrdReturn = await post(scheduleURL, osrdConfig, {}, true);
+        console.log(osrdConfig, osrdReturn);
         // store.dispatch(updateSimulation(osrdReturn));
         // store.dispatch(toggleWorkingStatus(false));
       } catch (e) {

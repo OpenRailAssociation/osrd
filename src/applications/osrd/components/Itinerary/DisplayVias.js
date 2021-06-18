@@ -57,7 +57,7 @@ export default function DisplayVias(props) {
                           value={
                             osrdconf.vias[index] !== undefined
                             && osrdconf.vias[index].stoptime !== undefined
-                              ? Number(osrdconf.vias[index].stoptime) : '0'
+                              ? Number(osrdconf.vias[index].stoptime) : 0
                           }
                           sm
                           noMargin

@@ -8,6 +8,7 @@ export const UPDATE_PATHFINDING_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
 export const UPDATE_TIMETABLE_ID = 'osrdconf/UPDATE_TIMETABLE_ID';
 export const UPDATE_ORIGIN = 'osrdconf/UPDATE_ORIGIN';
 export const UPDATE_ORIGIN_TIME = 'osrdconf/UPDATE_ORIGIN_TIME';
+export const REPLACE_VIAS = 'osrdconf/REPLACE_VIAS';
 export const UPDATE_VIAS = 'osrdconf/UPDATE_VIAS';
 export const UPDATE_VIA_STOPTIME = 'osrdconf/UPDATE_VIA_STOPTIME';
 export const PERMUTE_VIAS = 'osrdconf/PERMUTE_VIAS';
@@ -53,6 +54,9 @@ export default function reducer(state = initialState, action) {
         break;
       case UPDATE_ORIGIN_TIME:
         draft.originTime = action.originTime;
+        break;
+      case REPLACE_VIAS:
+        draft.vias = action.vias;
         break;
       case UPDATE_VIAS:
         draft.vias.push(action.vias);
@@ -138,6 +142,14 @@ export function updateOriginTime(originTime) {
     dispatch({
       type: UPDATE_ORIGIN_TIME,
       originTime,
+    });
+  };
+}
+export function replaceVias(vias) {
+  return (dispatch) => {
+    dispatch({
+      type: REPLACE_VIAS,
+      vias,
     });
   };
 }

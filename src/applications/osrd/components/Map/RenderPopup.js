@@ -26,14 +26,14 @@ export default function RenderPopup() {
 
     properties.source = featureInfoClick.feature.source;
     properties.clickLngLat = featureInfoClick.lngLat;
-    properties.boundingBox = bbox(featureInfoClick.feature);
-    /* eslint prefer-destructuring: ["error", {AssignmentExpression: {array: false}}] */
+    /* properties.boundingBox = bbox(featureInfoClick.feature);
+      eslint prefer-destructuring: ["error", {AssignmentExpression: {array: false}}] */
     /* eslint no-underscore-dangle: ["error", { "allow": ["_geometry"] }] */
-    properties.startLonLat = featureInfoClick.feature._geometry.coordinates[0];
+    /* properties.startLonLat = featureInfoClick.feature._geometry.coordinates[0];
     properties.endLonLat =
       featureInfoClick.feature._geometry.coordinates[
         featureInfoClick.feature._geometry.coordinates.length - 1
-      ];
+      ]; */
 
     return (
       <Popup

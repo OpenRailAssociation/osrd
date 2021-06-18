@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateItinerary, updatePathfindingID } from 'reducers/osrdconf';
+import {
+  updateItinerary, updatePathfindingID, updateOrigin, updateDestination, replaceVias,
+} from 'reducers/osrdconf';
 import { updateFeatureInfoClick } from 'reducers/map';
 import { post } from 'common/requests';
 import bbox from '@turf/bbox';
@@ -10,9 +12,21 @@ import DisplayItinerary from 'applications/osrd/components/Itinerary/DisplayItin
 
 const itineraryURI = '/osrd/pathfinding';
 
+// Obtain only asked vias
+const convertPathfindingVias = (steps) => {
+  const count = steps.length - 1;
+  const vias = [];
+  steps.forEach((step, idx) => {
+    if (!step.suggestion && idx !== 0 && idx !== count) {
+      vias.push(step);
+    }
+  });
+  return vias;
+};
+
 const Itinerary = (props) => {
   const [vias, setVias] = useState([]);
-  const [firstRun, setFirstRun] = useState(true);
+  const [launchPathfinding, setLaunchPathfinding] = useState(false);
   const { updateExtViewport } = props;
   const dispatch = useDispatch();
   const map = useSelector((state) => state.map);
@@ -46,43 +60,77 @@ const Itinerary = (props) => {
     }
   };
 
+  // Way to ensure marker position on track
+  const correctWaypointsGPS = (pathfindingData) => {
+    setLaunchPathfinding(false);
+
+    dispatch(updateOrigin({
+      ...osrdconf.origin, clickLngLat: pathfindingData.steps[0].geographic,
+    }));
+
+    if (osrdconf.vias.length > 0 && pathfindingData.steps.length > 2) {
+      const stepsVias = convertPathfindingVias(pathfindingData.steps);
+      dispatch(replaceVias(osrdconf.vias.map((via, idx) => (
+        { ...via, clickLngLat: stepsVias[idx].geographic }))));
+    }
+
+    dispatch(updateDestination({
+      ...osrdconf.destination,
+      clickLngLat: pathfindingData.steps[pathfindingData.steps.length - 1].geographic,
+    }));
+    setLaunchPathfinding(true);
+  };
+
   const mapItinerary = async (zoom = true) => {
     // const geom = (map.mapTrackSources === 'schematic') ? 'sch' : 'geo';
+    dispatch(updateItinerary(undefined));
 
     if (osrdconf.origin !== undefined && osrdconf.destination !== undefined) {
       const params = {
         infra: 27,
         name: 'Test path',
-        waypoints: [],
+        steps: [],
       };
 
       // Adding start point
-      params.waypoints.push([{
-        track_section: osrdconf.origin.id,
-        geo_coordinate: osrdconf.origin.clickLngLat,
-      }]);
+      params.steps.push({
+        stop_time: 0,
+        waypoints: [{
+          track_section: osrdconf.origin.id,
+          geo_coordinate: osrdconf.origin.clickLngLat,
+        }],
+      });
 
       // Adding via points if exist
       if (osrdconf.vias.length > 0) {
         osrdconf.vias.forEach((via) => {
-          params.waypoints.push([{
-            track_section: via.id,
-            geo_coordinate: via.clickLngLat,
-          }]);
+          params.steps.push({
+            stop_time: via.stoptime === undefined ? 0 : Number(via.stoptime),
+            waypoints: [{
+              track_section: via.id,
+              geo_coordinate: via.clickLngLat,
+            }],
+          });
         });
       }
 
       // Adding end point
-      params.waypoints.push([{
-        track_section: osrdconf.destination.id,
-        geo_coordinate: osrdconf.destination.clickLngLat,
-      }]);
+      params.steps.push({
+        stop_time: 0,
+        waypoints: [{
+          track_section: osrdconf.destination.id,
+          geo_coordinate: osrdconf.destination.clickLngLat,
+        }],
+      });
 
       try {
+        console.log(params);
         const itineraryCreated = await post(itineraryURI, params, {}, true);
+        correctWaypointsGPS(itineraryCreated);
         dispatch(updateItinerary(itineraryCreated.geographic));
         dispatch(updatePathfindingID(itineraryCreated.id));
         if (zoom) zoomToFeature(bbox(itineraryCreated.geographic));
+        console.log(itineraryCreated);
       } catch (e) {
         console.log('ERROR', e);
       }
@@ -90,7 +138,7 @@ const Itinerary = (props) => {
   };
 
   useEffect(() => {
-    if (osrdconf.pathfindingID === undefined) {
+    if (osrdconf.pathfindingID === undefined || osrdconf.geojson === undefined) {
       osrdconf.vias.forEach((item) => {
         vias.push({
           time: item.time,
@@ -103,11 +151,11 @@ const Itinerary = (props) => {
     } else {
       zoomToFeature(bbox(osrdconf.geojson));
     }
-    setFirstRun(false);
+    setLaunchPathfinding(true);
   }, []);
 
   useEffect(() => {
-    if (!firstRun) {
+    if (launchPathfinding) {
       if (JSON.stringify(osrdconf.vias) !== JSON.stringify(vias)) {
         mapItinerary(false);
         viasRedux2state(osrdconf.vias);

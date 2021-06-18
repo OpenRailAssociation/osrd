@@ -37,7 +37,7 @@ export default function formatConf(setErrorMessages, t, osrdconf) {
     }); */
 
     const osrdConfSchedule = {
-      train_id: osrdconf.name,
+      train_name: osrdconf.name,
       departure_time: 0,
       phases: [],
       initial_speed: 0,
