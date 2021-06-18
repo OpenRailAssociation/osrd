@@ -2,6 +2,7 @@ package fr.sncf.osrd.railjson.schema.schedule;
 
 import com.squareup.moshi.Json;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public abstract class RJSAllowance {
     public static final PolymorphicJsonAdapterFactory<RJSAllowance> adapter = (
@@ -12,6 +13,7 @@ public abstract class RJSAllowance {
     );
 
     public static final class MarecoAllowance extends RJSAllowance {
+
         @Json(name = "allowance_type")
         public MarecoAllowance.MarginType allowanceType;
 

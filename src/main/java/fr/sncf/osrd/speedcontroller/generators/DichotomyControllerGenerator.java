@@ -28,7 +28,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     protected Set<SpeedController> maxSpeedControllers;
 
     /** Train schedule */
-    protected TrainSchedule schedule;
+    protected TrainSchedule schedule = null;
 
     /** Expected times from previous evaluation */
     protected NavigableMap<Double, Double> expectedTimes;

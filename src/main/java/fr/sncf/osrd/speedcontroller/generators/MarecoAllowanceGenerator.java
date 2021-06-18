@@ -1,5 +1,6 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarecoAllowance.MarginType;
@@ -24,6 +25,8 @@ import static java.lang.Math.min;
 
 public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
+    // TODO use this parameter
+    @SuppressFBWarnings({"URF_UNREAD_FIELD"})
     private final RJSAllowance.MarecoAllowance.MarginType allowanceType;
     private final double value;
 
