@@ -24,6 +24,7 @@ from osrd_infra.models import (
 def format_result(train_schedule_result):
     steps = format_steps(train_schedule_result)
     return {
+        "id": train_schedule_result.train_schedule.pk,
         "name": train_schedule_result.train_schedule.train_name,
         "steps": steps,
         "stops": format_stops(train_schedule_result, steps),
@@ -95,10 +96,10 @@ def format_steps(train_schedule_result):
                 ),
                 "geo_position": geo_line.interpolate_normalized(
                     head_offset_normalized
-                ).json,
+                ).tuple,
                 "schema_position": schema_line.interpolate_normalized(
                     head_offset_normalized
-                ).json,
+                ).tuple,
                 "start_block_occupancy": start_block_occupation,
                 "end_block_occupancy": end_block_occupation,
             }
