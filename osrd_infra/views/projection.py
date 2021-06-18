@@ -34,6 +34,10 @@ class Projection:
             begin = track_range["begin"]
             end = track_range["end"]
             track_id = track_range["track_section"]
+            if track_id in self.tracks:
+                (p_begin, _, p_offset) = self.tracks[track_id]
+                self.tracks[track_id] = (p_begin, end, p_offset)
+                continue
             self.tracks[track_id] = (begin, end, offset)
             offset += abs(end - begin)
             self.length += abs(end - begin)

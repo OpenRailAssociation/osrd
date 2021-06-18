@@ -58,7 +58,8 @@ def format_steps(train_schedule_result):
         elif log["status"] == "FREE":
             track = reverse_format(log["end_track_section"])
             pos = projection.track_position(track, log["end_offset"])
-            end_occupancy.append((log["time"], pos))
+            if pos:
+                end_occupancy.append((log["time"], pos))
     start_occupancy.append((float("inf"), float("inf")))
     end_occupancy.append((float("inf"), float("inf")))
 
