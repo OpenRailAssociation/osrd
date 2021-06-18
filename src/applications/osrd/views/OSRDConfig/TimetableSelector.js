@@ -14,7 +14,7 @@ export default function TimetableSelector() {
 
   const getTimetable = async (id) => {
     try {
-      const timetableQuery = await get(`${timetableURL}/${id}`, {}, true);
+      const timetableQuery = await get(`${timetableURL}/${id}`, {});
       setselectedTimetable(timetableQuery);
     } catch (e) {
       console.log('ERROR', e);

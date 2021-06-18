@@ -17,7 +17,7 @@ export default function InfraSelector() {
 
   const getInfra = async (id) => {
     try {
-      const infraQuery = await get(`${infraURL}/${id}`, {}, true);
+      const infraQuery = await get(`${infraURL}/${id}`, {});
       setSelectedInfra(infraQuery);
     } catch (e) {
       console.log('ERROR', e);
@@ -26,7 +26,7 @@ export default function InfraSelector() {
 
   const getInfrasList = async () => {
     try {
-      const infrasListQuery = await get(infraURL, {}, true);
+      const infrasListQuery = await get(infraURL, {});
       setInfrasList(infrasListQuery);
     } catch (e) {
       console.log('ERROR', e);

@@ -23,7 +23,7 @@ export default function MapSearchSignalBox(props) {
 
   const updateSearch = async (params) => {
     try {
-      const data = await get(searchURI, params, true);
+      const data = await get(searchURI, params);
       console.log('coucou', data);
       setSearchResults(data);
     } catch (e) {

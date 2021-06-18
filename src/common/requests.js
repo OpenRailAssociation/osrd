@@ -1,8 +1,7 @@
 import axios from 'axios';
 import mainConfig from 'config/config';
 
-const formatPath = (path) => `${mainConfig.api}${path}${path.slice(-1) !== '/' ? '/' : ''}`;
-const formatPathGateway = (path) => `${mainConfig.proxy}${path}${path.slice(-1) !== '/' ? '/' : ''}`;
+const formatPath = (path) => `${mainConfig.proxy}${path}${path.slice(-1) !== '/' ? '/' : ''}`;
 
 const getAuthConfig = () => ({
   headers: {
@@ -10,20 +9,18 @@ const getAuthConfig = () => ({
   },
 });
 
-export const get = async (path, params = undefined, proxyGateway = false) => {
+export const get = async (path, params = undefined) => {
   const config = getAuthConfig();
-  const formattedPath = proxyGateway ? formatPathGateway(path) : formatPath(path);
   if (params) {
     config.params = params;
   }
-  const res = await axios.get(formattedPath, config);
+  const res = await axios.get(formatPath(path), config);
   return res.data;
 };
 
-export const post = async (path, payload, config = {}, proxyGateway = false) => {
+export const post = async (path, payload, config = {}) => {
   config = { ...getAuthConfig(), ...config };
-  const formattedPath = proxyGateway ? formatPathGateway(path) : formatPath(path);
-  const res = await axios.post(formattedPath, payload, config);
+  const res = await axios.post(formatPath(path), payload, config);
   return res.data;
 };
 
@@ -39,9 +36,8 @@ export const put = async (path, payload, config = {}) => {
   return data;
 };
 
-export const deleteRequest = async (path, proxyGateway = false) => {
+export const deleteRequest = async (path) => {
   const config = getAuthConfig();
-  const formattedPath = proxyGateway ? formatPathGateway(path) : formatPath(path);
-  const { data } = await axios.delete(formattedPath, config);
+  const { data } = await axios.delete(formatPath(path), config);
   return data;
 };

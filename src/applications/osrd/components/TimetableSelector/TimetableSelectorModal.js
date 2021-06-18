@@ -20,7 +20,7 @@ export default function TimetableSelectorModal() {
 
   const getTimetablesList = async () => {
     try {
-      const timetablesListQuery = await get(timetableURL, {}, true);
+      const timetablesListQuery = await get(timetableURL, {});
       settimetablesList(timetablesListQuery);
     } catch (e) {
       console.log('ERROR', e);
@@ -33,7 +33,7 @@ export default function TimetableSelectorModal() {
 
   const deleteTimetable = async (id) => {
     try {
-      await deleteRequest(`${timetableURL}/${id}`, true);
+      await deleteRequest(`${timetableURL}/${id}`);
       getTimetablesList();
     } catch (e) {
       console.log('ERROR', e);
@@ -47,7 +47,7 @@ export default function TimetableSelectorModal() {
     };
 
     try {
-      await post(timetableURL, params, {}, true);
+      await post(timetableURL, params, {});
     } catch (e) {
       console.log('ERROR', e);
     }

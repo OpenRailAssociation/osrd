@@ -47,7 +47,7 @@ export function getMateriel() {
   return async (dispatch) => {
     try {
       const materiel = await get('/matr/index/');
-      // const materielNEW = await get('/osrd/index/', undefined, true);
+      // const materielNEW = await get('/osrd/index/', undefined);
       // console.log('coucou', materielNEW);
       dispatch(setMateriel(materiel));
       return materiel;
