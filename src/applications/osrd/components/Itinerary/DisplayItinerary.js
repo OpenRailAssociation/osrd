@@ -16,7 +16,7 @@ import { updateOrigin, updateDestination } from 'reducers/osrdconf';
 export default function DisplayItinerary(props) {
   const osrdconf = useSelector((state) => state.osrdconf);
   const { t } = useTranslation(['osrdconf']);
-  const { zoomToFeature } = props;
+  const { zoomToFeaturePoint } = props;
 
   return (
     <div className={
@@ -37,8 +37,8 @@ export default function DisplayItinerary(props) {
             <i className="text-success icons-itinerary-bullet mr-2" />
             <div className="pl-1 hover w-100 d-flex align-items-center">
               <div
-                onClick={() => zoomToFeature(
-                  osrdconf.origin.boundingBox, osrdconf.origin.id, osrdconf.origin.source,
+                onClick={() => zoomToFeaturePoint(
+                  osrdconf.origin.clickLngLat, osrdconf.origin.id, osrdconf.origin.source,
                 )}
                 role="button"
                 tabIndex={0}
@@ -78,7 +78,7 @@ export default function DisplayItinerary(props) {
       </h2>
       <div className="mb-3">
         {osrdconf.vias.length > 0 ? (
-          <DisplayVias zoomToFeature={zoomToFeature} />
+          <DisplayVias zoomToFeaturePoint={zoomToFeaturePoint} />
         ) : (
           <small className="ml-4">{t('osrdconf:noplacechosen')}</small>
         )}
@@ -95,8 +95,8 @@ export default function DisplayItinerary(props) {
             <i className="text-warning icons-itinerary-bullet mr-2" />
             <div className="pl-1 hover w-100 d-flex align-items-center">
               <div
-                onClick={() => zoomToFeature(
-                  osrdconf.destination.boundingBox,
+                onClick={() => zoomToFeaturePoint(
+                  osrdconf.destination.clickLngLat,
                   osrdconf.destination.id,
                   osrdconf.destination.source,
                 )}
@@ -126,5 +126,5 @@ export default function DisplayItinerary(props) {
 }
 
 DisplayItinerary.propTypes = {
-  zoomToFeature: PropTypes.func.isRequired,
+  zoomToFeaturePoint: PropTypes.func.isRequired,
 };

@@ -25,20 +25,11 @@ const convertPathfindingVias = (steps) => {
 };
 
 const Itinerary = (props) => {
-  // const [vias, setVias] = useState([]);
   const [launchPathfinding, setLaunchPathfinding] = useState(false);
   const { updateExtViewport } = props;
   const dispatch = useDispatch();
   const map = useSelector((state) => state.map);
   const osrdconf = useSelector((state) => state.osrdconf);
-
-  /* const viasRedux2state = () => {
-    setVias({
-      vias: osrdconf.vias.map((item) => ({
-        stoptime: item.stoptime,
-      })),
-    });
-  }; */
 
   const zoomToFeature = (boundingBox, id = undefined, source = undefined) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
@@ -53,6 +44,19 @@ const Itinerary = (props) => {
       longitude,
       latitude,
       zoom,
+    };
+    updateExtViewport(newViewport);
+    if (id !== undefined && source !== undefined) {
+      updateFeatureInfoClick(Number(id), source);
+    }
+  };
+
+  const zoomToFeaturePoint = (lngLat, id = undefined, source = undefined) => {
+    const newViewport = {
+      ...map.viewport,
+      longitude: lngLat[0],
+      latitude: lngLat[1],
+      zoom: 16,
     };
     updateExtViewport(newViewport);
     if (id !== undefined && source !== undefined) {
@@ -139,14 +143,6 @@ const Itinerary = (props) => {
 
   useEffect(() => {
     if (osrdconf.pathfindingID === undefined || osrdconf.geojson === undefined) {
-      /* osrdconf.vias.forEach((item) => {
-        vias.push({
-          time: item.time,
-          stoptime: item.stoptime,
-        });
-      });
-
-      setVias({ vias }); */
       mapItinerary();
     } else {
       zoomToFeature(bbox(osrdconf.geojson));
@@ -170,7 +166,7 @@ const Itinerary = (props) => {
     <>
       <div className="osrd-config-item mb-2">
         <div className="osrd-config-item-container d-flex align-items-end">
-          <DisplayItinerary zoomToFeature={zoomToFeature} />
+          <DisplayItinerary zoomToFeaturePoint={zoomToFeaturePoint} />
         </div>
       </div>
     </>

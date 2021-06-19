@@ -9,11 +9,10 @@ import {
   deleteVias,
 } from 'applications/osrd/components/Itinerary/helpers';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { useDebounce } from 'utils/helpers';
 
 export default function DisplayVias(props) {
   const osrdconf = useSelector((state) => state.osrdconf);
-  const { zoomToFeature } = props;
+  const { zoomToFeaturePoint } = props;
 
   return (
     <DragDropContext onDragEnd={(e) => permuteVias(e.source.index, e.destination.index)}>
@@ -24,7 +23,7 @@ export default function DisplayVias(props) {
             ref={provided.innerRef}
           >
             {osrdconf.vias.map((place, index) => (
-              <Draggable key={nextId()} draggableId={`drag-vias-${index}`} index={index}>
+              <Draggable key={`drag-key-${index}`} draggableId={`drag-vias-${index}`} index={index}>
                 {(providedDraggable) => (
                   <div
                     ref={providedDraggable.innerRef}
@@ -36,8 +35,8 @@ export default function DisplayVias(props) {
                     <div className="pl-1 hover w-100 d-flex align-items-center">
                       <div
                         className="flex-grow-1"
-                        onClick={() => zoomToFeature(
-                          place.boundingBox,
+                        onClick={() => zoomToFeaturePoint(
+                          place.clickLngLat,
                           place.id,
                           place.source,
                         )}
@@ -86,5 +85,5 @@ export default function DisplayVias(props) {
 }
 
 DisplayVias.propTypes = {
-  zoomToFeature: PropTypes.func.isRequired,
+  zoomToFeaturePoint: PropTypes.func.isRequired,
 };
