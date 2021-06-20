@@ -11,12 +11,12 @@ const createTrain = (keyValues, simulationTrains) => {
     const dataSimulationTrain = {};
     dataSimulationTrain.name = train.name;
     dataSimulationTrain.trainNumber = trainNumber;
-    dataSimulationTrain.headPosition = formatStepsWithTime(train, 'headPosition');
-    dataSimulationTrain.tailPosition = formatStepsWithTime(train, 'tailPosition');
-    dataSimulationTrain.brakingDistance = formatStepsWithTime(train, 'brakingDistance');
-    dataSimulationTrain.currentBlocksection = formatStepsWithTime(train, 'currentBlocksection');
+    dataSimulationTrain.headPosition = formatStepsWithTime(train, 'head_position');
+    dataSimulationTrain.tailPosition = formatStepsWithTime(train, 'tail_position');
+    dataSimulationTrain.endBlockOccupancy = formatStepsWithTime(train, 'end_block_occupancy');
+    dataSimulationTrain.startBlockOccupancy = formatStepsWithTime(train, 'start_block_occupancy');
     dataSimulationTrain.areaBlock = mergeDatasArea(
-      dataSimulationTrain.brakingDistance, dataSimulationTrain.currentBlocksection, keyValues,
+      dataSimulationTrain.endBlockOccupancy, dataSimulationTrain.startBlockOccupancy, keyValues,
     );
     return dataSimulationTrain;
   });
@@ -78,7 +78,7 @@ const TrainDetails = (props) => {
               <div className="rounded p-2 mb-1 small bg-danger text-white">
                 <div className="font-weight-bold mr-1">FREINAGE</div>
                 {Math.round(
-                  dataSimulation[selectedTrain].brakingDistance[hoverPosition].value,
+                  dataSimulation[selectedTrain].endBlockOccupancy[hoverPosition].value,
                 ) / 1000}
                 km
               </div>
@@ -87,7 +87,7 @@ const TrainDetails = (props) => {
               <div className="rounded p-2 mb-1 small bg-orange text-white">
                 <div className="font-weight-bold mr-1">BLOCK</div>
                 {Math.round(
-                  dataSimulation[selectedTrain].currentBlocksection[hoverPosition].value,
+                  dataSimulation[selectedTrain].startBlockOccupancy[hoverPosition].value,
                 ) / 1000}
                 km
               </div>
@@ -96,8 +96,8 @@ const TrainDetails = (props) => {
               <div className="rounded p-2 mb-1 small bg-secondary text-white">
                 <div className="font-weight-bold mr-1">CANTON</div>
                 {Math.round(
-                  dataSimulation[selectedTrain].brakingDistance[hoverPosition].value
-                  - dataSimulation[selectedTrain].currentBlocksection[hoverPosition].value,
+                  dataSimulation[selectedTrain].endBlockOccupancy[hoverPosition].value
+                  - dataSimulation[selectedTrain].startBlockOccupancy[hoverPosition].value,
                 ) / 1000}
                 km
               </div>

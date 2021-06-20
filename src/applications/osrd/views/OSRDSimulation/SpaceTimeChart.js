@@ -28,10 +28,10 @@ const createChart = (chart, dataSimulation, keyValues, ref) => {
 
   const dataSimulationLinearMax = d3.max([
     d3.max([].concat(...dataSimulation.map(
-      (train) => d3.max(train.brakingDistance.map((step) => step[keyValues[1]])),
+      (train) => d3.max(train.endBlockOccupancy.map((step) => step[keyValues[1]])),
     ))),
     d3.max([].concat(...dataSimulation.map(
-      (train) => d3.max(train.currentBlocksection.map((step) => step[keyValues[1]])),
+      (train) => d3.max(train.startBlockOccupancy.map((step) => step[keyValues[1]])),
     ))),
     d3.max([].concat(...dataSimulation.map(
       (train) => d3.max(train.headPosition.map((step) => step[keyValues[1]])),
@@ -59,11 +59,11 @@ const drawTrain = (
   chart, dataSimulation, isSelected, keyValues, offsetTimeByDragging,
   rotate, setMustRedraw, setSelectedTrain,
 ) => {
-  const groupID = `spaceTime-${dataSimulation.name}`;
+  const groupID = `spaceTime-${dataSimulation.trainNumber}`;
 
   const areaColor = isSelected ? 'rgba(0, 136, 207, 0.2)' : 'url(#hatchPatternGray)';
-  const brakingDistanceColor = isSelected ? SNCFCOLORS.red : SNCFCOLORS.coolgray9;
-  const currentBlocksectionColor = isSelected ? SNCFCOLORS.yellow : SNCFCOLORS.coolgray5;
+  const endBlockOccupancyColor = isSelected ? SNCFCOLORS.red : SNCFCOLORS.coolgray9;
+  const startBlockOccupancyColor = isSelected ? SNCFCOLORS.yellow : SNCFCOLORS.coolgray5;
   const tailPositionColor = isSelected ? SNCFCOLORS.cyan : SNCFCOLORS.coolgray3;
   const headPositionColor = isSelected ? SNCFCOLORS.blue : SNCFCOLORS.coolgray7;
 
@@ -99,10 +99,10 @@ const drawTrain = (
     chart, areaColor, dataSimulation, groupID, 'curveStepAfter', keyValues,
     'areaBlock', rotate, setMustRedraw, setSelectedTrain,
   );
-  drawCurve(chart, brakingDistanceColor, dataSimulation, groupID,
-    'curveStepAfter', keyValues, 'brakingDistance', rotate, isSelected);
-  drawCurve(chart, currentBlocksectionColor, dataSimulation, groupID,
-    'curveStepAfter', keyValues, 'currentBlocksection', rotate, isSelected);
+  drawCurve(chart, endBlockOccupancyColor, dataSimulation, groupID,
+    'curveStepAfter', keyValues, 'endBlockOccupancy', rotate, isSelected);
+  drawCurve(chart, startBlockOccupancyColor, dataSimulation, groupID,
+    'curveStepAfter', keyValues, 'startBlockOccupancy', rotate, isSelected);
   drawCurve(chart, tailPositionColor, dataSimulation, groupID,
     'curveLinear', keyValues, 'tailPosition', rotate, isSelected);
   drawCurve(chart, headPositionColor, dataSimulation, groupID,
@@ -116,12 +116,12 @@ const createTrain = (keyValues, simulationTrains) => {
     const dataSimulationTrain = {};
     dataSimulationTrain.name = train.name;
     dataSimulationTrain.trainNumber = trainNumber;
-    dataSimulationTrain.headPosition = formatStepsWithTime(train, 'headPosition');
-    dataSimulationTrain.tailPosition = formatStepsWithTime(train, 'tailPosition');
-    dataSimulationTrain.brakingDistance = formatStepsWithTime(train, 'brakingDistance');
-    dataSimulationTrain.currentBlocksection = formatStepsWithTime(train, 'currentBlocksection');
+    dataSimulationTrain.headPosition = formatStepsWithTime(train, 'head_position');
+    dataSimulationTrain.tailPosition = formatStepsWithTime(train, 'tail_position');
+    dataSimulationTrain.endBlockOccupancy = formatStepsWithTime(train, 'end_block_occupancy');
+    dataSimulationTrain.startBlockOccupancy = formatStepsWithTime(train, 'start_block_occupancy');
     dataSimulationTrain.areaBlock = mergeDatasArea(
-      dataSimulationTrain.brakingDistance, dataSimulationTrain.currentBlocksection, keyValues,
+      dataSimulationTrain.endBlockOccupancy, dataSimulationTrain.startBlockOccupancy, keyValues,
     );
     return dataSimulationTrain;
   });
@@ -170,7 +170,7 @@ const SpaceTimeChart = (props) => {
         LIST_VALUES_NAME_SPACE_TIME, rotate, setChart, setHoverPosition,
         setMustRedraw,
       );
-      findConflicts(chartLocal, dataSimulation, rotate);
+      // findConflicts(chartLocal, dataSimulation, rotate);
       setChart(chartLocal);
       setMustRedraw(false);
     }

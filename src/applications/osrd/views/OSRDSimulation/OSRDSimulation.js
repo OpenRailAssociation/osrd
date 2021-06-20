@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { store } from 'Store';
 import { useSelector } from 'react-redux';
-import { redirectToGraph } from 'reducers/osrdsimulation';
-import { Redirect } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { get } from 'common/requests';
 import ButtonFullscreen from 'common/ButtonFullscreen';
-import CenterLoader from 'common/CenterLoader/CenterLoader';
 import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
 import SpeedSpaceChart from 'applications/osrd/views/OSRDSimulation/SpeedSpaceChart';
 import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
@@ -14,11 +11,8 @@ import TrainsList from 'applications/osrd/views/OSRDSimulation/TrainsList';
 import { simplifyData, timeShiftTrain, timeShiftStops } from 'applications/osrd/components/Helpers/ChartHelpers';
 import './OSRDSimulation.scss';
 
-// For testdata
-import testData from './test-data.json';
-
-let isWorking = true;
-const simulationRaw = testData;
+const timetableURI = '/osrd/timetable';
+const trainscheduleURI = '/osrd/train_schedule';
 
 const OSRDSimulation = () => {
   const { t } = useTranslation(['translation', 'simulation']);
@@ -27,10 +21,31 @@ const OSRDSimulation = () => {
   // const [hoverStop, setHoverStop] = useState(undefined);
   const [selectedTrain, setSelectedTrain] = useState(0);
   const [mustRedraw, setMustRedraw] = useState(true);
-  // const { isWorking, simulationRaw } = useSelector((state) => state.osrdsimulation);
-  const [simulation, setSimulation] = useState(undefined);
+  const osrdconf = useSelector((state) => state.osrdconf);
+  const [simulation, setSimulation] = useState({ trains: [] });
 
-  // Test data simulated
+  const getTimetable = async (timetableID) => {
+    try {
+      const simulationLocal = [];
+      const timetable = await get(`${timetableURI}/${timetableID}`);
+      for (const trainscheduleID of timetable.train_schedules) {
+        try {
+          simulationLocal.push(await get(`${trainscheduleURI}/${trainscheduleID}/result/`));
+        } catch (e) {
+          console.log('ERROR', e);
+        }
+      }
+      setSimulation({ trains: simulationLocal });
+    } catch (e) {
+      console.log('ERROR', e);
+    }
+  };
+
+  useEffect(() => {
+    getTimetable(osrdconf.timetableID);
+  }, []);
+
+  /* / Test data simulated
   // TO REMOVE IN PRODUCTION
   useEffect(() => {
     if (simulationRaw !== undefined) {
@@ -57,16 +72,7 @@ const OSRDSimulation = () => {
       // const hoverTime = simulation.trains[selectedTrain].steps[hoverPosition].time;
     }
   }, [hoverPosition]);
-
-  store.dispatch(redirectToGraph(false));
-
-  /* const play = () => {
-    for (let i = 0; i < simulation.trains[0].steps.length; i += 10) {
-      setTimeout(() => {
-        setHoverPosition(i);
-      }, 500);
-    }
-  }; */
+  */
 
   const offsetTimeByDragging = (offset, selectedTrainLocal) => {
     const { trains } = simulation;
@@ -80,30 +86,20 @@ const OSRDSimulation = () => {
 
   return (
     <>
-      {isWorking === false && simulation === undefined
-        ? <Redirect to="/osrd/settings" /> : null}
       <main className={`mastcontainer ${fullscreen ? ' fullscreen' : ''}`}>
-        {isWorking || simulation === undefined ? (
-          <CenterLoader message={t('simulation:isWorking')} />
-        ) : (
-          <div className="m-0 p-3">
-            <div className="osrd-simulation-container mb-2">
-              {/* <button
-                  type="button"
-                  onClick={play}
-                  className="btn btn-secondary btn-sm">
-                    PLAY
-                  </button> */}
-              <div className="row">
-                <div className="col-md-4">
-                  <TrainsList
-                    simulation={simulation}
-                    selectedTrain={selectedTrain}
-                    setSelectedTrain={setSelectedTrain}
-                    setMustRedraw={setMustRedraw}
-                  />
-                </div>
-                <div className="col-md-8">
+        <div className="m-0 p-3">
+          <div className="osrd-simulation-container mb-2">
+            <div className="row">
+              <div className="col-md-4">
+                <TrainsList
+                  simulation={simulation}
+                  selectedTrain={selectedTrain}
+                  setSelectedTrain={setSelectedTrain}
+                  setMustRedraw={setMustRedraw}
+                />
+              </div>
+              <div className="col-md-8">
+                {simulation.trains.length > 0 ? (
                   <SpaceTimeChart
                     simulation={simulation}
                     hoverPosition={hoverPosition}
@@ -114,39 +110,44 @@ const OSRDSimulation = () => {
                     mustRedraw={mustRedraw}
                     setMustRedraw={setMustRedraw}
                   />
-                </div>
+                ) : null}
               </div>
             </div>
-            <div className="osrd-simulation-container mb-2">
-              <div className="row">
-                <div className="col-md-4">
+          </div>
+          <div className="osrd-simulation-container mb-2">
+            <div className="row">
+              <div className="col-md-4">
+                {simulation.trains.length > 0 ? (
                   <TrainDetails
                     simulation={simulation}
                     hoverPosition={hoverPosition}
                     selectedTrain={selectedTrain}
                   />
-                </div>
-                <div className="col-md-8">
+                ) : null}
+              </div>
+              <div className="col-md-8">
+                {simulation.trains.length > 0 ? (
                   <SpeedSpaceChart
                     simulation={simulation}
                     hoverPosition={hoverPosition}
                     setHoverPosition={setHoverPosition}
                     selectedTrain={selectedTrain}
-                    setSelectedTrain={setSelectedTrain}
                     mustRedraw={mustRedraw}
                     setMustRedraw={setMustRedraw}
                   />
-                </div>
+                ) : null}
               </div>
             </div>
-            <div className="osrd-simulation-container mb-2">
+          </div>
+          <div className="osrd-simulation-container mb-2">
+            {simulation.trains.length > 0 ? (
               <TimeTable
                 data={simulation.trains[selectedTrain].stops}
               />
-            </div>
-            <ButtonFullscreen />
+            ) : null}
           </div>
-        )}
+          <ButtonFullscreen />
+        </div>
       </main>
     </>
   );

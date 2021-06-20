@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
+import { sec2time } from 'utils/timeManipulation';
 
 const TrainsList = (props) => {
   const {
@@ -32,8 +33,8 @@ const TrainsList = (props) => {
           key={nextId()}
         >
           <td><div className="cell-inner">{train.name}</div></td>
-          <td><div className="cell-inner">{start}</div></td>
-          <td><div className="cell-inner">{stop}</div></td>
+          <td><div className="cell-inner">{sec2time(start)}</div></td>
+          <td><div className="cell-inner">{sec2time(stop)}</div></td>
         </tr>
       );
     });

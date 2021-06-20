@@ -1,12 +1,7 @@
 import * as d3 from 'd3';
+import { sec2time } from 'utils/timeManipulation';
 
-export const sec2time = (time) => {
-  time = Number(time);
-  const h = `0${Math.floor(time / 3600)}`.slice(-2);
-  const m = `0${Math.floor((time % 3600) / 60)}`.slice(-2);
-  const s = `0${Math.floor((time % 3600) % 60)}`.slice(-2);
-  return d3.timeParse('%H:%M:%S')(`${h}:${m}:${s}`);
-};
+export const sec2d3datetime = (time) => d3.timeParse('%H:%M:%S')(sec2time(time + 30000));
 
 const addSeconds = (dateOrig, seconds) => {
   const date = new Date(`2021-01-01 ${dateOrig}`);
@@ -30,12 +25,12 @@ export const defineLinear = (max, pctMarge = 0) => d3.scaleLinear()
   .domain([0 - (max * pctMarge), max + (max * pctMarge)]);
 
 export const formatStepsWithTime = (train, valueName) => train.steps
-  .map((step) => ({ time: sec2time(step.time), value: step[valueName] }));
+  .map((step) => ({ time: sec2d3datetime(step.time), value: step[valueName] }));
 
 export const formatStepsWithSpace = (
   multiplier, train, valueName,
 ) => train.steps
-  .map((step) => ({ space: step.headPosition, value: step[valueName] * multiplier }));
+  .map((step) => ({ space: step.head_position, value: step[valueName] * multiplier }));
 
 export const formatData = (trains, trainNumber, dataName) => trains[trainNumber][dataName]
   .map((step) => ({ space: step.space, value: step.speed }));
@@ -63,7 +58,7 @@ export const handleWindowResize = (
 export const timeShiftTrain = (steps, value) => steps
   .map((step) => ({ ...step, time: offsetSeconds(step.time + value) }));
 export const timeShiftStops = (stops, value) => stops
-  .map((stop) => ({ ...stop, time: addSeconds(stop.time, value) }));
+  .map((stop) => ({ ...stop, time: offsetSeconds(stop.time + value) }));
 
 // Simplify data, 50% by default
 export const simplifyData = (simulationTrains, factor = 2) => simulationTrains.map((train) => {

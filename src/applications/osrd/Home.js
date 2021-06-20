@@ -26,9 +26,7 @@ class HomeOSRD extends React.Component {
           items={(
             <>
               <MastNavItemSNCF link="/osrd/settings" linkname={t('osrd.nav.home')} icon="icons-itinerary-train-station" />
-              {osrdsimulation.simulation !== undefined
-                ? <MastNavItemSNCF link="/osrd/simulation" linkname={t('osrd.nav.simulation')} icon="icons-itinerary-train" />
-                : null}
+              <MastNavItemSNCF link="/osrd/simulation" linkname={t('osrd.nav.simulation')} icon="icons-itinerary-train" />
             </>
           )}
           itemsBottom={

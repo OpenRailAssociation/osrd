@@ -15,26 +15,25 @@ const CHART_ID = 'SpeedSpaceChart';
 
 const SpeedSpaceChart = (props) => {
   const {
-    hoverPosition, mustRedraw, setHoverPosition,
+    hoverPosition, mustRedraw, selectedTrain, setHoverPosition,
     setMustRedraw, simulation,
   } = props;
   const [rotate, setRotate] = useState(false);
   const [chart, setChart] = useState(undefined);
   const [isResizeActive, setResizeActive] = useState(false);
   const ref = useRef();
-  const trainNumber = 0;
   const keyValues = ['space', 'value'];
 
   // Prepare data
   const dataSimulation = {};
-  dataSimulation.speed = formatStepsWithSpace(3.6, simulation.trains[trainNumber], 'speed');
+  dataSimulation.speed = formatStepsWithSpace(3.6, simulation.trains[selectedTrain], 'speed');
   dataSimulation.areaBlock = mergeDatasArea(dataSimulation.speed, undefined, keyValues);
-  dataSimulation.emergency = expandAndFormatData(
-    dataSimulation.speed, simulation.trains[trainNumber].emergency,
+  /* dataSimulation.emergency = expandAndFormatData(
+    dataSimulation.speed, simulation.trains[selectedTrain].emergency,
   );
   dataSimulation.indication = expandAndFormatData(
-    dataSimulation.speed, simulation.trains[trainNumber].indication,
-  );
+    dataSimulation.speed, simulation.trains[selectedTrain].indication,
+  ); */
 
   const toggleRotation = () => {
     d3.select(`#${CHART_ID}`).remove();
@@ -65,8 +64,8 @@ const SpeedSpaceChart = (props) => {
       chartLocal.drawZone.append('g').attr('id', 'speedSpaceChart').attr('class', 'chartTrain');
       drawArea(chartLocal, 'rgba(0, 136, 207, 0.3)', dataSimulation, 'speedSpaceChart', 'curveLinear', keyValues, 'areaBlock', rotate);
       drawCurve(chartLocal, SNCFCOLORS.blue, dataSimulation, 'speedSpaceChart', 'curveLinear', keyValues, 'speed', rotate);
-      drawCurve(chartLocal, SNCFCOLORS.red, dataSimulation, 'speedSpaceChart', 'curveStepAfter', keyValues, 'emergency', rotate);
-      drawCurve(chartLocal, SNCFCOLORS.yellow, dataSimulation, 'speedSpaceChart', 'curveStepAfter', keyValues, 'indication', rotate);
+      // drawCurve(chartLocal, SNCFCOLORS.red, dataSimulation, 'speedSpaceChart', 'curveStepAfter', keyValues, 'emergency', rotate);
+      // drawCurve(chartLocal, SNCFCOLORS.yellow, dataSimulation, 'speedSpaceChart', 'curveStepAfter', keyValues, 'indication', rotate);
       enableInteractivity(
         chartLocal, dataSimulation, keyValues,
         LIST_VALUES_NAME_SPEED_SPACE, rotate, setChart, setHoverPosition,
@@ -105,6 +104,7 @@ const SpeedSpaceChart = (props) => {
 SpeedSpaceChart.propTypes = {
   hoverPosition: PropTypes.number,
   mustRedraw: PropTypes.bool.isRequired,
+  selectedTrain: PropTypes.number.isRequired,
   setHoverPosition: PropTypes.func.isRequired,
   setMustRedraw: PropTypes.func.isRequired,
   simulation: PropTypes.object.isRequired,
