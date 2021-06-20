@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { get } from 'common/requests';
 import TimetableSelectorModal from 'applications/osrd/components/TimetableSelector/TimetableSelectorModal';
 import icon from 'assets/pictures/layersicons/timetable.svg';
+import DotsLoader from 'common/DotsLoader/DotsLoader';
 
 const timetableURL = '/osrd/timetable';
 
@@ -40,16 +41,22 @@ export default function TimetableSelector() {
           <div className="h2 mb-0">
             <img className="mr-1" src={icon} alt="timetableIcon" />
             <span className="text-muted">{t('osrdconf:timetable')}</span>
-            {selectedTimetable !== undefined ? (
-              <>
-                <span className="ml-1">{selectedTimetable.name}</span>
-                <small className="ml-1 text-primary">{selectedTimetable.id}</small>
-              </>
-            ) : <span className="ml-1">{t('osrdconf:noTimetable')}</span> }
+            {osrdconf.timetableID !== undefined && selectedTimetable === undefined
+              ? <span className="ml-3"><DotsLoader /></span>
+              : (
+                <>
+                  {selectedTimetable !== undefined ? (
+                    <>
+                      <span className="ml-1">{selectedTimetable.name}</span>
+                      <small className="ml-1 text-primary">{selectedTimetable.id}</small>
+                    </>
+                  ) : <span className="ml-1">{t('osrdconf:noTimetable')}</span> }
+                </>
+              )}
           </div>
+          <TimetableSelectorModal />
         </div>
       </div>
-      <TimetableSelectorModal />
     </>
   );
 }

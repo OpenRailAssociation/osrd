@@ -5,6 +5,7 @@ import { updateInfraID } from 'reducers/osrdconf';
 import { get } from 'common/requests';
 import icon from 'assets/pictures/layersicons/layer_tiv.svg';
 import InfraSelectorModal from 'applications/osrd/components/InfraSelector/InfraSelectorModal';
+import DotsLoader from 'common/DotsLoader/DotsLoader';
 
 const infraURL = '/osrd/infra';
 
@@ -59,14 +60,16 @@ export default function InfraSelector() {
           data-toggle="modal"
           data-target="#infra-selector-modal"
         >
-          {selectedInfra !== undefined ? (
-            <div className="h2 mb-0">
-              <img className="mr-1" src={icon} alt="infraIcon" />
-              <span className="text-muted">{t('osrdconf:infrastructure')}</span>
-              <span className="ml-1">{selectedInfra.name}</span>
-              <small className="ml-1 text-primary">{selectedInfra.id}</small>
-            </div>
-          ) : null }
+          <div className="h2 mb-0">
+            <img className="mr-1" src={icon} alt="infraIcon" />
+            <span className="text-muted">{t('osrdconf:infrastructure')}</span>
+            {selectedInfra !== undefined ? (
+              <>
+                <span className="ml-1">{selectedInfra.name}</span>
+                <small className="ml-1 text-primary">{selectedInfra.id}</small>
+              </>
+            ) : <span className="ml-3"><DotsLoader /></span> }
+          </div>
         </div>
       </div>
       <InfraSelectorModal

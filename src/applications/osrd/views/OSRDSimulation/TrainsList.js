@@ -32,6 +32,14 @@ const TrainsList = (props) => {
           onClick={() => changeSelectedTrain(idx)}
           key={nextId()}
         >
+          <td>
+            <div className="cell-inner">
+              <div className="custom-control custom-checkbox custom-checkbox-alone">
+                <input type="checkbox" className="custom-control-input" id={`timetable-train-${idx}`} />
+                <label className="custom-control-label" for={`timetable-train-${idx}`} />
+              </div>
+            </div>
+          </td>
           <td><div className="cell-inner">{train.name}</div></td>
           <td><div className="cell-inner">{sec2time(start)}</div></td>
           <td><div className="cell-inner">{sec2time(stop)}</div></td>
@@ -53,6 +61,14 @@ const TrainsList = (props) => {
           <table className="table table-hover">
             <thead className="thead thead-light">
               <tr>
+                <th>
+                  <div className="cell-inner">
+                    <div className="custom-control custom-checkbox custom-checkbox-alone">
+                      <input type="checkbox" className="custom-control-input" id="timetable-sel-all-trains" />
+                      <label class="custom-control-label" for="timetable-sel-all-trains" />
+                    </div>
+                  </div>
+                </th>
                 <th scope="col"><div className="cell-inner">{t('simulation:name')}</div></th>
                 <th scope="col"><div className="cell-inner">{t('simulation:start')}</div></th>
                 <th scope="col"><div className="cell-inner">{t('simulation:stop')}</div></th>

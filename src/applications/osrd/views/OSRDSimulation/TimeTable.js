@@ -2,6 +2,7 @@ import React from 'react';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
+import { sec2time } from 'utils/timeManipulation';
 
 const addSeconds = (time, seconds) => {
   const dateCalc = new Date(`2020-01-01T${time}`);
@@ -20,8 +21,8 @@ const FormatStops = (props) => {
           {stop.name === 'start' || stop.name === 'stop' ? t(`simulation:${stop.name}`) : stop.name}
         </div>
       </td>
-      <td><div className="cell-inner">{stop.time}</div></td>
-      <td><div className="cell-inner">{departureTime}</div></td>
+      <td><div className="cell-inner">{sec2time(stop.time)}</div></td>
+      <td><div className="cell-inner">{sec2time(departureTime)}</div></td>
       <td>
         <div className="cell-inner">
           {stop.stop_time > 0 ? `${stop.stop_time}s` : null}
