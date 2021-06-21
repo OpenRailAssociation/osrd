@@ -11,20 +11,20 @@ import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.train.events.TrainRestarts;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class StopPhase extends PhaseState implements Phase {
     public final double duration;
 
-    public StopPhase(double duration, List<SpeedControllerGenerator> targetSpeedGenerators) {
-        super(targetSpeedGenerators);
+    public StopPhase(double duration) {
+        super(new ArrayList<>());
         this.duration = duration;
     }
 
     @Override
     public PhaseState getState(Simulation sim, TrainSchedule schedule) {
-        speedInstructions.generate(sim, schedule);
         return this;
     }
 
@@ -46,7 +46,7 @@ public class StopPhase extends PhaseState implements Phase {
     @Override
     @SuppressFBWarnings({"CN_IDIOM_NO_SUPER_CALL"})
     public PhaseState clone() {
-        return new StopPhase(duration, speedInstructions.targetSpeedGenerators);
+        return new StopPhase(duration);
     }
 
     @Override

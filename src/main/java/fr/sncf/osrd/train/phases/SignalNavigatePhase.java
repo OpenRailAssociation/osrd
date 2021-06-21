@@ -228,16 +228,13 @@ public final class SignalNavigatePhase implements Phase {
         }
 
         State(SignalNavigatePhase.State state) {
-            super(state.speedInstructions.targetSpeedGenerators);
+            super(state.speedInstructions);
             this.phase = state.phase;
             this.routeIndex = state.routeIndex;
             this.interactionsPathIndex = state.interactionsPathIndex;
             this.signalControllers = state.signalControllers;
             this.schedule = state.schedule;
             this.sim = state.sim;
-
-            // TODO ech: see if we can avoid this generate call
-            speedInstructions.generate(sim, schedule);
         }
 
         private boolean isInteractionUnderTrain(TrainState trainState) {

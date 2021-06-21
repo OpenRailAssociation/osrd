@@ -50,7 +50,7 @@ public class SpeedInstructions {
         this.maxSpeedControllers = new HashSet<>(other.maxSpeedControllers);
         this.targetSpeedControllers = new HashSet<>(other.targetSpeedControllers);
         this.expectedTimes = new TreeMap<>(other.expectedTimes);
-        this.targetSpeedGenerators = other.targetSpeedGenerators;
+        targetSpeedGenerators = new ArrayList<>(other.targetSpeedGenerators);
     }
 
     /** Returns how late we are compared to the expected time, in seconds. The result may be negative if we are

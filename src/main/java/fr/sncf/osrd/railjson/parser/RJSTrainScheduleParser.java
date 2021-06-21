@@ -133,8 +133,10 @@ public class RJSTrainScheduleParser {
         var targetSpeedGenerators = parseSpeedControllerGenerators(rjsPhase);
 
         if (rjsPhase.getClass() == RJSTrainPhase.Stop.class) {
+            if (targetSpeedGenerators.size() > 0)
+                throw new InvalidSchedule("Train stop phase can't have speed controllers");
             var rjsStop = (RJSTrainPhase.Stop) rjsPhase;
-            return new StopPhase(rjsStop.duration, targetSpeedGenerators);
+            return new StopPhase(rjsStop.duration);
         }
         if (rjsPhase.getClass() == RJSTrainPhase.Navigate.class) {
             var rjsNavigate = (RJSTrainPhase.Navigate) rjsPhase;
