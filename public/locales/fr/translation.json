@@ -14,7 +14,8 @@
     "loading": "Chargement...",
     "search": "Rechercher",
     "settings": "Paramètres",
-    "sort": "Tri"
+    "sort": "Tri",
+    "train(s)": "train(s)"
   },
   "Editor": {
     "nav": {
