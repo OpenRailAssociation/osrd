@@ -31,6 +31,8 @@ import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
+import fr.sncf.osrd.train.phases.SignalNavigatePhase;
+import fr.sncf.osrd.train.phases.SignalNavigatePhase.PhaseEndActionPoint.EndOfPhase;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -167,11 +169,10 @@ public class SimulationEndpoint implements Take {
                 for (var aspect : aspectChange.aspects)
                     aspects.add(aspect.id);
                 changes.add(new SimulationResultChange.ResponseSignalChange(signal, aspects, sim.getTime()));
-            } else if (change.getClass() == OperationalPointChange.class) {
-                var opChange = (OperationalPointChange) change;
-                var train = opChange.train.schedule;
-                var op = opChange.op;
-                changes.add(new SimulationResultChange.ResponseOperationalPointUpdate(train, op, sim.getTime()));
+            } else if (change.getClass() == EndOfPhase.class) {
+                var phaseEnd = (EndOfPhase) change;
+                changes.add(new SimulationResultChange.ResponsePhaseEndUpdate(phaseEnd.train, phaseEnd.phaseIndex,
+                        sim.getTime()));
             }
         }
 
@@ -189,7 +190,7 @@ public class SimulationEndpoint implements Take {
                         .withSubtype(SimulationResultChange.ResponseRouteStatus.class, "route_status")
                         .withSubtype(SimulationResultChange.ResponseTrainLocationUpdate.class, "train_location")
                         .withSubtype(SimulationResultChange.ResponseSignalChange.class, "signal_change")
-                        .withSubtype(SimulationResultChange.ResponseOperationalPointUpdate.class, "operational_point")
+                        .withSubtype(ResponsePhaseEndUpdate.class, "phase_end")
         );
 
         public final double time;
@@ -262,16 +263,16 @@ public class SimulationEndpoint implements Take {
             }
         }
 
-        private static final class ResponseOperationalPointUpdate extends SimulationResultChange {
+        private static final class ResponsePhaseEndUpdate extends SimulationResultChange {
             @Json(name = "train_name")
             private final String trainName;
-            @Json(name = "operational_point")
-            private final String operationalPoint;
+            @Json(name = "phase_index")
+            private final int phaseIndex;
 
-            public ResponseOperationalPointUpdate(TrainSchedule trainSchedule, OperationalPoint op, double time) {
+            public ResponsePhaseEndUpdate(Train train, int phaseIndex, double time) {
                 super(time);
-                this.trainName = trainSchedule.trainID;
-                this.operationalPoint = op.id;
+                this.trainName = train.getName();
+                this.phaseIndex = phaseIndex;
             }
         }
 
