@@ -18,7 +18,7 @@ import formatConf from 'applications/osrd/components/SimulationLauncher/formatCo
 const osrdURI = '/osrd/simulate';
 const scheduleURL = '/osrd/train_schedule'
 
-export default function SimulationLauncher() {
+export default function AddTrainSchedule() {
   const [errorMessagesState, setErrorMessages] = useState([]);
   const osrdconf = useSelector((state) => state.osrdconf);
   const osrdsimulation = useSelector((state) => state.osrdsimulation);
@@ -45,7 +45,6 @@ export default function SimulationLauncher() {
 
   return (
     <>
-      {osrdsimulation.redirectToGraph ? <Redirect to="/osrd/graph" /> : ''}
       <div className="osrd-config-item">
         <div className="osrd-config-item-container d-flex align-items-center mb-2 bg-gray">
           <div className="lead font-weight-bold text-white">{osrdconf.name}</div>

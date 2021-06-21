@@ -8,7 +8,7 @@ import Map from 'applications/osrd/components/Map/Map';
 import InfraSelector from 'applications/osrd/views/OSRDConfig/InfraSelector';
 import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
 import TrainCompoSelector from 'applications/osrd/views/OSRDConfig/TrainCompoSelector';
-import SimulationLauncher from 'applications/osrd/views/OSRDConfig/SimulationLauncher';
+import AddTrainSchedule from 'applications/osrd/views/OSRDConfig/AddTrainSchedule';
 import 'applications/osrd/views/OSRDConfig/OSRDConfig.scss';
 
 export default function OSRDConfig() {
@@ -31,7 +31,6 @@ export default function OSRDConfig() {
     <main className={`osrd-config-mastcontainer mastcontainer${fullscreen ? ' fullscreen' : ''}`}>
       <div className="row m-0 px-1 py-3 h-100">
         <div className="col-sm-6 h-100">
-          <SimulationLauncher title={t('osrdconf:simulation')} />
           <InfraSelector />
           <TimetableSelector />
           {/* <TrainCompoSelector title={t('osrdconf:composition')} modalID="trainCompoModal" /> */}
@@ -39,6 +38,7 @@ export default function OSRDConfig() {
             title={t('translation:common.itinerary')}
             updateExtViewport={setExtViewport}
           />
+          <AddTrainSchedule title={t('osrdconf:simulation')} />
         </div>
         <div className="col-sm-6 h-100">
           <div className="osrd-config-item osrd-config-item-map mb-2">

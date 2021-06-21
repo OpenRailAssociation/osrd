@@ -5,13 +5,11 @@ import produce from 'immer';
 export const UPDATE_CHART = 'osrdsimu/UPDATE_CHART';
 export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
 export const TOGGLE_WORKINGSTATUS = 'osrdsimu/TOGGLE_WORKINGSTATUS';
-export const REDIRECT_TO_GRAPH = 'osrdsimu/REDIRECT_TO_GRAPH';
 
 // Reducer
 export const initialState = {
   chart: undefined,
   isWorking: false,
-  redirectToGraph: false,
   simulationRaw: undefined,
 };
 
@@ -26,9 +24,6 @@ export default function reducer(state = initialState, action) {
         break;
       case TOGGLE_WORKINGSTATUS:
         draft.isWorking = action.isWorking;
-        break;
-      case REDIRECT_TO_GRAPH:
-        draft.redirectToGraph = action.redirectToGraph;
         break;
     }
   });
@@ -56,14 +51,6 @@ export function toggleWorkingStatus(bool) {
     dispatch({
       type: TOGGLE_WORKINGSTATUS,
       isWorking: bool,
-    });
-  };
-}
-export function redirectToGraph(bool) {
-  return (dispatch) => {
-    dispatch({
-      type: REDIRECT_TO_GRAPH,
-      redirectToGraph: bool,
     });
   };
 }
