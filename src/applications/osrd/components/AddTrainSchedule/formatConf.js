@@ -1,3 +1,5 @@
+import { time2sec } from 'utils/timeManipulation';
+
 export default function formatConf(setErrorMessages, t, osrdconf) {
   const errorMessages = [];
 
@@ -38,7 +40,7 @@ export default function formatConf(setErrorMessages, t, osrdconf) {
 
     const osrdConfSchedule = {
       train_name: osrdconf.name,
-      departure_time: 0,
+      departure_time: time2sec(osrdconf.originTime),
       phases: [],
       initial_speed: 0,
       timetable: osrdconf.timetableID,

@@ -13,7 +13,7 @@ import AlertSNCF from 'common/BootstrapSNCF/AlertSNCF';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 
-import formatConf from 'applications/osrd/components/SimulationLauncher/formatConf';
+import formatConf from 'applications/osrd/components/AddTrainSchedule/formatConf';
 
 const osrdURI = '/osrd/simulate';
 const scheduleURL = '/osrd/train_schedule'

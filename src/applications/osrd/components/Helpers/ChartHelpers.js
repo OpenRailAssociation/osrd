@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { sec2time } from 'utils/timeManipulation';
 
-export const sec2d3datetime = (time) => d3.timeParse('%H:%M:%S')(sec2time(time + 30000));
+export const sec2d3datetime = (time) => d3.timeParse('%H:%M:%S')(sec2time(time));
 
 const addSeconds = (dateOrig, seconds) => {
   const date = new Date(`2021-01-01 ${dateOrig}`);
