@@ -21,14 +21,23 @@ const OSRDSimulation = () => {
   const [hoverPosition, setHoverPosition] = useState(undefined);
   // const [hoverStop, setHoverStop] = useState(undefined);
   const [selectedTrain, setSelectedTrain] = useState(0);
+  const [isEmpty, setIsEmpty] = useState(true);
   const [mustRedraw, setMustRedraw] = useState(true);
   const osrdconf = useSelector((state) => state.osrdconf);
   const [simulation, setSimulation] = useState({ trains: [] });
+
+  const WaitingLoader = () => {
+    if (isEmpty) {
+      return <h1 className="text-center">{t('simulation:noData')}</h1>;
+    }
+    return <CenterLoader />;
+  };
 
   const getTimetable = async (timetableID) => {
     try {
       const simulationLocal = [];
       const timetable = await get(`${timetableURI}/${timetableID}`);
+      if (timetable.train_schedules.length > 0) { setIsEmpty(false); }
       for (const trainscheduleID of timetable.train_schedules) {
         try {
           simulationLocal.push(await get(`${trainscheduleURI}/${trainscheduleID}/result/`));
@@ -89,7 +98,7 @@ const OSRDSimulation = () => {
     <>
       <main className={`mastcontainer ${fullscreen ? ' fullscreen' : ''}`}>
         {simulation.trains.length === 0
-          ? <div className="pt-5 mt-5"><CenterLoader /></div> : (
+          ? <div className="pt-5 mt-5"><WaitingLoader /></div> : (
             <div className="m-0 p-3">
               <div className="osrd-simulation-container mb-2">
                 <div className="row">

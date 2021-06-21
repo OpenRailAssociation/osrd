@@ -3,6 +3,7 @@
   "isWorking": "Calcul de la simulation en cours...",
   "ManualOffset": "Ajout de secondes au train",
   "name": "Nom",
+  "noData": "Aucune donnée disponible",
   "null": "Lieu non renseigné",
   "start": "Départ",
   "stop": "Arrivée",
