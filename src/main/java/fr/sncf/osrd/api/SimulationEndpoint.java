@@ -206,7 +206,7 @@ public class SimulationEndpoint implements Take {
             this.time = time;
         }
 
-        private static final class ResponseRouteStatus extends SimulationResultChange {
+        public static final class ResponseRouteStatus extends SimulationResultChange {
             private final String id;
             private final RouteStatus status;
             @Json(name = "start_track_section")
@@ -235,7 +235,7 @@ public class SimulationEndpoint implements Take {
             }
         }
 
-        private static final class ResponseTrainLocationUpdate extends SimulationResultChange {
+        public static final class ResponseTrainLocationUpdate extends SimulationResultChange {
             @Json(name = "train_name")
             private final String trainName;
             @Json(name = "head_track_section")
@@ -263,7 +263,7 @@ public class SimulationEndpoint implements Take {
             }
         }
 
-        private static final class ResponsePhaseEndUpdate extends SimulationResultChange {
+        public static final class ResponsePhaseEndUpdate extends SimulationResultChange {
             @Json(name = "train_name")
             private final String trainName;
             @Json(name = "phase_index")
@@ -276,7 +276,7 @@ public class SimulationEndpoint implements Take {
             }
         }
 
-        private static final class ResponseSignalChange extends SimulationResultChange {
+        public static final class ResponseSignalChange extends SimulationResultChange {
             private final String signal;
             private final List<String> aspects;
 
