@@ -270,7 +270,8 @@ public final class SignalNavigatePhase implements Phase {
 
             // 4) create an event with simulation data up to this point
             // The train reached the action point
-            if (trainState.location.getPathPosition() >= nextInteraction.position) {
+            // If less than 1m away we consider that it has been reached, because the train has to stop before the end
+            if (trainState.location.getPathPosition() >= nextInteraction.position - 1) {
                 popInteraction(trainState);
                 return TrainReachesActionPoint.plan(sim, trainState.time, train, simulationResult, nextInteraction);
             }
