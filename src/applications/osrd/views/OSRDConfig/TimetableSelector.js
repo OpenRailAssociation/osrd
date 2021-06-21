@@ -25,6 +25,8 @@ export default function TimetableSelector() {
   useEffect(() => {
     if (osrdconf.timetableID !== undefined) {
       getTimetable(osrdconf.timetableID);
+    } else {
+      setselectedTimetable(undefined);
     }
   }, [osrdconf.timetableID]);
 
@@ -54,9 +56,9 @@ export default function TimetableSelector() {
                 </>
               )}
           </div>
-          <TimetableSelectorModal />
         </div>
       </div>
+      <TimetableSelectorModal />
     </>
   );
 }

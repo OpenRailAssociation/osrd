@@ -7,6 +7,7 @@ import MastNavSNCF from 'common/BootstrapSNCF/MastNavSNCF';
 import MastNavItemSNCF from 'common/BootstrapSNCF/MastNavItemSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/logo_osrd_seul_blanc.svg';
+import { NotificationsState } from 'common/Notifications.tsx';
 import AboutOSRD from './About';
 import OSRDSimulation from './views/OSRDSimulation/OSRDSimulation';
 import OSRDConfig from './views/OSRDConfig/OSRDConfig';
@@ -46,6 +47,7 @@ class HomeOSRD extends React.Component {
           </Route>
           <Redirect to={osrdsimulation.redirectToGraph ? '/osrd/simulation' : '/osrd/settings'} />
         </Switch>
+        <NotificationsState />
       </>
     );
   }

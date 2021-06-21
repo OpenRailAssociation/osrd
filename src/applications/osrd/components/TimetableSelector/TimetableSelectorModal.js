@@ -8,6 +8,7 @@ import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { setSuccess } from 'reducers/main.ts';
 
 const timetableURL = '/osrd/timetable';
 
@@ -15,7 +16,7 @@ export default function TimetableSelectorModal() {
   const dispatch = useDispatch();
   const [newNameTimetable, setNewNameTimetable] = useState(null);
   const [timetablesList, settimetablesList] = useState(undefined);
-  const { infraID } = useSelector((state) => state.osrdconf);
+  const { infraID, timetableID } = useSelector((state) => state.osrdconf);
   const { t } = useTranslation(['translation', 'osrdconf']);
 
   const getTimetablesList = async () => {
@@ -35,6 +36,13 @@ export default function TimetableSelectorModal() {
     try {
       await deleteRequest(`${timetableURL}/${id}`);
       getTimetablesList();
+      dispatch(setSuccess({
+        title: 'Timetable effacée',
+        text: 'Youpi banane',
+      }));
+      if (timetableID === id) {
+        dispatch(updateTimetableID(undefined));
+      }
     } catch (e) {
       console.log('ERROR', e);
     }
