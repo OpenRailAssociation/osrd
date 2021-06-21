@@ -94,7 +94,7 @@ public final class ApiServerCommand implements CliCommand {
         @Override
         public Opt<Response> route(RqFallback req) {
             Sentry.captureException(req.throwable());
-            return new Opt.Single<>(new RsWithStatus(new RsText("An error occurred"), req.code()));
+            return new Opt.Single<>(new RsWithStatus(new RsText(req.throwable().getMessage()), req.code()));
         }
     }
 }

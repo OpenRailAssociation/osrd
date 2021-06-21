@@ -109,13 +109,14 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
                 }
                 if (nextTrackSection == null)
                     throw new RuntimeException("Can't move train further because it has reached the end of its path");
-            }
-            else {
+            } else {
                 var nodeIndex = curTrackSectionPos.edge.getEndNode(curTrackSectionPos.direction);
                 var node = infra.trackGraph.getNode(nodeIndex);
                 assert node.getClass() == Switch.class;
                 var switchState = infraState.getSwitchState(((Switch) node).switchIndex);
                 nextTrackSection = switchState.getBranch();
+                if (nextTrackSection == null)
+                    throw new RuntimeException("Can't move the train further because a switch is in motion.");
             }
         }
 
