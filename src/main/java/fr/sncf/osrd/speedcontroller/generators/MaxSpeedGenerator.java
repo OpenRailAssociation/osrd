@@ -19,7 +19,8 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
     }
 
     @Override
-    public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed) {
+    public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed,
+                                         double initialSpeed) {
         // the path is computed at the beginning of the simulation, as it is (for now) part of the event
         var trainPath = schedule.fullPath;
         var rollingStock = schedule.rollingStock;

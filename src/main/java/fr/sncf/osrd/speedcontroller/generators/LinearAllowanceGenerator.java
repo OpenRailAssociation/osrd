@@ -21,15 +21,19 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
     }
 
     @Override
-    public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed) {
+    public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule,
+                                         Set<SpeedController> maxSpeed, double initialSpeed) {
         double timeStep = 1;
+        double begin = findPhaseInitialLocation(schedule);
+        double end = findPhaseEndLocation(schedule);
         // find the percentage of the allowance to add to the whole path
         double percentage;
         if (allowanceType.equals(MarginType.TIME))
             percentage = value;
         else {
             // TODO compute the margin only on the phase range
-            var expectedTime = getExpectedTimes(sim, schedule, maxSpeed, timeStep);
+            var expectedTime = getExpectedTimes(sim, schedule, maxSpeed, timeStep,
+                    begin, end, initialSpeed);
             var totalTime = expectedTime.lastEntry().getValue() - expectedTime.firstEntry().getValue();
             var schemaLength = expectedTime.lastEntry().getKey() - expectedTime.firstEntry().getKey();
             var n = schemaLength / 100000;
@@ -41,7 +45,8 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
         // This is needed to have a similar distance delta per step, needed for the shift (see next comment)
         double expectedSpeedTimeStep = timeStep * scaleFactor;
 
-        var expectedSpeeds = getExpectedSpeeds(sim, schedule, maxSpeed, expectedSpeedTimeStep);
+        var expectedSpeeds = getExpectedSpeeds(sim, schedule, maxSpeed, expectedSpeedTimeStep,
+                begin, end, initialSpeed);
 
         // We shift the speed limits by one position: the max speed at t is the speed at t + dt
         // This is because we use the position of the train to evaluate the target speed at the next simulation step

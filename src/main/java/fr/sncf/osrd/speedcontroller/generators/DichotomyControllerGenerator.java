@@ -46,13 +46,10 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
 
     /** Generates a set of speed controller using dichotomy */
     @Override
-    public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> speedControllers) {
+    public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule,
+                                         Set<SpeedController> speedControllers, double initialSpeed) {
+        this.initialSpeed = initialSpeed;
         this.sim = sim;
-        double beginPosition = findPhaseInitialLocation(schedule);
-        double endPosition = findPhaseEndLocation(schedule);
-        var initialSpeeds = getExpectedSpeeds(sim, schedule, speedControllers, 1,
-                beginPosition, endPosition, schedule.initialSpeed);
-        initialSpeed = Interpolation.interpolate(initialSpeeds, beginPosition);
         this.schedule = schedule;
         this.maxSpeedControllers = speedControllers;
         return binarySearch(sim, schedule);

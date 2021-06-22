@@ -27,7 +27,8 @@ public abstract class SpeedControllerGenerator {
     }
 
     /** Generates the set of SpeedController */
-    public abstract Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed);
+    public abstract Set<SpeedController> generate(Simulation sim, TrainSchedule schedule,
+                                                  Set<SpeedController> maxSpeed, double initialSpeed);
 
     public NavigableMap<Double, Double> getExpectedTimes(Simulation sim,
                                                           TrainSchedule schedule,
@@ -146,7 +147,7 @@ public abstract class SpeedControllerGenerator {
             if (endPhase.edge.id.equals(phase.endLocation.trackSection.id)
                     && endPhase.offset == phase.endLocation.offset) {
                 if (index == 0) {
-                    return convertTrackLocation(schedule.initialLocation, schedule);
+                    return 0;
                 } else {
                     var previousPhase = schedule.phases.get(index - 1);
                     return convertTrackLocation(previousPhase.getEndLocation(), schedule);
