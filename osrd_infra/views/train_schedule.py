@@ -8,9 +8,10 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from osrd_infra.serializers import TrainScheduleSerializer
-from osrd_infra.views import get_rolling_stock_payload, get_train_schedule_payload
+from osrd_infra.views import get_rolling_stock_payload
 from osrd_infra.views.projection import Projection
 from osrd_infra.utils import geo_transform, reverse_format
+from osrd_infra.views.railjson import format_route_id, format_track_section_id
 
 from osrd_infra.models import (
     TrackSectionEntity,
@@ -220,6 +221,58 @@ def format_signals(train_schedule_result):
         signal["geo_position"] = geo_transform(location.geographic).json
         signal["schema_position"] = geo_transform(location.schematic).json
     return signals
+
+
+def get_train_phases(path):
+    phases = []
+    routes = []
+    steps = path.payload["steps"]
+    step_index = 1
+    step_track = steps[step_index]["position"]["track_section"]
+    step_offset = steps[step_index]["position"]["offset"]
+    for route in path.payload["path"]:
+        new_route = format_route_id(route["route"])
+        if not routes or routes[-1] != new_route:
+            routes.append(new_route)
+        for track in route["track_sections"]:
+            while track["track_section"] == step_track:
+                if step_offset < track["begin"] and step_offset < track["end"]:
+                    break
+                if step_offset > track["begin"] and step_offset > track["end"]:
+                    break
+                phases.append(
+                    {
+                        "type": "navigate",
+                        "driver_sight_distance": 400,
+                        "end_location": {
+                            "track_section": format_track_section_id(step_track),
+                            "offset": step_offset,
+                        },
+                        "routes": routes,
+                    }
+                )
+                step_index += 1
+                if step_index >= len(steps):
+                    return phases
+
+                routes = [routes[-1]]
+                step_track = steps[step_index]["position"]["track_section"]
+                step_offset = steps[step_index]["position"]["offset"]
+    raise ParseError(f"The train schedule uses an invalid path '{path.pk}'")
+
+
+def get_train_schedule_payload(train_schedule):
+    path = train_schedule.path
+
+    return {
+        "id": train_schedule.train_name,
+        "rolling_stock": f"rolling_stock.{train_schedule.rolling_stock_id}",
+        "departure_time": train_schedule.departure_time,
+        "initial_head_location": path.get_initial_location(),
+        "initial_route": format_route_id(path.get_initial_route()),
+        "initial_speed": train_schedule.initial_speed,
+        "phases": get_train_phases(path),
+    }
 
 
 class TrainScheduleView(
