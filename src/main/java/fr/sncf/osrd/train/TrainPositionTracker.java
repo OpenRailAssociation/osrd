@@ -9,6 +9,8 @@ import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.DeepEqualsUtils;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public final class TrainPositionTracker implements Cloneable, DeepComparable<TrainPositionTracker> {
@@ -21,6 +23,12 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
     /** The list of edges the train currently spans over. */
     public final ArrayDeque<TrackSectionRange> trackSectionRanges;
 
+    /** The path of the train */
+    public final List<TrackSectionRange> trackSectionPath;
+
+    /** If set to true, we follow the given path rather than the switch positions. Used for margin computations */
+    public boolean ignoreInfraState = false;
+
     /**
      * Create a new position tracker on some given infrastructure and path.
      * @param infraState the infrastructure to navigate on
@@ -28,11 +36,13 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
     public TrainPositionTracker(
             Infra infra,
             InfraState infraState,
-            ArrayDeque<TrackSectionRange> trackSectionRanges
+            ArrayDeque<TrackSectionRange> trackSectionRanges,
+            List<TrackSectionRange> trackSectionPath
     ) {
         this.infra = infra;
         this.infraState = infraState;
         this.trackSectionRanges = trackSectionRanges;
+        this.trackSectionPath = trackSectionPath;
     }
 
     private TrainPositionTracker(TrainPositionTracker tracker) {
@@ -40,6 +50,8 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         this.infraState = tracker.infraState;
         this.trackSectionRanges = tracker.trackSectionRanges.clone();
         this.pathPosition = tracker.pathPosition;
+        this.trackSectionPath = new ArrayList<>(tracker.trackSectionPath);
+        this.ignoreInfraState = tracker.ignoreInfraState;
     }
 
     // region STD_OVERRIDES
@@ -84,11 +96,27 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
 
         // In case of a switch, we need to get the next track section align with the position of the switch.
         if (neighbors.size() > 1) {
-            var nodeIndex = curTrackSectionPos.edge.getEndNode(curTrackSectionPos.direction);
-            var node = infra.trackGraph.getNode(nodeIndex);
-            assert node.getClass() == Switch.class;
-            var switchState = infraState.getSwitchState(((Switch) node).switchIndex);
-            nextTrackSection = switchState.getBranch();
+            if (ignoreInfraState) {
+                // If we need to ignore the infra state, we refer to the given path instead
+                nextTrackSection = null;
+                var currentEdge = curTrackSectionPos.edge;
+                for (int i = 1; i < trackSectionPath.size(); i++) {
+                    if (trackSectionPath.get(i - 1).edge.id.equals(currentEdge.id) &&
+                        !trackSectionPath.get(i).edge.id.equals(currentEdge.id)) {
+                        nextTrackSection = trackSectionPath.get(i).edge;
+                        break;
+                    }
+                }
+                if (nextTrackSection == null)
+                    throw new RuntimeException("Can't move train further because it has reached the end of its path");
+            }
+            else {
+                var nodeIndex = curTrackSectionPos.edge.getEndNode(curTrackSectionPos.direction);
+                var node = infra.trackGraph.getNode(nodeIndex);
+                assert node.getClass() == Switch.class;
+                var switchState = infraState.getSwitchState(((Switch) node).switchIndex);
+                nextTrackSection = switchState.getBranch();
+            }
         }
 
         var nextTrackSectionDirection = nextTrackSection.getDirection(
