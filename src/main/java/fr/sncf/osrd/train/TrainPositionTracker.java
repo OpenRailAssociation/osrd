@@ -101,8 +101,8 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
                 nextTrackSection = null;
                 var currentEdge = curTrackSectionPos.edge;
                 for (int i = 1; i < trackSectionPath.size(); i++) {
-                    if (trackSectionPath.get(i - 1).edge.id.equals(currentEdge.id) &&
-                        !trackSectionPath.get(i).edge.id.equals(currentEdge.id)) {
+                    if (trackSectionPath.get(i - 1).edge.id.equals(currentEdge.id)
+                            && !trackSectionPath.get(i).edge.id.equals(currentEdge.id)) {
                         nextTrackSection = trackSectionPath.get(i).edge;
                         break;
                     }
