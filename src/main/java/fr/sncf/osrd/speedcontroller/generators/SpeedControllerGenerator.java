@@ -56,6 +56,7 @@ public interface SpeedControllerGenerator {
                                                                        Set<SpeedController> controllers,
                                                                        double timestep) {
         var location = Train.getInitialLocation(schedule, sim);
+        location.ignoreInfraState = true;
         var totalLength = 0;
         for (var range : schedule.fullPath)
             totalLength += Math.abs(range.getBeginPosition() - range.getEndPosition());
