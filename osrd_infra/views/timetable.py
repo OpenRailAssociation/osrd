@@ -25,7 +25,14 @@ class TimetableView(
     def retrieve(self, request, *args, **kwargs):
         qs = Timetable.objects.prefetch_related("train_schedules").get(pk=kwargs["pk"])
         serializer = TimetableSerializer(qs)
-        train_schedules = [train.pk for train in qs.train_schedules.all()]
+        train_schedules = [
+            {
+                "id": train.pk,
+                "train_name": train.train_name,
+                "departure_time": train.departure_time,
+            }
+            for train in qs.train_schedules.all()
+        ]
         return Response({**serializer.data, "train_schedules": train_schedules})
 
 
