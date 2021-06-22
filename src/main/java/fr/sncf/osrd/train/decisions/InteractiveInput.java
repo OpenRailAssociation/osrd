@@ -31,6 +31,7 @@ public abstract class InteractiveInput extends TrainDecisionMaker {
         private final InteractiveInput input;
         private final Train train;
 
+        /** Plan a check input event */
         public static CheckInputEvent plan(Simulation sim, double time, InteractiveInput input, Train train) {
             var change = new CheckInputEventPlanned(sim, time, input, train);
             var event = change.apply(sim);
@@ -38,6 +39,7 @@ public abstract class InteractiveInput extends TrainDecisionMaker {
             return event;
         }
 
+        /** Create a check input event */
         public CheckInputEvent(TimelineEventId eventId, InteractiveInput input, Train train) {
             super(eventId);
             this.input = input;

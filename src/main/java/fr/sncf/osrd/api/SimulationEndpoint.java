@@ -218,7 +218,7 @@ public class SimulationEndpoint implements Take {
             @Json(name = "end_offset")
             private final double endOffset;
 
-            public ResponseRouteStatus(Route route, RouteStatus status, double time) {
+            ResponseRouteStatus(Route route, RouteStatus status, double time) {
                 super(time);
                 this.id = route.id;
                 this.status = status;
@@ -248,7 +248,7 @@ public class SimulationEndpoint implements Take {
             private final double tailOffset;
             private final double speed;
 
-            public ResponseTrainLocationUpdate(TrainSchedule trainSchedule, double pathOffset,
+            ResponseTrainLocationUpdate(TrainSchedule trainSchedule, double pathOffset,
                                                double time, double speed) {
                 super(time);
                 var headLocation = trainSchedule.findLocation(pathOffset);
@@ -269,7 +269,7 @@ public class SimulationEndpoint implements Take {
             @Json(name = "phase_index")
             private final int phaseIndex;
 
-            public ResponsePhaseEndUpdate(Train train, int phaseIndex, double time) {
+            ResponsePhaseEndUpdate(Train train, int phaseIndex, double time) {
                 super(time);
                 this.trainName = train.getName();
                 this.phaseIndex = phaseIndex;
@@ -280,7 +280,7 @@ public class SimulationEndpoint implements Take {
             private final String signal;
             private final List<String> aspects;
 
-            public ResponseSignalChange(String signal, ArrayList<String> aspects, double time) {
+            ResponseSignalChange(String signal, ArrayList<String> aspects, double time) {
                 super(time);
                 this.signal = signal;
                 this.aspects = aspects;
