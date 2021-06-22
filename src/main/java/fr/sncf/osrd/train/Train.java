@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Set;
 
 public class Train {
@@ -75,7 +76,10 @@ public class Train {
                 initialLocation.offset,
                 initialLocation.offset
         ));
-        return new TrainPositionTracker(sim.infra, sim.infraState, initialPosition);
+        var trackSectionPath = new ArrayList<TrackSectionRange>();
+        for (var phase : schedule.phases)
+            phase.forEachPathSection(trackSectionPath::add);
+        return new TrainPositionTracker(sim.infra, sim.infraState, initialPosition, trackSectionPath);
     }
 
     /** Returns the last TrainState */
