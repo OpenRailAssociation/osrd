@@ -192,11 +192,8 @@ public class Helpers {
     /** Loads the given config file, but replaces the given allowance parameters in the phases
      * the nth list of allowance is used for the nth phase */
     public static Config makeConfigWithSpeedParamsList(List<List<RJSAllowance>> params, String baseConfigPath) {
-        ClassLoader classLoader = Helpers.class.getClassLoader();
-        var configPath = classLoader.getResource(baseConfigPath);
-        assert configPath != null;
         try {
-            var path = Path.of(configPath.getFile());
+            var path = getResourcePath(baseConfigPath);
             var baseDirPath = path.getParent();
             var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, path);
             var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
@@ -219,7 +216,7 @@ public class Helpers {
                     jsonConfig.realTimeViewer,
                     jsonConfig.changeReplayCheck
             );
-        } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule e) {
+        } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule  e) {
             fail(e);
             throw new RuntimeException();
         }

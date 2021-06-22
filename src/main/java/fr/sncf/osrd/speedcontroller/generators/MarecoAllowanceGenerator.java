@@ -76,7 +76,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         return res;
     }
 
-    private List<Double> findDecelerationPhases(double vf, NavigableMap<Double, Double> speeds) {
+    private List<Double> findDecelerationPhases(double vf) {
         var res = new ArrayList<Double>();
         for (var announcer : findLimitSpeedAnnouncers(maxSpeedControllers)) {
             if (announcer.targetSpeedLimit > vf)
@@ -133,12 +133,10 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     }
 
     @Override
-    protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule, double v1) {
+    protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule, double v1, double startLocation, double endLocation) {
         double timestep = 0.01; // TODO: link this timestep to the rest of the simulation
         var wle = (2 * schedule.rollingStock.C * v1 + schedule.rollingStock.B) * v1 * v1;
         var vf = wle * v1 / (wle + schedule.rollingStock.rollingResistance(v1) * v1);
-        double startLocation = findPhaseInitialLocation(schedule);
-        double endLocation = findPhaseEndLocation(schedule);
 
         var currentSpeedControllers = new HashSet<>(maxSpeedControllers);
         currentSpeedControllers.add(new MaxSpeedController(v1, startLocation, endLocation));
@@ -148,7 +146,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             var controller = generateCoastingSpeedControllerAtPosition(expectedSpeeds, location, timestep);
             currentSpeedControllers.add(controller);
         }
-        for (var location : findDecelerationPhases(vf, expectedSpeeds)) {
+        for (var location : findDecelerationPhases(vf)) {
             var controller = generateCoastingSpeedControllerAtPosition(expectedSpeeds, location, timestep);
             currentSpeedControllers.add(controller);
         }

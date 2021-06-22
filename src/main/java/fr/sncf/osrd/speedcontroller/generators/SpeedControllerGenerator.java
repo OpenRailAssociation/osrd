@@ -139,6 +139,16 @@ public abstract class SpeedControllerGenerator {
         throw new RuntimeException("Can't find phase in schedule");
     }
 
+    /** Finds the position (as a double) corresponding to the beginning of the phase */
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
+    protected double findPhaseInitialSpeed(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed) {
+        double phasePosition = findPhaseInitialLocation(schedule);
+        var Speeds = getExpectedSpeeds(sim, schedule, maxSpeed, 1,
+              0, phasePosition, schedule.initialSpeed);
+        return Speeds.lastEntry().getValue();
+    }
+
+
     /** Finds the position (as a double) corresponding to the end of the phase */
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     protected double findPhaseInitialLocation(TrainSchedule schedule) {

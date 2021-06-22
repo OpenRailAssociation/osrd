@@ -28,12 +28,13 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
         double end = findPhaseEndLocation(schedule);
         // find the percentage of the allowance to add to the whole path
         double percentage;
+        double startLocation = findPhaseInitialLocation(schedule);
+        double endLocation = findPhaseEndLocation(schedule);
         if (allowanceType.equals(MarginType.TIME))
             percentage = value;
         else {
-            // TODO compute the margin only on the phase range
-            var expectedTime = getExpectedTimes(sim, schedule, maxSpeed, timeStep,
-                    begin, end, initialSpeed);
+            var expectedTime = getExpectedTimes(sim, schedule, maxSpeed, 1,
+                    startLocation, endLocation, initialSpeed);
             var totalTime = expectedTime.lastEntry().getValue() - expectedTime.firstEntry().getValue();
             var schemaLength = expectedTime.lastEntry().getKey() - expectedTime.firstEntry().getKey();
             var n = schemaLength / 100000;

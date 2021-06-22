@@ -19,7 +19,7 @@ import java.util.Set;
 public abstract class DichotomyControllerGenerator extends SpeedControllerGenerator {
 
     /** Expected speed at the beginning of the phase */
-    private double initialSpeed;
+    protected double initialSpeed;
 
     /** We stop the dichotomy when the result is this close to the target (in seconds) */
     private final double precision;
@@ -57,8 +57,9 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
 
     /** Evaluates the run time of the phase if we follow the given speed controllers */
     protected double evalRunTime(Simulation sim, TrainSchedule schedule, Set<SpeedController> speedControllers) {
-        expectedTimes = getExpectedTimes(sim, schedule, speedControllers, 1,
-                findPhaseInitialLocation(schedule), findPhaseEndLocation(schedule), initialSpeed);
+        expectedTimes = getExpectedTimes(sim, schedule, speedControllers, 1);
+        //expectedTimes = getExpectedTimes(sim, schedule, speedControllers, 1,
+        //        findPhaseInitialLocation(schedule), findPhaseEndLocation(schedule), initialSpeed);
         return expectedTimes.lastEntry().getValue() - expectedTimes.firstEntry().getValue();
     }
 
@@ -72,13 +73,14 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     protected abstract double getFirstHighEstimate();
 
     /** Generates a set of speed controllers given the dichotomy value */
-    protected abstract Set<SpeedController> getSpeedControllers(TrainSchedule schedule, double value);
+    protected abstract Set<SpeedController> getSpeedControllers(TrainSchedule schedule, double value, double begin, double end);
 
     /** Runs the dichotomy */
     private Set<SpeedController> binarySearch(Simulation sim, TrainSchedule schedule) {
         var lowerBound = getFirstLowEstimate();
         var higherBound = getFirstHighEstimate();
         // marche de base
+        // the binary search condition should be on the total time
         var time = evalRunTime(sim, schedule, maxSpeedControllers);
         var targetTime = getTargetTime(time);
         var beginLocation = findPhaseInitialLocation(schedule);
@@ -89,9 +91,11 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         int i = 0;
         do {
             nextValue = (lowerBound + higherBound) / 2;
-            nextSpeedControllers = getSpeedControllers(schedule, nextValue);
+            nextSpeedControllers = getSpeedControllers(schedule, nextValue, beginLocation, endLocation);
             var expectedTimes = getExpectedTimes(sim, schedule,
-                    nextSpeedControllers, 1, beginLocation, endLocation, initialSpeed);
+                    nextSpeedControllers, 1);
+            //var expectedTimes = getExpectedTimes(sim, schedule,
+            //        nextSpeedControllers, 1, beginLocation, endLocation, initialSpeed);
             time = expectedTimes.lastEntry().getValue() - expectedTimes.firstEntry().getValue();
             if (time > targetTime)
                 lowerBound = nextValue;
