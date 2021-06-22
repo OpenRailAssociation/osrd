@@ -141,6 +141,7 @@ public class TrainPhysicsIntegrator {
         return res;
     }
 
+    /** Apply an action and update the train state */
     public PositionUpdate applyActionAndUpdate(Action action, double distanceStep) {
         // compute and limit the traction force
         var tractionForce = action.tractionForce();
