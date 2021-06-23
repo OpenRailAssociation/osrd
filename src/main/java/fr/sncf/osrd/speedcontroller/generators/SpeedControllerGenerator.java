@@ -128,7 +128,7 @@ public abstract class SpeedControllerGenerator {
         return res;
     }
 
-    /** Finds the position (as a double) corresponding to the beginning of the phase */
+    /** Finds the position (as a double) corresponding to the end of the phase */
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     protected double findPhaseEndLocation(TrainSchedule schedule) {
         for (var schedulePhase : schedule.phases) {
