@@ -44,6 +44,7 @@ def format_steps(train_schedule_result):
     projection = Projection(path)
 
     # Compute block occupation
+    block_occupied = set()
     start_occupancy = []
     end_occupancy = []
     for log in train_schedule_result.log:
@@ -55,7 +56,8 @@ def format_steps(train_schedule_result):
                 projection.track_position(track, log["end_offset"]) or projection.end()
             )
             start_occupancy.append((log["time"], pos))
-        elif log["status"] == "FREE":
+            block_occupied.add(log["id"])
+        elif log["status"] == "FREE" and log["id"] in block_occupied:
             track = reverse_format(log["end_track_section"])
             pos = projection.track_position(track, log["end_offset"])
             if pos:
