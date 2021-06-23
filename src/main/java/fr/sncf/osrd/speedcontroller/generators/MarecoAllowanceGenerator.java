@@ -136,7 +136,8 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
         var currentSpeedControllers = new HashSet<>(maxSpeedControllers);
         currentSpeedControllers.add(new MaxSpeedController(v1, startLocation, endLocation));
-        var expectedSpeeds = getExpectedSpeeds(sim, schedule, currentSpeedControllers, timestep);
+        var expectedSpeeds = getExpectedSpeeds(sim, schedule, currentSpeedControllers, timestep,
+                startLocation, endLocation, initialSpeed);
 
         for (var location : findPositionSameSpeedAsVF(expectedSpeeds, vf)) {
             var controller = generateCoastingSpeedControllerAtPosition(expectedSpeeds, location, timestep);

@@ -58,8 +58,8 @@ public class SpeedInstructions {
         var lastGenerator = targetSpeedGenerators.get(targetSpeedGenerators.size() - 1);
         expectedTimes = lastGenerator.getExpectedTimes(sim, schedule, targetSpeedControllers, 1,
                 initialPosition, Double.POSITIVE_INFINITY, initialSpeed);
-        for (var k : expectedTimes.keySet()) {
-            expectedTimes.put(k, expectedTimes.get(k) - previousDelay + sim.getTime());
+        for (var entry : expectedTimes.entrySet()) {
+            expectedTimes.put(entry.getKey(), entry.getValue() - previousDelay + sim.getTime());
         }
     }
 
