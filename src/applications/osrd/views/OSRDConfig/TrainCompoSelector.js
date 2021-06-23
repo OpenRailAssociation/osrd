@@ -7,38 +7,37 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import TrainCompo from 'applications/osrd/components/TrainCompo/TrainCompo';
 import TrainCompoCard from 'applications/osrd/components/TrainCompo/TrainCompoCard';
+import icon from 'assets/pictures/train.svg';
 
-export default function TrainCompoSelector(props) {
+export default function TrainCompoSelector() {
   const osrdconf = useSelector((state) => state.osrdconf);
-  const { modalID } = props;
   const { t } = useTranslation(['translation', 'osrdconf']);
-
-  const displayChosenCompo = () => (
-    <TrainCompoCard
-      data={osrdconf.trainCompo}
-      displayDetails={() => {}}
-      active={false}
-    />
-  );
 
   return (
     <>
       <div className="osrd-config-item mb-2">
-        <div className="osrd-config-item-container">
+        <div className="osrd-config-item-container d-flex">
           {osrdconf.trainCompo !== undefined && osrdconf.trainCompo.codenbengin !== undefined ? (
-            displayChosenCompo()
+            <TrainCompoCard
+              data={osrdconf.trainCompo}
+              displayDetails={() => {}}
+              active={false}
+            />
           ) : (
-            <span className="mr-2 text-muted text-italic">
-              {t('osrdconf:noTrainCompo')}
-            </span>
+            <div className="d-flex align-items-center flex-grow-1">
+              <img width="32px" className="mr-1" src={icon} alt="infraIcon" />
+              <span className="mr-2 text-muted text-italic">
+                {t('osrdconf:noTrainCompo')}
+              </span>
+            </div>
           )}
-          <button type="button" className="btn btn-sm btn-secondary ml-auto" data-toggle="modal" data-target={`#${modalID}`}>
+          <button type="button" className="btn btn-sm btn-secondary" data-toggle="modal" data-target="#trainCompoModal">
             {t('osrdconf:chooseTrainCompo')}
             <i className="icons-itinerary-train ml-2" />
           </button>
         </div>
       </div>
-      <ModalSNCF htmlID={modalID} optionalClasses="traincompo-modal">
+      <ModalSNCF htmlID="trainCompoModal" optionalClasses="traincompo-modal">
         <ModalBodySNCF>
           <TrainCompo />
         </ModalBodySNCF>
@@ -53,7 +52,3 @@ export default function TrainCompoSelector(props) {
     </>
   );
 }
-
-TrainCompoSelector.propTypes = {
-  modalID: PropTypes.string.isRequired,
-};

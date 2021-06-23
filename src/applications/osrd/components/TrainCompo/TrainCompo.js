@@ -38,9 +38,7 @@ export default function TrainCompo() {
   const updateSearch = () => {
     // Text filter
     let resultContentNew = traincompo.materiel.results.filter(
-      (el) => el.enginref.toLowerCase().includes(filters.text)
-        || el.materielanalyse.toLowerCase().includes(filters.text)
-        || el.codeengin.toLowerCase().includes(filters.text),
+      (el) => el.name.toLowerCase().includes(filters.text),
     );
 
     // checkbox filters
@@ -58,8 +56,8 @@ export default function TrainCompo() {
     }
 
     resultContentNew = (filters.sort)
-      ? resultContentNew.sort((a, b) => a.enginref.localeCompare(b.enginref))
-      : resultContentNew.sort((a, b) => b.enginref.localeCompare(a.enginref));
+      ? resultContentNew.sort((a, b) => a.name.localeCompare(b.name))
+      : resultContentNew.sort((a, b) => b.name.localeCompare(a.name));
 
     setTimeout(() => {
       setResultContent(resultContentNew);

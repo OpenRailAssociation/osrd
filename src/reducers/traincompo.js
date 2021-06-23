@@ -46,9 +46,8 @@ export function setBaseGoc(basegoc) {
 export function getMateriel() {
   return async (dispatch) => {
     try {
-      const materiel = await get('/matr/index/');
-      // const materielNEW = await get('/osrd/index/', undefined);
-      // console.log('coucou', materielNEW);
+      const materiel = await get('/osrd/rolling_stock/');
+      console.log('coucou', materiel);
       dispatch(setMateriel(materiel));
       return materiel;
     } catch (e) {

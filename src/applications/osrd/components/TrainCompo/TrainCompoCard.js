@@ -71,7 +71,7 @@ export default function TrainCompoCard(props) {
       tabIndex={0}
     >
       <div className="traincompo-header">
-        <div className="traincompo-title">{data.enginref}</div>
+        <div className="traincompo-title">{data.name}</div>
         <div className="traincompo-img">
           <div className="traincompo-img-scale">
             {genImagesCompo(data)}
@@ -85,7 +85,7 @@ export default function TrainCompoCard(props) {
               {data.materielanalyse}
               <br />
               <small className="text-primary mr-1">ID</small>
-              {data.codeengin}
+              {data.id}
               <small className="text-primary ml-2 mr-1">SOURCE</small>
               <small className="text-muted">{data.source}</small>
             </div>
@@ -106,17 +106,17 @@ export default function TrainCompoCard(props) {
         </div>
         <div className="traincompo-size">
           <AiOutlineColumnWidth />
-          {data.longueurconvoi}
+          {data.length}
           <small>M</small>
         </div>
         <div className="traincompo-weight">
           <FaWeightHanging />
-          {data.etatchargevom}
+          {data.mass}
           <small>T</small>
         </div>
         <div className="traincompo-speed">
           <IoIosSpeedometer />
-          {data.vitessmax}
+          {data.max_speed}
           <small>KM/H</small>
         </div>
       </div>
