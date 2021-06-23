@@ -109,7 +109,7 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
             currentTrainLength += section.length();
 
         var tailDisplacement = currentTrainLength - expectedTrainLength;
-        if (Math.abs(tailDisplacement) > 1e-3)
+        if (tailDisplacement > 0)
             updateTailPosition(tailDisplacement);
     }
 
