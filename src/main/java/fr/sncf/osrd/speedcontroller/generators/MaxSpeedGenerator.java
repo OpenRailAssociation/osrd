@@ -76,10 +76,10 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
         controllers.add(LimitAnnounceSpeedController.create(
                 rollingStock.maxSpeed,
                 0,
-                offset - 10,
+                offset - 5,
                 rollingStock.timetableGamma
         ));
-        controllers.add(new MaxSpeedController(0, offset - 10, Double.POSITIVE_INFINITY));
+        controllers.add(new MaxSpeedController(0, offset - 5, Double.POSITIVE_INFINITY));
         return controllers;
     }
 }

@@ -84,7 +84,8 @@ public final class SignalNavigatePhase implements Phase {
         Collections.sort(eventPath);
 
         var phaseEnd = new PhaseEndActionPoint();
-        eventPath.add(new Interaction(InteractionType.HEAD, pathLength, phaseEnd));
+        // We place the end of phase a few meters before the actual end, because we will stop before reaching it
+        eventPath.add(new Interaction(InteractionType.HEAD, pathLength - 1, phaseEnd));
         return eventPath;
     }
 
@@ -340,9 +341,7 @@ public final class SignalNavigatePhase implements Phase {
             // 4) create an event with simulation data up to this point
 
             // The train reached the action point
-            // If less than a few meters away we consider that it has been reached,
-            // because the train has to stop before the end of the phase
-            if (trainState.location.getPathPosition() >= nextInteraction.position - 5) {
+            if (trainState.location.getPathPosition() >= nextInteraction.position) {
                 popInteraction(trainState);
                 return TrainReachesActionPoint.plan(sim, trainState.time, train, simulationResult, nextInteraction);
             }

@@ -141,7 +141,7 @@ public class SpeedInstructionsTests {
         run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
         var expected = baseSimTime * 1.5;
-        assertEquals(expected, marginsSimTime, expected * 0.002);
+        assertEquals(expected, marginsSimTime, expected * 0.01);
     }
 
     @Test
@@ -166,7 +166,7 @@ public class SpeedInstructionsTests {
         var expected = baseSimTime * 3;
         saveGraph(events, "margin-200-out.csv");
         saveGraph(eventsBase, "margin-200-base.csv");
-        assertEquals(expected, marginsSimTime, expected * 0.001);
+        assertEquals(expected, marginsSimTime, expected * 0.01);
     }
 
     @Test
@@ -190,7 +190,7 @@ public class SpeedInstructionsTests {
         var marginsSimTime = sim2.getTime();
         saveGraph(events, "margin-0-out.csv");
         saveGraph(eventsBase, "margin-0-base.csv");
-        assertEquals(baseSimTime, marginsSimTime, baseSimTime * 0.002);
+        assertEquals(baseSimTime, marginsSimTime, baseSimTime * 0.01);
     }
 
     public static boolean isLate(Simulation sim) {
