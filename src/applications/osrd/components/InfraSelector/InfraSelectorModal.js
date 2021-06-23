@@ -60,5 +60,8 @@ export default function InfraSelectorModal(props) {
 }
 
 InfraSelectorModal.propTypes = {
-  infrasList: PropTypes.object.isRequired,
+  infrasList: PropTypes.object,
+};
+InfraSelectorModal.defaultProps = {
+  infrasList: undefined,
 };

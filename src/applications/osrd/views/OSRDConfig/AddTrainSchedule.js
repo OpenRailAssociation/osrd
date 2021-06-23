@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import nextId from 'react-id-generator';
@@ -17,7 +18,8 @@ import formatConf from 'applications/osrd/components/AddTrainSchedule/formatConf
 const osrdURI = '/osrd/simulate';
 const scheduleURL = '/osrd/train_schedule'
 
-export default function AddTrainSchedule() {
+export default function AddTrainSchedule(props) {
+  const { mustUpdateTimetable, setMustUpdateTimetable } = props;
   const [errorMessagesState, setErrorMessages] = useState([]);
   const [isWorking, setIsWorking] = useState(false);
   const [trainCount, setTrainCount] = useState(1);
@@ -28,7 +30,6 @@ export default function AddTrainSchedule() {
   const dispatch = useDispatch();
 
   const submitConf = () => {
-    setIsWorking(true);
     // First train tested, and next we put the other trains
     const originTime = time2sec(osrdconf.originTime);
     const osrdConfig = formatConf(setErrorMessages, t, osrdconf, originTime);
@@ -44,7 +45,7 @@ export default function AddTrainSchedule() {
       } catch (e) {
         console.log(e);
       }
-      setIsWorking(false);
+      setMustUpdateTimetable(!mustUpdateTimetable);
     }
   };
 
@@ -70,6 +71,7 @@ export default function AddTrainSchedule() {
               id="osrdconf-traincount"
               onChange={(e) => setTrainCount(e.target.value)}
               value={trainCount}
+              seconds
               noMargin
               sm
             />
@@ -82,6 +84,7 @@ export default function AddTrainSchedule() {
               onChange={(e) => setTrainDelta(e.target.value)}
               value={trainDelta}
               noMargin
+              seconds
               sm
             />
           </span>
@@ -101,3 +104,8 @@ export default function AddTrainSchedule() {
     </>
   );
 }
+
+AddTrainSchedule.propTypes = {
+  mustUpdateTimetable: PropTypes.bool.isRequired,
+  setMustUpdateTimetable: PropTypes.func.isRequired,
+};

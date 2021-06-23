@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateInfraID } from 'reducers/osrdconf';
 import { get } from 'common/requests';
-import icon from 'assets/pictures/layersicons/layer_tiv.svg';
+import icon from 'assets/pictures/tracks.svg';
 import InfraSelectorModal from 'applications/osrd/components/InfraSelector/InfraSelectorModal';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 
@@ -61,7 +61,7 @@ export default function InfraSelector() {
           data-target="#infra-selector-modal"
         >
           <div className="h2 mb-0">
-            <img className="mr-1" src={icon} alt="infraIcon" />
+            <img width="32px" className="mr-1" src={icon} alt="infraIcon" />
             <span className="text-muted">{t('osrdconf:infrastructure')}</span>
             {selectedInfra !== undefined ? (
               <>

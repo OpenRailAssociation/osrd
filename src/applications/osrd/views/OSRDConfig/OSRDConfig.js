@@ -16,6 +16,7 @@ export default function OSRDConfig() {
   const dispatch = useDispatch();
   const { t } = useTranslation(['translation', 'osrdconf']);
   const [extViewport, setExtViewport] = useState(undefined);
+  const [mustUpdateTimetable, setMustUpdateTimetable] = useState(true);
 
   useEffect(() => {
     if (extViewport !== undefined) {
@@ -32,13 +33,19 @@ export default function OSRDConfig() {
       <div className="row m-0 px-1 py-3 h-100">
         <div className="col-sm-6 h-100">
           <InfraSelector />
-          <TimetableSelector />
-          {/* <TrainCompoSelector title={t('osrdconf:composition')} modalID="trainCompoModal" /> */}
+          <TimetableSelector
+            mustUpdateTimetable={mustUpdateTimetable}
+            setMustUpdateTimetable={setMustUpdateTimetable}
+          />
+          <TrainCompoSelector />
           <Itinerary
             title={t('translation:common.itinerary')}
             updateExtViewport={setExtViewport}
           />
-          <AddTrainSchedule title={t('osrdconf:simulation')} />
+          <AddTrainSchedule
+            mustUpdateTimetable={mustUpdateTimetable}
+            setMustUpdateTimetable={setMustUpdateTimetable}
+          />
         </div>
         <div className="col-sm-6 h-100">
           <div className="osrd-config-item osrd-config-item-map mb-2">

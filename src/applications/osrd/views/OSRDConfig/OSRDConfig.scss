@@ -176,5 +176,17 @@
 .timetable-trainlist {
   max-height: 10rem;
   font-size: .9rem;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-left: 1rem;
+  .timetable-trainlist-train {
+    transition: .2s;
+    &:hover {
+      background-color: #f2f2f2;
+    }
+  }
+  button {
+    background-color: transparent;
+    border: none;
+  }
 }

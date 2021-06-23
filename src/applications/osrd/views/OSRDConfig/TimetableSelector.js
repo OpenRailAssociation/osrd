@@ -1,24 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { get } from 'common/requests';
+import { get, deleteRequest } from 'common/requests';
 import TimetableSelectorModal from 'applications/osrd/components/TimetableSelector/TimetableSelectorModal';
-import icon from 'assets/pictures/layersicons/timetable.svg';
+import icon from 'assets/pictures/timetable.svg';
 import { sec2time } from 'utils/timeManipulation';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 
 const timetableURL = '/osrd/timetable';
-const trainscheduleURI = '/osrd/train_schedule';
+const scheduleURL = '/osrd/train_schedule';
 
-const formatTrainList = (trainList) => trainList.map((train) => (
-  <tr key={nextId()}>
-    <td><div className="cell-inner">{train.train_name}</div></td>
-    <td><div className="cell-inner">{sec2time(train.departure_time)}</div></td>
-  </tr>
-));
-
-export default function TimetableSelector() {
+export default function TimetableSelector(props) {
+  const { mustUpdateTimetable } = props;
   const [selectedTimetable, setselectedTimetable] = useState(undefined);
   const [trainList, setTrainList] = useState(undefined);
   const osrdconf = useSelector((state) => state.osrdconf);
@@ -27,24 +22,37 @@ export default function TimetableSelector() {
   const getTimetable = async (id) => {
     try {
       const timetableQuery = await get(`${timetableURL}/${id}`, {});
+      timetableQuery.train_schedules.sort((a, b) => a.departure_time > b.departure_time);
       setselectedTimetable(timetableQuery);
+      setTrainList(timetableQuery.train_schedules);
     } catch (e) {
       console.log('ERROR', e);
     }
   };
 
-  const getTrainList = async () => {
-    const trainListLocal = [];
-    for (const trainschedule of selectedTimetable.train_schedules) {
-      try {
-        trainListLocal.push(await get(`${trainscheduleURI}/${trainschedule.id}`));
-      } catch (e) {
-        console.log('ERROR', e);
-      }
-    }
-    trainListLocal.sort((a, b) => a.departure_time > b.departure_time);
-    setTrainList(trainListLocal);
+  const deleteTrainSchedule = async (id) => {
+    await deleteRequest(`${scheduleURL}/${id}`);
+    getTimetable(osrdconf.timetableID);
   };
+
+  const formatTrainList = () => trainList.map((train, idx) => (
+    <div key={nextId()} className="row align-items-center timetable-trainlist-train">
+      <div className="col-7">
+        <span className="small text-primary mr-1">{idx + 1}</span>
+        {train.train_name}
+      </div>
+      <div className="col-3">{sec2time(train.departure_time)}</div>
+      <div className="col-2">
+        <button
+          type="button"
+          className="btn btn-sm btn-only-icon btn-white"
+          onClick={() => deleteTrainSchedule(train.id)}
+        >
+          <i className="icons-close" />
+        </button>
+      </div>
+    </div>
+  ));
 
   useEffect(() => {
     if (osrdconf.timetableID !== undefined) {
@@ -52,13 +60,7 @@ export default function TimetableSelector() {
     } else {
       setselectedTimetable(undefined);
     }
-  }, [osrdconf.timetableID]);
-
-  useEffect(() => {
-    if (selectedTimetable !== undefined) {
-      getTrainList();
-    }
-  }, [selectedTimetable]);
+  }, [osrdconf.timetableID, mustUpdateTimetable]);
 
   return (
     <>
@@ -71,7 +73,7 @@ export default function TimetableSelector() {
           data-target="#timetable-selector-modal"
         >
           <div className="h2 mb-0 d-flex align-items-center">
-            <img className="mr-1" src={icon} alt="timetableIcon" />
+            <img width="32px" className="mr-1" src={icon} alt="timetableIcon" />
             <span className="text-muted">{t('osrdconf:timetable')}</span>
             {osrdconf.timetableID !== undefined && selectedTimetable === undefined
               ? <span className="ml-3"><DotsLoader /></span>
@@ -89,18 +91,20 @@ export default function TimetableSelector() {
                 </>
               )}
           </div>
-          <div className="timetable-trainlist">
-            <div className="table-wrapper">
-              <div className="table-scroller dragscroll">
-                <table className="table table-hover">
-                  {trainList !== undefined ? formatTrainList(trainList) : null}
-                </table>
-              </div>
+        </div>
+        {trainList !== undefined && trainList.length > 0 ? (
+          <div className="osrd-config-item-container">
+            <div className="timetable-trainlist">
+              {formatTrainList(trainList)}
             </div>
           </div>
-        </div>
+        ) : null }
       </div>
       <TimetableSelectorModal />
     </>
   );
 }
+
+TimetableSelector.propTypes = {
+  mustUpdateTimetable: PropTypes.bool.isRequired,
+};
