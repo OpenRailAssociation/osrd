@@ -1,6 +1,5 @@
 package fr.sncf.osrd.train;
 
-import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra_state.RouteState;
@@ -17,8 +16,7 @@ import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
-import fr.sncf.osrd.utils.Interpolation;
-import org.junit.jupiter.api.Disabled;
+import fr.sncf.osrd.utils.SortedDoubleMap;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -47,8 +45,8 @@ public class PasesTest {
         assertEquals(baseEndTime, actualEndTime, baseEndTime * 0.1);
     }
 
-    public static NavigableMap<Double, Double> getTimePerPosition(Iterable<TimelineEvent> events) {
-        var res = new TreeMap<Double, Double>();
+    public static SortedDoubleMap getTimePerPosition(Iterable<TimelineEvent> events) {
+        var res = new SortedDoubleMap();
         for (var event : events) {
             if (event instanceof TrainReachesActionPoint) {
                 var trainReachesActionPoint = (TrainReachesActionPoint) event;
@@ -77,8 +75,8 @@ public class PasesTest {
         var expectedTimePerPosition = getTimePerPosition(eventsRef);
 
         for (double t = expectedTimePerPosition.firstKey(); t < expectedTimePerPosition.lastKey(); t += 1) {
-            var expected = Interpolation.interpolate(expectedTimePerPosition, t);
-            var result = Interpolation.interpolate(resultTimePerPosition, t);
+            var expected = expectedTimePerPosition.interpolate(t);
+            var result = resultTimePerPosition.interpolate(t);
             assertEquals(expected, result, expected * 0.01);
         }
     }

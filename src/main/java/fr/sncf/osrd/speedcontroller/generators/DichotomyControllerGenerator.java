@@ -3,16 +3,12 @@ package fr.sncf.osrd.speedcontroller.generators;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.simulation.Simulation;
-import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.train.events.TrainReachesActionPoint;
-import fr.sncf.osrd.utils.Interpolation;
+import fr.sncf.osrd.utils.SortedDoubleMap;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.NavigableMap;
 import java.util.Set;
 
 /** Generates a set of speed controller using a generic dichotomy */
@@ -31,7 +27,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     protected TrainSchedule schedule = null;
 
     /** Expected times from previous evaluation */
-    protected NavigableMap<Double, Double> expectedTimes;
+    protected SortedDoubleMap expectedTimes;
 
     /** Simulation state given in `generate` parameters */
     protected Simulation sim;

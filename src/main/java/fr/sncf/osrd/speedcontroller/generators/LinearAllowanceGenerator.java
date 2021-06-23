@@ -6,6 +6,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.MapSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.utils.SortedDoubleMap;
 
 import java.util.*;
 
@@ -53,7 +54,7 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
         // This is because we use the position of the train to evaluate the target speed at the next simulation step
         // Once this offset is removed (and the associated bugs fixed), we can remove this block
         var keys = new ArrayList<>(expectedSpeeds.navigableKeySet());
-        var speedLimits = new TreeMap<Double, Double>();
+        var speedLimits = new SortedDoubleMap();
         for (int i = 1; i < keys.size(); i++)
             speedLimits.put(keys.get(i - 1), expectedSpeeds.get(keys.get(i)));
         speedLimits.put(expectedSpeeds.lastKey(), expectedSpeeds.lastEntry().getValue());

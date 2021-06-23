@@ -4,6 +4,7 @@ import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.generators.MaxSpeedGenerator;
 import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
+import fr.sncf.osrd.utils.SortedDoubleMap;
 
 import java.util.*;
 
@@ -21,7 +22,7 @@ public class SpeedInstructions {
 
     /** Set of speed controllers indicating the target speed at each point */
     public Set<SpeedController> targetSpeedControllers;
-    public transient NavigableMap<Double, Double> expectedTimes;
+    public transient SortedDoubleMap expectedTimes;
 
     /** Creates an instance from a target speed generator. Max speed is always determined
      * from a `new MaxSpeedGenerator()`.
@@ -66,32 +67,14 @@ public class SpeedInstructions {
     public SpeedInstructions(SpeedInstructions other) {
         this.maxSpeedControllers = new HashSet<>(other.maxSpeedControllers);
         this.targetSpeedControllers = new HashSet<>(other.targetSpeedControllers);
-        this.expectedTimes = new TreeMap<>(other.expectedTimes);
+        this.expectedTimes = new SortedDoubleMap(other.expectedTimes);
         targetSpeedGenerators = new ArrayList<>(other.targetSpeedGenerators);
     }
 
     /** Returns how late we are compared to the expected time, in seconds. The result may be negative if we are
      * ahead of schedule. */
     public double secondsLate(double position, double time) {
-        var entryBefore = expectedTimes.floorEntry(position);
-        var entryAfter = expectedTimes.ceilingEntry(position);
-        if (entryBefore == null)
-            entryBefore = entryAfter;
-        if (entryAfter == null)
-            entryAfter = entryBefore;
-        if (entryAfter == null)
-            throw new RuntimeException("Missing pre-computed expected times");
-        var timeBefore = entryBefore.getValue();
-        var positionBefore = entryBefore.getKey();
-        var timeAfter = entryAfter.getValue();
-        var positionAfter = entryAfter.getKey();
-        double expectedTime;
-        if (Math.abs(positionAfter - positionBefore) < 1e-5)
-            expectedTime = timeBefore;
-        else {
-            var slope = (timeAfter - timeBefore) / (positionAfter - positionBefore);
-            expectedTime = timeBefore + (position - positionBefore) * slope;
-        }
+        var expectedTime = expectedTimes.interpolate(position);
         return time - expectedTime;
     }
 

@@ -1,6 +1,6 @@
 package fr.sncf.osrd.speedcontroller;
 
-import fr.sncf.osrd.utils.Interpolation;
+import fr.sncf.osrd.utils.SortedDoubleMap;
 
 import java.util.NavigableMap;
 import java.util.TreeMap;
@@ -8,21 +8,21 @@ import java.util.TreeMap;
 public class MapSpeedController extends SpeedController {
 
     /** Keys are positions in space, values are speed */
-    private final transient NavigableMap<Double, Double> values;
+    private final transient SortedDoubleMap values;
 
-    public MapSpeedController(NavigableMap<Double, Double> values) {
+    public MapSpeedController(SortedDoubleMap values) {
         super(values.firstKey(), values.lastKey());
         this.values = values;
     }
 
     @Override
     public SpeedDirective getDirective(double pathPosition) {
-        return new SpeedDirective(Interpolation.interpolate(values, pathPosition));
+        return new SpeedDirective(values.interpolate(pathPosition));
     }
 
     @Override
     public SpeedController scaled(double scalingFactor) {
-        var newValues = new TreeMap<>(values);
+        var newValues = new SortedDoubleMap(values);
         newValues.replaceAll((k, v) -> v * scalingFactor);
         return new MapSpeedController(newValues);
     }

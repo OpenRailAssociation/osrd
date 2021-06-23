@@ -14,14 +14,10 @@ import fr.sncf.osrd.train.Action;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator;
 import fr.sncf.osrd.train.TrainPositionTracker;
-import fr.sncf.osrd.utils.Interpolation;
+import fr.sncf.osrd.utils.SortedDoubleMap;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-import static fr.sncf.osrd.utils.Interpolation.interpolate;
-import static java.lang.Math.exp;
-import static java.lang.Math.min;
 
 public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
@@ -61,7 +57,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         return max*2;
     }
 
-    private List<Double> findPositionSameSpeedAsVF(NavigableMap<Double, Double> speeds, double vf) {
+    private List<Double> findPositionSameSpeedAsVF(SortedDoubleMap speeds, double vf) {
         // TODO check only in deceleration intervals
         boolean isLastSpeedBelowVF = true;
         var res = new ArrayList<Double>();
@@ -91,9 +87,9 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         return location;
     }
 
-    private CoastingSpeedController generateCoastingSpeedControllerAtPosition(NavigableMap<Double, Double> speeds,
+    private CoastingSpeedController generateCoastingSpeedControllerAtPosition(SortedDoubleMap speeds,
                                                                               double endLocation, double timestep) {
-        double speed = interpolate(speeds, endLocation);
+        double speed = speeds.interpolate(endLocation);
 
         var location = convertPosition(schedule, sim, endLocation);
 
@@ -109,7 +105,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             // TODO (optimization): support negative delta
             location = convertPosition(schedule, sim, location.getPathPosition() - update.positionDelta);
 
-        } while(speed < interpolate(speeds, location.getPathPosition()));
+        } while(speed < speeds.interpolate(location.getPathPosition()));
         return new CoastingSpeedController(location.getPathPosition(), endLocation);
     }
 
