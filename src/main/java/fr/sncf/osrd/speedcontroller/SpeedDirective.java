@@ -16,6 +16,11 @@ public final class SpeedDirective {
         return new SpeedDirective(Double.POSITIVE_INFINITY);
     }
 
+    /** Creates a speed directive indicating coasting over its range */
+    public static SpeedDirective getCoastingController() {
+        return new SpeedDirective(Double.NaN);
+    }
+
     /**
      * Combine with another speed limit
      * @param directive the speed limit to merge into the current one

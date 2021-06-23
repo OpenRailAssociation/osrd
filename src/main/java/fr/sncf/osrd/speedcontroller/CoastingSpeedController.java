@@ -12,11 +12,8 @@ public class CoastingSpeedController extends SpeedController {
     }
 
     @Override
-    public SpeedDirective getDirective(
-            double pathPosition
-    ) {
-        // NaN indicates coasting
-        return new SpeedDirective(Double.NaN);
+    public SpeedDirective getDirective(double pathPosition) {
+        return SpeedDirective.getCoastingController();
     }
 
     @Override
