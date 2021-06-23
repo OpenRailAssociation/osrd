@@ -101,7 +101,8 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
      * @param positionDelta How much the train moves by.
      */
     public void updatePosition(double expectedTrainLength, double positionDelta) {
-        pathPosition += updateHeadPosition(positionDelta);
+        updateHeadPosition(positionDelta);
+        pathPosition += positionDelta;
 
         double currentTrainLength = 0;
         for (var section : trackSectionRanges)
@@ -113,12 +114,10 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
     }
 
     /** TODO: Check if it's the wanted behavior...
-     * TODO: should be void
      * Move the head of train to positionDelta ahead.
      * The train stop if it can't go further.
-     * @return The delta distance travelled by the train.
      */
-    private double updateHeadPosition(double targetDist) {
+    private void updateHeadPosition(double targetDist) {
         var remainingDist = targetDist;
         var headPos = trackSectionRanges.getFirst();
         var edgeSpaceAhead = headPos.forwardSpace();
@@ -133,7 +132,6 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
             remainingDist -= nextPos.edge.length;
             trackSectionRanges.addFirst(nextPos);
         }
-        return targetDist;
     }
 
     private void updateTailPosition(double positionDelta) {
