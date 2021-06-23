@@ -168,35 +168,27 @@ def format_steps(train_schedule_result):
 
 
 def format_stops(train_schedule_result, steps):
-    op_times = {}
+    path = train_schedule_result.train_schedule.path.payload
+    phase_times = {}
     for log in train_schedule_result.log:
-        if log["type"] == "operational_point":
-            op_id = reverse_format(log["operational_point"])
-            op_times[op_id] = log["time"]
+        if log["type"] == "phase_end":
+            phase_times[log["phase_index"] + 1] = log["time"]
     stops = [
         {
-            "name": "start",
+            "name": path["steps"][0]["name"],
             "time": train_schedule_result.train_schedule.departure_time,
             "stop_time": 0,
         }
     ]
-    """ TODO: Add stops using path
-    for phase in train_schedule_result.train_schedule.phases:
+    for phase_index in range(1, len(path["steps"])):
+        assert phase_index in phase_times
         stops.append(
             {
-                "name": phase["operational_point"],
-                "time": op_times.get(phase["operational_point"], float("nan")),
-                "stop_time": phase["stop_time"],
+                "name": path["steps"][phase_index]["name"],
+                "time": phase_times[phase_index],
+                "stop_time": path["steps"][phase_index]["stop_time"],
             }
         )
-    """
-    stops.append(
-        {
-            "name": "stop",
-            "time": steps[-1]["time"],
-            "stop_time": 0,
-        }
-    )
     return stops
 
 
@@ -263,7 +255,6 @@ def get_train_phases(path):
 
 def get_train_schedule_payload(train_schedule):
     path = train_schedule.path
-
     return {
         "id": train_schedule.train_name,
         "rolling_stock": f"rolling_stock.{train_schedule.rolling_stock_id}",
