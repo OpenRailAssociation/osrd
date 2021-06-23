@@ -1,6 +1,4 @@
-import { time2sec } from 'utils/timeManipulation';
-
-export default function formatConf(setErrorMessages, t, osrdconf) {
+export default function formatConf(setErrorMessages, t, osrdconf, originTime) {
   const errorMessages = [];
 
   if (osrdconf.origin === undefined) {
@@ -40,7 +38,7 @@ export default function formatConf(setErrorMessages, t, osrdconf) {
 
     const osrdConfSchedule = {
       train_name: osrdconf.name,
-      departure_time: time2sec(osrdconf.originTime),
+      departure_time: originTime,
       phases: [],
       initial_speed: 0,
       timetable: osrdconf.timetableID,

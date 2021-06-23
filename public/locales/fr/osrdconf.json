@@ -1,16 +1,13 @@
 {
+  "addTrainSchedule": "Ajouter",
   "blocktype": "Type de block",
   "chooseOnMap": "Choisir sur la carte",
   "chooseTrainCompo": "Choisir un matériel",
   "composition": "Composition",
   "destination": "Destination",
-  "displayItinerary": "Tracer l'itinéraire",
-  "eraseItinerary": "Effacer l'itinéraire",
-  "eraseSimulation": "Effacer",
-  "eraseSimulationConfirm": "Voulez-vous effacer tous les paramètres ?",
   "errorMessages": {
     "noDestination": "La destination n'est pas définie",
-    "noName": "Veuillez choisir un nom pour la simulation",
+    "noName": "Veuillez choisir un nom pour le train",
     "noOrigin": "L'origine n'est pas définie",
     "noOriginTime": "Veuillez renseignez au moins l'horaire de départ à l'origine",
     "noTimetable": "Veuillez choisir ou créer une grille horaire",
@@ -20,7 +17,6 @@
   "infrachoose": "Choisissez une infrastructure",
   "infrastructure": "Infrastructure",
   "launchSimulation": "Démarrer",
-  "name": "Nom de la simulation",
   "noTimetable": "Aucune",
   "noplacechosen": "Aucun point défini",
   "noTrainCompo": "Aucun matériel défini...",
@@ -31,6 +27,9 @@
   "timetablechoose": "Choisissez ou ajoutez une grille horaire",
   "title": "Configuration simulation",
   "track": "Voie",
+  "trainScheduleCount": "Nombre de trains",
+  "trainScheduleDelta": "Délai entre chaque train",
+  "trainScheduleName": "Nom du train à ajouter",
   "via": "Étape",
   "vias": "Points de passage, arrêts"
 }

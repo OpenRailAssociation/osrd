@@ -56,7 +56,7 @@ const TrainsList = (props) => {
   return (
     <>
       <div className="h2 mb-2">{t('simulation:trainList')}</div>
-      <div className="table-wrapper">
+      <div className="table-wrapper simulation-trainlist">
         <div className="table-scroller dragscroll">
           <table className="table table-hover">
             <thead className="thead thead-light">

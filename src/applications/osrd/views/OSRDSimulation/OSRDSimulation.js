@@ -38,13 +38,14 @@ const OSRDSimulation = () => {
       const simulationLocal = [];
       const timetable = await get(`${timetableURI}/${timetableID}`);
       if (timetable.train_schedules.length > 0) { setIsEmpty(false); }
-      for (const trainscheduleID of timetable.train_schedules) {
+      for (const trainschedule of timetable.train_schedules) {
         try {
-          simulationLocal.push(await get(`${trainscheduleURI}/${trainscheduleID}/result/`));
+          simulationLocal.push(await get(`${trainscheduleURI}/${trainschedule.id}/result/`));
         } catch (e) {
           console.log('ERROR', e);
         }
       }
+      simulationLocal.sort((a, b) => a.stops[0].time > b.stops[0].time);
       setSimulation({ trains: simulationLocal });
     } catch (e) {
       console.log('ERROR', e);

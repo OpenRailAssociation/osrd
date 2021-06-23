@@ -17,7 +17,6 @@ export const UPDATE_DESTINATION = 'osrdconf/UPDATE_DESTINATION';
 export const UPDATE_TRAINCOMPO = 'osrdconf/UPDATE_TRAINCOMPO';
 export const UPDATE_ITINERARY = 'osrdconf/UPDATE_ITINERARY';
 export const UPDATE_FEATURE_INFO_CLICK_OSRD = 'osrdconf/UPDATE_FEATURE_INFO_CLICK_OSRD';
-export const ERASE_SIMULATION = 'osrdconf/ERASE_SIMULATION';
 
 // Reducer
 export const initialState = {
@@ -81,16 +80,6 @@ export default function reducer(state = initialState, action) {
         break;
       case UPDATE_FEATURE_INFO_CLICK_OSRD:
         draft.featureInfoClick = action.featureInfoClick;
-        break;
-      case ERASE_SIMULATION:
-        draft.name = '';
-        draft.origin = undefined;
-        draft.originTime = undefined;
-        draft.destination = undefined;
-        draft.destinationTime = undefined;
-        draft.vias = [];
-        draft.trainCompo = undefined;
-        draft.geojson = undefined;
         break;
     }
   });
@@ -221,13 +210,6 @@ export function updateFeatureInfoClickOSRD(featureInfoClick) {
     dispatch({
       type: UPDATE_FEATURE_INFO_CLICK_OSRD,
       featureInfoClick,
-    });
-  };
-}
-export function eraseSimulation() {
-  return (dispatch) => {
-    dispatch({
-      type: ERASE_SIMULATION,
     });
   };
 }

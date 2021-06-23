@@ -5,16 +5,17 @@ import { useTranslation } from 'react-i18next';
 import { get } from 'common/requests';
 import TimetableSelectorModal from 'applications/osrd/components/TimetableSelector/TimetableSelectorModal';
 import icon from 'assets/pictures/layersicons/timetable.svg';
+import { sec2time } from 'utils/timeManipulation';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 
 const timetableURL = '/osrd/timetable';
 const trainscheduleURI = '/osrd/train_schedule';
 
 const formatTrainList = (trainList) => trainList.map((train) => (
-  <div key={nextId()}>
-    <span>{train.train_name}</span>
-    <span>{train.departure_time}</span>
-  </div>
+  <tr key={nextId()}>
+    <td><div className="cell-inner">{train.train_name}</div></td>
+    <td><div className="cell-inner">{sec2time(train.departure_time)}</div></td>
+  </tr>
 ));
 
 export default function TimetableSelector() {
@@ -34,13 +35,14 @@ export default function TimetableSelector() {
 
   const getTrainList = async () => {
     const trainListLocal = [];
-    for (const trainscheduleID of selectedTimetable.train_schedules) {
+    for (const trainschedule of selectedTimetable.train_schedules) {
       try {
-        trainListLocal.push(await get(`${trainscheduleURI}/${trainscheduleID}`));
+        trainListLocal.push(await get(`${trainscheduleURI}/${trainschedule.id}`));
       } catch (e) {
         console.log('ERROR', e);
       }
     }
+    trainListLocal.sort((a, b) => a.departure_time > b.departure_time);
     setTrainList(trainListLocal);
   };
 
@@ -87,7 +89,15 @@ export default function TimetableSelector() {
                 </>
               )}
           </div>
-          {trainList !== undefined ? formatTrainList(trainList) : null}
+          <div className="timetable-trainlist">
+            <div className="table-wrapper">
+              <div className="table-scroller dragscroll">
+                <table className="table table-hover">
+                  {trainList !== undefined ? formatTrainList(trainList) : null}
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <TimetableSelectorModal />

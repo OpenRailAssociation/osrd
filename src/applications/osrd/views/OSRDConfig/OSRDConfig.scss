@@ -172,3 +172,9 @@
     }
   }
 }
+
+.timetable-trainlist {
+  max-height: 10rem;
+  font-size: .9rem;
+  overflow: auto;
+}

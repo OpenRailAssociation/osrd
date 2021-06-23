@@ -3,15 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import nextId from 'react-id-generator';
 import { post } from 'common/requests';
-import { updateName, eraseSimulation } from 'reducers/osrdconf';
+import { updateName } from 'reducers/osrdconf';
 import {
   redirectToGraph, updateSimulation, toggleWorkingStatus,
 } from 'reducers/osrdsimulation';
-import { Redirect } from 'react-router-dom';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import AlertSNCF from 'common/BootstrapSNCF/AlertSNCF';
-import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import DotsLoader from 'common/DotsLoader/DotsLoader';
+import { time2sec } from 'utils/timeManipulation';
 
 import formatConf from 'applications/osrd/components/AddTrainSchedule/formatConf';
 
@@ -20,51 +19,75 @@ const scheduleURL = '/osrd/train_schedule'
 
 export default function AddTrainSchedule() {
   const [errorMessagesState, setErrorMessages] = useState([]);
+  const [isWorking, setIsWorking] = useState(false);
+  const [trainCount, setTrainCount] = useState(1);
+  const [trainDelta, setTrainDelta] = useState(60);
   const osrdconf = useSelector((state) => state.osrdconf);
   const osrdsimulation = useSelector((state) => state.osrdsimulation);
   const { t } = useTranslation(['translation', 'osrdconf']);
   const dispatch = useDispatch();
 
-  const submitConf = async () => {
-    const osrdConfig = formatConf(setErrorMessages, t, osrdconf);
-
+  const submitConf = () => {
+    setIsWorking(true);
+    // First train tested, and next we put the other trains
+    const originTime = time2sec(osrdconf.originTime);
+    const osrdConfig = formatConf(setErrorMessages, t, osrdconf, originTime);
     if (osrdConfig !== false) {
       try {
-        // store.dispatch(redirectToGraph(true));
-        // store.dispatch(toggleWorkingStatus(true));
-      //  const osrdReturn = await post(osrdURI, osrdConfig);
-        const osrdReturn = await post(scheduleURL, osrdConfig, {}, true);
-        console.log(osrdConfig, osrdReturn);
-        // store.dispatch(updateSimulation(osrdReturn));
-        // store.dispatch(toggleWorkingStatus(false));
+        for (let nb = 1; nb <= trainCount; nb += 1) {
+          post(
+            scheduleURL,
+            formatConf(setErrorMessages, t, osrdconf, originTime + (60 * trainDelta * (nb - 1))),
+            {},
+          );
+        }
       } catch (e) {
         console.log(e);
       }
+      setIsWorking(false);
     }
   };
 
   return (
     <>
       <div className="osrd-config-item">
-        <div className="osrd-config-item-container d-flex align-items-center mb-2 bg-gray">
-          <div className="lead font-weight-bold text-white">{osrdconf.name}</div>
-          <button className="btn btn-sm btn-danger ml-auto mr-2" type="button" data-toggle="modal" data-target="#modal-erase-simulation">
-            {t('osrdconf:eraseSimulation')}
-          </button>
-          <button className="btn btn-sm btn-primary" type="button" onClick={submitConf}>
-            {t('osrdconf:launchSimulation')}
-          </button>
-        </div>
         <div className="osrd-config-item-container d-flex align-items-end mb-2">
-          <InputSNCF
-            type="text"
-            label={t('osrdconf:name')}
-            id="osrdconf-name"
-            onChange={(e) => dispatch(updateName(e.target.value))}
-            value={osrdconf.name}
-            noMargin
-            sm
-          />
+          <span className="mr-2 flex-grow-1">
+            <InputSNCF
+              type="text"
+              label={t('osrdconf:trainScheduleName')}
+              id="osrdconf-name"
+              onChange={(e) => dispatch(updateName(e.target.value))}
+              value={osrdconf.name}
+              noMargin
+              sm
+            />
+          </span>
+          <span className="mr-2">
+            <InputSNCF
+              type="number"
+              label={t('osrdconf:trainScheduleCount')}
+              id="osrdconf-traincount"
+              onChange={(e) => setTrainCount(e.target.value)}
+              value={trainCount}
+              noMargin
+              sm
+            />
+          </span>
+          <span className="mr-2">
+            <InputSNCF
+              type="number"
+              label={t('osrdconf:trainScheduleDelta')}
+              id="osrdconf-delta"
+              onChange={(e) => setTrainDelta(e.target.value)}
+              value={trainDelta}
+              noMargin
+              sm
+            />
+          </span>
+          <button className="btn btn-sm btn-primary" type="button" onClick={submitConf}>
+            {isWorking ? <DotsLoader /> : t('osrdconf:addTrainSchedule')}
+          </button>
         </div>
         {errorMessagesState.length > 0
           ? (
@@ -75,21 +98,6 @@ export default function AddTrainSchedule() {
             </AlertSNCF>
           ) : null}
       </div>
-      <ModalSNCF htmlID="modal-erase-simulation" size="sm">
-        <ModalBodySNCF>
-          <>
-            <div className="mb-3 h1">{t('osrdconf:eraseSimulationConfirm')}</div>
-            <div className="d-flex">
-              <button className="btn btn-secondary flex-fill mr-2" type="button" data-dismiss="modal">
-                {t('translation:common.cancel')}
-              </button>
-              <button className="btn btn-danger flex-fill" type="button" data-dismiss="modal" onClick={() => store.dispatch(eraseSimulation())}>
-                {t('translation:common.erase')}
-              </button>
-            </div>
-          </>
-        </ModalBodySNCF>
-      </ModalSNCF>
     </>
   );
 }

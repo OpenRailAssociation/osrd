@@ -4,6 +4,11 @@
   border-radius: 4px;
 }
 
+.simulation-trainlist {
+  max-height: 17rem;
+  overflow: auto;
+}
+
 .grid .tick {
   opacity: .2;
   line {
