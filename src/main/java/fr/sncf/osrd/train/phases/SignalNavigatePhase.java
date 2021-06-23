@@ -338,13 +338,15 @@ public final class SignalNavigatePhase implements Phase {
             var simulationResult = trainState.evolveStateUntilPosition(sim, nextInteraction.position);
 
             // 4) create an event with simulation data up to this point
+
             // The train reached the action point
-            // If less than 1m away we consider that it has been reached, because the train has to stop before the end
-            if (trainState.location.getPathPosition() >= nextInteraction.position - 1) {
+            // If less than a few meters away we consider that it has been reached,
+            // because the train has to stop before the end of the phase
+            if (trainState.location.getPathPosition() >= nextInteraction.position - 5) {
                 popInteraction(trainState);
                 return TrainReachesActionPoint.plan(sim, trainState.time, train, simulationResult, nextInteraction);
             }
-            // The train didn't reached the action point
+            // The train didn't reached the action point (stopped because of signalisation)
             return TrainMoveEvent.plan(sim, trainState.time, train, simulationResult);
         }
 
