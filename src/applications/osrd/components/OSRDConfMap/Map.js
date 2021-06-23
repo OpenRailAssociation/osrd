@@ -21,9 +21,9 @@ import MapSettingsTrackSources from 'common/Map/Settings/MapSettingsTrackSources
 import MapSettingsShowOSM from 'common/Map/Settings/MapSettingsShowOSM';
 
 /* Interactions */
-import RenderPopup from 'applications/osrd/components/Map/RenderPopup';
-import RenderItinerary from 'applications/osrd/components/Map/RenderItinerary';
-import RenderItineraryMarkers from 'applications/osrd/components/Map/RenderItineraryMarkers';
+import RenderPopup from 'applications/osrd/components/OSRDConfMap/RenderPopup';
+import RenderItinerary from 'applications/osrd/components/OSRDConfMap/RenderItinerary';
+import RenderItineraryMarkers from 'applications/osrd/components/OSRDConfMap/RenderItineraryMarkers';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';

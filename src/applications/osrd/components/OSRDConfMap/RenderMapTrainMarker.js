@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import MapTrainMarker from 'applications/osrd/components/Map/MapTrainMarker';
+import MapTrainMarker from 'applications/osrd/components/OSRDConfMap/MapTrainMarker';
 import { useSelector } from 'react-redux';
 
 export default function RenderMapTrainMarker(props) {

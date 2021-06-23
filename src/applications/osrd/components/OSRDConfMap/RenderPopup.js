@@ -3,8 +3,8 @@ import { Popup } from 'react-map-gl';
 import { useSelector } from 'react-redux';
 import bbox from '@turf/bbox';
 import PopupInfos from 'common/Map/Popup/PopupInfos';
-import PopupInfosCustomContent from 'applications/osrd/components/Map/PopupInfosCustomContent';
-import PopupInfosCustomTitle from 'applications/osrd/components/Map/PopupInfosCustomTitle';
+import PopupInfosCustomContent from 'applications/osrd/components/OSRDConfMap/PopupInfosCustomContent';
+import PopupInfosCustomTitle from 'applications/osrd/components/OSRDConfMap/PopupInfosCustomTitle';
 import convertLayerVariables from 'applications/osrd/components/Helpers/convertLayerVariables';
 
 export default function RenderPopup() {

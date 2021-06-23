@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateViewport } from 'reducers/map';
 import Itinerary from 'applications/osrd/views/OSRDConfig/Itinerary';
-import Map from 'applications/osrd/components/Map/Map';
+import Map from 'applications/osrd/components/OSRDConfMap/Map';
 import InfraSelector from 'applications/osrd/views/OSRDConfig/InfraSelector';
 import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
 import TrainCompoSelector from 'applications/osrd/views/OSRDConfig/TrainCompoSelector';
