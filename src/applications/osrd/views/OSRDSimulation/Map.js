@@ -1,11 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
-import ReactMapGL, { ScaleControl, AttributionControl, FlyToInterpolator } from 'react-map-gl';
+import ReactMapGL, {
+  ScaleControl, AttributionControl, FlyToInterpolator, WebMercatorViewport,
+} from 'react-map-gl';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import colors from 'common/Map/Consts/colors.ts';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateViewport } from 'reducers/map';
-import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';
+import { sec2time } from 'utils/timeManipulation';
+import bbox from '@turf/bbox';
 
 import 'common/Map/Map.scss';
 
@@ -21,9 +25,7 @@ import MapSettingsTrackSources from 'common/Map/Settings/MapSettingsTrackSources
 import MapSettingsShowOSM from 'common/Map/Settings/MapSettingsShowOSM';
 
 /* Interactions */
-import RenderPopup from 'applications/osrd/components/OSRDConfMap/RenderPopup';
-import RenderItinerary from 'applications/osrd/components/OSRDConfMap/RenderItinerary';
-import RenderItineraryMarkers from 'applications/osrd/components/OSRDConfMap/RenderItineraryMarkers';
+import TrainHoverPosition from 'applications/osrd/components/SimulationMap/TrainHoverPosition';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
@@ -36,13 +38,47 @@ import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 /* Objects & various */
 import Signals from 'common/Map/Layers/Signals';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
+import RenderItinerary from 'applications/osrd/components/SimulationMap/RenderItinerary';
 
-const Map = () => {
+const createGeoJSONPath = (steps) => {
+  const features = [];
+  steps.forEach((step, idx) => {
+    if (steps[idx + 1] !== undefined) {
+      features.push({
+        type: 'Feature',
+        geometry: {
+          type: 'LineString',
+          coordinates: [step.geo_position, steps[idx + 1].geo_position],
+        },
+        properties: {
+          end_block_occupancy: step.end_block_occupancy,
+          head_position: step.head_position,
+          hover_position: idx,
+          speed: step.speed,
+          start_block_occupancy: step.start_block_occupancy,
+          tail_position: step.tail_position,
+          time: sec2time(step.time),
+        },
+      });
+    }
+  });
+  return {
+    type: 'FeatureCollection',
+    features,
+  };
+};
+
+const Map = (props) => {
+  const {
+    hoverPosition, selectedTrain, setExtViewport, setHoverPosition, simulation,
+  } = props;
   const {
     viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM,
   } = useSelector((state) => state.map);
   const [showSearch, setShowSearch] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [geojsonPath, setGeojsonPath] = useState(undefined);
+  const [trainHoverPosition, setTrainHoverPosition] = useState(undefined);
   const [idHover, setIdHover] = useState(undefined);
   const {
     urlLat, urlLon, urlZoom, urlBearing, urlPitch,
@@ -51,6 +87,21 @@ const Map = () => {
   const updateViewportChange = useCallback(
     (value) => dispatch(updateViewport(value, undefined)), [dispatch],
   );
+
+  const zoomToFeature = (boundingBox) => {
+    const [minLng, minLat, maxLng, maxLat] = boundingBox;
+    const viewportTemp = new WebMercatorViewport({ ...viewport, width: 600, height: 400 });
+    const { longitude, latitude, zoom } = viewportTemp.fitBounds(
+      [[minLng, minLat], [maxLng, maxLat]],
+      { padding: 40 },
+    );
+    setExtViewport({
+      ...viewport,
+      longitude,
+      latitude,
+      zoom,
+    });
+  };
 
   const scaleControlStyle = {
     left: 20,
@@ -74,30 +125,18 @@ const Map = () => {
     setShowSettings(!showSettings);
   };
 
-  const onFeatureClick = (e) => {
-    if (e.features
-      && e.features.length > 0
-      && e.features[0].properties.gaia_id !== undefined
-      // && e.features[0].properties.type_voie === 'VP') {
-    ) {
-      dispatch(updateFeatureInfoClickOSRD({
-        displayPopup: true,
-        feature: e.features[0],
-        lngLat: e.lngLat,
-      }));
-    } else {
-      dispatch(updateFeatureInfoClickOSRD({
-        displayPopup: false,
-        feature: undefined,
-      }));
+  const onFeatureHover = (e) => {
+    if (e.features !== null && e.features[0] !== undefined) {
+      setHoverPosition(e.features[0].properties.hover_position);
     }
   };
 
-  const onFeatureHover = (e) => {
-    if (e.features !== null && e.features[0] !== undefined) {
-      setIdHover(e.features[0].properties.gaia_id);
-    } else {
-      setIdHover(undefined);
+  const displayPath = () => {
+    if (simulation.trains.length > 0
+      && simulation.trains[selectedTrain].steps[hoverPosition] !== undefined) {
+      const geojson = createGeoJSONPath(simulation.trains[selectedTrain].steps);
+      setGeojsonPath(geojson);
+      zoomToFeature(bbox(geojson));
     }
   };
 
@@ -112,7 +151,20 @@ const Map = () => {
         pitch: parseFloat(urlPitch),
       });
     }
+    displayPath();
   }, []);
+
+  useEffect(() => {
+    displayPath();
+  }, [simulation.train, selectedTrain]);
+
+  useEffect(() => {
+    if (simulation.trains.length > 0
+      && hoverPosition !== undefined
+      && simulation.trains[selectedTrain].steps[hoverPosition] !== undefined) {
+      setTrainHoverPosition(simulation.trains[selectedTrain].steps[hoverPosition]);
+    }
+  }, [hoverPosition]);
 
   return (
     <>
@@ -121,7 +173,7 @@ const Map = () => {
         <ButtonMapSettings toggleMapSettings={toggleMapSettings} />
         <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
       </div>
-      <MapSearch active={showSearch} toggleMapSearch={toggleMapSearch} />
+      {/* }<MapSearch active={showSearch} toggleMapSearch={toggleMapSearch} /> */}
       <MapSettings active={showSettings} toggleMapSettings={toggleMapSettings}>
         <MapSettingsMapStyle />
         <div className="my-2" />
@@ -140,9 +192,8 @@ const Map = () => {
         onViewportChange={updateViewportChange}
         clickRadius={4}
         attributionControl={false} // Defined below
-        onClick={onFeatureClick}
         onHover={onFeatureHover}
-        interactiveLayerIds={mapTrackSources === 'geographic' ? ['chartis/tracks-geo/main'] : ['schematicMainLayer']}
+        interactiveLayerIds={geojsonPath ? ['geojsonPath'] : ['']}
         touchRotate
         asyncRender
       >
@@ -171,7 +222,6 @@ const Map = () => {
             <Platform colors={colors[mapStyle]} />
             <TracksGeographic colors={colors[mapStyle]} idHover={idHover} />
             <Signals sourceTable="map_midi_signal" colors={colors[mapStyle]} sourceLayer="geo" />
-            <RenderPopup />
           </>
         ) : (
           <>
@@ -180,16 +230,30 @@ const Map = () => {
           </>
         )}
 
-        <RenderPopup />
-        <RenderItinerary />
-        <RenderItineraryMarkers />
         {mapSearchMarker !== undefined ? (
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         ) : null}
 
+        {geojsonPath !== undefined
+          ? <RenderItinerary geojson={geojsonPath} /> : null}
+
+        {trainHoverPosition !== undefined
+          ? <TrainHoverPosition point={trainHoverPosition} /> : null}
+
       </ReactMapGL>
     </>
   );
+};
+
+Map.propTypes = {
+  selectedTrain: PropTypes.number.isRequired,
+  setExtViewport: PropTypes.func.isRequired,
+  setHoverPosition: PropTypes.func.isRequired,
+  hoverPosition: PropTypes.number,
+  simulation: PropTypes.object.isRequired,
+};
+Map.defaultProps = {
+  hoverPosition: undefined,
 };
 
 export default Map;

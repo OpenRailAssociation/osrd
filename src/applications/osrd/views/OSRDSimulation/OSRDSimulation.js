@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { get } from 'common/requests';
+import { FlyToInterpolator } from 'react-map-gl';
 import ButtonFullscreen from 'common/ButtonFullscreen';
 import CenterLoader from 'common/CenterLoader/CenterLoader';
 import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
 import SpeedSpaceChart from 'applications/osrd/views/OSRDSimulation/SpeedSpaceChart';
 import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
+import Map from 'applications/osrd/views/OSRDSimulation/Map';
 import TrainDetails from 'applications/osrd/views/OSRDSimulation/TrainDetails';
 import TrainsList from 'applications/osrd/views/OSRDSimulation/TrainsList';
+import { updateViewport } from 'reducers/map';
 import { simplifyData, timeShiftTrain, timeShiftStops } from 'applications/osrd/components/Helpers/ChartHelpers';
 import './OSRDSimulation.scss';
 
@@ -20,11 +23,13 @@ const OSRDSimulation = () => {
   const { fullscreen } = useSelector((state) => state.main);
   const [hoverPosition, setHoverPosition] = useState(undefined);
   // const [hoverStop, setHoverStop] = useState(undefined);
+  const [extViewport, setExtViewport] = useState(undefined);
   const [selectedTrain, setSelectedTrain] = useState(0);
   const [isEmpty, setIsEmpty] = useState(true);
   const [mustRedraw, setMustRedraw] = useState(true);
   const osrdconf = useSelector((state) => state.osrdconf);
   const [simulation, setSimulation] = useState({ trains: [] });
+  const dispatch = useDispatch();
 
   const WaitingLoader = () => {
     if (isEmpty) {
@@ -56,34 +61,15 @@ const OSRDSimulation = () => {
     getTimetable(osrdconf.timetableID);
   }, []);
 
-  /* / Test data simulated
-  // TO REMOVE IN PRODUCTION
   useEffect(() => {
-    if (simulationRaw !== undefined) {
-      const shiftValue = 2500;
-      const simulationLocal = { ...simulationRaw, trains: simplifyData(simulationRaw.trains, 25) };
-      for (let idx = 1; idx < 5; idx += 1) {
-        simulationLocal.trains.push(
-          {
-            ...simulationLocal.trains[0],
-            steps: timeShiftTrain(simulationLocal.trains[0].steps, idx * shiftValue),
-            stops: timeShiftStops(simulationLocal.trains[0].stops, idx * shiftValue),
-            name: `${simulationLocal.trains[0].name}${idx}`,
-          },
-        );
-      }
-      setSimulation(simulationLocal);
-      isWorking = false;
+    if (extViewport !== undefined) {
+      dispatch(updateViewport({
+        ...extViewport,
+        transitionDuration: 1000,
+        transitionInterpolator: new FlyToInterpolator(),
+      }));
     }
-  }, []);
-
-  useEffect(() => {
-    if (simulation !== undefined
-      && simulation.trains[selectedTrain].steps[hoverPosition] !== undefined) {
-      // const hoverTime = simulation.trains[selectedTrain].steps[hoverPosition].time;
-    }
-  }, [hoverPosition]);
-  */
+  }, [extViewport]);
 
   const offsetTimeByDragging = (offset, selectedTrainLocal) => {
     const { trains } = simulation;
@@ -152,12 +138,27 @@ const OSRDSimulation = () => {
                   </div>
                 </div>
               </div>
-              <div className="osrd-simulation-container mb-2">
-                {simulation.trains.length > 0 ? (
-                  <TimeTable
-                    data={simulation.trains[selectedTrain].stops}
-                  />
-                ) : null}
+              <div className="row">
+                <div className="col-md-6">
+                  <div className="osrd-simulation-container mb-2">
+                    {simulation.trains.length > 0 ? (
+                      <TimeTable
+                        data={simulation.trains[selectedTrain].stops}
+                      />
+                    ) : null}
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="osrd-simulation-container osrd-simulation-map mb-2">
+                    <Map
+                      hoverPosition={hoverPosition}
+                      selectedTrain={selectedTrain}
+                      simulation={simulation}
+                      setExtViewport={setExtViewport}
+                      setHoverPosition={setHoverPosition}
+                    />
+                  </div>
+                </div>
               </div>
               <ButtonFullscreen />
             </div>
