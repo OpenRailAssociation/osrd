@@ -2,6 +2,7 @@ package fr.sncf.osrd.train.phases;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
@@ -11,9 +12,7 @@ import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra_state.SignalState;
-import fr.sncf.osrd.simulation.Simulation;
-import fr.sncf.osrd.simulation.SimulationError;
-import fr.sncf.osrd.simulation.TimelineEvent;
+import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
@@ -84,11 +83,8 @@ public final class SignalNavigatePhase implements Phase {
 
         Collections.sort(eventPath);
 
-        // If no action point at the very end of the path then add a virtual action point
-        if (eventPath.isEmpty() || eventPath.get(eventPath.size() - 1).position < pathLength) {
-            var virtualActionPoint = new VirtualActionPoint();
-            eventPath.add(new Interaction(InteractionType.HEAD, pathLength, virtualActionPoint));
-        }
+        var phaseEnd = new PhaseEndActionPoint();
+        eventPath.add(new Interaction(InteractionType.HEAD, pathLength, phaseEnd));
         return eventPath;
     }
 
@@ -174,8 +170,8 @@ public final class SignalNavigatePhase implements Phase {
         trackSectionPath.forEach(consumer);
     }
 
-    /** This class represent an empty action point. It's as last event in the event path */
-    public static final class VirtualActionPoint implements ActionPoint {
+    /** This class represent the location of the phase end. It's as last event in the event path */
+    public static final class PhaseEndActionPoint implements ActionPoint {
 
         @Override
         public InteractionTypeSet getInteractionsType() {
@@ -188,11 +184,34 @@ public final class SignalNavigatePhase implements Phase {
         }
 
         @Override
-        public void interact(Simulation sim, Train train, InteractionType actionType) { }
+        public void interact(Simulation sim, Train train, InteractionType actionType) {
+            var change = new EndOfPhase(sim, train, train.getLastState().currentPhaseIndex);
+            sim.publishChange(change);
+        }
 
         @Override
         public String toString() {
-            return "VirtualActionPoint { }";
+            return "PhaseEndActionPoint { }";
+        }
+
+        public static class EndOfPhase extends Change {
+            public final Train train;
+            public final int phaseIndex;
+
+            /** Create a change to notify that a train has reached the end of its current phase */
+            public EndOfPhase(Simulation sim, Train train, int phaseIndex) {
+                super(sim);
+                this.train = train;
+                this.phaseIndex = phaseIndex;
+            }
+
+            @Override
+            public void replay(Simulation sim) {}
+
+            @Override
+            public String toString() {
+                return String.format("EndOfPhase { train: %s, phase index: %d }", train.getName(), phaseIndex);
+            }
         }
     }
 
@@ -320,7 +339,8 @@ public final class SignalNavigatePhase implements Phase {
 
             // 4) create an event with simulation data up to this point
             // The train reached the action point
-            if (trainState.location.getPathPosition() >= nextInteraction.position) {
+            // If less than 1m away we consider that it has been reached, because the train has to stop before the end
+            if (trainState.location.getPathPosition() >= nextInteraction.position - 1) {
                 popInteraction(trainState);
                 return TrainReachesActionPoint.plan(sim, trainState.time, train, simulationResult, nextInteraction);
             }

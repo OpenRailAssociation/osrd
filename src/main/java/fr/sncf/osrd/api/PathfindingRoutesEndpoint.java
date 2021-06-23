@@ -126,10 +126,12 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                     });
 
             if (found == 0)
-                return new RsWithStatus(new RsText("Not path could be found"), 400);
+                return new RsWithStatus(new RsText("No path could be found"), 400);
 
             candidatePaths.clear();
-            candidatePaths.add(pathsToGoal.get(pathsToGoal.size() - 1));
+            var lastStop = pathsToGoal.get(pathsToGoal.size() - 1);
+            var newCandidate = new BasicPathNode<>(lastStop.edge, lastStop.position);
+            candidatePaths.add(newCandidate);
         }
 
         var res = new PathfindingResult();
@@ -158,7 +160,19 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                 var route = routes.get(j);
                 var trackSections = Route.routesToTrackSectionRange(
                         Collections.singletonList(route), begin, end);
+                if (j == 0) {
+                    // Add the given origin location to the steps output
+                    var firstTrack = trackSections.get(0);
+                    var newStep = new PathfindingResult.StepResult(firstTrack.edge, firstTrack.getBeginPosition());
+                    res.addStep(newStep);
+                }
                 res.add(route, trackSections);
+                if (j == routes.size() - 1) {
+                    // Add the given destination location to the steps output
+                    var lastTrack = trackSections.get(trackSections.size() - 1);
+                    var newStep = new PathfindingResult.StepResult(lastTrack.edge, lastTrack.getEndPosition());
+                    res.addStep(newStep);
+                }
             }
         }
         return new RsJson(new RsWithBody(adapterResult.toJson(res)));
@@ -172,11 +186,11 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     @SuppressFBWarnings({"URF_UNREAD_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static class PathfindingResult {
         public final List<RouteResult> path;
-        public final List<OperationalPointResult> operationalPoints;
+        public final List<StepResult> steps;
 
         private PathfindingResult() {
             path = new ArrayList<>();
-            operationalPoints = new ArrayList<>();
+            steps = new ArrayList<>();
         }
 
         void add(Route route, List<TrackSectionRange> trackSections) {
@@ -189,11 +203,26 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                         trackSection.getEndPosition());
                 routeResult.trackSections.add(trackSectionResult);
                 for (var op : trackSection.edge.operationalPoints) {
-                    if (trackSection.containsPosition(op.position))
-                        operationalPoints.add(new OperationalPointResult(op, trackSection.edge));
+                    if (trackSection.containsPosition(op.position)) {
+                        var newStep = new StepResult(op, trackSection.edge);
+                        addStep(newStep);
+                    }
                 }
             }
             path.add(routeResult);
+        }
+
+        void addStep(StepResult newStep) {
+            if (steps.isEmpty()) {
+                steps.add(newStep);
+                return;
+            }
+            var lastStep = steps.get(steps.size() - 1);
+            if (lastStep.isDuplicate(newStep)) {
+                lastStep.merge(newStep);
+                return;
+            }
+            steps.add(newStep);
         }
 
         public static class RouteResult {
@@ -202,13 +231,39 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             public List<TrackSectionRangeResult> trackSections;
         }
 
-        public static class OperationalPointResult {
-            public String op;
+        public static class StepResult {
+            public String name;
             public PositionResult position;
+            public boolean suggestion;
 
-            OperationalPointResult(PointValue<OperationalPoint> op, TrackSection trackSection) {
-                this.op = op.value.id;
+            /** Suggested operational points */
+            StepResult(PointValue<OperationalPoint> op, TrackSection trackSection) {
+                this.name = op.value.id;
                 this.position = new PositionResult(trackSection.id, op.position);
+                this.suggestion = true;
+            }
+
+            /** Given step */
+            StepResult(TrackSection trackSection, double offset) {
+                this.name = "Unknown";
+                this.position = new PositionResult(trackSection.id, offset);
+                this.suggestion = false;
+            }
+
+            /** Check if two step result are at the same location */
+            public boolean isDuplicate(StepResult other) {
+                if (!position.trackSection.equals(other.position.trackSection))
+                    return false;
+                return Math.abs(position.offset - other.position.offset) < 0.001;
+            }
+
+            /** Merge a suggested with a give step */
+            public void merge(StepResult other) {
+                suggestion &= other.suggestion;
+                if (!other.suggestion)
+                    return;
+                position = other.position;
+                name = other.name;
             }
         }
 

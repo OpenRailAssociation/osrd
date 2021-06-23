@@ -255,7 +255,7 @@ public class PasesTest {
         for (var e : events) {
             if (e instanceof TrainReachesActionPoint) {
                 var point = ((TrainReachesActionPoint) e).interaction.actionPoint;
-                if (point instanceof SignalNavigatePhase.VirtualActionPoint)
+                if (point instanceof SignalNavigatePhase.PhaseEndActionPoint)
                     return e.eventId.scheduledTime;
             }
         }

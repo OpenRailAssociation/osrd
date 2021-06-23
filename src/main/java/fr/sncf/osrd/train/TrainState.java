@@ -5,8 +5,6 @@ import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
-import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.train.phases.PhaseState;
@@ -16,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
-import java.util.HashSet;
-import java.util.Set;
 
 public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     static final Logger logger = LoggerFactory.getLogger(TrainState.class);
@@ -80,6 +76,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         this.currentPhaseIndex = currentPhaseIndex;
         this.currentPhaseState = currentPhaseState;
         this.actionPointsUnderTrain = actionPointsUnderTrain;
+        trainSchedule.trainDecisionMaker.setTrainState(this);
     }
 
     /** Create a clone */
@@ -146,15 +143,15 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
         // get the list of active speed controllers
         var isLate = currentPhaseState.speedInstructions.secondsLate(prevLocation, time) > 0;
-        var activeSpeedControllers = getActiveSpeedControllers(isLate);
+        var activeSpeedControllers = trainSchedule.trainDecisionMaker.getActiveSpeedControllers(isLate);
         locationChange.speedControllersUpdates.dedupAdd(prevLocation, activeSpeedControllers);
 
-        // get the current speed directives mandated by the speed controllers
-        var speedDirective = SpeedController.getDirective(activeSpeedControllers, prevLocation);
-        locationChange.speedDirectivesUpdates.dedupAdd(prevLocation, speedDirective);
-
+        // get the speed directive
+        var speedDirective = new SpeedDirective(Double.POSITIVE_INFINITY);
+        for (var controller : activeSpeedControllers)
+            speedDirective.mergeWith(controller.getDirective(location.getPathPosition()));
         // get the action the driver
-        Action action = driverDecision(speedDirective, integrator);
+        Action action = trainSchedule.trainDecisionMaker.getNextAction(speedDirective, integrator);
 
         logger.trace("train took action {}", action);
         assert action != null;
@@ -197,44 +194,22 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
     /**  Create a location change from the current state to current simulation time */
     public Train.TrainStateChange evolveStateUntilNow(Simulation sim) {
+        return evolveStateUntilTime(sim, sim.getTime());
+    }
+
+    /**  Create a location change from the current state to the given time */
+    public Train.TrainStateChange evolveStateUntilTime(Simulation sim, double time) {
         var locationChange = new Train.TrainStateChange(sim, trainSchedule.trainID, this);
 
-        while (this.time + 1.0 < sim.getTime())
+        while (this.time + 1.0 < time)
             step(locationChange, 1.0, Double.POSITIVE_INFINITY);
         step(locationChange, sim.getTime() - time, Double.POSITIVE_INFINITY);
 
         return locationChange;
     }
 
-    private Set<SpeedController> getActiveSpeedControllers(boolean isLate) {
-        var activeControllers = new HashSet<SpeedController>();
-        // Add train speed controllers
-        Set<SpeedController> targetControllers;
-        if (isLate)
-            targetControllers = currentPhaseState.speedInstructions.maxSpeedControllers;
-        else
-            targetControllers = currentPhaseState.speedInstructions.targetSpeedControllers;
-        for (var controller : targetControllers) {
-            if (!controller.isActive(this))
-                continue;
-            activeControllers.add(controller);
-        }
-        // Add phase speed controllers
-        for (var controller : currentPhaseState.getSpeedControllers()) {
-            if (!controller.isActive(this))
-                continue;
-            activeControllers.add(controller);
-        }
-        return activeControllers;
-    }
-
-    private Action driverDecision(SpeedDirective directive, TrainPhysicsIntegrator integrator) {
-        var rollingStock = trainSchedule.rollingStock;
-        return integrator.actionToTargetSpeed(directive, rollingStock);
-    }
-
     public TimelineEvent simulatePhase(Train train, Simulation sim) throws SimulationError {
-        return currentPhaseState.simulate(sim, train, this);
+        return trainSchedule.trainDecisionMaker.simulatePhase(train, sim);
     }
 
     /** Add or update aspects constraint of a signal */

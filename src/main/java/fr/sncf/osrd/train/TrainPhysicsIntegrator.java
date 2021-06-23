@@ -78,6 +78,10 @@ public class TrainPhysicsIntegrator {
         return computeTotalForce(rollingResistance, actionTractionForce) / inertia;
     }
 
+    public double getMaxBrakingForce(RollingStock rollingStock) {
+        return -rollingStock.timetableGamma * inertia;
+    }
+
     /** Computes the force required to keep some speed. */
     public Action actionToTargetSpeed(SpeedDirective speedDirective, RollingStock rollingStock) {
         // the force we'd need to apply to reach the target speed at the next step
@@ -110,7 +114,7 @@ public class TrainPhysicsIntegrator {
         }
 
         // if the resulting force is negative
-        var maxBrakingForce = -rollingStock.timetableGamma * inertia;
+        var maxBrakingForce = getMaxBrakingForce(rollingStock);
         if (actionForce < maxBrakingForce)
             actionForce = maxBrakingForce;
         return Action.brake(Math.abs(actionForce));

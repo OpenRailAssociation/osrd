@@ -13,6 +13,10 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.speedcontroller.generators.*;
+import fr.sncf.osrd.train.decisions.KeyboardInput;
+import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
+import fr.sncf.osrd.speedcontroller.generators.MaxSpeedGenerator;
+import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.train.phases.StopPhase;
@@ -20,10 +24,8 @@ import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class RJSTrainScheduleParser {
     /** Parses a RailJSON train schedule */
@@ -89,7 +91,8 @@ public class RJSTrainScheduleParser {
                 initialDirection,
                 initialRoute,
                 initialSpeed,
-                phases
+                phases,
+                parseDecisionMaker(rjsTrainSchedule.trainControlMethod)
         );
     }
 
@@ -110,6 +113,16 @@ public class RJSTrainScheduleParser {
                 return new MarecoAllowanceGenerator(marecoAllowance.allowanceValue, marecoAllowance.allowanceType, phase);
         } else {
             throw new InvalidSchedule("Unimplemented allowance type");
+        }
+    }
+
+    private static TrainDecisionMaker parseDecisionMaker(String decisionMakerType) throws InvalidSchedule {
+        if (decisionMakerType == null || decisionMakerType.equals("default")) {
+            return new TrainDecisionMaker.DefaultTrainDecisionMaker();
+        } else if (decisionMakerType.equals("keyboard")) {
+            return new KeyboardInput(2);
+        } else {
+            throw new InvalidSchedule(String.format("Unknown decision maker type: %s", decisionMakerType));
         }
     }
 

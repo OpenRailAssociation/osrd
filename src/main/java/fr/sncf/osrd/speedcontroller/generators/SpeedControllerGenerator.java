@@ -30,6 +30,8 @@ public abstract class SpeedControllerGenerator {
     public abstract Set<SpeedController> generate(Simulation sim, TrainSchedule schedule,
                                                   Set<SpeedController> maxSpeed, double initialSpeed);
 
+    /** Generates a map of location -> expected time if we follow the given controllers.
+     * This may be overridden in scenarios when it is already computed when computing the controllers */
     public NavigableMap<Double, Double> getExpectedTimes(Simulation sim,
                                                           TrainSchedule schedule,
                                                           Set<SpeedController> controllers,

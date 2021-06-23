@@ -9,6 +9,7 @@ import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
+import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.infra_state.SignalState;
@@ -30,6 +31,8 @@ import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
+import fr.sncf.osrd.train.phases.SignalNavigatePhase;
+import fr.sncf.osrd.train.phases.SignalNavigatePhase.PhaseEndActionPoint.EndOfPhase;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -147,15 +150,15 @@ public class SimulationEndpoint implements Take {
         public void changePublishedCallback(Change change) {
             if (change.getClass() == RouteState.RouteStatusChange.class) {
                 var routeStatusChange = (RouteState.RouteStatusChange) change;
-                var routeId = infra.routeGraph.getEdge(routeStatusChange.routeIndex).id;
+                var route = infra.routeGraph.getEdge(routeStatusChange.routeIndex);
                 changes.add(new SimulationResultChange.ResponseRouteStatus(
-                        routeId, routeStatusChange.newStatus, sim.getTime()));
+                        route, routeStatusChange.newStatus, sim.getTime()));
             } else if (change.getClass() == Train.TrainStateChange.class) {
                 var trainStateChange = (Train.TrainStateChange) change;
                 var train = trainSchedules.get(trainStateChange.trainID);
                 for (var pos : trainStateChange.positionUpdates)
                     changes.add(new SimulationResultChange.ResponseTrainLocationUpdate(
-                            train, pos.pathPosition, pos.time));
+                            train, pos.pathPosition, pos.time, pos.speed));
             } else if (change.getClass() == TrainCreatedEvent.TrainCreationPlanned.class) {
                 var trainCreationPlanned = (TrainCreatedEvent.TrainCreationPlanned) change;
                 trainSchedules.put(trainCreationPlanned.schedule.trainID, trainCreationPlanned.schedule);
@@ -166,11 +169,10 @@ public class SimulationEndpoint implements Take {
                 for (var aspect : aspectChange.aspects)
                     aspects.add(aspect.id);
                 changes.add(new SimulationResultChange.ResponseSignalChange(signal, aspects, sim.getTime()));
-            } else if (change.getClass() == OperationalPointChange.class) {
-                var opChange = (OperationalPointChange) change;
-                var train = opChange.train.schedule;
-                var op = opChange.op;
-                changes.add(new SimulationResultChange.ResponseOperationalPointUpdate(train, op, sim.getTime()));
+            } else if (change.getClass() == EndOfPhase.class) {
+                var phaseEnd = (EndOfPhase) change;
+                changes.add(new SimulationResultChange.ResponsePhaseEndUpdate(phaseEnd.train, phaseEnd.phaseIndex,
+                        sim.getTime()));
             }
         }
 
@@ -188,7 +190,7 @@ public class SimulationEndpoint implements Take {
                         .withSubtype(SimulationResultChange.ResponseRouteStatus.class, "route_status")
                         .withSubtype(SimulationResultChange.ResponseTrainLocationUpdate.class, "train_location")
                         .withSubtype(SimulationResultChange.ResponseSignalChange.class, "signal_change")
-                        .withSubtype(SimulationResultChange.ResponseOperationalPointUpdate.class, "operational_point")
+                        .withSubtype(ResponsePhaseEndUpdate.class, "phase_end")
         );
 
         public final double time;
@@ -204,47 +206,77 @@ public class SimulationEndpoint implements Take {
             this.time = time;
         }
 
-        private static final class ResponseRouteStatus extends SimulationResultChange {
+        public static final class ResponseRouteStatus extends SimulationResultChange {
             private final String id;
             private final RouteStatus status;
+            @Json(name = "start_track_section")
+            private final String startTrackSection;
+            @Json(name = "start_offset")
+            private final double startOffset;
+            @Json(name = "end_track_section")
+            private final String endTrackSection;
+            @Json(name = "end_offset")
+            private final double endOffset;
 
-            public ResponseRouteStatus(String routeId, RouteStatus status, double time) {
+            public ResponseRouteStatus(Route route, RouteStatus status, double time) {
                 super(time);
-                this.id = routeId;
+                this.id = route.id;
                 this.status = status;
+                var firstTvdSectionPathDir = route.tvdSectionsPathDirections.get(0);
+                var start = route.tvdSectionsPaths.get(0).getTrackSections(firstTvdSectionPathDir)[0];
+                this.startTrackSection = start.edge.id;
+                this.startOffset = start.getBeginPosition();
+                var lastIndex = route.tvdSectionsPaths.size() - 1;
+                var lastTvdSectionPathDir = route.tvdSectionsPathDirections.get(lastIndex);
+                var lastTracks = route.tvdSectionsPaths.get(lastIndex).getTrackSections(lastTvdSectionPathDir);
+                var end = lastTracks[lastTracks.length - 1];
+                this.endTrackSection = end.edge.id;
+                this.endOffset = end.getEndPosition();
             }
         }
 
-        private static final class ResponseTrainLocationUpdate extends SimulationResultChange {
+        public static final class ResponseTrainLocationUpdate extends SimulationResultChange {
             @Json(name = "train_name")
             private final String trainName;
-            @Json(name = "track_section")
-            private final String trackSection;
-            private final double offset;
+            @Json(name = "head_track_section")
+            private final String headTrackSection;
+            @Json(name = "head_offset")
+            private final double headOffset;
+            @Json(name = "tail_track_section")
+            private final String tailTrackSection;
+            @Json(name = "tail_offset")
+            private final double tailOffset;
+            private final double speed;
 
-            public ResponseTrainLocationUpdate(TrainSchedule trainSchedule, double pathOffset, double time) {
+            public ResponseTrainLocationUpdate(TrainSchedule trainSchedule, double pathOffset,
+                                               double time, double speed) {
                 super(time);
-                var location = trainSchedule.findLocation(pathOffset);
+                var headLocation = trainSchedule.findLocation(pathOffset);
                 this.trainName = trainSchedule.trainID;
-                this.trackSection = location.edge.id;
-                this.offset = location.offset;
+                this.headTrackSection = headLocation.edge.id;
+                this.headOffset = headLocation.offset;
+                var tailLocation = trainSchedule.findLocation(
+                        Math.max(0, pathOffset - trainSchedule.rollingStock.length));
+                this.tailTrackSection = tailLocation.edge.id;
+                this.tailOffset = tailLocation.offset;
+                this.speed = speed;
             }
         }
 
-        private static final class ResponseOperationalPointUpdate extends SimulationResultChange {
+        public static final class ResponsePhaseEndUpdate extends SimulationResultChange {
             @Json(name = "train_name")
             private final String trainName;
-            @Json(name = "operational_point")
-            private final String operationalPoint;
+            @Json(name = "phase_index")
+            private final int phaseIndex;
 
-            public ResponseOperationalPointUpdate(TrainSchedule trainSchedule, OperationalPoint op, double time) {
+            public ResponsePhaseEndUpdate(Train train, int phaseIndex, double time) {
                 super(time);
-                this.trainName = trainSchedule.trainID;
-                this.operationalPoint = op.id;
+                this.trainName = train.getName();
+                this.phaseIndex = phaseIndex;
             }
         }
 
-        private static final class ResponseSignalChange extends SimulationResultChange {
+        public static final class ResponseSignalChange extends SimulationResultChange {
             private final String signal;
             private final List<String> aspects;
 
