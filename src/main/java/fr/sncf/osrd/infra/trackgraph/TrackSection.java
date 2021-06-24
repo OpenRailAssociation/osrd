@@ -50,6 +50,7 @@ public final class TrackSection extends BiNEdge<TrackSection> {
     public final IntervalTree<RouteFragment> backwardRoutes = new IntervalTree<>();
 
     // the data structure used for the slope automatically negates it when iterated on backwards
+    //TODO: transform slope into an extension of sorted sequence
     public final DoubleOrientedRangeSequence slope = new DoubleOrientedRangeSequence();
     public final ArrayList<RangeValue<SpeedSection>> forwardSpeedSections = new ArrayList<>();
     public final ArrayList<RangeValue<SpeedSection>> backwardSpeedSections = new ArrayList<>();
