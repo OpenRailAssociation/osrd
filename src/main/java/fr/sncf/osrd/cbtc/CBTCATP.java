@@ -48,7 +48,8 @@ public class CBTCATP {
 
         boolean seen = false;
         double switchPosition = 0;
-        for (TrackSectionRange range : fullPath) {
+        for (int i = 0; i < fullPath.size(); i++) {
+            TrackSectionRange range = fullPath.get(i);
             switchPosition += range.length();
             if (!seen && range.edge.id == curTrackSectionPos.edge.id) {
                 seen = true;
@@ -57,10 +58,14 @@ public class CBTCATP {
                 var nodeIndex = range.edge.getEndNode(range.direction);
                 var node = sim.infra.trackGraph.getNode(nodeIndex);
 
-                if (node.getClass() == Switch.class && sim.infraState.getSwitchState(((Switch) node).switchIndex)
-                        .getPosition() == SwitchPosition.MOVING) {
-                    logger.debug("CLOSED SWITCH POSITION : {} | {}", switchPosition, location.getPathPosition());
-                    return switchPosition;
+                if (node.getClass() == Switch.class) {
+                    var switchState = sim.infraState.getSwitchState(((Switch) node).switchIndex);
+                    var nextTrackSection = (i < fullPath.size() - 1) ? fullPath.get(i + 1) : null;
+                    if (switchState.getPosition() == SwitchPosition.MOVING || nextTrackSection == null
+                            || nextTrackSection.edge.id != switchState.getBranch().id) {
+                        logger.debug("CLOSED SWITCH POSITION : {} | {}", switchPosition, location.getPathPosition());
+                        return switchPosition;
+                    }
                 }
             }
         }
