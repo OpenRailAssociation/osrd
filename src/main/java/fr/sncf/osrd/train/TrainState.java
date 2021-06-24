@@ -194,12 +194,12 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     }
 
     /**  Create a location change from the current state to the given time */
-    public Train.TrainStateChange evolveStateUntilTime(Simulation sim, double time) {
+    public Train.TrainStateChange evolveStateUntilTime(Simulation sim, double targetTime) {
         var locationChange = new Train.TrainStateChange(sim, trainSchedule.trainID, this);
 
-        while (this.time + 1.0 < time)
+        while (this.time + 1.0 < targetTime)
             step(locationChange, 1.0, Double.POSITIVE_INFINITY);
-        step(locationChange, sim.getTime() - time, Double.POSITIVE_INFINITY);
+        step(locationChange, targetTime - this.time, Double.POSITIVE_INFINITY);
 
         return locationChange;
     }
