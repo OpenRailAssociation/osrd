@@ -3,10 +3,9 @@ package fr.sncf.osrd.railjson.schema.infra.trackranges;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
 
 public class RJSSlope extends RJSTrackRange {
-
     public double gradient;
-    public RJSSlope(
-            ApplicableDirection applicableDirection,
+
+    RJSSlope(
             double begin,
             double end,
             double gradient
