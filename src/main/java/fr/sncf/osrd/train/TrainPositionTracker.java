@@ -183,12 +183,14 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
 
     /** Computes the maximum grade (slope) under the train. */
     public double maxTrainGrade() {
-        //TODO: change with the max of the absolute value
         var val = 0.;
+        var maxVal = 0.;
         for (var track : trackSectionRanges) {
-            for (var slope : TrackSection.getSlope(track.edge, track.direction).data) {
-                if (track.containsPosition(slope.position))
-                    val = Double.max(slope.value, val);
+            for (var slope : track.edge.slope.getValuesInRange(track.getBeginPosition(), track.getEndPosition())) {
+                if (maxVal < Math.abs(slope)) {
+                    val = slope;
+                    maxVal = Math.abs(slope);
+                }
             }
         }
         return val;

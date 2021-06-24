@@ -107,8 +107,6 @@ public final class RailMLParser {
                 rjsTvdSections,
                 rjsRoutes,
                 rjsSpeedSections,
-                new ArrayList<>(),
-                new ArrayList<>(),
                 rjsAspects,
                 new ArrayList<>());
     }
