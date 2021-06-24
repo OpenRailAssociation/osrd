@@ -18,6 +18,7 @@ class TrainSchedule(models.Model):
     departure_time = models.FloatField()
     path = models.ForeignKey(Path, on_delete=models.CASCADE)
     initial_speed = models.FloatField()
+    labels = models.ManyToManyField("TrainScheduleLabel", blank=True)
 
 
 class TrainScheduleResult(models.Model):
@@ -32,3 +33,7 @@ class Simulation(models.Model):
     timetable = models.ForeignKey(Timetable, on_delete=models.DO_NOTHING)
     start_time = models.DateTimeField(auto_now_add=True)
     started_by = models.UUIDField()
+
+
+class TrainScheduleLabel(models.Model):
+    label = models.CharField(max_length=128, unique=True)
