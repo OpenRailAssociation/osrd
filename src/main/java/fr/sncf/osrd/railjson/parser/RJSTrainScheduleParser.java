@@ -12,6 +12,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.cbtc.CBTCPhase;
 import fr.sncf.osrd.train.decisions.KeyboardInput;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.speedcontroller.generators.MaxSpeedGenerator;
@@ -143,6 +144,24 @@ public class RJSTrainScheduleParser {
 
             var endLocation = parseLocation(infra, rjsNavigate.endLocation);
             return SignalNavigatePhase.from(routes, driverSightDistance, startLocation,
+                    endLocation, targetSpeedGenerator);
+        }
+        if (rjsPhase.getClass() == RJSTrainPhase.CBTC.class) {
+            var rjsNavigate = (RJSTrainPhase.CBTC) rjsPhase;
+            var routes = new ArrayList<Route>();
+            for (var rjsRoute : rjsNavigate.routes) {
+                var route = infra.routeGraph.routeMap.get(rjsRoute.id);
+                if (route == null)
+                    throw new UnknownRoute("unknown route in navigate phase", rjsRoute.id);
+                routes.add(route);
+            }
+
+            var driverSightDistance = rjsNavigate.driverSightDistance;
+            if (Double.isNaN(driverSightDistance) || driverSightDistance < 0)
+                throw new InvalidSchedule("invalid driver sight distance");
+
+            var endLocation = parseLocation(infra, rjsNavigate.endLocation);
+            return CBTCPhase.from(routes, driverSightDistance, startLocation,
                     endLocation, targetSpeedGenerator);
         }
         throw new RuntimeException("unknown train phase");

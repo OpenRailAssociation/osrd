@@ -6,6 +6,7 @@ import com.squareup.moshi.*;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.cbtc.CBTCPhase;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
@@ -70,6 +71,7 @@ public class ChangeSerializer {
             .add(PolymorphicJsonAdapterFactory.of(Phase.class, "phaseType")
                     .withSubtype(SignalNavigatePhase.class, "navigatePhase")
                     .withSubtype(StopPhase.class, "stopPhase")
+                    .withSubtype(CBTCPhase.class, "cbtcPhase")
             )
             .add(adaptPolymorphicType(PhaseState.class, "phaseStateType"))
             .add(PolymorphicJsonAdapterFactory.of(ActionPoint.class, "actionPointType")

@@ -18,6 +18,7 @@ public abstract class RJSTrainPhase {
             PolymorphicJsonAdapterFactory.of(RJSTrainPhase.class, "type")
                     .withSubtype(RJSTrainPhase.Navigate.class, "navigate")
                     .withSubtype(RJSTrainPhase.Stop.class, "stop")
+                    .withSubtype(RJSTrainPhase.CBTC.class, "cbtc")
     );
 
     /** What generator to use to generate the target speed */
@@ -58,6 +59,34 @@ public abstract class RJSTrainPhase {
 
         public Stop(double duration) {
             this.duration = duration;
+        }
+    }
+
+    public static final class CBTC extends RJSTrainPhase {
+        /** The sequence of routes the train should take.
+         * The train must be on the first route when it enters this phase. */
+        public ID<RJSRoute>[] routes;
+
+        /** The location of the head of the train when it exits this phase */
+        @Json(name = "end_location")
+        public RJSTrackLocation endLocation;
+
+        /** The distance at which the driver can see objects on the tracks */
+        @Json(name = "driver_sight_distance")
+        public double driverSightDistance;
+
+        /** Create a navigation phase */
+        public CBTC(ID<RJSRoute>[] routes, RJSTrackLocation endLocation, double driverSightDistance) {
+            this.routes = routes;
+            this.endLocation = endLocation;
+            this.driverSightDistance = driverSightDistance;
+        }
+
+        /** Create an uninitialized navigation phase */
+        public CBTC() {
+            this.routes = null;
+            this.endLocation = null;
+            this.driverSightDistance = Double.NaN;
         }
     }
 }
