@@ -6,6 +6,8 @@ import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSOperationalPointPart;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCurve;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSectionPart;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 
@@ -16,6 +18,9 @@ import java.util.Objects;
 public class RJSTrackSection implements Identified {
     public String id;
     public double length;
+
+    public List<RJSSlope> slopes;
+    public List<RJSCurve> curves;
 
     /** List of waypoints (detectors and buffer stops) on the track section */
     @Json(name = "route_waypoints")
