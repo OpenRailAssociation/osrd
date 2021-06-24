@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.serializers import (
     Serializer,
+    Field,
     ModelSerializer,
     SerializerMethodField,
 )
@@ -26,6 +27,7 @@ from osrd_infra.models import (
     # Simulation
     Timetable,
     TrainSchedule,
+    TrainScheduleLabel,
 )
 
 from osrd_infra.models.common import EnumSerializer
@@ -162,7 +164,20 @@ class TimetableSerializer(ModelSerializer):
         fields = "__all__"
 
 
+class LabelsField(Field):
+    def to_representation(self, value):
+        return [label.label for label in value.all()]
+
+    def to_internal_value(self, data):
+        return [
+            TrainScheduleLabel.objects.get_or_create(label=label)[0].pk
+            for label in data
+        ]
+
+
 class TrainScheduleSerializer(ModelSerializer):
+    labels = LabelsField(default=[])
+
     class Meta:
         model = TrainSchedule
         fields = "__all__"
