@@ -104,6 +104,12 @@ public class RailJSONParser {
             speedSections.put(rjsSpeedSection.id, speedSection);
         }
 
+        //TODO parse slopes
+        //for (var rjsSlopes : railJSON.slopes) {}
+
+        //TODO parse curves
+        //for (var rjsCurves : railJSON.curves) {}
+
         var waypointsMap = new HashMap<String, Waypoint>();
         var detectorIdToSignalMap = new HashMap<String, Signal>();
 
