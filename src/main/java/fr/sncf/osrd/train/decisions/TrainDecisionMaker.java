@@ -28,6 +28,9 @@ public abstract class TrainDecisionMaker {
         return trainState.currentPhaseState.simulate(sim, train, trainState);
     }
 
+    /** Return a list of active controller.
+     *  If isLate is true this function uses the max speed controller to catch up with the target time.
+     */
     public Set<SpeedController> getActiveSpeedControllers(boolean isLate) {
         var speedInstructions = trainState.currentPhaseState.speedInstructions;
         var activeControllers = new HashSet<SpeedController>();

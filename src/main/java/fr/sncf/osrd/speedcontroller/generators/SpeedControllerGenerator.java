@@ -102,6 +102,7 @@ public abstract class SpeedControllerGenerator {
                                                                       double end,
                                                                       double initialSpeed) {
         var location = Train.getInitialLocation(schedule, sim);
+        location.ignoreInfraState = true;
         location.updatePosition(schedule.rollingStock.length, begin);
         var totalLength = 0;
         for (var range : schedule.fullPath)
