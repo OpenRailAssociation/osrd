@@ -104,12 +104,6 @@ public class RailJSONParser {
             speedSections.put(rjsSpeedSection.id, speedSection);
         }
 
-        //TODO parse slopes
-        //for (var rjsSlopes : railJSON.slopes) {}
-
-        //TODO parse curves
-        //for (var rjsCurves : railJSON.curves) {}
-
         var waypointsMap = new HashMap<String, Waypoint>();
         var detectorIdToSignalMap = new HashMap<String, Signal>();
 
@@ -186,6 +180,12 @@ public class RailJSONParser {
                     detectorIdToSignalMap.put(rjsSignal.linkedDetector.id, signal);
             }
             signalsBuilder.build();
+
+            // Parse slopes
+            for (var rjsSlope : trackSection.slopes)
+                infraTrackSection.slope.addRange(rjsSlope.begin, rjsSlope.end, rjsSlope.gradient);
+
+            // TODO: Parse curves
         }
 
         // Fill switch with their right / left track sections
