@@ -226,10 +226,8 @@ public class Helpers {
      * The purpose of this function is to edit the phases and call makeCOnfigWithGivenPhases afterwards */
     public static RJSTrainPhase[] loadRJSPhases(String simulationPath) {
         try {
-            ClassLoader classLoader = Helpers.class.getClassLoader();
-            var path = classLoader.getResource(simulationPath);
-            assert path != null;
-            var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, Path.of(path.getFile()));
+            var path = getResourcePath(simulationPath);
+            var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, path);
             return schedule.trainSchedules.stream().findAny().orElseThrow().phases;
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -238,11 +236,8 @@ public class Helpers {
 
     /** Loads the given config, but replaces the given phases in the schedule */
     public static Config makeConfigWithGivenPhases(RJSTrainPhase[] phases, String baseConfigPath) {
-        ClassLoader classLoader = Helpers.class.getClassLoader();
-        var configPath = classLoader.getResource(baseConfigPath);
-        assert configPath != null;
         try {
-            var path = Path.of(configPath.getFile());
+            var path = getResourcePath(baseConfigPath);
             var baseDirPath = path.getParent();
             var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, path);
             var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
