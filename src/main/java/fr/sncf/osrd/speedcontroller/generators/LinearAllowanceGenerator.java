@@ -15,6 +15,7 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
     private final MarginType allowanceType;
     private final double value;
 
+    /** Constructor */
     public LinearAllowanceGenerator(double allowanceValue, MarginType allowanceType, RJSTrainPhase phase) {
         super(phase);
         this.allowanceType = allowanceType;

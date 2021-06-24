@@ -1,5 +1,7 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
+import static java.lang.Math.min;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
@@ -15,8 +17,6 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-
-import static java.lang.Math.min;
 
 /** This class is used to generate a set of SpeedController (similar to a speed at any given point). */
 public abstract class SpeedControllerGenerator {
@@ -147,9 +147,9 @@ public abstract class SpeedControllerGenerator {
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     protected double findPhaseInitialSpeed(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed) {
         double phasePosition = findPhaseInitialLocation(schedule);
-        var Speeds = getExpectedSpeeds(sim, schedule, maxSpeed, 1,
+        var speeds = getExpectedSpeeds(sim, schedule, maxSpeed, 1,
                 0, phasePosition, schedule.initialSpeed);
-        return Speeds.lastEntry().getValue();
+        return speeds.lastEntry().getValue();
     }
 
 

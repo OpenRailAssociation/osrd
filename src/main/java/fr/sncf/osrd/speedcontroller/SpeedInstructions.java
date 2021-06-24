@@ -48,7 +48,6 @@ public class SpeedInstructions {
             initialPosition = state.location.getPathPosition();
         }
 
-
         maxSpeedControllers = new MaxSpeedGenerator().generate(sim, schedule, null, 0);
         targetSpeedControllers = maxSpeedControllers;
         for (var generator : targetSpeedGenerators)

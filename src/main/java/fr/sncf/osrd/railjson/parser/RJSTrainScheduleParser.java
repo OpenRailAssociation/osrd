@@ -103,14 +103,12 @@ public class RJSTrainScheduleParser {
         else if (allowance instanceof RJSAllowance.LinearAllowance) {
             var linearAllowance = (RJSAllowance.LinearAllowance) allowance;
             return new LinearAllowanceGenerator(linearAllowance.allowanceValue, linearAllowance.allowanceType, phase);
-        }
-        else if (allowance instanceof RJSAllowance.ConstructionAllowance) {
+        } else if (allowance instanceof RJSAllowance.ConstructionAllowance) {
             var constructionAllowance = (RJSAllowance.ConstructionAllowance) allowance;
             return new ConstructionAllowanceGenerator(constructionAllowance.allowanceValue, phase);
-        }
-        else if (allowance instanceof RJSAllowance.MarecoAllowance) {
-                var marecoAllowance = (RJSAllowance.MarecoAllowance) allowance;
-                return new MarecoAllowanceGenerator(marecoAllowance.allowanceValue, marecoAllowance.allowanceType, phase);
+        } else if (allowance instanceof RJSAllowance.MarecoAllowance) {
+            var marecoAllowance = (RJSAllowance.MarecoAllowance) allowance;
+            return new MarecoAllowanceGenerator(marecoAllowance.allowanceValue, marecoAllowance.allowanceType, phase);
         } else {
             throw new InvalidSchedule("Unimplemented allowance type");
         }

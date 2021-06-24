@@ -6,13 +6,17 @@ public class SortedDoubleMap extends TreeMap<Double, Double> {
 
     private static final long serialVersionUID = -4311554160237448509L;
 
+    /** Default constructor */
     public SortedDoubleMap() {
         super();
     }
 
+    /** Copy constructor */
     public SortedDoubleMap(TreeMap<Double, Double> other) {
         super(other);
     }
+
+    /** Interpolates linearly using the values before and after x */
     public double interpolate(double x) {
         // last pair of (position, speed) before the given position
         var entryBefore = floorEntry(x);

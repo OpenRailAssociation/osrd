@@ -65,9 +65,11 @@ public final class SignalNavigatePhase implements Phase {
             TrackSectionLocation endLocation,
             List<SpeedControllerGenerator> targetSpeedGenerators
     ) {
-        var trackSectionPath = Route.routesToTrackSectionRange(routes, startLocation, endLocation);
+        var trackSectionPath = Route.routesToTrackSectionRange(routes,
+                startLocation, endLocation);
         var actionPointPath = trackSectionToActionPointPath(driverSightDistance, trackSectionPath);
-        return new SignalNavigatePhase(routes, endLocation, trackSectionPath, actionPointPath, driverSightDistance, targetSpeedGenerators);
+        return new SignalNavigatePhase(routes, endLocation, trackSectionPath, actionPointPath,
+                driverSightDistance, targetSpeedGenerators);
     }
 
     private static ArrayList<Interaction> trackSectionToActionPointPath(

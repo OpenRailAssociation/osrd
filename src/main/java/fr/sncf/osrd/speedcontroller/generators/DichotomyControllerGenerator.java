@@ -69,7 +69,8 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     protected abstract double getFirstHighEstimate();
 
     /** Generates a set of speed controllers given the dichotomy value */
-    protected abstract Set<SpeedController> getSpeedControllers(TrainSchedule schedule, double value, double begin, double end);
+    protected abstract Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
+                                                                double value, double begin, double end);
 
     /** Runs the dichotomy */
     private Set<SpeedController> binarySearch(Simulation sim, TrainSchedule schedule) {
@@ -100,7 +101,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
             // saveGraph(nextSpeedControllers, sim, schedule, "speeds-" + i + ".csv");
             if (i++ > 20)
                 throw new RuntimeException("Did not converge");
-        } while( Math.abs(time - targetTime) > precision);
+        } while (Math.abs(time - targetTime) > precision);
         return nextSpeedControllers;
     }
 

@@ -26,6 +26,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     private final RJSAllowance.MarecoAllowance.MarginType allowanceType;
     private final double value;
 
+    /** Constructor */
     public MarecoAllowanceGenerator(double allowanceValue, MarginType allowanceType, RJSTrainPhase phase) {
         super(phase, 5);
         this.allowanceType = allowanceType;
@@ -54,7 +55,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             position += 1;
         }
         // TODO find better way to define it
-        return max*2;
+        return max * 2;
     }
 
     private List<Double> findPositionSameSpeedAsVF(SortedDoubleMap speeds, double vf) {
@@ -105,7 +106,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             // TODO (optimization): support negative delta
             location = convertPosition(schedule, sim, location.getPathPosition() - update.positionDelta);
 
-        } while(speed < speeds.interpolate(location.getPathPosition()));
+        } while (speed < speeds.interpolate(location.getPathPosition()));
         return new CoastingSpeedController(location.getPathPosition(), endLocation);
     }
 
@@ -129,7 +130,8 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     }
 
     @Override
-    protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule, double v1, double startLocation, double endLocation) {
+    protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule, double v1,
+                                                       double startLocation, double endLocation) {
         double timestep = 0.01; // TODO: link this timestep to the rest of the simulation
         var wle = (2 * schedule.rollingStock.C * v1 + schedule.rollingStock.B) * v1 * v1;
         var vf = wle * v1 / (wle + schedule.rollingStock.rollingResistance(v1) * v1);
