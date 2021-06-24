@@ -57,12 +57,6 @@ public class RJSInfra {
     /** The list of routes */
     public Collection<RJSRoute> routes;
 
-    /** The list of slopes */
-    public Collection<RJSSlope> slopes;
-
-    /** The list of curves */
-    public Collection<RJSCurve> curves;
-
     /** The list of speed sections */
     @Json(name = "speed_sections")
     public Collection<RJSSpeedSection> speedSections;
@@ -83,8 +77,6 @@ public class RJSInfra {
             Collection<RJSTVDSection> tvdSections,
             Collection<RJSRoute> routes,
             Collection<RJSSpeedSection> speedSections,
-            Collection<RJSSlope> slopes,
-            Collection<RJSCurve> curves,
             Collection<RJSAspect> aspects,
             List<RJSRSFunction> signalFunctions
     ) {
@@ -95,8 +87,6 @@ public class RJSInfra {
         this.tvdSections = tvdSections;
         this.routes = routes;
         this.speedSections = speedSections;
-        this.slopes = slopes;
-        this.curves = curves;
         this.aspects = aspects;
         this.scriptFunctions = signalFunctions;
     }
@@ -106,8 +96,6 @@ public class RJSInfra {
      */
     public RJSInfra() {
         this(
-                new ArrayList<>(),
-                new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),
