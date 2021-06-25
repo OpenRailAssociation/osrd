@@ -94,11 +94,14 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         );
     }
 
+    /** Checks if the current phase is the last one */
+    public boolean isDuringLastPhase() {
+        return currentPhaseIndex == trainSchedule.phases.size() - 1;
+    }
+
     /** Create a new TrainState pointing at the next phase */
     public TrainState nextPhase(Simulation sim) {
-        var nextPhase = currentPhaseIndex + 1;
-
-        if (nextPhase == trainSchedule.phases.size())
+        if (isDuringLastPhase())
             return new TrainState(
                     time,
                     location.clone(),
@@ -110,6 +113,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                     new ArrayDeque<>(actionPointsUnderTrain)
                     );
 
+        var nextPhase = currentPhaseIndex + 1;
         var nextPhaseState = trainSchedule.phases.get(nextPhase).getState(sim, trainSchedule);
         return new TrainState(
                 time,
@@ -154,7 +158,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         assert action.type != Action.ActionType.EMERGENCY_BRAKING;
 
         // run the physics sim
-        var update = integrator.applyActionAndUpdate(action, distanceStep);
+        var update = integrator.computeUpdate(action, distanceStep);
 
         // update location
         location.updatePosition(rollingStock.length, update.positionDelta);

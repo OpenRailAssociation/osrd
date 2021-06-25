@@ -10,6 +10,8 @@ import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.infra.InvalidInfraException;
@@ -26,6 +28,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
@@ -160,7 +164,7 @@ public class Helpers {
             return RJSInfra.adapter.fromJson(jsonReader);
         } catch (IOException e) {
             fail(e);
-            return null;
+            throw new RuntimeException();
         }
     }
 
@@ -170,7 +174,7 @@ public class Helpers {
             return Config.readFromFile(getResourcePath(path));
         } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule e) {
             fail(e);
-            return null;
+            throw new RuntimeException();
         }
     }
 
@@ -179,22 +183,70 @@ public class Helpers {
         return getBaseConfig("tiny_infra/config_railjson.json");
     }
 
-    /** Generates a config where all the RJSRunningTieParameters have been replaced by the one given */
-    public static Config makeConfigWithSpeedParams(RJSAllowance params) {
-        ClassLoader classLoader = Helpers.class.getClassLoader();
-        var configPath = classLoader.getResource("tiny_infra/config_railjson.json");
-        assert configPath != null;
+    /** Loads the given config file, but replaces the given allowance parameters in all the phases */
+    public static Config makeConfigWithSpeedParams(List<RJSAllowance> params, String baseConfigPath) {
+        var paramsList = params == null ? null : Collections.singletonList(params);
+        return makeConfigWithSpeedParamsList(paramsList, baseConfigPath);
+    }
+
+    /** Loads the given config file, but replaces the given allowance parameters in the phases
+     * the nth list of allowance is used for the nth phase */
+    public static Config makeConfigWithSpeedParamsList(List<List<RJSAllowance>> params, String baseConfigPath) {
         try {
-            var path = Path.of(configPath.getFile());
+            var path = getResourcePath(baseConfigPath);
             var baseDirPath = path.getParent();
             var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, path);
             var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
             var infra = Infra.parseFromFile(jsonConfig.infraType, infraPath.toString());
             var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
             var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
-            for (var trainSchedule : schedule.trainSchedules)
-                for (var phase : trainSchedule.phases)
-                    phase.allowance = params;
+            for (var trainSchedule : schedule.trainSchedules) {
+                for (int i = 0; i < trainSchedule.phases.length; i++) {
+                    trainSchedule.phases[i].allowances = params == null ? null
+                            : params.get(i % params.size()).toArray(new RJSAllowance[0]);
+                }
+            }
+            var trainSchedules = RJSSimulationParser.parse(infra, schedule);
+            return new Config(
+                    jsonConfig.simulationTimeStep,
+                    infra,
+                    trainSchedules,
+                    jsonConfig.simulationStepPause,
+                    jsonConfig.showViewer,
+                    jsonConfig.realTimeViewer,
+                    jsonConfig.changeReplayCheck
+            );
+        } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule  e) {
+            fail(e);
+            throw new RuntimeException();
+        }
+    }
+
+    /** Loads the phases in the given simulation file
+     * The purpose of this function is to edit the phases and call makeCOnfigWithGivenPhases afterwards */
+    public static RJSTrainPhase[] loadRJSPhases(String simulationPath) {
+        try {
+            var path = getResourcePath(simulationPath);
+            var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, path);
+            return schedule.trainSchedules.stream().findAny().orElseThrow().phases;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /** Loads the given config, but replaces the given phases in the schedule */
+    public static Config makeConfigWithGivenPhases(RJSTrainPhase[] phases, String baseConfigPath) {
+        try {
+            var path = getResourcePath(baseConfigPath);
+            var baseDirPath = path.getParent();
+            var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, path);
+            var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
+            var infra = Infra.parseFromFile(jsonConfig.infraType, infraPath.toString());
+            var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
+            var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
+            for (var trainSchedule : schedule.trainSchedules) {
+                trainSchedule.phases = phases;
+            }
             var trainSchedules = RJSSimulationParser.parse(infra, schedule);
             return new Config(
                     jsonConfig.simulationTimeStep,
@@ -207,14 +259,18 @@ public class Helpers {
             );
         } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule e) {
             fail(e);
-            return null;
+            throw new RuntimeException();
         }
+    }
+
+    /** Generates a config where all the RJSRunningTieParameters have been replaced by the one given */
+    public static Config makeConfigWithSpeedParams(List<RJSAllowance> params) {
+        return makeConfigWithSpeedParams(params, "tiny_infra/config_railjson.json");
     }
 
     /** Go through all the events in the simulation, fails if an exception is thrown */
     public static ArrayList<TimelineEvent> run(Simulation sim) {
         var config = getBaseConfig();
-        assert config != null;
         return run(sim, config);
     }
 
@@ -224,7 +280,7 @@ public class Helpers {
             return runWithExceptions(sim, config);
         } catch (SimulationError e) {
             fail(e);
-            return null;
+            throw new RuntimeException();
         }
     }
 
@@ -243,7 +299,6 @@ public class Helpers {
     /** Go through all the events in the simulation, exceptions pass through */
     public static ArrayList<TimelineEvent> runWithExceptions(Simulation sim) throws SimulationError {
         var config = getBaseConfig();
-        assert config != null;
         return runWithExceptions(sim, config);
     }
 

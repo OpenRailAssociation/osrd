@@ -1,9 +1,10 @@
-package fr.sncf.osrd;
+package fr.sncf.osrd.train;
 
-import static fr.sncf.osrd.TestTrains.FAST_NO_FRICTION_TRAIN;
+import static fr.sncf.osrd.train.TestTrains.FAST_NO_FRICTION_TRAIN;
 import static org.junit.jupiter.api.Assertions.*;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra.*;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.trackgraph.BufferStop;

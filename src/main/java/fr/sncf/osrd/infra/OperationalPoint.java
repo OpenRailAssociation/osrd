@@ -46,4 +46,9 @@ public class OperationalPoint implements ActionPoint {
         var change = new OperationalPointChange(sim, train, this);
         sim.publishChange(change);
     }
+
+    @Override
+    public String toString() {
+        return String.format("OperationalPoint {%s}", id);
+    }
 }

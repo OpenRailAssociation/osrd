@@ -1,11 +1,9 @@
-package fr.sncf.osrd;
+package fr.sncf.osrd.train;
 
-import static fr.sncf.osrd.TestTrains.REALISTIC_FAST_TRAIN;
+import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.train.TrainPhysicsIntegrator;
 import org.junit.jupiter.api.Test;
 
 
