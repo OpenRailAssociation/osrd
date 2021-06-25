@@ -65,7 +65,8 @@ public class CBTCATP {
                     var switchState = sim.infraState.getSwitchState(((Switch) node).switchIndex);
                     var nextTrackSection = (i < fullPath.size() - 1) ? fullPath.get(i + 1) : null;
                     if (switchState.getPosition() == SwitchPosition.MOVING || nextTrackSection == null
-                            || nextTrackSection.edge.id != switchState.getBranch().id) {
+                            || nextTrackSection.edge.id != switchState.getBranch().id
+                                    && range.edge.id != switchState.getBranch().id) {
                         logger.debug("CLOSED SWITCH POSITION : {} | {}", switchPosition - 50,
                                 location.getPathPosition());
                         return switchPosition - 50; // TODO : change 50 for a meaningfull variable
