@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
+import { updateRollingStockID } from 'reducers/osrdconf';
+import { useDispatch } from 'react-redux';
 import ProgressSNCF from 'common/BootstrapSNCF/ProgressSNCF';
 import { BsLightningFill } from 'react-icons/bs';
 import { MdLocalGasStation } from 'react-icons/md';
@@ -23,6 +25,7 @@ const genImagesCompo = (data) => {
 };
 
 export default function TrainCompoCard(props) {
+  const dispatch = useDispatch();
   const {
     data,
     displayDetails,
@@ -66,9 +69,10 @@ export default function TrainCompoCard(props) {
   return (
     <div
       className={`traincompo-container mb-3 ${active ? 'active' : ''}`}
-      onClick={() => displayDetails(data.codenbengin)}
+      onClick={() => dispatch(updateRollingStockID(data.id))}
       role="button"
       tabIndex={0}
+      data-dismiss="modal"
     >
       <div className="traincompo-header">
         <div className="traincompo-title">{data.name}</div>
@@ -82,12 +86,8 @@ export default function TrainCompoCard(props) {
         <div className="row">
           <div className="col-sm-8">
             <div className="traincompo-subtitle">
-              {data.materielanalyse}
-              <br />
               <small className="text-primary mr-1">ID</small>
               {data.id}
-              <small className="text-primary ml-2 mr-1">SOURCE</small>
-              <small className="text-muted">{data.source}</small>
             </div>
           </div>
           <div className="col-sm-4">

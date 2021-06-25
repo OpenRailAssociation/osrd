@@ -1,53 +1,59 @@
-export default function formatConf(setErrorMessages, t, osrdconf, originTime) {
-  const errorMessages = [];
+export default function formatConf(dispatch, setFailure, t, osrdconf, originTime) {
+  let error = false;
+  if (!osrdconf.origin) {
+    error = true;
+    dispatch(setFailure({
+      name: t('osrdconf:errorMessages.title'),
+      message: t('osrdconf:errorMessages.noOrigin'),
+    }));
+  }
+  if (!osrdconf.originTime) {
+    error = true;
+    dispatch(setFailure({
+      name: t('osrdconf:errorMessages.title'),
+      message: t('osrdconf:errorMessages.noOriginTime'),
+    }));
+  }
+  if (!osrdconf.destination) {
+    error = true;
+    dispatch(setFailure({
+      name: t('osrdconf:errorMessages.title'),
+      message: t('osrdconf:errorMessages.noDestination'),
+    }));
+  }
+  if (!osrdconf.rollingStockID) {
+    error = true;
+    dispatch(setFailure({
+      name: t('osrdconf:errorMessages.title'),
+      message: t('osrdconf:errorMessages.noRollingStock'),
+    }));
+  }
+  if (!osrdconf.name) {
+    error = true;
+    dispatch(setFailure({
+      name: t('osrdconf:errorMessages.title'),
+      message: t('osrdconf:errorMessages.noName'),
+    }));
+  }
+  if (!osrdconf.timetableID) {
+    error = true;
+    dispatch(setFailure({
+      name: t('osrdconf:errorMessages.title'),
+      message: t('osrdconf:errorMessages.noTimetable'),
+    }));
+  }
 
-  if (osrdconf.origin === undefined) {
-    errorMessages.push(t('osrdconf:errorMessages.noOrigin'));
-  }
-  if (osrdconf.originTime === undefined) {
-    errorMessages.push(t('osrdconf:errorMessages.noOriginTime'));
-  }
-  if (osrdconf.destination === undefined) {
-    errorMessages.push(t('osrdconf:errorMessages.noDestination'));
-  }
-  /* if (osrdconf.trainCompo === undefined) {
-    errorMessages.push(t('osrdconf:errorMessages.noTrainCompo'));
-  } */
-  if (osrdconf.name === '') {
-    errorMessages.push(t('osrdconf:errorMessages.noName'));
-  }
-  if (osrdconf.timetableID === undefined) {
-    errorMessages.push(t('osrdconf:errorMessages.noTimetable'));
-  }
-
-  if (errorMessages.length === 0) {
-    /* const stops = osrdconf.vias.length === 0
-      ? []
-      : osrdconf.vias.map((via) => ({
-        id: via.idGaia,
-        stop_time: via.stoptime,
-        time: via?.time,
-      }));
-
-    const regex = /'/g;
-    const curveJson = JSON.parse(osrdconf.trainCompo.courbeeffortvitesse.replace(regex, '"'));
-    const tractiveEffortCurve = [];
-    Object.keys(curveJson).forEach((key) => {
-      tractiveEffortCurve.push([key, curveJson[key]]);
-    }); */
-
+  if (!error) {
     const osrdConfSchedule = {
       train_name: osrdconf.name,
       departure_time: originTime,
       phases: [],
       initial_speed: 0,
       timetable: osrdconf.timetableID,
-      rolling_stock: 1,
+      rolling_stock: osrdconf.rollingStockID,
       path: osrdconf.pathfindingID,
     };
-
     return osrdConfSchedule;
   }
-  setErrorMessages(errorMessages);
   return false;
 }

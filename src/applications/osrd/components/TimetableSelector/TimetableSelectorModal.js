@@ -32,15 +32,15 @@ export default function TimetableSelectorModal() {
     getTimetablesList();
   }, []);
 
-  const deleteTimetable = async (id) => {
+  const deleteTimetable = async (timetable) => {
     try {
-      await deleteRequest(`${timetableURL}/${id}`);
+      await deleteRequest(`${timetableURL}/${timetable.id}`);
       getTimetablesList();
       dispatch(setSuccess({
-        title: 'Timetable effacée',
-        text: 'Youpi banane',
+        title: t('osrdconf:timetabledelete'),
+        text: `${timetable.name} ID ${timetable.id}`,
       }));
-      if (timetableID === id) {
+      if (timetableID === timetable.id) {
         dispatch(updateTimetableID(undefined));
       }
     } catch (e) {
@@ -60,7 +60,6 @@ export default function TimetableSelectorModal() {
       console.log('ERROR', e);
     }
     getTimetablesList();
-    console.log(newNameTimetable);
   };
 
   return (
@@ -101,7 +100,7 @@ export default function TimetableSelectorModal() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => deleteTimetable(timetable.id)}
+                    onClick={() => deleteTimetable(timetable)}
                     className="btn btn-sm btn-only-icon btn-white"
                   >
                     <i className="icons-close" />

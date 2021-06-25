@@ -73,7 +73,7 @@ export default function TimetableSelector(props) {
           data-target="#timetable-selector-modal"
         >
           <div className="h2 mb-0 d-flex align-items-center">
-            <img width="32px" className="mr-1" src={icon} alt="timetableIcon" />
+            <img width="32px" className="mr-2" src={icon} alt="timetableIcon" />
             <span className="text-muted">{t('osrdconf:timetable')}</span>
             {osrdconf.timetableID !== undefined && selectedTimetable === undefined
               ? <span className="ml-3"><DotsLoader /></span>
@@ -92,7 +92,7 @@ export default function TimetableSelector(props) {
               )}
           </div>
         </div>
-        {trainList !== undefined && trainList.length > 0 ? (
+        {osrdconf.timetableID !== undefined && trainList !== undefined && trainList.length > 0 ? (
           <div className="osrd-config-item-container">
             <div className="timetable-trainlist">
               {formatTrainList(trainList)}

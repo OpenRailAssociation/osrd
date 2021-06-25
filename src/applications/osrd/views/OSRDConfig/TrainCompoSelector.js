@@ -1,40 +1,54 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import PropTypes from 'prop-types';
+import { get } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import TrainCompo from 'applications/osrd/components/TrainCompo/TrainCompo';
-import TrainCompoCard from 'applications/osrd/components/TrainCompo/TrainCompoCard';
 import icon from 'assets/pictures/train.svg';
 
+const ROLLINGSTOCK_URL = '/osrd/rolling_stock';
+
 export default function TrainCompoSelector() {
-  const osrdconf = useSelector((state) => state.osrdconf);
+  const { rollingStockID } = useSelector((state) => state.osrdconf);
   const { t } = useTranslation(['translation', 'osrdconf']);
+  const [rollingStockSelected, setRollingStockSelected] = useState(undefined);
+
+  const getRollingStock = async () => {
+    try {
+      const rollingStock = await get(`${ROLLINGSTOCK_URL}/${rollingStockID}`);
+      setRollingStockSelected(rollingStock);
+    } catch (e) {
+      console.log('ERROR', e);
+    }
+  };
+
+  useEffect(() => {
+    if (rollingStockID !== undefined) {
+      getRollingStock();
+    }
+  }, [rollingStockID]);
 
   return (
     <>
       <div className="osrd-config-item mb-2">
-        <div className="osrd-config-item-container d-flex">
-          {osrdconf.trainCompo !== undefined && osrdconf.trainCompo.codenbengin !== undefined ? (
-            <TrainCompoCard
-              data={osrdconf.trainCompo}
-              displayDetails={() => {}}
-              active={false}
-            />
-          ) : (
-            <div className="d-flex align-items-center flex-grow-1">
-              <img width="32px" className="mr-1" src={icon} alt="infraIcon" />
+        <div
+          className="osrd-config-item-container d-flex osrd-config-item-clickable"
+          data-toggle="modal"
+          data-target="#trainCompoModal"
+        >
+          <div className="h2 d-flex align-items-center">
+            <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
+            <span className="mr-2 text-muted">{t('osrdconf:rollingstock')}</span>
+            {rollingStockSelected !== undefined ? (
+              rollingStockSelected.name
+            ) : (
               <span className="mr-2 text-muted text-italic">
                 {t('osrdconf:noTrainCompo')}
               </span>
-            </div>
-          )}
-          <button type="button" className="btn btn-sm btn-secondary" data-toggle="modal" data-target="#trainCompoModal">
-            {t('osrdconf:chooseTrainCompo')}
-            <i className="icons-itinerary-train ml-2" />
-          </button>
+            )}
+          </div>
         </div>
       </div>
       <ModalSNCF htmlID="trainCompoModal" optionalClasses="traincompo-modal">

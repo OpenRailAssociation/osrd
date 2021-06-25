@@ -190,7 +190,7 @@ const Map = (props) => {
         height="100%"
         mapStyle={osmBlankStyle}
         onViewportChange={updateViewportChange}
-        clickRadius={4}
+        clickRadius={10}
         attributionControl={false} // Defined below
         onHover={onFeatureHover}
         interactiveLayerIds={geojsonPath ? ['geojsonPath'] : ['']}

@@ -47,7 +47,6 @@ export function getMateriel() {
   return async (dispatch) => {
     try {
       const materiel = await get('/osrd/rolling_stock/');
-      console.log('coucou', materiel);
       dispatch(setMateriel(materiel));
       return materiel;
     } catch (e) {

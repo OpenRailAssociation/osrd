@@ -61,7 +61,7 @@ export default function InfraSelector() {
           data-target="#infra-selector-modal"
         >
           <div className="h2 mb-0">
-            <img width="32px" className="mr-1" src={icon} alt="infraIcon" />
+            <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
             <span className="text-muted">{t('osrdconf:infrastructure')}</span>
             {selectedInfra !== undefined ? (
               <>

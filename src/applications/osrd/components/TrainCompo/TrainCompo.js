@@ -22,8 +22,6 @@ export default function TrainCompo() {
   const [detailsContent, setDetailsContent] = useState(undefined);
   const [filters, setFilters] = useState({
     text: '',
-    thor: true,
-    cim: true,
     elec: true,
     diesel: true,
     sort: true, // true for ASC, false for DESC
@@ -42,12 +40,6 @@ export default function TrainCompo() {
     );
 
     // checkbox filters
-    if (!filters.thor) {
-      resultContentNew = resultContentNew.filter((el) => el.source !== 'THOR');
-    }
-    if (!filters.cim) {
-      resultContentNew = resultContentNew.filter((el) => el.source !== 'CIM');
-    }
     if (!filters.elec) {
       resultContentNew = resultContentNew.filter((el) => el.modetraction !== 'E');
     }
@@ -140,10 +132,6 @@ export default function TrainCompo() {
                 </div>
               </div>
               <div className="row">
-                <div className="col-6">
-                  <CheckboxRadioSNCF onChange={toggleFilter} name="thor" id="thor" label="Source THOR" type="checkbox" checked />
-                  <CheckboxRadioSNCF onChange={toggleFilter} name="cim" id="cim" label="Source CIM" type="checkbox" checked />
-                </div>
                 <div className="col-6">
                   <CheckboxRadioSNCF
                     onChange={toggleFilter}

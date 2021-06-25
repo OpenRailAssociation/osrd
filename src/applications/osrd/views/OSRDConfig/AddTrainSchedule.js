@@ -2,45 +2,45 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import nextId from 'react-id-generator';
 import { post } from 'common/requests';
 import { updateName } from 'reducers/osrdconf';
-import {
-  redirectToGraph, updateSimulation, toggleWorkingStatus,
-} from 'reducers/osrdsimulation';
+import { setFailure, setSuccess } from 'reducers/main.ts';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import AlertSNCF from 'common/BootstrapSNCF/AlertSNCF';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
-import { time2sec } from 'utils/timeManipulation';
+import { time2sec, sec2time } from 'utils/timeManipulation';
 
 import formatConf from 'applications/osrd/components/AddTrainSchedule/formatConf';
 
-const osrdURI = '/osrd/simulate';
-const scheduleURL = '/osrd/train_schedule'
+const scheduleURL = '/osrd/train_schedule';
 
 export default function AddTrainSchedule(props) {
   const { mustUpdateTimetable, setMustUpdateTimetable } = props;
-  const [errorMessagesState, setErrorMessages] = useState([]);
   const [isWorking, setIsWorking] = useState(false);
   const [trainCount, setTrainCount] = useState(1);
   const [trainDelta, setTrainDelta] = useState(60);
   const osrdconf = useSelector((state) => state.osrdconf);
-  const osrdsimulation = useSelector((state) => state.osrdsimulation);
   const { t } = useTranslation(['translation', 'osrdconf']);
   const dispatch = useDispatch();
 
   const submitConf = () => {
     // First train tested, and next we put the other trains
     const originTime = time2sec(osrdconf.originTime);
-    const osrdConfig = formatConf(setErrorMessages, t, osrdconf, originTime);
-    if (osrdConfig !== false) {
+    const osrdConfig = formatConf(dispatch, setFailure, t, osrdconf, originTime);
+    if (osrdConfig) {
       try {
         for (let nb = 1; nb <= trainCount; nb += 1) {
+          const newOriginTime = originTime + (60 * trainDelta * (nb - 1));
           post(
             scheduleURL,
-            formatConf(setErrorMessages, t, osrdconf, originTime + (60 * trainDelta * (nb - 1))),
+            formatConf(
+              dispatch, setFailure, t, osrdconf, newOriginTime,
+            ),
             {},
           );
+          dispatch(setSuccess({
+            title: t('osrdconf:trainAdded'),
+            text: sec2time(newOriginTime),
+          }));
         }
       } catch (e) {
         console.log(e);
@@ -92,14 +92,6 @@ export default function AddTrainSchedule(props) {
             {isWorking ? <DotsLoader /> : t('osrdconf:addTrainSchedule')}
           </button>
         </div>
-        {errorMessagesState.length > 0
-          ? (
-            <AlertSNCF title={t('translation:common.error')}>
-              <ul className="mt-1 mb-0">
-                {errorMessagesState.map((message) => <li key={nextId()}>{message}</li>)}
-              </ul>
-            </AlertSNCF>
-          ) : null}
       </div>
     </>
   );
