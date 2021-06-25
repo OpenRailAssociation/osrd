@@ -12,6 +12,7 @@ import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.train.Action;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
+import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.simulation.Simulation;
 
 import java.util.*;
@@ -43,7 +44,9 @@ public class CBTCATP {
 
     private double getNextClosedSwitchPathPosition() {
         ArrayList<TrackSectionRange> fullPath = trainSchedule.fullPath;
-
+        if (location.getPathPosition() > 360) {
+            System.out.println("stop");
+        }
         var curTrackSectionPos = location.trackSectionRanges.getFirst();
 
         boolean seen = false;
@@ -63,8 +66,9 @@ public class CBTCATP {
                     var nextTrackSection = (i < fullPath.size() - 1) ? fullPath.get(i + 1) : null;
                     if (switchState.getPosition() == SwitchPosition.MOVING || nextTrackSection == null
                             || nextTrackSection.edge.id != switchState.getBranch().id) {
-                        logger.debug("CLOSED SWITCH POSITION : {} | {}", switchPosition, location.getPathPosition());
-                        return switchPosition;
+                        logger.debug("CLOSED SWITCH POSITION : {} | {}", switchPosition - 50,
+                                location.getPathPosition());
+                        return switchPosition - 50; // TODO : change 50 for a meaningfull variable
                     }
                 }
             }
@@ -161,18 +165,24 @@ public class CBTCATP {
         return 2;
     }
 
-    public LimitAnnounceSpeedController directive() {
+    public ArrayList<SpeedController> directive() {
         double mass = this.trainSchedule.rollingStock.mass;
         double gamma = this.trainSchedule.rollingStock.timetableGamma;
+        ArrayList<SpeedController> controllers = new ArrayList<SpeedController>();
+        double nextDangerPosition = getNextDangerPointPathPostion();
         if (canBreak(marginBehindNextDanger(1, 100))) {
-            return new LimitAnnounceSpeedController(this.trainSchedule.rollingStock.maxSpeed,
-                    getNextDangerPointPathPostion() - 100, getNextDangerPointPathPostion(), gamma);
+            return controllers;
         }
-        if (canBreak(getNextDangerPointPathPostion() - location.getPathPosition() - 50) || true) {
-            return new LimitAnnounceSpeedController(0, location.getPathPosition() - 50,
-                    getNextDangerPointPathPostion() - 90, gamma);
+        if (canBreak(nextDangerPosition - location.getPathPosition() - 50)) {
+            controllers.add(new LimitAnnounceSpeedController(0, location.getPathPosition() - 50,
+                    nextDangerPosition - 90, gamma));
+            controllers.add(new MaxSpeedController(0, nextDangerPosition - 90, nextDangerPosition));
+            return controllers;
+        } else {
+            controllers.add(new MaxSpeedController(0, 0, nextDangerPosition));
+            controllers.add(new LimitAnnounceSpeedController(0, 0, nextDangerPosition, gamma));
+            return controllers;
         }
-        return new LimitAnnounceSpeedController(0, 0, getNextDangerPointPathPostion(), gamma);
     }
 
     private static ArrayList<Train> getListNextTrain(TrackSectionRange tracksection,

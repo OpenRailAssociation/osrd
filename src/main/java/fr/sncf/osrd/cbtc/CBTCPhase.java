@@ -23,6 +23,9 @@ import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.PhaseState;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class CBTCPhase implements Phase {
     public final List<Route> routePath;
     public final TrackSectionLocation endLocation;
@@ -65,6 +68,8 @@ public class CBTCPhase implements Phase {
     }
 
     public static final class CBTCPhaseState extends PhaseState {
+        static final Logger logger = LoggerFactory.getLogger(CBTCPhaseState.class);
+
         public final CBTCPhase phase;
         private int routeIndex = 0;
         private final transient Simulation sim;
@@ -111,14 +116,12 @@ public class CBTCPhase implements Phase {
         }
 
         public ArrayList<SpeedController> getSpeedControllers() {
-            var controllers = new ArrayList<SpeedController>();
             TrainState trainState = sim.trains.get(schedule.trainID).getLastState();
             if(trainState != null) {
                 CBTCATP atp = new CBTCATP(sim, schedule, trainState);
-                var controller = atp.directive();
-                controllers.add(controller);
+                return atp.directive();
             }
-            return controllers;
+            return new ArrayList<SpeedController>();
         }
 
         public int getRouteIndex() {
