@@ -143,4 +143,3 @@ class EditionTests(APITestCase):
 class SchemaTests(APITestCase):
     def test_schema(self):
         get_schema()
-

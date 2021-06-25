@@ -1,6 +1,6 @@
 from django.contrib.gis.db.models import PointField, PolygonField, LineStringField
-from django.db.models import BigAutoField, OneToOneField, PositiveSmallIntegerField, ForeignKey, FloatField, CharField, \
-    IntegerField, JSONField, BooleanField
+from django.db.models import BigAutoField, OneToOneField, PositiveSmallIntegerField, ForeignKey, FloatField, \
+    CharField, IntegerField, JSONField, BooleanField
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.apps import apps
@@ -34,9 +34,9 @@ def get_type(klass):
             return entity_meta.name
         if isinstance(klass.related_model, EntityBase):
             return 'entity'
-        raise NotImplemented
+        raise NotImplementedError
     print(type(klass), klass)
-    raise NotImplemented
+    raise NotImplementedError
 
 
 def get_schema():
