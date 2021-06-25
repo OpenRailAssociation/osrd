@@ -30,6 +30,7 @@
   "title": "Configuration simulation",
   "track": "Voie",
   "trainAdded": "Train ajouté",
+  "trainLabels": "Etiquettes",
   "trainScheduleCount": "Nombre de trains",
   "trainScheduleDelta": "Délai entre chaque train",
   "trainScheduleName": "Nom du train à ajouter",

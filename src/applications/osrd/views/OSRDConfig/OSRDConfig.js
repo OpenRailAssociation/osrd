@@ -9,6 +9,7 @@ import InfraSelector from 'applications/osrd/views/OSRDConfig/InfraSelector';
 import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
 import TrainCompoSelector from 'applications/osrd/views/OSRDConfig/TrainCompoSelector';
 import AddTrainSchedule from 'applications/osrd/views/OSRDConfig/AddTrainSchedule';
+import AddTrainLabels from 'applications/osrd/views/OSRDConfig/AddTrainLabels';
 import 'applications/osrd/views/OSRDConfig/OSRDConfig.scss';
 
 export default function OSRDConfig() {
@@ -46,6 +47,7 @@ export default function OSRDConfig() {
             mustUpdateTimetable={mustUpdateTimetable}
             setMustUpdateTimetable={setMustUpdateTimetable}
           />
+          <AddTrainLabels />
         </div>
         <div className="col-sm-6 h-100">
           <div className="osrd-config-item osrd-config-item-map mb-2">

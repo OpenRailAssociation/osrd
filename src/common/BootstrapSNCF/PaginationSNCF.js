@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { withTranslation } from 'react-i18next';
 import { connect } from 'react-redux';
 
-
 class PaginationSNCF extends Component {
   static propTypes = {
     t: PropTypes.func.isRequired,
