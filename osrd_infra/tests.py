@@ -8,6 +8,7 @@ from osrd_infra.models import (
     Infra,
     TrackSectionEntity,
 )
+from osrd_infra.views.schema import get_schema
 
 
 def new_infra(client):
@@ -137,3 +138,9 @@ class EditionTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(TrackSectionEntity.objects.get().identifier_set.count(), 0)
+
+
+class SchemaTests(APITestCase):
+    def test_schema(self):
+        get_schema()
+
