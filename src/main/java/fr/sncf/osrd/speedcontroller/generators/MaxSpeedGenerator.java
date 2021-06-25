@@ -13,9 +13,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 /** This is a SpeedControllerGenerator that generates the maximum allowed speed at any given point. */
-public class MaxSpeedGenerator implements SpeedControllerGenerator {
+public class MaxSpeedGenerator extends SpeedControllerGenerator {
+    public MaxSpeedGenerator() {
+        super(null);
+    }
+
     @Override
-    public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed) {
+    public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed,
+                                         double initialSpeed) {
         // the path is computed at the beginning of the simulation, as it is (for now) part of the event
         var trainPath = schedule.fullPath;
         var rollingStock = schedule.rollingStock;
@@ -71,10 +76,10 @@ public class MaxSpeedGenerator implements SpeedControllerGenerator {
         controllers.add(LimitAnnounceSpeedController.create(
                 rollingStock.maxSpeed,
                 0,
-                offset - 10,
+                offset - 5,
                 rollingStock.timetableGamma
         ));
-        controllers.add(new MaxSpeedController(0, offset - 10, Double.POSITIVE_INFINITY));
+        controllers.add(new MaxSpeedController(0, offset - 5, Double.POSITIVE_INFINITY));
         return controllers;
     }
 }

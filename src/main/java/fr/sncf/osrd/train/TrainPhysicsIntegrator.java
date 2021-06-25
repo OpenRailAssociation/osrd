@@ -89,16 +89,21 @@ public class TrainPhysicsIntegrator {
         // a<0 dec force<0
         // a>0 acc force>0
         // normally the train speed should be positive
+
+        if (Double.isNaN(speedDirective.allowedSpeed)) {
+            return Action.coast();
+        }
+
         assert currentSpeed >= 0;
         var targetForce = (speedDirective.allowedSpeed - currentSpeed) / timeStep * inertia;
         // limited the possible acceleration for reasons of travel comfort
         if (targetForce > rollingStock.comfortAcceleration * inertia)
             targetForce = rollingStock.comfortAcceleration * inertia;
 
-        var otherForces = computeTotalForce(0, 0);
+        var weightForce = computeTotalForce(0, 0);
 
         // targetForce = actionForce + otherForces
-        var actionForce = targetForce - otherForces;
+        var actionForce = targetForce - weightForce;
 
         // we can't realistically accelerate and brake with infinite forces, so limit it to some given value
         if (actionForce >= 0) {
@@ -141,15 +146,22 @@ public class TrainPhysicsIntegrator {
         return res;
     }
 
-    /** Apply an action and update the train state */
-    public PositionUpdate applyActionAndUpdate(Action action, double distanceStep) {
-        // compute and limit the traction force
-        var tractionForce = action.tractionForce();
+    /**
+     * Compute the train's acceleration given an action
+     * @param action the action made by the driver
+     * @param maxDistance the maximum distance the train can go
+     * @return the new speed of the train
+     */
+    public PositionUpdate computeUpdate(Action action, double maxDistance, double directionSign) {
+        return computeUpdate(action.tractionForce(), action.brakingForce(), maxDistance, directionSign);
+    }
 
-        // compute and limit the braking force
-        var brakingForce = action.brakingForce();
+    public PositionUpdate computeUpdate(Action action, double maxDistance) {
+        return computeUpdate(action, maxDistance, 1);
+    }
 
-        return computeUpdate(tractionForce, brakingForce, distanceStep);
+    public PositionUpdate computeUpdate(double actionTractionForce, double actionBrakingForce, double maxDistance) {
+        return computeUpdate(actionTractionForce, actionBrakingForce, maxDistance, 1);
     }
 
     /**
@@ -159,7 +171,8 @@ public class TrainPhysicsIntegrator {
      * @param maxDistance the maximum distance the train can go
      * @return the new speed of the train
      */
-    public PositionUpdate computeUpdate(double actionTractionForce, double actionBrakingForce, double maxDistance) {
+    public PositionUpdate computeUpdate(double actionTractionForce, double actionBrakingForce, double maxDistance,
+                                        double directionSign) {
         // the rolling resistance is the sum of forces that always go the direction
         // opposite to the train's movement
         assert actionBrakingForce >= 0.;
@@ -188,7 +201,8 @@ public class TrainPhysicsIntegrator {
         // general case: compute the acceleration and new position
         // compute the acceleration on all the integration step. the variable is named this way because be
         // compute the acceleration on only a part of the integration step below
-        var fullStepAcceleration = computeAcceleration(effectiveRollingResistance, actionTractionForce);
+        var fullStepAcceleration = computeAcceleration(directionSign * effectiveRollingResistance,
+                actionTractionForce);
         var newSpeed = currentSpeed + fullStepAcceleration * timeStep;
 
         // when the train changes direction, the rolling resistance doesn't apply

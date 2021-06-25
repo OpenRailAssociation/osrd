@@ -22,6 +22,28 @@ public class SimulationTest extends ApiTest {
 
         var rjsSimulation = MoshiUtils.deserialize(RJSSimulation.adapter, Paths.get(simulationPath.toURI()));
         var requestBody = SimulationEndpoint.adapterRequest.toJson(new SimulationEndpoint.SimulationRequest(
+                "tiny_infra/infra.json",
+                rjsSimulation.rollingStocks,
+                rjsSimulation.trainSchedules
+        ));
+        var result = new RsPrint(
+                new SimulationEndpoint(infraHandlerMock).act(new RqFake("POST", "/simulation", requestBody))
+        ).printBody();
+
+        var simResultChanges =  SimulationEndpoint.adapterResult.fromJson(result);
+        assert simResultChanges != null;
+        for (int i = 1; i < simResultChanges.length; i++)
+            assert simResultChanges[i - 1].time <= simResultChanges[i].time;
+    }
+
+    @Test
+    public void oneSingleEndPhase() throws Exception {
+        ClassLoader classLoader = getClass().getClassLoader();
+        var simulationPath = classLoader.getResource("tiny_infra/simulation.json");
+        assert simulationPath != null;
+
+        var rjsSimulation = MoshiUtils.deserialize(RJSSimulation.adapter, Paths.get(simulationPath.toURI()));
+        var requestBody = SimulationEndpoint.adapterRequest.toJson(new SimulationEndpoint.SimulationRequest(
                         "tiny_infra/infra.json",
                         rjsSimulation.rollingStocks,
                         rjsSimulation.trainSchedules
@@ -31,8 +53,7 @@ public class SimulationTest extends ApiTest {
         ).printBody();
 
         var simResultChanges =  SimulationEndpoint.adapterResult.fromJson(result);
-        for (int i = 1; i < simResultChanges.length; i++)
-            assert simResultChanges[i - 1].time <= simResultChanges[i].time;
+        assert simResultChanges != null;
 
         var nPhaseEnd = Arrays.stream(simResultChanges)
                 .filter(change -> change instanceof ResponsePhaseEndUpdate)

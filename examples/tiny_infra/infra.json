@@ -618,7 +618,7 @@
         {
           "applicable_direction": "BOTH",
           "begin": 2000,
-          "end": 8000,
+          "end": 6000,
           "ref": "speedsection.mid_limit"
         }
       ]

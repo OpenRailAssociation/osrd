@@ -23,6 +23,7 @@ import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -31,19 +32,27 @@ public final class SignalNavigatePhase implements Phase {
     public final TrackSectionLocation endLocation;
     private final ArrayList<TrackSectionRange> trackSectionPath;
     private final ArrayList<Interaction> interactionsPath;
-    public transient SpeedControllerGenerator targetSpeedGenerator;
+    private final Interaction lastInteractionOnPhase;
+    private final double driverSightDistance;
+    public transient List<SpeedControllerGenerator> targetSpeedGenerators;
+
+    /** Offset between the beginning of the global train path and the beginning of this phase */
+    public double offset;
 
     private SignalNavigatePhase(
             List<Route> routePath,
             TrackSectionLocation endLocation,
             ArrayList<TrackSectionRange> trackSectionPath,
             ArrayList<Interaction> interactionsPath,
-            SpeedControllerGenerator targetSpeedGenerator) {
+            double driverSightDistance,
+            List<SpeedControllerGenerator> targetSpeedGenerators) {
         this.routePath = routePath;
         this.endLocation = endLocation;
         this.trackSectionPath = trackSectionPath;
         this.interactionsPath = interactionsPath;
-        this.targetSpeedGenerator = targetSpeedGenerator;
+        this.driverSightDistance = driverSightDistance;
+        this.targetSpeedGenerators = targetSpeedGenerators;
+        lastInteractionOnPhase = interactionsPath.get(interactionsPath.size() - 1);
     }
 
 
@@ -54,11 +63,13 @@ public final class SignalNavigatePhase implements Phase {
             double driverSightDistance,
             TrackSectionLocation startLocation,
             TrackSectionLocation endLocation,
-            SpeedControllerGenerator targetSpeedGenerator
+            List<SpeedControllerGenerator> targetSpeedGenerators
     ) {
-        var trackSectionPath = Route.routesToTrackSectionRange(routes, startLocation, endLocation);
+        var trackSectionPath = Route.routesToTrackSectionRange(routes,
+                startLocation, endLocation);
         var actionPointPath = trackSectionToActionPointPath(driverSightDistance, trackSectionPath);
-        return new SignalNavigatePhase(routes, endLocation, trackSectionPath, actionPointPath, targetSpeedGenerator);
+        return new SignalNavigatePhase(routes, endLocation, trackSectionPath, actionPointPath,
+                driverSightDistance, targetSpeedGenerators);
     }
 
     private static ArrayList<Interaction> trackSectionToActionPointPath(
@@ -68,33 +79,83 @@ public final class SignalNavigatePhase implements Phase {
         var eventPath = new ArrayList<Interaction>();
         double pathLength = 0;
         for (var trackRange : trackSectionRanges) {
-            for (var interactablePoint : TrackSection.getInteractables(trackRange.edge, trackRange.direction)) {
-                if (!trackRange.containsPosition(interactablePoint.position))
-                    continue;
-
-                var interactable = interactablePoint.value;
-                var edgeDistToObj = Math.abs(interactablePoint.position - trackRange.getBeginPosition());
-
-                if (interactable.getInteractionsType().interactWithHead()) {
-                    var distance = pathLength + edgeDistToObj;
-                    eventPath.add(new Interaction(InteractionType.HEAD, distance, interactable));
-                }
-                if (interactable.getInteractionsType().interactWhenSeen()) {
-                    var sightDistance = Double.min(interactable.getActionDistance(), driverSightDistance);
-                    var distance = pathLength + edgeDistToObj - sightDistance;
-                    if (distance < 0)
-                        distance = 0;
-                    eventPath.add(new Interaction(InteractionType.SEEN, distance, interactable));
-                }
-            }
+            registerRange(eventPath, trackRange, pathLength, driverSightDistance);
             pathLength += trackRange.length();
         }
 
         Collections.sort(eventPath);
 
         var phaseEnd = new PhaseEndActionPoint();
-        eventPath.add(new Interaction(InteractionType.HEAD, pathLength, phaseEnd));
+        // We place the end of phase a few meters before the actual end, because we will stop before reaching it
+        eventPath.add(new Interaction(InteractionType.HEAD, pathLength - 1, phaseEnd));
         return eventPath;
+    }
+
+    private static void registerRange(ArrayList<Interaction> eventPath, TrackSectionRange trackRange,
+                                      double pathLength, double driverSightDistance) {
+        for (var interactablePoint : TrackSection.getInteractables(trackRange.edge, trackRange.direction)) {
+            if (!trackRange.containsPosition(interactablePoint.position))
+                continue;
+
+            var interactable = interactablePoint.value;
+            var edgeDistToObj = Math.abs(interactablePoint.position - trackRange.getBeginPosition());
+
+            if (interactable.getInteractionsType().interactWithHead()) {
+                var distance = pathLength + edgeDistToObj;
+                eventPath.add(new Interaction(InteractionType.HEAD, distance, interactable));
+            }
+            if (interactable.getInteractionsType().interactWhenSeen()) {
+                var sightDistance = Double.min(interactable.getActionDistance(), driverSightDistance);
+                var distance = pathLength + edgeDistToObj - sightDistance;
+                if (distance < 0)
+                    distance = 0;
+                eventPath.add(new Interaction(InteractionType.SEEN, distance, interactable));
+            }
+        }
+    }
+
+    @Override
+    public void resolvePhases(List<Phase> phases) {
+        boolean seenSelf = false;
+        AtomicReference<Double> currentPosition = new AtomicReference<>(0.);
+        for (var phase : phases) {
+            if (seenSelf) {
+                // adds the routes in the next phases to the current route, to trigger reserves at the right time
+                if (phase instanceof SignalNavigatePhase)
+                    routePath.addAll(((SignalNavigatePhase) phase).routePath);
+            }
+            boolean finalSeenSelf = seenSelf;
+            if (phase == this) {
+                seenSelf = true;
+                offset = currentPosition.get();
+                for (var ip : interactionsPath)
+                    ip.position += offset;
+            }
+            phase.forEachPathSection(pathSection -> {
+                if (finalSeenSelf)
+                    registerRange(interactionsPath, pathSection, currentPosition.get(), driverSightDistance);
+                currentPosition.updateAndGet(v -> v + pathSection.length());
+            });
+        }
+        // Removes duplicate routes
+        for (int i = 1; i < routePath.size(); i++) {
+            if (routePath.get(i).id.equals(routePath.get(i - 1).id)) {
+                routePath.remove(i);
+                i--;
+            }
+        }
+        interactionsPath.sort(Comparator.comparingDouble(i -> i.position));
+
+        var ownIndex = phases.indexOf(this);
+        if (ownIndex < phases.size() - 1) {
+            var nextPhase = phases.get(ownIndex + 1);
+            if (nextPhase instanceof SignalNavigatePhase) {
+                var nextRoutes = ((SignalNavigatePhase) nextPhase).routePath;
+                if (!nextRoutes.isEmpty()) {
+                    routePath.add(nextRoutes.get(0));
+                }
+            }
+        }
     }
 
     @Override
@@ -180,7 +241,7 @@ public final class SignalNavigatePhase implements Phase {
         }
 
         State(SignalNavigatePhase phase, Simulation sim, TrainSchedule schedule) {
-            super(phase.targetSpeedGenerator);
+            super(phase.targetSpeedGenerators);
             this.sim = sim;
             this.schedule = schedule;
             speedInstructions.generate(sim, schedule);
@@ -189,14 +250,13 @@ public final class SignalNavigatePhase implements Phase {
         }
 
         State(SignalNavigatePhase.State state) {
-            super(state.speedInstructions.targetSpeedGenerator);
+            super(state.speedInstructions);
             this.phase = state.phase;
             this.routeIndex = state.routeIndex;
             this.interactionsPathIndex = state.interactionsPathIndex;
             this.signalControllers = state.signalControllers;
             this.schedule = state.schedule;
             this.sim = state.sim;
-            speedInstructions.generate(sim, schedule);
         }
 
         private boolean isInteractionUnderTrain(TrainState trainState) {
@@ -249,14 +309,26 @@ public final class SignalNavigatePhase implements Phase {
                 interactionsPathIndex++;
         }
 
+        private boolean hasPhaseEnded() {
+            if (interactionsPathIndex == phase.interactionsPath.size())
+                return true;
+            if (interactionsPathIndex == 0)
+                return false;
+            return phase.interactionsPath.get(interactionsPathIndex - 1) == phase.lastInteractionOnPhase;
+        }
+
         @Override
         public TimelineEvent simulate(Simulation sim, Train train, TrainState trainState) throws SimulationError {
             // Check if we reached our goal
-            if (interactionsPathIndex == phase.interactionsPath.size()) {
-                var change = new Train.TrainStateChange(sim, train.getName(), trainState.nextPhase(sim));
+            if (hasPhaseEnded()) {
+                var nextState = trainState.nextPhase(sim);
+                var change = new Train.TrainStateChange(sim, train.getName(), nextState);
                 change.apply(sim, train);
                 sim.publishChange(change);
-                return null;
+                if (trainState.isDuringLastPhase())
+                    return null;
+                else
+                    return nextState.simulatePhase(train, sim);
             }
 
             // 1) find the next interaction event
@@ -269,13 +341,13 @@ public final class SignalNavigatePhase implements Phase {
             var simulationResult = trainState.evolveStateUntilPosition(sim, nextInteraction.position);
 
             // 4) create an event with simulation data up to this point
+
             // The train reached the action point
-            // If less than 1m away we consider that it has been reached, because the train has to stop before the end
-            if (trainState.location.getPathPosition() >= nextInteraction.position - 1) {
+            if (trainState.location.getPathPosition() >= nextInteraction.position) {
                 popInteraction(trainState);
                 return TrainReachesActionPoint.plan(sim, trainState.time, train, simulationResult, nextInteraction);
             }
-            // The train didn't reached the action point
+            // The train didn't reached the action point (stopped because of signalisation)
             return TrainMoveEvent.plan(sim, trainState.time, train, simulationResult);
         }
 
