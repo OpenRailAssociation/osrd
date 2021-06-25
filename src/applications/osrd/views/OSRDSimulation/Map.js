@@ -132,8 +132,7 @@ const Map = (props) => {
   };
 
   const displayPath = () => {
-    if (simulation.trains.length > 0
-      && simulation.trains[selectedTrain].steps[hoverPosition] !== undefined) {
+    if (simulation.trains.length > 0) {
       const geojson = createGeoJSONPath(simulation.trains[selectedTrain].steps);
       setGeojsonPath(geojson);
       zoomToFeature(bbox(geojson));
@@ -151,7 +150,6 @@ const Map = (props) => {
         pitch: parseFloat(urlPitch),
       });
     }
-    displayPath();
   }, []);
 
   useEffect(() => {
@@ -193,7 +191,7 @@ const Map = (props) => {
         clickRadius={10}
         attributionControl={false} // Defined below
         onHover={onFeatureHover}
-        interactiveLayerIds={geojsonPath ? ['geojsonPath'] : ['']}
+        interactiveLayerIds={geojsonPath ? ['geojsonPath'] : []}
         touchRotate
         asyncRender
       >

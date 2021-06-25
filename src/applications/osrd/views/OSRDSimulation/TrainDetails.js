@@ -48,17 +48,17 @@ const TrainDetails = (props) => {
           <div className="row">
             <div className="col-sm-6">
               <div className="rounded font-weight-bold bg-secondary text-white p-2 mb-2">
-                <i className="icons-clock mr-1" />
+                <i className="icons-clock mr-2" />
                 {dataSimulation[selectedTrain].headPosition[hoverPosition].time.toLocaleTimeString('fr-FR')}
               </div>
             </div>
             <div className="col-sm-6">
-              <div className={`rounded font-weight-bold text-white p-2 mb-2
+              {/* <div className={`rounded font-weight-bold text-white p-2 mb-2
                 ${simulation.trains[selectedTrain].steps[hoverPosition].state === 'RUNNING' ? 'bg-success' : 'bg-danger'}
                 `}
               >
                 {simulation.trains[selectedTrain].steps[hoverPosition].state}
-              </div>
+              </div> */}
             </div>
             <div className="col-sm-4">
               <div className="rounded p-2 mb-1 small bg-blue text-white">

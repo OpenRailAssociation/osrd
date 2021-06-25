@@ -36,7 +36,7 @@ const TrainsList = (props) => {
             <div className="cell-inner">
               <div className="custom-control custom-checkbox custom-checkbox-alone">
                 <input type="checkbox" className="custom-control-input" id={`timetable-train-${idx}`} />
-                <label className="custom-control-label" for={`timetable-train-${idx}`} />
+                <label className="custom-control-label" htmlFor={`timetable-train-${idx}`} />
               </div>
             </div>
           </td>
@@ -65,7 +65,7 @@ const TrainsList = (props) => {
                   <div className="cell-inner">
                     <div className="custom-control custom-checkbox custom-checkbox-alone">
                       <input type="checkbox" className="custom-control-input" id="timetable-sel-all-trains" />
-                      <label class="custom-control-label" for="timetable-sel-all-trains" />
+                      <label className="custom-control-label" htmlFor="timetable-sel-all-trains" />
                     </div>
                   </div>
                 </th>
