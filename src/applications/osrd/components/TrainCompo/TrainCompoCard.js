@@ -116,7 +116,7 @@ export default function TrainCompoCard(props) {
         </div>
         <div className="traincompo-speed">
           <IoIosSpeedometer />
-          {data.max_speed}
+          {Math.round(data.max_speed * 3.6)}
           <small>KM/H</small>
         </div>
       </div>
