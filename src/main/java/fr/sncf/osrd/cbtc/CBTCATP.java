@@ -14,6 +14,7 @@ import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 
 import java.util.*;
 //import java.util.ArrayList;
@@ -84,28 +85,23 @@ public class CBTCATP {
 
         // Find next train
         double nextTrainPathPosition = getDistanceNextTrain();
-        logger.debug("next train position {}", nextTrainPathPosition);
-
+        logger.debug("id train {}, next train position {}", trainSchedule.trainID, nextTrainPathPosition);
         // Find end of path
         double endOfPathPosition = 0;
         for (TrackSectionRange track : trainSchedule.fullPath) {
             endOfPathPosition += track.length();
         }
-
+        endOfPathPosition -= this.location.getPathPosition();
         // return min of the three potential danger point
+        logger.debug(
+                "Train : {} -> sa position : {} -> Distance fin de track : {} -> Distance porchain train {}, retenu : {}",
+                this.trainSchedule.trainID, this.location.getPathPosition(), endOfPathPosition, nextTrainPathPosition,
+                Math.min(nextSwitchPathPosition, Math.min(nextTrainPathPosition, endOfPathPosition)));
+        // return Double.POSITIVE_INFINITY;
         return Math.min(nextSwitchPathPosition, Math.min(nextTrainPathPosition, endOfPathPosition));
     }
 
     public boolean canBreak(double distance) {
-        // logger.debug("{} - {} -> {}", dpPathPosition, trainPathPosition,
-        // dpPathPosition-trainPathPosition);
-        // logger.debug("distance sans la marge = {}, vitesse du train : {}", distance,
-        // vitesse_finale() );
-        // logger.debug("energie initiale : {}, energie dissipée : {}",
-        // initialEnergie(), lostBrakeEnergie(distance));
-        // logger.debug("acceleration : {}, energie dissipée : {}", accel_erre(),
-        // lostBrakeEnergie());
-        // logger.debug("{}",lostBrakeEnergie(distance)-initialEnergie()>0);
         if (lostBrakeEnergie(distance) - initialEnergie() > 0) {
             return true;
         }
@@ -114,7 +110,7 @@ public class CBTCATP {
 
     public double marginBehindNextDanger(double dt, double marge) {
         double vitesse = this.trainState.speed;
-        return getNextDangerPointPathPostion() - location.getPathPosition() - (dt * vitesse + marge);
+        return getNextDangerPointPathPostion() - position_depart() - (dt * vitesse + marge);
     }
 
     public double lostBrakeEnergie(double distance) {
@@ -166,17 +162,19 @@ public class CBTCATP {
     }
 
     public ArrayList<SpeedController> directive() {
-        double mass = this.trainSchedule.rollingStock.mass;
         double gamma = this.trainSchedule.rollingStock.timetableGamma;
         ArrayList<SpeedController> controllers = new ArrayList<SpeedController>();
         double nextDangerPosition = getNextDangerPointPathPostion();
         if (canBreak(marginBehindNextDanger(1, 100))) {
+            logger.debug("true");
             return controllers;
         }
-        if (canBreak(nextDangerPosition - location.getPathPosition() - 50)) {
+        if (canBreak(nextDangerPosition - location.getPathPosition() - 50) || true) {
+            logger.debug("false");
             controllers.add(new LimitAnnounceSpeedController(0, location.getPathPosition() - 50,
-                    nextDangerPosition - 90, gamma));
-            controllers.add(new MaxSpeedController(0, nextDangerPosition - 90, nextDangerPosition));
+                    nextDangerPosition + location.getPathPosition() - 90, gamma));
+            controllers.add(new MaxSpeedController(0, nextDangerPosition - 90 + location.getPathPosition(),
+                    nextDangerPosition + location.getPathPosition()));
             return controllers;
         } else {
             controllers.add(new MaxSpeedController(0, 0, nextDangerPosition));
@@ -185,26 +183,18 @@ public class CBTCATP {
         }
     }
 
-    private static ArrayList<Train> getListNextTrain(TrackSectionRange tracksection,
-            HashMap<Integer, ArrayList<Train>> ListTrackSectionRange) {
-        var cle = tracksection.hashCode();
-        if (ListTrackSectionRange.containsKey(cle)) {
-            return ListTrackSectionRange.get(cle);
-        }
-        return null;
-    }
-
-    private HashMap<Integer, ArrayList<Train>> getTrainTracks() {
+    private HashMap<String, ArrayList<Train>> getTrainTracks() {
         var trains = sim.trains;
         Iterator<Map.Entry<String, Train>> iterator = trains.entrySet().iterator();
-        HashMap<Integer, ArrayList<Train>> ListTrackSectionRange = new HashMap<>();
+        HashMap<String, ArrayList<Train>> ListTrackSectionRange = new HashMap<>();
         while (iterator.hasNext()) {
             Map.Entry<String, Train> mapentry = iterator.next();
             Train train = mapentry.getValue();
-            var trackSectionRanges = mapentry.getValue().getLastState().location.trackSectionRanges.clone();
-            while (!trackSectionRanges.isEmpty()) {
-                TrackSectionRange tracksectionrange = trackSectionRanges.pop();
-                int cle = tracksectionrange.hashCode();
+            if (!train.schedule.trainID.equals(this.trainSchedule.trainID)) {
+                TrackSection tracksection = train.getLastState().location.trackSectionRanges.getLast().edge;
+                // logger.debug("train : {}, tracksection :{}", train.schedule.trainID,
+                // train.getLastState().location.trackSectionRanges.getFirst().edge.id);
+                String cle = tracksection.id;
                 if (ListTrackSectionRange.containsKey(cle)) {
                     ListTrackSectionRange.get(cle).add(train);
                 } else {
@@ -214,59 +204,94 @@ public class CBTCATP {
                 }
             }
         }
+        for (Map.Entry<String, ArrayList<Train>> mapentry1 : ListTrackSectionRange.entrySet()) {
+            String a = "";
+            for (Train tt : mapentry1.getValue()) {
+                a = a + tt.schedule.trainID + " ";
+            }
+            // logger.debug("tracksection : {}, train sur la tracksection {}",
+            // mapentry1.getKey(), a);
+        }
+        // logger.debug("{}!!!!!!!!!!!!!!!!!!!!!!!", ListTrackSectionRange);
         return ListTrackSectionRange;
     }
 
     private double getDistanceNextTrain() {
         var distance = Double.POSITIVE_INFINITY;
-        var tracksectionpath = this.trainState.location.trackSectionPath;
-        HashMap<Integer, ArrayList<Train>> ListTrackSectionRange = getTrainTracks();
+        var tracksectionpath = this.trainSchedule.fullPath;
+        var currentTrackSection = this.trainState.location.trackSectionRanges.getLast().edge;
+        HashMap<String, ArrayList<Train>> ListTrackSectionRange = getTrainTracks();
         ArrayList<Train> listetrain = null;
-        TrackSectionRange tracksectionrange = null;
-        for (TrackSectionRange tracksection : tracksectionpath) {
-            tracksectionrange = tracksection;
-            listetrain = getListNextTrain(tracksection, ListTrackSectionRange);
-            if (listetrain != null) {
+        boolean devant = false;
+        int i = 0;
+        for (i = 0; i < tracksectionpath.size(); i++) {
+            TrackSectionRange tsr = tracksectionpath.get(i);
+            if (tsr.edge.id == currentTrackSection.id) {
+                devant = true;
+            }
+            if (devant)
                 break;
+        }
+        ;
+
+        // On considère les trains sur la meme tracksection
+        listetrain = ListTrackSectionRange.get(currentTrackSection.id);
+        ArrayList<Train> listetrain2 = new ArrayList<>();
+        if (listetrain != null && listetrain.size() != 0) {
+            for (Train train : listetrain) {
+                if (train.getLastState().location.trackSectionRanges.getFirst()
+                        .getBeginPosition() > this.trainState.location.trackSectionRanges.getLast().getEndPosition()) {
+                    listetrain2.add(train);
+                }
+            }
+            listetrain = listetrain2;
+            if (listetrain != null && listetrain.size() != 0) {
+                Train tr = listetrain.get(0);
+                for (Train train : listetrain) {
+                    if (train.getLastState().location.trackSectionRanges.getFirst()
+                            .getBeginPosition() < tr.getLastState().location.trackSectionRanges.getFirst()
+                                    .getBeginPosition()) {
+                        tr = train;
+                    }
+                }
+                return tr.getLastState().location.trackSectionRanges.getFirst().getBeginPosition()
+                        - this.trainState.location.trackSectionRanges.getLast().getEndPosition(); // a vérifier getLast
+                                                                                                  // et getFirst
             }
         }
-        if (listetrain == null)
-            return distance;
-        assert tracksectionrange != null;
+        var longueur = currentTrackSection.length
+                - this.trainState.location.trackSectionRanges.getLast().getEndPosition();
+        TrackSection section = currentTrackSection;
+        i++;
+        while (i < tracksectionpath.size() && (listetrain == null || listetrain.size() == 0)) {
+            var track = tracksectionpath.get(i);
+            listetrain = ListTrackSectionRange.get(track.edge.id);
+            if (listetrain != null && listetrain.size() != 0)
+                break;
+            if (!section.id.equals(track.edge.id)) {
+                logger.debug("On ajoute la taille d'un canton");
+                longueur += track.edge.length;
+            }
+            section = track.edge;
+            i++;
+        }
+        if (listetrain == null || listetrain.isEmpty()) {
+            // logger.debug("111111111111111111");
+            return Double.POSITIVE_INFINITY;
+        }
+        Train tr = listetrain.get(0);
         for (Train train : listetrain) {
-            var distance2 = distancetoPreviousTrackSection(train, tracksectionrange);
-            if (distance2 < distance) {
-                distance = distance2;
+            if (train.getLastState().location.trackSectionRanges.getFirst()
+                    .getBeginPosition() < tr.getLastState().location.trackSectionRanges.getFirst().getBeginPosition()) {
+                tr = train;
             }
         }
-        var DistanceTrack = getPositionTrack(this.trainSchedule, tracksectionrange);
-        var trainPosition = this.trainState.location.getPathPosition();
-        assert DistanceTrack - trainPosition + DistanceTrack > 0;
-        return DistanceTrack - trainPosition + DistanceTrack;
-    }
-
-    private double distancetoPreviousTrackSection(Train train, TrackSectionRange tracksection) {
-        return distancetoPreviousTrackSection(train.getLastState(), tracksection, train.schedule);
-    }
-
-    private double distancetoPreviousTrackSection(TrainState trainstate, TrackSectionRange tracksection,
-            TrainSchedule schedule) {
-        var PositionTrackSession = getPositionTrack(schedule, tracksection);
-        assert trainstate.location.getPathPosition() - PositionTrackSession > 0;
-        return trainstate.location.getPathPosition() - PositionTrackSession;
-    }
-
-    private double getPositionTrack(TrainSchedule schedule, TrackSectionRange tracksection) {
-
-        Iterator<TrackSectionRange> i = schedule.fullPath.iterator();
-        assert i.hasNext();
-        TrackSectionRange t = i.next();
-        double PositionTrackSession = 0;
-        while (i.hasNext() && t != tracksection) {
-            PositionTrackSession += t.length();
-            t = i.next();
-        }
-        return PositionTrackSession;
+        logger.debug("begin : {}, end : {}",
+                tr.getLastState().location.trackSectionRanges.getFirst().getBeginPosition(),
+                tr.getLastState().location.trackSectionRanges.getFirst().getEndPosition());
+        distance = longueur + tr.getLastState().location.trackSectionRanges.getFirst().getBeginPosition();
+        assert distance > 0;
+        return distance;
     }
 
 }
