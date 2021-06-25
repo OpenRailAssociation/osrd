@@ -3,6 +3,7 @@ import produce from 'immer';
 
 // Action Types
 export const UPDATE_NAME = 'osrdconf/UPDATE_NAME';
+export const UPDATE_LABELS = 'osrdconf/UPDATE_LABELS';
 export const UPDATE_INFRA_ID = 'osrdconf/UPDATE_INFRA_ID';
 export const UPDATE_PATHFINDING_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
 export const UPDATE_TIMETABLE_ID = 'osrdconf/UPDATE_TIMETABLE_ID';
@@ -22,6 +23,7 @@ export const UPDATE_FEATURE_INFO_CLICK_OSRD = 'osrdconf/UPDATE_FEATURE_INFO_CLIC
 // Reducer
 export const initialState = {
   name: '',
+  labels: [],
   infraID: undefined,
   pathfindingID: undefined,
   timetableID: undefined,
@@ -40,6 +42,9 @@ export default function reducer(state = initialState, action) {
     switch (action.type) {
       case UPDATE_NAME:
         draft.name = action.name;
+        break;
+      case UPDATE_LABELS:
+        draft.labels = action.labels;
         break;
       case UPDATE_INFRA_ID:
         draft.infraID = action.infraID;
@@ -96,6 +101,14 @@ export function updateName(name) {
     dispatch({
       type: UPDATE_NAME,
       name,
+    });
+  };
+}
+export function updateLabels(labels) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_LABELS,
+      labels,
     });
   };
 }

@@ -43,11 +43,11 @@ export default function OSRDConfig() {
             title={t('translation:common.itinerary')}
             updateExtViewport={setExtViewport}
           />
+          <AddTrainLabels />
           <AddTrainSchedule
             mustUpdateTimetable={mustUpdateTimetable}
             setMustUpdateTimetable={setMustUpdateTimetable}
           />
-          <AddTrainLabels />
         </div>
         <div className="col-sm-6 h-100">
           <div className="osrd-config-item osrd-config-item-map mb-2">

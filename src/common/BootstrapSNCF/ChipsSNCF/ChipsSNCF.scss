@@ -1,4 +1,14 @@
 .form-control-container .chips-input {
-  width: auto;
+  width: auto !important;
   flex-grow: 1;
+  min-height: 2rem;
+  line-height: 1;
+}
+.chips.chips-label {
+  font-size: .9rem;
+  line-height: 1.2;
+  height: 2rem;
+}
+button.chips.chips-btn {
+  min-height: 2rem;
 }
