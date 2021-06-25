@@ -18,6 +18,11 @@ public class TrainCreatedEvent extends TimelineEvent {
     }
 
     @Override
+    public String toString() {
+        return String.format("TrainCreatedEvent { %s }", schedule.trainID);
+    }
+
+    @Override
     protected void onOccurrence(Simulation sim) throws SimulationError {
         var trainName = schedule.trainID;
         logger.info("starting train {}", trainName);
@@ -36,6 +41,9 @@ public class TrainCreatedEvent extends TimelineEvent {
         if (other.getClass() != TrainCreatedEvent.class)
             return false;
         var o = (TrainCreatedEvent) other;
+
+        // This comparison will not work as expected (not a deep comparison)
+        // If we need it someday we have to make train schedules deep comparable as well, which takes a lot of changes.
         return o.schedule == schedule;
     }
 

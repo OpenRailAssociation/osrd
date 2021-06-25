@@ -12,9 +12,9 @@ import fr.sncf.osrd.train.TrainCapability;
 public class RollingStock {
     public final String id;
 
-    private final double A; // in newtons
-    private final double B; // in newtons / (m/s)
-    private final double C; // in newtons / (m/s^2)
+    public final double A; // in newtons
+    public final double B; // in newtons / (m/s)
+    public final double C; // in newtons / (m/s^2)
 
     /**
      * Gets the rolling resistance at a given speed, which is a force that always goes

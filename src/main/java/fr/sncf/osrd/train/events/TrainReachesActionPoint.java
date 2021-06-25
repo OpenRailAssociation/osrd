@@ -113,4 +113,12 @@ public final class TrainReachesActionPoint extends TimelineEvent {
             );
         }
     }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "TrainReachesActionPoint { eventId=%s, trainId=%s, actionPoint=%s, interactsWith=%s }",
+                eventId, trainStateChange.trainID, interaction.actionPoint, interaction.interactionType.name()
+        );
+    }
 }

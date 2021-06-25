@@ -74,7 +74,7 @@ public class Train {
                 initialLocation.edge,
                 schedule.initialDirection,
                 initialLocation.offset,
-                initialLocation.offset
+                initialLocation.offset // This starts as a 0 length range, the train grow in size as it appears
         ));
         var trackSectionPath = new ArrayList<TrackSectionRange>();
         for (var phase : schedule.phases)

@@ -10,7 +10,7 @@ import java.util.Objects;
 
 public final class Interaction implements DeepComparable<Interaction>, Comparable<Interaction> {
     public final InteractionType interactionType;
-    public final double position;
+    public double position;
     public final ActionPoint actionPoint;
 
     /** Create an interaction */
