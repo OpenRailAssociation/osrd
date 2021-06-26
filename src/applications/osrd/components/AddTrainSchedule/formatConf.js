@@ -46,6 +46,7 @@ export default function formatConf(dispatch, setFailure, t, osrdconf, originTime
   if (!error) {
     const osrdConfSchedule = {
       train_name: osrdconf.name,
+      labels: osrdconf.labels,
       departure_time: originTime,
       phases: [],
       initial_speed: 0,

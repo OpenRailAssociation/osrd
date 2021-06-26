@@ -1,10 +1,12 @@
 {
   "departureTime": "Départ",
   "isWorking": "Calcul de la simulation en cours...",
+  "labels": "Etiquettes",
   "ManualOffset": "Ajout de secondes au train",
   "name": "Nom",
   "noData": "Aucune donnée disponible",
   "null": "Lieu non renseigné",
+  "placeholderlabel": "Filtrer les étiquettes",
   "start": "Départ",
   "stop": "Arrivée",
   "stopPlace": "Arrêt",

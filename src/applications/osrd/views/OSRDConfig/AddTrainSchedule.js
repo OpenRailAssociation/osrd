@@ -43,6 +43,10 @@ export default function AddTrainSchedule(props) {
           }));
         }
       } catch (e) {
+        dispatch(setFailure({
+          name: e.name,
+          message: e.message,
+        }));
         console.log(e);
       }
       setMustUpdateTimetable(!mustUpdateTimetable);

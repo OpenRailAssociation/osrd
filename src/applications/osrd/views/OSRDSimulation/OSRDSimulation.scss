@@ -65,3 +65,11 @@
     padding: 0;
   }
 }
+.table td.td-button {
+  padding: 0;
+  .cell-inner-button {
+    padding: .5rem 1.25rem;
+    cursor: pointer;
+  }
+
+}

@@ -45,7 +45,9 @@ const OSRDSimulation = () => {
       if (timetable.train_schedules.length > 0) { setIsEmpty(false); }
       for (const trainschedule of timetable.train_schedules) {
         try {
-          simulationLocal.push(await get(`${trainscheduleURI}/${trainschedule.id}/result/`));
+          const trainResult = await get(`${trainscheduleURI}/${trainschedule.id}/result/`)
+          const trainDetails = await get(`${trainscheduleURI}/${trainschedule.id}`)
+          simulationLocal.push({ ...trainResult, labels: trainDetails.labels});
         } catch (e) {
           console.log('ERROR', e);
         }
@@ -89,7 +91,7 @@ const OSRDSimulation = () => {
             <div className="m-0 p-3">
               <div className="osrd-simulation-container mb-2">
                 <div className="row">
-                  <div className="col-md-4">
+                  <div className="col-md-6">
                     <TrainsList
                       simulation={simulation}
                       selectedTrain={selectedTrain}
@@ -97,7 +99,7 @@ const OSRDSimulation = () => {
                       setMustRedraw={setMustRedraw}
                     />
                   </div>
-                  <div className="col-md-8">
+                  <div className="col-md-6">
                     {simulation.trains.length > 0 ? (
                       <SpaceTimeChart
                         simulation={simulation}
