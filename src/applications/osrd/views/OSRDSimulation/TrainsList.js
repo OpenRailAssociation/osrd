@@ -28,7 +28,6 @@ const TrainsList = (props) => {
         if (step.name === 'stop') { stop = step.time; }
       });
 
-      console.log('coucou', filter, train.labels);
       if (filter === '' || (train.labels !== undefined && train.labels.join().toLowerCase().includes(filter.toLowerCase()))) {
         return (
           <tr

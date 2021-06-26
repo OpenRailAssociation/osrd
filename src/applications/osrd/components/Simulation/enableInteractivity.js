@@ -58,8 +58,12 @@ const updateChart = (chart, keyValues, rotate) => {
     ? chart.y : d3.event.transform.rescaleY(chart.y);
 
   // update axes with these new boundaries
-  chart.xAxis.call(d3.axisBottom(newX)); // .tickFormat(d3.timeFormat('%H:%M:%S'))
-  chart.yAxis.call(d3.axisLeft(newY));
+  const axisBottomX = !rotate && keyValues[0] === 'time'
+    ? d3.axisBottom(newX).tickFormat(d3.timeFormat('%H:%M:%S')) : d3.axisBottom(newX);
+  const axisLeftY = rotate && keyValues[0] === 'time'
+    ? d3.axisLeft(newY).tickFormat(d3.timeFormat('%H:%M:%S')) : d3.axisLeft(newY);
+  chart.xAxis.call(axisBottomX);
+  chart.yAxis.call(axisLeftY);
 
   chart.xAxisGrid.call(gridX(newX, chart.height));
   chart.yAxisGrid.call(gridY(newY, chart.width));

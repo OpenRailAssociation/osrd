@@ -19,7 +19,7 @@ import enableInteractivity, { traceVerticalLine } from 'applications/osrd/compon
 
 const CHART_ID = 'SpaceTimeChart';
 
-const createChart = (chart, dataSimulation, keyValues, ref) => {
+const createChart = (chart, dataSimulation, keyValues, ref, rotate) => {
   d3.select(`#${CHART_ID}`).remove();
 
   const dataSimulationTime = d3.extent([].concat(...dataSimulation.map(
@@ -49,7 +49,7 @@ const createChart = (chart, dataSimulation, keyValues, ref) => {
     : chart.y;
 
   const width = parseInt(d3.select(`#container-${CHART_ID}`).style('width'), 10);
-  const chartLocal = defineChart(width, 300, defineX, defineY, ref, CHART_ID);
+  const chartLocal = defineChart(width, 300, defineX, defineY, ref, rotate, keyValues, CHART_ID);
   return (chart === undefined)
     ? chartLocal
     : { ...chartLocal, x: chart.x, y: chart.y };
@@ -157,7 +157,7 @@ const SpaceTimeChart = (props) => {
   const drawAllTrains = () => {
     if (mustRedraw) {
       const chartLocal = createChart(
-        chart, dataSimulation, keyValues, ref,
+        chart, dataSimulation, keyValues, ref, rotate,
       );
       dataSimulation.forEach((train, idx) => {
         drawTrain(
