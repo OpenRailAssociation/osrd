@@ -26,6 +26,7 @@ import MapSettingsShowOSM from 'common/Map/Settings/MapSettingsShowOSM';
 
 /* Interactions */
 import TrainHoverPosition from 'applications/osrd/components/SimulationMap/TrainHoverPosition';
+import TrainHoverPositionOthers from 'applications/osrd/components/SimulationMap/TrainHoverPositionOthers';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
@@ -40,15 +41,49 @@ import Signals from 'common/Map/Layers/Signals';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import RenderItinerary from 'applications/osrd/components/SimulationMap/RenderItinerary';
 
+const createOtherPoint = (trains, selectedTrain, hoverPosition) => {
+  const actualTime = trains[selectedTrain].steps[hoverPosition].time;
+
+  // First find trains where actual time from position is between start & stop
+  const concernedTrains = [];
+  trains.forEach((train, idx) => {
+    if (actualTime >= train.steps[0].time
+      && actualTime <= train.steps[train.steps.length - 1].time
+      && idx !== selectedTrain) {
+      concernedTrains.push(idx);
+    }
+  });
+  const results = [];
+
+  // For each train founded, search for nearest time point and send it
+  concernedTrains.forEach((trainIdx) => {
+    const trainTimes = trains[trainIdx].steps.filter((step) => step.time >= actualTime);
+    results.push({ ...trainTimes[0], name: trains[trainIdx].name, id: trainIdx });
+  });
+  return results;
+};
+
 const createGeoJSONPath = (steps) => {
+  const features = {
+    type: 'Feature',
+    geometry: {
+      type: 'LineString',
+      coordinates: steps.map((step) => step.geo_position),
+    },
+    properties: {},
+  };
+  return features;
+};
+
+const createGeoJSONPoints = (steps) => {
   const features = [];
   steps.forEach((step, idx) => {
     if (steps[idx + 1] !== undefined) {
       features.push({
         type: 'Feature',
         geometry: {
-          type: 'LineString',
-          coordinates: [step.geo_position, steps[idx + 1].geo_position],
+          type: 'Point',
+          coordinates: step.geo_position,
         },
         properties: {
           end_block_occupancy: step.end_block_occupancy,
@@ -78,6 +113,8 @@ const Map = (props) => {
   const [showSearch, setShowSearch] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [geojsonPath, setGeojsonPath] = useState(undefined);
+  const [geojsonPoints, setGeojsonPoints] = useState(undefined);
+  const [trainHoverPositionOthers, setTrainHoverPositionOthers] = useState(undefined);
   const [trainHoverPosition, setTrainHoverPosition] = useState(undefined);
   const [idHover, setIdHover] = useState(undefined);
   const {
@@ -136,6 +173,7 @@ const Map = (props) => {
       const geojson = createGeoJSONPath(simulation.trains[selectedTrain].steps);
       setGeojsonPath(geojson);
       zoomToFeature(bbox(geojson));
+      setGeojsonPoints(createGeoJSONPoints(simulation.trains[selectedTrain].steps));
     }
   };
 
@@ -161,6 +199,7 @@ const Map = (props) => {
       && hoverPosition !== undefined
       && simulation.trains[selectedTrain].steps[hoverPosition] !== undefined) {
       setTrainHoverPosition(simulation.trains[selectedTrain].steps[hoverPosition]);
+      setTrainHoverPositionOthers(createOtherPoint(simulation.trains, selectedTrain, hoverPosition));
     }
   }, [hoverPosition]);
 
@@ -191,7 +230,7 @@ const Map = (props) => {
         clickRadius={10}
         attributionControl={false} // Defined below
         onHover={onFeatureHover}
-        interactiveLayerIds={geojsonPath ? ['geojsonPath'] : []}
+        interactiveLayerIds={geojsonPath ? ['geojsonPoints'] : []}
         touchRotate
         asyncRender
       >
@@ -232,11 +271,17 @@ const Map = (props) => {
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         ) : null}
 
-        {geojsonPath !== undefined
-          ? <RenderItinerary geojson={geojsonPath} /> : null}
+        {geojsonPath !== undefined && geojsonPoints !== undefined ? (
+          <RenderItinerary
+            geojsonPath={geojsonPath}
+            geojsonPoints={geojsonPoints}
+          />
+        ) : null}
 
         {trainHoverPosition !== undefined
           ? <TrainHoverPosition point={trainHoverPosition} /> : null}
+        {trainHoverPosition !== undefined
+          ? <TrainHoverPositionOthers trainHoverPositionOthers={trainHoverPositionOthers} /> : null}
 
       </ReactMapGL>
     </>
