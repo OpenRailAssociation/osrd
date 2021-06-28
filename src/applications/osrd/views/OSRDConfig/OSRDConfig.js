@@ -32,7 +32,7 @@ export default function OSRDConfig() {
   return (
     <main className={`osrd-config-mastcontainer mastcontainer${fullscreen ? ' fullscreen' : ''}`}>
       <div className="row m-0 px-1 py-3 h-100">
-        <div className="col-sm-6 h-100">
+        <div className="col-sm-6">
           <InfraSelector />
           <TimetableSelector
             mustUpdateTimetable={mustUpdateTimetable}
@@ -49,7 +49,7 @@ export default function OSRDConfig() {
             setMustUpdateTimetable={setMustUpdateTimetable}
           />
         </div>
-        <div className="col-sm-6 h-100">
+        <div className="col-sm-6">
           <div className="osrd-config-item osrd-config-item-map mb-2">
             <div className="osrd-config-item-container h-100 osrd-config-item-container-map">
               <Map />
