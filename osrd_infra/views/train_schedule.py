@@ -32,6 +32,35 @@ def format_result(train_schedule_result):
     }
 
 
+def format_step(
+    time,
+    speed,
+    projection,
+    head_track,
+    head_offset,
+    tail_track,
+    tail_offset,
+    start_block_occupation,
+    end_block_occupation,
+):
+    assert head_offset <= head_track.track_section.length
+    head_offset_normalized = head_offset / head_track.track_section.length
+    geo_line = geo_transform(head_track.geo_line_location.geographic)
+    schema_line = geo_transform(head_track.geo_line_location.schematic)
+    return {
+        "time": time,
+        "speed": speed,
+        "head_position": projection.track_position(head_track.pk, head_offset),
+        "tail_position": projection.track_position(tail_track.pk, tail_offset),
+        "geo_position": geo_line.interpolate_normalized(head_offset_normalized).tuple,
+        "schema_position": schema_line.interpolate_normalized(
+            head_offset_normalized
+        ).tuple,
+        "start_block_occupancy": start_block_occupation,
+        "end_block_occupancy": end_block_occupation,
+    }
+
+
 def format_steps(train_schedule_result):
     routes = train_schedule_result.train_schedule.path.payload["path"]
 
@@ -71,42 +100,38 @@ def format_steps(train_schedule_result):
     qs = TrackSectionEntity.objects.filter(pk__in=list(tracks))
     prefetch_tracks = entities_prefetch_components(TrackSectionEntity, qs)
     tracks = {track.pk: track for track in prefetch_tracks}
+    last = None
     for log in train_schedule_result.log:
         if log["type"] != "train_location":
             continue
         time = log["time"]
-        head_track_id = reverse_format(log["head_track_section"])
-        tail_track_id = reverse_format(log["tail_track_section"])
-        head_track = tracks[head_track_id]
-        geo_line = geo_transform(head_track.geo_line_location.geographic)
-        schema_line = geo_transform(head_track.geo_line_location.schematic)
-        head_offset_normalized = log["head_offset"] / head_track.track_section.length
+        while last and time - last["time"] > 1.0:
+            last["time"] += 1
+            last["head_offset"] += last["speed"]
+            last["tail_offset"] += last["speed"]
+            res.append(format_step(**last))
+
+        head_track = tracks[reverse_format(log["head_track_section"])]
+        tail_track = tracks[reverse_format(log["tail_track_section"])]
 
         while time >= start_occupancy[0][0]:
             end_block_occupation = start_occupancy.pop(0)[1]
         while time >= end_occupancy[0][0]:
             start_block_occupation = end_occupancy.pop(0)[1]
 
-        res.append(
-            {
-                "time": time,
-                "speed": log["speed"],
-                "head_position": projection.track_position(
-                    head_track_id, log["head_offset"]
-                ),
-                "tail_position": projection.track_position(
-                    tail_track_id, log["tail_offset"]
-                ),
-                "geo_position": geo_line.interpolate_normalized(
-                    head_offset_normalized
-                ).tuple,
-                "schema_position": schema_line.interpolate_normalized(
-                    head_offset_normalized
-                ).tuple,
-                "start_block_occupancy": start_block_occupation,
-                "end_block_occupancy": end_block_occupation,
-            }
-        )
+        last = {
+            "time": time,
+            "speed": log["speed"],
+            "projection": projection,
+            "head_track": head_track,
+            "head_offset": log["head_offset"],
+            "tail_track": tail_track,
+            "tail_offset": log["tail_offset"],
+            "start_block_occupation": start_block_occupation,
+            "end_block_occupation": end_block_occupation,
+        }
+        res.append(format_step(**last))
+
     return res
 
 
