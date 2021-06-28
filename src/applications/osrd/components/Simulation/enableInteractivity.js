@@ -29,13 +29,13 @@ const mousemove = (
   listValues, rotate, setHoverPosition,
 ) => {
   // recover coordinate we need
-  const bisect = d3.bisector((d) => d[keyValues[0]]).left;
   const valuePosition = rotate
     ? chart.y.invert(d3.mouse(d3.event.currentTarget)[1])
     : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
-  hoverPosition = bisect(dataSimulation[listValues[0]], valuePosition, 1);
+  const bisect = d3.bisector((d) => d[keyValues[0]]).left;
+  const newHoverPosition = bisect(dataSimulation[listValues[0]], valuePosition, 1);
 
-  /* // Update guideLines
+  // Update guideLines
   chart.svg.selectAll('#vertical-line')
     .attr('x1', d3.mouse(d3.event.currentTarget)[0])
     .attr('x2', d3.mouse(d3.event.currentTarget)[0]);
@@ -43,11 +43,8 @@ const mousemove = (
     .attr('y1', d3.mouse(d3.event.currentTarget)[1])
     .attr('y2', d3.mouse(d3.event.currentTarget)[1]);
 
-  /* updatePointers(
-    chart, dataSimulation, hoverPosition, keyValues, listValues, rotate,
-  ); */
-  setHoverPosition(hoverPosition);
-  return hoverPosition;
+  setHoverPosition(newHoverPosition);
+  return newHoverPosition;
 };
 
 const updateChart = (chart, keyValues, rotate) => {
@@ -91,7 +88,6 @@ const updateChart = (chart, keyValues, rotate) => {
     .selectAll('.conflictsPoints')
     .attr('cx', (d) => newX((rotate ? d[keyValues[1]] : d[keyValues[0]])))
     .attr('cy', (d) => newY((rotate ? d[keyValues[0]] : d[keyValues[1]])));
-
   return { newX, newY };
 };
 
@@ -99,9 +95,8 @@ export const traceVerticalLine = (
   chart, dataSimulation, hoverPosition, keyValues, listValues, refValueName, rotate,
 ) => {
   if (chart !== undefined && dataSimulation[refValueName][hoverPosition] !== undefined) {
-    const valuePosition = dataSimulation[refValueName][hoverPosition][keyValues[0]];
-
     displayGuide(chart, 1);
+    /* const valuePosition = dataSimulation[refValueName][hoverPosition][keyValues[0]];
     if (rotate) {
       chart.svg.selectAll('#vertical-line').style('opacity', 0);
       chart.svg.selectAll('#horizontal-line')
@@ -112,7 +107,7 @@ export const traceVerticalLine = (
       chart.svg.selectAll('#vertical-line')
         .attr('x1', chart.x(valuePosition))
         .attr('x2', chart.x(valuePosition));
-    }
+    } */
     updatePointers(
       chart, dataSimulation, hoverPosition, keyValues,
       listValues, rotate,
@@ -124,9 +119,9 @@ const enableInteractivity = (
   chart, dataSimulation, keyValues, listValues, rotate, setChart, setHoverPosition,
   setMustRedraw = () => {},
 ) => {
-  let hoverPosition;
+  let newHoverPosition;
 
-  const zoom = d3.zoom(hoverPosition)
+  const zoom = d3.zoom(newHoverPosition)
     .scaleExtent([0.5, 20]) // This control how much you can unzoom (x0.5) and zoom (x20)
     .extent([[0, 0], [chart.width, chart.height]])
     .on('zoom', () => {
@@ -134,7 +129,7 @@ const enableInteractivity = (
       const newChart = { ...chart, x: zoomFunctions.newX, y: zoomFunctions.newY };
       setChart(newChart);
       updatePointers(
-        newChart, dataSimulation, hoverPosition, keyValues, listValues, rotate,
+        newChart, dataSimulation, newHoverPosition, keyValues, listValues, rotate,
       );
     })
     .filter(() => d3.event.button === 0 || d3.event.button === 1)
@@ -143,7 +138,7 @@ const enableInteractivity = (
   chart.svg // .selectAll('.zoomable')
     .on('mouseover', () => displayGuide(chart, 1))
     .on('mousemove', () => {
-      hoverPosition = mousemove(
+      newHoverPosition = mousemove(
         chart, dataSimulation, undefined, keyValues,
         listValues, rotate, setHoverPosition,
       );

@@ -9,5 +9,6 @@ export function sec2time(sec) {
 
 export function time2sec(time) {
   const timeArray = time.split(':');
-  return (Number(timeArray[0]) * 3600) + (Number(timeArray[1]) * 60) + Number(timeArray[2]);
+  const seconds = timeArray[2] ? Number(timeArray[2]) : 0;
+  return (Number(timeArray[0]) * 3600) + (Number(timeArray[1]) * 60) + seconds;
 }
