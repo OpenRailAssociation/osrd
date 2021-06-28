@@ -24,9 +24,9 @@ export default function AddTrainSchedule(props) {
 
   const submitConf = () => {
     // First train tested, and next we put the other trains
-    const originTime = time2sec(osrdconf.originTime);
-    const osrdConfig = formatConf(dispatch, setFailure, t, osrdconf, originTime);
+    const osrdConfig = formatConf(dispatch, setFailure, t, osrdconf, osrdconf.originTime);
     if (osrdConfig) {
+      const originTime = time2sec(osrdconf.originTime);
       try {
         for (let nb = 1; nb <= trainCount; nb += 1) {
           const newOriginTime = originTime + (60 * trainDelta * (nb - 1));
