@@ -61,6 +61,28 @@ def format_step(
     }
 
 
+def get_move_location(path, track_id, offset, distance, start=0):
+    for i in range(start, len(path)):
+        if path[i]["track_section"] != track_id:
+            continue
+        if offset < path[i]["begin"] and offset < path[i]["end"]:
+            continue
+        if offset > path[i]["begin"] and offset > path[i]["end"]:
+            continue
+        if distance <= abs(path[i]["end"] - offset):
+            if path[i]["end"] > path[i]["begin"]:
+                return path[i]["track_section"], offset + distance
+            return path[i]["track_section"], offset - distance
+        return get_move_location(
+            path,
+            path[i + 1]["track_section"],
+            path[i + 1]["begin"],
+            distance - abs(path[i]["end"] - offset),
+            i + 1,
+        )
+    raise ParseError("Internal error: interpolation exceed end path location")
+
+
 def format_steps(train_schedule_result):
     routes = train_schedule_result.train_schedule.path.payload["path"]
 
@@ -106,9 +128,19 @@ def format_steps(train_schedule_result):
             continue
         time = log["time"]
         while last and time - last["time"] > 1.0:
-            last["time"] += 1
-            last["head_offset"] += last["speed"]
-            last["tail_offset"] += last["speed"]
+            head_track, head_offset = get_move_location(
+                path, last["head_track"].pk, last["head_offset"], last["speed"]
+            )
+            tail_track, tail_offset = get_move_location(
+                path, last["tail_track"].pk, last["tail_offset"], last["speed"]
+            )
+            last.update(
+                time=last["time"] + 1,
+                head_track=tracks[head_track],
+                head_offset=head_offset,
+                tail_track=tracks[tail_track],
+                tail_offset=tail_offset,
+            )
             res.append(format_step(**last))
 
         head_track = tracks[reverse_format(log["head_track_section"])]
@@ -131,7 +163,6 @@ def format_steps(train_schedule_result):
             "end_block_occupation": end_block_occupation,
         }
         res.append(format_step(**last))
-
     return res
 
 
