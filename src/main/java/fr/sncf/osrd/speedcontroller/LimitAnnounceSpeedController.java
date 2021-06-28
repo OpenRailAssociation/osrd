@@ -28,7 +28,7 @@ public final class LimitAnnounceSpeedController extends SpeedController {
             double targetPosition,
             double gamma
     ) {
-        var requiredBrakingDistance = (initialSpeed * initialSpeed - targetSpeed * targetSpeed) / 2 * gamma;
+        var requiredBrakingDistance = (initialSpeed * initialSpeed - targetSpeed * targetSpeed) / (2 * gamma);
         return new LimitAnnounceSpeedController(
                 targetSpeed,
                 targetPosition - requiredBrakingDistance,
