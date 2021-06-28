@@ -307,7 +307,7 @@ public class Train {
                 }
 
                 var last = get(size() - 1);
-                if (last.speed == speed && time - last.time < 1.)
+                if (last.speed == speed)
                     return;
 
                 add(new SpeedUpdate(pathPosition, time, speed));
