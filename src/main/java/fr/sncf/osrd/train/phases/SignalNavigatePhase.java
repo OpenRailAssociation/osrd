@@ -215,7 +215,7 @@ public final class SignalNavigatePhase implements Phase {
         trackSectionPath.forEach(consumer);
     }
 
-    /** This class represent the location of the phase end. It's as last event in the event path */
+    /** This class represent the location of the phase end. It's the last interaction on the path. */
     public static final class PhaseEndActionPoint implements ActionPoint {
 
         @Override
@@ -229,34 +229,31 @@ public final class SignalNavigatePhase implements Phase {
         }
 
         @Override
-        public void interact(Simulation sim, Train train, InteractionType actionType) {
-            var change = new EndOfPhase(sim, train, train.getLastState().currentPhaseIndex);
-            sim.publishChange(change);
-        }
+        public void interact(Simulation sim, Train train, InteractionType actionType) {}
 
         @Override
         public String toString() {
             return "PhaseEndActionPoint { }";
         }
+    }
 
-        public static class EndOfPhase extends Change {
-            public final Train train;
-            public final int phaseIndex;
+    public static class EndOfPhase extends Change {
+        public final Train train;
+        public final int phaseIndex;
 
-            /** Create a change to notify that a train has reached the end of its current phase */
-            public EndOfPhase(Simulation sim, Train train, int phaseIndex) {
-                super(sim);
-                this.train = train;
-                this.phaseIndex = phaseIndex;
-            }
+        /** Create a change to notify that a train has reached the end of its current phase */
+        public EndOfPhase(Simulation sim, Train train, int phaseIndex) {
+            super(sim);
+            this.train = train;
+            this.phaseIndex = phaseIndex;
+        }
 
-            @Override
-            public void replay(Simulation sim) {}
+        @Override
+        public void replay(Simulation sim) {}
 
-            @Override
-            public String toString() {
-                return String.format("EndOfPhase { train: %s, phase index: %d }", train.getName(), phaseIndex);
-            }
+        @Override
+        public String toString() {
+            return String.format("EndOfPhase { train: %s, phase index: %d }", train.getName(), phaseIndex);
         }
     }
 
@@ -363,6 +360,8 @@ public final class SignalNavigatePhase implements Phase {
         public TimelineEvent simulate(Simulation sim, Train train, TrainState trainState) throws SimulationError {
             // Check if we reached our goal
             if (hasPhaseEnded()) {
+                var endOfPhaseChange = new EndOfPhase(sim, train, train.getLastState().currentPhaseIndex);
+                sim.publishChange(endOfPhaseChange);
                 var nextState = trainState.nextPhase(sim);
                 var change = new Train.TrainStateChange(sim, train.getName(), nextState);
                 change.apply(sim, train);
