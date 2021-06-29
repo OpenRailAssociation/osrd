@@ -101,7 +101,8 @@ public class CBTCPhase implements Phase {
             for(TrackSectionRange track : schedule.fullPath) {
                 endOfPathPosition += track.length();
             }
-            if(train.getLastState().location.getPathPosition() >= endOfPathPosition) {
+            // TEMPORARY : fix in order to detect the end of the simulation
+            if(train.getLastState().location.getPathPosition() >= endOfPathPosition || Math.abs(train.getLastState().location.getPathPosition() - endOfPathPosition) < 10) {
                 var change = new Train.TrainStateChange(sim, train.getName(), trainState.nextPhase(sim));
                 change.apply(sim, train);
                 sim.publishChange(change);
