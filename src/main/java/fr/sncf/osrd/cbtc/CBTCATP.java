@@ -45,9 +45,6 @@ public class CBTCATP {
 
     private double getNextClosedSwitchPathPosition() {
         ArrayList<TrackSectionRange> fullPath = trainSchedule.fullPath;
-        if (location.getPathPosition() > 360) {
-            System.out.println("stop");
-        }
         var curTrackSectionPos = location.trackSectionRanges.getFirst();
 
         boolean seen = false;
@@ -80,21 +77,22 @@ public class CBTCATP {
 
     }
 
-    public double getNextDangerPointPathPostion() {
+    public double getNextDangerPointPathDistance() {
         // Find next switch
         double nextSwitchPathPosition = getNextClosedSwitchPathPosition();
+        double nextSwitchPathDistance = nextSwitchPathPosition - this.location.getPathPosition();
 
         // Find next train
-        double nextTrainPathPosition = getDistanceNextTrain();
+        double nextTrainPathDistance = getDistanceNextTrain();
 
         // Find end of path
         double endOfPathPosition = 0;
         for (TrackSectionRange track : trainSchedule.fullPath) {
             endOfPathPosition += track.length();
         }
-        endOfPathPosition -= this.location.getPathPosition();
+        double endOfPathDistance = endOfPathPosition - this.location.getPathPosition();
         // return min of the three potential danger point
-        return Math.min(nextSwitchPathPosition, Math.min(nextTrainPathPosition, endOfPathPosition));
+        return Math.min(nextSwitchPathDistance, Math.min(nextTrainPathDistance, endOfPathDistance));
     }
 
     // Retroune True, si l'énergie qu'il peut dissiper sur la distance est plus
@@ -110,7 +108,7 @@ public class CBTCATP {
             double marge // stopping distance behind the next danger
     ) {
         double speed = this.trainState.speed;
-        return getNextDangerPointPathPostion() - starting_position() - (dt * speed + marge);
+        return getNextDangerPointPathDistance() - starting_position() - (dt * speed + marge);
     }
 
     // Dissipated energie on distance
@@ -156,7 +154,7 @@ public class CBTCATP {
     public double CBTC() {
         if (canBreak(marginBehindNextDanger(1, 100)))
             return 0;
-        if (canBreak(getNextDangerPointPathPostion() - location.getPathPosition() - 50))
+        if (canBreak(getNextDangerPointPathDistance()))
             return 1;
         return 2;
     }
@@ -164,17 +162,17 @@ public class CBTCATP {
     public ArrayList<SpeedController> directive() {
         double gamma = this.trainSchedule.rollingStock.timetableGamma;
         ArrayList<SpeedController> controllers = new ArrayList<SpeedController>();
-        double nextDangerPosition = getNextDangerPointPathPostion();
+        double nextDangerPosition = getNextDangerPointPathDistance();
         if (canBreak(marginBehindNextDanger(1, 100))) {
-            logger.debug("true");
+            // logger.debug("true");
             return controllers;
         }
-        if (canBreak(nextDangerPosition - location.getPathPosition() - 50) || true) {
-            logger.debug("false");
+        if (canBreak(nextDangerPosition) || true) {
+            // logger.debug("false");
             controllers.add(new LimitAnnounceSpeedController(0, location.getPathPosition() - 50,
-                    nextDangerPosition + location.getPathPosition() - 90, gamma));
-            controllers.add(new MaxSpeedController(0, nextDangerPosition - 90 + location.getPathPosition(),
-                    nextDangerPosition + location.getPathPosition()));
+                    nextDangerPosition + location.getPathPosition(), gamma));
+            controllers.add(new MaxSpeedController(0, nextDangerPosition - 40 + location.getPathPosition(),
+                    nextDangerPosition + location.getPathPosition() + 40));
             return controllers;
         } else { // Enter EMERGENCY_BRAKING
             controllers.add(new MaxSpeedController(0, 0, nextDangerPosition));
@@ -249,7 +247,7 @@ public class CBTCATP {
                 break;
 
             if (!section.id.equals(track.edge.id)) {
-                logger.debug("On ajoute la taille d'un canton");
+                // logger.debug("On ajoute la taille d'un canton");
                 longueur += section.length;
                 section = track.edge;
             }
