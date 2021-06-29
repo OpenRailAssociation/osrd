@@ -2,11 +2,13 @@
   "departureTime": "Départ",
   "isWorking": "Calcul de la simulation en cours...",
   "labels": "Etiquettes",
+  "loadingTrain": "Chargement du train",
   "ManualOffset": "Ajout de secondes au train",
   "name": "Nom",
   "noData": "Aucune donnée disponible",
   "null": "Lieu non renseigné",
   "placeholderlabel": "Filtrer les étiquettes",
+  "simplify": "Simplification des données",
   "start": "Départ",
   "stop": "Arrivée",
   "stopPlace": "Arrêt",
@@ -14,5 +16,6 @@
   "stopStopTime": "Durée d'arrêt",
   "timetable": "Tableau horaire",
   "train": "Train",
-  "trainList": "Liste des trains"
+  "trainList": "Liste des trains",
+  "waiting": "Chargement en cours..."
 }

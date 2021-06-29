@@ -24,6 +24,7 @@ const OSRDSimulation = () => {
   const [hoverPosition, setHoverPosition] = useState(undefined);
   // const [hoverStop, setHoverStop] = useState(undefined);
   const [extViewport, setExtViewport] = useState(undefined);
+  const [waitingMessage, setWaitingMessage] = useState(t('simulation:waiting'));
   const [selectedTrain, setSelectedTrain] = useState(0);
   const [isEmpty, setIsEmpty] = useState(true);
   const [mustRedraw, setMustRedraw] = useState(true);
@@ -35,7 +36,7 @@ const OSRDSimulation = () => {
     if (isEmpty) {
       return <h1 className="text-center">{t('simulation:noData')}</h1>;
     }
-    return <CenterLoader />;
+    return <CenterLoader message={waitingMessage} />;
   };
 
   const getTimetable = async (timetableID) => {
@@ -43,17 +44,19 @@ const OSRDSimulation = () => {
       const simulationLocal = [];
       const timetable = await get(`${timetableURI}/${timetableID}`);
       if (timetable.train_schedules.length > 0) { setIsEmpty(false); }
-      for (const trainschedule of timetable.train_schedules) {
+      for (const [idx, trainschedule] of timetable.train_schedules.entries()) {
         try {
           const trainResult = await get(`${trainscheduleURI}/${trainschedule.id}/result/`)
           const trainDetails = await get(`${trainscheduleURI}/${trainschedule.id}`)
+          await setWaitingMessage(`${t('simulation:loadingTrain')} ${idx + 1}/${timetable.train_schedules.length}`)
           simulationLocal.push({ ...trainResult, labels: trainDetails.labels});
         } catch (e) {
           console.log('ERROR', e);
         }
       }
+      setWaitingMessage(t('simulation:simplify'));
       simulationLocal.sort((a, b) => a.stops[0].time > b.stops[0].time);
-      setSimulation({ trains: simulationLocal });
+      setSimulation({ trains: simplifyData(simulationLocal, 10) });
     } catch (e) {
       console.log('ERROR', e);
     }

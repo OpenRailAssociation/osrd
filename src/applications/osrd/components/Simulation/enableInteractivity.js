@@ -94,20 +94,22 @@ const updateChart = (chart, keyValues, rotate) => {
 export const traceVerticalLine = (
   chart, dataSimulation, hoverPosition, keyValues, listValues, refValueName, rotate,
 ) => {
-  if (chart !== undefined && dataSimulation[refValueName][hoverPosition] !== undefined) {
+  if (chart !== undefined
+    && dataSimulation[refValueName][hoverPosition] !== undefined
+    && d3.event === null) {
     displayGuide(chart, 1);
-    /* const valuePosition = dataSimulation[refValueName][hoverPosition][keyValues[0]];
+    const valuePosition = dataSimulation[refValueName][hoverPosition][keyValues[0]];
     if (rotate) {
-      chart.svg.selectAll('#vertical-line').style('opacity', 0);
+      // chart.svg.selectAll('#vertical-line').style('opacity', 0);
       chart.svg.selectAll('#horizontal-line')
         .attr('y1', chart.y(valuePosition))
         .attr('y2', chart.y(valuePosition));
     } else {
-      chart.svg.selectAll('#horizontal-line').style('opacity', 0);
+      // chart.svg.selectAll('#horizontal-line').style('opacity', 0);
       chart.svg.selectAll('#vertical-line')
         .attr('x1', chart.x(valuePosition))
         .attr('x2', chart.x(valuePosition));
-    } */
+    }
     updatePointers(
       chart, dataSimulation, hoverPosition, keyValues,
       listValues, rotate,
@@ -145,6 +147,7 @@ const enableInteractivity = (
     })
     .call(zoom);
 
+  console.log('coucou', newHoverPosition);
   drawGuideLines(chart);
 };
 
