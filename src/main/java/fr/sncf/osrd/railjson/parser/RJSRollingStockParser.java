@@ -1,12 +1,12 @@
 package fr.sncf.osrd.railjson.parser;
 
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSTrainCapability;
 import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStockField;
 import fr.sncf.osrd.railjson.parser.exceptions.MissingRollingStockField;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSTrainCapability;
 import fr.sncf.osrd.train.TrainCapability;
 
 public class RJSRollingStockParser {

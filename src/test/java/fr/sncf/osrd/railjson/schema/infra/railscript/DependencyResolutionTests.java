@@ -1,13 +1,16 @@
 package fr.sncf.osrd.railjson.schema.infra.railscript;
 
-import static fr.sncf.osrd.Helpers.*;
+import static fr.sncf.osrd.Helpers.getBaseInfra;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 public class DependencyResolutionTests {

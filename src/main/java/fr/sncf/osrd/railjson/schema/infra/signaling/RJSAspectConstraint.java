@@ -1,10 +1,9 @@
 package fr.sncf.osrd.railjson.schema.infra.signaling;
 
-import fr.sncf.osrd.infra.signaling.AspectConstraint;
-import fr.sncf.osrd.infra.signaling.AspectConstraint.ConstraintPosition.Element;
-
 import com.squareup.moshi.Json;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
+import fr.sncf.osrd.infra.signaling.AspectConstraint;
+import fr.sncf.osrd.infra.signaling.AspectConstraint.ConstraintPosition.Element;
 
 public abstract class RJSAspectConstraint {
     public static class ConstraintPosition {

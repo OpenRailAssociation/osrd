@@ -1,15 +1,16 @@
 package fr.sncf.osrd.railml.tracksectiongraph;
 
-import static fr.sncf.osrd.utils.graph.EdgeEndpoint.*;
+import static fr.sncf.osrd.utils.graph.EdgeEndpoint.BEGIN;
+import static fr.sncf.osrd.utils.graph.EdgeEndpoint.END;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.railml.DescriptionLevel;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
-import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection.EndpointID;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSectionLink;
+import fr.sncf.osrd.railml.DescriptionLevel;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
+import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import fr.sncf.osrd.utils.graph.IBiNeighborRel;
 import org.dom4j.Document;
 import org.dom4j.Element;

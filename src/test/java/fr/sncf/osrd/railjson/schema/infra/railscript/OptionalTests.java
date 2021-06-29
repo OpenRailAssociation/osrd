@@ -8,7 +8,6 @@ import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.RailScriptExprParser;
 import fr.sncf.osrd.railjson.schema.common.ID;
-import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;

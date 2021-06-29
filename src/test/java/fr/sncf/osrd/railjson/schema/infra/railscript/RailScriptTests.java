@@ -16,10 +16,13 @@ import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.railjson.parser.RailScriptExprParser;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr.*;
 import fr.sncf.osrd.simulation.SimulationError;
-import net.jqwik.api.*;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
 import net.jqwik.api.lifecycle.AfterTry;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Random;
 
 
 public class RailScriptTests extends RSHelpers {

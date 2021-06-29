@@ -5,7 +5,6 @@ import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
-import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.train.Action;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator;

@@ -1,7 +1,6 @@
 package fr.sncf.osrd.train;
 
 import fr.sncf.osrd.RollingStock;
-import fr.sncf.osrd.train.TrainCapability;
 
 import java.util.ArrayList;
 

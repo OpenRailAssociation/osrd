@@ -1,8 +1,8 @@
 package fr.sncf.osrd.infra.railscript.value;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
+import fr.sncf.osrd.infra_state.RouteStatus;
 
 public enum RSType {
     BOOLEAN(null),

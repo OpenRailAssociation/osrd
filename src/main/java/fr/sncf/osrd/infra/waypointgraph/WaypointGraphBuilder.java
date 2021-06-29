@@ -6,13 +6,11 @@ import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.PointValue;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.UndirectedBiEdgeID;
 import fr.sncf.osrd.utils.graph.overlay.BiGraphOverlayBuilder;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.overlay.OverlayPathNode;
-import fr.sncf.osrd.utils.graph.path.BasicDirPathNode;
 import fr.sncf.osrd.utils.graph.path.FullPathArray;
-import fr.sncf.osrd.utils.graph.path.PathNode;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,10 +1,10 @@
 package fr.sncf.osrd.railml.tracksectiongraph;
 
 import fr.sncf.osrd.railml.DescriptionLevel;
-import fr.sncf.osrd.utils.graph.Edge;
-import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import fr.sncf.osrd.utils.PointValue;
 import fr.sncf.osrd.utils.RangeValue;
+import fr.sncf.osrd.utils.graph.Edge;
+import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.slf4j.Logger;

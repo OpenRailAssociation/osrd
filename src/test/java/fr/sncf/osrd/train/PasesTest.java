@@ -24,7 +24,8 @@ import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.SortedDoubleMap;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 
 public class PasesTest {
 

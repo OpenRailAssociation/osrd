@@ -1,8 +1,8 @@
 package fr.sncf.osrd.infra.railscript;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.railscript.value.RSType;
+import fr.sncf.osrd.infra.railscript.value.RSValue;
 
 public class RSFunction<T extends RSValue> {
     public final String functionName;

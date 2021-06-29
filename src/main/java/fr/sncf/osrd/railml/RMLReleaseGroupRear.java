@@ -1,6 +1,5 @@
 package fr.sncf.osrd.railml;
 
-import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSTVDSection;
 import org.dom4j.Document;

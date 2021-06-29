@@ -1,12 +1,13 @@
 package fr.sncf.osrd.infra.signaling;
 
-import fr.sncf.osrd.infra.railscript.*;
+import fr.sncf.osrd.infra.railscript.RSStatefulExpr;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
 import fr.sncf.osrd.infra_state.InfraState;
-import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.InteractionType;
-import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.InteractionTypeSet;
+import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
 
 import java.util.ArrayList;

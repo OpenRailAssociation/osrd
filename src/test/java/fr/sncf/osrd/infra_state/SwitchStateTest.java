@@ -1,15 +1,13 @@
 package fr.sncf.osrd.infra_state;
 
 import static fr.sncf.osrd.Helpers.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-import fr.sncf.osrd.DebugViewer;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
-import fr.sncf.osrd.railjson.parser.RailJSONParser;
-import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
-import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.infra_state.events.SwitchMoveEvent;
+import fr.sncf.osrd.railjson.parser.RailJSONParser;
+import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import org.junit.jupiter.api.Test;
 

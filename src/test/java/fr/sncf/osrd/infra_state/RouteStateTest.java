@@ -2,7 +2,6 @@ package fr.sncf.osrd.infra_state;
 
 import static fr.sncf.osrd.Helpers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;

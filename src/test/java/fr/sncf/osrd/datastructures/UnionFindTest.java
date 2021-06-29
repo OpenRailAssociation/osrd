@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.utils.UnionFind;
 import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 
 class UnionFindTest {

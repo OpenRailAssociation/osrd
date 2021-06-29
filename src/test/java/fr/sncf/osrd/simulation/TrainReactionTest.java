@@ -2,7 +2,6 @@ package fr.sncf.osrd.simulation;
 
 import static fr.sncf.osrd.Helpers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
@@ -10,10 +9,7 @@ import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr;
-import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspect;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
 
 
 public class TrainReactionTest {

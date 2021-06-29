@@ -3,7 +3,10 @@ package fr.sncf.osrd.infra_state.events;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra_state.SignalState;
-import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.simulation.TimelineEvent;
+import fr.sncf.osrd.simulation.TimelineEventId;
 
 public class SignalDelayedUpdateEvent extends TimelineEvent {
     public final int delaySlot;

@@ -4,7 +4,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.TimelineEvent;
-import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainState;
@@ -12,7 +11,6 @@ import fr.sncf.osrd.train.events.TrainRestarts;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 
 public class StopPhase extends PhaseState implements Phase {
