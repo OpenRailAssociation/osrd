@@ -56,4 +56,9 @@ public final class Interaction implements DeepComparable<Interaction>, Comparabl
     public int hashCode() {
         return Objects.hash(position, interactionType, actionPoint);
     }
+
+    @Override
+    public String toString() {
+        return String.format("Interaction { type=%s, position=%f, point=%s }", interactionType, position, actionPoint);
+    }
 }
