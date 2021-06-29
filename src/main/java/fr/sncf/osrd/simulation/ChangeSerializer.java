@@ -27,6 +27,10 @@ import fr.sncf.osrd.simulation.changelog.ChangeLog;
 import fr.sncf.osrd.speedcontroller.*;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.Train.*;
+import fr.sncf.osrd.train.decisions.InteractiveInput;
+import fr.sncf.osrd.train.decisions.KeyboardInput;
+import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
+import fr.sncf.osrd.train.decisions.TrainDecisionMaker.DefaultTrainDecisionMaker;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.PhaseState;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
@@ -87,6 +91,13 @@ public class ChangeSerializer {
                     .withSubtype(SignalState.class, "signal")
                     .withSubtype(RouteState.class, "route")
                     .withSubtype(SwitchState.class, "switch")
+            )
+            .add(PolymorphicJsonAdapterFactory.of(TrainDecisionMaker.class, "trainDecisionMakerType")
+                    .withSubtype(DefaultTrainDecisionMaker.class, "defaultTrainDecisionMakerType")
+                    .withSubtype(InteractiveInput.class, "interactiveInput")
+            )
+            .add(PolymorphicJsonAdapterFactory.of(InteractiveInput.class, "interactiveInputType")
+                .withSubtype(KeyboardInput.class, "keyboardInputType")
             )
             .add(adaptPolymorphicType(SpeedController.class, "controllerType"))
             .build()
