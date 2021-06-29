@@ -302,4 +302,4 @@ class TrainScheduleView(
             train_schedule=train_schedule, log=response.json()
         )
         result.save()
-        return Response(format_result(result))
+        return Response({"id": train_schedule.pk})
