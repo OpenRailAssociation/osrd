@@ -20,6 +20,7 @@ import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
+import fr.sncf.osrd.utils.Misc;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.util.*;
@@ -66,6 +67,7 @@ public final class SignalNavigatePhase implements Phase {
             TrackSectionLocation endLocation,
             List<SpeedControllerGenerator> targetSpeedGenerators
     ) {
+        Misc.removeConsecutiveDuplicates(routes, route -> route.id);
         var trackSectionPath = Route.routesToTrackSectionRange(routes,
                 startLocation, endLocation);
         var actionPointPath = trackSectionToActionPointPath(driverSightDistance, trackSectionPath);
