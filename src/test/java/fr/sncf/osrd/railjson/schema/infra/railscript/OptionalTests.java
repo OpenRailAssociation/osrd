@@ -20,8 +20,8 @@ public class OptionalTests {
 
     @Test
     public void testSignalsFunctionWithOptionals() throws InvalidInfraException, SimulationError {
-        var infra = getBaseInfra("tiny_infra/infra_optional.json");
-        var config = getBaseConfig("tiny_infra/config_railjson_optional.json");
+        final var infra = getBaseInfra("tiny_infra/infra_optional.json");
+        final var config = getBaseConfig("tiny_infra/config_railjson_optional.json");
 
         // We force a (very long) switch change, to make sure signals are necessary
         infra.switches.iterator().next().positionChangeDelay = 42;
@@ -34,8 +34,8 @@ public class OptionalTests {
     @Test
     public void testSignalsFunctionWithOptionalsForcedGreen() throws InvalidInfraException, SimulationError {
         // Other half the test above: we check that invalid signals would have failed
-        var infra = getBaseInfra("tiny_infra/infra_optional.json");
-        var config = getBaseConfig("tiny_infra/config_railjson_optional.json");
+        final var infra = getBaseInfra("tiny_infra/infra_optional.json");
+        final var config = getBaseConfig("tiny_infra/config_railjson_optional.json");
 
         var functions = infra.scriptFunctions;
         var aspect = new RJSRSExpr.AspectSet.AspectSetMember(
@@ -56,7 +56,7 @@ public class OptionalTests {
 
     @Test
     void testThrowOnInvalidDelay() throws InvalidInfraException {
-        var infra = getBaseInfra("tiny_infra/infra_optional.json");
+        final var infra = getBaseInfra("tiny_infra/infra_optional.json");
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var trueExpr = new RJSRSExpr.True();
         var delay = new RJSRSExpr.Delay(0, trueExpr);

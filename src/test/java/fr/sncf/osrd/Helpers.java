@@ -189,6 +189,11 @@ public class Helpers {
         return makeConfigWithSpeedParamsList(paramsList, baseConfigPath);
     }
 
+    /** Generates a config where all the RJSRunningTieParameters have been replaced by the one given */
+    public static Config makeConfigWithSpeedParams(List<RJSAllowance> params) {
+        return makeConfigWithSpeedParams(params, "tiny_infra/config_railjson.json");
+    }
+
     /** Loads the given config file, but replaces the given allowance parameters in the phases
      * the nth list of allowance is used for the nth phase */
     public static Config makeConfigWithSpeedParamsList(List<List<RJSAllowance>> params, String baseConfigPath) {
@@ -196,8 +201,8 @@ public class Helpers {
             var path = getResourcePath(baseConfigPath);
             var baseDirPath = path.getParent();
             var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, path);
-            var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
-            var infra = Infra.parseFromFile(jsonConfig.infraType, infraPath.toString());
+            final var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
+            final var infra = Infra.parseFromFile(jsonConfig.infraType, infraPath.toString());
             var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
             var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
             for (var trainSchedule : schedule.trainSchedules) {
@@ -240,8 +245,8 @@ public class Helpers {
             var path = getResourcePath(baseConfigPath);
             var baseDirPath = path.getParent();
             var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, path);
-            var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
-            var infra = Infra.parseFromFile(jsonConfig.infraType, infraPath.toString());
+            final var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
+            final var infra = Infra.parseFromFile(jsonConfig.infraType, infraPath.toString());
             var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
             var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
             for (var trainSchedule : schedule.trainSchedules) {
@@ -263,14 +268,9 @@ public class Helpers {
         }
     }
 
-    /** Generates a config where all the RJSRunningTieParameters have been replaced by the one given */
-    public static Config makeConfigWithSpeedParams(List<RJSAllowance> params) {
-        return makeConfigWithSpeedParams(params, "tiny_infra/config_railjson.json");
-    }
-
     /** Go through all the events in the simulation, fails if an exception is thrown */
     public static ArrayList<TimelineEvent> run(Simulation sim) {
-        var config = getBaseConfig();
+        final var config = getBaseConfig();
         return run(sim, config);
     }
 
@@ -298,7 +298,7 @@ public class Helpers {
 
     /** Go through all the events in the simulation, exceptions pass through */
     public static ArrayList<TimelineEvent> runWithExceptions(Simulation sim) throws SimulationError {
-        var config = getBaseConfig();
+        final var config = getBaseConfig();
         return runWithExceptions(sim, config);
     }
 

@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Test;
 public class TVDSectionStateTest {
     @Test
     public void testSimpleReserve() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
-        var config = getBaseConfig();
+        final var config = getBaseConfig();
         assert config != null;
         var changelog = new ArrayChangeLog();
         config.trainSchedules.clear();
@@ -38,9 +38,9 @@ public class TVDSectionStateTest {
 
     @Test
     public void testOccupy() throws InvalidInfraException, SimulationError {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
-        var config = getBaseConfig();
+        final var config = getBaseConfig();
         assert config != null;
         var changelog = new ArrayChangeLog();
         config.trainSchedules.clear();

@@ -50,6 +50,7 @@ public class SpeedInstructionsTests {
         }
     }
 
+    /** Get a speed generator indicating the given speed at every point */
     public static SpeedControllerGenerator getStaticGenerator(double maxSpeed) {
         return new SpeedControllerGenerator(null) {
             @Override
@@ -62,8 +63,8 @@ public class SpeedInstructionsTests {
 
     @Test
     public void testFollowTargetSpeed() throws InvalidInfraException {
-        var infra = getBaseInfra();
-        var config = getBaseConfig();
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
 
         var phase = config.trainSchedules.get(0).phases.get(0);
         assert phase instanceof SignalNavigatePhase;
@@ -79,8 +80,8 @@ public class SpeedInstructionsTests {
 
     @Test
     public void testCatchup() throws InvalidInfraException, SimulationError {
-        var infra = getBaseInfra();
-        var config = getBaseConfig();
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
 
         var phase = config.trainSchedules.get(0).phases.get(0);
         assert phase instanceof SignalNavigatePhase;
@@ -98,8 +99,8 @@ public class SpeedInstructionsTests {
 
     @Test
     public void testIsLate() throws InvalidInfraException, SimulationError {
-        var infra = getBaseInfra();
-        var config = makeConfigWithSpeedParams(null);
+        final var infra = getBaseInfra();
+        final var config = makeConfigWithSpeedParams(null);
 
         infra.switches.iterator().next().positionChangeDelay = 20;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
@@ -111,8 +112,8 @@ public class SpeedInstructionsTests {
 
     @Test
     public void testIsNotLate() throws InvalidInfraException, SimulationError {
-        var infra = getBaseInfra();
-        var config = getBaseConfig();
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
@@ -123,20 +124,20 @@ public class SpeedInstructionsTests {
 
     @Test
     public void testMargin50() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
         var params = new RJSAllowance.LinearAllowance();
         params.allowanceType = MarginType.TIME;
         params.allowanceValue = 50;
 
         // base run, no margin
-        var config = makeConfigWithSpeedParams(null);
+        final var config = makeConfigWithSpeedParams(null);
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with 50% margins
-        var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
+        final var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
@@ -146,20 +147,20 @@ public class SpeedInstructionsTests {
 
     @Test
     public void testMargin200() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
         var params = new RJSAllowance.LinearAllowance();
         params.allowanceType = MarginType.TIME;
         params.allowanceValue = 200;
 
         // base run, no margin
-        var config = makeConfigWithSpeedParams(null);
+        final var config = makeConfigWithSpeedParams(null);
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with 200% margins
-        var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
+        final var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
@@ -171,20 +172,20 @@ public class SpeedInstructionsTests {
 
     @Test
     public void testMargin0() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
         var params = new RJSAllowance.LinearAllowance();
         params.allowanceType = MarginType.TIME;
         params.allowanceValue = 0;
 
         // base run, no margin
-        var config = makeConfigWithSpeedParams(null);
+        final var config = makeConfigWithSpeedParams(null);
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with 0% margins
-        var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
+        final var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
@@ -193,6 +194,7 @@ public class SpeedInstructionsTests {
         assertEquals(baseSimTime, marginsSimTime, baseSimTime * 0.01);
     }
 
+    /** Helper function: returns true if the train is late at the time it is called */
     public static boolean isLate(Simulation sim) {
         var event = getLastTrainEvent(sim);
         var trainState = sim.trains.get("Test.").getLastState();
@@ -201,7 +203,8 @@ public class SpeedInstructionsTests {
         return secondsLate > 1;
     }
 
-    public  static Train.TrainStateChange.SpeedUpdate getLastTrainEvent(Simulation sim) {
+    /** Helper function: returns the last speed update of the train */
+    public static Train.TrainStateChange.SpeedUpdate getLastTrainEvent(Simulation sim) {
         var train = sim.trains.get("Test.");
         var lastEvent = train.lastScheduledEvent;
         Train.TrainStateChange.SpeedUpdates updates;
@@ -218,6 +221,7 @@ public class SpeedInstructionsTests {
         return updates.get(0);
     }
 
+    /** Get the last speed of the train */
     public static double getLastTrainSpeed(Simulation sim) {
         return getLastTrainEvent(sim).speed;
     }

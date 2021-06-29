@@ -14,7 +14,7 @@ public class DependencyResolutionTests {
 
     @Test
     public void testDependencyResolution() throws InvalidInfraException {
-        var infra = getBaseInfra("tiny_infra/infra_optional.json");
+        final var infra = getBaseInfra("tiny_infra/infra_optional.json");
 
         var expectedMap = new HashMap<String, HashSet<String>>();
         expectedMap.put("il.sig.C1", new HashSet<>());
