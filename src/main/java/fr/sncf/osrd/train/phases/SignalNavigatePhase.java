@@ -2,7 +2,6 @@ package fr.sncf.osrd.train.phases;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.TrainSchedule;
-import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
@@ -12,6 +11,7 @@ import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra_state.SignalState;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
@@ -20,7 +20,6 @@ import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
-import fr.sncf.osrd.utils.Misc;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.util.*;
@@ -66,13 +65,22 @@ public final class SignalNavigatePhase implements Phase {
             TrackSectionLocation startLocation,
             TrackSectionLocation endLocation,
             List<SpeedControllerGenerator> targetSpeedGenerators
-    ) {
-        Misc.removeConsecutiveDuplicates(routes, route -> route.id);
+    ) throws InvalidSchedule {
+        verifyRoutes(routes);
         var trackSectionPath = Route.routesToTrackSectionRange(routes,
                 startLocation, endLocation);
         var actionPointPath = trackSectionToActionPointPath(driverSightDistance, trackSectionPath);
         return new SignalNavigatePhase(routes, endLocation, trackSectionPath, actionPointPath,
                 driverSightDistance, targetSpeedGenerators);
+    }
+
+    /** Asserts that there are no duplicate routes
+     * Eventually we can add more checks to ensure the integrity of the path */
+    private static void verifyRoutes(List<Route> routes) throws InvalidSchedule {
+        for (int i = 1; i < routes.size(); i++) {
+            if (routes.get(i).id.equals(routes.get(i - 1).id))
+                throw new InvalidSchedule("Phase path contains duplicate routes: " + routes.get(i).id);
+        }
     }
 
     private static ArrayList<Interaction> trackSectionToActionPointPath(
@@ -141,8 +149,14 @@ public final class SignalNavigatePhase implements Phase {
                 currentPosition.updateAndGet(v -> v + pathSection.length());
             });
         }
+
         // Removes duplicate routes
-        Misc.removeConsecutiveDuplicates(routePath, route -> route.id);
+        for (int i = 1; i < routePath.size(); i++) {
+            if (routePath.get(i).id.equals(routePath.get(i - 1).id)) {
+                routePath.remove(i);
+                i--;
+            }
+        }
         interactionsPath.sort(Comparator.comparingDouble(i -> i.position));
     }
 
