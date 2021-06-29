@@ -10,6 +10,7 @@ import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.trackgraph.BufferStop;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -44,7 +45,7 @@ public class StaticSpeedLimitTest {
     }
 
     @Test
-    public void simpleSpeedLimitTest() throws InvalidInfraException, SimulationError {
+    public void simpleSpeedLimitTest() throws InvalidInfraException, SimulationError, InvalidSchedule {
         var trackGraph = new TrackGraph();
 
         var nodeA = trackGraph.makePlaceholderNode("A");
