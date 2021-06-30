@@ -146,8 +146,6 @@ const enableInteractivity = (
       );
     })
     .call(zoom);
-
-  console.log('coucou', newHoverPosition);
   drawGuideLines(chart);
 };
 

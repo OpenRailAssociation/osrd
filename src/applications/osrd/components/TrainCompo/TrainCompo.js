@@ -64,13 +64,13 @@ export default function TrainCompo() {
 
   const displayMateriel = (result) => {
     const active = (detailsContent !== undefined
-      && detailsContent.codenbengin === result.codenbengin);
+      && detailsContent.id === result.id);
     return (
       <TrainCompoCard
         data={result}
         displayDetails={displayDetails}
         active={active}
-        key={result.codenbengin}
+        key={result.id}
       />
     );
   };

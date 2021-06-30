@@ -21,13 +21,6 @@ const TrainsList = (props) => {
 
   const formatTrainsList = () => {
     const newFormattedList = simulation.trains.map((train, idx) => {
-      let start = '00:00:00';
-      let stop = '00:00:00';
-      train.stops.forEach((step) => {
-        if (step.name === 'start') { start = step.time; }
-        if (step.name === 'stop') { stop = step.time; }
-      });
-
       if (filter === '' || (train.labels !== undefined && train.labels.join().toLowerCase().includes(filter.toLowerCase()))) {
         return (
           <tr
@@ -52,11 +45,12 @@ const TrainsList = (props) => {
                 {train.name}
               </div>
             </td>
-            <td><div className="cell-inner">{sec2time(start)}</div></td>
-            <td><div className="cell-inner">{sec2time(stop)}</div></td>
+            <td><div className="cell-inner">{sec2time(train.stops[0].time)}</div></td>
+            <td><div className="cell-inner">{sec2time(train.stops[train.stops.length - 1].time)}</div></td>
             <td><div className="cell-inner">{train.labels.join(' / ')}</div></td>
           </tr>
-        )}
+        );
+      }
       return null;
     });
     return newFormattedList;

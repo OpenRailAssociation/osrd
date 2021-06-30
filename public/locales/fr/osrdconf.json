@@ -31,9 +31,9 @@
   "track": "Voie",
   "trainAdded": "Train ajouté",
   "trainLabels": "Etiquettes",
-  "trainScheduleCount": "Nombre de trains",
-  "trainScheduleDelta": "Délai entre chaque train",
-  "trainScheduleName": "Nom du train à ajouter",
+  "trainScheduleCount": "Nombre",
+  "trainScheduleDelta": "Délai",
+  "trainScheduleName": "Nom",
   "via": "Étape",
   "vias": "Points de passage, arrêts"
 }

@@ -22,7 +22,7 @@ export default function AddTrainSchedule(props) {
   const { t } = useTranslation(['translation', 'osrdconf']);
   const dispatch = useDispatch();
 
-  const submitConf = () => {
+  const submitConf = async () => {
     // First train tested, and next we put the other trains
     const osrdConfig = formatConf(dispatch, setFailure, t, osrdconf, osrdconf.originTime);
     if (osrdConfig) {
@@ -30,7 +30,8 @@ export default function AddTrainSchedule(props) {
       try {
         for (let nb = 1; nb <= trainCount; nb += 1) {
           const newOriginTime = originTime + (60 * trainDelta * (nb - 1));
-          post(
+          /* eslint no-await-in-loop: 0 */
+          await post(
             scheduleURL,
             formatConf(
               dispatch, setFailure, t, osrdconf, newOriginTime,

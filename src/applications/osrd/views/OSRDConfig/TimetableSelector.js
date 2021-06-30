@@ -83,7 +83,7 @@ export default function TimetableSelector(props) {
                     <>
                       <span className="ml-1">{selectedTimetable.name}</span>
                       <small className="ml-1 text-primary flex-grow-1">{selectedTimetable.id}</small>
-                      <span className="ml-2 badge badge-primary">
+                      <span className="ml-2 badge badge-secondary">
                         {`${selectedTimetable.train_schedules.length} ${t('translation:common.train(s)')}`}
                       </span>
                     </>

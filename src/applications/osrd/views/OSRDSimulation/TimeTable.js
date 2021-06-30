@@ -18,7 +18,7 @@ const FormatStops = (props) => {
     <tr>
       <td>
         <div className="cell-inner font-weight-bold">
-          {stop.name === 'start' || stop.name === 'stop' ? t(`simulation:${stop.name}`) : stop.name}
+          {stop.name}
         </div>
       </td>
       <td><div className="cell-inner">{sec2time(stop.time)}</div></td>
