@@ -105,7 +105,7 @@ public abstract class SpeedControllerGenerator {
         location.ignoreInfraState = true;
         location.updatePosition(schedule.rollingStock.length, begin);
         var totalLength = 0;
-        for (var range : schedule.fullPath)
+        for (var range : schedule.plannedPath.trackSectionPath)
             totalLength += Math.abs(range.getBeginPosition() - range.getEndPosition());
 
         var res = new TreeMap<Double, PositionUpdate>();
@@ -174,7 +174,7 @@ public abstract class SpeedControllerGenerator {
     /** Converts a TrackSectionLocation into a distance on the track (double) */
     private double convertTrackLocation(TrackSectionLocation location, TrainSchedule schedule) {
         double sumPreviousSections = 0;
-        for (var edge : schedule.fullPath) {
+        for (var edge : schedule.plannedPath.trackSectionPath) {
             if (edge.containsLocation(location)) {
                 return sumPreviousSections + location.offset;
             }

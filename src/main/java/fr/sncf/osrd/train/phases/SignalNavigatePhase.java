@@ -127,11 +127,16 @@ public final class SignalNavigatePhase implements Phase {
                 for (var ip : interactionsPath)
                     ip.position += offset;
             }
-            phase.forEachPathSection(pathSection -> {
-                if (finalSeenSelf)
-                    registerRange(interactionsPath, pathSection, currentPosition.get(), driverSightDistance);
-                currentPosition.updateAndGet(v -> v + pathSection.length());
-            });
+
+            // TODO ech: remove this block by the end of the phase rework
+            if (phase instanceof SignalNavigatePhase) {
+                var other = (SignalNavigatePhase) phase;
+                other.trackSectionPath.forEach(pathSection -> {
+                    if (finalSeenSelf)
+                        registerRange(interactionsPath, pathSection, currentPosition.get(), driverSightDistance);
+                    currentPosition.updateAndGet(v -> v + pathSection.length());
+                });
+            }
         }
         interactionsPath.sort(Comparator.comparingDouble(i -> i.position));
     }
@@ -144,11 +149,6 @@ public final class SignalNavigatePhase implements Phase {
     @Override
     public TrackSectionLocation getEndLocation() {
         return endLocation;
-    }
-
-    @Override
-    public void forEachPathSection(Consumer<TrackSectionRange> consumer) {
-        trackSectionPath.forEach(consumer);
     }
 
     /** This class represent the location of the phase end. It's as last event in the event path */

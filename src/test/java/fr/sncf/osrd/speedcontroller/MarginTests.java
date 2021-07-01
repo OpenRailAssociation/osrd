@@ -248,7 +248,7 @@ public class MarginTests {
 
     private double convertTrackLocation(TrackSectionLocation location, TrainSchedule schedule) {
         double sumPreviousSections = 0;
-        for (var edge : schedule.fullPath) {
+        for (var edge : schedule.plannedPath.trackSectionPath) {
             if (edge.containsLocation(location)) {
                 return sumPreviousSections + location.offset;
             }

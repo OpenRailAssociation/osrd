@@ -1,5 +1,6 @@
 package fr.sncf.osrd.train;
 
+import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.trackgraph.Detector;
@@ -7,6 +8,7 @@ import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
@@ -24,13 +26,13 @@ public class TrainPath {
     public int routeIndex = 0;
 
     /** Full train path as a list of trackSectionRange */
-    private final ArrayList<TrackSectionRange> trackSectionPath;
+    public final ArrayList<TrackSectionRange> trackSectionPath;
 
     /** Full train path as a list of TVD sections */
-    private final ArrayList<TVDSectionPath> tvdSectionPaths;
+    public final ArrayList<TVDSectionPath> tvdSectionPaths;
 
     /** Directions of each tvd section on the route */
-    private final ArrayList<EdgeDirection> tvdSectionDirections;
+    public final ArrayList<EdgeDirection> tvdSectionDirections;
 
     /** Constructor */
     public TrainPath(List<Route> routePath,
@@ -50,6 +52,26 @@ public class TrainPath {
         this.tvdSectionDirections = new ArrayList<>(other.tvdSectionDirections);
         this.trackSectionPath = new ArrayList<>(other.trackSectionPath);
         this.routeIndex = other.routeIndex;
+    }
+
+    /** Initializes a train path given a schedule */
+    public TrainPath(TrainSchedule schedule) {
+        routePath = new ArrayList<>();
+        for (var phase : schedule.phases)
+            // TODO ech: change this by the end of the phase rework
+            if (phase instanceof SignalNavigatePhase)
+                routePath.addAll(((SignalNavigatePhase) phase).routePath);
+        for (int i = 1; i < routePath.size(); i++) {
+            if (routePath.get(i).id.equals(routePath.get(i - 1).id)) {
+                routePath.remove(i);
+                i--;
+            }
+        }
+        var endLocation = schedule.phases.get(schedule.phases.size() - 1).getEndLocation();
+        tvdSectionPaths = new ArrayList<>();
+        tvdSectionDirections = new ArrayList<>();
+        initTVD(routePath);
+        trackSectionPath = Route.routesToTrackSectionRange(routePath, schedule.initialLocation, endLocation);
     }
 
     /** Initializes the lists of tvd sections and directions */

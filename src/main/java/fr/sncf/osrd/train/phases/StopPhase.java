@@ -32,10 +32,6 @@ public class StopPhase extends PhaseState implements Phase {
     }
 
     @Override
-    public void forEachPathSection(Consumer<TrackSectionRange> consumer) {
-    }
-
-    @Override
     public TimelineEvent simulate(Simulation sim, Train train, TrainState trainState) {
         var nextState = new Train.TrainStateChange(sim, train.getName(), trainState.nextPhase(sim));
         return TrainRestarts.plan(sim, sim.getTime() + duration, train, nextState);

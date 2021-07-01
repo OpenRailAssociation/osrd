@@ -53,7 +53,7 @@ public class Train {
                 0,
                 phaseState,
                 new ArrayDeque<>(),
-                createPath(schedule)
+                new TrainPath(schedule.plannedPath)
         );
 
         ActivateRoute.trainCreation(sim, initialState);
@@ -63,23 +63,6 @@ public class Train {
         sim.publishChange(trainCreatedChange);
         train.scheduleStateChange(sim);
         return train;
-    }
-
-    /** Initializes a train path
-     * This method should change by the end of the phase rework */
-    private static TrainPath createPath(TrainSchedule schedule) {
-        var routes = new ArrayList<Route>();
-        for (var phase : schedule.phases)
-            if (phase instanceof SignalNavigatePhase)
-                routes.addAll(((SignalNavigatePhase) phase).routePath);
-        for (int i = 1; i < routes.size(); i++) {
-            if (routes.get(i).id.equals(routes.get(i - 1).id)) {
-                routes.remove(i);
-                i--;
-            }
-        }
-        var endLocation = schedule.phases.get(schedule.phases.size() - 1).getEndLocation();
-        return new TrainPath(routes, schedule.initialLocation, endLocation);
     }
 
     /** Generates the initial location object of a train given its schedule */
@@ -93,9 +76,7 @@ public class Train {
                 initialLocation.offset,
                 initialLocation.offset // This starts as a 0 length range, the train grow in size as it appears
         ));
-        var trackSectionPath = new ArrayList<TrackSectionRange>();
-        for (var phase : schedule.phases)
-            phase.forEachPathSection(trackSectionPath::add);
+        var trackSectionPath = new TrainPath(schedule).trackSectionPath;
         return new TrainPositionTracker(sim.infra, sim.infraState, initialPosition, trackSectionPath);
     }
 

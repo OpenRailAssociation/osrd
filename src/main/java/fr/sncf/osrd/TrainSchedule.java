@@ -2,6 +2,7 @@ package fr.sncf.osrd;
 
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.train.TrackSectionRange;
+import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.utils.TrackSectionLocation;
@@ -21,9 +22,11 @@ public final class TrainSchedule {
     public final double initialSpeed;
 
     public final ArrayList<Phase> phases;
-    public final ArrayList<TrackSectionRange> fullPath;
 
     public final TrainDecisionMaker trainDecisionMaker;
+
+    /** This is the *expected* path, eventually it may change in the TrainState copy */
+    public final TrainPath plannedPath;
 
     /** Create a new train schedule */
     public TrainSchedule(
@@ -44,9 +47,7 @@ public final class TrainSchedule {
         this.initialRoute = initialRoute;
         this.initialSpeed = initialSpeed;
         this.phases = phases;
-        this.fullPath = new ArrayList<>();
-        for (var phase : phases)
-            phase.forEachPathSection(fullPath::add);
+        plannedPath = new TrainPath(this);
         if (trainDecisionMaker == null)
             trainDecisionMaker = new TrainDecisionMaker.DefaultTrainDecisionMaker();
         this.trainDecisionMaker = trainDecisionMaker;
@@ -55,7 +56,7 @@ public final class TrainSchedule {
     /** Find location on track given a distance from the start.
      * If the path position is higher than the fullPath length the function return null. */
     public TrackSectionLocation findLocation(double pathPosition) {
-        for (var track : fullPath) {
+        for (var track : plannedPath.trackSectionPath) {
             if (pathPosition <= track.length()) {
                 var location = track.getBeginPosition();
                 if (track.direction == EdgeDirection.START_TO_STOP)
