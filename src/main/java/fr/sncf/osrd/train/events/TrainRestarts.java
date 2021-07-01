@@ -1,7 +1,10 @@
 package fr.sncf.osrd.train.events;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.simulation.TimelineEvent;
+import fr.sncf.osrd.simulation.TimelineEventId;
 import fr.sncf.osrd.train.Train;
 
 public final class TrainRestarts extends TimelineEvent {

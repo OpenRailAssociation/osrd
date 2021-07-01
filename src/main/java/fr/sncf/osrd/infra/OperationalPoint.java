@@ -8,7 +8,6 @@ import fr.sncf.osrd.train.InteractionType;
 import fr.sncf.osrd.train.InteractionTypeSet;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.utils.PointSequence;
-import fr.sncf.osrd.utils.PointValue;
 
 import java.util.ArrayList;
 

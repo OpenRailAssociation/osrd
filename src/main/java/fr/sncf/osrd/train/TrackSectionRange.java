@@ -1,11 +1,11 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.simulation.ChangeSerializer.SerializableDouble;
 import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
-import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.simulation.ChangeSerializer.SerializableDouble;
 
 import java.util.Objects;
 

@@ -1,15 +1,15 @@
 package fr.sncf.osrd;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static fr.sncf.osrd.infra.trackgraph.TrackSection.linkEdges;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import fr.sncf.osrd.infra.trackgraph.BufferStop;
+import fr.sncf.osrd.infra.trackgraph.Detector;
+import fr.sncf.osrd.infra.trackgraph.TrackGraph;
+import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-import fr.sncf.osrd.infra.trackgraph.Detector;
-import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;

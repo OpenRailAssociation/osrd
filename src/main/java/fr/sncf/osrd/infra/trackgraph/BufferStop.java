@@ -2,8 +2,8 @@ package fr.sncf.osrd.infra.trackgraph;
 
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.train.InteractionType;
-import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.InteractionTypeSet;
+import fr.sncf.osrd.train.Train;
 
 /**
  * A stop block prevents trains from going past the end of a track.

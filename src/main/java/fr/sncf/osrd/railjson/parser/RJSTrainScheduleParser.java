@@ -1,5 +1,7 @@
 package fr.sncf.osrd.railjson.parser;
 
+import fr.sncf.osrd.RollingStock;
+import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
@@ -10,13 +12,9 @@ import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
-import fr.sncf.osrd.RollingStock;
-import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.speedcontroller.generators.*;
 import fr.sncf.osrd.train.decisions.KeyboardInput;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
-import fr.sncf.osrd.speedcontroller.generators.MaxSpeedGenerator;
-import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.train.phases.StopPhase;

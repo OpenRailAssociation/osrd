@@ -1,12 +1,14 @@
 package fr.sncf.osrd.speedcontroller;
 
+import static fr.sncf.osrd.Helpers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.TimelineEvent;
-import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.TrackSectionLocation;
@@ -18,28 +20,25 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import static fr.sncf.osrd.Helpers.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 public class MarginTests {
 
-    private static final boolean saveCSVFiles = true;
+    private static final boolean saveCSVFiles = false;
 
     @Test
     public void testConstructionMargins() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
         var params = new RJSAllowance.ConstructionAllowance();
         params.allowanceValue = 30;
 
         // base run, no margin
-        var config = makeConfigWithSpeedParams(null);
+        final var config = makeConfigWithSpeedParams(null);
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with construction margin
-        var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
+        final var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
@@ -53,7 +52,7 @@ public class MarginTests {
 
     @Test
     public void testConstructionOnLinearMargin() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
         var params1 = new RJSAllowance.LinearAllowance();
         params1.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
@@ -66,13 +65,13 @@ public class MarginTests {
         params.add(params2);
 
         // Run with construction margin
-        var configMargins = makeConfigWithSpeedParams(params);
+        final var configMargins = makeConfigWithSpeedParams(params);
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
         // base run, no margin
-        var config = makeConfigWithSpeedParams(null);
+        final var config = makeConfigWithSpeedParams(null);
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
@@ -87,19 +86,19 @@ public class MarginTests {
 
     @Test
     public void testLargerEcoMargin() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         var params = new RJSAllowance.MarecoAllowance();
         params.allowanceValue = 200;
         params.allowanceType = RJSAllowance.MarecoAllowance.MarginType.TIME;
 
         // Run with construction margin
-        var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
+        final var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
         // base run, no margin
-        var config = makeConfigWithSpeedParams(null);
+        final var config = makeConfigWithSpeedParams(null);
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
@@ -113,20 +112,20 @@ public class MarginTests {
 
     @Test
     public void testEcoMargin() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
         var params = new RJSAllowance.MarecoAllowance();
         params.allowanceValue = 10;
         params.allowanceType = RJSAllowance.MarecoAllowance.MarginType.TIME;
 
         // Run with construction margin
-        var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
+        final var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
         // base run, no margin
-        var config = makeConfigWithSpeedParams(null);
+        final var config = makeConfigWithSpeedParams(null);
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
@@ -138,6 +137,7 @@ public class MarginTests {
         saveGraph(events, "eco-out.csv");
     }
 
+    /** Saves a csv files with the time, speed and positions. For debugging purpose. */
     public static void saveGraph(ArrayList<TimelineEvent> events, String path) {
         if (!saveCSVFiles)
             return;
@@ -152,8 +152,7 @@ public class MarginTests {
                     for (var update : updates) {
                         writer.println(String.format("%f,%f,%f", update.pathPosition, update.time, update.speed));
                     }
-                }
-                else if (event instanceof TrainMoveEvent) {
+                } else if (event instanceof TrainMoveEvent) {
                     var updates = ((TrainMoveEvent) event).trainStateChange.positionUpdates;
                     for (var update : updates) {
                         writer.println(String.format("%f,%f,%f", update.pathPosition, update.time, update.speed));
@@ -168,19 +167,19 @@ public class MarginTests {
 
     @Test
     public void testConstructionMarginsNoAllowance() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
         var params = new RJSAllowance.ConstructionAllowance();
         params.allowanceValue = 0;
 
         // base run, no margin
-        var config = makeConfigWithSpeedParams(null);
+        final var config = makeConfigWithSpeedParams(null);
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with construction margin
-        var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
+        final var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
@@ -190,20 +189,20 @@ public class MarginTests {
 
     @Test
     public void testTimeMargin() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
         var params = new RJSAllowance.LinearAllowance();
         params.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
         params.allowanceValue = 20; // percents
 
         // base run, no margin
-        var config = makeConfigWithSpeedParams(null);
+        final var config = makeConfigWithSpeedParams(null);
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with 20% margins
-        var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
+        final var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
@@ -217,20 +216,20 @@ public class MarginTests {
 
     @Test
     public void testDistanceMargin() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
         var params = new RJSAllowance.LinearAllowance();
         params.allowanceType = RJSAllowance.LinearAllowance.MarginType.DISTANCE;
         params.allowanceValue = 270; // seconds per 100km
 
         // base run, no margin
-        var config = makeConfigWithSpeedParams(null);
+        final var config = makeConfigWithSpeedParams(null);
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with 50% margins
-        var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
+        final var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();

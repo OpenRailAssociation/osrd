@@ -5,19 +5,21 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import com.squareup.moshi.JsonReader;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
-import fr.sncf.osrd.railjson.schema.RJSSimulation;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
-import fr.sncf.osrd.simulation.*;
-import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
+import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
+import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.simulation.TimelineEvent;
+import fr.sncf.osrd.simulation.TimelineEventId;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import fr.sncf.osrd.utils.PathUtils;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
@@ -189,6 +191,11 @@ public class Helpers {
         return makeConfigWithSpeedParamsList(paramsList, baseConfigPath);
     }
 
+    /** Generates a config where all the RJSRunningTieParameters have been replaced by the one given */
+    public static Config makeConfigWithSpeedParams(List<RJSAllowance> params) {
+        return makeConfigWithSpeedParams(params, "tiny_infra/config_railjson.json");
+    }
+
     /** Loads the given config file, but replaces the given allowance parameters in the phases
      * the nth list of allowance is used for the nth phase */
     public static Config makeConfigWithSpeedParamsList(List<List<RJSAllowance>> params, String baseConfigPath) {
@@ -196,8 +203,8 @@ public class Helpers {
             var path = getResourcePath(baseConfigPath);
             var baseDirPath = path.getParent();
             var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, path);
-            var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
-            var infra = Infra.parseFromFile(jsonConfig.infraType, infraPath.toString());
+            final var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
+            final var infra = Infra.parseFromFile(jsonConfig.infraType, infraPath.toString());
             var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
             var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
             for (var trainSchedule : schedule.trainSchedules) {
@@ -240,8 +247,8 @@ public class Helpers {
             var path = getResourcePath(baseConfigPath);
             var baseDirPath = path.getParent();
             var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, path);
-            var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
-            var infra = Infra.parseFromFile(jsonConfig.infraType, infraPath.toString());
+            final var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
+            final var infra = Infra.parseFromFile(jsonConfig.infraType, infraPath.toString());
             var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
             var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
             for (var trainSchedule : schedule.trainSchedules) {
@@ -263,14 +270,9 @@ public class Helpers {
         }
     }
 
-    /** Generates a config where all the RJSRunningTieParameters have been replaced by the one given */
-    public static Config makeConfigWithSpeedParams(List<RJSAllowance> params) {
-        return makeConfigWithSpeedParams(params, "tiny_infra/config_railjson.json");
-    }
-
     /** Go through all the events in the simulation, fails if an exception is thrown */
     public static ArrayList<TimelineEvent> run(Simulation sim) {
-        var config = getBaseConfig();
+        final var config = getBaseConfig();
         return run(sim, config);
     }
 
@@ -298,7 +300,7 @@ public class Helpers {
 
     /** Go through all the events in the simulation, exceptions pass through */
     public static ArrayList<TimelineEvent> runWithExceptions(Simulation sim) throws SimulationError {
-        var config = getBaseConfig();
+        final var config = getBaseConfig();
         return runWithExceptions(sim, config);
     }
 

@@ -1,15 +1,14 @@
 package fr.sncf.osrd.api;
 
 import fr.sncf.osrd.infra.Infra;
-
-import java.io.IOException;
-import java.util.HashMap;
-
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+
+import java.io.IOException;
+import java.util.HashMap;
 
 public class InfraHandler {
     private final HashMap<String, Infra> cache = new HashMap<>();

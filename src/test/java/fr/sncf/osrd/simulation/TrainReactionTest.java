@@ -2,7 +2,6 @@ package fr.sncf.osrd.simulation;
 
 import static fr.sncf.osrd.Helpers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
@@ -10,16 +9,13 @@ import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr;
-import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspect;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
 
 
 public class TrainReactionTest {
     @Test
     public void testWaitingForSwitchChange() throws InvalidInfraException, SimulationError {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         infra.switches.iterator().next().positionChangeDelay = 42;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         SwitchState switchState = sim.infraState.getSwitchState(0);
@@ -29,7 +25,7 @@ public class TrainReactionTest {
 
     @Test
     public void testGoThroughGreen() throws InvalidInfraException, SimulationError {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         infra.switches.iterator().next().positionChangeDelay = 42;
         var functions = infra.scriptFunctions;
         var aspect = new RJSRSExpr.AspectSet.AspectSetMember(
@@ -53,7 +49,7 @@ public class TrainReactionTest {
 
     @Test
     public void testStopAtRed() throws InvalidInfraException, SimulationError {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         var functions = infra.scriptFunctions;
         var aspect = new RJSRSExpr.AspectSet.AspectSetMember(
                 new ID<>("RED"),

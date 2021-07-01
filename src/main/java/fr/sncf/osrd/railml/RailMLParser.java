@@ -1,7 +1,6 @@
 package fr.sncf.osrd.railml;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspect;
@@ -17,7 +16,9 @@ import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class RailMLParser {
     static final Logger logger = LoggerFactory.getLogger(RailMLParser.class);

@@ -2,16 +2,20 @@ package fr.sncf.osrd.railml;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.schema.common.ID;
-import fr.sncf.osrd.railjson.schema.infra.*;
+import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
+import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
+import fr.sncf.osrd.railjson.schema.infra.RJSTVDSection;
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.railml.routegraph.RMLRouteGraph;
 import fr.sncf.osrd.railml.routegraph.RMLRouteGraphBuilder;
 import fr.sncf.osrd.railml.routegraph.RMLRouteWaypoint;
 import fr.sncf.osrd.railml.tracksectiongraph.RMLTrackSectionGraph;
-
 import fr.sncf.osrd.railml.tracksectiongraph.TrackNetElement;
-import fr.sncf.osrd.utils.graph.*;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
+import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
