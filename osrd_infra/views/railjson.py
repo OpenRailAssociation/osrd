@@ -152,6 +152,8 @@ def serialize_track_section(track_section_entity, **cached_entities):
     waypoints = cached_entities["waypoints"]
     op_parts = cached_entities["op_parts"]
     speed_section_parts = cached_entities["speed_section_parts"]
+    slopes = track_section_entity.slope_set.all()
+    curves = track_section_entity.curve_set.all()
 
     return {
         "length": track_section.length,
@@ -175,6 +177,22 @@ def serialize_track_section(track_section_entity, **cached_entities):
             serialize_speed_section_part(cached_entities, speed_section_parts[range_object.entity_id])
             for range_object in range_objects
             if range_object.entity_id in speed_section_parts
+        ],
+        "slopes": [
+            {
+                "gradient": slope.gradient,
+                "begin": slope.start_offset,
+                "end": slope.end_offset,
+            }
+            for slope in slopes
+        ],
+        "curves": [
+            {
+                "radius": curve.radius,
+                "begin": curve.start_offset,
+                "end": curve.end_offset,
+            }
+            for curve in curves
         ],
     }
 
