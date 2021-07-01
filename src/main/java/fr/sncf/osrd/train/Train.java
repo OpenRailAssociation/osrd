@@ -2,9 +2,11 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra_state.SignalState;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
@@ -50,7 +52,8 @@ public class Train {
                 schedule,
                 0,
                 phaseState,
-                new ArrayDeque<>()
+                new ArrayDeque<>(),
+                createPath(schedule)
         );
 
         ActivateRoute.trainCreation(sim, initialState);
@@ -60,6 +63,23 @@ public class Train {
         sim.publishChange(trainCreatedChange);
         train.scheduleStateChange(sim);
         return train;
+    }
+
+    /** Initializes a train path
+     * This method should change by the end of the phase rework */
+    private static TrainPath createPath(TrainSchedule schedule) {
+        var routes = new ArrayList<Route>();
+        for (var phase : schedule.phases)
+            if (phase instanceof SignalNavigatePhase)
+                routes.addAll(((SignalNavigatePhase) phase).routePath);
+        for (int i = 1; i < routes.size(); i++) {
+            if (routes.get(i).id.equals(routes.get(i - 1).id)) {
+                routes.remove(i);
+                i--;
+            }
+        }
+        var endLocation = schedule.phases.get(schedule.phases.size() - 1).getEndLocation();
+        return new TrainPath(routes, schedule.initialLocation, endLocation);
     }
 
     /** Generates the initial location object of a train given its schedule */

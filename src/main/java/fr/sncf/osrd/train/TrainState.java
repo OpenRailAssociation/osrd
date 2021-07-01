@@ -38,6 +38,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
     public final ArrayDeque<Interaction> actionPointsUnderTrain;
 
+    public TrainPath path;
+
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     public boolean deepEquals(TrainState o) {
@@ -66,7 +68,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             TrainSchedule trainSchedule,
             int currentPhaseIndex,
             PhaseState currentPhaseState,
-            ArrayDeque<Interaction> actionPointsUnderTrain
+            ArrayDeque<Interaction> actionPointsUnderTrain,
+            TrainPath path
     ) {
         this.time = time;
         this.location = location;
@@ -77,6 +80,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         this.currentPhaseState = currentPhaseState;
         this.actionPointsUnderTrain = actionPointsUnderTrain;
         trainSchedule.trainDecisionMaker.setTrainState(this);
+        this.path = path;
     }
 
     /** Create a clone */
@@ -90,7 +94,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 trainSchedule,
                 currentPhaseIndex,
                 currentPhaseState.clone(),
-                new ArrayDeque<>(actionPointsUnderTrain)
+                new ArrayDeque<>(actionPointsUnderTrain),
+                new TrainPath(path)
         );
     }
 
@@ -110,7 +115,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                     trainSchedule,
                     currentPhaseIndex,
                     currentPhaseState,
-                    new ArrayDeque<>(actionPointsUnderTrain)
+                    new ArrayDeque<>(actionPointsUnderTrain),
+                    new TrainPath(path)
                     );
 
         var nextPhase = currentPhaseIndex + 1;
@@ -123,7 +129,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 trainSchedule,
                 nextPhase,
                 nextPhaseState,
-                new ArrayDeque<>(actionPointsUnderTrain)
+                new ArrayDeque<>(actionPointsUnderTrain),
+                new TrainPath(path)
         );
     }
 

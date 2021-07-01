@@ -5,7 +5,6 @@ import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.utils.TrackSectionLocation;
@@ -36,13 +35,21 @@ public class TrainPath {
     /** Constructor */
     public TrainPath(List<Route> routePath,
                      TrackSectionLocation startLocation,
-                     TrackSectionLocation endLocation) throws InvalidSchedule {
+                     TrackSectionLocation endLocation) {
         this.routePath = routePath;
-        verifyRoutes(routePath);
         tvdSectionPaths = new ArrayList<>();
         tvdSectionDirections = new ArrayList<>();
         initTVD(routePath);
         trackSectionPath = Route.routesToTrackSectionRange(routePath, startLocation, endLocation);
+    }
+
+    /** Copy constructor */
+    public TrainPath(TrainPath other) {
+        this.routePath = new ArrayList<>(other.routePath);
+        this.tvdSectionPaths = new ArrayList<>(other.tvdSectionPaths);
+        this.tvdSectionDirections = new ArrayList<>(other.tvdSectionDirections);
+        this.trackSectionPath = new ArrayList<>(other.trackSectionPath);
+        this.routeIndex = other.routeIndex;
     }
 
     /** Initializes the lists of tvd sections and directions */
@@ -52,15 +59,6 @@ public class TrainPath {
                 tvdSectionPaths.add(route.tvdSectionsPaths.get(i));
                 tvdSectionDirections.add(route.tvdSectionsPathDirections.get(i));
             }
-        }
-    }
-
-    /** Asserts that there are no duplicate routes
-     * Eventually we can add more checks to ensure the integrity of the path */
-    private static void verifyRoutes(List<Route> routes) throws InvalidSchedule {
-        for (int i = 1; i < routes.size(); i++) {
-            if (routes.get(i).id.equals(routes.get(i - 1).id))
-                throw new InvalidSchedule("Phase path contains duplicate routes: " + routes.get(i).id);
         }
     }
 
