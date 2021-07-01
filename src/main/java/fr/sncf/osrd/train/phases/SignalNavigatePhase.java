@@ -79,6 +79,7 @@ public final class SignalNavigatePhase implements Phase {
 
     /** Asserts that there are no duplicate routes
      * Eventually we can add more checks to ensure the integrity of the path */
+    @Deprecated
     private static void verifyRoutes(List<Route> routes) throws InvalidSchedule {
         for (int i = 1; i < routes.size(); i++) {
             if (routes.get(i).id.equals(routes.get(i - 1).id))
@@ -164,6 +165,7 @@ public final class SignalNavigatePhase implements Phase {
     }
 
     /** Finds the tvd section after the given waypoint */
+    @Deprecated
     public TVDSection findForwardTVDSection(Waypoint waypoint) {
         // TODO: Find a faster and smarter way to do it
         for (var route : routePath) {
@@ -179,6 +181,7 @@ public final class SignalNavigatePhase implements Phase {
     }
 
     /** Finds the tvd section before the given waypoint */
+    @Deprecated
     private TVDSection findBackwardTVDSection(Waypoint waypoint) {
         // TODO: Find a faster and smarter way to do it
         for (var route : routePath) {
@@ -414,6 +417,7 @@ public final class SignalNavigatePhase implements Phase {
         }
 
         /** Occupy and free tvd sections given a detector the train is interacting with. */
+        @Deprecated
         public void updateTVDSections(
                 Simulation sim,
                 Detector detector,
