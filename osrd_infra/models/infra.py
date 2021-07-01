@@ -163,6 +163,28 @@ class TrackSectionRangeComponent(Component):
         name = "range_location"
 
 
+class TrackSectionSlopeComponent(Component):
+    """A track section component that define a slope in a specific range"""
+
+    gradient = models.FloatField()
+    start_offset = models.FloatField()
+    end_offset = models.FloatField()
+
+    class ComponentMeta:
+        name = "slope"
+
+
+class TrackSectionCurveComponent(Component):
+    """A track section component that define a curve in a specific range"""
+
+    radius = models.FloatField()
+    start_offset = models.FloatField()
+    end_offset = models.FloatField()
+
+    class ComponentMeta:
+        name = "curve"
+
+
 class IdentifierComponent(Component):
     database = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
@@ -354,6 +376,8 @@ class TrackSectionEntity(Entity):
         GeoLineLocationComponent,
         IdentifierComponent,
         BelongsToTrackComponent,
+        TrackSectionSlopeComponent,
+        TrackSectionCurveComponent,
     ]
 
 
