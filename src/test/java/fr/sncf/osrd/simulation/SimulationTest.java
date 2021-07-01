@@ -1,11 +1,9 @@
 package fr.sncf.osrd.simulation;
 
+import static fr.sncf.osrd.Helpers.TestEvent;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static fr.sncf.osrd.Helpers.*;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
 import org.junit.jupiter.api.Test;
 

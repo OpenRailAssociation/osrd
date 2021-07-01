@@ -1,10 +1,13 @@
 package fr.sncf.osrd.utils.graph.overlay;
 
-import static fr.sncf.osrd.utils.graph.EdgeDirection.*;
+import static fr.sncf.osrd.utils.graph.EdgeDirection.START_TO_STOP;
+import static fr.sncf.osrd.utils.graph.EdgeDirection.STOP_TO_START;
 
 import fr.sncf.osrd.utils.graph.*;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 
 /**

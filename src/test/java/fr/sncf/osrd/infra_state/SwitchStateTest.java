@@ -1,22 +1,20 @@
 package fr.sncf.osrd.infra_state;
 
 import static fr.sncf.osrd.Helpers.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-import fr.sncf.osrd.DebugViewer;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
-import fr.sncf.osrd.railjson.parser.RailJSONParser;
-import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
-import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.infra_state.events.SwitchMoveEvent;
+import fr.sncf.osrd.railjson.parser.RailJSONParser;
+import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import org.junit.jupiter.api.Test;
 
 public class SwitchStateTest {
     @Test
     public void testSwitchNoMove() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         RouteState routeState = sim.infraState.getRouteState(3);
@@ -31,9 +29,9 @@ public class SwitchStateTest {
 
     @Test
     public void testSimpleSwitch() throws InvalidInfraException, SimulationError {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
-        var config = getBaseConfig();
+        final var config = getBaseConfig();
 
         config.trainSchedules.clear();
 
@@ -56,7 +54,7 @@ public class SwitchStateTest {
 
     @Test
     public void testSwitchShorterDelay() throws InvalidInfraException, SimulationError {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
 
         infra.switches.iterator().next().positionChangeDelay = 2;
@@ -77,8 +75,8 @@ public class SwitchStateTest {
 
     @Test
     public void testSwitchLongerDelay() throws InvalidInfraException, SimulationError {
-        var infra = getBaseInfra();
-        var config = getBaseConfig();
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
 
         infra.switches.iterator().next().positionChangeDelay = 42;
 

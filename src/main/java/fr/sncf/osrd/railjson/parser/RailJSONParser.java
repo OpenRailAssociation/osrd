@@ -2,22 +2,24 @@ package fr.sncf.osrd.railjson.parser;
 
 import static fr.sncf.osrd.infra.trackgraph.TrackSection.linkEdges;
 
-import com.squareup.moshi.*;
+import com.squareup.moshi.JsonReader;
 import fr.sncf.osrd.infra.*;
+import fr.sncf.osrd.infra.railscript.RSExpr;
+import fr.sncf.osrd.infra.railscript.RSExprVisitor;
+import fr.sncf.osrd.infra.railscript.RSFunction;
+import fr.sncf.osrd.infra.routegraph.Route;
+import fr.sncf.osrd.infra.routegraph.RouteGraph;
+import fr.sncf.osrd.infra.signaling.Aspect;
+import fr.sncf.osrd.infra.signaling.AspectConstraint;
+import fr.sncf.osrd.infra.signaling.Signal;
+import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
-import fr.sncf.osrd.infra.routegraph.Route;
-import fr.sncf.osrd.infra.routegraph.RouteGraph;
-import fr.sncf.osrd.infra.signaling.*;
-import fr.sncf.osrd.infra.railscript.RSExprVisitor;
-import fr.sncf.osrd.infra.railscript.RSFunction;
 import fr.sncf.osrd.utils.RangeValue;
 import fr.sncf.osrd.utils.SortedArraySet;
-import fr.sncf.osrd.infra.trackgraph.*;
-import fr.sncf.osrd.infra.railscript.RSExpr;
 import okio.BufferedSource;
 
 import java.io.IOException;

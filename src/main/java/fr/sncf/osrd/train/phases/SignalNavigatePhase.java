@@ -12,7 +12,10 @@ import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
-import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.simulation.Change;
+import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
@@ -160,6 +163,7 @@ public final class SignalNavigatePhase implements Phase {
         interactionsPath.sort(Comparator.comparingDouble(i -> i.position));
     }
 
+    /** Finds the tvd section after the given waypoint */
     public TVDSection findForwardTVDSection(Waypoint waypoint) {
         // TODO: Find a faster and smarter way to do it
         for (var route : routePath) {
@@ -174,6 +178,7 @@ public final class SignalNavigatePhase implements Phase {
         return null;
     }
 
+    /** Finds the tvd section before the given waypoint */
     private TVDSection findBackwardTVDSection(Waypoint waypoint) {
         // TODO: Find a faster and smarter way to do it
         for (var route : routePath) {
@@ -196,7 +201,7 @@ public final class SignalNavigatePhase implements Phase {
             }
         }
 
-        // There is no previous tvd section
+        // There is no previous tvd section on this train path
         return null;
     }
 

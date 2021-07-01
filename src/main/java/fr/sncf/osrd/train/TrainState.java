@@ -1,12 +1,12 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
-import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.train.phases.PhaseState;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.DeepComparable;

@@ -15,8 +15,8 @@ public class DelayTests {
 
     @Test
     public void testSimpleDelay() throws InvalidInfraException {
-        var infra = getBaseInfra();
-        var config = getBaseConfig();
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
         config.trainSchedules.clear();
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
@@ -50,8 +50,8 @@ public class DelayTests {
 
     @Test
     public void testRecursiveDelay() throws InvalidInfraException {
-        var infra = getBaseInfra();
-        var config = getBaseConfig();
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
         config.trainSchedules.clear();
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
@@ -76,8 +76,8 @@ public class DelayTests {
 
     @Test
     public void testDifferentDelays() throws InvalidInfraException {
-        var infra = getBaseInfra();
-        var config = getBaseConfig();
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
         config.trainSchedules.clear();
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
@@ -106,8 +106,8 @@ public class DelayTests {
 
     @Test
     public void testFunctionDelay() throws InvalidInfraException {
-        var infra = getBaseInfra();
-        var config = getBaseConfig();
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
         config.trainSchedules.clear();
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
@@ -137,8 +137,8 @@ public class DelayTests {
 
     @Test
     public void testDoubleFunctionDelay() throws InvalidInfraException {
-        var infra = getBaseInfra();
-        var config = getBaseConfig();
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
         config.trainSchedules.clear();
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 

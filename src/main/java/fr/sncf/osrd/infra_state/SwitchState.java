@@ -1,6 +1,7 @@
 package fr.sncf.osrd.infra_state;
 
-import static fr.sncf.osrd.infra.trackgraph.SwitchPosition.*;
+import static fr.sncf.osrd.infra.trackgraph.SwitchPosition.LEFT;
+import static fr.sncf.osrd.infra.trackgraph.SwitchPosition.MOVING;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.railscript.value.RSMatchable;
@@ -8,9 +9,9 @@ import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.infra_state.events.SwitchMoveEvent;
 import fr.sncf.osrd.simulation.EntityChange;
 import fr.sncf.osrd.simulation.Simulation;
-import fr.sncf.osrd.infra_state.events.SwitchMoveEvent;
 import fr.sncf.osrd.simulation.SimulationError;
 
 /**

@@ -3,7 +3,6 @@ package fr.sncf.osrd.simulation.changelog;
 import fr.sncf.osrd.simulation.Change;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 
 public final class ArrayChangeLog extends ChangeConsumer implements ChangeLog {

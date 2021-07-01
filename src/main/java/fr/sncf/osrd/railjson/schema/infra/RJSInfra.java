@@ -4,9 +4,9 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.railjson.schema.common.ID;
-import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspect;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSFunction;
+import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspect;
 import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspectConstraint;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 

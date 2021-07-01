@@ -5,7 +5,6 @@ import fr.sncf.osrd.train.InteractionType;
 import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 

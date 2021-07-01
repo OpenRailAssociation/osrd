@@ -1,9 +1,6 @@
 package fr.sncf.osrd.simulation;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.utils.DeepComparable;
-
-import java.util.Objects;
 
 public final class TimelineEventId implements Comparable<TimelineEventId> {
     // the simulation time the event is planned to execute at

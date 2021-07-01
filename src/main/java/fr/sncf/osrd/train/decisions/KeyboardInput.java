@@ -1,15 +1,9 @@
 package fr.sncf.osrd.train.decisions;
 
 import fr.sncf.osrd.DebugViewer;
-import fr.sncf.osrd.simulation.Simulation;
-import fr.sncf.osrd.simulation.SimulationError;
-import fr.sncf.osrd.simulation.TimelineEvent;
-import fr.sncf.osrd.simulation.TimelineEventId;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.train.Action;
-import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator;
-import fr.sncf.osrd.train.events.TrainMoveEvent;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;

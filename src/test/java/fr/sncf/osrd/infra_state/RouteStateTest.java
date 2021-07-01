@@ -2,7 +2,6 @@ package fr.sncf.osrd.infra_state;
 
 import static fr.sncf.osrd.Helpers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
@@ -20,9 +19,9 @@ import java.util.stream.Stream;
 public class RouteStateTest {
     @Test
     public void testSimpleReserve() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
-        var config = getBaseConfig();
+        final var config = getBaseConfig();
         assert config != null;
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
@@ -39,9 +38,9 @@ public class RouteStateTest {
 
     @Test
     public void testAwaitSwitchChange() throws InvalidInfraException, SimulationError {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
-        var config = getBaseConfig();
+        final var config = getBaseConfig();
         assert config != null;
 
         config.trainSchedules.clear();
@@ -62,9 +61,9 @@ public class RouteStateTest {
 
     @Test
     public void testSeveralSwitches() throws InvalidInfraException, SimulationError {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
-        var config = getBaseConfig();
+        final var config = getBaseConfig();
         assert config != null;
 
         config.trainSchedules.clear();
@@ -94,9 +93,9 @@ public class RouteStateTest {
 
     @Test
     public void testOccupied() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
-        var config = getBaseConfig();
+        final var config = getBaseConfig();
         assert config != null;
 
         config.trainSchedules.clear();
@@ -119,9 +118,9 @@ public class RouteStateTest {
 
     @Test
     public void testReserveStatusChanges() throws InvalidInfraException, SimulationError {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         assert infra != null;
-        var config = getBaseConfig();
+        final var config = getBaseConfig();
         assert config != null;
 
         var changelog = new ArrayChangeLog();

@@ -8,9 +8,12 @@ import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
-import fr.sncf.osrd.utils.SortedArraySet;
-import fr.sncf.osrd.utils.graph.*;
 import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
+import fr.sncf.osrd.utils.SortedArraySet;
+import fr.sncf.osrd.utils.graph.DirNGraph;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
+import fr.sncf.osrd.utils.graph.EdgeEndpoint;
+import fr.sncf.osrd.utils.graph.UndirectedBiEdgeID;
 
 import java.util.*;
 
