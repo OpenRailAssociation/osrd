@@ -216,7 +216,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     ) {
         var locationChange = new Train.TrainStateChange(sim, trainSchedule.trainID, this);
 
-        while (location.getPathPosition() < goalPathPosition || this.time + 1.0 < targetTime) {
+        while (location.getPathPosition() < goalPathPosition && this.time + 1.0 < targetTime) {
             var distanceStep = goalPathPosition - location.getPathPosition();
             step(locationChange, 1.0, distanceStep);
         }
