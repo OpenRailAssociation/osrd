@@ -2,9 +2,6 @@ package fr.sncf.osrd.speedcontroller;
 
 import fr.sncf.osrd.utils.SortedDoubleMap;
 
-import java.util.NavigableMap;
-import java.util.TreeMap;
-
 public class MapSpeedController extends SpeedController {
 
     /** Keys are positions in space, values are speed */

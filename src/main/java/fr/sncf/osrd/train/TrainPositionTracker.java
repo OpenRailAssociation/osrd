@@ -2,9 +2,9 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.trackgraph.*;
+import fr.sncf.osrd.infra.trackgraph.Switch;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra_state.InfraState;
-import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.DeepEqualsUtils;
 

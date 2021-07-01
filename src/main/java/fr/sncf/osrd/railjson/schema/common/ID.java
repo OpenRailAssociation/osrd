@@ -2,7 +2,6 @@ package fr.sncf.osrd.railjson.schema.common;
 
 import com.squareup.moshi.*;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;

@@ -6,6 +6,7 @@ import fr.sncf.osrd.api.InfraHandler;
 import fr.sncf.osrd.api.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.PathfindingTracksEndpoint;
 import fr.sncf.osrd.api.SimulationEndpoint;
+import io.sentry.Sentry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.takes.Response;
@@ -18,7 +19,6 @@ import org.takes.misc.Opt;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithStatus;
 import org.takes.tk.TkSlf4j;
-import io.sentry.Sentry;
 
 import java.io.IOException;
 

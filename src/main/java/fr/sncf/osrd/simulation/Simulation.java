@@ -9,7 +9,9 @@ import fr.sncf.osrd.utils.DeepComparable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * <h1>A Discrete TimelineEvent Simulation.</h1>

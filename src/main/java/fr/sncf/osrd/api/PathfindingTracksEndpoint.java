@@ -10,7 +10,6 @@ import fr.sncf.osrd.utils.graph.BiDijkstra;
 import fr.sncf.osrd.utils.graph.DistCostFunction;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.path.BasicDirPathNode;
-import fr.sncf.osrd.utils.graph.path.BasicPathNode;
 import fr.sncf.osrd.utils.graph.path.FullPathArray;
 import org.takes.Request;
 import org.takes.Response;

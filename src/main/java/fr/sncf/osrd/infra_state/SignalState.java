@@ -11,9 +11,6 @@ import fr.sncf.osrd.simulation.EntityChange;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.TrainState;
-
-import java.util.ArrayList;
 
 /**
  * The state of the signal is the actual entity which interacts with the rest of the infrastructure

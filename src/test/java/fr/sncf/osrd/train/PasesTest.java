@@ -1,5 +1,10 @@
 package fr.sncf.osrd.train;
 
+import static fr.sncf.osrd.Helpers.*;
+import static fr.sncf.osrd.speedcontroller.MarginTests.saveGraph;
+import static fr.sncf.osrd.speedcontroller.SpeedInstructionsTests.getStaticGenerator;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra_state.RouteState;
@@ -19,25 +24,21 @@ import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.SortedDoubleMap;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
-
-import static fr.sncf.osrd.Helpers.*;
-import static fr.sncf.osrd.speedcontroller.MarginTests.saveGraph;
-import static fr.sncf.osrd.speedcontroller.SpeedInstructionsTests.getStaticGenerator;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.Collections;
+import java.util.List;
 
 public class PasesTest {
 
     @Test
     public void testSimplePhases() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
 
-        var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
+        final var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim, config);
         var actualEndTime = sim.getTime();
 
-        var configBase = getBaseConfig();
+        final var configBase = getBaseConfig();
         var simBase = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(simBase, configBase);
         var baseEndTime = simBase.getTime();
@@ -45,6 +46,7 @@ public class PasesTest {
         assertEquals(baseEndTime, actualEndTime, baseEndTime * 0.1);
     }
 
+    /** Get a map of the time at which each position is reached */
     public static SortedDoubleMap getTimePerPosition(Iterable<TimelineEvent> events) {
         var res = new SortedDoubleMap();
         for (var event : events) {
@@ -59,13 +61,13 @@ public class PasesTest {
 
     @Test
     public void testSameEventTimes() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
 
-        var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
+        final var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim, config);
 
-        var configBase = makeConfigWithSpeedParams(Collections.singletonList(null));
+        final var configBase = makeConfigWithSpeedParams(Collections.singletonList(null));
         var simBase = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsRef = run(simBase, configBase);
 
@@ -83,8 +85,8 @@ public class PasesTest {
 
     @Test
     public void testReactToSignals() throws InvalidInfraException, SimulationError {
-        var infra = getBaseInfra();
-        var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
 
         infra.switches.iterator().next().positionChangeDelay = 500;
 
@@ -97,8 +99,8 @@ public class PasesTest {
 
     @Test
     public void testTriggerSwitchChangeAtRightTime() throws InvalidInfraException, SimulationError {
-        var infra = getBaseInfra();
-        var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
 
         infra.switches.iterator().next().positionChangeDelay = 42;
 
@@ -118,8 +120,8 @@ public class PasesTest {
 
     @Test
     public void testDifferentSpeedLimits() throws InvalidInfraException {
-        var infra = getBaseInfra();
-        var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
 
         var phases = config.trainSchedules.get(0).phases;
         assert phases.get(0) instanceof SignalNavigatePhase;
@@ -136,18 +138,18 @@ public class PasesTest {
 
     @Test
     public void testSeveralPhasesNoMargin() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
 
         var phases = loadPhasesLongerFirstPhase();
-        var config = makeConfigWithGivenPhases(phases, "tiny_infra/config_railjson_several_phases.json");
+        final var config = makeConfigWithGivenPhases(phases, "tiny_infra/config_railjson_several_phases.json");
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         saveGraph(run(sim, config), "double-construction-out.csv");
         var actualEndTime = sim.getTime();
 
-        var config_base = makeConfigWithSpeedParams(null);
-        var sim_base = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        saveGraph(run(sim_base, config_base), "double-construction-base.csv");
-        var baseEndTime = sim_base.getTime();
+        final var configBase = makeConfigWithSpeedParams(null);
+        var simBase = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        saveGraph(run(simBase, configBase), "double-construction-base.csv");
+        var baseEndTime = simBase.getTime();
 
         var expected = baseEndTime + 0;
 
@@ -156,7 +158,7 @@ public class PasesTest {
 
     @Test
     public void testSeveralConstructionMargins() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
         var param1 = new RJSAllowance.ConstructionAllowance();
         var param2 = new RJSAllowance.ConstructionAllowance();
         param1.allowanceValue = 15;
@@ -166,21 +168,23 @@ public class PasesTest {
         phases[0].allowances = new RJSAllowance[]{param1};
         phases[1].allowances = new RJSAllowance[]{param2};
 
-        var config = makeConfigWithGivenPhases(phases, "tiny_infra/config_railjson_several_phases.json");
+        final var config = makeConfigWithGivenPhases(phases, "tiny_infra/config_railjson_several_phases.json");
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         saveGraph(run(sim, config), "double-construction-out.csv");
         var actualEndTime = sim.getTime();
 
-        var config_base = makeConfigWithSpeedParams(null);
-        var sim_base = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        saveGraph(run(sim_base, config_base), "double-construction-base.csv");
-        var baseEndTime = sim_base.getTime();
+        final var configBase = makeConfigWithSpeedParams(null);
+        var simBase = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        saveGraph(run(simBase, configBase), "double-construction-base.csv");
+        var baseEndTime = simBase.getTime();
 
         var expected = baseEndTime + param1.allowanceValue + param2.allowanceValue;
 
         assertEquals(expected, actualEndTime, expected * 0.01);
     }
 
+    /** Adds an element to an array of route
+     * This function is used to hide away the generic array creation */
     @SuppressWarnings("unchecked")
     public static ID<RJSRoute>[] addToArray(ID<RJSRoute>[] array, ID<RJSRoute> val) {
         var res = (ID<RJSRoute>[]) java.lang.reflect.Array.newInstance(ID.class, array.length + 1);
@@ -189,6 +193,8 @@ public class PasesTest {
         return res;
     }
 
+    /** Removes the first element from an array of route
+     * This function is used to hide away the generic array creation */
     @SuppressWarnings("unchecked")
     public static ID<RJSRoute>[] removeFirstFromArray(ID<RJSRoute>[] array) {
         var res = (ID<RJSRoute>[]) java.lang.reflect.Array.newInstance(ID.class, array.length - 1);
@@ -196,6 +202,7 @@ public class PasesTest {
         return res;
     }
 
+    /** Get a list of 2 phases on the base infra, with the transition happening roughly half-way */
     public static RJSTrainPhase[] loadPhasesLongerFirstPhase() {
         var phases = loadRJSPhases("tiny_infra/simulation_several_phases.json");
         phases[0].endLocation = new RJSTrackLocation(new ID<>("ne.micro.foo_to_bar"), 4000);
@@ -210,7 +217,7 @@ public class PasesTest {
 
     @Test
     public void testDifferentMargins() throws InvalidInfraException {
-        var infra = getBaseInfra();
+        final var infra = getBaseInfra();
 
         var paramsFirstPhase = new RJSAllowance.LinearAllowance();
         paramsFirstPhase.allowanceValue = 10;
@@ -224,24 +231,24 @@ public class PasesTest {
         phases[0].allowances = new RJSAllowance[]{paramsFirstPhase};
         phases[1].allowances = new RJSAllowance[]{paramsSecondPhase};
 
-        var configMargins = makeConfigWithGivenPhases(phases, "tiny_infra/config_railjson_several_phases.json");
+        final var configMargins = makeConfigWithGivenPhases(phases, "tiny_infra/config_railjson_several_phases.json");
         var simMargins = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        var eventsMargins = run(simMargins, configMargins);
-        var timeFirstPhaseMMargins = findPhaseChangeTime(eventsMargins);
-        var timeMargins = simMargins.getTime();
+        final var eventsMargins = run(simMargins, configMargins);
+        final var timeFirstPhaseMMargins = findPhaseChangeTime(eventsMargins);
+        final var timeMargins = simMargins.getTime();
 
         phases[0].allowances = null;
         phases[1].allowances = null;
 
-        var config = makeConfigWithGivenPhases(phases, "tiny_infra/config_railjson_several_phases.json");
+        final var config = makeConfigWithGivenPhases(phases, "tiny_infra/config_railjson_several_phases.json");
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var baseEvents = run(sim, config);
         var baseTimeFirstPhase = findPhaseChangeTime(baseEvents);
         var baseTime = sim.getTime();
 
         var baseTimeSecondPhase = baseTime - baseTimeFirstPhase;
-        var expected = baseTimeFirstPhase * (1 + paramsFirstPhase.allowanceValue / 100) +
-                baseTimeSecondPhase * (1 + paramsSecondPhase.allowanceValue / 100);
+        var expected = baseTimeFirstPhase * (1 + paramsFirstPhase.allowanceValue / 100)
+                + baseTimeSecondPhase * (1 + paramsSecondPhase.allowanceValue / 100);
         saveGraph(eventsMargins, "two-margins-out.csv");
         saveGraph(baseEvents, "two-margins-base.csv");
         assertEquals(expected, timeMargins, expected * 0.01);
@@ -249,6 +256,7 @@ public class PasesTest {
                 timeFirstPhaseMMargins, baseTimeFirstPhase * 0.05);
     }
 
+    /** Returns the time of the first transition between two phases */
     public static double findPhaseChangeTime(List<TimelineEvent> events) {
         for (var e : events) {
             if (e instanceof TrainReachesActionPoint) {

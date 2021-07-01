@@ -19,7 +19,7 @@ public class RMLSwitchILTest {
                 fail("Can't load test resource");
                 return;
             }
-            var infraPath = resource.toString();
+            final var infraPath = resource.toString();
             infra = RailMLParser.parse(infraPath);
         } catch (InvalidInfraException e) {
             fail("XML reading should not have failed", e);

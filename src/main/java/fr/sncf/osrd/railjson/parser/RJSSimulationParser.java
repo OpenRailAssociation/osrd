@@ -1,11 +1,11 @@
 package fr.sncf.osrd.railjson.parser;
 
+import fr.sncf.osrd.RollingStock;
+import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
-import fr.sncf.osrd.RollingStock;
-import fr.sncf.osrd.TrainSchedule;
 
 import java.util.ArrayList;
 import java.util.HashMap;

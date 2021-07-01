@@ -16,7 +16,10 @@ import fr.sncf.osrd.train.TrainPhysicsIntegrator;
 import fr.sncf.osrd.train.TrainPositionTracker;
 import fr.sncf.osrd.utils.SortedDoubleMap;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {

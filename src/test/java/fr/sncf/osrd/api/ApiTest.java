@@ -21,7 +21,7 @@ public class ApiTest {
     /** Setup infra handler mock */
     @BeforeEach
     public void setUp() throws InvalidInfraException, IOException {
-        var infra = "tiny_infra/infra.json";
+        final var infra = "tiny_infra/infra.json";
         var tinyInfra = Infra.parseFromFile(JsonConfig.InfraType.UNKNOWN, Helpers.getResourcePath(infra).toString());
         when(infraHandlerMock.load(infra)).thenReturn(tinyInfra);
     }
