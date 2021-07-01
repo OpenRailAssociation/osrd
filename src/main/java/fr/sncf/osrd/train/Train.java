@@ -124,10 +124,7 @@ public class Train {
     /** Reserve routes when the train is in navigate phase */
     public void onEventOccurred(Simulation sim) throws SimulationError {
         // TODO find a smarter way to do it and remove this method
-        if (lastState.currentPhaseState.getClass() == SignalNavigatePhase.State.class) {
-            var navigateState = (SignalNavigatePhase.State) lastState.currentPhaseState;
-            ActivateRoute.reserveRoutes(sim, navigateState);
-        }
+        ActivateRoute.reserveRoutes(sim, lastState.path);
     }
 
     // endregion
@@ -135,12 +132,7 @@ public class Train {
     // region INTERACTIONS
     /** Make the train interact with a detector */
     public void interact(Simulation sim, Detector detector, InteractionType interactionType) throws SimulationError {
-        if (lastState.currentPhaseState.getClass() == SignalNavigatePhase.State.class) {
-            var navigatePhaseState = (SignalNavigatePhase.State) lastState.currentPhaseState;
-            navigatePhaseState.updateTVDSections(sim, detector, interactionType);
-            return;
-        }
-        throw new RuntimeException("Unexpected phase while interacting with a detector");
+        lastState.path.updateTVDSections(sim, detector, interactionType);
     }
 
     /** Make the train interact with a signal */

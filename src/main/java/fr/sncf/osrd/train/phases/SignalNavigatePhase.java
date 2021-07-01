@@ -7,9 +7,7 @@ import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.signaling.AspectConstraint;
 import fr.sncf.osrd.infra.signaling.Signal;
-import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.simulation.Change;
@@ -38,7 +36,6 @@ public final class SignalNavigatePhase implements Phase {
     private final Interaction lastInteractionOnPhase;
     private final double driverSightDistance;
     public transient List<SpeedControllerGenerator> targetSpeedGenerators;
-    private transient List<Phase> allPhases;
 
     /** Offset between the beginning of the global train path and the beginning of this phase */
     public double offset;
@@ -69,22 +66,11 @@ public final class SignalNavigatePhase implements Phase {
             TrackSectionLocation endLocation,
             List<SpeedControllerGenerator> targetSpeedGenerators
     ) throws InvalidSchedule {
-        verifyRoutes(routes);
         var trackSectionPath = Route.routesToTrackSectionRange(routes,
                 startLocation, endLocation);
         var actionPointPath = trackSectionToActionPointPath(driverSightDistance, trackSectionPath);
         return new SignalNavigatePhase(routes, endLocation, trackSectionPath, actionPointPath,
                 driverSightDistance, targetSpeedGenerators);
-    }
-
-    /** Asserts that there are no duplicate routes
-     * Eventually we can add more checks to ensure the integrity of the path */
-    @Deprecated
-    private static void verifyRoutes(List<Route> routes) throws InvalidSchedule {
-        for (int i = 1; i < routes.size(); i++) {
-            if (routes.get(i).id.equals(routes.get(i - 1).id))
-                throw new InvalidSchedule("Phase path contains duplicate routes: " + routes.get(i).id);
-        }
     }
 
     private static ArrayList<Interaction> trackSectionToActionPointPath(
@@ -131,15 +117,9 @@ public final class SignalNavigatePhase implements Phase {
 
     @Override
     public void resolvePhases(List<Phase> phases) {
-        allPhases = phases;
         boolean seenSelf = false;
         AtomicReference<Double> currentPosition = new AtomicReference<>(0.);
         for (var phase : phases) {
-            if (seenSelf) {
-                // adds the routes in the next phases to the current route, to trigger reserves at the right time
-                if (phase instanceof SignalNavigatePhase)
-                    routePath.addAll(((SignalNavigatePhase) phase).routePath);
-            }
             boolean finalSeenSelf = seenSelf;
             if (phase == this) {
                 seenSelf = true;
@@ -153,59 +133,7 @@ public final class SignalNavigatePhase implements Phase {
                 currentPosition.updateAndGet(v -> v + pathSection.length());
             });
         }
-
-        // Removes duplicate routes
-        for (int i = 1; i < routePath.size(); i++) {
-            if (routePath.get(i).id.equals(routePath.get(i - 1).id)) {
-                routePath.remove(i);
-                i--;
-            }
-        }
         interactionsPath.sort(Comparator.comparingDouble(i -> i.position));
-    }
-
-    /** Finds the tvd section after the given waypoint */
-    @Deprecated
-    public TVDSection findForwardTVDSection(Waypoint waypoint) {
-        // TODO: Find a faster and smarter way to do it
-        for (var route : routePath) {
-            for (var j = 0; j < route.tvdSectionsPaths.size(); j++) {
-                var tvdSectionPath = route.tvdSectionsPaths.get(j);
-                var tvdSectionPathDirection = route.tvdSectionsPathDirections.get(j);
-                if (tvdSectionPath.getStartNode(tvdSectionPathDirection) == waypoint.index)
-                    return tvdSectionPath.tvdSection;
-            }
-        }
-        // No tvd section could be found forward this waypoint
-        return null;
-    }
-
-    /** Finds the tvd section before the given waypoint */
-    @Deprecated
-    private TVDSection findBackwardTVDSection(Waypoint waypoint) {
-        // TODO: Find a faster and smarter way to do it
-        for (var route : routePath) {
-            for (var j = 0; j < route.tvdSectionsPaths.size(); j++) {
-                var tvdSectionPath = route.tvdSectionsPaths.get(j);
-                var tvdSectionPathDirection = route.tvdSectionsPathDirections.get(j);
-                if (tvdSectionPath.getEndNode(tvdSectionPathDirection) == waypoint.index)
-                    return tvdSectionPath.tvdSection;
-            }
-        }
-        // No tvd section could be found behind this waypoint
-        // Try to look in the previous phases
-        int indexSelf = allPhases.indexOf(this);
-        for (int i = indexSelf - 1; i >= 0; i--) {
-            var prevPhase = allPhases.get(indexSelf - 1);
-            if (prevPhase.getClass() == SignalNavigatePhase.class) {
-                var res = ((SignalNavigatePhase) prevPhase).findBackwardTVDSection(waypoint);
-                if (res != null)
-                    return res;
-            }
-        }
-
-        // There is no previous tvd section on this train path
-        return null;
     }
 
     @Override
@@ -414,42 +342,6 @@ public final class SignalNavigatePhase implements Phase {
                     interaction.actionPoint
             );
             trainState.actionPointsUnderTrain.addLast(underTrainInteraction);
-        }
-
-        /** Occupy and free tvd sections given a detector the train is interacting with. */
-        @Deprecated
-        public void updateTVDSections(
-                Simulation sim,
-                Detector detector,
-                InteractionType interactionType
-        ) throws SimulationError {
-            // Update route index
-            var currentRoute = phase.routePath.get(routeIndex);
-            var tvdSectionPathIndex = currentRoute.tvdSectionsPaths.size() - 1;
-            var lastTvdSectionPath = currentRoute.tvdSectionsPaths.get(tvdSectionPathIndex);
-            var lastTvdSectionPathDir = currentRoute.tvdSectionsPathDirections.get(tvdSectionPathIndex);
-            if (lastTvdSectionPath.getEndNode(lastTvdSectionPathDir) == detector.index)
-                routeIndex++;
-
-            // Occupy the next tvdSection
-            if (interactionType == InteractionType.HEAD) {
-                var forwardTVDSectionPath = phase.findForwardTVDSection(detector);
-                if (forwardTVDSectionPath == null)
-                    return;
-                var nextTVDSection = sim.infraState.getTvdSectionState(forwardTVDSectionPath.index);
-                nextTVDSection.occupy(sim);
-                return;
-            }
-            // Doesn't occupy the last tvdSection
-            var backwardTVDSectionPath = phase.findBackwardTVDSection(detector);
-            if (backwardTVDSectionPath == null)
-                return;
-            var backwardTVDSection = sim.infraState.getTvdSectionState(backwardTVDSectionPath.index);
-            backwardTVDSection.unoccupy(sim);
-        }
-
-        public int getRouteIndex() {
-            return routeIndex;
         }
 
         private ArrayList<SpeedController> parseAspectConstraint(AspectConstraint constraint, TrainState trainState) {
