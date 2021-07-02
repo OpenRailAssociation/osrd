@@ -61,8 +61,6 @@ public class RJSTrainScheduleParser {
                 beginLocation = endLocation;
             phases.add(phase);
         }
-        for (var phase : phases)
-            phase.resolvePhases(phases);
 
         // find from what direction the train arrives on the initial location
         EdgeDirection initialDirection = null;

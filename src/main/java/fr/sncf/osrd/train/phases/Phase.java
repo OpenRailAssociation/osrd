@@ -13,6 +13,4 @@ public interface Phase {
     PhaseState getState(Simulation sim, TrainSchedule schedule);
 
     TrackSectionLocation getEndLocation();
-
-    default void resolvePhases(List<Phase> phases) {}
 }
