@@ -1,5 +1,6 @@
 package fr.sncf.osrd.train;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.routegraph.Route;
@@ -52,26 +53,6 @@ public class TrainPath {
         this.tvdSectionDirections = new ArrayList<>(other.tvdSectionDirections);
         this.trackSectionPath = new ArrayList<>(other.trackSectionPath);
         this.routeIndex = other.routeIndex;
-    }
-
-    /** Initializes a train path given a schedule */
-    public TrainPath(TrainSchedule schedule) {
-        routePath = new ArrayList<>();
-        for (var phase : schedule.phases)
-            // TODO ech: change this by the end of the phase rework
-            if (phase instanceof SignalNavigatePhase)
-                routePath.addAll(((SignalNavigatePhase) phase).routePath);
-        for (int i = 1; i < routePath.size(); i++) {
-            if (routePath.get(i).id.equals(routePath.get(i - 1).id)) {
-                routePath.remove(i);
-                i--;
-            }
-        }
-        var endLocation = schedule.phases.get(schedule.phases.size() - 1).getEndLocation();
-        tvdSectionPaths = new ArrayList<>();
-        tvdSectionDirections = new ArrayList<>();
-        initTVD(routePath);
-        trackSectionPath = Route.routesToTrackSectionRange(routePath, schedule.initialLocation, endLocation);
     }
 
     /** Initializes the lists of tvd sections and directions */
@@ -140,5 +121,17 @@ public class TrainPath {
             return;
         var backwardTVDSection = sim.infraState.getTvdSectionState(backwardTVDSectionPath.index);
         backwardTVDSection.unoccupy(sim);
+    }
+
+    /** Converts a TrackSectionLocation into a position on the track (double) */
+    public double convertTrackLocation(TrackSectionLocation location) {
+        double sumPreviousSections = 0;
+        for (var edge : trackSectionPath) {
+            if (edge.containsLocation(location)) {
+                return sumPreviousSections + location.offset - edge.getBeginPosition();
+            }
+            sumPreviousSections += edge.getEndPosition() - edge.getBeginPosition();
+        }
+        throw new RuntimeException("Can't find location in path");
     }
 }

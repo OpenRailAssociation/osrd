@@ -37,7 +37,8 @@ public final class TrainSchedule {
             EdgeDirection initialDirection, Route initialRoute,
             double initialSpeed,
             ArrayList<Phase> phases,
-            TrainDecisionMaker trainDecisionMaker
+            TrainDecisionMaker trainDecisionMaker,
+            TrainPath plannedPath
     ) {
         this.trainID = trainID;
         this.rollingStock = rollingStock;
@@ -47,7 +48,7 @@ public final class TrainSchedule {
         this.initialRoute = initialRoute;
         this.initialSpeed = initialSpeed;
         this.phases = phases;
-        plannedPath = new TrainPath(this);
+        this.plannedPath = plannedPath;
         if (trainDecisionMaker == null)
             trainDecisionMaker = new TrainDecisionMaker.DefaultTrainDecisionMaker();
         this.trainDecisionMaker = trainDecisionMaker;

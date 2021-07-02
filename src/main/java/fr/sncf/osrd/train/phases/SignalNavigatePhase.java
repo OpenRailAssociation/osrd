@@ -23,14 +23,13 @@ import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public final class SignalNavigatePhase implements Phase {
     public final TrainPath expectedPath;
-    public final List<Route> routePath;
+    public TrackSectionLocation startLocation;
     public final TrackSectionLocation endLocation;
-    private final ArrayList<TrackSectionRange> trackSectionPath;
     private final ArrayList<Interaction> interactionsPath;
     private final Interaction lastInteractionOnPhase;
     private final double driverSightDistance;
@@ -40,16 +39,14 @@ public final class SignalNavigatePhase implements Phase {
     public double offset;
 
     private SignalNavigatePhase(
-            List<Route> routePath,
+            TrackSectionLocation startLocation,
             TrackSectionLocation endLocation,
-            ArrayList<TrackSectionRange> trackSectionPath,
             ArrayList<Interaction> interactionsPath,
             double driverSightDistance,
             List<SpeedControllerGenerator> targetSpeedGenerators,
             TrainPath expectedPath) {
-        this.routePath = routePath;
+        this.startLocation = startLocation;
         this.endLocation = endLocation;
-        this.trackSectionPath = trackSectionPath;
         this.interactionsPath = interactionsPath;
         this.driverSightDistance = driverSightDistance;
         this.targetSpeedGenerators = targetSpeedGenerators;
@@ -68,25 +65,38 @@ public final class SignalNavigatePhase implements Phase {
             List<SpeedControllerGenerator> targetSpeedGenerators,
             TrainPath expectedPath
     ) throws InvalidSchedule {
-        var trackSectionPath = Route.routesToTrackSectionRange(routes,
-                startLocation, endLocation);
-        var actionPointPath = trackSectionToActionPointPath(driverSightDistance, trackSectionPath);
-        return new SignalNavigatePhase(routes, endLocation, trackSectionPath, actionPointPath,
+        var actionPointPath = trackSectionToActionPointPath(driverSightDistance,
+                expectedPath,
+                startLocation,
+                endLocation,
+                expectedPath.trackSectionPath);
+        return new SignalNavigatePhase(startLocation, endLocation, actionPointPath,
                 driverSightDistance, targetSpeedGenerators, expectedPath);
     }
 
     private static ArrayList<Interaction> trackSectionToActionPointPath(
             double driverSightDistance,
+            TrainPath path,
+            TrackSectionLocation startLocation,
+            TrackSectionLocation endLocation,
             Iterable<TrackSectionRange> trackSectionRanges
     ) {
+        var startPosition = path.convertTrackLocation(startLocation);
+        var endPosition = path.convertTrackLocation(endLocation);
         var eventPath = new ArrayList<Interaction>();
         double pathLength = 0;
         for (var trackRange : trackSectionRanges) {
-            registerRange(eventPath, trackRange, pathLength, driverSightDistance);
+            if (pathLength + trackRange.length() >= startPosition)
+                registerRange(eventPath, trackRange, pathLength, driverSightDistance);
             pathLength += trackRange.length();
+            if (pathLength > endPosition + driverSightDistance)
+                break;
         }
 
-        Collections.sort(eventPath);
+        eventPath = eventPath.stream()
+                .filter(interaction -> interaction.position >= startPosition && interaction.position <= endPosition)
+                .sorted()
+                .collect(Collectors.toCollection(ArrayList::new));
 
         var phaseEnd = new PhaseEndActionPoint();
         // We place the end of phase a few meters before the actual end, because we will stop before reaching it
@@ -115,32 +125,6 @@ public final class SignalNavigatePhase implements Phase {
                 eventPath.add(new Interaction(InteractionType.SEEN, distance, interactable));
             }
         }
-    }
-
-    @Override
-    public void resolvePhases(List<Phase> phases) {
-        boolean seenSelf = false;
-        AtomicReference<Double> currentPosition = new AtomicReference<>(0.);
-        for (var phase : phases) {
-            boolean finalSeenSelf = seenSelf;
-            if (phase == this) {
-                seenSelf = true;
-                offset = currentPosition.get();
-                for (var ip : interactionsPath)
-                    ip.position += offset;
-            }
-
-            // TODO ech: remove this block by the end of the phase rework
-            if (phase instanceof SignalNavigatePhase) {
-                var other = (SignalNavigatePhase) phase;
-                other.trackSectionPath.forEach(pathSection -> {
-                    if (finalSeenSelf)
-                        registerRange(interactionsPath, pathSection, currentPosition.get(), driverSightDistance);
-                    currentPosition.updateAndGet(v -> v + pathSection.length());
-                });
-            }
-        }
-        interactionsPath.sort(Comparator.comparingDouble(i -> i.position));
     }
 
     @Override
@@ -227,6 +211,7 @@ public final class SignalNavigatePhase implements Phase {
             speedInstructions.generate(sim, schedule);
             this.phase = phase;
             this.signalControllers = new HashMap<>();
+            routeIndex = phase.expectedPath.routeIndex;
         }
 
         State(SignalNavigatePhase.State state) {

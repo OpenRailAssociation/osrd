@@ -118,7 +118,8 @@ public class StaticSpeedLimitTest {
                 route,
                 0,
                 phases,
-                null
+                null,
+                path
         );
         TrainCreatedEvent.plan(sim, schedule);
 

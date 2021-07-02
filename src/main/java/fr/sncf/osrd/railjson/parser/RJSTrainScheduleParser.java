@@ -93,7 +93,8 @@ public class RJSTrainScheduleParser {
                 initialRoute,
                 initialSpeed,
                 phases,
-                parseDecisionMaker(rjsTrainSchedule.trainControlMethod)
+                parseDecisionMaker(rjsTrainSchedule.trainControlMethod),
+                expectedPath
         );
     }
 

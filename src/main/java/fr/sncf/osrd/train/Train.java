@@ -76,7 +76,7 @@ public class Train {
                 initialLocation.offset,
                 initialLocation.offset // This starts as a 0 length range, the train grow in size as it appears
         ));
-        var trackSectionPath = new TrainPath(schedule).trackSectionPath;
+        var trackSectionPath = schedule.plannedPath.trackSectionPath;
         return new TrainPositionTracker(sim.infra, sim.infraState, initialPosition, trackSectionPath);
     }
 
