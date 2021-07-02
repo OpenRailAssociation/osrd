@@ -184,7 +184,8 @@ public class RJSTrainScheduleParser {
                     var route = infra.routeGraph.routeMap.get(rjsRoute.id);
                     if (route == null)
                         throw new UnknownRoute("unknown route in navigate phase", rjsRoute.id);
-                    routes.add(route);
+                    if (routes.isEmpty() || routes.get(routes.size() - 1) != route)
+                        routes.add(route);
                 }
             }
         }
