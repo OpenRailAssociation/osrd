@@ -13,6 +13,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.speedcontroller.generators.*;
+import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.train.decisions.KeyboardInput;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.train.phases.Phase;
@@ -39,6 +40,8 @@ public class RJSTrainScheduleParser {
 
         var initialLocation = parseLocation(infra, rjsTrainSchedule.initialHeadLocation);
 
+        var expectedPath = parsePath(infra, rjsTrainSchedule.phases, initialLocation);
+
         var initialRouteID = rjsTrainSchedule.initialRoute.id;
         var initialRoute = infra.routeGraph.routeMap.get(initialRouteID);
         if (initialRoute == null)
@@ -52,7 +55,7 @@ public class RJSTrainScheduleParser {
         var phases = new ArrayList<Phase>();
         var beginLocation = initialLocation;
         for (var rjsPhase : rjsTrainSchedule.phases) {
-            var phase = parsePhase(infra, beginLocation, rjsPhase);
+            var phase = parsePhase(infra, beginLocation, rjsPhase, expectedPath);
             var endLocation = phase.getEndLocation();
             if (endLocation != null)
                 beginLocation = endLocation;
@@ -136,7 +139,8 @@ public class RJSTrainScheduleParser {
     private static Phase parsePhase(
             Infra infra,
             TrackSectionLocation startLocation,
-            RJSTrainPhase rjsPhase
+            RJSTrainPhase rjsPhase,
+            TrainPath expectedPath
     ) throws InvalidSchedule {
 
         var targetSpeedGenerators = parseSpeedControllerGenerators(rjsPhase);
@@ -163,9 +167,28 @@ public class RJSTrainScheduleParser {
 
             var endLocation = parseLocation(infra, rjsNavigate.endLocation);
             return SignalNavigatePhase.from(routes, driverSightDistance, startLocation,
-                    endLocation, targetSpeedGenerators);
+                    endLocation, targetSpeedGenerators, expectedPath);
         }
         throw new RuntimeException("unknown train phase");
+    }
+
+    private static TrainPath parsePath(Infra infra,
+                                       RJSTrainPhase[] phases,
+                                       TrackSectionLocation start) throws InvalidSchedule {
+        var routes = new ArrayList<Route>();
+        for (var phase : phases) {
+            if (phase.getClass() == RJSTrainPhase.Navigate.class) {
+                var navigate = (RJSTrainPhase.Navigate) phase;
+                for (var rjsRoute : navigate.routes) {
+                    var route = infra.routeGraph.routeMap.get(rjsRoute.id);
+                    if (route == null)
+                        throw new UnknownRoute("unknown route in navigate phase", rjsRoute.id);
+                    routes.add(route);
+                }
+            }
+        }
+        var rjsEndLocation = phases[phases.length - 1].endLocation;
+        return new TrainPath(routes, start, parseLocation(infra, rjsEndLocation));
     }
 
     private static TrackSectionLocation parseLocation(Infra infra, RJSTrackLocation location) throws InvalidSchedule {

@@ -101,10 +101,13 @@ public class StaticSpeedLimitTest {
         var sim = Simulation.createFromInfra(infra, 0, changelog);
 
         var startLocation = new TrackSectionLocation(edge, 0);
+        var path = new TrainPath(Collections.singletonList(route),
+                startLocation,
+                new TrackSectionLocation(edge, 10000));
         var phases = new ArrayList<Phase>();
         phases.add(SignalNavigatePhase.from(
                 Collections.singletonList(route), 400, startLocation,
-                new TrackSectionLocation(edge, 10000), null));
+                new TrackSectionLocation(edge, 10000), null, path));
 
         var schedule = new TrainSchedule(
                 "test_train",

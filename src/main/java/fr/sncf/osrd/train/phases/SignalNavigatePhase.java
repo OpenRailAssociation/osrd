@@ -2,7 +2,6 @@ package fr.sncf.osrd.train.phases;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.TrainSchedule;
-import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.signaling.AspectConstraint;
@@ -25,10 +24,10 @@ import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public final class SignalNavigatePhase implements Phase {
+    public final TrainPath expectedPath;
     public final List<Route> routePath;
     public final TrackSectionLocation endLocation;
     private final ArrayList<TrackSectionRange> trackSectionPath;
@@ -46,13 +45,15 @@ public final class SignalNavigatePhase implements Phase {
             ArrayList<TrackSectionRange> trackSectionPath,
             ArrayList<Interaction> interactionsPath,
             double driverSightDistance,
-            List<SpeedControllerGenerator> targetSpeedGenerators) {
+            List<SpeedControllerGenerator> targetSpeedGenerators,
+            TrainPath expectedPath) {
         this.routePath = routePath;
         this.endLocation = endLocation;
         this.trackSectionPath = trackSectionPath;
         this.interactionsPath = interactionsPath;
         this.driverSightDistance = driverSightDistance;
         this.targetSpeedGenerators = targetSpeedGenerators;
+        this.expectedPath = expectedPath;
         lastInteractionOnPhase = interactionsPath.get(interactionsPath.size() - 1);
     }
 
@@ -64,13 +65,14 @@ public final class SignalNavigatePhase implements Phase {
             double driverSightDistance,
             TrackSectionLocation startLocation,
             TrackSectionLocation endLocation,
-            List<SpeedControllerGenerator> targetSpeedGenerators
+            List<SpeedControllerGenerator> targetSpeedGenerators,
+            TrainPath expectedPath
     ) throws InvalidSchedule {
         var trackSectionPath = Route.routesToTrackSectionRange(routes,
                 startLocation, endLocation);
         var actionPointPath = trackSectionToActionPointPath(driverSightDistance, trackSectionPath);
         return new SignalNavigatePhase(routes, endLocation, trackSectionPath, actionPointPath,
-                driverSightDistance, targetSpeedGenerators);
+                driverSightDistance, targetSpeedGenerators, expectedPath);
     }
 
     private static ArrayList<Interaction> trackSectionToActionPointPath(
