@@ -35,9 +35,6 @@ public final class SignalNavigatePhase implements Phase {
     private final double driverSightDistance;
     public transient List<SpeedControllerGenerator> targetSpeedGenerators;
 
-    /** Offset between the beginning of the global train path and the beginning of this phase */
-    public double offset;
-
     private SignalNavigatePhase(
             TrackSectionLocation startLocation,
             TrackSectionLocation endLocation,
@@ -58,7 +55,6 @@ public final class SignalNavigatePhase implements Phase {
 
     /** Create a new navigation phase from an already determined path */
     public static SignalNavigatePhase from(
-            List<Route> routes,
             double driverSightDistance,
             TrackSectionLocation startLocation,
             TrackSectionLocation endLocation,
@@ -184,7 +180,6 @@ public final class SignalNavigatePhase implements Phase {
 
     public static final class State extends PhaseState {
         public final SignalNavigatePhase phase;
-        private int routeIndex = 0;
         private int interactionsPathIndex = 0;
         private final transient Simulation sim;
         private final transient TrainSchedule schedule;
@@ -196,7 +191,7 @@ public final class SignalNavigatePhase implements Phase {
             if (other.getClass() != State.class)
                 return false;
             var o = (State) other;
-            return o.phase == phase && o.routeIndex == routeIndex && o.interactionsPathIndex == interactionsPathIndex;
+            return o.phase == phase && o.interactionsPathIndex == interactionsPathIndex;
         }
 
         @Override
@@ -211,13 +206,11 @@ public final class SignalNavigatePhase implements Phase {
             speedInstructions.generate(sim, schedule);
             this.phase = phase;
             this.signalControllers = new HashMap<>();
-            routeIndex = phase.expectedPath.routeIndex;
         }
 
         State(SignalNavigatePhase.State state) {
             super(state.speedInstructions);
             this.phase = state.phase;
-            this.routeIndex = state.routeIndex;
             this.interactionsPathIndex = state.interactionsPathIndex;
             this.signalControllers = state.signalControllers;
             this.schedule = state.schedule;
