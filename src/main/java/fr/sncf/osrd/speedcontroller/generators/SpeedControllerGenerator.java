@@ -106,7 +106,7 @@ public abstract class SpeedControllerGenerator {
         location.updatePosition(schedule.rollingStock.length, begin);
         var totalLength = 0;
         for (var range : schedule.plannedPath.trackSectionPath)
-            totalLength += Math.abs(range.getBeginPosition() - range.getEndPosition());
+            totalLength += range.length();
 
         var res = new TreeMap<Double, PositionUpdate>();
 
@@ -126,7 +126,9 @@ public abstract class SpeedControllerGenerator {
 
             location.updatePosition(schedule.rollingStock.length, update.positionDelta);
             res.put(location.getPathPosition(), update);
-        } while (location.getPathPosition() < totalLength && location.getPathPosition() < end && speed > 0);
+        } while (location.getPathPosition() + timestep * speed < totalLength
+                && location.getPathPosition() < end
+                && speed > 0);
         return res;
     }
 
@@ -161,7 +163,7 @@ public abstract class SpeedControllerGenerator {
             if (endPhase.edge.id.equals(phase.endLocation.trackSection.id)
                     && endPhase.offset == phase.endLocation.offset) {
                 if (index == 0) {
-                    return 0;
+                    return convertTrackLocation(schedule.initialLocation, schedule);
                 } else {
                     var previousPhase = schedule.phases.get(index - 1);
                     return convertTrackLocation(previousPhase.getEndLocation(), schedule);
@@ -173,13 +175,6 @@ public abstract class SpeedControllerGenerator {
 
     /** Converts a TrackSectionLocation into a distance on the track (double) */
     private double convertTrackLocation(TrackSectionLocation location, TrainSchedule schedule) {
-        double sumPreviousSections = 0;
-        for (var edge : schedule.plannedPath.trackSectionPath) {
-            if (edge.containsLocation(location)) {
-                return sumPreviousSections + location.offset;
-            }
-            sumPreviousSections += edge.getEndPosition() - edge.getBeginPosition();
-        }
-        throw new RuntimeException("Can't find location in path");
+        return schedule.plannedPath.convertTrackLocation(location);
     }
 }
