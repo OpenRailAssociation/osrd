@@ -6,6 +6,9 @@ import colors from 'common/Map/Consts/colors.ts';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateViewport } from 'reducers/map';
 import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';
+import { get } from 'common/requests';
+import { point as turfPoint, lineString as turfLineString } from '@turf/helpers';
+import turfNearestPointOnLine from '@turf/nearest-point-on-line';
 
 import 'common/Map/Map.scss';
 
@@ -36,6 +39,7 @@ import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 /* Objects & various */
 import Signals from 'common/Map/Layers/Signals';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
+import SnappedMarker from 'common/Map/Layers/SnappedMarker';
 
 const Map = () => {
   const {
@@ -44,6 +48,10 @@ const Map = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [idHover, setIdHover] = useState(undefined);
+  const [trackSectionHover, setTrackSectionHover] = useState(undefined);
+  const [lngLatHover, setLngLatHover] = useState(undefined);
+  const [trackSectionGeoJSON, setTrackSectionGeoJSON] = useState(undefined);
+  const [snappedPoint, setSnappedPoint] = useState(undefined);
   const {
     urlLat, urlLon, urlZoom, urlBearing, urlPitch,
   } = useParams();
@@ -75,6 +83,7 @@ const Map = () => {
   };
 
   const onFeatureClick = (e) => {
+    console.log(e);
     if (e.features
       && e.features.length > 0
       && e.features[0].properties.gaia_id !== undefined
@@ -93,13 +102,37 @@ const Map = () => {
     }
   };
 
-  const onFeatureHover = (e) => {
-    if (e.features !== null && e.features[0] !== undefined) {
-      setIdHover(e.features[0].properties.gaia_id);
-    } else {
-      setIdHover(undefined);
+  const getGeoJSONFeature = async (feature) => {
+    if (trackSectionHover === undefined
+      || feature.properties.entity_id !== trackSectionHover.properties.entity_id) {
+      setTrackSectionHover(feature);
+      try {
+        const geojson = await get(`/osrd/ecs/entity/track_section/${feature.properties.entity_id}/`);
+        setTrackSectionGeoJSON(geojson.components.geo_line_location.geographic);
+      } catch (e) {
+        console.log('ERROR', e);
+      }
     }
   };
+
+  const onFeatureHover = (e) => {
+    if (e.features !== null && e.features[0] !== undefined) {
+      getGeoJSONFeature(e.features[0]);
+      setIdHover(e.features[0].properties.gaia_id);
+      setLngLatHover(e.lngLat);
+    } else {
+      setIdHover(undefined);
+      setSnappedPoint(undefined);
+    }
+  };
+
+  useEffect(() => {
+    if (trackSectionGeoJSON !== undefined && lngLatHover !== undefined) {
+      const line = turfLineString(trackSectionGeoJSON.coordinates);
+      const point = turfPoint(lngLatHover);
+      setSnappedPoint(turfNearestPointOnLine(line, point));
+    }
+  }, [trackSectionGeoJSON, trackSectionHover, lngLatHover]);
 
   useEffect(() => {
     if (urlLat) {
@@ -138,7 +171,7 @@ const Map = () => {
         height="100%"
         mapStyle={osmBlankStyle}
         onViewportChange={updateViewportChange}
-        clickRadius={4}
+        clickRadius={10}
         attributionControl={false} // Defined below
         onClick={onFeatureClick}
         onHover={onFeatureHover}
@@ -186,6 +219,7 @@ const Map = () => {
         {mapSearchMarker !== undefined ? (
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         ) : null}
+        {snappedPoint !== undefined ? <SnappedMarker geojson={snappedPoint} /> : null}
 
       </ReactMapGL>
     </>
