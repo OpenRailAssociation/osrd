@@ -4,8 +4,10 @@ import fr.sncf.osrd.utils.graph.ApplicableDirection;
 
 public class RJSCurve extends RJSTrackRange {
 
+    // Radius (m).
     public double radius;
-    public RJSCurve(
+
+    RJSCurve(
             double begin,
             double end,
             double radius

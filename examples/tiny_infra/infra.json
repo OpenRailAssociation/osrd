@@ -492,7 +492,7 @@
         {
           "begin": 0,
           "end": 200,
-          "radius": 10
+          "radius": 2000
         }
       ],
       "operational_points": [
@@ -658,7 +658,7 @@
         {
           "begin": 0,
           "end": 200,
-          "radius": 10
+          "radius": 2000
         }
       ],
       "operational_points": [
