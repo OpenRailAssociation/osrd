@@ -10,11 +10,9 @@ import fr.sncf.osrd.speedcontroller.CoastingSpeedController;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.train.Action;
-import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.TrainPhysicsIntegrator;
-import fr.sncf.osrd.train.TrainPositionTracker;
+import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.utils.SortedDoubleMap;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,8 +28,9 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     private final double value;
 
     /** Constructor */
-    public MarecoAllowanceGenerator(double allowanceValue, MarginType allowanceType, RJSTrainPhase phase) {
-        super(phase, 5);
+    public MarecoAllowanceGenerator(TrainPath path, TrackSectionLocation begin, TrackSectionLocation end,
+                                    double allowanceValue, MarginType allowanceType) {
+        super(path, begin, end, 5);
         this.allowanceType = allowanceType;
         this.value = allowanceValue;
     }
@@ -49,9 +48,8 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     @Override
     protected double getFirstHighEstimate() {
         double max = 0;
-        double position = findPhaseInitialLocation(schedule);
-        double endLocation = findPhaseEndLocation(schedule);
-        while (position < endLocation) {
+        double position = sectionBegin;
+        while (position < sectionEnd) {
             double val = SpeedController.getDirective(maxSpeedControllers, position).allowedSpeed;
             if (val > max)
                 max = val;

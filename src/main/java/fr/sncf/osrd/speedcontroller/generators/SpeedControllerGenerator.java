@@ -8,11 +8,13 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator.PositionUpdate;
 import fr.sncf.osrd.utils.SortedDoubleMap;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
+import java.util.ArrayList;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
@@ -21,15 +23,22 @@ import java.util.stream.Collectors;
 /** This class is used to generate a set of SpeedController (similar to a speed at any given point). */
 public abstract class SpeedControllerGenerator {
 
-    protected RJSTrainPhase phase;
+    protected final double sectionBegin;
+    protected final double sectionEnd;
 
-    protected SpeedControllerGenerator(RJSTrainPhase phase) {
-        this.phase = phase;
+    protected SpeedControllerGenerator(double begin, double end) {
+        this.sectionBegin = begin;
+        this.sectionEnd = end;
+    }
+
+    protected SpeedControllerGenerator(TrainPath path, TrackSectionLocation begin, TrackSectionLocation end) {
+        this.sectionBegin = path.convertTrackLocation(begin);
+        this.sectionEnd = path.convertTrackLocation(end);
     }
 
     /** Generates the set of SpeedController */
     public abstract Set<SpeedController> generate(Simulation sim, TrainSchedule schedule,
-                                                  Set<SpeedController> maxSpeed, double initialSpeed);
+                                                  Set<SpeedController> maxSpeed);
 
     /** Generates a map of location -> expected time if we follow the given controllers.
      * This may be overridden in scenarios when it is already computed when computing the controllers */
@@ -57,14 +66,26 @@ public abstract class SpeedControllerGenerator {
                                             TrainSchedule schedule,
                                             Set<SpeedController> controllers,
                                             double timestep) {
-        return getExpectedTimes(sim, schedule, controllers, timestep, 0, Double.POSITIVE_INFINITY, 0);
+        var defaultValues = getDefaultValues(sim, schedule, controllers, timestep);
+        return getExpectedTimes(sim, schedule, controllers, timestep,
+                defaultValues[0], defaultValues[1], defaultValues[2]);
+    }
+
+    private double[] getDefaultValues(Simulation sim,
+                                      TrainSchedule schedule,
+                                      Set<SpeedController> controllers,
+                                      double timestep) {
+        var initialSpeed = findInitialSpeed(sim, schedule, controllers, timestep);
+        return new double[]{sectionBegin, sectionEnd, initialSpeed};
     }
 
     public SortedDoubleMap getExpectedSpeeds(Simulation sim,
                                              TrainSchedule schedule,
                                              Set<SpeedController> controllers,
                                              double timestep) {
-        return getExpectedSpeeds(sim, schedule, controllers, timestep, 0, Double.POSITIVE_INFINITY, 0);
+        var defaultValues = getDefaultValues(sim, schedule, controllers, timestep);
+        return getExpectedSpeeds(sim, schedule, controllers, timestep,
+                defaultValues[0], defaultValues[1], defaultValues[2]);
     }
 
     /** Generates a map of location -> expected speed if we follow the given controllers */
@@ -88,8 +109,9 @@ public abstract class SpeedControllerGenerator {
                                                                       TrainSchedule schedule,
                                                                       Set<SpeedController> controllers,
                                                                       double timestep) {
+        var defaultValues = getDefaultValues(sim, schedule, controllers, timestep);
         return getUpdatesAtPositions(sim, schedule, controllers, timestep,
-                0, Double.POSITIVE_INFINITY, 0);
+                defaultValues[0], defaultValues[1], defaultValues[2]);
     }
 
     /** Generates a map of location -> updates if we follow the given controllers.
@@ -132,49 +154,12 @@ public abstract class SpeedControllerGenerator {
         return res;
     }
 
-    /** Finds the position (as a double) corresponding to the end of the phase */
-    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
-    protected double findPhaseEndLocation(TrainSchedule schedule) {
-        for (var schedulePhase : schedule.phases) {
-            var endPhase = schedulePhase.getEndLocation();
-            if (endPhase.edge.id.equals(phase.endLocation.trackSection.id)
-                    && endPhase.offset == phase.endLocation.offset) {
-                return convertTrackLocation(endPhase, schedule);
-            }
-        }
-        throw new RuntimeException("Can't find phase in schedule");
-    }
-
     /** Finds the position (as a double) corresponding to the beginning of the phase */
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
-    protected double findPhaseInitialSpeed(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed) {
-        double phasePosition = findPhaseInitialLocation(schedule);
-        var speeds = getExpectedSpeeds(sim, schedule, maxSpeed, 1,
-                0, phasePosition, schedule.initialSpeed);
+    protected double findInitialSpeed(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed,
+                                      double timeStep) {
+        var speeds = getExpectedSpeeds(sim, schedule, maxSpeed, timeStep,
+                0, sectionEnd, schedule.initialSpeed);
         return speeds.lastEntry().getValue();
-    }
-
-
-    /** Finds the position (as a double) corresponding to the end of the phase */
-    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
-    protected double findPhaseInitialLocation(TrainSchedule schedule) {
-        for (int index = 0; index < schedule.phases.size(); index++) {
-            var endPhase = schedule.phases.get(index).getEndLocation();
-            if (endPhase.edge.id.equals(phase.endLocation.trackSection.id)
-                    && endPhase.offset == phase.endLocation.offset) {
-                if (index == 0) {
-                    return convertTrackLocation(schedule.initialLocation, schedule);
-                } else {
-                    var previousPhase = schedule.phases.get(index - 1);
-                    return convertTrackLocation(previousPhase.getEndLocation(), schedule);
-                }
-            }
-        }
-        throw new RuntimeException("Can't find phase in schedule");
-    }
-
-    /** Converts a TrackSectionLocation into a distance on the track (double) */
-    private double convertTrackLocation(TrackSectionLocation location, TrainSchedule schedule) {
-        return schedule.plannedPath.convertTrackLocation(location);
     }
 }

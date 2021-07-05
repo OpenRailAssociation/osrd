@@ -36,30 +36,16 @@ public class SpeedInstructions {
 
     /** Generates all the instructions, expected to be called when a new phase starts */
     public void generate(Simulation sim, TrainSchedule schedule) {
-        double initialSpeed = schedule.initialSpeed;
-        double previousDelay = 0;
-        double initialPosition = 0;
-        var train = sim.trains.get(schedule.trainID);
-        if (train != null) {
-            var state = train.getLastState();
-            initialSpeed = state.speed;
-            previousDelay = state.currentPhaseState.speedInstructions
-                    .secondsLate(state.location.getPathPosition(), sim.getTime());
-            initialPosition = state.location.getPathPosition();
-        }
 
-        maxSpeedControllers = new MaxSpeedGenerator().generate(sim, schedule, null, 0);
+        maxSpeedControllers = new MaxSpeedGenerator().generate(sim, schedule, null);
         targetSpeedControllers = maxSpeedControllers;
         for (var generator : targetSpeedGenerators)
-            targetSpeedControllers = generator.generate(sim, schedule, targetSpeedControllers, initialSpeed);
+            targetSpeedControllers = generator.generate(sim, schedule, targetSpeedControllers);
         targetSpeedControllers.addAll(maxSpeedControllers);
 
         var lastGenerator = targetSpeedGenerators.get(targetSpeedGenerators.size() - 1);
         expectedTimes = lastGenerator.getExpectedTimes(sim, schedule, targetSpeedControllers, 1,
-                initialPosition, Double.POSITIVE_INFINITY, initialSpeed);
-        for (var entry : expectedTimes.entrySet()) {
-            expectedTimes.put(entry.getKey(), entry.getValue() - previousDelay + sim.getTime());
-        }
+                0, Double.POSITIVE_INFINITY, schedule.initialSpeed);
     }
 
     /** Copy constructor */

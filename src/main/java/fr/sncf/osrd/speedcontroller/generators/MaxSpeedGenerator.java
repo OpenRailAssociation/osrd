@@ -15,12 +15,11 @@ import java.util.Set;
 /** This is a SpeedControllerGenerator that generates the maximum allowed speed at any given point. */
 public class MaxSpeedGenerator extends SpeedControllerGenerator {
     public MaxSpeedGenerator() {
-        super(null);
+        super(0, Double.POSITIVE_INFINITY);
     }
 
     @Override
-    public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed,
-                                         double initialSpeed) {
+    public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed) {
         // the path is computed at the beginning of the simulation, as it is (for now) part of the event
         var trainPath = schedule.plannedPath.trackSectionPath;
         var rollingStock = schedule.rollingStock;

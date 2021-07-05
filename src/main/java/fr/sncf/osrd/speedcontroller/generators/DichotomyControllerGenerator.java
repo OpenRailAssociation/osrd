@@ -4,7 +4,9 @@ import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.utils.SortedDoubleMap;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -32,19 +34,18 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     /** Simulation state given in `generate` parameters */
     protected Simulation sim;
 
-    /** Constructor
-     * @param phase given rjs train phase
-     * @param precision how close we need to be to the target time (in seconds) */
-    protected DichotomyControllerGenerator(RJSTrainPhase phase, double precision) {
-        super(phase);
+    /** Constructor */
+    protected DichotomyControllerGenerator(TrainPath path, TrackSectionLocation begin,
+                                           TrackSectionLocation end, double precision) {
+        super(path, begin, end);
         this.precision = precision;
     }
 
     /** Generates a set of speed controller using dichotomy */
     @Override
     public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule,
-                                         Set<SpeedController> speedControllers, double initialSpeed) {
-        this.initialSpeed = initialSpeed;
+                                         Set<SpeedController> speedControllers) {
+        this.initialSpeed = findInitialSpeed(sim, schedule, speedControllers, 1);
         this.sim = sim;
         this.schedule = schedule;
         this.maxSpeedControllers = speedControllers;
@@ -54,8 +55,6 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     /** Evaluates the run time of the phase if we follow the given speed controllers */
     protected double evalRunTime(Simulation sim, TrainSchedule schedule, Set<SpeedController> speedControllers) {
         expectedTimes = getExpectedTimes(sim, schedule, speedControllers, 1);
-        //expectedTimes = getExpectedTimes(sim, schedule, speedControllers, 1,
-        //        findPhaseInitialLocation(schedule), findPhaseEndLocation(schedule), initialSpeed);
         return expectedTimes.lastEntry().getValue() - expectedTimes.firstEntry().getValue();
     }
 
@@ -80,15 +79,13 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         // the binary search condition should be on the total time
         var time = evalRunTime(sim, schedule, maxSpeedControllers);
         var targetTime = getTargetTime(time);
-        var beginLocation = findPhaseInitialLocation(schedule);
-        var endLocation = findPhaseEndLocation(schedule);
 
         double nextValue;
         Set<SpeedController> nextSpeedControllers;
         int i = 0;
         do {
             nextValue = (lowerBound + higherBound) / 2;
-            nextSpeedControllers = getSpeedControllers(schedule, nextValue, beginLocation, endLocation);
+            nextSpeedControllers = getSpeedControllers(schedule, nextValue, sectionBegin, sectionEnd);
             var expectedTimes = getExpectedTimes(sim, schedule,
                     nextSpeedControllers, 1);
             //var expectedTimes = getExpectedTimes(sim, schedule,

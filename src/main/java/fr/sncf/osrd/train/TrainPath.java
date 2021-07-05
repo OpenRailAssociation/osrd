@@ -134,4 +134,12 @@ public class TrainPath {
         }
         throw new RuntimeException("Can't find location in path");
     }
+
+    public TrackSectionLocation getStartLocation() {
+        return trackSectionPath.get(0).getBeginLocation();
+    }
+
+    public TrackSectionLocation getEndLocation() {
+        return trackSectionPath.get(trackSectionPath.size() - 1).getEndLocation();
+    }
 }

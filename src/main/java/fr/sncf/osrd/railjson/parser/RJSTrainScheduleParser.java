@@ -9,6 +9,7 @@ import fr.sncf.osrd.railjson.parser.exceptions.UnknownRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.UnknownRoute;
 import fr.sncf.osrd.railjson.parser.exceptions.UnknownTrackSection;
 import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
+import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
@@ -96,19 +97,32 @@ public class RJSTrainScheduleParser {
         );
     }
 
-    private static SpeedControllerGenerator parseSpeedControllerGenerator(RJSAllowance allowance, RJSTrainPhase phase)
+    private static SpeedControllerGenerator parseSpeedControllerGenerator(RJSAllowance allowance,
+                                                                          TrainPath path,
+                                                                          Infra infra)
             throws InvalidSchedule {
         if (allowance == null)
             return new MaxSpeedGenerator();
-        else if (allowance instanceof RJSAllowance.LinearAllowance) {
+
+        var begin = path.getStartLocation();
+        if (allowance.begin != null)
+            begin = parseLocation(infra, allowance.begin);
+        var end = path.getEndLocation();
+        if (allowance.end != null)
+            end = parseLocation(infra, allowance.end);
+
+        if (allowance instanceof RJSAllowance.LinearAllowance) {
             var linearAllowance = (RJSAllowance.LinearAllowance) allowance;
-            return new LinearAllowanceGenerator(linearAllowance.allowanceValue, linearAllowance.allowanceType, phase);
+            return new LinearAllowanceGenerator(path, begin, end,
+                    linearAllowance.allowanceValue, linearAllowance.allowanceType);
         } else if (allowance instanceof RJSAllowance.ConstructionAllowance) {
             var constructionAllowance = (RJSAllowance.ConstructionAllowance) allowance;
-            return new ConstructionAllowanceGenerator(constructionAllowance.allowanceValue, phase);
+            return new ConstructionAllowanceGenerator(path, begin, end,
+                    constructionAllowance.allowanceValue);
         } else if (allowance instanceof RJSAllowance.MarecoAllowance) {
             var marecoAllowance = (RJSAllowance.MarecoAllowance) allowance;
-            return new MarecoAllowanceGenerator(marecoAllowance.allowanceValue, marecoAllowance.allowanceType, phase);
+            return new MarecoAllowanceGenerator(path, begin, end,
+                    marecoAllowance.allowanceValue, marecoAllowance.allowanceType);
         } else {
             throw new InvalidSchedule("Unimplemented allowance type");
         }
@@ -124,13 +138,15 @@ public class RJSTrainScheduleParser {
         }
     }
 
-    private static List<SpeedControllerGenerator> parseSpeedControllerGenerators(RJSTrainPhase phase)
+    private static List<SpeedControllerGenerator> parseSpeedControllerGenerators(RJSTrainPhase phase,
+                                                                                 TrainPath path,
+                                                                                 Infra infra)
             throws InvalidSchedule {
         List<SpeedControllerGenerator> list = new ArrayList<>();
         if (phase.allowances == null)
             return list;
         for (var allowance : phase.allowances) {
-            list.add(parseSpeedControllerGenerator(allowance, phase));
+            list.add(parseSpeedControllerGenerator(allowance, path, infra));
         }
         return list;
     }
@@ -142,7 +158,8 @@ public class RJSTrainScheduleParser {
             TrainPath expectedPath
     ) throws InvalidSchedule {
 
-        var targetSpeedGenerators = parseSpeedControllerGenerators(rjsPhase);
+        var targetSpeedGenerators = parseSpeedControllerGenerators(rjsPhase,
+                expectedPath, infra);
 
         if (rjsPhase.getClass() == RJSTrainPhase.Stop.class) {
             if (targetSpeedGenerators.size() > 0)
