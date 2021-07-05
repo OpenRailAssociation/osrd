@@ -11,6 +11,7 @@ import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
 import Map from 'applications/osrd/views/OSRDSimulation/Map';
 import TrainDetails from 'applications/osrd/views/OSRDSimulation/TrainDetails';
 import TrainsList from 'applications/osrd/views/OSRDSimulation/TrainsList';
+import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
 import { updateViewport } from 'reducers/map';
 import { simplifyData, timeShiftTrain, timeShiftStops } from 'applications/osrd/components/Helpers/ChartHelpers';
 import './OSRDSimulation.scss';
@@ -18,10 +19,12 @@ import './OSRDSimulation.scss';
 const timetableURI = '/osrd/timetable';
 const trainscheduleURI = '/osrd/train_schedule';
 
+const SIMPLIFICATION_FACTOR = 5; // Division of steps
+
 const OSRDSimulation = () => {
   const { t } = useTranslation(['translation', 'simulation']);
   const { fullscreen } = useSelector((state) => state.main);
-  const [hoverPosition, setHoverPosition] = useState(undefined);
+  const [hoverPosition, setHoverPosition] = useState(0);
   // const [hoverStop, setHoverStop] = useState(undefined);
   const [extViewport, setExtViewport] = useState(undefined);
   const [waitingMessage, setWaitingMessage] = useState(t('simulation:waiting'));
@@ -56,7 +59,8 @@ const OSRDSimulation = () => {
       }
       setWaitingMessage(t('simulation:simplify'));
       simulationLocal.sort((a, b) => a.stops[0].time > b.stops[0].time);
-      setSimulation({ trains: simplifyData(simulationLocal, 10) });
+      console.log(simulationLocal);
+      setSimulation({ trains: simplifyData(simulationLocal, SIMPLIFICATION_FACTOR) });
     } catch (e) {
       console.log('ERROR', e);
     }
@@ -128,6 +132,10 @@ const OSRDSimulation = () => {
                         selectedTrain={selectedTrain}
                       />
                     ) : null}
+                    <TimeButtons
+                      setHoverPosition={setHoverPosition}
+                      simulationLength={simulation.trains[selectedTrain].steps.length}
+                    />
                   </div>
                   <div className="col-md-8">
                     {simulation.trains.length > 0 ? (
