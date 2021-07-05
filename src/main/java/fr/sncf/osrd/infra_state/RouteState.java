@@ -99,10 +99,11 @@ public final class RouteState implements RSMatchable {
         }
     }
 
-    /** Reserve a route and his tvd sections. Routes that share tvd sections will have the status CONFLICT */
-    public void reserve(Simulation sim) throws SimulationError {
-        assert status == RouteStatus.FREE;
-
+    /**
+     * Request all switches to move to the position defined by
+     * route.switchesPosition
+     */
+    public void requestSwitchPositionChange(Simulation sim) throws SimulationError {
         // Set the switches in the moving position
         movingSwitchesLeft = 0;
         for (var switchPos : route.switchesPosition.entrySet()) {
@@ -113,6 +114,24 @@ public final class RouteState implements RSMatchable {
                 switchState.requestPositionChange(sim, switchPos.getValue(), this);
             }
         }
+    }
+
+    /** Reserve the tvd sections of the route */
+    public void reserveTvdSection(Simulation sim) throws SimulationError {
+        for (var tvdSectionPath : route.tvdSectionsPaths) {
+            var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
+            tvdSection.reserve(sim);
+        }
+    }
+
+    /**
+     * Reserve a route and his tvd sections. Routes that share tvd sections will
+     * have the status CONFLICT
+     */
+    public void reserve(Simulation sim) throws SimulationError {
+        assert status == RouteStatus.FREE;
+
+        requestSwitchPositionChange(sim);
 
         RouteStatus newStatus = movingSwitchesLeft > 0 ? RouteStatus.REQUESTED : RouteStatus.RESERVED;
 
@@ -121,11 +140,29 @@ public final class RouteState implements RSMatchable {
         sim.publishChange(change);
         notifySignals(sim);
 
-        // Reserve the tvd sections
-        for (var tvdSectionPath : route.tvdSectionsPaths) {
-            var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
-            tvdSection.reserve(sim);
+        reserveTvdSection(sim);
+    }
+
+    /**
+     * Reserve a route in cbtc and his tvd sections. Routes that share tvd sections
+     * will have the status CONFLICT
+     */
+    public void cbtcReserve(Simulation sim) throws SimulationError {
+        if (status != RouteStatus.CBTC_OCCUPIED && status != RouteStatus.CBTC_RESERVED
+                && status != RouteStatus.CBTC_REQUESTED) {
+            return;
         }
+
+        requestSwitchPositionChange(sim);
+
+        RouteStatus newStatus = movingSwitchesLeft > 0 ? RouteStatus.CBTC_REQUESTED : RouteStatus.CBTC_RESERVED;
+
+        var change = new RouteStatusChange(sim, this, newStatus);
+        change.apply(sim, this);
+        sim.publishChange(change);
+        notifySignals(sim);
+
+        reserveTvdSection(sim);
     }
 
     /** Reserve a route and his tvd sections *when creating a train*.
