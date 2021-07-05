@@ -6,6 +6,7 @@ import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.DeepEqualsUtils;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -184,7 +185,10 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         var val = 0.;
         var maxVal = 0.;
         for (var track : trackSectionRanges) {
-            var gradients = track.edge.correctedGradients;
+            var gradients = track.edge.forwardGradients;
+            if (track.direction == EdgeDirection.STOP_TO_START)
+                gradients = track.edge.backwardGradients;
+
             for (var slope : gradients.getValuesInRange(track.getBeginPosition(), track.getEndPosition())) {
                 if (maxVal < Math.abs(slope)) {
                     val = slope;
