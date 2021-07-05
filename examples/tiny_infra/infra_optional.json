@@ -507,6 +507,8 @@
     {
       "id": "ne.micro.foo_b",
       "length": 200,
+      "slopes": [{"gradient":  10, "begin":  0, "end":  200}],
+      "curves": [{"radius":  10, "begin":  0, "end":  200}],
       "operational_points": [
         {
           "position": 100,
@@ -550,6 +552,8 @@
     },
     {
       "id": "ne.micro.foo_to_bar",
+      "slopes": [{"gradient":  10, "begin":  0, "end":  5000}, {"gradient":  -10, "begin":  5000, "end":  1000}],
+      "curves": [],
       "length": 10000,
       "operational_points": [],
       "route_waypoints": [
@@ -648,6 +652,8 @@
     {
       "id": "ne.micro.foo_a",
       "length": 200,
+      "slopes": [],
+      "curves": [{"radius":  10, "begin":  0, "end":  200}],
       "operational_points": [
         {
           "position": 100,
@@ -692,6 +698,8 @@
     {
       "id": "ne.micro.bar_a",
       "length": 200,
+      "slopes": [],
+      "curves": [],
       "operational_points": [
         {
           "position": 100,

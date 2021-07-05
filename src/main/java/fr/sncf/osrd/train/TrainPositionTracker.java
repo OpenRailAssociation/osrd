@@ -3,7 +3,6 @@ package fr.sncf.osrd.train;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.trackgraph.Switch;
-import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.DeepEqualsUtils;
@@ -185,7 +184,8 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         var val = 0.;
         var maxVal = 0.;
         for (var track : trackSectionRanges) {
-            for (var slope : track.edge.slope.getValuesInRange(track.getBeginPosition(), track.getEndPosition())) {
+            var gradients = track.edge.correctedGradients;
+            for (var slope : gradients.getValuesInRange(track.getBeginPosition(), track.getEndPosition())) {
                 if (maxVal < Math.abs(slope)) {
                     val = slope;
                     maxVal = Math.abs(slope);
