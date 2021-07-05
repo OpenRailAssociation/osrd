@@ -4,16 +4,10 @@ import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { sec2time } from 'utils/timeManipulation';
 
-const addSeconds = (time, seconds) => {
-  const dateCalc = new Date(`2020-01-01T${time}`);
-  dateCalc.setSeconds(dateCalc.getSeconds() + seconds);
-  return dateCalc.toLocaleString('fr-FR').slice(-8);
-};
-
 const FormatStops = (props) => {
   const { t } = useTranslation(['simulation']);
   const { stop } = props;
-  const departureTime = (stop.stop_time > 0) ? addSeconds(stop.time, stop.stop_time) : '';
+  const departureTime = (stop.stop_time > 0) ? stop.time + stop.stop_time : '';
   return (
     <tr>
       <td>
