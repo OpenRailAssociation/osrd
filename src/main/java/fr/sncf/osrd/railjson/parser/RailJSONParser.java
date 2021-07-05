@@ -15,10 +15,12 @@ import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSTrackRange;
+import fr.sncf.osrd.utils.DoubleRangeMap;
 import fr.sncf.osrd.utils.RangeValue;
 import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
@@ -198,31 +200,18 @@ public class RailJSONParser {
             }
 
             // Add an initial flat gradient slope
-            infraTrackSection.correctedGradients.addRange(0., infraTrackSection.length, 0.);
+            infraTrackSection.forwardGradients.addRange(0., infraTrackSection.length, 0.);
+            infraTrackSection.backwardGradients.addRange(0., infraTrackSection.length, 0.);
 
             // Insert railjson slopes
             for (var rjsSlope : trackSection.slopes) {
-                if (rjsSlope.gradient != 0.)
-                    infraTrackSection.correctedGradients.addRange(rjsSlope.begin, rjsSlope.end, rjsSlope.gradient);
+                if (rjsSlope.gradient != 0.) {
+                    infraTrackSection.forwardGradients.addRange(rjsSlope.begin, rjsSlope.end, rjsSlope.gradient);
+                    infraTrackSection.backwardGradients.addRange(rjsSlope.begin, rjsSlope.end, -rjsSlope.gradient);
+                }
             }
-
-            // Insert curves: gradient + 800 / radius
-            for (var rjsCurve : trackSection.curves) {
-                if (rjsCurve.radius == 0.)
-                    continue;
-
-                var gradients = infraTrackSection.correctedGradients;
-
-                var floorEndEntry = gradients.floorEntry(rjsCurve.end);
-                gradients.put(rjsCurve.end, floorEndEntry.getValue());
-
-                var floorBeginEntry = gradients.floorEntry(rjsCurve.begin);
-                if (floorBeginEntry.getKey() < rjsCurve.begin)
-                    gradients.put(rjsCurve.begin, floorBeginEntry.getValue() + 800. / rjsCurve.radius);
-
-                for (var slopeEntry : gradients.subMap(rjsCurve.begin, rjsCurve.end).entrySet())
-                    gradients.put(slopeEntry.getKey(), slopeEntry.getValue() + 800. / rjsCurve.radius);
-            }
+            addCurvesToGradients(infraTrackSection.forwardGradients, trackSection);
+            addCurvesToGradients(infraTrackSection.backwardGradients, trackSection);
         }
 
         // Fill switch with their right / left track sections
@@ -333,6 +322,24 @@ public class RailJSONParser {
 
         return Infra.build(trackGraph, waypointGraph, routeGraph.build(),
                 tvdSectionsMap, aspectsMap, signals, switches);
+    }
+
+    private static void addCurvesToGradients(DoubleRangeMap gradients, RJSTrackSection trackSection) {
+        // Insert curves: gradient + 800 / radius
+        for (var rjsCurve : trackSection.curves) {
+            if (rjsCurve.radius == 0.)
+                continue;
+
+            var floorEndEntry = gradients.floorEntry(rjsCurve.end);
+            gradients.put(rjsCurve.end, floorEndEntry.getValue());
+
+            var floorBeginEntry = gradients.floorEntry(rjsCurve.begin);
+            if (floorBeginEntry.getKey() < rjsCurve.begin)
+                gradients.put(rjsCurve.begin, floorBeginEntry.getValue() + 800. / rjsCurve.radius);
+
+            for (var slopeEntry : gradients.subMap(rjsCurve.begin, rjsCurve.end).entrySet())
+                gradients.put(slopeEntry.getKey(), slopeEntry.getValue() + 800. / rjsCurve.radius);
+        }
     }
 
     private static <E extends RJSRouteWaypoint> void findWaypoints(
