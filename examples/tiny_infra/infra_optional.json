@@ -508,7 +508,7 @@
       "id": "ne.micro.foo_b",
       "length": 200,
       "slopes": [{"gradient":  10, "begin":  0, "end":  200}],
-      "curves": [{"radius":  10, "begin":  0, "end":  200}],
+      "curves": [{"radius":  2000, "begin":  0, "end":  200}],
       "operational_points": [
         {
           "position": 100,
@@ -653,7 +653,7 @@
       "id": "ne.micro.foo_a",
       "length": 200,
       "slopes": [],
-      "curves": [{"radius":  10, "begin":  0, "end":  200}],
+      "curves": [{"radius":  2000, "begin":  0, "end":  200}],
       "operational_points": [
         {
           "position": 100,
