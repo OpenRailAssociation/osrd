@@ -18,6 +18,7 @@ import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSTrackRange;
 import fr.sncf.osrd.utils.RangeValue;
 import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
@@ -187,11 +188,41 @@ public class RailJSONParser {
             }
             signalsBuilder.build();
 
-            // Parse slopes
-            for (var rjsSlope : trackSection.slopes)
-                infraTrackSection.slope.addRange(rjsSlope.begin, rjsSlope.end, rjsSlope.gradient);
+            // Parse slopes and curves
+            if (RJSTrackRange.isOverlaping(trackSection.slopes)) {
+                throw new InvalidInfraException(
+                        String.format("Track section '%s' has overlaping slopes", trackSection.id));
+            } else if (RJSTrackRange.isOverlaping(trackSection.curves)) {
+                throw new InvalidInfraException(
+                        String.format("Track section '%s' has overlaping curves", trackSection.id));
+            }
 
-            // TODO: Parse curves
+            // Add an initial flat gradient slope
+            infraTrackSection.correctedGradients.addRange(0., infraTrackSection.length, 0.);
+
+            // Insert railjson slopes
+            for (var rjsSlope : trackSection.slopes) {
+                if (rjsSlope.gradient != 0.)
+                    infraTrackSection.correctedGradients.addRange(rjsSlope.begin, rjsSlope.end, rjsSlope.gradient);
+            }
+
+            // Insert curves: gradient + 800 / radius
+            for (var rjsCurve : trackSection.curves) {
+                if (rjsCurve.radius == 0.)
+                    continue;
+
+                var gradients = infraTrackSection.correctedGradients;
+
+                var floorEndEntry = gradients.floorEntry(rjsCurve.end);
+                gradients.put(rjsCurve.end, floorEndEntry.getValue());
+
+                var floorBeginEntry = gradients.floorEntry(rjsCurve.begin);
+                if (floorBeginEntry.getKey() < rjsCurve.begin)
+                    gradients.put(rjsCurve.begin, floorBeginEntry.getValue() + 800. / rjsCurve.radius);
+
+                for (var slopeEntry : gradients.subMap(rjsCurve.begin, rjsCurve.end).entrySet())
+                    gradients.put(slopeEntry.getKey(), slopeEntry.getValue() + 800. / rjsCurve.radius);
+            }
         }
 
         // Fill switch with their right / left track sections
