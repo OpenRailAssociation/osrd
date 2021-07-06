@@ -1,7 +1,8 @@
 package fr.sncf.osrd.railjson.parser;
 
 import fr.sncf.osrd.RollingStock;
-import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.speedcontroller.SpeedInstructions;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
@@ -9,7 +10,6 @@ import fr.sncf.osrd.railjson.parser.exceptions.UnknownRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.UnknownRoute;
 import fr.sncf.osrd.railjson.parser.exceptions.UnknownTrackSection;
 import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
-import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
@@ -80,6 +80,10 @@ public class RJSTrainScheduleParser {
             }
         }
 
+        var targetSpeedGenerators = parseSpeedControllerGenerators(rjsTrainSchedule,
+                expectedPath, infra);
+        var speedInstructions = new SpeedInstructions(targetSpeedGenerators);
+
         if (initialDirection == null)
             throw new InvalidSchedule("the initial location isn't on the initial route");
 
@@ -93,7 +97,8 @@ public class RJSTrainScheduleParser {
                 initialSpeed,
                 phases,
                 parseDecisionMaker(rjsTrainSchedule.trainControlMethod),
-                expectedPath
+                expectedPath,
+                speedInstructions
         );
     }
 
@@ -138,7 +143,7 @@ public class RJSTrainScheduleParser {
         }
     }
 
-    private static List<SpeedControllerGenerator> parseSpeedControllerGenerators(RJSTrainPhase phase,
+    private static List<SpeedControllerGenerator> parseSpeedControllerGenerators(RJSTrainSchedule phase,
                                                                                  TrainPath path,
                                                                                  Infra infra)
             throws InvalidSchedule {
@@ -158,12 +163,7 @@ public class RJSTrainScheduleParser {
             TrainPath expectedPath
     ) throws InvalidSchedule {
 
-        var targetSpeedGenerators = parseSpeedControllerGenerators(rjsPhase,
-                expectedPath, infra);
-
         if (rjsPhase.getClass() == RJSTrainPhase.Stop.class) {
-            if (targetSpeedGenerators.size() > 0)
-                throw new InvalidSchedule("Train stop phase can't have speed controllers");
             var rjsStop = (RJSTrainPhase.Stop) rjsPhase;
             return new StopPhase(rjsStop.duration);
         }
@@ -183,7 +183,7 @@ public class RJSTrainScheduleParser {
 
             var endLocation = parseLocation(infra, rjsNavigate.endLocation);
             return SignalNavigatePhase.from(driverSightDistance, startLocation,
-                    endLocation, targetSpeedGenerators, expectedPath);
+                    endLocation, expectedPath);
         }
         throw new RuntimeException("unknown train phase");
     }

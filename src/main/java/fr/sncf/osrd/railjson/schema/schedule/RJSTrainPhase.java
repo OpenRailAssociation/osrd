@@ -20,9 +20,6 @@ public abstract class RJSTrainPhase {
                     .withSubtype(RJSTrainPhase.Stop.class, "stop")
     );
 
-    /** What generator to use to generate the target speed */
-    public RJSAllowance[] allowances;
-
     /** The location of the head of the train when it exits this phase */
     @Json(name = "end_location")
     public RJSTrackLocation endLocation;

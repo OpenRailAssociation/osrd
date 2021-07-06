@@ -3,7 +3,7 @@ package fr.sncf.osrd.speedcontroller;
 import static fr.sncf.osrd.Helpers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
@@ -38,7 +38,7 @@ public class MarginTests {
         var baseSimTime = sim.getTime();
 
         // Run with construction margin
-        final var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
+        final var configMargins = makeConfigWithSpeedParams(Collections.singleton(params));
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();

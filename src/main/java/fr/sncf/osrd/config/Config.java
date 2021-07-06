@@ -1,7 +1,7 @@
 package fr.sncf.osrd.config;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.RJSSimulationParser;

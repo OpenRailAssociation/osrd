@@ -4,7 +4,7 @@ import static fr.sncf.osrd.Helpers.*;
 import static fr.sncf.osrd.speedcontroller.MarginTests.saveGraph;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
@@ -68,10 +68,8 @@ public class SpeedInstructionsTests {
         final var infra = getBaseInfra();
         final var config = getBaseConfig();
 
-        var phase = config.trainSchedules.get(0).phases.get(0);
-        assert phase instanceof SignalNavigatePhase;
         SpeedControllerGenerator generator = getStaticGenerator(5);
-        ((SignalNavigatePhase) phase).targetSpeedGenerators = Collections.singletonList(generator);
+        config.trainSchedules.get(0).speedInstructions = new SpeedInstructions(Collections.singletonList(generator));
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
@@ -85,10 +83,8 @@ public class SpeedInstructionsTests {
         final var infra = getBaseInfra();
         final var config = getBaseConfig();
 
-        var phase = config.trainSchedules.get(0).phases.get(0);
-        assert phase instanceof SignalNavigatePhase;
         SpeedControllerGenerator generator = getStaticGenerator(10);
-        ((SignalNavigatePhase) phase).targetSpeedGenerators = Collections.singletonList(generator);
+        config.trainSchedules.get(0).speedInstructions = new SpeedInstructions(Collections.singletonList(generator));
 
         infra.switches.iterator().next().positionChangeDelay = 42;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
@@ -200,7 +196,7 @@ public class SpeedInstructionsTests {
     public static boolean isLate(Simulation sim) {
         var event = getLastTrainEvent(sim);
         var trainState = sim.trains.get("Test.").getLastState();
-        var secondsLate = trainState.currentPhaseState.speedInstructions.secondsLate(
+        var secondsLate = trainState.trainSchedule.speedInstructions.secondsLate(
                 event.pathPosition, event.time);
         return secondsLate > 1;
     }

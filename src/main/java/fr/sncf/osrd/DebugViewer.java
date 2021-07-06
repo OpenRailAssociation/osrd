@@ -9,6 +9,7 @@ import fr.sncf.osrd.simulation.Change;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.TrackSectionLocation;

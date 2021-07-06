@@ -1,8 +1,7 @@
 package fr.sncf.osrd.train.phases;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.TrainSchedule;
-import fr.sncf.osrd.infra.routegraph.Route;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.signaling.AspectConstraint;
 import fr.sncf.osrd.infra.signaling.Signal;
@@ -16,7 +15,6 @@ import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
@@ -33,20 +31,17 @@ public final class SignalNavigatePhase implements Phase {
     private final ArrayList<Interaction> interactionsPath;
     private final Interaction lastInteractionOnPhase;
     private final double driverSightDistance;
-    public transient List<SpeedControllerGenerator> targetSpeedGenerators;
 
     private SignalNavigatePhase(
             TrackSectionLocation startLocation,
             TrackSectionLocation endLocation,
             ArrayList<Interaction> interactionsPath,
             double driverSightDistance,
-            List<SpeedControllerGenerator> targetSpeedGenerators,
             TrainPath expectedPath) {
         this.startLocation = startLocation;
         this.endLocation = endLocation;
         this.interactionsPath = interactionsPath;
         this.driverSightDistance = driverSightDistance;
-        this.targetSpeedGenerators = targetSpeedGenerators;
         this.expectedPath = expectedPath;
         lastInteractionOnPhase = interactionsPath.get(interactionsPath.size() - 1);
     }
@@ -58,7 +53,6 @@ public final class SignalNavigatePhase implements Phase {
             double driverSightDistance,
             TrackSectionLocation startLocation,
             TrackSectionLocation endLocation,
-            List<SpeedControllerGenerator> targetSpeedGenerators,
             TrainPath expectedPath
     ) throws InvalidSchedule {
         var actionPointPath = trackSectionToActionPointPath(driverSightDistance,
@@ -67,7 +61,7 @@ public final class SignalNavigatePhase implements Phase {
                 endLocation,
                 expectedPath.trackSectionPath);
         return new SignalNavigatePhase(startLocation, endLocation, actionPointPath,
-                driverSightDistance, targetSpeedGenerators, expectedPath);
+                driverSightDistance, expectedPath);
     }
 
     private static ArrayList<Interaction> trackSectionToActionPointPath(
@@ -200,16 +194,13 @@ public final class SignalNavigatePhase implements Phase {
         }
 
         State(SignalNavigatePhase phase, Simulation sim, TrainSchedule schedule) {
-            super(phase.targetSpeedGenerators);
             this.sim = sim;
             this.schedule = schedule;
-            speedInstructions.generate(sim, schedule);
             this.phase = phase;
             this.signalControllers = new HashMap<>();
         }
 
         State(SignalNavigatePhase.State state) {
-            super(state.speedInstructions);
             this.phase = state.phase;
             this.interactionsPathIndex = state.interactionsPathIndex;
             this.signalControllers = state.signalControllers;

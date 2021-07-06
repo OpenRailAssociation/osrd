@@ -3,8 +3,7 @@ package fr.sncf.osrd.speedcontroller.generators;
 import static java.lang.Math.min;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.TrainSchedule;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.train.Train;
@@ -14,7 +13,6 @@ import fr.sncf.osrd.train.TrainPhysicsIntegrator.PositionUpdate;
 import fr.sncf.osrd.utils.SortedDoubleMap;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
-import java.util.ArrayList;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;

@@ -29,9 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
@@ -185,20 +183,14 @@ public class Helpers {
         return getBaseConfig("tiny_infra/config_railjson.json");
     }
 
-    /** Loads the given config file, but replaces the given allowance parameters in all the phases */
-    public static Config makeConfigWithSpeedParams(List<RJSAllowance> params, String baseConfigPath) {
-        var paramsList = params == null ? null : Collections.singletonList(params);
-        return makeConfigWithSpeedParamsList(paramsList, baseConfigPath);
-    }
-
     /** Generates a config where all the RJSRunningTieParameters have been replaced by the one given */
-    public static Config makeConfigWithSpeedParams(List<RJSAllowance> params) {
+    public static Config makeConfigWithSpeedParams(Collection<RJSAllowance> params) {
         return makeConfigWithSpeedParams(params, "tiny_infra/config_railjson.json");
     }
 
     /** Loads the given config file, but replaces the given allowance parameters in the phases
      * the nth list of allowance is used for the nth phase */
-    public static Config makeConfigWithSpeedParamsList(List<List<RJSAllowance>> params, String baseConfigPath) {
+    public static Config makeConfigWithSpeedParams(Collection<RJSAllowance> params, String baseConfigPath) {
         try {
             var path = getResourcePath(baseConfigPath);
             var baseDirPath = path.getParent();
@@ -208,10 +200,7 @@ public class Helpers {
             var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
             var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
             for (var trainSchedule : schedule.trainSchedules) {
-                for (int i = 0; i < trainSchedule.phases.length; i++) {
-                    trainSchedule.phases[i].allowances = params == null ? null
-                            : params.get(i % params.size()).toArray(new RJSAllowance[0]);
-                }
+                trainSchedule.allowances = params == null ? null : params.toArray(new RJSAllowance[0]);
             }
             var trainSchedules = RJSSimulationParser.parse(infra, schedule);
             return new Config(

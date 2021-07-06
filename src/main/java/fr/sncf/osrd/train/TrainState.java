@@ -1,7 +1,6 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -149,7 +148,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         var prevLocation = location.getPathPosition();
 
         // get the list of active speed controllers
-        var isLate = currentPhaseState.speedInstructions.secondsLate(prevLocation, time) > 0;
+        var isLate = trainSchedule.speedInstructions.secondsLate(prevLocation, time) > 0;
         var activeSpeedControllers = trainSchedule.trainDecisionMaker.getActiveSpeedControllers(isLate);
         locationChange.speedControllersUpdates.dedupAdd(prevLocation, activeSpeedControllers);
 

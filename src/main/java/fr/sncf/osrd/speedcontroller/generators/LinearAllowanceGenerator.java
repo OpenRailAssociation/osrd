@@ -1,8 +1,7 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
-import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.MapSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;

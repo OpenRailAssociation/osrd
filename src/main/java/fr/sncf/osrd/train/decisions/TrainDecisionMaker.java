@@ -31,7 +31,7 @@ public abstract class TrainDecisionMaker {
      *  If isLate is true this function uses the max speed controller to catch up with the target time.
      */
     public Set<SpeedController> getActiveSpeedControllers(boolean isLate) {
-        var speedInstructions = trainState.currentPhaseState.speedInstructions;
+        var speedInstructions = trainState.trainSchedule.speedInstructions;
         var activeControllers = new HashSet<SpeedController>();
         // Add train speed controllers
         Set<SpeedController> targetControllers;

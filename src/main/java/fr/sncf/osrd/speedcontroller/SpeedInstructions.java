@@ -1,6 +1,6 @@
 package fr.sncf.osrd.speedcontroller;
 
-import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.generators.MaxSpeedGenerator;
 import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
