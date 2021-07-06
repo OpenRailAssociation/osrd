@@ -32,6 +32,11 @@ public class CBTCATP {
     double time_erre = 0.4;
     double time_react = 0.4;
 
+    double margeBehindTrain = 50;
+
+    double dt = 0.2;
+    double marge = 100;
+
     public CBTCATP(Simulation sim, TrainSchedule trainSchedule, TrainState trainState) {
         this.location = trainState.location;
         this.trainSchedule = trainSchedule;
@@ -104,11 +109,9 @@ public class CBTCATP {
         return false;
     }
 
-    public double marginBehindNextDanger(double dt, // Time step of the simulation
-            double marge // stopping distance behind the next danger
-    ) {
+    public double marginBehindNextDanger(double distance) {
         double speed = this.trainState.speed;
-        return getNextDangerPointPathDistance() - starting_position() - (dt * speed + marge);
+        return distance - starting_position() - (dt * speed + marge);
     }
 
     // Dissipated energie on distance
@@ -151,28 +154,21 @@ public class CBTCATP {
         return accel_erre() * this.time_react + this.trainState.speed;
     }
 
-    public double CBTC() {
-        if (canBreak(marginBehindNextDanger(1, 100)))
-            return 0;
-        if (canBreak(getNextDangerPointPathDistance()))
-            return 1;
-        return 2;
-    }
-
     public ArrayList<SpeedController> directive() {
         double gamma = this.trainSchedule.rollingStock.timetableGamma;
         ArrayList<SpeedController> controllers = new ArrayList<SpeedController>();
         double nextDangerPosition = getNextDangerPointPathDistance();
-        if (canBreak(marginBehindNextDanger(1, 100))) {
+        if (canBreak(marginBehindNextDanger(nextDangerPosition))) {
             // logger.debug("true");
             return controllers;
         }
-        if (canBreak(nextDangerPosition) || true) {
+        if (canBreak(nextDangerPosition)) {
             // logger.debug("false");
-            controllers.add(new LimitAnnounceSpeedController(0, location.getPathPosition() - 50,
-                    nextDangerPosition + location.getPathPosition(), gamma));
-            controllers.add(new MaxSpeedController(0, nextDangerPosition - 40 + location.getPathPosition(),
-                    nextDangerPosition + location.getPathPosition() + 40));
+            controllers.add(new LimitAnnounceSpeedController(0, location.getPathPosition() - 20,
+                    nextDangerPosition + location.getPathPosition() - margeBehindTrain, gamma));
+            controllers
+                    .add(new MaxSpeedController(0, nextDangerPosition - margeBehindTrain + location.getPathPosition(),
+                            nextDangerPosition + location.getPathPosition() + 40));
             return controllers;
         } else { // Enter EMERGENCY_BRAKING
             controllers.add(new MaxSpeedController(0, 0, nextDangerPosition));
@@ -199,12 +195,6 @@ public class CBTCATP {
                     list.add(train);
                     ListTrackSection.put(key, list);
                 }
-            }
-        }
-        for (Map.Entry<String, ArrayList<Train>> mapentry1 : ListTrackSection.entrySet()) {
-            String a = "";
-            for (Train tt : mapentry1.getValue()) {
-                a = a + tt.schedule.trainID + " ";
             }
         }
         return ListTrackSection;
@@ -243,15 +233,16 @@ public class CBTCATP {
                 }
                 listetrain = listetrain2;
             }
-            if (listetrain != null && listetrain.size() != 0 && track.edge.id.equals(currentTrackSection.id))
-                break;
-
             if (!section.id.equals(track.edge.id)) {
                 // logger.debug("On ajoute la taille d'un canton");
                 longueur += section.length;
                 section = track.edge;
             }
             i++;
+
+            if (listetrain != null && listetrain.size() != 0 && track.edge.id.equals(currentTrackSection.id))
+                break;
+
         }
         if (listetrain == null || listetrain.isEmpty()) {
             return Double.POSITIVE_INFINITY;
