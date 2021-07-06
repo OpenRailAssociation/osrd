@@ -30,17 +30,17 @@ public class CBTCPhase implements Phase {
     public final List<Route> routePath;
     public final TrackSectionLocation endLocation;
     private final ArrayList<TrackSectionRange> trackSectionPath;
-    public transient SpeedControllerGenerator targetSpeedGenerator;
+    public transient List<SpeedControllerGenerator> targetSpeedGenerator;
 
     private CBTCPhase(
         List<Route> routePath,
         TrackSectionLocation endLocation,
         ArrayList<TrackSectionRange> trackSectionPath,
-        SpeedControllerGenerator targetSpeedGenerator) {
+        List<SpeedControllerGenerator> targetSpeedGenerators) {
         this.routePath = routePath;
         this.endLocation = endLocation;
         this.trackSectionPath = trackSectionPath;
-        this.targetSpeedGenerator = targetSpeedGenerator;
+        this.targetSpeedGenerator = targetSpeedGenerators;
 }   
 
         /** Create a new navigation phase from an already determined path */
@@ -49,10 +49,10 @@ public class CBTCPhase implements Phase {
             double driverSightDistance,
             TrackSectionLocation startLocation,
             TrackSectionLocation endLocation,
-            SpeedControllerGenerator targetSpeedGenerator
+            List<SpeedControllerGenerator> targetSpeedGenerators
     ) {
         var trackSectionPath = Route.routesToTrackSectionRange(routes, startLocation, endLocation);
-        return new CBTCPhase(routes, endLocation, trackSectionPath, targetSpeedGenerator);
+        return new CBTCPhase(routes, endLocation, trackSectionPath, targetSpeedGenerators);
     }
     
     public PhaseState getState(Simulation sim, TrainSchedule schedule) {
@@ -86,7 +86,7 @@ public class CBTCPhase implements Phase {
         }
 
         CBTCPhaseState(CBTCPhase.CBTCPhaseState state) {
-            super(state.speedInstructions.targetSpeedGenerator);
+            super(state.speedInstructions.targetSpeedGenerators);
             this.phase = state.phase;
             this.routeIndex = state.routeIndex;
             this.signalControllers = state.signalControllers;

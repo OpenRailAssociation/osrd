@@ -184,7 +184,7 @@ public class RJSTrainScheduleParser {
 
             var endLocation = parseLocation(infra, rjsNavigate.endLocation);
             return CBTCPhase.from(routes, driverSightDistance, startLocation,
-                    endLocation, targetSpeedGenerator);
+                    endLocation, targetSpeedGenerators);
         }
         throw new RuntimeException("unknown train phase");
     }
