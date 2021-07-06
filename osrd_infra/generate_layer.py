@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Type
 
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
@@ -8,8 +8,12 @@ from osrd_infra.serializers import serialize_components
 
 from osrd_infra.models import (
     Infra,
-    ALL_ENTITY_TYPES,
     fetch_entities,
+    TrackSectionEntity,
+    Entity,
+    GeoLineLocationComponent,
+    GeoPointLocationComponent,
+    GeoAreaLocationComponent,
 )
 
 
@@ -28,19 +32,37 @@ def push_layer(layer_slug: str, version: int, payload: List[Dict]):
 
 
 def generate_layers(infra: Infra):
-    generate_entities_layer(infra)
+    generate_layer(infra, TrackSectionEntity)
 
 
-def generate_entities_layer(infra: Infra):
+def get_geo_attribute_name(entity_type: Type[Entity]):
+    for geo_component in (
+        GeoLineLocationComponent,
+        GeoPointLocationComponent,
+        GeoAreaLocationComponent,
+    ):
+        if geo_component in entity_type._entity_meta.components:
+            return geo_component._component_meta.name
+    return None
+
+
+def generate_layer(infra: Infra, entity_type: Type[Entity]):
     layer = []
-    for entity_type_name, entity_type in ALL_ENTITY_TYPES.items():
-        for entity in fetch_entities(entity_type, infra.namespace):
-            layer.append(
-                {
-                    "entity_id": entity.entity_id,
-                    "entity_type": entity_type_name,
-                    "components": serialize_components(entity),
-                }
-            )
+    geo_attr_name = get_geo_attribute_name(entity_type)
 
-    push_layer("osrd_track_section", infra.id, layer)
+    for entity in fetch_entities(entity_type, infra.namespace):
+        # Get all entity components
+        components = serialize_components(entity)
+        entity_payload = {
+            "entity_id": entity.entity_id,
+            "components": components,
+        }
+        if geo_attr_name:
+            geo_component = getattr(entity, geo_attr_name)
+            entity_payload["geom_geo"] = geom_to_geosjon_dict(geo_component.geographic)
+            entity_payload["geom_sch"] = geom_to_geosjon_dict(geo_component.schematic)
+
+        layer.append(entity_payload)
+
+    entity_type_name = entity._entity_meta.name
+    push_layer(f"osrd_{entity_type_name}", infra.id, layer)
