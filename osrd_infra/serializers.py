@@ -82,7 +82,9 @@ def serialize_components(entity):
     for comp_model in entity_meta.components:
         comp_meta = get_component_meta(comp_model)
         comp_serializer = ComponentSerializer.registry[comp_model]
-        field = getattr(entity, comp_meta.related_name)
+        field = getattr(entity, comp_meta.related_name, None)
+        if not field:
+            continue
         if comp_meta.unique:
             serialized = comp_serializer(field, omit_entity_id=True).data
         else:
