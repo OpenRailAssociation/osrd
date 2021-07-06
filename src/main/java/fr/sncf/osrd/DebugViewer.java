@@ -18,6 +18,7 @@ import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.geom.Point3;
 import org.graphstream.ui.graphicGraph.GraphicGraph;
+import org.graphstream.ui.layout.Layouts;
 import org.graphstream.ui.spriteManager.Sprite;
 import org.graphstream.ui.spriteManager.SpriteManager;
 import org.graphstream.ui.swing_viewer.DefaultView;
@@ -170,7 +171,7 @@ public class DebugViewer extends ChangeConsumer {
         // create the graphstream swing infrastructure needed
         SwingViewer viewer = new SwingViewer(graph, SwingViewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
         var view = (DefaultView) viewer.addDefaultView(false);
-        viewer.disableAutoLayout();
+        viewer.enableAutoLayout(Layouts.newLayoutAlgorithm());
         view.setMouseManager(new MouseManager() {
             @Override
             public void init(GraphicGraph graph, View view) {

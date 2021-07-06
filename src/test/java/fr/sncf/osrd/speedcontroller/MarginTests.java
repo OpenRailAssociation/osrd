@@ -1,8 +1,11 @@
 package fr.sncf.osrd.speedcontroller;
 
 import static fr.sncf.osrd.Helpers.*;
+import static fr.sncf.osrd.speedcontroller.SpeedInstructionsTests.getStaticGenerator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import fr.sncf.osrd.railjson.schema.common.ID;
+import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
@@ -11,6 +14,7 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
+import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +27,8 @@ import java.util.Collections;
 public class MarginTests {
 
     private static final boolean saveCSVFiles = false;
+
+    public final RJSTrackLocation routeHalf = new RJSTrackLocation(new ID<>("ne.micro.foo_to_bar"), 4000);
 
     @Test
     public void testConstructionMargins() throws InvalidInfraException {
@@ -244,6 +250,36 @@ public class MarginTests {
         assertEquals(expected, marginsSimTime, expected * 0.01);
         saveGraph(eventsBase, "linear-distance-base.csv");
         saveGraph(events, "linear-distance-out.csv");
+    }
+
+    @Test
+    public void testDifferentSpeedLimits() throws InvalidInfraException {
+        final var infra = getBaseInfra();
+        var params1 = new RJSAllowance.LinearAllowance();
+        params1.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
+        params1.allowanceValue = 20;
+        params1.end = routeHalf;
+        var params2 = new RJSAllowance.LinearAllowance();
+        params2.begin = routeHalf;
+        params2.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
+        params2.allowanceValue = 50;
+
+        var params = new ArrayList<RJSAllowance>();
+        params.add(params1);
+        params.add(params2);
+
+        // Run with margins
+        final var configMargins = makeConfigWithSpeedParams(params);
+        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var events = run(sim2, configMargins);
+
+        // base run, no margin
+        final var config = makeConfigWithSpeedParams(null);
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var eventsBase = run(sim, config);
+
+        saveGraph(eventsBase, "linear-time-on-construction-base.csv");
+        saveGraph(events, "linear-time-on-construction-out.csv");
     }
 
     private double convertTrackLocation(TrackSectionLocation location, TrainSchedule schedule) {

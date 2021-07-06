@@ -13,7 +13,10 @@ import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
+import fr.sncf.osrd.railjson.schema.common.ID;
+import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
+import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.simulation.Simulation;
@@ -21,7 +24,9 @@ import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.simulation.TimelineEventId;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
+import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.PathUtils;
+import fr.sncf.osrd.utils.SortedDoubleMap;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import okio.Okio;
 
@@ -324,5 +329,63 @@ public class Helpers {
     /** Simple class similar to java Runnable, but with exceptions */
     public interface Procedure {
         void run() throws Exception;
+    }
+
+    /** Get a map of the time at which each position is reached */
+    public static SortedDoubleMap getTimePerPosition(Iterable<TimelineEvent> events) {
+        var res = new SortedDoubleMap();
+        for (var event : events) {
+            if (event instanceof TrainReachesActionPoint) {
+                var trainReachesActionPoint = (TrainReachesActionPoint) event;
+                for (var update : trainReachesActionPoint.trainStateChange.positionUpdates)
+                    res.put(update.pathPosition, update.time);
+            }
+        }
+        return res;
+    }
+
+    /** Get a map of the speed at each position */
+    public static SortedDoubleMap getSpeedPerPosition(Iterable<TimelineEvent> events) {
+        var res = new SortedDoubleMap();
+        for (var event : events) {
+            if (event instanceof TrainReachesActionPoint) {
+                var trainReachesActionPoint = (TrainReachesActionPoint) event;
+                for (var update : trainReachesActionPoint.trainStateChange.positionUpdates)
+                    res.put(update.pathPosition, update.speed);
+            }
+        }
+        return res;
+    }
+
+    /** Adds an element to an array of route
+     * This function is used to hide away the generic array creation */
+    @SuppressWarnings("unchecked")
+    public static ID<RJSRoute>[] addToArray(ID<RJSRoute>[] array, ID<RJSRoute> val) {
+        var res = (ID<RJSRoute>[]) java.lang.reflect.Array.newInstance(ID.class, array.length + 1);
+        System.arraycopy(array, 0, res, 0, array.length);
+        res[res.length - 1] = val;
+        return res;
+    }
+
+    /** Removes the first element from an array of route
+     * This function is used to hide away the generic array creation */
+    @SuppressWarnings("unchecked")
+    public static ID<RJSRoute>[] removeFirstFromArray(ID<RJSRoute>[] array) {
+        var res = (ID<RJSRoute>[]) java.lang.reflect.Array.newInstance(ID.class, array.length - 1);
+        if (array.length - 1 >= 0) System.arraycopy(array, 1, res, 0, array.length - 1);
+        return res;
+    }
+
+    /** Get a list of 2 phases on the base infra, with the transition happening roughly half-way */
+    public static RJSTrainPhase[] loadPhasesLongerFirstPhase() {
+        var phases = loadRJSPhases("tiny_infra/simulation_several_phases.json");
+        phases[0].endLocation = new RJSTrackLocation(new ID<>("ne.micro.foo_to_bar"), 4000);
+        assert phases[0] instanceof RJSTrainPhase.Navigate;
+        assert phases[1] instanceof RJSTrainPhase.Navigate;
+        var navigate0 = (RJSTrainPhase.Navigate) phases[0];
+        var navigate1 = (RJSTrainPhase.Navigate) phases[1];
+        navigate0.routes = addToArray(navigate0.routes, new ID<>("rt.C3-S7"));
+        navigate1.routes = removeFirstFromArray(navigate1.routes);
+        return phases;
     }
 }

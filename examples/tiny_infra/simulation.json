@@ -48,6 +48,13 @@
       },
       "initial_route": "rt.buffer_stop_b-C3",
       "initial_speed": 0,
+      "allowances": [
+        {
+          "type": "linear",
+          "allowance_type": "TIME",
+          "allowance_value": 5
+        }
+      ],
       "phases": [
         {
           "driver_sight_distance": 400,
@@ -59,13 +66,6 @@
             "rt.buffer_stop_b-C3",
             "rt.C3-S7",
             "rt.S7-buffer_stop_c"
-          ],
-          "allowances": [
-            {
-              "type": "linear",
-              "allowance_type": "TIME",
-              "allowance_value": 5
-            }
           ],
           "type": "navigate"
         }

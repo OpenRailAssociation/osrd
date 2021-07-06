@@ -37,6 +37,7 @@ public class Train {
             Simulation sim,
             TrainSchedule schedule
     ) throws SimulationError {
+        schedule.speedInstructions.generate(sim, schedule);
         var phaseState = schedule.phases.get(0).getState(sim, schedule);
         var location = getInitialLocation(schedule, sim);
         var initialState = new TrainState(
