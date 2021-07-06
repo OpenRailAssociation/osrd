@@ -231,4 +231,9 @@ public final class RouteState implements RSMatchable {
             return String.format("RouteStatusChange { route: %d, status: %s }", routeIndex, newStatus);
         }
     }
+
+    public boolean hasCBTCStatus() {
+        return status == RouteStatus.CBTC_OCCUPIED || status == RouteStatus.CBTC_RESERVED
+                || status == RouteStatus.CBTC_REQUESTED;
+    }
 }
