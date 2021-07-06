@@ -1,7 +1,6 @@
 package fr.sncf.osrd.railjson.schema.infra.railscript;
 
-import com.squareup.moshi.*;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 
 public class RJSRSFunction implements Identified {

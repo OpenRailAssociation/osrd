@@ -8,9 +8,12 @@ import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
-import fr.sncf.osrd.utils.SortedArraySet;
-import fr.sncf.osrd.utils.graph.*;
 import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
+import fr.sncf.osrd.utils.SortedArraySet;
+import fr.sncf.osrd.utils.graph.DirNGraph;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
+import fr.sncf.osrd.utils.graph.EdgeEndpoint;
+import fr.sncf.osrd.utils.graph.UndirectedBiEdgeID;
 
 import java.util.*;
 
@@ -25,6 +28,16 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
         var node = getNode(lastTvdSectionPath.getEndNode(lastTvdSectionPathDir));
         var nodeDirection = lastTvdSectionPath.nodeDirection(lastTvdSectionPathDir, EdgeEndpoint.END);
         return node.getRouteNeighbors(nodeDirection);
+    }
+
+    /** Return the neighbors of the route at the start node */
+    public List<Route> getIncomingNeighbors(Route route) {
+        var firstTvdSectionPathIndex = 0;
+        var firstTvdSectionPath = route.tvdSectionsPaths.get(firstTvdSectionPathIndex);
+        var firstTvdSectionPathDir = route.tvdSectionsPathDirections.get(firstTvdSectionPathIndex);
+        var node = getNode(firstTvdSectionPath.getStartNode(firstTvdSectionPathDir));
+        var nodeDirection = firstTvdSectionPath.nodeDirection(firstTvdSectionPathDir, EdgeEndpoint.BEGIN);
+        return node.getIncomingRouteNeighbors(nodeDirection);
     }
 
     public static class Builder {
@@ -111,6 +124,13 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
             var startWaypoint = waypointGraph.getNode(firstTVDSectionPath.getStartNode(firstTVDSectionPathDir));
             var waypointDirection = firstTVDSectionPath.nodeDirection(firstTVDSectionPathDir, EdgeEndpoint.BEGIN);
             startWaypoint.getRouteNeighbors(waypointDirection).add(route);
+
+            // Link route to the ending waypoint
+            var lastTVDSectionPath = tvdSectionsPath.get(0);
+            var lastTVDSectionPathDir = tvdSectionsPathDirection.get(0);
+            var endWaypoint = waypointGraph.getNode(lastTVDSectionPath.getEndNode(lastTVDSectionPathDir));
+            var endWaypointDirection = lastTVDSectionPath.nodeDirection(lastTVDSectionPathDir, EdgeEndpoint.END);
+            endWaypoint.getIncomingRouteNeighbors(endWaypointDirection).add(route);
 
             // Link route to track sections and tvd sections
             double routeOffset = 0;

@@ -1,16 +1,13 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
-import fr.sncf.osrd.TrainSchedule;
-import fr.sncf.osrd.train.decisions.KeyboardInput;
-import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.CryoList;
 import fr.sncf.osrd.utils.DeepComparable;
@@ -74,7 +71,7 @@ public class Train {
                 initialLocation.edge,
                 schedule.initialDirection,
                 initialLocation.offset,
-                initialLocation.offset
+                initialLocation.offset // This starts as a 0 length range, the train grow in size as it appears
         ));
         var trackSectionPath = new ArrayList<TrackSectionRange>();
         for (var phase : schedule.phases)

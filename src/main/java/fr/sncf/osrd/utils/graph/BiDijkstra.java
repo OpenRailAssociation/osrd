@@ -1,11 +1,14 @@
 package fr.sncf.osrd.utils.graph;
 
-import static fr.sncf.osrd.utils.graph.EdgeDirection.*;
+import static fr.sncf.osrd.utils.graph.EdgeDirection.START_TO_STOP;
+import static fr.sncf.osrd.utils.graph.EdgeDirection.STOP_TO_START;
 
 import fr.sncf.osrd.utils.graph.path.BasicDirPathNode;
 import fr.sncf.osrd.utils.graph.path.PathNode;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
 public abstract class BiDijkstra {
     public interface GoalChecker<EdgeT extends Edge> {

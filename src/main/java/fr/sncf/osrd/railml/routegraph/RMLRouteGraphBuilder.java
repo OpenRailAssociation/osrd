@@ -5,7 +5,7 @@ import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railml.tracksectiongraph.RMLTrackSectionGraph;
 import fr.sncf.osrd.railml.tracksectiongraph.TrackNetElement;
-import fr.sncf.osrd.utils.graph.*;
+import fr.sncf.osrd.utils.graph.UndirectedBiEdgeID;
 import fr.sncf.osrd.utils.graph.overlay.BiGraphOverlayBuilder;
 import fr.sncf.osrd.utils.graph.overlay.OverlayPathNode;
 import fr.sncf.osrd.utils.graph.path.FullPathArray;

@@ -56,13 +56,12 @@ public class RSHelpers {
         }
 
         static Simulation genSimulation() {
-            var infra = fr.sncf.osrd.Helpers.getBaseInfra();
-            assert infra != null;
+            final var infra = fr.sncf.osrd.Helpers.getBaseInfra();
             try {
                 return Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
             } catch (InvalidInfraException e) {
                 fail(e);
-                return null;
+                throw new RuntimeException();
             }
         }
 
@@ -203,7 +202,7 @@ public class RSHelpers {
                 return rjsrsFunction;
             } catch (InvalidInfraException e) {
                 fail(e);
-                return null;
+                throw new RuntimeException();
             }
         }
 
@@ -233,7 +232,7 @@ public class RSHelpers {
             return eval(rsExpr);
         } catch (InvalidInfraException e) {
             fail(e);
-            return null;
+            throw new RuntimeException();
         }
     }
 

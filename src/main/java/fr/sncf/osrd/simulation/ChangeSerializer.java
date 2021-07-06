@@ -24,9 +24,9 @@ import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.simulation.changelog.ChangeLog;
-import fr.sncf.osrd.speedcontroller.*;
+import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.train.TrackSectionRange;
-import fr.sncf.osrd.train.Train.*;
+import fr.sncf.osrd.train.Train.TrainStateChange;
 import fr.sncf.osrd.train.decisions.InteractiveInput;
 import fr.sncf.osrd.train.decisions.KeyboardInput;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
@@ -36,9 +36,13 @@ import fr.sncf.osrd.train.phases.PhaseState;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.train.phases.StopPhase;
 import fr.sncf.osrd.utils.CryoList;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfoList;
+import io.github.classgraph.ScanResult;
 import okio.BufferedSink;
 import okio.Okio;
 import okio.Sink;
+
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.reflect.Type;
@@ -48,7 +52,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.function.Supplier;
-import io.github.classgraph.*;
 
 public class ChangeSerializer {
     public static final JsonAdapter<Change> changeAdapter = new Moshi.Builder()

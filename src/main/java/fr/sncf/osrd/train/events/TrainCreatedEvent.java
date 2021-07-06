@@ -2,7 +2,10 @@ package fr.sncf.osrd.train.events;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.TrainSchedule;
-import fr.sncf.osrd.simulation.*;
+import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.simulation.TimelineEvent;
+import fr.sncf.osrd.simulation.TimelineEventId;
 import fr.sncf.osrd.train.Train;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +18,11 @@ public class TrainCreatedEvent extends TimelineEvent {
     private TrainCreatedEvent(TimelineEventId eventId, TrainSchedule schedule) {
         super(eventId);
         this.schedule = schedule;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("TrainCreatedEvent { %s }", schedule.trainID);
     }
 
     @Override
@@ -36,6 +44,9 @@ public class TrainCreatedEvent extends TimelineEvent {
         if (other.getClass() != TrainCreatedEvent.class)
             return false;
         var o = (TrainCreatedEvent) other;
+
+        // This comparison will not work as expected (not a deep comparison)
+        // If we need it someday we have to make train schedules deep comparable as well, which takes a lot of changes.
         return o.schedule == schedule;
     }
 

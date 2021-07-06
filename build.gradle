@@ -87,6 +87,16 @@ test {
 
 checkstyle {
     toolVersion '8.37'
+    configFile rootProject.file('config/checkstyle/checkstyle.xml')
+}
+
+task Checkstyle(type: Checkstyle) {
+    configFile rootProject.file('config/checkstyle/checkstyle.xml')
+    source 'src/'
+    ignoreFailures false
+    showViolations true
+    include '**/*.java'
+    classpath = files()
 }
 
 tasks.withType(Checkstyle) {

@@ -1,11 +1,13 @@
 package fr.sncf.osrd.infra.waypointgraph;
 
-import static fr.sncf.osrd.utils.graph.EdgeDirection.*;
+import static fr.sncf.osrd.utils.graph.EdgeDirection.START_TO_STOP;
 
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
-import fr.sncf.osrd.utils.graph.*;
 import fr.sncf.osrd.utils.CryoMap;
+import fr.sncf.osrd.utils.graph.BiNGraph;
+import fr.sncf.osrd.utils.graph.EdgeEndpoint;
+import fr.sncf.osrd.utils.graph.UndirectedBiEdgeID;
 
 import java.util.List;
 

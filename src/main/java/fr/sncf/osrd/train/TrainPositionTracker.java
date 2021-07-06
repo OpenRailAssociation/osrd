@@ -2,9 +2,9 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.trackgraph.*;
+import fr.sncf.osrd.infra.trackgraph.Switch;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra_state.InfraState;
-import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.DeepEqualsUtils;
 
@@ -130,7 +130,8 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
      * @param positionDelta How much the train moves by.
      */
     public void updatePosition(double expectedTrainLength, double positionDelta) {
-        pathPosition += updateHeadPosition(positionDelta);
+        updateHeadPosition(positionDelta);
+        pathPosition += positionDelta;
 
         double currentTrainLength = 0;
         for (var section : trackSectionRanges)
@@ -144,9 +145,8 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
     /** TODO: Check if it's the wanted behavior...
      * Move the head of train to positionDelta ahead.
      * The train stop if it can't go further.
-     * @return The delta distance travelled by the train.
      */
-    private double updateHeadPosition(double targetDist) {
+    private void updateHeadPosition(double targetDist) {
         var remainingDist = targetDist;
         var headPos = trackSectionRanges.getFirst();
         var edgeSpaceAhead = headPos.forwardSpace();
@@ -161,7 +161,6 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
             remainingDist -= nextPos.edge.length;
             trackSectionRanges.addFirst(nextPos);
         }
-        return targetDist;
     }
 
     private void updateTailPosition(double positionDelta) {

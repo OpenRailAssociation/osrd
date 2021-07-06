@@ -3,8 +3,6 @@ package fr.sncf.osrd.infra.routegraph;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
-import java.util.Arrays;
-
 public class RouteLocation {
     public final Route route;
     public final double offset;

@@ -1,18 +1,19 @@
-package fr.sncf.osrd;
+package fr.sncf.osrd.train;
 
-import static fr.sncf.osrd.TestTrains.FAST_NO_FRICTION_TRAIN;
+import static fr.sncf.osrd.train.TestTrains.FAST_NO_FRICTION_TRAIN;
 import static org.junit.jupiter.api.Assertions.*;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra.*;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.trackgraph.BufferStop;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
-import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
-import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
@@ -23,7 +24,10 @@ import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 
@@ -43,7 +47,7 @@ public class StaticSpeedLimitTest {
     }
 
     @Test
-    public void simpleSpeedLimitTest() throws InvalidInfraException, SimulationError {
+    public void simpleSpeedLimitTest() throws InvalidInfraException, SimulationError, InvalidSchedule {
         var trackGraph = new TrackGraph();
 
         var nodeA = trackGraph.makePlaceholderNode("A");

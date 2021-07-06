@@ -4,10 +4,9 @@ import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
-import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class RJSRoute implements Identified {
@@ -46,7 +45,10 @@ public class RJSRoute implements Identified {
         FREE,
         RESERVED,
         OCCUPIED,
+        REQUESTED,
+        CBTC_RESERVED,
+        CBTC_OCCUPIED,
+        CBTC_REQUESTED,
         CONFLICT,
-        REQUESTED
     }
 }

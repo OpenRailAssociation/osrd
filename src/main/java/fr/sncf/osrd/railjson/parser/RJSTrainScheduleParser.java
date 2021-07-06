@@ -1,5 +1,7 @@
 package fr.sncf.osrd.railjson.parser;
 
+import fr.sncf.osrd.RollingStock;
+import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
@@ -13,11 +15,9 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.cbtc.CBTCPhase;
+import fr.sncf.osrd.speedcontroller.generators.*;
 import fr.sncf.osrd.train.decisions.KeyboardInput;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
-import fr.sncf.osrd.speedcontroller.generators.MaxSpeedGenerator;
-import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
-import fr.sncf.osrd.speedcontroller.generators.AllowanceGenerator;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.train.phases.StopPhase;
@@ -25,6 +25,7 @@ import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 public class RJSTrainScheduleParser {
@@ -60,6 +61,8 @@ public class RJSTrainScheduleParser {
                 beginLocation = endLocation;
             phases.add(phase);
         }
+        for (var phase : phases)
+            phase.resolvePhases(phases);
 
         // find from what direction the train arrives on the initial location
         EdgeDirection initialDirection = null;
@@ -94,6 +97,24 @@ public class RJSTrainScheduleParser {
         );
     }
 
+    private static SpeedControllerGenerator parseSpeedControllerGenerator(RJSAllowance allowance, RJSTrainPhase phase)
+            throws InvalidSchedule {
+        if (allowance == null)
+            return new MaxSpeedGenerator();
+        else if (allowance instanceof RJSAllowance.LinearAllowance) {
+            var linearAllowance = (RJSAllowance.LinearAllowance) allowance;
+            return new LinearAllowanceGenerator(linearAllowance.allowanceValue, linearAllowance.allowanceType, phase);
+        } else if (allowance instanceof RJSAllowance.ConstructionAllowance) {
+            var constructionAllowance = (RJSAllowance.ConstructionAllowance) allowance;
+            return new ConstructionAllowanceGenerator(constructionAllowance.allowanceValue, phase);
+        } else if (allowance instanceof RJSAllowance.MarecoAllowance) {
+            var marecoAllowance = (RJSAllowance.MarecoAllowance) allowance;
+            return new MarecoAllowanceGenerator(marecoAllowance.allowanceValue, marecoAllowance.allowanceType, phase);
+        } else {
+            throw new InvalidSchedule("Unimplemented allowance type");
+        }
+    }
+
     private static TrainDecisionMaker parseDecisionMaker(String decisionMakerType) throws InvalidSchedule {
         if (decisionMakerType == null || decisionMakerType.equals("default")) {
             return new TrainDecisionMaker.DefaultTrainDecisionMaker();
@@ -104,16 +125,15 @@ public class RJSTrainScheduleParser {
         }
     }
 
-    private static SpeedControllerGenerator parseSpeedControllerGenerator(RJSAllowance allowance)
+    private static List<SpeedControllerGenerator> parseSpeedControllerGenerators(RJSTrainPhase phase)
             throws InvalidSchedule {
-        if (allowance == null)
-            return new MaxSpeedGenerator();
-        else if (allowance.getClass() == RJSAllowance.LinearAllowance.class) {
-            var linearAllowance = (RJSAllowance.LinearAllowance) allowance;
-            return new AllowanceGenerator(linearAllowance.allowanceValue, linearAllowance.allowanceType);
-        } else {
-            throw new InvalidSchedule("Unimplemented allowance type");
+        List<SpeedControllerGenerator> list = new ArrayList<>();
+        if (phase.allowances == null)
+            return list;
+        for (var allowance : phase.allowances) {
+            list.add(parseSpeedControllerGenerator(allowance, phase));
         }
+        return list;
     }
 
     private static Phase parsePhase(
@@ -122,11 +142,13 @@ public class RJSTrainScheduleParser {
             RJSTrainPhase rjsPhase
     ) throws InvalidSchedule {
 
-        var targetSpeedGenerator = parseSpeedControllerGenerator(rjsPhase.allowance);
+        var targetSpeedGenerators = parseSpeedControllerGenerators(rjsPhase);
 
         if (rjsPhase.getClass() == RJSTrainPhase.Stop.class) {
+            if (targetSpeedGenerators.size() > 0)
+                throw new InvalidSchedule("Train stop phase can't have speed controllers");
             var rjsStop = (RJSTrainPhase.Stop) rjsPhase;
-            return new StopPhase(rjsStop.duration, targetSpeedGenerator);
+            return new StopPhase(rjsStop.duration);
         }
         if (rjsPhase.getClass() == RJSTrainPhase.Navigate.class) {
             var rjsNavigate = (RJSTrainPhase.Navigate) rjsPhase;
@@ -144,7 +166,7 @@ public class RJSTrainScheduleParser {
 
             var endLocation = parseLocation(infra, rjsNavigate.endLocation);
             return SignalNavigatePhase.from(routes, driverSightDistance, startLocation,
-                    endLocation, targetSpeedGenerator);
+                    endLocation, targetSpeedGenerators);
         }
         if (rjsPhase.getClass() == RJSTrainPhase.CBTC.class) {
             var rjsNavigate = (RJSTrainPhase.CBTC) rjsPhase;

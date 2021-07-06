@@ -5,12 +5,12 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.SpeedSection;
 import fr.sncf.osrd.infra.routegraph.Route;
-import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
+import fr.sncf.osrd.infra.signaling.Signal;
+import fr.sncf.osrd.utils.*;
 import fr.sncf.osrd.utils.graph.BiNEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-import fr.sncf.osrd.utils.*;
 
 import java.util.ArrayList;
 import java.util.List;

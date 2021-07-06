@@ -10,7 +10,7 @@ import java.util.Objects;
 
 public final class Interaction implements DeepComparable<Interaction>, Comparable<Interaction> {
     public final InteractionType interactionType;
-    public final double position;
+    public double position;
     public final ActionPoint actionPoint;
 
     /** Create an interaction */
@@ -55,5 +55,10 @@ public final class Interaction implements DeepComparable<Interaction>, Comparabl
     @Override
     public int hashCode() {
         return Objects.hash(position, interactionType, actionPoint);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Interaction { type=%s, position=%f, point=%s }", interactionType, position, actionPoint);
     }
 }

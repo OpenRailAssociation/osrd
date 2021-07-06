@@ -1,7 +1,6 @@
 package fr.sncf.osrd.railjson.schema.infra;
 
 import com.squareup.moshi.Json;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;

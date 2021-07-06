@@ -1,6 +1,11 @@
 {
   "aspects": [
     {
+      "id": "WHITE_CROSS",
+      "color": "#ffffff",
+      "constraints": []
+    },
+    {
       "id": "GREEN",
       "color": "#2a850c",
       "constraints": []
@@ -143,19 +148,19 @@
         "type": "condition",
         "if": {
           "type": "aspect_set_contains",
-          "aspect_set": {
-            "type": "argument_ref",
-            "argument_name": "aspects"
-          },
-          "aspect": "RED"
+            "aspect_set": {
+              "type": "argument_ref",
+              "argument_name": "aspects"
+            },
+            "aspect": "WHITE_CROSS"
         },
         "then": {
           "type": "aspect_set",
-          "members": [
-            {
-              "aspect": "RED"
-            }
-          ]
+            "members": [
+              {
+                "aspect": "WHITE_CROSS"
+              }
+            ]
         },
         "else": {
           "type": "condition",
@@ -165,19 +170,38 @@
               "type": "argument_ref",
               "argument_name": "aspects"
             },
-            "aspect": "YELLOW"
+            "aspect": "RED"
           },
           "then": {
             "type": "aspect_set",
             "members": [
               {
-                "aspect": "YELLOW"
+                "aspect": "RED"
               }
             ]
           },
           "else": {
-            "type": "argument_ref",
-            "argument_name": "aspects"
+            "type": "condition",
+            "if": {
+              "type": "aspect_set_contains",
+              "aspect_set": {
+                "type": "argument_ref",
+                "argument_name": "aspects"
+              },
+              "aspect": "YELLOW"
+            },
+            "then": {
+              "type": "aspect_set",
+              "members": [
+                {
+                  "aspect": "YELLOW"
+                }
+              ]
+            },
+            "else": {
+              "type": "argument_ref",
+              "argument_name": "aspects"
+            }
           }
         }
       }
@@ -237,6 +261,16 @@
           {
             "type": "aspect_set",
             "members": [
+              {
+                "aspect": "WHITE_CROSS",
+                "condition": {
+                  "type": "is_incoming_route_cbtc",
+                  "route": {
+                    "type": "argument_ref",
+                    "argument_name": "route"
+                  }
+                }
+              },
               {
                 "aspect": "RED",
                 "condition": {

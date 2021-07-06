@@ -1,12 +1,12 @@
 package fr.sncf.osrd.railml;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
-import fr.sncf.osrd.utils.graph.ApplicableDirection;
-import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
+import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
 import fr.sncf.osrd.utils.FloatCompare;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
+import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import org.dom4j.Element;
 
 import java.util.Locale;

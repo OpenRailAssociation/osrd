@@ -1,7 +1,6 @@
 package fr.sncf.osrd.railjson.schema.infra;
 
 import com.squareup.moshi.Json;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
@@ -10,7 +9,9 @@ import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSOperationalPointPart;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSectionPart;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class RJSTrackSection implements Identified {
     public String id;
