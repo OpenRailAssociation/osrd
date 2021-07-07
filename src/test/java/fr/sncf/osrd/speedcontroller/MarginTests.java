@@ -12,6 +12,7 @@ import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.TimelineEvent;
+import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
@@ -26,9 +27,7 @@ import java.util.Collections;
 
 public class MarginTests {
 
-    private static final boolean saveCSVFiles = false;
-
-    public final RJSTrackLocation routeHalf = new RJSTrackLocation(new ID<>("ne.micro.foo_to_bar"), 4000);
+    private static final boolean saveCSVFiles = true;
 
     @Test
     public void testConstructionMargins() throws InvalidInfraException {
@@ -255,12 +254,24 @@ public class MarginTests {
     @Test
     public void testDifferentSpeedLimits() throws InvalidInfraException {
         final var infra = getBaseInfra();
+
+        double marginChangeLocation = 5000;
+
+        // base run, no margin
+        final var config = makeConfigWithSpeedParams(null);
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var eventsBase = run(sim, config);
+        var baseTimePerPosition = getTimePerPosition(eventsBase);
+        var marginChangeTime = baseTimePerPosition.interpolate(marginChangeLocation);
+        var totalTime = sim.getTime();
+
+
         var params1 = new RJSAllowance.LinearAllowance();
         params1.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
         params1.allowanceValue = 20;
-        params1.endLocation = routeHalf;
+        params1.endPosition = marginChangeLocation;
         var params2 = new RJSAllowance.LinearAllowance();
-        params2.beginLocation = routeHalf;
+        params2.beginPosition = marginChangeLocation;
         params2.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
         params2.allowanceValue = 50;
 
@@ -272,14 +283,14 @@ public class MarginTests {
         final var configMargins = makeConfigWithSpeedParams(params);
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
+        var marginTime = sim2.getTime();
 
-        // base run, no margin
-        final var config = makeConfigWithSpeedParams(null);
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        var eventsBase = run(sim, config);
+        saveGraph(eventsBase, "different-margins-base.csv");
+        saveGraph(events, "different-margins-out.csv");
 
-        saveGraph(eventsBase, "linear-time-on-construction-base.csv");
-        saveGraph(events, "linear-time-on-construction-out.csv");
+        var expected = marginChangeTime * (1 + params1.allowanceValue / 100)
+                + (totalTime - marginChangeTime) * (1 + params2.allowanceValue / 100);
+        assertEquals(expected, marginTime, expected * 0.01);
     }
 
     private double convertTrackLocation(TrackSectionLocation location, TrainSchedule schedule) {

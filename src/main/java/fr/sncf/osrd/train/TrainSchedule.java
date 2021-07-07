@@ -31,7 +31,7 @@ public final class TrainSchedule {
 
     public SpeedInstructions speedInstructions;
 
-    public final List<TrainStop> stops;
+    public List<TrainStop> stops;
 
     /** Create a new train schedule */
     public TrainSchedule(
