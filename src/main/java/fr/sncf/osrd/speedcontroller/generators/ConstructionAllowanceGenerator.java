@@ -15,9 +15,9 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
 
     private final double value;
 
-    public ConstructionAllowanceGenerator(TrainPath path, TrackSectionLocation begin, TrackSectionLocation end,
+    public ConstructionAllowanceGenerator(double begin, double end,
                                           double allowanceValue) {
-        super(path, begin, end, 0.1);
+        super(begin, end, 0.1);
         this.value = allowanceValue;
     }
 

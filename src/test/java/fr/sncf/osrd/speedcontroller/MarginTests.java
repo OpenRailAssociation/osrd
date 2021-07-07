@@ -258,9 +258,9 @@ public class MarginTests {
         var params1 = new RJSAllowance.LinearAllowance();
         params1.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
         params1.allowanceValue = 20;
-        params1.end = routeHalf;
+        params1.endLocation = routeHalf;
         var params2 = new RJSAllowance.LinearAllowance();
-        params2.begin = routeHalf;
+        params2.beginLocation = routeHalf;
         params2.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
         params2.allowanceValue = 50;
 

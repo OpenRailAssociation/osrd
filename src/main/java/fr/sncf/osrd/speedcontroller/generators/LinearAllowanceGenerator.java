@@ -19,9 +19,9 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
     private final double value;
 
     /** Constructor */
-    public LinearAllowanceGenerator(TrainPath path, TrackSectionLocation begin, TrackSectionLocation end,
+    public LinearAllowanceGenerator(double begin, double end,
                                     double allowanceValue, MarginType allowanceType) {
-        super(path, begin, end);
+        super(begin, end);
         this.allowanceType = allowanceType;
         this.value = allowanceValue;
     }

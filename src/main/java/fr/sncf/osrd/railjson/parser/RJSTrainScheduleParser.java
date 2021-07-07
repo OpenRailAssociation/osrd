@@ -106,6 +106,30 @@ public class RJSTrainScheduleParser {
                 stops);
     }
 
+    private static double[] parseAllowanceBeginEnd(RJSAllowance allowance,
+                                                   TrainPath path,
+                                                   Infra infra) throws InvalidSchedule {
+        if (allowance.beginLocation != null && allowance.beginPosition != null)
+            throw new InvalidSchedule("Can't set both begin_location and begin_position for an allowance");
+        if (allowance.endLocation != null && allowance.endPosition != null)
+            throw new InvalidSchedule("Can't set both end_location and end_position for an allowance");
+
+        double begin = path.convertTrackLocation(path.getStartLocation());
+        double end = path.convertTrackLocation(path.getEndLocation());
+
+        if (allowance.beginLocation != null)
+            begin = path.convertTrackLocation(parseLocation(infra, allowance.beginLocation));
+        else if (allowance.beginPosition != null)
+            begin = allowance.beginPosition;
+
+        if (allowance.endLocation != null)
+            end = path.convertTrackLocation(parseLocation(infra, allowance.endLocation));
+        else if (allowance.endPosition != null)
+            end = allowance.endPosition;
+
+        return new double[]{begin, end};
+    }
+
     private static SpeedControllerGenerator parseSpeedControllerGenerator(RJSAllowance allowance,
                                                                           TrainPath path,
                                                                           Infra infra)
@@ -113,24 +137,21 @@ public class RJSTrainScheduleParser {
         if (allowance == null)
             return new MaxSpeedGenerator();
 
-        var begin = path.getStartLocation();
-        if (allowance.begin != null)
-            begin = parseLocation(infra, allowance.begin);
-        var end = path.getEndLocation();
-        if (allowance.end != null)
-            end = parseLocation(infra, allowance.end);
+        var beginAndEnd = parseAllowanceBeginEnd(allowance, path, infra);
+        var begin = beginAndEnd[0];
+        var end = beginAndEnd[1];
 
         if (allowance instanceof RJSAllowance.LinearAllowance) {
             var linearAllowance = (RJSAllowance.LinearAllowance) allowance;
-            return new LinearAllowanceGenerator(path, begin, end,
+            return new LinearAllowanceGenerator(begin, end,
                     linearAllowance.allowanceValue, linearAllowance.allowanceType);
         } else if (allowance instanceof RJSAllowance.ConstructionAllowance) {
             var constructionAllowance = (RJSAllowance.ConstructionAllowance) allowance;
-            return new ConstructionAllowanceGenerator(path, begin, end,
+            return new ConstructionAllowanceGenerator(begin, end,
                     constructionAllowance.allowanceValue);
         } else if (allowance instanceof RJSAllowance.MarecoAllowance) {
             var marecoAllowance = (RJSAllowance.MarecoAllowance) allowance;
-            return new MarecoAllowanceGenerator(path, begin, end,
+            return new MarecoAllowanceGenerator(begin, end,
                     marecoAllowance.allowanceValue, marecoAllowance.allowanceType);
         } else {
             throw new InvalidSchedule("Unimplemented allowance type");

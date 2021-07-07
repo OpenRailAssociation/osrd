@@ -27,9 +27,9 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     private final double value;
 
     /** Constructor */
-    public MarecoAllowanceGenerator(TrainPath path, TrackSectionLocation begin, TrackSectionLocation end,
+    public MarecoAllowanceGenerator(double begin, double end,
                                     double allowanceValue, MarginType allowanceType) {
-        super(path, begin, end, 5);
+        super(begin, end, 5);
         this.allowanceType = allowanceType;
         this.value = allowanceValue;
     }

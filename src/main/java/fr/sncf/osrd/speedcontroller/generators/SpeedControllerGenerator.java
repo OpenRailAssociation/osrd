@@ -29,11 +29,6 @@ public abstract class SpeedControllerGenerator {
         this.sectionEnd = end;
     }
 
-    protected SpeedControllerGenerator(TrainPath path, TrackSectionLocation begin, TrackSectionLocation end) {
-        this.sectionBegin = path.convertTrackLocation(begin);
-        this.sectionEnd = path.convertTrackLocation(end);
-    }
-
     /** Generates the set of SpeedController */
     public abstract Set<SpeedController> generate(Simulation sim, TrainSchedule schedule,
                                                   Set<SpeedController> maxSpeed);

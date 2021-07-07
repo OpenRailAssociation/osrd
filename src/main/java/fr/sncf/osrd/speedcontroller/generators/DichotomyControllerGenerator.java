@@ -34,9 +34,8 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     protected Simulation sim;
 
     /** Constructor */
-    protected DichotomyControllerGenerator(TrainPath path, TrackSectionLocation begin,
-                                           TrackSectionLocation end, double precision) {
-        super(path, begin, end);
+    protected DichotomyControllerGenerator(double begin, double end, double precision) {
+        super(begin, end);
         this.precision = precision;
     }
 
