@@ -15,6 +15,7 @@ import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.*;
 //import java.util.ArrayList;
@@ -102,77 +103,101 @@ public class CBTCATP {
 
     // Retroune True, si l'énergie qu'il peut dissiper sur la distance est plus
     // grande que son énergie initiale
-    public boolean canBreak(double distance) {
-        if (lostBrakeEnergie(distance) - initialEnergie() > 0) {
-            return true;
-        }
-        return false;
-    }
 
-    public double marginBehindNextDanger(double distance) {
+    public double marginBehindNextDanger(double distance, double startposition) {
         double speed = this.trainState.speed;
-        return distance - starting_position() - (dt * speed + marge);
+        return distance - startposition - (dt * speed + marge);
     }
 
-    // Dissipated energie on distance
-    public double lostBrakeEnergie(double distance) {
+    // Dissipated energy on distance
+    public double lostBrakeEnergy(double distance) {
         // TODO : Consider the change of altitude!!
         // Only working with constant Gamma//
         double mass = this.trainSchedule.rollingStock.mass;
         double gamma = this.trainSchedule.rollingStock.timetableGamma;
-        double energie = gamma * mass * distance;
-        return energie;
+        double energy = gamma * mass * distance;
+        return energy;
     }
 
-    public double initialEnergie() {
-        // TODO Consider the altitude
-        double vitesse = this.final_speed();
+    public double cineticEnergy(double vitesse) {
         double mass = this.trainSchedule.rollingStock.mass;
-        return 1.0 / 2.0 * mass * Math.pow(vitesse, 2);// TODO : Consider the altitude
+        return 1.0 / 2.0 * mass * Math.pow(vitesse, 2);
     }
 
-    private double max_tilt() {
-
-        return 0;
+    private double potentialEnergy(double distance, double end) {
+        return HeightDifference(distance, end) * this.trainSchedule.rollingStock.mass * 9.81;
     }
 
-    private double starting_position() {
+    private double HeightDifference(double begin, double end) {
+        return HeightDifference(end) - HeightDifference(begin);
+    }
+
+    private double HeightDifference(double distance) {
+        return HeightDifference(this.trainState.location.trackSectionRanges.getFirst(), distance);
+    }
+
+    private double HeightDifference(TrackSectionRange tr, double distance) {
+        ArrayDeque<TrackSectionRange> listTrack = getListTrackSectionRangeUntilDistance(tr, distance);
+        var height = 0.;
+        for (TrackSectionRange track : listTrack) {
+            height += HeigthDifferenceBetweenPoints(track);
+        }
+        System.err.println(height);
+        return height;
+    }
+
+    private double startingDistance(double finalspeed, double accel, double i) {
         var speed = this.trainState.speed;
-        var accel = this.accel_erre();
-        double update_position = Math.pow(this.time_react, 2) * (accel) / 2 + this.time_react * speed;
-        update_position += this.time_erre * this.final_speed();
+        double update_position = Math.pow(this.time_react, 2) * (accel) / 2
+                + this.time_react * (speed + 9.81 * Math.sin(i) * this.time_react / 2);
+        update_position += this.time_erre * finalspeed;
         return update_position;
     }
 
-    private double accel_erre() {
-        var i = this.max_tilt();
+    private double accel_erre(double i) {
         double mass = this.trainSchedule.rollingStock.mass;
         return Math.sin(i) * 9.81 * mass + this.trainSchedule.rollingStock.getMaxEffort(this.trainState.speed) / mass;
     }
 
-    private double final_speed() {
-        return accel_erre() * this.time_react + this.trainState.speed;
+    private double final_speed(double accel) {
+        return accel * this.time_react + this.trainState.speed;
     }
 
     public ArrayList<SpeedController> directive() {
         double gamma = this.trainSchedule.rollingStock.timetableGamma;
         ArrayList<SpeedController> controllers = new ArrayList<SpeedController>();
-        double nextDangerPosition = getNextDangerPointPathDistance();
-        if (canBreak(marginBehindNextDanger(nextDangerPosition))) {
+        double nextDangerDistance = getNextDangerPointPathDistance();
+        ArrayDeque<TrackSectionRange> listTrack = getListTrackSectionRangeUntilDistance(nextDangerDistance);
+
+        double i = maxTilt(listTrack);
+        double accel = accel_erre(i);
+        double speed = final_speed(accel);
+        double distancestart = startingDistance(speed, accel, i);
+
+        double margindistance = marginBehindNextDanger(nextDangerDistance, distancestart);
+
+        double cineticEnergy = cineticEnergy(speed);
+        double lostBrakeEnergy = lostBrakeEnergy(nextDangerDistance - distancestart);
+        // double potentialEnergy = potentialEnergy(distancestart, nextDangerDistance);
+        System.err.println(this.trainSchedule.trainID + " " + nextDangerDistance + " " + distancestart + " "
+                + potentialEnergy(distancestart, margindistance));
+
+        if (cineticEnergy + potentialEnergy(distancestart, margindistance) - lostBrakeEnergy(margindistance) < 0) {
             // logger.debug("true");
             return controllers;
         }
-        if (canBreak(nextDangerPosition)) {
-            // logger.debug("false");
+        if (cineticEnergy + potentialEnergy(distancestart, nextDangerDistance - 10)
+                - lostBrakeEnergy(nextDangerDistance - distancestart - 10) < 0) {
+            // logger.debug("false");s
             controllers.add(new LimitAnnounceSpeedController(0, location.getPathPosition() - 20,
-                    nextDangerPosition + location.getPathPosition() - margeBehindTrain, gamma));
+                    nextDangerDistance + location.getPathPosition() - margeBehindTrain, gamma));
             controllers
-                    .add(new MaxSpeedController(0, nextDangerPosition - margeBehindTrain + location.getPathPosition(),
-                            nextDangerPosition + location.getPathPosition() + 40));
+                    .add(new MaxSpeedController(0, nextDangerDistance - margeBehindTrain + location.getPathPosition(),
+                            nextDangerDistance + location.getPathPosition() + 40));
             return controllers;
         } else { // Enter EMERGENCY_BRAKING
-            controllers.add(new MaxSpeedController(0, 0, nextDangerPosition));
-            controllers.add(new LimitAnnounceSpeedController(0, 0, nextDangerPosition, gamma));
+            controllers.add(new MaxSpeedController(0, 0, nextDangerDistance));
+            controllers.add(new LimitAnnounceSpeedController(0, 0, nextDangerDistance, gamma));
             return controllers;
         }
     }
@@ -259,4 +284,79 @@ public class CBTCATP {
         return distance;
     }
 
+    // function to determine max tilt before nextdanger
+    private double maxTilt(ArrayDeque<TrackSectionRange> trackSectionRanges) {
+        var val = 0.;
+        var maxVal = 0.;
+        for (var track : trackSectionRanges) {
+            var gradients = track.edge.forwardGradients;
+            if (track.direction == EdgeDirection.STOP_TO_START)
+                gradients = track.edge.backwardGradients;
+
+            for (var slope : gradients.getValuesInRange(track.getBeginPosition(), track.getEndPosition())) {
+                if (maxVal < Math.abs(slope)) {
+                    val = slope;
+                    maxVal = Math.abs(slope);
+                }
+            }
+        }
+        return val;
+    }
+
+    private double HeigthDifferenceBetweenPoints(TrackSectionRange track) {
+        var height = 0.;
+        var gradients = track.edge.forwardGradients;
+        var begin = 0.;
+        if (track.direction == EdgeDirection.STOP_TO_START)
+            gradients = track.edge.backwardGradients;
+        Set<Double> entries = gradients.keySet();
+        for (var end : entries) {
+            var slope = gradients.get(end);
+            System.err.println(slope);
+            if (end > track.getBeginPosition() && begin < track.getEndPosition()) {
+                height += Math.sin(slope)
+                        * (Math.min(end, track.getEndPosition()) - Math.max(begin, track.getBeginPosition()));
+            }
+            begin = end;
+            if (begin > track.getEndPosition())
+                break;
+        }
+        return height;
+
+    }
+
+    private TrackSection nextTrackSection(TrackSection track) {
+        List<TrackSectionRange> trackSectionPath = trainState.location.trackSectionPath;
+        TrackSection nextTrackSection = null;
+        var currentEdge = track;
+        for (int i = 1; i < trackSectionPath.size(); i++) {
+            if (trackSectionPath.get(i - 1).edge.id.equals(currentEdge.id)
+                    && !trackSectionPath.get(i).edge.id.equals(currentEdge.id)) {
+                nextTrackSection = trackSectionPath.get(i).edge;
+                break;
+            }
+        }
+        // if (nextTrackSection == null)
+        // throw new RuntimeException("Can't move train further because it has reached
+        // the end of its path");
+
+        return nextTrackSection;
+    }
+
+    private ArrayDeque<TrackSectionRange> getListTrackSectionRangeUntilDistance(TrackSectionRange tr, double distance) {
+        ArrayDeque<TrackSectionRange> tracks = new ArrayDeque<>();
+        double begin = tr.getEndPosition();
+        TrackSection edge = tr.edge;
+        while (distance > 0 && edge != null) {
+            tracks.add(new TrackSectionRange(edge, trainState.location.trackSectionRanges.getFirst().direction, begin,
+                    Math.min(edge.length - begin, distance)));
+            distance -= Math.min(edge.length - begin, distance);
+            edge = nextTrackSection(edge);
+        }
+        return tracks;
+    }
+
+    private ArrayDeque<TrackSectionRange> getListTrackSectionRangeUntilDistance(double distance) {
+        return getListTrackSectionRangeUntilDistance(this.trainState.location.trackSectionRanges.getFirst(), distance);
+    }
 }
