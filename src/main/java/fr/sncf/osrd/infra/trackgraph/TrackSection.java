@@ -50,7 +50,8 @@ public final class TrackSection extends BiNEdge<TrackSection> {
     public final IntervalTree<RouteFragment> backwardRoutes = new IntervalTree<>();
 
     // the data structure used for the slope automatically negates it when iterated on backwards
-    public final DoubleOrientedRangeSequence slope = new DoubleOrientedRangeSequence();
+    public final DoubleRangeMap forwardGradients = new DoubleRangeMap();
+    public final DoubleRangeMap backwardGradients = new DoubleRangeMap();
     public final ArrayList<RangeValue<SpeedSection>> forwardSpeedSections = new ArrayList<>();
     public final ArrayList<RangeValue<SpeedSection>> backwardSpeedSections = new ArrayList<>();
     public final PointSequence<OperationalPoint> operationalPoints = new PointSequence<>();
@@ -172,19 +173,11 @@ public final class TrackSection extends BiNEdge<TrackSection> {
             throw new InvalidInfraException(String.format("invalid PointSequence end for %s", id));
     }
 
-    private <ValueT> void validateRanges(RangeSequence<ValueT> ranges) throws InvalidInfraException {
-        if (ranges.getFirstPosition() < 0.)
-            throw new InvalidInfraException(String.format("invalid RangeSequence start for %s", id));
-        if (ranges.getLastPosition() >= length)
-            throw new InvalidInfraException(String.format("invalid RangeSequence end for %s", id));
-    }
-
     /**
      * Ensure the edge data in consistent.
      * @throws InvalidInfraException when discrepancies are detected
      */
-    public void validate() throws InvalidInfraException {
-        validateRanges(slope);
+    public void validate() {
         // TODO: validate speed limits
     }
 
@@ -192,10 +185,6 @@ public final class TrackSection extends BiNEdge<TrackSection> {
      * All the functions below are attributes getters, meant to implement either RangeAttrGetter or PointAttrGetter.
      * These can be passed around to build generic algorithms on attributes.
      */
-
-    public static RangeSequence<Double> getSlope(TrackSection edge, EdgeDirection direction) {
-        return edge.slope;
-    }
 
     /**
      * Gets the speed limit on a given section of track, along a given direction.
