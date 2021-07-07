@@ -119,8 +119,8 @@ public class StaticSpeedLimitTest {
                 phases,
                 null,
                 path,
-                null
-        );
+                null,
+                null);
         TrainCreatedEvent.plan(sim, schedule);
 
         // run the simulation

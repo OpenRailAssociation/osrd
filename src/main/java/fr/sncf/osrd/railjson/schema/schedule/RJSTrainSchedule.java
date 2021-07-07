@@ -35,6 +35,9 @@ public class RJSTrainSchedule implements Identified {
     /** What generator to use to generate the target speed */
     public RJSAllowance[] allowances;
 
+    /** List of stops */
+    public RJSTrainStop[] stops;
+
     /** Create a new train schedule */
     public RJSTrainSchedule(
             String id,
@@ -45,7 +48,8 @@ public class RJSTrainSchedule implements Identified {
             double initialSpeed,
             RJSTrainPhase[] phases,
             String trainControlMethod,
-            RJSAllowance[] allowances
+            RJSAllowance[] allowances,
+            RJSTrainStop[] stops
     ) {
         this.id = id;
         this.rollingStock = rollingStock;
@@ -56,6 +60,7 @@ public class RJSTrainSchedule implements Identified {
         this.phases = phases;
         this.trainControlMethod = trainControlMethod;
         this.allowances = allowances;
+        this.stops = stops;
     }
 
     @Override

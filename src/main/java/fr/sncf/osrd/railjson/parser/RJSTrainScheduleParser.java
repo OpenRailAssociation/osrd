@@ -1,6 +1,7 @@
 package fr.sncf.osrd.railjson.parser;
 
 import fr.sncf.osrd.RollingStock;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
 import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.infra.Infra;
@@ -15,6 +16,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.speedcontroller.generators.*;
 import fr.sncf.osrd.train.TrainPath;
+import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.train.decisions.KeyboardInput;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.train.phases.Phase;
@@ -84,6 +86,8 @@ public class RJSTrainScheduleParser {
                 expectedPath, infra);
         var speedInstructions = new SpeedInstructions(targetSpeedGenerators);
 
+        var stops = parseStops(rjsTrainSchedule.stops, infra, expectedPath);
+
         if (initialDirection == null)
             throw new InvalidSchedule("the initial location isn't on the initial route");
 
@@ -98,8 +102,8 @@ public class RJSTrainScheduleParser {
                 phases,
                 parseDecisionMaker(rjsTrainSchedule.trainControlMethod),
                 expectedPath,
-                speedInstructions
-        );
+                speedInstructions,
+                stops);
     }
 
     private static SpeedControllerGenerator parseSpeedControllerGenerator(RJSAllowance allowance,
@@ -217,5 +221,24 @@ public class RJSTrainScheduleParser {
         if (offset < 0 || offset > trackSection.length)
             throw new InvalidSchedule("invalid track section offset");
         return new TrackSectionLocation(trackSection, offset);
+    }
+
+    private static List<TrainStop> parseStops(RJSTrainStop[] stops, Infra infra, TrainPath path) throws InvalidSchedule {
+        var res = new ArrayList<TrainStop>();
+        if (stops == null)
+            return res;
+        for (var stop : stops) {
+            if ((stop.position == null) == (stop.location == null)) {
+                throw new InvalidSchedule("Train stop must specify exactly one of position or location");
+            }
+            double position;
+            if (stop.position != null) {
+                position = stop.position;
+            } else {
+                position = path.convertTrackLocation(parseLocation(infra, stop.location));
+            }
+            res.add(new TrainStop(position, stop.duration));
+        }
+        return res;
     }
 }

@@ -3,14 +3,13 @@ package fr.sncf.osrd.train;
 import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.speedcontroller.SpeedInstructions;
-import fr.sncf.osrd.train.TrackSectionRange;
-import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public final class TrainSchedule {
     public final String trainID;
@@ -32,6 +31,8 @@ public final class TrainSchedule {
 
     public SpeedInstructions speedInstructions;
 
+    public final List<TrainStop> stops;
+
     /** Create a new train schedule */
     public TrainSchedule(
             String trainID,
@@ -43,8 +44,8 @@ public final class TrainSchedule {
             ArrayList<Phase> phases,
             TrainDecisionMaker trainDecisionMaker,
             TrainPath plannedPath,
-            SpeedInstructions speedInstructions
-    ) {
+            SpeedInstructions speedInstructions,
+            List<TrainStop> stops) {
         this.trainID = trainID;
         this.rollingStock = rollingStock;
         this.departureTime = departureTime;
@@ -54,6 +55,7 @@ public final class TrainSchedule {
         this.initialSpeed = initialSpeed;
         this.phases = phases;
         this.plannedPath = plannedPath;
+        this.stops = stops != null ? stops : new ArrayList<>();
         if (trainDecisionMaker == null)
             trainDecisionMaker = new TrainDecisionMaker.DefaultTrainDecisionMaker();
         this.trainDecisionMaker = trainDecisionMaker;
