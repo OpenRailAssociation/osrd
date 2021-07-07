@@ -119,9 +119,10 @@ public abstract class SpeedControllerGenerator {
         var location = Train.getInitialLocation(schedule, sim);
         location.ignoreInfraState = true;
         location.updatePosition(schedule.rollingStock.length, begin);
-        var totalLength = 0;
+        var totalLength = 0.;
         for (var range : schedule.plannedPath.trackSectionPath)
             totalLength += range.length();
+        totalLength = min(totalLength, end);
 
         var res = new TreeMap<Double, PositionUpdate>();
 
@@ -135,15 +136,13 @@ public abstract class SpeedControllerGenerator {
             var integrator = TrainPhysicsIntegrator.make(timestep, schedule.rollingStock,
                     speed, location.maxTrainGrade());
             var action = integrator.actionToTargetSpeed(directive, schedule.rollingStock);
-            var distanceLeft = min(totalLength - location.getPathPosition(), end - location.getPathPosition());
+            var distanceLeft = totalLength - location.getPathPosition();
             var update =  integrator.computeUpdate(action, distanceLeft);
             speed = update.speed;
 
             location.updatePosition(schedule.rollingStock.length, update.positionDelta);
             res.put(location.getPathPosition(), update);
-        } while (location.getPathPosition() + timestep * speed < totalLength
-                && location.getPathPosition() < end
-                && speed > 0);
+        } while (location.getPathPosition() + timestep * speed < totalLength && speed > 0);
         return res;
     }
 
@@ -151,8 +150,10 @@ public abstract class SpeedControllerGenerator {
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     protected double findInitialSpeed(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed,
                                       double timeStep) {
+        if (sectionBegin <= 0)
+            return schedule.initialSpeed;
         var speeds = getExpectedSpeeds(sim, schedule, maxSpeed, timeStep,
-                0, sectionEnd, schedule.initialSpeed);
+                0, sectionBegin, schedule.initialSpeed);
         return speeds.lastEntry().getValue();
     }
 }

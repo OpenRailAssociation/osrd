@@ -1,7 +1,6 @@
 package fr.sncf.osrd;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.squareup.moshi.JsonReader;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -342,6 +341,17 @@ public class Helpers {
             }
         }
         return res;
+    }
+
+    public static void assertSameSpeedPerPosition(Iterable<TimelineEvent> eventsExpected,
+                                                  Iterable<TimelineEvent> events) {
+        var expectedSpeedPerPosition = getSpeedPerPosition(eventsExpected);
+        var speedPerPosition = getSpeedPerPosition(events);
+        for (double t = expectedSpeedPerPosition.firstKey(); t < expectedSpeedPerPosition.lastKey(); t += 1) {
+            var expected = expectedSpeedPerPosition.interpolate(t);
+            var result = speedPerPosition.interpolate(t);
+            assertEquals(expected, result, expected * 0.01);
+        }
     }
 
     /** Get a map of the speed at each position */

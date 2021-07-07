@@ -114,8 +114,8 @@ public class RJSTrainScheduleParser {
         if (allowance.endLocation != null && allowance.endPosition != null)
             throw new InvalidSchedule("Can't set both end_location and end_position for an allowance");
 
-        double begin = path.convertTrackLocation(path.getStartLocation());
-        double end = path.convertTrackLocation(path.getEndLocation());
+        double begin = 0;
+        double end = Double.POSITIVE_INFINITY;
 
         if (allowance.beginLocation != null)
             begin = path.convertTrackLocation(parseLocation(infra, allowance.beginLocation));

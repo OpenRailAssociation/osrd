@@ -58,7 +58,8 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
             speedLimits.put(keys.get(i - 1), expectedSpeeds.get(keys.get(i)));
         speedLimits.put(expectedSpeeds.lastKey(), expectedSpeeds.lastEntry().getValue());
 
-        return addSpeedController(maxSpeed, new MapSpeedController(speedLimits).scaled(scaleFactor));
+        var speedController = new MapSpeedController(speedLimits, sectionBegin, sectionEnd);
+        return addSpeedController(maxSpeed, speedController.scaled(scaleFactor));
     }
 
     static Set<SpeedController> addSpeedController(Set<SpeedController> speedControllers,

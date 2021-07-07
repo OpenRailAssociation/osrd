@@ -3,6 +3,7 @@ package fr.sncf.osrd.speedcontroller;
 import static fr.sncf.osrd.Helpers.*;
 import static fr.sncf.osrd.speedcontroller.SpeedInstructionsTests.getStaticGenerator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
@@ -252,6 +253,50 @@ public class MarginTests {
     }
 
     @Test
+    public void testSameSpeedLimits() throws InvalidInfraException {
+        final var infra = getBaseInfra();
+
+        double marginChangeLocation = 5000;
+
+        var params1 = new RJSAllowance.LinearAllowance();
+        params1.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
+        params1.allowanceValue = 50;
+        params1.endPosition = marginChangeLocation;
+        var params2 = new RJSAllowance.LinearAllowance();
+        params2.beginPosition = marginChangeLocation;
+        params2.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
+        params2.allowanceValue = 50;
+
+        var params = new ArrayList<RJSAllowance>();
+        params.add(params1);
+        params.add(params2);
+
+        // Run with margins
+        final var configMargins = makeConfigWithSpeedParams(params);
+        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var events = run(sim2, configMargins);
+        var marginTime = sim2.getTime();
+
+
+        // base run, one global margin
+        var globalParams = new RJSAllowance.LinearAllowance();
+        globalParams.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
+        globalParams.allowanceValue = 50;
+        final var config = makeConfigWithSpeedParams(Collections.singleton(globalParams));
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var eventsBase = run(sim, config);
+        var totalTime = sim.getTime();
+
+
+
+        saveGraph(eventsBase, "same-margins-base.csv");
+        saveGraph(events, "same-margins-out.csv");
+
+        assertSameSpeedPerPosition(eventsBase, events);
+    }
+
+
+    @Test
     public void testDifferentSpeedLimits() throws InvalidInfraException {
         final var infra = getBaseInfra();
 
@@ -268,7 +313,7 @@ public class MarginTests {
 
         var params1 = new RJSAllowance.LinearAllowance();
         params1.allowanceType = RJSAllowance.LinearAllowance.MarginType.TIME;
-        params1.allowanceValue = 20;
+        params1.allowanceValue = 50;
         params1.endPosition = marginChangeLocation;
         var params2 = new RJSAllowance.LinearAllowance();
         params2.beginPosition = marginChangeLocation;

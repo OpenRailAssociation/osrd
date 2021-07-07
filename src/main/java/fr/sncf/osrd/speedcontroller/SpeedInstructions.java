@@ -40,8 +40,7 @@ public class SpeedInstructions {
         maxSpeedControllers = new MaxSpeedGenerator().generate(sim, schedule, null);
         targetSpeedControllers = maxSpeedControllers;
         for (var generator : targetSpeedGenerators)
-            targetSpeedControllers = generator.generate(sim, schedule, targetSpeedControllers);
-        targetSpeedControllers.addAll(maxSpeedControllers);
+            targetSpeedControllers.addAll(generator.generate(sim, schedule, targetSpeedControllers));
 
         var lastGenerator = targetSpeedGenerators.get(targetSpeedGenerators.size() - 1);
         expectedTimes = lastGenerator.getExpectedTimes(sim, schedule, targetSpeedControllers, 1,
