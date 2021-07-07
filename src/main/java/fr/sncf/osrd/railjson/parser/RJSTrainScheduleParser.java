@@ -45,6 +45,8 @@ public class RJSTrainScheduleParser {
 
         var expectedPath = parsePath(infra, rjsTrainSchedule.phases, initialLocation);
 
+        var stops = parseStops(rjsTrainSchedule.stops, infra, expectedPath);
+
         var initialRouteID = rjsTrainSchedule.initialRoute.id;
         var initialRoute = infra.routeGraph.routeMap.get(initialRouteID);
         if (initialRoute == null)
@@ -58,7 +60,7 @@ public class RJSTrainScheduleParser {
         var phases = new ArrayList<Phase>();
         var beginLocation = initialLocation;
         for (var rjsPhase : rjsTrainSchedule.phases) {
-            var phase = parsePhase(infra, beginLocation, rjsPhase, expectedPath);
+            var phase = parsePhase(infra, beginLocation, rjsPhase, expectedPath, stops);
             var endLocation = phase.getEndLocation();
             if (endLocation != null)
                 beginLocation = endLocation;
@@ -85,8 +87,6 @@ public class RJSTrainScheduleParser {
         var targetSpeedGenerators = parseSpeedControllerGenerators(rjsTrainSchedule,
                 expectedPath, infra);
         var speedInstructions = new SpeedInstructions(targetSpeedGenerators);
-
-        var stops = parseStops(rjsTrainSchedule.stops, infra, expectedPath);
 
         if (initialDirection == null)
             throw new InvalidSchedule("the initial location isn't on the initial route");
@@ -164,7 +164,8 @@ public class RJSTrainScheduleParser {
             Infra infra,
             TrackSectionLocation startLocation,
             RJSTrainPhase rjsPhase,
-            TrainPath expectedPath
+            TrainPath expectedPath,
+            List<TrainStop> stops
     ) throws InvalidSchedule {
 
         if (rjsPhase.getClass() == RJSTrainPhase.Stop.class) {
@@ -187,7 +188,7 @@ public class RJSTrainScheduleParser {
 
             var endLocation = parseLocation(infra, rjsNavigate.endLocation);
             return SignalNavigatePhase.from(driverSightDistance, startLocation,
-                    endLocation, expectedPath);
+                    endLocation, expectedPath, stops);
         }
         throw new RuntimeException("unknown train phase");
     }

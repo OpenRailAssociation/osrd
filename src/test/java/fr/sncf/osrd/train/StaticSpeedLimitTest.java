@@ -106,7 +106,7 @@ public class StaticSpeedLimitTest {
         var phases = new ArrayList<Phase>();
         phases.add(SignalNavigatePhase.from(
                 400, startLocation,
-                new TrackSectionLocation(edge, 10000), path));
+                new TrackSectionLocation(edge, 10000), path, null));
 
         var schedule = new TrainSchedule(
                 "test_train",

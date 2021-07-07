@@ -1,6 +1,7 @@
 package fr.sncf.osrd.train.phases;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.StopActionPoint;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.signaling.AspectConstraint;
@@ -53,15 +54,27 @@ public final class SignalNavigatePhase implements Phase {
             double driverSightDistance,
             TrackSectionLocation startLocation,
             TrackSectionLocation endLocation,
-            TrainPath expectedPath
-    ) throws InvalidSchedule {
+            TrainPath expectedPath,
+            List<TrainStop> stops
+    ) {
+        if (stops == null)
+            stops = new ArrayList<>();
+
         var actionPointPath = trackSectionToActionPointPath(driverSightDistance,
                 expectedPath,
                 startLocation,
                 endLocation,
                 expectedPath.trackSectionPath);
+        addStopInteractions(actionPointPath, stops);
         return new SignalNavigatePhase(startLocation, endLocation, actionPointPath,
                 driverSightDistance, expectedPath);
+    }
+
+    private static void addStopInteractions(ArrayList<Interaction> interactions, List<TrainStop> stops) {
+        for (int i = 0; i < stops.size(); i++) {
+            var stop = stops.get(i);
+            interactions.add(new Interaction(InteractionType.HEAD, stop.position, new StopActionPoint(i)));
+        }
     }
 
     private static ArrayList<Interaction> trackSectionToActionPointPath(
