@@ -3,13 +3,10 @@ package fr.sncf.osrd.train.phases;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.StopActionPoint;
 import fr.sncf.osrd.train.TrainSchedule;
-import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.signaling.AspectConstraint;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra_state.SignalState;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
-import fr.sncf.osrd.simulation.Change;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
@@ -75,6 +72,7 @@ public final class SignalNavigatePhase implements Phase {
             var stop = stops.get(i);
             interactions.add(new Interaction(InteractionType.HEAD, stop.position, new StopActionPoint(i)));
         }
+        interactions.sort(Comparator.comparingDouble(x -> x.position));
     }
 
     private static ArrayList<Interaction> trackSectionToActionPointPath(
