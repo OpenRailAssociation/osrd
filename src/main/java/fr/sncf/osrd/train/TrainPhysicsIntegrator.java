@@ -47,7 +47,7 @@ public class TrainPhysicsIntegrator {
     ) {
         // get an angle from a meter per km elevation difference
         var angle = Math.atan(maxTrainGrade / 1000.0);  // from m/km to m/m
-        var weightForce = rollingStock.mass * Constants.GRAVITY * -Math.sin(angle);
+        var weightForce = - rollingStock.mass * Constants.GRAVITY * Math.sin(angle);
 
         var inertia = rollingStock.mass * rollingStock.inertiaCoefficient;
         return new TrainPhysicsIntegrator(
@@ -114,6 +114,8 @@ public class TrainPhysicsIntegrator {
         }
 
         // if the resulting force is negative
+        // targetForce should not be larger than the average braking force gamma * inertia
+        //assert (targetForce >= getMaxBrakingForce(rollingStock));
         var maxBrakingForce = getMaxBrakingForce(rollingStock);
         if (actionForce < maxBrakingForce)
             actionForce = maxBrakingForce;
@@ -173,39 +175,34 @@ public class TrainPhysicsIntegrator {
      */
     public PositionUpdate computeUpdate(double actionTractionForce, double actionBrakingForce, double maxDistance,
                                         double directionSign) {
-        // the rolling resistance is the sum of forces that always go the direction
-        // opposite to the train's movement
         assert actionBrakingForce >= 0.;
-        
-        // the absolute value of forces opposite to the direction of movement
-        // the active rolling resistance is the train's braking force
-        // the passive rolling resistance is the sum of other friction parameters, which apply no matter what
-        var rollingResistance = precomputedRollingResistance + actionBrakingForce;
 
-        // as the rolling resistance is a reaction force, it needs to be adjusted to be opposed to the other forces
-        double effectiveRollingResistance;
+        // the sum of forces that always go the direction opposite to the train's movement
+        double oppositeForce = precomputedRollingResistance + actionBrakingForce;
+
+        // as the oppositeForces is a reaction force, it needs to be adjusted to be opposed to the other forces
+        double effectiveOppositeForces;
         if (currentSpeed == 0.0) {
             var totalOtherForce = computeTotalForce(0.0, actionTractionForce);
             // if the train is stopped and the rolling resistance is greater in amplitude than the other forces,
             // the train won't move
-            if (Math.abs(totalOtherForce) < rollingResistance)
+            if (Math.abs(totalOtherForce) < oppositeForce)
                 return new PositionUpdate(timeStep, 0.0, 0.0);
             // if the sum of other forces isn't sufficient to keep the train still, the rolling resistance
             // will be opposed to the movement direction (which is the direction of the other forces)
-            effectiveRollingResistance = Math.copySign(rollingResistance, -totalOtherForce);
+            effectiveOppositeForces = Math.copySign(oppositeForce, -totalOtherForce);
         } else {
             // if the train is moving, the rolling resistance if opposed to the movement
-            effectiveRollingResistance = Math.copySign(rollingResistance, -currentSpeed);
+            effectiveOppositeForces = Math.copySign(oppositeForce, -currentSpeed);
         }
 
         // general case: compute the acceleration and new position
         // compute the acceleration on all the integration step. the variable is named this way because be
         // compute the acceleration on only a part of the integration step below
-        var fullStepAcceleration = computeAcceleration(directionSign * effectiveRollingResistance,
-                actionTractionForce);
-        var newSpeed = currentSpeed + fullStepAcceleration * timeStep;
+        var fullStepAcceleration =  computeAcceleration( effectiveOppositeForces, actionTractionForce);
+        var newSpeed = currentSpeed + directionSign * fullStepAcceleration * timeStep;
 
-        // when the train changes direction, the rolling resistance doesn't apply
+        // when the train changes direction, the opposite force doesn't apply
         // in the same direction for all the integration step.
 
         var timeDelta = timeStep;
