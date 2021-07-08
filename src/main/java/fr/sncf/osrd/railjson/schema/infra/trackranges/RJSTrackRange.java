@@ -2,10 +2,6 @@ package fr.sncf.osrd.railjson.schema.infra.trackranges;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
-import javafx.util.Pair;
-
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
