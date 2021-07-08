@@ -190,6 +190,7 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
             if (track.direction == EdgeDirection.STOP_TO_START)
                 gradients = track.edge.backwardGradients;
 
+            //TODO: improve using an average
             for (var slope : gradients.getValuesInRange(track.getBeginPosition(), track.getEndPosition())) {
                 if (maxVal < Math.abs(slope)) {
                     val = slope;
