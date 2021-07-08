@@ -1,6 +1,12 @@
+import * as d3 from 'd3';
+
 export function datetime2string(ts) {
   const datetime = new Date(ts);
   return datetime.toLocaleString();
+}
+
+export function time2datetime(time) {
+  return d3.timeParse('%H:%M:%S')(time);
 }
 
 export function sec2time(sec) {

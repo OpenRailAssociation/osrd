@@ -9,7 +9,7 @@ import colors from 'common/Map/Consts/colors.ts';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateViewport } from 'reducers/map';
 import { updateHoverPosition } from 'reducers/osrdsimulation';
-import { sec2time } from 'utils/timeManipulation';
+import { sec2time, time2sec } from 'utils/timeManipulation';
 import bbox from '@turf/bbox';
 
 import 'common/Map/Map.scss';
@@ -42,8 +42,9 @@ import Signals from 'common/Map/Layers/Signals';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import RenderItinerary from 'applications/osrd/components/SimulationMap/RenderItinerary';
 
-const createOtherPoint = (trains, selectedTrain, hoverPosition) => {
-  const actualTime = trains[selectedTrain].steps[hoverPosition].time;
+const createOtherPoint = (trains, selectedTrain, timePosition) => {
+  // const actualTime = trains[selectedTrain].steps[hoverPosition].time;
+  const actualTime = time2sec(timePosition);
 
   // First find trains where actual time from position is between start & stop
   const concernedTrains = [];
@@ -111,7 +112,7 @@ const Map = (props) => {
   const {
     viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM,
   } = useSelector((state) => state.map);
-  const { hoverPosition } = useSelector((state) => state.osrdsimulation);
+  const { hoverPosition, timePosition } = useSelector((state) => state.osrdsimulation);
   const [showSearch, setShowSearch] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [geojsonPath, setGeojsonPath] = useState(undefined);
@@ -197,13 +198,11 @@ const Map = (props) => {
   }, [simulation.train, selectedTrain]);
 
   useEffect(() => {
-    if (simulation.trains.length > 0
-      && hoverPosition !== undefined
-      && simulation.trains[selectedTrain].steps[hoverPosition] !== undefined) {
+    if (simulation.trains.length > 0 && timePosition) {
       setTrainHoverPosition(simulation.trains[selectedTrain].steps[hoverPosition]);
-      setTrainHoverPositionOthers(createOtherPoint(simulation.trains, selectedTrain, hoverPosition));
+      setTrainHoverPositionOthers(createOtherPoint(simulation.trains, selectedTrain, timePosition));
     }
-  }, [hoverPosition]);
+  }, [timePosition]);
 
   return (
     <>
@@ -282,7 +281,7 @@ const Map = (props) => {
 
         {trainHoverPosition !== undefined
           ? <TrainHoverPosition point={trainHoverPosition} /> : null}
-        {trainHoverPosition !== undefined
+        {trainHoverPositionOthers !== undefined
           ? <TrainHoverPositionOthers trainHoverPositionOthers={trainHoverPositionOthers} /> : null}
 
       </ReactMapGL>

@@ -13,8 +13,10 @@ import TrainDetails from 'applications/osrd/views/OSRDSimulation/TrainDetails';
 import TrainsList from 'applications/osrd/views/OSRDSimulation/TrainsList';
 import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
 import { updateViewport } from 'reducers/map';
+import { updateTimePosition } from 'reducers/osrdsimulation';
 import { simplifyData, timeShiftTrain, timeShiftStops } from 'applications/osrd/components/Helpers/ChartHelpers';
 import './OSRDSimulation.scss';
+import { sec2time } from 'utils/timeManipulation';
 
 const timetableURI = '/osrd/timetable';
 const trainscheduleURI = '/osrd/train_schedule';
@@ -31,7 +33,7 @@ const OSRDSimulation = () => {
   const [isEmpty, setIsEmpty] = useState(true);
   const [mustRedraw, setMustRedraw] = useState(true);
   const osrdconf = useSelector((state) => state.osrdconf);
-  const osrdsimulation = useSelector((state) => state.osrdsimulation);
+  const { hoverPosition } = useSelector((state) => state.osrdsimulation);
   const [simulation, setSimulation] = useState({ trains: [] });
   const dispatch = useDispatch();
 
@@ -66,8 +68,15 @@ const OSRDSimulation = () => {
   };
 
   useEffect(() => {
-    console.log(osrdsimulation.timePosition);
-  }, [osrdsimulation.timePosition]);
+    if (simulation.trains[selectedTrain]
+      && simulation.trains[selectedTrain].steps[hoverPosition]) {
+      dispatch(
+        updateTimePosition(
+          sec2time(simulation.trains[selectedTrain].steps[hoverPosition].time),
+        ),
+      );
+    }
+  }, [hoverPosition, selectedTrain]);
 
   useEffect(() => {
     getTimetable(osrdconf.timetableID);
@@ -125,8 +134,8 @@ const OSRDSimulation = () => {
               </div>
               <div className="osrd-simulation-container mb-2">
                 <TimeButtons
-                  simulation={simulation}
                   selectedTrain={selectedTrain}
+                  simulation={simulation}
                   simulationLength={simulation.trains[selectedTrain].steps.length}
                 />
               </div>

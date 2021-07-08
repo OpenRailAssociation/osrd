@@ -136,7 +136,7 @@ const SpaceTimeChart = (props) => {
   } = props;
   const ref = useRef();
   const dispatch = useDispatch();
-  const { hoverPosition } = useSelector((state) => state.osrdsimulation);
+  const { hoverPosition, timePosition } = useSelector((state) => state.osrdsimulation);
   const keyValues = ['time', 'value'];
   const [rotate, setRotate] = useState(false);
   const [isResizeActive, setResizeActive] = useState(false);
@@ -186,9 +186,10 @@ const SpaceTimeChart = (props) => {
 
   useEffect(() => {
     traceVerticalLine(
-      chart, dataSimulation[selectedTrain], hoverPosition, keyValues, LIST_VALUES_NAME_SPACE_TIME, 'headPosition', rotate,
+      chart, dataSimulation[selectedTrain], hoverPosition, keyValues,
+      LIST_VALUES_NAME_SPACE_TIME, 'headPosition', rotate, timePosition,
     );
-  }, [mustRedraw, hoverPosition, chart]);
+  }, [chart, hoverPosition, mustRedraw, timePosition]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKey);

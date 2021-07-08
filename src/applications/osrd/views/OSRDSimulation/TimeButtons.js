@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import * as d3 from 'd3';
 import { useSelector, useDispatch } from 'react-redux';
-import { updateHoverPosition } from 'reducers/osrdsimulation';
+import { updateHoverPosition, updateTimePosition } from 'reducers/osrdsimulation';
 import PropTypes from 'prop-types';
-import { sec2time } from 'utils/timeManipulation';
 import {
   FaStop, FaPause, FaPlay, FaBackward,
 } from 'react-icons/fa';
+import { time2sec } from 'utils/timeManipulation';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
 // transform a speed ratio (X2 X10 X20, etc.) to interval time & step to bypass
@@ -17,10 +18,10 @@ const factor2ms = (factor) => {
 
 export default function TimeButtons(props) {
   const {
-    simulation, selectedTrain, simulationLength,
+    selectedTrain, simulation, simulationLength,
   } = props;
   const dispatch = useDispatch();
-  const { hoverPosition } = useSelector((state) => state.osrdsimulation);
+  const { timePosition } = useSelector((state) => state.osrdsimulation);
   const [playInterval, setPlayInterval] = useState(undefined);
   const [playState, setPlayState] = useState(0);
   const [playReverse, setPlayReverse] = useState(false);
@@ -74,13 +75,29 @@ export default function TimeButtons(props) {
     }
   };
 
+  const changeTimePosition = (e) => {
+    if (simulation.trains[selectedTrain]) {
+      const bisect = d3.bisector((d) => d.time).left;
+      dispatch(
+        updateHoverPosition(
+          bisect(simulation.trains[selectedTrain].steps, time2sec(e.target.value), 1),
+        ),
+      );
+    }
+    dispatch(updateTimePosition(e.target.value));
+  };
+
   return (
     <div className="d-flex">
-      <button type="button" disabled className="btn btn-disabled font-weight-bold mr-1">
-        <i className="icons-clock mr-2" />
-        {simulation.trains[selectedTrain].steps[hoverPosition]
-          ? sec2time(simulation.trains[selectedTrain].steps[hoverPosition].time) : '--:--:--'}
-      </button>
+      <span className="mr-1">
+        <InputSNCF
+          noMargin
+          type="time"
+          id="simulation-time"
+          value={timePosition}
+          onChange={changeTimePosition}
+        />
+      </span>
       <button
         type="button"
         className="btn btn-only-icon btn-danger mr-1"
@@ -112,9 +129,6 @@ export default function TimeButtons(props) {
           <FaPlay />
         </button>
       )}
-      <button type="button" disabled className="btn btn-disabled font-weight-bold">
-        <i className="icons-close" />
-      </button>
       <InputSNCF
         noMargin
         type="number"
@@ -125,7 +139,7 @@ export default function TimeButtons(props) {
       />
       <div className="timeline-container flex-grow-1">
         <div className="timeline">
-          test
+          &nbsp;
         </div>
       </div>
     </div>
@@ -133,7 +147,10 @@ export default function TimeButtons(props) {
 }
 
 TimeButtons.propTypes = {
-  simulationLength: PropTypes.number.isRequired,
   simulation: PropTypes.object.isRequired,
-  selectedTrain: PropTypes.number.isRequired,
+  selectedTrain: PropTypes.number,
+  simulationLength: PropTypes.number.isRequired,
+};
+TimeButtons.defaultProps = {
+  selectedTrain: undefined,
 };

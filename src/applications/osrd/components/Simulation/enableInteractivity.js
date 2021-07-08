@@ -2,6 +2,7 @@ import * as d3 from 'd3';
 import drawGuideLines from 'applications/osrd/components/Simulation/drawGuideLines';
 import { gridX, gridY } from 'applications/osrd/components/Helpers/ChartHelpers';
 import { updateHoverPosition, updateTimePosition } from 'reducers/osrdsimulation';
+import { time2datetime } from 'utils/timeManipulation';
 
 export const displayGuide = (chart, opacity) => {
   chart.svg.selectAll('#vertical-line').style('opacity', opacity);
@@ -70,13 +71,14 @@ const updateChart = (chart, keyValues, rotate) => {
 };
 
 export const traceVerticalLine = (
-  chart, dataSimulation, hoverPosition, keyValues, listValues, refValueName, rotate,
+  chart, dataSimulation, hoverPosition, keyValues, listValues,
+  refValueName, rotate, timePosition,
 ) => {
   if (chart !== undefined
-    && dataSimulation[refValueName][hoverPosition] !== undefined
     && d3.event === null) {
     displayGuide(chart, 1);
-    const valuePosition = dataSimulation[refValueName][hoverPosition][keyValues[0]];
+    const valuePosition = time2datetime(timePosition);
+    /* const valuePosition = dataSimulation[refValueName][hoverPosition][keyValues[0]]; */
     if (rotate) {
       // chart.svg.selectAll('#vertical-line').style('opacity', 0);
       chart.svg.selectAll('#horizontal-line')
@@ -88,16 +90,18 @@ export const traceVerticalLine = (
         .attr('x1', chart.x(valuePosition))
         .attr('x2', chart.x(valuePosition));
     }
-    updatePointers(
-      chart, dataSimulation, hoverPosition, keyValues,
-      listValues, rotate,
-    );
+    if (dataSimulation[refValueName][hoverPosition] !== undefined) {
+      updatePointers(
+        chart, dataSimulation, hoverPosition, keyValues,
+        listValues, rotate,
+      );
+    }
   }
 };
 
 const enableInteractivity = (
-  chart, dataSimulation, dispatch, keyValues, listValues, rotate, setChart, setHoverPosition,
-  setMustRedraw = () => {},
+  chart, dataSimulation, dispatch, keyValues,
+  listValues, rotate, setChart, setMustRedraw = () => {},
 ) => {
   let newHoverPosition;
 
@@ -134,19 +138,12 @@ const enableInteractivity = (
       .attr('y1', d3.mouse(d3.event.currentTarget)[1])
       .attr('y2', d3.mouse(d3.event.currentTarget)[1]);
 
-    // setHoverPosition(newHoverPosition);
     dispatch(updateHoverPosition(newHoverPosition));
-    return newHoverPosition;
   };
 
   chart.svg // .selectAll('.zoomable')
     .on('mouseover', () => displayGuide(chart, 1))
-    .on('mousemove', () => {
-      newHoverPosition = mousemove(
-        chart, dataSimulation, dispatch, undefined, keyValues,
-        listValues, rotate, setHoverPosition,
-      );
-    })
+    .on('mousemove', () => mousemove())
     .call(zoom);
   drawGuideLines(chart);
 };
