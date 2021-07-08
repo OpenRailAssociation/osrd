@@ -19,12 +19,11 @@ import './OSRDSimulation.scss';
 const timetableURI = '/osrd/timetable';
 const trainscheduleURI = '/osrd/train_schedule';
 
-const SIMPLIFICATION_FACTOR = 5; // Division of steps
+const SIMPLIFICATION_FACTOR = 10; // Division of steps
 
 const OSRDSimulation = () => {
   const { t } = useTranslation(['translation', 'simulation']);
   const { fullscreen } = useSelector((state) => state.main);
-  const [hoverPosition, setHoverPosition] = useState(0);
   // const [hoverStop, setHoverStop] = useState(undefined);
   const [extViewport, setExtViewport] = useState(undefined);
   const [waitingMessage, setWaitingMessage] = useState(t('simulation:waiting'));
@@ -32,6 +31,7 @@ const OSRDSimulation = () => {
   const [isEmpty, setIsEmpty] = useState(true);
   const [mustRedraw, setMustRedraw] = useState(true);
   const osrdconf = useSelector((state) => state.osrdconf);
+  const osrdsimulation = useSelector((state) => state.osrdsimulation);
   const [simulation, setSimulation] = useState({ trains: [] });
   const dispatch = useDispatch();
 
@@ -59,12 +59,15 @@ const OSRDSimulation = () => {
       }
       setWaitingMessage(t('simulation:simplify'));
       simulationLocal.sort((a, b) => a.stops[0].time > b.stops[0].time);
-      console.log(simulationLocal);
       setSimulation({ trains: simplifyData(simulationLocal, SIMPLIFICATION_FACTOR) });
     } catch (e) {
       console.log('ERROR', e);
     }
   };
+
+  useEffect(() => {
+    console.log(osrdsimulation.timePosition);
+  }, [osrdsimulation.timePosition]);
 
   useEffect(() => {
     getTimetable(osrdconf.timetableID);
@@ -110,8 +113,6 @@ const OSRDSimulation = () => {
                     {simulation.trains.length > 0 ? (
                       <SpaceTimeChart
                         simulation={simulation}
-                        hoverPosition={hoverPosition}
-                        setHoverPosition={setHoverPosition}
                         selectedTrain={selectedTrain}
                         setSelectedTrain={setSelectedTrain}
                         offsetTimeByDragging={offsetTimeByDragging}
@@ -123,26 +124,26 @@ const OSRDSimulation = () => {
                 </div>
               </div>
               <div className="osrd-simulation-container mb-2">
+                <TimeButtons
+                  simulation={simulation}
+                  selectedTrain={selectedTrain}
+                  simulationLength={simulation.trains[selectedTrain].steps.length}
+                />
+              </div>
+              <div className="osrd-simulation-container mb-2">
                 <div className="row">
                   <div className="col-md-4">
                     {simulation.trains.length > 0 ? (
                       <TrainDetails
                         simulation={simulation}
-                        hoverPosition={hoverPosition}
                         selectedTrain={selectedTrain}
                       />
                     ) : null}
-                    <TimeButtons
-                      setHoverPosition={setHoverPosition}
-                      simulationLength={simulation.trains[selectedTrain].steps.length}
-                    />
                   </div>
                   <div className="col-md-8">
                     {simulation.trains.length > 0 ? (
                       <SpeedSpaceChart
                         simulation={simulation}
-                        hoverPosition={hoverPosition}
-                        setHoverPosition={setHoverPosition}
                         selectedTrain={selectedTrain}
                         mustRedraw={mustRedraw}
                         setMustRedraw={setMustRedraw}
@@ -164,11 +165,9 @@ const OSRDSimulation = () => {
                 <div className="col-md-6">
                   <div className="osrd-simulation-container osrd-simulation-map mb-2">
                     <Map
-                      hoverPosition={hoverPosition}
                       selectedTrain={selectedTrain}
                       simulation={simulation}
                       setExtViewport={setExtViewport}
-                      setHoverPosition={setHoverPosition}
                     />
                   </div>
                 </div>

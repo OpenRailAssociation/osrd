@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import {
@@ -25,8 +26,9 @@ const createTrain = (keyValues, simulationTrains) => {
 
 const TrainDetails = (props) => {
   const {
-    hoverPosition, selectedTrain, simulation,
+    selectedTrain, simulation,
   } = props;
+  const { hoverPosition } = useSelector((state) => state.osrdsimulation);
   const keyValues = ['time', 'value'];
   const [dataSimulation, setDataSimulation] = useState(undefined);
 
@@ -38,7 +40,7 @@ const TrainDetails = (props) => {
 
   return dataSimulation !== undefined ? (
     <>
-      <div className="mb-2">
+      <div className="my-2">
         <span className="h2 mr-2">{t('simulation:train')}</span>
         <span className="font-weight-bold">{dataSimulation[selectedTrain].name}</span>
       </div>
@@ -46,20 +48,6 @@ const TrainDetails = (props) => {
         && dataSimulation[selectedTrain].headPosition[hoverPosition] !== undefined
         ? (
           <div className="row">
-            <div className="col-sm-6">
-              <div className="rounded font-weight-bold bg-secondary text-white p-2 mb-2">
-                <i className="icons-clock mr-2" />
-                {dataSimulation[selectedTrain].headPosition[hoverPosition].time.toLocaleTimeString('fr-FR')}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              {/* <div className={`rounded font-weight-bold text-white p-2 mb-2
-                ${simulation.trains[selectedTrain].steps[hoverPosition].state === 'RUNNING' ? 'bg-success' : 'bg-danger'}
-                `}
-              >
-                {simulation.trains[selectedTrain].steps[hoverPosition].state}
-              </div> */}
-            </div>
             <div className="col-sm-4">
               <div className="rounded p-2 mb-1 small bg-blue text-white">
                 <div className="font-weight-bold mr-1">TÊTE</div>
@@ -117,11 +105,7 @@ const TrainDetails = (props) => {
 
 TrainDetails.propTypes = {
   simulation: PropTypes.object.isRequired,
-  hoverPosition: PropTypes.number,
   selectedTrain: PropTypes.number.isRequired,
-};
-TrainDetails.defaultProps = {
-  hoverPosition: undefined,
 };
 
 export default TrainDetails;

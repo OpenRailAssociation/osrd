@@ -1,6 +1,7 @@
 import React, {
   useState, useEffect, useRef,
 } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import * as d3 from 'd3';
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simulation/consts';
@@ -130,10 +131,12 @@ const createTrain = (keyValues, simulationTrains) => {
 
 const SpaceTimeChart = (props) => {
   const {
-    hoverPosition, mustRedraw, offsetTimeByDragging, selectedTrain,
-    setHoverPosition, setMustRedraw, setSelectedTrain, simulation,
+    mustRedraw, offsetTimeByDragging, selectedTrain,
+    setMustRedraw, setSelectedTrain, simulation,
   } = props;
   const ref = useRef();
+  const dispatch = useDispatch();
+  const { hoverPosition } = useSelector((state) => state.osrdsimulation);
   const keyValues = ['time', 'value'];
   const [rotate, setRotate] = useState(false);
   const [isResizeActive, setResizeActive] = useState(false);
@@ -166,9 +169,8 @@ const SpaceTimeChart = (props) => {
         );
       });
       enableInteractivity(
-        chartLocal, dataSimulation[selectedTrain], keyValues,
-        LIST_VALUES_NAME_SPACE_TIME, rotate, setChart, setHoverPosition,
-        setMustRedraw,
+        chartLocal, dataSimulation[selectedTrain], dispatch, keyValues,
+        LIST_VALUES_NAME_SPACE_TIME, rotate, setChart, setMustRedraw,
       );
       // findConflicts(chartLocal, dataSimulation, rotate);
       setChart(chartLocal);
@@ -223,16 +225,11 @@ const SpaceTimeChart = (props) => {
 
 SpaceTimeChart.propTypes = {
   simulation: PropTypes.object.isRequired,
-  hoverPosition: PropTypes.number,
   mustRedraw: PropTypes.bool.isRequired,
-  setHoverPosition: PropTypes.func.isRequired,
   selectedTrain: PropTypes.number.isRequired,
   setMustRedraw: PropTypes.func.isRequired,
   setSelectedTrain: PropTypes.func.isRequired,
   offsetTimeByDragging: PropTypes.func.isRequired,
-};
-SpaceTimeChart.defaultProps = {
-  hoverPosition: undefined,
 };
 
 export default SpaceTimeChart;

@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import drawGuideLines from 'applications/osrd/components/Simulation/drawGuideLines';
 import { gridX, gridY } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { updateHoverPosition, updateTimePosition } from 'reducers/osrdsimulation';
 
 export const displayGuide = (chart, opacity) => {
   chart.svg.selectAll('#vertical-line').style('opacity', opacity);
@@ -22,29 +23,6 @@ export const updatePointers = (
           : chart.y(dataSimulation[name][hoverPosition][keyValues[1]])));
     }
   });
-};
-
-const mousemove = (
-  chart, dataSimulation, hoverPosition, keyValues,
-  listValues, rotate, setHoverPosition,
-) => {
-  // recover coordinate we need
-  const valuePosition = rotate
-    ? chart.y.invert(d3.mouse(d3.event.currentTarget)[1])
-    : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
-  const bisect = d3.bisector((d) => d[keyValues[0]]).left;
-  const newHoverPosition = bisect(dataSimulation[listValues[0]], valuePosition, 1);
-
-  // Update guideLines
-  chart.svg.selectAll('#vertical-line')
-    .attr('x1', d3.mouse(d3.event.currentTarget)[0])
-    .attr('x2', d3.mouse(d3.event.currentTarget)[0]);
-  chart.svg.selectAll('#horizontal-line')
-    .attr('y1', d3.mouse(d3.event.currentTarget)[1])
-    .attr('y2', d3.mouse(d3.event.currentTarget)[1]);
-
-  setHoverPosition(newHoverPosition);
-  return newHoverPosition;
 };
 
 const updateChart = (chart, keyValues, rotate) => {
@@ -118,7 +96,7 @@ export const traceVerticalLine = (
 };
 
 const enableInteractivity = (
-  chart, dataSimulation, keyValues, listValues, rotate, setChart, setHoverPosition,
+  chart, dataSimulation, dispatch, keyValues, listValues, rotate, setChart, setHoverPosition,
   setMustRedraw = () => {},
 ) => {
   let newHoverPosition;
@@ -137,11 +115,35 @@ const enableInteractivity = (
     .filter(() => d3.event.button === 0 || d3.event.button === 1)
     .on('end', () => setMustRedraw(true));
 
+  const mousemove = () => {
+    // recover coordinate we need
+    const valuePosition = rotate
+      ? chart.y.invert(d3.mouse(d3.event.currentTarget)[1])
+      : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
+    const bisect = d3.bisector((d) => d[keyValues[0]]).left;
+    newHoverPosition = bisect(dataSimulation[listValues[0]], valuePosition, 1);
+    if (keyValues[0] === 'time') {
+      dispatch(updateTimePosition(valuePosition.toLocaleTimeString('fr-FR')));
+    }
+
+    // Update guideLines
+    chart.svg.selectAll('#vertical-line')
+      .attr('x1', d3.mouse(d3.event.currentTarget)[0])
+      .attr('x2', d3.mouse(d3.event.currentTarget)[0]);
+    chart.svg.selectAll('#horizontal-line')
+      .attr('y1', d3.mouse(d3.event.currentTarget)[1])
+      .attr('y2', d3.mouse(d3.event.currentTarget)[1]);
+
+    // setHoverPosition(newHoverPosition);
+    dispatch(updateHoverPosition(newHoverPosition));
+    return newHoverPosition;
+  };
+
   chart.svg // .selectAll('.zoomable')
     .on('mouseover', () => displayGuide(chart, 1))
     .on('mousemove', () => {
       newHoverPosition = mousemove(
-        chart, dataSimulation, undefined, keyValues,
+        chart, dataSimulation, dispatch, undefined, keyValues,
         listValues, rotate, setHoverPosition,
       );
     })

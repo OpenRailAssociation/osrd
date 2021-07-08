@@ -8,6 +8,7 @@ import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import colors from 'common/Map/Consts/colors.ts';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateViewport } from 'reducers/map';
+import { updateHoverPosition } from 'reducers/osrdsimulation';
 import { sec2time } from 'utils/timeManipulation';
 import bbox from '@turf/bbox';
 
@@ -105,11 +106,12 @@ const createGeoJSONPoints = (steps) => {
 
 const Map = (props) => {
   const {
-    hoverPosition, selectedTrain, setExtViewport, setHoverPosition, simulation,
+    selectedTrain, setExtViewport, simulation,
   } = props;
   const {
     viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM,
   } = useSelector((state) => state.map);
+  const { hoverPosition } = useSelector((state) => state.osrdsimulation);
   const [showSearch, setShowSearch] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [geojsonPath, setGeojsonPath] = useState(undefined);
@@ -164,7 +166,7 @@ const Map = (props) => {
 
   const onFeatureHover = (e) => {
     if (e.features !== null && e.features[0] !== undefined) {
-      setHoverPosition(e.features[0].properties.hover_position);
+      dispatch(updateHoverPosition(e.features[0].properties.hover_position));
     }
   };
 
@@ -291,12 +293,8 @@ const Map = (props) => {
 Map.propTypes = {
   selectedTrain: PropTypes.number.isRequired,
   setExtViewport: PropTypes.func.isRequired,
-  setHoverPosition: PropTypes.func.isRequired,
   hoverPosition: PropTypes.number,
   simulation: PropTypes.object.isRequired,
-};
-Map.defaultProps = {
-  hoverPosition: undefined,
 };
 
 export default Map;

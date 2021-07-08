@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import * as d3 from 'd3';
 import { LIST_VALUES_NAME_SPEED_SPACE } from 'applications/osrd/components/Simulation/consts';
@@ -15,9 +16,11 @@ const CHART_ID = 'SpeedSpaceChart';
 
 const SpeedSpaceChart = (props) => {
   const {
-    hoverPosition, mustRedraw, selectedTrain, setHoverPosition,
+    mustRedraw, selectedTrain, setHoverPosition,
     setMustRedraw, simulation,
   } = props;
+  const dispatch = useDispatch();
+  const { hoverPosition } = useSelector((state) => state.osrdsimulation);
   const [rotate, setRotate] = useState(false);
   const [chart, setChart] = useState(undefined);
   const [isResizeActive, setResizeActive] = useState(false);
@@ -67,7 +70,7 @@ const SpeedSpaceChart = (props) => {
       // drawCurve(chartLocal, SNCFCOLORS.red, dataSimulation, 'speedSpaceChart', 'curveStepAfter', keyValues, 'emergency', rotate);
       // drawCurve(chartLocal, SNCFCOLORS.yellow, dataSimulation, 'speedSpaceChart', 'curveStepAfter', keyValues, 'indication', rotate);
       enableInteractivity(
-        chartLocal, dataSimulation, keyValues,
+        chartLocal, dataSimulation, dispatch, keyValues,
         LIST_VALUES_NAME_SPEED_SPACE, rotate, setChart, setHoverPosition,
         setMustRedraw,
       );
@@ -102,15 +105,11 @@ const SpeedSpaceChart = (props) => {
 };
 
 SpeedSpaceChart.propTypes = {
-  hoverPosition: PropTypes.number,
   mustRedraw: PropTypes.bool.isRequired,
   selectedTrain: PropTypes.number.isRequired,
   setHoverPosition: PropTypes.func.isRequired,
   setMustRedraw: PropTypes.func.isRequired,
   simulation: PropTypes.object.isRequired,
-};
-SpeedSpaceChart.defaultProps = {
-  hoverPosition: undefined,
 };
 
 export default SpeedSpaceChart;
