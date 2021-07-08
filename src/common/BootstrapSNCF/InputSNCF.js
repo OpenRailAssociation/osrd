@@ -53,6 +53,7 @@ class InputSNCF extends React.Component {
     sm: PropTypes.bool,
     whiteBG: PropTypes.bool,
     noMargin: PropTypes.bool,
+    focus: PropTypes.bool,
   }
 
   static defaultProps = {
@@ -76,6 +77,7 @@ class InputSNCF extends React.Component {
     sm: false,
     whiteBG: false,
     noMargin: false,
+    focus: false,
   }
 
   // Appends a icon button right next to the input field
@@ -121,7 +123,7 @@ class InputSNCF extends React.Component {
   // Renders a basic input field without any underlying list
   renderBasicInput = () => {
     const {
-      isInvalid, errorMsg, label, id, type, onChange, seconds, sm,
+      isInvalid, errorMsg, focus, label, id, type, onChange, seconds, sm,
       readonly, whiteBG, clearButton, value, placeholder, inputProps,
     } = this.props;
 
@@ -158,6 +160,7 @@ class InputSNCF extends React.Component {
               value={value}
               placeholder={placeholder}
               step={seconds ? 1 : 60}
+              ref={(input) => ((focus) ? input && input.focus() : null)}
               {...inputProps}
             />
             <span className="form-control-state" />
@@ -177,7 +180,7 @@ class InputSNCF extends React.Component {
     const containerMargin = noMargin ? '' : 'mb-4';
 
     return (
-      <div className={`w-100 ${containerMargin}`}>
+      <div className={containerMargin}>
         {this.renderBasicInput()}
       </div>
     );
