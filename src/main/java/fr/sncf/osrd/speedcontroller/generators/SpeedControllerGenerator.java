@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 /** This class is used to generate a set of SpeedController (similar to a speed at any given point). */
 public abstract class SpeedControllerGenerator {
 
-    protected final double sectionBegin;
-    protected final double sectionEnd;
+    protected double sectionBegin;
+    protected double sectionEnd;
 
     protected SpeedControllerGenerator(double begin, double end) {
         this.sectionBegin = begin;

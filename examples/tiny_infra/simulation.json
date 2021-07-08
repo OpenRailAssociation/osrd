@@ -49,11 +49,13 @@
       "initial_route": "rt.buffer_stop_b-C3",
       "initial_speed": 0,
       "allowances": [
-        {
-          "type": "linear",
-          "allowance_type": "TIME",
-          "allowance_value": 5
-        }
+        [
+          {
+            "type": "linear",
+            "allowance_type": "TIME",
+            "allowance_value": 5
+          }
+        ]
       ],
       "phases": [
         {

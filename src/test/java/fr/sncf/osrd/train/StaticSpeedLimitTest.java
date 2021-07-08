@@ -13,6 +13,7 @@ import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
+import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
@@ -119,7 +120,7 @@ public class StaticSpeedLimitTest {
                 phases,
                 null,
                 path,
-                null,
+                new SpeedInstructions(null),
                 null);
         TrainCreatedEvent.plan(sim, schedule);
 

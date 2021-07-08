@@ -202,7 +202,7 @@ public class MarginTests {
                 20, TIME);
 
         // base run, no margin
-        final var config = getBaseConfig();
+        final var config = getBaseConfigNoAllowance();
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
@@ -215,9 +215,9 @@ public class MarginTests {
 
         var expected = baseSimTime * 1.2;
 
-        assertEquals(expected, marginsSimTime, expected * 0.01);
         saveGraph(eventsBase, "linear-time-base.csv");
         saveGraph(events, "linear-time-out.csv");
+        assertEquals(expected, marginsSimTime, expected * 0.01);
     }
 
     @Test

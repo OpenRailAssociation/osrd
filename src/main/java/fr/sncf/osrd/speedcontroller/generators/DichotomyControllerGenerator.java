@@ -43,6 +43,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     @Override
     public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule,
                                          Set<SpeedController> speedControllers) {
+        sectionEnd = Double.min(sectionEnd, schedule.plannedPath.length);
         this.initialSpeed = findInitialSpeed(sim, schedule, speedControllers, 1);
         this.sim = sim;
         this.schedule = schedule;

@@ -32,6 +32,9 @@ public class TrainPath {
     /** Directions of each tvd section on the route */
     public final ArrayList<EdgeDirection> tvdSectionDirections;
 
+    /** Path length in meters */
+    public final double length;
+
     /** Constructor */
     public TrainPath(List<Route> routePath,
                      TrackSectionLocation startLocation,
@@ -41,6 +44,7 @@ public class TrainPath {
         tvdSectionDirections = new ArrayList<>();
         initTVD(routePath);
         trackSectionPath = Route.routesToTrackSectionRange(routePath, startLocation, endLocation);
+        length = convertTrackLocation(endLocation);
     }
 
     /** Copy constructor */
@@ -50,6 +54,7 @@ public class TrainPath {
         this.tvdSectionDirections = new ArrayList<>(other.tvdSectionDirections);
         this.trackSectionPath = new ArrayList<>(other.trackSectionPath);
         this.routeIndex = other.routeIndex;
+        this.length = other.length;
     }
 
     /** Initializes the lists of tvd sections and directions */

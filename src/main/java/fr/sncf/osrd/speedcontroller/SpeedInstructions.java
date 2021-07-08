@@ -74,7 +74,7 @@ public class SpeedInstructions {
     public void generate(Simulation sim, TrainSchedule schedule) {
 
         maxSpeedControllers = new MaxSpeedGenerator().generate(sim, schedule, null);
-        targetSpeedControllers = maxSpeedControllers;
+        targetSpeedControllers = new HashSet<>(maxSpeedControllers);
         for (var generatorSet : targetSpeedGenerators) {
             var newControllers = new HashSet<SpeedController>();
             for (var generator : generatorSet) {
