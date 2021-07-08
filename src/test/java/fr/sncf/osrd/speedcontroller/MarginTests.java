@@ -269,7 +269,6 @@ public class MarginTests {
         final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromSet(params));
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
-        var marginTime = sim2.getTime();
 
 
         // base run, one global margin
@@ -277,7 +276,6 @@ public class MarginTests {
         final var config = getConfigWithSpeedInstructions(SpeedInstructions.fromController(globalParams));
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
-        var totalTime = sim.getTime();
 
 
 

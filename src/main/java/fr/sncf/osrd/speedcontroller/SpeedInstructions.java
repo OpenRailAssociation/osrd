@@ -24,7 +24,7 @@ public class SpeedInstructions {
 
     /** Set of speed controllers indicating the target speed at each point */
     public Set<SpeedController> targetSpeedControllers;
-    public transient SortedDoubleMap expectedTimes;
+    public transient SortedDoubleMap expectedTimes = null;
 
     /** Creates an instance from target speed generators. Max speed is always determined
      * from a `new MaxSpeedGenerator()`.
@@ -90,6 +90,7 @@ public class SpeedInstructions {
     /** Returns how late we are compared to the expected time, in seconds. The result may be negative if we are
      * ahead of schedule. */
     public double secondsLate(double position, double time) {
+        assert expectedTimes != null;
         var expectedTime = expectedTimes.interpolate(position);
         return time - expectedTime;
     }

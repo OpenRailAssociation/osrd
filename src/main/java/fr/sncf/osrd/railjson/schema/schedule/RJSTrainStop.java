@@ -15,4 +15,11 @@ public class RJSTrainStop {
 
     /** Stop duration */
     public double duration;
+
+    /** Constructor */
+    public RJSTrainStop(Double position, RJSTrackLocation location, double duration) {
+        this.position = position;
+        this.location = location;
+        this.duration = duration;
+    }
 }

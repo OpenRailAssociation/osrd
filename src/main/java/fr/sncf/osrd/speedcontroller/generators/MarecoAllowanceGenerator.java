@@ -22,7 +22,7 @@ import java.util.Set;
 public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
     // TODO use this parameter
-    @SuppressFBWarnings({"URF_UNREAD_FIELD"})
+    @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public final RJSAllowance.MarecoAllowance.MarginType allowanceType;
     public final double value;
 

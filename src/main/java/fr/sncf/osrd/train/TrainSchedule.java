@@ -1,5 +1,6 @@
 package fr.sncf.osrd.train;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.speedcontroller.SpeedInstructions;
@@ -31,6 +32,7 @@ public final class TrainSchedule {
 
     public SpeedInstructions speedInstructions;
 
+    @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"}) // This field will eventually be useful
     public List<TrainStop> stops;
 
     /** Create a new train schedule */
