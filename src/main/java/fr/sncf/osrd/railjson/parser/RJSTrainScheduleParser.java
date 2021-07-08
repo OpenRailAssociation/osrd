@@ -26,7 +26,9 @@ import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 public class RJSTrainScheduleParser {
@@ -168,15 +170,18 @@ public class RJSTrainScheduleParser {
         }
     }
 
-    private static List<SpeedControllerGenerator> parseSpeedControllerGenerators(RJSTrainSchedule phase,
-                                                                                 TrainPath path,
-                                                                                 Infra infra)
+    private static List<Set<SpeedControllerGenerator>> parseSpeedControllerGenerators(RJSTrainSchedule phase,
+                                                                                      TrainPath path,
+                                                                                      Infra infra)
             throws InvalidSchedule {
-        List<SpeedControllerGenerator> list = new ArrayList<>();
+        List<Set<SpeedControllerGenerator>> list = new ArrayList<>();
         if (phase.allowances == null)
             return list;
-        for (var allowance : phase.allowances) {
-            list.add(parseSpeedControllerGenerator(allowance, path, infra));
+        for (var allowanceSet : phase.allowances) {
+            var set = new HashSet<SpeedControllerGenerator>();
+            for (var allowance : allowanceSet)
+                set.add(parseSpeedControllerGenerator(allowance, path, infra));
+            list.add(set);
         }
         return list;
     }

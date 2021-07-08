@@ -32,8 +32,11 @@ public class RJSTrainSchedule implements Identified {
     @Json(name = "train_control_method")
     public String trainControlMethod;
 
-    /** What generator to use to generate the target speed */
-    public RJSAllowance[] allowances;
+    /** What generator to use to generate the target speed.
+     * The double array should be seen as a list of set, each element
+     * in a set is applied independently and each set is applied one after
+     * the other with the previous one as base speed. */
+    public RJSAllowance[][] allowances;
 
     /** List of stops */
     public RJSTrainStop[] stops;
@@ -48,7 +51,7 @@ public class RJSTrainSchedule implements Identified {
             double initialSpeed,
             RJSTrainPhase[] phases,
             String trainControlMethod,
-            RJSAllowance[] allowances,
+            RJSAllowance[][] allowances,
             RJSTrainStop[] stops
     ) {
         this.id = id;

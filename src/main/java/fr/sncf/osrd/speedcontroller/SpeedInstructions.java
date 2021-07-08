@@ -14,8 +14,10 @@ import java.util.*;
  * Later on, we may add other indications such as when to coast. */
 public class SpeedInstructions {
 
-    /** Generator for the target speeds */
-    public final transient List<SpeedControllerGenerator> targetSpeedGenerators;
+    /** Generator for the target speeds
+     * Each set is applied one after the other, using the previous result as base speed.
+     * The generators in a set are applied independently */
+    public final transient List<Set<SpeedControllerGenerator>> targetSpeedGenerators;
 
     /** Set of speed controllers indicating the maximum speed at each point */
     public Set<SpeedController> maxSpeedControllers;
@@ -24,14 +26,39 @@ public class SpeedInstructions {
     public Set<SpeedController> targetSpeedControllers;
     public transient SortedDoubleMap expectedTimes;
 
-    /** Creates an instance from a target speed generator. Max speed is always determined
+    /** Creates an instance from target speed generators. Max speed is always determined
      * from a `new MaxSpeedGenerator()`.
      * @param targetSpeedGenerators generators used for target speed controllers. If null, a MaxSpeedGenerator is
-     *      used instead. If several controllers are given, we give the result of the previous one as reference. */
-    public SpeedInstructions(List<SpeedControllerGenerator> targetSpeedGenerators) {
+     *      used instead. When given several generators, those in a set are computed independently,
+     *      then each set is computed sequentially using the previous one as reference speed. */
+    public SpeedInstructions(List<Set<SpeedControllerGenerator>> targetSpeedGenerators) {
         if (targetSpeedGenerators == null || targetSpeedGenerators.size() == 0)
-            targetSpeedGenerators = Collections.singletonList(new MaxSpeedGenerator());
+            targetSpeedGenerators = Collections.singletonList(Collections.singleton(new MaxSpeedGenerator()));
         this.targetSpeedGenerators = targetSpeedGenerators;
+    }
+
+    /** Creates an instance from a list of generators. They are evaluated sequentially using the previous
+     * one as reference. */
+    public static SpeedInstructions fromList(List<SpeedControllerGenerator> targetSpeedGenerators) {
+        if (targetSpeedGenerators == null || targetSpeedGenerators.size() == 0)
+            return new SpeedInstructions(null);
+        else {
+            var listOfSet = new ArrayList<Set<SpeedControllerGenerator>>();
+            for (var generator : targetSpeedGenerators)
+                listOfSet.add(Collections.singleton(generator));
+            return new SpeedInstructions(listOfSet);
+        }
+    }
+
+    /** Creates an instance from a set of generators. They are evaluated independently. */
+    public static SpeedInstructions fromSet(Set<SpeedControllerGenerator> targetSpeedGenerators) {
+        if (targetSpeedGenerators == null || targetSpeedGenerators.size() == 0)
+            return new SpeedInstructions(null);
+        else {
+            var listOfSet = new ArrayList<Set<SpeedControllerGenerator>>();
+            listOfSet.add(targetSpeedGenerators);
+            return new SpeedInstructions(listOfSet);
+        }
     }
 
     /** Generates all the instructions, expected to be called when a new phase starts */
@@ -39,20 +66,16 @@ public class SpeedInstructions {
 
         maxSpeedControllers = new MaxSpeedGenerator().generate(sim, schedule, null);
         targetSpeedControllers = maxSpeedControllers;
-        for (var generator : targetSpeedGenerators)
-            targetSpeedControllers.addAll(generator.generate(sim, schedule, targetSpeedControllers));
+        for (var generatorSet : targetSpeedGenerators) {
+            var newControllers = new HashSet<SpeedController>();
+            for (var generator : generatorSet) {
+                newControllers.addAll(generator.generate(sim, schedule, targetSpeedControllers));
+            }
+            targetSpeedControllers.addAll(newControllers);
+        }
 
-        var lastGenerator = targetSpeedGenerators.get(targetSpeedGenerators.size() - 1);
-        expectedTimes = lastGenerator.getExpectedTimes(sim, schedule, targetSpeedControllers, 1,
+        expectedTimes = SpeedControllerGenerator.getExpectedTimes(sim, schedule, targetSpeedControllers, 1,
                 0, Double.POSITIVE_INFINITY, schedule.initialSpeed);
-    }
-
-    /** Copy constructor */
-    public SpeedInstructions(SpeedInstructions other) {
-        this.maxSpeedControllers = new HashSet<>(other.maxSpeedControllers);
-        this.targetSpeedControllers = new HashSet<>(other.targetSpeedControllers);
-        this.expectedTimes = new SortedDoubleMap(other.expectedTimes);
-        targetSpeedGenerators = new ArrayList<>(other.targetSpeedGenerators);
     }
 
     /** Returns how late we are compared to the expected time, in seconds. The result may be negative if we are
