@@ -101,9 +101,6 @@ public final class SignalNavigatePhase implements Phase {
                 .sorted()
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        var phaseEnd = new PhaseEndActionPoint();
-        // We place the end of phase a few meters before the actual end, because we will stop before reaching it
-        eventPath.add(new Interaction(InteractionType.HEAD, pathLength - 1, phaseEnd));
         return eventPath;
     }
 
@@ -138,51 +135,6 @@ public final class SignalNavigatePhase implements Phase {
     @Override
     public TrackSectionLocation getEndLocation() {
         return endLocation;
-    }
-
-    /** This class represent the location of the phase end. It's as last event in the event path */
-    public static final class PhaseEndActionPoint implements ActionPoint {
-
-        @Override
-        public InteractionTypeSet getInteractionsType() {
-            return new InteractionTypeSet();
-        }
-
-        @Override
-        public double getActionDistance() {
-            return 0;
-        }
-
-        @Override
-        public void interact(Simulation sim, Train train, InteractionType actionType) {
-            var change = new EndOfPhase(sim, train, train.getLastState().currentPhaseIndex);
-            sim.publishChange(change);
-        }
-
-        @Override
-        public String toString() {
-            return "PhaseEndActionPoint { }";
-        }
-
-        public static class EndOfPhase extends Change {
-            public final Train train;
-            public final int phaseIndex;
-
-            /** Create a change to notify that a train has reached the end of its current phase */
-            public EndOfPhase(Simulation sim, Train train, int phaseIndex) {
-                super(sim);
-                this.train = train;
-                this.phaseIndex = phaseIndex;
-            }
-
-            @Override
-            public void replay(Simulation sim) {}
-
-            @Override
-            public String toString() {
-                return String.format("EndOfPhase { train: %s, phase index: %d }", train.getName(), phaseIndex);
-            }
-        }
     }
 
     public static final class State extends PhaseState {

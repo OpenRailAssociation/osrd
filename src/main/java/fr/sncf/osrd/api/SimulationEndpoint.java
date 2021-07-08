@@ -5,6 +5,8 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.StopActionPoint;
+import fr.sncf.osrd.infra.StopActionPoint.StopReachedChange;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
@@ -29,7 +31,6 @@ import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
-import fr.sncf.osrd.train.phases.SignalNavigatePhase.PhaseEndActionPoint.EndOfPhase;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -166,10 +167,10 @@ public class SimulationEndpoint implements Take {
                 for (var aspect : aspectChange.aspects)
                     aspects.add(aspect.id);
                 changes.add(new SimulationResultChange.ResponseSignalChange(signal, aspects, sim.getTime()));
-            } else if (change.getClass() == EndOfPhase.class) {
-                var phaseEnd = (EndOfPhase) change;
-                changes.add(new SimulationResultChange.ResponsePhaseEndUpdate(phaseEnd.train, phaseEnd.phaseIndex,
-                        sim.getTime()));
+            } else if (change.getClass() == StopReachedChange.class) {
+                var stopReached = (StopReachedChange) change;
+                changes.add(new SimulationResultChange.ResponseStopReachedUpdate(stopReached.train,
+                        stopReached.stopIndex, sim.getTime()));
             }
         }
 
@@ -187,7 +188,7 @@ public class SimulationEndpoint implements Take {
                         .withSubtype(SimulationResultChange.ResponseRouteStatus.class, "route_status")
                         .withSubtype(SimulationResultChange.ResponseTrainLocationUpdate.class, "train_location")
                         .withSubtype(SimulationResultChange.ResponseSignalChange.class, "signal_change")
-                        .withSubtype(ResponsePhaseEndUpdate.class, "phase_end")
+                        .withSubtype(SimulationResultChange.ResponseStopReachedUpdate.class, "stop_reached")
         );
 
         public final double time;
@@ -260,16 +261,16 @@ public class SimulationEndpoint implements Take {
             }
         }
 
-        public static final class ResponsePhaseEndUpdate extends SimulationResultChange {
+        public static final class ResponseStopReachedUpdate extends SimulationResultChange {
             @Json(name = "train_name")
             private final String trainName;
-            @Json(name = "phase_index")
-            private final int phaseIndex;
+            @Json(name = "stop_index")
+            private final int stopIndex;
 
-            ResponsePhaseEndUpdate(Train train, int phaseIndex, double time) {
+            ResponseStopReachedUpdate(Train train, int stopIndex, double time) {
                 super(time);
                 this.trainName = train.getName();
-                this.phaseIndex = phaseIndex;
+                this.stopIndex = stopIndex;
             }
         }
 

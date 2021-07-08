@@ -134,8 +134,8 @@ public class StaticSpeedLimitTest {
                 .map(change -> (Train.TrainStateChange) change)
                 .collect(Collectors.toList());
         // Expect 2 state change: Train over starting Operational Point -> Go A to B -> Next phase
-        // The last 2 changes come from the end of phase point, and the last update when the phase ends
-        assertEquals(4, locationChanges.size());
+        // The change come from the train stop
+        assertEquals(3, locationChanges.size());
         // The second state change contain the movement of the train
         var locationChange = locationChanges.get(1);
 

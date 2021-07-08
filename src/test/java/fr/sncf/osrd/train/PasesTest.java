@@ -195,9 +195,8 @@ public class PasesTest {
         assertEquals(baseTimeFirstPhase * (1 + paramsFirstPhase.allowanceValue / 100),
                 timeFirstPhaseMMargins, baseTimeFirstPhase * 0.05);
     }
-    */
 
-    /** Returns the time of the first transition between two phases */
+    /** Returns the time of the first transition between two phases
     public static double findPhaseChangeTime(List<TimelineEvent> events) {
         for (var e : events) {
             if (e instanceof TrainReachesActionPoint) {
@@ -208,4 +207,5 @@ public class PasesTest {
         }
         throw new RuntimeException("Can't find phase change");
     }
+    */
 }

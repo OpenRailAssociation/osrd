@@ -7,6 +7,7 @@ import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.OperationalPoint;
+import fr.sncf.osrd.infra.StopActionPoint;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
 import fr.sncf.osrd.infra.railscript.value.RSBool;
@@ -84,7 +85,7 @@ public class ChangeSerializer {
                     .withSubtype(Detector.class, "detector")
                     .withSubtype(Signal.class, "signal")
                     .withSubtype(OperationalPoint.class, "operationalPoint")
-                    .withSubtype(SignalNavigatePhase.PhaseEndActionPoint.class, "virtualActionPoint")
+                    .withSubtype(StopActionPoint.class, "stopActionPoint")
             )
             .add(PolymorphicJsonAdapterFactory.of(RSValue.class, "valueType")
                     .withSubtype(RSAspectSet.class, "aspectSet")

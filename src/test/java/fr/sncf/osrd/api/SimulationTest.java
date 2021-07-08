@@ -2,7 +2,7 @@ package fr.sncf.osrd.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import fr.sncf.osrd.api.SimulationEndpoint.SimulationResultChange.ResponsePhaseEndUpdate;
+import fr.sncf.osrd.api.SimulationEndpoint.SimulationResultChange.ResponseStopReachedUpdate;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import org.junit.jupiter.api.Test;
@@ -55,7 +55,7 @@ public class SimulationTest extends ApiTest {
         assert simResultChanges != null;
 
         var nPhaseEnd = Arrays.stream(simResultChanges)
-                .filter(change -> change instanceof ResponsePhaseEndUpdate)
+                .filter(change -> change instanceof ResponseStopReachedUpdate)
                 .count();
         assertEquals(1, nPhaseEnd);
     }

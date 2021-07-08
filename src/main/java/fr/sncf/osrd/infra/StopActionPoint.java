@@ -33,16 +33,16 @@ public class StopActionPoint implements ActionPoint {
 
     @Override
     public void interact(Simulation sim, Train train, InteractionType interactionType) throws SimulationError {
-        var change = new StopChange(sim, train, stopIndex);
+        var change = new StopReachedChange(sim, train, stopIndex);
         sim.publishChange(change);
     }
 
-    public static class StopChange extends Change {
+    public static class StopReachedChange extends Change {
         public final Train train;
         public final int stopIndex;
 
         /** Create a change to notify that a train has reached a stop */
-        public StopChange(Simulation sim, Train train, int stopIndex) {
+        public StopReachedChange(Simulation sim, Train train, int stopIndex) {
             super(sim);
             this.train = train;
             this.stopIndex = stopIndex;

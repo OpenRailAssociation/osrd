@@ -200,14 +200,6 @@ public class RJSTrainScheduleParser {
         }
         if (rjsPhase.getClass() == RJSTrainPhase.Navigate.class) {
             var rjsNavigate = (RJSTrainPhase.Navigate) rjsPhase;
-            var routes = new ArrayList<Route>();
-            for (var rjsRoute : rjsNavigate.routes) {
-                var route = infra.routeGraph.routeMap.get(rjsRoute.id);
-                if (route == null)
-                    throw new UnknownRoute("unknown route in navigate phase", rjsRoute.id);
-                routes.add(route);
-            }
-
             var driverSightDistance = rjsNavigate.driverSightDistance;
             if (Double.isNaN(driverSightDistance) || driverSightDistance < 0)
                 throw new InvalidSchedule("invalid driver sight distance");
@@ -252,6 +244,7 @@ public class RJSTrainScheduleParser {
 
     private static List<TrainStop> parseStops(RJSTrainStop[] stops, Infra infra, TrainPath path) throws InvalidSchedule {
         var res = new ArrayList<TrainStop>();
+        res.add(new TrainStop(path.length - 10, 0));
         if (stops == null)
             return res;
         for (var stop : stops) {
