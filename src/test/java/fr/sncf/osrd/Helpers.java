@@ -338,10 +338,20 @@ public class Helpers {
 
     public static void assertSameSpeedPerPosition(Iterable<TimelineEvent> eventsExpected,
                                                   Iterable<TimelineEvent> events) {
+        assertSameSpeedPerPositionBetween(eventsExpected, events, 0, Double.POSITIVE_INFINITY, 1);
+    }
+
+    public static void assertSameSpeedPerPositionBetween(Iterable<TimelineEvent> eventsExpected,
+                                                         Iterable<TimelineEvent> events,
+                                                         double begin,
+                                                         double end,
+                                                         double expectedScale) {
         var expectedSpeedPerPosition = getSpeedPerPosition(eventsExpected);
         var speedPerPosition = getSpeedPerPosition(events);
-        for (double t = expectedSpeedPerPosition.firstKey(); t < expectedSpeedPerPosition.lastKey(); t += 1) {
-            var expected = expectedSpeedPerPosition.interpolate(t);
+        end = Double.min(end, expectedSpeedPerPosition.lastKey());
+        begin = Double.max(expectedSpeedPerPosition.firstKey(), begin);
+        for (double t = begin; t < end; t += 1) {
+            var expected = expectedSpeedPerPosition.interpolate(t) * expectedScale;
             var result = speedPerPosition.interpolate(t);
             assertEquals(expected, result, expected * 0.01);
         }

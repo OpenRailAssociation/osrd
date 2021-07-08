@@ -30,6 +30,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 
@@ -322,6 +323,28 @@ public class MarginTests {
         assertEquals(expected, marginTime, expected * 0.01);
     }
 
+    @Test
+    public void testSeveralConstructionMargins() throws InvalidInfraException {
+        final var infra = getBaseInfra();
+        var param1 = new ConstructionAllowanceGenerator(0, 5000, 15);
+        var param2 = new ConstructionAllowanceGenerator(5000, POSITIVE_INFINITY, 30);
+
+        final var config = getConfigWithSpeedInstructions(
+                SpeedInstructions.fromList(Arrays.asList(param1, param2)));
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        saveGraph(run(sim, config), "double-construction-out.csv");
+        var actualEndTime = sim.getTime();
+
+        final var configBase = getBaseConfigNoAllowance();
+        var simBase = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        saveGraph(run(simBase, configBase), "double-construction-base.csv");
+        var baseEndTime = simBase.getTime();
+
+        var expected = baseEndTime + param1.value + param2.value;
+
+        assertEquals(expected, actualEndTime, expected * 0.01);
+    }
+
     private double convertTrackLocation(TrackSectionLocation location, TrainSchedule schedule) {
         double sumPreviousSections = 0;
         for (var edge : schedule.plannedPath.trackSectionPath) {
@@ -331,5 +354,34 @@ public class MarginTests {
             sumPreviousSections += edge.getEndPosition() - edge.getBeginPosition();
         }
         throw new RuntimeException("Can't find location in path");
+    }
+
+    @Test
+    public void testDifferentMargins() throws InvalidInfraException {
+        final var infra = getBaseInfra();
+
+        var paramsFirstPhase = new LinearAllowanceGenerator(0, 5000, 10, TIME);
+        var paramsSecondPhase = new LinearAllowanceGenerator(5000, POSITIVE_INFINITY, 60, TIME);
+        var params = new HashSet<SpeedControllerGenerator>();
+        params.add(paramsFirstPhase);
+        params.add(paramsSecondPhase);
+
+        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromSet(params));
+        var simMargins = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        final var eventsMargins = run(simMargins, configMargins);
+
+        final var config = getBaseConfigNoAllowance();
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var baseEvents = run(sim, config);
+
+        saveGraph(eventsMargins, "two-margins-out.csv");
+        saveGraph(baseEvents, "two-margins-base.csv");
+
+        // We don't test the whole range as the speeds can be *slightly* different
+        // during the transition or when close to 0 (see also issue with shifted speed limits)
+        assertSameSpeedPerPositionBetween(baseEvents, eventsMargins, 10, 2000,
+                1 / (1 + paramsFirstPhase.value / 100));
+        assertSameSpeedPerPositionBetween(baseEvents, eventsMargins, 6000, 9000,
+                1 / (1 + paramsSecondPhase.value / 100));
     }
 }
