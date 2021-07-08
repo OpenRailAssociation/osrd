@@ -1,825 +1,757 @@
 {
-  "aspects": [
-    {
-      "id": "WHITE_CROSS",
-      "color": "#ffffff",
-      "constraints": []
-    },
-    {
-      "id": "GREEN",
-      "color": "#2a850c",
-      "constraints": []
-    },
-    {
-      "id": "YELLOW",
-      "color": "#f08a05",
-      "constraints": [
-        {
-          "type": "speed_limit",
-          "speed": 4,
-          "applies_at": {
-            "element": "NEXT_SIGNAL",
-            "offset": -100
-          },
-          "until": {
-            "element": "NEXT_SIGNAL",
-            "offset": 0
-          }
-        }
-      ]
-    },
-    {
-      "id": "RED",
-      "color": "#db0c04",
-      "constraints": [
-        {
-          "type": "speed_limit",
-          "speed": 0,
-          "applies_at": {
-            "element": "CURRENT_SIGNAL",
-            "offset": -10
-          },
-          "until": {
-            "element": "END",
-            "offset": 0
-          }
-        }
-      ]
-    }
-  ],
-  "operational_points": [
-    {
-      "id": "op.station"
-    }
-  ],
-  "routes": [
-    {
-      "id": "rt.12",
-      "switches_position": {},
-      "release_groups": [
-        [
-          "tvd.12"
-        ]
-      ],
-      "entry_point": "tde.1"
-    },
-    {
-      "id": "rt.23",
-      "switches_position": {},
-      "release_groups": [
-        [
-          "tvd.23"
-        ]
-      ],
-      "entry_point": "tde.2"
-    },
-    {
-      "id": "rt.34",
-      "switches_position": {},
-      "release_groups": [
-        [
-          "tvd.34"
-        ]
-      ],
-      "entry_point": "tde.3"
-    },
-    {
-      "id": "rt.45",
-      "switches_position": {},
-      "release_groups": [
-        [
-          "tvd.45"
-        ]
-      ],
-      "entry_point": "tde.4"
-    },
-    {
-      "id": "rt.56",
-      "switches_position": {},
-      "release_groups": [
-        [
-          "tvd.56"
-        ]
-      ],
-      "entry_point": "tde.5"
-    },
-    {
-      "id": "rt.67",
-      "switches_position": {},
-      "release_groups": [
-        [
-          "tvd.67"
-        ]
-      ],
-      "entry_point": "tde.6"
-    },
-    {
-      "id": "rt.78",
-      "switches_position": {},
-      "release_groups": [
-        [
-          "tvd.78"
-        ]
-      ],
-      "entry_point": "tde.7"
-    },
-    {
-      "id": "rt.81",
-      "switches_position": {},
-      "release_groups": [
-        [
-          "tvd.81"
-        ]
-      ],
-      "entry_point": "tde.8"
-    }
-  ],
-  "script_functions": [
-    {
-      "name": "sncf_filter",
-      "arguments": [
-        {
-          "type": "ASPECT_SET",
-          "name": "aspects"
-        }
-      ],
-      "return_type": "ASPECT_SET",
-      "body": {
-        "type": "condition",
-        "if": {
-          "type": "aspect_set_contains",
-            "aspect_set": {
-              "type": "argument_ref",
-              "argument_name": "aspects"
-            },
-            "aspect": "WHITE_CROSS"
+    "aspects": [{
+            "id": "WHITE_CROSS",
+            "color": "#ffffff",
+            "constraints": []
         },
-        "then": {
-          "type": "aspect_set",
-            "members": [
-              {
-                "aspect": "WHITE_CROSS"
-              }
-            ]
+        {
+            "id": "GREEN",
+            "color": "#2a850c",
+            "constraints": []
         },
-        "else": {
-          "type": "condition",
-          "if": {
-            "type": "aspect_set_contains",
-            "aspect_set": {
-              "type": "argument_ref",
-              "argument_name": "aspects"
-            },
-            "aspect": "RED"
-          },
-          "then": {
-            "type": "aspect_set",
-            "members": [
-              {
-                "aspect": "RED"
-              }
-            ]
-          },
-          "else": {
-            "type": "condition",
-            "if": {
-              "type": "aspect_set_contains",
-              "aspect_set": {
-                "type": "argument_ref",
-                "argument_name": "aspects"
-              },
-              "aspect": "YELLOW"
-            },
-            "then": {
-              "type": "aspect_set",
-              "members": [
-                {
-                  "aspect": "YELLOW"
+        {
+            "id": "YELLOW",
+            "color": "#f08a05",
+            "constraints": [{
+                "type": "speed_limit",
+                "speed": 4,
+                "applies_at": {
+                    "element": "NEXT_SIGNAL",
+                    "offset": -100
+                },
+                "until": {
+                    "element": "NEXT_SIGNAL",
+                    "offset": 0
                 }
-              ]
-            },
-            "else": {
-              "type": "argument_ref",
-              "argument_name": "aspects"
+            }]
+        },
+        {
+            "id": "RED",
+            "color": "#db0c04",
+            "constraints": [{
+                "type": "speed_limit",
+                "speed": 0,
+                "applies_at": {
+                    "element": "CURRENT_SIGNAL",
+                    "offset": -10
+                },
+                "until": {
+                    "element": "END",
+                    "offset": 0
+                }
+            }]
+        }
+    ],
+    "operational_points": [{
+        "id": "op.station"
+    }],
+    "routes": [{
+            "id": "rt.12",
+            "switches_position": {},
+            "release_groups": [
+                [
+                    "tvd.12"
+                ]
+            ],
+            "entry_point": "tde.1"
+        },
+        {
+            "id": "rt.23",
+            "switches_position": {},
+            "release_groups": [
+                [
+                    "tvd.23"
+                ]
+            ],
+            "entry_point": "tde.2"
+        },
+        {
+            "id": "rt.34",
+            "switches_position": {},
+            "release_groups": [
+                [
+                    "tvd.34"
+                ]
+            ],
+            "entry_point": "tde.3"
+        },
+        {
+            "id": "rt.45",
+            "switches_position": {},
+            "release_groups": [
+                [
+                    "tvd.45"
+                ]
+            ],
+            "entry_point": "tde.4"
+        },
+        {
+            "id": "rt.56",
+            "switches_position": {},
+            "release_groups": [
+                [
+                    "tvd.56"
+                ]
+            ],
+            "entry_point": "tde.5"
+        },
+        {
+            "id": "rt.67",
+            "switches_position": {},
+            "release_groups": [
+                [
+                    "tvd.67"
+                ]
+            ],
+            "entry_point": "tde.6"
+        },
+        {
+            "id": "rt.78",
+            "switches_position": {},
+            "release_groups": [
+                [
+                    "tvd.78"
+                ]
+            ],
+            "entry_point": "tde.7"
+        },
+        {
+            "id": "rt.81",
+            "switches_position": {},
+            "release_groups": [
+                [
+                    "tvd.81"
+                ]
+            ],
+            "entry_point": "tde.8"
+        }
+    ],
+    "script_functions": [{
+            "name": "sncf_filter",
+            "arguments": [{
+                "type": "ASPECT_SET",
+                "name": "aspects"
+            }],
+            "return_type": "ASPECT_SET",
+            "body": {
+                "type": "condition",
+                "if": {
+                    "type": "aspect_set_contains",
+                    "aspect_set": {
+                        "type": "argument_ref",
+                        "argument_name": "aspects"
+                    },
+                    "aspect": "WHITE_CROSS"
+                },
+                "then": {
+                    "type": "aspect_set",
+                    "members": [{
+                        "aspect": "WHITE_CROSS"
+                    }]
+                },
+                "else": {
+                    "type": "condition",
+                    "if": {
+                        "type": "aspect_set_contains",
+                        "aspect_set": {
+                            "type": "argument_ref",
+                            "argument_name": "aspects"
+                        },
+                        "aspect": "RED"
+                    },
+                    "then": {
+                        "type": "aspect_set",
+                        "members": [{
+                            "aspect": "RED"
+                        }]
+                    },
+                    "else": {
+                        "type": "condition",
+                        "if": {
+                            "type": "aspect_set_contains",
+                            "aspect_set": {
+                                "type": "argument_ref",
+                                "argument_name": "aspects"
+                            },
+                            "aspect": "YELLOW"
+                        },
+                        "then": {
+                            "type": "aspect_set",
+                            "members": [{
+                                "aspect": "YELLOW"
+                            }]
+                        },
+                        "else": {
+                            "type": "argument_ref",
+                            "argument_name": "aspects"
+                        }
+                    }
+                }
             }
-          }
-        }
-      }
-    },
-    {
-      "name": "bal3_end",
-      "arguments": [
-        {
-          "type": "ROUTE",
-          "name": "route"
-        }
-      ],
-      "return_type": "ASPECT_SET",
-      "body": {
-        "type": "call",
-        "function": "sncf_filter",
-        "arguments": [
-          {
-            "type": "aspect_set",
-            "members": [
-              {
-                "aspect": "RED",
-                "condition": {
-                  "type": "route_has_state",
-                  "route": {
-                    "type": "argument_ref",
-                    "argument_name": "route"
-                  },
-                  "state": "OCCUPIED"
-                }
-              },
-              {
-                "aspect": "YELLOW"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "bal3",
-      "arguments": [
-        {
-          "type": "SIGNAL",
-          "name": "master_signal"
         },
         {
-          "type": "ROUTE",
-          "name": "route"
-        }
-      ],
-      "return_type": "ASPECT_SET",
-      "body": {
-        "type": "call",
-        "function": "sncf_filter",
-        "arguments": [
-          {
-            "type": "aspect_set",
-            "members": [
-              {
-                "aspect": "WHITE_CROSS",
-                "condition": {
-                  "type": "is_incoming_route_cbtc",
-                  "route": {
-                    "type": "argument_ref",
-                    "argument_name": "route"
-                  }
+            "name": "bal3_end",
+            "arguments": [{
+                "type": "ROUTE",
+                "name": "route"
+            }],
+            "return_type": "ASPECT_SET",
+            "body": {
+                "type": "call",
+                "function": "sncf_filter",
+                "arguments": [{
+                    "type": "aspect_set",
+                    "members": [{
+                            "aspect": "RED",
+                            "condition": {
+                                "type": "route_has_state",
+                                "route": {
+                                    "type": "argument_ref",
+                                    "argument_name": "route"
+                                },
+                                "state": "OCCUPIED"
+                            }
+                        },
+                        {
+                            "aspect": "YELLOW"
+                        }
+                    ]
+                }]
+            }
+        },
+        {
+            "name": "bal3",
+            "arguments": [{
+                    "type": "SIGNAL",
+                    "name": "master_signal"
+                },
+                {
+                    "type": "ROUTE",
+                    "name": "route"
                 }
-              },
-              {
-                "aspect": "RED",
-                "condition": {
-                  "type": "route_has_state",
-                  "route": {
-                    "type": "argument_ref",
-                    "argument_name": "route"
-                  },
-                  "state": "OCCUPIED"
+            ],
+            "return_type": "ASPECT_SET",
+            "body": {
+                "type": "call",
+                "function": "sncf_filter",
+                "arguments": [{
+                    "type": "aspect_set",
+                    "members": [{
+                            "aspect": "WHITE_CROSS",
+                            "condition": {
+                                "type": "is_incoming_route_cbtc",
+                                "route": {
+                                    "type": "argument_ref",
+                                    "argument_name": "route"
+                                }
+                            }
+                        },
+                        {
+                            "aspect": "RED",
+                            "condition": {
+                                "type": "route_has_state",
+                                "route": {
+                                    "type": "argument_ref",
+                                    "argument_name": "route"
+                                },
+                                "state": "OCCUPIED"
+                            }
+                        },
+                        {
+                            "aspect": "YELLOW",
+                            "condition": {
+                                "type": "signal_has_aspect",
+                                "signal": {
+                                    "type": "argument_ref",
+                                    "argument_name": "master_signal"
+                                },
+                                "aspect": "RED"
+                            }
+                        },
+                        {
+                            "aspect": "GREEN"
+                        }
+                    ]
+                }]
+            }
+        }
+    ],
+    "speed_sections": [{
+        "id": "speedsection.all",
+        "is_signalized": false,
+        "speed": 15
+    }],
+    "switches": [],
+    "track_section_links": [{
+            "begin": {
+                "endpoint": "END",
+                "section": "tr.81"
+            },
+            "end": {
+                "endpoint": "BEGIN",
+                "section": "tr.12"
+            },
+            "navigability": "BOTH"
+        },
+        {
+            "begin": {
+                "endpoint": "END",
+                "section": "tr.12"
+            },
+            "end": {
+                "endpoint": "BEGIN",
+                "section": "tr.23"
+            },
+            "navigability": "BOTH"
+        },
+        {
+            "begin": {
+                "endpoint": "END",
+                "section": "tr.23"
+            },
+            "end": {
+                "endpoint": "BEGIN",
+                "section": "tr.34"
+            },
+            "navigability": "BOTH"
+        },
+        {
+            "begin": {
+                "endpoint": "END",
+                "section": "tr.34"
+            },
+            "end": {
+                "endpoint": "BEGIN",
+                "section": "tr.45"
+            },
+            "navigability": "BOTH"
+        },
+        {
+            "begin": {
+                "endpoint": "END",
+                "section": "tr.45"
+            },
+            "end": {
+                "endpoint": "BEGIN",
+                "section": "tr.56"
+            },
+            "navigability": "BOTH"
+        },
+        {
+            "begin": {
+                "endpoint": "END",
+                "section": "tr.56"
+            },
+            "end": {
+                "endpoint": "BEGIN",
+                "section": "tr.67"
+            },
+            "navigability": "BOTH"
+        },
+        {
+            "begin": {
+                "endpoint": "END",
+                "section": "tr.67"
+            },
+            "end": {
+                "endpoint": "BEGIN",
+                "section": "tr.78"
+            },
+            "navigability": "BOTH"
+        },
+        {
+            "begin": {
+                "endpoint": "END",
+                "section": "tr.78"
+            },
+            "end": {
+                "endpoint": "BEGIN",
+                "section": "tr.81"
+            },
+            "navigability": "BOTH"
+        }
+    ],
+    "track_sections": [{
+            "id": "tr.12",
+            "length": 200,
+            "slopes": [{
+                    "begin": 0,
+                    "end": 100,
+                    "gradient": 10
+                },
+                {
+                    "begin": 100,
+                    "end": 200,
+                    "gradient": -10
                 }
-              },
-              {
-                "aspect": "YELLOW",
-                "condition": {
-                  "type": "signal_has_aspect",
-                  "signal": {
-                    "type": "argument_ref",
-                    "argument_name": "master_signal"
-                  },
-                  "aspect": "RED"
+            ],
+            "operational_points": [{
+                "position": 100,
+                "ref": "op.station"
+            }],
+            "route_waypoints": [{
+                "type": "detector",
+                "applicable_direction": "BOTH",
+                "id": "tde.1",
+                "position": 25
+            }],
+            "signals": [{
+                "expr": {
+                    "type": "call",
+                    "function": "bal3",
+                    "arguments": [{
+                            "type": "signal",
+                            "signal": "sig.2"
+                        },
+                        {
+                            "type": "route",
+                            "route": "rt.12"
+                        }
+                    ]
+                },
+                "id": "sig.1",
+                "applicable_direction": "NORMAL",
+                "position": 0,
+                "sight_distance": 200
+            }],
+            "speed_sections": [{
+                "applicable_direction": "BOTH",
+                "begin": 0,
+                "end": 200,
+                "ref": "speedsection.all"
+            }]
+        },
+        {
+            "id": "tr.23",
+            "length": 200,
+            "slopes": [{
+                    "begin": 0,
+                    "end": 100,
+                    "gradient": 10
+                },
+                {
+                    "begin": 100,
+                    "end": 200,
+                    "gradient": -10
                 }
-              },
-              {
-                "aspect": "GREEN"
-              }
+            ],
+            "operational_points": [],
+            "route_waypoints": [{
+                "type": "detector",
+                "applicable_direction": "BOTH",
+                "id": "tde.2",
+                "position": 25
+            }],
+            "signals": [{
+                "expr": {
+                    "type": "call",
+                    "function": "bal3",
+                    "arguments": [{
+                            "type": "signal",
+                            "signal": "sig.3"
+                        },
+                        {
+                            "type": "route",
+                            "route": "rt.23"
+                        }
+                    ]
+                },
+                "id": "sig.2",
+                "applicable_direction": "NORMAL",
+                "position": 0,
+                "sight_distance": 200
+            }],
+            "speed_sections": [{
+                "applicable_direction": "BOTH",
+                "begin": 0,
+                "end": 200,
+                "ref": "speedsection.all"
+            }]
+        },
+        {
+            "id": "tr.34",
+            "length": 200,
+            "operational_points": [],
+            "route_waypoints": [{
+                "type": "detector",
+                "applicable_direction": "BOTH",
+                "id": "tde.3",
+                "position": 25
+            }],
+            "signals": [{
+                "expr": {
+                    "type": "call",
+                    "function": "bal3",
+                    "arguments": [{
+                            "type": "signal",
+                            "signal": "sig.4"
+                        },
+                        {
+                            "type": "route",
+                            "route": "rt.34"
+                        }
+                    ]
+                },
+                "id": "sig.3",
+                "applicable_direction": "NORMAL",
+                "position": 0,
+                "sight_distance": 200
+            }],
+            "speed_sections": [{
+                "applicable_direction": "BOTH",
+                "begin": 0,
+                "end": 200,
+                "ref": "speedsection.all"
+            }]
+        },
+        {
+            "id": "tr.45",
+            "length": 200,
+            "operational_points": [],
+            "route_waypoints": [{
+                "type": "detector",
+                "applicable_direction": "BOTH",
+                "id": "tde.4",
+                "position": 25
+            }],
+            "signals": [{
+                "expr": {
+                    "type": "call",
+                    "function": "bal3",
+                    "arguments": [{
+                            "type": "signal",
+                            "signal": "sig.5"
+                        },
+                        {
+                            "type": "route",
+                            "route": "rt.45"
+                        }
+                    ]
+                },
+                "id": "sig.4",
+                "applicable_direction": "NORMAL",
+                "position": 0,
+                "sight_distance": 200
+            }],
+            "speed_sections": [{
+                "applicable_direction": "BOTH",
+                "begin": 0,
+                "end": 200,
+                "ref": "speedsection.all"
+            }]
+        },
+        {
+            "id": "tr.56",
+            "length": 200,
+            "operational_points": [],
+            "route_waypoints": [{
+                "type": "detector",
+                "applicable_direction": "BOTH",
+                "id": "tde.5",
+                "position": 25
+            }],
+            "signals": [{
+                "expr": {
+                    "type": "call",
+                    "function": "bal3",
+                    "arguments": [{
+                            "type": "signal",
+                            "signal": "sig.6"
+                        },
+                        {
+                            "type": "route",
+                            "route": "rt.56"
+                        }
+                    ]
+                },
+                "id": "sig.5",
+                "applicable_direction": "NORMAL",
+                "position": 0,
+                "sight_distance": 200
+            }],
+            "speed_sections": [{
+                "applicable_direction": "BOTH",
+                "begin": 0,
+                "end": 200,
+                "ref": "speedsection.all"
+            }]
+        },
+        {
+            "id": "tr.67",
+            "length": 200,
+            "operational_points": [],
+            "route_waypoints": [{
+                "type": "detector",
+                "applicable_direction": "BOTH",
+                "id": "tde.6",
+                "position": 25
+            }],
+            "signals": [{
+                "expr": {
+                    "type": "call",
+                    "function": "bal3",
+                    "arguments": [{
+                            "type": "signal",
+                            "signal": "sig.7"
+                        },
+                        {
+                            "type": "route",
+                            "route": "rt.67"
+                        }
+                    ]
+                },
+                "id": "sig.6",
+                "applicable_direction": "NORMAL",
+                "position": 0,
+                "sight_distance": 200
+            }],
+            "speed_sections": [{
+                "applicable_direction": "BOTH",
+                "begin": 0,
+                "end": 200,
+                "ref": "speedsection.all"
+            }]
+        },
+        {
+            "id": "tr.78",
+            "length": 200,
+            "operational_points": [],
+            "route_waypoints": [{
+                "type": "detector",
+                "applicable_direction": "BOTH",
+                "id": "tde.7",
+                "position": 25
+            }],
+            "signals": [{
+                "expr": {
+                    "type": "call",
+                    "function": "bal3",
+                    "arguments": [{
+                            "type": "signal",
+                            "signal": "sig.8"
+                        },
+                        {
+                            "type": "route",
+                            "route": "rt.78"
+                        }
+                    ]
+                },
+                "id": "sig.7",
+                "applicable_direction": "NORMAL",
+                "position": 0,
+                "sight_distance": 200
+            }],
+            "speed_sections": [{
+                "applicable_direction": "BOTH",
+                "begin": 0,
+                "end": 200,
+                "ref": "speedsection.all"
+            }]
+        },
+        {
+            "id": "tr.81",
+            "length": 200,
+            "operational_points": [],
+            "route_waypoints": [{
+                "type": "detector",
+                "applicable_direction": "BOTH",
+                "id": "tde.8",
+                "position": 25
+            }],
+            "signals": [{
+                "expr": {
+                    "type": "call",
+                    "function": "bal3_end",
+                    "arguments": [{
+                        "type": "route",
+                        "route": "rt.81"
+                    }]
+                },
+                "id": "sig.8",
+                "applicable_direction": "NORMAL",
+                "position": 0,
+                "sight_distance": 200
+            }],
+            "speed_sections": [{
+                "applicable_direction": "BOTH",
+                "begin": 0,
+                "end": 200,
+                "ref": "speedsection.all"
+            }]
+        }
+    ],
+    "tvd_sections": [{
+            "buffer_stops": [],
+            "id": "tvd.12",
+            "is_berthing_track": true,
+            "train_detectors": [
+                "tde.1",
+                "tde.2"
             ]
-          }
-        ]
-      }
-    }
-  ],
-  "speed_sections": [
-    {
-      "id": "speedsection.all",
-      "is_signalized": false,
-      "speed": 15
-    }
-  ],
-  "switches": [],
-  "track_section_links": [
-    {
-      "begin": {
-        "endpoint": "END",
-        "section": "tr.81"
-      },
-      "end": {
-        "endpoint": "BEGIN",
-        "section": "tr.12"
-      },
-      "navigability": "BOTH"
-    },
-    {
-      "begin": {
-        "endpoint": "END",
-        "section": "tr.12"
-      },
-      "end": {
-        "endpoint": "BEGIN",
-        "section": "tr.23"
-      },
-      "navigability": "BOTH"
-    },
-    {
-      "begin": {
-        "endpoint": "END",
-        "section": "tr.23"
-      },
-      "end": {
-        "endpoint": "BEGIN",
-        "section": "tr.34"
-      },
-      "navigability": "BOTH"
-    },
-    {
-      "begin": {
-        "endpoint": "END",
-        "section": "tr.34"
-      },
-      "end": {
-        "endpoint": "BEGIN",
-        "section": "tr.45"
-      },
-      "navigability": "BOTH"
-    },
-    {
-      "begin": {
-        "endpoint": "END",
-        "section": "tr.45"
-      },
-      "end": {
-        "endpoint": "BEGIN",
-        "section": "tr.56"
-      },
-      "navigability": "BOTH"
-    },
-    {
-      "begin": {
-        "endpoint": "END",
-        "section": "tr.56"
-      },
-      "end": {
-        "endpoint": "BEGIN",
-        "section": "tr.67"
-      },
-      "navigability": "BOTH"
-    },
-    {
-      "begin": {
-        "endpoint": "END",
-        "section": "tr.67"
-      },
-      "end": {
-        "endpoint": "BEGIN",
-        "section": "tr.78"
-      },
-      "navigability": "BOTH"
-    },
-    {
-      "begin": {
-        "endpoint": "END",
-        "section": "tr.78"
-      },
-      "end": {
-        "endpoint": "BEGIN",
-        "section": "tr.81"
-      },
-      "navigability": "BOTH"
-    }
-  ],
-  "track_sections": [
-    {
-      "id": "tr.12",
-      "length": 200,
-      "operational_points": [
+        },
         {
-          "position": 100,
-          "ref": "op.station"
-        }
-      ],
-      "route_waypoints": [
-        {
-          "type": "detector",
-          "applicable_direction": "BOTH",
-          "id": "tde.1",
-          "position": 25
-        }
-      ],
-      "signals": [
-        {
-          "expr": {
-            "type": "call",
-            "function": "bal3",
-            "arguments": [
-              {
-                "type": "signal",
-                "signal": "sig.2"
-              },
-              {
-                "type": "route",
-                "route": "rt.12"
-              }
+            "buffer_stops": [],
+            "id": "tvd.23",
+            "is_berthing_track": true,
+            "train_detectors": [
+                "tde.2",
+                "tde.3"
             ]
-          },
-          "id": "sig.1",
-          "applicable_direction": "NORMAL",
-          "position": 0,
-          "sight_distance": 200
-        }
-      ],
-      "speed_sections": [
+        },
         {
-          "applicable_direction": "BOTH",
-          "begin": 0,
-          "end": 200,
-          "ref": "speedsection.all"
-        }
-      ]
-    },
-    {
-      "id": "tr.23",
-      "length": 200,
-      "operational_points": [],
-      "route_waypoints": [
-        {
-          "type": "detector",
-          "applicable_direction": "BOTH",
-          "id": "tde.2",
-          "position": 25
-        }
-      ],
-      "signals": [
-        {
-          "expr": {
-            "type": "call",
-            "function": "bal3",
-            "arguments": [
-              {
-                "type": "signal",
-                "signal": "sig.3"
-              },
-              {
-                "type": "route",
-                "route": "rt.23"
-              }
+            "buffer_stops": [],
+            "id": "tvd.34",
+            "is_berthing_track": true,
+            "train_detectors": [
+                "tde.3",
+                "tde.4"
             ]
-          },
-          "id": "sig.2",
-          "applicable_direction": "NORMAL",
-          "position": 0,
-          "sight_distance": 200
-        }
-      ],
-      "speed_sections": [
+        },
         {
-          "applicable_direction": "BOTH",
-          "begin": 0,
-          "end": 200,
-          "ref": "speedsection.all"
-        }
-      ]
-    },
-    {
-      "id": "tr.34",
-      "length": 200,
-      "operational_points": [],
-      "route_waypoints": [
-        {
-          "type": "detector",
-          "applicable_direction": "BOTH",
-          "id": "tde.3",
-          "position": 25
-        }
-      ],
-      "signals": [
-        {
-          "expr": {
-            "type": "call",
-            "function": "bal3",
-            "arguments": [
-              {
-                "type": "signal",
-                "signal": "sig.4"
-              },
-              {
-                "type": "route",
-                "route": "rt.34"
-              }
+            "buffer_stops": [],
+            "id": "tvd.45",
+            "is_berthing_track": true,
+            "train_detectors": [
+                "tde.4",
+                "tde.5"
             ]
-          },
-          "id": "sig.3",
-          "applicable_direction": "NORMAL",
-          "position": 0,
-          "sight_distance": 200
-        }
-      ],
-      "speed_sections": [
+        },
         {
-          "applicable_direction": "BOTH",
-          "begin": 0,
-          "end": 200,
-          "ref": "speedsection.all"
-        }
-      ]
-    },
-    {
-      "id": "tr.45",
-      "length": 200,
-      "operational_points": [],
-      "route_waypoints": [
-        {
-          "type": "detector",
-          "applicable_direction": "BOTH",
-          "id": "tde.4",
-          "position": 25
-        }
-      ],
-      "signals": [
-        {
-          "expr": {
-            "type": "call",
-            "function": "bal3",
-            "arguments": [
-              {
-                "type": "signal",
-                "signal": "sig.5"
-              },
-              {
-                "type": "route",
-                "route": "rt.45"
-              }
+            "buffer_stops": [],
+            "id": "tvd.56",
+            "is_berthing_track": true,
+            "train_detectors": [
+                "tde.5",
+                "tde.6"
             ]
-          },
-          "id": "sig.4",
-          "applicable_direction": "NORMAL",
-          "position": 0,
-          "sight_distance": 200
-        }
-      ],
-      "speed_sections": [
+        },
         {
-          "applicable_direction": "BOTH",
-          "begin": 0,
-          "end": 200,
-          "ref": "speedsection.all"
-        }
-      ]
-    },
-    {
-      "id": "tr.56",
-      "length": 200,
-      "operational_points": [],
-      "route_waypoints": [
-        {
-          "type": "detector",
-          "applicable_direction": "BOTH",
-          "id": "tde.5",
-          "position": 25
-        }
-      ],
-      "signals": [
-        {
-          "expr": {
-            "type": "call",
-            "function": "bal3",
-            "arguments": [
-              {
-                "type": "signal",
-                "signal": "sig.6"
-              },
-              {
-                "type": "route",
-                "route": "rt.56"
-              }
+            "buffer_stops": [],
+            "id": "tvd.67",
+            "is_berthing_track": true,
+            "train_detectors": [
+                "tde.6",
+                "tde.7"
             ]
-          },
-          "id": "sig.5",
-          "applicable_direction": "NORMAL",
-          "position": 0,
-          "sight_distance": 200
-        }
-      ],
-      "speed_sections": [
+        },
         {
-          "applicable_direction": "BOTH",
-          "begin": 0,
-          "end": 200,
-          "ref": "speedsection.all"
-        }
-      ]
-    },
-    {
-      "id": "tr.67",
-      "length": 200,
-      "operational_points": [],
-      "route_waypoints": [
-        {
-          "type": "detector",
-          "applicable_direction": "BOTH",
-          "id": "tde.6",
-          "position": 25
-        }
-      ],
-      "signals": [
-        {
-          "expr": {
-            "type": "call",
-            "function": "bal3",
-            "arguments": [
-              {
-                "type": "signal",
-                "signal": "sig.7"
-              },
-              {
-                "type": "route",
-                "route": "rt.67"
-              }
+            "buffer_stops": [],
+            "id": "tvd.78",
+            "is_berthing_track": true,
+            "train_detectors": [
+                "tde.7",
+                "tde.8"
             ]
-          },
-          "id": "sig.6",
-          "applicable_direction": "NORMAL",
-          "position": 0,
-          "sight_distance": 200
-        }
-      ],
-      "speed_sections": [
+        },
         {
-          "applicable_direction": "BOTH",
-          "begin": 0,
-          "end": 200,
-          "ref": "speedsection.all"
-        }
-      ]
-    },
-    {
-      "id": "tr.78",
-      "length": 200,
-      "operational_points": [],
-      "route_waypoints": [
-        {
-          "type": "detector",
-          "applicable_direction": "BOTH",
-          "id": "tde.7",
-          "position": 25
-        }
-      ],
-      "signals": [
-        {
-          "expr": {
-            "type": "call",
-            "function": "bal3",
-            "arguments": [
-              {
-                "type": "signal",
-                "signal": "sig.8"
-              },
-              {
-                "type": "route",
-                "route": "rt.78"
-              }
+            "buffer_stops": [],
+            "id": "tvd.81",
+            "is_berthing_track": true,
+            "train_detectors": [
+                "tde.8",
+                "tde.1"
             ]
-          },
-          "id": "sig.7",
-          "applicable_direction": "NORMAL",
-          "position": 0,
-          "sight_distance": 200
         }
-      ],
-      "speed_sections": [
-        {
-          "applicable_direction": "BOTH",
-          "begin": 0,
-          "end": 200,
-          "ref": "speedsection.all"
-        }
-      ]
-    },
-    {
-      "id": "tr.81",
-      "length": 200,
-      "operational_points": [],
-      "route_waypoints": [
-        {
-          "type": "detector",
-          "applicable_direction": "BOTH",
-          "id": "tde.8",
-          "position": 25
-        }
-      ],
-      "signals": [
-        {
-          "expr": {
-            "type": "call",
-            "function": "bal3_end",
-            "arguments": [
-              {
-                "type": "route",
-                "route": "rt.81"
-              }
-            ]
-          },
-          "id": "sig.8",
-          "applicable_direction": "NORMAL",
-          "position": 0,
-          "sight_distance": 200
-        }
-      ],
-      "speed_sections": [
-        {
-          "applicable_direction": "BOTH",
-          "begin": 0,
-          "end": 200,
-          "ref": "speedsection.all"
-        }
-      ]
-    }
-  ],
-  "tvd_sections": [
-    {
-      "buffer_stops": [],
-      "id": "tvd.12",
-      "is_berthing_track": true,
-      "train_detectors": [
-        "tde.1",
-        "tde.2"
-      ]
-    },
-    {
-      "buffer_stops": [],
-      "id": "tvd.23",
-      "is_berthing_track": true,
-      "train_detectors": [
-        "tde.2",
-        "tde.3"
-      ]
-    },
-    {
-      "buffer_stops": [],
-      "id": "tvd.34",
-      "is_berthing_track": true,
-      "train_detectors": [
-        "tde.3",
-        "tde.4"
-      ]
-    },
-    {
-      "buffer_stops": [],
-      "id": "tvd.45",
-      "is_berthing_track": true,
-      "train_detectors": [
-        "tde.4",
-        "tde.5"
-      ]
-    },
-    {
-      "buffer_stops": [],
-      "id": "tvd.56",
-      "is_berthing_track": true,
-      "train_detectors": [
-        "tde.5",
-        "tde.6"
-      ]
-    },
-    {
-      "buffer_stops": [],
-      "id": "tvd.67",
-      "is_berthing_track": true,
-      "train_detectors": [
-        "tde.6",
-        "tde.7"
-      ]
-    },
-    {
-      "buffer_stops": [],
-      "id": "tvd.78",
-      "is_berthing_track": true,
-      "train_detectors": [
-        "tde.7",
-        "tde.8"
-      ]
-    },
-    {
-      "buffer_stops": [],
-      "id": "tvd.81",
-      "is_berthing_track": true,
-      "train_detectors": [
-        "tde.8",
-        "tde.1"
-      ]
-    }
-  ],
-  "version": 1
+    ],
+    "version": 1
 }

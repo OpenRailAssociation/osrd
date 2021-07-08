@@ -26,19 +26,19 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
     /** The path of the train */
     public final List<TrackSectionRange> trackSectionPath;
 
-    /** If set to true, we follow the given path rather than the switch positions. Used for margin computations */
+    /**
+     * If set to true, we follow the given path rather than the switch positions.
+     * Used for margin computations
+     */
     public boolean ignoreInfraState = false;
 
     /**
      * Create a new position tracker on some given infrastructure and path.
+     * 
      * @param infraState the infrastructure to navigate on
      */
-    public TrainPositionTracker(
-            Infra infra,
-            InfraState infraState,
-            ArrayDeque<TrackSectionRange> trackSectionRanges,
-            List<TrackSectionRange> trackSectionPath
-    ) {
+    public TrainPositionTracker(Infra infra, InfraState infraState, ArrayDeque<TrackSectionRange> trackSectionRanges,
+            List<TrackSectionRange> trackSectionPath) {
         this.infra = infra;
         this.infraState = infraState;
         this.trackSectionRanges = trackSectionRanges;
@@ -57,7 +57,7 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
     // region STD_OVERRIDES
 
     @Override
-    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
+    @SuppressFBWarnings({ "FE_FLOATING_POINT_EQUALITY" })
     public boolean equals(Object obj) {
         if (obj == null)
             return false;
@@ -77,6 +77,7 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
 
     /**
      * Makes a copy of the position tracker.
+     * 
      * @return a copy of the position tracker.
      */
     @Override
@@ -94,7 +95,8 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         var next = neighbors.get(0);
         var nextTrackSection = next.getEdge(curTrackSectionPos.edge, curTrackSectionPos.direction);
 
-        // In case of a switch, we need to get the next track section align with the position of the switch.
+        // In case of a switch, we need to get the next track section align with the
+        // position of the switch.
         if (neighbors.size() > 1) {
             if (ignoreInfraState) {
                 // If we need to ignore the infra state, we refer to the given path instead
@@ -120,13 +122,14 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
             }
         }
 
-        var nextTrackSectionDirection = nextTrackSection.getDirection(
-                curTrackSectionPos.edge, curTrackSectionPos.direction);
+        var nextTrackSectionDirection = nextTrackSection.getDirection(curTrackSectionPos.edge,
+                curTrackSectionPos.direction);
         return TrackSectionRange.makeNext(nextTrackSection, nextTrackSectionDirection, delta);
     }
 
     /**
      * Updates the position of the train on the network.
+     * 
      * @param positionDelta How much the train moves by.
      */
     public void updatePosition(double expectedTrainLength, double positionDelta) {
@@ -142,9 +145,9 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
             updateTailPosition(tailDisplacement);
     }
 
-    /** TODO: Check if it's the wanted behavior...
-     * Move the head of train to positionDelta ahead.
-     * The train stop if it can't go further.
+    /**
+     * TODO: Check if it's the wanted behavior... Move the head of train to
+     * positionDelta ahead. The train stop if it can't go further.
      */
     private void updateHeadPosition(double targetDist) {
         var remainingDist = targetDist;
@@ -157,7 +160,8 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         // add edges to the current edges queue as the train moves forward
         while (remainingDist > 0) {
             var nextPos = nextTrackSectionPosition(remainingDist);
-            // this should kind of be nextPos.length(), but doing it this way avoids float compare errors
+            // this should kind of be nextPos.length(), but doing it this way avoids float
+            // compare errors
             remainingDist -= nextPos.edge.length;
             trackSectionRanges.addFirst(nextPos);
         }
@@ -200,7 +204,7 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
     }
 
     @Override
-    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
+    @SuppressFBWarnings({ "FE_FLOATING_POINT_EQUALITY" })
     public boolean deepEquals(TrainPositionTracker other) {
         return pathPosition == other.pathPosition
                 && DeepEqualsUtils.deepEquals(trackSectionRanges, other.trackSectionRanges);

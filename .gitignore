@@ -6,6 +6,7 @@ gradlew*
 *.iml
 *.jar
 .jqwik-database
+*.class
 
 # vscode
 

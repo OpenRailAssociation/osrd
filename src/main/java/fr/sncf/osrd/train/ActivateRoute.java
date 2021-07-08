@@ -9,10 +9,8 @@ import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 
 public class ActivateRoute {
     /** This function try to reserve forwarding routes */
-    public static void reserveRoutes(
-            Simulation sim,
-            SignalNavigatePhase.State navigatePhaseState
-    ) throws SimulationError {
+    public static void reserveRoutes(Simulation sim, SignalNavigatePhase.State navigatePhaseState)
+            throws SimulationError {
         // TODO have a smarter way to reserve routes
         if (navigatePhaseState.getRouteIndex() + 1 >= navigatePhaseState.phase.routePath.size())
             return;
@@ -23,17 +21,20 @@ public class ActivateRoute {
             nextRouteState.reserve(sim);
     }
 
-    /** Reserve the initial routes, mark occupied tvd sections and add interactable elements that are under the train
-     * to the TrainState*/
+    /**
+     * Reserve the initial routes, mark occupied tvd sections and add interactable
+     * elements that are under the train to the TrainState
+     */
     public static void trainCreation(Simulation sim, TrainState trainState) throws SimulationError {
         Route route = trainState.trainSchedule.initialRoute;
         var routeState = sim.infraState.getRouteState(route.index);
 
         // Reserve the initial route
-        if (routeState.status != RouteStatus.FREE)
-            throw new SimulationError(String.format(
-                    "Impossible to reserve the route '%s' since it is not available.", routeState.route.id));
-        routeState.initialReserve(sim);
+        // if (routeState.status != RouteStatus.FREE)
+        // throw new SimulationError(String.format(
+        // "Impossible to reserve the route '%s' since it is not available.",
+        // routeState.route.id));
+        // routeState.initialReserve(sim);
 
         // Reserve the tvdSection where the train is created
         var trainPosition = trainState.location.trackSectionRanges.getFirst();

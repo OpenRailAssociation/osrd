@@ -38,7 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 // caused by the temporary opRef.begin == opRef.end
-@SuppressFBWarnings({"SIC_INNER_SHOULD_BE_STATIC_ANON"})
+@SuppressFBWarnings({ "SIC_INNER_SHOULD_BE_STATIC_ANON" })
 public class DebugViewer extends ChangeConsumer {
     static final Logger logger = LoggerFactory.getLogger(DebugViewer.class);
 
@@ -83,13 +83,8 @@ public class DebugViewer extends ChangeConsumer {
     private static final String TRAIN_CSS = "text-alignment: under; shape: box; size: 25px, 10px; fill-color: #256ba8;"
             + "z-index: 2; sprite-orientation: to;";
 
-    private DebugViewer(
-            Infra infra,
-            boolean realTime,
-            double stepPause,
-            SingleGraph graph,
-            SpriteManager spriteManager
-    ) {
+    private DebugViewer(Infra infra, boolean realTime, double stepPause, SingleGraph graph,
+            SpriteManager spriteManager) {
         this.infra = infra;
         this.realTime = realTime;
         this.stepPause = stepPause;
@@ -99,6 +94,7 @@ public class DebugViewer extends ChangeConsumer {
 
     /**
      * Create a viewer for debug purposes
+     * 
      * @param infra the infrastructure display
      */
     public static DebugViewer from(Infra infra, boolean realTime, double stepPause) {
@@ -115,7 +111,7 @@ public class DebugViewer extends ChangeConsumer {
 
         for (var node : infra.trackGraph.iterNodes()) {
             Node graphNode = graph.addNode(String.valueOf(node.index));
-            //graphNode.setAttribute("ui.label", node.id + "(index = " + node.index + ")");
+            // graphNode.setAttribute("ui.label", node.id + "(index = " + node.index + ")");
             graphNode.setAttribute("ui.style", "text-alignment: under;");
             graphNode.setAttribute("layout.weight", referenceEdgeSize);
         }
@@ -152,7 +148,8 @@ public class DebugViewer extends ChangeConsumer {
                 var signalRefID = encodeSpriteId(signal.value.id + "@" + edge.id);
                 var sprite = spriteManager.addSprite(signalRefID);
                 sprite.attachToEdge(edge.id);
-                sprite.setPosition(pos);;
+                sprite.setPosition(pos);
+                ;
                 sprite.setAttribute("ui.label", signal.value.id);
                 viewer.signalSprites.put(signal.value, sprite);
                 viewer.updateSignal(signal.value, signal.value.getInitialAspects());
@@ -164,13 +161,14 @@ public class DebugViewer extends ChangeConsumer {
     }
 
     private void show() {
-        // if you believe something is wrong with the code below, just run graph.display() instead
+        // if you believe something is wrong with the code below, just run
+        // graph.display() instead
 
         // create the graphstream swing infrastructure needed
         SwingViewer viewer = new SwingViewer(graph, SwingViewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
         var view = (DefaultView) viewer.addDefaultView(false);
         // viewer.disableAutoLayout();
-        viewer.enableAutoLayout(Layouts.newLayoutAlgorithm());
+        viewer.enableAutoLayout();
         view.setMouseManager(new MouseManager() {
             @Override
             public void init(GraphicGraph graph, View view) {
@@ -221,11 +219,8 @@ public class DebugViewer extends ChangeConsumer {
                 var camera = view.getCamera();
                 var ratioPx2Gu = camera.getMetrics().ratioPx2Gu;
 
-                camera.setViewCenter(
-                        grabPointCenter.x + deltaX / ratioPx2Gu,
-                        grabPointCenter.y - deltaY / ratioPx2Gu,
-                        grabPointCenter.z
-                );
+                camera.setViewCenter(grabPointCenter.x + deltaX / ratioPx2Gu, grabPointCenter.y - deltaY / ratioPx2Gu,
+                        grabPointCenter.z);
             }
 
             @Override
@@ -251,10 +246,8 @@ public class DebugViewer extends ChangeConsumer {
     private void updateSignal(Signal signal, RSAspectSet aspects) {
         var sprite = signalSprites.get(signal);
 
-        var signalCSS = String.format(
-                "text-alignment: under; shape: circle; size: 20px; fill-color: %s;",
-                aspects.iterator().next().color
-        );
+        var signalCSS = String.format("text-alignment: under; shape: circle; size: 20px; fill-color: %s;",
+                aspects.iterator().next().color);
 
         sprite.setAttribute("ui.style", signalCSS);
     }
@@ -309,7 +302,8 @@ public class DebugViewer extends ChangeConsumer {
             return;
         }
 
-        // if the user doesn't want realtime visualization, update the viewer once per timeline event
+        // if the user doesn't want realtime visualization, update the viewer once per
+        // timeline event
         if (!realTime) {
             if (currentTime < nextEventTime) {
                 currentTime = nextEventTime;
@@ -341,7 +335,7 @@ public class DebugViewer extends ChangeConsumer {
     }
 
     @Override
-    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+    @SuppressFBWarnings({ "BC_UNCONFIRMED_CAST" })
     public void changePublishedCallback(Change change) {
         // region TRAIN_CHANGES
         if (change.getClass() == Train.TrainCreatedChange.class) {

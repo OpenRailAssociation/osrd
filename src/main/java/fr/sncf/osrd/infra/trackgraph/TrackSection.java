@@ -32,13 +32,8 @@ public final class TrackSection extends BiNEdge<TrackSection> {
         public final EdgeDirection direction;
 
         /** Represent an interval in a route */
-        public RouteFragment(
-                Route route,
-                double routeOffset,
-                double trackBegin,
-                double trackEnd,
-                EdgeDirection direction
-        ) {
+        public RouteFragment(Route route, double routeOffset, double trackBegin, double trackEnd,
+                EdgeDirection direction) {
             super(trackBegin, trackEnd);
             this.route = route;
             this.routeOffset = routeOffset;
@@ -49,7 +44,8 @@ public final class TrackSection extends BiNEdge<TrackSection> {
     public final IntervalTree<RouteFragment> forwardRoutes = new IntervalTree<>();
     public final IntervalTree<RouteFragment> backwardRoutes = new IntervalTree<>();
 
-    // the data structure used for the slope automatically negates it when iterated on backwards
+    // the data structure used for the slope automatically negates it when iterated
+    // on backwards
     public final DoubleRangeMap forwardGradients = new DoubleRangeMap();
     public final DoubleRangeMap backwardGradients = new DoubleRangeMap();
     public final ArrayList<RangeValue<SpeedSection>> forwardSpeedSections = new ArrayList<>();
@@ -69,6 +65,7 @@ public final class TrackSection extends BiNEdge<TrackSection> {
 
     /**
      * Given a side of the edge, return the list of neighbors
+     * 
      * @param endpoint the end of the edge to consider
      * @return the list of neighbors at this end
      */
@@ -80,6 +77,7 @@ public final class TrackSection extends BiNEdge<TrackSection> {
 
     /**
      * Given a direction of the edge, return the list of forward neighbors
+     * 
      * @param direction the direction of the edge to consider
      * @return the list of neighbors forward
      */
@@ -91,6 +89,7 @@ public final class TrackSection extends BiNEdge<TrackSection> {
 
     /**
      * Given a direction of the edge, return the list of backward neighbors
+     * 
      * @param direction the direction of the edge to consider
      * @return the list of neighbors backward
      */
@@ -104,37 +103,26 @@ public final class TrackSection extends BiNEdge<TrackSection> {
     }
 
     /**
-     * Create a new topological edge.
-     * This constructor is private, as the edge should also be registered into the nodes.
+     * Create a new topological edge. This constructor is private, as the edge
+     * should also be registered into the nodes.
      */
-    TrackSection(
-            TrackGraph graph,
-            int index,
-            String id,
-            int startNodeIndex,
-            int endNodeIndex,
-            double length,
-            List<List<Double>> endpointCoords
-    ) {
+    TrackSection(TrackGraph graph, int index, String id, int startNodeIndex, int endNodeIndex, double length,
+            List<List<Double>> endpointCoords) {
         super(index, startNodeIndex, endNodeIndex, length);
         graph.registerEdge(this);
         this.id = id;
         this.endpointCoords = endpointCoords;
     }
 
-    public static void linkEdges(
-            TrackSection edgeA,
-            EdgeEndpoint positionOnA,
-            TrackSection edgeB,
-            EdgeEndpoint positionOnB
-    ) {
+    public static void linkEdges(TrackSection edgeA, EdgeEndpoint positionOnA, TrackSection edgeB,
+            EdgeEndpoint positionOnB) {
         edgeA.getNeighbors(positionOnA).add(edgeB);
         edgeB.getNeighbors(positionOnB).add(edgeA);
     }
 
-
     /**
      * Gets the last valid edge position along a direction
+     * 
      * @param direction the direction to consider positioning from
      * @return the last valid edge position
      */
@@ -146,6 +134,7 @@ public final class TrackSection extends BiNEdge<TrackSection> {
 
     /**
      * Gets the first valid edge position along a direction
+     * 
      * @param direction the direction to consider positioning from
      * @return the first valid edge position
      */
@@ -157,6 +146,7 @@ public final class TrackSection extends BiNEdge<TrackSection> {
 
     /**
      * Gets the position in the edge along a direction
+     * 
      * @param direction the direction to consider positioning from
      */
     public double position(EdgeDirection direction, double pos) {
@@ -165,7 +155,7 @@ public final class TrackSection extends BiNEdge<TrackSection> {
         return length - pos;
     }
 
-    @SuppressFBWarnings({"UPM_UNCALLED_PRIVATE_METHOD"})
+    @SuppressFBWarnings({ "UPM_UNCALLED_PRIVATE_METHOD" })
     private <ValueT> void validatePoints(PointSequence<ValueT> points) throws InvalidInfraException {
         if (points.getFirstPosition() < 0.)
             throw new InvalidInfraException(String.format("invalid PointSequence start for %s", id));
@@ -175,6 +165,7 @@ public final class TrackSection extends BiNEdge<TrackSection> {
 
     /**
      * Ensure the edge data in consistent.
+     * 
      * @throws InvalidInfraException when discrepancies are detected
      */
     public void validate() {
@@ -182,13 +173,15 @@ public final class TrackSection extends BiNEdge<TrackSection> {
     }
 
     /*
-     * All the functions below are attributes getters, meant to implement either RangeAttrGetter or PointAttrGetter.
-     * These can be passed around to build generic algorithms on attributes.
+     * All the functions below are attributes getters, meant to implement either
+     * RangeAttrGetter or PointAttrGetter. These can be passed around to build
+     * generic algorithms on attributes.
      */
 
     /**
      * Gets the speed limit on a given section of track, along a given direction.
-     * @param edge the section of track
+     * 
+     * @param edge      the section of track
      * @param direction the direction
      * @return the speed limits
      */
@@ -199,8 +192,10 @@ public final class TrackSection extends BiNEdge<TrackSection> {
     }
 
     /**
-     * Gets visible track objects on a given section of track, along a given direction.
-     * @param edge the section of track
+     * Gets visible track objects on a given section of track, along a given
+     * direction.
+     * 
+     * @param edge      the section of track
      * @param direction the direction
      * @return visible track objects
      */

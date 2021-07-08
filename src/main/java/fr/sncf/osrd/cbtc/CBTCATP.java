@@ -111,7 +111,6 @@ public class CBTCATP {
 
     // Dissipated energy on distance
     public double lostBrakeEnergy(double distance) {
-        // TODO : Consider the change of altitude!!
         // Only working with constant Gamma//
         double mass = this.trainSchedule.rollingStock.mass;
         double gamma = this.trainSchedule.rollingStock.timetableGamma;
@@ -142,21 +141,20 @@ public class CBTCATP {
         for (TrackSectionRange track : listTrack) {
             height += HeigthDifferenceBetweenPoints(track);
         }
-        System.err.println(height);
         return height;
     }
 
     private double startingDistance(double finalspeed, double accel, double i) {
         var speed = this.trainState.speed;
-        double update_position = Math.pow(this.time_react, 2) * (accel) / 2
-                + this.time_react * (speed + 9.81 * Math.sin(i) * this.time_react / 2);
+        double update_position = Math.pow(this.time_react, 2) * (accel + 9.81 * Math.sin(i)) / 2
+                + this.time_react * (speed);
         update_position += this.time_erre * finalspeed;
         return update_position;
     }
 
     private double accel_erre(double i) {
         double mass = this.trainSchedule.rollingStock.mass;
-        return Math.sin(i) * 9.81 * mass + this.trainSchedule.rollingStock.getMaxEffort(this.trainState.speed) / mass;
+        return Math.sin(i) * 9.81 + this.trainSchedule.rollingStock.getMaxEffort(this.trainState.speed) / mass;
     }
 
     private double final_speed(double accel) {
@@ -169,7 +167,8 @@ public class CBTCATP {
         double nextDangerDistance = getNextDangerPointPathDistance();
         ArrayDeque<TrackSectionRange> listTrack = getListTrackSectionRangeUntilDistance(nextDangerDistance);
 
-        double i = maxTilt(listTrack);
+        double grad = maxGradient(listTrack);
+        double i = Math.atan(grad / 1000);
         double accel = accel_erre(i);
         double speed = final_speed(accel);
         double distancestart = startingDistance(speed, accel, i);
@@ -177,12 +176,14 @@ public class CBTCATP {
         double margindistance = marginBehindNextDanger(nextDangerDistance, distancestart);
 
         double cineticEnergy = cineticEnergy(speed);
-        double lostBrakeEnergy = lostBrakeEnergy(nextDangerDistance - distancestart);
+        // double lostBrakeEnergy = lostBrakeEnergy(nextDangerDistance - distancestart);
         // double potentialEnergy = potentialEnergy(distancestart, nextDangerDistance);
-        System.err.println(this.trainSchedule.trainID + " " + nextDangerDistance + " " + distancestart + " "
-                + potentialEnergy(distancestart, margindistance));
+        // System.err.println("id : " + this.trainSchedule.trainID + " nextdanger: " +
+        // nextDangerDistance
+        // + ", distancestart : " + distancestart + " i : " + i + ", potentiel : "
+        // + potentialEnergy(distancestart, margindistance));
 
-        if (cineticEnergy + potentialEnergy(distancestart, margindistance) - lostBrakeEnergy(margindistance) < 0) {
+        if (cineticEnergy - potentialEnergy(distancestart, margindistance) - lostBrakeEnergy(margindistance) < 0) {
             // logger.debug("true");
             return controllers;
         }
@@ -285,7 +286,7 @@ public class CBTCATP {
     }
 
     // function to determine max tilt before nextdanger
-    private double maxTilt(ArrayDeque<TrackSectionRange> trackSectionRanges) {
+    private double maxGradient(ArrayDeque<TrackSectionRange> trackSectionRanges) {
         var val = 0.;
         var maxVal = 0.;
         for (var track : trackSectionRanges) {
@@ -312,7 +313,7 @@ public class CBTCATP {
         Set<Double> entries = gradients.keySet();
         for (var end : entries) {
             var slope = gradients.get(end);
-            System.err.println(slope);
+            // System.err.println(slope);
             if (end > track.getBeginPosition() && begin < track.getEndPosition()) {
                 height += Math.sin(slope)
                         * (Math.min(end, track.getEndPosition()) - Math.max(begin, track.getBeginPosition()));
