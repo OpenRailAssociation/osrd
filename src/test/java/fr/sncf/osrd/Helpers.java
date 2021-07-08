@@ -22,6 +22,7 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.simulation.TimelineEventId;
+import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.PathUtils;
@@ -84,7 +85,9 @@ public class Helpers {
                     && o.onCancellationCallback == onCancellationCallback;
         }
 
-        /** Plan a test event at a given time with no callbacks */
+        /**
+         * Plan a test event at a given time with no callbacks
+         */
         public static TestEvent plan(
                 Simulation sim,
                 double eventTime,
@@ -93,7 +96,9 @@ public class Helpers {
             return plan(sim, eventTime, data, null);
         }
 
-        /** Plan a test event at a given time with the specified callbacks on occurence */
+        /**
+         * Plan a test event at a given time with the specified callbacks on occurence
+         */
         public static TestEvent plan(
                 Simulation sim,
                 double eventTime,
@@ -103,7 +108,9 @@ public class Helpers {
             return plan(sim, eventTime, data, onOccurrenceCallback, null);
         }
 
-        /** Plan a test event at a given time with the specified callbacks */
+        /**
+         * Plan a test event at a given time with the specified callbacks
+         */
         public static TestEvent plan(
                 Simulation sim,
                 double eventTime,
@@ -154,12 +161,16 @@ public class Helpers {
     }
 
 
-    /** Generates the defaults infra from tiny_infra/infra.json, to be edited for each test */
+    /**
+     * Generates the defaults infra from tiny_infra/infra.json, to be edited for each test
+     */
     public static RJSInfra getBaseInfra() {
         return getBaseInfra("tiny_infra/infra.json");
     }
 
-    /** Generates the defaults infra from the specified path */
+    /**
+     * Generates the defaults infra from the specified path
+     */
     public static RJSInfra getBaseInfra(String path) {
         try {
             var fileSource = Okio.source(getResourcePath(path));
@@ -172,7 +183,9 @@ public class Helpers {
         }
     }
 
-    /** Generates the defaults config from tiny_infra/config_railjson.json */
+    /**
+     * Generates the defaults config from tiny_infra/config_railjson.json
+     */
     public static Config getBaseConfig(String path) {
         try {
             return Config.readFromFile(getResourcePath(path));
@@ -182,44 +195,24 @@ public class Helpers {
         }
     }
 
-    /** Generates the defaults config from tiny_infra/config_railjson.json */
+    /**
+     * Generates the defaults config from tiny_infra/config_railjson.json
+     */
     public static Config getBaseConfig() {
         return getBaseConfig("tiny_infra/config_railjson.json");
     }
 
-    /** Generates a config where all the RJSRunningTieParameters have been replaced by the one given */
-    public static Config makeConfigWithSpeedParams(Collection<RJSAllowance> params) {
-        return makeConfigWithSpeedParams(params, "tiny_infra/config_railjson.json");
+    /**
+     * Generates the defaults config from tiny_infra/config_railjson.json without allowances
+     */
+    public static Config getBaseConfigNoAllowance() {
+        return getConfigWithSpeedInstructions(new SpeedInstructions(null));
     }
 
-    /** Loads the given config file, but replaces the given allowance parameters in the phases
-     * the nth list of allowance is used for the nth phase */
-    public static Config makeConfigWithSpeedParams(Collection<RJSAllowance> params, String baseConfigPath) {
-        try {
-            var path = getResourcePath(baseConfigPath);
-            var baseDirPath = path.getParent();
-            var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, path);
-            final var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
-            final var infra = Infra.parseFromFile(jsonConfig.infraType, infraPath.toString());
-            var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
-            var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
-            for (var trainSchedule : schedule.trainSchedules) {
-                trainSchedule.allowances = params == null ? null : params.toArray(new RJSAllowance[0]);
-            }
-            var trainSchedules = RJSSimulationParser.parse(infra, schedule);
-            return new Config(
-                    jsonConfig.simulationTimeStep,
-                    infra,
-                    trainSchedules,
-                    jsonConfig.simulationStepPause,
-                    jsonConfig.showViewer,
-                    jsonConfig.realTimeViewer,
-                    jsonConfig.changeReplayCheck
-            );
-        } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule  e) {
-            fail(e);
-            throw new RuntimeException();
-        }
+    public static Config getConfigWithSpeedInstructions(SpeedInstructions instructions) {
+        var config = getBaseConfig("tiny_infra/config_railjson.json");
+        config.trainSchedules.forEach(schedule -> schedule.speedInstructions = instructions);
+        return config;
     }
 
     /** Loads the phases in the given simulation file

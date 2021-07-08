@@ -23,8 +23,8 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
     // TODO use this parameter
     @SuppressFBWarnings({"URF_UNREAD_FIELD"})
-    private final RJSAllowance.MarecoAllowance.MarginType allowanceType;
-    private final double value;
+    public final RJSAllowance.MarecoAllowance.MarginType allowanceType;
+    public final double value;
 
     /** Constructor */
     public MarecoAllowanceGenerator(double begin, double end,

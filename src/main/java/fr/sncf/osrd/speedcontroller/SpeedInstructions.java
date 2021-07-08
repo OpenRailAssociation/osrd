@@ -61,6 +61,15 @@ public class SpeedInstructions {
         }
     }
 
+    /** Creates an instance from a set of generators. They are evaluated independently. */
+    public static SpeedInstructions fromController(SpeedControllerGenerator targetSpeedGenerator) {
+        if (targetSpeedGenerator == null)
+            return new SpeedInstructions(null);
+        else {
+            return fromSet(Collections.singleton(targetSpeedGenerator));
+        }
+    }
+
     /** Generates all the instructions, expected to be called when a new phase starts */
     public void generate(Simulation sim, TrainSchedule schedule) {
 

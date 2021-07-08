@@ -15,8 +15,8 @@ import java.util.Set;
 
 public class LinearAllowanceGenerator extends SpeedControllerGenerator {
 
-    private final MarginType allowanceType;
-    private final double value;
+    public final MarginType allowanceType;
+    public final double value;
 
     /** Constructor */
     public LinearAllowanceGenerator(double begin, double end,

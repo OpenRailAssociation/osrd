@@ -13,7 +13,7 @@ import java.util.Set;
  * The allowanceValue is in seconds, added over the whole phase */
 public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator {
 
-    private final double value;
+    public final double value;
 
     public ConstructionAllowanceGenerator(double begin, double end,
                                           double allowanceValue) {

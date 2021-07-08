@@ -4,11 +4,11 @@ import static fr.sncf.osrd.Helpers.*;
 import static fr.sncf.osrd.speedcontroller.MarginTests.saveGraph;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import fr.sncf.osrd.speedcontroller.generators.LinearAllowanceGenerator;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -16,7 +16,6 @@ import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
-import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -66,10 +65,9 @@ public class SpeedInstructionsTests {
     @Test
     public void testFollowTargetSpeed() throws InvalidInfraException {
         final var infra = getBaseInfra();
-        final var config = getBaseConfig();
 
         SpeedControllerGenerator generator = getStaticGenerator(5);
-        config.trainSchedules.get(0).speedInstructions = new SpeedInstructions(Collections.singletonList(generator));
+        final var config = getConfigWithSpeedInstructions(SpeedInstructions.fromController(generator));
 
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
 
@@ -81,10 +79,9 @@ public class SpeedInstructionsTests {
     @Test
     public void testCatchup() throws InvalidInfraException, SimulationError {
         final var infra = getBaseInfra();
-        final var config = getBaseConfig();
 
         SpeedControllerGenerator generator = getStaticGenerator(10);
-        config.trainSchedules.get(0).speedInstructions = new SpeedInstructions(Collections.singletonList(generator));
+        final var config = getConfigWithSpeedInstructions(SpeedInstructions.fromController(generator));
 
         infra.switches.iterator().next().positionChangeDelay = 42;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
@@ -98,7 +95,7 @@ public class SpeedInstructionsTests {
     @Test
     public void testIsLate() throws InvalidInfraException, SimulationError {
         final var infra = getBaseInfra();
-        final var config = makeConfigWithSpeedParams(null);
+        final var config = getBaseConfigNoAllowance();
 
         infra.switches.iterator().next().positionChangeDelay = 20;
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
@@ -124,18 +121,16 @@ public class SpeedInstructionsTests {
     public void testMargin50() throws InvalidInfraException {
         final var infra = getBaseInfra();
         assert infra != null;
-        var params = new RJSAllowance.LinearAllowance();
-        params.allowanceType = MarginType.TIME;
-        params.allowanceValue = 50;
+        var params = new LinearAllowanceGenerator(0, Double.POSITIVE_INFINITY, 50, MarginType.TIME);
 
         // base run, no margin
-        final var config = makeConfigWithSpeedParams(null);
+        final var config = getBaseConfigNoAllowance();
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with 50% margins
-        final var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
+        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
@@ -147,18 +142,16 @@ public class SpeedInstructionsTests {
     public void testMargin200() throws InvalidInfraException {
         final var infra = getBaseInfra();
         assert infra != null;
-        var params = new RJSAllowance.LinearAllowance();
-        params.allowanceType = MarginType.TIME;
-        params.allowanceValue = 200;
+        var params = new LinearAllowanceGenerator(0, Double.POSITIVE_INFINITY, 200, MarginType.TIME);
 
         // base run, no margin
-        final var config = makeConfigWithSpeedParams(null);
+        final var config = getBaseConfigNoAllowance();
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with 200% margins
-        final var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
+        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
@@ -172,18 +165,16 @@ public class SpeedInstructionsTests {
     public void testMargin0() throws InvalidInfraException {
         final var infra = getBaseInfra();
         assert infra != null;
-        var params = new RJSAllowance.LinearAllowance();
-        params.allowanceType = MarginType.TIME;
-        params.allowanceValue = 0;
+        var params = new LinearAllowanceGenerator(0, Double.POSITIVE_INFINITY, 0, MarginType.TIME);
 
         // base run, no margin
-        final var config = makeConfigWithSpeedParams(null);
+        final var config = getBaseConfigNoAllowance();
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with 0% margins
-        final var configMargins = makeConfigWithSpeedParams(Collections.singletonList(params));
+        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
