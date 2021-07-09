@@ -183,10 +183,6 @@ public class TrainPhysicsIntegrator {
         // the sum of forces that always go the direction opposite to the train's movement
         double oppositeForce = rollingResistance + actionBrakingForce;
 
-        /*if (isBrakingValueConstant && actionBrakingForce > 0.) {
-            oppositeForce = actionBrakingForce;
-        }*/
-
         // as the oppositeForces is a reaction force, it needs to be adjusted to be opposed to the other forces
         double effectiveOppositeForces;
         if (currentSpeed == 0.0) {
@@ -207,9 +203,6 @@ public class TrainPhysicsIntegrator {
         // compute the acceleration on all the integration step. the variable is named this way because we
         // compute the acceleration on only a part of the integration step below
         var fullStepAcceleration =  computeTotalForce(effectiveOppositeForces, actionTractionForce) / inertia;
-        /*if (isBrakingValueConstant && actionBrakingForce > 0.) {
-            fullStepAcceleration =  effectiveOppositeForces / inertia;
-        }*/
         var newSpeed = currentSpeed + directionSign * fullStepAcceleration * timeStep;
 
         // when the train changes direction, the opposite force doesn't apply
