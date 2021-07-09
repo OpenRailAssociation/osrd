@@ -242,7 +242,8 @@ public class RJSTrainScheduleParser {
         return new TrackSectionLocation(trackSection, offset);
     }
 
-    private static List<TrainStop> parseStops(RJSTrainStop[] stops, Infra infra, TrainPath path) throws InvalidSchedule {
+    private static List<TrainStop> parseStops(RJSTrainStop[] stops, Infra infra, TrainPath path)
+            throws InvalidSchedule {
         var res = new ArrayList<TrainStop>();
         res.add(new TrainStop(path.length - 10, 0));
         if (stops == null)

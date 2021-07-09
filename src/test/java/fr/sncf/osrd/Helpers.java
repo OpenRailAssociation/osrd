@@ -209,6 +209,7 @@ public class Helpers {
         return getConfigWithSpeedInstructions(new SpeedInstructions(null));
     }
 
+    /** Gets the default config but with the given SpeedInstruction in train schedules */
     public static Config getConfigWithSpeedInstructions(SpeedInstructions instructions) {
         var config = getBaseConfig("tiny_infra/config_railjson.json");
         config.trainSchedules.forEach(schedule -> schedule.speedInstructions = instructions);
@@ -336,11 +337,14 @@ public class Helpers {
         return res;
     }
 
+    /** Throws an error if the (interpolated) time per position differ too much */
     public static void assertSameSpeedPerPosition(Iterable<TimelineEvent> eventsExpected,
                                                   Iterable<TimelineEvent> events) {
         assertSameSpeedPerPositionBetween(eventsExpected, events, 0, Double.POSITIVE_INFINITY, 1);
     }
 
+    /** Throws an error if the (interpolated) time per position differ too much between begin and end
+     * The expected speeds are scaled by expectedScale */
     public static void assertSameSpeedPerPositionBetween(Iterable<TimelineEvent> eventsExpected,
                                                          Iterable<TimelineEvent> events,
                                                          double begin,

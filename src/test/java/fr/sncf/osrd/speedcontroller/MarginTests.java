@@ -271,14 +271,11 @@ public class MarginTests {
         var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
 
-
         // base run, one global margin
         var globalParams = new LinearAllowanceGenerator(0, POSITIVE_INFINITY, 50, TIME);
         final var config = getConfigWithSpeedInstructions(SpeedInstructions.fromController(globalParams));
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
-
-
 
         saveGraph(eventsBase, "same-margins-base.csv");
         saveGraph(events, "same-margins-out.csv");
@@ -298,9 +295,8 @@ public class MarginTests {
         var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseTimePerPosition = getTimePerPosition(eventsBase);
-        var marginChangeTime = baseTimePerPosition.interpolate(marginChangeLocation);
-        var totalTime = sim.getTime();
-
+        final var marginChangeTime = baseTimePerPosition.interpolate(marginChangeLocation);
+        final var totalTime = sim.getTime();
 
         var params1 = new LinearAllowanceGenerator(0, marginChangeLocation, 20, TIME);
         var params2 = new LinearAllowanceGenerator(marginChangeLocation, POSITIVE_INFINITY, 60, TIME);

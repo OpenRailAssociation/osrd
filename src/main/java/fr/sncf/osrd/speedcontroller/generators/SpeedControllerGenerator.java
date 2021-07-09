@@ -50,8 +50,7 @@ public abstract class SpeedControllerGenerator {
         return res;
     }
 
-    /** Generates a map of location -> expected time if we follow the given controllers.
-     * This may be overridden in scenarios when it is already computed when computing the controllers */
+    /** Generates a map of location -> expected time if we follow the given controllers. */
     public SortedDoubleMap getExpectedTimes(Simulation sim,
                                             TrainSchedule schedule,
                                             Set<SpeedController> controllers,
@@ -61,14 +60,7 @@ public abstract class SpeedControllerGenerator {
                 defaultValues[0], defaultValues[1], defaultValues[2]);
     }
 
-    private double[] getDefaultValues(Simulation sim,
-                                      TrainSchedule schedule,
-                                      Set<SpeedController> controllers,
-                                      double timestep) {
-        var initialSpeed = findInitialSpeed(sim, schedule, controllers, timestep);
-        return new double[]{sectionBegin, sectionEnd, initialSpeed};
-    }
-
+    /** Generates a map of location -> expected speed if we follow the given controllers. */
     public SortedDoubleMap getExpectedSpeeds(Simulation sim,
                                              TrainSchedule schedule,
                                              Set<SpeedController> controllers,
@@ -93,15 +85,6 @@ public abstract class SpeedControllerGenerator {
             res.put(k, updatesMap.get(k).speed);
         }
         return res;
-    }
-
-    public NavigableMap<Double, PositionUpdate> getUpdatesAtPositions(Simulation sim,
-                                                                      TrainSchedule schedule,
-                                                                      Set<SpeedController> controllers,
-                                                                      double timestep) {
-        var defaultValues = getDefaultValues(sim, schedule, controllers, timestep);
-        return getUpdatesAtPositions(sim, schedule, controllers, timestep,
-                defaultValues[0], defaultValues[1], defaultValues[2]);
     }
 
     /** Generates a map of location -> updates if we follow the given controllers. */
@@ -142,8 +125,16 @@ public abstract class SpeedControllerGenerator {
         return res;
     }
 
-    /** Finds the position (as a double) corresponding to the beginning of the phase */
-    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
+    /** Generates the default begin, end, and initial speed for the other methods in this class */
+    private double[] getDefaultValues(Simulation sim,
+                                      TrainSchedule schedule,
+                                      Set<SpeedController> controllers,
+                                      double timestep) {
+        var initialSpeed = findInitialSpeed(sim, schedule, controllers, timestep);
+        return new double[]{sectionBegin, sectionEnd, initialSpeed};
+    }
+
+    /** Finds the position (as a double) corresponding to the beginning of the allowance */
     protected double findInitialSpeed(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed,
                                       double timeStep) {
         if (sectionBegin <= 0)
