@@ -168,7 +168,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 timeStep,
                 rollingStock,
                 speed,
-                location.maxTrainGrade());
+                location.meanTrainGrade());
 
         // get the action the driver
         Action action = trainSchedule.trainDecisionMaker.getNextAction(speedDirective, integrator);

@@ -155,7 +155,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
         do {
             var integrator = TrainPhysicsIntegrator.make(timestep, schedule.rollingStock,
-                    speed, location.maxTrainGrade());
+                    speed, location.meanTrainGrade());
             var action = Action.coast();
             var update =  integrator.computeUpdate(action, Double.POSITIVE_INFINITY,
                     -1);
