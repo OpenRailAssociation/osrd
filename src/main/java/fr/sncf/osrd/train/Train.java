@@ -46,6 +46,7 @@ public class Train {
                 sim.getTime(),
                 location,
                 schedule.initialSpeed,
+                0,
                 TrainStatus.STARTING_UP,
                 schedule,
                 0,

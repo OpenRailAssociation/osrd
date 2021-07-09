@@ -13,19 +13,26 @@ import fr.sncf.osrd.utils.Constants;
 public class TrainPhysicsIntegrator {
     private final double timeStep;
     private final double currentSpeed;
+    private final double currentAccel;
     private final double weightForce;
     private final double precomputedRollingResistance;
     private final double inertia;
 
+    //TODO : add a real jerk value, in the configuration files 
+    private final double jerk = 0.1;
+
+
     private TrainPhysicsIntegrator(
             double timeStep,
             double currentSpeed,
+            double currentAccel,
             double weightForce,
             double precomputedRollingResistance,
             double inertia
     ) {
         this.timeStep = timeStep;
         this.currentSpeed = currentSpeed;
+        this.currentAccel = currentAccel;
         this.weightForce = weightForce;
         assert precomputedRollingResistance >= 0.;
         this.precomputedRollingResistance = precomputedRollingResistance;
@@ -43,6 +50,7 @@ public class TrainPhysicsIntegrator {
             double timeStep,
             RollingStock rollingStock,
             double currentSpeed,
+            double currentAccel,
             double maxTrainGrade
     ) {
         // get an angle from a meter per km elevation difference
@@ -53,9 +61,24 @@ public class TrainPhysicsIntegrator {
         return new TrainPhysicsIntegrator(
                 timeStep,
                 currentSpeed,
+                currentAccel,
                 weightForce,
                 rollingStock.rollingResistance(currentSpeed),
                 inertia);
+    }
+
+    public static TrainPhysicsIntegrator make(
+            double timeStep,
+            RollingStock rollingStock,
+            double currentSpeed,
+            double maxTrainGrade
+    ) {
+        return make(
+                timeStep,
+                rollingStock,
+                currentSpeed,
+                0.,
+                maxTrainGrade);
     }
 
     /**
@@ -166,6 +189,7 @@ public class TrainPhysicsIntegrator {
 
     /**
      * Compute the train's acceleration given an action force
+     * 
      * @param actionTractionForce the force indirectly applied by the driver
      * @param actionBrakingForce the braking force indirectly applied by the driver
      * @param maxDistance the maximum distance the train can go
@@ -203,6 +227,15 @@ public class TrainPhysicsIntegrator {
         // compute the acceleration on only a part of the integration step below
         var fullStepAcceleration = computeAcceleration(directionSign * effectiveRollingResistance,
                 actionTractionForce);
+
+        // the variation of the acceleration can't realistically be infinite, we have to limit it, with the jerk
+        if (Math.abs(fullStepAcceleration - this.currentAccel)> jerk){
+            if (fullStepAcceleration > currentAccel)
+                fullStepAcceleration = currentAccel + jerk;
+            else 
+                fullStepAcceleration = currentAccel - jerk;
+        }
+        
         var newSpeed = currentSpeed + fullStepAcceleration * timeStep;
 
         // when the train changes direction, the rolling resistance doesn't apply
