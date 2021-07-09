@@ -27,7 +27,7 @@ const TrainHoverPosition = (props) => {
 };
 
 TrainHoverPosition.propTypes = {
-  point: PropTypes.array.isRequired,
+  point: PropTypes.object.isRequired,
 };
 
 export default TrainHoverPosition;

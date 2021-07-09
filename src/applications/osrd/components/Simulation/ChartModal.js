@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
+import { updateMustRedraw } from 'reducers/osrdsimulation';
 import 'applications/osrd/components/Simulation/ChartModal.scss';
 
 const ChartModal = (props) => {
   const {
-    type, setShowModal, trainName, offsetTimeByDragging, selectedTrain, setMustRedraw,
+    type, setShowModal, trainName, offsetTimeByDragging,
   } = props;
+  const dispatch = useDispatch();
   const { t } = useTranslation(['simulation']);
   const [offset, setOffset] = useState('');
 
@@ -14,8 +17,8 @@ const ChartModal = (props) => {
     if (key === 'Enter') {
       setShowModal('');
       const seconds = parseInt(type === '-' ? offset * -1 : offset, 10);
-      offsetTimeByDragging(seconds, selectedTrain);
-      setMustRedraw(true);
+      offsetTimeByDragging(seconds);
+      dispatch(updateMustRedraw(true));
     }
   };
 
@@ -56,8 +59,6 @@ ChartModal.propTypes = {
   trainName: PropTypes.string.isRequired,
   setShowModal: PropTypes.func.isRequired,
   offsetTimeByDragging: PropTypes.func.isRequired,
-  selectedTrain: PropTypes.number.isRequired,
-  setMustRedraw: PropTypes.func.isRequired,
 };
 
 export default ChartModal;

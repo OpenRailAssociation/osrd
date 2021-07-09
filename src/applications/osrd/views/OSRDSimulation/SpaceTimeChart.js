@@ -2,15 +2,16 @@ import React, {
   useState, useEffect, useRef,
 } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import PropTypes from 'prop-types';
 import * as d3 from 'd3';
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simulation/consts';
 import { SNCFCOLORS } from 'applications/osrd/consts';
 import {
   defineLinear, defineTime, formatStepsWithTime,
-  handleWindowResize, mergeDatasArea,
+  handleWindowResize, mergeDatasArea, timeShiftTrain, timeShiftStops,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
-import { updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation';
+import {
+  updateChart, updateMustRedraw, updateSimulation, updateSelectedTrain,
+} from 'reducers/osrdsimulation';
 import ChartModal from 'applications/osrd/components/Simulation/ChartModal';
 import defineChart from 'applications/osrd/components/Simulation/defineChart';
 import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
@@ -59,7 +60,7 @@ const createChart = (chart, dataSimulation, keyValues, ref, rotate) => {
 
 const drawTrain = (
   chart, dispatch, dataSimulation, isSelected, keyValues,
-  offsetTimeByDragging, rotate,
+  offsetTimeByDragging, rotate, setDragOffset,
 ) => {
   const groupID = `spaceTime-${dataSimulation.trainNumber}`;
 
@@ -89,7 +90,7 @@ const drawTrain = (
       const value = rotate
         ? Math.floor((chart.y.invert(d3.event.dy) - initialDrag) / 1000)
         : Math.floor((chart.x.invert(d3.event.dx) - initialDrag) / 1000);
-      offsetTimeByDragging(value, dataSimulation.trainNumber);
+      setDragOffset(value);
     });
 
   chart.drawZone.append('g')
@@ -130,8 +131,7 @@ const createTrain = (keyValues, simulationTrains) => {
   return dataSimulation;
 };
 
-const SpaceTimeChart = (props) => {
-  const { offsetTimeByDragging } = props;
+export default function SpaceTimeChart() {
   const ref = useRef();
   const dispatch = useDispatch();
   const {
@@ -143,11 +143,22 @@ const SpaceTimeChart = (props) => {
   const [dataSimulation, setDataSimulation] = useState(createTrain(keyValues, simulation.trains));
   const [chart, setChart] = useState(undefined);
   const [showModal, setShowModal] = useState('');
+  const [dragOffset, setDragOffset] = useState(0);
 
   const handleKey = ({ key }) => {
     if (['+', '-'].includes(key)) {
       setShowModal(key);
     }
+  };
+
+  const offsetTimeByDragging = (offset) => {
+    const trains = Array.from(simulation.trains);
+    trains[selectedTrain] = {
+      ...trains[selectedTrain],
+      steps: timeShiftTrain(trains[selectedTrain].steps, offset),
+      stops: timeShiftStops(trains[selectedTrain].stops, offset),
+    };
+    dispatch(updateSimulation({ ...simulation, trains }));
   };
 
   const toggleRotation = () => {
@@ -165,7 +176,7 @@ const SpaceTimeChart = (props) => {
       dataSimulation.forEach((train, idx) => {
         drawTrain(
           chartLocal, dispatch, train, (idx === selectedTrain),
-          keyValues, offsetTimeByDragging, rotate,
+          keyValues, offsetTimeByDragging, rotate, setDragOffset,
         );
       });
       enableInteractivity(
@@ -174,9 +185,14 @@ const SpaceTimeChart = (props) => {
       );
       // findConflicts(chartLocal, dataSimulation, rotate);
       setChart(chartLocal);
+      dispatch(updateChart(chartLocal));
       dispatch(updateMustRedraw(false));
     }
   };
+
+  useEffect(() => {
+    offsetTimeByDragging(dragOffset);
+  }, [dragOffset]);
 
   useEffect(() => {
     setDataSimulation(createTrain(keyValues, simulation.trains));
@@ -220,10 +236,4 @@ const SpaceTimeChart = (props) => {
       </button>
     </div>
   );
-};
-
-SpaceTimeChart.propTypes = {
-  offsetTimeByDragging: PropTypes.func.isRequired,
-};
-
-export default SpaceTimeChart;
+}

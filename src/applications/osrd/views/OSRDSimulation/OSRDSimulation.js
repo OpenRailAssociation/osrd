@@ -14,7 +14,7 @@ import TrainsList from 'applications/osrd/views/OSRDSimulation/TrainsList';
 import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
 import { updateViewport } from 'reducers/map';
 import { updateTimePosition, updateSimulation } from 'reducers/osrdsimulation';
-import { simplifyData, timeShiftTrain, timeShiftStops } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { simplifyData } from 'applications/osrd/components/Helpers/ChartHelpers';
 import './OSRDSimulation.scss';
 import { sec2time } from 'utils/timeManipulation';
 
@@ -32,7 +32,7 @@ const OSRDSimulation = () => {
   const [isEmpty, setIsEmpty] = useState(true);
   const osrdconf = useSelector((state) => state.osrdconf);
   const {
-    hoverPosition, mustRedraw, selectedTrain, simulation,
+    hoverPosition, selectedTrain, simulation,
   } = useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();
 
@@ -91,26 +91,6 @@ const OSRDSimulation = () => {
     }
   }, [extViewport]);
 
-  const offsetTimeByDragging2 = (offset, selectedTrainLocal) => {
-    const simulationLocal = { ...simulation };
-    simulationLocal.trains[selectedTrainLocal] = {
-      ...simulation.trains[selectedTrainLocal],
-      steps: timeShiftTrain(simulation.trains[selectedTrainLocal].steps, offset),
-      stops: timeShiftStops(simulation.trains[selectedTrainLocal].stops, offset),
-    };
-    dispatch(updateSimulation({ ...simulationLocal }));
-  };
-
-  const offsetTimeByDragging = (offset, selectedTrainLocal) => {
-    const trains = Array.from(simulation.trains);
-    trains[selectedTrainLocal] = {
-      ...trains[selectedTrainLocal],
-      steps: timeShiftTrain(trains[selectedTrainLocal].steps, offset),
-      stops: timeShiftStops(trains[selectedTrainLocal].stops, offset),
-    };
-    dispatch(updateSimulation({ ...simulation, trains }));
-  };
-
   return (
     <>
       <main className={`mastcontainer ${fullscreen ? ' fullscreen' : ''}`}>
@@ -124,9 +104,7 @@ const OSRDSimulation = () => {
                   </div>
                   <div className="col-md-6">
                     {simulation.trains.length > 0 ? (
-                      <SpaceTimeChart
-                        offsetTimeByDragging={offsetTimeByDragging}
-                      />
+                      <SpaceTimeChart />
                     ) : null}
                   </div>
                 </div>

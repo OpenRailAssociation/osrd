@@ -5,7 +5,7 @@ import { updateHoverPosition, updateTimePosition } from 'reducers/osrdsimulation
 import {
   FaStop, FaPause, FaPlay, FaBackward,
 } from 'react-icons/fa';
-import { time2sec } from 'utils/timeManipulation';
+import { sec2time, time2sec } from 'utils/timeManipulation';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
 // transform a speed ratio (X2 X10 X20, etc.) to interval time & step to bypass
@@ -143,6 +143,8 @@ export default function TimeButtons() {
       <div className="timeline-container flex-grow-1">
         <div className="timeline">
           {chart ? chart.x.domain().map((date) => date.toLocaleTimeString('fr-FR') + ' - ') : null}
+          <br />
+          {sec2time(simulation.trains[0].steps[0].time)}
         </div>
       </div>
     </div>
