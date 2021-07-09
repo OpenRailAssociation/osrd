@@ -28,18 +28,15 @@ public final class SignalNavigatePhase implements Phase {
     public final TrackSectionLocation endLocation;
     private final ArrayList<Interaction> interactionsPath;
     private final Interaction lastInteractionOnPhase;
-    private final double driverSightDistance;
 
     private SignalNavigatePhase(
             TrackSectionLocation startLocation,
             TrackSectionLocation endLocation,
             ArrayList<Interaction> interactionsPath,
-            double driverSightDistance,
             TrainPath expectedPath) {
         this.startLocation = startLocation;
         this.endLocation = endLocation;
         this.interactionsPath = interactionsPath;
-        this.driverSightDistance = driverSightDistance;
         this.expectedPath = expectedPath;
         lastInteractionOnPhase = interactionsPath.get(interactionsPath.size() - 1);
     }
@@ -63,8 +60,7 @@ public final class SignalNavigatePhase implements Phase {
                 endLocation,
                 expectedPath.trackSectionPath);
         addStopInteractions(actionPointPath, stops);
-        return new SignalNavigatePhase(startLocation, endLocation, actionPointPath,
-                driverSightDistance, expectedPath);
+        return new SignalNavigatePhase(startLocation, endLocation, actionPointPath, expectedPath);
     }
 
     private static void addStopInteractions(ArrayList<Interaction> interactions, List<TrainStop> stops) {
