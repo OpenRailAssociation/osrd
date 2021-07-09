@@ -105,7 +105,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
 
         do {
             var integrator = TrainPhysicsIntegrator.make(timestep, schedule.rollingStock,
-                    speed, location.maxTrainGrade());
+                    speed, location.meanTrainGrade());
             var action = Action.accelerate(-schedule.rollingStock.getMaxEffort(speed));
             var update =  integrator.computeUpdate(action, Double.POSITIVE_INFINITY,
                     -1);
