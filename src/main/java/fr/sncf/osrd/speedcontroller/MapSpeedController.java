@@ -7,8 +7,8 @@ public class MapSpeedController extends SpeedController {
     /** Keys are positions in space, values are speed */
     private final transient SortedDoubleMap values;
 
-    public MapSpeedController(SortedDoubleMap values) {
-        super(values.firstKey(), values.lastKey());
+    public MapSpeedController(SortedDoubleMap values, double begin, double end) {
+        super(begin, end);
         this.values = values;
     }
 
@@ -21,7 +21,7 @@ public class MapSpeedController extends SpeedController {
     public SpeedController scaled(double scalingFactor) {
         var newValues = new SortedDoubleMap(values);
         newValues.replaceAll((k, v) -> v * scalingFactor);
-        return new MapSpeedController(newValues);
+        return new MapSpeedController(newValues, beginPosition, endPosition);
     }
 
     @Override
