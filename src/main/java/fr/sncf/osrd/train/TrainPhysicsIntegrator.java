@@ -16,13 +16,13 @@ public class TrainPhysicsIntegrator {
     private final double weightForce;
     private final double rollingResistance;
     private final double inertia;
-    private final boolean isBrakingWithConstantValue;
+    private final boolean isBrakingValueConstant;
     /**
     * @param currentSpeed the current speed of the train
     * @param weightForce is the force due to the slope under the train
     * @param rollingResistance is the rolling resistance = A + B * currentSpeed + C * currentSpeed * currentSpeed
     * @param inertia is the mass * inertial coefficient
-     * @param isBrakingWithConstantValue is true when we have a constant braking gamma that overrides all the other forces
+     * @param isBrakingValueConstant is true when we have a constant braking gamma that overrides all the other forces
     */
     private TrainPhysicsIntegrator(
             double timeStep,
@@ -30,7 +30,7 @@ public class TrainPhysicsIntegrator {
             double weightForce,
             double rollingResistance,
             double inertia,
-            boolean isBrakingWithConstantValue
+            boolean isBrakingValueConstant
     ) {
         this.timeStep = timeStep;
         this.currentSpeed = currentSpeed;
@@ -38,7 +38,7 @@ public class TrainPhysicsIntegrator {
         assert rollingResistance >= 0.;
         this.rollingResistance = rollingResistance;
         this.inertia = inertia;
-        this.isBrakingWithConstantValue = isBrakingWithConstantValue;
+        this.isBrakingValueConstant = isBrakingValueConstant;
     }
 
     /**
@@ -59,14 +59,14 @@ public class TrainPhysicsIntegrator {
         var angle = Math.atan(meanTrainGrade / 1000.0);  // from m/km to m/m
         var weightForce = - rollingStock.mass * Constants.GRAVITY * Math.sin(angle);
         var inertia = rollingStock.mass * rollingStock.inertiaCoefficient;
-        var isBrakingWithConstantValue = rollingStock.maxGamma == null;
+        var isBrakingValueConstant = rollingStock.maxGamma == null;
         return new TrainPhysicsIntegrator(
                 timeStep,
                 currentSpeed,
                 weightForce,
                 rollingStock.rollingResistance(currentSpeed),
                 inertia,
-                isBrakingWithConstantValue);
+                isBrakingValueConstant);
     }
 
     /**
@@ -81,7 +81,7 @@ public class TrainPhysicsIntegrator {
 
     /** Get the max braking force if it exists or the average time table braking force. */
     public double getBrakingForce(RollingStock rollingStock) {
-        if (isBrakingWithConstantValue) {
+        if (isBrakingValueConstant) {
             return -rollingStock.timetableGamma * inertia;
         }
         return -rollingStock.maxGamma * inertia;
@@ -107,7 +107,7 @@ public class TrainPhysicsIntegrator {
             targetForce = rollingStock.comfortAcceleration * inertia;
 
         // targetForce = actionForce - mass * g * decl - Ra
-        // targetForce = actionForce + weightForce - Ra
+        // targetForce = actionForce + weightForce - Ra = actionForce + weightForce + oppositeForces
         var actionForce = targetForce - weightForce + rollingResistance;
 
         // we can't realistically accelerate with infinite forces, so limit it to some given value
@@ -120,12 +120,10 @@ public class TrainPhysicsIntegrator {
 
         // if the resulting force is negative limit the value to the maxBrakingForce
         // or assign to it an average braking force
-        if (isBrakingWithConstantValue) {
-            // brake or steep slope
-            // TODO: fix the steep slopes case (action force slightly negative)
+        // difference between actionForce < 0 because of a proper deceleration or because of the weight force
+        if (isBrakingValueConstant && targetForce < 0) { //proper deceleration
             var averageBrakingForce = getBrakingForce(rollingStock);
-            if (actionForce < averageBrakingForce)
-                actionForce = averageBrakingForce;
+            actionForce = averageBrakingForce - weightForce + rollingResistance;
             return Action.brake(Math.abs(actionForce));
         }
         // TODO implement speed controllers with non constant deceleration
@@ -192,9 +190,10 @@ public class TrainPhysicsIntegrator {
 
         // the sum of forces that always go the direction opposite to the train's movement
         double oppositeForce = rollingResistance + actionBrakingForce;
-        if (isBrakingWithConstantValue && actionBrakingForce > 0.) {
+
+        /*if (isBrakingValueConstant && actionBrakingForce > 0.) {
             oppositeForce = actionBrakingForce;
-        }
+        }*/
 
         // as the oppositeForces is a reaction force, it needs to be adjusted to be opposed to the other forces
         double effectiveOppositeForces;
@@ -216,9 +215,9 @@ public class TrainPhysicsIntegrator {
         // compute the acceleration on all the integration step. the variable is named this way because we
         // compute the acceleration on only a part of the integration step below
         var fullStepAcceleration =  computeTotalForce(effectiveOppositeForces, actionTractionForce) / inertia;
-        if (isBrakingWithConstantValue && actionBrakingForce > 0.) {
+        /*if (isBrakingValueConstant && actionBrakingForce > 0.) {
             fullStepAcceleration =  effectiveOppositeForces / inertia;
-        }
+        }*/
         var newSpeed = currentSpeed + directionSign * fullStepAcceleration * timeStep;
 
         // when the train changes direction, the opposite force doesn't apply
