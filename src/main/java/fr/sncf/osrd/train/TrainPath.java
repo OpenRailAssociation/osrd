@@ -144,4 +144,27 @@ public class TrainPath {
     public TrackSectionLocation getEndLocation() {
         return trackSectionPath.get(trackSectionPath.size() - 1).getEndLocation();
     }
+
+    /** Find location on track given a distance from the start.
+     * If the path position is higher than the fullPath length the function return null. */
+    public TrackSectionLocation findLocation(double pathPosition) {
+        for (var track : trackSectionPath) {
+            if (pathPosition <= track.length()) {
+                var location = track.getBeginPosition();
+                if (track.direction == EdgeDirection.START_TO_STOP)
+                    location += pathPosition;
+                else
+                    location -= pathPosition;
+                return new TrackSectionLocation(track.edge, location);
+            }
+            pathPosition -= track.length();
+        }
+
+        if (pathPosition < 1) {
+            // We might reach this point with an epsilon left when looking for the end because of float inaccuracies
+            return getEndLocation();
+        }
+
+        return null;
+    }
 }

@@ -63,21 +63,4 @@ public final class TrainSchedule {
         this.trainDecisionMaker = trainDecisionMaker;
         this.speedInstructions = speedInstructions;
     }
-
-    /** Find location on track given a distance from the start.
-     * If the path position is higher than the fullPath length the function return null. */
-    public TrackSectionLocation findLocation(double pathPosition) {
-        for (var track : plannedPath.trackSectionPath) {
-            if (pathPosition <= track.length()) {
-                var location = track.getBeginPosition();
-                if (track.direction == EdgeDirection.START_TO_STOP)
-                    location += pathPosition;
-                else
-                    location -= pathPosition;
-                return new TrackSectionLocation(track.edge, location);
-            }
-            pathPosition -= track.length();
-        }
-        return null;
-    }
 }

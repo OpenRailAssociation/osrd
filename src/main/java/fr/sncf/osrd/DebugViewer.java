@@ -282,10 +282,10 @@ public class DebugViewer extends ChangeConsumer {
             return;
         var pathHeadPosition = lastUpdate.interpolatePosition(currentTime);
         var pathTailPosition = Double.max(0, pathHeadPosition - trainData.schedule.rollingStock.length);
-        var headLocation = trainData.schedule.findLocation(pathHeadPosition);
+        var headLocation = trainData.schedule.plannedPath.findLocation(pathHeadPosition);
         if (headLocation == null)
             return;
-        var tailLocation = trainData.schedule.findLocation(pathTailPosition);
+        var tailLocation = trainData.schedule.plannedPath.findLocation(pathTailPosition);
         var speed = lastUpdate.speed;
         spriteHead.setAttribute("ui.label", String.format("%s (%.2f m/s)", trainData.name, speed));
         setTrainLocation(spriteHead, headLocation);

@@ -249,11 +249,11 @@ public class SimulationEndpoint implements Take {
             ResponseTrainLocationUpdate(TrainSchedule trainSchedule, double pathOffset,
                                                double time, double speed) {
                 super(time);
-                var headLocation = trainSchedule.findLocation(pathOffset);
+                var headLocation = trainSchedule.plannedPath.findLocation(pathOffset);
                 this.trainName = trainSchedule.trainID;
                 this.headTrackSection = headLocation.edge.id;
                 this.headOffset = headLocation.offset;
-                var tailLocation = trainSchedule.findLocation(
+                var tailLocation = trainSchedule.plannedPath.findLocation(
                         Math.max(0, pathOffset - trainSchedule.rollingStock.length));
                 this.tailTrackSection = tailLocation.edge.id;
                 this.tailOffset = tailLocation.offset;
