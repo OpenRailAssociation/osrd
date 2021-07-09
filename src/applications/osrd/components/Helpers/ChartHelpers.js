@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 import { sec2time } from 'utils/timeManipulation';
+import { updateMustRedraw } from 'reducers/osrdsimulation';
 
 export const sec2d3datetime = (time) => d3.timeParse('%H:%M:%S')(sec2time(time));
 
@@ -36,13 +37,13 @@ export const formatData = (trains, trainNumber, dataName) => trains[trainNumber]
   .map((step) => ({ space: step.space, value: step.speed }));
 
 export const handleWindowResize = (
-  chartID, drawTrain, isResizeActive, setResizeActive, setMustRedraw,
+  chartID, drawTrain, dispatch, isResizeActive, setResizeActive,
 ) => {
   if (!isResizeActive) {
     let timeOutFunctionId;
     const resizeDrawTrain = () => {
       d3.select(`#${chartID}`).remove();
-      setMustRedraw(true);
+      dispatch(updateMustRedraw(true));
       drawTrain();
     };
     const timeOutResize = () => {
@@ -54,7 +55,7 @@ export const handleWindowResize = (
   }
 };
 
-// Time shift a train to duplicate usage
+// Time shift a train
 export const timeShiftTrain = (steps, value) => steps
   .map((step) => ({ ...step, time: offsetSeconds(step.time + value) }));
 export const timeShiftStops = (stops, value) => stops

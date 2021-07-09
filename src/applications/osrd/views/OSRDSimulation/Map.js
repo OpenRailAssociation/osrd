@@ -106,13 +106,13 @@ const createGeoJSONPoints = (steps) => {
 };
 
 const Map = (props) => {
-  const {
-    selectedTrain, setExtViewport, simulation,
-  } = props;
+  const { setExtViewport } = props;
   const {
     viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM,
   } = useSelector((state) => state.map);
-  const { hoverPosition, timePosition } = useSelector((state) => state.osrdsimulation);
+  const {
+    hoverPosition, selectedTrain, simulation, timePosition,
+  } = useSelector((state) => state.osrdsimulation);
   const [showSearch, setShowSearch] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [geojsonPath, setGeojsonPath] = useState(undefined);
@@ -290,10 +290,7 @@ const Map = (props) => {
 };
 
 Map.propTypes = {
-  selectedTrain: PropTypes.number.isRequired,
   setExtViewport: PropTypes.func.isRequired,
-  hoverPosition: PropTypes.number,
-  simulation: PropTypes.object.isRequired,
 };
 
 export default Map;

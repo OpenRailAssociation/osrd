@@ -1,15 +1,13 @@
 import React from 'react';
 import nextId from 'react-id-generator';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import PropTypes from 'prop-types';
 import { sec2time } from 'utils/timeManipulation';
 
-const FormatStops = (props) => {
-  const { t } = useTranslation(['simulation']);
-  const { stop } = props;
+function formatStops(stop) {
   const departureTime = (stop.stop_time > 0) ? stop.time + stop.stop_time : '';
   return (
-    <tr>
+    <tr key={nextId()}>
       <td>
         <div className="cell-inner font-weight-bold">
           {stop.name}
@@ -24,11 +22,13 @@ const FormatStops = (props) => {
       </td>
     </tr>
   );
-};
+}
 
-const TimeTable = (props) => {
+export default function TimeTable() {
   const { t } = useTranslation(['simulation']);
-  const { data } = props;
+  const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
+  const data = simulation.trains[selectedTrain].stops;
+
   return (
     <>
       <div className="h2">{t('simulation:timetable')}</div>
@@ -44,20 +44,11 @@ const TimeTable = (props) => {
               </tr>
             </thead>
             <tbody>
-              {data.map((stop) => <FormatStops stop={stop} key={nextId()} />)}
+              {data.map((stop) => formatStops(stop))}
             </tbody>
           </table>
         </div>
       </div>
     </>
   );
-};
-
-TimeTable.propTypes = {
-  data: PropTypes.array.isRequired,
-};
-FormatStops.propTypes = {
-  stop: PropTypes.object.isRequired,
-};
-
-export default TimeTable;
+}

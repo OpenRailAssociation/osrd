@@ -13,7 +13,7 @@ import TrainDetails from 'applications/osrd/views/OSRDSimulation/TrainDetails';
 import TrainsList from 'applications/osrd/views/OSRDSimulation/TrainsList';
 import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
 import { updateViewport } from 'reducers/map';
-import { updateTimePosition } from 'reducers/osrdsimulation';
+import { updateTimePosition, updateSimulation } from 'reducers/osrdsimulation';
 import { simplifyData, timeShiftTrain, timeShiftStops } from 'applications/osrd/components/Helpers/ChartHelpers';
 import './OSRDSimulation.scss';
 import { sec2time } from 'utils/timeManipulation';
@@ -29,12 +29,11 @@ const OSRDSimulation = () => {
   // const [hoverStop, setHoverStop] = useState(undefined);
   const [extViewport, setExtViewport] = useState(undefined);
   const [waitingMessage, setWaitingMessage] = useState(t('simulation:waiting'));
-  const [selectedTrain, setSelectedTrain] = useState(0);
   const [isEmpty, setIsEmpty] = useState(true);
-  const [mustRedraw, setMustRedraw] = useState(true);
   const osrdconf = useSelector((state) => state.osrdconf);
-  const { hoverPosition } = useSelector((state) => state.osrdsimulation);
-  const [simulation, setSimulation] = useState({ trains: [] });
+  const {
+    hoverPosition, mustRedraw, selectedTrain, simulation,
+  } = useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();
 
   const WaitingLoader = () => {
@@ -61,7 +60,7 @@ const OSRDSimulation = () => {
       }
       setWaitingMessage(t('simulation:simplify'));
       simulationLocal.sort((a, b) => a.stops[0].time > b.stops[0].time);
-      setSimulation({ trains: simplifyData(simulationLocal, SIMPLIFICATION_FACTOR) });
+      dispatch(updateSimulation({ trains: simplifyData(simulationLocal, SIMPLIFICATION_FACTOR) }));
     } catch (e) {
       console.log('ERROR', e);
     }
@@ -92,14 +91,24 @@ const OSRDSimulation = () => {
     }
   }, [extViewport]);
 
-  const offsetTimeByDragging = (offset, selectedTrainLocal) => {
-    const { trains } = simulation;
-    trains[selectedTrainLocal] = {
+  const offsetTimeByDragging2 = (offset, selectedTrainLocal) => {
+    const simulationLocal = { ...simulation };
+    simulationLocal.trains[selectedTrainLocal] = {
       ...simulation.trains[selectedTrainLocal],
       steps: timeShiftTrain(simulation.trains[selectedTrainLocal].steps, offset),
       stops: timeShiftStops(simulation.trains[selectedTrainLocal].stops, offset),
     };
-    setSimulation({ ...simulation, trains });
+    dispatch(updateSimulation({ ...simulationLocal }));
+  };
+
+  const offsetTimeByDragging = (offset, selectedTrainLocal) => {
+    const trains = Array.from(simulation.trains);
+    trains[selectedTrainLocal] = {
+      ...trains[selectedTrainLocal],
+      steps: timeShiftTrain(trains[selectedTrainLocal].steps, offset),
+      stops: timeShiftStops(trains[selectedTrainLocal].stops, offset),
+    };
+    dispatch(updateSimulation({ ...simulation, trains }));
   };
 
   return (
@@ -111,52 +120,30 @@ const OSRDSimulation = () => {
               <div className="osrd-simulation-container mb-2">
                 <div className="row">
                   <div className="col-md-6">
-                    <TrainsList
-                      simulation={simulation}
-                      selectedTrain={selectedTrain}
-                      setSelectedTrain={setSelectedTrain}
-                      setMustRedraw={setMustRedraw}
-                    />
+                    <TrainsList />
                   </div>
                   <div className="col-md-6">
                     {simulation.trains.length > 0 ? (
                       <SpaceTimeChart
-                        simulation={simulation}
-                        selectedTrain={selectedTrain}
-                        setSelectedTrain={setSelectedTrain}
                         offsetTimeByDragging={offsetTimeByDragging}
-                        mustRedraw={mustRedraw}
-                        setMustRedraw={setMustRedraw}
                       />
                     ) : null}
                   </div>
                 </div>
               </div>
               <div className="osrd-simulation-container mb-2">
-                <TimeButtons
-                  selectedTrain={selectedTrain}
-                  simulation={simulation}
-                  simulationLength={simulation.trains[selectedTrain].steps.length}
-                />
+                <TimeButtons />
               </div>
               <div className="osrd-simulation-container mb-2">
                 <div className="row">
                   <div className="col-md-4">
                     {simulation.trains.length > 0 ? (
-                      <TrainDetails
-                        simulation={simulation}
-                        selectedTrain={selectedTrain}
-                      />
+                      <TrainDetails />
                     ) : null}
                   </div>
                   <div className="col-md-8">
                     {simulation.trains.length > 0 ? (
-                      <SpeedSpaceChart
-                        simulation={simulation}
-                        selectedTrain={selectedTrain}
-                        mustRedraw={mustRedraw}
-                        setMustRedraw={setMustRedraw}
-                      />
+                      <SpeedSpaceChart />
                     ) : null}
                   </div>
                 </div>
@@ -165,19 +152,13 @@ const OSRDSimulation = () => {
                 <div className="col-md-6">
                   <div className="osrd-simulation-container mb-2">
                     {simulation.trains.length > 0 ? (
-                      <TimeTable
-                        data={simulation.trains[selectedTrain].stops}
-                      />
+                      <TimeTable />
                     ) : null}
                   </div>
                 </div>
                 <div className="col-md-6">
                   <div className="osrd-simulation-container osrd-simulation-map mb-2">
-                    <Map
-                      selectedTrain={selectedTrain}
-                      simulation={simulation}
-                      setExtViewport={setExtViewport}
-                    />
+                    <Map setExtViewport={setExtViewport} />
                   </div>
                 </div>
               </div>

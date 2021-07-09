@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import {
   formatStepsWithTime, mergeDatasArea,
@@ -24,11 +23,8 @@ const createTrain = (keyValues, simulationTrains) => {
   return dataSimulation;
 };
 
-const TrainDetails = (props) => {
-  const {
-    selectedTrain, simulation,
-  } = props;
-  const { hoverPosition } = useSelector((state) => state.osrdsimulation);
+export default function TrainDetails() {
+  const { hoverPosition, selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
   const keyValues = ['time', 'value'];
   const [dataSimulation, setDataSimulation] = useState(undefined);
 
@@ -101,11 +97,4 @@ const TrainDetails = (props) => {
         ) : null }
     </>
   ) : null;
-};
-
-TrainDetails.propTypes = {
-  simulation: PropTypes.object.isRequired,
-  selectedTrain: PropTypes.number.isRequired,
-};
-
-export default TrainDetails;
+}

@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import PropTypes from 'prop-types';
 import * as d3 from 'd3';
 import { LIST_VALUES_NAME_SPEED_SPACE } from 'applications/osrd/components/Simulation/consts';
 import { SNCFCOLORS } from 'applications/osrd/consts';
 import {
   defineLinear, expandAndFormatData, formatStepsWithSpace, handleWindowResize, mergeDatasArea,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { updateMustRedraw } from 'reducers/osrdsimulation';
 import defineChart from 'applications/osrd/components/Simulation/defineChart';
 import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
 import drawArea from 'applications/osrd/components/Simulation/drawArea';
@@ -14,13 +14,11 @@ import enableInteractivity, { traceVerticalLine } from 'applications/osrd/compon
 
 const CHART_ID = 'SpeedSpaceChart';
 
-const SpeedSpaceChart = (props) => {
-  const {
-    mustRedraw, selectedTrain,
-    setMustRedraw, simulation,
-  } = props;
+export default function SpeedSpaceChart() {
   const dispatch = useDispatch();
-  const { hoverPosition, timePosition } = useSelector((state) => state.osrdsimulation);
+  const {
+    hoverPosition, mustRedraw, selectedTrain, simulation, timePosition,
+  } = useSelector((state) => state.osrdsimulation);
   const [rotate, setRotate] = useState(false);
   const [chart, setChart] = useState(undefined);
   const [isResizeActive, setResizeActive] = useState(false);
@@ -42,7 +40,7 @@ const SpeedSpaceChart = (props) => {
     d3.select(`#${CHART_ID}`).remove();
     setChart({ ...chart, x: chart.y, y: chart.x });
     setRotate(!rotate);
-    setMustRedraw(true);
+    dispatch(updateMustRedraw(true));
   };
 
   const createChart = () => {
@@ -65,23 +63,22 @@ const SpeedSpaceChart = (props) => {
     if (mustRedraw) {
       const chartLocal = createChart();
       chartLocal.drawZone.append('g').attr('id', 'speedSpaceChart').attr('class', 'chartTrain');
-      drawArea(chartLocal, 'rgba(0, 136, 207, 0.3)', dataSimulation, 'speedSpaceChart', 'curveLinear', keyValues, 'areaBlock', rotate);
+      drawArea(chartLocal, 'rgba(0, 136, 207, 0.3)', dataSimulation, dispatch, 'speedSpaceChart', 'curveLinear', keyValues, 'areaBlock', rotate);
       drawCurve(chartLocal, SNCFCOLORS.blue, dataSimulation, 'speedSpaceChart', 'curveLinear', keyValues, 'speed', rotate);
       // drawCurve(chartLocal, SNCFCOLORS.red, dataSimulation, 'speedSpaceChart', 'curveStepAfter', keyValues, 'emergency', rotate);
       // drawCurve(chartLocal, SNCFCOLORS.yellow, dataSimulation, 'speedSpaceChart', 'curveStepAfter', keyValues, 'indication', rotate);
       enableInteractivity(
         chartLocal, dataSimulation, dispatch, keyValues,
         LIST_VALUES_NAME_SPEED_SPACE, rotate, setChart,
-        setMustRedraw,
       );
       setChart(chartLocal);
-      setMustRedraw(false);
+      dispatch(updateMustRedraw(false));
     }
   };
 
   useEffect(() => {
     drawTrain();
-    handleWindowResize(CHART_ID, drawTrain, isResizeActive, setResizeActive, setMustRedraw);
+    handleWindowResize(CHART_ID, drawTrain, isResizeActive, setResizeActive);
   }, [chart, mustRedraw, rotate]);
 
   useEffect(() => {
@@ -103,13 +100,4 @@ const SpeedSpaceChart = (props) => {
       </button>
     </div>
   );
-};
-
-SpeedSpaceChart.propTypes = {
-  mustRedraw: PropTypes.bool.isRequired,
-  selectedTrain: PropTypes.number.isRequired,
-  setMustRedraw: PropTypes.func.isRequired,
-  simulation: PropTypes.object.isRequired,
-};
-
-export default SpeedSpaceChart;
+}

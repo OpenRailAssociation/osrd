@@ -1,8 +1,9 @@
 import * as d3 from 'd3';
+import { updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation';
 
 const drawArea = (
-  chart, pattern = 'gray', dataSimulation, groupID, interpolation, keyValues, name,
-  rotate, setMustRedraw = () => {}, setSelectedTrain = () => {},
+  chart, pattern = 'gray', dataSimulation, dispatch, groupID, interpolation,
+  keyValues, name, rotate,
 ) => { // Pattern could be a color or a pattern defined in svgDefs with syntax 'url(#idOfPAttern)'
   const dataDefinition = rotate
     ? d3.area()
@@ -18,8 +19,8 @@ const drawArea = (
 
   chart.drawZone.select(`#${groupID}`).append('path')
     .on('click', () => {
-      setSelectedTrain(dataSimulation.trainNumber);
-      setMustRedraw(true);
+      dispatch(updateSelectedTrain(dataSimulation.trainNumber));
+      dispatch(updateMustRedraw(true));
     })
     .attr('class', 'area zoomable')
     .datum(dataSimulation[name])

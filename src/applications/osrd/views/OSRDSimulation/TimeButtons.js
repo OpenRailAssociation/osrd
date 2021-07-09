@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as d3 from 'd3';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateHoverPosition, updateTimePosition } from 'reducers/osrdsimulation';
-import PropTypes from 'prop-types';
 import {
   FaStop, FaPause, FaPlay, FaBackward,
 } from 'react-icons/fa';
@@ -16,16 +15,16 @@ const factor2ms = (factor) => {
   return { ms, steps };
 };
 
-export default function TimeButtons(props) {
-  const {
-    selectedTrain, simulation, simulationLength,
-  } = props;
+export default function TimeButtons() {
   const dispatch = useDispatch();
-  const { timePosition } = useSelector((state) => state.osrdsimulation);
+  const {
+    hoverPosition, selectedTrain, simulation, timePosition, chart,
+  } = useSelector((state) => state.osrdsimulation);
   const [playInterval, setPlayInterval] = useState(undefined);
-  const [playState, setPlayState] = useState(0);
+  const [playState, setPlayState] = useState(hoverPosition);
   const [playReverse, setPlayReverse] = useState(false);
   const [simulationSpeed, setSimulationSpeed] = useState(1);
+  const simulationLength = simulation.trains[selectedTrain].steps.length;
 
   const stop = () => {
     clearInterval(playInterval);
@@ -87,6 +86,10 @@ export default function TimeButtons(props) {
     dispatch(updateTimePosition(e.target.value));
   };
 
+  useEffect(() => {
+    setPlayState(hoverPosition);
+  }, [hoverPosition]);
+
   return (
     <div className="d-flex">
       <span className="mr-1">
@@ -139,18 +142,9 @@ export default function TimeButtons(props) {
       />
       <div className="timeline-container flex-grow-1">
         <div className="timeline">
-          &nbsp;
+          {chart ? chart.x.domain().map((date) => date.toLocaleTimeString('fr-FR') + ' - ') : null}
         </div>
       </div>
     </div>
   );
 }
-
-TimeButtons.propTypes = {
-  simulation: PropTypes.object.isRequired,
-  selectedTrain: PropTypes.number,
-  simulationLength: PropTypes.number.isRequired,
-};
-TimeButtons.defaultProps = {
-  selectedTrain: undefined,
-};

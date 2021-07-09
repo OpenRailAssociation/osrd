@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
-import PropTypes from 'prop-types';
 import { sec2time } from 'utils/timeManipulation';
+import { updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
-const TrainsList = (props) => {
+export default function TrainsList() {
   const {
-    selectedTrain, setMustRedraw, setSelectedTrain, simulation,
-  } = props;
+    selectedTrain, simulation,
+  } = useSelector((state) => state.osrdsimulation);
+  const dispatch = useDispatch();
   const [formattedList, setFormattedList] = useState(undefined);
   const [filter, setFilter] = useState('');
 
   const { t } = useTranslation(['simulation']);
 
   const changeSelectedTrain = (idx) => {
-    setMustRedraw(true);
-    setSelectedTrain(idx);
+    dispatch(updateMustRedraw(true));
+    dispatch(updateSelectedTrain(idx));
   };
 
   const formatTrainsList = () => {
@@ -57,7 +59,7 @@ const TrainsList = (props) => {
   };
 
   useEffect(() => {
-    setFormattedList(formatTrainsList(simulation, selectedTrain, setSelectedTrain));
+    setFormattedList(formatTrainsList());
   }, [selectedTrain, simulation, filter]);
 
   return (
@@ -107,13 +109,4 @@ const TrainsList = (props) => {
       </div>
     </>
   );
-};
-
-TrainsList.propTypes = {
-  simulation: PropTypes.object.isRequired,
-  selectedTrain: PropTypes.number.isRequired,
-  setMustRedraw: PropTypes.func.isRequired,
-  setSelectedTrain: PropTypes.func.isRequired,
-};
-
-export default TrainsList;
+}

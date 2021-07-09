@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import drawGuideLines from 'applications/osrd/components/Simulation/drawGuideLines';
 import { gridX, gridY } from 'applications/osrd/components/Helpers/ChartHelpers';
-import { updateHoverPosition, updateTimePosition } from 'reducers/osrdsimulation';
+import { updateHoverPosition, updateMustRedraw, updateTimePosition } from 'reducers/osrdsimulation';
 import { time2datetime } from 'utils/timeManipulation';
 
 export const displayGuide = (chart, opacity) => {
@@ -101,7 +101,7 @@ export const traceVerticalLine = (
 
 const enableInteractivity = (
   chart, dataSimulation, dispatch, keyValues,
-  listValues, rotate, setChart, setMustRedraw = () => {},
+  listValues, rotate, setChart,
 ) => {
   let newHoverPosition;
 
@@ -117,7 +117,7 @@ const enableInteractivity = (
       );
     })
     .filter(() => d3.event.button === 0 || d3.event.button === 1)
-    .on('end', () => setMustRedraw(true));
+    .on('end', () => dispatch(updateMustRedraw(true)));
 
   const mousemove = () => {
     // recover coordinate we need

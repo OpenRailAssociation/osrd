@@ -10,6 +10,7 @@ import {
   defineLinear, defineTime, formatStepsWithTime,
   handleWindowResize, mergeDatasArea,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation';
 import ChartModal from 'applications/osrd/components/Simulation/ChartModal';
 import defineChart from 'applications/osrd/components/Simulation/defineChart';
 import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
@@ -57,8 +58,8 @@ const createChart = (chart, dataSimulation, keyValues, ref, rotate) => {
 };
 
 const drawTrain = (
-  chart, dataSimulation, isSelected, keyValues, offsetTimeByDragging,
-  rotate, setMustRedraw, setSelectedTrain,
+  chart, dispatch, dataSimulation, isSelected, keyValues,
+  offsetTimeByDragging, rotate,
 ) => {
   const groupID = `spaceTime-${dataSimulation.trainNumber}`;
 
@@ -75,10 +76,10 @@ const drawTrain = (
 
   const drag = d3.drag()
     .on('end', () => {
-      setMustRedraw(true);
+      dispatch(updateMustRedraw(true));
     })
     .on('start', () => {
-      setSelectedTrain(dataSimulation.trainNumber);
+      dispatch(updateSelectedTrain(dataSimulation.trainNumber));
     })
     .on('drag', () => {
       dragValue += rotate ? d3.event.dy : d3.event.dx;
@@ -97,8 +98,8 @@ const drawTrain = (
     .call(drag);
 
   drawArea(
-    chart, areaColor, dataSimulation, groupID, 'curveStepAfter', keyValues,
-    'areaBlock', rotate, setMustRedraw, setSelectedTrain,
+    chart, areaColor, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
+    'areaBlock', rotate,
   );
   drawCurve(chart, endBlockOccupancyColor, dataSimulation, groupID,
     'curveStepAfter', keyValues, 'endBlockOccupancy', rotate, isSelected);
@@ -130,13 +131,12 @@ const createTrain = (keyValues, simulationTrains) => {
 };
 
 const SpaceTimeChart = (props) => {
-  const {
-    mustRedraw, offsetTimeByDragging, selectedTrain,
-    setMustRedraw, setSelectedTrain, simulation,
-  } = props;
+  const { offsetTimeByDragging } = props;
   const ref = useRef();
   const dispatch = useDispatch();
-  const { hoverPosition, timePosition } = useSelector((state) => state.osrdsimulation);
+  const {
+    hoverPosition, mustRedraw, selectedTrain, simulation, timePosition,
+  } = useSelector((state) => state.osrdsimulation);
   const keyValues = ['time', 'value'];
   const [rotate, setRotate] = useState(false);
   const [isResizeActive, setResizeActive] = useState(false);
@@ -154,7 +154,7 @@ const SpaceTimeChart = (props) => {
     d3.select(`#${CHART_ID}`).remove();
     setChart({ ...chart, x: chart.y, y: chart.x });
     setRotate(!rotate);
-    setMustRedraw(true);
+    dispatch(updateMustRedraw(true));
   };
 
   const drawAllTrains = () => {
@@ -164,24 +164,24 @@ const SpaceTimeChart = (props) => {
       );
       dataSimulation.forEach((train, idx) => {
         drawTrain(
-          chartLocal, train, (idx === selectedTrain), keyValues,
-          offsetTimeByDragging, rotate, setMustRedraw, setSelectedTrain,
+          chartLocal, dispatch, train, (idx === selectedTrain),
+          keyValues, offsetTimeByDragging, rotate,
         );
       });
       enableInteractivity(
         chartLocal, dataSimulation[selectedTrain], dispatch, keyValues,
-        LIST_VALUES_NAME_SPACE_TIME, rotate, setChart, setMustRedraw,
+        LIST_VALUES_NAME_SPACE_TIME, rotate, setChart,
       );
       // findConflicts(chartLocal, dataSimulation, rotate);
       setChart(chartLocal);
-      setMustRedraw(false);
+      dispatch(updateMustRedraw(false));
     }
   };
 
   useEffect(() => {
     setDataSimulation(createTrain(keyValues, simulation.trains));
     drawAllTrains();
-    handleWindowResize(CHART_ID, drawAllTrains, isResizeActive, setResizeActive, setMustRedraw);
+    handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
   }, [mustRedraw, rotate, selectedTrain, simulation.trains[selectedTrain]]);
 
   useEffect(() => {
@@ -207,8 +207,6 @@ const SpaceTimeChart = (props) => {
             setShowModal={setShowModal}
             trainName={dataSimulation[selectedTrain].name}
             offsetTimeByDragging={offsetTimeByDragging}
-            selectedTrain={selectedTrain}
-            setMustRedraw={setMustRedraw}
           />
         )
         : null}
@@ -225,11 +223,6 @@ const SpaceTimeChart = (props) => {
 };
 
 SpaceTimeChart.propTypes = {
-  simulation: PropTypes.object.isRequired,
-  mustRedraw: PropTypes.bool.isRequired,
-  selectedTrain: PropTypes.number.isRequired,
-  setMustRedraw: PropTypes.func.isRequired,
-  setSelectedTrain: PropTypes.func.isRequired,
   offsetTimeByDragging: PropTypes.func.isRequired,
 };
 
