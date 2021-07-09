@@ -137,7 +137,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 timeStep,
                 rollingStock,
                 speed,
-                location.maxTrainGrade());
+                location.meanTrainGrade());
 
         var prevLocation = location.getPathPosition();
 

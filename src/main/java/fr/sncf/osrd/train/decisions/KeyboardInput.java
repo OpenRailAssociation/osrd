@@ -23,7 +23,7 @@ public class KeyboardInput extends InteractiveInput implements KeyListener {
         if (accelerating && !braking)
             return Action.accelerate(trainState.trainSchedule.rollingStock.getMaxEffort(trainState.speed));
         if (!accelerating && braking)
-            return Action.brake(integrator.getMaxBrakingForce(trainState.trainSchedule.rollingStock));
+            return Action.brake(integrator.getBrakingForce(trainState.trainSchedule.rollingStock));
         return Action.coast();
     }
 

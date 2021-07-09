@@ -49,7 +49,7 @@ public class SpeedInstructions {
         }
 
         maxSpeedControllers = new MaxSpeedGenerator().generate(sim, schedule, null, 0);
-        targetSpeedControllers = maxSpeedControllers;
+        targetSpeedControllers = new HashSet<>(maxSpeedControllers);
         for (var generator : targetSpeedGenerators)
             targetSpeedControllers = generator.generate(sim, schedule, targetSpeedControllers, initialSpeed);
         targetSpeedControllers.addAll(maxSpeedControllers);

@@ -6,7 +6,7 @@ import fr.sncf.osrd.utils.Constants;
 
 /**
  * An utility class to help simulate the train, using forward numerical integration.
- * It's used when simulating the train, and passed to speed controllers so they can take decisions
+ * It's used when simulating the train, and it is passed to speed controllers so they can take decisions
  * about what action to make. Once speed controllers took a decision, this same class is used to compute
  * the next position and speed of the train.
  */
@@ -14,98 +14,103 @@ public class TrainPhysicsIntegrator {
     private final double timeStep;
     private final double currentSpeed;
     private final double weightForce;
-    private final double precomputedRollingResistance;
+    private final double rollingResistance;
     private final double inertia;
-
+    private final boolean isBrakingWithConstantValue;
+    /**
+    * @param currentSpeed the current speed of the train
+    * @param weightForce is the force due to the slope under the train
+    * @param rollingResistance is the rolling resistance = A + B * currentSpeed + C * currentSpeed * currentSpeed
+    * @param inertia is the mass * inertial coefficient
+     * @param isBrakingWithConstantValue is true when we have a constant braking gamma that overrides all the other forces
+    */
     private TrainPhysicsIntegrator(
             double timeStep,
             double currentSpeed,
             double weightForce,
-            double precomputedRollingResistance,
-            double inertia
+            double rollingResistance,
+            double inertia,
+            boolean isBrakingWithConstantValue
     ) {
         this.timeStep = timeStep;
         this.currentSpeed = currentSpeed;
         this.weightForce = weightForce;
-        assert precomputedRollingResistance >= 0.;
-        this.precomputedRollingResistance = precomputedRollingResistance;
+        assert rollingResistance >= 0.;
+        this.rollingResistance = rollingResistance;
         this.inertia = inertia;
+        this.isBrakingWithConstantValue = isBrakingWithConstantValue;
     }
 
     /**
      * Makes a new train physics simulator
      * @param rollingStock the specs of the train
      * @param currentSpeed the current speed of the train
-     * @param maxTrainGrade the maximum slope under the train
+     * @param meanTrainGrade the maximum slope under the train
      * @return a new train physics simulator
      */
     public static TrainPhysicsIntegrator make(
             double timeStep,
             RollingStock rollingStock,
             double currentSpeed,
-            double maxTrainGrade
+            double meanTrainGrade
     ) {
         // get an angle from a meter per km elevation difference
-        var angle = Math.atan(maxTrainGrade / 1000.0);  // from m/km to m/m
+        // the curve's radius is taken into account in meanTrainGrade
+        var angle = Math.atan(meanTrainGrade / 1000.0);  // from m/km to m/m
         var weightForce = - rollingStock.mass * Constants.GRAVITY * Math.sin(angle);
-
         var inertia = rollingStock.mass * rollingStock.inertiaCoefficient;
+        var isBrakingWithConstantValue = rollingStock.maxGamma == null;
         return new TrainPhysicsIntegrator(
                 timeStep,
                 currentSpeed,
                 weightForce,
                 rollingStock.rollingResistance(currentSpeed),
-                inertia);
+                inertia,
+                isBrakingWithConstantValue);
     }
 
     /**
      * (Internal) Computes the sum of forces acting on the train
-     * @param rollingResistance the sum of rolling resistance forces (including braking)
+     * @param oppositeForces the sum of opposite forces (including braking)
      * @param actionTractionForce the traction force
      * @return the force vector for the train
      */
-    private double computeTotalForce(double rollingResistance, double actionTractionForce) {
-        return actionTractionForce + weightForce + rollingResistance;
+    private double computeTotalForce(double oppositeForces, double actionTractionForce) {
+        return actionTractionForce + weightForce + oppositeForces;
     }
 
-    /**
-     * (Internal) Computes the raw acceleration, given the traction and rolling resistance.
-     * @param rollingResistance the sum of rolling resistance forces (including braking)
-     * @param actionTractionForce the traction force
-     * @return the acceleration for the train
-     */
-    private double computeAcceleration(double rollingResistance, double actionTractionForce) {
-        return computeTotalForce(rollingResistance, actionTractionForce) / inertia;
+    /** Get the max braking force if it exists or the average time table braking force. */
+    public double getBrakingForce(RollingStock rollingStock) {
+        if (isBrakingWithConstantValue) {
+            return -rollingStock.timetableGamma * inertia;
+        }
+        return -rollingStock.maxGamma * inertia;
     }
 
-    public double getMaxBrakingForce(RollingStock rollingStock) {
-        return -rollingStock.timetableGamma * inertia;
-    }
-
-    /** Computes the force required to keep some speed. */
+    /** Computes the force required to reach the target speed. */
     public Action actionToTargetSpeed(SpeedDirective speedDirective, RollingStock rollingStock) {
         // the force we'd need to apply to reach the target speed at the next step
         // F= m*a
         // a<0 dec force<0
         // a>0 acc force>0
         // normally the train speed should be positive
+        assert currentSpeed >= 0;
 
+        // this is used to compute Mareco allowance
         if (Double.isNaN(speedDirective.allowedSpeed)) {
             return Action.coast();
         }
 
-        assert currentSpeed >= 0;
         var targetForce = (speedDirective.allowedSpeed - currentSpeed) / timeStep * inertia;
         // limited the possible acceleration for reasons of travel comfort
         if (targetForce > rollingStock.comfortAcceleration * inertia)
             targetForce = rollingStock.comfortAcceleration * inertia;
 
-        var weightForce = computeTotalForce(0, 0);
+        // targetForce = actionForce - mass * g * decl - Ra
+        // targetForce = actionForce + weightForce - Ra
+        var actionForce = targetForce - weightForce + rollingResistance;
 
-        // targetForce = actionForce + otherForces
-        var actionForce = targetForce - weightForce;
-
-        // we can't realistically accelerate and brake with infinite forces, so limit it to some given value
+        // we can't realistically accelerate with infinite forces, so limit it to some given value
         if (actionForce >= 0) {
             var maxTraction = rollingStock.getMaxEffort(currentSpeed);
             if (actionForce > maxTraction)
@@ -113,10 +118,18 @@ public class TrainPhysicsIntegrator {
             return Action.accelerate(actionForce);
         }
 
-        // if the resulting force is negative
-        // targetForce should not be larger than the average braking force gamma * inertia
-        //assert (targetForce >= getMaxBrakingForce(rollingStock));
-        var maxBrakingForce = getMaxBrakingForce(rollingStock);
+        // if the resulting force is negative limit the value to the maxBrakingForce
+        // or assign to it an average braking force
+        if (isBrakingWithConstantValue) {
+            // brake or steep slope
+            // TODO: fix the steep slopes case (action force slightly negative)
+            var averageBrakingForce = getBrakingForce(rollingStock);
+            if (actionForce < averageBrakingForce)
+                actionForce = averageBrakingForce;
+            return Action.brake(Math.abs(actionForce));
+        }
+        // TODO implement speed controllers with non constant deceleration
+        var maxBrakingForce = getBrakingForce(rollingStock);
         if (actionForce < maxBrakingForce)
             actionForce = maxBrakingForce;
         return Action.brake(Math.abs(actionForce));
@@ -168,8 +181,8 @@ public class TrainPhysicsIntegrator {
 
     /**
      * Compute the train's acceleration given an action force
-     * @param actionTractionForce the force indirectly applied by the driver
-     * @param actionBrakingForce the braking force indirectly applied by the driver
+     * @param actionTractionForce the force directly applied by the driver
+     * @param actionBrakingForce the braking force directly applied by the driver
      * @param maxDistance the maximum distance the train can go
      * @return the new speed of the train
      */
@@ -178,7 +191,10 @@ public class TrainPhysicsIntegrator {
         assert actionBrakingForce >= 0.;
 
         // the sum of forces that always go the direction opposite to the train's movement
-        double oppositeForce = precomputedRollingResistance + actionBrakingForce;
+        double oppositeForce = rollingResistance + actionBrakingForce;
+        if (isBrakingWithConstantValue && actionBrakingForce > 0.) {
+            oppositeForce = actionBrakingForce;
+        }
 
         // as the oppositeForces is a reaction force, it needs to be adjusted to be opposed to the other forces
         double effectiveOppositeForces;
@@ -197,9 +213,12 @@ public class TrainPhysicsIntegrator {
         }
 
         // general case: compute the acceleration and new position
-        // compute the acceleration on all the integration step. the variable is named this way because be
+        // compute the acceleration on all the integration step. the variable is named this way because we
         // compute the acceleration on only a part of the integration step below
-        var fullStepAcceleration =  computeAcceleration( effectiveOppositeForces, actionTractionForce);
+        var fullStepAcceleration =  computeTotalForce(effectiveOppositeForces, actionTractionForce) / inertia;
+        if (isBrakingWithConstantValue && actionBrakingForce > 0.) {
+            fullStepAcceleration =  effectiveOppositeForces / inertia;
+        }
         var newSpeed = currentSpeed + directionSign * fullStepAcceleration * timeStep;
 
         // when the train changes direction, the opposite force doesn't apply

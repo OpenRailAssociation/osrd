@@ -180,24 +180,23 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         return pathPosition;
     }
 
-    /** Computes the maximum grade (slope) under the train. */
-    public double maxTrainGrade() {
-        var val = 0.;
-        var maxVal = 0.;
+    /** Computes the average grade (slope) under the train. */
+    public double meanTrainGrade() {
+        var meanVal = 0.;
         for (var track : trackSectionRanges) {
             var gradients = track.edge.forwardGradients;
             if (track.direction == EdgeDirection.STOP_TO_START)
                 gradients = track.edge.backwardGradients;
 
-            //TODO: improve using an average
-            for (var slope : gradients.getValuesInRange(track.getBeginPosition(), track.getEndPosition())) {
-                if (maxVal < Math.abs(slope)) {
-                    val = slope;
-                    maxVal = Math.abs(slope);
+            var slopesUnderTheTrain = gradients.getValuesInRange(track.getBeginPosition(), track.getEndPosition());
+            if(slopesUnderTheTrain.size() > 0) {
+                for (var slope : slopesUnderTheTrain) {
+                    meanVal += slope;
                 }
+                meanVal /= slopesUnderTheTrain.size();
             }
         }
-        return val;
+        return meanVal;
     }
 
     @Override
