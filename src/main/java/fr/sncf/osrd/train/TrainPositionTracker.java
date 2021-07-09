@@ -199,9 +199,7 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
             }
 
         }
-
         return totalWeight > 0. ? meanVal / totalWeight : 0.;
-
     }
 
     @Override
