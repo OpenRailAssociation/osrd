@@ -1,6 +1,8 @@
 package fr.sncf.osrd.railjson.parser;
 
 import fr.sncf.osrd.RollingStock;
+import fr.sncf.osrd.railjson.schema.common.ID;
+import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
 import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.train.TrainSchedule;
@@ -44,7 +46,7 @@ public class RJSTrainScheduleParser {
 
         var initialLocation = parseLocation(infra, rjsTrainSchedule.initialHeadLocation);
 
-        var expectedPath = parsePath(infra, rjsTrainSchedule.phases, initialLocation);
+        var expectedPath = parsePath(infra, rjsTrainSchedule.phases, rjsTrainSchedule.routes, initialLocation);
 
         var stops = parseStops(rjsTrainSchedule.stops, infra, expectedPath);
 
@@ -208,20 +210,17 @@ public class RJSTrainScheduleParser {
 
     private static TrainPath parsePath(Infra infra,
                                        RJSTrainPhase[] phases,
+                                       ID<RJSRoute>[] rjsRoutes,
                                        TrackSectionLocation start) throws InvalidSchedule {
         var routes = new ArrayList<Route>();
-        for (var phase : phases) {
-            if (phase.getClass() == RJSTrainPhase.Navigate.class) {
-                var navigate = (RJSTrainPhase.Navigate) phase;
-                for (var rjsRoute : navigate.routes) {
-                    var route = infra.routeGraph.routeMap.get(rjsRoute.id);
-                    if (route == null)
-                        throw new UnknownRoute("unknown route in train path", rjsRoute.id);
-                    if (routes.isEmpty() || routes.get(routes.size() - 1) != route)
-                        routes.add(route);
-                }
-            }
+        for (var rjsRoute : rjsRoutes) {
+            var route = infra.routeGraph.routeMap.get(rjsRoute.id);
+            if (route == null)
+                throw new UnknownRoute("unknown route in train path", rjsRoute.id);
+            if (routes.isEmpty() || routes.get(routes.size() - 1) != route)
+                routes.add(route);
         }
+
         var rjsEndLocation = phases[phases.length - 1].endLocation;
         return new TrainPath(routes, start, parseLocation(infra, rjsEndLocation));
     }

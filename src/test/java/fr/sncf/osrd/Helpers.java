@@ -397,12 +397,6 @@ public class Helpers {
     public static RJSTrainPhase[] loadPhasesLongerFirstPhase() {
         var phases = loadRJSPhases("tiny_infra/simulation_several_phases.json");
         phases[0].endLocation = new RJSTrackLocation(new ID<>("ne.micro.foo_to_bar"), 4000);
-        assert phases[0] instanceof RJSTrainPhase.Navigate;
-        assert phases[1] instanceof RJSTrainPhase.Navigate;
-        var navigate0 = (RJSTrainPhase.Navigate) phases[0];
-        var navigate1 = (RJSTrainPhase.Navigate) phases[1];
-        navigate0.routes = addToArray(navigate0.routes, new ID<>("rt.C3-S7"));
-        navigate1.routes = removeFirstFromArray(navigate1.routes);
         return phases;
     }
 }

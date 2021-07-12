@@ -29,6 +29,8 @@ public class RJSTrainSchedule implements Identified {
 
     public RJSTrainPhase[] phases;
 
+    public ID<RJSRoute>[] routes;
+
     @Json(name = "train_control_method")
     public String trainControlMethod;
 

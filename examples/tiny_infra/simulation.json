@@ -57,6 +57,11 @@
           }
         ]
       ],
+      "routes": [
+        "rt.buffer_stop_b-C3",
+        "rt.C3-S7",
+        "rt.S7-buffer_stop_c"
+      ],
       "phases": [
         {
           "driver_sight_distance": 400,
@@ -64,11 +69,6 @@
             "track_section": "ne.micro.bar_a",
             "offset": 100
           },
-          "routes": [
-            "rt.buffer_stop_b-C3",
-            "rt.C3-S7",
-            "rt.S7-buffer_stop_c"
-          ],
           "type": "navigate"
         }
       ]
