@@ -55,14 +55,20 @@ def generate_layer(infra: Infra, entity_type: Type[Entity]):
     for entity in fetch_entities(entity_type, infra.namespace):
         # Get all entity components
         components = serialize_components(entity)
+
         entity_payload = {
             "entity_id": entity.entity_id,
             "components": components,
         }
+
         if geo_attr_name:
             geo_component = getattr(entity, geo_attr_name)
             entity_payload["geom_geo"] = geom_to_geosjon_dict(geo_component.geographic)
             entity_payload["geom_sch"] = geom_to_geosjon_dict(geo_component.schematic)
+
+            # avoid duplcate geometry data
+            components[geo_attr_name].pop("geographic")
+            components[geo_attr_name].pop("schematic")
 
         layer.append(entity_payload)
 
