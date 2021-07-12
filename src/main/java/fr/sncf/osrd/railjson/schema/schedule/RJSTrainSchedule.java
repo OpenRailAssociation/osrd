@@ -54,7 +54,8 @@ public class RJSTrainSchedule implements Identified {
             RJSTrainPhase[] phases,
             String trainControlMethod,
             RJSAllowance[][] allowances,
-            RJSTrainStop[] stops
+            RJSTrainStop[] stops,
+            ID<RJSRoute>[] routes
     ) {
         this.id = id;
         this.rollingStock = rollingStock;
@@ -66,6 +67,7 @@ public class RJSTrainSchedule implements Identified {
         this.trainControlMethod = trainControlMethod;
         this.allowances = allowances;
         this.stops = stops;
+        this.routes = routes;
     }
 
     @Override
