@@ -24,26 +24,8 @@ public abstract class RJSTrainPhase {
     public RJSTrackLocation endLocation;
 
     public static final class Navigate extends RJSTrainPhase {
-        /** The sequence of routes the train should take.
-         * The train must be on the first route when it enters this phase. */
-        public ID<RJSRoute>[] routes;
-
         /** The distance at which the driver can see objects on the tracks */
         @Json(name = "driver_sight_distance")
         public double driverSightDistance;
-
-        /** Create a navigation phase */
-        public Navigate(ID<RJSRoute>[] routes, RJSTrackLocation endLocation, double driverSightDistance) {
-            this.routes = routes;
-            this.endLocation = endLocation;
-            this.driverSightDistance = driverSightDistance;
-        }
-
-        /** Create an uninitialized navigation phase */
-        public Navigate() {
-            this.routes = null;
-            this.endLocation = null;
-            this.driverSightDistance = Double.NaN;
-        }
     }
 }
