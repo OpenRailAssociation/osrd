@@ -11,12 +11,12 @@ public class ActivateRoute {
     /** This function try to reserve forwarding routes */
     public static void reserveRoutes(
             Simulation sim,
-            TrainPath path
+            TrainState trainState
     ) throws SimulationError {
         // TODO have a smarter way to reserve routes
-        if (path.routeIndex + 1 >= path.routePath.size())
+        if (trainState.routeIndex + 1 >= trainState.path.routePath.size())
             return;
-        var nextRoute = path.routePath.get(path.routeIndex + 1);
+        var nextRoute = trainState.path.routePath.get(trainState.routeIndex + 1);
         var nextRouteState = sim.infraState.getRouteState(nextRoute.index);
         // Try to reserve the route if possible
         if (nextRouteState.status == RouteStatus.FREE)

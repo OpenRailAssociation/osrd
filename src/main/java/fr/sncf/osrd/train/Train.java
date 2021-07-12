@@ -101,7 +101,7 @@ public class Train {
     /** Reserve routes when the train is in navigate phase */
     public void onEventOccurred(Simulation sim) throws SimulationError {
         // TODO find a smarter way to do it and remove this method
-        ActivateRoute.reserveRoutes(sim, lastState.path);
+        ActivateRoute.reserveRoutes(sim, lastState);
     }
 
     // endregion
@@ -109,7 +109,7 @@ public class Train {
     // region INTERACTIONS
     /** Make the train interact with a detector */
     public void interact(Simulation sim, Detector detector, InteractionType interactionType) throws SimulationError {
-        lastState.path.updateTVDSections(sim, detector, interactionType);
+        lastState.updateTVDSections(sim, detector, interactionType);
     }
 
     /** Make the train interact with a signal */

@@ -20,9 +20,6 @@ public class TrainPath {
     /** Full train path as a list of routes */
     public final List<Route> routePath;
 
-    /** Index of the route the train is currently on in routePath */
-    public int routeIndex = 0;
-
     /** Full train path as a list of trackSectionRange */
     public final ArrayList<TrackSectionRange> trackSectionPath;
 
@@ -53,7 +50,6 @@ public class TrainPath {
         this.tvdSectionPaths = new ArrayList<>(other.tvdSectionPaths);
         this.tvdSectionDirections = new ArrayList<>(other.tvdSectionDirections);
         this.trackSectionPath = new ArrayList<>(other.trackSectionPath);
-        this.routeIndex = other.routeIndex;
         this.length = other.length;
     }
 
@@ -81,7 +77,7 @@ public class TrainPath {
     }
 
     /** Finds the tvd section before the given waypoint */
-    private TVDSection findBackwardTVDSection(Waypoint waypoint) {
+    public TVDSection findBackwardTVDSection(Waypoint waypoint) {
         // TODO: Find a faster and smarter way to do it
         for (var j = 0; j < tvdSectionPaths.size(); j++) {
             var tvdSectionPath = tvdSectionPaths.get(j);
@@ -92,37 +88,6 @@ public class TrainPath {
 
         // There is no previous tvd section on this train path
         return null;
-    }
-
-    /** Occupy and free tvd sections given a detector the train is interacting with. */
-    public void updateTVDSections(
-            Simulation sim,
-            Detector detector,
-            InteractionType interactionType
-    ) throws SimulationError {
-        // Update route index
-        var currentRoute = routePath.get(routeIndex);
-        var tvdSectionPathIndex = currentRoute.tvdSectionsPaths.size() - 1;
-        var lastTvdSectionPath = currentRoute.tvdSectionsPaths.get(tvdSectionPathIndex);
-        var lastTvdSectionPathDir = currentRoute.tvdSectionsPathDirections.get(tvdSectionPathIndex);
-        if (lastTvdSectionPath.getEndNode(lastTvdSectionPathDir) == detector.index)
-            routeIndex++;
-
-        // Occupy the next tvdSection
-        if (interactionType == InteractionType.HEAD) {
-            var forwardTVDSectionPath = findForwardTVDSection(detector);
-            if (forwardTVDSectionPath == null)
-                return;
-            var nextTVDSection = sim.infraState.getTvdSectionState(forwardTVDSectionPath.index);
-            nextTVDSection.occupy(sim);
-            return;
-        }
-        // Doesn't occupy the last tvdSection
-        var backwardTVDSectionPath = findBackwardTVDSection(detector);
-        if (backwardTVDSectionPath == null)
-            return;
-        var backwardTVDSection = sim.infraState.getTvdSectionState(backwardTVDSectionPath.index);
-        backwardTVDSection.unoccupy(sim);
     }
 
     /** Converts a TrackSectionLocation into a position on the track (double) */

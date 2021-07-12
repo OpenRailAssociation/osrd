@@ -1,6 +1,7 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -38,6 +39,9 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     public final ArrayDeque<Interaction> actionPointsUnderTrain;
 
     public TrainPath path;
+
+    /** Index of the route the train is currently on in routePath */
+    public int routeIndex = 0;
 
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
@@ -224,5 +228,36 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             throw new RuntimeException("Expected SignalNavigatePhase state");
         var navigatePhase = (SignalNavigatePhase.State) currentPhaseState;
         navigatePhase.setAspectConstraints(signalState, this);
+    }
+
+    /** Occupy and free tvd sections given a detector the train is interacting with. */
+    public void updateTVDSections(
+            Simulation sim,
+            Detector detector,
+            InteractionType interactionType
+    ) throws SimulationError {
+        // Update route index
+        var currentRoute = path.routePath.get(routeIndex);
+        var tvdSectionPathIndex = currentRoute.tvdSectionsPaths.size() - 1;
+        var lastTvdSectionPath = currentRoute.tvdSectionsPaths.get(tvdSectionPathIndex);
+        var lastTvdSectionPathDir = currentRoute.tvdSectionsPathDirections.get(tvdSectionPathIndex);
+        if (lastTvdSectionPath.getEndNode(lastTvdSectionPathDir) == detector.index)
+            routeIndex++;
+
+        // Occupy the next tvdSection
+        if (interactionType == InteractionType.HEAD) {
+            var forwardTVDSectionPath = path.findForwardTVDSection(detector);
+            if (forwardTVDSectionPath == null)
+                return;
+            var nextTVDSection = sim.infraState.getTvdSectionState(forwardTVDSectionPath.index);
+            nextTVDSection.occupy(sim);
+            return;
+        }
+        // Doesn't occupy the last tvdSection
+        var backwardTVDSectionPath = path.findBackwardTVDSection(detector);
+        if (backwardTVDSectionPath == null)
+            return;
+        var backwardTVDSection = sim.infraState.getTvdSectionState(backwardTVDSectionPath.index);
+        backwardTVDSection.unoccupy(sim);
     }
 }
