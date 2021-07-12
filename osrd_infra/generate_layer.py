@@ -10,6 +10,7 @@ from osrd_infra.models import (
     Infra,
     fetch_entities,
     TrackSectionEntity,
+    SignalEntity,
     Entity,
     GeoLineLocationComponent,
     GeoPointLocationComponent,
@@ -33,6 +34,7 @@ def push_layer(layer_slug: str, version: int, payload: List[Dict]):
 
 def generate_layers(infra: Infra):
     generate_layer(infra, TrackSectionEntity)
+    generate_layer(infra, SignalEntity)
 
 
 def get_geo_attribute_name(entity_type: Type[Entity]):
