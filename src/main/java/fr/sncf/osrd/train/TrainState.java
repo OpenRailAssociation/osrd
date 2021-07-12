@@ -177,6 +177,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         logger.trace("speed changed from {} to {}", speed, update.speed);
         locationChange.positionUpdates.addSpeedUpdate(newLocation, time, update.speed);
         speed = update.speed;
+        accel = update.accel;
     }
 
     /**  Create a location change from the current state to the given position.

@@ -18,8 +18,8 @@ public class TrainPhysicsIntegrator {
     private final double precomputedRollingResistance;
     private final double inertia;
 
-    //TODO : add a real jerk value, in the configuration files 
-    private final double jerk = 0.1;
+    // TODO : add a real jerk value, in the configuration files
+    private final double jerk = .6;
 
 
     private TrainPhysicsIntegrator(
@@ -147,11 +147,13 @@ public class TrainPhysicsIntegrator {
         public final double timeDelta;
         public final double positionDelta;
         public final double speed;
+        public final double accel;
 
-        PositionUpdate(double timeDelta, double positionDelta, double speed) {
+        PositionUpdate(double timeDelta, double positionDelta, double speed, double accel) {
             this.timeDelta = timeDelta;
             this.positionDelta = positionDelta;
             this.speed = speed;
+            this.accel = accel;
         }
     }
 
@@ -213,7 +215,7 @@ public class TrainPhysicsIntegrator {
             // if the train is stopped and the rolling resistance is greater in amplitude than the other forces,
             // the train won't move
             if (Math.abs(totalOtherForce) < rollingResistance)
-                return new PositionUpdate(timeStep, 0.0, 0.0);
+                return new PositionUpdate(timeStep, 0.0, 0.0, 0.0);
             // if the sum of other forces isn't sufficient to keep the train still, the rolling resistance
             // will be opposed to the movement direction (which is the direction of the other forces)
             effectiveRollingResistance = Math.copySign(rollingResistance, -totalOtherForce);
@@ -225,18 +227,18 @@ public class TrainPhysicsIntegrator {
         // general case: compute the acceleration and new position
         // compute the acceleration on all the integration step. the variable is named this way because be
         // compute the acceleration on only a part of the integration step below
-        var fullStepAcceleration = computeAcceleration(directionSign * effectiveRollingResistance,
-                actionTractionForce);
+        var fullStepAcceleration = computeAcceleration(directionSign * effectiveRollingResistance, actionTractionForce);
 
         // the variation of the acceleration can't realistically be infinite, we have to limit it, with the jerk
-        if (Math.abs(fullStepAcceleration - this.currentAccel)> jerk){
+        if (Math.abs(fullStepAcceleration - this.currentAccel)/ timeStep> jerk){
             if (fullStepAcceleration > currentAccel)
-                fullStepAcceleration = currentAccel + jerk;
+                fullStepAcceleration = currentAccel + jerk * timeStep;
             else 
-                fullStepAcceleration = currentAccel - jerk;
+                fullStepAcceleration = currentAccel - jerk * timeStep;
         }
-        
+
         var newSpeed = currentSpeed + fullStepAcceleration * timeStep;
+        var newAccel = fullStepAcceleration;
 
         // when the train changes direction, the rolling resistance doesn't apply
         // in the same direction for all the integration step.
@@ -253,11 +255,12 @@ public class TrainPhysicsIntegrator {
         var newPositionDelta = computePositionDelta(currentSpeed, fullStepAcceleration, timeDelta);
 
         if (newPositionDelta <= maxDistance)
-            return new PositionUpdate(timeDelta, newPositionDelta, newSpeed);
+            return new PositionUpdate(timeDelta, newPositionDelta, newSpeed, newAccel);
 
         timeDelta = computeTimeDelta(currentSpeed, fullStepAcceleration, maxDistance);
         assert timeDelta < timeStep && timeDelta > 0;
         newSpeed = currentSpeed + fullStepAcceleration * timeDelta;
-        return  new PositionUpdate(timeDelta, maxDistance, newSpeed);
+        newAccel = fullStepAcceleration;
+        return new PositionUpdate(timeDelta, maxDistance, newSpeed, newAccel);
     }
 }
