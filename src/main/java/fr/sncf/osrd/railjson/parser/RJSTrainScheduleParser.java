@@ -21,7 +21,6 @@ import fr.sncf.osrd.train.decisions.KeyboardInput;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
-import fr.sncf.osrd.train.phases.StopPhase;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
@@ -194,10 +193,6 @@ public class RJSTrainScheduleParser {
             List<TrainStop> stops
     ) throws InvalidSchedule {
 
-        if (rjsPhase.getClass() == RJSTrainPhase.Stop.class) {
-            var rjsStop = (RJSTrainPhase.Stop) rjsPhase;
-            return new StopPhase(rjsStop.duration);
-        }
         if (rjsPhase.getClass() == RJSTrainPhase.Navigate.class) {
             var rjsNavigate = (RJSTrainPhase.Navigate) rjsPhase;
             var driverSightDistance = rjsNavigate.driverSightDistance;
@@ -221,7 +216,7 @@ public class RJSTrainScheduleParser {
                 for (var rjsRoute : navigate.routes) {
                     var route = infra.routeGraph.routeMap.get(rjsRoute.id);
                     if (route == null)
-                        throw new UnknownRoute("unknown route in navigate phase", rjsRoute.id);
+                        throw new UnknownRoute("unknown route in train path", rjsRoute.id);
                     if (routes.isEmpty() || routes.get(routes.size() - 1) != route)
                         routes.add(route);
                 }

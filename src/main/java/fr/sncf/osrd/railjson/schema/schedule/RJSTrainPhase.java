@@ -17,7 +17,6 @@ public abstract class RJSTrainPhase {
     public static final PolymorphicJsonAdapterFactory<RJSTrainPhase> adapter = (
             PolymorphicJsonAdapterFactory.of(RJSTrainPhase.class, "type")
                     .withSubtype(RJSTrainPhase.Navigate.class, "navigate")
-                    .withSubtype(RJSTrainPhase.Stop.class, "stop")
     );
 
     /** The location of the head of the train when it exits this phase */
@@ -45,15 +44,6 @@ public abstract class RJSTrainPhase {
             this.routes = null;
             this.endLocation = null;
             this.driverSightDistance = Double.NaN;
-        }
-    }
-
-    public static final class Stop extends RJSTrainPhase {
-        /** The duration of the stop */
-        public double duration;
-
-        public Stop(double duration) {
-            this.duration = duration;
         }
     }
 }
