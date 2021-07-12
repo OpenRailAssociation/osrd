@@ -39,12 +39,14 @@ export function selectZone(
       type: SELECT_ZONE,
       zone,
     });
+    console.log(infra, layers, zone);
     // load the data
     if (zone) {
       dispatch(setLoading());
       try {
         const data = await getEditorLayers(infra, layers, zone);
         dispatch(setSuccess());
+        console.log(data);
         dispatch(setEditorData(data));
         dispatch(loadDataModel());
       } catch (e) {
@@ -77,7 +79,7 @@ export function setEditorData(geojsons: Array<GeoJSON>): ThunkAction<ActionSelec
 const SET_INFRASTRUCTURE = 'editor/SET_INFRASTRUCTURE';
 type ActionSetInfra = {
   type: typeof SET_INFRASTRUCTURE;
-  data: number;
+  data: ApiInfrastructure;
 };
 export function setInfrastructure(infra: ApiInfrastructure): ThunkAction<ActionSetInfra> {
   return (dispatch) => {
@@ -103,7 +105,6 @@ type ActionLoadDataModel = {
 export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
   return async (dispatch, getState) => {
     // check if we need to load the model
-    console.log(getState().editor);
     if (
       !getState().editor.editorEntitiesDefinintion ||
       !getState().editor.editorComponentsDefinintion
@@ -255,7 +256,7 @@ export const initialState: EditorState = {
   // ID of the infrastructure on which we are working
   editorInfrastructure: null,
   // ID of selected layers on which we are working
-  editorLayers: ['map_midi_circuitdevoie'],
+  editorLayers: ['osrd_track_section', 'osrd_signal'],
   // Edition zone:
   editorZone: null,
   // Data of the edition zone

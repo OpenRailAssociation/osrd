@@ -35,16 +35,10 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const { infra, urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
   const { mapStyle, viewport } = useSelector((state: { map: any }) => state.map);
   const setViewport = useCallback(
-    (value) =>
-      dispatch(
-        updateViewport(
-          value,
-          editorState.editorInfrastructure
-            ? `/editor/${editorState.editorInfrastructure.id}`
-            : '/editor/-1',
-        ),
-      ),
-    [dispatch, updateViewport, editorState.editorInfrastructure?.id],
+    (value) => {
+      dispatch(updateViewport(value, `/editor/${infra ? infra : '-1'}`));
+    },
+    [dispatch, updateViewport, infra],
   );
 
   // Initial viewport:
