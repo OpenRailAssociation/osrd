@@ -374,25 +374,6 @@ public class Helpers {
         return res;
     }
 
-    /** Adds an element to an array of route
-     * This function is used to hide away the generic array creation */
-    @SuppressWarnings("unchecked")
-    public static ID<RJSRoute>[] addToArray(ID<RJSRoute>[] array, ID<RJSRoute> val) {
-        var res = (ID<RJSRoute>[]) java.lang.reflect.Array.newInstance(ID.class, array.length + 1);
-        System.arraycopy(array, 0, res, 0, array.length);
-        res[res.length - 1] = val;
-        return res;
-    }
-
-    /** Removes the first element from an array of route
-     * This function is used to hide away the generic array creation */
-    @SuppressWarnings("unchecked")
-    public static ID<RJSRoute>[] removeFirstFromArray(ID<RJSRoute>[] array) {
-        var res = (ID<RJSRoute>[]) java.lang.reflect.Array.newInstance(ID.class, array.length - 1);
-        if (array.length - 1 >= 0) System.arraycopy(array, 1, res, 0, array.length - 1);
-        return res;
-    }
-
     /** Get a list of 2 phases on the base infra, with the transition happening roughly half-way */
     public static RJSTrainPhase[] loadPhasesLongerFirstPhase() {
         var phases = loadRJSPhases("tiny_infra/simulation_several_phases.json");
