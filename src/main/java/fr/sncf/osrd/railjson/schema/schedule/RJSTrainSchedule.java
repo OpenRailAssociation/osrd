@@ -29,8 +29,19 @@ public class RJSTrainSchedule implements Identified {
 
     public RJSTrainPhase[] phases;
 
+    public ID<RJSRoute>[] routes;
+
     @Json(name = "train_control_method")
     public String trainControlMethod;
+
+    /** What allowance to apply on the train schedule.
+     * The double array should be seen as a list of set, each element
+     * in one set is applied independently, then each set is applied one after
+     * the other with the result of the previous one used as base speed. */
+    public RJSAllowance[][] allowances;
+
+    /** List of stops */
+    public RJSTrainStop[] stops;
 
     /** Create a new train schedule */
     public RJSTrainSchedule(
@@ -41,7 +52,10 @@ public class RJSTrainSchedule implements Identified {
             ID<RJSRoute> initialRoute,
             double initialSpeed,
             RJSTrainPhase[] phases,
-            String trainControlMethod
+            String trainControlMethod,
+            RJSAllowance[][] allowances,
+            RJSTrainStop[] stops,
+            ID<RJSRoute>[] routes
     ) {
         this.id = id;
         this.rollingStock = rollingStock;
@@ -51,6 +65,9 @@ public class RJSTrainSchedule implements Identified {
         this.initialSpeed = initialSpeed;
         this.phases = phases;
         this.trainControlMethod = trainControlMethod;
+        this.allowances = allowances;
+        this.stops = stops;
+        this.routes = routes;
     }
 
     @Override

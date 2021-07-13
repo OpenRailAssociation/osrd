@@ -1,12 +1,13 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
-import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.MapSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.utils.SortedDoubleMap;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,31 +15,27 @@ import java.util.Set;
 
 public class LinearAllowanceGenerator extends SpeedControllerGenerator {
 
-    private final MarginType allowanceType;
-    private final double value;
+    public final MarginType allowanceType;
+    public final double value;
 
     /** Constructor */
-    public LinearAllowanceGenerator(double allowanceValue, MarginType allowanceType, RJSTrainPhase phase) {
-        super(phase);
+    public LinearAllowanceGenerator(double begin, double end,
+                                    double allowanceValue, MarginType allowanceType) {
+        super(begin, end);
         this.allowanceType = allowanceType;
         this.value = allowanceValue;
     }
 
     @Override
     public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule,
-                                         Set<SpeedController> maxSpeed, double initialSpeed) {
+                                         Set<SpeedController> maxSpeed) {
         double timeStep = 1;
-        double begin = findPhaseInitialLocation(schedule);
-        double end = findPhaseEndLocation(schedule);
         // find the percentage of the allowance to add to the whole path
         double percentage;
-        double startLocation = findPhaseInitialLocation(schedule);
-        double endLocation = findPhaseEndLocation(schedule);
         if (allowanceType.equals(MarginType.TIME))
             percentage = value;
         else {
-            var expectedTime = getExpectedTimes(sim, schedule, maxSpeed, 1,
-                    startLocation, endLocation, initialSpeed);
+            var expectedTime = getExpectedTimes(sim, schedule, maxSpeed, 1);
             var totalTime = expectedTime.lastEntry().getValue() - expectedTime.firstEntry().getValue();
             var schemaLength = expectedTime.lastEntry().getKey() - expectedTime.firstEntry().getKey();
             var n = schemaLength / 100000;
@@ -50,8 +47,7 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
         // This is needed to have a similar distance delta per step, needed for the shift (see next comment)
         double expectedSpeedTimeStep = timeStep * scaleFactor;
 
-        var expectedSpeeds = getExpectedSpeeds(sim, schedule, maxSpeed, expectedSpeedTimeStep,
-                begin, end, initialSpeed);
+        var expectedSpeeds = getExpectedSpeeds(sim, schedule, maxSpeed, expectedSpeedTimeStep);
 
         // We shift the speed limits by one position: the max speed at t is the speed at t + dt
         // This is because we use the position of the train to evaluate the target speed at the next simulation step
@@ -62,7 +58,8 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
             speedLimits.put(keys.get(i - 1), expectedSpeeds.get(keys.get(i)));
         speedLimits.put(expectedSpeeds.lastKey(), expectedSpeeds.lastEntry().getValue());
 
-        return addSpeedController(maxSpeed, new MapSpeedController(speedLimits).scaled(scaleFactor));
+        var speedController = new MapSpeedController(speedLimits, sectionBegin, sectionEnd);
+        return addSpeedController(maxSpeed, speedController.scaled(scaleFactor));
     }
 
     static Set<SpeedController> addSpeedController(Set<SpeedController> speedControllers,

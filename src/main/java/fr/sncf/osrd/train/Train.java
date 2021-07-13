@@ -1,14 +1,12 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.TrainSchedule;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
-import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.CryoList;
 import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.DeepEqualsUtils;
@@ -16,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Set;
 
 public class Train {
@@ -40,6 +37,7 @@ public class Train {
             Simulation sim,
             TrainSchedule schedule
     ) throws SimulationError {
+        schedule.speedInstructions.generate(sim, schedule);
         var phaseState = schedule.phases.get(0).getState(sim, schedule);
         var location = getInitialLocation(schedule, sim);
         var initialState = new TrainState(
@@ -50,7 +48,8 @@ public class Train {
                 schedule,
                 0,
                 phaseState,
-                new ArrayDeque<>()
+                new ArrayDeque<>(),
+                new TrainPath(schedule.plannedPath)
         );
 
         ActivateRoute.trainCreation(sim, initialState);
@@ -73,9 +72,7 @@ public class Train {
                 initialLocation.offset,
                 initialLocation.offset // This starts as a 0 length range, the train grow in size as it appears
         ));
-        var trackSectionPath = new ArrayList<TrackSectionRange>();
-        for (var phase : schedule.phases)
-            phase.forEachPathSection(trackSectionPath::add);
+        var trackSectionPath = schedule.plannedPath.trackSectionPath;
         return new TrainPositionTracker(sim.infra, sim.infraState, initialPosition, trackSectionPath);
     }
 
@@ -104,10 +101,7 @@ public class Train {
     /** Reserve routes when the train is in navigate phase */
     public void onEventOccurred(Simulation sim) throws SimulationError {
         // TODO find a smarter way to do it and remove this method
-        if (lastState.currentPhaseState.getClass() == SignalNavigatePhase.State.class) {
-            var navigateState = (SignalNavigatePhase.State) lastState.currentPhaseState;
-            ActivateRoute.reserveRoutes(sim, navigateState);
-        }
+        ActivateRoute.reserveRoutes(sim, lastState);
     }
 
     // endregion
@@ -115,12 +109,7 @@ public class Train {
     // region INTERACTIONS
     /** Make the train interact with a detector */
     public void interact(Simulation sim, Detector detector, InteractionType interactionType) throws SimulationError {
-        if (lastState.currentPhaseState.getClass() == SignalNavigatePhase.State.class) {
-            var navigatePhaseState = (SignalNavigatePhase.State) lastState.currentPhaseState;
-            navigatePhaseState.updateTVDSections(sim, detector, interactionType);
-            return;
-        }
-        throw new RuntimeException("Unexpected phase while interacting with a detector");
+        lastState.updateTVDSections(sim, detector, interactionType);
     }
 
     /** Make the train interact with a signal */

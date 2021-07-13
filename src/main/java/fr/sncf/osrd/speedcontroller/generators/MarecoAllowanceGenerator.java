@@ -1,20 +1,17 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarecoAllowance.MarginType;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.CoastingSpeedController;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.train.Action;
-import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.TrainPhysicsIntegrator;
-import fr.sncf.osrd.train.TrainPositionTracker;
+import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.utils.SortedDoubleMap;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -25,13 +22,14 @@ import java.util.Set;
 public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
     // TODO use this parameter
-    @SuppressFBWarnings({"URF_UNREAD_FIELD"})
-    private final RJSAllowance.MarecoAllowance.MarginType allowanceType;
-    private final double value;
+    @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
+    public final RJSAllowance.MarecoAllowance.MarginType allowanceType;
+    public final double value;
 
     /** Constructor */
-    public MarecoAllowanceGenerator(double allowanceValue, MarginType allowanceType, RJSTrainPhase phase) {
-        super(phase, 5);
+    public MarecoAllowanceGenerator(double begin, double end,
+                                    double allowanceValue, MarginType allowanceType) {
+        super(begin, end, 5);
         this.allowanceType = allowanceType;
         this.value = allowanceValue;
     }
@@ -49,9 +47,8 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     @Override
     protected double getFirstHighEstimate() {
         double max = 0;
-        double position = findPhaseInitialLocation(schedule);
-        double endLocation = findPhaseEndLocation(schedule);
-        while (position < endLocation) {
+        double position = sectionBegin;
+        while (position < sectionEnd) {
             double val = SpeedController.getDirective(maxSpeedControllers, position).allowedSpeed;
             if (val > max)
                 max = val;

@@ -12,6 +12,11 @@ public class MapSpeedController extends SpeedController {
         this.values = values;
     }
 
+    public MapSpeedController(SortedDoubleMap values, double begin, double end) {
+        super(begin, end);
+        this.values = values;
+    }
+
     @Override
     public SpeedDirective getDirective(double pathPosition) {
         return new SpeedDirective(values.interpolate(pathPosition));
@@ -21,7 +26,7 @@ public class MapSpeedController extends SpeedController {
     public SpeedController scaled(double scalingFactor) {
         var newValues = new SortedDoubleMap(values);
         newValues.replaceAll((k, v) -> v * scalingFactor);
-        return new MapSpeedController(newValues);
+        return new MapSpeedController(newValues, beginPosition, endPosition);
     }
 
     @Override

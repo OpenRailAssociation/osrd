@@ -140,6 +140,14 @@ public final class TrackSectionRange implements DeepComparable<TrackSectionRange
         return endPosition;
     }
 
+    public TrackSectionLocation getBeginLocation() {
+        return new TrackSectionLocation(edge, beginPosition);
+    }
+
+    public TrackSectionLocation getEndLocation() {
+        return new TrackSectionLocation(edge, endPosition);
+    }
+
     /** Expand the range of the track section by following its direction */
     public void expandForward(double delta) {
         if (direction == EdgeDirection.START_TO_STOP) {

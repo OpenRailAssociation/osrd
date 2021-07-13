@@ -1,61 +1,43 @@
 package fr.sncf.osrd.train.phases;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.TrainSchedule;
-import fr.sncf.osrd.infra.TVDSection;
-import fr.sncf.osrd.infra.routegraph.Route;
-import fr.sncf.osrd.infra.signaling.ActionPoint;
+import fr.sncf.osrd.infra.StopActionPoint;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.infra.signaling.AspectConstraint;
 import fr.sncf.osrd.infra.signaling.Signal;
-import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra_state.SignalState;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
-import fr.sncf.osrd.simulation.Change;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public final class SignalNavigatePhase implements Phase {
-    public final List<Route> routePath;
+    public final TrainPath expectedPath;
+    public TrackSectionLocation startLocation;
     public final TrackSectionLocation endLocation;
-    private final ArrayList<TrackSectionRange> trackSectionPath;
     private final ArrayList<Interaction> interactionsPath;
     private final Interaction lastInteractionOnPhase;
-    private final double driverSightDistance;
-    public transient List<SpeedControllerGenerator> targetSpeedGenerators;
-    private transient List<Phase> allPhases;
-
-    /** Offset between the beginning of the global train path and the beginning of this phase */
-    public double offset;
 
     private SignalNavigatePhase(
-            List<Route> routePath,
+            TrackSectionLocation startLocation,
             TrackSectionLocation endLocation,
-            ArrayList<TrackSectionRange> trackSectionPath,
             ArrayList<Interaction> interactionsPath,
-            double driverSightDistance,
-            List<SpeedControllerGenerator> targetSpeedGenerators) {
-        this.routePath = routePath;
+            TrainPath expectedPath) {
+        this.startLocation = startLocation;
         this.endLocation = endLocation;
-        this.trackSectionPath = trackSectionPath;
         this.interactionsPath = interactionsPath;
-        this.driverSightDistance = driverSightDistance;
-        this.targetSpeedGenerators = targetSpeedGenerators;
+        this.expectedPath = expectedPath;
         lastInteractionOnPhase = interactionsPath.get(interactionsPath.size() - 1);
     }
 
@@ -63,45 +45,56 @@ public final class SignalNavigatePhase implements Phase {
 
     /** Create a new navigation phase from an already determined path */
     public static SignalNavigatePhase from(
-            List<Route> routes,
             double driverSightDistance,
             TrackSectionLocation startLocation,
             TrackSectionLocation endLocation,
-            List<SpeedControllerGenerator> targetSpeedGenerators
-    ) throws InvalidSchedule {
-        verifyRoutes(routes);
-        var trackSectionPath = Route.routesToTrackSectionRange(routes,
-                startLocation, endLocation);
-        var actionPointPath = trackSectionToActionPointPath(driverSightDistance, trackSectionPath);
-        return new SignalNavigatePhase(routes, endLocation, trackSectionPath, actionPointPath,
-                driverSightDistance, targetSpeedGenerators);
+            TrainPath expectedPath,
+            List<TrainStop> stops
+    ) {
+        if (stops == null)
+            stops = new ArrayList<>();
+
+        var actionPointPath = trackSectionToActionPointPath(driverSightDistance,
+                expectedPath,
+                startLocation,
+                endLocation,
+                expectedPath.trackSectionPath);
+        addStopInteractions(actionPointPath, stops);
+        return new SignalNavigatePhase(startLocation, endLocation, actionPointPath, expectedPath);
     }
 
-    /** Asserts that there are no duplicate routes
-     * Eventually we can add more checks to ensure the integrity of the path */
-    private static void verifyRoutes(List<Route> routes) throws InvalidSchedule {
-        for (int i = 1; i < routes.size(); i++) {
-            if (routes.get(i).id.equals(routes.get(i - 1).id))
-                throw new InvalidSchedule("Phase path contains duplicate routes: " + routes.get(i).id);
+    private static void addStopInteractions(ArrayList<Interaction> interactions, List<TrainStop> stops) {
+        for (int i = 0; i < stops.size(); i++) {
+            var stop = stops.get(i);
+            interactions.add(new Interaction(InteractionType.HEAD, stop.position, new StopActionPoint(i)));
         }
+        interactions.sort(Comparator.comparingDouble(x -> x.position));
     }
 
     private static ArrayList<Interaction> trackSectionToActionPointPath(
             double driverSightDistance,
+            TrainPath path,
+            TrackSectionLocation startLocation,
+            TrackSectionLocation endLocation,
             Iterable<TrackSectionRange> trackSectionRanges
     ) {
+        var startPosition = path.convertTrackLocation(startLocation);
+        var endPosition = path.convertTrackLocation(endLocation);
         var eventPath = new ArrayList<Interaction>();
         double pathLength = 0;
         for (var trackRange : trackSectionRanges) {
-            registerRange(eventPath, trackRange, pathLength, driverSightDistance);
+            if (pathLength + trackRange.length() >= startPosition)
+                registerRange(eventPath, trackRange, pathLength, driverSightDistance);
             pathLength += trackRange.length();
+            if (pathLength > endPosition + driverSightDistance)
+                break;
         }
 
-        Collections.sort(eventPath);
+        eventPath = eventPath.stream()
+                .filter(interaction -> interaction.position >= startPosition && interaction.position <= endPosition)
+                .sorted()
+                .collect(Collectors.toCollection(ArrayList::new));
 
-        var phaseEnd = new PhaseEndActionPoint();
-        // We place the end of phase a few meters before the actual end, because we will stop before reaching it
-        eventPath.add(new Interaction(InteractionType.HEAD, pathLength - 1, phaseEnd));
         return eventPath;
     }
 
@@ -129,83 +122,6 @@ public final class SignalNavigatePhase implements Phase {
     }
 
     @Override
-    public void resolvePhases(List<Phase> phases) {
-        allPhases = phases;
-        boolean seenSelf = false;
-        AtomicReference<Double> currentPosition = new AtomicReference<>(0.);
-        for (var phase : phases) {
-            if (seenSelf) {
-                // adds the routes in the next phases to the current route, to trigger reserves at the right time
-                if (phase instanceof SignalNavigatePhase)
-                    routePath.addAll(((SignalNavigatePhase) phase).routePath);
-            }
-            boolean finalSeenSelf = seenSelf;
-            if (phase == this) {
-                seenSelf = true;
-                offset = currentPosition.get();
-                for (var ip : interactionsPath)
-                    ip.position += offset;
-            }
-            phase.forEachPathSection(pathSection -> {
-                if (finalSeenSelf)
-                    registerRange(interactionsPath, pathSection, currentPosition.get(), driverSightDistance);
-                currentPosition.updateAndGet(v -> v + pathSection.length());
-            });
-        }
-
-        // Removes duplicate routes
-        for (int i = 1; i < routePath.size(); i++) {
-            if (routePath.get(i).id.equals(routePath.get(i - 1).id)) {
-                routePath.remove(i);
-                i--;
-            }
-        }
-        interactionsPath.sort(Comparator.comparingDouble(i -> i.position));
-    }
-
-    /** Finds the tvd section after the given waypoint */
-    public TVDSection findForwardTVDSection(Waypoint waypoint) {
-        // TODO: Find a faster and smarter way to do it
-        for (var route : routePath) {
-            for (var j = 0; j < route.tvdSectionsPaths.size(); j++) {
-                var tvdSectionPath = route.tvdSectionsPaths.get(j);
-                var tvdSectionPathDirection = route.tvdSectionsPathDirections.get(j);
-                if (tvdSectionPath.getStartNode(tvdSectionPathDirection) == waypoint.index)
-                    return tvdSectionPath.tvdSection;
-            }
-        }
-        // No tvd section could be found forward this waypoint
-        return null;
-    }
-
-    /** Finds the tvd section before the given waypoint */
-    private TVDSection findBackwardTVDSection(Waypoint waypoint) {
-        // TODO: Find a faster and smarter way to do it
-        for (var route : routePath) {
-            for (var j = 0; j < route.tvdSectionsPaths.size(); j++) {
-                var tvdSectionPath = route.tvdSectionsPaths.get(j);
-                var tvdSectionPathDirection = route.tvdSectionsPathDirections.get(j);
-                if (tvdSectionPath.getEndNode(tvdSectionPathDirection) == waypoint.index)
-                    return tvdSectionPath.tvdSection;
-            }
-        }
-        // No tvd section could be found behind this waypoint
-        // Try to look in the previous phases
-        int indexSelf = allPhases.indexOf(this);
-        for (int i = indexSelf - 1; i >= 0; i--) {
-            var prevPhase = allPhases.get(indexSelf - 1);
-            if (prevPhase.getClass() == SignalNavigatePhase.class) {
-                var res = ((SignalNavigatePhase) prevPhase).findBackwardTVDSection(waypoint);
-                if (res != null)
-                    return res;
-            }
-        }
-
-        // There is no previous tvd section on this train path
-        return null;
-    }
-
-    @Override
     public PhaseState getState(Simulation sim, TrainSchedule schedule) {
         return new State(this, sim, schedule);
     }
@@ -215,59 +131,8 @@ public final class SignalNavigatePhase implements Phase {
         return endLocation;
     }
 
-    @Override
-    public void forEachPathSection(Consumer<TrackSectionRange> consumer) {
-        trackSectionPath.forEach(consumer);
-    }
-
-    /** This class represent the location of the phase end. It's as last event in the event path */
-    public static final class PhaseEndActionPoint implements ActionPoint {
-
-        @Override
-        public InteractionTypeSet getInteractionsType() {
-            return new InteractionTypeSet();
-        }
-
-        @Override
-        public double getActionDistance() {
-            return 0;
-        }
-
-        @Override
-        public void interact(Simulation sim, Train train, InteractionType actionType) {
-            var change = new EndOfPhase(sim, train, train.getLastState().currentPhaseIndex);
-            sim.publishChange(change);
-        }
-
-        @Override
-        public String toString() {
-            return "PhaseEndActionPoint { }";
-        }
-
-        public static class EndOfPhase extends Change {
-            public final Train train;
-            public final int phaseIndex;
-
-            /** Create a change to notify that a train has reached the end of its current phase */
-            public EndOfPhase(Simulation sim, Train train, int phaseIndex) {
-                super(sim);
-                this.train = train;
-                this.phaseIndex = phaseIndex;
-            }
-
-            @Override
-            public void replay(Simulation sim) {}
-
-            @Override
-            public String toString() {
-                return String.format("EndOfPhase { train: %s, phase index: %d }", train.getName(), phaseIndex);
-            }
-        }
-    }
-
     public static final class State extends PhaseState {
         public final SignalNavigatePhase phase;
-        private int routeIndex = 0;
         private int interactionsPathIndex = 0;
         private final transient Simulation sim;
         private final transient TrainSchedule schedule;
@@ -279,7 +144,7 @@ public final class SignalNavigatePhase implements Phase {
             if (other.getClass() != State.class)
                 return false;
             var o = (State) other;
-            return o.phase == phase && o.routeIndex == routeIndex && o.interactionsPathIndex == interactionsPathIndex;
+            return o.phase == phase && o.interactionsPathIndex == interactionsPathIndex;
         }
 
         @Override
@@ -288,18 +153,14 @@ public final class SignalNavigatePhase implements Phase {
         }
 
         State(SignalNavigatePhase phase, Simulation sim, TrainSchedule schedule) {
-            super(phase.targetSpeedGenerators);
             this.sim = sim;
             this.schedule = schedule;
-            speedInstructions.generate(sim, schedule);
             this.phase = phase;
             this.signalControllers = new HashMap<>();
         }
 
         State(SignalNavigatePhase.State state) {
-            super(state.speedInstructions);
             this.phase = state.phase;
-            this.routeIndex = state.routeIndex;
             this.interactionsPathIndex = state.interactionsPathIndex;
             this.signalControllers = state.signalControllers;
             this.schedule = state.schedule;
@@ -411,41 +272,6 @@ public final class SignalNavigatePhase implements Phase {
                     interaction.actionPoint
             );
             trainState.actionPointsUnderTrain.addLast(underTrainInteraction);
-        }
-
-        /** Occupy and free tvd sections given a detector the train is interacting with. */
-        public void updateTVDSections(
-                Simulation sim,
-                Detector detector,
-                InteractionType interactionType
-        ) throws SimulationError {
-            // Update route index
-            var currentRoute = phase.routePath.get(routeIndex);
-            var tvdSectionPathIndex = currentRoute.tvdSectionsPaths.size() - 1;
-            var lastTvdSectionPath = currentRoute.tvdSectionsPaths.get(tvdSectionPathIndex);
-            var lastTvdSectionPathDir = currentRoute.tvdSectionsPathDirections.get(tvdSectionPathIndex);
-            if (lastTvdSectionPath.getEndNode(lastTvdSectionPathDir) == detector.index)
-                routeIndex++;
-
-            // Occupy the next tvdSection
-            if (interactionType == InteractionType.HEAD) {
-                var forwardTVDSectionPath = phase.findForwardTVDSection(detector);
-                if (forwardTVDSectionPath == null)
-                    return;
-                var nextTVDSection = sim.infraState.getTvdSectionState(forwardTVDSectionPath.index);
-                nextTVDSection.occupy(sim);
-                return;
-            }
-            // Doesn't occupy the last tvdSection
-            var backwardTVDSectionPath = phase.findBackwardTVDSection(detector);
-            if (backwardTVDSectionPath == null)
-                return;
-            var backwardTVDSection = sim.infraState.getTvdSectionState(backwardTVDSectionPath.index);
-            backwardTVDSection.unoccupy(sim);
-        }
-
-        public int getRouteIndex() {
-            return routeIndex;
         }
 
         private ArrayList<SpeedController> parseAspectConstraint(AspectConstraint constraint, TrainState trainState) {
