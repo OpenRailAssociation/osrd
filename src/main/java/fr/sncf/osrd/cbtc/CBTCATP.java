@@ -12,10 +12,12 @@ import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.train.Action;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
+import fr.sncf.osrd.speedcontroller.CBTCSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
+import kotlin.internal.AccessibleLateinitPropertyLiteral;
 
 import java.util.*;
 //import java.util.ArrayList;
@@ -32,17 +34,21 @@ public class CBTCATP {
 
     double time_erre = 0.4;
     double time_react = 0.4;
+    double braking_settling_time;
 
-    double margeBehindTrain = 50;
+    double jerk = 0.6;
+
+    double margeBehindTrain = 10;
 
     double dt = 0.2;
-    double marge = 100;
+    double marge = 10;
 
     public CBTCATP(Simulation sim, TrainSchedule trainSchedule, TrainState trainState) {
         this.location = trainState.location;
         this.trainSchedule = trainSchedule;
         this.trainState = trainState;
         this.sim = sim;
+        braking_settling_time = trainSchedule.rollingStock.timetableGamma / jerk;
     }
 
     private TrackSectionLocation getLocation() {
@@ -104,27 +110,50 @@ public class CBTCATP {
     // Retroune True, si l'énergie qu'il peut dissiper sur la distance est plus
     // grande que son énergie initiale
 
-    public double marginBehindNextDanger(double distance, double startposition) {
-        double speed = this.trainState.speed;
-        return distance - startposition - (dt * speed + marge);
+    public double marginBehindNextDanger(double speed, double finalSpeed, double accel, double i, double startdistance, double nextDangerDistance) {
+        //TODO : à revoir
+
+        //Distance travelled by the train at the next time
+        double distance = speed * dt + dt * dt / 2. * accel
+                + (speed * accel * dt + accel * accel * dt * dt / 2.) / this.trainSchedule.rollingStock.timetableGamma;
+        
+        //Time to settle braking
+        double gamma = this.trainSchedule.rollingStock.timetableGamma;
+        var braking_settling_time = (this.trainState.accel + gamma)/jerk;
+        distance += jerk * Math.pow(braking_settling_time, 3) / 6.; 
+
+        //Difference Distance between current StartDistance and the next one
+        var nextAccel = Math.min(accel + jerk * dt, this.trainSchedule.rollingStock.getMaxEffort(speed)); 
+        var nextSpeed = speed + nextAccel * dt;
+        distance += startingDistance(speed, finalSpeed, accel, i) - startdistance; 
+
+        //Energy acquiere 
+        distance += 1. / 2. * (Math.pow(nextSpeed,2) - Math.pow(speed,2)) / gamma;
+        
+        //No potential energy acquire
+        return distance + 10; 
     }
 
     // Dissipated energy on distance
     public double lostBrakeEnergy(double distance) {
         // Only working with constant Gamma//
-        double mass = this.trainSchedule.rollingStock.mass;
         double gamma = this.trainSchedule.rollingStock.timetableGamma;
-        double energy = gamma * mass * distance;
+        double energy = -gamma * distance;
         return energy;
     }
 
     public double cineticEnergy(double vitesse) {
-        double mass = this.trainSchedule.rollingStock.mass;
-        return 1.0 / 2.0 * mass * Math.pow(vitesse, 2);
+        return 1.0 / 2.0 * Math.pow(vitesse, 2);
+    }
+
+    public double potentialEnergy(double end) {
+        return -HeightDifference(0, end) * 9.81;
     }
 
     private double potentialEnergy(double distance, double end) {
-        return HeightDifference(distance, end) * this.trainSchedule.rollingStock.mass * 9.81;
+        var height = HeightDifference(distance, end);
+        // System.err.println(height);
+        return -height * 9.81;
     }
 
     private double HeightDifference(double begin, double end) {
@@ -144,62 +173,84 @@ public class CBTCATP {
         return height;
     }
 
-    private double startingDistance(double finalspeed, double accel, double i) {
-        var speed = this.trainState.speed;
-        double update_position = Math.pow(this.time_react, 2) * (accel + 9.81 * Math.sin(i)) / 2
+    private double startingDistance(double speed, double finalspeed, double accel, double i) {
+        double gamma = this.trainSchedule.rollingStock.timetableGamma;
+        var braking_settling_time = (accel + gamma) / jerk;
+        double update_position = Math.pow(this.time_react, 2) * (accel + 9.81 * Math.sin(i)) / 2.
                 + this.time_react * (speed);
         update_position += this.time_erre * finalspeed;
+        update_position += braking_settling_time * finalspeed - jerk * Math.pow(braking_settling_time, 2) / 2.;
         return update_position;
     }
 
-    private double accel_erre(double i) {
+    private double accel_erre(double i, double speed) {
+        //TODO : optimise the acceleration with the jerk 
         double mass = this.trainSchedule.rollingStock.mass;
-        return Math.sin(i) * 9.81 + this.trainSchedule.rollingStock.getMaxEffort(this.trainState.speed) / mass;
+        return - Math.sin(i) * 9.81 + this.trainSchedule.rollingStock.getMaxEffort(this.trainState.speed) / mass;
     }
 
-    private double final_speed(double accel) {
-        return accel * this.time_react + this.trainState.speed;
+    private double final_speed(double accel, double speed) {
+        return accel * this.time_react + speed;
+    }
+
+    public List<Double> getDistanceStart(double nextDangerDistance, double speed){
+        ArrayDeque<TrackSectionRange> listTrack = getListTrackSectionRangeUntilDistance(nextDangerDistance);
+        double grad = maxGradient(listTrack);
+        double i = Math.atan(grad / 1000);
+        double accel = accel_erre(i, speed);
+        double finalSpeed = final_speed(accel, speed);
+        double startdistance = startingDistance(speed, finalSpeed, accel, i);
+
+        double margin = marginBehindNextDanger(speed, finalSpeed, accel, i, startdistance, nextDangerDistance);
+
+        ArrayList<Double> li = new ArrayList<Double>();
+        li.add(startdistance);
+        li.add(margin);
+    
+        return li;
     }
 
     public ArrayList<SpeedController> directive() {
         double gamma = this.trainSchedule.rollingStock.timetableGamma;
+
         ArrayList<SpeedController> controllers = new ArrayList<SpeedController>();
         double nextDangerDistance = getNextDangerPointPathDistance();
-        ArrayDeque<TrackSectionRange> listTrack = getListTrackSectionRangeUntilDistance(nextDangerDistance);
 
-        double grad = maxGradient(listTrack);
-        double i = Math.atan(grad / 1000);
-        double accel = accel_erre(i);
-        double speed = final_speed(accel);
-        double distancestart = startingDistance(speed, accel, i);
+        var li =  getDistanceStart(nextDangerDistance, this.trainState.speed);
+        
+        double startdistance = li.get(0);
+        double marginBehindDanger = li.get(1);
 
-        double margindistance = marginBehindNextDanger(nextDangerDistance, distancestart);
+        double distanceSecure = nextDangerDistance - marginBehindDanger - startdistance;
 
-        double cineticEnergy = cineticEnergy(speed);
-        // double lostBrakeEnergy = lostBrakeEnergy(nextDangerDistance - distancestart);
-        // double potentialEnergy = potentialEnergy(distancestart, nextDangerDistance);
-        // System.err.println("id : " + this.trainSchedule.trainID + " nextdanger: " +
-        // nextDangerDistance
-        // + ", distancestart : " + distancestart + " i : " + i + ", potentiel : "
-        // + potentialEnergy(distancestart, margindistance));
+        double cineticEnergy = cineticEnergy(this.trainState.speed);
 
-        if (cineticEnergy - potentialEnergy(distancestart, margindistance) - lostBrakeEnergy(margindistance) < 0) {
-            // logger.debug("true");
+        System.err.println(trainSchedule.trainID + " " + trainState.location.getPathPosition() + " " + trainState.speed
+                + " " + startdistance + " " + marginBehindDanger + " "
+                + potentialEnergy(startdistance, nextDangerDistance)+" "+ (cineticEnergy + potentialEnergy(startdistance, distanceSecure) + lostBrakeEnergy(distanceSecure) < 0));
+
+        if (cineticEnergy + potentialEnergy(startdistance, distanceSecure) + lostBrakeEnergy(distanceSecure) < 0) {
+            logger.debug("true");
             return controllers;
         }
-        if (cineticEnergy + potentialEnergy(distancestart, nextDangerDistance - 10)
-                - lostBrakeEnergy(nextDangerDistance - distancestart - 10) < 0) {
-            // logger.debug("false");s
-            controllers.add(new LimitAnnounceSpeedController(0, location.getPathPosition() - 20,
-                    nextDangerDistance + location.getPathPosition() - margeBehindTrain, gamma));
-            controllers
-                    .add(new MaxSpeedController(0, nextDangerDistance - margeBehindTrain + location.getPathPosition(),
-                            nextDangerDistance + location.getPathPosition() + 40));
+
+        if (cineticEnergy + potentialEnergy(startdistance, nextDangerDistance)
+                + lostBrakeEnergy(nextDangerDistance - startdistance) < 0 ) {
+            logger.debug("false");
+            controllers.add(new CBTCSpeedController(0, location.getPathPosition() - 20,
+                    nextDangerDistance + location.getPathPosition() - margeBehindTrain + 10, gamma));
             return controllers;
+
         } else { // Enter EMERGENCY_BRAKING
-            controllers.add(new MaxSpeedController(0, 0, nextDangerDistance));
-            controllers.add(new LimitAnnounceSpeedController(0, 0, nextDangerDistance, gamma));
-            return controllers;
+            throw new RuntimeException("Enter Emergency Braking");
+            // controllers.add(new MaxSpeedController(0, 0, nextDangerDistance));
+            // controllers.add(new LimitAnnounceSpeedController(0, 0, nextDangerDistance,
+            // gamma));
+            // controllers.add(new CBTCSpeedController(0, location.getPathPosition() - 20,
+            // nextDangerDistance + location.getPathPosition() - margeBehindTrain + 10,
+            // gamma));
+            // return controllers;
+
         }
     }
 
@@ -260,7 +311,6 @@ public class CBTCATP {
                 listetrain = listetrain2;
             }
             if (!section.id.equals(track.edge.id)) {
-                // logger.debug("On ajoute la taille d'un canton");
                 longueur += section.length;
                 section = track.edge;
             }
@@ -288,16 +338,16 @@ public class CBTCATP {
     // function to determine max tilt before nextdanger
     private double maxGradient(ArrayDeque<TrackSectionRange> trackSectionRanges) {
         var val = 0.;
-        var maxVal = 0.;
+        var minVal = Double.POSITIVE_INFINITY;
         for (var track : trackSectionRanges) {
             var gradients = track.edge.forwardGradients;
             if (track.direction == EdgeDirection.STOP_TO_START)
                 gradients = track.edge.backwardGradients;
 
             for (var slope : gradients.getValuesInRange(track.getBeginPosition(), track.getEndPosition())) {
-                if (maxVal < Math.abs(slope)) {
+                if (minVal > slope) {
                     val = slope;
-                    maxVal = Math.abs(slope);
+                    minVal = slope;
                 }
             }
         }
@@ -312,14 +362,15 @@ public class CBTCATP {
             gradients = track.edge.backwardGradients;
         Set<Double> entries = gradients.keySet();
         for (var end : entries) {
-            var slope = gradients.get(end);
-            // System.err.println(slope);
-            if (end > track.getBeginPosition() && begin < track.getEndPosition()) {
+            double grad = gradients.get(begin);
+            var slope = Math.atan(grad / 1000);
+            if (end >= track.getEndPosition() && begin <= track.getBeginPosition()) {
+                // logger.debug("height : {}", slope);
                 height += Math.sin(slope)
-                        * (Math.min(end, track.getEndPosition()) - Math.max(begin, track.getBeginPosition()));
+                        * (Math.min(end, track.getBeginPosition()) - Math.max(begin, track.getEndPosition()));
             }
             begin = end;
-            if (begin > track.getEndPosition())
+            if (begin > track.getBeginPosition())
                 break;
         }
         return height;
@@ -337,10 +388,6 @@ public class CBTCATP {
                 break;
             }
         }
-        // if (nextTrackSection == null)
-        // throw new RuntimeException("Can't move train further because it has reached
-        // the end of its path");
-
         return nextTrackSection;
     }
 
@@ -353,6 +400,7 @@ public class CBTCATP {
                     Math.min(edge.length - begin, distance)));
             distance -= Math.min(edge.length - begin, distance);
             edge = nextTrackSection(edge);
+            begin = 0;
         }
         return tracks;
     }
