@@ -217,8 +217,7 @@ public class RJSTrainScheduleParser {
             var route = infra.routeGraph.routeMap.get(rjsRoute.id);
             if (route == null)
                 throw new UnknownRoute("unknown route in train path", rjsRoute.id);
-            if (routes.isEmpty() || routes.get(routes.size() - 1) != route)
-                routes.add(route);
+            routes.add(route);
         }
 
         var rjsEndLocation = phases[phases.length - 1].endLocation;
@@ -243,15 +242,13 @@ public class RJSTrainScheduleParser {
         if (stops == null)
             return res;
         for (var stop : stops) {
-            if ((stop.position == null) == (stop.location == null)) {
+            if ((stop.position == null) == (stop.location == null))
                 throw new InvalidSchedule("Train stop must specify exactly one of position or location");
-            }
             double position;
-            if (stop.position != null) {
+            if (stop.position != null)
                 position = stop.position;
-            } else {
+            else
                 position = path.convertTrackLocation(parseLocation(infra, stop.location));
-            }
             res.add(new TrainStop(position, stop.duration));
         }
         return res;

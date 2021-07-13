@@ -40,39 +40,26 @@ public class SpeedInstructions {
     /** Creates an instance from a list of generators. They are evaluated sequentially using the previous
      * one as reference. */
     public static SpeedInstructions fromList(List<SpeedControllerGenerator> targetSpeedGenerators) {
-        if (targetSpeedGenerators == null || targetSpeedGenerators.size() == 0)
-            return new SpeedInstructions(null);
-        else {
-            var listOfSet = new ArrayList<Set<SpeedControllerGenerator>>();
-            for (var generator : targetSpeedGenerators)
-                listOfSet.add(Collections.singleton(generator));
-            return new SpeedInstructions(listOfSet);
-        }
+        var listOfSet = new ArrayList<Set<SpeedControllerGenerator>>();
+        for (var generator : targetSpeedGenerators)
+            listOfSet.add(Collections.singleton(generator));
+        return new SpeedInstructions(listOfSet);
     }
 
     /** Creates an instance from a set of generators. They are evaluated independently. */
     public static SpeedInstructions fromSet(Set<SpeedControllerGenerator> targetSpeedGenerators) {
-        if (targetSpeedGenerators == null || targetSpeedGenerators.size() == 0)
-            return new SpeedInstructions(null);
-        else {
-            var listOfSet = new ArrayList<Set<SpeedControllerGenerator>>();
-            listOfSet.add(targetSpeedGenerators);
-            return new SpeedInstructions(listOfSet);
-        }
+        var listOfSet = new ArrayList<Set<SpeedControllerGenerator>>();
+        listOfSet.add(targetSpeedGenerators);
+        return new SpeedInstructions(listOfSet);
     }
 
     /** Creates an instance from a set of generators. They are evaluated independently. */
     public static SpeedInstructions fromController(SpeedControllerGenerator targetSpeedGenerator) {
-        if (targetSpeedGenerator == null)
-            return new SpeedInstructions(null);
-        else {
-            return fromSet(Collections.singleton(targetSpeedGenerator));
-        }
+        return fromSet(Collections.singleton(targetSpeedGenerator));
     }
 
-    /** Generates all the instructions, expected to be called when a new phase starts */
+    /** Generates all the instructions, expected to be called when the train is created in the simulation */
     public void generate(Simulation sim, TrainSchedule schedule) {
-
         maxSpeedControllers = new MaxSpeedGenerator().generate(sim, schedule, null);
         targetSpeedControllers = new HashSet<>(maxSpeedControllers);
         for (var generatorSet : targetSpeedGenerators) {

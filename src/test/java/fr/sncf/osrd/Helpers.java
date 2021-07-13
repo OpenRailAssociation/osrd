@@ -1,5 +1,7 @@
 package fr.sncf.osrd;
 
+import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.TIME;
+import static java.lang.Double.POSITIVE_INFINITY;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.squareup.moshi.JsonReader;
@@ -9,6 +11,7 @@ import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
+import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
@@ -23,15 +26,21 @@ import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.simulation.TimelineEventId;
 import fr.sncf.osrd.speedcontroller.SpeedInstructions;
+import fr.sncf.osrd.speedcontroller.generators.ConstructionAllowanceGenerator;
+import fr.sncf.osrd.speedcontroller.generators.LinearAllowanceGenerator;
+import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
+import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.PathUtils;
 import fr.sncf.osrd.utils.SortedDoubleMap;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import okio.Okio;
+import org.junit.jupiter.api.Test;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.*;
@@ -39,6 +48,9 @@ import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 public class Helpers {
+
+    private static final boolean saveCSVFiles = false;
+
     public static final class TestEvent extends TimelineEvent {
         public final String data;
         private final BiConsumer<Simulation, TestEvent> onOccurrenceCallback;
@@ -379,5 +391,33 @@ public class Helpers {
         var phases = loadRJSPhases("tiny_infra/simulation_several_phases.json");
         phases[0].endLocation = new RJSTrackLocation(new ID<>("ne.micro.foo_to_bar"), 4000);
         return phases;
+    }
+
+    /** Saves a csv files with the time, speed and positions. For debugging purpose. */
+    public static void saveGraph(ArrayList<TimelineEvent> events, String path) {
+        if (!saveCSVFiles)
+            return;
+        if (events == null)
+            throw new RuntimeException();
+        try {
+            PrintWriter writer = new PrintWriter(path, "UTF-8");
+            writer.println("position,time,speed");
+            for (var event : events) {
+                if (event instanceof TrainReachesActionPoint) {
+                    var updates = ((TrainReachesActionPoint) event).trainStateChange.positionUpdates;
+                    for (var update : updates) {
+                        writer.println(String.format("%f,%f,%f", update.pathPosition, update.time, update.speed));
+                    }
+                } else if (event instanceof TrainMoveEvent) {
+                    var updates = ((TrainMoveEvent) event).trainStateChange.positionUpdates;
+                    for (var update : updates) {
+                        writer.println(String.format("%f,%f,%f", update.pathPosition, update.time, update.speed));
+                    }
+                }
+            }
+            writer.close();
+        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 }

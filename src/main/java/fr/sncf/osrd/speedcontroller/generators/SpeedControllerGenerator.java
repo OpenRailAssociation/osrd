@@ -55,9 +55,9 @@ public abstract class SpeedControllerGenerator {
                                             TrainSchedule schedule,
                                             Set<SpeedController> controllers,
                                             double timestep) {
-        var defaultValues = getDefaultValues(sim, schedule, controllers, timestep);
+        var initialSpeed = findInitialSpeed(sim, schedule, controllers, timestep);
         return getExpectedTimes(sim, schedule, controllers, timestep,
-                defaultValues[0], defaultValues[1], defaultValues[2]);
+                sectionBegin, sectionEnd, initialSpeed);
     }
 
     /** Generates a map of location -> expected speed if we follow the given controllers. */
@@ -65,9 +65,9 @@ public abstract class SpeedControllerGenerator {
                                              TrainSchedule schedule,
                                              Set<SpeedController> controllers,
                                              double timestep) {
-        var defaultValues = getDefaultValues(sim, schedule, controllers, timestep);
+        var initialSpeed = findInitialSpeed(sim, schedule, controllers, timestep);
         return getExpectedSpeeds(sim, schedule, controllers, timestep,
-                defaultValues[0], defaultValues[1], defaultValues[2]);
+                sectionBegin, sectionEnd, initialSpeed);
     }
 
     /** Generates a map of location -> expected speed if we follow the given controllers */
@@ -123,15 +123,6 @@ public abstract class SpeedControllerGenerator {
             res.put(location.getPathPosition(), update);
         } while (location.getPathPosition() + timestep * speed < totalLength && speed > 0);
         return res;
-    }
-
-    /** Generates the default begin, end, and initial speed for the other methods in this class */
-    private double[] getDefaultValues(Simulation sim,
-                                      TrainSchedule schedule,
-                                      Set<SpeedController> controllers,
-                                      double timestep) {
-        var initialSpeed = findInitialSpeed(sim, schedule, controllers, timestep);
-        return new double[]{sectionBegin, sectionEnd, initialSpeed};
     }
 
     /** Finds the position (as a double) corresponding to the beginning of the allowance */

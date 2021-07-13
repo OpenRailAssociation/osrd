@@ -1,7 +1,6 @@
 package fr.sncf.osrd.speedcontroller;
 
 import static fr.sncf.osrd.Helpers.*;
-import static fr.sncf.osrd.speedcontroller.MarginTests.saveGraph;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.speedcontroller.generators.LinearAllowanceGenerator;

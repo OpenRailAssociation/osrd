@@ -171,7 +171,7 @@ public class DebugViewer extends ChangeConsumer {
         // create the graphstream swing infrastructure needed
         SwingViewer viewer = new SwingViewer(graph, SwingViewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
         var view = (DefaultView) viewer.addDefaultView(false);
-        viewer.enableAutoLayout(Layouts.newLayoutAlgorithm());
+        viewer.disableAutoLayout();
         view.setMouseManager(new MouseManager() {
             @Override
             public void init(GraphicGraph graph, View view) {

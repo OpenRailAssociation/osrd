@@ -36,8 +36,6 @@ import java.util.HashSet;
 
 public class MarginTests {
 
-    private static final boolean saveCSVFiles = true;
-
     @Test
     public void testConstructionMargins() throws InvalidInfraException {
         final var infra = getBaseInfra();
@@ -144,34 +142,6 @@ public class MarginTests {
 
         saveGraph(eventsBase, "eco-base.csv");
         saveGraph(events, "eco-out.csv");
-    }
-
-    /** Saves a csv files with the time, speed and positions. For debugging purpose. */
-    public static void saveGraph(ArrayList<TimelineEvent> events, String path) {
-        if (!saveCSVFiles)
-            return;
-        if (events == null)
-            throw new RuntimeException();
-        try {
-            PrintWriter writer = new PrintWriter(path, "UTF-8");
-            writer.println("position,time,speed");
-            for (var event : events) {
-                if (event instanceof TrainReachesActionPoint) {
-                    var updates = ((TrainReachesActionPoint) event).trainStateChange.positionUpdates;
-                    for (var update : updates) {
-                        writer.println(String.format("%f,%f,%f", update.pathPosition, update.time, update.speed));
-                    }
-                } else if (event instanceof TrainMoveEvent) {
-                    var updates = ((TrainMoveEvent) event).trainStateChange.positionUpdates;
-                    for (var update : updates) {
-                        writer.println(String.format("%f,%f,%f", update.pathPosition, update.time, update.speed));
-                    }
-                }
-            }
-            writer.close();
-        } catch (FileNotFoundException | UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test

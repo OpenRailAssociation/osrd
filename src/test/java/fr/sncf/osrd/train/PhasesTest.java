@@ -1,8 +1,6 @@
 package fr.sncf.osrd.train;
 
 import static fr.sncf.osrd.Helpers.*;
-import static fr.sncf.osrd.speedcontroller.MarginTests.saveGraph;
-import static fr.sncf.osrd.speedcontroller.SpeedInstructionsTests.getStaticGenerator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
@@ -11,26 +9,14 @@ import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
-import fr.sncf.osrd.railjson.schema.common.ID;
-import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
-import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
-import fr.sncf.osrd.simulation.TimelineEvent;
-import fr.sncf.osrd.train.events.TrainReachesActionPoint;
-import fr.sncf.osrd.train.phases.SignalNavigatePhase;
-import fr.sncf.osrd.utils.SortedDoubleMap;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
-import java.util.List;
 
 public class PhasesTest {
 
     @Test
-    public void testSimplePhases() throws InvalidInfraException {
+    public void testSameSimulationEndTime() throws InvalidInfraException {
         final var infra = getBaseInfra();
 
         final var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");

@@ -71,14 +71,18 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
             offset += trackSectionRange.length();
         }
 
+        // We tell the train to stop before the end because the train stops are not accurate and we risk
+        // reaching the buffer stop. This *should* be temporary.
+        var targetPosition = offset - 10;
+
         // Add the speed controller corresponding to the end of the path
         controllers.add(LimitAnnounceSpeedController.create(
                 rollingStock.maxSpeed,
                 0,
-                offset - 10,
+                targetPosition,
                 rollingStock.timetableGamma
         ));
-        controllers.add(new MaxSpeedController(0, offset - 10, Double.POSITIVE_INFINITY));
+        controllers.add(new MaxSpeedController(0, targetPosition, Double.POSITIVE_INFINITY));
         return controllers;
     }
 }

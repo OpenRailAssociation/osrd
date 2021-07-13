@@ -247,17 +247,12 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         // Occupy the next tvdSection
         if (interactionType == InteractionType.HEAD) {
             var forwardTVDSectionPath = path.findForwardTVDSection(detector);
-            if (forwardTVDSectionPath == null)
-                return;
             var nextTVDSection = sim.infraState.getTvdSectionState(forwardTVDSectionPath.index);
             nextTVDSection.occupy(sim);
-            return;
+        } else { // Unoccupy the last tvdSection
+            var backwardTVDSectionPath = path.findBackwardTVDSection(detector);
+            var backwardTVDSection = sim.infraState.getTvdSectionState(backwardTVDSectionPath.index);
+            backwardTVDSection.unoccupy(sim);
         }
-        // Doesn't occupy the last tvdSection
-        var backwardTVDSectionPath = path.findBackwardTVDSection(detector);
-        if (backwardTVDSectionPath == null)
-            return;
-        var backwardTVDSection = sim.infraState.getTvdSectionState(backwardTVDSectionPath.index);
-        backwardTVDSection.unoccupy(sim);
     }
 }

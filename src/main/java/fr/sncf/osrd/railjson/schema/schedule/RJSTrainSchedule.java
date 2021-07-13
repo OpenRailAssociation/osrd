@@ -34,10 +34,10 @@ public class RJSTrainSchedule implements Identified {
     @Json(name = "train_control_method")
     public String trainControlMethod;
 
-    /** What generator to use to generate the target speed.
+    /** What allowance to apply on the train schedule.
      * The double array should be seen as a list of set, each element
-     * in a set is applied independently and each set is applied one after
-     * the other with the previous one as base speed. */
+     * in one set is applied independently, then each set is applied one after
+     * the other with the result of the previous one used as base speed. */
     public RJSAllowance[][] allowances;
 
     /** List of stops */
