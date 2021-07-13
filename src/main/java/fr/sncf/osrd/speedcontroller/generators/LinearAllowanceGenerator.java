@@ -1,12 +1,11 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
-import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.MapSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.utils.SortedDoubleMap;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;

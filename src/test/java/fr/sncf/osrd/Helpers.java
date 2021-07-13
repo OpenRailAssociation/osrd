@@ -34,7 +34,7 @@ import okio.Okio;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
@@ -258,7 +258,7 @@ public class Helpers {
                     jsonConfig.realTimeViewer,
                     jsonConfig.changeReplayCheck
             );
-        } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule e) {
+        } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule  e) {
             fail(e);
             throw new RuntimeException();
         }
