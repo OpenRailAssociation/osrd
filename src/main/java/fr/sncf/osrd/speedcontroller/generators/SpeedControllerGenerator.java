@@ -114,7 +114,7 @@ public abstract class SpeedControllerGenerator {
             var integrator = TrainPhysicsIntegrator.make(timestep, schedule.rollingStock,
                     speed, location.maxTrainGrade());
             var action = integrator.actionToTargetSpeed(directive, schedule.rollingStock);
-            var distanceLeft = totalLength - location.getPathPosition();
+            var distanceLeft = min(totalLength - location.getPathPosition(), end - location.getPathPosition());
             var update =  integrator.computeUpdate(action, distanceLeft);
             speed = update.speed;
 
