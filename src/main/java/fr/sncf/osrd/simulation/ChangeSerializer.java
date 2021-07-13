@@ -7,6 +7,7 @@ import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.OperationalPoint;
+import fr.sncf.osrd.infra.StopActionPoint;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
 import fr.sncf.osrd.infra.railscript.value.RSBool;
@@ -33,7 +34,6 @@ import fr.sncf.osrd.train.decisions.TrainDecisionMaker.DefaultTrainDecisionMaker
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.train.phases.PhaseState;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
-import fr.sncf.osrd.train.phases.StopPhase;
 import fr.sncf.osrd.utils.CryoList;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
@@ -76,7 +76,6 @@ public class ChangeSerializer {
             .add(adaptPolymorphicType(Change.class, "changeType"))
             .add(PolymorphicJsonAdapterFactory.of(Phase.class, "phaseType")
                     .withSubtype(SignalNavigatePhase.class, "navigatePhase")
-                    .withSubtype(StopPhase.class, "stopPhase")
             )
             .add(adaptPolymorphicType(PhaseState.class, "phaseStateType"))
             .add(PolymorphicJsonAdapterFactory.of(ActionPoint.class, "actionPointType")
@@ -84,7 +83,7 @@ public class ChangeSerializer {
                     .withSubtype(Detector.class, "detector")
                     .withSubtype(Signal.class, "signal")
                     .withSubtype(OperationalPoint.class, "operationalPoint")
-                    .withSubtype(SignalNavigatePhase.PhaseEndActionPoint.class, "virtualActionPoint")
+                    .withSubtype(StopActionPoint.class, "stopActionPoint")
             )
             .add(PolymorphicJsonAdapterFactory.of(RSValue.class, "valueType")
                     .withSubtype(RSAspectSet.class, "aspectSet")

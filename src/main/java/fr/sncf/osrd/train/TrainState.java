@@ -1,7 +1,7 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -38,6 +38,11 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
     public final ArrayDeque<Interaction> actionPointsUnderTrain;
 
+    public TrainPath path;
+
+    /** Index of the route the train is currently on in routePath */
+    public int routeIndex = 0;
+
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     public boolean deepEquals(TrainState o) {
@@ -66,7 +71,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             TrainSchedule trainSchedule,
             int currentPhaseIndex,
             PhaseState currentPhaseState,
-            ArrayDeque<Interaction> actionPointsUnderTrain
+            ArrayDeque<Interaction> actionPointsUnderTrain,
+            TrainPath path
     ) {
         this.time = time;
         this.location = location;
@@ -77,6 +83,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         this.currentPhaseState = currentPhaseState;
         this.actionPointsUnderTrain = actionPointsUnderTrain;
         trainSchedule.trainDecisionMaker.setTrainState(this);
+        this.path = path;
     }
 
     /** Create a clone */
@@ -90,7 +97,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 trainSchedule,
                 currentPhaseIndex,
                 currentPhaseState.clone(),
-                new ArrayDeque<>(actionPointsUnderTrain)
+                new ArrayDeque<>(actionPointsUnderTrain),
+                new TrainPath(path)
         );
     }
 
@@ -110,7 +118,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                     trainSchedule,
                     currentPhaseIndex,
                     currentPhaseState,
-                    new ArrayDeque<>(actionPointsUnderTrain)
+                    new ArrayDeque<>(actionPointsUnderTrain),
+                    new TrainPath(path)
                     );
 
         var nextPhase = currentPhaseIndex + 1;
@@ -123,7 +132,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 trainSchedule,
                 nextPhase,
                 nextPhaseState,
-                new ArrayDeque<>(actionPointsUnderTrain)
+                new ArrayDeque<>(actionPointsUnderTrain),
+                new TrainPath(path)
         );
     }
 
@@ -142,7 +152,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         var prevLocation = location.getPathPosition();
 
         // get the list of active speed controllers
-        var isLate = currentPhaseState.speedInstructions.secondsLate(prevLocation, time) > 0;
+        var isLate = trainSchedule.speedInstructions.secondsLate(prevLocation, time) > 0;
         var activeSpeedControllers = trainSchedule.trainDecisionMaker.getActiveSpeedControllers(isLate);
         locationChange.speedControllersUpdates.dedupAdd(prevLocation, activeSpeedControllers);
 
@@ -241,5 +251,31 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             throw new RuntimeException("Expected SignalNavigatePhase state");
         var navigatePhase = (SignalNavigatePhase.State) currentPhaseState;
         navigatePhase.setAspectConstraints(signalState, this);
+    }
+
+    /** Occupy and free tvd sections given a detector the train is interacting with. */
+    public void updateTVDSections(
+            Simulation sim,
+            Detector detector,
+            InteractionType interactionType
+    ) throws SimulationError {
+        // Update route index
+        var currentRoute = path.routePath.get(routeIndex);
+        var tvdSectionPathIndex = currentRoute.tvdSectionsPaths.size() - 1;
+        var lastTvdSectionPath = currentRoute.tvdSectionsPaths.get(tvdSectionPathIndex);
+        var lastTvdSectionPathDir = currentRoute.tvdSectionsPathDirections.get(tvdSectionPathIndex);
+        if (lastTvdSectionPath.getEndNode(lastTvdSectionPathDir) == detector.index)
+            routeIndex++;
+
+        // Occupy the next tvdSection
+        if (interactionType == InteractionType.HEAD) {
+            var forwardTVDSectionPath = path.findForwardTVDSection(detector);
+            var nextTVDSection = sim.infraState.getTvdSectionState(forwardTVDSectionPath.index);
+            nextTVDSection.occupy(sim);
+        } else { // Unoccupy the last tvdSection
+            var backwardTVDSectionPath = path.findBackwardTVDSection(detector);
+            var backwardTVDSection = sim.infraState.getTvdSectionState(backwardTVDSectionPath.index);
+            backwardTVDSection.unoccupy(sim);
+        }
     }
 }

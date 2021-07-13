@@ -1,6 +1,6 @@
 package fr.sncf.osrd.speedcontroller;
 
-import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.generators.MaxSpeedGenerator;
 import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
@@ -14,65 +14,70 @@ import java.util.*;
  * Later on, we may add other indications such as when to coast. */
 public class SpeedInstructions {
 
-    /** Generator for the target speeds */
-    public final transient List<SpeedControllerGenerator> targetSpeedGenerators;
+    /** Generator for the target speeds
+     * Each set is applied one after the other, using the previous result as base speed.
+     * The generators in a set are applied independently */
+    public final transient List<Set<SpeedControllerGenerator>> targetSpeedGenerators;
 
     /** Set of speed controllers indicating the maximum speed at each point */
     public Set<SpeedController> maxSpeedControllers;
 
     /** Set of speed controllers indicating the target speed at each point */
     public Set<SpeedController> targetSpeedControllers;
-    public transient SortedDoubleMap expectedTimes;
+    public transient SortedDoubleMap expectedTimes = null;
 
-    /** Creates an instance from a target speed generator. Max speed is always determined
+    /** Creates an instance from target speed generators. Max speed is always determined
      * from a `new MaxSpeedGenerator()`.
      * @param targetSpeedGenerators generators used for target speed controllers. If null, a MaxSpeedGenerator is
-     *      used instead. If several controllers are given, we give the result of the previous one as reference. */
-    public SpeedInstructions(List<SpeedControllerGenerator> targetSpeedGenerators) {
+     *      used instead. When given several generators, those in a set are computed independently,
+     *      then each set is computed sequentially using the previous one as reference speed. */
+    public SpeedInstructions(List<Set<SpeedControllerGenerator>> targetSpeedGenerators) {
         if (targetSpeedGenerators == null || targetSpeedGenerators.size() == 0)
-            targetSpeedGenerators = Collections.singletonList(new MaxSpeedGenerator());
+            targetSpeedGenerators = Collections.singletonList(Collections.singleton(new MaxSpeedGenerator()));
         this.targetSpeedGenerators = targetSpeedGenerators;
     }
 
-    /** Generates all the instructions, expected to be called when a new phase starts */
-    public void generate(Simulation sim, TrainSchedule schedule) {
-        double initialSpeed = schedule.initialSpeed;
-        double previousDelay = 0;
-        double initialPosition = 0;
-        var train = sim.trains.get(schedule.trainID);
-        if (train != null) {
-            var state = train.getLastState();
-            initialSpeed = state.speed;
-            previousDelay = state.currentPhaseState.speedInstructions
-                    .secondsLate(state.location.getPathPosition(), sim.getTime());
-            initialPosition = state.location.getPathPosition();
-        }
-
-        maxSpeedControllers = new MaxSpeedGenerator().generate(sim, schedule, null, 0);
-        targetSpeedControllers = maxSpeedControllers;
+    /** Creates an instance from a list of generators. They are evaluated sequentially using the previous
+     * one as reference. */
+    public static SpeedInstructions fromList(List<SpeedControllerGenerator> targetSpeedGenerators) {
+        var listOfSet = new ArrayList<Set<SpeedControllerGenerator>>();
         for (var generator : targetSpeedGenerators)
-            targetSpeedControllers = generator.generate(sim, schedule, targetSpeedControllers, initialSpeed);
-        targetSpeedControllers.addAll(maxSpeedControllers);
-
-        var lastGenerator = targetSpeedGenerators.get(targetSpeedGenerators.size() - 1);
-        expectedTimes = lastGenerator.getExpectedTimes(sim, schedule, targetSpeedControllers, 1,
-                initialPosition, Double.POSITIVE_INFINITY, initialSpeed);
-        for (var entry : expectedTimes.entrySet()) {
-            expectedTimes.put(entry.getKey(), entry.getValue() - previousDelay + sim.getTime());
-        }
+            listOfSet.add(Collections.singleton(generator));
+        return new SpeedInstructions(listOfSet);
     }
 
-    /** Copy constructor */
-    public SpeedInstructions(SpeedInstructions other) {
-        this.maxSpeedControllers = new HashSet<>(other.maxSpeedControllers);
-        this.targetSpeedControllers = new HashSet<>(other.targetSpeedControllers);
-        this.expectedTimes = new SortedDoubleMap(other.expectedTimes);
-        targetSpeedGenerators = new ArrayList<>(other.targetSpeedGenerators);
+    /** Creates an instance from a set of generators. They are evaluated independently. */
+    public static SpeedInstructions fromSet(Set<SpeedControllerGenerator> targetSpeedGenerators) {
+        var listOfSet = new ArrayList<Set<SpeedControllerGenerator>>();
+        listOfSet.add(targetSpeedGenerators);
+        return new SpeedInstructions(listOfSet);
+    }
+
+    /** Creates an instance from a set of generators. They are evaluated independently. */
+    public static SpeedInstructions fromController(SpeedControllerGenerator targetSpeedGenerator) {
+        return fromSet(Collections.singleton(targetSpeedGenerator));
+    }
+
+    /** Generates all the instructions, expected to be called when the train is created in the simulation */
+    public void generate(Simulation sim, TrainSchedule schedule) {
+        maxSpeedControllers = new MaxSpeedGenerator().generate(sim, schedule, null);
+        targetSpeedControllers = new HashSet<>(maxSpeedControllers);
+        for (var generatorSet : targetSpeedGenerators) {
+            var newControllers = new HashSet<SpeedController>();
+            for (var generator : generatorSet) {
+                newControllers.addAll(generator.generate(sim, schedule, targetSpeedControllers));
+            }
+            targetSpeedControllers.addAll(newControllers);
+        }
+
+        expectedTimes = SpeedControllerGenerator.getExpectedTimes(sim, schedule, targetSpeedControllers, 1,
+                0, Double.POSITIVE_INFINITY, schedule.initialSpeed);
     }
 
     /** Returns how late we are compared to the expected time, in seconds. The result may be negative if we are
      * ahead of schedule. */
     public double secondsLate(double position, double time) {
+        assert expectedTimes != null;
         var expectedTime = expectedTimes.interpolate(position);
         return time - expectedTime;
     }

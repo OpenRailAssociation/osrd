@@ -1,13 +1,16 @@
-package fr.sncf.osrd;
+package fr.sncf.osrd.train;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.infra.routegraph.Route;
-import fr.sncf.osrd.train.TrackSectionRange;
+import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.train.phases.Phase;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public final class TrainSchedule {
     public final String trainID;
@@ -21,9 +24,16 @@ public final class TrainSchedule {
     public final double initialSpeed;
 
     public final ArrayList<Phase> phases;
-    public final ArrayList<TrackSectionRange> fullPath;
 
     public final TrainDecisionMaker trainDecisionMaker;
+
+    /** This is the *expected* path, eventually it may change in the TrainState copy */
+    public final TrainPath plannedPath;
+
+    public SpeedInstructions speedInstructions;
+
+    @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"}) // This field will eventually be useful
+    public List<TrainStop> stops;
 
     /** Create a new train schedule */
     public TrainSchedule(
@@ -34,8 +44,10 @@ public final class TrainSchedule {
             EdgeDirection initialDirection, Route initialRoute,
             double initialSpeed,
             ArrayList<Phase> phases,
-            TrainDecisionMaker trainDecisionMaker
-    ) {
+            TrainDecisionMaker trainDecisionMaker,
+            TrainPath plannedPath,
+            SpeedInstructions speedInstructions,
+            List<TrainStop> stops) {
         this.trainID = trainID;
         this.rollingStock = rollingStock;
         this.departureTime = departureTime;
@@ -44,28 +56,11 @@ public final class TrainSchedule {
         this.initialRoute = initialRoute;
         this.initialSpeed = initialSpeed;
         this.phases = phases;
-        this.fullPath = new ArrayList<>();
-        for (var phase : phases)
-            phase.forEachPathSection(fullPath::add);
+        this.plannedPath = plannedPath;
+        this.stops = stops != null ? stops : new ArrayList<>();
         if (trainDecisionMaker == null)
             trainDecisionMaker = new TrainDecisionMaker.DefaultTrainDecisionMaker();
         this.trainDecisionMaker = trainDecisionMaker;
-    }
-
-    /** Find location on track given a distance from the start.
-     * If the path position is higher than the fullPath length the function return null. */
-    public TrackSectionLocation findLocation(double pathPosition) {
-        for (var track : fullPath) {
-            if (pathPosition <= track.length()) {
-                var location = track.getBeginPosition();
-                if (track.direction == EdgeDirection.START_TO_STOP)
-                    location += pathPosition;
-                else
-                    location -= pathPosition;
-                return new TrackSectionLocation(track.edge, location);
-            }
-            pathPosition -= track.length();
-        }
-        return null;
+        this.speedInstructions = speedInstructions;
     }
 }

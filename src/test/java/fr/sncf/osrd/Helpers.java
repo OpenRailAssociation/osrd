@@ -1,7 +1,8 @@
 package fr.sncf.osrd;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.TIME;
+import static java.lang.Double.POSITIVE_INFINITY;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.squareup.moshi.JsonReader;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -10,32 +11,46 @@ import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
+import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
+import fr.sncf.osrd.railjson.schema.common.ID;
+import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
+import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.simulation.TimelineEventId;
+import fr.sncf.osrd.speedcontroller.SpeedInstructions;
+import fr.sncf.osrd.speedcontroller.generators.ConstructionAllowanceGenerator;
+import fr.sncf.osrd.speedcontroller.generators.LinearAllowanceGenerator;
+import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
+import fr.sncf.osrd.train.events.TrainMoveEvent;
+import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.PathUtils;
+import fr.sncf.osrd.utils.SortedDoubleMap;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import okio.Okio;
+import org.junit.jupiter.api.Test;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 public class Helpers {
+
+    private static final boolean saveCSVFiles = false;
+
     public static final class TestEvent extends TimelineEvent {
         public final String data;
         private final BiConsumer<Simulation, TestEvent> onOccurrenceCallback;
@@ -82,7 +97,9 @@ public class Helpers {
                     && o.onCancellationCallback == onCancellationCallback;
         }
 
-        /** Plan a test event at a given time with no callbacks */
+        /**
+         * Plan a test event at a given time with no callbacks
+         */
         public static TestEvent plan(
                 Simulation sim,
                 double eventTime,
@@ -91,7 +108,9 @@ public class Helpers {
             return plan(sim, eventTime, data, null);
         }
 
-        /** Plan a test event at a given time with the specified callbacks on occurence */
+        /**
+         * Plan a test event at a given time with the specified callbacks on occurence
+         */
         public static TestEvent plan(
                 Simulation sim,
                 double eventTime,
@@ -101,7 +120,9 @@ public class Helpers {
             return plan(sim, eventTime, data, onOccurrenceCallback, null);
         }
 
-        /** Plan a test event at a given time with the specified callbacks */
+        /**
+         * Plan a test event at a given time with the specified callbacks
+         */
         public static TestEvent plan(
                 Simulation sim,
                 double eventTime,
@@ -152,12 +173,16 @@ public class Helpers {
     }
 
 
-    /** Generates the defaults infra from tiny_infra/infra.json, to be edited for each test */
+    /**
+     * Generates the defaults infra from tiny_infra/infra.json, to be edited for each test
+     */
     public static RJSInfra getBaseInfra() {
         return getBaseInfra("tiny_infra/infra.json");
     }
 
-    /** Generates the defaults infra from the specified path */
+    /**
+     * Generates the defaults infra from the specified path
+     */
     public static RJSInfra getBaseInfra(String path) {
         try {
             var fileSource = Okio.source(getResourcePath(path));
@@ -170,7 +195,9 @@ public class Helpers {
         }
     }
 
-    /** Generates the defaults config from tiny_infra/config_railjson.json */
+    /**
+     * Generates the defaults config from tiny_infra/config_railjson.json
+     */
     public static Config getBaseConfig(String path) {
         try {
             return Config.readFromFile(getResourcePath(path));
@@ -180,53 +207,25 @@ public class Helpers {
         }
     }
 
-    /** Generates the defaults config from tiny_infra/config_railjson.json */
+    /**
+     * Generates the defaults config from tiny_infra/config_railjson.json
+     */
     public static Config getBaseConfig() {
         return getBaseConfig("tiny_infra/config_railjson.json");
     }
 
-    /** Loads the given config file, but replaces the given allowance parameters in all the phases */
-    public static Config makeConfigWithSpeedParams(List<RJSAllowance> params, String baseConfigPath) {
-        var paramsList = params == null ? null : Collections.singletonList(params);
-        return makeConfigWithSpeedParamsList(paramsList, baseConfigPath);
+    /**
+     * Generates the defaults config from tiny_infra/config_railjson.json without allowances
+     */
+    public static Config getBaseConfigNoAllowance() {
+        return getConfigWithSpeedInstructions(new SpeedInstructions(null));
     }
 
-    /** Generates a config where all the RJSRunningTieParameters have been replaced by the one given */
-    public static Config makeConfigWithSpeedParams(List<RJSAllowance> params) {
-        return makeConfigWithSpeedParams(params, "tiny_infra/config_railjson.json");
-    }
-
-    /** Loads the given config file, but replaces the given allowance parameters in the phases
-     * the nth list of allowance is used for the nth phase */
-    public static Config makeConfigWithSpeedParamsList(List<List<RJSAllowance>> params, String baseConfigPath) {
-        try {
-            var path = getResourcePath(baseConfigPath);
-            var baseDirPath = path.getParent();
-            var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, path);
-            final var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
-            final var infra = Infra.parseFromFile(jsonConfig.infraType, infraPath.toString());
-            var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
-            var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
-            for (var trainSchedule : schedule.trainSchedules) {
-                for (int i = 0; i < trainSchedule.phases.length; i++) {
-                    trainSchedule.phases[i].allowances = params == null ? null
-                            : params.get(i % params.size()).toArray(new RJSAllowance[0]);
-                }
-            }
-            var trainSchedules = RJSSimulationParser.parse(infra, schedule);
-            return new Config(
-                    jsonConfig.simulationTimeStep,
-                    infra,
-                    trainSchedules,
-                    jsonConfig.simulationStepPause,
-                    jsonConfig.showViewer,
-                    jsonConfig.realTimeViewer,
-                    jsonConfig.changeReplayCheck
-            );
-        } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule  e) {
-            fail(e);
-            throw new RuntimeException();
-        }
+    /** Gets the default config but with the given SpeedInstruction in train schedules */
+    public static Config getConfigWithSpeedInstructions(SpeedInstructions instructions) {
+        var config = getBaseConfig("tiny_infra/config_railjson.json");
+        config.trainSchedules.forEach(schedule -> schedule.speedInstructions = instructions);
+        return config;
     }
 
     /** Loads the phases in the given simulation file
@@ -335,5 +334,90 @@ public class Helpers {
     /** Simple class similar to java Runnable, but with exceptions */
     public interface Procedure {
         void run() throws Exception;
+    }
+
+    /** Get a map of the time at which each position is reached */
+    public static SortedDoubleMap getTimePerPosition(Iterable<TimelineEvent> events) {
+        var res = new SortedDoubleMap();
+        for (var event : events) {
+            if (event instanceof TrainReachesActionPoint) {
+                var trainReachesActionPoint = (TrainReachesActionPoint) event;
+                for (var update : trainReachesActionPoint.trainStateChange.positionUpdates)
+                    res.put(update.pathPosition, update.time);
+            }
+        }
+        return res;
+    }
+
+    /** Throws an error if the (interpolated) time per position differ too much */
+    public static void assertSameSpeedPerPosition(Iterable<TimelineEvent> eventsExpected,
+                                                  Iterable<TimelineEvent> events) {
+        assertSameSpeedPerPositionBetween(eventsExpected, events, 0, Double.POSITIVE_INFINITY, 1);
+    }
+
+    /** Throws an error if the (interpolated) time per position differ too much between begin and end
+     * The expected speeds are scaled by expectedScale */
+    public static void assertSameSpeedPerPositionBetween(Iterable<TimelineEvent> eventsExpected,
+                                                         Iterable<TimelineEvent> events,
+                                                         double begin,
+                                                         double end,
+                                                         double expectedScale) {
+        var expectedSpeedPerPosition = getSpeedPerPosition(eventsExpected);
+        var speedPerPosition = getSpeedPerPosition(events);
+        end = Double.min(end, expectedSpeedPerPosition.lastKey());
+        begin = Double.max(expectedSpeedPerPosition.firstKey(), begin);
+        for (double t = begin; t < end; t += 1) {
+            var expected = expectedSpeedPerPosition.interpolate(t) * expectedScale;
+            var result = speedPerPosition.interpolate(t);
+            assertEquals(expected, result, expected * 0.01);
+        }
+    }
+
+    /** Get a map of the speed at each position */
+    public static SortedDoubleMap getSpeedPerPosition(Iterable<TimelineEvent> events) {
+        var res = new SortedDoubleMap();
+        for (var event : events) {
+            if (event instanceof TrainReachesActionPoint) {
+                var trainReachesActionPoint = (TrainReachesActionPoint) event;
+                for (var update : trainReachesActionPoint.trainStateChange.positionUpdates)
+                    res.put(update.pathPosition, update.speed);
+            }
+        }
+        return res;
+    }
+
+    /** Get a list of 2 phases on the base infra, with the transition happening roughly half-way */
+    public static RJSTrainPhase[] loadPhasesLongerFirstPhase() {
+        var phases = loadRJSPhases("tiny_infra/simulation_several_phases.json");
+        phases[0].endLocation = new RJSTrackLocation(new ID<>("ne.micro.foo_to_bar"), 4000);
+        return phases;
+    }
+
+    /** Saves a csv files with the time, speed and positions. For debugging purpose. */
+    public static void saveGraph(ArrayList<TimelineEvent> events, String path) {
+        if (!saveCSVFiles)
+            return;
+        if (events == null)
+            throw new RuntimeException();
+        try {
+            PrintWriter writer = new PrintWriter(path, "UTF-8");
+            writer.println("position,time,speed");
+            for (var event : events) {
+                if (event instanceof TrainReachesActionPoint) {
+                    var updates = ((TrainReachesActionPoint) event).trainStateChange.positionUpdates;
+                    for (var update : updates) {
+                        writer.println(String.format("%f,%f,%f", update.pathPosition, update.time, update.speed));
+                    }
+                } else if (event instanceof TrainMoveEvent) {
+                    var updates = ((TrainMoveEvent) event).trainStateChange.positionUpdates;
+                    for (var update : updates) {
+                        writer.println(String.format("%f,%f,%f", update.pathPosition, update.time, update.speed));
+                    }
+                }
+            }
+            writer.close();
+        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -1,9 +1,10 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
-import fr.sncf.osrd.TrainSchedule;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.train.TrainPath;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,10 +13,11 @@ import java.util.Set;
  * The allowanceValue is in seconds, added over the whole phase */
 public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator {
 
-    private final double value;
+    public final double value;
 
-    public ConstructionAllowanceGenerator(double allowanceValue, RJSTrainPhase phase) {
-        super(phase, 0.1);
+    public ConstructionAllowanceGenerator(double begin, double end,
+                                          double allowanceValue) {
+        super(begin, end, 0.1);
         this.value = allowanceValue;
     }
 
@@ -32,9 +34,8 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
     @Override
     protected double getFirstHighEstimate() {
         double max = 0;
-        double position = findPhaseInitialLocation(schedule);
-        double endLocation = findPhaseEndLocation(schedule);
-        while (position < endLocation) {
+        double position = sectionBegin;
+        while (position < sectionEnd) {
             double val = SpeedController.getDirective(maxSpeedControllers, position).allowedSpeed;
             if (val > max)
                 max = val;

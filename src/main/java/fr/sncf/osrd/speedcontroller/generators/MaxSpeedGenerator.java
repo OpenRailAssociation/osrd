@@ -1,6 +1,6 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
-import fr.sncf.osrd.TrainSchedule;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
@@ -15,14 +15,13 @@ import java.util.Set;
 /** This is a SpeedControllerGenerator that generates the maximum allowed speed at any given point. */
 public class MaxSpeedGenerator extends SpeedControllerGenerator {
     public MaxSpeedGenerator() {
-        super(null);
+        super(0, Double.POSITIVE_INFINITY);
     }
 
     @Override
-    public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed,
-                                         double initialSpeed) {
+    public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed) {
         // the path is computed at the beginning of the simulation, as it is (for now) part of the event
-        var trainPath = schedule.fullPath;
+        var trainPath = schedule.plannedPath.trackSectionPath;
         var rollingStock = schedule.rollingStock;
 
         var controllers = new HashSet<SpeedController>();
@@ -72,14 +71,18 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
             offset += trackSectionRange.length();
         }
 
+        // We tell the train to stop before the end because the train stops are not accurate and we risk
+        // reaching the buffer stop. This *should* be temporary.
+        var targetPosition = offset - 10;
+
         // Add the speed controller corresponding to the end of the path
         controllers.add(LimitAnnounceSpeedController.create(
                 rollingStock.maxSpeed,
                 0,
-                offset - 5,
+                targetPosition,
                 rollingStock.timetableGamma
         ));
-        controllers.add(new MaxSpeedController(0, offset - 5, Double.POSITIVE_INFINITY));
+        controllers.add(new MaxSpeedController(0, targetPosition, Double.POSITIVE_INFINITY));
         return controllers;
     }
 }
