@@ -216,41 +216,33 @@ def format_signals(train_schedule_result):
 
 
 def get_train_phases(path):
-    phases = []
-    routes = []
     steps = path.payload["steps"]
-    step_index = 1
-    step_track = steps[step_index]["position"]["track_section"]
-    step_offset = steps[step_index]["position"]["offset"]
-    for route in path.payload["path"]:
-        new_route = format_route_id(route["route"])
-        if not routes or routes[-1] != new_route:
-            routes.append(new_route)
-        for track in route["track_sections"]:
-            while track["track_section"] == step_track:
-                if step_offset < track["begin"] and step_offset < track["end"]:
-                    break
-                if step_offset > track["begin"] and step_offset > track["end"]:
-                    break
-                phases.append(
-                    {
-                        "type": "navigate",
-                        "driver_sight_distance": 400,
-                        "end_location": {
-                            "track_section": format_track_section_id(step_track),
-                            "offset": step_offset,
-                        },
-                        "routes": routes,
-                    }
-                )
-                step_index += 1
-                if step_index >= len(steps):
-                    return phases
+    step_track = steps[-1]["position"]["track_section"]
+    return {
+        "type": "navigate",
+        "driver_sight_distance": 400,
+        "end_location": {
+            "track_section": format_track_section_id(step_track),
+            "offset": steps[-1]["position"]["offset"],
+        },
+    }
 
-                routes = [routes[-1]]
-                step_track = steps[step_index]["position"]["track_section"]
-                step_offset = steps[step_index]["position"]["offset"]
-    raise ParseError(f"The train schedule uses an invalid path '{path.pk}'")
+
+def get_train_stops(path):
+    stops = []
+    steps = path.payload["steps"]
+    for step_index in range(1, len(steps)):
+        step_track = steps[step_index]["position"]["track_section"]
+        stops.append(
+            {
+                "location": {
+                    "track_section": format_track_section_id(step_track),
+                    "offset": steps[step_index]["position"]["offset"],
+                },
+                "duration": steps[step_index]["stop_time"],
+            }
+        )
+    return stops
 
 
 def get_train_schedule_payload(train_schedule):
@@ -263,6 +255,8 @@ def get_train_schedule_payload(train_schedule):
         "initial_route": format_route_id(path.get_initial_route()),
         "initial_speed": train_schedule.initial_speed,
         "phases": get_train_phases(path),
+        "routes": [format_route_id(route["route"]) for route in path.payload["path"]],
+        "stops": get_train_stops(path),
     }
 
 
