@@ -128,23 +128,23 @@ public class StaticSpeedLimitTest {
         while (!sim.isSimulationOver())
             sim.step();
 
-        // get location changes and ensure these is only one
+        // get location changes
         var locationChanges = changelog.publishedChanges.stream()
                 .filter(change -> change.getClass() == Train.TrainStateChange.class)
                 .map(change -> (Train.TrainStateChange) change)
                 .collect(Collectors.toList());
-        // Expect 2 state change: Train over starting Operational Point -> Go A to B -> Next phase
-        // The change come from the train stop
-        assertEquals(3, locationChanges.size());
-        // The second state change contain the movement of the train
-        var locationChange = locationChanges.get(1);
+
+        // Flatten the updates to get one list with the movements of the train
+        var speedUpdates = new ArrayList<Train.TrainStateChange.SpeedUpdate>();
+        for (var locationChange : locationChanges)
+            speedUpdates.addAll(locationChange.positionUpdates);
 
         // create the list of all speed derivative sign changes
         var profile = new ArrayList<ProfileData>();
         var profiler = new SignAnalyzer();
         var position = 0.0;
-        for (int i = 0; i < locationChange.positionUpdates.size(); i++) {
-            var posUpdate = locationChange.positionUpdates.get(i);
+        for (int i = 0; i < speedUpdates.size(); i++) {
+            var posUpdate = speedUpdates.get(i);
             var profileChange = profiler.feed(posUpdate.speed);
             if (profileChange != null)
                 profile.add(new ProfileData(profileChange, i, position));
