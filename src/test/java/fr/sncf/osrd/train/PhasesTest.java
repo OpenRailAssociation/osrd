@@ -90,24 +90,4 @@ public class PhasesTest {
 
         run(sim, config);
     }
-
-    @Test
-    public void testSeveralPhasesNoMargin() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-
-        var phases = loadPhasesLongerFirstPhase();
-        final var config = makeConfigWithGivenPhases(phases, "tiny_infra/config_railjson_several_phases.json");
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        saveGraph(run(sim, config), "double-construction-out.csv");
-        var actualEndTime = sim.getTime();
-
-        final var configBase = getBaseConfigNoAllowance();
-        var simBase = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
-        saveGraph(run(simBase, configBase), "double-construction-base.csv");
-        var baseEndTime = simBase.getTime();
-
-        var expected = baseEndTime + 0;
-
-        assertEquals(expected, actualEndTime, expected * 0.01);
-    }
 }
