@@ -1,8 +1,5 @@
 package fr.sncf.osrd.utils;
 
-
-import javafx.util.Pair;
-
 import java.util.HashMap;
 import java.util.TreeMap;
 
@@ -17,12 +14,11 @@ public class DoubleRangeMap extends TreeMap<Double, Double> {
     }
 
     /** Retrieve values in a given range returning inner ranges and their values */
-    public HashMap<Pair<Double, Double>, Double> getValuesInRange(double begin, double end) {
+    public HashMap<Range, Double> getValuesInRange(double begin, double end) {
         // Handle reversed range
         if (end < begin)
             return getValuesInRange(end, begin);
-
-        var res = new HashMap<Pair<Double, Double>, Double>();
+        var res = new HashMap<Range, Double>();
         var floorEntry = floorEntry(begin);
         double lastValue = 0.;
 
@@ -32,12 +28,12 @@ public class DoubleRangeMap extends TreeMap<Double, Double> {
         for (var entry : subMap(begin, end).entrySet()) {
             if (entry.getKey() >= begin)
                 continue;
-            res.put(new Pair<>(begin, entry.getKey()), lastValue);
+            res.put(new Range(begin, entry.getKey()), lastValue);
             begin = entry.getKey();
             lastValue = entry.getValue();
         }
 
-        res.put(new Pair<>(begin, end), lastValue);
+        res.put(new Range(begin, end), lastValue);
         return res;
     }
 }

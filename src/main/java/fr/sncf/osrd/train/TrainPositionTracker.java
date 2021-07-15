@@ -193,13 +193,15 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
             var slopesUnderTheTrain = gradients.getValuesInRange(track.getBeginPosition(), track.getEndPosition());
 
             for (var slope : slopesUnderTheTrain.entrySet()) {
-                var weight = slope.getKey().getValue() - slope.getKey().getKey();
+                var weight = slope.getKey().length();
                 meanVal += slope.getValue() * weight;
                 totalWeight += weight;
             }
 
         }
-        return meanVal / totalWeight;
+
+        return totalWeight > 0. ? meanVal / totalWeight : 0.;
+
     }
 
     @Override
