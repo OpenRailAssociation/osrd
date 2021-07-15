@@ -3,10 +3,12 @@ package fr.sncf.osrd.train.phases;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.StopActionPoint;
 import fr.sncf.osrd.train.TrainSchedule;
+import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.signaling.AspectConstraint;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra_state.SignalState;
+import fr.sncf.osrd.simulation.Change;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
@@ -88,6 +90,45 @@ public final class SignalNavigatePhase implements Phase {
             pathLength += trackRange.length();
             if (pathLength > endPosition + driverSightDistance)
                 break;
+        }
+
+        // create a map switch index -> switch id
+        var nodeSwitch = new HashMap<Integer, String>();
+        for (var route : path.routePath) {
+            for (var s : route.switchesPosition.keySet()) {
+                nodeSwitch.put(s.index, s.id);
+            }
+        }
+
+        // add the switch to interactions
+        double dist = 0;
+        String lastSwitchEncounteredId = null;
+        for (var trackRange : trackSectionRanges) {
+            String switchBeginId = null;
+            if (Math.abs(trackRange.getBeginPosition() - 0) < 1e-6) {
+                switchBeginId = nodeSwitch.getOrDefault(trackRange.edge.startNode, null);
+            }
+            if (Math.abs(trackRange.getBeginPosition() - trackRange.edge.length) < 1e-6) {
+                switchBeginId = nodeSwitch.getOrDefault(trackRange.edge.endNode, null);
+            }
+            String switchEndId = null;
+            if (Math.abs(trackRange.getEndPosition() - 0) < 1e-6) {
+                switchEndId = nodeSwitch.getOrDefault(trackRange.edge.startNode, null);
+            }
+            if (Math.abs(trackRange.getEndPosition() - trackRange.edge.length) < 1e-6) {
+                switchEndId = nodeSwitch.getOrDefault(trackRange.edge.endNode, null);
+            }
+
+            if (switchBeginId != null && !switchBeginId.equals(lastSwitchEncounteredId)) {
+                var passage = new SwitchActionPoint(switchBeginId);
+                eventPath.add(new Interaction(InteractionType.HEAD, dist, passage));
+            }
+            dist += trackRange.length();
+            if (switchEndId != null) {
+                var passage = new SwitchActionPoint(switchEndId);
+                eventPath.add(new Interaction(InteractionType.HEAD, dist, passage));
+            }
+            lastSwitchEncounteredId = switchEndId;
         }
 
         eventPath = eventPath.stream()
@@ -312,6 +353,57 @@ public final class SignalNavigatePhase implements Phase {
             for (var signalControllers : signalControllers.values())
                 controllers.addAll(signalControllers);
             return controllers;
+        }
+    }
+
+    /** This class represent the location of a switch */
+    public static final class SwitchActionPoint implements ActionPoint {
+
+        private final String switchId;
+
+        public SwitchActionPoint(String switchId) {
+            super();
+            this.switchId = switchId;
+        }
+
+        @Override
+        public InteractionTypeSet getInteractionsType() {
+            return new InteractionTypeSet();
+        }
+
+        @Override
+        public double getActionDistance() {
+            return 0;
+        }
+
+        @Override
+        public void interact(Simulation sim, Train train, InteractionType actionType) {
+            var change = new PassageOnSwitch(sim, train.getName(), switchId);
+            sim.publishChange(change);
+        }
+
+        @Override
+        public String toString() {
+            return "SwitchActionPoint { }";
+        }
+
+        public static class PassageOnSwitch extends Change {
+            public final String trainId;
+            public final String switchId;
+
+            public PassageOnSwitch(Simulation sim, String trainId, String switchId) {
+                super(sim);
+                this.trainId = trainId;
+                this.switchId = switchId;
+            }
+
+            @Override
+            public void replay(Simulation sim) {}
+
+            @Override
+            public String toString() {
+                return String.format("PassageOnSwitch { train: %s, switch: %s }", trainId, switchId);
+            }
         }
     }
 }

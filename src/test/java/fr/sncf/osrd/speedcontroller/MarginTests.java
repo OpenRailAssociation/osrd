@@ -2,13 +2,9 @@ package fr.sncf.osrd.speedcontroller;
 
 import static fr.sncf.osrd.Helpers.*;
 import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.TIME;
-import static fr.sncf.osrd.speedcontroller.SpeedInstructionsTests.getStaticGenerator;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
 
-import fr.sncf.osrd.railjson.schema.common.ID;
-import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
 import fr.sncf.osrd.speedcontroller.generators.ConstructionAllowanceGenerator;
 import fr.sncf.osrd.speedcontroller.generators.LinearAllowanceGenerator;
 import fr.sncf.osrd.speedcontroller.generators.MarecoAllowanceGenerator;
@@ -18,20 +14,11 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.simulation.Simulation;
-import fr.sncf.osrd.simulation.TimelineEvent;
-import fr.sncf.osrd.train.TrainStop;
-import fr.sncf.osrd.train.events.TrainMoveEvent;
-import fr.sncf.osrd.train.events.TrainReachesActionPoint;
-import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import org.junit.jupiter.api.Test;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 
 public class MarginTests {
@@ -44,13 +31,13 @@ public class MarginTests {
 
         // base run, no margin
         final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with construction margin
         final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
-        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
@@ -75,13 +62,13 @@ public class MarginTests {
 
         // Run with construction margin
         final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromList(params));
-        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
         // base run, no margin
         final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
@@ -101,13 +88,13 @@ public class MarginTests {
 
         // Run with construction margin
         final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
-        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
         // base run, no margin
         final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
@@ -127,13 +114,13 @@ public class MarginTests {
 
         // Run with construction margin
         final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
-        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
         // base run, no margin
         final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
@@ -152,13 +139,13 @@ public class MarginTests {
 
         // base run, no margin
         final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with construction margin
         final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
-        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
@@ -174,13 +161,13 @@ public class MarginTests {
 
         // base run, no margin
         final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with 20% margins
         final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
-        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
@@ -200,13 +187,13 @@ public class MarginTests {
 
         // base run, no margin
         final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with 50% margins
         final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
-        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
@@ -238,13 +225,13 @@ public class MarginTests {
 
         // Run with margins
         final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromSet(params));
-        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
 
         // base run, one global margin
         var globalParams = new LinearAllowanceGenerator(0, POSITIVE_INFINITY, 50, TIME);
         final var config = getConfigWithSpeedInstructions(SpeedInstructions.fromController(globalParams));
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
 
         saveGraph(eventsBase, "same-margins-base.csv");
@@ -262,7 +249,7 @@ public class MarginTests {
 
         // base run, no margin
         final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
         var baseTimePerPosition = getTimePerPosition(eventsBase);
         final var marginChangeTime = baseTimePerPosition.interpolate(marginChangeLocation);
@@ -277,7 +264,7 @@ public class MarginTests {
 
         // Run with margins
         final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromSet(params));
-        var sim2 = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginTime = sim2.getTime();
 
@@ -297,12 +284,12 @@ public class MarginTests {
 
         final var config = getConfigWithSpeedInstructions(
                 SpeedInstructions.fromList(Arrays.asList(param1, param2)));
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         saveGraph(run(sim, config), "double-construction-out.csv");
         var actualEndTime = sim.getTime();
 
         final var configBase = getBaseConfigNoAllowance();
-        var simBase = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var simBase = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         saveGraph(run(simBase, configBase), "double-construction-base.csv");
         var baseEndTime = simBase.getTime();
 
@@ -333,11 +320,11 @@ public class MarginTests {
         params.add(paramsSecondPhase);
 
         final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromSet(params));
-        var simMargins = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var simMargins = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         final var eventsMargins = run(simMargins, configMargins);
 
         final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var baseEvents = run(sim, config);
 
         saveGraph(eventsMargins, "two-margins-out.csv");

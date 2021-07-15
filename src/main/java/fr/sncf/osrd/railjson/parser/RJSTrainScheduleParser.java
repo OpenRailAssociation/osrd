@@ -202,8 +202,13 @@ public class RJSTrainScheduleParser {
                 throw new InvalidSchedule("invalid driver sight distance");
 
             var endLocation = parseLocation(infra, rjsNavigate.endLocation);
-            return SignalNavigatePhase.from(driverSightDistance, startLocation,
-                    endLocation, expectedPath, stops);
+            return SignalNavigatePhase.from(
+                driverSightDistance,
+                startLocation,
+                endLocation,
+                expectedPath,
+                stops
+            );
         }
         throw new RuntimeException("unknown train phase");
     }

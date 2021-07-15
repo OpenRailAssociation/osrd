@@ -19,7 +19,7 @@ public class TVDSectionStateTest {
         var changelog = new ArrayChangeLog();
         config.trainSchedules.clear();
 
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, changelog);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, changelog);
 
         var tvd = sim.infraState.getTvdSectionState(0);
 
@@ -44,7 +44,7 @@ public class TVDSectionStateTest {
         var changelog = new ArrayChangeLog();
         config.trainSchedules.clear();
 
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, changelog);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, changelog);
 
         var tvd = sim.infraState.getTvdSectionState(0);
         var route = sim.infraState.getRouteState(0);

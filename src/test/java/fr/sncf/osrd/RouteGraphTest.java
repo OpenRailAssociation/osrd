@@ -57,7 +57,7 @@ public class RouteGraphTest {
             releaseGroups.add(releaseGroup);
         }
 
-        return builder.makeRoute(id, tvdSections, releaseGroups, switchPositions, waypoints.get(0), null);
+        return builder.makeRoute(id, tvdSections, releaseGroups, switchPositions, waypoints.get(0), null, null);
     }
 
     private static Route makeRoute(

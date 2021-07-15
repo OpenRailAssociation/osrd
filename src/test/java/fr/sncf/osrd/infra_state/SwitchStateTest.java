@@ -16,7 +16,7 @@ public class SwitchStateTest {
     public void testSwitchNoMove() throws InvalidInfraException {
         final var infra = getBaseInfra();
         assert infra != null;
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         RouteState routeState = sim.infraState.getRouteState(3);
         makeAssertEvent(sim, 21, () -> routeState.status == RouteStatus.RESERVED);
         var events = run(sim);
@@ -37,7 +37,7 @@ public class SwitchStateTest {
 
         infra.switches.iterator().next().positionChangeDelay = 6;
 
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
 
         SwitchState switchState = sim.infraState.getSwitchState(0);
@@ -59,7 +59,7 @@ public class SwitchStateTest {
 
         infra.switches.iterator().next().positionChangeDelay = 2;
 
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
 
         SwitchState switchState = sim.infraState.getSwitchState(0);
@@ -80,7 +80,7 @@ public class SwitchStateTest {
 
         infra.switches.iterator().next().positionChangeDelay = 42;
 
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
 
         SwitchState switchState = sim.infraState.getSwitchState(0);

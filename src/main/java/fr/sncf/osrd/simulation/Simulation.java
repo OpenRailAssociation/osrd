@@ -2,6 +2,7 @@ package fr.sncf.osrd.simulation;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.SuccessionTable;
 import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.train.Train;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -80,12 +82,23 @@ public final class Simulation implements DeepComparable<Simulation> {
     }
 
     /** Creates a simulation and initialize infrastructure entities */
-    public static Simulation createFromInfra(
+    public static Simulation createFromInfraAndEmptySuccessions(
             Infra infra,
             double simStartTime,
             ChangeConsumer changeConsumer
     ) {
         var infraState = InfraState.from(infra);
+        return new Simulation(infra, infraState, simStartTime, changeConsumer);
+    }
+    
+    /** Creates a simulation and initialize infrastructure entities */
+    public static Simulation createFromInfraAndSuccessions(
+            Infra infra,
+            List<SuccessionTable> initTables,
+            double simStartTime,
+            ChangeConsumer changeConsumer
+    ) {
+        var infraState = InfraState.from(infra, initTables);
         return new Simulation(infra, infraState, simStartTime, changeConsumer);
     }
 

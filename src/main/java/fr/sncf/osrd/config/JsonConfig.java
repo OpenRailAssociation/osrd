@@ -19,6 +19,8 @@ public final class JsonConfig {
     public final String infraPath;
     @Json(name = "simulation_path")
     public final String simulationPath;
+    @Json(name = "succession_path")
+    public final String successionPath;
     @Json(name = "show_viewer")
     public final boolean showViewer;
     @Json(name = "realtime_viewer")
@@ -33,6 +35,7 @@ public final class JsonConfig {
             InfraType infraType,
             String infraPath,
             String simulationPath,
+            String successionPath,
             boolean showViewer,
             boolean realTimeViewer,
             boolean changeReplayCheck,
@@ -42,6 +45,7 @@ public final class JsonConfig {
         this.infraType = infraType;
         this.infraPath = infraPath;
         this.simulationPath = simulationPath;
+        this.successionPath = successionPath;
         this.showViewer = showViewer;
         this.realTimeViewer = realTimeViewer;
         this.changeReplayCheck = changeReplayCheck;

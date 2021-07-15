@@ -8,6 +8,7 @@ import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidSuccession;
 import fr.sncf.osrd.simulation.ChangeReplayChecker;
 import fr.sncf.osrd.simulation.ChangeSerializer;
 import fr.sncf.osrd.simulation.Simulation;
@@ -57,7 +58,7 @@ public final class SimulateCommand implements CliCommand {
 
             // create the simulation and add change consumers
             var multiplexer = new ChangeConsumerMultiplexer(changeConsumers);
-            var sim = Simulation.createFromInfra(config.infra, 0, multiplexer);
+            var sim = Simulation.createFromInfraAndSuccessions(config.infra, config.switchSuccessions, 0, multiplexer);
 
             if (config.changeReplayCheck)
                 multiplexer.add(ChangeReplayChecker.from(sim));
@@ -83,7 +84,7 @@ public final class SimulateCommand implements CliCommand {
         } catch (SimulationError simulationError) {
             logger.error("an logic error prevented the simulation from completing", simulationError);
             return 1;
-        } catch (InvalidInfraException | InvalidRollingStock | InvalidSchedule exception) {
+        } catch (InvalidInfraException | InvalidRollingStock | InvalidSchedule | InvalidSuccession exception) {
             logger.error("an error occurred while parsing the input", exception);
             return 1;
         } catch (IOException ioException) {

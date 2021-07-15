@@ -51,7 +51,8 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 List<SortedArraySet<TVDSection>> releaseGroups,
                 HashMap<Switch, SwitchPosition> switchesPosition,
                 Waypoint entryPoint,
-                Signal entrySignal
+                Signal entrySignalNormal,
+                Signal entrySignalReverse
         ) throws InvalidInfraException {
             var length = 0;
             var tvdSectionsPath = new ArrayList<TVDSectionPath>();
@@ -95,7 +96,15 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 throw new InvalidInfraException(String.format(
                         "Route '%s' has a tvd section that is not part of any of its release groups", id));
 
+            // Get start waypoint and start direction
+            var firstTVDSectionPath = tvdSectionsPath.get(0);
+            var firstTVDSectionPathDir = tvdSectionsPathDirection.get(0);
+            var startWaypoint = waypointGraph.getNode(firstTVDSectionPath.getStartNode(firstTVDSectionPathDir));
+            var waypointDirection = firstTVDSectionPath.nodeDirection(firstTVDSectionPathDir, EdgeEndpoint.BEGIN);
+
             // Create route
+            var entrySignal = waypointDirection == EdgeDirection.START_TO_STOP? entrySignalNormal : entrySignalReverse;
+
             var route = new Route(
                     id,
                     routeGraph,
@@ -109,12 +118,8 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
             routeGraph.routeMap.put(id, route);
 
             // Link route to the starting waypoint
-            var firstTVDSectionPath = tvdSectionsPath.get(0);
-            var firstTVDSectionPathDir = tvdSectionsPathDirection.get(0);
-            var startWaypoint = waypointGraph.getNode(firstTVDSectionPath.getStartNode(firstTVDSectionPathDir));
-            var waypointDirection = firstTVDSectionPath.nodeDirection(firstTVDSectionPathDir, EdgeEndpoint.BEGIN);
             startWaypoint.getRouteNeighbors(waypointDirection).add(route);
-
+            
             // Link route to track sections and tvd sections
             double routeOffset = 0;
             for (int i = 0; i < route.tvdSectionsPaths.size(); i++) {
