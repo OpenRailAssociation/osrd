@@ -96,14 +96,8 @@ public class SimulationEndpoint implements Take {
         var trainSchedules = RJSSimulationParser.parse(infra, rjsSimulation);
 
         // load trains successions tables
-        List<SuccessionTable> successions = null;
-
-        if (request.successions == null) {
-            successions = new ArrayList<>();
-            for (var s : infra.switches) {
-                successions.add(new SuccessionTable(s.id, new ArrayList<>()));
-            }
-        } else {
+        var successions = new ArrayList<SuccessionTable>();
+        if (request.successions != null) {
             var rjsSuccessions = new RJSSuccessions(request.successions);
             successions = RJSSuccessionsParser.parse(rjsSuccessions);
         }
