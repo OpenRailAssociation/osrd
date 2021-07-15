@@ -240,7 +240,7 @@ public class TrainPhysicsIntegrator {
 
         timeDelta = computeTimeDelta(currentSpeed, fullStepAcceleration, maxDistance);
         assert timeDelta < timeStep && timeDelta > 0;
-        newSpeed = currentSpeed + fullStepAcceleration * timeDelta;
+        newSpeed = currentSpeed + directionSign * fullStepAcceleration * timeDelta;
         return  new PositionUpdate(timeDelta, maxDistance, newSpeed);
     }
 }

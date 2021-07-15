@@ -33,7 +33,7 @@ public final class LimitAnnounceSpeedController extends SpeedController {
                 targetSpeed,
                 targetPosition - requiredBrakingDistance,
                 targetPosition,
-                gamma
+                gamma //maxBraking
         );
     }
 

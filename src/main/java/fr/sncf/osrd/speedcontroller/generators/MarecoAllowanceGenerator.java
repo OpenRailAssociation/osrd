@@ -94,14 +94,13 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     private CoastingSpeedController generateCoastingSpeedControllerAtPosition(SortedDoubleMap speeds,
                                                                               double endLocation, double timestep) {
         double speed = speeds.interpolate(endLocation);
-
         var location = convertPosition(schedule, sim, endLocation);
 
-        do {
+        while (speed < speeds.interpolate(location.getPathPosition()) && location.getPathPosition() >= 0.0001) {
             var integrator = TrainPhysicsIntegrator.make(timestep, schedule.rollingStock,
                     speed, location.meanTrainGrade());
             var action = Action.coast();
-            var update =  integrator.computeUpdate(action, Double.POSITIVE_INFINITY,
+            var update =  integrator.computeUpdate(action, location.getPathPosition(),
                     -1);
             speed = update.speed;
 
@@ -109,7 +108,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             // TODO (optimization): support negative delta
             location = convertPosition(schedule, sim, location.getPathPosition() - update.positionDelta);
 
-        } while (speed < speeds.interpolate(location.getPathPosition()));
+        }
         return new CoastingSpeedController(location.getPathPosition(), endLocation);
     }
 

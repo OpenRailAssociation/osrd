@@ -90,9 +90,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
             nextValue = (lowerBound + higherBound) / 2;
             nextSpeedControllers = getSpeedControllers(schedule, nextValue, beginLocation, endLocation);
             var expectedTimes = getExpectedTimes(sim, schedule,
-                    nextSpeedControllers, 1);
-            //var expectedTimes = getExpectedTimes(sim, schedule,
-            //        nextSpeedControllers, 1, beginLocation, endLocation, initialSpeed);
+                    nextSpeedControllers, 0.1);
             time = expectedTimes.lastEntry().getValue() - expectedTimes.firstEntry().getValue();
             if (time > targetTime)
                 lowerBound = nextValue;
@@ -108,7 +106,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     /** Saves a speed / position graph, for debugging purpose */
     public void saveGraph(Set<SpeedController> speedControllers, Simulation sim, TrainSchedule schedule, String path) {
         try {
-            PrintWriter writer = null;
+            PrintWriter writer;
             writer = new PrintWriter(path, "UTF-8");
             writer.println("position,speed");
             var expectedSpeeds = getExpectedSpeeds(sim, schedule, speedControllers, 0.01);
