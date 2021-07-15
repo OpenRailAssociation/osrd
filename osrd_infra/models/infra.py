@@ -57,6 +57,14 @@ class Infra(models.Model):
         EntityNamespace, on_delete=models.CASCADE, editable=False
     )
 
+    def save(self, **kwargs):
+        if not self.namespace_id:
+            self.namespace = EntityNamespace()
+            self.namespace.save()
+
+    def delete(self, *args, **kwargs):
+        self.namespace.delete()
+
     def __str__(self):
         return self.name
 

@@ -1,5 +1,5 @@
 from osrd_infra.serializers import InfraSerializer
-from osrd_infra.models import Infra, EntityNamespace
+from osrd_infra.models import Infra
 from rest_framework.viewsets import GenericViewSet
 from rest_framework import mixins
 from rest_framework.decorators import action
@@ -22,9 +22,7 @@ class InfraView(
     serializer_class = InfraSerializer
 
     def perform_create(self, serializer):
-        namespace = EntityNamespace()
-        namespace.save()
-        serializer.save(owner=self.request.user.sub, namespace=namespace)
+        serializer.save(owner=self.request.user.sub)
 
     @action(detail=True, methods=["get"])
     def geojson(self, request, pk=None):

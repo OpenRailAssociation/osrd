@@ -7,13 +7,18 @@ from osrd_infra.models import (
     Component,
     get_entity_meta,
     get_component_meta,
-    EntityNamespace,
     ALL_ENTITY_TYPES,
     # misc
     Infra,
     Path,
     RollingStock,
 )
+
+
+@admin.register(Infra)
+class InfraAdmin(admin.ModelAdmin):
+    list_display = ("name", "namespace")
+    readonly_fields = ("namespace",)
 
 
 def generate_inline(component: Type[Component]):
@@ -42,10 +47,7 @@ for entity_type in ALL_ENTITY_TYPES.values():
 
 admin.site.register(
     [
-        # ecs
-        EntityNamespace,
         # misc
-        Infra,
         Path,
         RollingStock,
     ]
