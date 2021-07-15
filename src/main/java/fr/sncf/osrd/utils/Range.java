@@ -1,14 +1,18 @@
 package fr.sncf.osrd.utils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.simulation.ChangeSerializer.SerializableDouble;
 
 import java.util.Objects;
 
 public class Range implements Comparable<Range> {
     public static final Range INFINITE_RANGE = new Range(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
-    public final double begin;
-    public final double end;
+    @SerializableDouble
+    protected double begin;
+
+    @SerializableDouble
+    protected double end;
 
 
     /**
@@ -17,22 +21,8 @@ public class Range implements Comparable<Range> {
      * @param end the end bound
      */
     public Range(double begin, double end) {
-        assert begin <= end;
         this.begin = begin;
         this.end = end;
-    }
-
-    /**
-     * Restricts (clamps) a value to this range
-     * @param value the value to restrict to this range
-     * @return the clamped value
-     */
-    public double clamp(double value) {
-        if (value < begin)
-            value = begin;
-        if (value > end)
-            value = end;
-        return value;
     }
 
     @Override
@@ -62,5 +52,16 @@ public class Range implements Comparable<Range> {
         if (compare == 0)
             return Double.compare(end, other.end);
         return compare;
+    }
+
+    public double length() {
+        return Math.abs(end - begin);
+    }
+
+    /** Check if a position is contained in the range */
+    public boolean containsPosition(double position) {
+        if (Double.min(begin, end) > position)
+            return false;
+        return Double.max(begin, end) >= position;
     }
 }
