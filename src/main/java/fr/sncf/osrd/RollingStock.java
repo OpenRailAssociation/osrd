@@ -1,7 +1,8 @@
 package fr.sncf.osrd;
 
+import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.train.TrainCapability;
+import fr.sncf.osrd.train.TrainFeature;
 
 
 /**
@@ -18,6 +19,11 @@ public class RollingStock {
 
     public final RollingStock.GammaType gammaType;
     public final double gamma;
+
+    public final String source;
+
+    @Json(name = "verbose_name")
+    public final String verboseName;
 
     /** the length of the train, in meters. */
     public final double length;
@@ -48,7 +54,7 @@ public class RollingStock {
      */
     public final double inertiaCoefficient;
 
-    public final TrainCapability[] capabilities;
+    public final TrainFeature[] features;
 
     /**
      * Associates a speed to a force.
@@ -97,16 +103,20 @@ public class RollingStock {
         return maxEffort;
     }
 
+    // TODO masses
+
     /** Creates a new rolling stock (a physical train inventory item). */
     public RollingStock(
             String id,
+            String source,
+            String verboseName,
             double length,
             double mass,
             double inertiaCoefficient,
             double a,
             double b,
             double c,
-            TrainCapability[] capabilities,
+            TrainFeature[] features,
             double maxSpeed,
             double startUpTime,
             double startUpAcceleration,
@@ -116,6 +126,8 @@ public class RollingStock {
             TractiveEffortPoint[] tractiveEffortCurve
     ) {
         this.id = id;
+        this.source = source;
+        this.verboseName = verboseName;
         this.A = a;
         this.B = b;
         this.C = c;
@@ -128,7 +140,7 @@ public class RollingStock {
         this.gammaType = gammaType;
         this.mass = mass;
         this.inertiaCoefficient = inertiaCoefficient;
-        this.capabilities = capabilities;
+        this.features = features;
         this.tractiveEffortCurve = tractiveEffortCurve;
     }
 }

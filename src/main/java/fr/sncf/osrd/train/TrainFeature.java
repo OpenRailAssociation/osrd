@@ -1,6 +1,6 @@
 package fr.sncf.osrd.train;
 
-public enum TrainCapability {
+public enum TrainFeature {
     TVM300,
     TVM430,
     ETCS1,

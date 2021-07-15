@@ -125,6 +125,13 @@ public class RailJSONParser {
             speedSections.put(rjsSpeedSection.id, speedSection);
         }
 
+        // parse electrical profile types
+        var catenaryTypes = new HashMap<String, CatenaryType>();
+        for (var rjsCatenaryType : railJSON.catenaryTypes) {
+            var catenaryType = new CatenaryType(rjsCatenaryType.type, rjsCatenaryType.voltage);
+            catenaryTypes.put(rjsCatenaryType.id, catenaryType);
+        }
+
         var waypointsMap = new HashMap<String, Waypoint>();
         var detectorIdToSignalNormalMap = new HashMap<String, Signal>();
         var detectorIdToSignalReverseMap = new HashMap<String, Signal>();
@@ -163,6 +170,18 @@ public class RailJSONParser {
                     infraTrackSection.forwardSpeedSections.add(rangeSpeedLimit);
                 if (rjsSpeedLimits.applicableDirection.appliesToReverse())
                     infraTrackSection.backwardSpeedSections.add(rangeSpeedLimit);
+            }
+
+            // Parser the type of electrical profile in the TrackSection
+            if (trackSection.catenarySections == null)
+                trackSection.catenarySections = new ArrayList<>();
+            for (var rjsCatenarySections : trackSection.catenarySections) {
+                var catenarySection = catenaryTypes.get(rjsCatenarySections.ref.id);
+                var rangeCatenarySection = new RangeValue<>(rjsCatenarySections.begin, rjsCatenarySections.end, catenarySection);
+                if (rjsCatenarySections.applicableDirection.appliesToNormal())
+                    infraTrackSection.forwardCatenarySections.add(rangeCatenarySection);
+                if (rjsCatenarySections.applicableDirection.appliesToReverse())
+                    infraTrackSection.backwardCatenarySections.add(rangeCatenarySection);
             }
 
             // Parse waypoints

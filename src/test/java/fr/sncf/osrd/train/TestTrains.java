@@ -7,14 +7,16 @@ import java.util.ArrayList;
 public class TestTrains {
     public static final RollingStock FAST_NO_FRICTION_TRAIN = new RollingStock(
             "no friction train",
+            "test source",
+            "no friction train verbose name",
             200, 1, 1, 0,
             0,
             0,
-            new TrainCapability[] {
-                    TrainCapability.TVM430,
-                    TrainCapability.TVM300,
-                    TrainCapability.ETCS1,
-                    TrainCapability.ETCS2
+            new TrainFeature[] {
+                    TrainFeature.TVM430,
+                    TrainFeature.TVM300,
+                    TrainFeature.ETCS1,
+                    TrainFeature.ETCS2
             },
             300,
             0,
@@ -47,14 +49,16 @@ public class TestTrains {
 
         REALISTIC_FAST_TRAIN = new RollingStock(
                 "fast train",
+                "fast train source",
+                "fast train verbose name",
                 400, trainMass, 1.05, (0.65 * trainMass) / 100,
                 ((0.008 * trainMass) / 100) * 3.6,
                 (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
-                new TrainCapability[] {
-                        TrainCapability.TVM430,
-                        TrainCapability.TVM300,
-                        TrainCapability.ETCS1,
-                        TrainCapability.ETCS2
+                new TrainFeature[] {
+                        TrainFeature.TVM430,
+                        TrainFeature.TVM300,
+                        TrainFeature.ETCS1,
+                        TrainFeature.ETCS2
                 }, maxSpeed,
                 30,
                 0.05,
@@ -66,14 +70,16 @@ public class TestTrains {
 
         REALISTIC_FAST_TRAIN_MAX_DEC_TYPE = new RollingStock(
                 "fast train",
+                "fast train source",
+                "fast train verbose",
                 400, trainMass, 1.05, (0.65 * trainMass) / 100,
                 ((0.008 * trainMass) / 100) * 3.6,
                 (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
-                new TrainCapability[] {
-                        TrainCapability.TVM430,
-                        TrainCapability.TVM300,
-                        TrainCapability.ETCS1,
-                        TrainCapability.ETCS2
+                new TrainFeature[] {
+                        TrainFeature.TVM430,
+                        TrainFeature.TVM300,
+                        TrainFeature.ETCS1,
+                        TrainFeature.ETCS2
                 }, maxSpeed,
                 30,
                 0.05,
