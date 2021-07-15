@@ -2,22 +2,16 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.simulation.ChangeSerializer.SerializableDouble;
 import fr.sncf.osrd.utils.DeepComparable;
+import fr.sncf.osrd.utils.Range;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.Objects;
 
-public final class TrackSectionRange implements DeepComparable<TrackSectionRange> {
+public final class TrackSectionRange extends Range implements DeepComparable<TrackSectionRange> {
     public final TrackSection edge;
     public final EdgeDirection direction;
-
-    @SerializableDouble
-    private double beginPosition;
-
-    @SerializableDouble
-    private double endPosition;
 
     // region STD_OVERRIDES
 
@@ -26,8 +20,8 @@ public final class TrackSectionRange implements DeepComparable<TrackSectionRange
     public boolean deepEquals(TrackSectionRange other) {
         return edge == other.edge
                 && direction == other.direction
-                && beginPosition == other.beginPosition
-                && endPosition == other.endPosition;
+                && begin == other.begin
+                && end == other.end;
     }
 
     @Override
@@ -46,15 +40,15 @@ public final class TrackSectionRange implements DeepComparable<TrackSectionRange
         if (direction != other.direction)
             return false;
 
-        if (beginPosition != other.beginPosition)
+        if (begin != other.begin)
             return false;
 
-        return endPosition == other.endPosition;
+        return end == other.end;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(edge.id, direction, beginPosition, endPosition);
+        return Objects.hash(edge.id, direction, begin, end);
     }
 
     // endregion
@@ -63,27 +57,25 @@ public final class TrackSectionRange implements DeepComparable<TrackSectionRange
      * Creates a new track section range
      * @param edge the edge
      * @param direction the direction to use when iterating on the edge.
-     * @param beginPosition the position inside the edge at which the range starts
-     * @param endPosition the position inside the edge at which the range ends
+     * @param begin the position inside the edge at which the range starts
+     * @param end the position inside the edge at which the range ends
      */
     public TrackSectionRange(
             TrackSection edge,
             EdgeDirection direction,
-            double beginPosition,
-            double endPosition
+            double begin,
+            double end
     ) {
+        super(begin, end);
         this.edge = edge;
         this.direction = direction;
-        this.beginPosition = beginPosition;
-        this.endPosition = endPosition;
     }
 
     /** Clone a track section range */
     public TrackSectionRange(TrackSectionRange original) {
+        super(original.begin, original.end);
         this.edge = original.edge;
         this.direction = original.direction;
-        this.beginPosition = original.beginPosition;
-        this.endPosition = original.endPosition;
     }
 
     /** Creates the opposite track section range */
@@ -91,8 +83,8 @@ public final class TrackSectionRange implements DeepComparable<TrackSectionRange
         return new TrackSectionRange(
                 this.edge,
                 this.direction.opposite(),
-                this.endPosition,
-                this.beginPosition
+                this.end,
+                this.begin
         );
     }
 
@@ -107,37 +99,26 @@ public final class TrackSectionRange implements DeepComparable<TrackSectionRange
         return new TrackSectionRange(edge, direction, edge.length, Double.max(edge.length - desiredLength, 0));
     }
 
-    /** Check if a position is contained in the track section range */
-    public boolean containsPosition(double position) {
-        if (Double.min(beginPosition, endPosition) > position)
-            return false;
-        return Double.max(beginPosition, endPosition) >= position;
-    }
-
-    /** Check if a position is contained in the track section range */
+    /** Check if a location is contained in the track section range */
     public boolean containsLocation(TrackSectionLocation location) {
         if (location.edge != edge)
             return false;
         return containsPosition(location.offset);
     }
 
-    public double length() {
-        return Math.abs(endPosition - beginPosition);
-    }
-
     /** Get the available forward space of the edge */
     public double forwardSpace() {
         if (direction == EdgeDirection.START_TO_STOP)
-            return edge.length - endPosition;
-        return endPosition;
+            return edge.length - end;
+        return end;
     }
 
     public double getBeginPosition() {
-        return beginPosition;
+        return begin;
     }
 
     public double getEndPosition() {
-        return endPosition;
+        return end;
     }
 
     public TrackSectionLocation getBeginLocation() {
@@ -151,23 +132,23 @@ public final class TrackSectionRange implements DeepComparable<TrackSectionRange
     /** Expand the range of the track section by following its direction */
     public void expandForward(double delta) {
         if (direction == EdgeDirection.START_TO_STOP) {
-            endPosition += delta;
-            assert endPosition <= edge.length;
+            end += delta;
+            assert end <= edge.length;
             return;
         }
-        endPosition -= delta;
-        assert endPosition >= 0.;
+        end -= delta;
+        assert end >= 0.;
     }
 
     /** Shrink the range of the track section by following its direction */
     public void shrinkForward(double delta) {
         if (direction == EdgeDirection.START_TO_STOP) {
-            beginPosition += delta;
-            assert beginPosition <= endPosition;
+            begin += delta;
+            assert begin <= end;
             return;
         }
-        beginPosition -= delta;
-        assert beginPosition >= endPosition;
+        begin -= delta;
+        assert begin >= end;
     }
 
     /** Merge two track sections range that share their edge and direction */
@@ -178,20 +159,20 @@ public final class TrackSectionRange implements DeepComparable<TrackSectionRange
             return new TrackSectionRange(
                     left.edge,
                     left.direction,
-                    Double.min(left.beginPosition, right.beginPosition),
-                    Double.max(left.endPosition, right.endPosition));
+                    Double.min(left.begin, right.begin),
+                    Double.max(left.end, right.end));
         return new TrackSectionRange(
                 left.edge,
                 left.direction,
-                Double.max(left.beginPosition, right.beginPosition),
-                Double.min(left.endPosition, right.endPosition));
+                Double.max(left.begin, right.begin),
+                Double.min(left.end, right.end));
     }
 
     /** Returns whether there is a common point between two ranges */
     public boolean intersect(TrackSectionRange other) {
         if (other.edge != edge)
             return false;
-        return other.containsPosition(beginPosition) || other.containsPosition(endPosition);
+        return other.containsPosition(begin) || other.containsPosition(end);
     }
 
     @Override
