@@ -1,6 +1,9 @@
 package fr.sncf.osrd.utils;
 
-import java.util.ArrayList;
+
+import javafx.util.Pair;
+
+import java.util.HashMap;
 import java.util.TreeMap;
 
 public class DoubleRangeMap extends TreeMap<Double, Double> {
@@ -13,19 +16,28 @@ public class DoubleRangeMap extends TreeMap<Double, Double> {
             put(end, 0.);
     }
 
-    /** Retrieve a value */
-    public ArrayList<Double> getValuesInRange(double begin, double end) {
+    /** Retrieve values in a given range returning inner ranges and their values */
+    public HashMap<Pair<Double, Double>, Double> getValuesInRange(double begin, double end) {
         // Handle reversed range
         if (end < begin)
             return getValuesInRange(end, begin);
 
-        var res = new ArrayList<Double>();
+        var res = new HashMap<Pair<Double, Double>, Double>();
         var floorEntry = floorEntry(begin);
-        if (floorEntry != null)
-            res.add(floorEntry.getValue());
+        double lastValue = 0.;
 
-        for (var entry : subMap(begin, end).entrySet())
-            res.add(entry.getValue());
+        if (floorEntry != null)
+            lastValue = floorEntry.getValue();
+
+        for (var entry : subMap(begin, end).entrySet()) {
+            if (entry.getKey() >= begin)
+                continue;
+            res.put(new Pair<>(begin, entry.getKey()), lastValue);
+            begin = entry.getKey();
+            lastValue = entry.getValue();
+        }
+
+        res.put(new Pair<>(begin, end), lastValue);
         return res;
     }
 }
