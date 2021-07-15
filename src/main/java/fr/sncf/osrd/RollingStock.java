@@ -15,7 +15,7 @@ public class RollingStock {
     public final double A; // in newtons
     public final double B; // in newtons / (m/s)
     public final double C; // in newtons / (m/s^2)
-    public final Double maxGamma = null;
+    public final double maxGamma = Double.NaN;
 
     /**
      * Gets the rolling resistance at a given speed, which is a force that always goes

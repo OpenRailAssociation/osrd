@@ -173,14 +173,6 @@ public final class TrackSection extends BiNEdge<TrackSection> {
             throw new InvalidInfraException(String.format("invalid PointSequence end for %s", id));
     }
 
-    /**
-     * Ensure the edge data in consistent.
-     * @throws InvalidInfraException when discrepancies are detected
-     */
-    public void validate() {
-        // TODO: validate speed limits
-    }
-
     /*
      * All the functions below are attributes getters, meant to implement either RangeAttrGetter or PointAttrGetter.
      * These can be passed around to build generic algorithms on attributes.
