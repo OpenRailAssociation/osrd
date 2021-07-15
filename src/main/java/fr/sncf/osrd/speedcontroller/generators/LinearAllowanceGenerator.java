@@ -5,9 +5,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.Margin
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.MapSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.utils.SortedDoubleMap;
-import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.util.ArrayList;
 import java.util.HashSet;

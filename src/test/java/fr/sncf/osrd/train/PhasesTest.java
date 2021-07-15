@@ -20,12 +20,12 @@ public class PhasesTest {
         final var infra = getBaseInfra();
 
         final var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         run(sim, config);
         var actualEndTime = sim.getTime();
 
         final var configBase = getBaseConfig();
-        var simBase = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var simBase = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         run(simBase, configBase);
         var baseEndTime = simBase.getTime();
 
@@ -37,11 +37,11 @@ public class PhasesTest {
         final var infra = getBaseInfra();
 
         final var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var events = run(sim, config);
 
         final var configBase = getBaseConfigNoAllowance();
-        var simBase = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var simBase = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var eventsRef = run(simBase, configBase);
 
         assertEquals(eventsRef.size() + 1, events.size());
@@ -63,7 +63,7 @@ public class PhasesTest {
 
         infra.switches.iterator().next().positionChangeDelay = 500;
 
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
 
         // If the train ignores the signals, an exception will be thrown when it runs over the moving switch
@@ -77,7 +77,7 @@ public class PhasesTest {
 
         infra.switches.iterator().next().positionChangeDelay = 42;
 
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
 
         SwitchState switchState = sim.infraState.getSwitchState(0);

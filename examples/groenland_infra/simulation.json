@@ -1,0 +1,159 @@
+{
+    "rolling_stocks": [
+        {
+            "id": "fast_rolling_stock",
+            "rolling_resistance": {
+                "type": "davis",
+                "A": 5400.0,
+                "B": 200.0,
+                "C": 12.0
+            },
+            "length": 20,
+            "max_speed": 80,
+            "startup_time": 10,
+            "startup_acceleration": 0.05,
+            "comfort_acceleration": 0.25,
+            "timetable_gamma": 0.5,
+            "mass": 900000,
+            "inertia_coefficient": 1.05,
+            "features": [
+                "TVM300",
+                "TVM430",
+                "ETCS1",
+                "ETCS2",
+                "KVB"
+            ],
+            "tractive_effort_curve": [
+                {
+                    "speed": 0,
+                    "max_effort": 441666.6666666667
+                },
+                {
+                    "speed": 5,
+                    "max_effort": 439473.6842105263
+                },
+                {
+                    "speed": 10,
+                    "max_effort": 435714.28571428574
+                },
+                {
+                    "speed": 15,
+                    "max_effort": 427777.77777777775
+                },
+                {
+                    "speed": 20,
+                    "max_effort": 400000.0
+                },
+                {
+                    "speed": 22,
+                    "max_effort": 350971.5388299929
+                },
+                {
+                    "speed": 27,
+                    "max_effort": 347206.93642395496
+                },
+                {
+                    "speed": 32,
+                    "max_effort": 346938.7385068534
+                },
+                {
+                    "speed": 37,
+                    "max_effort": 344395.0325320009
+                },
+                {
+                    "speed": 42,
+                    "max_effort": 334314.2138640166
+                },
+                {
+                    "speed": 47,
+                    "max_effort": 313589.8108101956
+                },
+                {
+                    "speed": 52,
+                    "max_effort": 283584.5657113532
+                },
+                {
+                    "speed": 57,
+                    "max_effort": 250604.14937613969
+                },
+                {
+                    "speed": 62,
+                    "max_effort": 222698.71360301683
+                },
+                {
+                    "speed": 67,
+                    "max_effort": 204685.35097358702
+                },
+                {
+                    "speed": 72,
+                    "max_effort": 195984.55717992093
+                },
+                {
+                    "speed": 77,
+                    "max_effort": 192916.76425246376
+                }
+            ]
+        }
+    ],
+    "train_schedules": [
+        {
+            "id": "train.0",
+            "rolling_stock": "fast_rolling_stock",
+            "initial_head_location": {
+                "track_section": "ne.micro.22",
+                "offset": 250
+            },
+            "initial_route": "rt.22_END-22_BEGIN",
+            "initial_speed": 0,
+            "routes": [
+                "rt.22_END-22_BEGIN",
+                "rt.22_BEGIN-41_END",
+                "rt.41_END-41_BEGIN",
+                "rt.41_BEGIN-1_BEGIN",
+                "rt.1_BEGIN-1_END",
+                "rt.1_END-2_BEGIN",
+                "rt.2_BEGIN-2_END",
+                "rt.2_END-3_BEGIN",
+                "rt.3_BEGIN-3_END",
+                "rt.3_END-4_BEGIN",
+                "rt.4_BEGIN-4_END",
+                "rt.4_END-5_BEGIN",
+                "rt.5_BEGIN-5_END",
+                "rt.5_END-6_BEGIN",
+                "rt.6_BEGIN-6_END",
+                "rt.6_END-7_BEGIN",
+                "rt.7_BEGIN-7_END",
+                "rt.7_END-8_BEGIN",
+                "rt.8_BEGIN-8_END",
+                "rt.8_END-9_BEGIN",
+                "rt.9_BEGIN-9_END",
+                "rt.9_END-54_BEGIN",
+                "rt.54_BEGIN-54_END",
+                "rt.54_END-56_BEGIN",
+                "rt.56_BEGIN-56_END",
+                "rt.56_END-58_BEGIN",
+                "rt.58_BEGIN-58_END",
+                "rt.58_END-59_BEGIN",
+                "rt.59_BEGIN-59_END",
+                "rt.59_END-60_BEGIN",
+                "rt.60_BEGIN-60_END",
+                "rt.60_END-61_BEGIN",
+                "rt.61_BEGIN-61_END",
+                "rt.61_END-62_BEGIN",
+                "rt.62_BEGIN-62_END",
+                "rt.62_END-68_BEGIN",
+                "rt.68_BEGIN-68_END"
+            ],
+            "phases": [
+                {
+                    "driver_sight_distance": 400,
+                    "end_location": {
+                        "track_section": "ne.micro.68",
+                        "offset": 559
+                    },
+                    "type": "navigate"
+                }
+            ]
+        }
+    ]
+}

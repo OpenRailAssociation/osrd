@@ -91,14 +91,14 @@ public class StaticSpeedLimitTest {
         releaseGroup.add(tvdSection);
         releaseGroups.add(releaseGroup);
         var route = routeGraphBuilder.makeRoute(
-                "R1", tvdSectionsR1, releaseGroups, new HashMap<>(), waypointsAB.get(0), null);
+                "R1", tvdSectionsR1, releaseGroups, new HashMap<>(), waypointsAB.get(0), null, null);
 
         final var infra = Infra.build(trackGraph, waypointGraph, routeGraphBuilder.build(),
                 tvdSections, new HashMap<>(), new ArrayList<>(), new ArrayList<>());
 
         // initialize the simulation
         var changelog = new ArrayChangeLog();
-        var sim = Simulation.createFromInfra(infra, 0, changelog);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(infra, 0, changelog);
 
         var startLocation = new TrackSectionLocation(edge, 0);
         var path = new TrainPath(Collections.singletonList(route),
@@ -106,7 +106,8 @@ public class StaticSpeedLimitTest {
                 new TrackSectionLocation(edge, 10000));
         var phases = new ArrayList<Phase>();
         phases.add(SignalNavigatePhase.from(
-                400, startLocation,
+                400,
+                startLocation,
                 new TrackSectionLocation(edge, 10000), path, null));
 
         var schedule = new TrainSchedule(

@@ -25,7 +25,7 @@ public class OptionalTests {
         // We force a (very long) switch change, to make sure signals are necessary
         infra.switches.iterator().next().positionChangeDelay = 42;
 
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
         run(sim, config);
     }
@@ -45,7 +45,7 @@ public class OptionalTests {
         }
         infra.switches.iterator().next().positionChangeDelay = 42;
 
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
         assertThrows(SimulationError.class,
                 () -> runWithExceptions(sim, config),
@@ -55,8 +55,8 @@ public class OptionalTests {
 
     @Test
     void testThrowOnInvalidDelay() throws InvalidInfraException {
-        final var infra = getBaseInfra("tiny_infra/infra_optional.json");
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var infra = getBaseInfra("tiny_infra/infra_optional.json");
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var trueExpr = new RJSRSExpr.True();
         var delay = new RJSRSExpr.Delay(0, trueExpr);
         var signalId = new ID<RJSSignal>(sim.infraState.getSignalState(0).signal.id);

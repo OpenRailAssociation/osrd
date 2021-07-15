@@ -24,7 +24,7 @@ public class RouteStateTest {
         final var config = getBaseConfig();
         assert config != null;
 
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
 
         config.trainSchedules.clear();
 
@@ -47,7 +47,7 @@ public class RouteStateTest {
 
         infra.switches.iterator().next().positionChangeDelay = 10;
 
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
 
         RouteState routeState = sim.infraState.getRouteState(3);
@@ -76,7 +76,7 @@ public class RouteStateTest {
             if (route.id.equals("rt.C3-S7"))
                 route.switchesPosition.put(new ID<>(newSwitch.id), RJSSwitch.Position.LEFT);
 
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
         sim.infraState.getSwitchState(1).setPosition(sim, SwitchPosition.RIGHT);
 
@@ -100,7 +100,7 @@ public class RouteStateTest {
 
         config.trainSchedules.clear();
 
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
 
         RouteState routeState = sim.infraState.getRouteState(3);
         makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
@@ -125,7 +125,7 @@ public class RouteStateTest {
 
         var changelog = new ArrayChangeLog();
 
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, changelog);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, changelog);
 
         config.trainSchedules.clear();
 

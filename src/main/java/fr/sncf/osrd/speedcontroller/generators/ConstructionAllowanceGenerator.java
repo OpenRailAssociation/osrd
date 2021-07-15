@@ -3,8 +3,6 @@ package fr.sncf.osrd.speedcontroller.generators;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.train.TrainPath;
-import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -1,0 +1,11 @@
+{
+    "successions": [
+        {
+            "switch": "il.switch.0-1-2",
+            "table": [
+                "train.0",
+                "train.1"
+            ]
+        }
+    ]
+}

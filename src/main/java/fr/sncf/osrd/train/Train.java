@@ -102,7 +102,7 @@ public class Train {
     /** Reserve routes when the train is in navigate phase */
     public void onEventOccurred(Simulation sim) throws SimulationError {
         // TODO find a smarter way to do it and remove this method
-        ActivateRoute.reserveRoutes(sim, lastState);
+        ActivateRoute.reserveRoutes(sim, this);
     }
 
     // endregion

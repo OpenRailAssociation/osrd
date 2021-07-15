@@ -5,22 +5,26 @@ import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
-import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 
 public class ActivateRoute {
-    /** This function try to reserve forwarding routes */
+    /**
+     * This function send reservation requests to the TowerState to reserve the next forwarding routes
+     * @param sim the simulation
+     * @param navigatePhaseState the current navigate phase of the train
+     * @param train the train that emit the requests
+     * @throws SimulationError
+     */
     public static void reserveRoutes(
             Simulation sim,
-            TrainState trainState
+            Train train
     ) throws SimulationError {
         // TODO have a smarter way to reserve routes
-        if (trainState.routeIndex + 1 >= trainState.path.routePath.size())
+        var lastState = train.getLastState();
+        if (lastState.routeIndex + 1 >= lastState.path.routePath.size())
             return;
-        var nextRoute = trainState.path.routePath.get(trainState.routeIndex + 1);
+        var nextRoute = lastState.path.routePath.get(lastState.routeIndex + 1);
         var nextRouteState = sim.infraState.getRouteState(nextRoute.index);
-        // Try to reserve the route if possible
-        if (nextRouteState.status == RouteStatus.FREE)
-            nextRouteState.reserve(sim);
+        sim.infraState.towerState.request(sim, nextRouteState, train);
     }
 
     /** Reserve the initial routes, mark occupied tvd sections and add interactable elements that are under the train
@@ -38,15 +42,19 @@ public class ActivateRoute {
         // Reserve the tvdSection where the train is created
         var trainPosition = trainState.location.trackSectionRanges.getFirst();
 
+        var lastTvdSectionPath = route.tvdSectionsPaths.get(0);
+        occupyTvdSectionPath(sim, lastTvdSectionPath);
+
         for (var i = 0; i < route.tvdSectionsPaths.size(); i++) {
             var currentTvdSectionPath = route.tvdSectionsPaths.get(i);
-            occupyTvdSectionPath(sim, currentTvdSectionPath);
             var currentTvdSectionPathDirection = route.tvdSectionsPathDirections.get(i);
             for (var trackSection : currentTvdSectionPath.getTrackSections(currentTvdSectionPathDirection)) {
                 if (trainPosition.intersect(trackSection))
                     return;
             }
-            freeTvdSectionPath(sim, currentTvdSectionPath);
+            freeTvdSectionPath(sim, lastTvdSectionPath);
+            occupyTvdSectionPath(sim, currentTvdSectionPath);
+            lastTvdSectionPath = currentTvdSectionPath;
         }
     }
 

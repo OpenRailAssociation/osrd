@@ -2,7 +2,6 @@ package fr.sncf.osrd.speedcontroller.generators;
 
 import static java.lang.Math.min;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.SpeedController;
