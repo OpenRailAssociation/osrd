@@ -183,21 +183,23 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
 
     /** Computes the average grade (slope) under the train. */
     public double meanTrainGrade() {
-        var meanVal = 0.;
+        double meanVal = 0.;
+        double totalWeight = 0.;
         for (var track : trackSectionRanges) {
             var gradients = track.edge.forwardGradients;
             if (track.direction == EdgeDirection.STOP_TO_START)
                 gradients = track.edge.backwardGradients;
 
             var slopesUnderTheTrain = gradients.getValuesInRange(track.getBeginPosition(), track.getEndPosition());
-            if(slopesUnderTheTrain.size() > 0) {
-                for (var slope : slopesUnderTheTrain) {
-                    meanVal += slope;
-                }
-                meanVal /= slopesUnderTheTrain.size();
+
+            for (var slope : slopesUnderTheTrain.entrySet()) {
+                var weight = slope.getKey().getValue() - slope.getKey().getKey();
+                meanVal += slope.getValue() * weight;
+                totalWeight += weight;
             }
+
         }
-        return meanVal;
+        return meanVal / totalWeight;
     }
 
     @Override
