@@ -489,6 +489,56 @@
       }
     }
   },
+  "catenary_types":[
+    {
+      "id": "A",
+      "voltage": 1500
+    },
+    {
+      "id": "A1",
+      "voltage" : 1500
+    },
+    {
+      "id": "B",
+      "voltage": 1500
+    },
+    {
+      "id": "B1",
+      "voltage": 1500
+    },
+    {
+      "id": "C",
+      "voltage": 1500
+    },
+    {
+      "id": "D",
+      "voltage": 1500
+    },
+    {
+      "id": "E",
+      "voltage": 1500
+    },
+    {
+      "id": "F",
+      "voltage": 1500
+    },
+    {
+      "id": "O",
+      "voltage": 1500
+    },
+    {
+      "id": "25k",
+      "voltage": 25000
+    },
+    {
+      "id": "20k",
+      "voltage": 20000
+    },
+    {
+      "id": "22k",
+      "voltage": 22000
+    }
+  ],
   "switches": [
     {
       "id": "il.switch_foo",
@@ -727,6 +777,20 @@
           "begin": 2000,
           "end": 6000,
           "ref": "speedsection.mid_limit"
+        }
+      ],
+      "catenary_sections": [
+        {
+          "applicable_direction": "BOTH",
+          "begin": 1000,
+          "end": 5000,
+          "ref": "A"
+        },
+        {
+          "applicable_direction": "BOTH",
+          "begin": 5000,
+          "end": 10000,
+          "ref": "25k"
         }
       ]
     },

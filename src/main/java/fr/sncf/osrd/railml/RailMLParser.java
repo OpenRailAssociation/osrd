@@ -1,6 +1,8 @@
 package fr.sncf.osrd.railml;
 
+import fr.sncf.osrd.infra.CatenaryType;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.railjson.schema.infra.RJSCatenaryType;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
@@ -108,6 +110,7 @@ public final class RailMLParser {
                 rjsTvdSections,
                 rjsRoutes,
                 rjsSpeedSections,
+                new ArrayList<>(),
                 rjsAspects,
                 new ArrayList<>(),
                 Map.of(RJSSwitchType.CLASSIC_NAME, RJSSwitchType.CLASSIC_TYPE)
