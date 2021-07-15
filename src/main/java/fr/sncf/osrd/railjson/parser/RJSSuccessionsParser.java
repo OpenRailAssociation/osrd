@@ -8,7 +8,7 @@ import fr.sncf.osrd.railjson.schema.RJSSuccessions;
 
 public class RJSSuccessionsParser {
     /** Parse the description of a switch succession tables */
-    public static List<SuccessionTable> parse(
+    public static ArrayList<SuccessionTable> parse(
             RJSSuccessions rjsSuccession
     ) throws InvalidSuccession {
         var switchSuccession = new ArrayList<SuccessionTable>();
