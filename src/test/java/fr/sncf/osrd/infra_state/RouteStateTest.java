@@ -20,9 +20,7 @@ public class RouteStateTest {
     @Test
     public void testSimpleReserve() throws InvalidInfraException {
         final var infra = getBaseInfra();
-        assert infra != null;
         final var config = getBaseConfig();
-        assert config != null;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
 
@@ -39,9 +37,7 @@ public class RouteStateTest {
     @Test
     public void testAwaitSwitchChange() throws InvalidInfraException, SimulationError {
         final var infra = getBaseInfra();
-        assert infra != null;
         final var config = getBaseConfig();
-        assert config != null;
 
         config.trainSchedules.clear();
 
@@ -62,9 +58,7 @@ public class RouteStateTest {
     @Test
     public void testSeveralSwitches() throws InvalidInfraException, SimulationError {
         final var infra = getBaseInfra();
-        assert infra != null;
         final var config = getBaseConfig();
-        assert config != null;
 
         config.trainSchedules.clear();
 
@@ -94,9 +88,7 @@ public class RouteStateTest {
     @Test
     public void testOccupied() throws InvalidInfraException {
         final var infra = getBaseInfra();
-        assert infra != null;
         final var config = getBaseConfig();
-        assert config != null;
 
         config.trainSchedules.clear();
 
@@ -119,9 +111,7 @@ public class RouteStateTest {
     @Test
     public void testReserveStatusChanges() throws InvalidInfraException, SimulationError {
         final var infra = getBaseInfra();
-        assert infra != null;
         final var config = getBaseConfig();
-        assert config != null;
 
         var changelog = new ArrayChangeLog();
 
@@ -149,5 +139,33 @@ public class RouteStateTest {
                 .map(Object::toString)
                 .collect(Collectors.toSet());
         assertEquals(expectedChanges, changesSet);
+    }
+
+    @Test
+    public void testCircularInfraReserves() throws InvalidInfraException {
+        final var infra = getBaseInfra("circular_infra/infra.json");
+        final var config = getBaseConfig("circular_infra/config.json");
+
+        var changelog = new ArrayChangeLog();
+
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, changelog);
+
+        config.trainSchedules.remove(2);
+        config.trainSchedules.remove(1);
+
+        run(sim, config);
+
+        var changesSet = changelog.publishedChanges.stream()
+                .filter(x -> x instanceof RouteState.RouteStatusChange)
+                .map(Object::toString)
+                .collect(Collectors.toSet());
+
+        // We check that every route has been reserved and occupied at least once
+        for (int i = 0; i < infra.routes.size(); i++) {
+            for (var status : new RouteStatus[]{RouteStatus.RESERVED, RouteStatus.OCCUPIED}) {
+                var expected = new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(i), status);
+                assert changesSet.contains(expected.toString());
+            }
+        }
     }
 }
