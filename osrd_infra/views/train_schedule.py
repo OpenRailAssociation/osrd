@@ -218,14 +218,14 @@ def format_signals(train_schedule_result):
 def get_train_phases(path):
     steps = path.payload["steps"]
     step_track = steps[-1]["position"]["track_section"]
-    return {
+    return [{
         "type": "navigate",
         "driver_sight_distance": 400,
         "end_location": {
             "track_section": format_track_section_id(step_track),
             "offset": steps[-1]["position"]["offset"],
         },
-    }
+    }]
 
 
 def get_train_stops(path):
