@@ -10,9 +10,8 @@ public class ActivateRoute {
     /**
      * This function send reservation requests to the TowerState to reserve the next forwarding routes
      * @param sim the simulation
-     * @param navigatePhaseState the current navigate phase of the train
      * @param train the train that emit the requests
-     * @throws SimulationError
+     * @throws SimulationError emmited when an error happens during the reservation
      */
     public static void reserveRoutes(
             Simulation sim,

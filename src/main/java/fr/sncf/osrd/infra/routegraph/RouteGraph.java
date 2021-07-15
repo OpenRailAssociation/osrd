@@ -103,7 +103,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
             var waypointDirection = firstTVDSectionPath.nodeDirection(firstTVDSectionPathDir, EdgeEndpoint.BEGIN);
 
             // Create route
-            var entrySignal = waypointDirection == EdgeDirection.START_TO_STOP? entrySignalNormal : entrySignalReverse;
+            var entrySignal = waypointDirection == EdgeDirection.START_TO_STOP ? entrySignalNormal : entrySignalReverse;
 
             var route = new Route(
                     id,

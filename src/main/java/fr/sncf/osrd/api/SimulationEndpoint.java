@@ -70,7 +70,12 @@ public class SimulationEndpoint implements Take {
     }
 
     @Override
-    public Response act(Request req) throws IOException, InvalidRollingStock, InvalidSchedule, InvalidSuccession, SimulationError {
+    public Response act(Request req) throws
+            IOException,
+            InvalidRollingStock,
+            InvalidSchedule,
+            InvalidSuccession,
+            SimulationError {
         // Parse request input
         var body = new RqPrint(req).printBody();
         var request = adapterRequest.fromJson(body);
@@ -98,8 +103,7 @@ public class SimulationEndpoint implements Take {
             for (var s : infra.switches) {
                 successions.add(new SuccessionTable(s.id, new ArrayList<>()));
             }
-        }
-        else {
+        } else {
             var rjsSuccessions = new RJSSuccessions(request.successions);
             successions = RJSSuccessionsParser.parse(rjsSuccessions);
         }
@@ -154,11 +158,10 @@ public class SimulationEndpoint implements Take {
 
         /** Create SimulationRequest with empty successions tables */
         public SimulationRequest(
-            String infra,
-            Collection<RJSRollingStock> rollingStocks,
-            Collection<RJSTrainSchedule> trainSchedules
-        )
-        {
+                String infra,
+                Collection<RJSRollingStock> rollingStocks,
+                Collection<RJSTrainSchedule> trainSchedules
+        ) {
             this.infra = infra;
             this.rollingStocks = rollingStocks;
             this.trainSchedules = trainSchedules;

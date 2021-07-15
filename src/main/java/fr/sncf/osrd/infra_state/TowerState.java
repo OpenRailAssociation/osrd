@@ -24,8 +24,8 @@ public class TowerState {
 
     /**
      * Create a switch post without theoric trains successions tables
-     * @param infra
-     * @return
+     * @param infra the given infrastructure
+     * @return a TowerState with an empty trains successions table for each switch
      */
     public static TowerState makeTowerStateWithoutTables(Infra infra) {
         var initTables = new ArrayList<SuccessionTable>();
@@ -37,9 +37,9 @@ public class TowerState {
 
     /**
      * Create a switch post with given theoric trains successions tables
-     * @param infra
-     * @param initTables
-     * @return
+     * @param infra the given infrastructure
+     * @param initTables the given trains successions tables, exactly one per switch
+     * @return a TowerState with the given trains succcessions tables
      */
     public static TowerState makeTowerState(Infra infra, List<SuccessionTable> initTables) {
         
@@ -66,10 +66,10 @@ public class TowerState {
     }
 
     private TowerState(
-        List<SuccessionTable> initTables,
-        HashMap<String, State> state,
-        HashMap<String, HashSet<Request>> waitingList,
-        HashMap<String, String> lastRequestedRoute
+            List<SuccessionTable> initTables,
+            HashMap<String, State> state,
+            HashMap<String, HashSet<Request>> waitingList,
+            HashMap<String, String> lastRequestedRoute
     ) {
         this.initTables = initTables;
         this.state = state;
@@ -77,6 +77,12 @@ public class TowerState {
         this.lastRequestedRoute = lastRequestedRoute;
     }
 
+    /**
+     * check if a switch is set for a train
+     * @param switchID the identifier of the switch
+     * @param trainID the identifier of the train
+     * @return true iff the given switch is set for the given train
+     */
     public boolean isCurrentAllowed(String switchID, String trainID) {
         assert state.containsKey(switchID);
         var q = state.get(switchID);
@@ -218,20 +224,22 @@ public class TowerState {
     }
 
     private static class State {
+        
         SuccessionTable table;
         int currentIndex;
         String currentTrainAllowed;
         HashMap<String, Integer> trainCount;
 
         public State(
-            SuccessionTable table,
-            int currentIndex,
-            String currentTrainAllowed,
-            HashMap<String, Integer> trainCount) {
-                this.table = table;
-                this.currentIndex = currentIndex;
-                this.currentTrainAllowed = currentTrainAllowed;
-                this.trainCount = trainCount;
+                SuccessionTable table,
+                int currentIndex,
+                String currentTrainAllowed,
+                HashMap<String, Integer> trainCount
+        ) {
+            this.table = table;
+            this.currentIndex = currentIndex;
+            this.currentTrainAllowed = currentTrainAllowed;
+            this.trainCount = trainCount;
         }
     }
 }

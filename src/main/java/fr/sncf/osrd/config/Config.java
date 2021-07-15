@@ -71,9 +71,7 @@ public class Config {
             for (var s : infra.switches) {
                 switchSuccessions.add(new SuccessionTable(s.id, new ArrayList<>()));
             }
-        }
-        else // read optional initial trains successions tables from file
-        {
+        } else { // read optional initial trains successions tables from file
             var successionPath = PathUtils.relativeTo(baseDirPath, jsonConfig.successionPath);
             var succession = MoshiUtils.deserialize(RJSSuccessions.adapter, successionPath);
             switchSuccessions = RJSSuccessionsParser.parse(succession);
