@@ -120,7 +120,6 @@ public final class Infra {
         infra.trackGraph.validate();
 
         for (var trackSection : trackGraph.iterEdges()) {
-            @SuppressWarnings("unchecked")
             var forwardBuilder = trackSection.forwardActionPoints.builder();
             var backwardBuilder = trackSection.backwardActionPoints.builder();
 

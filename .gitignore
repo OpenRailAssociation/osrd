@@ -6,9 +6,11 @@ gradlew*
 *.iml
 *.jar
 .jqwik-database
+examples_generator/__pycache__/
 
 # avoid mistakenly adding proprietary files
 *.rsl
 *.xml
 *.railml
 *.railml3
+

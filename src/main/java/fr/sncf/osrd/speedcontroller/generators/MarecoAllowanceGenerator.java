@@ -11,7 +11,6 @@ import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.utils.SortedDoubleMap;
-import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.util.ArrayList;
 import java.util.HashSet;

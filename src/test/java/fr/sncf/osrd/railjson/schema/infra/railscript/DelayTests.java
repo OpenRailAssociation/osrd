@@ -18,7 +18,7 @@ public class DelayTests {
         final var infra = getBaseInfra();
         final var config = getBaseConfig();
         config.trainSchedules.clear();
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
 
         var expr = new UpdatableBool();
         var time = 10;
@@ -53,7 +53,7 @@ public class DelayTests {
         final var infra = getBaseInfra();
         final var config = getBaseConfig();
         config.trainSchedules.clear();
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
 
         var expr = new UpdatableBool();
         var time = 10;
@@ -79,7 +79,7 @@ public class DelayTests {
         final var infra = getBaseInfra();
         final var config = getBaseConfig();
         config.trainSchedules.clear();
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
 
         var expr1 = new UpdatableBool();
         var expr2 = new UpdatableBool();
@@ -109,7 +109,7 @@ public class DelayTests {
         final var infra = getBaseInfra();
         final var config = getBaseConfig();
         config.trainSchedules.clear();
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
 
         var delayFunc = new RSFunction<RSBool>("delayFunc",
                 new String[]{"arg1"},
@@ -140,7 +140,7 @@ public class DelayTests {
         final var infra = getBaseInfra();
         final var config = getBaseConfig();
         config.trainSchedules.clear();
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
 
         var delayFunc = new RSFunction<RSBool>("delayFunc",
                 new String[]{"arg1"},

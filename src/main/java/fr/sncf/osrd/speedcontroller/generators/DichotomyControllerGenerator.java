@@ -3,9 +3,7 @@ package fr.sncf.osrd.speedcontroller.generators;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.utils.SortedDoubleMap;
-import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;

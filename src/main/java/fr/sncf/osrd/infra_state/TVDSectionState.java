@@ -35,10 +35,14 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
         var change = new TVDSectionReservationChange(sim, this, false);
         change.apply(sim, this);
         sim.publishChange(change);
+
         for (var route : tvdSection.routeSubscribers) {
             var routeState = sim.infraState.getRouteState(route.index);
             routeState.onTvdSectionFreed(sim);
         }
+
+        // notify the switch post that the TVDSection was freed
+        sim.infraState.towerState.notifyFreed(sim, this.tvdSection);
     }
 
     /** Create an event to notify route that the tvd section is occupied */

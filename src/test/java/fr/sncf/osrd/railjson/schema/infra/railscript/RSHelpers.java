@@ -58,7 +58,7 @@ public class RSHelpers {
         static Simulation genSimulation() {
             final var infra = fr.sncf.osrd.Helpers.getBaseInfra();
             try {
-                return Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+                return Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
             } catch (InvalidInfraException e) {
                 fail(e);
                 throw new RuntimeException();
