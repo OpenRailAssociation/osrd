@@ -23,9 +23,9 @@ public class ChangeReplayChecker extends ChangeConsumer {
         if (refInfra != null) {
             var refInitTables = refSim.infraState.towerState.initTables;
             replaySim = Simulation.createFromInfraAndSuccessions(refInfra, refInitTables, refSim.startTime, null);
-        }
-        else
+        } else {
             replaySim = Simulation.createWithoutInfra(refSim.startTime, null);
+        }
 
         assert replaySim.deepEquals(refSim) : "the reference and replay simulation shouldn't differ from the start";
         return new ChangeReplayChecker(refSim, replaySim);
