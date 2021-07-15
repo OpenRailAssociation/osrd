@@ -7,6 +7,9 @@ import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 
+import java.util.Arrays;
+import java.util.Map;
+
 public class RJSRollingStock implements Identified {
     public static final JsonAdapter<RJSRollingStock> adapter = new Moshi
             .Builder()
@@ -14,14 +17,85 @@ public class RJSRollingStock implements Identified {
             .build()
             .adapter(RJSRollingStock.class);
 
-    /** An unique train identifier */
-    public String id;
+    /** A unique train identifier */
+    public String id = null;
 
-    /** the length of the train, in meters. */
-    public double length;
+    public String source = null;
 
-    /** The mass of the train, in kilograms. */
-    public double mass;
+    @Json(name = "verbose_name")
+    public String verboseName = null;
+
+    public String type = null;
+
+    @Json(name = "sub_type")
+    public String subType = null;
+
+    public String series = null;
+
+    @Json(name = "sub_series")
+    public String subSeries = null;
+
+    public String variant = null;
+
+    @Json(name = "units_count")
+    public int unitsCount = -1;
+
+    /**
+     * <p>Engineers measured a number of effort curves for each rolling stock. 
+     * These are referenced from effort curve profiles.
+     * Effort curves associate a speed to a traction force.
+     * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves</p>
+     *
+     * <p>The type of this field is somehow misleading, each effort curve is an array
+     * of (speed, max_effort) tuples.</p>
+     */
+    @Json(name = "effort_curves")
+    public Map<String, float[][]> effortCurves;
+
+    /**
+     * An effort curve profile is a set of rules which associate environmental conditions,
+     * such as line voltage or air conditionning settings, to effort curves
+     */
+    @Json(name = "effort_curve_profiles")
+    public Map<String, RJSEffortCurvesProfile[]> effortCurvesProfiles;
+
+    /**
+     * Each rolling resistance profile is a set of rules which associate environmental conditions,
+     * such as the load, to a rolling resistance.
+     */
+    @Json(name = "rolling_resistance_profiles")
+    public Map<String, RJSRollingResistanceProfile[]> rollingResistanceProfiles;
+
+    public RJSLivery[] liveries = null;
+
+    /** the length of the train, in meters.*/
+    public double length = Double.NaN;
+
+    /** The max speed of the train, in meters per seconds. */
+    @Json(name = "max_speed")
+    public double maxSpeed = Double.NaN;
+
+    /**
+     * The time the train takes to start up, in seconds.
+     * During this time, the train's maximum acceleration is limited.
+     */
+    @Json(name = "startup_time")
+    public double startUpTime = Double.NaN;
+
+    /** The acceleration to apply during the startup state. */
+    @Json(name = "start_up_acceleration")
+    public double startUpAcceleration = Double.NaN;
+
+    /** The maximum acceleration when the train is in its regular operating mode. */
+    @Json(name = "comfort_acceleration")
+    public double comfortAcceleration = Double.NaN;
+
+    /** The braking deceleration coefficient can be the max or constant (depends on gammaType field). */
+    public double gamma = Double.NaN;
+
+    /** The naive braking deceleration coefficient for timetabling. */
+    @Json(name = "gamma_type")
+    public RollingStock.GammaType gammaType = null;
 
     /**
      * Inertia coefficient.
@@ -30,108 +104,120 @@ public class RJSRollingStock implements Identified {
      * It's without unit: effective mass = mass * inertia coefficient
      */
     @Json(name = "inertia_coefficient")
-    public double inertiaCoefficient;
+    public double inertiaCoefficient = Double.NaN;
 
-    /** The rolling resistance force formula */
-    @Json(name = "rolling_resistance")
-    public RJSRollingResistance rollingResistance;
+    @Json(name = "power_class")
+    public int powerClass = -1;
 
-    /** The list of capabilities (protection systems, signaling equipment) the train is able to deal with */
-    public RJSTrainCapability[] capabilities;
+    /** The list of equipments (protection systems, signaling equipment) the train is able to deal with */
+    public RJSTrainFeature[] features = new RJSTrainFeature[0];
 
-    /** The max speed of the train, in meters per seconds. */
-    @Json(name = "max_speed")
-    public double maxSpeed;
+    /** The load profiles of the train */
+    public RJSTrainMass[] masses = null;
 
-    /**
-     * The time the train takes to start up, in seconds.
-     * During this time, the train's maximum acceleration is limited.
-     */
-    @Json(name = "startup_time")
-    public double startUpTime;
+    /** Each train has a number of operation modes (electric, diesel, battery), which come with their own properties */
+    public RJSMode[] modes = null;
 
-    /** The acceleration to apply during the startup state. */
-    @Json(name = "startup_acceleration")
-    public double startUpAcceleration;
+    // region ROLLING_RESISTANCE
 
-    /** The maximum acceleration when the train is in its regular operating mode. */
-    @Json(name = "comfort_acceleration")
-    public double comfortAcceleration;
+    public static final class RJSRollingResistanceProfile {
+        @Json(name = "rolling_resistance")
+        public RJSRollingResistance rollingResistance;
+        public RJSRollingResistanceProfileCondition condition;
 
-    /** The braking deceleration coefficient can be the max or constant (depends on gammaType field). */
-    public double gamma;
-
-    /** The naive braking deceleration coefficient for timetabling. */
-    @Json(name = "gamma_type")
-    public RollingStock.GammaType gammaType;
-
-    /**
-     * Associates a speed to a force.
-     * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves
-     */
-    @Json(name = "tractive_effort_curve")
-    public RJSTractiveEffortPoint[] tractiveEffortCurve;
-
-    /** Creates a new rolling stock */
-    public RJSRollingStock(
-            String id,
-            double length,
-            double mass,
-            double inertiaCoefficient,
-            RJSRollingResistance rollingResistance,
-            RJSTrainCapability[] capabilities,
-            double maxSpeed,
-            double startUpTime,
-            double startUpAcceleration,
-            double comfortAcceleration,
-            double gamma,
-            RollingStock.GammaType gammaType,
-            RJSTractiveEffortPoint[] tractiveEffortCurve
-    ) {
-        this.id = id;
-        this.length = length;
-        this.mass = mass;
-        this.inertiaCoefficient = inertiaCoefficient;
-        this.rollingResistance = rollingResistance;
-        this.capabilities = capabilities;
-        this.maxSpeed = maxSpeed;
-        this.startUpTime = startUpTime;
-        this.startUpAcceleration = startUpAcceleration;
-        this.comfortAcceleration = comfortAcceleration;
-        this.gamma = gamma;
-        this.gammaType = gammaType;
-        this.tractiveEffortCurve = tractiveEffortCurve;
-    }
-
-    /**
-     * Creates an empty rolling stock
-     */
-    public RJSRollingStock() {
-        this.id = null;
-        this.length = Double.NaN;
-        this.mass = Double.NaN;
-        this.inertiaCoefficient = Double.NaN;
-        this.rollingResistance = null;
-        this.capabilities = new RJSTrainCapability[0];
-        this.maxSpeed = Double.NaN;
-        this.startUpTime = Double.NaN;
-        this.startUpAcceleration = Double.NaN;
-        this.comfortAcceleration = Double.NaN;
-        this.gamma = Double.NaN;
-        this.gammaType = null;
-        this.tractiveEffortCurve = null;
-    }
-
-    public static final class RJSTractiveEffortPoint {
-        public double speed;
-        @Json(name = "max_effort")
-        public double maxEffort;
-
-        public RJSTractiveEffortPoint(double speed, double maxEffort) {
-            this.speed = speed;
-            this.maxEffort = maxEffort;
+        public RJSRollingResistanceProfile(
+                RJSRollingResistance rollingResistance,
+                RJSRollingResistanceProfileCondition condition
+        ) {
+            this.rollingResistance = rollingResistance;
+            this.condition = condition;
         }
     }
+
+    public static final class RJSRollingResistanceProfileCondition {
+        @Json(name = "load_state")
+        public RJSLoadState loadState;
+
+        public RJSRollingResistanceProfileCondition(RJSLoadState loadState) {
+            this.loadState = loadState;
+        }
+    }
+
+    // endregion
+
+    // region EFFORT_CURVES
+
+    public static final class RJSEffortCurvesProfileCondition {
+        @Json(name = "climate_control")
+        public RJSClimateControl climateControl;
+        public double voltage = Double.NaN;
+        @Json(name = "catenary_type")
+        public String catenaryType;
+
+        /** Creates a condition which filters when a given effort curve should apply */
+        public RJSEffortCurvesProfileCondition(RJSClimateControl climateControl, double voltage, String catenaryType) {
+            this.climateControl = climateControl;
+            this.voltage = voltage;
+            this.catenaryType = catenaryType;
+        }
+    }
+
+    public static final class RJSEffortCurvesProfile {
+        @Json(name = "effort_curve")
+        public String effortCurve;
+        public RJSEffortCurvesProfileCondition condition;
+
+        public RJSEffortCurvesProfile(String effortCurves, RJSEffortCurvesProfileCondition condition) {
+            this.effortCurve = effortCurves;
+            this.condition = condition;
+        }
+    }
+
+    // endregion
+
+    // region MASSES
+
+    public static final class RJSTrainMass {
+        public double mass;
+        public RJSLoadState loadState;
+
+        public RJSTrainMass(double mass, RJSLoadState loadState) {
+            this.mass = mass;
+            this.loadState = loadState;
+        }
+    }
+
+    // endregion
+
+    // region MODES
+
+    public static final class RJSMode {
+        public String type = null;
+
+        public double voltage = Double.NaN;
+
+        public double frequency = Double.NaN;
+
+        @Json(name = "rolling_resistance_profile")
+        public String rollingResistanceProfile = null;
+
+        @Json(name = "effort_curve_profile")
+        public String effortCurveProfile = null;
+    }
+
+    // endregion
+
+    // region LIVERIES
+
+    public static final class RJSLivery {
+        public String id = null;
+
+        public String name = null;
+
+        public String[] components = null;
+    }
+
+    // endregion
 
     @Override
     public String getID() {

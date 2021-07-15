@@ -9,8 +9,6 @@ import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSFunction;
 import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspect;
 import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspectConstraint;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCurve;
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,6 +61,10 @@ public class RJSInfra {
     @Json(name = "speed_sections")
     public Collection<RJSSpeedSection> speedSections;
 
+    /** The list of catenary sections */
+    @Json(name = "catenary_types")
+    public Collection<RJSCatenaryType> catenaryTypes;
+
     /** The list of all the aspects signals can take */
     public Collection<RJSAspect> aspects;
 
@@ -83,6 +85,7 @@ public class RJSInfra {
             Collection<RJSTVDSection> tvdSections,
             Collection<RJSRoute> routes,
             Collection<RJSSpeedSection> speedSections,
+            Collection<RJSCatenaryType> catenaryTypes,
             Collection<RJSAspect> aspects,
             List<RJSRSFunction> signalFunctions,
             Map<String, RJSSwitchType> switchTypes
@@ -94,6 +97,7 @@ public class RJSInfra {
         this.tvdSections = tvdSections;
         this.routes = routes;
         this.speedSections = speedSections;
+        this.catenaryTypes = catenaryTypes;
         this.aspects = aspects;
         this.scriptFunctions = signalFunctions;
         this.switchTypes = switchTypes;
@@ -104,6 +108,7 @@ public class RJSInfra {
      */
     public RJSInfra() {
         this(
+                new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),

@@ -1,6 +1,7 @@
 package fr.sncf.osrd.infra.trackgraph;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.CatenaryType;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.SpeedSection;
@@ -55,6 +56,8 @@ public final class TrackSection extends BiNEdge<TrackSection> {
     public final DoubleRangeMap backwardGradients = new DoubleRangeMap();
     public final ArrayList<RangeValue<SpeedSection>> forwardSpeedSections = new ArrayList<>();
     public final ArrayList<RangeValue<SpeedSection>> backwardSpeedSections = new ArrayList<>();
+    public final ArrayList<RangeValue<CatenaryType>> forwardCatenarySections = new ArrayList<>();
+    public final ArrayList<RangeValue<CatenaryType>> backwardCatenarySections = new ArrayList<>();
     public final PointSequence<OperationalPoint> operationalPoints = new PointSequence<>();
     public final PointSequence<Waypoint> waypoints = new PointSequence<>();
     public final PointSequence<Signal> signals = new PointSequence<>();
@@ -208,6 +211,19 @@ public final class TrackSection extends BiNEdge<TrackSection> {
         if (direction == EdgeDirection.START_TO_STOP)
             return edge.forwardSpeedSections;
         return edge.backwardSpeedSections;
+    }
+
+    /**
+     * Gets the type of catenary on a given track section, according to a given direction.
+     * @param edge the track section
+     * @param direction the direction
+     * Returns type of catenary
+     */
+
+    public static ArrayList<RangeValue<CatenaryType>> getCatenarySections(TrackSection edge, EdgeDirection direction) {
+        if (direction == EdgeDirection.START_TO_STOP)
+            return edge.forwardCatenarySections;
+        return edge.backwardCatenarySections;
     }
 
     /**
