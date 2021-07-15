@@ -59,7 +59,7 @@ public class TrainPhysicsIntegrator {
         var angle = Math.atan(meanTrainGrade / 1000.0);  // from m/km to m/m
         var weightForce = - rollingStock.mass * Constants.GRAVITY * Math.sin(angle);
         var inertia = rollingStock.mass * rollingStock.inertiaCoefficient;
-        var isBrakingValueConstant = rollingStock.maxGamma == null;
+        var isBrakingValueConstant = rollingStock.maxGamma == Double.NaN;
         return new TrainPhysicsIntegrator(
                 timeStep,
                 currentSpeed,
