@@ -22,7 +22,7 @@ public final class RJSSuccessions {
     public Collection<RJSSuccessionTable> successionTables;
 
     public RJSSuccessions(
-        Collection<RJSSuccessionTable> successionTables
+            Collection<RJSSuccessionTable> successionTables
     ) {
         this.successionTables = successionTables;
     }

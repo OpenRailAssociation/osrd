@@ -265,7 +265,7 @@ public class RailJSONParser {
                     entryPoint,
                     entrySignalNormal,
                     entrySignalReverse
-                );
+            );
         }
 
         var routeNames = new HashMap<String, Route>();

@@ -391,6 +391,12 @@ public final class SignalNavigatePhase implements Phase {
             public final String trainId;
             public final String switchId;
 
+            /**
+             * The constructor of the change PassageOnSwitch
+             * @param sim the current simulation
+             * @param trainId the identifier train that passes on the switch
+             * @param switchId the identifier of the switch that the train is passing on
+             */
             public PassageOnSwitch(Simulation sim, String trainId, String switchId) {
                 super(sim);
                 this.trainId = trainId;
