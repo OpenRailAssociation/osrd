@@ -74,13 +74,6 @@ public final class TrackGraph extends BiNGraph<TrackSection, TrackNode> {
         return op;
     }
 
-    /**
-     * Check the validity of the graph
-     */
-    public void validate() throws InvalidInfraException {
-        for (var edge : this.iterEdges())
-            edge.validate();
-    }
 
     @Override
     public List<TrackSection> getNeighborRels(TrackSection edge, EdgeEndpoint endpoint) {

@@ -117,7 +117,7 @@ public final class Infra {
             ArrayList<Switch> switches
     ) throws InvalidInfraException {
         var infra = new Infra(trackGraph, waypointGraph, routeGraph, tvdSections, aspects, signals, switches);
-        infra.trackGraph.validate();
+
 
         for (var trackSection : trackGraph.iterEdges()) {
             var forwardBuilder = trackSection.forwardActionPoints.builder();
