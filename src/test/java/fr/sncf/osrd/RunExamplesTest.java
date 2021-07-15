@@ -4,9 +4,13 @@ import static fr.sncf.osrd.Helpers.*;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import fr.sncf.osrd.config.Config;
+import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.simulation.ChangeReplayChecker;
 import fr.sncf.osrd.simulation.ChangeSerializer;
 import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
@@ -15,6 +19,7 @@ import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import okio.Buffer;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class RunExamplesTest {
@@ -40,7 +45,7 @@ public class RunExamplesTest {
             ChangeLogSummarizer.summarize(changelog);
 
             ChangeSerializer.serializeChangeLog(changelog, new Buffer());
-        } catch (Exception e) {
+        } catch (InvalidRollingStock | IOException | SimulationError | InvalidInfraException | InvalidSchedule e) {
             fail(e);
         }
     }
