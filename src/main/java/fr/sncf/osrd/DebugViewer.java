@@ -250,14 +250,16 @@ public class DebugViewer extends ChangeConsumer {
     }
 
     private void updateSignal(Signal signal, RSAspectSet aspects) {
-        var sprite = signalSprites.get(signal);
+        if (!aspects.isEmpty()) {
+            var sprite = signalSprites.get(signal);
 
-        var signalCSS = String.format(
-                "text-alignment: under; shape: circle; size: 20px; fill-color: %s;",
-                aspects.iterator().next().color
-        );
+            var signalCSS = String.format(
+                    "text-alignment: under; shape: circle; size: 20px; fill-color: %s;",
+                    aspects.iterator().next().color
+            );
 
-        sprite.setAttribute("ui.style", signalCSS);
+            sprite.setAttribute("ui.style", signalCSS);
+        }
     }
 
     private void createTrain(TrainSchedule schedule) {
