@@ -52,6 +52,14 @@ public class TowerState {
             state.put(table.switchID, q);
         }
 
+        // Create default states for unspecified switches
+        for (var s : infra.switches) {
+            if (!state.containsKey(s.id)) {
+                state.put(s.id, new State(new SuccessionTable(s.id, new ArrayList<>()),
+                        0, null, new HashMap<>()));
+            }
+        }
+
         var sps = new TowerState(initTables, state, waitingList, lastRequestedRoute);
 
         for (var table : initTables) {
