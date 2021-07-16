@@ -122,11 +122,11 @@ public final class TrackSectionRange extends Range implements DeepComparable<Tra
     }
 
     public TrackSectionLocation getBeginLocation() {
-        return new TrackSectionLocation(edge, beginPosition);
+        return new TrackSectionLocation(edge, begin);
     }
 
     public TrackSectionLocation getEndLocation() {
-        return new TrackSectionLocation(edge, endPosition);
+        return new TrackSectionLocation(edge, end);
     }
 
     /** Expand the range of the track section by following its direction */
