@@ -183,12 +183,14 @@ public class RouteStateTest {
                 jsonConfig.simulationTimeStep,
                 rjsInfra,
                 trainSchedules,
+                null,
                 jsonConfig.simulationStepPause,
                 false,
                 jsonConfig.realTimeViewer,
                 jsonConfig.changeReplayCheck
         );
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, null);
+        var sim = Simulation.createFromInfraAndSuccessions(RailJSONParser.parse(infra),
+                config.switchSuccessions, 0, null);
 
         run(sim, config);
     }
@@ -200,7 +202,8 @@ public class RouteStateTest {
 
         var changelog = new ArrayChangeLog();
 
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, changelog);
+        var sim = Simulation.createFromInfraAndSuccessions(RailJSONParser.parse(infra),
+                config.switchSuccessions, 0, changelog);
 
         config.trainSchedules.remove(2);
         config.trainSchedules.remove(1);
@@ -228,7 +231,8 @@ public class RouteStateTest {
 
         var changelog = new ArrayChangeLog();
 
-        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, changelog);
+        var sim = Simulation.createFromInfraAndSuccessions(RailJSONParser.parse(infra),
+                config.switchSuccessions, 0, changelog);
 
         run(sim, config);
 
