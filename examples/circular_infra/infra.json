@@ -370,6 +370,8 @@
     {
       "id": "tr.12",
       "length": 200,
+      "slopes": [],
+      "curves": [],
       "operational_points": [
         {
           "position": 100,
@@ -418,6 +420,8 @@
     {
       "id": "tr.23",
       "length": 200,
+      "slopes": [],
+      "curves": [],
       "operational_points": [],
       "route_waypoints": [
         {
@@ -461,6 +465,8 @@
     {
       "id": "tr.34",
       "length": 200,
+      "slopes": [],
+      "curves": [],
       "operational_points": [],
       "route_waypoints": [
         {
@@ -504,6 +510,8 @@
     {
       "id": "tr.45",
       "length": 200,
+      "slopes": [],
+      "curves": [],
       "operational_points": [],
       "route_waypoints": [
         {
@@ -547,6 +555,8 @@
     {
       "id": "tr.56",
       "length": 200,
+      "slopes": [],
+      "curves": [],
       "operational_points": [],
       "route_waypoints": [
         {
@@ -590,6 +600,8 @@
     {
       "id": "tr.67",
       "length": 200,
+      "slopes": [],
+      "curves": [],
       "operational_points": [],
       "route_waypoints": [
         {
@@ -633,6 +645,8 @@
     {
       "id": "tr.78",
       "length": 200,
+      "slopes": [],
+      "curves": [],
       "operational_points": [],
       "route_waypoints": [
         {
@@ -676,6 +690,8 @@
     {
       "id": "tr.81",
       "length": 200,
+      "slopes": [],
+      "curves": [],
       "operational_points": [],
       "route_waypoints": [
         {

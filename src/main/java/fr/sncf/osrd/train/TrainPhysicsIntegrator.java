@@ -17,13 +17,15 @@ public class TrainPhysicsIntegrator {
     private final double rollingResistance;
     private final double inertia;
     private final boolean isBrakingValueConstant;
+
     /**
-    * @param currentSpeed the current speed of the train
-    * @param weightForce is the force due to the slope under the train
-    * @param rollingResistance is the rolling resistance = A + B * currentSpeed + C * currentSpeed * currentSpeed
-    * @param inertia is the mass * inertial coefficient
+     * The class to simulate the train physics
+     * @param currentSpeed the current speed of the train
+     * @param weightForce is the force due to the slope under the train
+     * @param rollingResistance is the rolling resistance = A + B * currentSpeed + C * currentSpeed * currentSpeed
+     * @param inertia is the mass * inertial coefficient
      * @param isBrakingValueConstant is true when we have a constant braking gamma that overrides all the other forces
-    */
+     */
     private TrainPhysicsIntegrator(
             double timeStep,
             double currentSpeed,
@@ -59,7 +61,7 @@ public class TrainPhysicsIntegrator {
         var angle = Math.atan(meanTrainGrade / 1000.0);  // from m/km to m/m
         var weightForce = - rollingStock.mass * Constants.GRAVITY * Math.sin(angle);
         var inertia = rollingStock.mass * rollingStock.inertiaCoefficient;
-        var isBrakingValueConstant = rollingStock.maxGamma == Double.NaN;
+        var isBrakingValueConstant = Double.isNaN(rollingStock.maxGamma);
         return new TrainPhysicsIntegrator(
                 timeStep,
                 currentSpeed,
@@ -155,8 +157,7 @@ public class TrainPhysicsIntegrator {
         if (Math.abs(acceleration) < 0.00001)
             return positionDelta / currentSpeed;
         var numerator = -currentSpeed + Math.sqrt(currentSpeed * currentSpeed + 2 * positionDelta * acceleration);
-        var res = numerator / acceleration;
-        return res;
+        return numerator / acceleration;
     }
 
     /**

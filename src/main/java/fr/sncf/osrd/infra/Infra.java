@@ -118,7 +118,6 @@ public final class Infra {
     ) throws InvalidInfraException {
         var infra = new Infra(trackGraph, waypointGraph, routeGraph, tvdSections, aspects, signals, switches);
 
-
         for (var trackSection : trackGraph.iterEdges()) {
             var forwardBuilder = trackSection.forwardActionPoints.builder();
             var backwardBuilder = trackSection.backwardActionPoints.builder();
@@ -269,6 +268,7 @@ public final class Infra {
                         var bufferedSource = Okio.buffer(fileSource)
                 ) {
                     var rjsRoot = RJSInfra.adapter.fromJson(bufferedSource);
+                    assert rjsRoot != null;
                     return RailJSONParser.parse(rjsRoot);
                 }
             default:
