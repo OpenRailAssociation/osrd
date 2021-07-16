@@ -168,4 +168,22 @@ public class RouteStateTest {
             }
         }
     }
+
+    @Test
+    public void testCircularInfraRouteIndexes() throws InvalidInfraException {
+        final var infra = getBaseInfra("circular_infra/infra.json");
+        final var config = getBaseConfig("circular_infra/config.json");
+
+        var changelog = new ArrayChangeLog();
+
+        var sim = Simulation.createFromInfra(RailJSONParser.parse(infra), 0, changelog);
+
+        run(sim, config);
+
+        for (var train : sim.trains.values()) {
+            var trainState = train.getLastState();
+            var path = train.schedule.plannedPath;
+            assertEquals(path.routePath.size() - 1, trainState.routeIndex);
+        }
+    }
 }
