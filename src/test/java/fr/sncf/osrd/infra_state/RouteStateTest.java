@@ -189,8 +189,8 @@ public class RouteStateTest {
                 jsonConfig.realTimeViewer,
                 jsonConfig.changeReplayCheck
         );
-        var sim = Simulation.createFromInfraAndSuccessions(RailJSONParser.parse(infra),
-                config.switchSuccessions, 0, null);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra),
+                0, null);
 
         run(sim, config);
     }
