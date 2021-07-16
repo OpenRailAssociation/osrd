@@ -145,7 +145,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
                 startLocation, endLocation, initialSpeed);
 
         for (var location : findPositionSameSpeedAsVF(expectedSpeeds, vf)) {
-            if (IsAccelerationPhase(expectedSpeeds, location))
+            if (isAccelerationPhase(expectedSpeeds, location))
                 continue;
             var controller = generateCoastingSpeedControllerAtPosition(expectedSpeeds, location, timestep);
             currentSpeedControllers.add(controller);
@@ -157,7 +157,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         return currentSpeedControllers;
     }
 
-    private boolean IsAccelerationPhase(SortedDoubleMap speeds, Double location) {
+    private boolean isAccelerationPhase(SortedDoubleMap speeds, Double location) {
         double speed = speeds.interpolate(location);
         var entryBefore = speeds.floorEntry(location);
         double previousSpeed = entryBefore.getValue();

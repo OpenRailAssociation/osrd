@@ -210,9 +210,9 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
     /**  Create a location change from the current state to the minimum of given time and pathPosition */
     public Train.TrainStateChange evolveStateUntilTimeOrPosition(
-        Simulation sim, 
-        double targetTime, 
-        double goalPathPosition
+            Simulation sim,
+            double targetTime,
+            double goalPathPosition
     ) {
         var locationChange = new Train.TrainStateChange(sim, trainSchedule.trainID, this);
 
@@ -223,7 +223,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
         // If the position goal has not been reached, 
         // there may be one step of less than one second left to complete
-        if(location.getPathPosition() < goalPathPosition) {
+        if (location.getPathPosition() < goalPathPosition) {
             var distanceStep = goalPathPosition - location.getPathPosition();
             step(locationChange, targetTime - this.time, distanceStep);
         }

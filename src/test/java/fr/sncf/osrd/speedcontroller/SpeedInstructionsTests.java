@@ -81,9 +81,10 @@ public class SpeedInstructionsTests {
         run(sim, config);
     }
 
-    @Test@Disabled
-    // TODO fix this
+    @Test
+    @Disabled
     public void testCatchup() throws InvalidInfraException, SimulationError {
+        // TODO fix this
         final var infra = getBaseInfra();
         final var config = getBaseConfig();
 
@@ -115,7 +116,7 @@ public class SpeedInstructionsTests {
     }
 
     @Test
-    public void testIsNotLate() throws InvalidInfraException, SimulationError {
+    public void testIsNotLate() throws InvalidInfraException {
         final var infra = getBaseInfra();
         final var config = getBaseConfig();
 
