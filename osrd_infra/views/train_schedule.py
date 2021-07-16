@@ -181,8 +181,8 @@ def format_steps(logs, train_path, projection_path):
 def format_stops(logs, train_schedule):
     path = train_schedule.path.payload
     phase_times = {}
-    for log in logs["phase_end"]:
-        phase_times[log["phase_index"] + 1] = log["time"]
+    for log in logs["stop_reached"]:
+        phase_times[log["stop_index"] + 1] = log["time"]
     stops = [
         {
             "name": path["steps"][0]["name"],
