@@ -7,6 +7,7 @@ import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidSuccession;
 import fr.sncf.osrd.simulation.ChangeReplayChecker;
 import fr.sncf.osrd.simulation.ChangeSerializer;
 import fr.sncf.osrd.simulation.Simulation;
@@ -32,7 +33,8 @@ public class RunExamplesTest {
             changeConsumers.add(changelog);
 
             var multiplexer = new ChangeConsumerMultiplexer(changeConsumers);
-            var sim = Simulation.createFromInfra(config.infra, 0, multiplexer);
+            var sim = Simulation.createFromInfraAndSuccessions(config.infra,
+                    config.switchSuccessions, 0, multiplexer);
 
             multiplexer.add(ChangeReplayChecker.from(sim));
 
@@ -45,7 +47,8 @@ public class RunExamplesTest {
             ChangeLogSummarizer.summarize(changelog);
 
             ChangeSerializer.serializeChangeLog(changelog, new Buffer());
-        } catch (InvalidRollingStock | IOException | SimulationError | InvalidInfraException | InvalidSchedule e) {
+        } catch (InvalidRollingStock | IOException | SimulationError
+                | InvalidInfraException | InvalidSchedule | InvalidSuccession e) {
             fail(e);
         }
     }
