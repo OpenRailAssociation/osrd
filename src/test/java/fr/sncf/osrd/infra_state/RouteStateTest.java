@@ -157,7 +157,8 @@ public class RouteStateTest {
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public void testReserveRouteTrainStartNotOnFirstTVD() throws InvalidInfraException, IOException, InvalidRollingStock, InvalidSchedule {
+    public void testReserveRouteTrainStartNotOnFirstTrackSection()
+            throws InvalidInfraException, IOException, InvalidRollingStock, InvalidSchedule {
         final var infra = getBaseInfra();
         var path = getResourcePath("tiny_infra/config_railjson.json");
         var baseDirPath = path.getParent();
@@ -175,6 +176,47 @@ public class RouteStateTest {
             s.initialRoute = s.routes[0];
             s.initialHeadLocation.trackSection = new ID<>("ne.micro.foo_to_bar");
             s.initialHeadLocation.offset = 10;
+        });
+
+
+        var trainSchedules = RJSSimulationParser.parse(rjsInfra, schedule);
+        var config = new Config(
+                jsonConfig.simulationTimeStep,
+                rjsInfra,
+                trainSchedules,
+                null,
+                jsonConfig.simulationStepPause,
+                false,
+                jsonConfig.realTimeViewer,
+                jsonConfig.changeReplayCheck
+        );
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra),
+                0, null);
+
+        run(sim, config);
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void testReserveRouteTrainStartNotOnFirstTVD()
+            throws InvalidInfraException, IOException, InvalidRollingStock, InvalidSchedule {
+        final var infra = getBaseInfra();
+        var path = getResourcePath("tiny_infra/config_railjson.json");
+        var baseDirPath = path.getParent();
+        var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, path);
+        final var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
+        final var rjsInfra = parseFromFile(jsonConfig.infraType, infraPath.toString());
+        var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
+        var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
+
+        schedule.trainSchedules.forEach(s -> {
+            s.routes = (ID<RJSRoute>[]) new ID[]{
+                    new ID<RJSRoute>("rt.C3-S7"),
+                    new ID<RJSRoute>("rt.S7-buffer_stop_c"),
+            };
+            s.initialRoute = s.routes[0];
+            s.initialHeadLocation.trackSection = new ID<>("ne.micro.foo_to_bar");
+            s.initialHeadLocation.offset = 100;
         });
 
 
