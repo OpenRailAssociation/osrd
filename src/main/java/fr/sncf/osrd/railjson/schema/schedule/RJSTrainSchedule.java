@@ -22,8 +22,6 @@ public class RJSTrainSchedule implements Identified {
     /** The initial state of the train */
     @Json(name = "initial_head_location")
     public RJSTrackLocation initialHeadLocation;
-    @Json(name = "initial_route")
-    public ID<RJSRoute> initialRoute;
     @Json(name = "initial_speed")
     public double initialSpeed;
 
@@ -49,7 +47,6 @@ public class RJSTrainSchedule implements Identified {
             ID<RJSRollingStock> rollingStock,
             double departureTime,
             RJSTrackLocation initialHeadLocation,
-            ID<RJSRoute> initialRoute,
             double initialSpeed,
             RJSTrainPhase[] phases,
             String trainControlMethod,
@@ -61,7 +58,6 @@ public class RJSTrainSchedule implements Identified {
         this.rollingStock = rollingStock;
         this.departureTime = departureTime;
         this.initialHeadLocation = initialHeadLocation;
-        this.initialRoute = initialRoute;
         this.initialSpeed = initialSpeed;
         this.phases = phases;
         this.trainControlMethod = trainControlMethod;

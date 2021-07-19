@@ -81,7 +81,6 @@
         "track_section": "tr.12",
         "offset": 50
       },
-      "initial_route": "rt.12",
       "initial_speed": 0,
       "routes": [
         "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
@@ -114,7 +113,6 @@
         "track_section": "tr.12",
         "offset": 50
       },
-      "initial_route": "rt.12",
       "initial_speed": 0,
       "routes": [
         "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
@@ -147,7 +145,6 @@
         "track_section": "tr.12",
         "offset": 50
       },
-      "initial_route": "rt.12",
       "initial_speed": 0,
       "routes": [
         "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",

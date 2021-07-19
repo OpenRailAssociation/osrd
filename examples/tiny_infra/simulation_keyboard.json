@@ -47,7 +47,6 @@
         "track_section": "ne.micro.foo_b",
         "offset": 100
       },
-      "initial_route": "rt.buffer_stop_b-C3",
       "initial_speed": 0,
       "routes": ["rt.buffer_stop_b-C3", "rt.C3-S7", "rt.S7-buffer_stop_c"],
       "phases": [

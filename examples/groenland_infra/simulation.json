@@ -103,7 +103,6 @@
                 "track_section": "ne.micro.22",
                 "offset": 250
             },
-            "initial_route": "rt.22_END-22_BEGIN",
             "initial_speed": 0,
             "routes": [
                 "rt.22_END-22_BEGIN",

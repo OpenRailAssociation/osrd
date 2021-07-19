@@ -450,7 +450,6 @@ class Simulation:
                 "track_section": uname_track(departure_utrack),
                 "offset": self.lengths[departure_utrack] // 2
             },
-            "initial_route": path[0],
             "initial_speed": 0,
             "routes": path,
             "phases": [
