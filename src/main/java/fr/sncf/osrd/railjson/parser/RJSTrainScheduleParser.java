@@ -50,7 +50,7 @@ public class RJSTrainScheduleParser {
 
         var stops = parseStops(rjsTrainSchedule.stops, infra, expectedPath);
 
-        var initialRouteID = rjsTrainSchedule.initialRoute.id;
+        var initialRouteID = rjsTrainSchedule.routes[0].id;
         var initialRoute = infra.routeGraph.routeMap.get(initialRouteID);
         if (initialRoute == null)
             throw new UnknownRoute("unknown initial route", initialRouteID);

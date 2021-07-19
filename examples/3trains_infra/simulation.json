@@ -103,7 +103,6 @@
                 "track_section": "ne.micro.4",
                 "offset": 500
             },
-            "initial_route": "rt.4_END-4_BEGIN",
             "initial_speed": 0,
             "routes": [
                 "rt.4_END-4_BEGIN",
@@ -132,7 +131,6 @@
                 "track_section": "ne.micro.0",
                 "offset": 500
             },
-            "initial_route": "rt.0_END-0_BEGIN",
             "initial_speed": 0,
             "routes": [
                 "rt.0_END-0_BEGIN",
@@ -161,7 +159,6 @@
                 "track_section": "ne.micro.1",
                 "offset": 500
             },
-            "initial_route": "rt.1_END-1_BEGIN",
             "initial_speed": 0,
             "routes": [
                 "rt.1_END-1_BEGIN",
