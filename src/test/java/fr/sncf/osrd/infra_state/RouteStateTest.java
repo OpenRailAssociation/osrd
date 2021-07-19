@@ -173,7 +173,6 @@ public class RouteStateTest {
                     new ID<RJSRoute>("rt.C3-S7"),
                     new ID<RJSRoute>("rt.S7-buffer_stop_c"),
             };
-            s.initialRoute = s.routes[0];
             s.initialHeadLocation.trackSection = new ID<>("ne.micro.foo_to_bar");
             s.initialHeadLocation.offset = 10;
         });
@@ -214,7 +213,6 @@ public class RouteStateTest {
                     new ID<RJSRoute>("rt.C3-S7"),
                     new ID<RJSRoute>("rt.S7-buffer_stop_c"),
             };
-            s.initialRoute = s.routes[0];
             s.initialHeadLocation.trackSection = new ID<>("ne.micro.foo_to_bar");
             s.initialHeadLocation.offset = 100;
         });
