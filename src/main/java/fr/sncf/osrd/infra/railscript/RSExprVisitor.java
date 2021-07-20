@@ -114,4 +114,9 @@ public class RSExprVisitor {
         nextSignal.signal.accept(this);
         nextSignal.route.accept(this);
     }
+
+    /** Visit method */
+    public void visit(RSExpr.PreviousReservedRoute previousReservedRoute) throws InvalidInfraException {
+        previousReservedRoute.signal.accept(this);
+    }
 }

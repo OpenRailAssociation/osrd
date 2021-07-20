@@ -21,8 +21,8 @@ import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.utils.RangeValue;
 import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
 import okio.BufferedSource;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -167,18 +167,38 @@ public class RailJSONParser {
             var signalsBuilder = infraTrackSection.signals.builder();
             if (trackSection.signals == null)
                 trackSection.signals = new ArrayList<>();
+
             for (var rjsSignal : trackSection.signals) {
+
+                if (rjsSignal.applicableDirection == ApplicableDirection.BOTH) {
+                    throw new InvalidInfraException("A signal cannot be applicable in both directions.");
+                }
+
+                EdgeDirection direction = null;
+                if (rjsSignal.applicableDirection == ApplicableDirection.NORMAL) {
+                    direction = EdgeDirection.START_TO_STOP;
+                } else {
+                    direction = EdgeDirection.STOP_TO_START;
+                }
+
                 var expr = RailScriptExprParser.parseStatefulSignalExpr(aspectsMap, scriptFunctions, rjsSignal.expr);
+
+                // get linked detector
+                Detector linkedDetector = null;
+                if (rjsSignal.linkedDetector != null)
+                    linkedDetector = (Detector) waypointsMap.get(rjsSignal.linkedDetector.id);
+
                 var signal = new Signal(
                         signals.size(),
                         rjsSignal.id,
                         expr,
-                        rjsSignal.applicableDirection,
-                        rjsSignal.sightDistance
+                        direction,
+                        rjsSignal.sightDistance,
+                        linkedDetector
                 );
                 signalsBuilder.add(rjsSignal.position, signal);
                 signals.add(signal);
-                if (rjsSignal.linkedDetector != null && !rjsSignal.linkedDetector.id.equals("")) {
+                if (rjsSignal.linkedDetector != null) {
                     if (rjsSignal.applicableDirection == ApplicableDirection.NORMAL)
                         detectorIdToSignalNormalMap.put(rjsSignal.linkedDetector.id, signal);
                     else if (rjsSignal.applicableDirection == ApplicableDirection.REVERSE)

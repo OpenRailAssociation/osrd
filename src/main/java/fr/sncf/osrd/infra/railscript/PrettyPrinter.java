@@ -4,7 +4,6 @@ import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.value.RSType;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
-
 import java.io.PrintStream;
 import java.util.HashMap;
 
@@ -324,6 +323,13 @@ public class PrettyPrinter extends RSExprVisitor {
         nextSignal.route.accept(this);
         out.print(", ");
         nextSignal.signal.accept(this);
+        out.print(")");
+    }
+
+    @Override
+    public void visit(RSExpr.PreviousReservedRoute previousReservedRoute) throws InvalidInfraException {
+        out.print("previous_reserved_route(");
+        previousReservedRoute.signal.accept(this);
         out.print(")");
     }
 }

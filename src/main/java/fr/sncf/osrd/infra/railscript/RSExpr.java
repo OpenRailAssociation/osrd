@@ -10,7 +10,6 @@ import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.infra_state.SwitchState;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -694,6 +693,45 @@ public abstract class RSExpr<T extends RSValue> {
         @Override
         public RSType getType(RSType[] argumentTypes) {
             return RSType.OPTIONAL_SIGNAL;
+        }
+
+        @Override
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+        }
+    }
+
+    
+    public static final class PreviousReservedRoute extends RSExpr<RSOptional<RouteState>> {
+        public final RSExpr<SignalState> signal;
+
+        public PreviousReservedRoute(RSExpr<SignalState> signal) {
+            this.signal = signal;
+        }
+
+        /**
+         * Evaluate the expression to an optional route
+         * @param state the global state of the program
+         * @return the current reserved route preceding the signal, if any. Else an empty optional
+         */
+        @Override
+        public RSOptional<RouteState> evaluate(RSExprState<?> state) {
+            var currentSignal = signal.evaluate(state).signal;
+            var routes = currentSignal.linkedDetector.getIncomingRouteNeighbors(
+                    currentSignal.direction
+                );
+            for (var route : routes) {
+                var routeState = state.infraState.getRouteState(route.index); 
+                if (routeState.status == RouteStatus.RESERVED) {
+                    return new RSOptional<>(routeState);
+                }
+            }
+            return new RSOptional<>(null);
+        }
+
+        @Override
+        public RSType getType(RSType[] argumentTypes) {
+            return RSType.OPTIONAL_ROUTE;
         }
 
         @Override
