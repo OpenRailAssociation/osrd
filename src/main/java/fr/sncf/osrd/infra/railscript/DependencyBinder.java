@@ -5,7 +5,6 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Switch;
-
 import java.util.*;
 
 /** This visitor evaluates all the possible return values of the (non-boolean) expressions
@@ -221,6 +220,25 @@ public class DependencyBinder extends RSExprVisitor {
                         routeDependencies.add(currentRoute);
                     }
                 }
+            }
+        }
+        lastExprPossibleValues = possibleValues;
+    }
+
+    /** Visit method
+     * We add all the routes that precede the signal
+     */
+    public void visit(RSExpr.PreviousReservedRoute previousReservedRoute) throws InvalidInfraException {
+        var possibleValues = new HashSet<>();
+        previousReservedRoute.signal.accept(this);
+        var possibleSignals = lastExprPossibleValues;
+        for (var val : possibleSignals) {
+            assert val instanceof Signal;
+            var signal = (Signal) val;
+            for (var route : signal.linkedDetector.getIncomingRouteNeighbors(
+                    signal.direction
+                )) {
+                possibleValues.add(route);
             }
         }
         lastExprPossibleValues = possibleValues;

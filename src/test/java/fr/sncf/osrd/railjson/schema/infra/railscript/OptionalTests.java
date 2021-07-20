@@ -1,20 +1,26 @@
 package fr.sncf.osrd.railjson.schema.infra.railscript;
 
-import static fr.sncf.osrd.Helpers.*;
+import static fr.sncf.osrd.Helpers.getBaseConfig;
+import static fr.sncf.osrd.Helpers.getBaseInfra;
+import static fr.sncf.osrd.Helpers.run;
+import static fr.sncf.osrd.Helpers.runWithExceptions;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.HashMap;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.railscript.RSExpr;
+import fr.sncf.osrd.infra.railscript.RSExprState;
+import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
+import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.RailScriptExprParser;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
-import java.util.HashMap;
 
 public class OptionalTests {
 
@@ -77,5 +83,71 @@ public class OptionalTests {
 
     static void tryInstanciate(Simulation sim, RJSRSExpr expr) throws InvalidInfraException {
         new RailScriptExprParser(sim.infra.aspects, new HashMap<>()).parse(expr);
+    }
+
+    /**
+     * Check that the previous_reserved_route primitive return the expected value in TinyInfra
+     */
+    @Test
+    public void testPreviousReservedRouteTinyInfra() throws InvalidInfraException, SimulationError {
+        final var infra = getBaseInfra();
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+
+        // Creation of the SignalRef 
+        var signal = new RSExpr.SignalRef("il.sig.C3");
+        // build name maps to prepare resolving names in expressions
+        var signalNames = new HashMap<String, Signal>();
+        for (var s : sim.infra.signals)
+            signalNames.put(s.id, s);
+        signal.resolve(signalNames);
+        
+        // Creation of the PreviousReservedRoute expression
+        var previousReserveRoute = new RSExpr.PreviousReservedRoute(signal);
+        // Creation of the state for the evaluation
+        var state = new RSExprState<>(previousReserveRoute, 0, 0);
+        
+        // First, the route preceding the signal is free, so the evaluation must return null
+        var result = state.evalInit(sim.infraState);
+        assert result.value == null;
+
+        // In a second time, we reserve the route preceding the signal, the result must not be null anymore
+        RouteState routeState = sim.infraState.getRouteState(1);
+        routeState.reserve(sim);
+        result = state.evalInputChange(sim.infraState, null);
+        assert result.value != null;
+        assert result.value.route.id.equals("rt.buffer_stop_b-C3");
+    }
+
+    /**
+     * Check that the previous_reserved_route primitive return the expected value in TinyInfra
+     */
+    @Test
+    public void testPreviousReservedRouteCircularInfra() throws InvalidInfraException, SimulationError {
+        final var infra = getBaseInfra("circular_infra/infra.json");
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+
+        // Creation of the SignalRef 
+        var signal = new RSExpr.SignalRef("sig.1");
+        // build name maps to prepare resolving names in expressions
+        var signalNames = new HashMap<String, Signal>();
+        for (var s : sim.infra.signals)
+            signalNames.put(s.id, s);
+        signal.resolve(signalNames);
+        
+        // Creation of the PreviousReservedRoute expression
+        var previousReserveRoute = new RSExpr.PreviousReservedRoute(signal);
+        // Creation of the state for the evaluation
+        var state = new RSExprState<>(previousReserveRoute, 0, 0);
+        
+        // First, the route preceding the signal is free, so the evaluation must return null
+        var result = state.evalInit(sim.infraState);
+        assert result.value == null;
+
+        // In a second time, we reserve the route preceding the signal, the result must not be null anymore
+        RouteState routeState = sim.infraState.getRouteState(7);
+        routeState.reserve(sim);
+        result = state.evalInputChange(sim.infraState, null);
+        assert result.value != null;
+        assert result.value.route.id.equals("rt.81");
     }
 }

@@ -15,8 +15,8 @@ import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railml.RailMLParser;
 import fr.sncf.osrd.utils.SortedArraySet;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
 import okio.Okio;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -124,9 +124,9 @@ public final class Infra {
             var backwardBuilder = trackSection.backwardActionPoints.builder();
 
             for (var signal : trackSection.signals) {
-                if (signal.value.direction.appliesToNormal())
+                if (signal.value.direction == EdgeDirection.START_TO_STOP)
                     forwardBuilder.add(signal.position, signal.value);
-                if (signal.value.direction.appliesToReverse())
+                if (signal.value.direction == EdgeDirection.STOP_TO_START)
                     backwardBuilder.add(signal.position, signal.value);
             }
             for (var waypoint : trackSection.waypoints) {

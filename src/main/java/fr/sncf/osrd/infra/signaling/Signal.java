@@ -2,14 +2,14 @@ package fr.sncf.osrd.infra.signaling;
 
 import fr.sncf.osrd.infra.railscript.RSStatefulExpr;
 import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
+import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.InteractionType;
 import fr.sncf.osrd.train.InteractionTypeSet;
 import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.utils.graph.ApplicableDirection;
-
+import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.ArrayList;
 
 public class Signal implements ActionPoint {
@@ -18,7 +18,10 @@ public class Signal implements ActionPoint {
     public final String id;
     public final RSStatefulExpr<RSAspectSet> expr;
     public final ArrayList<Signal> signalSubscribers = new ArrayList<>();
-    public final ApplicableDirection direction;
+    public final EdgeDirection direction;
+
+    /** If it exists, the detector linked to the signal, else null */
+    public final Detector linkedDetector;
 
     private RSAspectSet initialAspects = new RSAspectSet();
     private static final InteractionTypeSet interactionTypeSet =
@@ -29,14 +32,16 @@ public class Signal implements ActionPoint {
             int index,
             String id,
             RSStatefulExpr<RSAspectSet> expr,
-            ApplicableDirection direction,
-            double sightDistance
+            EdgeDirection direction,
+            double sightDistance,
+            Detector linkedDetector
     ) {
         this.index = index;
         this.id = id;
         this.expr = expr;
         this.direction = direction;
         this.sightDistance = sightDistance;
+        this.linkedDetector = linkedDetector; 
     }
 
     public void evalInitialAspect(InfraState initialState) {

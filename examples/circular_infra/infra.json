@@ -401,6 +401,7 @@
             ]
           },
           "id": "sig.1",
+          "linked_detector": "tde.1",
           "applicable_direction": "NORMAL",
           "position": 0,
           "sight_distance": 200
@@ -444,6 +445,7 @@
             ]
           },
           "id": "sig.2",
+          "linked_detector": "tde.2",
           "applicable_direction": "NORMAL",
           "position": 0,
           "sight_distance": 200
@@ -487,6 +489,7 @@
             ]
           },
           "id": "sig.3",
+          "linked_detector": "tde.3",
           "applicable_direction": "NORMAL",
           "position": 0,
           "sight_distance": 200
@@ -530,6 +533,7 @@
             ]
           },
           "id": "sig.4",
+          "linked_detector": "tde.4",
           "applicable_direction": "NORMAL",
           "position": 0,
           "sight_distance": 200
@@ -573,6 +577,7 @@
             ]
           },
           "id": "sig.5",
+          "linked_detector": "tde.5",
           "applicable_direction": "NORMAL",
           "position": 0,
           "sight_distance": 200
@@ -616,6 +621,7 @@
             ]
           },
           "id": "sig.6",
+          "linked_detector": "tde.6",
           "applicable_direction": "NORMAL",
           "position": 0,
           "sight_distance": 200
@@ -659,6 +665,7 @@
             ]
           },
           "id": "sig.7",
+          "linked_detector": "tde.7",
           "applicable_direction": "NORMAL",
           "position": 0,
           "sight_distance": 200
@@ -698,6 +705,7 @@
             ]
           },
           "id": "sig.8",
+          "linked_detector": "tde.8",
           "applicable_direction": "NORMAL",
           "position": 0,
           "sight_distance": 200
