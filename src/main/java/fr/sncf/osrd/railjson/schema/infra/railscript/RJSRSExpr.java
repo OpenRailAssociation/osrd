@@ -8,7 +8,6 @@ import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspect;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
-
 import java.util.Map;
 
 /**
@@ -115,6 +114,7 @@ public abstract class RJSRSExpr {
                     .withSubtype(AspectSetContains.class, "aspect_set_contains")
                     .withSubtype(ReservedRoute.class, "reserved_route")
                     .withSubtype(NextSignal.class, "next_signal")
+                    .withSubtype(PreviousReservedRoute.class, "previous_reserved_route")
     );
 
     // region BOOLEAN_LOGIC
@@ -406,6 +406,20 @@ public abstract class RJSRSExpr {
         public NextSignal(RJSRSExpr signal, RJSRSExpr route) {
             this.signal = signal;
             this.route = route;
+        }
+    }
+
+    /**
+     * Returns the current reserved route preceding the signal, if any
+     */
+    public static final class PreviousReservedRoute extends RJSRSExpr {
+        /**
+         * The expression giving the signal to look for.
+         */
+        public RJSRSExpr signal;
+
+        public PreviousReservedRoute(RJSRSExpr signal) {
+            this.signal = signal;
         }
     }
     // endregion

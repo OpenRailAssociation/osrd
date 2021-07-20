@@ -220,6 +220,11 @@ public class RailScriptExprParser {
             var signalExpr = parseSignalExpr(nextSignalExpr.signal);
             var routeExpr = parseRouteExpr(nextSignalExpr.route);
             return new RSExpr.NextSignal(signalExpr, routeExpr);
+        } 
+        if (type == RJSRSExpr.PreviousReservedRoute.class) {
+            var previousReservedRouteExpr = (RJSRSExpr.PreviousReservedRoute) expr;
+            var signalExpr = parseSignalExpr(previousReservedRouteExpr.signal);
+            return new RSExpr.PreviousReservedRoute(signalExpr);
         }
 
         throw new InvalidInfraException(String.format("'%s' unsupported signal expression", type));
