@@ -51,7 +51,7 @@ PAYLOAD_SCHEMA = {
                         },
                     },
                     "name": {"type": "string"},
-                    "suggestion": {"type": "bool"},
+                    "suggestion": {"type": "boolean"},
                     "stop_time": {"type": "number"},
                     "geographic": {
                         "type": "array",
@@ -59,7 +59,12 @@ PAYLOAD_SCHEMA = {
                         "minItems": 2,
                         "maxItems": 2,
                     },
-                    "schematic": {"type": "string"},
+                    "schematic": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "minItems": 2,
+                        "maxItems": 2,
+                    },
                 },
             },
             "title": "schema",
