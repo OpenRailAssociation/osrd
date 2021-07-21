@@ -283,7 +283,10 @@ class TrainScheduleView(
     @action(detail=True, methods=["get"])
     def result(self, request, pk=None):
         train_schedule = self.get_object()
-        result = get_object_or_404(TrainScheduleResult, train_schedule=train_schedule)
+        try:
+            result = TrainScheduleResult.objects.get(train_schedule=train_schedule)
+        except TrainScheduleResult.DoesNotExist:
+            result = self.generate_schedule_result(train_schedule)
 
         # Retrieve projection path
         projection_path = train_schedule.path
@@ -291,6 +294,7 @@ class TrainScheduleView(
         if projection_path_string:
             projection_path = get_object_or_404(Path, pk=projection_path_string)
 
+        self.generate_schedule_result(train_schedule)
         return Response(format_result(result, projection_path))
 
     def create(self, request):
@@ -298,6 +302,10 @@ class TrainScheduleView(
         serializer.is_valid(raise_exception=True)
         train_schedule = serializer.save()
 
+        return Response({"id": train_schedule.pk})
+
+    @staticmethod
+    def generate_schedule_result(train_schedule):
         payload = {
             "infra": train_schedule.timetable.infra_id,
             "rolling_stocks": [get_rolling_stock_payload(train_schedule.rolling_stock)],
@@ -319,4 +327,4 @@ class TrainScheduleView(
             train_schedule=train_schedule, log=response.json()
         )
         result.save()
-        return Response({"id": train_schedule.pk})
+        return result
