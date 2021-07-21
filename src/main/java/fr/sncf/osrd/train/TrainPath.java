@@ -76,11 +76,11 @@ public class TrainPath {
             var next = trackSectionPath.get(i);
             if (previous.getEndLocation().equals(next.getBeginLocation()))
                 continue;
-            if (previous.edge.endNeighbors.contains(next.edge) &&
-                    next.edge.startNeighbors.contains(previous.edge))
+            if (previous.edge.endNeighbors.contains(next.edge)
+                    && next.edge.startNeighbors.contains(previous.edge))
                 continue;
-            String err = "Invalid path: the beginning of a track section isn't the start of the next " +
-                    "(previous=%s, next=%s)";
+            String err = "Invalid path: the beginning of a track section isn't the start of the next "
+                    + "(previous=%s, next=%s)";
 
             throw new InvalidSchedule(String.format(err, previous, next));
         }
