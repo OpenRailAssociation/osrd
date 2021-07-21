@@ -41,7 +41,6 @@ public class PathTest {
             s.initialHeadLocation.offset = 100;
         });
 
-
         try {
             RJSSimulationParser.parse(rjsInfra, schedule);
         } catch (InvalidSchedule e) {
@@ -72,7 +71,6 @@ public class PathTest {
             s.initialHeadLocation.offset = 100;
         });
 
-
         try {
             RJSSimulationParser.parse(rjsInfra, schedule);
         } catch (InvalidSchedule e) {
@@ -99,7 +97,6 @@ public class PathTest {
                 new ID<RJSRoute>("rt.C3-S7"),
                 new ID<RJSRoute>("rt.S7-buffer_stop_c"),
         });
-
 
         try {
             RJSSimulationParser.parse(rjsInfra, schedule);
