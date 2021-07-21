@@ -4,6 +4,7 @@ import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
@@ -32,13 +33,18 @@ public class TrainPath {
     /** Constructor */
     public TrainPath(List<Route> routePath,
                      TrackSectionLocation startLocation,
-                     TrackSectionLocation endLocation) {
+                     TrackSectionLocation endLocation) throws InvalidSchedule {
         this.routePath = routePath;
         tvdSectionPaths = new ArrayList<>();
         tvdSectionDirections = new ArrayList<>();
         initTVD(routePath);
-        trackSectionPath = Route.routesToTrackSectionRange(routePath, startLocation, endLocation);
+        try {
+            trackSectionPath = Route.routesToTrackSectionRange(routePath, startLocation, endLocation);
+        } catch (RuntimeException e) {
+            throw new InvalidSchedule(e.getMessage());
+        }
         length = convertTrackLocation(endLocation);
+        validate();
     }
 
     /** Copy constructor */
@@ -57,6 +63,26 @@ public class TrainPath {
                 tvdSectionPaths.add(route.tvdSectionsPaths.get(i));
                 tvdSectionDirections.add(route.tvdSectionsPathDirections.get(i));
             }
+        }
+    }
+
+    private void validate() throws InvalidSchedule {
+        for (int i = 1; i < routePath.size(); i++) {
+            if (routePath.get(i).id.equals(routePath.get(i - 1).id))
+                throw new InvalidSchedule("Train path contains duplicate routes");
+        }
+        for (int i = 1; i < trackSectionPath.size(); i++) {
+            var previous = trackSectionPath.get(i - 1);
+            var next = trackSectionPath.get(i);
+            if (previous.getEndLocation().equals(next.getBeginLocation()))
+                continue;
+            if (previous.edge.endNeighbors.contains(next.edge) &&
+                    next.edge.startNeighbors.contains(previous.edge))
+                continue;
+            String err = "Invalid path: the beginning of a track section isn't the start of the next " +
+                    "(previous=%s, next=%s)";
+
+            throw new InvalidSchedule(String.format(err, previous, next));
         }
     }
 
