@@ -9,10 +9,14 @@ import okhttp3.Request;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 public class InfraHandler {
     private final HashMap<String, Infra> cache = new HashMap<>();
-    private final OkHttpClient client = new OkHttpClient();
+    private final OkHttpClient client = new OkHttpClient.Builder()
+            .readTimeout(120, TimeUnit.SECONDS)
+            .build();
+
     private final String baseUrl;
     private final String authorizationToken;
 
