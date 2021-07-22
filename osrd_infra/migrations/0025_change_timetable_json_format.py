@@ -2,10 +2,10 @@
 
 from django.db import migrations, models
 import osrd_infra.utils
-from osrd_infra.models import TrainScheduleResult
 
 
 def drop_train_schedule_results(apps, schema_editor):
+    TrainScheduleResult = apps.get_model("osrd_infra", "trainscheduleresult")
     TrainScheduleResult.objects.all().delete()
 
 
