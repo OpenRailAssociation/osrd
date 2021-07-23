@@ -72,5 +72,5 @@ def generate_layer(infra: Infra, entity_type: Type[Entity]):
 
         layer.append(entity_payload)
 
-    entity_type_name = entity._entity_meta.name
+    entity_type_name = entity_type._entity_meta.name
     push_layer(f"osrd_{entity_type_name}", infra.id, layer)
