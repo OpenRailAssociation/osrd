@@ -162,7 +162,7 @@ public class TowerState {
 
         // reserve the route
         System.out.println("TOWER ACCEPTED : " + request.train.getName() + " : " + request.routeState.route.id);
-        request.routeState.reserve(sim);
+        request.routeState.reserve(sim, request.train);
     }
 
     /**

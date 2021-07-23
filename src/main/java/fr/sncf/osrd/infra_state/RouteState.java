@@ -8,6 +8,8 @@ import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.simulation.EntityChange;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.SortedArraySet;
 
 /**
@@ -81,12 +83,18 @@ public final class RouteState implements RSMatchable {
     /** Notify the route that one of his tvd section is occupied */
     public void onTvdSectionOccupied(Simulation sim) throws SimulationError {
 
-        if (status == RouteStatus.REQUESTED) {
+        if (status == RouteStatus.REQUESTED || status == RouteStatus.CBTC_REQUESTED) {
             throw new SimulationError("The TVD section we try to occupy isn't reserved yet");
         }
-        if (status != RouteStatus.RESERVED)
+
+        RouteStatusChange change;
+        if (status == RouteStatus.RESERVED) {
+            change = new RouteStatusChange(sim, this, RouteStatus.OCCUPIED);
+        } else if (status == RouteStatus.CBTC_RESERVED) {
+            change = new RouteStatusChange(sim, this, RouteStatus.CBTC_OCCUPIED);
+        } else {
             return;
-        var change = new RouteStatusChange(sim, this, RouteStatus.OCCUPIED);
+        }
         change.apply(sim, this);
         sim.publishChange(change);
         notifySignals(sim);
@@ -99,10 +107,13 @@ public final class RouteState implements RSMatchable {
         }
     }
 
-    /** Reserve a route and his tvd sections. Routes that share tvd sections will have the status CONFLICT */
-    public void reserve(Simulation sim) throws SimulationError {
-        assert status == RouteStatus.FREE;
-
+    /**
+     * Request all switches to move to the position defined by
+     * route.switchesPosition
+     * 
+     * @param sim
+     */
+    private void requestSwitchPositionChange(Simulation sim) throws SimulationError {
         // Set the switches in the moving position
         movingSwitchesLeft = 0;
         for (var switchPos : route.switchesPosition.entrySet()) {
@@ -113,6 +124,40 @@ public final class RouteState implements RSMatchable {
                 switchState.requestPositionChange(sim, switchPos.getValue(), this);
             }
         }
+    }
+
+    /**
+     * Reserve the tvd sections of the route
+     * 
+     * @param sim
+     */
+    public void reserveTvdSection(Simulation sim) throws SimulationError {
+        for (var tvdSectionPath : route.tvdSectionsPaths) {
+            var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
+            tvdSection.reserve(sim);
+        }
+    }
+
+    public void reserve(Simulation sim, Train train) throws SimulationError {
+        var trainState = train.getLastState();
+        var phase = trainState.trainSchedule.phases.get(trainState.currentPhaseIndex);
+        if(phase instanceof SignalNavigatePhase) {
+            reserve(sim);
+        } /* else if (phase instanceof CBTCNavigatePhase) {
+            cbtcReserve(sim);
+        } */
+    }
+
+    /**
+     * Reserve a route and his tvd sections. Routes that share tvd sections will
+     * have the status CONFLICT
+     * 
+     * @param sim
+     */
+    public void reserve(Simulation sim) throws SimulationError {
+        assert status == RouteStatus.FREE;
+
+        requestSwitchPositionChange(sim);
 
         RouteStatus newStatus = movingSwitchesLeft > 0 ? RouteStatus.REQUESTED : RouteStatus.RESERVED;
 
@@ -121,11 +166,28 @@ public final class RouteState implements RSMatchable {
         sim.publishChange(change);
         notifySignals(sim);
 
-        // Reserve the tvd sections
-        for (var tvdSectionPath : route.tvdSectionsPaths) {
-            var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
-            tvdSection.reserve(sim);
-        }
+        reserveTvdSection(sim);
+    }
+
+    /**
+     * Reserve a route and his tvd sections in CBTC. Routes that share tvd sections will
+     * have the status CONFLICT
+     * 
+     * @param sim
+     */
+    public void cbtcReserve(Simulation sim) throws SimulationError {
+        assert status == RouteStatus.FREE || hasCBTCStatus();
+
+        requestSwitchPositionChange(sim);
+
+        RouteStatus newStatus = movingSwitchesLeft > 0 ? RouteStatus.CBTC_REQUESTED : RouteStatus.CBTC_RESERVED;
+
+        var change = new RouteStatusChange(sim, this, newStatus);
+        change.apply(sim, this);
+        sim.publishChange(change);
+        notifySignals(sim);
+
+        reserveTvdSection(sim);
     }
 
     /** Reserve a route and his tvd sections *when creating a train*.
@@ -143,8 +205,18 @@ public final class RouteState implements RSMatchable {
     /** Should be called when a switch is done moving and is in the position we requested */
     public void onSwitchMove(Simulation sim) throws SimulationError {
         movingSwitchesLeft--;
+        // If all switches are in the requested position, we mark the route as reserved
         if (movingSwitchesLeft == 0) {
-            var change = new RouteStatusChange(sim, this, RouteStatus.RESERVED);
+            RouteStatusChange change;
+            // We mark the route in the reservation mode corresponding to the current
+            // request mode
+            if (status == RouteStatus.REQUESTED) {
+                change = new RouteStatusChange(sim, this, RouteStatus.RESERVED);
+            } else if (status == RouteStatus.CBTC_REQUESTED) {
+                change = new RouteStatusChange(sim, this, RouteStatus.CBTC_RESERVED);
+            } else {
+                throw new SimulationError("The Route needs to be either REQUESTED or CBTC_REQUESTED if a switch move");
+            }
             change.apply(sim, this);
             sim.publishChange(change);
             notifySignals(sim);
@@ -165,6 +237,14 @@ public final class RouteState implements RSMatchable {
         if (route != o.route)
             return false;
         return status == o.status;
+    }
+
+    /**
+     * @return True if the status of the route is CBTC, else False
+     */
+    public boolean hasCBTCStatus() {
+        return status == RouteStatus.CBTC_REQUESTED || status == RouteStatus.CBTC_RESERVED
+                || status == RouteStatus.CBTC_OCCUPIED;
     }
 
     public static class RouteStatusChange extends EntityChange<RouteState, Void> {
