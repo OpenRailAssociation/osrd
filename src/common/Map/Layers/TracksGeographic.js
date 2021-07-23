@@ -76,7 +76,7 @@ const TracksGeographic = (props) => {
           id="chartis/tracks-geo/hover"
           type="line"
           paint={{ 'line-color': '#ffb612', 'line-width': 3 }}
-          filter={['==', 'gaia_id', idHover]}
+          filter={['==', 'entity_id', idHover]}
           source-layer={MAP_TRACK_SOURCES.geographic}
         />
       ) : null}
@@ -85,7 +85,7 @@ const TracksGeographic = (props) => {
 };
 
 TracksGeographic.propTypes = {
-  idHover: PropTypes.string,
+  idHover: PropTypes.number,
   colors: PropTypes.object.isRequired,
 };
 

@@ -91,7 +91,7 @@ const Itinerary = (props) => {
 
     if (osrdconf.origin !== undefined && osrdconf.destination !== undefined) {
       const params = {
-        infra: 27,
+        infra: osrdconf.infraID,
         name: 'Test path',
         steps: [],
       };

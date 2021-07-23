@@ -86,7 +86,7 @@ const Map = () => {
     console.log(e);
     if (e.features
       && e.features.length > 0
-      && e.features[0].properties.gaia_id !== undefined
+      && e.features[0].properties.entity_id !== undefined
       // && e.features[0].properties.type_voie === 'VP') {
     ) {
       dispatch(updateFeatureInfoClickOSRD({
@@ -118,7 +118,7 @@ const Map = () => {
   const onFeatureHover = (e) => {
     if (e.features !== null && e.features[0] !== undefined) {
       getGeoJSONFeature(e.features[0]);
-      setIdHover(e.features[0].properties.gaia_id);
+      setIdHover(e.features[0].properties.entity_id);
       setLngLatHover(e.lngLat);
     } else {
       setIdHover(undefined);

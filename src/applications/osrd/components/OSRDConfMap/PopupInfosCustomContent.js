@@ -9,22 +9,10 @@ export default function PopupInfosCustomContent(props) {
   const { data } = props;
   return (
     <>
-      {data.idGaia && (
-        <>
-          <div className="labelvalue w-100 mt-3">
-            <span className="labelvalue-label">idGAIA</span>
-            {data.idGaia}
-          </div>
-          <div className="labelvalue w-100">
-            <span className="labelvalue-label">GPS</span>
-            {data.clickLngLat.join(' / ')}
-          </div>
-          <div className="labelvalue w-100 mb-3">
-            <span className="labelvalue-label">Entity</span>
-            {data.id}
-          </div>
-        </>
-      )}
+      <div className="labelvalue w-100 mt-3">
+        <span className="labelvalue-label">ID</span>
+        {data.id}
+      </div>
       <div className="d-flex my-1">
         <button className="btn btn-success flex-fill" type="button" onClick={() => setPointIti('start', data)}>
           <RiMapPin2Fill />
