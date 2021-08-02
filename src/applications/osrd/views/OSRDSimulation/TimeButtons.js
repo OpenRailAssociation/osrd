@@ -7,6 +7,7 @@ import {
 } from 'react-icons/fa';
 import { sec2time, time2sec } from 'utils/timeManipulation';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import TimeLine from 'applications/osrd/components/TimeLine/TimeLine';
 
 // transform a speed ratio (X2 X10 X20, etc.) to interval time & step to bypass
 const factor2ms = (factor) => {
@@ -25,6 +26,13 @@ export default function TimeButtons() {
   const [playReverse, setPlayReverse] = useState(false);
   const [simulationSpeed, setSimulationSpeed] = useState(1);
   const simulationLength = simulation.trains[selectedTrain].steps.length;
+
+  const dataRange = [
+    simulation.trains[0].steps[0].time,
+    simulation.trains[simulation.trains.length - 1]
+      .steps[simulation.trains[simulation.trains.length - 1].steps.length - 1]
+      .time,
+  ];
 
   const stop = () => {
     clearInterval(playInterval);
@@ -91,7 +99,7 @@ export default function TimeButtons() {
   }, [hoverPosition]);
 
   return (
-    <div className="d-flex">
+    <div className="d-flex align-items-start">
       <span className="mr-1">
         <InputSNCF
           noMargin
@@ -140,11 +148,13 @@ export default function TimeButtons() {
         onChange={(e) => changeSimulationSpeed(e.target.value)}
         seconds
       />
-      <div className="timeline-container flex-grow-1">
-        <div className="timeline">
-          {chart ? chart.x.domain().map((date) => date.toLocaleTimeString('fr-FR') + ' - ') : null}
-          <br />
-          {sec2time(simulation.trains[0].steps[0].time)}
+      <div className="timeline-container flex-grow-1 w-100 ml-2">
+        <div className="timeline w-100">
+          {/* chart ? chart.x.domain().map((date) => date.toLocaleTimeString('fr-FR') + ' - ') : null */}
+          {/* dataRange.map((sec) => sec2time(sec) + ' - ') */}
+          <TimeLine
+            dataRange={dataRange}
+          />
         </div>
       </div>
     </div>

@@ -13,6 +13,10 @@ export function sec2time(sec) {
   return new Date(sec * 1000).toISOString().substr(11, 8);
 }
 
+export function sec2datetime(sec) {
+  return d3.timeParse('%H:%M:%S')(sec2time(sec));
+}
+
 export function time2sec(time) {
   const timeArray = time.split(':');
   const seconds = timeArray[2] ? Number(timeArray[2]) : 0;

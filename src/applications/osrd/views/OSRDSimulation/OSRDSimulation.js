@@ -50,9 +50,9 @@ const OSRDSimulation = () => {
       if (timetable.train_schedules.length > 0) { setIsEmpty(false); }
       for (const [idx, trainschedule] of timetable.train_schedules.entries()) {
         try {
-          const trainResult = await get(`${trainscheduleURI}/${trainschedule.id}/result/`)
-          const trainDetails = await get(`${trainscheduleURI}/${trainschedule.id}`)
-          await setWaitingMessage(`${t('simulation:loadingTrain')} ${idx + 1}/${timetable.train_schedules.length}`)
+          const trainResult = await get(`${trainscheduleURI}/${trainschedule.id}/result/`);
+          const trainDetails = await get(`${trainscheduleURI}/${trainschedule.id}`);
+          await setWaitingMessage(`${t('simulation:loadingTrain')} ${idx + 1}/${timetable.train_schedules.length}`);
           simulationLocal.push({ ...trainResult, labels: trainDetails.labels});
         } catch (e) {
           console.log('ERROR', e);
