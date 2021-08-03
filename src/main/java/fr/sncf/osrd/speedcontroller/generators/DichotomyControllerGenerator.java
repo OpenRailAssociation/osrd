@@ -12,10 +12,6 @@ import java.util.Set;
 
 /** Generates a set of speed controller using a generic dichotomy */
 public abstract class DichotomyControllerGenerator extends SpeedControllerGenerator {
-
-    /** Expected speed at the beginning of the phase */
-    protected double initialSpeed;
-
     /** We stop the dichotomy when the result is this close to the target (in seconds) */
     private final double precision;
 
@@ -23,7 +19,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     protected Set<SpeedController> maxSpeedControllers;
 
     /** Train schedule */
-    protected TrainSchedule schedule;
+    protected TrainSchedule schedule = null;
 
     /** Expected times from previous evaluation */
     protected SortedDoubleMap expectedTimes;
@@ -43,7 +39,6 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule,
                                          Set<SpeedController> speedControllers) {
         sectionEnd = Double.min(sectionEnd, schedule.plannedPath.length);
-        this.initialSpeed = findInitialSpeed(sim, schedule, speedControllers, 1);
         this.sim = sim;
         this.schedule = schedule;
         this.maxSpeedControllers = speedControllers;
