@@ -258,7 +258,7 @@ public class Helpers {
                     jsonConfig.realTimeViewer,
                     jsonConfig.changeReplayCheck
             );
-        } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule  e) {
+        } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule e) {
             fail(e);
             throw new RuntimeException();
         }
