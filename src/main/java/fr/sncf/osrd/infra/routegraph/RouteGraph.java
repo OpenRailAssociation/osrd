@@ -1,5 +1,8 @@
 package fr.sncf.osrd.infra.routegraph;
 
+import static fr.sncf.osrd.utils.graph.EdgeDirection.START_TO_STOP;
+import static fr.sncf.osrd.utils.graph.EdgeDirection.STOP_TO_START;
+
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.signaling.Signal;
@@ -9,13 +12,14 @@ import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
+import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.DirNGraph;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-import fr.sncf.osrd.utils.graph.UndirectedBiEdgeID;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class RouteGraph extends DirNGraph<Route, Waypoint> {
     public final HashMap<String, Route> routeMap = new HashMap<>();
@@ -44,7 +48,9 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 routeGraph.registerNode(node);
         }
 
-        /** Add a route to the Route Graph */
+        /**
+         * Add a route to the Route Graph
+         */
         public Route makeRoute(
                 String id,
                 SortedArraySet<TVDSection> tvdSections,
@@ -74,9 +80,9 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                             String.format("Route '%s' has a tvd section path outside tvd section", id));
 
                 if (tvdSectionPath.startNode == startIndex)
-                    tvdSectionsPathDirection.add(EdgeDirection.START_TO_STOP);
+                    tvdSectionsPathDirection.add(START_TO_STOP);
                 else
-                    tvdSectionsPathDirection.add(EdgeDirection.STOP_TO_START);
+                    tvdSectionsPathDirection.add(STOP_TO_START);
 
                 tvdSectionsPath.add(tvdSectionPath);
                 length += tvdSectionPath.length;
@@ -103,7 +109,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
             var waypointDirection = firstTVDSectionPath.nodeDirection(firstTVDSectionPathDir, EdgeEndpoint.BEGIN);
 
             // Create route
-            var entrySignal = waypointDirection == EdgeDirection.START_TO_STOP ? entrySignalNormal : entrySignalReverse;
+            var entrySignal = waypointDirection == START_TO_STOP ? entrySignalNormal : entrySignalReverse;
 
             var route = new Route(
                     id,
@@ -119,7 +125,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
 
             // Link route to the starting waypoint
             startWaypoint.getRouteNeighbors(waypointDirection).add(route);
-            
+
             // Link route to track sections and tvd sections
             double routeOffset = 0;
             for (int i = 0; i < route.tvdSectionsPaths.size(); i++) {
@@ -143,94 +149,116 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
             return routeGraph;
         }
 
-        private Set<Waypoint> findTvdWaypoints(TrackSection trackSection, EdgeDirection direction) {
-            var res = new HashSet<Waypoint>();
-            var waypoints = trackSection.waypoints;
-            if (waypoints.size() > 0) {
-                if (direction == EdgeDirection.START_TO_STOP)
-                    res.add(waypoints.data.get(0).value);
-                else
-                    res.add(waypoints.data.get(waypoints.data.size() - 1).value);
-                return res;
-            }
-            var neighbors = trackSection.getForwardNeighbors(direction);
-            for (var neighbor : neighbors) {
-                var neighborDirection = neighbor.getDirection(trackSection, direction);
-                res.addAll(findTvdWaypoints(neighbor, neighborDirection));
-                var backNeighbors = neighbor.getBackwardNeighbors(neighborDirection);
-                for (var backNeighbor : backNeighbors) {
-                    if (backNeighbor != trackSection) {
-                        var backNeighborDirection = backNeighbor.getDirection(neighbor, neighborDirection.opposite());
-                        res.addAll(findTvdWaypoints(backNeighbor, backNeighborDirection));
+        private TrackSectionRange findInitialRange(Waypoint startPoint, Set<TVDSection> sections) throws InvalidInfraException {
+            for (var edgeDirection : EdgeDirection.values()) {
+                for (var path : startPoint.getTvdSectionPathNeighbors(edgeDirection)) {
+                    if (sections.contains(path.tvdSection)) {
+                        var direction = path.startNode == startPoint.index ? START_TO_STOP : STOP_TO_START;
+                        return path.getTrackSections(direction)[0];
                     }
                 }
             }
-            return res;
+            throw new InvalidInfraException("TODO");
         }
 
-        /** Generates a set of waypoints on the route, based on its tvd sections and switch positions
-         * We accumulate all the waypoints in all the tvd sections, then remove the ones in the other switch branches */
-        private Set<Waypoint> getWaypointsOnRoute(
-                Set<TVDSection> tvdSections,
-                HashMap<Switch, SwitchPosition> switchesPosition
-        ) throws InvalidInfraException {
-            var res = new HashSet<Waypoint>();
-            tvdSections.forEach(x -> res.addAll(x.waypoints));
-            if (switchesPosition != null) {
-                for (var entry : switchesPosition.entrySet()) {
-                    var aSwitch = entry.getKey();
-                    switch (entry.getValue()) {
-                        case LEFT:
-                            if (aSwitch.rightTrackSection.startNode == aSwitch.index)
-                                res.removeAll(findTvdWaypoints(aSwitch.rightTrackSection, EdgeDirection.START_TO_STOP));
-                            else
-                                res.removeAll(findTvdWaypoints(aSwitch.rightTrackSection, EdgeDirection.STOP_TO_START));
-                            break;
-                        case RIGHT:
-                            if (aSwitch.leftTrackSection.startNode == aSwitch.index)
-                                res.removeAll(findTvdWaypoints(aSwitch.leftTrackSection, EdgeDirection.START_TO_STOP));
-                            else
-                                res.removeAll(findTvdWaypoints(aSwitch.leftTrackSection, EdgeDirection.STOP_TO_START));
-                            break;
-                        case MOVING:
-                            throw new InvalidInfraException("route: switch required position cannot be MOVING");
-                    }
+        private TrackSection nextTrackSection(TrackSection edge,
+                                              EdgeDirection direction,
+                                              Map<Integer, Switch> switches,
+                                              Map<Switch, SwitchPosition> positions) throws InvalidInfraException {
+            var endWaypoint = direction == START_TO_STOP ? edge.endNode : edge.startNode;
+            var neighbors = direction == START_TO_STOP ? edge.endNeighbors : edge.startNeighbors;
+            if (neighbors.size() == 1) {
+                return neighbors.get(0);
+            } else {
+                if (!switches.containsKey(endWaypoint))
+                    return null;
+                var s = switches.get(endWaypoint);
+                var position = positions.get(s);
+                switch (position) {
+                    case LEFT:
+                        return s.leftTrackSection;
+                    case RIGHT:
+                        return s.rightTrackSection;
+                    case MOVING:
+                        throw new InvalidInfraException("TODO");
                 }
             }
-            return res;
+            throw new InvalidInfraException("TODO");
         }
 
-        /** Generates a list of waypoints present on the route in the right order */
+        /**
+         * Generates a list of waypoints present on the route in the right order
+         */
         private List<Waypoint> generateWaypointList(
                 Waypoint startPoint,
                 Set<TVDSection> tvdSections,
                 HashMap<Switch, SwitchPosition> switchesPosition
         ) throws InvalidInfraException {
-            var currentPoint = startPoint;
-            var waypoints = new ArrayList<Waypoint>();
+            var allWaypointIndexes = generateWaypointListIndexes(startPoint, tvdSections, switchesPosition);
+            var res = allWaypointIndexes.stream()
+                    .map(waypointGraph::getNode)
+                    .collect(Collectors.toList());
 
-            var waypointsToVisit = getWaypointsOnRoute(tvdSections, switchesPosition);
+            assert allWaypointIndexes.get(0) == startPoint.index;
+            assert res.size() > 1;
 
-            // We order the points by finding which one is adjacent to the previous point
-            // until there is no more point to visit
+            return res;
+        }
+
+        /** Add the waypoints on the edge to res, in the right order.
+         * Only waypoints in validWaypoints (the ones on the right tvd sections) are added
+         * Returns true if new points have been added. */
+        private static boolean addWaypoints(TrackSection edge,
+                                            EdgeDirection direction,
+                                            List<Integer> res,
+                                            Set<Integer> validWaypoints) {
+            int previousSize = res.size();
+            if (direction == START_TO_STOP) {
+                for (var p : edge.waypoints) {
+                    var index = p.value.index;
+                    if (validWaypoints.contains(index) && !res.contains(index))
+                        res.add(p.value.index);
+                }
+            } else {
+                for (var i = edge.waypoints.size() - 1; i >= 0; i--) {
+                    var index = edge.waypoints.get(i).value.index;
+                    if (validWaypoints.contains(index) && !res.contains(index))
+                        res.add(edge.waypoints.get(i).value.index);
+                }
+            }
+            return res.size() > previousSize;
+        }
+
+        private List<Integer> generateWaypointListIndexes(
+                Waypoint startPoint,
+                Set<TVDSection> tvdSections,
+                HashMap<Switch, SwitchPosition> switchesPosition
+        ) throws InvalidInfraException {
+
+            // Init the maps and lists
+            var switchesMap = new HashMap<Integer, Switch>();
+            var res = new ArrayList<Integer>();
+            var waypointsOnTVDSections = new HashSet<Integer>();
+            for (var section : tvdSections)
+                for (var waypoint : section.waypoints)
+                    waypointsOnTVDSections.add(waypoint.index);
+            if (switchesPosition != null)
+                for (var s : switchesPosition.keySet())
+                    switchesMap.put(s.index, s);
+
+            // Finds the first track section
+            var initialRange = findInitialRange(startPoint, tvdSections);
+            var direction = initialRange.direction;
+            var edge = initialRange.edge;
+
             while (true) {
-                waypointsToVisit.remove(currentPoint);
-                waypoints.add(currentPoint);
-                if (waypointsToVisit.isEmpty())
-                    return waypoints;
-                for (var waypoint : waypointsToVisit) {
-                    var pair = UndirectedBiEdgeID.from(waypoint.index, currentPoint.index);
-                    if (waypointGraph.tvdSectionPathMap.containsKey(pair)) {
-                        currentPoint = waypoint;
-                        break;
-                    }
-                }
-                if (!waypointsToVisit.contains(currentPoint)) {
-                    // we didn't find a pair
-                    var errorMsg = "Route: can't find a waypoint list, are the tvd sections connected "
-                            + "and the switches set to the right positions?";
-                    throw new InvalidInfraException(errorMsg);
-                }
+                if (!addWaypoints(edge, direction, res, waypointsOnTVDSections))
+                    return res;
+                var previousEndPoint = direction == START_TO_STOP ? edge.endNode : edge.startNode;
+                edge = nextTrackSection(edge, direction, switchesMap, switchesPosition);
+                if (edge == null)
+                    return res;
+                direction = edge.startNode == previousEndPoint ? START_TO_STOP : STOP_TO_START;
             }
         }
 
