@@ -60,95 +60,104 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 Signal entrySignalNormal,
                 Signal entrySignalReverse
         ) throws InvalidInfraException {
-            var length = 0;
-            var tvdSectionsPath = new ArrayList<TVDSectionPath>();
-            var tvdSectionsPathDirection = new ArrayList<EdgeDirection>();
+            try {
+                var length = 0;
+                var tvdSectionsPath = new ArrayList<TVDSectionPath>();
+                var tvdSectionsPathDirection = new ArrayList<EdgeDirection>();
 
-            var waypoints = generateWaypointList(entryPoint, tvdSections, switchesPosition);
+                var waypoints = generateWaypointList(entryPoint, tvdSections, switchesPosition);
 
-            // Find the list of tvd section path
-            for (var i = 1; i < waypoints.size(); i++) {
-                var startIndex = waypoints.get(i - 1).index;
-                var endIndex = waypoints.get(i).index;
-                var tvdSectionPath = waypointGraph.getTVDSectionPath(startIndex, endIndex);
+                // Find the list of tvd section path
+                for (var i = 1; i < waypoints.size(); i++) {
+                    var startIndex = waypoints.get(i - 1).index;
+                    var endIndex = waypoints.get(i).index;
+                    var tvdSectionPath = waypointGraph.getTVDSectionPath(startIndex, endIndex);
 
-                if (tvdSectionPath == null)
-                    throw new InvalidInfraException(String.format(
-                            "Route: '%s' couldn't find tvd section path: (%d, %d)", id, startIndex, endIndex));
-                if (!tvdSections.contains(tvdSectionPath.tvdSection))
-                    throw new InvalidInfraException(
-                            String.format("Route '%s' has a tvd section path outside tvd section", id));
-
-                if (tvdSectionPath.startNode == startIndex)
-                    tvdSectionsPathDirection.add(START_TO_STOP);
-                else
-                    tvdSectionsPathDirection.add(STOP_TO_START);
-
-                tvdSectionsPath.add(tvdSectionPath);
-                length += tvdSectionPath.length;
-            }
-
-            // Checks that the release groups are consistent and complete
-            var copiedTvdSections = new SortedArraySet<TVDSection>();
-            for (var releaseGroup : releaseGroups) {
-                for (var tvdSection : releaseGroup) {
-                    if (!tvdSections.contains(tvdSection))
+                    if (tvdSectionPath == null)
                         throw new InvalidInfraException(String.format(
-                                "Route '%s' has a release group that doesn't match route's tvd sections", id));
-                    copiedTvdSections.add(tvdSection);
+                                "Couldn't find tvd section path: (%d, %d)", startIndex, endIndex));
+                    if (!tvdSections.contains(tvdSectionPath.tvdSection))
+                        throw new InvalidInfraException("Route has a tvd section path outside tvd section");
+
+                    if (tvdSectionPath.startNode == startIndex)
+                        tvdSectionsPathDirection.add(START_TO_STOP);
+                    else
+                        tvdSectionsPathDirection.add(STOP_TO_START);
+
+                    tvdSectionsPath.add(tvdSectionPath);
+                    length += tvdSectionPath.length;
                 }
-            }
-            if (copiedTvdSections.size() != tvdSections.size())
-                throw new InvalidInfraException(String.format(
-                        "Route '%s' has a tvd section that is not part of any of its release groups", id));
 
-            // Get start waypoint and start direction
-            var firstTVDSectionPath = tvdSectionsPath.get(0);
-            var firstTVDSectionPathDir = tvdSectionsPathDirection.get(0);
-            var startWaypoint = waypointGraph.getNode(firstTVDSectionPath.getStartNode(firstTVDSectionPathDir));
-            var waypointDirection = firstTVDSectionPath.nodeDirection(firstTVDSectionPathDir, EdgeEndpoint.BEGIN);
-
-            // Create route
-            var entrySignal = waypointDirection == START_TO_STOP ? entrySignalNormal : entrySignalReverse;
-
-            var route = new Route(
-                    id,
-                    routeGraph,
-                    length,
-                    releaseGroups,
-                    tvdSectionsPath,
-                    tvdSectionsPathDirection,
-                    switchesPosition,
-                    entrySignal);
-
-            routeGraph.routeMap.put(id, route);
-
-            // Link route to the starting waypoint
-            startWaypoint.getRouteNeighbors(waypointDirection).add(route);
-
-            // Link route to track sections and tvd sections
-            double routeOffset = 0;
-            for (int i = 0; i < route.tvdSectionsPaths.size(); i++) {
-                var tvdSectionPath = route.tvdSectionsPaths.get(i);
-                var tvdSectionPathDir = route.tvdSectionsPathDirections.get(i);
-                tvdSectionPath.tvdSection.routeSubscribers.add(route);
-                for (var trackSectionRange : tvdSectionPath.getTrackSections(tvdSectionPathDir)) {
-                    var trackSection = trackSectionRange.edge;
-                    var trackBegin = Math.min(trackSectionRange.getBeginPosition(), trackSectionRange.getEndPosition());
-                    var trackEnd = Math.max(trackSectionRange.getBeginPosition(), trackSectionRange.getEndPosition());
-                    var routeFragment = new TrackSection.RouteFragment(
-                            route, routeOffset, trackBegin, trackEnd, trackSectionRange.direction);
-                    trackSection.getRoutes(trackSectionRange.direction).insert(routeFragment);
-                    routeOffset += trackSectionRange.length();
+                // Checks that the release groups are consistent and complete
+                var copiedTvdSections = new SortedArraySet<TVDSection>();
+                for (var releaseGroup : releaseGroups) {
+                    for (var tvdSection : releaseGroup) {
+                        if (!tvdSections.contains(tvdSection))
+                            throw new InvalidInfraException(
+                                    "Route has a release group that doesn't match route's tvd sections");
+                        copiedTvdSections.add(tvdSection);
+                    }
                 }
+                if (copiedTvdSections.size() != tvdSections.size())
+                    throw new InvalidInfraException(
+                            "Route has a tvd section that is not part of any of its release groups");
+
+                // Get start waypoint and start direction
+                var firstTVDSectionPath = tvdSectionsPath.get(0);
+                var firstTVDSectionPathDir = tvdSectionsPathDirection.get(0);
+                var startWaypoint = waypointGraph.getNode(firstTVDSectionPath.getStartNode(firstTVDSectionPathDir));
+                var waypointDirection = firstTVDSectionPath.nodeDirection(firstTVDSectionPathDir, EdgeEndpoint.BEGIN);
+
+                // Create route
+                var entrySignal = waypointDirection == START_TO_STOP ? entrySignalNormal : entrySignalReverse;
+
+                var route = new Route(
+                        id,
+                        routeGraph,
+                        length,
+                        releaseGroups,
+                        tvdSectionsPath,
+                        tvdSectionsPathDirection,
+                        switchesPosition,
+                        entrySignal);
+
+                routeGraph.routeMap.put(id, route);
+
+                // Link route to the starting waypoint
+                startWaypoint.getRouteNeighbors(waypointDirection).add(route);
+
+                // Link route to track sections and tvd sections
+                double routeOffset = 0;
+                for (int i = 0; i < route.tvdSectionsPaths.size(); i++) {
+                    var tvdSectionPath = route.tvdSectionsPaths.get(i);
+                    var tvdSectionPathDir = route.tvdSectionsPathDirections.get(i);
+                    tvdSectionPath.tvdSection.routeSubscribers.add(route);
+                    for (var trackSectionRange : tvdSectionPath.getTrackSections(tvdSectionPathDir)) {
+                        var trackSection = trackSectionRange.edge;
+                        var trackBegin = Math.min(trackSectionRange.getBeginPosition(), trackSectionRange.getEndPosition());
+                        var trackEnd = Math.max(trackSectionRange.getBeginPosition(), trackSectionRange.getEndPosition());
+                        var routeFragment = new TrackSection.RouteFragment(
+                                route, routeOffset, trackBegin, trackEnd, trackSectionRange.direction);
+                        trackSection.getRoutes(trackSectionRange.direction).insert(routeFragment);
+                        routeOffset += trackSectionRange.length();
+                    }
+                }
+                return route;
+            } catch (InvalidInfraException e) {
+                // Forwards the exception and adds the route ID to the message, this helps with identifying problems
+                var msg = String.format("Error when building route %s: %s", id, e);
+                throw new InvalidInfraException(msg);
             }
-            return route;
         }
 
         public RouteGraph build() {
             return routeGraph;
         }
 
+        /** Finds the first TrackSectionRange of the route, based on the entry point and the given sections.
+         *
+         * The missing information is the track direction: we try both until we find one that starts with
+         * one of the given TVD sections. If neither matches, there is an error in the infra. */
         private TrackSectionRange findInitialRange(Waypoint startPoint, Set<TVDSection> sections) throws InvalidInfraException {
             for (var edgeDirection : EdgeDirection.values()) {
                 for (var path : startPoint.getTvdSectionPathNeighbors(edgeDirection)) {
@@ -158,9 +167,11 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                     }
                 }
             }
-            throw new InvalidInfraException("TODO");
+            throw new InvalidInfraException("Can't find route initial track section, the given TVD sections " +
+                    "may not match the entry waypoint.");
         }
 
+        /** Moves forward by one track section, following switches position. Returns null if it can't be determined. */
         private TrackSection nextTrackSection(TrackSection edge,
                                               EdgeDirection direction,
                                               Map<Integer, Switch> switches,
@@ -179,11 +190,10 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                         return s.leftTrackSection;
                     case RIGHT:
                         return s.rightTrackSection;
-                    case MOVING:
-                        throw new InvalidInfraException("TODO");
+                    default:
+                        throw new InvalidInfraException("A switch position can't be set to MOVING to define a route.");
                 }
             }
-            throw new InvalidInfraException("TODO");
         }
 
         /**
@@ -200,7 +210,10 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                     .collect(Collectors.toList());
 
             assert allWaypointIndexes.get(0) == startPoint.index;
-            assert res.size() > 1;
+            assert tvdSections.stream().allMatch(section -> section.waypoints.stream().anyMatch(res::contains));
+
+            if (res.size() <= 1)
+                throw new InvalidInfraException("The route only contains a single waypoint");
 
             return res;
         }
@@ -226,6 +239,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
             }
         }
 
+        /** Generates the waypoint list for the route, but returns only the indexes. */
         private List<Integer> generateWaypointListIndexes(
                 Waypoint startPoint,
                 Set<TVDSection> tvdSections,
