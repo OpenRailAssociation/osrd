@@ -61,8 +61,8 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
                 var end = begin + speedTrackRange.length();
 
                 // Add the speed controller corresponding to the approach to the restricted speed section
-                var isBrakingValueConstant = rollingStock.maxGamma == null;
-                if(isBrakingValueConstant) {
+                var isBrakingValueConstant = Double.isNaN(rollingStock.maxGamma);
+                if (isBrakingValueConstant) {
                     controllers.add(LimitAnnounceSpeedController.create(
                             rollingStock.maxSpeed,
                             speedSection.speedLimit,
