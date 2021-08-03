@@ -14,9 +14,7 @@ import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 
 public class RouteGraphTest {
 
@@ -240,5 +238,86 @@ public class RouteGraphTest {
         checkRoute(route2, 2, 100, bsB, d3);
         checkRoute(route3, 2, 75, d3, bsD);
         checkRoute(route4, 2, 75, bsD, d3);
+    }
+
+    @Test
+    public void triangularTVDSection() throws InvalidInfraException {
+        // Craft trackGraph
+        var trackGraph = new TrackGraph();
+        var nodeInnerA = trackGraph.makePlaceholderNode("innerA");
+        var nodeInnerB = trackGraph.makePlaceholderNode("innerB");
+        var nodeInnerC = trackGraph.makePlaceholderNode("innerC");
+        var nodeOuterA = trackGraph.makePlaceholderNode("outerA");
+        var nodeOuterB = trackGraph.makePlaceholderNode("outerB");
+        var nodeOuterC = trackGraph.makePlaceholderNode("outerC");
+        var trackSectionA = trackGraph.makeTrackSection(nodeOuterA.index, nodeInnerA.index, "eA", 100, null);
+        var trackSectionB = trackGraph.makeTrackSection(nodeOuterB.index, nodeInnerB.index, "eB", 100, null);
+        var trackSectionC = trackGraph.makeTrackSection(nodeOuterC.index, nodeInnerC.index, "eC", 100, null);
+        var trackSectionAB = trackGraph.makeTrackSection(nodeInnerA.index, nodeInnerB.index, "AB", 100, null);
+        var trackSectionBC = trackGraph.makeTrackSection(nodeInnerB.index, nodeInnerC.index, "BC", 100, null);
+        var trackSectionCA = trackGraph.makeTrackSection(nodeInnerC.index, nodeInnerA.index, "CA", 100, null);
+        var detectorBuilderA = trackSectionA.waypoints.builder();
+        var detectorBuilderB = trackSectionB.waypoints.builder();
+        var detectorBuilderC = trackSectionC.waypoints.builder();
+        var da = new Detector(0, "DA");
+        var db = new Detector(1, "DB");
+        var dc = new Detector(2, "DC");
+        detectorBuilderA.add(50, da);
+        detectorBuilderB.add(50, db);
+        detectorBuilderC.add(50, dc);
+        detectorBuilderA.build();
+        detectorBuilderB.build();
+        detectorBuilderC.build();
+
+        linkEdges(trackSectionA, EdgeEndpoint.END, trackSectionAB, EdgeEndpoint.BEGIN);
+        linkEdges(trackSectionA, EdgeEndpoint.END, trackSectionCA, EdgeEndpoint.END);
+        linkEdges(trackSectionB, EdgeEndpoint.END, trackSectionBC, EdgeEndpoint.BEGIN);
+        linkEdges(trackSectionB, EdgeEndpoint.END, trackSectionAB, EdgeEndpoint.END);
+        linkEdges(trackSectionC, EdgeEndpoint.END, trackSectionCA, EdgeEndpoint.BEGIN);
+        linkEdges(trackSectionC, EdgeEndpoint.END, trackSectionBC, EdgeEndpoint.END);
+
+
+        var switchA = trackGraph.makeSwitchNode(nodeInnerA.index, "switchA", 0, 0);
+        var switchB = trackGraph.makeSwitchNode(nodeInnerB.index, "switchB", 1, 0);
+        var switchC = trackGraph.makeSwitchNode(nodeInnerC.index, "switchC", 2, 0);
+        switchA.leftTrackSection = trackSectionCA;
+        switchA.rightTrackSection = trackSectionAB;
+        switchB.leftTrackSection = trackSectionAB;
+        switchB.rightTrackSection = trackSectionBC;
+        switchC.leftTrackSection = trackSectionBC;
+        switchC.rightTrackSection = trackSectionCA;
+
+        // Craft tvdSections
+        var tvdSectionsMap = new HashMap<String, TVDSection>();
+        var tvdSectionsSet = new SortedArraySet<TVDSection>();
+        var tvd123Waypoints = new ArrayList<Waypoint>(Arrays.asList(da, db, dc));
+        var tvdSection123 = new TVDSection("TVDSectionABC", 0, tvd123Waypoints, false);
+        tvdSectionsMap.put("TVDSectionABC", tvdSection123);
+        tvdSectionsSet.addAll(tvdSectionsMap.values());
+        var releaseGroups = Collections.singletonList(tvdSectionsSet);
+
+        // Build DetectorGraph
+        var waypointGraph = Infra.buildWaypointGraph(trackGraph, tvdSectionsMap);
+
+        // Build RouteGraph
+        var routeGraphBuilder = new RouteGraph.Builder(waypointGraph);
+
+        var switchPositionsR1 = new HashMap<Switch, SwitchPosition>();
+        switchPositionsR1.put(switchA, SwitchPosition.RIGHT);
+        switchPositionsR1.put(switchB, SwitchPosition.LEFT);
+        routeGraphBuilder.makeRoute("R1", tvdSectionsSet, releaseGroups, switchPositionsR1,
+                da, null, null);
+        var switchPositionsR2 = new HashMap<Switch, SwitchPosition>();
+        switchPositionsR2.put(switchB, SwitchPosition.RIGHT);
+        switchPositionsR2.put(switchC, SwitchPosition.LEFT);
+        routeGraphBuilder.makeRoute("R2", tvdSectionsSet, releaseGroups, switchPositionsR2,
+                db, null, null);
+        var switchPositionsR3 = new HashMap<Switch, SwitchPosition>();
+        switchPositionsR3.put(switchC, SwitchPosition.RIGHT);
+        switchPositionsR3.put(switchA, SwitchPosition.LEFT);
+        routeGraphBuilder.makeRoute("R3", tvdSectionsSet, releaseGroups, switchPositionsR3,
+                dc, null, null);
+
+        routeGraphBuilder.build();
     }
 }

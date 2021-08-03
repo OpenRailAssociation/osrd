@@ -206,13 +206,11 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
         }
 
         /** Add the waypoints on the edge to res, in the right order.
-         * Only waypoints in validWaypoints (the ones on the right tvd sections) are added
-         * Returns true if new points have been added. */
-        private static boolean addWaypoints(TrackSection edge,
+         * Only waypoints in validWaypoints (the ones on the right tvd sections) are added */
+        private static void addWaypoints(TrackSection edge,
                                             EdgeDirection direction,
                                             List<Integer> res,
                                             Set<Integer> validWaypoints) {
-            int previousSize = res.size();
             if (direction == START_TO_STOP) {
                 for (var p : edge.waypoints) {
                     var index = p.value.index;
@@ -226,7 +224,6 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                         res.add(edge.waypoints.get(i).value.index);
                 }
             }
-            return res.size() > previousSize;
         }
 
         private List<Integer> generateWaypointListIndexes(
@@ -251,16 +248,21 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
             var direction = initialRange.direction;
             var edge = initialRange.edge;
 
+            var seenWaypoints = new SortedArraySet<Integer>();
+
             while (true) {
-                if (!addWaypoints(edge, direction, res, waypointsOnTVDSections))
-                    return res;
+                addWaypoints(edge, direction, res, waypointsOnTVDSections);
                 var previousEndPoint = direction == START_TO_STOP ? edge.endNode : edge.startNode;
+
+                if (seenWaypoints.contains(previousEndPoint))
+                    return res;
+                seenWaypoints.add(previousEndPoint);
+
                 edge = nextTrackSection(edge, direction, switchesMap, switchesPosition);
                 if (edge == null)
                     return res;
                 direction = edge.startNode == previousEndPoint ? START_TO_STOP : STOP_TO_START;
             }
         }
-
     }
 }
