@@ -21,7 +21,7 @@ import { sec2time } from 'utils/timeManipulation';
 const timetableURI = '/osrd/timetable';
 const trainscheduleURI = '/osrd/train_schedule';
 
-const SIMPLIFICATION_FACTOR = 10; // Division of steps
+const SIMPLIFICATION_FACTOR = 20; // Division of steps
 
 const OSRDSimulation = () => {
   const { t } = useTranslation(['translation', 'simulation']);

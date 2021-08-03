@@ -4,14 +4,32 @@ import React, {
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import * as d3 from 'd3';
-import { sec2datetime } from 'utils/timeManipulation';
+import { sec2datetime, time2datetime } from 'utils/timeManipulation';
 import { gridX } from 'applications/osrd/components/Helpers/ChartHelpers';
+
+const drawTrains = (trains, selectedTrain, xScale, svg, height) => {
+  trains.forEach((train, idx) => {
+    const startTime = train.stops[0].time;
+    const endTime = train.stops[train.stops.length - 1].time;
+    const strokeColor = (selectedTrain === idx) ? '#0088ce' : '#777';
+    svg.append('line')
+      .style('stroke', strokeColor)
+      .style('stroke-width', 2)
+      .attr('x1', xScale(sec2datetime(startTime)))
+      .attr('y1', height - 4)
+      .attr('x2', xScale(sec2datetime(endTime)))
+      .attr('y2', 4);
+  });
+};
 
 export default function TimeLine(props) {
   const { dataRange } = props;
-  const { timePosition, chart } = useSelector((state) => state.osrdsimulation);
+  const {
+    chart, selectedTrain, simulation, timePosition,
+  } = useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();
   const ref = useRef();
+  const [svgState, setSvg] = useState(undefined);
 
   const dimensions = {
     width: 800,
@@ -19,6 +37,14 @@ export default function TimeLine(props) {
     margin: {
       top: 0, right: 1, bottom: 20, left: 10,
     },
+  };
+
+  const moveTimePosition = (svg) => {
+    const xScale = d3.scaleTime()
+      .domain([sec2datetime(dataRange[0]), sec2datetime(dataRange[1])])
+      .range([dimensions.margin.left, dimensions.width - dimensions.margin.right]);
+    svg.select('#timePositionTimeLine')
+      .attr('transform', `translate(${xScale(time2datetime(timePosition))},0)`);
   };
 
   const drawChart = () => {
@@ -63,6 +89,23 @@ export default function TimeLine(props) {
     svg.append('g')
       .attr('clip-path', 'url(#timelineClipPath)');
 
+    svg.append('g')
+      .attr('id', 'timePositionTimeLine')
+      .append('line')
+      .attr('class', 'guideLines')
+      .style('stroke', '#333')
+      .style('stroke-width', 2)
+      .attr('x1', 0)
+      .attr('y1', dimensions.height)
+      .attr('x2', 0)
+      .attr('y2', 0);
+    svg.select('#timePositionTimeLine')
+      .append('path')
+      .attr('d', d3.symbol().type(d3.symbolTriangle).size(40))
+      .attr('transform', `translate(0,${dimensions.height + 8})`);
+    svg.select('#timePositionTimeLine')
+      .attr('transform', `translate(${xScale(time2datetime(timePosition))},0)`);
+
     svg.append('rect')
       .attr('x', xScale(chartRect[0]))
       .attr('y', 1)
@@ -72,13 +115,22 @@ export default function TimeLine(props) {
       .attr('stroke-width', 2)
       .attr('fill', 'rgba(0, 0, 0, 0.05)');
 
+    drawTrains(simulation.trains, selectedTrain, xScale, svg, dimensions.height);
+    setSvg(svg);
   };
 
   useEffect(() => {
     if (chart) {
       drawChart();
     }
-  }, [chart, dataRange]);
+  }, [chart]);
+
+  useEffect(() => {
+    if (svgState) {
+      console.log('On bouge !');
+      moveTimePosition(svgState);
+    }
+  }, [timePosition]);
 
   return (
     <>
@@ -88,6 +140,5 @@ export default function TimeLine(props) {
 }
 
 TimeLine.propTypes = {
-  chartRect: PropTypes.array.isRequired,
   dataRange: PropTypes.array.isRequired,
 };
