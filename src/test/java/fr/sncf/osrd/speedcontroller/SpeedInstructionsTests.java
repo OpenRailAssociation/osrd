@@ -118,6 +118,7 @@ public class SpeedInstructionsTests {
         run(sim, config);
     }
 
+    /** Test the linear allowance */
     @ParameterizedTest
     @ValueSource(doubles = {0, 50, 200})
     public void testLinearAllowance(double value) throws InvalidInfraException {
