@@ -79,9 +79,7 @@ public class SpeedInstructionsTests {
     }
 
     @Test
-    @Disabled
     public void testCatchup() throws InvalidInfraException, SimulationError {
-        // TODO fix this
         final var infra = getBaseInfra();
 
         SpeedControllerGenerator generator = getStaticGenerator(10);
