@@ -62,7 +62,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
 
     @Override
     protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
-                                                       double value,
+                                                       double targetSpeed,
                                                        double initialPosition,
                                                        double endPosition) {
 
@@ -73,7 +73,6 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
                 0, initialPosition, schedule.initialSpeed);
         var initialSpeed = expectedSpeeds.interpolate(initialPosition);
         double scaleFactor = 1;
-        var targetSpeed = value;
         // TODO: adapt this to non-constant deceleration
         var requiredBrakingDistance = Double.max(0,
                 (initialSpeed * initialSpeed - targetSpeed * targetSpeed) / 2 * schedule.rollingStock.timetableGamma);
@@ -82,7 +81,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
         var roiSpeeds = getExpectedSpeeds(sim, schedule, currentSpeedControllers, timestep,
                 endBrakingPosition, endPosition, initialSpeed);
         double maxSpeed = max(roiSpeeds.values());
-        scaleFactor = value / maxSpeed;
+        scaleFactor = targetSpeed / maxSpeed;
 
         currentSpeedControllers.add(new MapSpeedController(roiSpeeds).scaled(scaleFactor));
 

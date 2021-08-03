@@ -117,7 +117,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         return this.getFirstHighEstimate() / (1 + value / 100);
     }
 
-    private List<Double> findPositionSameSpeedAsVF(NavigableMap<Double, Double> speeds, double vf) {
+    private List<Double> findPositionSameSpeedAsVF(SortedDoubleMap speeds, double vf) {
         // TODO check only in deceleration intervals
         boolean isLastSpeedBelowVF = true;
         var res = new ArrayList<Double>();
