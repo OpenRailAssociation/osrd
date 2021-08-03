@@ -46,7 +46,6 @@ export const initialState = {
 
 export default function reducer(state = initialState, action) {
   return produce(state, (draft) => {
-    console.log(action.type);
     switch (action.type) {
       case UPDATE_VIEWPORT:
         draft.viewport.width = action.viewport.width;

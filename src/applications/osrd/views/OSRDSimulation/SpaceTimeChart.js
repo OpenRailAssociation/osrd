@@ -185,7 +185,7 @@ export default function SpaceTimeChart() {
       );
       // findConflicts(chartLocal, dataSimulation, rotate);
       setChart(chartLocal);
-      dispatch(updateChart(chartLocal));
+      dispatch(updateChart({ ...chartLocal, rotate }));
       dispatch(updateMustRedraw(false));
     }
   };

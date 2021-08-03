@@ -49,7 +49,7 @@ export default function TimeLine(props) {
 
   const drawChart = () => {
     if (d3.select(ref.current)) { d3.select(ref.current).select('svg').remove(); }
-    const chartRect = chart.x.domain();
+    const chartRect = chart.rotate ? chart.y.domain() : chart.x.domain();
 
     const svg = d3.select(ref.current)
       .append('svg')
@@ -127,7 +127,6 @@ export default function TimeLine(props) {
 
   useEffect(() => {
     if (svgState) {
-      console.log('On bouge !');
       moveTimePosition(svgState);
     }
   }, [timePosition]);
