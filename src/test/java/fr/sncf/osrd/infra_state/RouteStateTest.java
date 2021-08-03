@@ -178,7 +178,6 @@ public class RouteStateTest {
             s.initialHeadLocation.offset = 10;
         });
 
-
         var trainSchedules = RJSSimulationParser.parse(rjsInfra, schedule);
         var config = new Config(
                 jsonConfig.simulationTimeStep,
@@ -217,7 +216,6 @@ public class RouteStateTest {
             s.initialHeadLocation.trackSection = new ID<>("ne.micro.foo_to_bar");
             s.initialHeadLocation.offset = 100;
         });
-
 
         var trainSchedules = RJSSimulationParser.parse(rjsInfra, schedule);
         var config = new Config(
