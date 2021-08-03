@@ -40,6 +40,7 @@ public class InfraHandler {
         var body = response.body();
         assert body != null;
         var rjsInfra = RJSInfra.adapter.fromJson(body.source());
+        body.close();
         if (rjsInfra == null)
             throw new IOException("RJSInfra is null");
         return RailJSONParser.parse(rjsInfra);
