@@ -41,28 +41,37 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         return baseTime * (1 + value / 100);
     }
 
+    /**
+     * Compute vf given v1
+     * @param v1 speed limit in MARECO algorithm
+     * @return vf speed when the train starts braking in MARECO algorithm
+     */
     public double vf(double v1) {
         var a = schedule.rollingStock.A;
         var b = schedule.rollingStock.B;
         var c = schedule.rollingStock.C;
-        return (2*c*v1*v1*v1 + b*v1*v1)/(3*c*v1*v1 + 2*b*v1 + a);
+        double vf = (2 * c * v1 * v1 * v1 + b * v1 * v1) / (3 * c * v1 * v1 + 2 * b * v1 + a);
+        return vf;
     }
 
     // we will try to find v1 so that f(v1, vmax) == 0
-    public double f(double v1, double vmax) {
+    public double newtonsMethod(double v1, double vmax) {
         return vf(v1) - vmax;
     }
 
-    //df(v1, vmax)/dv1 /*first derivative*/
-    public double fprime(double v1, double vmax) {
+    /**
+     * First derivative of newtonsMethod
+     * df(v1, vmax)/dv1
+     */
+    public double newtonsMethodDerivative(double v1, double vmax) {
         var a = schedule.rollingStock.A;
         var b = schedule.rollingStock.B;
         var c = schedule.rollingStock.C;
-        var v = (3*c*v1*v1 + 2*b*v1 + a);
-        var vprime = (6*c*v1 + 2*b);
-        var u = (2*c*v1*v1*v1 + b*v1*v1) - vmax * v;
-        var uprime = (6*c*v1*v1 + 2*b*v1) - vmax * vprime;
-        return (uprime * v - vprime * u) / (v * v);
+        var v = (3 * c * v1 * v1 + 2 * b * v1 + a);
+        var dv = (6 * c * v1 + 2 * b);
+        var u = (2 * c * v1 * v1 * v1 + b * v1 * v1) - vmax * v;
+        var du = (6 * c * v1 * v1 + 2 * b * v1) - vmax * dv;
+        return (du * v - dv * u) / (v * v);
     }
 
     @Override
@@ -85,18 +94,18 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         }
 
         double tolerance = .000001; // Stop if you're close enough
-        int max_count = 200; // Maximum number of Newton's method iterations
-        double x = max * 3/2; // at high v1 the equation vf = f(v1) tends to be vf = 2*v1/3
+        int maxCount = 200; // Maximum number of Newton's method iterations
+        double x = max * 3 / 2; // at high v1 the equation vf = f(v1) tends to be vf = 2*v1/3
 
-        for( int count=1;
-            //Carry on till we're close, or we've run it 200 times.
-             (Math.abs(f(x, max)) > tolerance) && ( count < max_count);
-             count ++)  {
+        for (int count = 1;
+                //Carry on till we're close, or we've run it 200 times.
+                (Math.abs(newtonsMethod(x, max)) > tolerance) && (count < maxCount);
+                count++)  {
 
-            x= x - f(x, max)/fprime(x, max);  //Newtons method.
+            x = x - newtonsMethod(x, max) / newtonsMethodDerivative(x, max);  //Newtons method.
         }
 
-        if( Math.abs(f(x, max)) <= tolerance) {
+        if (Math.abs(newtonsMethod(x, max)) <= tolerance) {
             return x;
         } else {
             return max * 2; // if no value has been found return a high value to have some margin
@@ -105,7 +114,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
     @Override
     protected double getFirstGuess() {
-        return this.getFirstHighEstimate()/(1 + value / 100);
+        return this.getFirstHighEstimate() / (1 + value / 100);
     }
 
     private List<Double> findPositionSameSpeedAsVF(NavigableMap<Double, Double> speeds, double vf) {
@@ -180,7 +189,10 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     }
 
     @Override
-    protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule, double v1, double startLocation, double endLocation) {
+    protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
+                                                       double v1,
+                                                       double startLocation,
+                                                       double endLocation) {
         double timestep = 0.01; // TODO: link this timestep to the rest of the simulation
         var vf = vf(v1);
 

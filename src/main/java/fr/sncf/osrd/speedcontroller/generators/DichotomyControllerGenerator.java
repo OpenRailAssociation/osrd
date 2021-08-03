@@ -98,7 +98,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
             nextValue = (lowerBound + higherBound) / 2;
             if (i++ > 20)
                 throw new RuntimeException("Did not converge");
-        } while( Math.abs(time - targetTime) > precision);
+        } while (Math.abs(time - targetTime) > precision);
         return nextSpeedControllers;
     }
 

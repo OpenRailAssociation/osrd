@@ -16,9 +16,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
-
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -150,7 +148,7 @@ public class MarginTests {
         run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
-        assertEquals(baseSimTime, marginsSimTime, 0.5);
+        assertEquals(baseSimTime, marginsSimTime, baseSimTime * 0.01);
     }
 
     @Test
