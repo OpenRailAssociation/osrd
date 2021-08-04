@@ -295,6 +295,7 @@ class TrainScheduleView(
 ):
     queryset = TrainSchedule.objects.all()
     serializer_class = TrainScheduleSerializer
+    http_method_names = GenericViewSet.http_method_names + ["update"]
 
     @staticmethod
     def convert_result(train_schedule, result, path):
@@ -305,6 +306,11 @@ class TrainScheduleView(
             projection_path = get_object_or_404(Path, pk=projection_path_string)
 
         return format_result(result, projection_path)
+
+    def update(self, request, *args, **kwargs):
+        train_schedule = self.get_object()
+        self.generate_schedule_result(train_schedule)
+        return Response({"id": train_schedule.pk})
 
     @action(detail=True, methods=["get"])
     def result(self, request, pk=None):
