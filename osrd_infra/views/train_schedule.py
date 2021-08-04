@@ -296,6 +296,16 @@ class TrainScheduleView(
     queryset = TrainSchedule.objects.all()
     serializer_class = TrainScheduleSerializer
 
+    @staticmethod
+    def convert_result(train_schedule, result, path):
+        # Retrieve projection path
+        projection_path = train_schedule.path
+        projection_path_string = path
+        if projection_path_string:
+            projection_path = get_object_or_404(Path, pk=projection_path_string)
+
+        return format_result(result, projection_path)
+
     @action(detail=True, methods=["get"])
     def result(self, request, pk=None):
         train_schedule = self.get_object()
@@ -304,19 +314,27 @@ class TrainScheduleView(
         except TrainScheduleResult.DoesNotExist:
             result = self.generate_schedule_result(train_schedule)
 
-        # Retrieve projection path
-        projection_path = train_schedule.path
-        projection_path_string = request.query_params.get("path", None)
-        if projection_path_string:
-            projection_path = get_object_or_404(Path, pk=projection_path_string)
+        return Response(self.convert_result(train_schedule, result, request.query_params.get("path", None)))
 
-        return Response(format_result(result, projection_path))
+    @action(detail=False, methods=["get"])
+    def results(self, request):
+        results = TrainScheduleResult.objects.filter(train_schedule_id__in=request.data)
+        schedules = TrainSchedule.objects.filter(pk__in=request.data)
+        schedules_map = dict()
+        for schedule in schedules:
+            schedules_map[schedule.id] = schedule
+        path = request.query_params.get("path", None)
+        res = []
+        for result in results:
+            res.append(self.convert_result(schedules_map[result.train_schedule_id], result, path))
+        return Response(res)
 
     def create(self, request):
         serializer = TrainScheduleSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         train_schedule = serializer.save()
 
+        self.generate_schedule_result(train_schedule)
         return Response({"id": train_schedule.pk})
 
     @staticmethod
