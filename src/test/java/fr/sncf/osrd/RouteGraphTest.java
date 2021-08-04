@@ -241,6 +241,7 @@ public class RouteGraphTest {
     }
 
     @Test
+    @SuppressWarnings("checkstyle:VariableDeclarationUsageDistance")
     public void triangularTVDSection() throws InvalidInfraException {
         // Craft trackGraph
         var trackGraph = new TrackGraph();
@@ -275,7 +276,6 @@ public class RouteGraphTest {
         linkEdges(trackSectionB, EdgeEndpoint.END, trackSectionAB, EdgeEndpoint.END);
         linkEdges(trackSectionC, EdgeEndpoint.END, trackSectionCA, EdgeEndpoint.BEGIN);
         linkEdges(trackSectionC, EdgeEndpoint.END, trackSectionBC, EdgeEndpoint.END);
-
 
         var switchA = trackGraph.makeSwitchNode(nodeInnerA.index, "switchA", 0, 0);
         var switchB = trackGraph.makeSwitchNode(nodeInnerB.index, "switchB", 1, 0);
@@ -317,7 +317,5 @@ public class RouteGraphTest {
         switchPositionsR3.put(switchA, SwitchPosition.LEFT);
         routeGraphBuilder.makeRoute("R3", tvdSectionsSet, releaseGroups, switchPositionsR3,
                 dc, null, null);
-
-        routeGraphBuilder.build();
     }
 }

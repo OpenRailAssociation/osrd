@@ -134,8 +134,10 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                     tvdSectionPath.tvdSection.routeSubscribers.add(route);
                     for (var trackSectionRange : tvdSectionPath.getTrackSections(tvdSectionPathDir)) {
                         var trackSection = trackSectionRange.edge;
-                        var trackBegin = Math.min(trackSectionRange.getBeginPosition(), trackSectionRange.getEndPosition());
-                        var trackEnd = Math.max(trackSectionRange.getBeginPosition(), trackSectionRange.getEndPosition());
+                        var trackBegin = Math.min(trackSectionRange.getBeginPosition(),
+                                trackSectionRange.getEndPosition());
+                        var trackEnd = Math.max(trackSectionRange.getBeginPosition(),
+                                trackSectionRange.getEndPosition());
                         var routeFragment = new TrackSection.RouteFragment(
                                 route, routeOffset, trackBegin, trackEnd, trackSectionRange.direction);
                         trackSection.getRoutes(trackSectionRange.direction).insert(routeFragment);
@@ -155,10 +157,10 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
         }
 
         /** Finds the first TrackSectionRange of the route, based on the entry point and the given sections.
-         *
          * The missing information is the track direction: we try both until we find one that starts with
          * one of the given TVD sections. If neither matches, there is an error in the infra. */
-        private TrackSectionRange findInitialRange(Waypoint startPoint, Set<TVDSection> sections) throws InvalidInfraException {
+        private TrackSectionRange findInitialRange(Waypoint startPoint, Set<TVDSection> sections)
+                throws InvalidInfraException {
             for (var edgeDirection : EdgeDirection.values()) {
                 for (var path : startPoint.getTvdSectionPathNeighbors(edgeDirection)) {
                     if (sections.contains(path.tvdSection)) {
@@ -167,8 +169,8 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                     }
                 }
             }
-            throw new InvalidInfraException("Can't find route initial track section, the given TVD sections " +
-                    "may not match the entry waypoint.");
+            throw new InvalidInfraException("Can't find route initial track section, the given TVD sections "
+                    + "may not match the entry waypoint.");
         }
 
         /** Moves forward by one track section, following switches position. Returns null if it can't be determined. */
