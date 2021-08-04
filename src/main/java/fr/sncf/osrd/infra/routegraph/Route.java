@@ -167,4 +167,9 @@ public class Route extends DirNEdge {
         trackSectionPath.add(lastTrack);
         return trackSectionPath;
     }
+
+    @Override
+    public String toString() {
+        return String.format("Route {id=%s}", id);
+    }
 }

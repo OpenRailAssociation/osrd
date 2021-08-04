@@ -46,4 +46,9 @@ public final class TVDSection implements Comparable<TVDSection> {
             return false;
         return id.equals(((TVDSection) obj).id);
     }
+
+    @Override
+    public String toString() {
+        return String.format("TVD section {id=%s, index=%d, waypoints=%s}", id, index, waypoints);
+    }
 }

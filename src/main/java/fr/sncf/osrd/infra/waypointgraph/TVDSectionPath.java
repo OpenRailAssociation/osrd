@@ -8,6 +8,7 @@ import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class TVDSectionPath extends BiNEdge<TVDSectionPath> {
     public TVDSection tvdSection = null;
@@ -51,5 +52,11 @@ public class TVDSectionPath extends BiNEdge<TVDSectionPath> {
             reversedTrackSections.add(trackSection.opposite());
         }
         return reversedTrackSections;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("TVD section path {tvd=%s, sections forward=%s, sections backward=%s}",
+                tvdSection, Arrays.toString(trackSectionsForward), Arrays.toString(trackSectionsBackward));
     }
 }
