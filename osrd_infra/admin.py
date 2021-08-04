@@ -12,6 +12,12 @@ from osrd_infra.models import (
     Infra,
     Path,
     RollingStock,
+    # timetable
+    Timetable,
+    TrainSchedule,
+    TrainScheduleResult,
+    Simulation,
+    TrainScheduleLabel,
 )
 
 
@@ -50,5 +56,11 @@ admin.site.register(
         # misc
         Path,
         RollingStock,
+        # timetable
+        Timetable,
+        TrainSchedule,
+        TrainScheduleResult,
+        Simulation,
+        TrainScheduleLabel,
     ]
 )
