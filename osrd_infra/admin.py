@@ -24,7 +24,7 @@ from osrd_infra.models import (
 @admin.register(Infra)
 class InfraAdmin(admin.ModelAdmin):
     list_display = ("name", "namespace")
-    readonly_fields = ("namespace",)
+    readonly_fields = ("namespace", "created", "modified")
 
 
 def generate_inline(component: Type[Component]):
