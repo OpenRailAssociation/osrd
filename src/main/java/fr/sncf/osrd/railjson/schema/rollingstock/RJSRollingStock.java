@@ -1,6 +1,7 @@
 package fr.sncf.osrd.railjson.schema.rollingstock;
 
 import com.squareup.moshi.Json;
+import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 
 public class RJSRollingStock implements Identified {
@@ -48,9 +49,12 @@ public class RJSRollingStock implements Identified {
     @Json(name = "comfort_acceleration")
     public double comfortAcceleration;
 
+    /** The braking deceleration coefficient can be the max or constant (depends on gammaType field). */
+    public double gamma;
+
     /** The naive braking deceleration coefficient for timetabling. */
-    @Json(name = "timetable_gamma")
-    public double timetableGamma;
+    @Json(name = "gamma_type")
+    public RollingStock.GammaType gammaType;
 
     /**
      * Associates a speed to a force.
@@ -71,7 +75,8 @@ public class RJSRollingStock implements Identified {
             double startUpTime,
             double startUpAcceleration,
             double comfortAcceleration,
-            double timetableGamma,
+            double gamma,
+            RollingStock.GammaType gammaType,
             RJSTractiveEffortPoint[] tractiveEffortCurve
     ) {
         this.id = id;
@@ -84,11 +89,14 @@ public class RJSRollingStock implements Identified {
         this.startUpTime = startUpTime;
         this.startUpAcceleration = startUpAcceleration;
         this.comfortAcceleration = comfortAcceleration;
-        this.timetableGamma = timetableGamma;
+        this.gamma = gamma;
+        this.gammaType = gammaType;
         this.tractiveEffortCurve = tractiveEffortCurve;
     }
 
-    /** Creates an empty rolling stock */
+    /**
+     * Creates an empty rolling stock
+     */
     public RJSRollingStock() {
         this.id = null;
         this.length = Double.NaN;
@@ -100,7 +108,8 @@ public class RJSRollingStock implements Identified {
         this.startUpTime = Double.NaN;
         this.startUpAcceleration = Double.NaN;
         this.comfortAcceleration = Double.NaN;
-        this.timetableGamma = Double.NaN;
+        this.gamma = Double.NaN;
+        this.gammaType = null;
         this.tractiveEffortCurve = null;
     }
 

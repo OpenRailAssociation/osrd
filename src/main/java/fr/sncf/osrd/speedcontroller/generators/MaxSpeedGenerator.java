@@ -62,7 +62,7 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
                         rollingStock.maxSpeed,
                         speedSection.speedLimit,
                         begin,
-                        rollingStock.timetableGamma
+                        rollingStock.gamma
                 ));
 
                 // Add the speed controller corresponding to the restricted speed section
@@ -80,7 +80,7 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
                 rollingStock.maxSpeed,
                 0,
                 targetPosition,
-                rollingStock.timetableGamma
+                rollingStock.gamma
         ));
         controllers.add(new MaxSpeedController(0, targetPosition, Double.POSITIVE_INFINITY));
         return controllers;

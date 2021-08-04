@@ -331,7 +331,7 @@ public final class SignalNavigatePhase implements Phase {
                         trainState.trainSchedule.rollingStock.maxSpeed,
                         speedLimit.speed,
                         appliesAt,
-                        trainState.trainSchedule.rollingStock.timetableGamma
+                        trainState.trainSchedule.rollingStock.gamma
                 ));
                 res.add(new MaxSpeedController(
                         speedLimit.speed,
