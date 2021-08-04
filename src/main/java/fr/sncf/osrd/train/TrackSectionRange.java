@@ -193,4 +193,10 @@ public final class TrackSectionRange implements DeepComparable<TrackSectionRange
             return false;
         return other.containsPosition(beginPosition) || other.containsPosition(endPosition);
     }
+
+    @Override
+    public String toString() {
+        return String.format("TrackSectionRange {edge=%s, direction=%s, begin=%f, end=%f}",
+                edge, direction, beginPosition, endPosition);
+    }
 }
