@@ -117,7 +117,6 @@ public abstract class NavigatePhaseState implements DeepComparable<NavigatePhase
     /**
      * Make the transition to the next phase of the train, if there is any
      * 
-     * @param sim        the current simulation
      * @param train      the train that changes phase
      * @param trainState the state of the train
      */
@@ -161,7 +160,7 @@ public abstract class NavigatePhaseState implements DeepComparable<NavigatePhase
                     trainState.trainSchedule.rollingStock.maxSpeed,
                     speedLimit.speed,
                     appliesAt,
-                    trainState.trainSchedule.rollingStock.timetableGamma
+                    trainState.trainSchedule.rollingStock.gamma
             ));
             res.add(new MaxSpeedController(
                     speedLimit.speed,

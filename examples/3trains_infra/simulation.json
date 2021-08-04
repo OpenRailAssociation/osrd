@@ -13,7 +13,8 @@
             "startup_time": 10,
             "startup_acceleration": 0.05,
             "comfort_acceleration": 0.25,
-            "timetable_gamma": 0.5,
+            "gamma": 0.5,
+            "gamma_type": "CONST",
             "mass": 900000,
             "inertia_coefficient": 1.05,
             "features": [

@@ -75,7 +75,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
         double scaleFactor = 1;
         // TODO: adapt this to non-constant deceleration
         var requiredBrakingDistance = Double.max(0,
-                (initialSpeed * initialSpeed - targetSpeed * targetSpeed) / 2 * schedule.rollingStock.timetableGamma);
+                (initialSpeed * initialSpeed - targetSpeed * targetSpeed) / 2 * schedule.rollingStock.gamma);
         var endBrakingPosition = initialPosition + requiredBrakingDistance;
         // running calculation starting where the braking ends, to create a scaled MapSpeedController from it
         var roiSpeeds = getExpectedSpeeds(sim, schedule, currentSpeedControllers, timestep,
@@ -89,7 +89,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
                 initialSpeed,
                 initialSpeed * scaleFactor,
                 endBrakingPosition,
-                schedule.rollingStock.timetableGamma
+                schedule.rollingStock.gamma
         );
         currentSpeedControllers.add(brakingSpeedController);
 
