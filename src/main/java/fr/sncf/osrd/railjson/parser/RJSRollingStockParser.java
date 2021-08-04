@@ -42,8 +42,11 @@ public class RJSRollingStockParser {
         if (Double.isNaN(rjsRollingStock.comfortAcceleration))
             throw new MissingRollingStockField("comfort_acceleration");
 
-        if (Double.isNaN(rjsRollingStock.timetableGamma))
-            throw new MissingRollingStockField("timetable_gamma");
+        if (Double.isNaN(rjsRollingStock.gamma))
+            throw new MissingRollingStockField("gamma");
+
+        if (rjsRollingStock.gammaType == null)
+            throw new MissingRollingStockField("gamma_type");
 
         if (rjsRollingStock.tractiveEffortCurve == null)
             throw new MissingRollingStockField("tractive_effort_curve");
@@ -73,7 +76,8 @@ public class RJSRollingStockParser {
                 rjsRollingStock.startUpTime,
                 rjsRollingStock.startUpAcceleration,
                 rjsRollingStock.comfortAcceleration,
-                rjsRollingStock.timetableGamma,
+                rjsRollingStock.gamma,
+                rjsRollingStock.gammaType,
                 tractiveEffortCurve
         );
     }

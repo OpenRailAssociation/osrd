@@ -15,18 +15,10 @@ public class RollingStock {
     public final double A; // in newtons
     public final double B; // in newtons / (m/s)
     public final double C; // in newtons / (m/s^2)
-    public final double maxGamma = Double.NaN;
 
-    /**
-     * Gets the rolling resistance at a given speed, which is a force that always goes
-     * opposite to the train's movement direction
-     */
-    public double rollingResistance(double speed) {
-        speed = Math.abs(speed);
-        // this formula is called the Davis equation.
-        // it's completely empirical, and models the drag and friction forces
-        return A + B * speed + C * speed * speed;
-    }
+    public final RollingStock.GammaType gammaType;
+    public final double gamma;
+
 
     /** the length of the train, in meters. */
     public final double length;
@@ -46,9 +38,6 @@ public class RollingStock {
     /** The maximum acceleration when the train is in its regular operating mode. */
     public final double comfortAcceleration;
 
-    /** The naive braking deceleration coefficient for timetabling. */
-    public final double timetableGamma;
-
     /** The mass of the train, in kilograms. */
     public final double mass;
 
@@ -67,6 +56,22 @@ public class RollingStock {
      * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves
      */
     public final TractiveEffortPoint[] tractiveEffortCurve;
+
+    /**
+     * Gets the rolling resistance at a given speed, which is a force that always goes
+     * opposite to the train's movement direction
+     */
+    public double rollingResistance(double speed) {
+        speed = Math.abs(speed);
+        // this formula is called the Davis equation.
+        // it's completely empirical, and models the drag and friction forces
+        return A + B * speed + C * speed * speed;
+    }
+
+    public enum GammaType {
+        CONST,
+        MAX
+    }
 
     public static final class TractiveEffortPoint {
         public final double speed;
@@ -107,7 +112,8 @@ public class RollingStock {
             double startUpTime,
             double startUpAcceleration,
             double comfortAcceleration,
-            double timetableGamma,
+            double gamma,
+            GammaType gammaType,
             TractiveEffortPoint[] tractiveEffortCurve
     ) {
         this.id = id;
@@ -119,7 +125,8 @@ public class RollingStock {
         this.startUpTime = startUpTime;
         this.startUpAcceleration = startUpAcceleration;
         this.comfortAcceleration = comfortAcceleration;
-        this.timetableGamma = timetableGamma;
+        this.gamma = gamma;
+        this.gammaType = gammaType;
         this.mass = mass;
         this.inertiaCoefficient = inertiaCoefficient;
         this.capabilities = capabilities;

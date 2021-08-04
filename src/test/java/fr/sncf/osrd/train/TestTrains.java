@@ -15,11 +15,13 @@ public class TestTrains {
                     TrainCapability.TVM300,
                     TrainCapability.ETCS1,
                     TrainCapability.ETCS2
-            }, 300,
+            },
+            300,
             0,
             1,
             1,
             1,
+            RollingStock.GammaType.CONST,
             new RollingStock.TractiveEffortPoint[] {
                     new RollingStock.TractiveEffortPoint(0, 1)
             }
@@ -57,6 +59,7 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.5,
+                RollingStock.GammaType.CONST,
                 tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0])
         );
     }
