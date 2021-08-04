@@ -103,19 +103,17 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
 
         var location = convertPosition(schedule, sim, endPosition);
 
-        do {
+        while (speed > newSpeeds.interpolate(location.getPathPosition()) && location.getPathPosition() > 0.) {
             var integrator = TrainPhysicsIntegrator.make(timestep, schedule.rollingStock,
                     speed, location.meanTrainGrade());
             var action = Action.accelerate(-schedule.rollingStock.getMaxEffort(speed));
-            var update =  integrator.computeUpdate(action, Double.POSITIVE_INFINITY,
-                    -1);
+            var update =  integrator.computeUpdate(action, location.getPathPosition(), -1);
             speed = update.speed;
 
             // We cannot just call updatePosition with a negative delta so we re-create the location object
             // TODO (optimization): support negative delta
             location = convertPosition(schedule, sim, location.getPathPosition() - update.positionDelta);
-
-        } while (speed > newSpeeds.interpolate(location.getPathPosition()));
+        }
 
         var res = new HashSet<>(maxSpeedControllers);
         var initialSpeedControllers = new HashSet<>(maxSpeedControllers);
