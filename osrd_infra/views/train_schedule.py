@@ -295,7 +295,6 @@ class TrainScheduleView(
 ):
     queryset = TrainSchedule.objects.all()
     serializer_class = TrainScheduleSerializer
-    http_method_names = GenericViewSet.http_method_names + ["update"]
 
     @staticmethod
     def convert_result(train_schedule, result, path):
