@@ -16,6 +16,7 @@ import fr.sncf.osrd.railml.tracksectiongraph.TrackNetElement;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
+
 import org.dom4j.Document;
 import org.dom4j.Element;
 
@@ -45,7 +46,7 @@ public class RMLRoute {
             var route = (Element) routeNode;
             var id = route.attributeValue("id");
 
-            var switchesPosition = parseSwitchesPosition(route);
+            var switchesGroup = parseSwitchesPosition(route);
             var releaseGroups = parseReleaseGroups(route, releaseGroupsRear);
 
             var entryWaypoint = parseEntryWaypoint(route,
@@ -64,7 +65,7 @@ public class RMLRoute {
 
             var exitWaypoint = parseExitWaypoint(route,
                     rmlRouteGraph, rjsTrackSections, graph, signalTrackNetElementMap);
-            res.add(new RJSRoute(id, switchesPosition, releaseGroups, entryWaypoint, exitWaypoint, entryDirection));
+            res.add(new RJSRoute(id, switchesGroup, releaseGroups, entryWaypoint, exitWaypoint, entryDirection));
         }
         return res;
     }
@@ -227,14 +228,14 @@ public class RMLRoute {
         return null;
     }
 
-    private static Map<ID<RJSSwitch>, RJSSwitch.Position> parseSwitchesPosition(Element route) {
-        var switchesPosition = new HashMap<ID<RJSSwitch>, RJSSwitch.Position>();
+    private static Map<ID<RJSSwitch>, String> parseSwitchesPosition(Element route) {
+        var switchesGroup = new HashMap<ID<RJSSwitch>, String>();
         for (var switchPosition : route.elements("facingSwitchInPosition")) {
             var switchID = new ID<RJSSwitch>(switchPosition.element("refersToSwitch").attributeValue("ref"));
             var positionStr = switchPosition.attributeValue("inPosition");
-            var position = RJSSwitch.Position.valueOf(positionStr.toUpperCase(Locale.ENGLISH));
-            switchesPosition.put(switchID, position);
+            var group = positionStr.toUpperCase(Locale.ENGLISH);
+            switchesGroup.put(switchID, group);
         }
-        return switchesPosition;
+        return switchesGroup;
     }
 }

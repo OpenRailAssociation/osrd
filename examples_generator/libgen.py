@@ -1071,7 +1071,7 @@ class Infra:
                     if self.degree[utrack] == 2
                     else uname_buffer_stop(utrack),
                     "entry_direction": "START_TO_STOP",
-                    "switches_position": {},
+                    "switches_group": {},
                     "release_groups": [[uname_tvd_track(utrack)]],
                 }
             )
@@ -1083,7 +1083,7 @@ class Infra:
                     else uname_buffer_stop(utrack),
                     "exit_point": uname_tde_begin(utrack),
                     "entry_direction": "STOP_TO_START",
-                    "switches_position": {},
+                    "switches_group": {},
                     "release_groups": [[uname_tvd_track(utrack)]],
                 }
             )
@@ -1095,7 +1095,7 @@ class Infra:
                     "entry_point": oname_tde(ofirst),
                     "exit_point": oname_tde(osecond),
                     "entry_direction": "STOP_TO_START" if ofirst % 2 == 0 else "START_TO_STOP",
-                    "switches_position": {},
+                    "switches_group": {},
                     "release_groups": [[oname_tvd_link(ofirst, osecond)]],
                 }
             )
@@ -1105,7 +1105,7 @@ class Infra:
                     "entry_point": oname_tde(osecond),
                     "exit_point": oname_tde(ofirst),
                     "entry_direction": "STOP_TO_START" if osecond % 2 == 0 else "START_TO_STOP",
-                    "switches_position": {},
+                    "switches_group": {},
                     "release_groups": [[oname_tvd_link(ofirst, osecond)]],
                 }
             )
@@ -1117,7 +1117,7 @@ class Infra:
                     "entry_point": oname_tde(obase),
                     "exit_point": oname_tde(oleft),
                     "entry_direction": "STOP_TO_START" if obase % 2 == 0 else "START_TO_STOP",
-                    "switches_position": {oname_switch(obase, oleft, oright): "LEFT"},
+                    "switches_group": {oname_switch(obase, oleft, oright): "LEFT"},
                     "release_groups": [[oname_tvd_switch(obase, oleft, oright)]],
                 }
             )
@@ -1127,7 +1127,7 @@ class Infra:
                     "entry_point": oname_tde(obase),
                     "exit_point": oname_tde(oright),
                     "entry_direction": "STOP_TO_START" if obase % 2 == 0 else "START_TO_STOP",
-                    "switches_position": {oname_switch(obase, oleft, oright): "RIGHT"},
+                    "switches_group": {oname_switch(obase, oleft, oright): "RIGHT"},
                     "release_groups": [[oname_tvd_switch(obase, oleft, oright)]],
                 }
             )
@@ -1137,7 +1137,7 @@ class Infra:
                     "entry_point": oname_tde(oleft),
                     "exit_point": oname_tde(obase),
                     "entry_direction": "STOP_TO_START" if oleft % 2 == 0 else "START_TO_STOP",
-                    "switches_position": {oname_switch(obase, oleft, oright): "LEFT"},
+                    "switches_group": {oname_switch(obase, oleft, oright): "LEFT"},
                     "release_groups": [[oname_tvd_switch(obase, oleft, oright)]],
                 }
             )
@@ -1147,7 +1147,7 @@ class Infra:
                     "entry_point": oname_tde(oright),
                     "exit_point": oname_tde(obase),
                     "entry_direction": "STOP_TO_START" if oright % 2 == 0 else "START_TO_STOP",
-                    "switches_position": {oname_switch(obase, oleft, oright): "RIGHT"},
+                    "switches_group": {oname_switch(obase, oleft, oright): "RIGHT"},
                     "release_groups": [[oname_tvd_switch(obase, oleft, oright)]],
                 }
             )
@@ -1349,6 +1349,33 @@ class Infra:
         for obase, oleft, oright in self.switches:
             self.build_switch_signal(obase, oleft, oright, cbtc=cbtc)
 
+    def build_switch_types(self):
+        self.json["switch_types"] = {
+            "classic_switch": {
+                "ports": [
+                    "base",
+                    "left",
+                    "right"
+                ],
+                "groups": {
+                    "LEFT": [
+                        {
+                            "src": "base",
+                            "dst": "left",
+                            "bidirectional": True
+                        }
+                    ],
+                    "RIGHT": [
+                        {
+                            "src": "base",
+                            "dst": "right",
+                            "bidirectional": True
+                        }
+                    ]
+                }
+            }
+        }
+        
     def build_switches(self):
         self.json["switches"] = []
         for obase, oleft, oright in self.switches:
@@ -1367,7 +1394,7 @@ class Infra:
                         "section": oname_track(oright),
                     },
                     "id": oname_switch(obase, oleft, oright),
-                    "position_change_delay": self.POSITION_CHANGE_DELAY,
+                    "position_change_delay": self.GROUP_CHANGE_DELAY,
                 }
             )
 
@@ -1448,6 +1475,7 @@ class Infra:
             assert self.degree[utrack] in [1, 2]
 
         self.build_aspects(cbtc=cbtc)
+        self.build_switch_types()
         self.build_operational_points()
         self.build_routes()
         self.build_script_functions(cbtc=cbtc)
@@ -1460,7 +1488,7 @@ class Infra:
         return self.json
 
     def __init__(self, lengths, space_tde=200, space_sig=25, sight_distance=400):
-        self.POSITION_CHANGE_DELAY = 6
+        self.GROUP_CHANGE_DELAY = 6
         self.SPACE_TDE = space_tde
         self.SPACE_SIG = space_sig
         self.SIGHT_DISTANCE = sight_distance

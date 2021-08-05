@@ -42,6 +42,31 @@
             ]
         }
     ],
+    "switch_types": {
+        "classic_switch": {
+            "ports": [
+                "base",
+                "left",
+                "right"
+            ],
+            "groups": {
+                "LEFT": [
+                    {
+                        "src": "base",
+                        "dst": "left",
+                        "bidirectional": true
+                    }
+                ],
+                "RIGHT": [
+                    {
+                        "src": "base",
+                        "dst": "right",
+                        "bidirectional": true
+                    }
+                ]
+            }
+        }
+    },
     "operational_points": [],
     "routes": [
         {
@@ -49,7 +74,7 @@
             "entry_point": "tde.0_BEGIN",
             "exit_point": "buffer_stop.0",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.0"
@@ -61,7 +86,7 @@
             "entry_point": "buffer_stop.0",
             "exit_point": "tde.0_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.0"
@@ -73,7 +98,7 @@
             "entry_point": "tde.1_BEGIN",
             "exit_point": "buffer_stop.1",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.1"
@@ -85,7 +110,7 @@
             "entry_point": "buffer_stop.1",
             "exit_point": "tde.1_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.1"
@@ -97,7 +122,7 @@
             "entry_point": "tde.2_BEGIN",
             "exit_point": "buffer_stop.2",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.2"
@@ -109,7 +134,7 @@
             "entry_point": "buffer_stop.2",
             "exit_point": "tde.2_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.2"
@@ -121,7 +146,7 @@
             "entry_point": "tde.0_BEGIN",
             "exit_point": "tde.1_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.0-1-2": "LEFT"
             },
             "release_groups": [
@@ -135,7 +160,7 @@
             "entry_point": "tde.0_BEGIN",
             "exit_point": "tde.2_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.0-1-2": "RIGHT"
             },
             "release_groups": [
@@ -149,7 +174,7 @@
             "entry_point": "tde.1_BEGIN",
             "exit_point": "tde.0_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.0-1-2": "LEFT"
             },
             "release_groups": [
@@ -163,7 +188,7 @@
             "entry_point": "tde.2_BEGIN",
             "exit_point": "tde.0_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.0-1-2": "RIGHT"
             },
             "release_groups": [
@@ -376,117 +401,77 @@
             "name": "switch_signal",
             "arguments": [
                 {
+                    "type": "SIGNAL",
+                    "name": "signal"
+                },
+                {
                     "type": "SWITCH",
                     "name": "switch"
-                },
-                {
-                    "type": "ROUTE",
-                    "name": "left_route"
-                },
-                {
-                    "type": "SIGNAL",
-                    "name": "left_master_signal"
-                },
-                {
-                    "type": "ROUTE",
-                    "name": "right_route"
-                },
-                {
-                    "type": "SIGNAL",
-                    "name": "right_master_signal"
                 }
             ],
             "return_type": "ASPECT_SET",
             "body": {
-                "type": "match",
+                "type": "optional_match",
+                "name": "route",
                 "expr": {
-                    "type": "argument_ref",
-                    "argument_name": "switch"
+                    "type": "reserved_route",
+                    "signal": {
+                        "type": "argument_ref",
+                        "argument_name": "signal"
+                    }
                 },
-                "branches": {
-                    "LEFT": {
-                        "type": "call",
-                        "function": "sncf_filter",
-                        "arguments": [
+                "case_none": {
+                    "type": "aspect_set",
+                    "members": [
+                        {
+                            "aspect": "RED"
+                        }
+                    ]
+                },
+                "case_some": {
+                    "type": "condition",
+                    "if": {
+                        "type": "or",
+                        "exprs": [
                             {
-                                "type": "aspect_set",
-                                "members": [
-                                    {
-                                        "aspect": "RED",
-                                        "condition": {
-                                            "type": "not",
-                                            "expr": {
-                                                "type": "route_has_state",
-                                                "route": {
-                                                    "type": "argument_ref",
-                                                    "argument_name": "left_route"
-                                                },
-                                                "state": "RESERVED"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "aspect": "YELLOW",
-                                        "condition": {
-                                            "type": "signal_has_aspect",
-                                            "signal": {
-                                                "type": "argument_ref",
-                                                "argument_name": "left_master_signal"
-                                            },
-                                            "aspect": "RED"
-                                        }
-                                    },
-                                    {
-                                        "aspect": "GREEN"
-                                    }
-                                ]
+                                "type": "route_has_state",
+                                "route": {
+                                    "type": "optional_match_ref",
+                                    "match_name": "route"
+                                },
+                                "state": "CONFLICT"
+                            },
+                            {
+                                "type": "route_has_state",
+                                "route": {
+                                    "type": "optional_match_ref",
+                                    "match_name": "route"
+                                },
+                                "state": "OCCUPIED"
+                            },
+                            {
+                                "type": "route_has_state",
+                                "route": {
+                                    "type": "optional_match_ref",
+                                    "match_name": "route"
+                                },
+                                "state": "REQUESTED"
                             }
                         ]
                     },
-                    "RIGHT": {
-                        "type": "call",
-                        "function": "sncf_filter",
-                        "arguments": [
-                            {
-                                "type": "aspect_set",
-                                "members": [
-                                    {
-                                        "aspect": "RED",
-                                        "condition": {
-                                            "type": "not",
-                                            "expr": {
-                                                "type": "route_has_state",
-                                                "route": {
-                                                    "type": "argument_ref",
-                                                    "argument_name": "right_route"
-                                                },
-                                                "state": "RESERVED"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "aspect": "YELLOW",
-                                        "condition": {
-                                            "type": "signal_has_aspect",
-                                            "signal": {
-                                                "type": "argument_ref",
-                                                "argument_name": "right_master_signal"
-                                            },
-                                            "aspect": "RED"
-                                        }
-                                    },
-                                    {
-                                        "aspect": "GREEN"
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    "MOVING": {
+                    "then": {
                         "type": "aspect_set",
                         "members": [
                             {
-                                "aspect": "RED"
+                                "aspect": "YELLOW"
+                            }
+                        ]
+                    },
+                    "else": {
+                        "type": "aspect_set",
+                        "members": [
+                            {
+                                "aspect": "GREEN"
                             }
                         ]
                     }
@@ -497,20 +482,23 @@
     "speed_sections": [],
     "switches": [
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.0"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.1"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.2"
-            },
             "id": "il.switch.0-1-2",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.0"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.1"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.2"
+                }
+            }
         }
     ],
     "track_section_links": [
@@ -580,24 +568,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.0-1-2"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.0-1-2"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.0_BEGIN-1_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.1_BEGIN-1_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.0_BEGIN-2_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.2_BEGIN-2_END"
                             }
                         ]
                     },

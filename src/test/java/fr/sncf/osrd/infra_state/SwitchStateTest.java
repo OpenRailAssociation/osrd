@@ -4,7 +4,6 @@ import static fr.sncf.osrd.Helpers.*;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra_state.events.SwitchMoveEvent;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.simulation.Simulation;
@@ -35,18 +34,18 @@ public class SwitchStateTest {
 
         config.trainSchedules.clear();
 
-        infra.switches.iterator().next().positionChangeDelay = 6;
+        infra.switches.iterator().next().groupChangeDelay = 6;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         SwitchState switchState = sim.infraState.getSwitchState(0);
         RouteState routeState = sim.infraState.getRouteState(3);
         double requestTime = 42;
         makeFunctionEvent(sim, requestTime, () -> routeState.reserve(sim));
-        makeAssertEvent(sim, requestTime + 1, () -> switchState.getPosition() == SwitchPosition.MOVING);
+        makeAssertEvent(sim, requestTime + 1, () -> switchState.getGroup() == null);
         makeAssertEvent(sim, requestTime + 1, () -> routeState.status == RouteStatus.REQUESTED);
-        makeAssertEvent(sim, requestTime + 7, () -> switchState.getPosition() == SwitchPosition.LEFT);
+        makeAssertEvent(sim, requestTime + 7, () -> switchState.getGroup().equals("LEFT"));
         makeAssertEvent(sim, requestTime + 7, () -> routeState.status == RouteStatus.RESERVED);
 
         run(sim, config);
@@ -57,17 +56,17 @@ public class SwitchStateTest {
         final var infra = getBaseInfra();
         assert infra != null;
 
-        infra.switches.iterator().next().positionChangeDelay = 2;
+        infra.switches.iterator().next().groupChangeDelay = 2;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         SwitchState switchState = sim.infraState.getSwitchState(0);
         RouteState routeState = sim.infraState.getRouteState(3);
-        makeAssertEvent(sim, 0, () -> switchState.getPosition() == SwitchPosition.RIGHT);
-        makeAssertEvent(sim, 2, () -> switchState.getPosition() == SwitchPosition.MOVING);
+        makeAssertEvent(sim, 0, () -> switchState.getGroup().equals("RIGHT"));
+        makeAssertEvent(sim, 2, () -> switchState.getGroup() == null);
         makeAssertEvent(sim, 2, () -> routeState.status == RouteStatus.REQUESTED);
-        makeAssertEvent(sim, 3, () -> switchState.getPosition() == SwitchPosition.LEFT);
+        makeAssertEvent(sim, 3, () -> switchState.getGroup().equals("LEFT"));
         makeAssertEvent(sim, 3, () -> routeState.status == RouteStatus.RESERVED);
 
         run(sim);
@@ -78,17 +77,17 @@ public class SwitchStateTest {
         final var infra = getBaseInfra();
         final var config = getBaseConfig();
 
-        infra.switches.iterator().next().positionChangeDelay = 42;
+        infra.switches.iterator().next().groupChangeDelay = 42;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         SwitchState switchState = sim.infraState.getSwitchState(0);
         RouteState routeState = sim.infraState.getRouteState(3);
-        makeAssertEvent(sim, 0, () -> switchState.getPosition() == SwitchPosition.RIGHT);
-        makeAssertEvent(sim, 41, () -> switchState.getPosition() == SwitchPosition.MOVING);
+        makeAssertEvent(sim, 0, () -> switchState.getGroup().equals("RIGHT"));
+        makeAssertEvent(sim, 41, () -> switchState.getGroup() == null);
         makeAssertEvent(sim, 41, () -> routeState.status == RouteStatus.REQUESTED);
-        makeAssertEvent(sim, 43, () -> switchState.getPosition() == SwitchPosition.LEFT);
+        makeAssertEvent(sim, 43, () -> switchState.getGroup().equals("LEFT"));
         makeAssertEvent(sim, 43, () -> routeState.status == RouteStatus.RESERVED);
 
         run(sim, config);

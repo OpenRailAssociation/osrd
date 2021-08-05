@@ -74,9 +74,23 @@ public class RailJSONParser {
         var switchNames = new HashMap<String, Switch>();
         var switchIndex = 0;
         for (var rjsSwitch : railJSON.switches) {
-            var index = nodeIDs.get(rjsSwitch.base);
-            switchNames.put(rjsSwitch.id, trackGraph.makeSwitchNode(index, rjsSwitch.id, switchIndex++,
-                    rjsSwitch.positionChangeDelay));
+            // get the first port of the switch that will be consider as the base
+            if (rjsSwitch.ports.isEmpty()) {
+                throw new InvalidInfraException("The switch should have at least one port");
+            }
+            var base = rjsSwitch.ports.entrySet().stream().findFirst().get().getValue();
+            var index = nodeIDs.get(base);
+            switchNames.put(
+                    rjsSwitch.id,
+                    trackGraph.makeSwitchNode(
+                        index,
+                        rjsSwitch.id,
+                        switchIndex++,
+                        rjsSwitch.groupChangeDelay,
+                        new ArrayList<>(),
+                        new HashMap<>()
+                    )
+            );
         }
         final var switches = new ArrayList<>(switchNames.values());
 
@@ -245,11 +259,52 @@ public class RailJSONParser {
             addCurvesToGradients(infraTrackSection.backwardGradients, trackSection);
         }
 
-        // Fill switch with their right / left track sections
+        // Fill switch ports (ie connected track section endpoints)
+        for (var rjsSwitch : railJSON.switches) {
+            if (!switchNames.containsKey(rjsSwitch.id)) {
+                throw new InvalidInfraException("The switch was not properly added in the map switchName");
+            }
+            var switchRef = switchNames.get(rjsSwitch.id);
+            for (var entry : rjsSwitch.ports.entrySet()) {
+                var portName = entry.getKey();
+                var port = entry.getValue();
+                switchRef.ports.add(new Switch.Port(
+                        portName,
+                        infraTrackSections.get(port.section.id),
+                        port.endpoint
+                ));
+            }
+        }
+
+        // Fill switch groups
         for (var rjsSwitch : railJSON.switches) {
             var switchRef = switchNames.get(rjsSwitch.id);
-            switchRef.leftTrackSection = infraTrackSections.get(rjsSwitch.left.section.id);
-            switchRef.rightTrackSection = infraTrackSections.get(rjsSwitch.right.section.id);
+            var portMap = new HashMap<String, Switch.Port>();
+            for (var entry : rjsSwitch.ports.entrySet()) {
+                var portName = entry.getKey();
+                var port = entry.getValue();
+                portMap.put(
+                        portName,
+                        new Switch.Port(
+                            portName,
+                            infraTrackSections.get(port.section.id),
+                            port.endpoint
+                        )
+                );
+            }
+            for (var entry : railJSON.switchTypes.get(rjsSwitch.switchType).groups.entrySet()) {
+                var group = entry.getKey();
+                var edges = new ArrayList<Switch.PortEdge>();
+                for (var e : entry.getValue()) {
+                    var src = portMap.get(e.src);
+                    var dst = portMap.get(e.dst);
+                    edges.add(new Switch.PortEdge(src, dst));
+                    if (e.bidirectional) {
+                        edges.add(new Switch.PortEdge(dst, src));
+                    }
+                }
+                switchRef.groups.put(group, edges);
+            }
         }
 
         // link track sections together
@@ -294,11 +349,14 @@ public class RailJSONParser {
                 releaseGroups.add(releaseGroup);
             }
 
-            var switchesPosition = new HashMap<Switch, SwitchPosition>();
-            for (var switchPos : rjsRoute.switchesPosition.entrySet()) {
-                var switchRef = switchNames.get(switchPos.getKey().id);
-                var position = switchPos.getValue().parse();
-                switchesPosition.put(switchRef, position);
+            var switchesGroup = new HashMap<Switch, String>();
+            for (var switchGrp : rjsRoute.switchesGroup.entrySet()) {
+                var switchRef = switchNames.get(switchGrp.getKey().id);
+                var group = switchGrp.getValue();
+                if (!switchRef.groups.containsKey(group)) {
+                    throw new InvalidInfraException("This group is not compatible with this switch");
+                }
+                switchesGroup.put(switchRef, group);
             }
 
             var entryPoint = waypointsMap.get(rjsRoute.entryPoint.id);
@@ -312,7 +370,7 @@ public class RailJSONParser {
                     rjsRoute.id,
                     routeTvdSections,
                     releaseGroups,
-                    switchesPosition,
+                    switchesGroup,
                     entryPoint,
                     exitPoint,
                     entrySignal,

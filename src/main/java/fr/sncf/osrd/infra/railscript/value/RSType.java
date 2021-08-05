@@ -1,7 +1,6 @@
 package fr.sncf.osrd.infra.railscript.value;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra_state.RouteStatus;
 
 public enum RSType {
@@ -11,7 +10,7 @@ public enum RSType {
     ROUTE(RouteStatus.class),
     OPTIONAL_SIGNAL(null),
     OPTIONAL_ROUTE(null),
-    SWITCH(SwitchPosition.class);
+    SWITCH(null);
 
     public final Class<? extends Enum<?>> enumClass;
 
@@ -48,7 +47,8 @@ public enum RSType {
                 return ROUTE;
             case OPTIONAL_SIGNAL:
                 return SIGNAL;
+            default:
+                throw new InvalidInfraException("Can't call contained type on a type that is not an optional");
         }
-        throw new InvalidInfraException("Can't call contained type on a type that is not an optional");
     }
 }

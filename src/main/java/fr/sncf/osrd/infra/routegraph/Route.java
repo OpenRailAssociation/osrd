@@ -4,7 +4,6 @@ import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Switch;
-import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.TVDSectionPath;
 import fr.sncf.osrd.train.TrackSectionRange;
@@ -22,7 +21,7 @@ public class Route extends DirNEdge {
     public final List<SortedArraySet<TVDSection>> releaseGroups;
 
     /** Map between each switch on the route and its required position for this route */
-    public final HashMap<Switch, SwitchPosition> switchesPosition;
+    public final HashMap<Switch, String> switchesGroup;
 
     /** Signal placed before the route and reflecting its state*/
     public final Signal entrySignal;
@@ -39,7 +38,7 @@ public class Route extends DirNEdge {
             double length,
             List<SortedArraySet<TVDSection>> releaseGroups,
             List<TVDSectionPath> tvdSectionsPaths,
-            HashMap<Switch, SwitchPosition> switchesPosition,
+            HashMap<Switch, String> switchesGroup,
             Signal entrySignal) {
         super(
                 graph.nextEdgeIndex(),
@@ -49,7 +48,7 @@ public class Route extends DirNEdge {
         );
         this.id = id;
         this.releaseGroups = releaseGroups;
-        this.switchesPosition = switchesPosition;
+        this.switchesGroup = switchesGroup;
         graph.registerEdge(this);
         this.tvdSectionsPaths = tvdSectionsPaths;
         this.signalSubscribers = new ArrayList<>();
