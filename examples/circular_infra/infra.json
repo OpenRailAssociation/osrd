@@ -50,7 +50,7 @@
   "routes": [
     {
       "id": "rt.12",
-      "switches_position": {},
+      "switches_group": {},
       "release_groups": [
         [
           "tvd.12"
@@ -60,7 +60,7 @@
     },
     {
       "id": "rt.23",
-      "switches_position": {},
+      "switches_group": {},
       "release_groups": [
         [
           "tvd.23"
@@ -70,7 +70,7 @@
     },
     {
       "id": "rt.34",
-      "switches_position": {},
+      "switches_group": {},
       "release_groups": [
         [
           "tvd.34"
@@ -80,7 +80,7 @@
     },
     {
       "id": "rt.45",
-      "switches_position": {},
+      "switches_group": {},
       "release_groups": [
         [
           "tvd.45"
@@ -90,7 +90,7 @@
     },
     {
       "id": "rt.56",
-      "switches_position": {},
+      "switches_group": {},
       "release_groups": [
         [
           "tvd.56"
@@ -100,7 +100,7 @@
     },
     {
       "id": "rt.67",
-      "switches_position": {},
+      "switches_group": {},
       "release_groups": [
         [
           "tvd.67"
@@ -110,7 +110,7 @@
     },
     {
       "id": "rt.78",
-      "switches_position": {},
+      "switches_group": {},
       "release_groups": [
         [
           "tvd.78"
@@ -120,7 +120,7 @@
     },
     {
       "id": "rt.81",
-      "switches_position": {},
+      "switches_group": {},
       "release_groups": [
         [
           "tvd.81"

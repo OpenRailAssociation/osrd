@@ -13,7 +13,7 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.RSExpr;
 import fr.sncf.osrd.infra.railscript.RSExprState;
 import fr.sncf.osrd.infra.signaling.Signal;
-import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
+import fr.sncf.osrd.infra.trackgraph.SwitchGroup;
 import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.RailScriptExprParser;
@@ -31,10 +31,10 @@ public class OptionalTests {
         final var config = getBaseConfig("tiny_infra/config_railjson_optional.json");
 
         // We force a (very long) switch change, to make sure signals are necessary
-        infra.switches.iterator().next().positionChangeDelay = 42;
+        infra.switches.iterator().next().groupChangeDelay = 42;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
         run(sim, config);
     }
 
@@ -51,10 +51,10 @@ public class OptionalTests {
         for (var f : functions) {
             f.body = new RJSRSExpr.AspectSet(new RJSRSExpr.AspectSet.AspectSetMember[]{aspect});
         }
-        infra.switches.iterator().next().positionChangeDelay = 42;
+        infra.switches.iterator().next().groupChangeDelay = 42;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
         assertThrows(SimulationError.class,
                 () -> runWithExceptions(sim, config),
                 "Expected a simulation error once the train goes through the switch"

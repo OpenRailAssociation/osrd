@@ -114,7 +114,7 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
                 var node = infra.trackGraph.getNode(nodeIndex);
                 assert node.getClass() == Switch.class;
                 var switchState = infraState.getSwitchState(((Switch) node).switchIndex);
-                nextTrackSection = switchState.getBranch();
+                nextTrackSection = switchState.getBranch(curTrackSectionPos.edge, curTrackSectionPos.direction);
                 if (nextTrackSection == null)
                     throw new RuntimeException("Can't move the train further because a switch is in motion.");
             }

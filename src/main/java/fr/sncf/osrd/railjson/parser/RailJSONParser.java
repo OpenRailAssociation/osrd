@@ -73,9 +73,9 @@ public class RailJSONParser {
         var switchNames = new HashMap<String, Switch>();
         var switchIndex = 0;
         for (var rjsSwitch : railJSON.switches) {
-            var index = nodeIDs.get(rjsSwitch.base);
+            var index = nodeIDs.get(rjsSwitch.getBase());
             switchNames.put(rjsSwitch.id, trackGraph.makeSwitchNode(index, rjsSwitch.id, switchIndex++,
-                    rjsSwitch.positionChangeDelay));
+                    rjsSwitch.groupChangeDelay));
         }
         final var switches = new ArrayList<>(switchNames.values());
 
@@ -236,11 +236,45 @@ public class RailJSONParser {
             addCurvesToGradients(infraTrackSection.backwardGradients, trackSection);
         }
 
-        // Fill switch with their right / left track sections
+        // Fill switch ports (ie connected track section endpoints)
         for (var rjsSwitch : railJSON.switches) {
             var switchRef = switchNames.get(rjsSwitch.id);
-            switchRef.leftTrackSection = infraTrackSections.get(rjsSwitch.left.section.id);
-            switchRef.rightTrackSection = infraTrackSections.get(rjsSwitch.right.section.id);
+            for (var entry : rjsSwitch.ports.entrySet()) {
+                switchRef.ports.add(new Switch.Port(
+                        entry.getKey(),
+                        infraTrackSections.get(entry.getValue().section.id),
+                        entry.getValue().endpoint
+                ));
+            }
+        }
+
+        // Fill switch groups
+        for (var rjsSwitch : railJSON.switches) {
+            var switchRef = switchNames.get(rjsSwitch.id);
+            var portMap = new HashMap<String, Switch.Port>();
+            for (var entry : rjsSwitch.ports.entrySet()) {
+                portMap.put(
+                        entry.getKey(),
+                        new Switch.Port(
+                            entry.getKey(),
+                            infraTrackSections.get(entry.getValue().section.id),
+                            entry.getValue().endpoint
+                        )
+                );
+            }
+            for (var entry : railJSON.switchTypes.get(rjsSwitch.switchType).groups.entrySet()) {
+                var group = new SwitchGroup(entry.getKey());
+                var edges = new ArrayList<Switch.PortEdge>();
+                for (var e : entry.getValue()) {
+                    var src = portMap.get(e.src);
+                    var dst = portMap.get(e.dst);
+                    edges.add(new Switch.PortEdge(src, dst));
+                    if (e.bidirectional) {
+                        edges.add(new Switch.PortEdge(dst, src));
+                    }
+                }
+                switchRef.groups.put(group, edges);
+            }
         }
 
         // link track sections together
@@ -293,11 +327,11 @@ public class RailJSONParser {
                 releaseGroups.add(releaseGroup);
             }
 
-            var switchesPosition = new HashMap<Switch, SwitchPosition>();
-            for (var switchPos : rjsRoute.switchesPosition.entrySet()) {
-                var switchRef = switchNames.get(switchPos.getKey().id);
-                var position = switchPos.getValue().parse();
-                switchesPosition.put(switchRef, position);
+            var switchesGroup = new HashMap<Switch, SwitchGroup>();
+            for (var switchGrp : rjsRoute.switchesGroup.entrySet()) {
+                var switchRef = switchNames.get(switchGrp.getKey().id);
+                var group = new SwitchGroup(switchGrp.getValue());
+                switchesGroup.put(switchRef, group);
             }
 
             var entryPoint = waypointsMap.get(rjsRoute.entryPoint.id);
@@ -309,7 +343,7 @@ public class RailJSONParser {
                     rjsRoute.id,
                     tvdSections,
                     releaseGroups,
-                    switchesPosition,
+                    switchesGroup,
                     entryPoint,
                     entrySignalNormal,
                     entrySignalReverse

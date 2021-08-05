@@ -2,62 +2,50 @@ package fr.sncf.osrd.railjson.schema.infra;
 
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.railjson.schema.common.Identified;
+
+import java.util.Map;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSSwitch implements Identified {
     public String id;
 
-    /** The base track section of the switch */
-    public RJSTrackSection.EndpointID base;
-    /** The track section linked to the base if the switch is in LEFT position */
-    public RJSTrackSection.EndpointID left;
-    /** The track section linked to the base if the switch is in RIGHT position */
-    public RJSTrackSection.EndpointID right;
-    /** The time it takes for the switch to change position in seconds */
-    @Json(name = "position_change_delay")
-    public double positionChangeDelay;
+    /** The type of the switch */
+    @Json(name = "switch_type")
+    public String switchType;
+
+    /** The track sections connected to the ports of the switch */
+    @Json(name = "ports")
+    public Map<String, RJSTrackSection.EndpointID> ports;
+
+    @Json(name = "group_change_delay")
+    public double groupChangeDelay;
 
     /**
      * Create a new serialized switch
      * @param id the switch ID
-     * @param base the base branch
-     * @param left the left branch
-     * @param right the right branch
-     * @param positionChangeDelay the delay when changing position in seconds
+     * @param switchType the type of the switch
+     * @param ports the track sections connected to the ports
+     * @param groupChangeDelay the delay when changing the position in seconds
      */
     public RJSSwitch(
             String id,
-            RJSTrackSection.EndpointID base,
-            RJSTrackSection.EndpointID left,
-            RJSTrackSection.EndpointID right,
-            double positionChangeDelay
+            String switchType,
+            Map<String, RJSTrackSection.EndpointID> ports,
+            double groupChangeDelay
     ) {
         this.id = id;
-        this.base = base;
-        this.left = left;
-        this.right = right;
-        this.positionChangeDelay = positionChangeDelay;
+        this.switchType = switchType;
+        this.ports = ports;
+        this.groupChangeDelay = groupChangeDelay;
+    }
+
+    public RJSTrackSection.EndpointID getBase() {
+        return ports.entrySet().stream().findFirst().get().getValue();
     }
 
     @Override
     public String getID() {
         return id;
-    }
-
-    public enum Position {
-        LEFT, RIGHT;
-
-        /** Parse into SwitchPosition */
-        public SwitchPosition parse() {
-            switch (this) {
-                case LEFT:
-                    return SwitchPosition.LEFT;
-                case RIGHT:
-                    return SwitchPosition.RIGHT;
-            }
-            return null;
-        }
     }
 }

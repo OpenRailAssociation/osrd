@@ -138,7 +138,7 @@ public class TowerState {
             }
         }
         // check if the train is next on each switch of the route
-        for (var s : request.routeState.route.switchesPosition.keySet()) {
+        for (var s : request.routeState.route.switchesGroup.keySet()) {
             if (!isPlanned(s.id, trainID)) { // plan the train if not planned
                 plan(s.id, trainID);
             }
@@ -154,7 +154,7 @@ public class TowerState {
         }
 
         // go to next train to each switch of the route
-        for (var s : request.routeState.route.switchesPosition.keySet()) {
+        for (var s : request.routeState.route.switchesGroup.keySet()) {
             next(s.id);
             state.get(s.id).currentTrainAllowed = request.train.getName();
         }

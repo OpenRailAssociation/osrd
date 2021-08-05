@@ -12,8 +12,8 @@ public class RJSRoute implements Identified {
     public String id;
 
     /** List of the switches and their position through which the route transits */
-    @Json(name = "switches_position")
-    public Map<ID<RJSSwitch>, RJSSwitch.Position> switchesPosition;
+    @Json(name = "switches_group")
+    public Map<ID<RJSSwitch>, String> switchesGroup;
 
     @Json(name = "release_groups")
     public List<Set<ID<RJSTVDSection>>> releaseGroups;
@@ -25,12 +25,12 @@ public class RJSRoute implements Identified {
     /** Routes are described as a list of TVD Sections, Switches in specific positions, and an entry point */
     public RJSRoute(
             String id,
-            Map<ID<RJSSwitch>, RJSSwitch.Position> switchesPosition,
+            Map<ID<RJSSwitch>, String> switchesGroup,
             List<Set<ID<RJSTVDSection>>> releaseGroups,
             ID<RJSRouteWaypoint> entryPoint
     ) {
         this.id = id;
-        this.switchesPosition = switchesPosition;
+        this.switchesGroup = switchesGroup;
         this.releaseGroups = releaseGroups;
         this.entryPoint = entryPoint;
     }

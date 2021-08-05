@@ -7,7 +7,7 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Switch;
-import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
+import fr.sncf.osrd.infra.trackgraph.SwitchGroup;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
@@ -67,7 +67,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 String id,
                 SortedArraySet<TVDSection> tvdSections,
                 List<SortedArraySet<TVDSection>> releaseGroups,
-                HashMap<Switch, SwitchPosition> switchesPosition,
+                HashMap<Switch, SwitchGroup> switchesGroup,
                 Waypoint entryPoint,
                 Signal entrySignalNormal,
                 Signal entrySignalReverse
@@ -77,7 +77,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 var tvdSectionsPath = new ArrayList<TVDSectionPath>();
                 var tvdSectionsPathDirection = new ArrayList<EdgeDirection>();
 
-                var waypoints = generateWaypointList(entryPoint, tvdSections, switchesPosition);
+                var waypoints = generateWaypointList(entryPoint, tvdSections, switchesGroup);
 
                 // Find the list of tvd section path
                 for (var i = 1; i < waypoints.size(); i++) {
@@ -136,7 +136,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                         releaseGroups,
                         tvdSectionsPath,
                         tvdSectionsPathDirection,
-                        switchesPosition,
+                        switchesGroup,
                         entrySignal);
 
                 routeGraph.routeMap.put(id, route);
@@ -194,29 +194,31 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                     + "may not match the entry waypoint.");
         }
 
-        /** Moves forward by one track section, following switches position. Returns null if it can't be determined. */
+        /** Moves forward by one track section, following switches group. Returns null if it can't be determined. */
         private TrackSection nextTrackSection(TrackSection edge,
                                               EdgeDirection direction,
                                               Map<Integer, Switch> switches,
-                                              Map<Switch, SwitchPosition> positions) throws InvalidInfraException {
+                                              Map<Switch, SwitchGroup> groups
+        ) throws InvalidInfraException {
             var endWaypoint = direction == START_TO_STOP ? edge.endNode : edge.startNode;
             var neighbors = direction == START_TO_STOP ? edge.endNeighbors : edge.startNeighbors;
-            if (neighbors.size() == 1) {
+            if (neighbors.size() == 1)
                 return neighbors.get(0);
-            } else {
-                if (!switches.containsKey(endWaypoint))
-                    return null;
-                var s = switches.get(endWaypoint);
-                var position = positions.get(s);
-                switch (position) {
-                    case LEFT:
-                        return s.leftTrackSection;
-                    case RIGHT:
-                        return s.rightTrackSection;
-                    default:
-                        throw new InvalidInfraException("A switch position can't be set to MOVING to define a route.");
+            if (!switches.containsKey(endWaypoint))
+                return null;
+            var s = switches.get(endWaypoint);
+            var group = groups.get(s);
+            if (group.equals(SwitchGroup.MOVING)) {
+                throw new InvalidInfraException("A switch group can't be set to MOVING to define a route.");
+            }
+
+            for (var link : s.groups.get(group)) {
+                if (link.src.trackSection.id.equals(edge.id)) {
+                    return link.dst.trackSection;
                 }
             }
+
+            throw new InvalidInfraException("The next track section is not defined by the current group.");
         }
 
         /**
@@ -225,9 +227,9 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
         private List<Waypoint> generateWaypointList(
                 Waypoint startPoint,
                 Set<TVDSection> tvdSections,
-                HashMap<Switch, SwitchPosition> switchesPosition
+                HashMap<Switch, SwitchGroup> switchesGroup
         ) throws InvalidInfraException {
-            var allWaypointIndexes = generateWaypointListIndexes(startPoint, tvdSections, switchesPosition);
+            var allWaypointIndexes = generateWaypointListIndexes(startPoint, tvdSections, switchesGroup);
             var res = allWaypointIndexes.stream()
                     .map(waypointGraph::getNode)
                     .collect(Collectors.toList());
@@ -266,7 +268,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
         private List<Integer> generateWaypointListIndexes(
                 Waypoint startPoint,
                 Set<TVDSection> tvdSections,
-                HashMap<Switch, SwitchPosition> switchesPosition
+                HashMap<Switch, SwitchGroup> switchesGroup
         ) throws InvalidInfraException {
 
             // Init the maps and lists
@@ -276,8 +278,8 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
             for (var section : tvdSections)
                 for (var waypoint : section.waypoints)
                     waypointsOnTVDSections.add(waypoint.index);
-            if (switchesPosition != null)
-                for (var s : switchesPosition.keySet())
+            if (switchesGroup != null)
+                for (var s : switchesGroup.keySet())
                     switchesMap.put(s.index, s);
 
             // Finds the first track section
@@ -295,7 +297,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                     return res;
                 seenWaypoints.add(previousEndPoint);
 
-                edge = nextTrackSection(edge, direction, switchesMap, switchesPosition);
+                edge = nextTrackSection(edge, direction, switchesMap, switchesGroup);
                 if (edge == null)
                     return res;
                 direction = edge.startNode == previousEndPoint ? START_TO_STOP : STOP_TO_START;

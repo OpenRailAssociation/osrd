@@ -82,7 +82,7 @@ class Infra:
           self.json["aspects"] = [{'id': 'GREEN', 'color': '#2a850c', 'constraints': []}, {'id': 'YELLOW', 'color': '#f08a05', 'constraints': [{'type': 'speed_limit', 'speed': 8.33333333333333, 'applies_at': {'element': 'NEXT_SIGNAL', 'offset': -100}, 'until': {'element': 'NEXT_SIGNAL', 'offset': 0}}]}, {'id': 'RED', 'color': '#db0c04', 'constraints': [{'type': 'speed_limit', 'speed': 0, 'applies_at': {'element': 'CURRENT_SIGNAL', 'offset': -5}, 'until': {'element': 'END', 'offset': 0}}]}]
 
     def build_script_functions(self):
-        self.json["script_functions"] = [{'name': 'sncf_filter', 'arguments': [{'type': 'ASPECT_SET', 'name': 'aspects'}], 'return_type': 'ASPECT_SET', 'body': {'type': 'condition', 'if': {'type': 'aspect_set_contains', 'aspect_set': {'type': 'argument_ref', 'argument_name': 'aspects'}, 'aspect': 'RED'}, 'then': {'type': 'aspect_set', 'members': [{'aspect': 'RED'}]}, 'else': {'type': 'condition', 'if': {'type': 'aspect_set_contains', 'aspect_set': {'type': 'argument_ref', 'argument_name': 'aspects'}, 'aspect': 'YELLOW'}, 'then': {'type': 'aspect_set', 'members': [{'aspect': 'YELLOW'}]}, 'else': {'type': 'argument_ref', 'argument_name': 'aspects'}}}}, {'name': 'warn_signal', 'arguments': [{'type': 'SIGNAL', 'name': 'master_signal'}], 'return_type': 'ASPECT_SET', 'body': {'type': 'call', 'function': 'sncf_filter', 'arguments': [{'type': 'aspect_set', 'members': [{'aspect': 'YELLOW', 'condition': {'type': 'signal_has_aspect', 'signal': {'type': 'argument_ref', 'argument_name': 'master_signal'}, 'aspect': 'RED'}}, {'aspect': 'GREEN'}]}]}}, {'name': 'check_route', 'arguments': [{'type': 'ROUTE', 'name': 'route'}], 'return_type': 'ASPECT_SET', 'body': {'type': 'condition', 'if': {'type': 'or', 'exprs': [{'type': 'route_has_state', 'route': {'type': 'argument_ref', 'argument_name': 'route'}, 'state': 'OCCUPIED'}, {'type': 'route_has_state', 'route': {'type': 'argument_ref', 'argument_name': 'route'}, 'state': 'REQUESTED'}, {'type': 'route_has_state', 'route': {'type': 'argument_ref', 'argument_name': 'route'}, 'state': 'CONFLICT'}]}, 'then': {'type': 'aspect_set', 'members': [{'aspect': 'RED'}]}, 'else': {'type': 'aspect_set', 'members': [{'aspect': 'YELLOW'}]}}}, {'name': 'bal3_line_signal', 'arguments': [{'type': 'SIGNAL', 'name': 'master_signal'}, {'type': 'ROUTE', 'name': 'route'}], 'return_type': 'ASPECT_SET', 'body': {'type': 'call', 'function': 'sncf_filter', 'arguments': [{'type': 'aspect_set', 'members': [{'aspect': 'RED', 'condition': {'type': 'not', 'expr': {'type': 'route_has_state', 'route': {'type': 'argument_ref', 'argument_name': 'route'}, 'state': 'RESERVED'}}}, {'aspect': 'YELLOW', 'condition': {'type': 'signal_has_aspect', 'signal': {'type': 'argument_ref', 'argument_name': 'master_signal'}, 'aspect': 'RED'}}, {'aspect': 'GREEN'}]}]}}, {'name': 'switch_signal', 'arguments': [{'type': 'SWITCH', 'name': 'switch'}, {'type': 'ROUTE', 'name': 'left_route'}, {'type': 'SIGNAL', 'name': 'left_master_signal'}, {'type': 'ROUTE', 'name': 'right_route'}, {'type': 'SIGNAL', 'name': 'right_master_signal'}], 'return_type': 'ASPECT_SET', 'body': {'type': 'match', 'expr': {'type': 'argument_ref', 'argument_name': 'switch'}, 'branches': {'LEFT': {'type': 'call', 'function': 'sncf_filter', 'arguments': [{'type': 'aspect_set', 'members': [{'aspect': 'RED', 'condition': {'type': 'not', 'expr': {'type': 'route_has_state', 'route': {'type': 'argument_ref', 'argument_name': 'left_route'}, 'state': 'RESERVED'}}}, {'aspect': 'YELLOW', 'condition': {'type': 'signal_has_aspect', 'signal': {'type': 'argument_ref', 'argument_name': 'left_master_signal'}, 'aspect': 'RED'}}, {'aspect': 'GREEN'}]}]}, 'RIGHT': {'type': 'call', 'function': 'sncf_filter', 'arguments': [{'type': 'aspect_set', 'members': [{'aspect': 'RED', 'condition': {'type': 'not', 'expr': {'type': 'route_has_state', 'route': {'type': 'argument_ref', 'argument_name': 'right_route'}, 'state': 'RESERVED'}}}, {'aspect': 'YELLOW', 'condition': {'type': 'signal_has_aspect', 'signal': {'type': 'argument_ref', 'argument_name': 'right_master_signal'}, 'aspect': 'RED'}}, {'aspect': 'GREEN'}]}]}, 'MOVING': {'type': 'aspect_set', 'members': [{'aspect': 'RED'}]}}}}]
+        self.json["script_functions"] = [{'name': 'sncf_filter', 'arguments': [{'type': 'ASPECT_SET', 'name': 'aspects'}], 'return_type': 'ASPECT_SET', 'body': {'type': 'condition', 'if': {'type': 'aspect_set_contains', 'aspect_set': {'type': 'argument_ref', 'argument_name': 'aspects'}, 'aspect': 'RED'}, 'then': {'type': 'aspect_set', 'members': [{'aspect': 'RED'}]}, 'else': {'type': 'condition', 'if': {'type': 'aspect_set_contains', 'aspect_set': {'type': 'argument_ref', 'argument_name': 'aspects'}, 'aspect': 'YELLOW'}, 'then': {'type': 'aspect_set', 'members': [{'aspect': 'YELLOW'}]}, 'else': {'type': 'argument_ref', 'argument_name': 'aspects'}}}}, {'name': 'warn_signal', 'arguments': [{'type': 'SIGNAL', 'name': 'master_signal'}], 'return_type': 'ASPECT_SET', 'body': {'type': 'call', 'function': 'sncf_filter', 'arguments': [{'type': 'aspect_set', 'members': [{'aspect': 'YELLOW', 'condition': {'type': 'signal_has_aspect', 'signal': {'type': 'argument_ref', 'argument_name': 'master_signal'}, 'aspect': 'RED'}}, {'aspect': 'GREEN'}]}]}}, {'name': 'check_route', 'arguments': [{'type': 'ROUTE', 'name': 'route'}], 'return_type': 'ASPECT_SET', 'body': {'type': 'condition', 'if': {'type': 'or', 'exprs': [{'type': 'route_has_state', 'route': {'type': 'argument_ref', 'argument_name': 'route'}, 'state': 'OCCUPIED'}, {'type': 'route_has_state', 'route': {'type': 'argument_ref', 'argument_name': 'route'}, 'state': 'REQUESTED'}, {'type': 'route_has_state', 'route': {'type': 'argument_ref', 'argument_name': 'route'}, 'state': 'CONFLICT'}]}, 'then': {'type': 'aspect_set', 'members': [{'aspect': 'RED'}]}, 'else': {'type': 'aspect_set', 'members': [{'aspect': 'YELLOW'}]}}}, {'name': 'bal3_line_signal', 'arguments': [{'type': 'SIGNAL', 'name': 'master_signal'}, {'type': 'ROUTE', 'name': 'route'}], 'return_type': 'ASPECT_SET', 'body': {'type': 'call', 'function': 'sncf_filter', 'arguments': [{'type': 'aspect_set', 'members': [{'aspect': 'RED', 'condition': {'type': 'not', 'expr': {'type': 'route_has_state', 'route': {'type': 'argument_ref', 'argument_name': 'route'}, 'state': 'RESERVED'}}}, {'aspect': 'YELLOW', 'condition': {'type': 'signal_has_aspect', 'signal': {'type': 'argument_ref', 'argument_name': 'master_signal'}, 'aspect': 'RED'}}, {'aspect': 'GREEN'}]}]}}, {'name': 'switch_signal', 'arguments': [{'type': 'SIGNAL', 'name': 'signal'}, {'type': 'SWITCH', 'name': 'switch'}], 'return_type': 'ASPECT_SET', 'body': {'type': 'optional_match', 'name': 'route', 'expr': {'type': 'reserved_route', 'signal': {'type': 'argument_ref', 'argument_name': 'signal'}}, 'case_none': {'type': 'aspect_set', 'members': [{'aspect': 'RED'}]}, 'case_some': {'type': 'condition', 'if': {'type': 'or', 'exprs': [{'type': 'route_has_state', 'route': {'type': 'optional_match_ref', 'match_name': 'route'}, 'state': 'CONFLICT'}, {'type': 'route_has_state', 'route': {'type': 'optional_match_ref', 'match_name': 'route'}, 'state': 'OCCUPIED'}, {'type': 'route_has_state', 'route': {'type': 'optional_match_ref', 'match_name': 'route'}, 'state': 'REQUESTED'}]}, 'then': {'type': 'aspect_set', 'members': [{'aspect': 'YELLOW'}]}, 'else': {'type': 'aspect_set', 'members': [{'aspect': 'GREEN'}]}}}}]
 
     def build_speed_sections(self):
         self.json["speed_sections"] = []
@@ -175,13 +175,13 @@ class Infra:
             self.json["routes"].append({
                     "id": oname_route_between(uget_begin(utrack), uget_end(utrack)),
                     "entry_point": uname_tde_begin(utrack),
-                    "switches_position": {},
+                    "switches_group": {},
                     "release_groups": [[uname_tvd_track(utrack)]]
                 })
             self.json["routes"].append({
                     "id": oname_route_between(uget_end(utrack), uget_begin(utrack)),
                     "entry_point": uname_tde_end(utrack) if self.degree[utrack] == 2 else uname_buffer_stop(utrack),
-                    "switches_position": {},
+                    "switches_group": {},
                     "release_groups": [[uname_tvd_track(utrack)]]
                 })
         # routes associated with links
@@ -189,13 +189,13 @@ class Infra:
             self.json["routes"].append({
                     "id": oname_route_between(ofirst, osecond),
                     "entry_point": oname_tde(ofirst),
-                    "switches_position": {},
+                    "switches_group": {},
                     "release_groups": [[oname_tvd_link(ofirst, osecond)]]
                 })
             self.json["routes"].append({
                     "id": oname_route_between(osecond, ofirst),
                     "entry_point": oname_tde(osecond),
-                    "switches_position": {},
+                    "switches_group": {},
                     "release_groups": [[oname_tvd_link(ofirst, osecond)]]
                 })
         # routes associated with switches
@@ -203,25 +203,25 @@ class Infra:
             self.json["routes"].append({
                     "id": oname_route_between(obase, oleft),
                     "entry_point": oname_tde(obase),
-                    "switches_position": {oname_switch(obase, oleft, oright): "LEFT"},
+                    "switches_group": {oname_switch(obase, oleft, oright): "LEFT"},
                     "release_groups": [[oname_tvd_switch(obase, oleft, oright)]]
                 })
             self.json["routes"].append({
                     "id": oname_route_between(obase, oright),
                     "entry_point": oname_tde(obase),
-                    "switches_position": {oname_switch(obase, oleft, oright): "RIGHT"},
+                    "switches_group": {oname_switch(obase, oleft, oright): "RIGHT"},
                     "release_groups": [[oname_tvd_switch(obase, oleft, oright)]]
                 })
             self.json["routes"].append({
                     "id": oname_route_between(oleft, obase),
                     "entry_point": oname_tde(oleft),
-                    "switches_position": {oname_switch(obase, oleft, oright): "LEFT"},
+                    "switches_group": {oname_switch(obase, oleft, oright): "LEFT"},
                     "release_groups": [[oname_tvd_switch(obase, oleft, oright)]]
                 })
             self.json["routes"].append({
                     "id": oname_route_between(oright, obase),
                     "entry_point": oname_tde(oright),
-                    "switches_position": {oname_switch(obase, oleft, oright): "RIGHT"},
+                    "switches_group": {oname_switch(obase, oleft, oright): "RIGHT"},
                     "release_groups": [[oname_tvd_switch(obase, oleft, oright)]]
                 })
 
@@ -292,11 +292,12 @@ class Infra:
                             "type": "call",
                             "function": "switch_signal",
                             "arguments": [
-                                    {"type": "switch", "switch": oname_switch(obase, oleft, oright)},
-                                    {"type": "route", "route": oname_route_between(obase, oleft)},
-                                    {"type": "signal", "signal": left_next_signal},
-                                    {"type": "route", "route": oname_route_between(obase, oright)},
-                                    {"type": "signal", "signal": right_next_signal}
+                                    {"type": "signal", "signal": oname_sig_switch(obase, oleft, oright)},
+                                    {"type": "switch", "switch": oname_switch(obase, oleft, oright)}
+                                    #{"type": "route", "route": oname_route_between(obase, oleft)},
+                                    #{"type": "signal", "signal": left_next_signal},
+                                    #{"type": "route", "route": oname_route_between(obase, oright)},
+                                    #{"type": "signal", "signal": right_next_signal}
                                 ]
                         },
                         "id": oname_sig_switch(obase, oleft, oright),
@@ -308,15 +309,45 @@ class Infra:
             self.build_signal_bal3(oleft, obase)
             self.build_signal_bal3(oright, obase)
 
+    def build_switch_types(self):
+        self.json["switch_types"] = {
+            "classic_switch": {
+                "ports": [
+                    "base",
+                    "left",
+                    "right"
+                ],
+                "groups": {
+                    "LEFT": [
+                        {
+                            "src": "base",
+                            "dst": "left",
+                            "bidirectional": True
+                        }
+                    ],
+                    "RIGHT": [
+                        {
+                            "src": "base",
+                            "dst": "right",
+                            "bidirectional": True
+                        }
+                    ]
+                }
+            }
+        }
+        
     def build_switches(self):
         self.json["switches"] = []
         for obase, oleft, oright in self.switches:
             self.json["switches"].append({
-                    "base": {"endpoint": oget_side(obase), "section": oname_track(obase)},
-                    "left": {"endpoint": oget_side(oleft), "section": oname_track(oleft)},
-                    "right": {"endpoint": oget_side(oright), "section": oname_track(oright)},
                     "id": oname_switch(obase, oleft, oright),
-                    "position_change_delay": self.POSITION_CHANGE_DELAY
+                    "switch_type": "classic_switch",
+                    "group_change_delay": self.GROUP_CHANGE_DELAY,
+                    "ports": {
+                        "base": {"endpoint": oget_side(obase), "section": oname_track(obase)},
+                        "left": {"endpoint": oget_side(oleft), "section": oname_track(oleft)},
+                        "right": {"endpoint": oget_side(oright), "section": oname_track(oright)},
+                    }
                 })
 
     def build_track_section_links(self):
@@ -372,6 +403,7 @@ class Infra:
             assert self.degree[utrack] in [1, 2]
 
         self.build_aspects()
+        self.build_switch_types()
         self.build_operational_points()
         self.build_routes()
         self.build_script_functions()
@@ -384,7 +416,7 @@ class Infra:
         return self.json
 
     def __init__(self, lengths, space_tde = 200, space_sig = 25, sight_distance = 400):
-        self.POSITION_CHANGE_DELAY = 6
+        self.GROUP_CHANGE_DELAY = 6
         self.SPACE_TDE = space_tde
         self.SPACE_SIG = space_sig
         self.SIGHT_DISTANCE = sight_distance

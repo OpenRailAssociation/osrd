@@ -1,7 +1,7 @@
 package fr.sncf.osrd.infra_state.events;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
+import fr.sncf.osrd.infra.trackgraph.SwitchGroup;
 import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.simulation.Simulation;
@@ -13,23 +13,23 @@ import org.slf4j.LoggerFactory;
 
 public class SwitchMoveEvent extends TimelineEvent {
     static final Logger logger = LoggerFactory.getLogger(SwitchMoveEvent.class);
-    private final SwitchPosition newPosition;
+    private final SwitchGroup newGroup;
     private final SwitchState switchState;
     private final RouteState routeState;
 
     private SwitchMoveEvent(TimelineEventId eventId,
-                            SwitchPosition newPosition,
+                            SwitchGroup newGroup,
                             SwitchState switchState,
                             RouteState routeState) {
         super(eventId);
-        this.newPosition = newPosition;
+        this.newGroup = newGroup;
         this.switchState = switchState;
         this.routeState = routeState;
     }
 
     @Override
     protected void onOccurrence(Simulation sim) throws SimulationError {
-        switchState.setPosition(sim, newPosition);
+        switchState.setGroup(sim, newGroup);
         routeState.onSwitchMove(sim);
     }
 
@@ -44,16 +44,16 @@ public class SwitchMoveEvent extends TimelineEvent {
         if (other.getClass() != SwitchMoveEvent.class)
             return false;
         var o = (SwitchMoveEvent) other;
-        return o.newPosition == newPosition && o.switchState.equals(switchState) && o.routeState.equals(routeState);
+        return o.newGroup == newGroup && o.switchState.equals(switchState) && o.routeState.equals(routeState);
     }
 
     /** Plan a SwitchMoveEvent creating a change that schedule it */
     public static SwitchMoveEvent plan(Simulation sim,
                                        double moveTime,
-                                       SwitchPosition newPosition,
+                                       SwitchGroup newGroup,
                                        SwitchState switchState,
                                        RouteState routeState) {
-        var change = new SwitchMovePlanned(sim, moveTime, newPosition, switchState, routeState);
+        var change = new SwitchMovePlanned(sim, moveTime, newGroup, switchState, routeState);
         var event = change.apply(sim);
         sim.publishChange(change);
         return event;
@@ -61,23 +61,23 @@ public class SwitchMoveEvent extends TimelineEvent {
 
     public static class SwitchMovePlanned extends Simulation.TimelineEventCreated {
 
-        private final SwitchPosition newPosition;
+        private final SwitchGroup newGroup;
         private final SwitchState switchState;
         private final RouteState routeState;
 
         private SwitchMovePlanned(Simulation sim,
                                   double moveTime,
-                                  SwitchPosition newPosition,
+                                  SwitchGroup newGroup,
                                   SwitchState switchState,
                                   RouteState routeState) {
             super(sim, moveTime);
-            this.newPosition = newPosition;
+            this.newGroup = newGroup;
             this.switchState = switchState;
             this.routeState = routeState;
         }
 
         private SwitchMoveEvent apply(Simulation sim) {
-            var event = new SwitchMoveEvent(eventId, newPosition, switchState, routeState);
+            var event = new SwitchMoveEvent(eventId, newGroup, switchState, routeState);
             super.scheduleEvent(sim, event);
             return event;
         }
@@ -89,8 +89,8 @@ public class SwitchMoveEvent extends TimelineEvent {
 
         @Override
         public String toString() {
-            return String.format("SwitchChangePlanned { newPosition=%s, switchId=%s }",
-                    newPosition, switchState.switchRef.id);
+            return String.format("SwitchChangePlanned { newGroup=%s, switchId=%s }",
+                    newGroup, switchState.switchRef.id);
         }
     }
 }

@@ -15,6 +15,8 @@ import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class RJSInfra {
     /** Moshi adapter used to serialize and deserialize RJSInfra */
@@ -68,6 +70,10 @@ public class RJSInfra {
     @Json(name = "script_functions")
     public List<RJSRSFunction> scriptFunctions;
 
+    /** The map of switch types */
+    @Json(name = "switch_types")
+    public Map<String, RJSSwitchType> switchTypes;
+
     /** Create a new serialized RailJSON file */
     public RJSInfra(
             Collection<RJSTrackSection> trackSections,
@@ -78,7 +84,8 @@ public class RJSInfra {
             Collection<RJSRoute> routes,
             Collection<RJSSpeedSection> speedSections,
             Collection<RJSAspect> aspects,
-            List<RJSRSFunction> signalFunctions
+            List<RJSRSFunction> signalFunctions,
+            Map<String, RJSSwitchType> switchTypes
     ) {
         this.trackSections = trackSections;
         this.trackSectionLinks = trackSectionLinks;
@@ -89,6 +96,7 @@ public class RJSInfra {
         this.speedSections = speedSections;
         this.aspects = aspects;
         this.scriptFunctions = signalFunctions;
+        this.switchTypes = switchTypes;
     }
 
     /**
@@ -104,8 +112,8 @@ public class RJSInfra {
                 new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),
-                new ArrayList<>()
+                new ArrayList<>(),
+                new HashMap<>()
         );
     }
 }
-

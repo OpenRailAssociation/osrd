@@ -42,12 +42,37 @@
             ]
         }
     ],
+    "switch_types": {
+        "classic_switch": {
+            "ports": [
+                "base",
+                "left",
+                "right"
+            ],
+            "groups": {
+                "LEFT": [
+                    {
+                        "src": "base",
+                        "dst": "left",
+                        "bidirectional": true
+                    }
+                ],
+                "RIGHT": [
+                    {
+                        "src": "base",
+                        "dst": "right",
+                        "bidirectional": true
+                    }
+                ]
+            }
+        }
+    },
     "operational_points": [],
     "routes": [
         {
             "id": "rt.0_BEGIN-0_END",
             "entry_point": "tde.0_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.0"
@@ -57,7 +82,7 @@
         {
             "id": "rt.0_END-0_BEGIN",
             "entry_point": "buffer_stop.0",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.0"
@@ -67,7 +92,7 @@
         {
             "id": "rt.1_BEGIN-1_END",
             "entry_point": "tde.1_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.1"
@@ -77,7 +102,7 @@
         {
             "id": "rt.1_END-1_BEGIN",
             "entry_point": "tde.1_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.1"
@@ -87,7 +112,7 @@
         {
             "id": "rt.2_BEGIN-2_END",
             "entry_point": "tde.2_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.2"
@@ -97,7 +122,7 @@
         {
             "id": "rt.2_END-2_BEGIN",
             "entry_point": "tde.2_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.2"
@@ -107,7 +132,7 @@
         {
             "id": "rt.3_BEGIN-3_END",
             "entry_point": "tde.3_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.3"
@@ -117,7 +142,7 @@
         {
             "id": "rt.3_END-3_BEGIN",
             "entry_point": "tde.3_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.3"
@@ -127,7 +152,7 @@
         {
             "id": "rt.4_BEGIN-4_END",
             "entry_point": "tde.4_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.4"
@@ -137,7 +162,7 @@
         {
             "id": "rt.4_END-4_BEGIN",
             "entry_point": "tde.4_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.4"
@@ -147,7 +172,7 @@
         {
             "id": "rt.5_BEGIN-5_END",
             "entry_point": "tde.5_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.5"
@@ -157,7 +182,7 @@
         {
             "id": "rt.5_END-5_BEGIN",
             "entry_point": "tde.5_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.5"
@@ -167,7 +192,7 @@
         {
             "id": "rt.6_BEGIN-6_END",
             "entry_point": "tde.6_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.6"
@@ -177,7 +202,7 @@
         {
             "id": "rt.6_END-6_BEGIN",
             "entry_point": "tde.6_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.6"
@@ -187,7 +212,7 @@
         {
             "id": "rt.7_BEGIN-7_END",
             "entry_point": "tde.7_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.7"
@@ -197,7 +222,7 @@
         {
             "id": "rt.7_END-7_BEGIN",
             "entry_point": "tde.7_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.7"
@@ -207,7 +232,7 @@
         {
             "id": "rt.8_BEGIN-8_END",
             "entry_point": "tde.8_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.8"
@@ -217,7 +242,7 @@
         {
             "id": "rt.8_END-8_BEGIN",
             "entry_point": "tde.8_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.8"
@@ -227,7 +252,7 @@
         {
             "id": "rt.9_BEGIN-9_END",
             "entry_point": "tde.9_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.9"
@@ -237,7 +262,7 @@
         {
             "id": "rt.9_END-9_BEGIN",
             "entry_point": "tde.9_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.9"
@@ -247,7 +272,7 @@
         {
             "id": "rt.10_BEGIN-10_END",
             "entry_point": "tde.10_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.10"
@@ -257,7 +282,7 @@
         {
             "id": "rt.10_END-10_BEGIN",
             "entry_point": "tde.10_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.10"
@@ -267,7 +292,7 @@
         {
             "id": "rt.11_BEGIN-11_END",
             "entry_point": "tde.11_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.11"
@@ -277,7 +302,7 @@
         {
             "id": "rt.11_END-11_BEGIN",
             "entry_point": "tde.11_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.11"
@@ -287,7 +312,7 @@
         {
             "id": "rt.12_BEGIN-12_END",
             "entry_point": "tde.12_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.12"
@@ -297,7 +322,7 @@
         {
             "id": "rt.12_END-12_BEGIN",
             "entry_point": "tde.12_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.12"
@@ -307,7 +332,7 @@
         {
             "id": "rt.13_BEGIN-13_END",
             "entry_point": "tde.13_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.13"
@@ -317,7 +342,7 @@
         {
             "id": "rt.13_END-13_BEGIN",
             "entry_point": "tde.13_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.13"
@@ -327,7 +352,7 @@
         {
             "id": "rt.14_BEGIN-14_END",
             "entry_point": "tde.14_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.14"
@@ -337,7 +362,7 @@
         {
             "id": "rt.14_END-14_BEGIN",
             "entry_point": "tde.14_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.14"
@@ -347,7 +372,7 @@
         {
             "id": "rt.15_BEGIN-15_END",
             "entry_point": "tde.15_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.15"
@@ -357,7 +382,7 @@
         {
             "id": "rt.15_END-15_BEGIN",
             "entry_point": "tde.15_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.15"
@@ -367,7 +392,7 @@
         {
             "id": "rt.16_BEGIN-16_END",
             "entry_point": "tde.16_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.16"
@@ -377,7 +402,7 @@
         {
             "id": "rt.16_END-16_BEGIN",
             "entry_point": "tde.16_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.16"
@@ -387,7 +412,7 @@
         {
             "id": "rt.17_BEGIN-17_END",
             "entry_point": "tde.17_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.17"
@@ -397,7 +422,7 @@
         {
             "id": "rt.17_END-17_BEGIN",
             "entry_point": "tde.17_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.17"
@@ -407,7 +432,7 @@
         {
             "id": "rt.18_BEGIN-18_END",
             "entry_point": "tde.18_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.18"
@@ -417,7 +442,7 @@
         {
             "id": "rt.18_END-18_BEGIN",
             "entry_point": "tde.18_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.18"
@@ -427,7 +452,7 @@
         {
             "id": "rt.19_BEGIN-19_END",
             "entry_point": "tde.19_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.19"
@@ -437,7 +462,7 @@
         {
             "id": "rt.19_END-19_BEGIN",
             "entry_point": "tde.19_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.19"
@@ -447,7 +472,7 @@
         {
             "id": "rt.20_BEGIN-20_END",
             "entry_point": "tde.20_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.20"
@@ -457,7 +482,7 @@
         {
             "id": "rt.20_END-20_BEGIN",
             "entry_point": "tde.20_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.20"
@@ -467,7 +492,7 @@
         {
             "id": "rt.21_BEGIN-21_END",
             "entry_point": "tde.21_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.21"
@@ -477,7 +502,7 @@
         {
             "id": "rt.21_END-21_BEGIN",
             "entry_point": "buffer_stop.21",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.21"
@@ -487,7 +512,7 @@
         {
             "id": "rt.22_BEGIN-22_END",
             "entry_point": "tde.22_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.22"
@@ -497,7 +522,7 @@
         {
             "id": "rt.22_END-22_BEGIN",
             "entry_point": "buffer_stop.22",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.22"
@@ -507,7 +532,7 @@
         {
             "id": "rt.23_BEGIN-23_END",
             "entry_point": "tde.23_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.23"
@@ -517,7 +542,7 @@
         {
             "id": "rt.23_END-23_BEGIN",
             "entry_point": "tde.23_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.23"
@@ -527,7 +552,7 @@
         {
             "id": "rt.24_BEGIN-24_END",
             "entry_point": "tde.24_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.24"
@@ -537,7 +562,7 @@
         {
             "id": "rt.24_END-24_BEGIN",
             "entry_point": "tde.24_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.24"
@@ -547,7 +572,7 @@
         {
             "id": "rt.25_BEGIN-25_END",
             "entry_point": "tde.25_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.25"
@@ -557,7 +582,7 @@
         {
             "id": "rt.25_END-25_BEGIN",
             "entry_point": "tde.25_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.25"
@@ -567,7 +592,7 @@
         {
             "id": "rt.26_BEGIN-26_END",
             "entry_point": "tde.26_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.26"
@@ -577,7 +602,7 @@
         {
             "id": "rt.26_END-26_BEGIN",
             "entry_point": "tde.26_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.26"
@@ -587,7 +612,7 @@
         {
             "id": "rt.27_BEGIN-27_END",
             "entry_point": "tde.27_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.27"
@@ -597,7 +622,7 @@
         {
             "id": "rt.27_END-27_BEGIN",
             "entry_point": "tde.27_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.27"
@@ -607,7 +632,7 @@
         {
             "id": "rt.28_BEGIN-28_END",
             "entry_point": "tde.28_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.28"
@@ -617,7 +642,7 @@
         {
             "id": "rt.28_END-28_BEGIN",
             "entry_point": "tde.28_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.28"
@@ -627,7 +652,7 @@
         {
             "id": "rt.29_BEGIN-29_END",
             "entry_point": "tde.29_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.29"
@@ -637,7 +662,7 @@
         {
             "id": "rt.29_END-29_BEGIN",
             "entry_point": "tde.29_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.29"
@@ -647,7 +672,7 @@
         {
             "id": "rt.30_BEGIN-30_END",
             "entry_point": "tde.30_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.30"
@@ -657,7 +682,7 @@
         {
             "id": "rt.30_END-30_BEGIN",
             "entry_point": "tde.30_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.30"
@@ -667,7 +692,7 @@
         {
             "id": "rt.31_BEGIN-31_END",
             "entry_point": "tde.31_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.31"
@@ -677,7 +702,7 @@
         {
             "id": "rt.31_END-31_BEGIN",
             "entry_point": "tde.31_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.31"
@@ -687,7 +712,7 @@
         {
             "id": "rt.32_BEGIN-32_END",
             "entry_point": "tde.32_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.32"
@@ -697,7 +722,7 @@
         {
             "id": "rt.32_END-32_BEGIN",
             "entry_point": "tde.32_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.32"
@@ -707,7 +732,7 @@
         {
             "id": "rt.33_BEGIN-33_END",
             "entry_point": "tde.33_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.33"
@@ -717,7 +742,7 @@
         {
             "id": "rt.33_END-33_BEGIN",
             "entry_point": "tde.33_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.33"
@@ -727,7 +752,7 @@
         {
             "id": "rt.34_BEGIN-34_END",
             "entry_point": "tde.34_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.34"
@@ -737,7 +762,7 @@
         {
             "id": "rt.34_END-34_BEGIN",
             "entry_point": "tde.34_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.34"
@@ -747,7 +772,7 @@
         {
             "id": "rt.35_BEGIN-35_END",
             "entry_point": "tde.35_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.35"
@@ -757,7 +782,7 @@
         {
             "id": "rt.35_END-35_BEGIN",
             "entry_point": "tde.35_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.35"
@@ -767,7 +792,7 @@
         {
             "id": "rt.36_BEGIN-36_END",
             "entry_point": "tde.36_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.36"
@@ -777,7 +802,7 @@
         {
             "id": "rt.36_END-36_BEGIN",
             "entry_point": "tde.36_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.36"
@@ -787,7 +812,7 @@
         {
             "id": "rt.37_BEGIN-37_END",
             "entry_point": "tde.37_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.37"
@@ -797,7 +822,7 @@
         {
             "id": "rt.37_END-37_BEGIN",
             "entry_point": "tde.37_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.37"
@@ -807,7 +832,7 @@
         {
             "id": "rt.38_BEGIN-38_END",
             "entry_point": "tde.38_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.38"
@@ -817,7 +842,7 @@
         {
             "id": "rt.38_END-38_BEGIN",
             "entry_point": "tde.38_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.38"
@@ -827,7 +852,7 @@
         {
             "id": "rt.39_BEGIN-39_END",
             "entry_point": "tde.39_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.39"
@@ -837,7 +862,7 @@
         {
             "id": "rt.39_END-39_BEGIN",
             "entry_point": "tde.39_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.39"
@@ -847,7 +872,7 @@
         {
             "id": "rt.40_BEGIN-40_END",
             "entry_point": "tde.40_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.40"
@@ -857,7 +882,7 @@
         {
             "id": "rt.40_END-40_BEGIN",
             "entry_point": "buffer_stop.40",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.40"
@@ -867,7 +892,7 @@
         {
             "id": "rt.41_BEGIN-41_END",
             "entry_point": "tde.41_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.41"
@@ -877,7 +902,7 @@
         {
             "id": "rt.41_END-41_BEGIN",
             "entry_point": "tde.41_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.41"
@@ -887,7 +912,7 @@
         {
             "id": "rt.42_BEGIN-42_END",
             "entry_point": "tde.42_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.42"
@@ -897,7 +922,7 @@
         {
             "id": "rt.42_END-42_BEGIN",
             "entry_point": "buffer_stop.42",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.42"
@@ -907,7 +932,7 @@
         {
             "id": "rt.43_BEGIN-43_END",
             "entry_point": "tde.43_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.43"
@@ -917,7 +942,7 @@
         {
             "id": "rt.43_END-43_BEGIN",
             "entry_point": "tde.43_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.43"
@@ -927,7 +952,7 @@
         {
             "id": "rt.44_BEGIN-44_END",
             "entry_point": "tde.44_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.44"
@@ -937,7 +962,7 @@
         {
             "id": "rt.44_END-44_BEGIN",
             "entry_point": "tde.44_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.44"
@@ -947,7 +972,7 @@
         {
             "id": "rt.45_BEGIN-45_END",
             "entry_point": "tde.45_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.45"
@@ -957,7 +982,7 @@
         {
             "id": "rt.45_END-45_BEGIN",
             "entry_point": "tde.45_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.45"
@@ -967,7 +992,7 @@
         {
             "id": "rt.46_BEGIN-46_END",
             "entry_point": "tde.46_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.46"
@@ -977,7 +1002,7 @@
         {
             "id": "rt.46_END-46_BEGIN",
             "entry_point": "tde.46_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.46"
@@ -987,7 +1012,7 @@
         {
             "id": "rt.47_BEGIN-47_END",
             "entry_point": "tde.47_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.47"
@@ -997,7 +1022,7 @@
         {
             "id": "rt.47_END-47_BEGIN",
             "entry_point": "tde.47_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.47"
@@ -1007,7 +1032,7 @@
         {
             "id": "rt.48_BEGIN-48_END",
             "entry_point": "tde.48_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.48"
@@ -1017,7 +1042,7 @@
         {
             "id": "rt.48_END-48_BEGIN",
             "entry_point": "tde.48_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.48"
@@ -1027,7 +1052,7 @@
         {
             "id": "rt.49_BEGIN-49_END",
             "entry_point": "tde.49_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.49"
@@ -1037,7 +1062,7 @@
         {
             "id": "rt.49_END-49_BEGIN",
             "entry_point": "tde.49_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.49"
@@ -1047,7 +1072,7 @@
         {
             "id": "rt.50_BEGIN-50_END",
             "entry_point": "tde.50_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.50"
@@ -1057,7 +1082,7 @@
         {
             "id": "rt.50_END-50_BEGIN",
             "entry_point": "tde.50_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.50"
@@ -1067,7 +1092,7 @@
         {
             "id": "rt.51_BEGIN-51_END",
             "entry_point": "tde.51_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.51"
@@ -1077,7 +1102,7 @@
         {
             "id": "rt.51_END-51_BEGIN",
             "entry_point": "tde.51_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.51"
@@ -1087,7 +1112,7 @@
         {
             "id": "rt.52_BEGIN-52_END",
             "entry_point": "tde.52_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.52"
@@ -1097,7 +1122,7 @@
         {
             "id": "rt.52_END-52_BEGIN",
             "entry_point": "buffer_stop.52",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.52"
@@ -1107,7 +1132,7 @@
         {
             "id": "rt.53_BEGIN-53_END",
             "entry_point": "tde.53_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.53"
@@ -1117,7 +1142,7 @@
         {
             "id": "rt.53_END-53_BEGIN",
             "entry_point": "buffer_stop.53",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.53"
@@ -1127,7 +1152,7 @@
         {
             "id": "rt.54_BEGIN-54_END",
             "entry_point": "tde.54_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.54"
@@ -1137,7 +1162,7 @@
         {
             "id": "rt.54_END-54_BEGIN",
             "entry_point": "tde.54_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.54"
@@ -1147,7 +1172,7 @@
         {
             "id": "rt.55_BEGIN-55_END",
             "entry_point": "tde.55_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.55"
@@ -1157,7 +1182,7 @@
         {
             "id": "rt.55_END-55_BEGIN",
             "entry_point": "tde.55_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.55"
@@ -1167,7 +1192,7 @@
         {
             "id": "rt.56_BEGIN-56_END",
             "entry_point": "tde.56_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.56"
@@ -1177,7 +1202,7 @@
         {
             "id": "rt.56_END-56_BEGIN",
             "entry_point": "tde.56_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.56"
@@ -1187,7 +1212,7 @@
         {
             "id": "rt.57_BEGIN-57_END",
             "entry_point": "tde.57_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.57"
@@ -1197,7 +1222,7 @@
         {
             "id": "rt.57_END-57_BEGIN",
             "entry_point": "tde.57_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.57"
@@ -1207,7 +1232,7 @@
         {
             "id": "rt.58_BEGIN-58_END",
             "entry_point": "tde.58_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.58"
@@ -1217,7 +1242,7 @@
         {
             "id": "rt.58_END-58_BEGIN",
             "entry_point": "tde.58_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.58"
@@ -1227,7 +1252,7 @@
         {
             "id": "rt.59_BEGIN-59_END",
             "entry_point": "tde.59_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.59"
@@ -1237,7 +1262,7 @@
         {
             "id": "rt.59_END-59_BEGIN",
             "entry_point": "tde.59_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.59"
@@ -1247,7 +1272,7 @@
         {
             "id": "rt.60_BEGIN-60_END",
             "entry_point": "tde.60_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.60"
@@ -1257,7 +1282,7 @@
         {
             "id": "rt.60_END-60_BEGIN",
             "entry_point": "tde.60_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.60"
@@ -1267,7 +1292,7 @@
         {
             "id": "rt.61_BEGIN-61_END",
             "entry_point": "tde.61_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.61"
@@ -1277,7 +1302,7 @@
         {
             "id": "rt.61_END-61_BEGIN",
             "entry_point": "tde.61_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.61"
@@ -1287,7 +1312,7 @@
         {
             "id": "rt.62_BEGIN-62_END",
             "entry_point": "tde.62_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.62"
@@ -1297,7 +1322,7 @@
         {
             "id": "rt.62_END-62_BEGIN",
             "entry_point": "tde.62_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.62"
@@ -1307,7 +1332,7 @@
         {
             "id": "rt.63_BEGIN-63_END",
             "entry_point": "tde.63_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.63"
@@ -1317,7 +1342,7 @@
         {
             "id": "rt.63_END-63_BEGIN",
             "entry_point": "buffer_stop.63",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.63"
@@ -1327,7 +1352,7 @@
         {
             "id": "rt.64_BEGIN-64_END",
             "entry_point": "tde.64_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.64"
@@ -1337,7 +1362,7 @@
         {
             "id": "rt.64_END-64_BEGIN",
             "entry_point": "tde.64_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.64"
@@ -1347,7 +1372,7 @@
         {
             "id": "rt.65_BEGIN-65_END",
             "entry_point": "tde.65_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.65"
@@ -1357,7 +1382,7 @@
         {
             "id": "rt.65_END-65_BEGIN",
             "entry_point": "tde.65_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.65"
@@ -1367,7 +1392,7 @@
         {
             "id": "rt.66_BEGIN-66_END",
             "entry_point": "tde.66_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.66"
@@ -1377,7 +1402,7 @@
         {
             "id": "rt.66_END-66_BEGIN",
             "entry_point": "tde.66_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.66"
@@ -1387,7 +1412,7 @@
         {
             "id": "rt.67_BEGIN-67_END",
             "entry_point": "tde.67_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.67"
@@ -1397,7 +1422,7 @@
         {
             "id": "rt.67_END-67_BEGIN",
             "entry_point": "tde.67_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.67"
@@ -1407,7 +1432,7 @@
         {
             "id": "rt.68_BEGIN-68_END",
             "entry_point": "tde.68_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.68"
@@ -1417,7 +1442,7 @@
         {
             "id": "rt.68_END-68_BEGIN",
             "entry_point": "buffer_stop.68",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.68"
@@ -1427,7 +1452,7 @@
         {
             "id": "rt.69_BEGIN-69_END",
             "entry_point": "tde.69_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.69"
@@ -1437,7 +1462,7 @@
         {
             "id": "rt.69_END-69_BEGIN",
             "entry_point": "tde.69_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.69"
@@ -1447,7 +1472,7 @@
         {
             "id": "rt.1_END-2_BEGIN",
             "entry_point": "tde.1_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.1-2"
@@ -1457,7 +1482,7 @@
         {
             "id": "rt.2_BEGIN-1_END",
             "entry_point": "tde.2_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.1-2"
@@ -1467,7 +1492,7 @@
         {
             "id": "rt.3_END-4_BEGIN",
             "entry_point": "tde.3_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.3-4"
@@ -1477,7 +1502,7 @@
         {
             "id": "rt.4_BEGIN-3_END",
             "entry_point": "tde.4_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.3-4"
@@ -1487,7 +1512,7 @@
         {
             "id": "rt.4_END-5_BEGIN",
             "entry_point": "tde.4_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.4-5"
@@ -1497,7 +1522,7 @@
         {
             "id": "rt.5_BEGIN-4_END",
             "entry_point": "tde.5_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.4-5"
@@ -1507,7 +1532,7 @@
         {
             "id": "rt.44_END-45_END",
             "entry_point": "tde.44_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.44-45"
@@ -1517,7 +1542,7 @@
         {
             "id": "rt.45_END-44_END",
             "entry_point": "tde.45_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.44-45"
@@ -1527,7 +1552,7 @@
         {
             "id": "rt.7_END-8_BEGIN",
             "entry_point": "tde.7_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.7-8"
@@ -1537,7 +1562,7 @@
         {
             "id": "rt.8_BEGIN-7_END",
             "entry_point": "tde.8_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.7-8"
@@ -1547,7 +1572,7 @@
         {
             "id": "rt.8_END-9_BEGIN",
             "entry_point": "tde.8_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.8-9"
@@ -1557,7 +1582,7 @@
         {
             "id": "rt.9_BEGIN-8_END",
             "entry_point": "tde.9_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.8-9"
@@ -1567,7 +1592,7 @@
         {
             "id": "rt.12_END-13_BEGIN",
             "entry_point": "tde.12_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.12-13"
@@ -1577,7 +1602,7 @@
         {
             "id": "rt.13_BEGIN-12_END",
             "entry_point": "tde.13_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.12-13"
@@ -1587,7 +1612,7 @@
         {
             "id": "rt.13_END-14_BEGIN",
             "entry_point": "tde.13_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.13-14"
@@ -1597,7 +1622,7 @@
         {
             "id": "rt.14_BEGIN-13_END",
             "entry_point": "tde.14_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.13-14"
@@ -1607,7 +1632,7 @@
         {
             "id": "rt.14_END-15_BEGIN",
             "entry_point": "tde.14_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.14-15"
@@ -1617,7 +1642,7 @@
         {
             "id": "rt.15_BEGIN-14_END",
             "entry_point": "tde.15_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.14-15"
@@ -1627,7 +1652,7 @@
         {
             "id": "rt.15_END-16_BEGIN",
             "entry_point": "tde.15_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.15-16"
@@ -1637,7 +1662,7 @@
         {
             "id": "rt.16_BEGIN-15_END",
             "entry_point": "tde.16_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.15-16"
@@ -1647,7 +1672,7 @@
         {
             "id": "rt.25_END-26_BEGIN",
             "entry_point": "tde.25_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.25-26"
@@ -1657,7 +1682,7 @@
         {
             "id": "rt.26_BEGIN-25_END",
             "entry_point": "tde.26_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.25-26"
@@ -1667,7 +1692,7 @@
         {
             "id": "rt.26_END-27_BEGIN",
             "entry_point": "tde.26_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.26-27"
@@ -1677,7 +1702,7 @@
         {
             "id": "rt.27_BEGIN-26_END",
             "entry_point": "tde.27_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.26-27"
@@ -1687,7 +1712,7 @@
         {
             "id": "rt.46_END-47_END",
             "entry_point": "tde.46_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.46-47"
@@ -1697,7 +1722,7 @@
         {
             "id": "rt.47_END-46_END",
             "entry_point": "tde.47_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.46-47"
@@ -1707,7 +1732,7 @@
         {
             "id": "rt.29_END-30_BEGIN",
             "entry_point": "tde.29_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.29-30"
@@ -1717,7 +1742,7 @@
         {
             "id": "rt.30_BEGIN-29_END",
             "entry_point": "tde.30_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.29-30"
@@ -1727,7 +1752,7 @@
         {
             "id": "rt.30_END-31_BEGIN",
             "entry_point": "tde.30_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.30-31"
@@ -1737,7 +1762,7 @@
         {
             "id": "rt.31_BEGIN-30_END",
             "entry_point": "tde.31_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.30-31"
@@ -1747,7 +1772,7 @@
         {
             "id": "rt.32_END-33_BEGIN",
             "entry_point": "tde.32_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.32-33"
@@ -1757,7 +1782,7 @@
         {
             "id": "rt.33_BEGIN-32_END",
             "entry_point": "tde.33_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.32-33"
@@ -1767,7 +1792,7 @@
         {
             "id": "rt.33_END-34_BEGIN",
             "entry_point": "tde.33_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.33-34"
@@ -1777,7 +1802,7 @@
         {
             "id": "rt.34_BEGIN-33_END",
             "entry_point": "tde.34_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.33-34"
@@ -1787,7 +1812,7 @@
         {
             "id": "rt.34_END-35_BEGIN",
             "entry_point": "tde.34_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.34-35"
@@ -1797,7 +1822,7 @@
         {
             "id": "rt.35_BEGIN-34_END",
             "entry_point": "tde.35_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.34-35"
@@ -1807,7 +1832,7 @@
         {
             "id": "rt.54_END-56_BEGIN",
             "entry_point": "tde.54_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.54-56"
@@ -1817,7 +1842,7 @@
         {
             "id": "rt.56_BEGIN-54_END",
             "entry_point": "tde.56_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.54-56"
@@ -1827,7 +1852,7 @@
         {
             "id": "rt.55_END-57_BEGIN",
             "entry_point": "tde.55_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.55-57"
@@ -1837,7 +1862,7 @@
         {
             "id": "rt.57_BEGIN-55_END",
             "entry_point": "tde.57_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.55-57"
@@ -1847,7 +1872,7 @@
         {
             "id": "rt.64_END-65_BEGIN",
             "entry_point": "tde.64_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.64-65"
@@ -1857,7 +1882,7 @@
         {
             "id": "rt.65_BEGIN-64_END",
             "entry_point": "tde.65_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.64-65"
@@ -1867,7 +1892,7 @@
         {
             "id": "rt.66_END-67_BEGIN",
             "entry_point": "tde.66_END",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.66-67"
@@ -1877,7 +1902,7 @@
         {
             "id": "rt.67_BEGIN-66_END",
             "entry_point": "tde.67_BEGIN",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.66-67"
@@ -1887,7 +1912,7 @@
         {
             "id": "rt.1_BEGIN-0_BEGIN",
             "entry_point": "tde.1_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.1-0-41": "LEFT"
             },
             "release_groups": [
@@ -1899,7 +1924,7 @@
         {
             "id": "rt.1_BEGIN-41_BEGIN",
             "entry_point": "tde.1_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.1-0-41": "RIGHT"
             },
             "release_groups": [
@@ -1911,7 +1936,7 @@
         {
             "id": "rt.0_BEGIN-1_BEGIN",
             "entry_point": "tde.0_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.1-0-41": "LEFT"
             },
             "release_groups": [
@@ -1923,7 +1948,7 @@
         {
             "id": "rt.41_BEGIN-1_BEGIN",
             "entry_point": "tde.41_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.1-0-41": "RIGHT"
             },
             "release_groups": [
@@ -1935,7 +1960,7 @@
         {
             "id": "rt.3_BEGIN-2_END",
             "entry_point": "tde.3_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.3-2-43": "LEFT"
             },
             "release_groups": [
@@ -1947,7 +1972,7 @@
         {
             "id": "rt.3_BEGIN-43_BEGIN",
             "entry_point": "tde.3_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.3-2-43": "RIGHT"
             },
             "release_groups": [
@@ -1959,7 +1984,7 @@
         {
             "id": "rt.2_END-3_BEGIN",
             "entry_point": "tde.2_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.3-2-43": "LEFT"
             },
             "release_groups": [
@@ -1971,7 +1996,7 @@
         {
             "id": "rt.43_BEGIN-3_BEGIN",
             "entry_point": "tde.43_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.3-2-43": "RIGHT"
             },
             "release_groups": [
@@ -1983,7 +2008,7 @@
         {
             "id": "rt.5_END-6_BEGIN",
             "entry_point": "tde.5_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.5-6-44": "LEFT"
             },
             "release_groups": [
@@ -1995,7 +2020,7 @@
         {
             "id": "rt.5_END-44_BEGIN",
             "entry_point": "tde.5_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.5-6-44": "RIGHT"
             },
             "release_groups": [
@@ -2007,7 +2032,7 @@
         {
             "id": "rt.6_BEGIN-5_END",
             "entry_point": "tde.6_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.5-6-44": "LEFT"
             },
             "release_groups": [
@@ -2019,7 +2044,7 @@
         {
             "id": "rt.44_BEGIN-5_END",
             "entry_point": "tde.44_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.5-6-44": "RIGHT"
             },
             "release_groups": [
@@ -2031,7 +2056,7 @@
         {
             "id": "rt.7_BEGIN-6_END",
             "entry_point": "tde.7_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.7-6-45": "LEFT"
             },
             "release_groups": [
@@ -2043,7 +2068,7 @@
         {
             "id": "rt.7_BEGIN-45_BEGIN",
             "entry_point": "tde.7_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.7-6-45": "RIGHT"
             },
             "release_groups": [
@@ -2055,7 +2080,7 @@
         {
             "id": "rt.6_END-7_BEGIN",
             "entry_point": "tde.6_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.7-6-45": "LEFT"
             },
             "release_groups": [
@@ -2067,7 +2092,7 @@
         {
             "id": "rt.45_BEGIN-7_BEGIN",
             "entry_point": "tde.45_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.7-6-45": "RIGHT"
             },
             "release_groups": [
@@ -2079,7 +2104,7 @@
         {
             "id": "rt.9_END-10_BEGIN",
             "entry_point": "tde.9_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.9-10-54": "LEFT"
             },
             "release_groups": [
@@ -2091,7 +2116,7 @@
         {
             "id": "rt.9_END-54_BEGIN",
             "entry_point": "tde.9_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.9-10-54": "RIGHT"
             },
             "release_groups": [
@@ -2103,7 +2128,7 @@
         {
             "id": "rt.10_BEGIN-9_END",
             "entry_point": "tde.10_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.9-10-54": "LEFT"
             },
             "release_groups": [
@@ -2115,7 +2140,7 @@
         {
             "id": "rt.54_BEGIN-9_END",
             "entry_point": "tde.54_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.9-10-54": "RIGHT"
             },
             "release_groups": [
@@ -2127,7 +2152,7 @@
         {
             "id": "rt.11_BEGIN-10_END",
             "entry_point": "tde.11_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.11-10-48": "LEFT"
             },
             "release_groups": [
@@ -2139,7 +2164,7 @@
         {
             "id": "rt.11_BEGIN-48_BEGIN",
             "entry_point": "tde.11_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.11-10-48": "RIGHT"
             },
             "release_groups": [
@@ -2151,7 +2176,7 @@
         {
             "id": "rt.10_END-11_BEGIN",
             "entry_point": "tde.10_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.11-10-48": "LEFT"
             },
             "release_groups": [
@@ -2163,7 +2188,7 @@
         {
             "id": "rt.48_BEGIN-11_BEGIN",
             "entry_point": "tde.48_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.11-10-48": "RIGHT"
             },
             "release_groups": [
@@ -2175,7 +2200,7 @@
         {
             "id": "rt.11_END-12_BEGIN",
             "entry_point": "tde.11_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.11-12-55": "LEFT"
             },
             "release_groups": [
@@ -2187,7 +2212,7 @@
         {
             "id": "rt.11_END-55_BEGIN",
             "entry_point": "tde.11_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.11-12-55": "RIGHT"
             },
             "release_groups": [
@@ -2199,7 +2224,7 @@
         {
             "id": "rt.12_BEGIN-11_END",
             "entry_point": "tde.12_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.11-12-55": "LEFT"
             },
             "release_groups": [
@@ -2211,7 +2236,7 @@
         {
             "id": "rt.55_BEGIN-11_END",
             "entry_point": "tde.55_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.11-12-55": "RIGHT"
             },
             "release_groups": [
@@ -2223,7 +2248,7 @@
         {
             "id": "rt.17_BEGIN-16_END",
             "entry_point": "tde.17_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.17-16-49": "LEFT"
             },
             "release_groups": [
@@ -2235,7 +2260,7 @@
         {
             "id": "rt.17_BEGIN-49_BEGIN",
             "entry_point": "tde.17_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.17-16-49": "RIGHT"
             },
             "release_groups": [
@@ -2247,7 +2272,7 @@
         {
             "id": "rt.16_END-17_BEGIN",
             "entry_point": "tde.16_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.17-16-49": "LEFT"
             },
             "release_groups": [
@@ -2259,7 +2284,7 @@
         {
             "id": "rt.49_BEGIN-17_BEGIN",
             "entry_point": "tde.49_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.17-16-49": "RIGHT"
             },
             "release_groups": [
@@ -2271,7 +2296,7 @@
         {
             "id": "rt.17_END-18_BEGIN",
             "entry_point": "tde.17_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.17-18-69": "LEFT"
             },
             "release_groups": [
@@ -2283,7 +2308,7 @@
         {
             "id": "rt.17_END-69_BEGIN",
             "entry_point": "tde.17_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.17-18-69": "RIGHT"
             },
             "release_groups": [
@@ -2295,7 +2320,7 @@
         {
             "id": "rt.18_BEGIN-17_END",
             "entry_point": "tde.18_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.17-18-69": "LEFT"
             },
             "release_groups": [
@@ -2307,7 +2332,7 @@
         {
             "id": "rt.69_BEGIN-17_END",
             "entry_point": "tde.69_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.17-18-69": "RIGHT"
             },
             "release_groups": [
@@ -2319,7 +2344,7 @@
         {
             "id": "rt.18_END-19_BEGIN",
             "entry_point": "tde.18_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.18-19-52": "LEFT"
             },
             "release_groups": [
@@ -2331,7 +2356,7 @@
         {
             "id": "rt.18_END-52_BEGIN",
             "entry_point": "tde.18_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.18-19-52": "RIGHT"
             },
             "release_groups": [
@@ -2343,7 +2368,7 @@
         {
             "id": "rt.19_BEGIN-18_END",
             "entry_point": "tde.19_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.18-19-52": "LEFT"
             },
             "release_groups": [
@@ -2355,7 +2380,7 @@
         {
             "id": "rt.52_BEGIN-18_END",
             "entry_point": "tde.52_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.18-19-52": "RIGHT"
             },
             "release_groups": [
@@ -2367,7 +2392,7 @@
         {
             "id": "rt.19_END-20_BEGIN",
             "entry_point": "tde.19_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.19-20-50": "LEFT"
             },
             "release_groups": [
@@ -2379,7 +2404,7 @@
         {
             "id": "rt.19_END-50_BEGIN",
             "entry_point": "tde.19_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.19-20-50": "RIGHT"
             },
             "release_groups": [
@@ -2391,7 +2416,7 @@
         {
             "id": "rt.20_BEGIN-19_END",
             "entry_point": "tde.20_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.19-20-50": "LEFT"
             },
             "release_groups": [
@@ -2403,7 +2428,7 @@
         {
             "id": "rt.50_BEGIN-19_END",
             "entry_point": "tde.50_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.19-20-50": "RIGHT"
             },
             "release_groups": [
@@ -2415,7 +2440,7 @@
         {
             "id": "rt.21_BEGIN-20_END",
             "entry_point": "tde.21_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.21-20-51": "LEFT"
             },
             "release_groups": [
@@ -2427,7 +2452,7 @@
         {
             "id": "rt.21_BEGIN-51_BEGIN",
             "entry_point": "tde.21_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.21-20-51": "RIGHT"
             },
             "release_groups": [
@@ -2439,7 +2464,7 @@
         {
             "id": "rt.20_END-21_BEGIN",
             "entry_point": "tde.20_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.21-20-51": "LEFT"
             },
             "release_groups": [
@@ -2451,7 +2476,7 @@
         {
             "id": "rt.51_BEGIN-21_BEGIN",
             "entry_point": "tde.51_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.21-20-51": "RIGHT"
             },
             "release_groups": [
@@ -2463,7 +2488,7 @@
         {
             "id": "rt.22_BEGIN-23_BEGIN",
             "entry_point": "tde.22_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.22-23-41": "LEFT"
             },
             "release_groups": [
@@ -2475,7 +2500,7 @@
         {
             "id": "rt.22_BEGIN-41_END",
             "entry_point": "tde.22_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.22-23-41": "RIGHT"
             },
             "release_groups": [
@@ -2487,7 +2512,7 @@
         {
             "id": "rt.23_BEGIN-22_BEGIN",
             "entry_point": "tde.23_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.22-23-41": "LEFT"
             },
             "release_groups": [
@@ -2499,7 +2524,7 @@
         {
             "id": "rt.41_END-22_BEGIN",
             "entry_point": "tde.41_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.22-23-41": "RIGHT"
             },
             "release_groups": [
@@ -2511,7 +2536,7 @@
         {
             "id": "rt.24_BEGIN-23_END",
             "entry_point": "tde.24_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.24-23-42": "LEFT"
             },
             "release_groups": [
@@ -2523,7 +2548,7 @@
         {
             "id": "rt.24_BEGIN-42_BEGIN",
             "entry_point": "tde.24_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.24-23-42": "RIGHT"
             },
             "release_groups": [
@@ -2535,7 +2560,7 @@
         {
             "id": "rt.23_END-24_BEGIN",
             "entry_point": "tde.23_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.24-23-42": "LEFT"
             },
             "release_groups": [
@@ -2547,7 +2572,7 @@
         {
             "id": "rt.42_BEGIN-24_BEGIN",
             "entry_point": "tde.42_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.24-23-42": "RIGHT"
             },
             "release_groups": [
@@ -2559,7 +2584,7 @@
         {
             "id": "rt.24_END-25_BEGIN",
             "entry_point": "tde.24_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.24-25-43": "LEFT"
             },
             "release_groups": [
@@ -2571,7 +2596,7 @@
         {
             "id": "rt.24_END-43_END",
             "entry_point": "tde.24_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.24-25-43": "RIGHT"
             },
             "release_groups": [
@@ -2583,7 +2608,7 @@
         {
             "id": "rt.25_BEGIN-24_END",
             "entry_point": "tde.25_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.24-25-43": "LEFT"
             },
             "release_groups": [
@@ -2595,7 +2620,7 @@
         {
             "id": "rt.43_END-24_END",
             "entry_point": "tde.43_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.24-25-43": "RIGHT"
             },
             "release_groups": [
@@ -2607,7 +2632,7 @@
         {
             "id": "rt.27_END-28_BEGIN",
             "entry_point": "tde.27_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.27-28-46": "LEFT"
             },
             "release_groups": [
@@ -2619,7 +2644,7 @@
         {
             "id": "rt.27_END-46_BEGIN",
             "entry_point": "tde.27_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.27-28-46": "RIGHT"
             },
             "release_groups": [
@@ -2631,7 +2656,7 @@
         {
             "id": "rt.28_BEGIN-27_END",
             "entry_point": "tde.28_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.27-28-46": "LEFT"
             },
             "release_groups": [
@@ -2643,7 +2668,7 @@
         {
             "id": "rt.46_BEGIN-27_END",
             "entry_point": "tde.46_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.27-28-46": "RIGHT"
             },
             "release_groups": [
@@ -2655,7 +2680,7 @@
         {
             "id": "rt.29_BEGIN-28_END",
             "entry_point": "tde.29_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.29-28-47": "LEFT"
             },
             "release_groups": [
@@ -2667,7 +2692,7 @@
         {
             "id": "rt.29_BEGIN-47_BEGIN",
             "entry_point": "tde.29_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.29-28-47": "RIGHT"
             },
             "release_groups": [
@@ -2679,7 +2704,7 @@
         {
             "id": "rt.28_END-29_BEGIN",
             "entry_point": "tde.28_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.29-28-47": "LEFT"
             },
             "release_groups": [
@@ -2691,7 +2716,7 @@
         {
             "id": "rt.47_BEGIN-29_BEGIN",
             "entry_point": "tde.47_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.29-28-47": "RIGHT"
             },
             "release_groups": [
@@ -2703,7 +2728,7 @@
         {
             "id": "rt.31_END-32_BEGIN",
             "entry_point": "tde.31_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.31-32-48": "LEFT"
             },
             "release_groups": [
@@ -2715,7 +2740,7 @@
         {
             "id": "rt.31_END-48_END",
             "entry_point": "tde.31_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.31-32-48": "RIGHT"
             },
             "release_groups": [
@@ -2727,7 +2752,7 @@
         {
             "id": "rt.32_BEGIN-31_END",
             "entry_point": "tde.32_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.31-32-48": "LEFT"
             },
             "release_groups": [
@@ -2739,7 +2764,7 @@
         {
             "id": "rt.48_END-31_END",
             "entry_point": "tde.48_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.31-32-48": "RIGHT"
             },
             "release_groups": [
@@ -2751,7 +2776,7 @@
         {
             "id": "rt.35_END-36_BEGIN",
             "entry_point": "tde.35_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.35-36-49": "LEFT"
             },
             "release_groups": [
@@ -2763,7 +2788,7 @@
         {
             "id": "rt.35_END-49_END",
             "entry_point": "tde.35_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.35-36-49": "RIGHT"
             },
             "release_groups": [
@@ -2775,7 +2800,7 @@
         {
             "id": "rt.36_BEGIN-35_END",
             "entry_point": "tde.36_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.35-36-49": "LEFT"
             },
             "release_groups": [
@@ -2787,7 +2812,7 @@
         {
             "id": "rt.49_END-35_END",
             "entry_point": "tde.49_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.35-36-49": "RIGHT"
             },
             "release_groups": [
@@ -2799,7 +2824,7 @@
         {
             "id": "rt.37_BEGIN-36_END",
             "entry_point": "tde.37_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.37-36-69": "LEFT"
             },
             "release_groups": [
@@ -2811,7 +2836,7 @@
         {
             "id": "rt.37_BEGIN-69_END",
             "entry_point": "tde.37_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.37-36-69": "RIGHT"
             },
             "release_groups": [
@@ -2823,7 +2848,7 @@
         {
             "id": "rt.36_END-37_BEGIN",
             "entry_point": "tde.36_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.37-36-69": "LEFT"
             },
             "release_groups": [
@@ -2835,7 +2860,7 @@
         {
             "id": "rt.69_END-37_BEGIN",
             "entry_point": "tde.69_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.37-36-69": "RIGHT"
             },
             "release_groups": [
@@ -2847,7 +2872,7 @@
         {
             "id": "rt.37_END-38_BEGIN",
             "entry_point": "tde.37_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.37-38-53": "LEFT"
             },
             "release_groups": [
@@ -2859,7 +2884,7 @@
         {
             "id": "rt.37_END-53_BEGIN",
             "entry_point": "tde.37_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.37-38-53": "RIGHT"
             },
             "release_groups": [
@@ -2871,7 +2896,7 @@
         {
             "id": "rt.38_BEGIN-37_END",
             "entry_point": "tde.38_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.37-38-53": "LEFT"
             },
             "release_groups": [
@@ -2883,7 +2908,7 @@
         {
             "id": "rt.53_BEGIN-37_END",
             "entry_point": "tde.53_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.37-38-53": "RIGHT"
             },
             "release_groups": [
@@ -2895,7 +2920,7 @@
         {
             "id": "rt.39_BEGIN-38_END",
             "entry_point": "tde.39_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.39-38-50": "LEFT"
             },
             "release_groups": [
@@ -2907,7 +2932,7 @@
         {
             "id": "rt.39_BEGIN-50_END",
             "entry_point": "tde.39_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.39-38-50": "RIGHT"
             },
             "release_groups": [
@@ -2919,7 +2944,7 @@
         {
             "id": "rt.38_END-39_BEGIN",
             "entry_point": "tde.38_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.39-38-50": "LEFT"
             },
             "release_groups": [
@@ -2931,7 +2956,7 @@
         {
             "id": "rt.50_END-39_BEGIN",
             "entry_point": "tde.50_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.39-38-50": "RIGHT"
             },
             "release_groups": [
@@ -2943,7 +2968,7 @@
         {
             "id": "rt.39_END-40_BEGIN",
             "entry_point": "tde.39_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.39-40-51": "LEFT"
             },
             "release_groups": [
@@ -2955,7 +2980,7 @@
         {
             "id": "rt.39_END-51_END",
             "entry_point": "tde.39_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.39-40-51": "RIGHT"
             },
             "release_groups": [
@@ -2967,7 +2992,7 @@
         {
             "id": "rt.40_BEGIN-39_END",
             "entry_point": "tde.40_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.39-40-51": "LEFT"
             },
             "release_groups": [
@@ -2979,7 +3004,7 @@
         {
             "id": "rt.51_END-39_END",
             "entry_point": "tde.51_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.39-40-51": "RIGHT"
             },
             "release_groups": [
@@ -2991,7 +3016,7 @@
         {
             "id": "rt.58_BEGIN-56_END",
             "entry_point": "tde.58_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.58-56-57": "LEFT"
             },
             "release_groups": [
@@ -3003,7 +3028,7 @@
         {
             "id": "rt.58_BEGIN-57_END",
             "entry_point": "tde.58_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.58-56-57": "RIGHT"
             },
             "release_groups": [
@@ -3015,7 +3040,7 @@
         {
             "id": "rt.56_END-58_BEGIN",
             "entry_point": "tde.56_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.58-56-57": "LEFT"
             },
             "release_groups": [
@@ -3027,7 +3052,7 @@
         {
             "id": "rt.57_END-58_BEGIN",
             "entry_point": "tde.57_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.58-56-57": "RIGHT"
             },
             "release_groups": [
@@ -3039,7 +3064,7 @@
         {
             "id": "rt.58_END-59_BEGIN",
             "entry_point": "tde.58_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.58-59-64": "LEFT"
             },
             "release_groups": [
@@ -3051,7 +3076,7 @@
         {
             "id": "rt.58_END-64_BEGIN",
             "entry_point": "tde.58_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.58-59-64": "RIGHT"
             },
             "release_groups": [
@@ -3063,7 +3088,7 @@
         {
             "id": "rt.59_BEGIN-58_END",
             "entry_point": "tde.59_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.58-59-64": "LEFT"
             },
             "release_groups": [
@@ -3075,7 +3100,7 @@
         {
             "id": "rt.64_BEGIN-58_END",
             "entry_point": "tde.64_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.58-59-64": "RIGHT"
             },
             "release_groups": [
@@ -3087,7 +3112,7 @@
         {
             "id": "rt.60_BEGIN-59_END",
             "entry_point": "tde.60_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.60-59-65": "LEFT"
             },
             "release_groups": [
@@ -3099,7 +3124,7 @@
         {
             "id": "rt.60_BEGIN-65_END",
             "entry_point": "tde.60_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.60-59-65": "RIGHT"
             },
             "release_groups": [
@@ -3111,7 +3136,7 @@
         {
             "id": "rt.59_END-60_BEGIN",
             "entry_point": "tde.59_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.60-59-65": "LEFT"
             },
             "release_groups": [
@@ -3123,7 +3148,7 @@
         {
             "id": "rt.65_END-60_BEGIN",
             "entry_point": "tde.65_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.60-59-65": "RIGHT"
             },
             "release_groups": [
@@ -3135,7 +3160,7 @@
         {
             "id": "rt.60_END-61_BEGIN",
             "entry_point": "tde.60_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.60-61-66": "LEFT"
             },
             "release_groups": [
@@ -3147,7 +3172,7 @@
         {
             "id": "rt.60_END-66_BEGIN",
             "entry_point": "tde.60_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.60-61-66": "RIGHT"
             },
             "release_groups": [
@@ -3159,7 +3184,7 @@
         {
             "id": "rt.61_BEGIN-60_END",
             "entry_point": "tde.61_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.60-61-66": "LEFT"
             },
             "release_groups": [
@@ -3171,7 +3196,7 @@
         {
             "id": "rt.66_BEGIN-60_END",
             "entry_point": "tde.66_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.60-61-66": "RIGHT"
             },
             "release_groups": [
@@ -3183,7 +3208,7 @@
         {
             "id": "rt.62_BEGIN-61_END",
             "entry_point": "tde.62_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.62-61-67": "LEFT"
             },
             "release_groups": [
@@ -3195,7 +3220,7 @@
         {
             "id": "rt.62_BEGIN-67_END",
             "entry_point": "tde.62_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.62-61-67": "RIGHT"
             },
             "release_groups": [
@@ -3207,7 +3232,7 @@
         {
             "id": "rt.61_END-62_BEGIN",
             "entry_point": "tde.61_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.62-61-67": "LEFT"
             },
             "release_groups": [
@@ -3219,7 +3244,7 @@
         {
             "id": "rt.67_END-62_BEGIN",
             "entry_point": "tde.67_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.62-61-67": "RIGHT"
             },
             "release_groups": [
@@ -3231,7 +3256,7 @@
         {
             "id": "rt.62_END-63_BEGIN",
             "entry_point": "tde.62_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.62-63-68": "LEFT"
             },
             "release_groups": [
@@ -3243,7 +3268,7 @@
         {
             "id": "rt.62_END-68_BEGIN",
             "entry_point": "tde.62_END",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.62-63-68": "RIGHT"
             },
             "release_groups": [
@@ -3255,7 +3280,7 @@
         {
             "id": "rt.63_BEGIN-62_END",
             "entry_point": "tde.63_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.62-63-68": "LEFT"
             },
             "release_groups": [
@@ -3267,7 +3292,7 @@
         {
             "id": "rt.68_BEGIN-62_END",
             "entry_point": "tde.68_BEGIN",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.62-63-68": "RIGHT"
             },
             "release_groups": [
@@ -3480,117 +3505,77 @@
             "name": "switch_signal",
             "arguments": [
                 {
+                    "type": "SIGNAL",
+                    "name": "signal"
+                },
+                {
                     "type": "SWITCH",
                     "name": "switch"
-                },
-                {
-                    "type": "ROUTE",
-                    "name": "left_route"
-                },
-                {
-                    "type": "SIGNAL",
-                    "name": "left_master_signal"
-                },
-                {
-                    "type": "ROUTE",
-                    "name": "right_route"
-                },
-                {
-                    "type": "SIGNAL",
-                    "name": "right_master_signal"
                 }
             ],
             "return_type": "ASPECT_SET",
             "body": {
-                "type": "match",
+                "type": "optional_match",
+                "name": "route",
                 "expr": {
-                    "type": "argument_ref",
-                    "argument_name": "switch"
+                    "type": "reserved_route",
+                    "signal": {
+                        "type": "argument_ref",
+                        "argument_name": "signal"
+                    }
                 },
-                "branches": {
-                    "LEFT": {
-                        "type": "call",
-                        "function": "sncf_filter",
-                        "arguments": [
+                "case_none": {
+                    "type": "aspect_set",
+                    "members": [
+                        {
+                            "aspect": "RED"
+                        }
+                    ]
+                },
+                "case_some": {
+                    "type": "condition",
+                    "if": {
+                        "type": "or",
+                        "exprs": [
                             {
-                                "type": "aspect_set",
-                                "members": [
-                                    {
-                                        "aspect": "RED",
-                                        "condition": {
-                                            "type": "not",
-                                            "expr": {
-                                                "type": "route_has_state",
-                                                "route": {
-                                                    "type": "argument_ref",
-                                                    "argument_name": "left_route"
-                                                },
-                                                "state": "RESERVED"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "aspect": "YELLOW",
-                                        "condition": {
-                                            "type": "signal_has_aspect",
-                                            "signal": {
-                                                "type": "argument_ref",
-                                                "argument_name": "left_master_signal"
-                                            },
-                                            "aspect": "RED"
-                                        }
-                                    },
-                                    {
-                                        "aspect": "GREEN"
-                                    }
-                                ]
+                                "type": "route_has_state",
+                                "route": {
+                                    "type": "optional_match_ref",
+                                    "match_name": "route"
+                                },
+                                "state": "CONFLICT"
+                            },
+                            {
+                                "type": "route_has_state",
+                                "route": {
+                                    "type": "optional_match_ref",
+                                    "match_name": "route"
+                                },
+                                "state": "OCCUPIED"
+                            },
+                            {
+                                "type": "route_has_state",
+                                "route": {
+                                    "type": "optional_match_ref",
+                                    "match_name": "route"
+                                },
+                                "state": "REQUESTED"
                             }
                         ]
                     },
-                    "RIGHT": {
-                        "type": "call",
-                        "function": "sncf_filter",
-                        "arguments": [
-                            {
-                                "type": "aspect_set",
-                                "members": [
-                                    {
-                                        "aspect": "RED",
-                                        "condition": {
-                                            "type": "not",
-                                            "expr": {
-                                                "type": "route_has_state",
-                                                "route": {
-                                                    "type": "argument_ref",
-                                                    "argument_name": "right_route"
-                                                },
-                                                "state": "RESERVED"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "aspect": "YELLOW",
-                                        "condition": {
-                                            "type": "signal_has_aspect",
-                                            "signal": {
-                                                "type": "argument_ref",
-                                                "argument_name": "right_master_signal"
-                                            },
-                                            "aspect": "RED"
-                                        }
-                                    },
-                                    {
-                                        "aspect": "GREEN"
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    "MOVING": {
+                    "then": {
                         "type": "aspect_set",
                         "members": [
                             {
-                                "aspect": "RED"
+                                "aspect": "YELLOW"
+                            }
+                        ]
+                    },
+                    "else": {
+                        "type": "aspect_set",
+                        "members": [
+                            {
+                                "aspect": "GREEN"
                             }
                         ]
                     }
@@ -3601,468 +3586,555 @@
     "speed_sections": [],
     "switches": [
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.1"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.0"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.41"
-            },
             "id": "il.switch.1-0-41",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.1"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.0"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.41"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.3"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.2"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.43"
-            },
             "id": "il.switch.3-2-43",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.3"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.2"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.43"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.5"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.6"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.44"
-            },
             "id": "il.switch.5-6-44",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.5"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.6"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.44"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.7"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.6"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.45"
-            },
             "id": "il.switch.7-6-45",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.7"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.6"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.45"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.9"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.10"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.54"
-            },
             "id": "il.switch.9-10-54",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.9"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.10"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.54"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.11"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.10"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.48"
-            },
             "id": "il.switch.11-10-48",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.11"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.10"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.48"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.11"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.12"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.55"
-            },
             "id": "il.switch.11-12-55",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.11"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.12"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.55"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.17"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.16"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.49"
-            },
             "id": "il.switch.17-16-49",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.17"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.16"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.49"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.17"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.18"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.69"
-            },
             "id": "il.switch.17-18-69",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.17"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.18"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.69"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.18"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.19"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.52"
-            },
             "id": "il.switch.18-19-52",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.18"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.19"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.52"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.19"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.20"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.50"
-            },
             "id": "il.switch.19-20-50",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.19"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.20"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.50"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.21"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.20"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.51"
-            },
             "id": "il.switch.21-20-51",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.21"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.20"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.51"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.22"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.23"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.41"
-            },
             "id": "il.switch.22-23-41",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.22"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.23"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.41"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.24"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.23"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.42"
-            },
             "id": "il.switch.24-23-42",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.24"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.23"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.42"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.24"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.25"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.43"
-            },
             "id": "il.switch.24-25-43",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.24"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.25"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.43"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.27"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.28"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.46"
-            },
             "id": "il.switch.27-28-46",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.27"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.28"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.46"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.29"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.28"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.47"
-            },
             "id": "il.switch.29-28-47",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.29"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.28"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.47"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.31"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.32"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.48"
-            },
             "id": "il.switch.31-32-48",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.31"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.32"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.48"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.35"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.36"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.49"
-            },
             "id": "il.switch.35-36-49",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.35"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.36"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.49"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.37"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.36"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.69"
-            },
             "id": "il.switch.37-36-69",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.37"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.36"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.69"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.37"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.38"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.53"
-            },
             "id": "il.switch.37-38-53",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.37"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.38"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.53"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.39"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.38"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.50"
-            },
             "id": "il.switch.39-38-50",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.39"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.38"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.50"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.39"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.40"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.51"
-            },
             "id": "il.switch.39-40-51",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.39"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.40"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.51"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.58"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.56"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.57"
-            },
             "id": "il.switch.58-56-57",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.58"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.56"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.57"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.58"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.59"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.64"
-            },
             "id": "il.switch.58-59-64",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.58"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.59"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.64"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.60"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.59"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.65"
-            },
             "id": "il.switch.60-59-65",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.60"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.59"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.65"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.60"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.61"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.66"
-            },
             "id": "il.switch.60-61-66",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.60"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.61"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.66"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.62"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.61"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.67"
-            },
             "id": "il.switch.62-61-67",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.62"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.61"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.67"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.62"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.63"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.68"
-            },
             "id": "il.switch.62-63-68",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.62"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.63"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.68"
+                }
+            }
         }
     ],
     "track_section_links": [
@@ -5108,24 +5180,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.1-0-41"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.1-0-41"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.1_BEGIN-0_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.0_BEGIN-0_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.1_BEGIN-41_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.41_BEGIN-41_END"
                             }
                         ]
                     },
@@ -5356,24 +5416,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.3-2-43"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.3-2-43"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.3_BEGIN-2_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.2_END-2_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.3_BEGIN-43_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.43_BEGIN-43_END"
                             }
                         ]
                     },
@@ -5604,24 +5652,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.5-6-44"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.5-6-44"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.5_END-6_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.6_BEGIN-6_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.5_END-44_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.44_BEGIN-44_END"
                             }
                         ]
                     },
@@ -5852,24 +5888,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.7-6-45"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.7-6-45"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.7_BEGIN-6_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.6_END-6_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.7_BEGIN-45_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.45_BEGIN-45_END"
                             }
                         ]
                     },
@@ -6100,24 +6124,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.9-10-54"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.9-10-54"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.9_END-10_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.10_BEGIN-10_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.9_END-54_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.54_BEGIN-54_END"
                             }
                         ]
                     },
@@ -6327,24 +6339,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.11-10-48"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.11-10-48"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.11_BEGIN-10_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.10_END-10_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.11_BEGIN-48_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.48_BEGIN-48_END"
                             }
                         ]
                     },
@@ -6360,24 +6360,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.11-12-55"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.11-12-55"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.11_END-12_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.12_BEGIN-12_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.11_END-55_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.55_BEGIN-55_END"
                             }
                         ]
                     },
@@ -7059,24 +7047,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.17-16-49"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.17-16-49"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.17_BEGIN-16_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.16_END-16_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.17_BEGIN-49_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.49_BEGIN-49_END"
                             }
                         ]
                     },
@@ -7092,24 +7068,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.17-18-69"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.17-18-69"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.17_END-18_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.18_BEGIN-18_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.17_END-69_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.69_BEGIN-69_END"
                             }
                         ]
                     },
@@ -7222,24 +7186,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.18-19-52"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.18-19-52"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.18_END-19_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.19_BEGIN-19_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.18_END-52_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.52_BEGIN-52_END"
                             }
                         ]
                     },
@@ -7352,24 +7304,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.19-20-50"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.19-20-50"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.19_END-20_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.20_BEGIN-20_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.19_END-50_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.50_BEGIN-50_END"
                             }
                         ]
                     },
@@ -7554,24 +7494,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.21-20-51"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.21-20-51"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.21_BEGIN-20_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.20_END-20_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.21_BEGIN-51_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.51_BEGIN-51_END"
                             }
                         ]
                     },
@@ -7638,24 +7566,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.22-23-41"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.22-23-41"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.22_BEGIN-23_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.23_BEGIN-23_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.22_BEGIN-41_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.41_END-41_BEGIN"
                             }
                         ]
                     },
@@ -7865,24 +7781,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.24-23-42"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.24-23-42"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.24_BEGIN-23_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.23_END-23_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.24_BEGIN-42_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.42_BEGIN-42_END"
                             }
                         ]
                     },
@@ -7898,24 +7802,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.24-25-43"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.24-25-43"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.24_END-25_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.25_BEGIN-25_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.24_END-43_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.43_END-43_BEGIN"
                             }
                         ]
                     },
@@ -8264,24 +8156,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.27-28-46"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.27-28-46"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.27_END-28_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.28_BEGIN-28_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.27_END-46_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.46_BEGIN-46_END"
                             }
                         ]
                     },
@@ -8512,24 +8392,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.29-28-47"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.29-28-47"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.29_BEGIN-28_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.28_END-28_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.29_BEGIN-47_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.47_BEGIN-47_END"
                             }
                         ]
                     },
@@ -8760,24 +8628,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.31-32-48"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.31-32-48"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.31_END-32_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.32_BEGIN-32_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.31_END-48_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.48_END-48_BEGIN"
                             }
                         ]
                     },
@@ -9244,24 +9100,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.35-36-49"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.35-36-49"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.35_END-36_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.36_BEGIN-36_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.35_END-49_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.49_END-49_BEGIN"
                             }
                         ]
                     },
@@ -9471,24 +9315,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.37-36-69"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.37-36-69"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.37_BEGIN-36_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.36_END-36_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.37_BEGIN-69_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.69_END-69_BEGIN"
                             }
                         ]
                     },
@@ -9504,24 +9336,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.37-38-53"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.37-38-53"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.37_END-38_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.38_BEGIN-38_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.37_END-53_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.53_BEGIN-53_END"
                             }
                         ]
                     },
@@ -9731,24 +9551,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.39-38-50"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.39-38-50"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.39_BEGIN-38_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.38_END-38_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.39_BEGIN-50_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.50_END-50_BEGIN"
                             }
                         ]
                     },
@@ -9764,24 +9572,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.39-40-51"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.39-40-51"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.39_END-40_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.40_BEGIN-40_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.39_END-51_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.51_END-51_BEGIN"
                             }
                         ]
                     },
@@ -11813,24 +11609,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.58-56-57"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.58-56-57"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.58_BEGIN-56_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.56_END-56_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.58_BEGIN-57_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.57_END-57_BEGIN"
                             }
                         ]
                     },
@@ -11846,24 +11630,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.58-59-64"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.58-59-64"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.58_END-59_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.59_BEGIN-59_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.58_END-64_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.64_BEGIN-64_END"
                             }
                         ]
                     },
@@ -12073,24 +11845,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.60-59-65"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.60-59-65"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.60_BEGIN-59_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.59_END-59_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.60_BEGIN-65_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.65_END-65_BEGIN"
                             }
                         ]
                     },
@@ -12106,24 +11866,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.60-61-66"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.60-61-66"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.60_END-61_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.61_BEGIN-61_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.60_END-66_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.66_BEGIN-66_END"
                             }
                         ]
                     },
@@ -12333,24 +12081,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.62-61-67"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.62-61-67"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.62_BEGIN-61_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.61_END-61_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.62_BEGIN-67_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.67_END-67_BEGIN"
                             }
                         ]
                     },
@@ -12366,24 +12102,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.62-63-68"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.62-63-68"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.62_END-63_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.63_BEGIN-63_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.62_END-68_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.68_BEGIN-68_END"
                             }
                         ]
                     },

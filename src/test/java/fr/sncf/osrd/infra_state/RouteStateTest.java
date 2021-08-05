@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
+import fr.sncf.osrd.infra.trackgraph.SwitchGroup;
 import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
@@ -27,11 +27,14 @@ import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
+import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.utils.PathUtils;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
+
+import java.util.Map;
 
 public class RouteStateTest {
     
@@ -76,7 +79,7 @@ public class RouteStateTest {
     }
 
     /**
-     * Check that the route waits until a switch is in the right position before
+     * Check that the route waits until a switch is in the right group before
      * going into the RESERVED state.
      */
     @Test
@@ -86,10 +89,10 @@ public class RouteStateTest {
 
         config.trainSchedules.clear();
 
-        infra.switches.iterator().next().positionChangeDelay = 10;
+        infra.switches.iterator().next().groupChangeDelay = 10;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
 
         RouteState routeState = sim.infraState.getRouteState(3);
         makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
@@ -100,7 +103,7 @@ public class RouteStateTest {
     }
 
     /**
-     * Check that the route waits until a switch is in the right position before
+     * Check that the route waits until a switch is in the right group before
      * going into the CBTC_RESERVED state.
      */
     @Test
@@ -110,10 +113,10 @@ public class RouteStateTest {
 
         config.trainSchedules.clear();
 
-        infra.switches.iterator().next().positionChangeDelay = 10;
+        infra.switches.iterator().next().groupChangeDelay = 10;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
 
         RouteState routeState = sim.infraState.getRouteState(3);
         makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
@@ -124,7 +127,7 @@ public class RouteStateTest {
     }
 
     /**
-     * Check that the route waits until two switches are in the right position
+     * Check that the route waits until two switches are in the right group
      * before going into the RESERVED state.
      */
     @Test
@@ -134,17 +137,26 @@ public class RouteStateTest {
 
         config.trainSchedules.clear();
 
+        infra.switchTypes.put(RJSSwitchType.CLASSIC_NAME, RJSSwitchType.CLASSIC_TYPE);
         var oldSwitch = infra.switches.iterator().next();
-        var newSwitch = new RJSSwitch("switch-foo-42", oldSwitch.base, oldSwitch.left,
-                oldSwitch.right, 42);
+        var newSwitch = new RJSSwitch(
+                "switch-foo-42",
+                RJSSwitchType.CLASSIC_NAME,
+                Map.of(
+                    "base", oldSwitch.ports.get("base"),
+                    "left", oldSwitch.ports.get("left"),
+                    "right", oldSwitch.ports.get("right")
+                ),
+                42
+        );
         infra.switches.add(newSwitch);
         for (var route : infra.routes)
             if (route.id.equals("rt.C3-S7"))
-                route.switchesPosition.put(new ID<>(newSwitch.id), RJSSwitch.Position.LEFT);
+                route.switchesGroup.put(new ID<>(newSwitch.id), "LEFT");
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
-        sim.infraState.getSwitchState(1).setPosition(sim, SwitchPosition.RIGHT);
+        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
+        sim.infraState.getSwitchState(1).setGroup(sim, new SwitchGroup("RIGHT"));
 
         RouteState routeState = sim.infraState.getRouteState(3);
 
@@ -158,7 +170,7 @@ public class RouteStateTest {
     }
 
     /**
-     * Check that the route waits until two switches are in the right position
+     * Check that the route waits until two switches are in the right group
      * before going into the CBTC_RESERVED state.
      */
     @Test
@@ -168,16 +180,26 @@ public class RouteStateTest {
 
         config.trainSchedules.clear();
 
+        infra.switchTypes.put(RJSSwitchType.CLASSIC_NAME, RJSSwitchType.CLASSIC_TYPE);
         var oldSwitch = infra.switches.iterator().next();
-        var newSwitch = new RJSSwitch("switch-foo-42", oldSwitch.base, oldSwitch.left, oldSwitch.right, 42);
+        var newSwitch = new RJSSwitch(
+                "switch-foo-42",
+                  RJSSwitchType.CLASSIC_NAME,
+                  Map.of(
+                    "base", oldSwitch.ports.get("base"),
+                    "left", oldSwitch.ports.get("base"),
+                    "right", oldSwitch.ports.get("right")
+                ),
+                42
+        );
         infra.switches.add(newSwitch);
         for (var route : infra.routes)
             if (route.id.equals("rt.C3-S7"))
-                route.switchesPosition.put(new ID<>(newSwitch.id), RJSSwitch.Position.LEFT);
+                route.switchesGroup.put(new ID<>(newSwitch.id), "LEFT");
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
-        sim.infraState.getSwitchState(1).setPosition(sim, SwitchPosition.RIGHT);
+        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
+        sim.infraState.getSwitchState(1).setGroup(sim, new SwitchGroup("RIGHT"));
 
         RouteState routeState = sim.infraState.getRouteState(3);
         makeFunctionEvent(sim, 0, () -> routeState.cbtcReserve(sim));
@@ -421,10 +443,10 @@ public class RouteStateTest {
 
         config.trainSchedules.clear();
 
-        infra.switches.iterator().next().positionChangeDelay = 10;
+        infra.switches.iterator().next().groupChangeDelay = 10;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
 
         RouteState routeState = sim.infraState.getRouteState(3);
         routeState.reserve(sim);
@@ -442,10 +464,10 @@ public class RouteStateTest {
 
         config.trainSchedules.clear();
 
-        infra.switches.iterator().next().positionChangeDelay = 10;
+        infra.switches.iterator().next().groupChangeDelay = 10;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
 
         RouteState routeState = sim.infraState.getRouteState(3);
         routeState.reserve(sim);
@@ -463,10 +485,10 @@ public class RouteStateTest {
 
         config.trainSchedules.clear();
 
-        infra.switches.iterator().next().positionChangeDelay = 10;
+        infra.switches.iterator().next().groupChangeDelay = 10;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
 
         RouteState routeState = sim.infraState.getRouteState(3);
         routeState.cbtcReserve(sim);

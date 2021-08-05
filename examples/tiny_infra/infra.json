@@ -54,7 +54,7 @@
     {
       "id": "rt.buffer_stop_a-C1",
       "entry_point": "buffer_stop_a",
-      "switches_position": {},
+      "switches_group": {},
       "release_groups": [
         [
           "tvd.foo_a"
@@ -64,7 +64,7 @@
     {
       "id": "rt.buffer_stop_b-C3",
       "entry_point": "buffer_stop_b",
-      "switches_position": {},
+      "switches_group": {},
       "release_groups": [
         [
           "tvd.foo_b"
@@ -74,7 +74,7 @@
     {
       "id": "rt.C1-S7",
       "entry_point": "tde.foo_a-switch_foo",
-      "switches_position": {
+      "switches_group": {
         "il.switch_foo": "RIGHT"
       },
       "release_groups": [
@@ -89,7 +89,7 @@
     {
       "id": "rt.C3-S7",
       "entry_point": "tde.foo_b-switch_foo",
-      "switches_position": {
+      "switches_group": {
         "il.switch_foo": "LEFT"
       },
       "release_groups": [
@@ -104,7 +104,7 @@
     {
       "id": "rt.S7-buffer_stop_c",
       "entry_point": "tde.track-bar",
-      "switches_position": {},
+      "switches_group": {},
       "release_groups": [
         [
           "tvd.bar_a"
@@ -114,7 +114,7 @@
     {
       "id": "rt.buffer_stop_c-C2",
       "entry_point": "buffer_stop_c",
-      "switches_position": {},
+      "switches_group": {},
       "release_groups": [
         [
           "tvd.bar_a"
@@ -124,7 +124,7 @@
     {
       "id": "rt.C2-C6",
       "entry_point": "tde.track-bar",
-      "switches_position": {},
+      "switches_group": {},
       "release_groups": [
         [
           "tvd.track"
@@ -134,7 +134,7 @@
     {
       "id": "rt.C6-buffer_stop_a",
       "entry_point": "tde.switch_foo-track",
-      "switches_position": {
+      "switches_group": {
         "il.switch_foo": "RIGHT"
       },
       "release_groups": [
@@ -149,7 +149,7 @@
     {
       "id": "rt.C6-buffer_stop_b",
       "entry_point": "tde.switch_foo-track",
-      "switches_position": {
+      "switches_group": {
         "il.switch_foo": "LEFT"
       },
       "release_groups": [
@@ -362,60 +362,87 @@
       }
     },
     {
-      "name": "switch_signal",
-      "arguments": [
-        {
-          "type": "SWITCH",
-          "name": "switch"
-        },
-        {
-          "type": "ROUTE",
-          "name": "left_route"
-        },
-        {
-          "type": "ROUTE",
-          "name": "right_route"
-        }
-      ],
-      "return_type": "ASPECT_SET",
-      "body": {
-        "type": "match",
+			"name": "switch_signal",
+			"arguments": [
+				{
+					"type": "SIGNAL",
+					"name": "signal"
+				},
+				{
+					"type": "SWITCH",
+					"name": "switch"
+				}
+			],
+			"return_type": "ASPECT_SET",
+			"body": {
+        "type": "optional_match",
+        "name": "route",
         "expr": {
-          "type": "argument_ref",
-          "argument_name": "switch"
+          "type": "reserved_route",
+          "signal": {
+            "type": "argument_ref",
+            "argument_name": "signal"
+          }
         },
-        "branches": {
-          "LEFT": {
-            "type": "call",
-            "function": "check_route",
-            "arguments": [
+        "case_none": {
+          "type": "aspect_set",
+          "members": [
+            {
+              "aspect": "RED"
+            }
+          ]
+        },
+        "case_some": {
+          "type": "condition",
+          "if": {
+            "type": "or",
+            "exprs": [
               {
-                "type": "argument_ref",
-                "argument_name": "left_route"
+                "type": "route_has_state",
+                "route": {
+                  "type": "optional_match_ref",
+                  "match_name": "route"
+                },
+                "state": "CONFLICT"
+              },
+              {
+                "type": "route_has_state",
+                "route": {
+                  "type": "optional_match_ref",
+                  "match_name": "route"
+                },
+                "state": "OCCUPIED"
+              },
+              {
+                "type": "route_has_state",
+                "route": {
+                  "type": "optional_match_ref",
+                  "match_name": "route"
+                },
+                "state": "REQUESTED"
               }
             ]
+
           },
-          "RIGHT": {
-            "type": "call",
-            "function": "check_route",
-            "arguments": [
-              {
-                "type": "argument_ref",
-                "argument_name": "right_route"
-              }
-            ]
-          },
-          "MOVING": {
+          "then": {
             "type": "aspect_set",
             "members": [
               {
-                "aspect": "RED"
+                "aspect": "YELLOW"
+              }
+            ]
+          },
+          "else": {
+            "type": "aspect_set",
+            "members": [
+              {
+                "aspect": "GREEN"
               }
             ]
           }
-        }
-      }
-    }
+				}
+			}
+		}
   ],
   "speed_sections": [
     {
@@ -424,21 +451,49 @@
       "speed": 16.666666666666668
     }
   ],
+  "switch_types": {
+    "classic_switch": {
+      "ports": [
+        "base",
+        "left",
+        "right"
+      ],
+      "groups": {
+        "LEFT": [
+          {
+            "src": "base",
+            "dst": "left",
+            "bidirectional": true
+          }
+        ],
+        "RIGHT": [
+          {
+            "src": "base",
+            "dst": "right",
+            "bidirectional": true
+          }
+        ]
+      }
+    }
+  },
   "switches": [
     {
-      "base": {
-        "endpoint": "BEGIN",
-        "section": "ne.micro.foo_to_bar"
-      },
       "id": "il.switch_foo",
-      "position_change_delay": 6,
-      "left": {
-        "endpoint": "END",
-        "section": "ne.micro.foo_b"
-      },
-      "right": {
-        "endpoint": "END",
-        "section": "ne.micro.foo_a"
+      "switch_type": "classic_switch",
+      "group_change_delay": 6,
+      "ports": {
+        "base": {
+          "endpoint": "BEGIN",
+          "section": "ne.micro.foo_to_bar"
+        },
+        "left": {
+          "endpoint": "END",
+          "section": "ne.micro.foo_b"
+        },
+        "right": {
+          "endpoint": "END",
+          "section": "ne.micro.foo_a"
+        }
       }
     }
   ],
@@ -495,6 +550,7 @@
           "radius": 2000
         }
       ],
+      "endpoints_coords": [[10341, -141], [10200, 0]],
       "operational_points": [
         {
           "position": 100,
@@ -556,6 +612,7 @@
         }
       ],
       "curves": [],
+      "endpoints_coords": [[10200, 0], [200, 0]],
       "operational_points": [],
       "route_waypoints": [
         {
@@ -604,16 +661,12 @@
             "function": "switch_signal",
             "arguments": [
               {
+                "type": "signal",
+                "signal": "il.sig.C6"
+              },
+              {
                 "type": "switch",
                 "switch": "il.switch_foo"
-              },
-              {
-                "type": "route",
-                "route": "rt.C6-buffer_stop_a"
-              },
-              {
-                "type": "route",
-                "route": "rt.C6-buffer_stop_b"
               }
             ]
           },
@@ -661,6 +714,7 @@
           "radius": 2000
         }
       ],
+      "endpoints_coords": [[10341, 141], [10200, 0]],
       "operational_points": [
         {
           "position": 100,
@@ -711,6 +765,7 @@
       "length": 200,
       "slopes": [],
       "curves": [],
+      "endpoints_coords": [[200, 0], [0, 0]],
       "operational_points": [
         {
           "position": 100,
