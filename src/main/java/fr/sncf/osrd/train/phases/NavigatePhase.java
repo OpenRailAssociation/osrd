@@ -72,7 +72,7 @@ public abstract class NavigatePhase {
         // create a map switch index -> switch id
         var nodeSwitch = new HashMap<Integer, String>();
         for (var route : path.routePath) {
-            for (var s : route.switchesPosition.keySet()) {
+            for (var s : route.switchesGroup.keySet()) {
                 nodeSwitch.put(s.index, s.id);
             }
         }

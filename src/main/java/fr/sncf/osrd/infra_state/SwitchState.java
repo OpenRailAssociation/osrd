@@ -1,62 +1,63 @@
 package fr.sncf.osrd.infra_state;
 
-import static fr.sncf.osrd.infra.trackgraph.SwitchPosition.LEFT;
-import static fr.sncf.osrd.infra.trackgraph.SwitchPosition.MOVING;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.railscript.value.RSMatchable;
-import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.trackgraph.Switch;
-import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra_state.events.SwitchMoveEvent;
 import fr.sncf.osrd.simulation.EntityChange;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
+import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 
 /**
  * The state of the route is the actual entity which interacts with the rest of the infrastructure
  */
-public final class SwitchState implements RSMatchable {
+public final class SwitchState implements RSValue {
     public final Switch switchRef;
 
-    private SwitchPosition position;
+    private String group;
 
     public SwitchState(Switch switchRef) {
         this.switchRef = switchRef;
-        this.position = LEFT;
+        this.group = switchRef.getDefaultGroup();
     }
 
-    public SwitchPosition getPosition() {
-        return position;
+    public String getGroup() {
+        return group;
     }
 
     /**
      * Return currently active branch
      */
-    public TrackSection getBranch() {
-        switch (position) {
-            case LEFT:
-                return switchRef.leftTrackSection;
-            case RIGHT:
-                return switchRef.rightTrackSection;
-            default:
-                return null;
+    public TrackSection getBranch(TrackSection trackSection, EdgeDirection direction) {
+        var endpoint = direction == EdgeDirection.START_TO_STOP
+                ? EdgeEndpoint.END
+                : EdgeEndpoint.BEGIN;
+        var edges = switchRef.groups.get(group);
+        for (var edge : edges) {
+            if (edge.src.trackSection.id.equals(trackSection.id) && edge.src.endpoint == endpoint) {
+                return edge.dst.trackSection;
+            }
         }
+        return null;
     }
 
     /**
-     * Change position of the switch
+     * Change group of the switch
      */
-    public void setPosition(Simulation sim, SwitchPosition position) throws SimulationError {
-        if (this.position != position) {
-            var change = new SwitchPositionChange(sim, this, position);
-            change.apply(sim, this);
-            sim.publishChange(change);
-            for (var signal : switchRef.signalSubscribers) {
-                var signalState = sim.infraState.getSignalState(signal.index);
-                signalState.notifyChange(sim);
-            }
+    public void setGroup(Simulation sim, String newGroup) throws SimulationError {
+        if (group == null && newGroup == null)
+            return;
+        if (group != null && group.equals(newGroup))
+            return;
+        var change = new SwitchGroupChange(sim, this, newGroup);
+        change.apply(sim, this);
+        sim.publishChange(change);
+        for (var signal : switchRef.signalSubscribers) {
+            var signalState = sim.infraState.getSignalState(signal.index);
+            signalState.notifyChange(sim);
         }
     }
 
@@ -64,45 +65,42 @@ public final class SwitchState implements RSMatchable {
     /**
      * Starts a switch change that will happen after the switch's delay
      */
-    public void requestPositionChange(
+    public void requestGroupChange(
             Simulation sim,
-            SwitchPosition position,
+            String newGroup,
             RouteState requestingRoute
     ) throws SimulationError {
-        if (this.position != position) {
-            var delay = switchRef.positionChangeDelay;
-            SwitchMoveEvent.plan(sim, sim.getTime() + delay, position, this, requestingRoute);
-            setPosition(sim, MOVING);
+        if (!group.equals(newGroup)) {
+            var delay = switchRef.groupChangeDelay;
+            SwitchMoveEvent.plan(sim, sim.getTime() + delay, newGroup, this, requestingRoute);
+            setGroup(sim, SwitchState.MOVING);
         }
     }
 
     @Override
-    public int getEnumValue() {
-        return position.ordinal();
-    }
-
-    @Override
-    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+    @SuppressFBWarnings("BC_UNCONFIRMED_CAST")
     public boolean deepEquals(RSValue other) {
         if (other.getClass() != SwitchState.class)
             return false;
         var o = (SwitchState) other;
-        return o.position == position && o.switchRef == switchRef;
+        if (group == null)
+            return o.group == null;
+        return group.equals(o.group) && switchRef.equals(o.switchRef);
     }
 
-    public static final class SwitchPositionChange extends EntityChange<SwitchState, Void> {
-        SwitchPosition position;
+    public static final class SwitchGroupChange extends EntityChange<SwitchState, Void> {
+        String group;
         public final int switchIndex;
 
-        protected SwitchPositionChange(Simulation sim, SwitchState entity, SwitchPosition position) {
+        protected SwitchGroupChange(Simulation sim, SwitchState entity, String group) {
             super(sim);
-            this.position = position;
+            this.group = group;
             this.switchIndex = entity.switchRef.switchIndex;
         }
 
         @Override
         public Void apply(Simulation sim, SwitchState entity) {
-            entity.position = position;
+            entity.group = group;
             return null;
         }
 
@@ -113,7 +111,9 @@ public final class SwitchState implements RSMatchable {
 
         @Override
         public String toString() {
-            return String.format("SwitchPositionChange { switch: %d, position: %s }", switchIndex, position);
+            return String.format("SwitchGroupChange { switch: %d, group: %s }", switchIndex, group);
         }
     }
+
+    public static final String MOVING = null;
 }

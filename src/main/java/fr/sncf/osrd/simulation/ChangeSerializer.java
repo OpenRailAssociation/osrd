@@ -20,7 +20,6 @@ import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.SignalState;
-import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.simulation.changelog.ChangeLog;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.train.TrackSectionRange;
@@ -91,7 +90,6 @@ public class ChangeSerializer {
                     .withSubtype(RSBool.class, "bool")
                     .withSubtype(SignalState.class, "signal")
                     .withSubtype(RouteState.class, "route")
-                    .withSubtype(SwitchState.class, "switch")
             )
             .add(PolymorphicJsonAdapterFactory.of(TrainDecisionMaker.class, "trainDecisionMakerType")
                     .withSubtype(DefaultTrainDecisionMaker.class, "defaultTrainDecisionMakerType")
