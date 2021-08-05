@@ -11,6 +11,7 @@ import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import java.util.HashMap;
 public class OptionalTests {
 
     @Test
+    @Disabled("See issue https://github.com/DGEXSolutions/osrd-core/issues/129")
     public void testSignalsFunctionWithOptionals() throws InvalidInfraException, SimulationError {
         final var infra = getBaseInfra("tiny_infra/infra_optional.json");
         final var config = getBaseConfig("tiny_infra/config_railjson_optional.json");
