@@ -53,10 +53,10 @@ public class Train {
                 0
         );
 
-        ActivateRoute.trainCreation(sim, initialState);
 
         var trainCreatedChange = new TrainCreatedChange(sim, schedule, initialState);
         var train = trainCreatedChange.apply(sim);
+        ActivateRoute.trainCreation(sim, initialState);
         sim.publishChange(trainCreatedChange);
         train.scheduleStateChange(sim);
         return train;
