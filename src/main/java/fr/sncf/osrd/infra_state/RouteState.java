@@ -118,12 +118,14 @@ public final class RouteState implements RSMatchable {
     private void requestSwitchPositionChange(Simulation sim) throws SimulationError {
         // Set the switches in the moving position
         movingSwitchesLeft = 0;
-        for (var switchPos : route.switchesPosition.entrySet()) {
-            var switchState = sim.infraState.getSwitchState(switchPos.getKey().switchIndex);
-            boolean isRightPosition = switchState.getPosition().equals(switchPos.getValue());
-            if (!isRightPosition) {
+        for (var switchGrp : route.switchesGroup.entrySet()) {
+            var switchRef = switchGrp.getKey();
+            var group = switchGrp.getValue();
+            var switchState = sim.infraState.getSwitchState(switchRef.switchIndex);
+            boolean isActiveGrp = switchState.getGroup().equals(group);
+            if (!isActiveGrp) {
                 movingSwitchesLeft++;
-                switchState.requestPositionChange(sim, switchPos.getValue(), this);
+                switchState.requestGroupChange(sim, group, this);
             }
         }
     }
@@ -210,9 +212,11 @@ public final class RouteState implements RSMatchable {
      * */
     public void initialReserve(Simulation sim, TrainState trainState) throws SimulationError {
         // Set the switches, no delay and waiting this time
-        for (var switchPos : route.switchesPosition.entrySet()) {
-            var switchState = sim.infraState.getSwitchState(switchPos.getKey().switchIndex);
-            switchState.setPosition(sim, switchPos.getValue());
+        for (var switchGrp : route.switchesGroup.entrySet()) {
+            var switchRef = switchGrp.getKey();
+            var group = switchGrp.getValue();
+            var switchState = sim.infraState.getSwitchState(switchRef.switchIndex);
+            switchState.setGroup(sim, group);
         }
 
         // Get the current phase of the train

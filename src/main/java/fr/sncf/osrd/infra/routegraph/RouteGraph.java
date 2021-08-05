@@ -8,6 +8,10 @@ import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.infra.TVDSectionPath;
+import fr.sncf.osrd.infra.trackgraph.Switch;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.infra.trackgraph.Waypoint;
+import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.TrackSectionLocation;
@@ -58,14 +62,14 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 String id,
                 SortedArraySet<TVDSection> tvdSections,
                 List<SortedArraySet<TVDSection>> releaseGroups,
-                HashMap<Switch, SwitchPosition> switchesPosition,
+                HashMap<Switch, String> switchesGroup,
                 Waypoint entryPoint,
                 Waypoint exitPoint,
                 Signal entrySignal,
                 EdgeDirection entryDirection
         ) throws InvalidInfraException {
             try {
-                var tvdSectionsPath = generatePath(id, entryPoint, exitPoint, entryDirection, switchesPosition);
+                var tvdSectionsPath = generatePath(id, entryPoint, exitPoint, entryDirection, switchesGroup);
 
                 var length = 0;
                 for (var tvdSectionPath : tvdSectionsPath)
@@ -96,7 +100,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                         length,
                         releaseGroups,
                         tvdSectionsPath,
-                        switchesPosition,
+                        switchesGroup,
                         entrySignal);
 
                 routeGraph.routeMap.put(id, route);
@@ -142,7 +146,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 Waypoint startWaypoint,
                 Waypoint exitWaypoint,
                 EdgeDirection entryDirection,
-                HashMap<Switch, SwitchPosition> switchPositions
+                HashMap<Switch, String> switchPositions
         ) throws InvalidInfraException {
             var res = new ArrayList<TVDSectionPath>();
 
@@ -234,7 +238,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 String routeId,
                 TrackSection edge,
                 EdgeDirection direction,
-                Map<Switch, SwitchPosition> switchPositions
+                HashMap<Switch, String> switchPositions
         ) throws InvalidInfraException {
             var trackSectionEndNode = direction == START_TO_STOP ? edge.endNode : edge.startNode;
             var neighbors = direction == START_TO_STOP ? edge.endNeighbors : edge.startNeighbors;
@@ -252,18 +256,17 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 throw new InvalidInfraException("route " + routeId + " stumbled upon an intersection without a switch");
 
             var switchNode = (Switch) intersectionNode;
-            var switchPosition = switchPositions.get(switchNode);
-            if (switchPosition == null)
+            var groupPosition = switchPositions.get(switchNode);
+            if (groupPosition == null)
                 throw new InvalidInfraException(
                         String.format("Missing switch position '%s' for route: %s", switchNode.id, routeId));
-            switch (switchPosition) {
-                case LEFT:
-                    return switchNode.leftTrackSection;
-                case RIGHT:
-                    return switchNode.rightTrackSection;
-                default:
-                    throw new InvalidInfraException("A switch position can't be set to MOVING to define a route.");
+            for (var link : switchNode.groups.get(groupPosition)) {
+                if (link.src.trackSection.id.equals(edge.id)) {
+                    return link.dst.trackSection;
+                }
             }
+
+            throw new InvalidInfraException("The next track section is not defined by the current group");
         }
     }
 }

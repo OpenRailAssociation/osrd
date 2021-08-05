@@ -42,6 +42,31 @@
             ]
         }
     ],
+    "switch_types": {
+        "classic_switch": {
+            "ports": [
+                "base",
+                "left",
+                "right"
+            ],
+            "groups": {
+                "LEFT": [
+                    {
+                        "src": "base",
+                        "dst": "left",
+                        "bidirectional": true
+                    }
+                ],
+                "RIGHT": [
+                    {
+                        "src": "base",
+                        "dst": "right",
+                        "bidirectional": true
+                    }
+                ]
+            }
+        }
+    },
     "operational_points": [],
     "routes": [
         {
@@ -49,7 +74,7 @@
             "entry_point": "tde.0_BEGIN",
             "exit_point": "buffer_stop.0",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.0"
@@ -61,7 +86,7 @@
             "entry_point": "buffer_stop.0",
             "exit_point": "tde.0_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.0"
@@ -73,7 +98,7 @@
             "entry_point": "tde.1_BEGIN",
             "exit_point": "tde.1_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.1"
@@ -85,7 +110,7 @@
             "entry_point": "tde.1_END",
             "exit_point": "tde.1_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.1"
@@ -97,7 +122,7 @@
             "entry_point": "tde.2_BEGIN",
             "exit_point": "tde.2_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.2"
@@ -109,7 +134,7 @@
             "entry_point": "tde.2_END",
             "exit_point": "tde.2_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.2"
@@ -121,7 +146,7 @@
             "entry_point": "tde.3_BEGIN",
             "exit_point": "tde.3_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.3"
@@ -133,7 +158,7 @@
             "entry_point": "tde.3_END",
             "exit_point": "tde.3_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.3"
@@ -145,7 +170,7 @@
             "entry_point": "tde.4_BEGIN",
             "exit_point": "tde.4_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.4"
@@ -157,7 +182,7 @@
             "entry_point": "tde.4_END",
             "exit_point": "tde.4_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.4"
@@ -169,7 +194,7 @@
             "entry_point": "tde.5_BEGIN",
             "exit_point": "tde.5_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.5"
@@ -181,7 +206,7 @@
             "entry_point": "tde.5_END",
             "exit_point": "tde.5_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.5"
@@ -193,7 +218,7 @@
             "entry_point": "tde.6_BEGIN",
             "exit_point": "tde.6_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.6"
@@ -205,7 +230,7 @@
             "entry_point": "tde.6_END",
             "exit_point": "tde.6_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.6"
@@ -217,7 +242,7 @@
             "entry_point": "tde.7_BEGIN",
             "exit_point": "tde.7_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.7"
@@ -229,7 +254,7 @@
             "entry_point": "tde.7_END",
             "exit_point": "tde.7_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.7"
@@ -241,7 +266,7 @@
             "entry_point": "tde.8_BEGIN",
             "exit_point": "tde.8_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.8"
@@ -253,7 +278,7 @@
             "entry_point": "tde.8_END",
             "exit_point": "tde.8_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.8"
@@ -265,7 +290,7 @@
             "entry_point": "tde.9_BEGIN",
             "exit_point": "tde.9_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.9"
@@ -277,7 +302,7 @@
             "entry_point": "tde.9_END",
             "exit_point": "tde.9_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.9"
@@ -289,7 +314,7 @@
             "entry_point": "tde.10_BEGIN",
             "exit_point": "tde.10_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.10"
@@ -301,7 +326,7 @@
             "entry_point": "tde.10_END",
             "exit_point": "tde.10_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.10"
@@ -313,7 +338,7 @@
             "entry_point": "tde.11_BEGIN",
             "exit_point": "tde.11_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.11"
@@ -325,7 +350,7 @@
             "entry_point": "tde.11_END",
             "exit_point": "tde.11_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.11"
@@ -337,7 +362,7 @@
             "entry_point": "tde.12_BEGIN",
             "exit_point": "tde.12_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.12"
@@ -349,7 +374,7 @@
             "entry_point": "tde.12_END",
             "exit_point": "tde.12_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.12"
@@ -361,7 +386,7 @@
             "entry_point": "tde.13_BEGIN",
             "exit_point": "tde.13_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.13"
@@ -373,7 +398,7 @@
             "entry_point": "tde.13_END",
             "exit_point": "tde.13_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.13"
@@ -385,7 +410,7 @@
             "entry_point": "tde.14_BEGIN",
             "exit_point": "tde.14_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.14"
@@ -397,7 +422,7 @@
             "entry_point": "tde.14_END",
             "exit_point": "tde.14_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.14"
@@ -409,7 +434,7 @@
             "entry_point": "tde.15_BEGIN",
             "exit_point": "tde.15_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.15"
@@ -421,7 +446,7 @@
             "entry_point": "tde.15_END",
             "exit_point": "tde.15_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.15"
@@ -433,7 +458,7 @@
             "entry_point": "tde.16_BEGIN",
             "exit_point": "tde.16_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.16"
@@ -445,7 +470,7 @@
             "entry_point": "tde.16_END",
             "exit_point": "tde.16_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.16"
@@ -457,7 +482,7 @@
             "entry_point": "tde.17_BEGIN",
             "exit_point": "tde.17_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.17"
@@ -469,7 +494,7 @@
             "entry_point": "tde.17_END",
             "exit_point": "tde.17_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.17"
@@ -481,7 +506,7 @@
             "entry_point": "tde.18_BEGIN",
             "exit_point": "tde.18_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.18"
@@ -493,7 +518,7 @@
             "entry_point": "tde.18_END",
             "exit_point": "tde.18_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.18"
@@ -505,7 +530,7 @@
             "entry_point": "tde.19_BEGIN",
             "exit_point": "tde.19_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.19"
@@ -517,7 +542,7 @@
             "entry_point": "tde.19_END",
             "exit_point": "tde.19_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.19"
@@ -529,7 +554,7 @@
             "entry_point": "tde.20_BEGIN",
             "exit_point": "tde.20_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.20"
@@ -541,7 +566,7 @@
             "entry_point": "tde.20_END",
             "exit_point": "tde.20_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.20"
@@ -553,7 +578,7 @@
             "entry_point": "tde.21_BEGIN",
             "exit_point": "buffer_stop.21",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.21"
@@ -565,7 +590,7 @@
             "entry_point": "buffer_stop.21",
             "exit_point": "tde.21_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.21"
@@ -577,7 +602,7 @@
             "entry_point": "tde.22_BEGIN",
             "exit_point": "buffer_stop.22",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.22"
@@ -589,7 +614,7 @@
             "entry_point": "buffer_stop.22",
             "exit_point": "tde.22_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.22"
@@ -601,7 +626,7 @@
             "entry_point": "tde.23_BEGIN",
             "exit_point": "tde.23_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.23"
@@ -613,7 +638,7 @@
             "entry_point": "tde.23_END",
             "exit_point": "tde.23_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.23"
@@ -625,7 +650,7 @@
             "entry_point": "tde.24_BEGIN",
             "exit_point": "tde.24_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.24"
@@ -637,7 +662,7 @@
             "entry_point": "tde.24_END",
             "exit_point": "tde.24_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.24"
@@ -649,7 +674,7 @@
             "entry_point": "tde.25_BEGIN",
             "exit_point": "tde.25_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.25"
@@ -661,7 +686,7 @@
             "entry_point": "tde.25_END",
             "exit_point": "tde.25_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.25"
@@ -673,7 +698,7 @@
             "entry_point": "tde.26_BEGIN",
             "exit_point": "tde.26_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.26"
@@ -685,7 +710,7 @@
             "entry_point": "tde.26_END",
             "exit_point": "tde.26_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.26"
@@ -697,7 +722,7 @@
             "entry_point": "tde.27_BEGIN",
             "exit_point": "tde.27_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.27"
@@ -709,7 +734,7 @@
             "entry_point": "tde.27_END",
             "exit_point": "tde.27_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.27"
@@ -721,7 +746,7 @@
             "entry_point": "tde.28_BEGIN",
             "exit_point": "tde.28_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.28"
@@ -733,7 +758,7 @@
             "entry_point": "tde.28_END",
             "exit_point": "tde.28_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.28"
@@ -745,7 +770,7 @@
             "entry_point": "tde.29_BEGIN",
             "exit_point": "tde.29_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.29"
@@ -757,7 +782,7 @@
             "entry_point": "tde.29_END",
             "exit_point": "tde.29_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.29"
@@ -769,7 +794,7 @@
             "entry_point": "tde.30_BEGIN",
             "exit_point": "tde.30_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.30"
@@ -781,7 +806,7 @@
             "entry_point": "tde.30_END",
             "exit_point": "tde.30_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.30"
@@ -793,7 +818,7 @@
             "entry_point": "tde.31_BEGIN",
             "exit_point": "tde.31_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.31"
@@ -805,7 +830,7 @@
             "entry_point": "tde.31_END",
             "exit_point": "tde.31_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.31"
@@ -817,7 +842,7 @@
             "entry_point": "tde.32_BEGIN",
             "exit_point": "tde.32_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.32"
@@ -829,7 +854,7 @@
             "entry_point": "tde.32_END",
             "exit_point": "tde.32_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.32"
@@ -841,7 +866,7 @@
             "entry_point": "tde.33_BEGIN",
             "exit_point": "tde.33_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.33"
@@ -853,7 +878,7 @@
             "entry_point": "tde.33_END",
             "exit_point": "tde.33_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.33"
@@ -865,7 +890,7 @@
             "entry_point": "tde.34_BEGIN",
             "exit_point": "tde.34_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.34"
@@ -877,7 +902,7 @@
             "entry_point": "tde.34_END",
             "exit_point": "tde.34_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.34"
@@ -889,7 +914,7 @@
             "entry_point": "tde.35_BEGIN",
             "exit_point": "tde.35_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.35"
@@ -901,7 +926,7 @@
             "entry_point": "tde.35_END",
             "exit_point": "tde.35_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.35"
@@ -913,7 +938,7 @@
             "entry_point": "tde.36_BEGIN",
             "exit_point": "tde.36_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.36"
@@ -925,7 +950,7 @@
             "entry_point": "tde.36_END",
             "exit_point": "tde.36_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.36"
@@ -937,7 +962,7 @@
             "entry_point": "tde.37_BEGIN",
             "exit_point": "tde.37_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.37"
@@ -949,7 +974,7 @@
             "entry_point": "tde.37_END",
             "exit_point": "tde.37_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.37"
@@ -961,7 +986,7 @@
             "entry_point": "tde.38_BEGIN",
             "exit_point": "tde.38_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.38"
@@ -973,7 +998,7 @@
             "entry_point": "tde.38_END",
             "exit_point": "tde.38_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.38"
@@ -985,7 +1010,7 @@
             "entry_point": "tde.39_BEGIN",
             "exit_point": "tde.39_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.39"
@@ -997,7 +1022,7 @@
             "entry_point": "tde.39_END",
             "exit_point": "tde.39_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.39"
@@ -1009,7 +1034,7 @@
             "entry_point": "tde.40_BEGIN",
             "exit_point": "buffer_stop.40",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.40"
@@ -1021,7 +1046,7 @@
             "entry_point": "buffer_stop.40",
             "exit_point": "tde.40_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.40"
@@ -1033,7 +1058,7 @@
             "entry_point": "tde.41_BEGIN",
             "exit_point": "tde.41_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.41"
@@ -1045,7 +1070,7 @@
             "entry_point": "tde.41_END",
             "exit_point": "tde.41_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.41"
@@ -1057,7 +1082,7 @@
             "entry_point": "tde.42_BEGIN",
             "exit_point": "buffer_stop.42",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.42"
@@ -1069,7 +1094,7 @@
             "entry_point": "buffer_stop.42",
             "exit_point": "tde.42_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.42"
@@ -1081,7 +1106,7 @@
             "entry_point": "tde.43_BEGIN",
             "exit_point": "tde.43_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.43"
@@ -1093,7 +1118,7 @@
             "entry_point": "tde.43_END",
             "exit_point": "tde.43_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.43"
@@ -1105,7 +1130,7 @@
             "entry_point": "tde.44_BEGIN",
             "exit_point": "tde.44_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.44"
@@ -1117,7 +1142,7 @@
             "entry_point": "tde.44_END",
             "exit_point": "tde.44_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.44"
@@ -1129,7 +1154,7 @@
             "entry_point": "tde.45_BEGIN",
             "exit_point": "tde.45_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.45"
@@ -1141,7 +1166,7 @@
             "entry_point": "tde.45_END",
             "exit_point": "tde.45_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.45"
@@ -1153,7 +1178,7 @@
             "entry_point": "tde.46_BEGIN",
             "exit_point": "tde.46_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.46"
@@ -1165,7 +1190,7 @@
             "entry_point": "tde.46_END",
             "exit_point": "tde.46_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.46"
@@ -1177,7 +1202,7 @@
             "entry_point": "tde.47_BEGIN",
             "exit_point": "tde.47_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.47"
@@ -1189,7 +1214,7 @@
             "entry_point": "tde.47_END",
             "exit_point": "tde.47_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.47"
@@ -1201,7 +1226,7 @@
             "entry_point": "tde.48_BEGIN",
             "exit_point": "tde.48_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.48"
@@ -1213,7 +1238,7 @@
             "entry_point": "tde.48_END",
             "exit_point": "tde.48_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.48"
@@ -1225,7 +1250,7 @@
             "entry_point": "tde.49_BEGIN",
             "exit_point": "tde.49_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.49"
@@ -1237,7 +1262,7 @@
             "entry_point": "tde.49_END",
             "exit_point": "tde.49_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.49"
@@ -1249,7 +1274,7 @@
             "entry_point": "tde.50_BEGIN",
             "exit_point": "tde.50_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.50"
@@ -1261,7 +1286,7 @@
             "entry_point": "tde.50_END",
             "exit_point": "tde.50_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.50"
@@ -1273,7 +1298,7 @@
             "entry_point": "tde.51_BEGIN",
             "exit_point": "tde.51_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.51"
@@ -1285,7 +1310,7 @@
             "entry_point": "tde.51_END",
             "exit_point": "tde.51_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.51"
@@ -1297,7 +1322,7 @@
             "entry_point": "tde.52_BEGIN",
             "exit_point": "buffer_stop.52",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.52"
@@ -1309,7 +1334,7 @@
             "entry_point": "buffer_stop.52",
             "exit_point": "tde.52_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.52"
@@ -1321,7 +1346,7 @@
             "entry_point": "tde.53_BEGIN",
             "exit_point": "buffer_stop.53",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.53"
@@ -1333,7 +1358,7 @@
             "entry_point": "buffer_stop.53",
             "exit_point": "tde.53_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.53"
@@ -1345,7 +1370,7 @@
             "entry_point": "tde.54_BEGIN",
             "exit_point": "tde.54_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.54"
@@ -1357,7 +1382,7 @@
             "entry_point": "tde.54_END",
             "exit_point": "tde.54_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.54"
@@ -1369,7 +1394,7 @@
             "entry_point": "tde.55_BEGIN",
             "exit_point": "tde.55_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.55"
@@ -1381,7 +1406,7 @@
             "entry_point": "tde.55_END",
             "exit_point": "tde.55_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.55"
@@ -1393,7 +1418,7 @@
             "entry_point": "tde.56_BEGIN",
             "exit_point": "tde.56_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.56"
@@ -1405,7 +1430,7 @@
             "entry_point": "tde.56_END",
             "exit_point": "tde.56_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.56"
@@ -1417,7 +1442,7 @@
             "entry_point": "tde.57_BEGIN",
             "exit_point": "tde.57_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.57"
@@ -1429,7 +1454,7 @@
             "entry_point": "tde.57_END",
             "exit_point": "tde.57_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.57"
@@ -1441,7 +1466,7 @@
             "entry_point": "tde.58_BEGIN",
             "exit_point": "tde.58_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.58"
@@ -1453,7 +1478,7 @@
             "entry_point": "tde.58_END",
             "exit_point": "tde.58_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.58"
@@ -1465,7 +1490,7 @@
             "entry_point": "tde.59_BEGIN",
             "exit_point": "tde.59_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.59"
@@ -1477,7 +1502,7 @@
             "entry_point": "tde.59_END",
             "exit_point": "tde.59_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.59"
@@ -1489,7 +1514,7 @@
             "entry_point": "tde.60_BEGIN",
             "exit_point": "tde.60_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.60"
@@ -1501,7 +1526,7 @@
             "entry_point": "tde.60_END",
             "exit_point": "tde.60_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.60"
@@ -1513,7 +1538,7 @@
             "entry_point": "tde.61_BEGIN",
             "exit_point": "tde.61_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.61"
@@ -1525,7 +1550,7 @@
             "entry_point": "tde.61_END",
             "exit_point": "tde.61_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.61"
@@ -1537,7 +1562,7 @@
             "entry_point": "tde.62_BEGIN",
             "exit_point": "tde.62_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.62"
@@ -1549,7 +1574,7 @@
             "entry_point": "tde.62_END",
             "exit_point": "tde.62_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.62"
@@ -1561,7 +1586,7 @@
             "entry_point": "tde.63_BEGIN",
             "exit_point": "buffer_stop.63",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.63"
@@ -1573,7 +1598,7 @@
             "entry_point": "buffer_stop.63",
             "exit_point": "tde.63_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.63"
@@ -1585,7 +1610,7 @@
             "entry_point": "tde.64_BEGIN",
             "exit_point": "tde.64_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.64"
@@ -1597,7 +1622,7 @@
             "entry_point": "tde.64_END",
             "exit_point": "tde.64_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.64"
@@ -1609,7 +1634,7 @@
             "entry_point": "tde.65_BEGIN",
             "exit_point": "tde.65_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.65"
@@ -1621,7 +1646,7 @@
             "entry_point": "tde.65_END",
             "exit_point": "tde.65_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.65"
@@ -1633,7 +1658,7 @@
             "entry_point": "tde.66_BEGIN",
             "exit_point": "tde.66_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.66"
@@ -1645,7 +1670,7 @@
             "entry_point": "tde.66_END",
             "exit_point": "tde.66_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.66"
@@ -1657,7 +1682,7 @@
             "entry_point": "tde.67_BEGIN",
             "exit_point": "tde.67_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.67"
@@ -1669,7 +1694,7 @@
             "entry_point": "tde.67_END",
             "exit_point": "tde.67_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.67"
@@ -1681,7 +1706,7 @@
             "entry_point": "tde.68_BEGIN",
             "exit_point": "buffer_stop.68",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.68"
@@ -1693,7 +1718,7 @@
             "entry_point": "buffer_stop.68",
             "exit_point": "tde.68_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.68"
@@ -1705,7 +1730,7 @@
             "entry_point": "tde.69_BEGIN",
             "exit_point": "tde.69_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.69"
@@ -1717,7 +1742,7 @@
             "entry_point": "tde.69_END",
             "exit_point": "tde.69_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.69"
@@ -1729,7 +1754,7 @@
             "entry_point": "tde.1_END",
             "exit_point": "tde.2_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.1-2"
@@ -1741,7 +1766,7 @@
             "entry_point": "tde.2_BEGIN",
             "exit_point": "tde.1_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.1-2"
@@ -1753,7 +1778,7 @@
             "entry_point": "tde.3_END",
             "exit_point": "tde.4_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.3-4"
@@ -1765,7 +1790,7 @@
             "entry_point": "tde.4_BEGIN",
             "exit_point": "tde.3_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.3-4"
@@ -1777,7 +1802,7 @@
             "entry_point": "tde.4_END",
             "exit_point": "tde.5_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.4-5"
@@ -1789,7 +1814,7 @@
             "entry_point": "tde.5_BEGIN",
             "exit_point": "tde.4_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.4-5"
@@ -1801,7 +1826,7 @@
             "entry_point": "tde.44_END",
             "exit_point": "tde.45_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.44-45"
@@ -1813,7 +1838,7 @@
             "entry_point": "tde.45_END",
             "exit_point": "tde.44_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.44-45"
@@ -1825,7 +1850,7 @@
             "entry_point": "tde.7_END",
             "exit_point": "tde.8_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.7-8"
@@ -1837,7 +1862,7 @@
             "entry_point": "tde.8_BEGIN",
             "exit_point": "tde.7_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.7-8"
@@ -1849,7 +1874,7 @@
             "entry_point": "tde.8_END",
             "exit_point": "tde.9_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.8-9"
@@ -1861,7 +1886,7 @@
             "entry_point": "tde.9_BEGIN",
             "exit_point": "tde.8_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.8-9"
@@ -1873,7 +1898,7 @@
             "entry_point": "tde.12_END",
             "exit_point": "tde.13_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.12-13"
@@ -1885,7 +1910,7 @@
             "entry_point": "tde.13_BEGIN",
             "exit_point": "tde.12_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.12-13"
@@ -1897,7 +1922,7 @@
             "entry_point": "tde.13_END",
             "exit_point": "tde.14_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.13-14"
@@ -1909,7 +1934,7 @@
             "entry_point": "tde.14_BEGIN",
             "exit_point": "tde.13_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.13-14"
@@ -1921,7 +1946,7 @@
             "entry_point": "tde.14_END",
             "exit_point": "tde.15_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.14-15"
@@ -1933,7 +1958,7 @@
             "entry_point": "tde.15_BEGIN",
             "exit_point": "tde.14_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.14-15"
@@ -1945,7 +1970,7 @@
             "entry_point": "tde.15_END",
             "exit_point": "tde.16_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.15-16"
@@ -1957,7 +1982,7 @@
             "entry_point": "tde.16_BEGIN",
             "exit_point": "tde.15_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.15-16"
@@ -1969,7 +1994,7 @@
             "entry_point": "tde.25_END",
             "exit_point": "tde.26_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.25-26"
@@ -1981,7 +2006,7 @@
             "entry_point": "tde.26_BEGIN",
             "exit_point": "tde.25_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.25-26"
@@ -1993,7 +2018,7 @@
             "entry_point": "tde.26_END",
             "exit_point": "tde.27_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.26-27"
@@ -2005,7 +2030,7 @@
             "entry_point": "tde.27_BEGIN",
             "exit_point": "tde.26_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.26-27"
@@ -2017,7 +2042,7 @@
             "entry_point": "tde.46_END",
             "exit_point": "tde.47_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.46-47"
@@ -2029,7 +2054,7 @@
             "entry_point": "tde.47_END",
             "exit_point": "tde.46_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.46-47"
@@ -2041,7 +2066,7 @@
             "entry_point": "tde.29_END",
             "exit_point": "tde.30_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.29-30"
@@ -2053,7 +2078,7 @@
             "entry_point": "tde.30_BEGIN",
             "exit_point": "tde.29_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.29-30"
@@ -2065,7 +2090,7 @@
             "entry_point": "tde.30_END",
             "exit_point": "tde.31_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.30-31"
@@ -2077,7 +2102,7 @@
             "entry_point": "tde.31_BEGIN",
             "exit_point": "tde.30_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.30-31"
@@ -2089,7 +2114,7 @@
             "entry_point": "tde.32_END",
             "exit_point": "tde.33_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.32-33"
@@ -2101,7 +2126,7 @@
             "entry_point": "tde.33_BEGIN",
             "exit_point": "tde.32_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.32-33"
@@ -2113,7 +2138,7 @@
             "entry_point": "tde.33_END",
             "exit_point": "tde.34_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.33-34"
@@ -2125,7 +2150,7 @@
             "entry_point": "tde.34_BEGIN",
             "exit_point": "tde.33_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.33-34"
@@ -2137,7 +2162,7 @@
             "entry_point": "tde.34_END",
             "exit_point": "tde.35_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.34-35"
@@ -2149,7 +2174,7 @@
             "entry_point": "tde.35_BEGIN",
             "exit_point": "tde.34_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.34-35"
@@ -2161,7 +2186,7 @@
             "entry_point": "tde.54_END",
             "exit_point": "tde.56_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.54-56"
@@ -2173,7 +2198,7 @@
             "entry_point": "tde.56_BEGIN",
             "exit_point": "tde.54_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.54-56"
@@ -2185,7 +2210,7 @@
             "entry_point": "tde.55_END",
             "exit_point": "tde.57_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.55-57"
@@ -2197,7 +2222,7 @@
             "entry_point": "tde.57_BEGIN",
             "exit_point": "tde.55_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.55-57"
@@ -2209,7 +2234,7 @@
             "entry_point": "tde.64_END",
             "exit_point": "tde.65_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.64-65"
@@ -2221,7 +2246,7 @@
             "entry_point": "tde.65_BEGIN",
             "exit_point": "tde.64_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.64-65"
@@ -2233,7 +2258,7 @@
             "entry_point": "tde.66_END",
             "exit_point": "tde.67_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.66-67"
@@ -2245,7 +2270,7 @@
             "entry_point": "tde.67_BEGIN",
             "exit_point": "tde.66_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.66-67"
@@ -2257,7 +2282,7 @@
             "entry_point": "tde.1_BEGIN",
             "exit_point": "tde.0_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.1-0-41": "LEFT"
             },
             "release_groups": [
@@ -2271,7 +2296,7 @@
             "entry_point": "tde.1_BEGIN",
             "exit_point": "tde.41_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.1-0-41": "RIGHT"
             },
             "release_groups": [
@@ -2285,7 +2310,7 @@
             "entry_point": "tde.0_BEGIN",
             "exit_point": "tde.1_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.1-0-41": "LEFT"
             },
             "release_groups": [
@@ -2299,7 +2324,7 @@
             "entry_point": "tde.41_BEGIN",
             "exit_point": "tde.1_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.1-0-41": "RIGHT"
             },
             "release_groups": [
@@ -2313,7 +2338,7 @@
             "entry_point": "tde.3_BEGIN",
             "exit_point": "tde.2_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.3-2-43": "LEFT"
             },
             "release_groups": [
@@ -2327,7 +2352,7 @@
             "entry_point": "tde.3_BEGIN",
             "exit_point": "tde.43_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.3-2-43": "RIGHT"
             },
             "release_groups": [
@@ -2341,7 +2366,7 @@
             "entry_point": "tde.2_END",
             "exit_point": "tde.3_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.3-2-43": "LEFT"
             },
             "release_groups": [
@@ -2355,7 +2380,7 @@
             "entry_point": "tde.43_BEGIN",
             "exit_point": "tde.3_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.3-2-43": "RIGHT"
             },
             "release_groups": [
@@ -2369,7 +2394,7 @@
             "entry_point": "tde.5_END",
             "exit_point": "tde.6_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.5-6-44": "LEFT"
             },
             "release_groups": [
@@ -2383,7 +2408,7 @@
             "entry_point": "tde.5_END",
             "exit_point": "tde.44_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.5-6-44": "RIGHT"
             },
             "release_groups": [
@@ -2397,7 +2422,7 @@
             "entry_point": "tde.6_BEGIN",
             "exit_point": "tde.5_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.5-6-44": "LEFT"
             },
             "release_groups": [
@@ -2411,7 +2436,7 @@
             "entry_point": "tde.44_BEGIN",
             "exit_point": "tde.5_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.5-6-44": "RIGHT"
             },
             "release_groups": [
@@ -2425,7 +2450,7 @@
             "entry_point": "tde.7_BEGIN",
             "exit_point": "tde.6_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.7-6-45": "LEFT"
             },
             "release_groups": [
@@ -2439,7 +2464,7 @@
             "entry_point": "tde.7_BEGIN",
             "exit_point": "tde.45_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.7-6-45": "RIGHT"
             },
             "release_groups": [
@@ -2453,7 +2478,7 @@
             "entry_point": "tde.6_END",
             "exit_point": "tde.7_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.7-6-45": "LEFT"
             },
             "release_groups": [
@@ -2467,7 +2492,7 @@
             "entry_point": "tde.45_BEGIN",
             "exit_point": "tde.7_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.7-6-45": "RIGHT"
             },
             "release_groups": [
@@ -2481,7 +2506,7 @@
             "entry_point": "tde.9_END",
             "exit_point": "tde.10_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.9-10-54": "LEFT"
             },
             "release_groups": [
@@ -2495,7 +2520,7 @@
             "entry_point": "tde.9_END",
             "exit_point": "tde.54_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.9-10-54": "RIGHT"
             },
             "release_groups": [
@@ -2509,7 +2534,7 @@
             "entry_point": "tde.10_BEGIN",
             "exit_point": "tde.9_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.9-10-54": "LEFT"
             },
             "release_groups": [
@@ -2523,7 +2548,7 @@
             "entry_point": "tde.54_BEGIN",
             "exit_point": "tde.9_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.9-10-54": "RIGHT"
             },
             "release_groups": [
@@ -2537,7 +2562,7 @@
             "entry_point": "tde.11_BEGIN",
             "exit_point": "tde.10_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.11-10-48": "LEFT"
             },
             "release_groups": [
@@ -2551,7 +2576,7 @@
             "entry_point": "tde.11_BEGIN",
             "exit_point": "tde.48_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.11-10-48": "RIGHT"
             },
             "release_groups": [
@@ -2565,7 +2590,7 @@
             "entry_point": "tde.10_END",
             "exit_point": "tde.11_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.11-10-48": "LEFT"
             },
             "release_groups": [
@@ -2579,7 +2604,7 @@
             "entry_point": "tde.48_BEGIN",
             "exit_point": "tde.11_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.11-10-48": "RIGHT"
             },
             "release_groups": [
@@ -2593,7 +2618,7 @@
             "entry_point": "tde.11_END",
             "exit_point": "tde.12_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.11-12-55": "LEFT"
             },
             "release_groups": [
@@ -2607,7 +2632,7 @@
             "entry_point": "tde.11_END",
             "exit_point": "tde.55_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.11-12-55": "RIGHT"
             },
             "release_groups": [
@@ -2621,7 +2646,7 @@
             "entry_point": "tde.12_BEGIN",
             "exit_point": "tde.11_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.11-12-55": "LEFT"
             },
             "release_groups": [
@@ -2635,7 +2660,7 @@
             "entry_point": "tde.55_BEGIN",
             "exit_point": "tde.11_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.11-12-55": "RIGHT"
             },
             "release_groups": [
@@ -2649,7 +2674,7 @@
             "entry_point": "tde.17_BEGIN",
             "exit_point": "tde.16_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.17-16-49": "LEFT"
             },
             "release_groups": [
@@ -2663,7 +2688,7 @@
             "entry_point": "tde.17_BEGIN",
             "exit_point": "tde.49_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.17-16-49": "RIGHT"
             },
             "release_groups": [
@@ -2677,7 +2702,7 @@
             "entry_point": "tde.16_END",
             "exit_point": "tde.17_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.17-16-49": "LEFT"
             },
             "release_groups": [
@@ -2691,7 +2716,7 @@
             "entry_point": "tde.49_BEGIN",
             "exit_point": "tde.17_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.17-16-49": "RIGHT"
             },
             "release_groups": [
@@ -2705,7 +2730,7 @@
             "entry_point": "tde.17_END",
             "exit_point": "tde.18_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.17-18-69": "LEFT"
             },
             "release_groups": [
@@ -2719,7 +2744,7 @@
             "entry_point": "tde.17_END",
             "exit_point": "tde.69_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.17-18-69": "RIGHT"
             },
             "release_groups": [
@@ -2733,7 +2758,7 @@
             "entry_point": "tde.18_BEGIN",
             "exit_point": "tde.17_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.17-18-69": "LEFT"
             },
             "release_groups": [
@@ -2747,7 +2772,7 @@
             "entry_point": "tde.69_BEGIN",
             "exit_point": "tde.17_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.17-18-69": "RIGHT"
             },
             "release_groups": [
@@ -2761,7 +2786,7 @@
             "entry_point": "tde.18_END",
             "exit_point": "tde.19_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.18-19-52": "LEFT"
             },
             "release_groups": [
@@ -2775,7 +2800,7 @@
             "entry_point": "tde.18_END",
             "exit_point": "tde.52_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.18-19-52": "RIGHT"
             },
             "release_groups": [
@@ -2789,7 +2814,7 @@
             "entry_point": "tde.19_BEGIN",
             "exit_point": "tde.18_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.18-19-52": "LEFT"
             },
             "release_groups": [
@@ -2803,7 +2828,7 @@
             "entry_point": "tde.52_BEGIN",
             "exit_point": "tde.18_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.18-19-52": "RIGHT"
             },
             "release_groups": [
@@ -2817,7 +2842,7 @@
             "entry_point": "tde.19_END",
             "exit_point": "tde.20_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.19-20-50": "LEFT"
             },
             "release_groups": [
@@ -2831,7 +2856,7 @@
             "entry_point": "tde.19_END",
             "exit_point": "tde.50_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.19-20-50": "RIGHT"
             },
             "release_groups": [
@@ -2845,7 +2870,7 @@
             "entry_point": "tde.20_BEGIN",
             "exit_point": "tde.19_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.19-20-50": "LEFT"
             },
             "release_groups": [
@@ -2859,7 +2884,7 @@
             "entry_point": "tde.50_BEGIN",
             "exit_point": "tde.19_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.19-20-50": "RIGHT"
             },
             "release_groups": [
@@ -2873,7 +2898,7 @@
             "entry_point": "tde.21_BEGIN",
             "exit_point": "tde.20_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.21-20-51": "LEFT"
             },
             "release_groups": [
@@ -2887,7 +2912,7 @@
             "entry_point": "tde.21_BEGIN",
             "exit_point": "tde.51_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.21-20-51": "RIGHT"
             },
             "release_groups": [
@@ -2901,7 +2926,7 @@
             "entry_point": "tde.20_END",
             "exit_point": "tde.21_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.21-20-51": "LEFT"
             },
             "release_groups": [
@@ -2915,7 +2940,7 @@
             "entry_point": "tde.51_BEGIN",
             "exit_point": "tde.21_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.21-20-51": "RIGHT"
             },
             "release_groups": [
@@ -2929,7 +2954,7 @@
             "entry_point": "tde.22_BEGIN",
             "exit_point": "tde.23_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.22-23-41": "LEFT"
             },
             "release_groups": [
@@ -2943,7 +2968,7 @@
             "entry_point": "tde.22_BEGIN",
             "exit_point": "tde.41_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.22-23-41": "RIGHT"
             },
             "release_groups": [
@@ -2957,7 +2982,7 @@
             "entry_point": "tde.23_BEGIN",
             "exit_point": "tde.22_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.22-23-41": "LEFT"
             },
             "release_groups": [
@@ -2971,7 +2996,7 @@
             "entry_point": "tde.41_END",
             "exit_point": "tde.22_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.22-23-41": "RIGHT"
             },
             "release_groups": [
@@ -2985,7 +3010,7 @@
             "entry_point": "tde.24_BEGIN",
             "exit_point": "tde.23_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.24-23-42": "LEFT"
             },
             "release_groups": [
@@ -2999,7 +3024,7 @@
             "entry_point": "tde.24_BEGIN",
             "exit_point": "tde.42_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.24-23-42": "RIGHT"
             },
             "release_groups": [
@@ -3013,7 +3038,7 @@
             "entry_point": "tde.23_END",
             "exit_point": "tde.24_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.24-23-42": "LEFT"
             },
             "release_groups": [
@@ -3027,7 +3052,7 @@
             "entry_point": "tde.42_BEGIN",
             "exit_point": "tde.24_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.24-23-42": "RIGHT"
             },
             "release_groups": [
@@ -3041,7 +3066,7 @@
             "entry_point": "tde.24_END",
             "exit_point": "tde.25_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.24-25-43": "LEFT"
             },
             "release_groups": [
@@ -3055,7 +3080,7 @@
             "entry_point": "tde.24_END",
             "exit_point": "tde.43_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.24-25-43": "RIGHT"
             },
             "release_groups": [
@@ -3069,7 +3094,7 @@
             "entry_point": "tde.25_BEGIN",
             "exit_point": "tde.24_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.24-25-43": "LEFT"
             },
             "release_groups": [
@@ -3083,7 +3108,7 @@
             "entry_point": "tde.43_END",
             "exit_point": "tde.24_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.24-25-43": "RIGHT"
             },
             "release_groups": [
@@ -3097,7 +3122,7 @@
             "entry_point": "tde.27_END",
             "exit_point": "tde.28_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.27-28-46": "LEFT"
             },
             "release_groups": [
@@ -3111,7 +3136,7 @@
             "entry_point": "tde.27_END",
             "exit_point": "tde.46_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.27-28-46": "RIGHT"
             },
             "release_groups": [
@@ -3125,7 +3150,7 @@
             "entry_point": "tde.28_BEGIN",
             "exit_point": "tde.27_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.27-28-46": "LEFT"
             },
             "release_groups": [
@@ -3139,7 +3164,7 @@
             "entry_point": "tde.46_BEGIN",
             "exit_point": "tde.27_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.27-28-46": "RIGHT"
             },
             "release_groups": [
@@ -3153,7 +3178,7 @@
             "entry_point": "tde.29_BEGIN",
             "exit_point": "tde.28_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.29-28-47": "LEFT"
             },
             "release_groups": [
@@ -3167,7 +3192,7 @@
             "entry_point": "tde.29_BEGIN",
             "exit_point": "tde.47_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.29-28-47": "RIGHT"
             },
             "release_groups": [
@@ -3181,7 +3206,7 @@
             "entry_point": "tde.28_END",
             "exit_point": "tde.29_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.29-28-47": "LEFT"
             },
             "release_groups": [
@@ -3195,7 +3220,7 @@
             "entry_point": "tde.47_BEGIN",
             "exit_point": "tde.29_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.29-28-47": "RIGHT"
             },
             "release_groups": [
@@ -3209,7 +3234,7 @@
             "entry_point": "tde.31_END",
             "exit_point": "tde.32_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.31-32-48": "LEFT"
             },
             "release_groups": [
@@ -3223,7 +3248,7 @@
             "entry_point": "tde.31_END",
             "exit_point": "tde.48_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.31-32-48": "RIGHT"
             },
             "release_groups": [
@@ -3237,7 +3262,7 @@
             "entry_point": "tde.32_BEGIN",
             "exit_point": "tde.31_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.31-32-48": "LEFT"
             },
             "release_groups": [
@@ -3251,7 +3276,7 @@
             "entry_point": "tde.48_END",
             "exit_point": "tde.31_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.31-32-48": "RIGHT"
             },
             "release_groups": [
@@ -3265,7 +3290,7 @@
             "entry_point": "tde.35_END",
             "exit_point": "tde.36_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.35-36-49": "LEFT"
             },
             "release_groups": [
@@ -3279,7 +3304,7 @@
             "entry_point": "tde.35_END",
             "exit_point": "tde.49_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.35-36-49": "RIGHT"
             },
             "release_groups": [
@@ -3293,7 +3318,7 @@
             "entry_point": "tde.36_BEGIN",
             "exit_point": "tde.35_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.35-36-49": "LEFT"
             },
             "release_groups": [
@@ -3307,7 +3332,7 @@
             "entry_point": "tde.49_END",
             "exit_point": "tde.35_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.35-36-49": "RIGHT"
             },
             "release_groups": [
@@ -3321,7 +3346,7 @@
             "entry_point": "tde.37_BEGIN",
             "exit_point": "tde.36_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.37-36-69": "LEFT"
             },
             "release_groups": [
@@ -3335,7 +3360,7 @@
             "entry_point": "tde.37_BEGIN",
             "exit_point": "tde.69_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.37-36-69": "RIGHT"
             },
             "release_groups": [
@@ -3349,7 +3374,7 @@
             "entry_point": "tde.36_END",
             "exit_point": "tde.37_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.37-36-69": "LEFT"
             },
             "release_groups": [
@@ -3363,7 +3388,7 @@
             "entry_point": "tde.69_END",
             "exit_point": "tde.37_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.37-36-69": "RIGHT"
             },
             "release_groups": [
@@ -3377,7 +3402,7 @@
             "entry_point": "tde.37_END",
             "exit_point": "tde.38_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.37-38-53": "LEFT"
             },
             "release_groups": [
@@ -3391,7 +3416,7 @@
             "entry_point": "tde.37_END",
             "exit_point": "tde.53_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.37-38-53": "RIGHT"
             },
             "release_groups": [
@@ -3405,7 +3430,7 @@
             "entry_point": "tde.38_BEGIN",
             "exit_point": "tde.37_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.37-38-53": "LEFT"
             },
             "release_groups": [
@@ -3419,7 +3444,7 @@
             "entry_point": "tde.53_BEGIN",
             "exit_point": "tde.37_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.37-38-53": "RIGHT"
             },
             "release_groups": [
@@ -3433,7 +3458,7 @@
             "entry_point": "tde.39_BEGIN",
             "exit_point": "tde.38_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.39-38-50": "LEFT"
             },
             "release_groups": [
@@ -3447,7 +3472,7 @@
             "entry_point": "tde.39_BEGIN",
             "exit_point": "tde.50_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.39-38-50": "RIGHT"
             },
             "release_groups": [
@@ -3461,7 +3486,7 @@
             "entry_point": "tde.38_END",
             "exit_point": "tde.39_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.39-38-50": "LEFT"
             },
             "release_groups": [
@@ -3475,7 +3500,7 @@
             "entry_point": "tde.50_END",
             "exit_point": "tde.39_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.39-38-50": "RIGHT"
             },
             "release_groups": [
@@ -3489,7 +3514,7 @@
             "entry_point": "tde.39_END",
             "exit_point": "tde.40_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.39-40-51": "LEFT"
             },
             "release_groups": [
@@ -3503,7 +3528,7 @@
             "entry_point": "tde.39_END",
             "exit_point": "tde.51_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.39-40-51": "RIGHT"
             },
             "release_groups": [
@@ -3517,7 +3542,7 @@
             "entry_point": "tde.40_BEGIN",
             "exit_point": "tde.39_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.39-40-51": "LEFT"
             },
             "release_groups": [
@@ -3531,7 +3556,7 @@
             "entry_point": "tde.51_END",
             "exit_point": "tde.39_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.39-40-51": "RIGHT"
             },
             "release_groups": [
@@ -3545,7 +3570,7 @@
             "entry_point": "tde.58_BEGIN",
             "exit_point": "tde.56_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.58-56-57": "LEFT"
             },
             "release_groups": [
@@ -3559,7 +3584,7 @@
             "entry_point": "tde.58_BEGIN",
             "exit_point": "tde.57_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.58-56-57": "RIGHT"
             },
             "release_groups": [
@@ -3573,7 +3598,7 @@
             "entry_point": "tde.56_END",
             "exit_point": "tde.58_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.58-56-57": "LEFT"
             },
             "release_groups": [
@@ -3587,7 +3612,7 @@
             "entry_point": "tde.57_END",
             "exit_point": "tde.58_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.58-56-57": "RIGHT"
             },
             "release_groups": [
@@ -3601,7 +3626,7 @@
             "entry_point": "tde.58_END",
             "exit_point": "tde.59_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.58-59-64": "LEFT"
             },
             "release_groups": [
@@ -3615,7 +3640,7 @@
             "entry_point": "tde.58_END",
             "exit_point": "tde.64_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.58-59-64": "RIGHT"
             },
             "release_groups": [
@@ -3629,7 +3654,7 @@
             "entry_point": "tde.59_BEGIN",
             "exit_point": "tde.58_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.58-59-64": "LEFT"
             },
             "release_groups": [
@@ -3643,7 +3668,7 @@
             "entry_point": "tde.64_BEGIN",
             "exit_point": "tde.58_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.58-59-64": "RIGHT"
             },
             "release_groups": [
@@ -3657,7 +3682,7 @@
             "entry_point": "tde.60_BEGIN",
             "exit_point": "tde.59_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.60-59-65": "LEFT"
             },
             "release_groups": [
@@ -3671,7 +3696,7 @@
             "entry_point": "tde.60_BEGIN",
             "exit_point": "tde.65_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.60-59-65": "RIGHT"
             },
             "release_groups": [
@@ -3685,7 +3710,7 @@
             "entry_point": "tde.59_END",
             "exit_point": "tde.60_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.60-59-65": "LEFT"
             },
             "release_groups": [
@@ -3699,7 +3724,7 @@
             "entry_point": "tde.65_END",
             "exit_point": "tde.60_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.60-59-65": "RIGHT"
             },
             "release_groups": [
@@ -3713,7 +3738,7 @@
             "entry_point": "tde.60_END",
             "exit_point": "tde.61_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.60-61-66": "LEFT"
             },
             "release_groups": [
@@ -3727,7 +3752,7 @@
             "entry_point": "tde.60_END",
             "exit_point": "tde.66_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.60-61-66": "RIGHT"
             },
             "release_groups": [
@@ -3741,7 +3766,7 @@
             "entry_point": "tde.61_BEGIN",
             "exit_point": "tde.60_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.60-61-66": "LEFT"
             },
             "release_groups": [
@@ -3755,7 +3780,7 @@
             "entry_point": "tde.66_BEGIN",
             "exit_point": "tde.60_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.60-61-66": "RIGHT"
             },
             "release_groups": [
@@ -3769,7 +3794,7 @@
             "entry_point": "tde.62_BEGIN",
             "exit_point": "tde.61_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.62-61-67": "LEFT"
             },
             "release_groups": [
@@ -3783,7 +3808,7 @@
             "entry_point": "tde.62_BEGIN",
             "exit_point": "tde.67_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.62-61-67": "RIGHT"
             },
             "release_groups": [
@@ -3797,7 +3822,7 @@
             "entry_point": "tde.61_END",
             "exit_point": "tde.62_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.62-61-67": "LEFT"
             },
             "release_groups": [
@@ -3811,7 +3836,7 @@
             "entry_point": "tde.67_END",
             "exit_point": "tde.62_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.62-61-67": "RIGHT"
             },
             "release_groups": [
@@ -3825,7 +3850,7 @@
             "entry_point": "tde.62_END",
             "exit_point": "tde.63_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.62-63-68": "LEFT"
             },
             "release_groups": [
@@ -3839,7 +3864,7 @@
             "entry_point": "tde.62_END",
             "exit_point": "tde.68_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.62-63-68": "RIGHT"
             },
             "release_groups": [
@@ -3853,7 +3878,7 @@
             "entry_point": "tde.63_BEGIN",
             "exit_point": "tde.62_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.62-63-68": "LEFT"
             },
             "release_groups": [
@@ -3867,7 +3892,7 @@
             "entry_point": "tde.68_BEGIN",
             "exit_point": "tde.62_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.62-63-68": "RIGHT"
             },
             "release_groups": [
@@ -4080,117 +4105,77 @@
             "name": "switch_signal",
             "arguments": [
                 {
+                    "type": "SIGNAL",
+                    "name": "signal"
+                },
+                {
                     "type": "SWITCH",
                     "name": "switch"
-                },
-                {
-                    "type": "ROUTE",
-                    "name": "left_route"
-                },
-                {
-                    "type": "SIGNAL",
-                    "name": "left_master_signal"
-                },
-                {
-                    "type": "ROUTE",
-                    "name": "right_route"
-                },
-                {
-                    "type": "SIGNAL",
-                    "name": "right_master_signal"
                 }
             ],
             "return_type": "ASPECT_SET",
             "body": {
-                "type": "match",
+                "type": "optional_match",
+                "name": "route",
                 "expr": {
-                    "type": "argument_ref",
-                    "argument_name": "switch"
+                    "type": "reserved_route",
+                    "signal": {
+                        "type": "argument_ref",
+                        "argument_name": "signal"
+                    }
                 },
-                "branches": {
-                    "LEFT": {
-                        "type": "call",
-                        "function": "sncf_filter",
-                        "arguments": [
+                "case_none": {
+                    "type": "aspect_set",
+                    "members": [
+                        {
+                            "aspect": "RED"
+                        }
+                    ]
+                },
+                "case_some": {
+                    "type": "condition",
+                    "if": {
+                        "type": "or",
+                        "exprs": [
                             {
-                                "type": "aspect_set",
-                                "members": [
-                                    {
-                                        "aspect": "RED",
-                                        "condition": {
-                                            "type": "not",
-                                            "expr": {
-                                                "type": "route_has_state",
-                                                "route": {
-                                                    "type": "argument_ref",
-                                                    "argument_name": "left_route"
-                                                },
-                                                "state": "RESERVED"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "aspect": "YELLOW",
-                                        "condition": {
-                                            "type": "signal_has_aspect",
-                                            "signal": {
-                                                "type": "argument_ref",
-                                                "argument_name": "left_master_signal"
-                                            },
-                                            "aspect": "RED"
-                                        }
-                                    },
-                                    {
-                                        "aspect": "GREEN"
-                                    }
-                                ]
+                                "type": "route_has_state",
+                                "route": {
+                                    "type": "optional_match_ref",
+                                    "match_name": "route"
+                                },
+                                "state": "CONFLICT"
+                            },
+                            {
+                                "type": "route_has_state",
+                                "route": {
+                                    "type": "optional_match_ref",
+                                    "match_name": "route"
+                                },
+                                "state": "OCCUPIED"
+                            },
+                            {
+                                "type": "route_has_state",
+                                "route": {
+                                    "type": "optional_match_ref",
+                                    "match_name": "route"
+                                },
+                                "state": "REQUESTED"
                             }
                         ]
                     },
-                    "RIGHT": {
-                        "type": "call",
-                        "function": "sncf_filter",
-                        "arguments": [
-                            {
-                                "type": "aspect_set",
-                                "members": [
-                                    {
-                                        "aspect": "RED",
-                                        "condition": {
-                                            "type": "not",
-                                            "expr": {
-                                                "type": "route_has_state",
-                                                "route": {
-                                                    "type": "argument_ref",
-                                                    "argument_name": "right_route"
-                                                },
-                                                "state": "RESERVED"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "aspect": "YELLOW",
-                                        "condition": {
-                                            "type": "signal_has_aspect",
-                                            "signal": {
-                                                "type": "argument_ref",
-                                                "argument_name": "right_master_signal"
-                                            },
-                                            "aspect": "RED"
-                                        }
-                                    },
-                                    {
-                                        "aspect": "GREEN"
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    "MOVING": {
+                    "then": {
                         "type": "aspect_set",
                         "members": [
                             {
-                                "aspect": "RED"
+                                "aspect": "YELLOW"
+                            }
+                        ]
+                    },
+                    "else": {
+                        "type": "aspect_set",
+                        "members": [
+                            {
+                                "aspect": "GREEN"
                             }
                         ]
                     }
@@ -4201,468 +4186,555 @@
     "speed_sections": [],
     "switches": [
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.1"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.0"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.41"
-            },
             "id": "il.switch.1-0-41",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.1"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.0"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.41"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.3"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.2"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.43"
-            },
             "id": "il.switch.3-2-43",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.3"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.2"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.43"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.5"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.6"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.44"
-            },
             "id": "il.switch.5-6-44",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.5"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.6"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.44"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.7"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.6"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.45"
-            },
             "id": "il.switch.7-6-45",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.7"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.6"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.45"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.9"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.10"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.54"
-            },
             "id": "il.switch.9-10-54",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.9"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.10"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.54"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.11"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.10"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.48"
-            },
             "id": "il.switch.11-10-48",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.11"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.10"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.48"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.11"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.12"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.55"
-            },
             "id": "il.switch.11-12-55",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.11"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.12"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.55"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.17"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.16"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.49"
-            },
             "id": "il.switch.17-16-49",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.17"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.16"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.49"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.17"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.18"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.69"
-            },
             "id": "il.switch.17-18-69",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.17"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.18"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.69"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.18"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.19"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.52"
-            },
             "id": "il.switch.18-19-52",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.18"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.19"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.52"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.19"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.20"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.50"
-            },
             "id": "il.switch.19-20-50",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.19"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.20"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.50"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.21"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.20"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.51"
-            },
             "id": "il.switch.21-20-51",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.21"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.20"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.51"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.22"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.23"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.41"
-            },
             "id": "il.switch.22-23-41",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.22"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.23"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.41"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.24"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.23"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.42"
-            },
             "id": "il.switch.24-23-42",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.24"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.23"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.42"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.24"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.25"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.43"
-            },
             "id": "il.switch.24-25-43",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.24"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.25"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.43"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.27"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.28"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.46"
-            },
             "id": "il.switch.27-28-46",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.27"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.28"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.46"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.29"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.28"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.47"
-            },
             "id": "il.switch.29-28-47",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.29"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.28"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.47"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.31"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.32"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.48"
-            },
             "id": "il.switch.31-32-48",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.31"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.32"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.48"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.35"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.36"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.49"
-            },
             "id": "il.switch.35-36-49",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.35"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.36"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.49"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.37"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.36"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.69"
-            },
             "id": "il.switch.37-36-69",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.37"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.36"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.69"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.37"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.38"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.53"
-            },
             "id": "il.switch.37-38-53",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.37"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.38"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.53"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.39"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.38"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.50"
-            },
             "id": "il.switch.39-38-50",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.39"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.38"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.50"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.39"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.40"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.51"
-            },
             "id": "il.switch.39-40-51",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.39"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.40"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.51"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.58"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.56"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.57"
-            },
             "id": "il.switch.58-56-57",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.58"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.56"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.57"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.58"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.59"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.64"
-            },
             "id": "il.switch.58-59-64",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.58"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.59"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.64"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.60"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.59"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.65"
-            },
             "id": "il.switch.60-59-65",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.60"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.59"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.65"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.60"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.61"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.66"
-            },
             "id": "il.switch.60-61-66",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.60"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.61"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.66"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.62"
-            },
-            "left": {
-                "endpoint": "END",
-                "section": "ne.micro.61"
-            },
-            "right": {
-                "endpoint": "END",
-                "section": "ne.micro.67"
-            },
             "id": "il.switch.62-61-67",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.62"
+                },
+                "left": {
+                    "endpoint": "END",
+                    "section": "ne.micro.61"
+                },
+                "right": {
+                    "endpoint": "END",
+                    "section": "ne.micro.67"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.62"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.63"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.68"
-            },
             "id": "il.switch.62-63-68",
-            "position_change_delay": 6
+            "switch_type": "classic_switch",
+            "group_change_delay": 6,
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.62"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.63"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.68"
+                }
+            }
         }
     ],
     "track_section_links": [
@@ -5708,24 +5780,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.1-0-41"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.1-0-41"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.1_BEGIN-0_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.0_BEGIN-0_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.1_BEGIN-41_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.41_BEGIN-41_END"
                             }
                         ]
                     },
@@ -5956,24 +6016,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.3-2-43"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.3-2-43"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.3_BEGIN-2_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.2_END-2_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.3_BEGIN-43_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.43_BEGIN-43_END"
                             }
                         ]
                     },
@@ -6204,24 +6252,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.5-6-44"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.5-6-44"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.5_END-6_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.6_BEGIN-6_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.5_END-44_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.44_BEGIN-44_END"
                             }
                         ]
                     },
@@ -6452,24 +6488,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.7-6-45"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.7-6-45"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.7_BEGIN-6_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.6_END-6_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.7_BEGIN-45_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.45_BEGIN-45_END"
                             }
                         ]
                     },
@@ -6700,24 +6724,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.9-10-54"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.9-10-54"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.9_END-10_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.10_BEGIN-10_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.9_END-54_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.54_BEGIN-54_END"
                             }
                         ]
                     },
@@ -6927,24 +6939,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.11-10-48"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.11-10-48"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.11_BEGIN-10_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.10_END-10_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.11_BEGIN-48_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.48_BEGIN-48_END"
                             }
                         ]
                     },
@@ -6960,24 +6960,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.11-12-55"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.11-12-55"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.11_END-12_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.12_BEGIN-12_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.11_END-55_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.55_BEGIN-55_END"
                             }
                         ]
                     },
@@ -7659,24 +7647,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.17-16-49"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.17-16-49"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.17_BEGIN-16_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.16_END-16_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.17_BEGIN-49_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.49_BEGIN-49_END"
                             }
                         ]
                     },
@@ -7692,24 +7668,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.17-18-69"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.17-18-69"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.17_END-18_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.18_BEGIN-18_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.17_END-69_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.69_BEGIN-69_END"
                             }
                         ]
                     },
@@ -7822,24 +7786,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.18-19-52"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.18-19-52"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.18_END-19_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.19_BEGIN-19_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.18_END-52_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.52_BEGIN-52_END"
                             }
                         ]
                     },
@@ -7952,24 +7904,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.19-20-50"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.19-20-50"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.19_END-20_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.20_BEGIN-20_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.19_END-50_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.50_BEGIN-50_END"
                             }
                         ]
                     },
@@ -8154,24 +8094,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.21-20-51"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.21-20-51"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.21_BEGIN-20_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.20_END-20_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.21_BEGIN-51_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.51_BEGIN-51_END"
                             }
                         ]
                     },
@@ -8238,24 +8166,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.22-23-41"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.22-23-41"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.22_BEGIN-23_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.23_BEGIN-23_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.22_BEGIN-41_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.41_END-41_BEGIN"
                             }
                         ]
                     },
@@ -8465,24 +8381,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.24-23-42"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.24-23-42"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.24_BEGIN-23_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.23_END-23_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.24_BEGIN-42_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.42_BEGIN-42_END"
                             }
                         ]
                     },
@@ -8498,24 +8402,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.24-25-43"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.24-25-43"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.24_END-25_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.25_BEGIN-25_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.24_END-43_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.43_END-43_BEGIN"
                             }
                         ]
                     },
@@ -8864,24 +8756,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.27-28-46"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.27-28-46"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.27_END-28_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.28_BEGIN-28_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.27_END-46_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.46_BEGIN-46_END"
                             }
                         ]
                     },
@@ -9112,24 +8992,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.29-28-47"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.29-28-47"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.29_BEGIN-28_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.28_END-28_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.29_BEGIN-47_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.47_BEGIN-47_END"
                             }
                         ]
                     },
@@ -9360,24 +9228,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.31-32-48"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.31-32-48"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.31_END-32_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.32_BEGIN-32_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.31_END-48_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.48_END-48_BEGIN"
                             }
                         ]
                     },
@@ -9844,24 +9700,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.35-36-49"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.35-36-49"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.35_END-36_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.36_BEGIN-36_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.35_END-49_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.49_END-49_BEGIN"
                             }
                         ]
                     },
@@ -10071,24 +9915,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.37-36-69"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.37-36-69"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.37_BEGIN-36_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.36_END-36_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.37_BEGIN-69_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.69_END-69_BEGIN"
                             }
                         ]
                     },
@@ -10104,24 +9936,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.37-38-53"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.37-38-53"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.37_END-38_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.38_BEGIN-38_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.37_END-53_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.53_BEGIN-53_END"
                             }
                         ]
                     },
@@ -10331,24 +10151,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.39-38-50"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.39-38-50"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.39_BEGIN-38_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.38_END-38_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.39_BEGIN-50_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.50_END-50_BEGIN"
                             }
                         ]
                     },
@@ -10364,24 +10172,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.39-40-51"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.39-40-51"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.39_END-40_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.40_BEGIN-40_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.39_END-51_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.51_END-51_BEGIN"
                             }
                         ]
                     },
@@ -12413,24 +12209,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.58-56-57"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.58-56-57"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.58_BEGIN-56_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.56_END-56_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.58_BEGIN-57_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.57_END-57_BEGIN"
                             }
                         ]
                     },
@@ -12446,24 +12230,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.58-59-64"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.58-59-64"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.58_END-59_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.59_BEGIN-59_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.58_END-64_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.64_BEGIN-64_END"
                             }
                         ]
                     },
@@ -12673,24 +12445,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.60-59-65"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.60-59-65"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.60_BEGIN-59_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.59_END-59_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.60_BEGIN-65_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.65_END-65_BEGIN"
                             }
                         ]
                     },
@@ -12706,24 +12466,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.60-61-66"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.60-61-66"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.60_END-61_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.61_BEGIN-61_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.60_END-66_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.66_BEGIN-66_END"
                             }
                         ]
                     },
@@ -12933,24 +12681,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.62-61-67"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.62-61-67"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.62_BEGIN-61_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.61_END-61_BEGIN"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.62_BEGIN-67_END"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.67_END-67_BEGIN"
                             }
                         ]
                     },
@@ -12966,24 +12702,12 @@
                         "function": "switch_signal",
                         "arguments": [
                             {
+                                "type": "signal",
+                                "signal": "il.sig.switch.62-63-68"
+                            },
+                            {
                                 "type": "switch",
                                 "switch": "il.switch.62-63-68"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.62_END-63_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.63_BEGIN-63_END"
-                            },
-                            {
-                                "type": "route",
-                                "route": "rt.62_END-68_BEGIN"
-                            },
-                            {
-                                "type": "signal",
-                                "signal": "il.sig.bal3.68_BEGIN-68_END"
                             }
                         ]
                     },
