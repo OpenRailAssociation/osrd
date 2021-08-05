@@ -309,8 +309,11 @@ class TrainScheduleView(
 
     def update(self, request, *args, **kwargs):
         train_schedule = self.get_object()
+        serializer = self.get_serializer(train_schedule, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
         self.generate_schedule_result(train_schedule)
-        return Response({"id": train_schedule.pk})
+        return Response(serializer.data)
 
     @action(detail=True, methods=["get"])
     def result(self, request, pk=None):
@@ -350,6 +353,7 @@ class TrainScheduleView(
             "rolling_stocks": [train_schedule.rolling_stock.to_railjson()],
             "train_schedules": [get_train_schedule_payload(train_schedule)],
         }
+        TrainScheduleResult.objects.filter(train_schedule=train_schedule).delete()
 
         try:
             response = requests.post(
