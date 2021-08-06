@@ -243,18 +243,19 @@ public class RJSTrainScheduleParser {
     private static List<TrainStop> parseStops(RJSTrainStop[] stops, Infra infra, TrainPath path)
             throws InvalidSchedule {
         var res = new ArrayList<TrainStop>();
-        res.add(new TrainStop(path.length - 10, 0));
-        if (stops == null)
-            return res;
-        for (var stop : stops) {
-            if ((stop.position == null) == (stop.location == null))
-                throw new InvalidSchedule("Train stop must specify exactly one of position or location");
-            double position;
-            if (stop.position != null)
-                position = stop.position;
-            else
-                position = path.convertTrackLocation(parseLocation(infra, stop.location));
-            res.add(new TrainStop(position, stop.duration));
+        if (stops != null) {
+            for (var stop : stops) {
+                if ((stop.position == null) == (stop.location == null))
+                    throw new InvalidSchedule("Train stop must specify exactly one of position or location");
+                double position;
+                if (stop.position != null)
+                    position = stop.position;
+                else
+                    position = path.convertTrackLocation(parseLocation(infra, stop.location));
+                res.add(new TrainStop(position, stop.duration));
+            }
+        } else {
+            res.add(new TrainStop(path.length - 10, 0));
         }
         return res;
     }
