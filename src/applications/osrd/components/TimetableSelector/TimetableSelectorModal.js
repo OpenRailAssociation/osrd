@@ -9,6 +9,7 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { setSuccess } from 'reducers/main.ts';
+import icon from 'assets/pictures/timetable.svg';
 
 const timetableURL = '/osrd/timetable';
 
@@ -65,7 +66,10 @@ export default function TimetableSelectorModal() {
   return (
     <ModalSNCF htmlID="timetable-selector-modal">
       <ModalHeaderSNCF>
-        {t('osrdconf:timetablechoose')}
+        <div className="d-flex align-items-center h1">
+          <img className="mr-3" src={icon} alt="timetable icon" width="48px" />
+          {t('osrdconf:timetablechoose')}
+        </div>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
         <>

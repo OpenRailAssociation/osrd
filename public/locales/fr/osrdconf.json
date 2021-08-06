@@ -14,7 +14,7 @@
     "title": "Une erreur est survenue"
   },
   "gare": "Gare, poste",
-  "infrachoose": "Choisissez une infrastructure",
+  "infrachoose": "Choix de l'infrastructure",
   "infrastructure": "Infrastructure",
   "launchSimulation": "Démarrer",
   "noTimetable": "Aucune",
@@ -25,7 +25,7 @@
   "simulation": "Simulation",
   "stopSimulation": "Stopper",
   "timetable": "Grille horaire",
-  "timetablechoose": "Choisissez ou ajoutez une grille horaire",
+  "timetablechoose": "Choix ou ajout d'une grille horaire",
   "timetabledelete": "Grille horaire effacée",
   "title": "Configuration simulation",
   "track": "Voie",

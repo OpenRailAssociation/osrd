@@ -8,6 +8,7 @@ import { datetime2string } from 'utils/timeManipulation';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import icon from 'assets/pictures/tracks.svg';
 
 export default function InfraSelectorModal(props) {
   const dispatch = useDispatch();
@@ -17,7 +18,10 @@ export default function InfraSelectorModal(props) {
   return (
     <ModalSNCF htmlID="infra-selector-modal">
       <ModalHeaderSNCF>
-        {t('osrdconf:infrachoose')}
+        <div className="d-flex align-items-center h1">
+          <img className="mr-3" src={icon} alt="infra schema" width="48px" />
+          {t('osrdconf:infrachoose')}
+        </div>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
         <>
