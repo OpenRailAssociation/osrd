@@ -21,6 +21,8 @@ import java.util.Set;
 
 import java.util.*;
 
+import static java.util.Collections.max;
+
 public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
     // TODO use this parameter
@@ -82,33 +84,25 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     // get the high boundary for the binary search, corresponding to vf = max
     @Override
     protected double getFirstHighEstimate() {
-        double max = 0;
-        double position = sectionBegin;
-        double endLocation = sectionEnd;
-        // get max allowed speed
-        while (position < endLocation) {
-            double val = SpeedController.getDirective(maxSpeedControllers, position).allowedSpeed;
-            if (val > max)
-                max = val;
-            position += 1;
-        }
+        var speeds = getExpectedSpeeds(sim, schedule, maxSpeedControllers, TIME_STEP);
+        double maxSpeed = max(speeds.values());
 
         double tolerance = .000001; // Stop if you're close enough
         int maxCount = 200; // Maximum number of Newton's method iterations
-        double x = max * 3 / 2; // at high v1 the equation vf = f(v1) tends to be vf = 2*v1/3
+        double x = maxSpeed * 3 / 2; // at high v1 the equation vf = f(v1) tends to be vf = 2*v1/3
 
         for (int count = 1;
                 //Carry on till we're close, or we've run it 200 times.
-                (Math.abs(newtonsMethod(x, max)) > tolerance) && (count < maxCount);
+                (Math.abs(newtonsMethod(x, maxSpeed)) > tolerance) && (count < maxCount);
                 count++)  {
 
-            x = x - newtonsMethod(x, max) / newtonsMethodDerivative(x, max);  //Newtons method.
+            x = x - newtonsMethod(x, maxSpeed) / newtonsMethodDerivative(x, maxSpeed);  //Newtons method.
         }
 
-        if (Math.abs(newtonsMethod(x, max)) <= tolerance) {
+        if (Math.abs(newtonsMethod(x, maxSpeed)) <= tolerance) {
             return x;
         } else {
-            return max * 2; // if no value has been found return a high value to have some margin
+            return maxSpeed * 2; // if no value has been found return a high value to have some margin
         }
     }
 
