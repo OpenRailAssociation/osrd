@@ -24,7 +24,7 @@ public class ActivateRoute {
         var nextRoute = lastState.path.routePath.get(lastState.routeIndex + 1);
         var nextRouteState = sim.infraState.getRouteState(nextRoute.index);
         sim.infraState.towerState.request(sim, nextRouteState, train);
-        reserveNextIfNeeded(sim, train);
+        reserveNextIfNeeded(sim, train, lastState.routeIndex + 1);
     }
 
     /** Reserve the initial routes, mark occupied tvd sections and add interactable elements that are under the train
@@ -38,7 +38,7 @@ public class ActivateRoute {
             throw new SimulationError(String.format(
                     "Impossible to reserve the route '%s' since it is not available.", routeState.route.id));
         routeState.initialReserve(sim);
-        reserveNextIfNeeded(sim, sim.trains.get(trainState.trainSchedule.trainID));
+        reserveNextIfNeeded(sim, sim.trains.get(trainState.trainSchedule.trainID), 0);
 
         // Reserve the tvdSection where the train is created
         var trainPosition = trainState.location.trackSectionRanges.getFirst();
@@ -56,11 +56,13 @@ public class ActivateRoute {
     }
 
     /** If the current route is a single TVD section long, we need to reserve the next one as well. */
-    private static void reserveNextIfNeeded(Simulation sim, Train train) throws SimulationError {
-        var route = train.schedule.plannedPath.routePath.get(0);
-        if (route.tvdSectionsPaths.size() > 1 || train.schedule.plannedPath.routePath.size() <= 1)
+    private static void reserveNextIfNeeded(Simulation sim, Train train, int routeIndex) throws SimulationError {
+        if (train.schedule.plannedPath.routePath.size() <= routeIndex + 1)
             return;
-        var nextRoute = train.schedule.plannedPath.routePath.get(1);
+        var route = train.schedule.plannedPath.routePath.get(routeIndex);
+        if (route.tvdSectionsPaths.size() > 1)
+            return;
+        var nextRoute = train.schedule.plannedPath.routePath.get(routeIndex + 1);
         var state = sim.infraState.getRouteState(nextRoute.index);
         if (state.status == RouteStatus.FREE)
             sim.infraState.towerState.request(sim, state, train);
