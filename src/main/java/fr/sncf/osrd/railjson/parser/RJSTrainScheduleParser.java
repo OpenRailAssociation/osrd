@@ -255,6 +255,7 @@ public class RJSTrainScheduleParser {
                 res.add(new TrainStop(position, stop.duration));
             }
         } else {
+            // TODO: put the stop at the actual end and not 10m before, once we have more accurate stops
             res.add(new TrainStop(path.length - 10, 0));
         }
         return res;
