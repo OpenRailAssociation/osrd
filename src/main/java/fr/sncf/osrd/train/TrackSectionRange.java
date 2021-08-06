@@ -178,6 +178,6 @@ public final class TrackSectionRange extends Range implements DeepComparable<Tra
     @Override
     public String toString() {
         return String.format("TrackSectionRange { Track=%s, direction=%s, begin=%f, end=%f }",
-                edge, direction, beginPosition, endPosition);
+                edge, direction, begin, end);
     }
 }
