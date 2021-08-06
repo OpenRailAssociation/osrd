@@ -37,7 +37,7 @@ export const formatData = (trains, trainNumber, dataName) => trains[trainNumber]
   .map((step) => ({ space: step.space, value: step.speed }));
 
 export const handleWindowResize = (
-  chartID, drawTrain, dispatch, isResizeActive, setResizeActive,
+  chartID, dispatch, drawTrain, isResizeActive, setResizeActive,
 ) => {
   if (!isResizeActive) {
     let timeOutFunctionId;

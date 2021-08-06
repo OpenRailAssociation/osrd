@@ -78,7 +78,7 @@ export default function SpeedSpaceChart() {
 
   useEffect(() => {
     drawTrain();
-    handleWindowResize(CHART_ID, drawTrain, isResizeActive, setResizeActive);
+    handleWindowResize(CHART_ID, dispatch, drawTrain, isResizeActive, setResizeActive);
   }, [chart, mustRedraw, rotate]);
 
   useEffect(() => {
