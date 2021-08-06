@@ -26,7 +26,6 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
     @Override
     public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule,
                                          Set<SpeedController> maxSpeed) {
-        double timeStep = 1;
         // find the percentage of the allowance to add to the whole path
         double percentage;
         if (allowanceType.equals(MarginType.TIME))
@@ -41,7 +40,7 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
         }
         double scaleFactor = 1 / (1 + percentage / 100);
 
-        var expectedSpeeds = getExpectedSpeeds(sim, schedule, maxSpeed, timeStep);
+        var expectedSpeeds = getExpectedSpeeds(sim, schedule, maxSpeed, TIME_STEP);
         var speedController = new MapSpeedController(expectedSpeeds, sectionBegin, sectionEnd);
         return addSpeedController(maxSpeed, speedController.scaled(scaleFactor));
     }
