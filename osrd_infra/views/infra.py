@@ -18,7 +18,7 @@ class InfraView(
     mixins.ListModelMixin,
     GenericViewSet,
 ):
-    queryset = Infra.objects.all()
+    queryset = Infra.objects.order_by("-modified")
     serializer_class = InfraSerializer
 
     def perform_create(self, serializer):
