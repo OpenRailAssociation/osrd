@@ -347,7 +347,8 @@ public class Helpers {
     /** Throws an error if the (interpolated) time per position differ too much */
     public static void assertSameSpeedPerPosition(Iterable<TimelineEvent> eventsExpected,
                                                   Iterable<TimelineEvent> events) {
-        assertSameSpeedPerPositionBetween(eventsExpected, events, 0, Double.POSITIVE_INFINITY, 1);
+        assertSameSpeedPerPositionBetween(eventsExpected, events, 0,
+                Double.POSITIVE_INFINITY, 1);
     }
 
     /** Throws an error if the (interpolated) time per position differ too much between begin and end
@@ -364,7 +365,7 @@ public class Helpers {
         for (double t = begin; t < end; t += 1) {
             var expected = expectedSpeedPerPosition.interpolate(t) * expectedScale;
             var result = speedPerPosition.interpolate(t);
-            assertEquals(expected, result, expected * 0.01);
+            assertEquals(expected, result, 0.2 + expected * 0.02);
         }
     }
 
@@ -375,6 +376,10 @@ public class Helpers {
             if (event instanceof TrainReachesActionPoint) {
                 var trainReachesActionPoint = (TrainReachesActionPoint) event;
                 for (var update : trainReachesActionPoint.trainStateChange.positionUpdates)
+                    res.put(update.pathPosition, update.speed);
+            } else if (event instanceof TrainMoveEvent) {
+                var trainMoveEvent = (TrainMoveEvent) event;
+                for (var update : trainMoveEvent.trainStateChange.positionUpdates)
                     res.put(update.pathPosition, update.speed);
             }
         }

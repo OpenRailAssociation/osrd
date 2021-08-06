@@ -106,10 +106,12 @@ public abstract class SpeedControllerGenerator {
 
         double speed = initialSpeed;
         do {
+            var nextPosition = location.getPathPosition() + speed * timestep;
+            final var finalNextPosition = min(nextPosition, end);
             var activeControllers = controllers.stream()
-                    .filter(x -> x.isActive(location))
+                    .filter(x -> x.isActive(finalNextPosition))
                     .collect(Collectors.toSet());
-            var directive = SpeedController.getDirective(activeControllers, location.getPathPosition());
+            var directive = SpeedController.getDirective(activeControllers, nextPosition);
 
             var integrator = TrainPhysicsIntegrator.make(timestep, schedule.rollingStock,
                     speed, location.maxTrainGrade());
