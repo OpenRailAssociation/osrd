@@ -5,7 +5,7 @@ from osrd_infra.models.pathfinding import Path
 
 
 class Timetable(models.Model):
-    infra = models.ForeignKey(Infra, on_delete=models.DO_NOTHING)
+    infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     name = models.CharField(max_length=128)
 
 
@@ -14,7 +14,7 @@ class TrainSchedule(models.Model):
     timetable = models.ForeignKey(
         Timetable, on_delete=models.CASCADE, related_name="train_schedules"
     )
-    rolling_stock = models.ForeignKey(RollingStock, on_delete=models.DO_NOTHING)
+    rolling_stock = models.ForeignKey(RollingStock, on_delete=models.CASCADE)
     departure_time = models.FloatField()
     path = models.ForeignKey(Path, on_delete=models.CASCADE)
     initial_speed = models.FloatField()
