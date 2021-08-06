@@ -164,9 +164,11 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         locationChange.speedControllersUpdates.dedupAdd(prevLocation, activeSpeedControllers);
 
         // get the speed directive
+        var nextPosition = location.getPathPosition() + speed * timeStep;
+        nextPosition = Double.min(nextPosition, trainSchedule.plannedPath.length);
         var speedDirective = new SpeedDirective(Double.POSITIVE_INFINITY);
         for (var controller : activeSpeedControllers)
-            speedDirective.mergeWith(controller.getDirective(location.getPathPosition()));
+            speedDirective.mergeWith(controller.getDirective(nextPosition));
         // get the action the driver
         Action action = trainSchedule.trainDecisionMaker.getNextAction(speedDirective, integrator);
 

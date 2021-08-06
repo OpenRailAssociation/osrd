@@ -41,21 +41,8 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
         }
         double scaleFactor = 1 / (1 + percentage / 100);
 
-        // This is needed to have a similar distance delta per step, needed for the shift (see next comment)
-        double expectedSpeedTimeStep = timeStep * scaleFactor;
-
-        var expectedSpeeds = getExpectedSpeeds(sim, schedule, maxSpeed, expectedSpeedTimeStep);
-
-        // We shift the speed limits by one position: the max speed at t is the speed at t + dt
-        // This is because we use the position of the train to evaluate the target speed at the next simulation step
-        // Once this offset is removed (and the associated bugs fixed), we can remove this block
-        var keys = new ArrayList<>(expectedSpeeds.navigableKeySet());
-        var speedLimits = new SortedDoubleMap();
-        for (int i = 1; i < keys.size(); i++)
-            speedLimits.put(keys.get(i - 1), expectedSpeeds.get(keys.get(i)));
-        speedLimits.put(expectedSpeeds.lastKey(), expectedSpeeds.lastEntry().getValue());
-
-        var speedController = new MapSpeedController(speedLimits, sectionBegin, sectionEnd);
+        var expectedSpeeds = getExpectedSpeeds(sim, schedule, maxSpeed, timeStep);
+        var speedController = new MapSpeedController(expectedSpeeds, sectionBegin, sectionEnd);
         return addSpeedController(maxSpeed, speedController.scaled(scaleFactor));
     }
 

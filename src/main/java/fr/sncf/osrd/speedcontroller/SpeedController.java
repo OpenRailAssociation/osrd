@@ -30,7 +30,7 @@ public abstract class SpeedController implements DeepComparable<SpeedController>
     }
 
     public boolean isActive(TrainState state) {
-        return isActive(state.location);
+        return isActive(state.location.getPathPosition() + state.speed * 1); // TODO find timestep here
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST", "FE_FLOATING_POINT_EQUALITY"})
