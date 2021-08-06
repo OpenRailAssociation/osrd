@@ -3,6 +3,7 @@ package fr.sncf.osrd.api;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.api.InfraManager.InfraLoadException;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
@@ -30,7 +31,7 @@ public class PathfindingTracksEndpoint extends PathfindingEndpoint {
             .failOnUnknown();
 
 
-    public PathfindingTracksEndpoint(InfraHandler infraHandler) {
+    public PathfindingTracksEndpoint(InfraManager infraHandler) {
         super(infraHandler);
     }
 
@@ -47,8 +48,8 @@ public class PathfindingTracksEndpoint extends PathfindingEndpoint {
         // load infra
         Infra infra;
         try {
-            infra = infraHandler.load(request.infra);
-        } catch (InvalidInfraException | IOException e) {
+            infra = infraManager.load(request.infra);
+        } catch (InfraLoadException | InterruptedException e) {
             return new RsWithStatus(new RsText(
                     String.format("Error loading infrastructure '%s'%n%s", request.infra, e.getMessage())), 400);
         }
