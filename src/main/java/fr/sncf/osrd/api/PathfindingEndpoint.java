@@ -14,10 +14,10 @@ public abstract class PathfindingEndpoint implements Take {
             .adapter(PathfindingRequest.class)
             .failOnUnknown();
 
-    protected final InfraHandler infraHandler;
+    protected final InfraManager infraManager;
 
-    public PathfindingEndpoint(InfraHandler infraHandler) {
-        this.infraHandler = infraHandler;
+    public PathfindingEndpoint(InfraManager infraHandler) {
+        this.infraManager = infraHandler;
     }
 
     public static final class PathfindingWaypoint {

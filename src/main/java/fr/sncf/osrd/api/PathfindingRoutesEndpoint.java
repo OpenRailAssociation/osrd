@@ -4,6 +4,7 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.api.InfraManager.InfraLoadException;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
@@ -18,6 +19,9 @@ import fr.sncf.osrd.utils.graph.DistCostFunction;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.path.BasicPathNode;
 import fr.sncf.osrd.utils.graph.path.FullPathArray;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.rq.RqPrint;
@@ -32,6 +36,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
+    static final Logger logger = LoggerFactory.getLogger(PathfindingRoutesEndpoint.class);
+
     public static final JsonAdapter<PathfindingResult> adapterResult = new Moshi
             .Builder()
             .build()
@@ -39,7 +45,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             .failOnUnknown();
 
 
-    public PathfindingRoutesEndpoint(InfraHandler infraHandler) {
+    public PathfindingRoutesEndpoint(InfraManager infraHandler) {
         super(infraHandler);
     }
 
@@ -57,8 +63,8 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
         // load infra
         Infra infra;
         try {
-            infra = infraHandler.load(request.infra);
-        } catch (InvalidInfraException | IOException e) {
+            infra = infraManager.load(request.infra);
+        } catch (InfraLoadException | InterruptedException e) {
             return new RsWithStatus(new RsText(
                     String.format("Error loading infrastructure '%s'%n%s", request.infra, e.getMessage())), 400);
         }

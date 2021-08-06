@@ -7,6 +7,7 @@ import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.StopActionPoint.StopReachedChange;
 import fr.sncf.osrd.train.TrainSchedule;
+import fr.sncf.osrd.api.InfraManager.InfraLoadException;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.SuccessionTable;
@@ -48,7 +49,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class SimulationEndpoint implements Take {
-    private final InfraHandler infraHandler;
+    private final InfraManager infraHandler;
 
     public static final JsonAdapter<SimulationRequest> adapterRequest = new Moshi
             .Builder()
@@ -65,7 +66,7 @@ public class SimulationEndpoint implements Take {
             .build()
             .adapter(SimulationResultChange[].class);
 
-    public SimulationEndpoint(InfraHandler infraHandler) {
+    public SimulationEndpoint(InfraManager infraHandler) {
         this.infraHandler = infraHandler;
     }
 
@@ -86,7 +87,7 @@ public class SimulationEndpoint implements Take {
         Infra infra;
         try {
             infra = infraHandler.load(request.infra);
-        } catch (InvalidInfraException | IOException e) {
+        } catch (InfraLoadException | InterruptedException e) {
             return new RsWithStatus(new RsText(
                     String.format("Error loading infrastructure '%s'%n%s", request.infra, e.getMessage())), 400);
         }
