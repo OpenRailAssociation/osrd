@@ -76,13 +76,18 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
 
         currentSpeedControllers.add(new MapSpeedController(roiSpeeds).scaled(scaleFactor));
 
-        LimitAnnounceSpeedController brakingSpeedController = LimitAnnounceSpeedController.create(
-                initialSpeed,
-                initialSpeed * scaleFactor,
-                endBrakingPosition,
-                schedule.rollingStock.gamma
-        );
-        currentSpeedControllers.add(brakingSpeedController);
+        var res = new HashSet<>(maxSpeedControllers);
+
+        if (endBrakingPosition != initialPosition) {
+            LimitAnnounceSpeedController brakingSpeedController = LimitAnnounceSpeedController.create(
+                    initialSpeed,
+                    initialSpeed * scaleFactor,
+                    endBrakingPosition,
+                    schedule.rollingStock.gamma
+            );
+            currentSpeedControllers.add(brakingSpeedController);
+            res.add(brakingSpeedController);
+        }
 
         // new running calculation with brakingSpeedController + scaled MapSpeedController
         // now only the re-acceleration phase is missing
@@ -106,10 +111,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
             location = convertPosition(schedule, sim, location.getPathPosition() - update.positionDelta);
         }
 
-        var res = new HashSet<>(maxSpeedControllers);
         var initialSpeedControllers = new HashSet<>(maxSpeedControllers);
-
-        res.add(brakingSpeedController);
 
         // scaled MapSpeedControllers only between the end of the braking phase and the beginning of the acceleration
         var speedsEndingEarlier = getExpectedSpeeds(sim, schedule, initialSpeedControllers, TIME_STEP,

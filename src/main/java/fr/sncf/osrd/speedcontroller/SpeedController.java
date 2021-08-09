@@ -2,6 +2,7 @@ package fr.sncf.osrd.speedcontroller;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.ChangeSerializer.SerializableDouble;
+import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.train.TrainPositionTracker;
 import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.utils.DeepComparable;
@@ -30,7 +31,7 @@ public abstract class SpeedController implements DeepComparable<SpeedController>
     }
 
     public boolean isActive(TrainState state) {
-        return isActive(state.location.getPathPosition() + state.speed * 1); // TODO find timestep here
+        return isActive(state.location.getPathPosition() + state.speed * SpeedControllerGenerator.TIME_STEP);
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST", "FE_FLOATING_POINT_EQUALITY"})
