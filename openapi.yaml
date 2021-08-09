@@ -4,3 +4,41 @@ info:
   description: OSRD master race
   version: 1.0.0
 paths:
+  /schema/:
+    get:
+      summary: List all models and their content
+      responses:
+        200:
+          description: The description
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entities:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        entity_name:
+                          type: string
+                        components:
+                          type: array
+                          items:
+                            type: string
+                  components:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        component_name:
+                          type: string
+                        fields:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              type:
+                                type: string
