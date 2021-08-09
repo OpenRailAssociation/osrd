@@ -4,6 +4,78 @@ info:
   description: OSRD master race
   version: 1.0.0
 paths:
+  /rolling_stock/:
+    get:
+      summary: List all available rolling stock
+      responses:
+        200:
+          description: The rolling stock list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                  next: {}
+                  previous: {}
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                        name:
+                          type: string
+                        owner:
+                          type: string
+                        length:
+                          type: number
+                        mass:
+                          type: number
+                        inertia_coefficient:
+                          type: number
+                        rolling_resistance:
+                          type: object
+                          properties:
+                            A:
+                              type: number
+                            B:
+                              type: number
+                            C:
+                              type: number
+                            type:
+                              type: string
+                        capabilities:
+                          type: array
+                          items:
+                            type: string
+                        max_speed:
+                          type: number
+                        startup_time:
+                          type: number
+                        startup_acceleration:
+                          type: number
+                        comfort_acceleration:
+                          type: number
+                        timetable_gamma:
+                          type: number
+                        tractive_effort_curves:
+                          type: object
+                          properties:
+                            SC:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  speed: {}
+                                  max_effort: {}
+                        traction_mode:
+                          type: string
+                        power_class:
+                          type: number
+                        image: {}
   /schema/:
     get:
       summary: List all models and their content
