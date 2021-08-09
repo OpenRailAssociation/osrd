@@ -7,6 +7,7 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
+import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.train.phases.PhaseState;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.DeepComparable;
@@ -200,10 +201,10 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         var locationChange = new Train.TrainStateChange(sim, trainSchedule.trainID, this);
 
         for (int i = 0; location.getPathPosition() < goalPathPosition; i++) {
-            if (i >= 10000)
+            if (i >= 1000000)
                 throw new SimulationError("train physics numerical integration doesn't seem to stop");
             var distanceStep = goalPathPosition - location.getPathPosition();
-            step(locationChange, 1.0, distanceStep);
+            step(locationChange, SpeedControllerGenerator.TIME_STEP, distanceStep);
             // Stop the evolution if the train has stopped
             if (speed < 0.0000001)
                 break;
@@ -222,7 +223,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         var locationChange = new Train.TrainStateChange(sim, trainSchedule.trainID, this);
 
         while (this.time + 1.0 < targetTime)
-            step(locationChange, 1.0, Double.POSITIVE_INFINITY);
+            step(locationChange, SpeedControllerGenerator.TIME_STEP, Double.POSITIVE_INFINITY);
         step(locationChange, targetTime - this.time, Double.POSITIVE_INFINITY);
 
         return locationChange;
@@ -238,7 +239,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
         while (location.getPathPosition() < goalPathPosition && this.time + 1.0 < targetTime) {
             var distanceStep = goalPathPosition - location.getPathPosition();
-            step(locationChange, 1.0, distanceStep);
+            step(locationChange, SpeedControllerGenerator.TIME_STEP, distanceStep);
         }
 
         // If the position goal has not been reached, 
