@@ -149,13 +149,6 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             @SuppressWarnings("SameParameterValue") double timeStep,
             double distanceStep
     ) {
-        var rollingStock = trainSchedule.rollingStock;
-        var integrator = TrainPhysicsIntegrator.make(
-                timeStep,
-                rollingStock,
-                speed,
-                location.maxTrainGrade());
-
         var prevLocation = location.getPathPosition();
 
         // get the list of active speed controllers
@@ -169,6 +162,14 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         var speedDirective = new SpeedDirective(Double.POSITIVE_INFINITY);
         for (var controller : activeSpeedControllers)
             speedDirective.mergeWith(controller.getDirective(nextPosition));
+
+        var rollingStock = trainSchedule.rollingStock;
+        var integrator = TrainPhysicsIntegrator.make(
+                timeStep,
+                rollingStock,
+                speed,
+                location.maxTrainGrade());
+
         // get the action the driver
         Action action = trainSchedule.trainDecisionMaker.getNextAction(speedDirective, integrator);
 
