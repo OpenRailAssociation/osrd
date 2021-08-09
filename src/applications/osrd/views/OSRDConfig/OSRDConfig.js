@@ -7,7 +7,7 @@ import Itinerary from 'applications/osrd/views/OSRDConfig/Itinerary';
 import Map from 'applications/osrd/views/OSRDConfig/Map';
 import InfraSelector from 'applications/osrd/views/OSRDConfig/InfraSelector';
 import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
-import TrainCompoSelector from 'applications/osrd/views/OSRDConfig/TrainCompoSelector';
+import RollingStockSelector from 'applications/osrd/views/OSRDConfig/RollingStockSelector';
 import AddTrainSchedule from 'applications/osrd/views/OSRDConfig/AddTrainSchedule';
 import AddTrainLabels from 'applications/osrd/views/OSRDConfig/AddTrainLabels';
 import 'applications/osrd/views/OSRDConfig/OSRDConfig.scss';
@@ -38,7 +38,7 @@ export default function OSRDConfig() {
             mustUpdateTimetable={mustUpdateTimetable}
             setMustUpdateTimetable={setMustUpdateTimetable}
           />
-          <TrainCompoSelector />
+          <RollingStockSelector />
           <Itinerary
             title={t('translation:common.itinerary')}
             updateExtViewport={setExtViewport}

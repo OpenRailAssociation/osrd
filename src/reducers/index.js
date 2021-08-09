@@ -9,11 +9,11 @@ import mapReducer from './map';
 import editorReducer from './editor';
 import osrdconfReducer from './osrdconf';
 import osrdsimulationReducer from './osrdsimulation';
-import trainCompoReducer from './traincompo';
+import rollingStockReducer from './rollingstock';
 // import phritReducer from './phrit';
 
 const compressor = createCompressor({
-  whitelist: ['traincompo'],
+  whitelist: ['rollingstock'],
 });
 
 const mapWhiteList = [
@@ -62,7 +62,7 @@ const rootReducer = {
   main: mainReducer,
   osrdconf: persistReducer(osrdconfPersistConfig, osrdconfReducer),
   osrdsimulation: osrdsimulationReducer,
-  traincompo: trainCompoReducer,
+  rollingstock: rollingStockReducer,
 };
 
 export default persistCombineReducers(persistConfig, rootReducer);

@@ -5,12 +5,12 @@ import { useTranslation } from 'react-i18next';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
-import TrainCompo from 'applications/osrd/components/TrainCompo/TrainCompo';
+import RollingStock from 'applications/osrd/components/RollingStock/RollingStock';
 import icon from 'assets/pictures/train.svg';
 
 const ROLLINGSTOCK_URL = '/osrd/rolling_stock';
 
-export default function TrainCompoSelector() {
+export default function RollingStockSelector() {
   const { rollingStockID } = useSelector((state) => state.osrdconf);
   const { t } = useTranslation(['translation', 'osrdconf']);
   const [rollingStockSelected, setRollingStockSelected] = useState(undefined);
@@ -36,7 +36,7 @@ export default function TrainCompoSelector() {
         <div
           className="osrd-config-item-container d-flex osrd-config-item-clickable"
           data-toggle="modal"
-          data-target="#trainCompoModal"
+          data-target="#rollingStockModal"
         >
           <div className="h2 d-flex align-items-center">
             <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
@@ -45,15 +45,15 @@ export default function TrainCompoSelector() {
               rollingStockSelected.name
             ) : (
               <span className="mr-2 text-muted text-italic">
-                {t('osrdconf:noTrainCompo')}
+                {t('osrdconf:noRollingStock')}
               </span>
             )}
           </div>
         </div>
       </div>
-      <ModalSNCF htmlID="trainCompoModal" optionalClasses="traincompo-modal">
+      <ModalSNCF htmlID="rollingStockModal" size="lg">
         <ModalBodySNCF>
-          <TrainCompo />
+          <RollingStock />
         </ModalBodySNCF>
         <ModalFooterSNCF>
           <div className="d-flex flex-row-reverse w-100">
