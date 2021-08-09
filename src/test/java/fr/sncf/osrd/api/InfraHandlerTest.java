@@ -10,9 +10,9 @@ import java.io.IOException;
 public class InfraHandlerTest {
     @Test
     public void invalidInfra() {
-        var handler = new InfraManager("http://localhost:8000/", "");
+        var manager = new InfraManager("http://localhost:8000/", "");
         Assertions.assertThrows(InfraLoadException.class, () -> {
-            handler.load("invalid");
+            manager.load("invalid");
         });
     }
 }

@@ -49,7 +49,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class SimulationEndpoint implements Take {
-    private final InfraManager infraHandler;
+    private final InfraManager infraManager;
 
     public static final JsonAdapter<SimulationRequest> adapterRequest = new Moshi
             .Builder()
@@ -66,8 +66,8 @@ public class SimulationEndpoint implements Take {
             .build()
             .adapter(SimulationResultChange[].class);
 
-    public SimulationEndpoint(InfraManager infraHandler) {
-        this.infraHandler = infraHandler;
+    public SimulationEndpoint(InfraManager infraManager) {
+        this.infraManager = infraManager;
     }
 
     @Override
@@ -86,7 +86,7 @@ public class SimulationEndpoint implements Take {
         // load infra
         Infra infra;
         try {
-            infra = infraHandler.load(request.infra);
+            infra = infraManager.load(request.infra);
         } catch (InfraLoadException | InterruptedException e) {
             return new RsWithStatus(new RsText(
                     String.format("Error loading infrastructure '%s'%n%s", request.infra, e.getMessage())), 400);
