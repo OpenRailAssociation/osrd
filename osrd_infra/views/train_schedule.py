@@ -228,14 +228,16 @@ def format_signals(train_schedule_result):
 def get_train_phases(path):
     steps = path.payload["steps"]
     step_track = steps[-1]["position"]["track_section"]
-    return [{
-        "type": "navigate",
-        "driver_sight_distance": 400,
-        "end_location": {
-            "track_section": format_track_section_id(step_track),
-            "offset": steps[-1]["position"]["offset"],
-        },
-    }]
+    return [
+        {
+            "type": "navigate",
+            "driver_sight_distance": 400,
+            "end_location": {
+                "track_section": format_track_section_id(step_track),
+                "offset": steps[-1]["position"]["offset"],
+            },
+        }
+    ]
 
 
 def get_train_stops(path):
@@ -294,7 +296,6 @@ class TrainScheduleView(
         if projection_path_string:
             projection_path = get_object_or_404(Path, pk=projection_path_string)
 
-        self.generate_schedule_result(train_schedule)
         return Response(format_result(result, projection_path))
 
     def create(self, request):
@@ -324,7 +325,8 @@ class TrainScheduleView(
         if not response:
             raise ParseError(response.content)
         result, _ = TrainScheduleResult.objects.get_or_create(
-            train_schedule=train_schedule, log=response.json()
+            train_schedule=train_schedule, defaults={"log": {}}
         )
+        result.log = response.json()
         result.save()
         return result
