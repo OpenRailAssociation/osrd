@@ -142,6 +142,11 @@ class PrettyPrinterTest {
                 (RSExpr<RSBool>[]) new RSExpr<?>[] {
                         RSExpr.True.INSTANCE,
                         RSExpr.False.INSTANCE,
+                        RSExpr.False.INSTANCE,
+                        RSExpr.False.INSTANCE,
+                        RSExpr.False.INSTANCE,
+                        RSExpr.False.INSTANCE,
+                        RSExpr.False.INSTANCE,
                         RSExpr.False.INSTANCE
                 }
         );
@@ -150,8 +155,13 @@ class PrettyPrinterTest {
         var expected = String.join("\n",
                 "match \"route\" {",
                 "    FREE: true,",
+                "    REQUESTED: false,",
                 "    RESERVED: false,",
-                "    OCCUPIED: false",
+                "    OCCUPIED: false,",
+                "    CBTC_REQUESTED: false,",
+                "    CBTC_RESERVED: false,",
+                "    CBTC_OCCUPIED: false,",
+                "    CONFLICT: false",
                 "}"
         );
         assertEquals(expected, content.toString());
