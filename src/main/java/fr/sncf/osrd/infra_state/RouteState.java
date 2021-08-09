@@ -9,6 +9,7 @@ import fr.sncf.osrd.simulation.EntityChange;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.SortedArraySet;
 
@@ -111,7 +112,8 @@ public final class RouteState implements RSMatchable {
      * Request all switches to move to the position defined by
      * route.switchesPosition
      * 
-     * @param sim
+     * @param sim the current simulation
+     * @throws SimulationError
      */
     private void requestSwitchPositionChange(Simulation sim) throws SimulationError {
         // Set the switches in the moving position
@@ -129,7 +131,8 @@ public final class RouteState implements RSMatchable {
     /**
      * Reserve the tvd sections of the route
      * 
-     * @param sim
+     * @param sim the current simulation
+     * @throws SimulationError
      */
     public void reserveTvdSection(Simulation sim) throws SimulationError {
         for (var tvdSectionPath : route.tvdSectionsPaths) {
@@ -138,9 +141,19 @@ public final class RouteState implements RSMatchable {
         }
     }
 
+    /**
+     * Reserve a route and his tvd sections. Routes that share tvd sections will
+     * have the status CONFLICT
+     * 
+     * @param sim   the current simulation
+     * @param train the train for which we wish to reserve a route
+     * @throws SimulationError
+     */
     public void reserve(Simulation sim, Train train) throws SimulationError {
+        // Get the current phase of the train
         var trainState = train.getLastState();
         var phase = trainState.trainSchedule.phases.get(trainState.currentPhaseIndex);
+        // Call the reservation function corresponding to the current phase type
         if(phase instanceof SignalNavigatePhase) {
             reserve(sim);
         } /* else if (phase instanceof CBTCNavigatePhase) {
@@ -152,7 +165,8 @@ public final class RouteState implements RSMatchable {
      * Reserve a route and his tvd sections. Routes that share tvd sections will
      * have the status CONFLICT
      * 
-     * @param sim
+     * @param sim the current simulation
+     * @throws SimulationError
      */
     public void reserve(Simulation sim) throws SimulationError {
         assert status == RouteStatus.FREE;
@@ -173,7 +187,8 @@ public final class RouteState implements RSMatchable {
      * Reserve a route and his tvd sections in CBTC. Routes that share tvd sections will
      * have the status CONFLICT
      * 
-     * @param sim
+     * @param sim the current simulation
+     * @throws SimulationError
      */
     public void cbtcReserve(Simulation sim) throws SimulationError {
         assert status == RouteStatus.FREE || hasCBTCStatus();
@@ -192,14 +207,26 @@ public final class RouteState implements RSMatchable {
 
     /** Reserve a route and his tvd sections *when creating a train*.
      * We set the switches position without waiting
+     * 
+     * @param sim the current simulation
+     * @param trainState
+     * @throws SimulationError
      * */
-    public void initialReserve(Simulation sim) throws SimulationError {
+    public void initialReserve(Simulation sim, TrainState trainState) throws SimulationError {
         // Set the switches, no delay and waiting this time
         for (var switchPos : route.switchesPosition.entrySet()) {
             var switchState = sim.infraState.getSwitchState(switchPos.getKey().switchIndex);
             switchState.setPosition(sim, switchPos.getValue());
         }
-        reserve(sim);
+
+        // Get the current phase of the train
+        var phase = trainState.trainSchedule.phases.get(trainState.currentPhaseIndex);
+        // Call the reservation function corresponding to the current phase type
+        if (phase instanceof SignalNavigatePhase) {
+            reserve(sim);
+        } /*
+           * else if (phase instanceof CBTCNavigatePhase) { cbtcReserve(sim); }
+           */
     }
 
     /** Should be called when a switch is done moving and is in the position we requested */
