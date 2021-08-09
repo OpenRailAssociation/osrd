@@ -100,6 +100,10 @@ class RollingStock(models.Model):
         validators=[JSONSchemaValidator(limit_value=EFFORT_CURVE_MAP_SCHEMA)],
     )
 
+    traction_mode = models.CharField(max_length=128)
+
+    power_class = models.PositiveIntegerField(help_text=_(""))
+
     image = models.ImageField(null=True, blank=True)
 
     def __str__(self):
