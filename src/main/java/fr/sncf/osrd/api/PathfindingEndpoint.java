@@ -16,8 +16,8 @@ public abstract class PathfindingEndpoint implements Take {
 
     protected final InfraManager infraManager;
 
-    public PathfindingEndpoint(InfraManager infraHandler) {
-        this.infraManager = infraHandler;
+    public PathfindingEndpoint(InfraManager infraManager) {
+        this.infraManager = infraManager;
     }
 
     public static final class PathfindingWaypoint {
