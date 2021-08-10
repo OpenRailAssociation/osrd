@@ -21,7 +21,7 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
     /**
      * Create an event to reserve the tvd section
      * 
-     * @param sim
+     * @param sim the current simulation
      */
     public void reserve(Simulation sim) throws SimulationError {
         var change = new TVDSectionReservationChange(sim, this, true);
@@ -36,7 +36,7 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
     /**
      * Create an event to free the tvd section
      * 
-     * @param sim
+     * @param sim the current simulation
      */
     public void free(Simulation sim) throws SimulationError {
         var change = new TVDSectionReservationChange(sim, this, false);
@@ -55,7 +55,7 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
     /** 
      * Create an event to notify route that the tvd section is occupied
      * 
-     * @param sim  
+     * @param sim the current simulation
      */
     public void occupy(Simulation sim) throws SimulationError {
         assert isReserved();
@@ -68,7 +68,7 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
     /** 
      * Create an event to notify route that the tvd section is not occupied anymore
      * 
-     * @param sim
+     * @param sim the current simulation
      */
     public void unoccupy(Simulation sim) throws SimulationError {
         assert isReserved();

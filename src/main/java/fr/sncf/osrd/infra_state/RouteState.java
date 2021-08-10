@@ -209,7 +209,7 @@ public final class RouteState implements RSMatchable {
      * We set the switches position without waiting
      * 
      * @param sim the current simulation
-     * @param trainState
+     * @param trainState the initial state of the train
      * @throws SimulationError
      * */
     public void initialReserve(Simulation sim, TrainState trainState) throws SimulationError {
