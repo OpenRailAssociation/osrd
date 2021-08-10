@@ -295,6 +295,12 @@ public final class SignalNavigatePhase implements Phase {
             if (trainState.location.getPathPosition() >= nextInteraction.position) {
                 popInteraction(trainState);
                 return TrainReachesActionPoint.plan(sim, trainState.time, train, simulationResult, nextInteraction);
+            } else if (trainState.speed < 0.0000001
+                    && nextInteraction.actionPoint.getClass() == StopActionPoint.class) {
+                // TODO: This is a hot fix to be sure to have a stop reached event
+                // Find a way to reach the final stop or at least be really close to it.
+                popInteraction(trainState);
+                return TrainReachesActionPoint.plan(sim, trainState.time, train, simulationResult, nextInteraction);
             }
             // The train didn't reached the action point (stopped because of signalisation)
             return TrainMoveEvent.plan(sim, trainState.time, train, simulationResult);
