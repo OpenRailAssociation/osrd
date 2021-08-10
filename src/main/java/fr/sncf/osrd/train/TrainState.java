@@ -205,7 +205,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         var locationChange = new Train.TrainStateChange(sim, trainSchedule.trainID, this);
 
         for (int i = 0; location.getPathPosition() < goalPathPosition; i++) {
-            if (i >= 1000000)
+            if (i >= 10000 / SpeedControllerGenerator.TIME_STEP)
                 throw new SimulationError("train physics numerical integration doesn't seem to stop");
             var distanceStep = goalPathPosition - location.getPathPosition();
             step(locationChange, SpeedControllerGenerator.TIME_STEP, distanceStep);
