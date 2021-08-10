@@ -143,7 +143,6 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
     }
 
     /** TODO: Check if it's the wanted behavior...
-     * TODO: should be void
      * Move the head of train to positionDelta ahead.
      * The train stop if it can't go further.
      */
