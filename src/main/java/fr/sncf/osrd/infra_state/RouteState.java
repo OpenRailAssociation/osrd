@@ -28,7 +28,7 @@ public final class RouteState implements RSMatchable {
 
     /** Notify the route that one of his tvd section isn't occupied anymore */
     public void onTvdSectionUnoccupied(Simulation sim, TVDSectionState tvdSectionUnoccupied) throws SimulationError {
-        if (status != RouteStatus.OCCUPIED)
+        if (status != RouteStatus.OCCUPIED && status != RouteStatus.CBTC_OCCUPIED)
             return;
 
         // TODO This function could be optimized.

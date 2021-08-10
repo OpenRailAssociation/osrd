@@ -124,6 +124,29 @@ public class RouteStateTest {
     }
 
     @Test
+    public void testCBTCOccupied() throws InvalidInfraException {
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
+
+        config.trainSchedules.clear();
+
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+
+        RouteState routeState = sim.infraState.getRouteState(3);
+        makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
+        makeAssertEvent(sim, 10, () -> routeState.status == RouteStatus.CBTC_RESERVED);
+        makeFunctionEvent(sim, 15, () -> routeState.onTvdSectionOccupied(sim));
+        makeAssertEvent(sim, 15, () -> routeState.status == RouteStatus.CBTC_OCCUPIED);
+        makeFunctionEvent(sim, 20, () -> {
+            for (var section : routeState.route.tvdSectionsPaths)
+                routeState.onTvdSectionUnoccupied(sim, sim.infraState.getTvdSectionState(section.tvdSection.index));
+        });
+        makeAssertEvent(sim, 20, () -> routeState.status == RouteStatus.FREE);
+
+        run(sim, config);
+    }
+
+    @Test
     public void testReserveStatusChanges() throws InvalidInfraException, SimulationError {
         final var infra = getBaseInfra();
         final var config = getBaseConfig();
@@ -150,6 +173,39 @@ public class RouteStateTest {
                 new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(8), RouteStatus.CONFLICT),
 
                 new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(3), RouteStatus.RESERVED)
+        )
+                .map(Object::toString)
+                .collect(Collectors.toSet());
+        assertEquals(expectedChanges, changesSet);
+    }
+
+    @Test
+    public void testCBTCReserveStatusChanges() throws InvalidInfraException, SimulationError {
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
+
+        var changelog = new ArrayChangeLog();
+
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, changelog);
+
+        config.trainSchedules.clear();
+
+        RouteState routeState = sim.infraState.getRouteState(3);
+        routeState.cbtcReserve(sim);
+        run(sim, config);
+
+        var changesSet = changelog.publishedChanges.stream()
+                .filter(x -> x instanceof RouteState.RouteStatusChange)
+                .map(Object::toString)
+                .collect(Collectors.toSet());
+
+        var expectedChanges = Stream.of(
+                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(2), RouteStatus.CONFLICT),
+                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(6), RouteStatus.CONFLICT),
+                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(7), RouteStatus.CONFLICT),
+                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(8), RouteStatus.CONFLICT),
+
+                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(3), RouteStatus.CBTC_RESERVED)
         )
                 .map(Object::toString)
                 .collect(Collectors.toSet());
