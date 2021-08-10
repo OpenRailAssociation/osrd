@@ -14,7 +14,7 @@ EFFORT_CURVE_SCHEMA = {
         },
         "required": ["speed", "max_effort"],
     },
-    "title": "schema"
+    "title": "schema",
 }
 
 
@@ -67,7 +67,7 @@ class RollingStock(models.Model):
 
     rolling_resistance = models.JSONField(
         help_text=_("The formula to use to compute rolling resistance"),
-        validators=[JSONSchemaValidator(limit_value=ROLLING_RESISTANCE_SCHEMA)]
+        validators=[JSONSchemaValidator(limit_value=ROLLING_RESISTANCE_SCHEMA)],
     )
 
     capabilities = ArrayField(
@@ -92,17 +92,21 @@ class RollingStock(models.Model):
     )
 
     timetable_gamma = models.FloatField(
-        help_text=_("The maximum braking coefficient, for timetabling purposes, in m/s^2"),
+        help_text=_(
+            "The maximum braking coefficient, for timetabling purposes, in m/s^2"
+        ),
     )
 
     tractive_effort_curves = models.JSONField(
-        help_text=_("A set of curves mapping speed (in m/s) to maximum traction (in newtons)"),
+        help_text=_(
+            "A set of curves mapping speed (in m/s) to maximum traction (in newtons)"
+        ),
         validators=[JSONSchemaValidator(limit_value=EFFORT_CURVE_MAP_SCHEMA)],
     )
 
     traction_mode = models.CharField(max_length=128)
 
-    power_class = models.PositiveIntegerField(help_text=_(""))
+    power_class = models.PositiveIntegerField()
 
     image = models.ImageField(null=True, blank=True)
 
