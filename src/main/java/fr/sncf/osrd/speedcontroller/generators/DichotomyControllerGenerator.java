@@ -83,9 +83,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         int i = 0;
         do {
             nextSpeedControllers = getSpeedControllers(schedule, nextValue, sectionBegin, sectionEnd);
-            var expectedTimes = getExpectedTimes(sim, schedule,
-                    nextSpeedControllers, TIME_STEP);
-            time = expectedTimes.lastEntry().getValue() - expectedTimes.firstEntry().getValue();
+            time = evalRunTime(sim, schedule, nextSpeedControllers);
             if (time > targetTime)
                 lowerBound = nextValue;
             else
