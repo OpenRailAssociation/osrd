@@ -4,7 +4,6 @@ import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

@@ -79,6 +79,8 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
     }
 
     /**
+     * Check if the tvdSection is reserved
+     * 
      * @return True if the tvdSection is reserved by at least one train
      */
     public boolean isReserved() {
@@ -102,7 +104,7 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
 
         @Override
         public Void apply(Simulation sim, TVDSectionState entity) {
-            if(!newReservation) 
+            if (!newReservation) 
                 assert entity.isReserved();
             entity.reservation += (newReservation) ? 1 : -1;
             return null;

@@ -17,7 +17,6 @@ import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSFunction;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSType;
-
 import java.util.HashMap;
 
 public class RailScriptExprParser {

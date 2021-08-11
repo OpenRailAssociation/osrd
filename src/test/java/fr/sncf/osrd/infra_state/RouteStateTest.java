@@ -12,12 +12,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
 import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.InvalidInfraException;
@@ -38,6 +36,9 @@ import fr.sncf.osrd.utils.moshi.MoshiUtils;
 
 public class RouteStateTest {
     
+    /**
+     * Test if a simple reservation work
+     */
     @ParameterizedTest
     @ValueSource(strings = {"NORMAL", "CBTC"})
     public void testSimpleReserve(String phase) throws InvalidInfraException {
@@ -49,7 +50,7 @@ public class RouteStateTest {
         config.trainSchedules.clear();
 
         RouteState routeState = sim.infraState.getRouteState(3);
-        if(phase.equals("NORMAL")) {
+        if (phase.equals("NORMAL")) {
             makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
             makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.RESERVED);
         } else if (phase.equals("CBTC")) {
@@ -61,6 +62,9 @@ public class RouteStateTest {
         run(sim, config);
     }
 
+    /**
+     * Check that the route waits until a switche is in the right position before going into the reserved state.
+     */
     @ParameterizedTest
     @ValueSource(strings = {"NORMAL", "CBTC"})
     public void testAwaitSwitchChange(String phase) throws InvalidInfraException, SimulationError {
@@ -75,7 +79,7 @@ public class RouteStateTest {
         sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
 
         RouteState routeState = sim.infraState.getRouteState(3);
-        if(phase.equals("NORMAL")) {
+        if (phase.equals("NORMAL")) {
             makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
             makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
             makeAssertEvent(sim, 19, () -> routeState.status == RouteStatus.REQUESTED);
@@ -90,6 +94,9 @@ public class RouteStateTest {
         run(sim, config);
     }
 
+    /**
+     * Check that the route waits until two switches are in the right position before going into the reserved state.
+     */
     @ParameterizedTest
     @ValueSource(strings = {"NORMAL", "CBTC"})
     public void testSeveralSwitches(String phase) throws InvalidInfraException, SimulationError {
@@ -111,7 +118,7 @@ public class RouteStateTest {
         sim.infraState.getSwitchState(1).setPosition(sim, SwitchPosition.RIGHT);
 
         RouteState routeState = sim.infraState.getRouteState(3);
-        if(phase.equals("NORMAL")) {
+        if (phase.equals("NORMAL")) {
             makeFunctionEvent(sim, 0, () -> routeState.reserve(sim));
     
             // at t=41, one switch is done moving but not the other
@@ -130,6 +137,10 @@ public class RouteStateTest {
         run(sim, config);
     }
 
+    /**
+     * Checks that the route goes into a occupied state when a tvdSection
+     * is occupied and that it becomes free when all tvdSection are unoccupied.
+     */
     @ParameterizedTest
     @ValueSource(strings = {"NORMAL", "CBTC"})
     public void testOccupied(String phase) throws InvalidInfraException {
@@ -141,7 +152,7 @@ public class RouteStateTest {
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
 
         RouteState routeState = sim.infraState.getRouteState(3);
-        if(phase.equals("NORMAL")) {
+        if (phase.equals("NORMAL")) {
             makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
             makeAssertEvent(sim, 10, () -> routeState.status == RouteStatus.RESERVED);
             makeFunctionEvent(sim, 15, () -> routeState.onTvdSectionOccupied(sim));
@@ -161,6 +172,9 @@ public class RouteStateTest {
         run(sim, config);
     }
 
+    /**
+     * Check that the route status changes are correct and in the right order.
+     */
     @ParameterizedTest
     @ValueSource(strings = {"NORMAL", "CBTC"})
     public void testReserveStatusChanges(String phase) throws InvalidInfraException, SimulationError {
@@ -174,7 +188,7 @@ public class RouteStateTest {
         config.trainSchedules.clear();
 
         RouteState routeState = sim.infraState.getRouteState(3);
-        if(phase.equals("NORMAL")) {
+        if (phase.equals("NORMAL")) {
             routeState.reserve(sim);
         } else if (phase.equals("CBTC")) {
             routeState.cbtcReserve(sim);
@@ -186,7 +200,7 @@ public class RouteStateTest {
                 .map(Object::toString)
                 .collect(Collectors.toSet());
 
-        if(phase.equals("NORMAL")) {
+        if (phase.equals("NORMAL")) {
             var expectedChanges = Stream.of(
                     new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(2), RouteStatus.CONFLICT),
                     new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(6), RouteStatus.CONFLICT),

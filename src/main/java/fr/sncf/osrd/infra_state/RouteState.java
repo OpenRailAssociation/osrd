@@ -113,7 +113,6 @@ public final class RouteState implements RSMatchable {
      * route.switchesPosition
      * 
      * @param sim the current simulation
-     * @throws SimulationError
      */
     private void requestSwitchPositionChange(Simulation sim) throws SimulationError {
         // Set the switches in the moving position
@@ -132,7 +131,6 @@ public final class RouteState implements RSMatchable {
      * Reserve the tvd sections of the route
      * 
      * @param sim the current simulation
-     * @throws SimulationError
      */
     public void reserveTvdSection(Simulation sim) throws SimulationError {
         for (var tvdSectionPath : route.tvdSectionsPaths) {
@@ -147,14 +145,13 @@ public final class RouteState implements RSMatchable {
      * 
      * @param sim   the current simulation
      * @param train the train for which we wish to reserve a route
-     * @throws SimulationError
      */
     public void reserve(Simulation sim, Train train) throws SimulationError {
         // Get the current phase of the train
         var trainState = train.getLastState();
         var phase = trainState.trainSchedule.phases.get(trainState.currentPhaseIndex);
         // Call the reservation function corresponding to the current phase type
-        if(phase instanceof SignalNavigatePhase) {
+        if (phase instanceof SignalNavigatePhase) {
             reserve(sim);
         } /* else if (phase instanceof CBTCNavigatePhase) {
             cbtcReserve(sim);
@@ -166,7 +163,6 @@ public final class RouteState implements RSMatchable {
      * have the status CONFLICT
      * 
      * @param sim the current simulation
-     * @throws SimulationError
      */
     public void reserve(Simulation sim) throws SimulationError {
         assert status == RouteStatus.FREE;
@@ -188,7 +184,6 @@ public final class RouteState implements RSMatchable {
      * have the status CONFLICT
      * 
      * @param sim the current simulation
-     * @throws SimulationError
      */
     public void cbtcReserve(Simulation sim) throws SimulationError {
         assert status == RouteStatus.FREE || hasCBTCStatus();
@@ -267,6 +262,8 @@ public final class RouteState implements RSMatchable {
     }
 
     /**
+     * Check if the route has a CBTC status (CBTC_REQUESTED, CBTC_RESERVED OR CBTC_OCCUPIED)
+     * 
      * @return True if the status of the route is CBTC, else False
      */
     public boolean hasCBTCStatus() {

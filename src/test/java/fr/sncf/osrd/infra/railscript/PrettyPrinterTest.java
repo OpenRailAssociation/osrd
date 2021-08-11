@@ -9,7 +9,6 @@ import fr.sncf.osrd.infra.railscript.value.RSType;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra_state.RouteState;
 import org.junit.jupiter.api.Test;
-
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
