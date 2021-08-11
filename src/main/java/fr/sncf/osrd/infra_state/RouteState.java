@@ -153,9 +153,7 @@ public final class RouteState implements RSMatchable {
         // Call the reservation function corresponding to the current phase type
         if (phase instanceof SignalNavigatePhase) {
             reserve(sim);
-        } /* else if (phase instanceof CBTCNavigatePhase) {
-            cbtcReserve(sim);
-        } */
+        }
     }
 
     /**
@@ -219,9 +217,7 @@ public final class RouteState implements RSMatchable {
         // Call the reservation function corresponding to the current phase type
         if (phase instanceof SignalNavigatePhase) {
             reserve(sim);
-        } /*
-           * else if (phase instanceof CBTCNavigatePhase) { cbtcReserve(sim); }
-           */
+        }
     }
 
     /** Should be called when a switch is done moving and is in the position we requested */
