@@ -113,11 +113,9 @@ public class TrainPhysicsIntegrator {
 
         // if the resulting force is negative limit the value to the maxBrakingForce
         var maxBrakingForce = getBrakingForce(rollingStock);
-        if (rollingStock.gammaType == RollingStock.GammaType.CONST && targetForce < 0) //proper deceleration
-            maxBrakingForce = getBrakingForce(rollingStock);
         // TODO implement speed controllers with non constant deceleration
         if (actionForce < maxBrakingForce)
-            actionForce = maxBrakingForce;
+            actionForce = maxBrakingForce - rollingResistance - weightForce;
         return Action.brake(Math.abs(actionForce));
     }
 
@@ -205,8 +203,8 @@ public class TrainPhysicsIntegrator {
 
         var timeDelta = timeStep;
 
-        // if the speed change sign we integrate only the step at which the speed is zero
-        if (currentSpeed != 0.0 && Math.signum(newSpeed) != Math.signum(currentSpeed)) {
+        // if the speed change sign or is very low we integrate only the step at which the speed is zero
+        if (currentSpeed != 0.0 && (Math.signum(newSpeed) != Math.signum(currentSpeed) || Math.abs(newSpeed) < 1E-10)) {
             timeDelta = -currentSpeed / fullStepAcceleration;
             newSpeed = 0.;
         }

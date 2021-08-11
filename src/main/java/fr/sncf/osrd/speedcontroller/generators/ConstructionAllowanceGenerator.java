@@ -22,7 +22,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
 
     public ConstructionAllowanceGenerator(double begin, double end,
                                           double allowanceValue) {
-        super(begin, end, 0.1);
+        super(begin, end, 5 * TIME_STEP);
         this.value = allowanceValue;
     }
 
@@ -33,7 +33,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
 
     @Override
     protected double getFirstLowEstimate() {
-        return 0;
+        return 0.0;
     }
 
     @Override
@@ -44,7 +44,11 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
 
     @Override
     protected double getFirstGuess() {
-        return ((this.getFirstHighEstimate() + this.getFirstLowEstimate()) / 2);
+        // first guess will be underestimated on purpose to make the dichotomy run in a smaller interval
+        // lowering it twice compared to its approximate value
+        // keeping getFirstLowEstimate() at 0.0 prevents mistakes
+        var time = evalRunTime(sim, schedule, maxSpeedControllers);
+        return ((this.getFirstHighEstimate() - this.getFirstLowEstimate()) * time / (time + 2 * value));
     }
 
     private static TrainPositionTracker convertPosition(TrainSchedule schedule, Simulation sim, double position) {
@@ -96,13 +100,16 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
 
         // backwards acceleration calculation
         double speed = roiSpeeds.interpolate(endPosition);
+        double scaledSpeed = newSpeeds.interpolate(endPosition);
+
+        assert scaledSpeed <= speed;
 
         var location = convertPosition(schedule, sim, endPosition);
 
         while (speed > newSpeeds.interpolate(location.getPathPosition()) && location.getPathPosition() > 0.) {
             var integrator = TrainPhysicsIntegrator.make(TIME_STEP, schedule.rollingStock,
                     speed, location.meanTrainGrade());
-            var action = Action.accelerate(-schedule.rollingStock.getMaxEffort(speed));
+            var action = Action.accelerate(schedule.rollingStock.getMaxEffort(speed));
             var update =  integrator.computeUpdate(action, location.getPathPosition(), -1);
             speed = update.speed;
 
