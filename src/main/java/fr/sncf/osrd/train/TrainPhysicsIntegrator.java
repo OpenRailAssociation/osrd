@@ -112,15 +112,10 @@ public class TrainPhysicsIntegrator {
         }
 
         // if the resulting force is negative limit the value to the maxBrakingForce
-        // or assign to it an average braking force
-        // difference between actionForce < 0 because of a proper deceleration or because of the weight force
-        if (rollingStock.gammaType == RollingStock.GammaType.CONST && targetForce < 0) { //proper deceleration
-            var averageBrakingForce = getBrakingForce(rollingStock);
-            actionForce = averageBrakingForce - weightForce + rollingResistance;
-            return Action.brake(Math.abs(actionForce));
-        }
-        // TODO implement speed controllers with non constant deceleration
         var maxBrakingForce = getBrakingForce(rollingStock);
+        if (rollingStock.gammaType == RollingStock.GammaType.CONST && targetForce < 0) //proper deceleration
+            maxBrakingForce = getBrakingForce(rollingStock);
+        // TODO implement speed controllers with non constant deceleration
         if (actionForce < maxBrakingForce)
             actionForce = maxBrakingForce;
         return Action.brake(Math.abs(actionForce));
