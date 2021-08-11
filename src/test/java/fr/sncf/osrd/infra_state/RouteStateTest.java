@@ -14,8 +14,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.InvalidInfraException;
@@ -39,9 +37,8 @@ public class RouteStateTest {
     /**
      * Test if a simple reservation work
      */
-    @ParameterizedTest
-    @ValueSource(strings = {"NORMAL", "CBTC"})
-    public void testSimpleReserve(String phase) throws InvalidInfraException {
+    @Test
+    public void testSimpleReserve() throws InvalidInfraException {
         final var infra = getBaseInfra();
         final var config = getBaseConfig();
 
@@ -50,24 +47,39 @@ public class RouteStateTest {
         config.trainSchedules.clear();
 
         RouteState routeState = sim.infraState.getRouteState(3);
-        if (phase.equals("NORMAL")) {
-            makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
-            makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.RESERVED);
-        } else if (phase.equals("CBTC")) {
-            makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
-            makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.CBTC_RESERVED);
-        }
+        makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
+        makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.RESERVED);
         makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
         makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(6).status == RouteStatus.CONFLICT);
         run(sim, config);
     }
 
     /**
-     * Check that the route waits until a switche is in the right position before going into the reserved state.
+     * Test if a simple cbtc reservation work
      */
-    @ParameterizedTest
-    @ValueSource(strings = {"NORMAL", "CBTC"})
-    public void testAwaitSwitchChange(String phase) throws InvalidInfraException, SimulationError {
+    @Test
+    public void testSimpleCBTCReserve() throws InvalidInfraException {
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
+
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+
+        config.trainSchedules.clear();
+
+        RouteState routeState = sim.infraState.getRouteState(3);
+        makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
+        makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.CBTC_RESERVED);
+        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(6).status == RouteStatus.CONFLICT);
+        run(sim, config);
+    }
+
+    /**
+     * Check that the route waits until a switch is in the right position before
+     * going into the RESERVED state.
+     */
+    @Test
+    public void testAwaitSwitchChange() throws InvalidInfraException, SimulationError {
         final var infra = getBaseInfra();
         final var config = getBaseConfig();
 
@@ -79,27 +91,43 @@ public class RouteStateTest {
         sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
 
         RouteState routeState = sim.infraState.getRouteState(3);
-        if (phase.equals("NORMAL")) {
-            makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
-            makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
-            makeAssertEvent(sim, 19, () -> routeState.status == RouteStatus.REQUESTED);
-            makeAssertEvent(sim, 21, () -> routeState.status == RouteStatus.RESERVED);
-        } else if (phase.equals("CBTC")) {
-            makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
-            makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
-            makeAssertEvent(sim, 19, () -> routeState.status == RouteStatus.CBTC_REQUESTED);
-            makeAssertEvent(sim, 21, () -> routeState.status == RouteStatus.CBTC_RESERVED);
-        }
-
+        makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
+        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 19, () -> routeState.status == RouteStatus.REQUESTED);
+        makeAssertEvent(sim, 21, () -> routeState.status == RouteStatus.RESERVED);
         run(sim, config);
     }
 
     /**
-     * Check that the route waits until two switches are in the right position before going into the reserved state.
+     * Check that the route waits until a switch is in the right position before
+     * going into the CBTC_RESERVED state.
      */
-    @ParameterizedTest
-    @ValueSource(strings = {"NORMAL", "CBTC"})
-    public void testSeveralSwitches(String phase) throws InvalidInfraException, SimulationError {
+    @Test
+    public void testAwaitSwitchChangeCBTC() throws InvalidInfraException, SimulationError {
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
+
+        config.trainSchedules.clear();
+
+        infra.switches.iterator().next().positionChangeDelay = 10;
+
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+
+        RouteState routeState = sim.infraState.getRouteState(3);
+        makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
+        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 19, () -> routeState.status == RouteStatus.CBTC_REQUESTED);
+        makeAssertEvent(sim, 21, () -> routeState.status == RouteStatus.CBTC_RESERVED);
+        run(sim, config);
+    }
+
+    /**
+     * Check that the route waits until two switches are in the right position
+     * before going into the RESERVED state.
+     */
+    @Test
+    public void testSeveralSwitches() throws InvalidInfraException, SimulationError {
         final var infra = getBaseInfra();
         final var config = getBaseConfig();
 
@@ -118,32 +146,54 @@ public class RouteStateTest {
         sim.infraState.getSwitchState(1).setPosition(sim, SwitchPosition.RIGHT);
 
         RouteState routeState = sim.infraState.getRouteState(3);
-        if (phase.equals("NORMAL")) {
-            makeFunctionEvent(sim, 0, () -> routeState.reserve(sim));
-    
-            // at t=41, one switch is done moving but not the other
-            makeAssertEvent(sim, 41, () -> routeState.status == RouteStatus.REQUESTED);
-            // at t=43, both switches have moved
-            makeAssertEvent(sim, 43, () -> routeState.status == RouteStatus.RESERVED);
-        } else if (phase.equals("CBTC")) {
-            makeFunctionEvent(sim, 0, () -> routeState.cbtcReserve(sim));
-    
-            // at t=41, one switch is done moving but not the other
-            makeAssertEvent(sim, 41, () -> routeState.status == RouteStatus.CBTC_REQUESTED);
-            // at t=43, both switches have moved
-            makeAssertEvent(sim, 43, () -> routeState.status == RouteStatus.CBTC_RESERVED);
-        }
+
+        makeFunctionEvent(sim, 0, () -> routeState.reserve(sim));
+        // at t=41, one switch is done moving but not the other
+        makeAssertEvent(sim, 41, () -> routeState.status == RouteStatus.REQUESTED);
+        // at t=43, both switches have moved
+        makeAssertEvent(sim, 43, () -> routeState.status == RouteStatus.RESERVED);
 
         run(sim, config);
     }
 
     /**
-     * Checks that the route goes into a occupied state when a tvdSection
-     * is occupied and that it becomes free when all tvdSection are unoccupied.
+     * Check that the route waits until two switches are in the right position
+     * before going into the CBTC_RESERVED state.
      */
-    @ParameterizedTest
-    @ValueSource(strings = {"NORMAL", "CBTC"})
-    public void testOccupied(String phase) throws InvalidInfraException {
+    @Test
+    public void testSeveralSwitchesCBTC() throws InvalidInfraException, SimulationError {
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
+
+        config.trainSchedules.clear();
+
+        var oldSwitch = infra.switches.iterator().next();
+        var newSwitch = new RJSSwitch("switch-foo-42", oldSwitch.base, oldSwitch.left, oldSwitch.right, 42);
+        infra.switches.add(newSwitch);
+        for (var route : infra.routes)
+            if (route.id.equals("rt.C3-S7"))
+                route.switchesPosition.put(new ID<>(newSwitch.id), RJSSwitch.Position.LEFT);
+
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+        sim.infraState.getSwitchState(1).setPosition(sim, SwitchPosition.RIGHT);
+
+        RouteState routeState = sim.infraState.getRouteState(3);
+        makeFunctionEvent(sim, 0, () -> routeState.cbtcReserve(sim));
+    
+        // at t=41, one switch is done moving but not the other
+        makeAssertEvent(sim, 41, () -> routeState.status == RouteStatus.CBTC_REQUESTED);
+        // at t=43, both switches have moved
+        makeAssertEvent(sim, 43, () -> routeState.status == RouteStatus.CBTC_RESERVED);
+
+        run(sim, config);
+    }
+
+    /**
+     * Checks that the route goes into the OCCUPIED state when a tvdSection is
+     * occupied and that it becomes FREE when all tvdSection are unoccupied.
+     */
+    public void testOccupied() throws InvalidInfraException {
         final var infra = getBaseInfra();
         final var config = getBaseConfig();
 
@@ -152,17 +202,37 @@ public class RouteStateTest {
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
 
         RouteState routeState = sim.infraState.getRouteState(3);
-        if (phase.equals("NORMAL")) {
-            makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
-            makeAssertEvent(sim, 10, () -> routeState.status == RouteStatus.RESERVED);
-            makeFunctionEvent(sim, 15, () -> routeState.onTvdSectionOccupied(sim));
-            makeAssertEvent(sim, 15, () -> routeState.status == RouteStatus.OCCUPIED);
-        } else if (phase.equals("CBTC")) {
-            makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
-            makeAssertEvent(sim, 10, () -> routeState.status == RouteStatus.CBTC_RESERVED);
-            makeFunctionEvent(sim, 15, () -> routeState.onTvdSectionOccupied(sim));
-            makeAssertEvent(sim, 15, () -> routeState.status == RouteStatus.CBTC_OCCUPIED);
-        }
+        makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
+        makeAssertEvent(sim, 10, () -> routeState.status == RouteStatus.RESERVED);
+        makeFunctionEvent(sim, 15, () -> routeState.onTvdSectionOccupied(sim));
+        makeAssertEvent(sim, 15, () -> routeState.status == RouteStatus.OCCUPIED);
+        makeFunctionEvent(sim, 20, () -> {
+            for (var section : routeState.route.tvdSectionsPaths)
+                routeState.onTvdSectionUnoccupied(sim, sim.infraState.getTvdSectionState(section.tvdSection.index));
+        });
+        makeAssertEvent(sim, 20, () -> routeState.status == RouteStatus.FREE);
+
+        run(sim, config);
+    }
+
+    /**
+     * Checks that the route goes into the CBTC_OCCUPIED state when a tvdSection is
+     * occupied and that it becomes FREE when all tvdSection are unoccupied.
+     */
+    @Test
+    public void testCBTCOccupied() throws InvalidInfraException {
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
+
+        config.trainSchedules.clear();
+
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+
+        RouteState routeState = sim.infraState.getRouteState(3);
+        makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
+        makeAssertEvent(sim, 10, () -> routeState.status == RouteStatus.CBTC_RESERVED);
+        makeFunctionEvent(sim, 15, () -> routeState.onTvdSectionOccupied(sim));
+        makeAssertEvent(sim, 15, () -> routeState.status == RouteStatus.CBTC_OCCUPIED);
         makeFunctionEvent(sim, 20, () -> {
             for (var section : routeState.route.tvdSectionsPaths)
                 routeState.onTvdSectionUnoccupied(sim, sim.infraState.getTvdSectionState(section.tvdSection.index));
@@ -175,9 +245,8 @@ public class RouteStateTest {
     /**
      * Check that the route status changes are correct and in the right order.
      */
-    @ParameterizedTest
-    @ValueSource(strings = {"NORMAL", "CBTC"})
-    public void testReserveStatusChanges(String phase) throws InvalidInfraException, SimulationError {
+    @Test
+    public void testReserveStatusChanges() throws InvalidInfraException, SimulationError {
         final var infra = getBaseInfra();
         final var config = getBaseConfig();
 
@@ -188,11 +257,7 @@ public class RouteStateTest {
         config.trainSchedules.clear();
 
         RouteState routeState = sim.infraState.getRouteState(3);
-        if (phase.equals("NORMAL")) {
-            routeState.reserve(sim);
-        } else if (phase.equals("CBTC")) {
-            routeState.cbtcReserve(sim);
-        }
+        routeState.reserve(sim);
         run(sim, config);
 
         var changesSet = changelog.publishedChanges.stream()
@@ -200,8 +265,7 @@ public class RouteStateTest {
                 .map(Object::toString)
                 .collect(Collectors.toSet());
 
-        if (phase.equals("NORMAL")) {
-            var expectedChanges = Stream.of(
+        var expectedChanges = Stream.of(
                     new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(2), RouteStatus.CONFLICT),
                     new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(6), RouteStatus.CONFLICT),
                     new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(7), RouteStatus.CONFLICT),
@@ -211,20 +275,39 @@ public class RouteStateTest {
             )
                     .map(Object::toString)
                     .collect(Collectors.toSet());
-            assertEquals(expectedChanges, changesSet);
-        } else if (phase.equals("CBTC")) {
-            var expectedChanges = Stream.of(
-                    new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(2), RouteStatus.CONFLICT),
-                    new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(6), RouteStatus.CONFLICT),
-                    new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(7), RouteStatus.CONFLICT),
-                    new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(8), RouteStatus.CONFLICT),
-    
-                    new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(3), RouteStatus.CBTC_RESERVED)
-            )
-                    .map(Object::toString)
-                    .collect(Collectors.toSet());
-            assertEquals(expectedChanges, changesSet);
-        }
+        assertEquals(expectedChanges, changesSet);
+    }
+
+    /**
+     * Check that the route status changes are correct and in the right order.
+     */
+    @Test
+    public void testReserveStatusChangesCBTC() throws InvalidInfraException, SimulationError {
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
+
+        var changelog = new ArrayChangeLog();
+
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, changelog);
+
+        config.trainSchedules.clear();
+
+        RouteState routeState = sim.infraState.getRouteState(3);
+        routeState.cbtcReserve(sim);
+        run(sim, config);
+
+        var changesSet = changelog.publishedChanges.stream().filter(x -> x instanceof RouteState.RouteStatusChange)
+                .map(Object::toString).collect(Collectors.toSet());
+
+        var expectedChanges = Stream.of(
+                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(2), RouteStatus.CONFLICT),
+                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(6), RouteStatus.CONFLICT),
+                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(7), RouteStatus.CONFLICT),
+                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(8), RouteStatus.CONFLICT),
+
+                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(3), RouteStatus.CBTC_RESERVED))
+                .map(Object::toString).collect(Collectors.toSet());
+        assertEquals(expectedChanges, changesSet);
     }
 
     @Test
