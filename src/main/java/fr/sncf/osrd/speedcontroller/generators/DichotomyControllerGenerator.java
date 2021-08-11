@@ -91,6 +91,8 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
             nextValue = (lowerBound + higherBound) / 2;
             if (i++ > 20)
                 throw new RuntimeException("Did not converge");
+            saveGraph(nextSpeedControllers, sim, schedule,
+                    "C:\\Users\\9706809E\\OneDrive - SNCF\\Documents\\Physique\\Affichage_courbes\\graph"+i+".csv");
         } while (Math.abs(time - targetTime) > precision);
         return nextSpeedControllers;
     }
@@ -99,10 +101,10 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     public void saveGraph(Set<SpeedController> speedControllers, Simulation sim, TrainSchedule schedule, String path) {
         try {
             PrintWriter writer = new PrintWriter(path, "UTF-8");
-            writer.println("position,speed");
+            writer.println("position;speed");
             var expectedSpeeds = getExpectedSpeeds(sim, schedule, speedControllers, TIME_STEP);
             for (var entry : expectedSpeeds.entrySet()) {
-                writer.println(String.format("%f,%f", entry.getKey(), entry.getValue()));
+                writer.println(String.format("%f;%f", entry.getKey(), entry.getValue()));
             }
             writer.close();
         } catch (FileNotFoundException | UnsupportedEncodingException e) {
