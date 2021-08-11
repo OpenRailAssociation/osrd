@@ -8,6 +8,7 @@ import static fr.sncf.osrd.Helpers.makeFunctionEvent;
 import static fr.sncf.osrd.Helpers.run;
 import static fr.sncf.osrd.infra.Infra.parseFromFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.util.stream.Collectors;
@@ -193,6 +194,7 @@ public class RouteStateTest {
      * Checks that the route goes into the OCCUPIED state when a tvdSection is
      * occupied and that it becomes FREE when all tvdSection are unoccupied.
      */
+    @Test
     public void testOccupied() throws InvalidInfraException {
         final var infra = getBaseInfra();
         final var config = getBaseConfig();
@@ -308,6 +310,92 @@ public class RouteStateTest {
                 new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(3), RouteStatus.CBTC_RESERVED))
                 .map(Object::toString).collect(Collectors.toSet());
         assertEquals(expectedChanges, changesSet);
+    }
+
+    /**
+     * Test that a normal reservation fails if a route is already RESERVED.
+     */
+    @Test
+    public void testReserveFailsIfReserved() throws InvalidInfraException, SimulationError {
+        final var infra = getBaseInfra();
+
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+
+        RouteState routeState = sim.infraState.getRouteState(3);
+        routeState.reserve(sim);
+        assertThrows(AssertionError.class, () -> routeState.reserve(sim));
+    }
+
+    /**
+     * Test that a normal reservation fails if a route is already CBTC_RESERVED.
+     */
+    @Test
+    public void testReserveFailsIfCBTCReserved() throws InvalidInfraException, SimulationError {
+        final var infra = getBaseInfra();
+
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+
+        RouteState routeState = sim.infraState.getRouteState(3);
+        routeState.cbtcReserve(sim);
+        assertThrows(AssertionError.class, () -> routeState.reserve(sim));
+    }
+
+    /**
+     * Test that a cbtc reservation fails if a route is already RESERVED.
+     */
+    @Test
+    public void testCBTCReserveFailsIfReserved() throws InvalidInfraException, SimulationError {
+        final var infra = getBaseInfra();
+
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+
+        RouteState routeState = sim.infraState.getRouteState(3);
+        routeState.reserve(sim);
+        assertThrows(AssertionError.class, () -> routeState.cbtcReserve(sim));
+    }
+
+    /**
+     * Check that a route can be CBTC_RESERVED several times simultaneously.
+     */
+    @Test
+    public void testMultipleCBTCReserve() throws InvalidInfraException, SimulationError {
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
+
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+
+        config.trainSchedules.clear();
+
+        RouteState routeState = sim.infraState.getRouteState(3);
+        // We reserve the route a first time
+        makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
+        makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.CBTC_RESERVED);
+        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(6).status == RouteStatus.CONFLICT);
+        // We reserve the route a second time
+        makeFunctionEvent(sim, 12, () -> routeState.cbtcReserve(sim));
+        makeAssertEvent(sim, 13, () -> routeState.status == RouteStatus.CBTC_RESERVED);
+        makeAssertEvent(sim, 13, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 13, () -> sim.infraState.getRouteState(6).status == RouteStatus.CONFLICT);
+        // The first train enters the route
+        makeFunctionEvent(sim, 14, () -> routeState.onTvdSectionOccupied(sim));
+        makeAssertEvent(sim, 14, () -> routeState.status == RouteStatus.CBTC_OCCUPIED);
+        // The second train enters the route
+        makeFunctionEvent(sim, 15, () -> routeState.onTvdSectionOccupied(sim));
+        makeAssertEvent(sim, 15, () -> routeState.status == RouteStatus.CBTC_OCCUPIED);
+        // The first train leaves the route, but there is still the second train on the route
+        makeFunctionEvent(sim, 16, () -> {
+            for (var section : routeState.route.tvdSectionsPaths)
+                routeState.onTvdSectionUnoccupied(sim, sim.infraState.getTvdSectionState(section.tvdSection.index));
+        });
+        makeAssertEvent(sim, 17, () -> routeState.status == RouteStatus.CBTC_OCCUPIED);
+        // The second train leaves the route, the route is now FREE
+        makeFunctionEvent(sim, 18, () -> {
+            for (var section : routeState.route.tvdSectionsPaths)
+                routeState.onTvdSectionUnoccupied(sim, sim.infraState.getTvdSectionState(section.tvdSection.index));
+        });
+        makeAssertEvent(sim, 19, () -> routeState.status == RouteStatus.FREE);
+        run(sim, config);
     }
 
     @Test
