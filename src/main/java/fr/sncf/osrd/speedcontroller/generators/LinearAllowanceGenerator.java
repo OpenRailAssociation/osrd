@@ -31,7 +31,7 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
         if (allowanceType.equals(MarginType.TIME))
             percentage = value;
         else {
-            var expectedTime = getExpectedTimes(sim, schedule, maxSpeed, 1);
+            var expectedTime = getExpectedTimes(sim, schedule, maxSpeed, TIME_STEP);
             var totalTime = expectedTime.lastEntry().getValue() - expectedTime.firstEntry().getValue();
             var schemaLength = expectedTime.lastEntry().getKey() - expectedTime.firstEntry().getKey();
             var n = schemaLength / 100000;
