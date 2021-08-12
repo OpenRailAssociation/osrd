@@ -355,6 +355,19 @@ public class RouteStateTest {
     }
 
     /**
+     * Check that we cannot occupy a route if it is not reserved
+     */
+    @Test
+    public void testOccupiedFailsIfNotReserved() throws InvalidInfraException, SimulationError {
+        final var infra = getBaseInfra();
+
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+
+        RouteState routeState = sim.infraState.getRouteState(3);
+        assertThrows(SimulationError.class, () -> routeState.onTvdSectionOccupied(sim));
+    }
+
+    /**
      * Check that a route can be CBTC_RESERVED several times simultaneously.
      */
     @Test
