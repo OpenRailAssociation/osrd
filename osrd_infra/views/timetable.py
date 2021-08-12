@@ -18,8 +18,14 @@ class TimetableView(
     mixins.ListModelMixin,
     GenericViewSet,
 ):
-    queryset = Timetable.objects.all()
     serializer_class = TimetableSerializer
+
+    def get_queryset(self):
+        queryset = Timetable.objects.order_by("-pk")
+        infra = self.request.query_params.get('infra')
+        if infra is not None:
+            queryset = queryset.filter(infra__pk=infra)
+        return queryset
 
     def retrieve(self, request, pk):
         timetable = self.get_object()
