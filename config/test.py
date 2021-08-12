@@ -8,6 +8,13 @@ DATABASES = {
         'USER': 'osrd',
         'PASSWORD': 'nopasswd',
         'HOST': 'localhost',
+    },
+    'gaia': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'gaia',
+        'USER': 'osrd',
+        'PASSWORD': 'nopasswd',
+        'HOST': 'localhost',
     }
 }
 
