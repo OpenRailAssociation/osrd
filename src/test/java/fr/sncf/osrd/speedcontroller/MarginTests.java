@@ -16,17 +16,71 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
 public class MarginTests {
 
-    @Test
-    public void testConstructionMargins() throws InvalidInfraException {
+    /** Test the linear allowance */
+    @ParameterizedTest
+    @ValueSource(doubles = {0, 50, 200})
+    public void testLinearAllowance(double value) throws InvalidInfraException {
         final var infra = getBaseInfra();
         assert infra != null;
-        var params = new ConstructionAllowanceGenerator(0, POSITIVE_INFINITY, 30);
+        var params = new LinearAllowanceGenerator(0, Double.POSITIVE_INFINITY, value, RJSAllowance.LinearAllowance.MarginType.TIME);
+
+        // base run, no margin
+        final var config = getBaseConfigNoAllowance();
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        run(sim, config);
+        var baseSimTime = sim.getTime();
+
+        // Run with margins
+        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
+        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        run(sim2, configMargins);
+        var marginsSimTime = sim2.getTime();
+        var expected = baseSimTime * (1 + value / 100);
+        assertEquals(expected, marginsSimTime, expected * 0.01);
+    }
+
+    @ParameterizedTest
+    @ValueSource(doubles = {0.0, 30, 100})
+    public void testConstructionMargins(double value) throws InvalidInfraException {
+        final var infra = getBaseInfra();
+        assert infra != null;
+        var params = new ConstructionAllowanceGenerator(0, POSITIVE_INFINITY, value);
+
+        // base run, no margin
+        final var config = getBaseConfigNoAllowance();
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var eventsBase = run(sim, config);
+        var baseSimTime = sim.getTime();
+
+        // Run with construction margin
+        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
+        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var events = run(sim2, configMargins);
+        var marginsSimTime = sim2.getTime();
+
+        var expected = baseSimTime + params.value;
+
+        assertEquals(expected, marginsSimTime, expected * 0.01);
+        saveGraph(eventsBase, "construction-base.csv");
+        saveGraph(events, "construction-out.csv");
+    }
+
+    @ParameterizedTest
+    @ValueSource(doubles = {0.0, 30, 100})
+    public void testConstructionMarginsOnSegment(double value) throws InvalidInfraException {
+        final var infra = getBaseInfra();
+        assert infra != null;
+        var params = new ConstructionAllowanceGenerator(1000, 3000, value);
 
         // base run, no margin
         final var config = getBaseConfigNoAllowance();
@@ -71,7 +125,7 @@ public class MarginTests {
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
-        var expected = baseSimTime * 1.1 + 15;
+        var expected = baseSimTime * (1 + params1.value / 100) + params2.value;
 
         assertEquals(expected, marginsSimTime, expected * 0.01);
 
@@ -79,11 +133,13 @@ public class MarginTests {
         saveGraph(events, "linear-time-on-construction-out.csv");
     }
 
-    @Test
-    public void testLargerEcoMargin() throws InvalidInfraException {
+    @ParameterizedTest
+    @ValueSource(doubles = {0.0, 10, 200})
+    public void testEcoMargin(double value) throws InvalidInfraException {
         final var infra = getBaseInfra();
+        assert infra != null;
         var params = new MarecoAllowanceGenerator(0, POSITIVE_INFINITY,
-                200, RJSAllowance.MarecoAllowance.MarginType.TIME);
+                value, RJSAllowance.MarecoAllowance.MarginType.TIME);
 
         // Run with construction margin
         final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
@@ -98,65 +154,19 @@ public class MarginTests {
         var baseSimTime = sim.getTime();
 
         var expected = baseSimTime * (1 + params.value / 100);
-        assertEquals(expected, marginsSimTime, expected * 0.1);
-
-        saveGraph(eventsBase, "eco-base.csv");
-        saveGraph(events, "eco-out.csv");
-    }
-
-    @Test
-    public void testEcoMargin() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        assert infra != null;
-        var params = new MarecoAllowanceGenerator(0, POSITIVE_INFINITY,
-                10, RJSAllowance.MarecoAllowance.MarginType.TIME);
-
-        // Run with construction margin
-        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
-        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim2, configMargins);
-        var marginsSimTime = sim2.getTime();
-
-        // base run, no margin
-        final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var eventsBase = run(sim, config);
-        var baseSimTime = sim.getTime();
-
-        var expected = baseSimTime * 1.1;
         assertEquals(expected, marginsSimTime, expected * 0.01);
 
         saveGraph(eventsBase, "eco-base.csv");
         saveGraph(events, "eco-out.csv");
     }
 
-    @Test
-    public void testConstructionMarginsNoAllowance() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        assert infra != null;
-        var params = new ConstructionAllowanceGenerator(0, POSITIVE_INFINITY, 0);
-
-        // base run, no margin
-        final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        run(sim, config);
-        var baseSimTime = sim.getTime();
-
-        // Run with construction margin
-        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
-        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        run(sim2, configMargins);
-        var marginsSimTime = sim2.getTime();
-
-        assertEquals(baseSimTime, marginsSimTime, baseSimTime * 0.01);
-    }
-
-    @Test
-    public void testTimeMargin() throws InvalidInfraException {
+    @ParameterizedTest
+    @ValueSource(doubles = {0.0, 20, 100})
+    public void testTimeMargin(double value) throws InvalidInfraException {
         final var infra = getBaseInfra();
         assert infra != null;
         var params = new LinearAllowanceGenerator(0, POSITIVE_INFINITY,
-                20, TIME);
+                value, TIME);
 
         // base run, no margin
         final var config = getBaseConfigNoAllowance();
@@ -170,19 +180,20 @@ public class MarginTests {
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
-        var expected = baseSimTime * 1.2;
+        var expected = baseSimTime * (1 + params.value / 100);
 
         saveGraph(eventsBase, "linear-time-base.csv");
         saveGraph(events, "linear-time-out.csv");
         assertEquals(expected, marginsSimTime, expected * 0.01);
     }
 
-    @Test
-    public void testDistanceMargin() throws InvalidInfraException {
+    @ParameterizedTest
+    @ValueSource(doubles = {0.0, 270})
+    public void testDistanceMargin(double value) throws InvalidInfraException {
         final var infra = getBaseInfra();
         assert infra != null;
         var params = new LinearAllowanceGenerator(0, POSITIVE_INFINITY,
-                270, RJSAllowance.LinearAllowance.MarginType.DISTANCE);
+                value, RJSAllowance.LinearAllowance.MarginType.DISTANCE);
 
         // base run, no margin
         final var config = getBaseConfigNoAllowance();
@@ -190,7 +201,7 @@ public class MarginTests {
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
-        // Run with 50% margins
+        // Run with margin
         final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
         var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
