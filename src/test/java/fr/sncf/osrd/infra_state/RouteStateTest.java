@@ -411,6 +411,69 @@ public class RouteStateTest {
         run(sim, config);
     }
 
+    /**
+     * Checks that a route that has already been requested cannot be reserved
+     */
+    @Test
+    public void testReservedFailsIfRequested() throws InvalidInfraException, SimulationError {
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
+
+        config.trainSchedules.clear();
+
+        infra.switches.iterator().next().positionChangeDelay = 10;
+
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+
+        RouteState routeState = sim.infraState.getRouteState(3);
+        routeState.reserve(sim);
+        assert routeState.status == RouteStatus.REQUESTED;
+        assertThrows(AssertionError.class, () -> routeState.reserve(sim));
+    }
+
+    /**
+     * Checks that a route that has already been requested cannot be cbtc reserved
+     */
+    @Test
+    public void testCBTCReservedFailsIfRequested() throws InvalidInfraException, SimulationError {
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
+
+        config.trainSchedules.clear();
+
+        infra.switches.iterator().next().positionChangeDelay = 10;
+
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+
+        RouteState routeState = sim.infraState.getRouteState(3);
+        routeState.reserve(sim);
+        assert routeState.status == RouteStatus.REQUESTED;
+        assertThrows(AssertionError.class, () -> routeState.cbtcReserve(sim));
+    }
+    
+    /**
+     * Checks that a route that has already been cbtc requested cannot be reserved
+     */
+    @Test
+    public void testReservedFailsIfCBTCRequested() throws InvalidInfraException, SimulationError {
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig();
+
+        config.trainSchedules.clear();
+
+        infra.switches.iterator().next().positionChangeDelay = 10;
+
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+
+        RouteState routeState = sim.infraState.getRouteState(3);
+        routeState.cbtcReserve(sim);
+        assert routeState.status == RouteStatus.CBTC_REQUESTED;
+        assertThrows(AssertionError.class, () -> routeState.reserve(sim));
+    }
+
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void testReserveRouteTrainStartNotOnFirstTrackSection()
