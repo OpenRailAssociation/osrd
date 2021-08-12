@@ -38,16 +38,18 @@ public class MarginTests {
         // base run, no margin
         final var config = getBaseConfigNoAllowance();
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        run(sim, config);
+        var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
         // Run with margins
         final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
         var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        run(sim2, configMargins);
+        var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
         var expected = baseSimTime * (1 + value / 100);
         assertEquals(expected, marginsSimTime, expected * 0.01);
+        saveGraph(eventsBase, "..\\linear-base.csv");
+        saveGraph(events, "..\\linear-out.csv");
     }
 
     /** Test the construction margin */
@@ -73,8 +75,8 @@ public class MarginTests {
         var expected = baseSimTime + params.value;
 
         assertEquals(expected, marginsSimTime, expected * 0.01);
-        saveGraph(eventsBase, "construction-base.csv");
-        saveGraph(events, "construction-out.csv");
+        saveGraph(eventsBase, "..\\construction-base.csv");
+        saveGraph(events, "..\\construction-out.csv");
     }
 
     /** Test the construction margin on a small segment */
@@ -83,7 +85,10 @@ public class MarginTests {
     public void testConstructionMarginsOnSegment(double value) throws InvalidInfraException {
         final var infra = getBaseInfra();
         assert infra != null;
-        var params = new ConstructionAllowanceGenerator(1000, 3000, value);
+        double begin = 1000;
+        double end = 3000;
+        double tolerance = 0.01; //percentage
+        var params = new ConstructionAllowanceGenerator(begin, end, value);
 
         // base run, no margin
         final var config = getBaseConfigNoAllowance();
@@ -91,17 +96,39 @@ public class MarginTests {
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
+        var timesBase = getTimePerPosition(eventsBase);
+        var timeFirstPointBase = timesBase.interpolate(begin);
+        var timeSecondPointBase = timesBase.interpolate(end);
+
+        var speedsBase = getSpeedPerPosition(eventsBase);
+        var speedFirstPointBase = speedsBase.interpolate(begin);
+        var speedSecondPointBase = speedsBase.interpolate(end);
+
         // Run with construction margin
         final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
         var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
         var marginsSimTime = sim2.getTime();
 
-        var expected = baseSimTime + params.value;
+        var times = getTimePerPosition(events);
+        var timeFirstPoint = times.interpolate(begin);
+        var timeSecondPoint = times.interpolate(end);
 
-        assertEquals(expected, marginsSimTime, expected * 0.01);
-        saveGraph(eventsBase, "construction-base.csv");
-        saveGraph(events, "construction-out.csv");
+        var speeds = getSpeedPerPosition(events);
+        var speedFirstPoint = speeds.interpolate(begin);
+        var speedSecondPoint = speeds.interpolate(end);
+
+        var expected = baseSimTime + params.value;
+        var expectedTimeSecondPoint = timeSecondPointBase + params.value;
+
+        assertEquals(expected, marginsSimTime, expected * tolerance);
+        // make sure the two points have the same position, time, and speed before and after margin
+        assertEquals(timeFirstPointBase, timeFirstPoint, timeFirstPointBase * tolerance);
+        assertEquals(expectedTimeSecondPoint, timeSecondPoint, expectedTimeSecondPoint * tolerance);
+        assertEquals(speedFirstPointBase, speedFirstPoint, speedFirstPointBase * tolerance);
+        assertEquals(speedSecondPointBase, speedSecondPoint, speedSecondPointBase * tolerance);
+        saveGraph(eventsBase, "..\\construction-segment-base.csv");
+        saveGraph(events, "..\\construction-segment-out.csv");
     }
 
     @Test
@@ -132,8 +159,40 @@ public class MarginTests {
 
         assertEquals(expected, marginsSimTime, expected * 0.01);
 
-        saveGraph(eventsBase, "linear-time-on-construction-base.csv");
-        saveGraph(events, "linear-time-on-construction-out.csv");
+        saveGraph(eventsBase, "..\\linear-time-on-construction-base.csv");
+        saveGraph(events, "..\\linear-time-on-construction-out.csv");
+    }
+
+    @Test
+    public void testMarecoOnConstructionMargin() throws InvalidInfraException {
+        final var infra = getBaseInfra();
+        assert infra != null;
+        var params1 = new ConstructionAllowanceGenerator(3000, 5000, 30);
+        var params2 = new MarecoAllowanceGenerator(0, POSITIVE_INFINITY,
+                10, RJSAllowance.MarecoAllowance.MarginType.TIME);
+
+        var params = new ArrayList<SpeedControllerGenerator>();
+        params.add(params1);
+        params.add(params2);
+
+        // Run with construction margin
+        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromList(params));
+        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var events = run(sim2, configMargins);
+        var marginsSimTime = sim2.getTime();
+
+        // base run, no margin
+        final var config = getBaseConfigNoAllowance();
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var eventsBase = run(sim, config);
+        var baseSimTime = sim.getTime();
+
+        var expected = (baseSimTime + params1.value) * (1 + params2.value / 100);
+
+        assertEquals(expected, marginsSimTime, expected * 0.01);
+
+        saveGraph(eventsBase, "..\\mareco-on-construction-base.csv");
+        saveGraph(events, "..\\mareco-on-construction-out.csv");
     }
 
     /** Test mareco */
@@ -160,8 +219,8 @@ public class MarginTests {
         var expected = baseSimTime * (1 + params.value / 100);
         assertEquals(expected, marginsSimTime, expected * 0.01);
 
-        saveGraph(eventsBase, "eco-base.csv");
-        saveGraph(events, "eco-out.csv");
+        saveGraph(eventsBase, "..\\mareco-base.csv");
+        saveGraph(events, "..\\mareco-out.csv");
     }
 
     /** Test the linear allowance type TIME */
@@ -187,8 +246,8 @@ public class MarginTests {
 
         var expected = baseSimTime * (1 + params.value / 100);
 
-        saveGraph(eventsBase, "linear-time-base.csv");
-        saveGraph(events, "linear-time-out.csv");
+        saveGraph(eventsBase, "..\\linear-time-base.csv");
+        saveGraph(events, "..\\linear-time-out.csv");
         assertEquals(expected, marginsSimTime, expected * 0.01);
     }
 
@@ -221,8 +280,8 @@ public class MarginTests {
         var expected = baseSimTime + expectedExtraTime;
 
         assertEquals(expected, marginsSimTime, expected * 0.01);
-        saveGraph(eventsBase, "linear-distance-base.csv");
-        saveGraph(events, "linear-distance-out.csv");
+        saveGraph(eventsBase, "..\\linear-distance-base.csv");
+        saveGraph(events, "..\\linear-distance-out.csv");
     }
 
     @Test
