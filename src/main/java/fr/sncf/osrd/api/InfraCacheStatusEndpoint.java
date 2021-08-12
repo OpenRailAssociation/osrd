@@ -7,13 +7,11 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
-
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
 import org.takes.rs.RsJson;
 import org.takes.rs.RsWithBody;
-
 import fr.sncf.osrd.api.InfraManager.InfraCacheEntry;
 import fr.sncf.osrd.api.InfraManager.InfraStatus;
 

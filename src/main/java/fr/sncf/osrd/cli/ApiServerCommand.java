@@ -24,7 +24,6 @@ import org.takes.tk.TkSlf4j;
 import org.takes.http.BkParallel;
 import org.takes.http.BkSafe;
 import org.takes.http.BkBasic;
-
 import java.io.IOException;
 
 @Parameters(commandDescription = "HTTP API server mode")
