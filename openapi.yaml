@@ -3,9 +3,17 @@ info:
   title: OSRD
   description: OSRD master race
   version: 1.0.0
+tags:
+- name: rolling_stock
+  description: Rolling Stock
+- name: timetable
+  description: Timetable
+
 paths:
   /rolling_stock/:
     get:
+      tags:
+      - rolling_stock
       summary: List all available rolling stock
       responses:
         200:
@@ -76,6 +84,152 @@ paths:
                         power_class:
                           type: number
                         image: {}
+  /timetable/:
+    get:
+      tags:
+      - timetable
+      summary: List all timetable
+      parameters:
+          - in: query
+            name: infra
+            schema:
+              type: integer
+            description: Filter timetable by infra
+      responses:
+        200:
+          description: The timetable list
+
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                  next: {}
+                  previous: {}
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                        name:
+                          type: string
+                        infra:
+                          type: number
+    post:
+      tags:
+      - timetable
+      summary: Create a timetable
+      requestBody:
+        description: Infrastructure id and waypoints
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                infra:
+                  type: number
+                name:
+                  type: string
+        required: true
+      responses:
+        201:
+          description: The timetable created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                  name:
+                    type: string
+                  infra:
+                    type: number
+  /timetable/{id}/:
+    get:
+      tags:
+      - timetable
+      summary: Retrieve a timetable and his train schedules
+      parameters:
+          - in: path
+            name: id
+            schema:
+              type: integer
+            description: Timetable ID
+            required: true
+      responses:
+        200:
+          description: The timetable content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                  name:
+                    type: string
+                  infra:
+                    type: number
+                  train_schedule:
+                    type: array
+                    items:
+                      type: number
+    delete:
+      tags:
+      - timetable
+      summary: Delete a timetable and his train schedules
+      parameters:
+          - in: path
+            name: id
+            schema:
+              type: integer
+            description: Timetable ID
+            required: true
+      responses:
+        204:
+          description: No content
+    put:
+      tags:
+      - timetable
+      summary: Update a timetable
+      requestBody:
+          description: Infrastructure id and waypoints
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  infra:
+                    type: number
+                  name:
+                    type: string
+          required: true
+      parameters:
+          - in: path
+            name: id
+            schema:
+              type: integer
+            description: Timetable ID
+            required: true
+      responses:
+        200:
+          description: The timetable updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                  name:
+                    type: string
+                  infra:
+                    type: number
   /schema/:
     get:
       summary: List all models and their content
