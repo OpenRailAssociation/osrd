@@ -32,7 +32,8 @@ public class MarginTests {
     public void testLinearAllowance(double value) throws InvalidInfraException {
         final var infra = getBaseInfra();
         assert infra != null;
-        var params = new LinearAllowanceGenerator(0, Double.POSITIVE_INFINITY, value, RJSAllowance.LinearAllowance.MarginType.TIME);
+        var params = new LinearAllowanceGenerator(0, Double.POSITIVE_INFINITY,
+                value, RJSAllowance.LinearAllowance.MarginType.TIME);
 
         // base run, no margin
         final var config = getBaseConfigNoAllowance();
@@ -49,6 +50,7 @@ public class MarginTests {
         assertEquals(expected, marginsSimTime, expected * 0.01);
     }
 
+    /** Test the construction margin */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 30, 100})
     public void testConstructionMargins(double value) throws InvalidInfraException {
@@ -75,6 +77,7 @@ public class MarginTests {
         saveGraph(events, "construction-out.csv");
     }
 
+    /** Test the construction margin on a small segment */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 30, 100})
     public void testConstructionMarginsOnSegment(double value) throws InvalidInfraException {
@@ -133,6 +136,7 @@ public class MarginTests {
         saveGraph(events, "linear-time-on-construction-out.csv");
     }
 
+    /** Test mareco */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 10, 200})
     public void testEcoMargin(double value) throws InvalidInfraException {
@@ -160,6 +164,7 @@ public class MarginTests {
         saveGraph(events, "eco-out.csv");
     }
 
+    /** Test the linear allowance type TIME */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 20, 100})
     public void testTimeMargin(double value) throws InvalidInfraException {
@@ -187,6 +192,7 @@ public class MarginTests {
         assertEquals(expected, marginsSimTime, expected * 0.01);
     }
 
+    /** Test the linear allowance type DISTANCE */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 270})
     public void testDistanceMargin(double value) throws InvalidInfraException {

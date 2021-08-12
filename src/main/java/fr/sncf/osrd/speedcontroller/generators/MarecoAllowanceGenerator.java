@@ -1,5 +1,7 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
+import static java.util.Collections.max;
+
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarecoAllowance.MarginType;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -18,10 +20,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import java.util.*;
-
-import static java.util.Collections.max;
 
 public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
