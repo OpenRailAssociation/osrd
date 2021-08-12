@@ -84,7 +84,7 @@ public final class RouteState implements RSMatchable {
     /** Notify the route that one of his tvd section is occupied */
     public void onTvdSectionOccupied(Simulation sim) throws SimulationError {
 
-        if (status == RouteStatus.REQUESTED || status == RouteStatus.CBTC_REQUESTED) {
+        if (status == RouteStatus.REQUESTED || status == RouteStatus.CBTC_REQUESTED || status == RouteStatus.FREE) {
             throw new SimulationError("The TVD section we try to occupy isn't reserved yet");
         }
 
