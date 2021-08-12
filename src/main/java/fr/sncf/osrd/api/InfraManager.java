@@ -7,19 +7,13 @@ import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-
 import java.io.IOException;
-import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
-
 import com.squareup.moshi.JsonDataException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class InfraManager {
