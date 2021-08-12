@@ -39,7 +39,7 @@ import java.util.function.Supplier;
 
 public class Helpers {
 
-    private static final boolean saveCSVFiles = false;
+    private static final boolean saveCSVFiles = true;
 
     public static final class TestEvent extends TimelineEvent {
         public final String data;
@@ -414,17 +414,17 @@ public class Helpers {
             throw new RuntimeException();
         try {
             PrintWriter writer = new PrintWriter(path, "UTF-8");
-            writer.println("position,time,speed");
+            writer.println("position;time;speed");
             for (var event : events) {
                 if (event instanceof TrainReachesActionPoint) {
                     var updates = ((TrainReachesActionPoint) event).trainStateChange.positionUpdates;
                     for (var update : updates) {
-                        writer.println(String.format("%f,%f,%f", update.pathPosition, update.time, update.speed));
+                        writer.println(String.format("%f;%f;%f", update.pathPosition, update.time, update.speed));
                     }
                 } else if (event instanceof TrainMoveEvent) {
                     var updates = ((TrainMoveEvent) event).trainStateChange.positionUpdates;
                     for (var update : updates) {
-                        writer.println(String.format("%f,%f,%f", update.pathPosition, update.time, update.speed));
+                        writer.println(String.format("%f;%f;%f", update.pathPosition, update.time, update.speed));
                     }
                 }
             }
