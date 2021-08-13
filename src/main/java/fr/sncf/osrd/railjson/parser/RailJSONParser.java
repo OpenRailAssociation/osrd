@@ -3,6 +3,7 @@ package fr.sncf.osrd.railjson.parser;
 import static fr.sncf.osrd.infra.trackgraph.TrackSection.linkEdges;
 
 import com.squareup.moshi.JsonReader;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.*;
 import fr.sncf.osrd.infra.railscript.RSExpr;
 import fr.sncf.osrd.infra.railscript.RSExprVisitor;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
+@SuppressFBWarnings({"NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"})
 public class RailJSONParser {
     /**
      * Parses some railJSON infra into the internal representation

@@ -91,8 +91,6 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
             nextValue = (lowerBound + higherBound) / 2;
             if (i++ > 20)
                 throw new RuntimeException("Did not converge");
-            saveGraph(nextSpeedControllers, sim, schedule,
-                    "C:\\Users\\9706809E\\OneDrive - SNCF\\Documents\\Physique\\Affichage_courbes\\graph" + i + ".csv");
         } while (Math.abs(time - targetTime) > precision);
         return nextSpeedControllers;
     }
