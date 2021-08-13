@@ -82,6 +82,11 @@ public class TrainPhysicsIntegrator {
 
     /** Computes the force required to reach the target speed. */
     public Action actionToTargetSpeed(SpeedDirective speedDirective, RollingStock rollingStock) {
+        return actionToTargetSpeed(speedDirective, rollingStock, 1);
+    }
+
+    /** Computes the force required to reach the target speed. */
+    public Action actionToTargetSpeed(SpeedDirective speedDirective, RollingStock rollingStock, double directionSign) {
         // the force we'd need to apply to reach the target speed at the next step
         // F= m*a
         // a<0 dec force<0
@@ -94,7 +99,8 @@ public class TrainPhysicsIntegrator {
             return Action.coast();
         }
 
-        var targetForce = (speedDirective.allowedSpeed - currentSpeed) / timeStep * inertia;
+        // if we're calculating backwards currentSpeed is > speedDirective.allowedSpeed
+        var targetForce = directionSign * (speedDirective.allowedSpeed - currentSpeed) / timeStep * inertia;
         // limited the possible acceleration for reasons of travel comfort
         if (targetForce > rollingStock.comfortAcceleration * inertia)
             targetForce = rollingStock.comfortAcceleration * inertia;
@@ -131,9 +137,11 @@ public class TrainPhysicsIntegrator {
         }
     }
 
-    private static double computePositionDelta(double currentSpeed, double acceleration, double timeStep) {
+    private static double computePositionDelta(double currentSpeed, double acceleration,
+                                               double timeStep, double directionSign) {
         // dx = currentSpeed * dt + 1/2 * acceleration * dt * dt
-        return currentSpeed * timeStep + 0.5 * acceleration * timeStep * timeStep;
+        var positionDelta = currentSpeed * timeStep + 0.5 * acceleration * timeStep * timeStep;
+        return directionSign * positionDelta;
     }
 
     private static double computeTimeDelta(double currentSpeed, double acceleration, double positionDelta) {
@@ -198,9 +206,6 @@ public class TrainPhysicsIntegrator {
         var fullStepAcceleration =  computeTotalForce(effectiveOppositeForces, actionTractionForce) / inertia;
         var newSpeed = currentSpeed + directionSign * fullStepAcceleration * timeStep;
 
-        // when the train changes direction, the opposite force doesn't apply
-        // in the same direction for all the integration step.
-
         var timeDelta = timeStep;
 
         // if the speed change sign or is very low we integrate only the step at which the speed is zero
@@ -210,7 +215,7 @@ public class TrainPhysicsIntegrator {
         }
 
         // TODO the integration of the rolling resistance
-        var newPositionDelta = computePositionDelta(currentSpeed, fullStepAcceleration, timeDelta);
+        var newPositionDelta = computePositionDelta(currentSpeed, fullStepAcceleration, timeDelta, directionSign);
 
         if (newPositionDelta <= maxDistance)
             return new PositionUpdate(timeDelta, newPositionDelta, newSpeed);

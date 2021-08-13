@@ -152,10 +152,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             var update =  integrator.computeUpdate(action, Double.POSITIVE_INFINITY,
                     -1);
             speed = update.speed;
-
-            // We cannot just call updatePosition with a negative delta so we re-create the location object
-            // TODO (optimization): support negative delta
-            location = convertPosition(schedule, sim, location.getPathPosition() - update.positionDelta);
+            location = convertPosition(schedule, sim, location.getPathPosition() + update.positionDelta);
 
         } while (speed < speeds.interpolate(location.getPathPosition()));
         return new CoastingSpeedController(location.getPathPosition(), endLocation);
