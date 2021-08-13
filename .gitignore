@@ -8,9 +8,15 @@ gradlew*
 .jqwik-database
 examples_generator/__pycache__/
 
+# vscode
+.project
+.settings
+.vscode
+bin
+.classpath
+
 # avoid mistakenly adding proprietary files
 *.rsl
 *.xml
 *.railml
 *.railml3
-

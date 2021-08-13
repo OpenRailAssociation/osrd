@@ -9,7 +9,6 @@ import fr.sncf.osrd.infra.railscript.value.RSType;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra_state.RouteState;
 import org.junit.jupiter.api.Test;
-
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -142,6 +141,11 @@ class PrettyPrinterTest {
                 (RSExpr<RSBool>[]) new RSExpr<?>[] {
                         RSExpr.True.INSTANCE,
                         RSExpr.False.INSTANCE,
+                        RSExpr.False.INSTANCE,
+                        RSExpr.False.INSTANCE,
+                        RSExpr.False.INSTANCE,
+                        RSExpr.False.INSTANCE,
+                        RSExpr.False.INSTANCE,
                         RSExpr.False.INSTANCE
                 }
         );
@@ -150,8 +154,13 @@ class PrettyPrinterTest {
         var expected = String.join("\n",
                 "match \"route\" {",
                 "    FREE: true,",
+                "    REQUESTED: false,",
                 "    RESERVED: false,",
-                "    OCCUPIED: false",
+                "    OCCUPIED: false,",
+                "    CBTC_REQUESTED: false,",
+                "    CBTC_RESERVED: false,",
+                "    CBTC_OCCUPIED: false,",
+                "    CONFLICT: false",
                 "}"
         );
         assertEquals(expected, content.toString());

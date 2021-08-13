@@ -6,7 +6,6 @@ import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.infra.Infra;
-
 import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -162,7 +161,7 @@ public class TowerState {
 
         // reserve the route
         System.out.println("TOWER ACCEPTED : " + request.train.getName() + " : " + request.routeState.route.id);
-        request.routeState.reserve(sim);
+        request.routeState.reserve(sim, request.train);
     }
 
     /**
