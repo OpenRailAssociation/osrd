@@ -33,6 +33,23 @@ public class PhasesTest {
     }
 
     @Test
+    public void testSameSimulationEndTimeCBTC() throws InvalidInfraException {
+        final var infra = getBaseInfra();
+
+        final var config = getBaseConfig("tiny_infra/config_railjson_several_phases_cbtc.json");
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        run(sim, config);
+        var actualEndTime = sim.getTime();
+
+        final var configBase = getBaseConfig("tiny_infra/config_railjson_cbtc.json");
+        var simBase = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        run(simBase, configBase);
+        var baseEndTime = simBase.getTime();
+
+        assertEquals(baseEndTime, actualEndTime, baseEndTime * 0.1);
+    }
+
+    @Test
     public void testSameEventTimes() throws InvalidInfraException {
         final var infra = getBaseInfra();
 
@@ -41,6 +58,30 @@ public class PhasesTest {
         var events = run(sim, config);
 
         final var configBase = getBaseConfigNoAllowance();
+        var simBase = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var eventsRef = run(simBase, configBase);
+
+        assertEquals(eventsRef.size() + 1, events.size());
+
+        var resultTimePerPosition = getTimePerPosition(events);
+        var expectedTimePerPosition = getTimePerPosition(eventsRef);
+
+        for (double t = expectedTimePerPosition.firstKey(); t < expectedTimePerPosition.lastKey(); t += 1) {
+            var expected = expectedTimePerPosition.interpolate(t);
+            var result = resultTimePerPosition.interpolate(t);
+            assertEquals(expected, result, expected * 0.01);
+        }
+    }
+
+    @Test
+    public void testSameEventTimesCBTC() throws InvalidInfraException {
+        final var infra = getBaseInfra();
+
+        final var config = getBaseConfig("tiny_infra/config_railjson_several_phases_cbtc.json");
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var events = run(sim, config);
+
+        final var configBase = getBaseConfigNoAllowance("tiny_infra/config_railjson_cbtc.json");
         var simBase = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var eventsRef = run(simBase, configBase);
 

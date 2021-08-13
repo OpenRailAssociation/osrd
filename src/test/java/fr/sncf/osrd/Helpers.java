@@ -30,7 +30,6 @@ import fr.sncf.osrd.utils.PathUtils;
 import fr.sncf.osrd.utils.SortedDoubleMap;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import okio.Okio;
-
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -211,9 +210,23 @@ public class Helpers {
         return getConfigWithSpeedInstructions(new SpeedInstructions(null));
     }
 
+    /**
+     * Generates the config from the file passed in arguments without allowances
+     */
+    public static Config getBaseConfigNoAllowance(String path) {
+        return getConfigWithSpeedInstructions(path, new SpeedInstructions(null));
+    }
+
     /** Gets the default config but with the given SpeedInstruction in train schedules */
     public static Config getConfigWithSpeedInstructions(SpeedInstructions instructions) {
         var config = getBaseConfig("tiny_infra/config_railjson.json");
+        config.trainSchedules.forEach(schedule -> schedule.speedInstructions = instructions);
+        return config;
+    }
+
+    /** Gets the config from the file passed in arguments but with the given SpeedInstruction in train schedules */
+    public static Config getConfigWithSpeedInstructions(String path, SpeedInstructions instructions) {
+        var config = getBaseConfig(path);
         config.trainSchedules.forEach(schedule -> schedule.speedInstructions = instructions);
         return config;
     }
