@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import fr.sncf.osrd.infra.StopActionPoint;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
@@ -168,6 +167,12 @@ public abstract class NavigatePhase implements Phase {
             public final String trainId;
             public final String switchId;
 
+            /**
+             * Create a new change notifying the passage of a train on a switch
+             * @param sim the current simulation
+             * @param trainId the id of the train that pass over the switch
+             * @param switchId the id of the switch on which we pass
+             */
             public PassageOnSwitch(Simulation sim, String trainId, String switchId) {
                 super(sim);
                 this.trainId = trainId;

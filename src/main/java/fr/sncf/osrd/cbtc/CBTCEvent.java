@@ -6,14 +6,17 @@ import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.simulation.TimelineEventId;
 import fr.sncf.osrd.train.Train;
 
+/**
+ * This event triggers the update of the position of a train.
+ */
 public class CBTCEvent extends TimelineEvent {
 
     private final Train train;
 
     /**
      * Create a new CBTC event for the given train at the given time.
-     * @param eventId
-     * @param train
+     * @param eventId the TimelineEventId of the Event
+     * @param train the train for wich we want to update position
      */
     public CBTCEvent(TimelineEventId eventId, Train train) {
         super(eventId);
@@ -22,9 +25,9 @@ public class CBTCEvent extends TimelineEvent {
 
     /**
      * Plan a new CBTC event at the given time for the given train.
-     * @param sim
-     * @param scheduledTime
-     * @param train
+     * @param sim the current simulation
+     * @param scheduledTime the time at which the event is scheduled.
+     * @param train the train for wich we want to update position
      * @return A new CBTC event.
      */
     public static CBTCEvent plan(Simulation sim, double scheduledTime, Train train) {
@@ -66,7 +69,7 @@ public class CBTCEvent extends TimelineEvent {
 
         /**
          * Create a new CBTC event and schedule it in the simulation.
-         * @param sim
+         * @param sim the current simulation
          * @return The created event.
          */
         private CBTCEvent apply(Simulation sim) {
@@ -82,7 +85,11 @@ public class CBTCEvent extends TimelineEvent {
 
         @Override
         public String toString() {
-            return String.format("CBTCEventPlanned { trainId=%s - scheduledTime=%f}", train.getName(), eventId.scheduledTime);
+            return String.format(
+                    "CBTCEventPlanned { trainId=%s - scheduledTime=%f}",
+                    train.getName(),
+                    eventId.scheduledTime
+                );
         }
     }
 }
