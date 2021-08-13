@@ -2,7 +2,6 @@ package fr.sncf.osrd.cbtc;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -29,10 +28,12 @@ public final class CBTCNavigatePhase extends NavigatePhase {
 
     /**
      * Creates a CBTC navigation phase with an already determined path and interaction path.
-     * @param startLocation
-     * @param endLocation
-     * @param interactionsPath
-     * @param expectedPath
+     * 
+     * @param startLocation the location of the beginning of the phase
+     * @param endLocation the location of the end of the phase
+     * @param interactionsPath the list of interaction points crossed during the phase
+     * @param expectedPath the path that the train is supposed to follow during the phase
+     * @return The new CBTC navigation phase.
      */
     private CBTCNavigatePhase(TrackSectionLocation startLocation, TrackSectionLocation endLocation,
             ArrayList<Interaction> interactionsPath, TrainPath expectedPath) {
@@ -41,12 +42,12 @@ public final class CBTCNavigatePhase extends NavigatePhase {
 
     /**
      * Creates a new CBTC navigation phase from an already determined path
-     * @param driverSightDistance
-     * @param startLocation
-     * @param endLocation
-     * @param expectedPath
-     * @param stops
      * 
+     * @param driverSightDistance the sight distance of the driver 
+     * @param startLocation the location of the beginning of the phase
+     * @param endLocation the location of the end of the phase
+     * @param expectedPath the path that the train is supposed to follow during the phase
+     * @param stops the list of stopping points that the train will cross during the phase
      * @return The new CBTC navigation phase.
      */
     public static CBTCNavigatePhase from(double driverSightDistance, TrackSectionLocation startLocation,
@@ -85,9 +86,9 @@ public final class CBTCNavigatePhase extends NavigatePhase {
 
         /**
          * Create a new state related to the given phase.
-         * @param phase
-         * @param sim
-         * @param schedule
+         * @param phase the state-related phase
+         * @param sim ther current simulation
+         * @param schedule the schedule of the train
          */
         CBTCNavigatePhaseState(CBTCNavigatePhase phase, Simulation sim, TrainSchedule schedule) {
             super(phase, sim, schedule);
@@ -95,7 +96,7 @@ public final class CBTCNavigatePhase extends NavigatePhase {
 
         /**
          * Create a clone of the given state.
-         * @param state
+         * @param state the state we wish to duplicate
          */
         CBTCNavigatePhaseState(CBTCNavigatePhaseState state) {
             super(state);
@@ -116,7 +117,7 @@ public final class CBTCNavigatePhase extends NavigatePhase {
             }
 
             // The time of the next CBTC position update (the 1e-9 is here to prevent from double division error)
-            // TODO : find a better way to do this
+            // The next time is the next multiple of 0.2
             double nextTime = 0.2 * (Math.floor(sim.getTime() / 0.2 + 1e-9) + 1);
 
             // 1) find the next interaction event
@@ -125,7 +126,7 @@ public final class CBTCNavigatePhase extends NavigatePhase {
             // 2) If the action point can interact with the tail of the train add it to the interaction list
             addInteractionUnderTrain(trainState, nextInteraction);
 
-            // 3) simulate up to nextEventTrackPosition
+            // 3) simulate up to the min of nextEventTrackPosition and nextTime
             var simulationResult = trainState.evolveStateUntilTimeOrPosition(sim, nextTime, nextInteraction.position);
 
             // 4) create an event with simulation data up to this point
@@ -139,8 +140,10 @@ public final class CBTCNavigatePhase extends NavigatePhase {
             // The train didn't reached the action point (stopped because of signalisation)
             var event = TrainMoveEvent.plan(sim, trainState.time, train, simulationResult);
 
-            // Test if the train does not move
-            if(trainState.speed >= 1e-6 && trainState.status != TrainStatus.REACHED_DESTINATION && trainState.status != TrainStatus.STOP){
+            // Test if the train is moving, if it does we set up a event to update 
+            // the position of the train when the simulation reaches nextTime
+            if (trainState.speed >= 1e-6 && trainState.status != TrainStatus.REACHED_DESTINATION
+                    && trainState.status != TrainStatus.STOP) {
                 CBTCEvent.plan(sim, nextTime, train);
             }
 

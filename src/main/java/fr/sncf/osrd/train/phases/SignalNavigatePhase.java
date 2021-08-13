@@ -2,7 +2,6 @@ package fr.sncf.osrd.train.phases;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.StopActionPoint;
 import fr.sncf.osrd.simulation.Simulation;

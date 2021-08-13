@@ -1,10 +1,8 @@
 package fr.sncf.osrd.train;
 
 import java.util.ArrayDeque;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra_state.SignalState;

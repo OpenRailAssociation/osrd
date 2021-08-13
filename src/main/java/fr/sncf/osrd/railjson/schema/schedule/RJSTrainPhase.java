@@ -2,7 +2,6 @@ package fr.sncf.osrd.railjson.schema.schedule;
 
 import com.squareup.moshi.Json;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
-
 import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
 
 /**
