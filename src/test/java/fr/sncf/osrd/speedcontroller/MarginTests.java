@@ -95,7 +95,6 @@ public class MarginTests {
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
 
-
         // Run with construction margin
         final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
         var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
