@@ -3,7 +3,6 @@ package fr.sncf.osrd.train.phases;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.Predicate;
-
 import fr.sncf.osrd.infra.signaling.AspectConstraint;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra_state.SignalState;
@@ -96,7 +95,7 @@ public abstract class NavigatePhaseState extends PhaseState {
         return phase.interactionsPath.get(interactionsPathIndex - 1) == phase.lastInteractionOnPhase;
     }
 
-   protected static void addInteractionUnderTrain(TrainState trainState, Interaction interaction) {
+    protected static void addInteractionUnderTrain(TrainState trainState, Interaction interaction) {
         if (interaction.interactionType == InteractionType.TAIL)
             return;
         if (!interaction.actionPoint.getInteractionsType().interactWithTail())
@@ -111,7 +110,7 @@ public abstract class NavigatePhaseState extends PhaseState {
         trainState.actionPointsUnderTrain.addLast(underTrainInteraction);
     }
 
-   protected ArrayList<SpeedController> parseAspectConstraint(AspectConstraint constraint, TrainState trainState) {
+    protected ArrayList<SpeedController> parseAspectConstraint(AspectConstraint constraint, TrainState trainState) {
         if (constraint.getClass() == AspectConstraint.SpeedLimit.class) {
             var speedLimit = (AspectConstraint.SpeedLimit) constraint;
             var appliesAt = speedLimit.appliesAt.convert(this, trainState);

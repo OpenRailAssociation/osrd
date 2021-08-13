@@ -43,7 +43,6 @@ import io.github.classgraph.ScanResult;
 import okio.BufferedSink;
 import okio.Okio;
 import okio.Sink;
-
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.reflect.Type;
