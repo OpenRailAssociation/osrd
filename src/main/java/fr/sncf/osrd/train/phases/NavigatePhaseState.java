@@ -107,7 +107,11 @@ public abstract class NavigatePhaseState extends PhaseState {
                 interaction.position + trainLength,
                 interaction.actionPoint
         );
-        trainState.actionPointsUnderTrain.addLast(underTrainInteraction);
+        // If this interaction is already added, we don't add it another time
+        if (trainState.actionPointsUnderTrain.isEmpty()
+                || !underTrainInteraction.deepEquals(trainState.actionPointsUnderTrain.getLast())) {
+            trainState.actionPointsUnderTrain.addLast(underTrainInteraction);
+        }
     }
 
     protected ArrayList<SpeedController> parseAspectConstraint(AspectConstraint constraint, TrainState trainState) {

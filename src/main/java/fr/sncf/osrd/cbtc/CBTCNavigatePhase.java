@@ -3,6 +3,7 @@ package fr.sncf.osrd.cbtc;
 import java.util.ArrayList;
 import java.util.List;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.StopActionPoint;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
@@ -133,6 +134,12 @@ public final class CBTCNavigatePhase extends NavigatePhase {
 
             // The train reached the action point
             if (trainState.location.getPathPosition() >= nextInteraction.position) {
+                popInteraction(trainState);
+                return TrainReachesActionPoint.plan(sim, trainState.time, train, simulationResult, nextInteraction);
+            } else if (trainState.speed < 0.0000001
+                    && nextInteraction.actionPoint.getClass() == StopActionPoint.class) {
+                // TODO: This is a hot fix to be sure to have a stop reached event
+                // Find a way to reach the final stop or at least be really close to it.
                 popInteraction(trainState);
                 return TrainReachesActionPoint.plan(sim, trainState.time, train, simulationResult, nextInteraction);
             }
