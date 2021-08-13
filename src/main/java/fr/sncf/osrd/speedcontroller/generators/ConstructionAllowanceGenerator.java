@@ -6,6 +6,7 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MapSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
+import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.train.Action;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator;
@@ -70,7 +71,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
         var initialSpeed = expectedSpeeds.interpolate(initialPosition);
         // TODO: adapt this to non-constant deceleration
         var requiredBrakingDistance = Double.max(0,
-                (initialSpeed * initialSpeed - targetSpeed * targetSpeed) / 2 * schedule.rollingStock.gamma);
+                (initialSpeed * initialSpeed - targetSpeed * targetSpeed) / (2 * schedule.rollingStock.gamma));
         var endBrakingPosition = initialPosition + requiredBrakingDistance;
         // running calculation starting where the braking ends, to create a scaled MapSpeedController from it
         var roiSpeeds = getExpectedSpeeds(sim, schedule, currentSpeedControllers, TIME_STEP,
@@ -83,9 +84,9 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
         var res = new HashSet<>(maxSpeedControllers);
 
         if (endBrakingPosition != initialPosition) {
-            LimitAnnounceSpeedController brakingSpeedController = LimitAnnounceSpeedController.create(
-                    initialSpeed,
+            LimitAnnounceSpeedController brakingSpeedController = new LimitAnnounceSpeedController(
                     initialSpeed * scaleFactor,
+                    initialPosition,
                     endBrakingPosition,
                     schedule.rollingStock.gamma
             );
@@ -102,20 +103,18 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
         double speed = roiSpeeds.interpolate(endPosition);
         double scaledSpeed = newSpeeds.interpolate(endPosition);
 
-        assert scaledSpeed <= speed;
+        assert speed >= scaledSpeed;
 
         var location = convertPosition(schedule, sim, endPosition);
 
         while (speed > newSpeeds.interpolate(location.getPathPosition()) && location.getPathPosition() > 0.) {
             var integrator = TrainPhysicsIntegrator.make(TIME_STEP, schedule.rollingStock,
                     speed, location.meanTrainGrade());
-            var action = Action.accelerate(schedule.rollingStock.getMaxEffort(speed));
-            var update =  integrator.computeUpdate(action, location.getPathPosition(), -1);
+            var directive = new SpeedDirective(newSpeeds.interpolate(location.getPathPosition()));
+            var action = integrator.actionToTargetSpeed(directive, schedule.rollingStock, -1);
+            var update = integrator.computeUpdate(action, location.getPathPosition(), -1);
             speed = update.speed;
-
-            // We cannot just call updatePosition with a negative delta so we re-create the location object
-            // TODO (optimization): support negative delta
-            location = convertPosition(schedule, sim, location.getPathPosition() - update.positionDelta);
+            location.updatePosition(schedule.rollingStock.length, update.positionDelta);
         }
 
         var initialSpeedControllers = new HashSet<>(maxSpeedControllers);
