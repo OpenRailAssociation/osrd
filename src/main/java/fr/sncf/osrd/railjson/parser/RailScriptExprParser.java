@@ -17,7 +17,6 @@ import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSFunction;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSType;
-
 import java.util.HashMap;
 
 public class RailScriptExprParser {
@@ -286,14 +285,20 @@ public class RailScriptExprParser {
         switch (state) {
             case FREE:
                 return RouteStatus.FREE;
+            case REQUESTED:
+                return RouteStatus.REQUESTED;
             case RESERVED:
                 return RouteStatus.RESERVED;
             case OCCUPIED:
                 return RouteStatus.OCCUPIED;
+            case CBTC_REQUESTED:
+                return RouteStatus.CBTC_REQUESTED;
+            case CBTC_RESERVED:
+                return RouteStatus.CBTC_RESERVED;
+            case CBTC_OCCUPIED:
+                return RouteStatus.CBTC_OCCUPIED;
             case CONFLICT:
                 return RouteStatus.CONFLICT;
-            case REQUESTED:
-                return RouteStatus.REQUESTED;
         }
         throw new RuntimeException("unsupported RailJSON route state");
     }
