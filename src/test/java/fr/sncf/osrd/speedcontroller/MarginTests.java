@@ -85,8 +85,8 @@ public class MarginTests {
     public void testConstructionMarginsOnSegment(double value) throws InvalidInfraException {
         final var infra = getBaseInfra();
         assert infra != null;
-        double begin = 1000;
-        double end = 3000;
+        double begin = 4000;
+        double end = 5000;
         double tolerance = 0.01; //percentage
         var params = new ConstructionAllowanceGenerator(begin, end, value);
 
@@ -94,41 +94,47 @@ public class MarginTests {
         final var config = getBaseConfigNoAllowance();
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var eventsBase = run(sim, config);
-        var baseSimTime = sim.getTime();
 
-        var timesBase = getTimePerPosition(eventsBase);
-        var timeFirstPointBase = timesBase.interpolate(begin);
-        var timeSecondPointBase = timesBase.interpolate(end);
-
-        var speedsBase = getSpeedPerPosition(eventsBase);
-        var speedFirstPointBase = speedsBase.interpolate(begin);
-        var speedSecondPointBase = speedsBase.interpolate(end);
 
         // Run with construction margin
         final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
         var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var events = run(sim2, configMargins);
-        var marginsSimTime = sim2.getTime();
+
+        var timesBase = getTimePerPosition(eventsBase);
+        var timeFirstPointBase = timesBase.interpolate(begin);
+        var timeSecondPointBase = timesBase.interpolate(end);
 
         var times = getTimePerPosition(events);
         var timeFirstPoint = times.interpolate(begin);
         var timeSecondPoint = times.interpolate(end);
+        var expectedTimeSecondPoint = timeSecondPointBase + params.value;
+
+        // make sure begin has the same time before and after margin, and that end is offset by the proper value
+        assertEquals(timeFirstPointBase, timeFirstPoint, timeFirstPointBase * tolerance);
+        assertEquals(expectedTimeSecondPoint, timeSecondPoint, expectedTimeSecondPoint * tolerance);
+
+        var speedsBase = getSpeedPerPosition(eventsBase);
+        var speedFirstPointBase = speedsBase.interpolate(begin);
+        var speedSecondPointBase = speedsBase.interpolate(end);
 
         var speeds = getSpeedPerPosition(events);
         var speedFirstPoint = speeds.interpolate(begin);
         var speedSecondPoint = speeds.interpolate(end);
 
-        var expected = baseSimTime + params.value;
-        var expectedTimeSecondPoint = timeSecondPointBase + params.value;
-
-        assertEquals(expected, marginsSimTime, expected * tolerance);
-        // make sure the two points have the same position, time, and speed before and after margin
-        assertEquals(timeFirstPointBase, timeFirstPoint, timeFirstPointBase * tolerance);
-        assertEquals(expectedTimeSecondPoint, timeSecondPoint, expectedTimeSecondPoint * tolerance);
+        // make sure begin and end have the same speed before and after margin
         assertEquals(speedFirstPointBase, speedFirstPoint, speedFirstPointBase * tolerance);
         assertEquals(speedSecondPointBase, speedSecondPoint, speedSecondPointBase * tolerance);
+
+        var baseSimTime = sim.getTime();
+        var marginsSimTime = sim2.getTime();
+
+        var expectedTotalTime = baseSimTime + params.value;
+
         saveGraph(eventsBase, "..\\construction-segment-base.csv");
         saveGraph(events, "..\\construction-segment-out.csv");
+
+        assertEquals(expectedTotalTime, marginsSimTime, expectedTotalTime * tolerance);
     }
 
     @Test
