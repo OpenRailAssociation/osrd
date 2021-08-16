@@ -12,7 +12,6 @@ import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.DeepEqualsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.ArrayDeque;
 import java.util.Set;
 

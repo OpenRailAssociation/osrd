@@ -35,10 +35,15 @@ public abstract class NavigatePhase implements Phase {
         lastInteractionOnPhase = interactionsPath.get(interactionsPath.size() - 1);
     }
 
-    protected static void addStopInteractions(ArrayList<Interaction> interactions, List<TrainStop> stops) {
+    protected static void addStopInteractions(ArrayList<Interaction> interactions, TrackSectionLocation startLocation,
+            TrackSectionLocation endLocation, TrainPath expectedPath, List<TrainStop> stops) {
+        double startPathPosition = expectedPath.convertTrackLocation(startLocation);
+        double endPathPosition = expectedPath.convertTrackLocation(endLocation);
         for (int i = 0; i < stops.size(); i++) {
             var stop = stops.get(i);
-            interactions.add(new Interaction(InteractionType.HEAD, stop.position, new StopActionPoint(i)));
+            if (startPathPosition <= stop.position && stop.position <= endPathPosition) {
+                interactions.add(new Interaction(InteractionType.HEAD, stop.position, new StopActionPoint(i)));
+            }
         }
         interactions.sort(Comparator.comparingDouble(x -> x.position));
     }
