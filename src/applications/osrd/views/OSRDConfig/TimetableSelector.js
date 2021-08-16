@@ -16,7 +16,7 @@ export default function TimetableSelector(props) {
   const { mustUpdateTimetable } = props;
   const [selectedTimetable, setselectedTimetable] = useState(undefined);
   const [trainList, setTrainList] = useState(undefined);
-  const osrdconf = useSelector((state) => state.osrdconf);
+  const { timetableID } = useSelector((state) => state.osrdconf);
   const { t } = useTranslation();
 
   const getTimetable = async (id) => {
@@ -32,7 +32,7 @@ export default function TimetableSelector(props) {
 
   const deleteTrainSchedule = async (id) => {
     await deleteRequest(`${scheduleURL}/${id}`);
-    getTimetable(osrdconf.timetableID);
+    getTimetable(timetableID);
   };
 
   const formatTrainList = () => trainList.map((train, idx) => (
@@ -55,12 +55,12 @@ export default function TimetableSelector(props) {
   ));
 
   useEffect(() => {
-    if (osrdconf.timetableID !== undefined) {
-      getTimetable(osrdconf.timetableID);
+    if (timetableID !== undefined) {
+      getTimetable(timetableID);
     } else {
       setselectedTimetable(undefined);
     }
-  }, [osrdconf.timetableID, mustUpdateTimetable]);
+  }, [timetableID, mustUpdateTimetable]);
 
   return (
     <>
@@ -75,7 +75,7 @@ export default function TimetableSelector(props) {
           <div className="h2 mb-0 d-flex align-items-center">
             <img width="32px" className="mr-2" src={icon} alt="timetableIcon" />
             <span className="text-muted">{t('osrdconf:timetable')}</span>
-            {osrdconf.timetableID !== undefined && selectedTimetable === undefined
+            {timetableID !== undefined && selectedTimetable === undefined
               ? <span className="ml-3"><DotsLoader /></span>
               : (
                 <>
@@ -92,7 +92,7 @@ export default function TimetableSelector(props) {
               )}
           </div>
         </div>
-        {osrdconf.timetableID !== undefined && trainList !== undefined && trainList.length > 0 ? (
+        {timetableID !== undefined && trainList !== undefined && trainList.length > 0 ? (
           <div className="osrd-config-item-container">
             <div className="timetable-trainlist">
               {formatTrainList(trainList)}

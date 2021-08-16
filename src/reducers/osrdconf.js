@@ -15,6 +15,7 @@ export const UPDATE_VIAS = 'osrdconf/UPDATE_VIAS';
 export const UPDATE_VIA_STOPTIME = 'osrdconf/UPDATE_VIA_STOPTIME';
 export const PERMUTE_VIAS = 'osrdconf/PERMUTE_VIAS';
 export const DELETE_VIAS = 'osrdconf/DELETE_VIAS';
+export const DELETE_ITINERARY = 'osrdconfDELETE_ITINERARY';
 export const UPDATE_DESTINATION = 'osrdconf/UPDATE_DESTINATION';
 export const UPDATE_TRAINCOMPO = 'osrdconf/UPDATE_TRAINCOMPO';
 export const UPDATE_ITINERARY = 'osrdconf/UPDATE_ITINERARY';
@@ -78,6 +79,14 @@ export default function reducer(state = initialState, action) {
         break;
       case DELETE_VIAS:
         draft.vias.splice(action.index, 1);
+        break;
+      case DELETE_ITINERARY:
+        draft.origin = undefined;
+        draft.vias = [];
+        draft.destination = undefined;
+        draft.geojson = undefined;
+        draft.originTime = undefined;
+        draft.pathfindingID = undefined;
         break;
       case UPDATE_DESTINATION:
         draft.destination = action.destination;
@@ -236,6 +245,13 @@ export function updateFeatureInfoClickOSRD(featureInfoClick) {
     dispatch({
       type: UPDATE_FEATURE_INFO_CLICK_OSRD,
       featureInfoClick,
+    });
+  };
+}
+export function deleteItinerary() {
+  return (dispatch) => {
+    dispatch({
+      type: DELETE_ITINERARY,
     });
   };
 }

@@ -22,7 +22,7 @@ export default function TimetableSelectorModal() {
 
   const getTimetablesList = async () => {
     try {
-      const timetablesListQuery = await get(timetableURL, {});
+      const timetablesListQuery = await get(timetableURL, { infra: infraID });
       settimetablesList(timetablesListQuery);
     } catch (e) {
       console.log('ERROR', e);
@@ -31,7 +31,7 @@ export default function TimetableSelectorModal() {
 
   useEffect(() => {
     getTimetablesList();
-  }, []);
+  }, [infraID]);
 
   const deleteTimetable = async (timetable) => {
     try {

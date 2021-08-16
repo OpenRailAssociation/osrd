@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { updateInfraID } from 'reducers/osrdconf';
+import { updateInfraID, updateTimetableID, deleteItinerary } from 'reducers/osrdconf';
 import { get } from 'common/requests';
 import icon from 'assets/pictures/tracks.svg';
 import InfraSelectorModal from 'applications/osrd/components/InfraSelector/InfraSelectorModal';
@@ -13,7 +13,7 @@ export default function InfraSelector() {
   const dispatch = useDispatch();
   const [infrasList, setInfrasList] = useState(undefined);
   const [selectedInfra, setSelectedInfra] = useState(undefined);
-  const osrdconf = useSelector((state) => state.osrdconf);
+  const { infraID } = useSelector((state) => state.osrdconf);
   const { t } = useTranslation();
 
   const getInfra = async (id) => {
@@ -35,8 +35,8 @@ export default function InfraSelector() {
   };
 
   const setInitialInfra = () => {
-    if (osrdconf.infraID !== undefined) {
-      getInfra(osrdconf.infraID);
+    if (infraID !== undefined) {
+      getInfra(infraID);
     } else if (infrasList !== undefined) {
       setSelectedInfra(infrasList.results[0]);
       dispatch(updateInfraID(infrasList.results[0].id));
@@ -47,7 +47,12 @@ export default function InfraSelector() {
 
   useEffect(() => {
     setInitialInfra();
-  }, [infrasList, osrdconf.infraID]);
+  }, [infrasList, infraID]);
+
+  useEffect(() => {
+    dispatch(updateTimetableID(undefined));
+    dispatch(deleteItinerary());
+  }, [infraID]);
 
   return (
     <>
