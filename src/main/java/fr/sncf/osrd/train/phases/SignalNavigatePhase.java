@@ -44,7 +44,7 @@ public final class SignalNavigatePhase extends NavigatePhase {
                 startLocation,
                 endLocation,
                 expectedPath.trackSectionPath);
-        addStopInteractions(actionPointPath, stops);
+        addStopInteractions(actionPointPath, startLocation, endLocation, expectedPath, stops);
         return new SignalNavigatePhase(startLocation, endLocation, actionPointPath, expectedPath);
     }
 
@@ -80,14 +80,7 @@ public final class SignalNavigatePhase extends NavigatePhase {
         public TimelineEvent simulate(Simulation sim, Train train, TrainState trainState) throws SimulationError {
             // Check if we reached our goal
             if (hasPhaseEnded()) {
-                var nextState = trainState.nextPhase(sim);
-                var change = new Train.TrainStateChange(sim, train.getName(), nextState);
-                change.apply(sim, train);
-                sim.publishChange(change);
-                if (trainState.isDuringLastPhase())
-                    return null;
-                else
-                    return nextState.simulatePhase(train, sim);
+                return nextPhase(sim, train, trainState);
             }
 
             // 1) find the next interaction event

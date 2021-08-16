@@ -61,7 +61,7 @@ public class PhasesTest {
         var simBase = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var eventsRef = run(simBase, configBase);
 
-        assertEquals(eventsRef.size() + 1, events.size());
+        assertEquals(eventsRef.size(), events.size());
 
         var resultTimePerPosition = getTimePerPosition(events);
         var expectedTimePerPosition = getTimePerPosition(eventsRef);
@@ -85,7 +85,7 @@ public class PhasesTest {
         var simBase = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var eventsRef = run(simBase, configBase);
 
-        assertEquals(eventsRef.size() + 1, events.size());
+        assertEquals(eventsRef.size(), events.size());
 
         var resultTimePerPosition = getTimePerPosition(events);
         var expectedTimePerPosition = getTimePerPosition(eventsRef);

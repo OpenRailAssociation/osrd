@@ -36,8 +36,8 @@ public final class CBTCNavigatePhase extends NavigatePhase {
      * @param expectedPath the path that the train is supposed to follow during the phase
      * @return The new CBTC navigation phase.
      */
-    private CBTCNavigatePhase(TrackSectionLocation startLocation, TrackSectionLocation endLocation,
-            ArrayList<Interaction> interactionsPath, TrainPath expectedPath) {
+    private CBTCNavigatePhase(TrackSectionLocation startLocation,
+            TrackSectionLocation endLocation, ArrayList<Interaction> interactionsPath, TrainPath expectedPath) {
         super(startLocation, endLocation, interactionsPath, expectedPath);
     }
 
@@ -58,7 +58,7 @@ public final class CBTCNavigatePhase extends NavigatePhase {
 
         var actionPointPath = trackSectionToActionPointPath(driverSightDistance, expectedPath, startLocation,
                 endLocation, expectedPath.trackSectionPath);
-        addStopInteractions(actionPointPath, stops);
+        addStopInteractions(actionPointPath, startLocation, endLocation, expectedPath, stops);
         return new CBTCNavigatePhase(startLocation, endLocation, actionPointPath, expectedPath);
     }
 
@@ -107,14 +107,7 @@ public final class CBTCNavigatePhase extends NavigatePhase {
         public TimelineEvent simulate(Simulation sim, Train train, TrainState trainState) throws SimulationError {
             // Check if we reached our goal
             if (hasPhaseEnded()) {
-                var nextState = trainState.nextPhase(sim);
-                var change = new Train.TrainStateChange(sim, train.getName(), nextState);
-                change.apply(sim, train);
-                sim.publishChange(change);
-                if (trainState.isDuringLastPhase())
-                    return null;
-                else
-                    return nextState.simulatePhase(train, sim);
+                return nextPhase(sim, train, trainState);
             }
 
             // The time of the next CBTC position update (the 1e-9 is here to prevent from double division error)

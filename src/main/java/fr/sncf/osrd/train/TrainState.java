@@ -1,14 +1,18 @@
 package fr.sncf.osrd.train;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
+import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.train.phases.NavigatePhaseState;
 import fr.sncf.osrd.train.phases.PhaseState;
@@ -112,7 +116,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     }
 
     /** Create a new TrainState pointing at the next phase */
-    public TrainState nextPhase(Simulation sim) {
+    public TrainState nextPhase(Simulation sim, HashMap<Signal, ArrayList<SpeedController>> signalControllers) {
         if (isDuringLastPhase())
             return new TrainState(
                     time,
@@ -129,6 +133,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
         var nextPhase = currentPhaseIndex + 1;
         var nextPhaseState = trainSchedule.phases.get(nextPhase).getState(sim, trainSchedule);
+        nextPhaseState.addAspectConstraints(signalControllers);
         return new TrainState(
                 time,
                 location.clone(),
