@@ -7,11 +7,14 @@ import fr.sncf.osrd.infra.signaling.AspectConstraint;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.train.Interaction;
 import fr.sncf.osrd.train.InteractionType;
+import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.train.TrainState;
 
@@ -95,6 +98,24 @@ public abstract class NavigatePhaseState extends PhaseState {
         return phase.interactionsPath.get(interactionsPathIndex - 1) == phase.lastInteractionOnPhase;
     }
 
+    /**
+     * Make the transition to the next phase of the train, if there is any
+     * 
+     * @param sim        the current simulation
+     * @param train      the train that changes phase
+     * @param trainState the state of the train
+     */
+    protected TimelineEvent nextPhase(Simulation sim, Train train, TrainState trainState) throws SimulationError {
+        var nextState = trainState.nextPhase(sim, signalControllers);
+        var change = new Train.TrainStateChange(sim, train.getName(), nextState);
+        change.apply(sim, train);
+        sim.publishChange(change);
+        if (trainState.isDuringLastPhase())
+            return null;
+        else
+            return nextState.simulatePhase(train, sim);
+    }
+
     protected static void addInteractionUnderTrain(TrainState trainState, Interaction interaction) {
         if (interaction.interactionType == InteractionType.TAIL)
             return;
@@ -145,4 +166,12 @@ public abstract class NavigatePhaseState extends PhaseState {
         }
         signalControllers.put(signalState.signal, controllers);
     }
+
+    /**
+     * Add a collection of signalController to the signalControllers hashMap
+     */
+    public void addAspectConstraints(HashMap<Signal, ArrayList<SpeedController>> signalControllers) {
+        this.signalControllers.putAll(signalControllers);
+    }
+
 }
