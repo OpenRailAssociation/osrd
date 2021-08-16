@@ -2,7 +2,7 @@ package fr.sncf.osrd.train;
 
 import static fr.sncf.osrd.Helpers.*;
 import static fr.sncf.osrd.infra.Infra.parseFromFile;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.InvalidInfraException;
@@ -41,13 +41,7 @@ public class PathTest {
             s.initialHeadLocation.offset = 100;
         });
 
-        try {
-            RJSSimulationParser.parse(rjsInfra, schedule);
-        } catch (InvalidSchedule e) {
-            // Exception is expected here
-            return;
-        }
-        fail("Exception InvalidSchedule was not thrown");
+        assertThrows(InvalidSchedule.class, () -> RJSSimulationParser.parse(rjsInfra, schedule));
     }
 
     @Test
@@ -71,13 +65,7 @@ public class PathTest {
             s.initialHeadLocation.offset = 100;
         });
 
-        try {
-            RJSSimulationParser.parse(rjsInfra, schedule);
-        } catch (InvalidSchedule e) {
-            // Exception is expected here
-            return;
-        }
-        fail("Exception InvalidSchedule was not thrown");
+        assertThrows(InvalidSchedule.class, () -> RJSSimulationParser.parse(rjsInfra, schedule));
     }
 
     @Test
@@ -98,13 +86,7 @@ public class PathTest {
                 new ID<RJSRoute>("rt.S7-buffer_stop_c"),
         });
 
-        try {
-            RJSSimulationParser.parse(rjsInfra, schedule);
-        } catch (InvalidSchedule e) {
-            // Exception is expected here
-            return;
-        }
-        fail("Exception InvalidSchedule was not thrown");
+        assertThrows(InvalidSchedule.class, () -> RJSSimulationParser.parse(rjsInfra, schedule));
     }
 
     @Test
@@ -126,13 +108,7 @@ public class PathTest {
             s.initialHeadLocation.offset = 100;
         });
 
-        try {
-            RJSSimulationParser.parse(rjsInfra, schedule);
-        } catch (InvalidSchedule e) {
-            // Exception is expected here
-            return;
-        }
-        fail("Exception InvalidSchedule was not thrown");
+        assertThrows(InvalidSchedule.class, () -> RJSSimulationParser.parse(rjsInfra, schedule));
     }
 
     @Test
@@ -155,12 +131,6 @@ public class PathTest {
             s.initialHeadLocation.offset = 100;
         });
 
-        try {
-            RJSSimulationParser.parse(rjsInfra, schedule);
-        } catch (InvalidSchedule e) {
-            // Exception is expected here
-            return;
-        }
-        fail("Exception InvalidSchedule was not thrown");
+        assertThrows(InvalidSchedule.class, () -> RJSSimulationParser.parse(rjsInfra, schedule));
     }
 }
