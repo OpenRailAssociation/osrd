@@ -49,14 +49,14 @@ public final class SignalNavigatePhase extends NavigatePhase {
     }
 
     @Override
-    public PhaseState getState(Simulation sim, TrainSchedule schedule) {
+    public NavigatePhaseState getState(Simulation sim, TrainSchedule schedule) {
         return new State(this, sim, schedule);
     }
 
     public static final class State extends NavigatePhaseState {
         @Override
         @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-        public boolean deepEquals(PhaseState other) {
+        public boolean deepEquals(NavigatePhaseState other) {
             if (other.getClass() != State.class)
                 return false;
             var o = (State) other;
@@ -64,7 +64,7 @@ public final class SignalNavigatePhase extends NavigatePhase {
         }
 
         @Override
-        public PhaseState clone() {
+        public NavigatePhaseState clone() {
             return new SignalNavigatePhase.State(this);
         }
 

@@ -33,8 +33,7 @@ import fr.sncf.osrd.train.decisions.KeyboardInput;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker.DefaultTrainDecisionMaker;
 import fr.sncf.osrd.train.phases.NavigatePhase;
-import fr.sncf.osrd.train.phases.Phase;
-import fr.sncf.osrd.train.phases.PhaseState;
+import fr.sncf.osrd.train.phases.NavigatePhaseState;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.CryoList;
 import io.github.classgraph.ClassGraph;
@@ -75,15 +74,11 @@ public class ChangeSerializer {
                     TrainStateChange.SpeedUpdates::new))
             .add(new SerializableDoubleAdapter())
             .add(adaptPolymorphicType(Change.class, "changeType"))
-            .add(PolymorphicJsonAdapterFactory.of(Phase.class, "phaseType")
-                    .withSubtype(NavigatePhase.class, "navigatePhase")
-                    .withSubtype(SignalNavigatePhase.class, "signalNavigatePhase")
-                    .withSubtype(CBTCNavigatePhase.class, "cbtcNavigatePhase"))
             .add(PolymorphicJsonAdapterFactory.of(NavigatePhase.class, "navigatePhaseType")
                     .withSubtype(SignalNavigatePhase.class, "signalNavigatePhase")
                     .withSubtype(CBTCNavigatePhase.class, "cbtcNavigatePhase")
             )
-            .add(adaptPolymorphicType(PhaseState.class, "phaseStateType"))
+            .add(adaptPolymorphicType(NavigatePhaseState.class, "navigatePhaseStateType"))
             .add(PolymorphicJsonAdapterFactory.of(ActionPoint.class, "actionPointType")
                     .withSubtype(BufferStop.class, "bufferStop")
                     .withSubtype(Detector.class, "detector")
