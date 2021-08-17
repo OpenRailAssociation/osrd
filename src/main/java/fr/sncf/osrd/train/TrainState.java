@@ -14,6 +14,7 @@ import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
+import fr.sncf.osrd.train.phases.NavigatePhase;
 import fr.sncf.osrd.train.phases.NavigatePhaseState;
 import fr.sncf.osrd.train.phases.PhaseState;
 import fr.sncf.osrd.utils.DeepComparable;
@@ -292,5 +293,15 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             var backwardTVDSection = sim.infraState.getTvdSectionState(backwardTVDSectionPath.index);
             backwardTVDSection.unoccupy(sim);
         }
+    }
+
+    /**
+     * Return the next phase
+     */
+    public NavigatePhase getNextPhase() {
+        if (isDuringLastPhase()) {
+            return null;
+        }
+        return (NavigatePhase) trainSchedule.phases.get(currentPhaseIndex + 1);
     }
 }
