@@ -71,6 +71,11 @@ public abstract class NavigatePhaseState extends PhaseState {
                 return interaction;
             interactionIndex++;
         }
+        // If we are not in the next phase and if there is not interaction left in this phase, 
+        // the next interaction is in the next phase
+        if (!trainState.isDuringLastPhase()) {
+            return trainState.getNextPhase().interactionsPath.get(0);
+        }
         return null;
     }
 

@@ -23,7 +23,7 @@ public abstract class NavigatePhase implements Phase {
     public final TrainPath expectedPath;
     public TrackSectionLocation startLocation;
     public final TrackSectionLocation endLocation;
-    protected final ArrayList<Interaction> interactionsPath;
+    public final ArrayList<Interaction> interactionsPath;
     protected final Interaction lastInteractionOnPhase;
 
     protected NavigatePhase(TrackSectionLocation startLocation, TrackSectionLocation endLocation,
