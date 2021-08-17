@@ -15,7 +15,7 @@ import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
-import fr.sncf.osrd.train.phases.Phase;
+import fr.sncf.osrd.train.phases.NavigatePhase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.RangeValue;
 import fr.sncf.osrd.utils.SignAnalyzer;
@@ -23,7 +23,6 @@ import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -104,7 +103,7 @@ public class StaticSpeedLimitTest {
         var path = new TrainPath(Collections.singletonList(route),
                 startLocation,
                 new TrackSectionLocation(edge, 10000));
-        var phases = new ArrayList<Phase>();
+        var phases = new ArrayList<NavigatePhase>();
         phases.add(SignalNavigatePhase.from(
                 400,
                 startLocation,

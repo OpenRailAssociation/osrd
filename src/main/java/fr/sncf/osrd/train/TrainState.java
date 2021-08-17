@@ -16,7 +16,6 @@ import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.train.phases.NavigatePhase;
 import fr.sncf.osrd.train.phases.NavigatePhaseState;
-import fr.sncf.osrd.train.phases.PhaseState;
 import fr.sncf.osrd.utils.DeepComparable;
 
 public final class TrainState implements Cloneable, DeepComparable<TrainState> {
@@ -33,7 +32,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
     public final transient TrainSchedule trainSchedule;
     public final int currentPhaseIndex;
-    public final PhaseState currentPhaseState;
+    public final NavigatePhaseState currentPhaseState;
 
     // this field MUST be kept private, as it is not the position of the train at the current simulation time,
     // but rather the position of the train at the last event. it's fine and expected, but SpeedControllers need
@@ -76,7 +75,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             TrainStatus status,
             TrainSchedule trainSchedule,
             int currentPhaseIndex,
-            PhaseState currentPhaseState,
+            NavigatePhaseState currentPhaseState,
             ArrayDeque<Interaction> actionPointsUnderTrain,
             TrainPath path,
             int routeIndex
@@ -262,11 +261,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
     /** Add or update aspects constraint of a signal */
     public void setAspectConstraints(SignalState signalState) {
-        if (!(currentPhaseState instanceof NavigatePhaseState)) {
-            throw new RuntimeException("Expected NavigatePhaseState");
-        }
-        var navigatePhase = (NavigatePhaseState) currentPhaseState;
-        navigatePhase.setAspectConstraints(signalState, this);
+        currentPhaseState.setAspectConstraints(signalState, this);
     }
 
     /** Occupy and free tvd sections given a detector the train is interacting with. */
@@ -302,6 +297,6 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         if (isDuringLastPhase()) {
             return null;
         }
-        return (NavigatePhase) trainSchedule.phases.get(currentPhaseIndex + 1);
+        return trainSchedule.phases.get(currentPhaseIndex + 1);
     }
 }

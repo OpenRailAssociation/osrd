@@ -16,10 +16,11 @@ import fr.sncf.osrd.train.InteractionTypeSet;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPath;
+import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
-public abstract class NavigatePhase implements Phase {
+public abstract class NavigatePhase {
     public final TrainPath expectedPath;
     public TrackSectionLocation startLocation;
     public final TrackSectionLocation endLocation;
@@ -34,6 +35,8 @@ public abstract class NavigatePhase implements Phase {
         this.expectedPath = expectedPath;
         lastInteractionOnPhase = interactionsPath.get(interactionsPath.size() - 1);
     }
+
+    public abstract NavigatePhaseState getState(Simulation sim, TrainSchedule schedule);
 
     protected static void addStopInteractions(ArrayList<Interaction> interactions, TrackSectionLocation startLocation,
             TrackSectionLocation endLocation, TrainPath expectedPath, List<TrainStop> stops) {
@@ -132,7 +135,6 @@ public abstract class NavigatePhase implements Phase {
         }
     }
 
-    @Override
     public TrackSectionLocation getEndLocation() {
         return endLocation;
     }

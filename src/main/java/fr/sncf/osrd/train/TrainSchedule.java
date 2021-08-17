@@ -5,10 +5,9 @@ import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
-import fr.sncf.osrd.train.phases.Phase;
+import fr.sncf.osrd.train.phases.NavigatePhase;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +22,7 @@ public final class TrainSchedule {
     public final Route initialRoute;
     public final double initialSpeed;
 
-    public final ArrayList<Phase> phases;
+    public final ArrayList<NavigatePhase> phases;
 
     public final TrainDecisionMaker trainDecisionMaker;
 
@@ -43,7 +42,7 @@ public final class TrainSchedule {
             TrackSectionLocation initialLocation,
             EdgeDirection initialDirection, Route initialRoute,
             double initialSpeed,
-            ArrayList<Phase> phases,
+            ArrayList<NavigatePhase> phases,
             TrainDecisionMaker trainDecisionMaker,
             TrainPath plannedPath,
             SpeedInstructions speedInstructions,

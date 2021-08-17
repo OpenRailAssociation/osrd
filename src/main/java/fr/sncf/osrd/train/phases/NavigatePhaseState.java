@@ -17,8 +17,9 @@ import fr.sncf.osrd.train.InteractionType;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.train.TrainState;
+import fr.sncf.osrd.utils.DeepComparable;
 
-public abstract class NavigatePhaseState extends PhaseState {
+public abstract class NavigatePhaseState implements DeepComparable<NavigatePhaseState>, Cloneable {
     public final NavigatePhase phase;
     protected int interactionsPathIndex = 0;
     protected final transient Simulation sim;
@@ -39,6 +40,13 @@ public abstract class NavigatePhaseState extends PhaseState {
         this.schedule = state.schedule;
         this.sim = state.sim;
     }
+
+    public abstract TimelineEvent simulate(Simulation sim, Train train, TrainState trainState) throws SimulationError;
+
+    @Override
+    public abstract NavigatePhaseState clone();
+
+    public abstract ArrayList<SpeedController> getSpeedControllers();
 
     protected boolean isInteractionUnderTrain(TrainState trainState) {
         var nextFrontalInteraction = phase.interactionsPath.get(interactionsPathIndex);
