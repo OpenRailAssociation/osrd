@@ -22,7 +22,7 @@ import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.train.decisions.KeyboardInput;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
-import fr.sncf.osrd.train.phases.Phase;
+import fr.sncf.osrd.train.phases.NavigatePhase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -60,7 +60,7 @@ public class RJSTrainScheduleParser {
             throw new InvalidSchedule("invalid initial speed");
 
         // parse the sequence of phases, keeping track of the location of the train between phases
-        var phases = new ArrayList<Phase>();
+        var phases = new ArrayList<NavigatePhase>();
         var beginLocation = initialLocation;
         for (var rjsPhase : rjsTrainSchedule.phases) {
             var phase = parsePhase(infra, beginLocation, rjsPhase, expectedPath, stops);
@@ -187,7 +187,7 @@ public class RJSTrainScheduleParser {
         return list;
     }
 
-    private static Phase parsePhase(
+    private static NavigatePhase parsePhase(
             Infra infra,
             TrackSectionLocation startLocation,
             RJSTrainPhase rjsPhase,

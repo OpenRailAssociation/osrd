@@ -19,7 +19,6 @@ import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.train.phases.NavigatePhase;
 import fr.sncf.osrd.train.phases.NavigatePhaseState;
-import fr.sncf.osrd.train.phases.PhaseState;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
 /**
@@ -63,7 +62,7 @@ public final class CBTCNavigatePhase extends NavigatePhase {
     }
 
     @Override
-    public PhaseState getState(Simulation sim, TrainSchedule schedule) {
+    public NavigatePhaseState getState(Simulation sim, TrainSchedule schedule) {
         return new CBTCNavigatePhaseState(this, sim, schedule);
     }
 
@@ -73,7 +72,7 @@ public final class CBTCNavigatePhase extends NavigatePhase {
     public static final class CBTCNavigatePhaseState extends NavigatePhaseState {
         @Override
         @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-        public boolean deepEquals(PhaseState other) {
+        public boolean deepEquals(NavigatePhaseState other) {
             if (other.getClass() != CBTCNavigatePhaseState.class)
                 return false;
             var o = (CBTCNavigatePhaseState) other;
@@ -81,7 +80,7 @@ public final class CBTCNavigatePhase extends NavigatePhase {
         }
 
         @Override
-        public PhaseState clone() {
+        public NavigatePhaseState clone() {
             return new CBTCNavigatePhaseState(this);
         }
 
