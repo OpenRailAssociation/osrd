@@ -82,7 +82,7 @@ public abstract class NavigatePhaseState implements DeepComparable<NavigatePhase
         // If we are not in the next phase and if there is not interaction left in this phase, 
         // the next interaction is in the next phase
         if (!trainState.isDuringLastPhase()) {
-            return trainState.getNextPhase().interactionsPath.get(0);
+            return trainState.getNextPhase().getState(sim, schedule).findFirstInteractions(trainState, predicate);
         }
         return null;
     }
