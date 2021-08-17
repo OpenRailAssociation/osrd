@@ -146,4 +146,25 @@ public class PhasesTest {
 
         run(sim, config);
     }
+
+    @Test
+    public void testTriggerSwitchChangeAtRightTimeCBTC() throws InvalidInfraException, SimulationError {
+        final var infra = getBaseInfra();
+        final var config = getBaseConfig("tiny_infra/config_railjson_several_phases_cbtc.json");
+
+        infra.switches.iterator().next().positionChangeDelay = 42;
+
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+
+        SwitchState switchState = sim.infraState.getSwitchState(0);
+        RouteState routeState = sim.infraState.getRouteState(3);
+        makeAssertEvent(sim, 0, () -> switchState.getPosition() == SwitchPosition.RIGHT);
+        makeAssertEvent(sim, 41, () -> switchState.getPosition() == SwitchPosition.MOVING);
+        makeAssertEvent(sim, 41, () -> routeState.status == RouteStatus.CBTC_REQUESTED);
+        makeAssertEvent(sim, 43, () -> switchState.getPosition() == SwitchPosition.LEFT);
+        makeAssertEvent(sim, 43, () -> routeState.status == RouteStatus.CBTC_RESERVED);
+
+        run(sim, config);
+    }
 }
