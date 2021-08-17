@@ -1,6 +1,7 @@
 package fr.sncf.osrd.infra_state;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.cbtc.CBTCNavigatePhase;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.railscript.value.RSMatchable;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
@@ -153,6 +154,8 @@ public final class RouteState implements RSMatchable {
         // Call the reservation function corresponding to the current phase type
         if (phase instanceof SignalNavigatePhase) {
             reserve(sim);
+        } else if (phase instanceof CBTCNavigatePhase) {
+            cbtcReserve(sim);
         }
     }
 
@@ -217,6 +220,8 @@ public final class RouteState implements RSMatchable {
         // Call the reservation function corresponding to the current phase type
         if (phase instanceof SignalNavigatePhase) {
             reserve(sim);
+        } else if (phase instanceof CBTCNavigatePhase) {
+            cbtcReserve(sim);
         }
     }
 
