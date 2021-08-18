@@ -140,8 +140,8 @@ export default function SpaceTimeChart() {
   const keyValues = ['time', 'value'];
   const [rotate, setRotate] = useState(false);
   const [isResizeActive, setResizeActive] = useState(false);
-  const [dataSimulation, setDataSimulation] = useState(createTrain(keyValues, simulation.trains));
   const [chart, setChart] = useState(undefined);
+  const [dataSimulation, setDataSimulation] = useState(createTrain(keyValues, simulation.trains));
   const [showModal, setShowModal] = useState('');
   const [dragOffset, setDragOffset] = useState(0);
 
@@ -189,6 +189,10 @@ export default function SpaceTimeChart() {
       dispatch(updateMustRedraw(false));
     }
   };
+
+  useEffect(() => {
+    dispatch(updateMustRedraw(true));
+  }, []);
 
   useEffect(() => {
     offsetTimeByDragging(dragOffset);
