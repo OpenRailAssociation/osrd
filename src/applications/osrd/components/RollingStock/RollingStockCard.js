@@ -101,7 +101,7 @@ export default function RollingStockCard(props) {
               </table>
             </div>
             <div className="col-sm-6">
-              {data.power_class ? (/* 1-5 max, must be adjusted for progress bar to 0-100% */
+              {data.power_class && data.power_class < 7 ? (
                 <div>
                   <small className="mr-1 text-primary">
                     {t('powerClass')}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { updateInfraID, updateTimetableID, deleteItinerary } from 'reducers/osrdconf';
+import { updateInfraID } from 'reducers/osrdconf';
 import { get } from 'common/requests';
 import icon from 'assets/pictures/tracks.svg';
 import InfraSelectorModal from 'applications/osrd/components/InfraSelector/InfraSelectorModal';
@@ -48,11 +48,6 @@ export default function InfraSelector() {
   useEffect(() => {
     setInitialInfra();
   }, [infrasList, infraID]);
-
-  useEffect(() => {
-    dispatch(updateTimetableID(undefined));
-    dispatch(deleteItinerary());
-  }, [infraID]);
 
   return (
     <>

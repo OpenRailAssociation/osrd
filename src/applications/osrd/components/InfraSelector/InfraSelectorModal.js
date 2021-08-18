@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
-import { updateInfraID } from 'reducers/osrdconf';
+import { updateInfraID, updateTimetableID, deleteItinerary } from 'reducers/osrdconf';
 import nextId from 'react-id-generator';
 import { datetime2string } from 'utils/timeManipulation';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
@@ -14,6 +14,12 @@ export default function InfraSelectorModal(props) {
   const dispatch = useDispatch();
   const { infrasList } = props;
   const { t } = useTranslation(['translation', 'osrdconf']);
+
+  const setInfraID = (id) => {
+    dispatch(updateInfraID(id));
+    dispatch(updateTimetableID(undefined));
+    dispatch(deleteItinerary());
+  };
 
   return (
     <ModalSNCF htmlID="infra-selector-modal">
@@ -31,7 +37,7 @@ export default function InfraSelectorModal(props) {
                 <div
                   role="button"
                   tabIndex="-1"
-                  onClick={() => dispatch(updateInfraID(infra.id))}
+                  onClick={() => setInfraID(infra.id)}
                   key={nextId()}
                   data-dismiss="modal"
                   className="osrd-config-infraselector-item mb-2"

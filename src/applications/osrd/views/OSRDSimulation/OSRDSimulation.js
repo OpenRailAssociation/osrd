@@ -26,11 +26,10 @@ const SIMPLIFICATION_FACTOR = 10; // Division of steps
 const OSRDSimulation = () => {
   const { t } = useTranslation(['translation', 'simulation']);
   const { fullscreen } = useSelector((state) => state.main);
-  // const [hoverStop, setHoverStop] = useState(undefined);
   const [extViewport, setExtViewport] = useState(undefined);
   const [waitingMessage, setWaitingMessage] = useState(t('simulation:waiting'));
   const [isEmpty, setIsEmpty] = useState(true);
-  const osrdconf = useSelector((state) => state.osrdconf);
+  const { timetableID } = useSelector((state) => state.osrdconf);
   const {
     hoverPosition, selectedTrain, simulation,
   } = useSelector((state) => state.osrdsimulation);
@@ -78,7 +77,7 @@ const OSRDSimulation = () => {
   }, [hoverPosition, selectedTrain]);
 
   useEffect(() => {
-    getTimetable(osrdconf.timetableID);
+    getTimetable(timetableID);
   }, []);
 
   useEffect(() => {

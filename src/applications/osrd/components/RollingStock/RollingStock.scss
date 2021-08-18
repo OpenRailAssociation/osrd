@@ -39,24 +39,16 @@
   cursor: pointer;
   transition: .2s;
   border-radius: 4px;
-}
-.rollingstock-container:hover:not(.active) {
-  opacity: .75;
-}
-
-.rollingstock-container.active .rollingstock-header {
-  border-radius: 4px 4px 0 0;
-  border-top: 2px solid #333;
-  border-left: 2px solid #333;
-  border-right: 2px solid #333;
-}
-.rollingstock-container.active .rollingstock-body {
-  border-left: 2px solid #333;
-  border-right: 2px solid #333;
-}
-.rollingstock-container.active .rollingstock-footer {
-  background-color: #333;
-  color: #fff;
+  &:hover {
+    .rollingstock-header, .rollingstock-body, .rollingstock-footer {
+      border-color: #333;
+    }
+  }
+  &.active {
+    .rollingstock-header, .rollingstock-body, .rollingstock-footer {
+      border-color: #0088ce;      
+    }
+  }
 }
 
 .rollingstock-header {
