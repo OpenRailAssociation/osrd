@@ -3,7 +3,6 @@ package fr.sncf.osrd.cbtc;
 import java.util.ArrayList;
 import java.util.List;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.StopActionPoint;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
@@ -16,7 +15,6 @@ import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.train.TrainStatus;
 import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
-import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.train.phases.NavigatePhase;
 import fr.sncf.osrd.train.phases.NavigatePhaseState;
 import fr.sncf.osrd.utils.TrackSectionLocation;
@@ -27,13 +25,15 @@ import fr.sncf.osrd.utils.TrackSectionLocation;
 public final class CBTCNavigatePhase extends NavigatePhase {
 
     /**
-     * Creates a CBTC navigation phase with an already determined path and interaction path.
+     * Creates a CBTC navigation phase with an already determined path and
+     * interaction path.
      * 
-     * @param startLocation the location of the beginning of the phase
-     * @param endLocation the location of the end of the phase
-     * @param interactionsPath the list of interaction points crossed during the phase
-     * @param expectedPath the path that the train is supposed to follow during the phase
-     * @return The new CBTC navigation phase.
+     * @param startLocation    the location of the beginning of the phase
+     * @param endLocation      the location of the end of the phase
+     * @param interactionsPath the list of interaction points crossed during the
+     *                         phase
+     * @param expectedPath     the path that the train is supposed to follow during
+     *                         the phase
      */
     private CBTCNavigatePhase(TrackSectionLocation startLocation,
             TrackSectionLocation endLocation, ArrayList<Interaction> interactionsPath, TrainPath expectedPath) {
@@ -103,10 +103,10 @@ public final class CBTCNavigatePhase extends NavigatePhase {
         }
 
         @Override
-        public TimelineEvent simulate(Simulation sim, Train train, TrainState trainState) throws SimulationError {
+        public TimelineEvent simulate(Train train, TrainState trainState) throws SimulationError {
             // Check if we reached our goal
             if (hasPhaseEnded()) {
-                return nextPhase(sim, train, trainState);
+                return nextPhase(train, trainState);
             }
 
             // The time of the next CBTC position update (the 1e-9 is here to prevent from double division error)
@@ -125,19 +125,12 @@ public final class CBTCNavigatePhase extends NavigatePhase {
             // 4) create an event with simulation data up to this point
 
             // The train reached the action point
-            if (trainState.location.getPathPosition() >= nextInteraction.position) {
-                popInteraction(trainState);
-                return TrainReachesActionPoint.plan(sim, trainState.time, train, simulationResult, nextInteraction);
-            } else if (trainState.speed < 0.0000001
-                    && nextInteraction.actionPoint.getClass() == StopActionPoint.class) {
-                // TODO: This is a hot fix to be sure to have a stop reached event
-                // Find a way to reach the final stop or at least be really close to it.
-                popInteraction(trainState);
-                return TrainReachesActionPoint.plan(sim, trainState.time, train, simulationResult, nextInteraction);
-            }
+            var event = reachedActionPoint(train, trainState, nextInteraction, simulationResult);
+            if (event != null)
+                return event;
 
             // The train didn't reached the action point (stopped because of signalisation)
-            var event = TrainMoveEvent.plan(sim, trainState.time, train, simulationResult);
+            event = TrainMoveEvent.plan(sim, trainState.time, train, simulationResult);
 
             // Test if the train is moving, if it does we set up a event to update 
             // the position of the train when the simulation reaches nextTime

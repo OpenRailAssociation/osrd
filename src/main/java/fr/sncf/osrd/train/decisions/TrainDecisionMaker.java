@@ -9,7 +9,6 @@ import fr.sncf.osrd.train.Action;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator;
 import fr.sncf.osrd.train.TrainState;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,7 +23,7 @@ public abstract class TrainDecisionMaker {
     public abstract Action getNextAction(SpeedDirective speedDirective, TrainPhysicsIntegrator integrator);
 
     public TimelineEvent simulatePhase(Train train, Simulation sim) throws SimulationError {
-        return trainState.currentPhaseState.simulate(sim, train, trainState);
+        return trainState.currentPhaseState.simulate(train, trainState);
     }
 
     /** Return a list of active controller.
