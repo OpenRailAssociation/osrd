@@ -7,9 +7,7 @@ import fr.sncf.osrd.utils.graph.BiNGraph;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
-import java.util.HashMap;
 
 public final class TrackGraph extends BiNGraph<TrackSection, TrackNode> {
     // operationalPoints a map from operational point IDs to operational points
@@ -37,28 +35,9 @@ public final class TrackGraph extends BiNGraph<TrackSection, TrackNode> {
             int index,
             String id,
             int switchIndex,
-            double groupChangeDelay) {
-        var node = new Switch(
-                this,
-                index,
-                id,
-                switchIndex,
-                groupChangeDelay,
-                new ArrayList<>(),
-                new HashMap<>()
-        );
-        trackNodeMap.put(node.id, node);
-        return node;
-    }
-
-    /** Create a switch node at the given node index */
-    public Switch makeSwitchNode(
-            int index,
-            String id,
-            int switchIndex,
             double groupChangeDelay,
             List<Switch.Port> ports,
-            Map<SwitchGroup, List<Switch.PortEdge>> groups
+            Map<String, List<Switch.PortEdge>> groups
     ) {
         var node = new Switch(
                 this,

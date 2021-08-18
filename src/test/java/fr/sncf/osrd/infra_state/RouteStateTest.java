@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.trackgraph.SwitchGroup;
 import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
@@ -92,7 +91,7 @@ public class RouteStateTest {
         infra.switches.iterator().next().groupChangeDelay = 10;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         RouteState routeState = sim.infraState.getRouteState(3);
         makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
@@ -116,7 +115,7 @@ public class RouteStateTest {
         infra.switches.iterator().next().groupChangeDelay = 10;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         RouteState routeState = sim.infraState.getRouteState(3);
         makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
@@ -155,8 +154,8 @@ public class RouteStateTest {
                 route.switchesGroup.put(new ID<>(newSwitch.id), "LEFT");
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
-        sim.infraState.getSwitchState(1).setGroup(sim, new SwitchGroup("RIGHT"));
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
+        sim.infraState.getSwitchState(1).setGroup(sim, "RIGHT");
 
         RouteState routeState = sim.infraState.getRouteState(3);
 
@@ -198,8 +197,8 @@ public class RouteStateTest {
                 route.switchesGroup.put(new ID<>(newSwitch.id), "LEFT");
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
-        sim.infraState.getSwitchState(1).setGroup(sim, new SwitchGroup("RIGHT"));
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
+        sim.infraState.getSwitchState(1).setGroup(sim, "RIGHT");
 
         RouteState routeState = sim.infraState.getRouteState(3);
         makeFunctionEvent(sim, 0, () -> routeState.cbtcReserve(sim));
@@ -446,7 +445,7 @@ public class RouteStateTest {
         infra.switches.iterator().next().groupChangeDelay = 10;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         RouteState routeState = sim.infraState.getRouteState(3);
         routeState.reserve(sim);
@@ -467,7 +466,7 @@ public class RouteStateTest {
         infra.switches.iterator().next().groupChangeDelay = 10;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         RouteState routeState = sim.infraState.getRouteState(3);
         routeState.reserve(sim);
@@ -488,7 +487,7 @@ public class RouteStateTest {
         infra.switches.iterator().next().groupChangeDelay = 10;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         RouteState routeState = sim.infraState.getRouteState(3);
         routeState.cbtcReserve(sim);

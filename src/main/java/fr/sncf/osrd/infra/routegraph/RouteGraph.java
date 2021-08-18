@@ -7,11 +7,11 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Switch;
-import fr.sncf.osrd.infra.trackgraph.SwitchGroup;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
+import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.DirNGraph;
@@ -67,7 +67,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 String id,
                 SortedArraySet<TVDSection> tvdSections,
                 List<SortedArraySet<TVDSection>> releaseGroups,
-                HashMap<Switch, SwitchGroup> switchesGroup,
+                HashMap<Switch, String> switchesGroup,
                 Waypoint entryPoint,
                 Signal entrySignalNormal,
                 Signal entrySignalReverse
@@ -198,7 +198,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
         private TrackSection nextTrackSection(TrackSection edge,
                                               EdgeDirection direction,
                                               Map<Integer, Switch> switches,
-                                              Map<Switch, SwitchGroup> groups
+                                              Map<Switch, String> groups
         ) throws InvalidInfraException {
             var endWaypoint = direction == START_TO_STOP ? edge.endNode : edge.startNode;
             var neighbors = direction == START_TO_STOP ? edge.endNeighbors : edge.startNeighbors;
@@ -208,7 +208,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 return null;
             var s = switches.get(endWaypoint);
             var group = groups.get(s);
-            if (group.equals(SwitchGroup.MOVING)) {
+            if (group.equals(SwitchState.MOVING)) {
                 throw new InvalidInfraException("A switch group can't be set to MOVING to define a route.");
             }
 
@@ -227,7 +227,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
         private List<Waypoint> generateWaypointList(
                 Waypoint startPoint,
                 Set<TVDSection> tvdSections,
-                HashMap<Switch, SwitchGroup> switchesGroup
+                HashMap<Switch, String> switchesGroup
         ) throws InvalidInfraException {
             var allWaypointIndexes = generateWaypointListIndexes(startPoint, tvdSections, switchesGroup);
             var res = allWaypointIndexes.stream()
@@ -268,7 +268,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
         private List<Integer> generateWaypointListIndexes(
                 Waypoint startPoint,
                 Set<TVDSection> tvdSections,
-                HashMap<Switch, SwitchGroup> switchesGroup
+                HashMap<Switch, String> switchesGroup
         ) throws InvalidInfraException {
 
             // Init the maps and lists

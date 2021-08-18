@@ -2,7 +2,6 @@ package fr.sncf.osrd.speedcontroller;
 
 import static fr.sncf.osrd.Helpers.*;
 
-import fr.sncf.osrd.infra.trackgraph.SwitchGroup;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -80,7 +79,7 @@ public class SpeedInstructionsTests {
 
         infra.switches.iterator().next().groupChangeDelay = 42;
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         makeAssertEvent(sim, 43, () -> isLate(sim));
         makeAssertEvent(sim, 150, () -> !isLate(sim));
@@ -94,7 +93,7 @@ public class SpeedInstructionsTests {
 
         infra.switches.iterator().next().groupChangeDelay = 20;
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         makeAssertEvent(sim, 30, () -> isLate(sim));
         run(sim, config);

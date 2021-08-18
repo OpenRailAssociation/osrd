@@ -13,7 +13,6 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.RSExpr;
 import fr.sncf.osrd.infra.railscript.RSExprState;
 import fr.sncf.osrd.infra.signaling.Signal;
-import fr.sncf.osrd.infra.trackgraph.SwitchGroup;
 import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.RailScriptExprParser;
@@ -34,7 +33,7 @@ public class OptionalTests {
         infra.switches.iterator().next().groupChangeDelay = 42;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
         run(sim, config);
     }
 
@@ -54,7 +53,7 @@ public class OptionalTests {
         infra.switches.iterator().next().groupChangeDelay = 42;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
         assertThrows(SimulationError.class,
                 () -> runWithExceptions(sim, config),
                 "Expected a simulation error once the train goes through the switch"

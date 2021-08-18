@@ -40,10 +40,6 @@ public class RJSSwitch implements Identified {
         this.groupChangeDelay = groupChangeDelay;
     }
 
-    public RJSTrackSection.EndpointID getBase() {
-        return ports.entrySet().stream().findFirst().get().getValue();
-    }
-
     @Override
     public String getID() {
         return id;

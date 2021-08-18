@@ -73,9 +73,23 @@ public class RailJSONParser {
         var switchNames = new HashMap<String, Switch>();
         var switchIndex = 0;
         for (var rjsSwitch : railJSON.switches) {
-            var index = nodeIDs.get(rjsSwitch.getBase());
-            switchNames.put(rjsSwitch.id, trackGraph.makeSwitchNode(index, rjsSwitch.id, switchIndex++,
-                    rjsSwitch.groupChangeDelay));
+            // get the first port of the switch that will be consider as the base
+            if (rjsSwitch.ports.isEmpty()) {
+                throw new InvalidInfraException("The switch should have at least one port");
+            }
+            var base = rjsSwitch.ports.entrySet().stream().findFirst().get().getValue();
+            var index = nodeIDs.get(base);
+            switchNames.put(
+                    rjsSwitch.id,
+                    trackGraph.makeSwitchNode(
+                        index,
+                        rjsSwitch.id,
+                        switchIndex++,
+                        rjsSwitch.groupChangeDelay,
+                        new ArrayList<>(),
+                        new HashMap<>()
+                    )
+            );
         }
         final var switches = new ArrayList<>(switchNames.values());
 
@@ -238,12 +252,17 @@ public class RailJSONParser {
 
         // Fill switch ports (ie connected track section endpoints)
         for (var rjsSwitch : railJSON.switches) {
+            if (!switchNames.containsKey(rjsSwitch.id)) {
+                throw new InvalidInfraException("The switch was not properly added in the map switchName");
+            }
             var switchRef = switchNames.get(rjsSwitch.id);
             for (var entry : rjsSwitch.ports.entrySet()) {
+                var portName = entry.getKey();
+                var port = entry.getValue();
                 switchRef.ports.add(new Switch.Port(
-                        entry.getKey(),
-                        infraTrackSections.get(entry.getValue().section.id),
-                        entry.getValue().endpoint
+                        portName,
+                        infraTrackSections.get(port.section.id),
+                        port.endpoint
                 ));
             }
         }
@@ -253,17 +272,19 @@ public class RailJSONParser {
             var switchRef = switchNames.get(rjsSwitch.id);
             var portMap = new HashMap<String, Switch.Port>();
             for (var entry : rjsSwitch.ports.entrySet()) {
+                var portName = entry.getKey();
+                var port = entry.getValue();
                 portMap.put(
-                        entry.getKey(),
+                        portName,
                         new Switch.Port(
-                            entry.getKey(),
-                            infraTrackSections.get(entry.getValue().section.id),
-                            entry.getValue().endpoint
+                            portName,
+                            infraTrackSections.get(port.section.id),
+                            port.endpoint
                         )
                 );
             }
             for (var entry : railJSON.switchTypes.get(rjsSwitch.switchType).groups.entrySet()) {
-                var group = new SwitchGroup(entry.getKey());
+                var group = entry.getKey();
                 var edges = new ArrayList<Switch.PortEdge>();
                 for (var e : entry.getValue()) {
                     var src = portMap.get(e.src);
@@ -327,10 +348,13 @@ public class RailJSONParser {
                 releaseGroups.add(releaseGroup);
             }
 
-            var switchesGroup = new HashMap<Switch, SwitchGroup>();
+            var switchesGroup = new HashMap<Switch, String>();
             for (var switchGrp : rjsRoute.switchesGroup.entrySet()) {
                 var switchRef = switchNames.get(switchGrp.getKey().id);
-                var group = new SwitchGroup(switchGrp.getValue());
+                var group = switchGrp.getValue();
+                if (!switchRef.groups.containsKey(group)) {
+                    throw new InvalidInfraException("This group is not compatible with this switch");
+                }
                 switchesGroup.put(switchRef, group);
             }
 

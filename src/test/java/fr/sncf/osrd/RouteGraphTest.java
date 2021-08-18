@@ -45,7 +45,7 @@ public class RouteGraphTest {
             String id,
             ArrayList<Waypoint> waypoints,
             SortedArraySet<TVDSection> tvdSections,
-            HashMap<Switch, SwitchGroup> switchGroups
+            HashMap<Switch, String> switchGroups
     ) throws InvalidInfraException {
         // Create a "flexible transit" release group
         var releaseGroups = new ArrayList<SortedArraySet<TVDSection>>();
@@ -151,7 +151,14 @@ public class RouteGraphTest {
 
         var index = 0;
 
-        var middleSwitch = trackGraph.makeSwitchNode(nodeC.index, "switch", 0, 0);
+        var middleSwitch = trackGraph.makeSwitchNode(
+                nodeC.index,
+                "switch",
+                0,
+                0,
+                new ArrayList<>(),
+                new HashMap<>()
+        );
 
         var portBase = new Switch.Port("base", track, EdgeEndpoint.BEGIN);
         var portLeft = new Switch.Port("left", fooA, EdgeEndpoint.END);
@@ -161,14 +168,14 @@ public class RouteGraphTest {
         middleSwitch.ports.add(portLeft);
         middleSwitch.ports.add(portRight);
         middleSwitch.groups.put(
-                new SwitchGroup("LEFT"),
+                "LEFT",
                 List.of(
                     new Switch.PortEdge(portBase, portLeft),
                     new Switch.PortEdge(portLeft, portBase)
                 )
         );
         middleSwitch.groups.put(
-                new SwitchGroup("RIGHT"),
+                "RIGHT",
                 List.of(
                     new Switch.PortEdge(portBase, portRight),
                     new Switch.PortEdge(portRight, portBase)
@@ -221,10 +228,10 @@ public class RouteGraphTest {
         // Build DetectorGraph
         var waypointGraph = Infra.buildWaypointGraph(trackGraph, tvdSections);
 
-        var switchGroupLeft = new HashMap<Switch, SwitchGroup>();
-        var switchGroupRight = new HashMap<Switch, SwitchGroup>();
-        switchGroupLeft.put(middleSwitch, new SwitchGroup("LEFT"));
-        switchGroupRight.put(middleSwitch, new SwitchGroup("RIGHT"));
+        var switchGroupLeft = new HashMap<Switch, String>();
+        var switchGroupRight = new HashMap<Switch, String>();
+        switchGroupLeft.put(middleSwitch, "LEFT");
+        switchGroupRight.put(middleSwitch, "RIGHT");
 
         // Build RouteGraph
         var routeGraphBuilder = new RouteGraph.Builder(waypointGraph);
@@ -310,25 +317,25 @@ public class RouteGraphTest {
 
         var portsA = List.of(baseA, leftA, rightA);
         var groupsA = Map.of(
-                new SwitchGroup("LEFT"),
+                "LEFT",
                 List.of(new Switch.PortEdge(baseA, leftA), new Switch.PortEdge(leftA, baseA)),
-                new SwitchGroup("RIGHT"),
+                "RIGHT",
                 List.of(new Switch.PortEdge(baseA, rightA), new Switch.PortEdge(rightA, baseA))
         );
 
         var portsB = List.of(baseB, leftB, rightB);
         var groupsB = Map.of(
-                new SwitchGroup("LEFT"),
+                "LEFT",
                 List.of(new Switch.PortEdge(baseB, leftB), new Switch.PortEdge(leftB, baseB)),
-                new SwitchGroup("RIGHT"),
+                "RIGHT",
                 List.of(new Switch.PortEdge(baseB, rightB), new Switch.PortEdge(rightB, baseB))
         );
 
         var portsC = List.of(baseC, leftC, rightC);
         var groupsC = Map.of(
-                new SwitchGroup("LEFT"),
+                "LEFT",
                 List.of(new Switch.PortEdge(baseC, leftC), new Switch.PortEdge(leftC, baseC)),
-                new SwitchGroup("RIGHT"),
+                "RIGHT",
                 List.of(new Switch.PortEdge(baseC, rightC), new Switch.PortEdge(rightC, baseC))
         );
 
@@ -351,19 +358,19 @@ public class RouteGraphTest {
         // Build RouteGraph
         var routeGraphBuilder = new RouteGraph.Builder(waypointGraph);
 
-        var switchGroupsR1 = new HashMap<Switch, SwitchGroup>();
-        switchGroupsR1.put(switchA, new SwitchGroup("RIGHT"));
-        switchGroupsR1.put(switchB, new SwitchGroup("LEFT"));
+        var switchGroupsR1 = new HashMap<Switch, String>();
+        switchGroupsR1.put(switchA, "RIGHT");
+        switchGroupsR1.put(switchB, "LEFT");
         routeGraphBuilder.makeRoute("R1", tvdSectionsSet, releaseGroups, switchGroupsR1,
                 da, null, null);
-        var switchGroupsR2 = new HashMap<Switch, SwitchGroup>();
-        switchGroupsR2.put(switchB, new SwitchGroup("RIGHT"));
-        switchGroupsR2.put(switchC, new SwitchGroup("LEFT"));
+        var switchGroupsR2 = new HashMap<Switch, String>();
+        switchGroupsR2.put(switchB, "RIGHT");
+        switchGroupsR2.put(switchC, "LEFT");
         routeGraphBuilder.makeRoute("R2", tvdSectionsSet, releaseGroups, switchGroupsR2,
                 db, null, null);
-        var switchGroupsR3 = new HashMap<Switch, SwitchGroup>();
-        switchGroupsR3.put(switchC, new SwitchGroup("RIGHT"));
-        switchGroupsR3.put(switchA, new SwitchGroup("LEFT"));
+        var switchGroupsR3 = new HashMap<Switch, String>();
+        switchGroupsR3.put(switchC, "RIGHT");
+        switchGroupsR3.put(switchA, "LEFT");
         routeGraphBuilder.makeRoute("R3", tvdSectionsSet, releaseGroups, switchGroupsR3,
                 dc, null, null);
     }

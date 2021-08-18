@@ -1,7 +1,6 @@
 package fr.sncf.osrd.infra_state.events;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.trackgraph.SwitchGroup;
 import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.simulation.Simulation;
@@ -13,12 +12,12 @@ import org.slf4j.LoggerFactory;
 
 public class SwitchMoveEvent extends TimelineEvent {
     static final Logger logger = LoggerFactory.getLogger(SwitchMoveEvent.class);
-    private final SwitchGroup newGroup;
+    private final String newGroup;
     private final SwitchState switchState;
     private final RouteState routeState;
 
     private SwitchMoveEvent(TimelineEventId eventId,
-                            SwitchGroup newGroup,
+                            String newGroup,
                             SwitchState switchState,
                             RouteState routeState) {
         super(eventId);
@@ -50,7 +49,7 @@ public class SwitchMoveEvent extends TimelineEvent {
     /** Plan a SwitchMoveEvent creating a change that schedule it */
     public static SwitchMoveEvent plan(Simulation sim,
                                        double moveTime,
-                                       SwitchGroup newGroup,
+                                       String newGroup,
                                        SwitchState switchState,
                                        RouteState routeState) {
         var change = new SwitchMovePlanned(sim, moveTime, newGroup, switchState, routeState);
@@ -61,13 +60,13 @@ public class SwitchMoveEvent extends TimelineEvent {
 
     public static class SwitchMovePlanned extends Simulation.TimelineEventCreated {
 
-        private final SwitchGroup newGroup;
+        private final String newGroup;
         private final SwitchState switchState;
         private final RouteState routeState;
 
         private SwitchMovePlanned(Simulation sim,
                                   double moveTime,
-                                  SwitchGroup newGroup,
+                                  String newGroup,
                                   SwitchState switchState,
                                   RouteState routeState) {
             super(sim, moveTime);

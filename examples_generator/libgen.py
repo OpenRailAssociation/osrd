@@ -79,10 +79,334 @@ class Infra:
             return length - self.SPACE_TDE + self.SPACE_SIG
 
     def build_aspects(self):
-          self.json["aspects"] = [{'id': 'GREEN', 'color': '#2a850c', 'constraints': []}, {'id': 'YELLOW', 'color': '#f08a05', 'constraints': [{'type': 'speed_limit', 'speed': 8.33333333333333, 'applies_at': {'element': 'NEXT_SIGNAL', 'offset': -100}, 'until': {'element': 'NEXT_SIGNAL', 'offset': 0}}]}, {'id': 'RED', 'color': '#db0c04', 'constraints': [{'type': 'speed_limit', 'speed': 0, 'applies_at': {'element': 'CURRENT_SIGNAL', 'offset': -5}, 'until': {'element': 'END', 'offset': 0}}]}]
+        # return the script functions of tiny infra
+        self.json["aspects"] = [
+            {
+                "id": "GREEN",
+                "color": "#2a850c",
+                "constraints": []
+            },
+            {
+                "id": "YELLOW",
+                "color": "#f08a05",
+                "constraints": [
+                    {
+                        "type": "speed_limit",
+                        "speed": 8.33333333333333,
+                        "applies_at": {
+                            "element": "NEXT_SIGNAL",
+                            "offset": -100
+                        },
+                        "until": {
+                            "element": "NEXT_SIGNAL",
+                            "offset": 0
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "RED",
+                "color": "#db0c04",
+                "constraints": [
+                    {
+                        "type": "speed_limit",
+                        "speed": 0,
+                        "applies_at": {
+                            "element": "CURRENT_SIGNAL",
+                            "offset": -5
+                        },
+                        "until": {
+                            "element": "END",
+                            "offset": 0
+                        }
+                    }
+                ]
+            }
+        ]
 
     def build_script_functions(self):
-        self.json["script_functions"] = [{'name': 'sncf_filter', 'arguments': [{'type': 'ASPECT_SET', 'name': 'aspects'}], 'return_type': 'ASPECT_SET', 'body': {'type': 'condition', 'if': {'type': 'aspect_set_contains', 'aspect_set': {'type': 'argument_ref', 'argument_name': 'aspects'}, 'aspect': 'RED'}, 'then': {'type': 'aspect_set', 'members': [{'aspect': 'RED'}]}, 'else': {'type': 'condition', 'if': {'type': 'aspect_set_contains', 'aspect_set': {'type': 'argument_ref', 'argument_name': 'aspects'}, 'aspect': 'YELLOW'}, 'then': {'type': 'aspect_set', 'members': [{'aspect': 'YELLOW'}]}, 'else': {'type': 'argument_ref', 'argument_name': 'aspects'}}}}, {'name': 'warn_signal', 'arguments': [{'type': 'SIGNAL', 'name': 'master_signal'}], 'return_type': 'ASPECT_SET', 'body': {'type': 'call', 'function': 'sncf_filter', 'arguments': [{'type': 'aspect_set', 'members': [{'aspect': 'YELLOW', 'condition': {'type': 'signal_has_aspect', 'signal': {'type': 'argument_ref', 'argument_name': 'master_signal'}, 'aspect': 'RED'}}, {'aspect': 'GREEN'}]}]}}, {'name': 'check_route', 'arguments': [{'type': 'ROUTE', 'name': 'route'}], 'return_type': 'ASPECT_SET', 'body': {'type': 'condition', 'if': {'type': 'or', 'exprs': [{'type': 'route_has_state', 'route': {'type': 'argument_ref', 'argument_name': 'route'}, 'state': 'OCCUPIED'}, {'type': 'route_has_state', 'route': {'type': 'argument_ref', 'argument_name': 'route'}, 'state': 'REQUESTED'}, {'type': 'route_has_state', 'route': {'type': 'argument_ref', 'argument_name': 'route'}, 'state': 'CONFLICT'}]}, 'then': {'type': 'aspect_set', 'members': [{'aspect': 'RED'}]}, 'else': {'type': 'aspect_set', 'members': [{'aspect': 'YELLOW'}]}}}, {'name': 'bal3_line_signal', 'arguments': [{'type': 'SIGNAL', 'name': 'master_signal'}, {'type': 'ROUTE', 'name': 'route'}], 'return_type': 'ASPECT_SET', 'body': {'type': 'call', 'function': 'sncf_filter', 'arguments': [{'type': 'aspect_set', 'members': [{'aspect': 'RED', 'condition': {'type': 'not', 'expr': {'type': 'route_has_state', 'route': {'type': 'argument_ref', 'argument_name': 'route'}, 'state': 'RESERVED'}}}, {'aspect': 'YELLOW', 'condition': {'type': 'signal_has_aspect', 'signal': {'type': 'argument_ref', 'argument_name': 'master_signal'}, 'aspect': 'RED'}}, {'aspect': 'GREEN'}]}]}}, {'name': 'switch_signal', 'arguments': [{'type': 'SIGNAL', 'name': 'signal'}, {'type': 'SWITCH', 'name': 'switch'}], 'return_type': 'ASPECT_SET', 'body': {'type': 'optional_match', 'name': 'route', 'expr': {'type': 'reserved_route', 'signal': {'type': 'argument_ref', 'argument_name': 'signal'}}, 'case_none': {'type': 'aspect_set', 'members': [{'aspect': 'RED'}]}, 'case_some': {'type': 'condition', 'if': {'type': 'or', 'exprs': [{'type': 'route_has_state', 'route': {'type': 'optional_match_ref', 'match_name': 'route'}, 'state': 'CONFLICT'}, {'type': 'route_has_state', 'route': {'type': 'optional_match_ref', 'match_name': 'route'}, 'state': 'OCCUPIED'}, {'type': 'route_has_state', 'route': {'type': 'optional_match_ref', 'match_name': 'route'}, 'state': 'REQUESTED'}]}, 'then': {'type': 'aspect_set', 'members': [{'aspect': 'YELLOW'}]}, 'else': {'type': 'aspect_set', 'members': [{'aspect': 'GREEN'}]}}}}]
+        # return the script functions of tiny infra
+        self.json["script_functions"] = [
+            {
+                "name": "sncf_filter",
+                "arguments": [
+                    {
+                        "type": "ASPECT_SET",
+                        "name": "aspects"
+                    }
+                ],
+                "return_type": "ASPECT_SET",
+                "body": {
+                    "type": "condition",
+                    "if": {
+                        "type": "aspect_set_contains",
+                        "aspect_set": {
+                            "type": "argument_ref",
+                            "argument_name": "aspects"
+                        },
+                        "aspect": "RED"
+                    },
+                    "then": {
+                        "type": "aspect_set",
+                        "members": [
+                            {
+                                "aspect": "RED"
+                            }
+                        ]
+                    },
+                    "else": {
+                        "type": "condition",
+                        "if": {
+                            "type": "aspect_set_contains",
+                            "aspect_set": {
+                                "type": "argument_ref",
+                                "argument_name": "aspects"
+                            },
+                            "aspect": "YELLOW"
+                        },
+                        "then": {
+                            "type": "aspect_set",
+                            "members": [
+                                {
+                                    "aspect": "YELLOW"
+                                }
+                            ]
+                        },
+                        "else": {
+                            "type": "argument_ref",
+                            "argument_name": "aspects"
+                        }
+                    }
+                }
+            },
+            {
+                "name": "warn_signal",
+                "arguments": [
+                    {
+                        "type": "SIGNAL",
+                        "name": "master_signal"
+                    }
+                ],
+                "return_type": "ASPECT_SET",
+                "body": {
+                    "type": "call",
+                    "function": "sncf_filter",
+                    "arguments": [
+                        {
+                            "type": "aspect_set",
+                            "members": [
+                                {
+                                    "aspect": "YELLOW",
+                                    "condition": {
+                                        "type": "signal_has_aspect",
+                                        "signal": {
+                                            "type": "argument_ref",
+                                            "argument_name": "master_signal"
+                                        },
+                                        "aspect": "RED"
+                                    }
+                                },
+                                {
+                                    "aspect": "GREEN"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "check_route",
+                "arguments": [
+                    {
+                        "type": "ROUTE",
+                        "name": "route"
+                    }
+                ],
+                "return_type": "ASPECT_SET",
+                "body": {
+                    "type": "condition",
+                    "if": {
+                        "type": "or",
+                        "exprs": [
+                            {
+                                "type": "route_has_state",
+                                "route": {
+                                    "type": "argument_ref",
+                                    "argument_name": "route"
+                                },
+                                "state": "OCCUPIED"
+                            },
+                            {
+                                "type": "route_has_state",
+                                "route": {
+                                    "type": "argument_ref",
+                                    "argument_name": "route"
+                                },
+                                "state": "REQUESTED"
+                            },
+                            {
+                                "type": "route_has_state",
+                                "route": {
+                                    "type": "argument_ref",
+                                    "argument_name": "route"
+                                },
+                                "state": "CONFLICT"
+                            }
+                        ]
+                    },
+                    "then": {
+                        "type": "aspect_set",
+                        "members": [
+                            {
+                                "aspect": "RED"
+                            }
+                        ]
+                    },
+                    "else": {
+                        "type": "aspect_set",
+                        "members": [
+                            {
+                                "aspect": "YELLOW"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "bal3_line_signal",
+                "arguments": [
+                    {
+                        "type": "SIGNAL",
+                        "name": "master_signal"
+                    },
+                    {
+                        "type": "ROUTE",
+                        "name": "route"
+                    }
+                ],
+                "return_type": "ASPECT_SET",
+                "body": {
+                    "type": "call",
+                    "function": "sncf_filter",
+                    "arguments": [
+                        {
+                            "type": "aspect_set",
+                            "members": [
+                                {
+                                    "aspect": "RED",
+                                    "condition": {
+                                        "type": "not",
+                                        "expr": {
+                                            "type": "route_has_state",
+                                            "route": {
+                                                "type": "argument_ref",
+                                                "argument_name": "route"
+                                            },
+                                            "state": "RESERVED"
+                                        }
+                                    }
+                                },
+                                {
+                                    "aspect": "YELLOW",
+                                    "condition": {
+                                        "type": "signal_has_aspect",
+                                        "signal": {
+                                            "type": "argument_ref",
+                                            "argument_name": "master_signal"
+                                        },
+                                        "aspect": "RED"
+                                    }
+                                },
+                                {
+                                    "aspect": "GREEN"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "switch_signal",
+                "arguments": [
+                    {
+                        "type": "SIGNAL",
+                        "name": "signal"
+                    },
+                    {
+                        "type": "SWITCH",
+                        "name": "switch"
+                    }
+                ],
+                "return_type": "ASPECT_SET",
+                "body": {
+                    "type": "optional_match",
+                    "name": "route",
+                    "expr": {
+                        "type": "reserved_route",
+                        "signal": {
+                            "type": "argument_ref",
+                            "argument_name": "signal"
+                        }
+                    },
+                    "case_none": {
+                        "type": "aspect_set",
+                        "members": [
+                            {
+                                "aspect": "RED"
+                            }
+                        ]
+                    },
+                    "case_some": {
+                        "type": "condition",
+                        "if": {
+                            "type": "or",
+                            "exprs": [
+                                {
+                                    "type": "route_has_state",
+                                    "route": {
+                                        "type": "optional_match_ref",
+                                        "match_name": "route"
+                                    },
+                                    "state": "CONFLICT"
+                                },
+                                {
+                                    "type": "route_has_state",
+                                    "route": {
+                                        "type": "optional_match_ref",
+                                        "match_name": "route"
+                                    },
+                                    "state": "OCCUPIED"
+                                },
+                                {
+                                    "type": "route_has_state",
+                                    "route": {
+                                        "type": "optional_match_ref",
+                                        "match_name": "route"
+                                    },
+                                    "state": "REQUESTED"
+                                }
+                            ]
+                        },
+                        "then": {
+                            "type": "aspect_set",
+                            "members": [
+                                {
+                                    "aspect": "YELLOW"
+                                }
+                            ]
+                        },
+                        "else": {
+                            "type": "aspect_set",
+                            "members": [
+                                {
+                                    "aspect": "GREEN"
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
 
     def build_speed_sections(self):
         self.json["speed_sections"] = []

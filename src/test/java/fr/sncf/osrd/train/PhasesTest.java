@@ -4,7 +4,6 @@ import static fr.sncf.osrd.Helpers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.trackgraph.SwitchGroup;
 import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.infra_state.SwitchState;
@@ -110,7 +109,7 @@ public class PhasesTest {
         infra.switches.iterator().next().groupChangeDelay = 500;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         // If the train ignores the signals, an exception will be thrown when it runs over the moving switch
         run(sim, config);
@@ -121,10 +120,10 @@ public class PhasesTest {
         final var infra = getBaseInfra();
         final var config = getBaseConfig("tiny_infra/config_railjson_several_phases_cbtc.json");
 
-        infra.switches.iterator().next().positionChangeDelay = 500;
+        infra.switches.iterator().next().groupChangeDelay = 500;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         // If the train ignores the signals, an exception will be thrown when it runs
         // over the moving switch
@@ -139,14 +138,14 @@ public class PhasesTest {
         infra.switches.iterator().next().groupChangeDelay = 42;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setGroup(sim, new SwitchGroup("RIGHT"));
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         SwitchState switchState = sim.infraState.getSwitchState(0);
         RouteState routeState = sim.infraState.getRouteState(3);
-        makeAssertEvent(sim, 0, () -> switchState.getGroup().equals(new SwitchGroup("RIGHT")));
-        makeAssertEvent(sim, 41, () -> switchState.getGroup().equals(SwitchGroup.MOVING));
+        makeAssertEvent(sim, 0, () -> switchState.getGroup().equals("RIGHT"));
+        makeAssertEvent(sim, 41, () -> switchState.getGroup() == null);
         makeAssertEvent(sim, 41, () -> routeState.status == RouteStatus.REQUESTED);
-        makeAssertEvent(sim, 43, () -> switchState.getGroup().equals(new SwitchGroup("LEFT")));
+        makeAssertEvent(sim, 43, () -> switchState.getGroup().equals("LEFT"));
         makeAssertEvent(sim, 43, () -> routeState.status == RouteStatus.RESERVED);
 
         run(sim, config);
@@ -157,17 +156,17 @@ public class PhasesTest {
         final var infra = getBaseInfra();
         final var config = getBaseConfig("tiny_infra/config_railjson_several_phases_cbtc.json");
 
-        infra.switches.iterator().next().positionChangeDelay = 42;
+        infra.switches.iterator().next().groupChangeDelay = 42;
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         SwitchState switchState = sim.infraState.getSwitchState(0);
         RouteState routeState = sim.infraState.getRouteState(3);
-        makeAssertEvent(sim, 0, () -> switchState.getPosition() == SwitchPosition.RIGHT);
-        makeAssertEvent(sim, 41, () -> switchState.getPosition() == SwitchPosition.MOVING);
+        makeAssertEvent(sim, 0, () -> "RIGHT".equals(switchState.getGroup()));
+        makeAssertEvent(sim, 41, () -> switchState.getGroup() == null);
         makeAssertEvent(sim, 41, () -> routeState.status == RouteStatus.CBTC_REQUESTED);
-        makeAssertEvent(sim, 43, () -> switchState.getPosition() == SwitchPosition.LEFT);
+        makeAssertEvent(sim, 43, () -> "LEFT".equals(switchState.getGroup()));
         makeAssertEvent(sim, 43, () -> routeState.status == RouteStatus.CBTC_RESERVED);
 
         run(sim, config);

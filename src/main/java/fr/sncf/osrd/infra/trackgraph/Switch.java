@@ -11,7 +11,7 @@ public class Switch extends TrackNode {
     public final int switchIndex;
     public final double groupChangeDelay;
     public final List<Port> ports;
-    public final Map<SwitchGroup, List<PortEdge>> groups;
+    public final Map<String, List<PortEdge>> groups;
     public ArrayList<Signal> signalSubscribers;
 
     Switch(
@@ -21,7 +21,7 @@ public class Switch extends TrackNode {
             int switchIndex,
             double groupChangeDelay,
             List<Port> ports,
-            Map<SwitchGroup, List<PortEdge>> groups) {
+            Map<String, List<PortEdge>> groups) {
         super(index, id);
         this.switchIndex = switchIndex;
         this.groupChangeDelay = groupChangeDelay;
@@ -31,11 +31,11 @@ public class Switch extends TrackNode {
         graph.registerNode(this);
     }
 
-    public SwitchGroup getDefaultGroup() {
+    public String getDefaultGroup() {
         return groups.entrySet().stream().findFirst().get().getKey();
     }
 
-    public static class Port {
+    public static final class Port {
 
         public final String id;
         public final TrackSection trackSection;
@@ -48,6 +48,9 @@ public class Switch extends TrackNode {
          * @param endpoint the endpoint of the connected track section
          */
         public Port(String id, TrackSection trackSection, EdgeEndpoint endpoint) {
+            if (id == null) {
+                throw new NullPointerException("Try to build a Port with a null id");
+            }
             this.id = id;
             this.trackSection = trackSection;
             this.endpoint = endpoint;
@@ -60,15 +63,15 @@ public class Switch extends TrackNode {
 
         @Override
         public boolean equals(Object p) {
-            if (!(p instanceof Port))
+            if (p == null)
                 return false;
-            if (id == null)
-                return ((Port) p).id == null;
+            if (p.getClass() != Port.class)
+                return false;
             return id.equals(((Port) p).id);
         }
     }
 
-    public static class PortEdge {
+    public static final class PortEdge {
 
         public final Port src;
         public final Port dst;

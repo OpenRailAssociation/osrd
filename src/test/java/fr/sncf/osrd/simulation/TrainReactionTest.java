@@ -4,7 +4,6 @@ import static fr.sncf.osrd.Helpers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.trackgraph.SwitchGroup;
 import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.common.ID;
@@ -19,7 +18,7 @@ public class TrainReactionTest {
         infra.switches.iterator().next().groupChangeDelay = 42;
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         SwitchState switchState = sim.infraState.getSwitchState(0);
-        switchState.setGroup(sim, new SwitchGroup("RIGHT"));
+        switchState.setGroup(sim, "RIGHT");
         run(sim);
     }
 
@@ -36,7 +35,7 @@ public class TrainReactionTest {
         }
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         SwitchState switchState = sim.infraState.getSwitchState(0);
-        switchState.setGroup(sim, new SwitchGroup("RIGHT"));
+        switchState.setGroup(sim, "RIGHT");
         makeFunctionEvent(sim, 100, () -> {
             var train = sim.trains.values().iterator().next();
             assert train.lastScheduledEvent == null;

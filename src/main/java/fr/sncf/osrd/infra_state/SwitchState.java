@@ -1,11 +1,9 @@
 package fr.sncf.osrd.infra_state;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.railscript.value.RSMatchable;
-import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.trackgraph.Switch;
-import fr.sncf.osrd.infra.trackgraph.SwitchGroup;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra_state.events.SwitchMoveEvent;
 import fr.sncf.osrd.simulation.EntityChange;
 import fr.sncf.osrd.simulation.Simulation;
@@ -16,17 +14,17 @@ import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 /**
  * The state of the route is the actual entity which interacts with the rest of the infrastructure
  */
-public final class SwitchState implements RSMatchable {
+public final class SwitchState implements RSValue {
     public final Switch switchRef;
 
-    private SwitchGroup group;
+    private String group;
 
     public SwitchState(Switch switchRef) {
         this.switchRef = switchRef;
         this.group = switchRef.getDefaultGroup();
     }
 
-    public SwitchGroup getGroup() {
+    public String getGroup() {
         return group;
     }
 
@@ -34,10 +32,12 @@ public final class SwitchState implements RSMatchable {
      * Return currently active branch
      */
     public TrackSection getBranch(TrackSection trackSection, EdgeDirection direction) {
-        var endpoint = direction.equals(EdgeDirection.START_TO_STOP) ? EdgeEndpoint.END : EdgeEndpoint.BEGIN;
+        var endpoint = direction == EdgeDirection.START_TO_STOP
+                ? EdgeEndpoint.END
+                : EdgeEndpoint.BEGIN;
         var edges = switchRef.groups.get(group);
         for (var edge : edges) {
-            if (edge.src.trackSection.id.equals(trackSection.id) && edge.src.endpoint.equals(endpoint)) {
+            if (edge.src.trackSection.id.equals(trackSection.id) && edge.src.endpoint == endpoint) {
                 return edge.dst.trackSection;
             }
         }
@@ -47,15 +47,17 @@ public final class SwitchState implements RSMatchable {
     /**
      * Change group of the switch
      */
-    public void setGroup(Simulation sim, SwitchGroup group) throws SimulationError {
-        if ((this.group == null && group != null) || (this.group != null && !this.group.equals(group))) {
-            var change = new SwitchGroupChange(sim, this, group);
-            change.apply(sim, this);
-            sim.publishChange(change);
-            for (var signal : switchRef.signalSubscribers) {
-                var signalState = sim.infraState.getSignalState(signal.index);
-                signalState.notifyChange(sim);
-            }
+    public void setGroup(Simulation sim, String newGroup) throws SimulationError {
+        if (group == null && newGroup == null)
+            return;
+        if (group != null && group.equals(newGroup))
+            return;
+        var change = new SwitchGroupChange(sim, this, newGroup);
+        change.apply(sim, this);
+        sim.publishChange(change);
+        for (var signal : switchRef.signalSubscribers) {
+            var signalState = sim.infraState.getSignalState(signal.index);
+            signalState.notifyChange(sim);
         }
     }
 
@@ -65,29 +67,18 @@ public final class SwitchState implements RSMatchable {
      */
     public void requestGroupChange(
             Simulation sim,
-            SwitchGroup group,
+            String newGroup,
             RouteState requestingRoute
     ) throws SimulationError {
-        if (!this.group.equals(group)) {
+        if (!group.equals(newGroup)) {
             var delay = switchRef.groupChangeDelay;
-            SwitchMoveEvent.plan(sim, sim.getTime() + delay, group, this, requestingRoute);
-            setGroup(sim, SwitchGroup.MOVING);
+            SwitchMoveEvent.plan(sim, sim.getTime() + delay, newGroup, this, requestingRoute);
+            setGroup(sim, SwitchState.MOVING);
         }
     }
 
     @Override
-    public int getEnumValue() {
-        int ordinal = 0;
-        for (SwitchGroup g : switchRef.groups.keySet()) {
-            if (g.equals(group)) {
-                return ordinal;
-            }
-        }
-        return -1;
-    }
-
-    @Override
-    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+    @SuppressFBWarnings("BC_UNCONFIRMED_CAST")
     public boolean deepEquals(RSValue other) {
         if (other.getClass() != SwitchState.class)
             return false;
@@ -98,10 +89,10 @@ public final class SwitchState implements RSMatchable {
     }
 
     public static final class SwitchGroupChange extends EntityChange<SwitchState, Void> {
-        SwitchGroup group;
+        String group;
         public final int switchIndex;
 
-        protected SwitchGroupChange(Simulation sim, SwitchState entity, SwitchGroup group) {
+        protected SwitchGroupChange(Simulation sim, SwitchState entity, String group) {
             super(sim);
             this.group = group;
             this.switchIndex = entity.switchRef.switchIndex;
@@ -123,4 +114,6 @@ public final class SwitchState implements RSMatchable {
             return String.format("SwitchGroupChange { switch: %d, group: %s }", switchIndex, group);
         }
     }
+
+    public static final String MOVING = null;
 }
