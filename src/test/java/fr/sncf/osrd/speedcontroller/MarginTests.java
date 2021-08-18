@@ -221,11 +221,11 @@ public class MarginTests {
         var eventsBase = run(sim, config);
         var baseSimTime = sim.getTime();
 
-        var expected = baseSimTime * (1 + params.value / 100);
-        assertEquals(expected, marginsSimTime, expected * 0.01);
-
         saveGraph(eventsBase, "..\\mareco-base.csv");
         saveGraph(events, "..\\mareco-out.csv");
+
+        var expected = baseSimTime * (1 + params.value / 100);
+        assertEquals(expected, marginsSimTime, 5);
     }
 
     /** Test the linear allowance type TIME */
