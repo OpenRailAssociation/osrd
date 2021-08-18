@@ -1,7 +1,6 @@
 import React, {
   useState, useEffect, useRef,
 } from 'react';
-import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import { sec2datetime, time2datetime } from 'utils/timeManipulation';
@@ -24,14 +23,18 @@ const drawTrains = (trains, selectedTrain, xScale, svg, height) => {
   });
 };
 
-export default function TimeLine(props) {
-  const { dataRange } = props;
+export default function TimeLine() {
   const {
     chart, selectedTrain, simulation, timePosition,
   } = useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();
   const ref = useRef();
   const [svgState, setSvg] = useState(undefined);
+
+  const dataRange = [
+    d3.min(simulation.trains, (trains) => d3.min(trains.steps, (steps) => steps.time)),
+    d3.max(simulation.trains, (trains) => d3.max(trains.steps, (steps) => steps.time)),
+  ];
 
   const dimensions = {
     width: ref.current ? ref.current.offsetWidth : 800,
@@ -166,7 +169,3 @@ export default function TimeLine(props) {
     </>
   );
 }
-
-TimeLine.propTypes = {
-  dataRange: PropTypes.array.isRequired,
-};

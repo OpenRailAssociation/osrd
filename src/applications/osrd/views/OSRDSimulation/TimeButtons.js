@@ -27,13 +27,6 @@ export default function TimeButtons() {
   const [simulationSpeed, setSimulationSpeed] = useState(1);
   const simulationLength = simulation.trains[selectedTrain].steps.length;
 
-  const dataRange = [
-    simulation.trains[0].steps[0].time,
-    simulation.trains[simulation.trains.length - 1]
-      .steps[simulation.trains[simulation.trains.length - 1].steps.length - 1]
-      .time,
-  ];
-
   const stop = () => {
     clearInterval(playInterval);
     setPlayInterval(undefined);
@@ -150,11 +143,7 @@ export default function TimeButtons() {
       />
       <div className="timeline-container flex-grow-1 w-100 ml-2">
         <div className="timeline w-100">
-          {/* chart ? chart.x.domain().map((date) => date.toLocaleTimeString('fr-FR') + ' - ') : null */}
-          {/* dataRange.map((sec) => sec2time(sec) + ' - ') */}
-          <TimeLine
-            dataRange={dataRange}
-          />
+          <TimeLine />
         </div>
       </div>
     </div>
