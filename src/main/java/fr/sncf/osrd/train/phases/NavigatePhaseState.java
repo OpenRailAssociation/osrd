@@ -3,6 +3,7 @@ package fr.sncf.osrd.train.phases;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.Predicate;
+import fr.sncf.osrd.infra.StopActionPoint;
 import fr.sncf.osrd.infra.signaling.AspectConstraint;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra_state.SignalState;
@@ -17,6 +18,8 @@ import fr.sncf.osrd.train.InteractionType;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.train.TrainState;
+import fr.sncf.osrd.train.Train.TrainStateChange;
+import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.DeepComparable;
 
 public abstract class NavigatePhaseState implements DeepComparable<NavigatePhaseState>, Cloneable {
@@ -41,7 +44,7 @@ public abstract class NavigatePhaseState implements DeepComparable<NavigatePhase
         this.sim = state.sim;
     }
 
-    public abstract TimelineEvent simulate(Simulation sim, Train train, TrainState trainState) throws SimulationError;
+    public abstract TimelineEvent simulate(Train train, TrainState trainState) throws SimulationError;
 
     @Override
     public abstract NavigatePhaseState clone();
@@ -118,7 +121,7 @@ public abstract class NavigatePhaseState implements DeepComparable<NavigatePhase
      * @param train      the train that changes phase
      * @param trainState the state of the train
      */
-    protected TimelineEvent nextPhase(Simulation sim, Train train, TrainState trainState) throws SimulationError {
+    protected TimelineEvent nextPhase(Train train, TrainState trainState) throws SimulationError {
         var nextState = trainState.nextPhase(sim, signalControllers);
         var change = new Train.TrainStateChange(sim, train.getName(), nextState);
         change.apply(sim, train);
@@ -185,6 +188,24 @@ public abstract class NavigatePhaseState implements DeepComparable<NavigatePhase
      */
     public void addAspectConstraints(HashMap<Signal, ArrayList<SpeedController>> signalControllers) {
         this.signalControllers.putAll(signalControllers);
+    }
+
+    /**
+     * Checks if the train has reached the next interaction and, if so, returns a new TrainReachesActionPoint event
+     * @return the TrainReachesActionPoint event or null.
+     */
+    public TimelineEvent reachedActionPoint(Train train, TrainState trainState, Interaction nextInteraction,
+            TrainStateChange simulationResult) {
+        if (trainState.location.getPathPosition() >= nextInteraction.position) {
+            popInteraction(trainState);
+            return TrainReachesActionPoint.plan(sim, trainState.time, train, simulationResult, nextInteraction);
+        } else if (trainState.speed < 0.0000001 && nextInteraction.actionPoint.getClass() == StopActionPoint.class) {
+            // TODO: This is a hot fix to be sure to have a stop reached event
+            // Find a way to reach the final stop or at least be really close to it.
+            popInteraction(trainState);
+            return TrainReachesActionPoint.plan(sim, trainState.time, train, simulationResult, nextInteraction);
+        }
+        return null;
     }
 
 }

@@ -8,15 +8,19 @@ import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.train.TrainState;
 
 /**
- * Class dedicated to the calculation of speed constraints related to the CBTC. 
+ * Class dedicated to the calculation of speed constraints related to the CBTC.
+ * Calculates the movement authorithy (MA) of the train and a list of speedController related to these MA.
+ * This class is for the moment a receptacle for a future implementation.
+ * TODO : Implement CBTCATP
  */
 public class CBTCATP {
+    // TODO : remove the warnings suppression
     @SuppressFBWarnings("URF_UNREAD_FIELD")
-    private Simulation sim;
+    private final Simulation sim;
     @SuppressFBWarnings("URF_UNREAD_FIELD")
-    private TrainSchedule trainSchedule;
+    private final TrainSchedule trainSchedule;
     @SuppressFBWarnings("URF_UNREAD_FIELD")
-    private TrainState trainState;
+    private final TrainState trainState;
 
     /**
      * Create a new ATP object
@@ -30,6 +34,9 @@ public class CBTCATP {
         this.sim = sim;
     }
 
+    /**
+     * Computes the list of speedControllers related to the CBTC.
+     */
     public ArrayList<SpeedController> directive() {
         return new ArrayList<SpeedController>(); 
     }
