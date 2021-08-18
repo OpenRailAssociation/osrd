@@ -194,30 +194,16 @@ public class RJSTrainScheduleParser {
             TrainPath expectedPath,
             List<TrainStop> stops
     ) throws InvalidSchedule {
+        var endLocation = parseLocation(infra, rjsPhase.endLocation);
+        var driverSightDistance = rjsPhase.driverSightDistance;
+
+        if (Double.isNaN(driverSightDistance) || driverSightDistance < 0)
+            throw new InvalidSchedule("invalid driver sight distance");
 
         if (rjsPhase.getClass() == RJSTrainPhase.Navigate.class) {
-            var rjsNavigate = (RJSTrainPhase.Navigate) rjsPhase;
-            var driverSightDistance = rjsNavigate.driverSightDistance;
-            if (Double.isNaN(driverSightDistance) || driverSightDistance < 0)
-                throw new InvalidSchedule("invalid driver sight distance");
-
-            var endLocation = parseLocation(infra, rjsNavigate.endLocation);
-            return SignalNavigatePhase.from(
-                driverSightDistance,
-                startLocation,
-                endLocation,
-                expectedPath,
-                stops
-            );
+            return SignalNavigatePhase.from(driverSightDistance, startLocation, endLocation, expectedPath, stops);
         } else if (rjsPhase.getClass() == RJSTrainPhase.CBTC.class) {
-            var rjsCBTC = (RJSTrainPhase.CBTC) rjsPhase;
-            var driverSightDistance = rjsCBTC.driverSightDistance;
-            if (Double.isNaN(driverSightDistance) || driverSightDistance < 0)
-                throw new InvalidSchedule("invalid driver sight distance");
-
-            var endLocation = parseLocation(infra, rjsCBTC.endLocation);
-            return CBTCNavigatePhase.from(driverSightDistance, startLocation,
-                    endLocation, expectedPath, stops);
+            return CBTCNavigatePhase.from(driverSightDistance, startLocation, endLocation, expectedPath, stops);
         }
         throw new RuntimeException("unknown train phase");
     }

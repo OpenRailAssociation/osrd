@@ -3,7 +3,6 @@ package fr.sncf.osrd.train.phases;
 import java.util.ArrayList;
 import java.util.List;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.StopActionPoint;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
@@ -15,7 +14,6 @@ import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
-import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
 public final class SignalNavigatePhase extends NavigatePhase {
@@ -77,10 +75,10 @@ public final class SignalNavigatePhase extends NavigatePhase {
         }
 
         @Override
-        public TimelineEvent simulate(Simulation sim, Train train, TrainState trainState) throws SimulationError {
+        public TimelineEvent simulate(Train train, TrainState trainState) throws SimulationError {
             // Check if we reached our goal
             if (hasPhaseEnded()) {
-                return nextPhase(sim, train, trainState);
+                return nextPhase(train, trainState);
             }
 
             // 1) find the next interaction event
@@ -95,16 +93,10 @@ public final class SignalNavigatePhase extends NavigatePhase {
             // 4) create an event with simulation data up to this point
 
             // The train reached the action point
-            if (trainState.location.getPathPosition() >= nextInteraction.position) {
-                popInteraction(trainState);
-                return TrainReachesActionPoint.plan(sim, trainState.time, train, simulationResult, nextInteraction);
-            } else if (trainState.speed < 0.0000001
-                    && nextInteraction.actionPoint.getClass() == StopActionPoint.class) {
-                // TODO: This is a hot fix to be sure to have a stop reached event
-                // Find a way to reach the final stop or at least be really close to it.
-                popInteraction(trainState);
-                return TrainReachesActionPoint.plan(sim, trainState.time, train, simulationResult, nextInteraction);
-            }
+            var event = reachedActionPoint(train, trainState, nextInteraction, simulationResult);
+            if (event != null)
+                return event;
+            
             // The train didn't reached the action point (stopped because of signalisation)
             return TrainMoveEvent.plan(sim, trainState.time, train, simulationResult);
         }

@@ -22,15 +22,11 @@ public abstract class RJSTrainPhase {
     @Json(name = "end_location")
     public RJSTrackLocation endLocation;
 
-    public static final class Navigate extends RJSTrainPhase {
-        /** The distance at which the driver can see objects on the tracks */
-        @Json(name = "driver_sight_distance")
-        public double driverSightDistance;
-    }
+    /** The distance at which the driver can see objects on the tracks */
+    @Json(name = "driver_sight_distance")
+    public double driverSightDistance;
+
+    public static final class Navigate extends RJSTrainPhase {}
     
-    public static final class CBTC extends RJSTrainPhase {
-        /** The distance at which the driver can see objects on the tracks */
-        @Json(name = "driver_sight_distance")
-        public double driverSightDistance;
-    }
+    public static final class CBTC extends RJSTrainPhase {}
 }
