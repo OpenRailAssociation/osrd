@@ -71,7 +71,7 @@ public class TrainPhysicsIntegrator {
      * @param actionTractionForce the traction force
      * @return the force vector for the train
      */
-    private double computeTotalForce(double oppositeForces, double actionTractionForce) {
+    public double computeTotalForce(double oppositeForces, double actionTractionForce) {
         return actionTractionForce + weightForce + oppositeForces;
     }
 
