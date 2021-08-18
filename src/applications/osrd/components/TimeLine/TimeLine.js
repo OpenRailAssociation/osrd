@@ -6,6 +6,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import { sec2datetime, time2datetime } from 'utils/timeManipulation';
 import { gridX } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { updateChart, updateMustRedraw } from 'reducers/osrdsimulation';
+import './TimeLine.scss';
 
 const drawTrains = (trains, selectedTrain, xScale, svg, height) => {
   trains.forEach((train, idx) => {
@@ -32,7 +34,7 @@ export default function TimeLine(props) {
   const [svgState, setSvg] = useState(undefined);
 
   const dimensions = {
-    width: 800,
+    width: ref.current ? ref.current.offsetWidth : 800,
     height: 40,
     margin: {
       top: 0, right: 1, bottom: 20, left: 10,
@@ -50,6 +52,8 @@ export default function TimeLine(props) {
   const drawChart = () => {
     if (d3.select(ref.current)) { d3.select(ref.current).select('svg').remove(); }
     const chartRect = chart.rotate ? chart.y.domain() : chart.x.domain();
+
+    let dragValue = 0;
 
     const svg = d3.select(ref.current)
       .append('svg')
@@ -70,7 +74,8 @@ export default function TimeLine(props) {
 
     const xScale = d3.scaleTime()
       .domain([sec2datetime(dataRange[0]), sec2datetime(dataRange[1])])
-      .range([dimensions.margin.left, dimensions.width - dimensions.margin.right]);
+      .range([dimensions.margin.left, dimensions.width - dimensions.margin.right])
+      .nice();
     const yScale = d3.scaleLinear()
       .domain([0, 10])
       .range([0, dimensions.height]);
@@ -106,16 +111,40 @@ export default function TimeLine(props) {
     svg.select('#timePositionTimeLine')
       .attr('transform', `translate(${xScale(time2datetime(timePosition))},0)`);
 
+    drawTrains(simulation.trains, selectedTrain, xScale, svg, dimensions.height);
+
+    const drag = d3.drag()
+      .on('end', () => {
+        console.log('drag end', dragValue);
+        const delta = xScale.invert(dragValue) - xScale.domain()[0];
+        const newX0 = (new Date(chartRect[0].getTime() + delta));
+        const newX1 = (new Date(chartRect[1].getTime() + delta));
+        console.log(xScale.invert(dragValue), delta, chartRect, [newX0, newX1]);
+        // console.log(chart.x.domain());
+        dispatch(updateChart({ ...chart, x: chart.x.domain([newX0, newX1]) }));
+        dispatch(updateMustRedraw(true));
+      })
+      .on('start', () => {
+        // dragValue = 0;
+        console.log('drag start');
+      })
+      .on('drag', () => {
+        dragValue += d3.event.dx;
+        d3.select('#rectZoomTimeLine')
+          .attr('transform', `translate(${dragValue},0)`);
+      });
+
     svg.append('rect')
+      .attr('id', 'rectZoomTimeLine')
       .attr('x', xScale(chartRect[0]))
       .attr('y', 1)
       .attr('width', xScale(chartRect[1]) - xScale(chartRect[0]))
       .attr('height', dimensions.height - 1)
       .attr('stroke', '#777')
       .attr('stroke-width', 2)
-      .attr('fill', 'rgba(0, 0, 0, 0.05)');
+      .attr('fill', 'rgba(0, 0, 0, 0.05)')
+      .call(drag);
 
-    drawTrains(simulation.trains, selectedTrain, xScale, svg, dimensions.height);
     setSvg(svg);
   };
 
