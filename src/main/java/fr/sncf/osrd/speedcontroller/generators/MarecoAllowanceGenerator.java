@@ -153,7 +153,6 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             }
         }
         // coasting before accelerating slopes
-        // TODO : don't trigger coasting when the train is accelerating
         var acceleratingSlopes = new ArrayList<AcceleratingSlope>();
         double previousPosition = 0.0;
         double previousSpeed = 0.0;
@@ -225,7 +224,9 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             var action = Action.coast();
             var update =  integrator.computeUpdate(action, location.getPathPosition(),-1);
             speed = update.speed;
-            location = convertPosition(schedule, sim, location.getPathPosition() + update.positionDelta);
+            if (speed == 0)
+                return null;
+            location.updatePosition(schedule.rollingStock.length, update.positionDelta);
 
         } while (speed < speeds.interpolate(location.getPathPosition()));
         return new CoastingSpeedController(location.getPathPosition(), endLocation);
@@ -255,16 +256,14 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
                                                        double v1,
                                                        double startLocation,
                                                        double endLocation) {
-        double timestep = 0.01; // TODO: link this timestep to the rest of the simulation
-        var vf = vf(v1);
-
         var currentSpeedControllers = new HashSet<>(maxSpeedControllers);
         currentSpeedControllers.add(new MaxSpeedController(v1, startLocation, endLocation));
         var expectedSpeeds = getExpectedSpeeds(sim, schedule, currentSpeedControllers, TIME_STEP);
         var endOfCoastingPositions = findEndOfCoastingPositions(expectedSpeeds, v1);
         for (var location : endOfCoastingPositions) {
             var controller = generateCoastingSpeedControllerAtPosition(expectedSpeeds, location, TIME_STEP);
-            currentSpeedControllers.add(controller);
+            if (controller != null)
+                currentSpeedControllers.add(controller);
         }
         return currentSpeedControllers;
     }

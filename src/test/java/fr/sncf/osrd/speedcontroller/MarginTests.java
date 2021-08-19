@@ -5,6 +5,7 @@ import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope;
 import fr.sncf.osrd.speedcontroller.generators.ConstructionAllowanceGenerator;
 import fr.sncf.osrd.speedcontroller.generators.LinearAllowanceGenerator;
 import fr.sncf.osrd.speedcontroller.generators.MarecoAllowanceGenerator;
@@ -23,6 +24,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 public class MarginTests {
 
@@ -202,7 +204,8 @@ public class MarginTests {
 
     /** Test mareco */
     @ParameterizedTest
-    @ValueSource(doubles = {0.0, 10, 200})
+    @ValueSource(doubles = {0.0, 10, 30, 200})
+    //@ValueSource(doubles = {127})
     public void testEcoMargin(double value) throws InvalidInfraException {
         final var infra = getBaseInfra();
         assert infra != null;
@@ -225,6 +228,48 @@ public class MarginTests {
         saveGraph(events, "..\\mareco-out.csv");
 
         var expected = baseSimTime * (1 + params.value / 100);
+        assertEquals(expected, marginsSimTime, 5);
+    }
+
+    /** Test slopes */
+    @ParameterizedTest
+    @ValueSource(ints = {0, 1, 2})
+    public void testDifferentSlopes(int slopeProfile) throws InvalidInfraException {
+        // inputs
+        double margin = 10.0;
+        List<RJSSlope> slopes = List.of(
+                List.of(new RJSSlope(0, 10000, -10)),
+                List.of(new RJSSlope(0, 10000, 0)),
+                List.of(new RJSSlope(0, 10000, +10))
+        ).get(slopeProfile);
+
+        // build sims
+        final var infra = getBaseInfra();
+        assert infra != null;
+        for (var trackSection : infra.trackSections)
+            if ("ne.micro.foo_to_bar".equals(trackSection.id))
+                trackSection.slopes = slopes;
+
+        // Run with mareco
+        final var marginsConfig = getConfigWithSpeedInstructions(SpeedInstructions.fromController(
+                new MarecoAllowanceGenerator(
+                        0,
+                        POSITIVE_INFINITY,
+                        margin,
+                        RJSAllowance.MarecoAllowance.MarginType.TIME
+                )
+        ));
+        var marginsSim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        run(marginsSim, marginsConfig);
+        var marginsSimTime = marginsSim.getTime();
+
+        // base run, no margin
+        final var config = getBaseConfigNoAllowance();
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        run(sim, config);
+        var simTime = sim.getTime();
+
+        var expected = simTime * (1 + margin / 100);
         assertEquals(expected, marginsSimTime, 5);
     }
 

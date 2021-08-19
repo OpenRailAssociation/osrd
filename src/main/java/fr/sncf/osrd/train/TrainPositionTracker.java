@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static java.lang.Math.abs;
+
 public final class TrainPositionTracker implements Cloneable, DeepComparable<TrainPositionTracker> {
     private final transient Infra infra;
     private final transient InfraState infraState;
@@ -125,12 +127,36 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         return TrackSectionRange.makeNext(nextTrackSection, nextTrackSectionDirection, delta);
     }
 
+    private TrackSectionRange previousTrackSectionPosition(double delta) {
+        var curTrackSectionPos = trackSectionRanges.getLast();
+        var neighbors = infra.trackGraph.getStartNeighborRels(curTrackSectionPos.edge, curTrackSectionPos.direction);
+
+        if (neighbors.isEmpty())
+            return new TrackSectionRange(
+                    curTrackSectionPos.edge,
+                    curTrackSectionPos.direction,
+                    curTrackSectionPos.getBeginPosition() - delta,
+                    curTrackSectionPos.getEndPosition());
+
+        var prev = neighbors.get(neighbors.size() - 1);
+        var prevTrackSection = prev.getEdge(curTrackSectionPos.edge, curTrackSectionPos.direction);
+
+        // TODO : implement the case of a switch like in nextTrackSectionPosition
+
+        var prevTrackSectionDirection = prevTrackSection.getDirection(
+                curTrackSectionPos.edge, curTrackSectionPos.direction);
+        return TrackSectionRange.makePrev(prevTrackSection, prevTrackSectionDirection, delta);
+    }
+
     /**
      * Updates the position of the train on the network.
      * @param positionDelta How much the train moves by.
      */
     public void updatePosition(double expectedTrainLength, double positionDelta) {
-        updateHeadPosition(positionDelta);
+        if (positionDelta >= 0)
+            updateHeadPosition(positionDelta);
+        else
+            updateHeadPositionBackwards(positionDelta);
         pathPosition += positionDelta;
 
         double currentTrainLength = 0;
@@ -138,8 +164,11 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
             currentTrainLength += section.length();
 
         var tailDisplacement = currentTrainLength - expectedTrainLength;
-        if (Math.abs(tailDisplacement) > 1e-3)
-            updateTailPosition(tailDisplacement);
+        if (abs(tailDisplacement) > 1e-3)
+            if (tailDisplacement >= 0)
+                updateTailPosition(tailDisplacement);
+            else
+                updateTailPositionBackwards(tailDisplacement);
     }
 
     /** TODO: Check if it's the wanted behavior...
@@ -163,6 +192,27 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         }
     }
 
+    /**
+     * Move the head of train to positionDelta backwards.
+     * The train stop if it can't go further.
+     */
+    private void updateHeadPositionBackwards(double targetDist) {
+        var remainingDist = abs(targetDist);
+        var headPos = trackSectionRanges.getFirst();
+        var availableSpace = headPos.length();
+        var edgeMovement = Double.min(abs(targetDist), availableSpace);
+        headPos.expandBackwards(edgeMovement);
+        remainingDist -= edgeMovement;
+
+        // remove edges to the current edges queue as the train moves backwards
+        while (remainingDist > 0) {
+            trackSectionRanges.removeFirst();
+            var previousPos = trackSectionRanges.getFirst();
+            // this should kind of be previousPos.length(), but doing it this way avoids float compare errors
+            remainingDist -= previousPos.edge.length;
+        }
+    }
+
     private void updateTailPosition(double positionDelta) {
         while (true) {
             var tailPos = trackSectionRanges.getLast();
@@ -173,6 +223,24 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
             }
             positionDelta -= availableSpace;
             trackSectionRanges.removeLast();
+        }
+    }
+
+    private void updateTailPositionBackwards(double positionDelta) {
+
+        var remainingDist = abs(positionDelta);
+        var tailPos = trackSectionRanges.getLast();
+        var edgeSpaceBehind = tailPos.backwardsSpace();
+        var edgeMovement = Double.min(abs(positionDelta), edgeSpaceBehind);
+        tailPos.shrinkBackwards(edgeMovement);
+        remainingDist -= edgeMovement;
+
+        // add edges to the current edges queue as the train moves backwards
+        while (remainingDist > 0) {
+            var previousPos = previousTrackSectionPosition(remainingDist);
+            // this should kind of be previousPos.length(), but doing it this way avoids float compare errors
+            remainingDist -= previousPos.length();
+            trackSectionRanges.addLast(previousPos);
         }
     }
 
