@@ -6,7 +6,6 @@ public class TrainStop {
 
     public final double position;
 
-    @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"}) // This will be used with proper stops implementation
     public final double stopDuration;
 
     public TrainStop(double position, double stopDuration) {
