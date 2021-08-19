@@ -98,6 +98,17 @@ public class Train {
         lastScheduledEvent = clonedState.simulatePhase(this, sim);
     }
 
+    /** Restarts the train after a stop */
+    public void restart(Simulation sim) throws SimulationError {
+        var clonedState = lastState.clone();
+        clonedState.stopIndex++;
+        if (clonedState.stopIndex >= schedule.stops.size())
+            return;
+        logger.info("restarting train {}", getName());
+        clonedState.time = sim.getTime();
+        lastScheduledEvent = clonedState.simulatePhase(this, sim);
+    }
+
     /** Reserve routes when the train is in navigate phase */
     public void onEventOccurred(Simulation sim) throws SimulationError {
         // TODO find a smarter way to do it and remove this method

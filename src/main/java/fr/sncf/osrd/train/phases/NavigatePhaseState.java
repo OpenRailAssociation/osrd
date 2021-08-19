@@ -195,7 +195,7 @@ public abstract class NavigatePhaseState implements DeepComparable<NavigatePhase
      */
     public TimelineEvent reachedActionPoint(Train train, TrainState trainState, Interaction nextInteraction,
             TrainStateChange simulationResult) {
-        if (trainState.location.getPathPosition() >= nextInteraction.position) {
+        if (trainState.location.getPathPosition() + 1e-2 >= nextInteraction.position) {
             popInteraction(trainState);
             return TrainReachesActionPoint.plan(sim, trainState.time, train, simulationResult, nextInteraction);
         }

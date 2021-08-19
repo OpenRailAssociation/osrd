@@ -45,7 +45,10 @@ public abstract class NavigatePhase {
         for (int i = 0; i < stops.size(); i++) {
             var stop = stops.get(i);
             if (startPathPosition <= stop.position && stop.position <= endPathPosition) {
-                interactions.add(new Interaction(InteractionType.HEAD, stop.position, new StopActionPoint(i)));
+                interactions.add(new Interaction(
+                        InteractionType.HEAD,
+                        stop.position,
+                        new StopActionPoint(i, stop.stopDuration)));
             }
         }
         interactions.sort(Comparator.comparingDouble(x -> x.position));
