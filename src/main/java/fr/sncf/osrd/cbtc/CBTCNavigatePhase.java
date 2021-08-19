@@ -6,6 +6,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
+import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
+import fr.sncf.osrd.speedcontroller.CBTCSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.train.Interaction;
 import fr.sncf.osrd.train.Train;
@@ -18,6 +20,8 @@ import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.phases.NavigatePhase;
 import fr.sncf.osrd.train.phases.NavigatePhaseState;
 import fr.sncf.osrd.utils.TrackSectionLocation;
+
+import java.util.Set;
 
 /**
  * Navigation phase to be used when the train is CBTC
@@ -154,6 +158,22 @@ public final class CBTCNavigatePhase extends NavigatePhase {
                 controllers.addAll(atp.directive());
             }
 
+            var activeControllers = new ArrayList<SpeedController>();
+            var speedInstructions = trainState.trainSchedule.speedInstructions;
+            Set<SpeedController> targetControllers;
+            targetControllers = speedInstructions.maxSpeedControllers;
+            for (var controller : targetControllers) {
+                if (!controller.isActive(trainState))
+                    continue;
+                activeControllers.add(controller);
+            }
+            
+            for (SpeedController controller : activeControllers){
+                if (controller instanceof LimitAnnounceSpeedController) {
+                    CBTCSpeedController cbtcspeed = new CBTCSpeedController(((LimitAnnounceSpeedController)controller).targetSpeedLimit, trainState.location.getPathPosition(), controller.endPosition, ((LimitAnnounceSpeedController)controller).gamma, trainState, schedule);
+                    controllers.add(cbtcspeed);
+                }
+            }
             return controllers;
         }
     }

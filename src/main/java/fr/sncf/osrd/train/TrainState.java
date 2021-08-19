@@ -29,6 +29,9 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     // the current speed of the train
     public double speed;
 
+    // the current acceleration of the train
+    public double accel;
+
     // what status the train is in: reached destination, rolling, emergency, ...
     public TrainStatus status;
 
@@ -83,6 +86,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             double time,
             TrainPositionTracker location,
             double speed,
+            double accel,
             TrainStatus status,
             TrainSchedule trainSchedule,
             int currentPhaseIndex,
@@ -96,6 +100,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         this.time = time;
         this.location = location;
         this.speed = speed;
+        this.accel = accel;
         this.status = status;
         this.trainSchedule = trainSchedule;
         this.currentPhaseIndex = currentPhaseIndex;
@@ -115,6 +120,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 time,
                 location.clone(),
                 speed,
+                accel,
                 status,
                 trainSchedule,
                 currentPhaseIndex,
@@ -139,6 +145,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                     time,
                     location.clone(),
                     speed,
+                    accel,
                     TrainStatus.REACHED_DESTINATION,
                     trainSchedule,
                     currentPhaseIndex,
@@ -157,6 +164,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 time,
                 location.clone(),
                 speed,
+                accel,
                 status,
                 trainSchedule,
                 nextPhase,
@@ -244,6 +252,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         logger.trace("speed changed from {} to {}", speed, update.speed);
         locationChange.positionUpdates.addSpeedUpdate(newLocation, time, update.speed);
         speed = update.speed;
+        accel = update.accel;
     }
 
     /**  Create a location change from the current state to the given position.
