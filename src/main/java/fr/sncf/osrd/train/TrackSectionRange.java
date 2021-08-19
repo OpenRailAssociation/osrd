@@ -99,6 +99,17 @@ public final class TrackSectionRange extends Range implements DeepComparable<Tra
         return new TrackSectionRange(edge, direction, edge.length, Double.max(edge.length - desiredLength, 0));
     }
 
+    /** Build a track section range given a direction and a desired length. */
+    public static TrackSectionRange makePrev(
+            TrackSection edge,
+            EdgeDirection direction,
+            double desiredLength
+    ) {
+        if (direction == EdgeDirection.START_TO_STOP)
+            return new TrackSectionRange(edge, direction, edge.length, Double.max(edge.length - desiredLength, 0));
+        return new TrackSectionRange(edge, direction, 0, Double.min(desiredLength, edge.length));
+    }
+
     /** Check if a location is contained in the track section range */
     public boolean containsLocation(TrackSectionLocation location) {
         if (location.edge != edge)
@@ -111,6 +122,13 @@ public final class TrackSectionRange extends Range implements DeepComparable<Tra
         if (direction == EdgeDirection.START_TO_STOP)
             return edge.length - end;
         return end;
+    }
+
+    /** Get the available backwards space of the edge */
+    public double backwardsSpace() {
+        if (direction == EdgeDirection.START_TO_STOP)
+            return begin;
+        return begin - edge.length;
     }
 
     public double getBeginPosition() {
@@ -140,6 +158,16 @@ public final class TrackSectionRange extends Range implements DeepComparable<Tra
         assert end >= 0.;
     }
 
+    public void expandBackwards(double delta) {
+        if (direction == EdgeDirection.START_TO_STOP) {
+            end -= delta;
+            assert end >= 0.;
+            return;
+        }
+        end += delta;
+        assert end <= edge.length;
+    }
+
     /** Shrink the range of the track section by following its direction */
     public void shrinkForward(double delta) {
         if (direction == EdgeDirection.START_TO_STOP) {
@@ -148,6 +176,16 @@ public final class TrackSectionRange extends Range implements DeepComparable<Tra
             return;
         }
         begin -= delta;
+        assert begin >= end;
+    }
+
+    public void shrinkBackwards(double delta) {
+        if (direction == EdgeDirection.START_TO_STOP) {
+            begin -= delta;
+            assert begin <= end;
+            return;
+        }
+        begin += delta;
         assert begin >= end;
     }
 

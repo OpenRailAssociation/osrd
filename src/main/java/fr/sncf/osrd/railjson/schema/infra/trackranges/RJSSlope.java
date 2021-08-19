@@ -6,7 +6,7 @@ public class RJSSlope extends RJSTrackRange {
     // Gradient (m)
     public double gradient;
 
-    RJSSlope(
+    public RJSSlope(
             double begin,
             double end,
             double gradient
