@@ -99,6 +99,8 @@ class Infra:
                     "operational_points": [],
                     "route_waypoints": None,
                     "signals": [],
+                    "slopes": [],
+                    "curves": [],
                     "speed_sections": [],
                     "endpoints_coords": [self.coordinates[uget_begin(utrack)], self.coordinates[uget_end(utrack)]]
                 })
@@ -398,7 +400,7 @@ class Infra:
 class Simulation:
 
     def build_rolling_stocks(self):
-        self.json["rolling_stocks"] = [{'id': 'fast_rolling_stock', 'rolling_resistance': {'type': 'davis', 'A': 5400.0, 'B': 200.0, 'C': 12.0}, 'length': 20, 'max_speed': 80, 'startup_time': 10, 'startup_acceleration': 0.05, 'comfort_acceleration': 0.25, 'timetable_gamma': 0.5, 'mass': 900000, 'inertia_coefficient': 1.05, 'features': ['TVM300', 'TVM430', 'ETCS1', 'ETCS2', 'KVB'], 'tractive_effort_curve': [{'speed': 0, 'max_effort': 441666.6666666667}, {'speed': 5, 'max_effort': 439473.6842105263}, {'speed': 10, 'max_effort': 435714.28571428574}, {'speed': 15, 'max_effort': 427777.77777777775}, {'speed': 20, 'max_effort': 400000.0}, {'speed': 22, 'max_effort': 350971.5388299929}, {'speed': 27, 'max_effort': 347206.93642395496}, {'speed': 32, 'max_effort': 346938.7385068534}, {'speed': 37, 'max_effort': 344395.0325320009}, {'speed': 42, 'max_effort': 334314.2138640166}, {'speed': 47, 'max_effort': 313589.8108101956}, {'speed': 52, 'max_effort': 283584.5657113532}, {'speed': 57, 'max_effort': 250604.14937613969}, {'speed': 62, 'max_effort': 222698.71360301683}, {'speed': 67, 'max_effort': 204685.35097358702}, {'speed': 72, 'max_effort': 195984.55717992093}, {'speed': 77, 'max_effort': 192916.76425246376}]}]
+        self.json["rolling_stocks"] = [{'id': 'fast_rolling_stock', 'rolling_resistance': {'type': 'davis', 'A': 5400.0, 'B': 200.0, 'C': 12.0}, 'length': 400, 'max_speed': 80, 'startup_time': 10, 'startup_acceleration': 0.05, 'comfort_acceleration': 0.25, 'gamma': 0.5, 'gamma_type': 'CONST', 'mass': 900000, 'inertia_coefficient': 1.05, 'features': ['TVM300', 'TVM430', 'ETCS1', 'ETCS2', 'KVB'], 'tractive_effort_curve': [{'speed': 0, 'max_effort': 441666.6666666667}, {'speed': 5, 'max_effort': 439473.6842105263}, {'speed': 10, 'max_effort': 435714.28571428574}, {'speed': 15, 'max_effort': 427777.77777777775}, {'speed': 20, 'max_effort': 400000.0}, {'speed': 22, 'max_effort': 350971.5388299929}, {'speed': 27, 'max_effort': 347206.93642395496}, {'speed': 32, 'max_effort': 346938.7385068534}, {'speed': 37, 'max_effort': 344395.0325320009}, {'speed': 42, 'max_effort': 334314.2138640166}, {'speed': 47, 'max_effort': 313589.8108101956}, {'speed': 52, 'max_effort': 283584.5657113532}, {'speed': 57, 'max_effort': 250604.14937613969}, {'speed': 62, 'max_effort': 222698.71360301683}, {'speed': 67, 'max_effort': 204685.35097358702}, {'speed': 72, 'max_effort': 195984.55717992093}, {'speed': 77, 'max_effort': 192916.76425246376}]}]
 
     def __init__(self, infra):
         self.json = dict()
