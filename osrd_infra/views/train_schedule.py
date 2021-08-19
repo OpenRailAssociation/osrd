@@ -8,7 +8,6 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from osrd_infra.serializers import TrainScheduleSerializer
-from osrd_infra.views import get_rolling_stock_payload
 from osrd_infra.views.projection import Projection
 from osrd_infra.utils import geo_transform, reverse_format
 from osrd_infra.views.railjson import format_route_id, format_track_section_id
@@ -309,7 +308,7 @@ class TrainScheduleView(
     def generate_schedule_result(train_schedule):
         payload = {
             "infra": train_schedule.timetable.infra_id,
-            "rolling_stocks": [get_rolling_stock_payload(train_schedule.rolling_stock)],
+            "rolling_stocks": [train_schedule.rolling_stock.to_railjson()],
             "train_schedules": [get_train_schedule_payload(train_schedule)],
         }
 

@@ -4,10 +4,7 @@ from rest_framework import mixins
 
 from osrd_infra.models import Timetable
 
-from osrd_infra.serializers import (
-    TimetableSerializer,
-    RollingStockSerializer,
-)
+from osrd_infra.serializers import TimetableSerializer
 
 
 class TimetableView(
@@ -39,14 +36,3 @@ class TimetableView(
             for train in timetable.train_schedules.all()
         ]
         return Response({**serializer.data, "train_schedules": train_schedules})
-
-
-def get_rolling_stock_payload(rolling_stock):
-    serializer = RollingStockSerializer(rolling_stock)
-    data = dict(serializer.data)
-    data.pop("owner")
-    data.pop("name")
-    data["features"] = data.pop("capabilities")
-    data["tractive_effort_curve"] = list(data.pop("tractive_effort_curves").values())[0]
-    data["id"] = f"rolling_stock.{data.pop('id')}"
-    return data

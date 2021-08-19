@@ -115,7 +115,7 @@ class RollingStock(models.Model):
 
     def to_railjson(self):
         return {
-            "id": self.name,
+            "id": f"rolling_stock.{self.id}",
             "length": self.length,
             "mass": self.mass,
             "inertia_coefficient": self.inertia_coefficient,
@@ -127,5 +127,5 @@ class RollingStock(models.Model):
             "comfort_acceleration": self.comfort_acceleration,
             "gamma": self.timetable_gamma,
             "gamma_type": "CONST",
-            "tractive_effort_curves": self.tractive_effort_curves,
+            "tractive_effort_curve": next(iter(self.tractive_effort_curves.values())),
         }
