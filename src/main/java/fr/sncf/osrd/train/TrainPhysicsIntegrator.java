@@ -6,36 +6,36 @@ import fr.sncf.osrd.utils.Constants;
 
 /**
  * An utility class to help simulate the train, using forward numerical integration.
- * It's used when simulating the train, and it is passed to speed controllers so they can take decisions
+ * It's used when simulating the train, and passed to speed controllers so they can take decisions
  * about what action to make. Once speed controllers took a decision, this same class is used to compute
  * the next position and speed of the train.
  */
 public class TrainPhysicsIntegrator {
     private final double timeStep;
     private final double currentSpeed;
+    private final double currentAccel;
     private final double weightForce;
-    private final double rollingResistance;
+    private final double precomputedRollingResistance;
     private final double inertia;
 
-    /**
-     * The class to simulate the train physics
-     * @param currentSpeed the current speed of the train
-     * @param weightForce is the force due to the slope under the train
-     * @param rollingResistance is the rolling resistance = A + B * currentSpeed + C * currentSpeed * currentSpeed
-     * @param inertia is the mass * inertial coefficient
-     */
+    // TODO : add a real jerk value, in the configuration files
+    private final double jerk = .6;
+
+
     private TrainPhysicsIntegrator(
             double timeStep,
             double currentSpeed,
+            double currentAccel,
             double weightForce,
-            double rollingResistance,
+            double precomputedRollingResistance,
             double inertia
     ) {
         this.timeStep = timeStep;
         this.currentSpeed = currentSpeed;
+        this.currentAccel = currentAccel;
         this.weightForce = weightForce;
-        assert rollingResistance >= 0.;
-        this.rollingResistance = rollingResistance;
+        assert precomputedRollingResistance >= 0.;
+        this.precomputedRollingResistance = precomputedRollingResistance;
         this.inertia = inertia;
     }
 
@@ -43,26 +43,50 @@ public class TrainPhysicsIntegrator {
      * Makes a new train physics simulator
      * @param rollingStock the specs of the train
      * @param currentSpeed the current speed of the train
-     * @param meanTrainGrade the maximum slope under the train
+     * @param currentAccel the current accel of the train
+     * @param maxTrainGrade the maximum slope under the train
      * @return a new train physics simulator
      */
     public static TrainPhysicsIntegrator make(
             double timeStep,
             RollingStock rollingStock,
             double currentSpeed,
-            double meanTrainGrade
+            double currentAccel,
+            double maxTrainGrade
     ) {
         // get an angle from a meter per km elevation difference
-        // the curve's radius is taken into account in meanTrainGrade
-        var angle = Math.atan(meanTrainGrade / 1000.0);  // from m/km to m/m
-        var weightForce = - rollingStock.mass * Constants.GRAVITY * Math.sin(angle);
+        var angle = Math.atan(maxTrainGrade / 1000.0);  // from m/km to m/m
+        var weightForce = rollingStock.mass * Constants.GRAVITY * -Math.sin(angle);
+
         var inertia = rollingStock.mass * rollingStock.inertiaCoefficient;
         return new TrainPhysicsIntegrator(
                 timeStep,
                 currentSpeed,
+                currentAccel,
                 weightForce,
                 rollingStock.rollingResistance(currentSpeed),
                 inertia);
+    }
+
+    /**
+     * Makes a new train physics simulator
+     * @param rollingStock the specs of the train
+     * @param currentSpeed the current speed of the train
+     * @param maxTrainGrade the maximum slope under the train
+     * @return a new train physics simulator
+     */
+    public static TrainPhysicsIntegrator make(
+            double timeStep,
+            RollingStock rollingStock,
+            double currentSpeed,
+            double maxTrainGrade
+    ) {
+        return make(
+                timeStep,
+                rollingStock,
+                currentSpeed,
+                0.,
+                maxTrainGrade);
     }
 
     /**
@@ -92,9 +116,7 @@ public class TrainPhysicsIntegrator {
         // a<0 dec force<0
         // a>0 acc force>0
         // normally the train speed should be positive
-        assert currentSpeed >= 0;
 
-        // this is used to compute Mareco allowance
         if (Double.isNaN(speedDirective.allowedSpeed)) {
             return Action.coast();
         }
@@ -129,11 +151,13 @@ public class TrainPhysicsIntegrator {
         public final double timeDelta;
         public final double positionDelta;
         public final double speed;
+        public final double accel;
 
-        PositionUpdate(double timeDelta, double positionDelta, double speed) {
+        PositionUpdate(double timeDelta, double positionDelta, double speed, double accel) {
             this.timeDelta = timeDelta;
             this.positionDelta = positionDelta;
             this.speed = speed;
+            this.accel = accel;
         }
     }
 
@@ -204,7 +228,17 @@ public class TrainPhysicsIntegrator {
         // compute the acceleration on all the integration step. the variable is named this way because we
         // compute the acceleration on only a part of the integration step below
         var fullStepAcceleration =  computeTotalForce(effectiveOppositeForces, actionTractionForce) / inertia;
+
+        // the variation of the acceleration can't realistically be infinite, we have to limit it, with the jerk
+        if (Math.abs(fullStepAcceleration - this.currentAccel) / timeStep > jerk) {
+            if (fullStepAcceleration > currentAccel)
+                fullStepAcceleration = currentAccel + jerk * timeStep;
+            else 
+                fullStepAcceleration = currentAccel - jerk * timeStep;
+        }
+
         var newSpeed = currentSpeed + directionSign * fullStepAcceleration * timeStep;
+        var newAccel = fullStepAcceleration;
 
         var timeDelta = timeStep;
 
@@ -218,11 +252,12 @@ public class TrainPhysicsIntegrator {
         var newPositionDelta = computePositionDelta(currentSpeed, fullStepAcceleration, timeDelta, directionSign);
 
         if (newPositionDelta <= maxDistance)
-            return new PositionUpdate(timeDelta, newPositionDelta, newSpeed);
+            return new PositionUpdate(timeDelta, newPositionDelta, newSpeed, newAccel);
 
         timeDelta = computeTimeDelta(currentSpeed, fullStepAcceleration, maxDistance);
         assert timeDelta < timeStep && timeDelta >= 0;
         newSpeed = currentSpeed + fullStepAcceleration * timeDelta;
-        return  new PositionUpdate(timeDelta, maxDistance, newSpeed);
+        newAccel = fullStepAcceleration;
+        return new PositionUpdate(timeDelta, maxDistance, newSpeed, newAccel);
     }
 }
