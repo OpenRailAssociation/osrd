@@ -1,5 +1,6 @@
 from rest_framework.response import Response
 
+from osrd_infra.utils import Benchmarker
 from osrd_infra.models import (
     ApplicableDirection,
     AspectEntity,
@@ -13,6 +14,7 @@ from osrd_infra.models import (
     OperationalPointEntity,
     OperationalPointPartEntity,
     RouteEntity,
+    ReleaseGroupComponent,
     SpeedSectionEntity,
     SpeedSectionPartEntity,
     SwitchPosition,
@@ -21,7 +23,11 @@ from osrd_infra.models import (
     fetch_entities,
 )
 
-from collections import Counter
+from collections import Counter, defaultdict
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def format_track_section_id(entity_id: int) -> str:
@@ -273,7 +279,36 @@ def serialize_tvd_section(tvd_section_entity, **cached_entities):
     }
 
 
-def serialize_route(cached_entities, route_entity):
+def serialize_routes(cached_entities, namespace):
+    entities = fetch_entities(RouteEntity, namespace)
+
+    # serializing routes efficiently is a bit more tricky than with other
+    # entity types: it involves a many to many relation inside a non-unique component,
+    # which the django orm doesn't seem to be able to prefetch efficiently all by itself.
+    release_group_ids = set(
+        release_group.pk
+        for route_entity in entities
+        for release_group in route_entity.release_group_set.all()
+    )
+
+    prefetched_release_group_rels = (
+        ReleaseGroupComponent.tvd_sections.through
+        .objects
+        .filter(releasegroupcomponent_id__in=release_group_ids)
+    )
+
+    prefetched_release_groups = defaultdict(list)
+    for rel in prefetched_release_group_rels:
+        prefetched_release_groups[rel.releasegroupcomponent_id].append(rel.tvdsectionentity_id)
+
+    return [
+        serialize_route(cached_entities, entity, prefetched_release_groups)
+        for entity
+        in entities
+    ]
+
+
+def serialize_route(cached_entities, route_entity, prefetched_release_groups):
     switch_position_components = route_entity.switch_position_set.all()
     release_groups = route_entity.release_group_set.all()
     entry_point = cached_entities["waypoints"][route_entity.route.entry_point_id]
@@ -288,8 +323,8 @@ def serialize_route(cached_entities, route_entity):
         },
         "release_groups": [
             [
-                format_tvd_section_id(tvd_section.entity_id)
-                for tvd_section in release_group.tvd_sections.all()
+                format_tvd_section_id(tvd_section_id)
+                for tvd_section_id in prefetched_release_groups[release_group.component_id]
             ]
             for release_group in release_groups
         ],
@@ -313,8 +348,11 @@ def fetch_and_map(entity_type, namespace, prefetch_related=None):
 
 
 def railjson_serialize_infra(infra):
-    namespace = infra.namespace
+    bench = Benchmarker()
 
+    bench.step("caching entities")
+
+    namespace = infra.namespace
     cached_entities = {
         "signals": fetch_and_map(SignalEntity, namespace),
         "waypoints": fetch_and_map(WaypointEntity, namespace),
@@ -326,50 +364,68 @@ def railjson_serialize_infra(infra):
         "track_section_links": fetch_and_map(TrackSectionLinkEntity, namespace),
     }
 
-    return Response(
-        {
-            "track_sections": [
-                serialize_track_section(entity, **cached_entities)
-                for entity in (
-                    fetch_entities(TrackSectionEntity, namespace)
-                    .prefetch_related("point_objects", "range_objects")
-                )
-            ],
-            "track_section_links": [
-                serialize_track_section_link(entity)
-                for entity in fetch_entities(TrackSectionLinkEntity, namespace)
-            ],
-            "switches": [
-                serialize_switch(cached_entities, entity)
-                for entity in fetch_entities(SwitchEntity, namespace)
-            ],
-            "script_functions": [
-                entity.rail_script.script
-                for entity in fetch_entities(ScriptFunctionEntity, namespace)
-            ],
-            "operational_points": [
-                serialize_operational_point(entity)
-                for entity in fetch_entities(OperationalPointEntity, namespace)
-            ],
-            "speed_sections": [
-                serialize_speed_section(entity)
-                for entity in fetch_entities(SpeedSectionEntity, namespace)
-            ],
-            "tvd_sections": [
-                serialize_tvd_section(entity, **cached_entities)
-                for entity in (
-                    fetch_entities(TVDSectionEntity, namespace)
-                    .prefetch_related("tvd_section_components")
-                )
-            ],
-            "routes": [
-                serialize_route(cached_entities, entity)
-                for entity in fetch_entities(RouteEntity, namespace)
-            ],
-            "aspects": [
-                serialize_aspect(entity)
-                for entity in fetch_entities(AspectEntity, namespace)
-            ],
-            "version": 1,
-        }
-    )
+    res = {"version": 1}
+    bench.step("serializing track sections")
+    res["track_sections"] = [
+        serialize_track_section(entity, **cached_entities)
+        for entity in (
+            fetch_entities(TrackSectionEntity, namespace)
+            .prefetch_related("point_objects", "range_objects")
+        )
+    ]
+
+    bench.step("serializing track section links")
+    res["track_section_links"] = [
+        serialize_track_section_link(entity)
+        for entity in fetch_entities(TrackSectionLinkEntity, namespace)
+    ]
+
+    bench.step("serializing switches")
+    res["switches"] = [
+        serialize_switch(cached_entities, entity)
+        for entity in fetch_entities(SwitchEntity, namespace)
+    ]
+
+    bench.step("serializing script functions")
+    res["script_functions"] = [
+        entity.rail_script.script
+        for entity in fetch_entities(ScriptFunctionEntity, namespace)
+    ]
+
+    bench.step("serializing operational points")
+    res["operational_points"] = [
+        serialize_operational_point(entity)
+        for entity in fetch_entities(OperationalPointEntity, namespace)
+    ]
+
+    bench.step("serializing speed sections")
+    res["speed_sections"] = [
+        serialize_speed_section(entity)
+        for entity in fetch_entities(SpeedSectionEntity, namespace)
+    ]
+
+    bench.step("serializing tvd sections")
+    res["tvd_sections"] = [
+        serialize_tvd_section(entity, **cached_entities)
+        for entity in (
+            fetch_entities(TVDSectionEntity, namespace)
+            .prefetch_related("tvd_section_components")
+        )
+    ]
+
+    bench.step("serializing routes")
+    res["routes"] = serialize_routes(cached_entities, namespace)
+
+    bench.step("serializing aspects")
+    res["aspects"] = [
+        serialize_aspect(entity)
+        for entity in fetch_entities(AspectEntity, namespace)
+    ]
+
+    bench.step("creating the response")
+    response = Response(res)
+
+    bench.stop()
+    bench.print_steps(logger.info)
+
+    return response
