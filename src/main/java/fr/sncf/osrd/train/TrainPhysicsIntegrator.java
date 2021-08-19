@@ -4,6 +4,8 @@ import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.utils.Constants;
 
+import static java.lang.Math.abs;
+
 /**
  * An utility class to help simulate the train, using forward numerical integration.
  * It's used when simulating the train, and it is passed to speed controllers so they can take decisions
@@ -122,7 +124,7 @@ public class TrainPhysicsIntegrator {
         // TODO implement speed controllers with non constant deceleration
         if (actionForce < maxBrakingForce)
             actionForce = maxBrakingForce - rollingResistance - weightForce;
-        return Action.brake(Math.abs(actionForce));
+        return Action.brake(abs(actionForce));
     }
 
     public static class PositionUpdate {
@@ -146,7 +148,7 @@ public class TrainPhysicsIntegrator {
 
     private static double computeTimeDelta(double currentSpeed, double acceleration, double positionDelta) {
         // Solve: acceleration / 2 * t^2 + currentSpeed * t - positionDelta = 0
-        if (Math.abs(acceleration) < 0.00001)
+        if (abs(acceleration) < 0.00001)
             return positionDelta / currentSpeed;
         var numerator = -currentSpeed + Math.sqrt(currentSpeed * currentSpeed + 2 * positionDelta * acceleration);
         return numerator / acceleration;
@@ -190,7 +192,7 @@ public class TrainPhysicsIntegrator {
             var totalOtherForce = computeTotalForce(0.0, actionTractionForce);
             // if the train is stopped and the rolling resistance is greater in amplitude than the other forces,
             // the train won't move
-            if (Math.abs(totalOtherForce) < oppositeForce)
+            if (abs(totalOtherForce) < oppositeForce)
                 return new PositionUpdate(timeStep, 0.0, 0.0);
             // if the sum of other forces isn't sufficient to keep the train still, the rolling resistance
             // will be opposed to the movement direction (which is the direction of the other forces)
@@ -209,8 +211,8 @@ public class TrainPhysicsIntegrator {
         var timeDelta = timeStep;
 
         // if the speed change sign or is very low we integrate only the step at which the speed is zero
-        if (currentSpeed != 0.0 && (Math.signum(newSpeed) != Math.signum(currentSpeed) || Math.abs(newSpeed) < 1E-10)) {
-            timeDelta = -currentSpeed / fullStepAcceleration;
+        if (currentSpeed != 0.0 && (Math.signum(newSpeed) != Math.signum(currentSpeed) || abs(newSpeed) < 1E-10)) {
+            timeDelta = -currentSpeed / (directionSign * fullStepAcceleration);
             newSpeed = 0.;
         }
 
