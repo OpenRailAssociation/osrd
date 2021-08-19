@@ -1,7 +1,9 @@
 import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
 import { Action } from 'redux';
-import { GeoJSON, Position } from 'geojson';
+import { Position } from 'geojson';
 import { JSONSchema7 } from 'json-schema';
+import { omit } from 'lodash';
+import config from './config/config';
 
 //
 //  Redux types
@@ -30,52 +32,7 @@ export type Zone = RectangleZone | PolygonZone;
 //
 type uuid = string;
 type flags = string; // Should match /[01]{7}/
-export type LineExtremity = Partial<{
-  OP_id: uuid;
-  V_nom: string; // should match /V\d+.*/
-  id_pk: number;
-  L_code: string; // should match /\d+/
-  pk_sncf: string; // should match /\d+\+\d+/
-  OP_id_voie: uuid;
-  RLJDZ_sens: string; // should match /[CD]/
-  OP_id_ligne: uuid;
-  P_pkInterne: number;
-  OP_id_localisation: uuid;
-  OP_id_localisationpk: uuid;
-  OP_id_relationjointdezone: uuid;
-  OP_id_tronconditineraireofpk: uuid;
-  OP_id_tronconditinerairevoie: uuid;
-  OP_id_relationlocalisationjdz: uuid;
-  id_circuitdevoie_CDV_extremites: number;
-  id_localisation_L_localisationPk: number;
-  id_relationjointdezone_RJDZ_localisations: number;
-  id_installationfixelocalisee_IFL_localisations: number;
-}>;
-export type LineProperties = Partial<{
-  default_id: number;
-  id_lrs: number;
-  OP_id_poste: uuid;
-  OP_id_nyx_gare_G_postesId: number;
-  OP_id_gare: uuid;
-  RA_libelle: string;
-  extremites: LineExtremity[];
-  RA_libelle_poste: string;
-  RA_libelle_gare: string;
-  isVerifie: [];
-  isReverifie: [];
-  isValidSch: boolean;
-  isValidGeo: boolean;
-  flagInvalidSch: flags;
-  flagInvalidGeo: flags;
-  OP_id: uuid;
-  isGeomSchFromLRS: boolean;
-  isGeomGeoFromLRS: boolean;
-  extremites_agg: string | null;
-  OP_id_poste_metier: string | null;
-  RA_libelle_poste_metier: string | null;
-  table_responsable: string | null;
-  last_midi_update: string; // ISO 8601 date
-}>;
+
 export interface Item {
   id: string;
   properties: Record<string, any>;
@@ -96,27 +53,92 @@ export interface Notification {
 //
 // Editor actions
 //
-export interface EditorActionInsert {
-  type: 'insert';
-  entity: string;
-  data: any;
+export interface EditorOperationCreateEntity {
+  operation: 'create_entity';
+  entity_type: string;
+  components: Array<{ component_type: string; component: unknown }>;
 }
-export interface EditorActionUpdate {
-  type: 'update';
-  entity: string;
-  data: any;
+export interface EditorOperationUpdateComponent {
+  operation: 'update_component';
+  component_id: number;
+  component_type: string;
+  update: { [key: string]: unknonw };
 }
-export interface EditorActionDelete {
-  type: 'delete';
-  entity: string;
-  id: number;
+export interface EditorOperationDeleteEntity {
+  operation: 'delete_entity';
+  entity_id: number;
 }
 
-export type EditorAction = EditorActionInsert | EditorActionUpdate | EditorActionDelete;
+export type EditorOperation =
+  | EditorOperationCreateEntity
+  | EditorOperationUpdateComponent
+  | EditorOperationDeleteEntity;
 
-// Editor data model definition
+//
+// Editor data model
+//
 export type EditorComponentsDefintion = { [key: string]: JSONSchema7 };
 export type EditorEntitiesDefinition = { [key: string]: Array<keyof EditorComponentDefintion> };
+
+export interface ComponentData {
+  component_id?: number;
+  component_type: string;
+}
+
+export class Entity {
+  entity_id: number = -1;
+  entity_type: string;
+  components: Array<ComponentData> = [];
+
+  constructor(arg: string | any) {
+    if (typeof arg === 'string') {
+      this.entity_type = arg;
+      this.components.push({ ...config.editor.component_identifier, component_type: 'identifier' });
+    } else {
+      this.entity_id = arg.entity_id || -1;
+      this.entity_type = arg.entity_type;
+      const componentsData = arg.components
+        ? arg.components
+        : omit(arg, ['entity_id', 'entity_type']);
+      this.components = Object.keys(componentsData).map((type: string) => {
+        return { ...componentsData[type], component_type: type };
+      });
+    }
+  }
+
+  toObject() {
+    const result = {
+      entity_id: this.entity_id,
+      entity_type: this.entity_type,
+    };
+    this.components.forEach((component: ComponentData) => {
+      result[component.component_type] = omit(component, ['component_type']);
+    });
+    return result;
+  }
+
+  toOperations(): Array<EditorOperation> {
+    if (this.entity_id < 0) {
+      return {
+        operation: 'create_entity',
+        entity_type: this.entity_type,
+        components: this.components
+          .filter(
+            (component) =>
+              Object.keys(omit(component, ['component_type', 'component_id'])).length > 0,
+          )
+          .map((component) => {
+            return {
+              component_type: component.component_type,
+              component: omit(component, ['component_type', 'component_id']),
+            };
+          }),
+      };
+    } else {
+      //TODO: do the update of all components
+    }
+  }
+}
 
 //
 //  Misc

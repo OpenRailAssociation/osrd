@@ -8,6 +8,7 @@
     "@nivo/line": "^0.61.1",
     "@react-three/drei": "^5.1.2",
     "@react-three/fiber": "^6.1.5",
+    "@rjsf/core": "^3.1.0",
     "@sentry/browser": "^5.19.2",
     "@sncf/bootstrap-sncf.metier": "^4.3.1-r5",
     "@testing-library/jest-dom": "^4.2.4",

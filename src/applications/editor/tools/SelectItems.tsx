@@ -202,6 +202,7 @@ export const SelectItems: Tool<SelectItemsState> = {
         if (isEqual(toolState.rectangleTopLeft, position)) {
           setState({ ...toolState, rectangleTopLeft: null });
         } else {
+          console.log(editorState);
           setState({
             ...toolState,
             rectangleTopLeft: null,

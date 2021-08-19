@@ -12,11 +12,13 @@ import { Layer, Source } from 'react-map-gl';
 
 import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
 import { EditorState, createLine } from '../../../reducers/editor';
+import { Entity } from '../../../types';
 import EditorZone from '../../../common/Map/Layers/EditorZone';
 import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../common/Map/Consts/colors';
 import Modal from '../components/Modal';
 import { getNearestPoint } from '../../../utils/mapboxHelper';
+import { EntityForm } from '../components/EntityForm';
 
 export type CreateLineState = CommonToolState & {
   linePoints: [number, number][];
@@ -209,32 +211,13 @@ export const CreateLine: Tool<CreateLineState> = {
         onClose={() => setState({ ...toolState, showPropertiesModal: false, linePoints: [] })}
         title={t('Editor.tools.create-line.label')}
       >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            dispatch<any>(createLine(toolState.linePoints, JSON.parse(toolState.lineProperties)));
+        <EntityForm
+          entity={new Entity('track_section')}
+          onSubmit={(data: Entity) => {
+            dispatch<any>(createLine(toolState.linePoints, data));
             setState({ ...toolState, linePoints: [], showPropertiesModal: false });
           }}
-        >
-          <div className="form-group">
-            <label htmlFor="new-line-properties">
-              {t('Editor.tools.create-line.properties')} :
-            </label>
-            <div className="form-control-container">
-              <textarea
-                id="new-line-properties"
-                className="form-control"
-                value={toolState.lineProperties}
-                onChange={(e) => setState({ ...toolState, lineProperties: e.target.value })}
-              />
-            </div>
-          </div>
-          <div className="text-right">
-            <button type="submit" className="btn btn-primary" disabled={!isConfirmEnabled}>
-              {t('common.confirm')}
-            </button>
-          </div>
-        </form>
+        />
       </Modal>
     ) : null;
   },

@@ -5,6 +5,9 @@ export const MAIN_API = {
     ? `http://${window.location.hostname}:8000`
     : 'https://api.dev.dgexsol.fr',
   version: '0.0.1.20200408.1',
+  editor: {
+    component_identifier: { database: 'gaia', name: 'Test' },
+  },
 };
 
 export default MAIN_API;

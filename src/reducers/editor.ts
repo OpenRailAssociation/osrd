@@ -4,7 +4,7 @@ import { Feature, FeatureCollection, GeoJSON } from 'geojson';
 import {
   ThunkAction,
   Path,
-  EditorAction,
+  EditorOperation,
   LineProperties,
   Zone,
   EditorComponentsDefintion,
@@ -15,7 +15,7 @@ import { setLoading, setSuccess, setFailure } from './main';
 import {
   getEditorModelDefinition,
   getEditorLayers,
-  saveEditorActions,
+  saveEditorOperations,
 } from '../applications/editor/api';
 import { clip } from '../utils/mapboxHelper';
 
@@ -39,14 +39,12 @@ export function selectZone(
       type: SELECT_ZONE,
       zone,
     });
-    console.log(infra, layers, zone);
     // load the data
     if (zone) {
       dispatch(setLoading());
       try {
         const data = await getEditorLayers(infra, layers, zone);
         dispatch(setSuccess());
-        console.log(data);
         dispatch(setEditorData(data));
         dispatch(loadDataModel());
       } catch (e) {
@@ -126,99 +124,80 @@ export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
 
 const CREATE_LINE = 'editor/CREATE_LINE';
 type ActionCreateLine = { type: typeof CREATE_LINE; feature: Feature };
-export function createLine(line: Path, properties: LineProperties): ThunkAction<ActionCreateLine> {
+export function createLine(line: Path, entity: Entity): ThunkAction<ActionCreateLine> {
   return (dispatch) => {
+    const geometry = {
+      type: 'LineString',
+      coordinates: line,
+    };
     dispatch({
       type: CREATE_LINE,
       feature: {
         type: 'Feature',
-        properties,
-        geometry: {
-          type: 'LineString',
-          coordinates: line,
-        },
+        properties: entity.toObject(),
+        geometry: geometry,
       },
     });
-    dispatch(
-      addAction({
-        type: 'insert',
-        entity: 'track_section',
-        data: [
-          {
-            component_type: 'identifier',
-            component: { database: 'gaia', name: 'track' },
-          },
-          {
-            component_type: 'track_section',
-            component: { length: 10 },
-          },
-          {
-            component_type: 'geo_line_location',
-            component: {
-              schematic: {
-                type: 'LineString',
-                coordinates: line,
-              },
-              geographic: {
-                type: 'LineString',
-                coordinates: line,
-              },
-            },
-          },
-        ],
-      }),
-    );
+    // add the geo component
+    entity.components.push({
+      component_type: 'geo_line_location',
+      geographic: geometry,
+      schematic: geometry,
+    });
+    dispatch(addOperations(entity.toOperations()));
   };
 }
 
-const ADD_ACTION = 'editor/ADD_ACTION';
-type ActionAddAction = {
-  type: typeof ADD_ACTION;
-  action: EditorAction;
+const ADD_OPERATIONS = 'editor/ADD_OPERATIONS';
+type ActionAddOperations = {
+  type: typeof ADD_ADD_OPERATIONS;
+  operation: EditorOperation;
 };
-export function addAction(action: EditorAction): ThunkAction<ActionAddAction> {
+export function addOperations(
+  operations: array<EditorOperation>,
+): ThunkAction<ActionAddOperations> {
   return (dispatch) => {
     dispatch({
-      type: ADD_ACTION,
-      action,
+      type: ADD_OPERATIONS,
+      operations,
     });
     // TODO: need to be triggered from an other way
-    dispatch(saveActions());
+    dispatch(saveOperations());
   };
 }
 
-const CLEAR_ACTIONS = 'editor/CLEAR_ACTIONS';
-type ActionClearActions = {
-  type: typeof CLEAR_ACTIONS;
+const CLEAR_OPERATIONS = 'editor/CLEAR_OPERATIONS';
+type ActionClearOperations = {
+  type: typeof CLEAR_OPERATIONS;
 };
-export function clearActions(): ThunkAction<ActionClearActions> {
+export function clearOperations(): ThunkAction<ActionClearOperations> {
   return (dispatch) => {
     dispatch({
-      type: CLEAR_ACTIONS,
+      type: CLEAR_OPERATIONS,
     });
   };
 }
 
-const SAVE_ACTIONS = 'editor/SAVE_ACTIONS';
-type ActionSaveActions = {
-  type: typeof SAVE_ACTIONS;
+const SAVE_OPERATIONS = 'editor/SAVE_OPERATIONS';
+type ActionSaveOperations = {
+  type: typeof SAVE_OPERATIONS;
 };
-export function saveActions(): ThunkAction<ActionSaveActions> {
+export function saveOperations(): ThunkAction<ActionSaveOperations> {
   return async (dispatch, getState) => {
     const state = getState();
     dispatch(setLoading());
     try {
-      const data = await saveEditorActions(
+      const data = await saveEditorOperations(
         state.editor.editorInfrastructure.id,
-        state.editor.editorActions,
+        state.editor.editorOperations,
       );
       dispatch(
         setSuccess({
           title: 'Modifications enregistrées',
-          text: `Vos ${state.editor.editorActions.length} modifications ont été publiées`,
+          text: `Vos ${state.editor.editorOperations.length} modifications ont été publiées`,
         }),
       );
-      dispatch(clearActions());
+      dispatch(clearOperations());
     } catch (e) {
       dispatch(setFailure(e));
     }
@@ -231,9 +210,9 @@ type Actions =
   | ActionLoadDataModel
   | ActionSetInfra
   | ActionCreateLine
-  | ActionAddAction
-  | ActionSaveActions
-  | ActionClearActions;
+  | ActionAddOperation
+  | ActionSaveOperations
+  | ActionClearOperations;
 
 //
 // State definition
@@ -245,7 +224,7 @@ export interface EditorState {
   editorLayers: Array<string>;
   editorZone: Zone | null;
   editorData: Array<GeoJSON> | null;
-  editorActions: Array<EditorAction>;
+  editorOperations: Array<EditorOperation>;
 }
 
 export const initialState: EditorState = {
@@ -256,14 +235,14 @@ export const initialState: EditorState = {
   // ID of the infrastructure on which we are working
   editorInfrastructure: null,
   // ID of selected layers on which we are working
-  editorLayers: ['osrd_track_section', 'osrd_signal'],
+  editorLayers: ['osrd_track_section', 'osrd_signal', 'map_midi_circuitdevoie'],
   // Edition zone:
   editorZone: null,
   // Data of the edition zone
   // An array of GeoJSONs (one per layer)
   editorData: null,
-  // List of modification actions
-  editorActions: [],
+  // List of modification operation
+  editorOperations: [],
 };
 
 //
@@ -295,11 +274,11 @@ export default function reducer(state = initialState, action: Actions) {
             ]
           : [{ type: 'FeatureCollection', count: 1, features: action.feature }];
         break;
-      case ADD_ACTION:
-        draft.editorActions = state.editorActions.concat([action.action]);
+      case ADD_OPERATIONS:
+        draft.editorOperations = state.editorOperations.concat(action.operations);
         break;
-      case CLEAR_ACTIONS:
-        draft.editorActions = [];
+      case CLEAR_OPERATIONS:
+        draft.editorOperations = [];
         break;
       case LOAD_DATA_MODEL:
         draft.editorEntitiesDefinintion = action.data.entities;
