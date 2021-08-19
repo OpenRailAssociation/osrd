@@ -74,11 +74,19 @@ public class TrainPath {
         for (int i = 1; i < trackSectionPath.size(); i++) {
             var previous = trackSectionPath.get(i - 1);
             var next = trackSectionPath.get(i);
+            
             if (previous.getEndLocation().equals(next.getBeginLocation()))
                 continue;
-            if (previous.edge.endNeighbors.contains(next.edge)
-                    && next.edge.startNeighbors.contains(previous.edge))
+            
+            var endNeighbors =
+                    (previous.direction == EdgeDirection.START_TO_STOP) ?
+                            previous.edge.endNeighbors : previous.edge.startNeighbors;
+            var startNeighbors =
+                    (next.direction == EdgeDirection.START_TO_STOP) ?
+                            next.edge.startNeighbors : next.edge.endNeighbors;
+            if (endNeighbors.contains(next.edge) && startNeighbors.contains(previous.edge))
                 continue;
+            
             String err = "Invalid path: the beginning of a track section isn't the start of the next "
                     + "(previous=%s, next=%s)";
 
