@@ -6,7 +6,7 @@ import fr.sncf.osrd.utils.Constants;
 
 /**
  * An utility class to help simulate the train, using forward numerical integration.
- * It's used when simulating the train, and passed to speed controllers so they can take decisions
+ * It's used when simulating the train, and it is passed to speed controllers so they can take decisions
  * about what action to make. Once speed controllers took a decision, this same class is used to compute
  * the next position and speed of the train.
  */
@@ -15,7 +15,7 @@ public class TrainPhysicsIntegrator {
     private final double currentSpeed;
     private final double currentAccel;
     private final double weightForce;
-    private final double precomputedRollingResistance;
+    private final double rollingResistance;
     private final double inertia;
 
     // TODO : add a real jerk value, in the configuration files
@@ -27,15 +27,15 @@ public class TrainPhysicsIntegrator {
             double currentSpeed,
             double currentAccel,
             double weightForce,
-            double precomputedRollingResistance,
+            double rollingResistance,
             double inertia
     ) {
         this.timeStep = timeStep;
         this.currentSpeed = currentSpeed;
         this.currentAccel = currentAccel;
         this.weightForce = weightForce;
-        assert precomputedRollingResistance >= 0.;
-        this.precomputedRollingResistance = precomputedRollingResistance;
+        assert rollingResistance >= 0.;
+        this.rollingResistance = rollingResistance;
         this.inertia = inertia;
     }
 
@@ -43,21 +43,19 @@ public class TrainPhysicsIntegrator {
      * Makes a new train physics simulator
      * @param rollingStock the specs of the train
      * @param currentSpeed the current speed of the train
-     * @param currentAccel the current accel of the train
-     * @param maxTrainGrade the maximum slope under the train
+     * @param meanTrainGrade the maximum slope under the train
      * @return a new train physics simulator
      */
     public static TrainPhysicsIntegrator make(
             double timeStep,
             RollingStock rollingStock,
             double currentSpeed,
-            double currentAccel,
-            double maxTrainGrade
+            double meanTrainGrade
     ) {
         // get an angle from a meter per km elevation difference
-        var angle = Math.atan(maxTrainGrade / 1000.0);  // from m/km to m/m
-        var weightForce = rollingStock.mass * Constants.GRAVITY * -Math.sin(angle);
-
+        // the curve's radius is taken into account in meanTrainGrade
+        var angle = Math.atan(meanTrainGrade / 1000.0);  // from m/km to m/m
+        var weightForce = - rollingStock.mass * Constants.GRAVITY * Math.sin(angle);
         var inertia = rollingStock.mass * rollingStock.inertiaCoefficient;
         return new TrainPhysicsIntegrator(
                 timeStep,
@@ -90,27 +88,6 @@ public class TrainPhysicsIntegrator {
     }
 
     /**
-     * Makes a new train physics simulator
-     * @param rollingStock the specs of the train
-     * @param currentSpeed the current speed of the train
-     * @param maxTrainGrade the maximum slope under the train
-     * @return a new train physics simulator
-     */
-    public static TrainPhysicsIntegrator make(
-            double timeStep,
-            RollingStock rollingStock,
-            double currentSpeed,
-            double maxTrainGrade
-    ) {
-        return make(
-                timeStep,
-                rollingStock,
-                currentSpeed,
-                0.,
-                maxTrainGrade);
-    }
-
-    /**
      * (Internal) Computes the sum of forces acting on the train
      * @param oppositeForces the sum of opposite forces (including braking)
      * @param actionTractionForce the traction force
@@ -137,7 +114,9 @@ public class TrainPhysicsIntegrator {
         // a<0 dec force<0
         // a>0 acc force>0
         // normally the train speed should be positive
+        assert currentSpeed >= 0;
 
+        // this is used to compute Mareco allowance
         if (Double.isNaN(speedDirective.allowedSpeed)) {
             return Action.coast();
         }
