@@ -8,8 +8,8 @@ import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -268,14 +268,8 @@ public final class CBTCSpeedController extends SpeedController {
         double finalSpeed = final_speed(accel, speed);
         double startDistance = startingDistance(speed, finalSpeed, accel, i);
 
-        double margin = marginBehindNextDanger(speed, finalSpeed, accel, i, startDistance, nextDangerDistance);
-
-        ArrayList<Double> li = new ArrayList<Double>();
-        li.add(startDistance);
-        li.add(margin);
-        li.add(finalSpeed);
-
-        var marge = new margeCalcul(startDistance, margin, finalSpeed);
+        double margin = marginBehindNextDanger(speed, accel);
+        var marge = new margeCalculation(startDistance, margin, finalSpeed);
 
         return marge;
     }
@@ -304,11 +298,12 @@ public final class CBTCSpeedController extends SpeedController {
             var gradients = track.edge.forwardGradients;
             if (track.direction == EdgeDirection.STOP_TO_START)
                 gradients = track.edge.backwardGradients;
+            var slopesUnderTheTrain = gradients.getValuesInRange(track.getBeginPosition(), track.getEndPosition());
+            for (var slope : slopesUnderTheTrain.entrySet()) {
 
-            for (var slope : gradients.getValuesInRange(track.getBeginPosition(), track.getEndPosition())) {
-                if (minVal > slope) {
-                    val = slope;
-                    minVal = slope;
+                if (minVal > slope.getValue()) {
+                    val = slope.getValue();
+                    minVal = slope.getValue();
                 }
             }
         }
