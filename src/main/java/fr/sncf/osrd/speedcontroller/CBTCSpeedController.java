@@ -8,8 +8,8 @@ import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -162,7 +162,14 @@ public final class CBTCSpeedController extends SpeedController {
     /**
      * Return margin behind next danger due to the time to establish braking
      */
-    private double marginBehindNextDanger(double speed, double accel) {
+    private double marginBehindNextDanger(
+            double speed,
+            double finalSpeed,
+            double accel,
+            double i,
+            double startdistance,
+            double nextDangerDistance
+    ) {
         double gamma = this.schedule.rollingStock.gamma;
 
         // Distance travelled by the train at the next time
@@ -170,7 +177,7 @@ public final class CBTCSpeedController extends SpeedController {
 
         /* Time to settle braking */
         /* TODO : add freewheeling */
-        distance += jerk * Math.pow(dt, 3) / 6.;
+        distance += jerk * Math.pow(dt, 3) / 6;
 
         return distance + 10.;
     }
@@ -261,8 +268,14 @@ public final class CBTCSpeedController extends SpeedController {
         double finalSpeed = final_speed(accel, speed);
         double startDistance = startingDistance(speed, finalSpeed, accel, i);
 
-        double margin = marginBehindNextDanger(speed, accel);
-        var marge = new margeCalculation(startDistance, margin, finalSpeed);
+        double margin = marginBehindNextDanger(speed, finalSpeed, accel, i, startDistance, nextDangerDistance);
+
+        ArrayList<Double> li = new ArrayList<Double>();
+        li.add(startDistance);
+        li.add(margin);
+        li.add(finalSpeed);
+
+        var marge = new margeCalcul(startDistance, margin, finalSpeed);
 
         return marge;
     }
@@ -291,12 +304,11 @@ public final class CBTCSpeedController extends SpeedController {
             var gradients = track.edge.forwardGradients;
             if (track.direction == EdgeDirection.STOP_TO_START)
                 gradients = track.edge.backwardGradients;
-            var slopesUnderTheTrain = gradients.getValuesInRange(track.getBeginPosition(), track.getEndPosition());
-            for (var slope : slopesUnderTheTrain.entrySet()) {
 
-                if (minVal > slope.getValue()) {
-                    val = slope.getValue();
-                    minVal = slope.getValue();
+            for (var slope : gradients.getValuesInRange(track.getBeginPosition(), track.getEndPosition())) {
+                if (minVal > slope) {
+                    val = slope;
+                    minVal = slope;
                 }
             }
         }
