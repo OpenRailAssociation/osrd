@@ -125,6 +125,7 @@ class RollingStock(models.Model):
             "startup_time": self.startup_time,
             "startup_acceleration": self.startup_acceleration,
             "comfort_acceleration": self.comfort_acceleration,
-            "timetable_gamma": self.timetable_gamma,
+            "gamma": self.timetable_gamma,
+            "gamma_type": "CONST",
             "tractive_effort_curves": self.tractive_effort_curves,
         }
