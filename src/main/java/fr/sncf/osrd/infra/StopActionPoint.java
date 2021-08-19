@@ -1,9 +1,7 @@
 package fr.sncf.osrd.infra;
 
 import fr.sncf.osrd.infra.signaling.ActionPoint;
-import fr.sncf.osrd.simulation.Change;
-import fr.sncf.osrd.simulation.Simulation;
-import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.train.InteractionType;
 import fr.sncf.osrd.train.InteractionTypeSet;
 import fr.sncf.osrd.train.Train;
@@ -11,9 +9,11 @@ import fr.sncf.osrd.train.Train;
 public class StopActionPoint implements ActionPoint {
 
     private final int stopIndex;
+    private final double duration;
 
-    public StopActionPoint(int stopIndex) {
+    public StopActionPoint(int stopIndex, double duration) {
         this.stopIndex = stopIndex;
+        this.duration = duration;
     }
 
     @Override
@@ -33,27 +33,68 @@ public class StopActionPoint implements ActionPoint {
 
     @Override
     public void interact(Simulation sim, Train train, InteractionType interactionType) throws SimulationError {
-        var change = new StopReachedChange(sim, train, stopIndex);
-        sim.publishChange(change);
+        var time = sim.getTime() + duration;
+        RestartTrainEvent.plan(sim, time, train, stopIndex);
     }
 
-    public static class StopReachedChange extends Change {
-        public final Train train;
-        public final int stopIndex;
+    public static class RestartTrainEvent extends TimelineEvent {
+        private final Train train;
 
-        /** Create a change to notify that a train has reached a stop */
-        public StopReachedChange(Simulation sim, Train train, int stopIndex) {
-            super(sim);
+        /** Plan a restart event */
+        public static RestartTrainEvent plan(Simulation sim, double time, Train train, int stopIndex) {
+            var change = new RestartTrainPlanned(sim, time, train, stopIndex);
+            var event = change.apply(sim);
+            sim.publishChange(change);
+            return event;
+        }
+
+        /** Create a restart event */
+        public RestartTrainEvent(TimelineEventId eventId, Train train) {
+            super(eventId);
             this.train = train;
-            this.stopIndex = stopIndex;
         }
 
         @Override
-        public void replay(Simulation sim) {}
+        protected void onOccurrence(Simulation sim) throws SimulationError {
+            train.restart(sim);
+        }
 
         @Override
-        public String toString() {
-            return String.format("StopChange { train: %s, stop index: %d }", train.getName(), stopIndex);
+        protected void onCancellation(Simulation sim) throws SimulationError {}
+
+        @Override
+        public boolean deepEquals(TimelineEvent other) {
+            if (!(other instanceof RestartTrainEvent))
+                return false;
+            return train.getName().equals(((RestartTrainEvent) other).train.getName());
+        }
+
+        public static class RestartTrainPlanned extends Simulation.TimelineEventCreated {
+
+            public final Train train;
+            public final int stopIndex;
+
+            protected RestartTrainPlanned(Simulation sim, double scheduledTime, Train train, int stopIndex) {
+                super(sim, scheduledTime);
+                this.train = train;
+                this.stopIndex = stopIndex;
+            }
+
+            private RestartTrainEvent apply(Simulation sim) {
+                var event = new RestartTrainEvent(eventId, train);
+                super.scheduleEvent(sim, event);
+                return event;
+            }
+
+            @Override
+            public void replay(Simulation sim) {
+                apply(sim);
+            }
+
+            @Override
+            public String toString() {
+                return String.format("RestartTrainPlanned { train=%s, stop_index=%s }", train.getName(), stopIndex);
+            }
         }
     }
 }

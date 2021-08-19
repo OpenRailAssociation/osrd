@@ -1,8 +1,9 @@
 package fr.sncf.osrd.train;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
+
+import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
+import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -50,6 +51,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     /** Index of the last route requested by the train. */
     public int requestedRouteIndex;
 
+    public int stopIndex;
+
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     public boolean deepEquals(TrainState o) {
@@ -66,6 +69,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         if (trainSchedule != o.trainSchedule)
             return false;
         if (currentPhaseIndex != o.currentPhaseIndex)
+            return false;
+        if (stopIndex != o.stopIndex)
             return false;
         if (!currentPhaseState.deepEquals(o.currentPhaseState))
             return false;
@@ -85,7 +90,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             ArrayDeque<Interaction> actionPointsUnderTrain,
             TrainPath path,
             int routeIndex,
-            int requestedRouteIndex
+            int requestedRouteIndex,
+            int stopIndex
     ) {
         this.time = time;
         this.location = location;
@@ -99,6 +105,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         this.path = path;
         this.routeIndex = routeIndex;
         this.requestedRouteIndex = requestedRouteIndex;
+        this.stopIndex = stopIndex;
     }
 
     /** Create a clone */
@@ -115,7 +122,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 new ArrayDeque<>(actionPointsUnderTrain),
                 new TrainPath(path),
                 routeIndex,
-                requestedRouteIndex
+                requestedRouteIndex,
+                stopIndex
         );
     }
 
@@ -138,7 +146,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                     new ArrayDeque<>(actionPointsUnderTrain),
                     new TrainPath(path),
                     routeIndex,
-                    requestedRouteIndex
+                    requestedRouteIndex,
+                    stopIndex
                     );
 
         var nextPhase = currentPhaseIndex + 1;
@@ -155,7 +164,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 new ArrayDeque<>(actionPointsUnderTrain),
                 new TrainPath(path),
                 routeIndex,
-                requestedRouteIndex
+                requestedRouteIndex,
+                stopIndex
         );
     }
 
@@ -308,5 +318,21 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             return null;
         }
         return trainSchedule.phases.get(currentPhaseIndex + 1);
+    }
+
+    /** Returns the speed controllers associated with remaining stops */
+    public Set<SpeedController> getStopSpeedControllers() {
+        var res = new HashSet<SpeedController>();
+        for (int i = stopIndex; i < trainSchedule.stops.size(); i++) {
+            var targetPosition = trainSchedule.stops.get(i).position;
+            res.add(LimitAnnounceSpeedController.create(
+                    trainSchedule.rollingStock.maxSpeed,
+                    0,
+                    targetPosition,
+                    trainSchedule.rollingStock.gamma
+            ));
+            res.add(new MaxSpeedController(0, targetPosition, Double.POSITIVE_INFINITY));
+        }
+        return res;
     }
 }
