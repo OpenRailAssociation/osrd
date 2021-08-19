@@ -4,7 +4,6 @@ import React, {
 import { useSelector, useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simulation/consts';
-import { SNCFCOLORS } from 'applications/osrd/consts';
 import {
   defineLinear, defineTime, formatStepsWithTime,
   handleWindowResize, mergeDatasArea, timeShiftTrain, timeShiftStops,
@@ -21,6 +20,16 @@ import findConflicts from 'applications/osrd/components/Simulation/findConflicts
 import enableInteractivity, { traceVerticalLine } from 'applications/osrd/components/Simulation/enableInteractivity';
 
 const CHART_ID = 'SpaceTimeChart';
+
+const drawAxisTitle = (chart, rotate) => {
+  chart.drawZone.append('text')
+    .attr('class', 'axis-unit')
+    .attr('text-anchor', 'end')
+    .attr('transform', rotate ? 'rotate(0)' : 'rotate(-90)')
+    .attr('x', rotate ? chart.width - 10 : -10)
+    .attr('y', rotate ? chart.height - 10 : 20)
+    .text('KM');
+};
 
 const createChart = (chart, dataSimulation, keyValues, ref, rotate) => {
   d3.select(`#${CHART_ID}`).remove();
@@ -64,12 +73,6 @@ const drawTrain = (
 ) => {
   const groupID = `spaceTime-${dataSimulation.trainNumber}`;
 
-  const areaColor = isSelected ? 'rgba(0, 136, 207, 0.2)' : 'url(#hatchPatternGray)';
-  const endBlockOccupancyColor = isSelected ? SNCFCOLORS.red : SNCFCOLORS.coolgray9;
-  const startBlockOccupancyColor = isSelected ? SNCFCOLORS.yellow : SNCFCOLORS.coolgray5;
-  const tailPositionColor = isSelected ? SNCFCOLORS.cyan : SNCFCOLORS.coolgray3;
-  const headPositionColor = isSelected ? SNCFCOLORS.blue : SNCFCOLORS.coolgray7;
-
   const initialDrag = rotate
     ? chart.y.invert(0)
     : chart.x.invert(0);
@@ -99,16 +102,16 @@ const drawTrain = (
     .call(drag);
 
   drawArea(
-    chart, areaColor, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
+    chart, `${isSelected ? 'selected' : ''} area`, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
     'areaBlock', rotate,
   );
-  drawCurve(chart, endBlockOccupancyColor, dataSimulation, groupID,
+  drawCurve(chart, `${isSelected ? 'selected' : ''} end-block`, dataSimulation, groupID,
     'curveStepAfter', keyValues, 'endBlockOccupancy', rotate, isSelected);
-  drawCurve(chart, startBlockOccupancyColor, dataSimulation, groupID,
+  drawCurve(chart, `${isSelected ? 'selected' : ''} start-block`, dataSimulation, groupID,
     'curveStepAfter', keyValues, 'startBlockOccupancy', rotate, isSelected);
-  drawCurve(chart, tailPositionColor, dataSimulation, groupID,
+  drawCurve(chart, `${isSelected ? 'selected' : ''} tail`, dataSimulation, groupID,
     'curveLinear', keyValues, 'tailPosition', rotate, isSelected);
-  drawCurve(chart, headPositionColor, dataSimulation, groupID,
+  drawCurve(chart, `${isSelected ? 'selected' : ''} head`, dataSimulation, groupID,
     'curveLinear', keyValues, 'headPosition', rotate, isSelected);
   drawText(chart, groupID, dataSimulation);
 };
@@ -173,6 +176,7 @@ export default function SpaceTimeChart() {
       const chartLocal = createChart(
         chart, dataSimulation, keyValues, ref, rotate,
       );
+      drawAxisTitle(chartLocal, rotate);
       dataSimulation.forEach((train, idx) => {
         drawTrain(
           chartLocal, dispatch, train, (idx === selectedTrain),

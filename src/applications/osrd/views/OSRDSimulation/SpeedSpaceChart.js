@@ -14,6 +14,24 @@ import enableInteractivity, { traceVerticalLine } from 'applications/osrd/compon
 
 const CHART_ID = 'SpeedSpaceChart';
 
+const drawAxisTitle = (chart, rotate) => {
+  chart.drawZone.append('text')
+    .attr('class', 'axis-unit')
+    .attr('text-anchor', 'end')
+    .attr('transform', rotate ? 'rotate(0)' : 'rotate(-90)')
+    .attr('x', rotate ? chart.width - 10 : -10)
+    .attr('y', rotate ? chart.height - 10 : 20)
+    .text('KM/H');
+
+  chart.drawZone.append('text')
+    .attr('class', 'axis-unit')
+    .attr('text-anchor', 'end')
+    .attr('transform', rotate ? 'rotate(-90)' : 'rotate(0)')
+    .attr('x', rotate ? -10 : chart.width - 10)
+    .attr('y', rotate ? 20 : chart.height - 10)
+    .text('M');
+};
+
 export default function SpeedSpaceChart() {
   const dispatch = useDispatch();
   const {
@@ -63,10 +81,9 @@ export default function SpeedSpaceChart() {
     if (mustRedraw) {
       const chartLocal = createChart();
       chartLocal.drawZone.append('g').attr('id', 'speedSpaceChart').attr('class', 'chartTrain');
-      drawArea(chartLocal, 'rgba(0, 136, 207, 0.3)', dataSimulation, dispatch, 'speedSpaceChart', 'curveLinear', keyValues, 'areaBlock', rotate);
-      drawCurve(chartLocal, SNCFCOLORS.blue, dataSimulation, 'speedSpaceChart', 'curveLinear', keyValues, 'speed', rotate);
-      // drawCurve(chartLocal, SNCFCOLORS.red, dataSimulation, 'speedSpaceChart', 'curveStepAfter', keyValues, 'emergency', rotate);
-      // drawCurve(chartLocal, SNCFCOLORS.yellow, dataSimulation, 'speedSpaceChart', 'curveStepAfter', keyValues, 'indication', rotate);
+      drawAxisTitle(chartLocal, rotate);
+      drawArea(chartLocal, 'area', dataSimulation, dispatch, 'speedSpaceChart', 'curveLinear', keyValues, 'areaBlock', rotate);
+      drawCurve(chartLocal, 'speed', dataSimulation, 'speedSpaceChart', 'curveLinear', keyValues, 'speed', rotate);
       enableInteractivity(
         chartLocal, dataSimulation, dispatch, keyValues,
         LIST_VALUES_NAME_SPEED_SPACE, rotate, setChart,

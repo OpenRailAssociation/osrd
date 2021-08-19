@@ -12,10 +12,12 @@ import Map from 'applications/osrd/views/OSRDSimulation/Map';
 import TrainDetails from 'applications/osrd/views/OSRDSimulation/TrainDetails';
 import TrainsList from 'applications/osrd/views/OSRDSimulation/TrainsList';
 import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
+import TimeLine from 'applications/osrd/components/TimeLine/TimeLine';
 import { updateViewport } from 'reducers/map';
 import { updateTimePosition, updateSimulation } from 'reducers/osrdsimulation';
 import { simplifyData } from 'applications/osrd/components/Helpers/ChartHelpers';
 import './OSRDSimulation.scss';
+// import './OSRDSimulationDarkMode.scss';
 import { sec2time } from 'utils/timeManipulation';
 
 const timetableURI = '/osrd/timetable';
@@ -29,6 +31,7 @@ const OSRDSimulation = () => {
   const [extViewport, setExtViewport] = useState(undefined);
   const [waitingMessage, setWaitingMessage] = useState(t('simulation:waiting'));
   const [isEmpty, setIsEmpty] = useState(true);
+  const [spaceTimeFullWidth, setSpaceTimeFullWidth] = useState(true);
   const { timetableID } = useSelector((state) => state.osrdconf);
   const {
     hoverPosition, selectedTrain, simulation,
@@ -98,32 +101,41 @@ const OSRDSimulation = () => {
             <div className="m-0 p-3">
               <div className="osrd-simulation-container mb-2">
                 <div className="row">
-                  <div className="col-md-6">
-                    <TrainsList />
-                  </div>
-                  <div className="col-md-6">
+                  {spaceTimeFullWidth ? (
+                    <div className="col-1">
+                      {simulation.trains[selectedTrain].name}
+                    </div>
+                  ) : (
+                    <div className="col-md-6">
+                      <TrainsList />
+                    </div>
+                  )}
+                  <div className={spaceTimeFullWidth ? 'col-11' : 'col-md-6'}>
                     {simulation.trains.length > 0 ? (
                       <SpaceTimeChart />
                     ) : null}
                   </div>
                 </div>
               </div>
-              <div className="osrd-simulation-container mb-2">
-                <TimeButtons />
+              <div className="mb-2">
+                <TimeLine />
               </div>
               <div className="osrd-simulation-container mb-2">
                 <div className="row">
                   <div className="col-md-4">
+                    <TimeButtons />
+                  </div>
+                  <div className="col-md-8">
                     {simulation.trains.length > 0 ? (
                       <TrainDetails />
                     ) : null}
                   </div>
-                  <div className="col-md-8">
-                    {simulation.trains.length > 0 ? (
-                      <SpeedSpaceChart />
-                    ) : null}
-                  </div>
                 </div>
+              </div>
+              <div className="mb-2">
+                {simulation.trains.length > 0 ? (
+                  <SpeedSpaceChart />
+                ) : null}
               </div>
               <div className="row">
                 <div className="col-md-6">

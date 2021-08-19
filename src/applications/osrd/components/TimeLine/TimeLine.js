@@ -6,7 +6,6 @@ import * as d3 from 'd3';
 import { sec2datetime, time2datetime } from 'utils/timeManipulation';
 import { gridX } from 'applications/osrd/components/Helpers/ChartHelpers';
 import { updateChart, updateMustRedraw } from 'reducers/osrdsimulation';
-import './TimeLine.scss';
 
 const drawTrains = (trains, selectedTrain, xScale, svg, height) => {
   trains.forEach((train, idx) => {
@@ -98,11 +97,9 @@ export default function TimeLine() {
       .attr('clip-path', 'url(#timelineClipPath)');
 
     svg.append('g')
+      .attr('class', 'timeline-cursor')
       .attr('id', 'timePositionTimeLine')
       .append('line')
-      .attr('class', 'guideLines')
-      .style('stroke', '#333')
-      .style('stroke-width', 2)
       .attr('x1', 0)
       .attr('y1', dimensions.height)
       .attr('x2', 0)
@@ -165,7 +162,11 @@ export default function TimeLine() {
 
   return (
     <>
-      <div ref={ref} />
+      <div className="timeline-container flex-grow-1 w-100">
+        <div className="timeline w-100">
+          <div ref={ref} />
+        </div>
+      </div>
     </>
   );
 }

@@ -36,30 +36,26 @@ export default function TrainDetails() {
 
   return dataSimulation !== undefined ? (
     <>
-      <div className="my-2">
-        <span className="h2 mr-2">{t('simulation:train')}</span>
-        <span className="font-weight-bold">{dataSimulation[selectedTrain].name}</span>
-      </div>
       { hoverPosition !== undefined
         && dataSimulation[selectedTrain].headPosition[hoverPosition] !== undefined
         ? (
           <div className="row">
-            <div className="col-sm-4">
-              <div className="rounded p-2 mb-1 small bg-blue text-white">
+            <div className="col-md-2">
+              <div className="rounded px-2 h-100 py-1 mb-1 small bg-blue text-white">
                 <div className="font-weight-bold mr-1">TÊTE</div>
                 {Math.round(dataSimulation[selectedTrain].headPosition[hoverPosition].value) / 1000}
                 km
               </div>
             </div>
-            <div className="col-sm-4">
-              <div className="rounded p-2 mb-1 small bg-cyan text-white">
+            <div className="col-md-2">
+              <div className="rounded px-2 h-100 py-1 mb-1 small bg-cyan text-white">
                 <div className="font-weight-bold mr-1">QUEUE</div>
                 {Math.round(dataSimulation[selectedTrain].tailPosition[hoverPosition].value) / 1000}
                 km
               </div>
             </div>
-            <div className="col-sm-4">
-              <div className="rounded p-2 mb-1 small bg-danger text-white">
+            <div className="col-md-2">
+              <div className="rounded px-2 h-100 py-1 mb-1 small bg-danger text-white">
                 <div className="font-weight-bold mr-1">FREINAGE</div>
                 {Math.round(
                   dataSimulation[selectedTrain].endBlockOccupancy[hoverPosition].value,
@@ -67,8 +63,8 @@ export default function TrainDetails() {
                 km
               </div>
             </div>
-            <div className="col-sm-4">
-              <div className="rounded p-2 mb-1 small bg-orange text-white">
+            <div className="col-md-2">
+              <div className="rounded px-2 h-100 py-1 mb-1 small bg-orange text-white">
                 <div className="font-weight-bold mr-1">BLOCK</div>
                 {Math.round(
                   dataSimulation[selectedTrain].startBlockOccupancy[hoverPosition].value,
@@ -76,8 +72,8 @@ export default function TrainDetails() {
                 km
               </div>
             </div>
-            <div className="col-sm-4">
-              <div className="rounded p-2 mb-1 small bg-secondary text-white">
+            <div className="col-md-2">
+              <div className="rounded px-2 h-100 py-1 mb-1 small bg-secondary text-white">
                 <div className="font-weight-bold mr-1">CANTON</div>
                 {Math.round(
                   dataSimulation[selectedTrain].endBlockOccupancy[hoverPosition].value
@@ -86,8 +82,8 @@ export default function TrainDetails() {
                 km
               </div>
             </div>
-            <div className="col-sm-4">
-              <div className="rounded p-2 mb-1 small bg-pink text-white">
+            <div className="col-md-2">
+              <div className="rounded px-2 h-100 py-1 mb-1 small bg-pink text-white">
                 <div className="font-weight-bold mr-1">VITESSE</div>
                 {Math.round(simulation.trains[selectedTrain].steps[hoverPosition].speed * 3.6)}
                 km/h

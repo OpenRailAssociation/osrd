@@ -40,6 +40,7 @@ svg text {
   font-size: .75rem;
 }
 
+/* SPACETIME */
 .spacetime-chart {
   position: relative;
   height: 300px;
@@ -48,9 +49,62 @@ svg text {
     right: 3rem;
     bottom: 2.5rem;
   }
+  .area {
+    fill: url(#hatchPatternGray);
+    &.selected {
+      fill: rgba(0, 136, 207, 0.2);
+    }
+  }
+  .start-block {
+    stroke: var(--coolgray5);
+    stroke-width: 2;
+    &.selected {
+      stroke: var(--yellow);
+    }
+    &.pointer {
+      fill: var(--yellow);
+    }
+  }
+  .end-block {
+    stroke: var(--coolgray9);
+    stroke-width: 2;
+    &.selected {
+      stroke: var(--red);
+    }
+    &.pointer {
+      fill: var(--red);
+    }
+  }
+  .tail {
+    stroke: var(--coolgray3);
+    &.selected {
+      stroke: var(--cyan);
+    }
+    &.pointer {
+      fill: var(--cyan);
+    }
+  }
+  .head {
+    stroke: var(--coolgray7);
+    &.selected {
+      stroke: var(--blue);
+    }
+    &.pointer {
+      fill: var(--blue);
+    }
+  }
+}
+.axis-unit {
+  font-size: 1rem;
+  font-weight: bold;
+  fill: var(--coolgray7);
 }
 
+/* SPEEDSPACE */
 .speedspace-chart {
+  background-color: white;
+  border-radius: 4px;
+  padding: 1rem;
   position: relative;
   height: 250px;
   .btn-rotate {
@@ -58,8 +112,20 @@ svg text {
     right: 4.5rem;
     bottom: 2.5rem;
   }
+  .area {
+    fill: rgba(0, 136, 207, 0.2);
+  }
+  .speed {
+    stroke: var(--blue);
+    stroke-width: 2;
+    &.pointer {
+      fill: var(--blue);
+    }
+  }
 }
 
+
+/* TABLE OVERRIDE */
 .table-cell-selected {
   color: #0088ce;
   font-weight: bold;
@@ -75,5 +141,42 @@ svg text {
     padding: .5rem 1.25rem;
     cursor: pointer;
   }
+}
 
+/* TIMELINE */
+.timeline {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 4px;
+  .tick {
+    color: var(--coolgray11);
+  }
+  .domain {
+    opacity: .5;
+    stroke: var(--coolgray11);
+  }
+  .grid .tick line {
+    stroke: var(--coolgray11);
+  }
+}
+
+#rectZoomTimeLine {
+  cursor: move;
+  transition: .2s;
+  stroke: var(--coolgray5);
+  &:hover {
+    stroke: var(--green);
+    fill: rgba(#82be00, 0.05);
+  }
+}
+.timeline-cursor {
+  line {
+    stroke: var(--coolgray9);
+    stroke-width: 2;
+    stroke-dasharray: 2, 1;
+  }
+  path {
+    stroke: var(--coolgray9);
+    fill: var(--coolgray9);
+  }
 }

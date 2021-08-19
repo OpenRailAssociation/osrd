@@ -17,6 +17,18 @@ const svgDefs = (defs) => {
 
   defs
     .append('pattern')
+    .attr('id', 'hatchPatternDarkGray')
+    .attr('width', hatchSize)
+    .attr('height', hatchSize)
+    .attr('patternTransform', `rotate(${rotation})`)
+    .attr('patternUnits', 'userSpaceOnUse')
+    .append('rect')
+    .attr('width', hatchSize / 2)
+    .attr('height', hatchSize)
+    .style('fill', '#747678');
+
+  defs
+    .append('pattern')
     .attr('id', 'hatchPatternBlue')
     .attr('width', hatchSize)
     .attr('height', hatchSize)

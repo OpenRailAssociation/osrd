@@ -1,14 +1,14 @@
 import * as d3 from 'd3';
 
 const drawCurve = (
-  chart, color, dataSimulation, groupID, interpolation, keyValues, name, rotate, isSelected = true,
+  chart, classes, dataSimulation, groupID, interpolation,
+  keyValues, name, rotate, isSelected = true,
 ) => {
   const drawZone = chart.drawZone.select(`#${groupID}`);
   drawZone.append('path')
-    .attr('class', 'line zoomable')
+    .attr('class', `line zoomable ${classes}`)
     .datum(dataSimulation[name])
     .attr('fill', 'none')
-    .attr('stroke', color)
     .attr('stroke-width', 1)
     .attr('d', d3.line()
       .x((d) => chart.x(rotate ? d[keyValues[1]] : d[keyValues[0]]))
@@ -17,11 +17,9 @@ const drawCurve = (
 
   if (isSelected) {
     drawZone.append('circle')
-      .attr('class', 'pointer')
+      .attr('class', `pointer ${classes}`)
       .attr('id', `pointer-${name}`)
-      .style('fill', color)
       .attr('transform', 'translate(-0.5,0)')
-      .attr('stroke', color)
       .attr('r', 3)
       .style('opacity', 0);
   }

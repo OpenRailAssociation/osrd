@@ -5,9 +5,8 @@ import { updateHoverPosition, updateTimePosition } from 'reducers/osrdsimulation
 import {
   FaStop, FaPause, FaPlay, FaBackward,
 } from 'react-icons/fa';
-import { sec2time, time2sec } from 'utils/timeManipulation';
+import { time2sec } from 'utils/timeManipulation';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import TimeLine from 'applications/osrd/components/TimeLine/TimeLine';
 
 // transform a speed ratio (X2 X10 X20, etc.) to interval time & step to bypass
 const factor2ms = (factor) => {
@@ -141,11 +140,6 @@ export default function TimeButtons() {
         onChange={(e) => changeSimulationSpeed(e.target.value)}
         seconds
       />
-      <div className="timeline-container flex-grow-1 w-100 ml-2">
-        <div className="timeline w-100">
-          <TimeLine />
-        </div>
-      </div>
     </div>
   );
 }

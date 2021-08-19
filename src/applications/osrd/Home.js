@@ -11,7 +11,7 @@ import { NotificationsState } from 'common/Notifications.tsx';
 import AboutOSRD from './About';
 import OSRDSimulation from './views/OSRDSimulation/OSRDSimulation';
 import OSRDConfig from './views/OSRDConfig/OSRDConfig';
-import 'applications/osrd/osrd.css';
+import 'applications/osrd/osrd.scss';
 
 class HomeOSRD extends React.Component {
   static propTypes = {
