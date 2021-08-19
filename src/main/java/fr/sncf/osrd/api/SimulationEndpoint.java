@@ -5,7 +5,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.StopActionPoint.StopReachedChange;
+import fr.sncf.osrd.infra.StopActionPoint.RestartTrainEvent.RestartTrainPlanned;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.api.InfraManager.InfraLoadException;
 import fr.sncf.osrd.infra.Infra;
@@ -207,8 +207,8 @@ public class SimulationEndpoint implements Take {
                 for (var aspect : aspectChange.aspects)
                     aspects.add(aspect.id);
                 changes.add(new SimulationResultChange.ResponseSignalChange(signal, aspects, sim.getTime()));
-            } else if (change.getClass() == StopReachedChange.class) {
-                var stopReached = (StopReachedChange) change;
+            } else if (change.getClass() == RestartTrainPlanned.class) {
+                var stopReached = (RestartTrainPlanned) change;
                 changes.add(new SimulationResultChange.ResponseStopReachedUpdate(stopReached.train,
                         stopReached.stopIndex, sim.getTime()));
             }

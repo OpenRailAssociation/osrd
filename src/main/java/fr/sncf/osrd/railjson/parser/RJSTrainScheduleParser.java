@@ -250,7 +250,7 @@ public class RJSTrainScheduleParser {
         } else {
             // The last stop needs to be slightly before the actual end
             // to avoid reaching the end of a track because of inaccuracies
-            res.add(new TrainStop(path.length - 1e-3, Double.POSITIVE_INFINITY));
+            res.add(new TrainStop(path.length - 1e-3, 0));
         }
         return res;
     }

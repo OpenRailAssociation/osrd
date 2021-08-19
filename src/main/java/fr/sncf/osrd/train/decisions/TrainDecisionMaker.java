@@ -43,6 +43,13 @@ public abstract class TrainDecisionMaker {
                 continue;
             activeControllers.add(controller);
         }
+        // Add stops speed controllers
+        for (var controller : trainState.getStopSpeedControllers()) {
+            if (!controller.isActive(trainState))
+                continue;
+            activeControllers.add(controller);
+        }
+
         // Add phase speed controllers
         for (var controller : trainState.currentPhaseState.getSpeedControllers()) {
             if (!controller.isActive(trainState))

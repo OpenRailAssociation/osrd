@@ -97,7 +97,7 @@ public final class SignalNavigatePhase extends NavigatePhase {
             if (event != null)
                 return event;
             
-            // The train didn't reached the action point (stopped because of signalisation)
+            // The train didn't reach the action point (stopped because of signalisation)
             return TrainMoveEvent.plan(sim, trainState.time, train, simulationResult);
         }
 
