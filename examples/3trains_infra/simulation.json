@@ -8,7 +8,7 @@
                 "B": 200.0,
                 "C": 12.0
             },
-            "length": 20,
+            "length": 400,
             "max_speed": 80,
             "startup_time": 10,
             "startup_acceleration": 0.05,
