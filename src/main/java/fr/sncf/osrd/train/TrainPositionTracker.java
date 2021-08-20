@@ -88,7 +88,10 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
 
     private TrackSectionRange nextTrackSectionPosition(double delta) {
         var curTrackSectionPos = trackSectionRanges.getFirst();
-        var neighbors = infra.trackGraph.getEndNeighborRels(curTrackSectionPos.edge, curTrackSectionPos.direction);
+        var neighbors = infra.trackGraph.getEndNeighborRels(
+                curTrackSectionPos.edge,
+                curTrackSectionPos.direction
+        );
 
         if (neighbors.isEmpty())
             throw new RuntimeException("Couldn't find a next track section");
@@ -103,8 +106,7 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
                 nextTrackSection = null;
                 var currentEdge = curTrackSectionPos.edge;
                 for (int i = 1; i < trackSectionPath.size(); i++) {
-                    if (trackSectionPath.get(i - 1).edge.id.equals(currentEdge.id)
-                            && !trackSectionPath.get(i).edge.id.equals(currentEdge.id)) {
+                    if (trackSectionPath.get(i - 1).edge.id.equals(currentEdge.id)) {
                         nextTrackSection = trackSectionPath.get(i).edge;
                         break;
                     }
@@ -129,8 +131,12 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
 
     private TrackSectionRange previousTrackSectionPosition(double delta) {
         var curTrackSectionPos = trackSectionRanges.getLast();
-        var neighbors = infra.trackGraph.getStartNeighborRels(curTrackSectionPos.edge, curTrackSectionPos.direction);
+        var neighbors = infra.trackGraph.getStartNeighborRels(
+                curTrackSectionPos.edge,
+                curTrackSectionPos.direction
+        );
 
+        // TODO : avoid having a negative begin on TrackSectionRanges
         if (neighbors.isEmpty())
             return new TrackSectionRange(
                     curTrackSectionPos.edge,
@@ -141,7 +147,21 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         var prev = neighbors.get(neighbors.size() - 1);
         var prevTrackSection = prev.getEdge(curTrackSectionPos.edge, curTrackSectionPos.direction);
 
-        // TODO : implement the case of a switch like in nextTrackSectionPosition
+        // In case of a switch, we need to get the next track section align with the position of the switch.
+        if (neighbors.size() > 1) {
+            assert ignoreInfraState;
+            // If we need to ignore the infra state, we refer to the given path instead
+            prevTrackSection = null;
+            var currentEdge = curTrackSectionPos.edge;
+            for (int i = 1; i < trackSectionPath.size(); i++) {
+                if (trackSectionPath.get(i).edge.id.equals(currentEdge.id)) {
+                    prevTrackSection = trackSectionPath.get(i - 1).edge;
+                    break;
+                }
+            }
+            if (prevTrackSection == null)
+                throw new RuntimeException("Can't move train further because it has reached the end of its path");
+        }
 
         var prevTrackSectionDirection = prevTrackSection.getDirection(
                 curTrackSectionPos.edge, curTrackSectionPos.direction.opposite()).opposite();

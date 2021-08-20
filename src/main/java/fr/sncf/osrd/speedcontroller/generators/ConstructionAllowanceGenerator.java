@@ -54,6 +54,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
 
     private static TrainPositionTracker convertPosition(TrainSchedule schedule, Simulation sim, double position) {
         var location = Train.getInitialLocation(schedule, sim);
+        location.ignoreInfraState = true;
         location.updatePosition(schedule.rollingStock.length, position);
         return location;
     }
