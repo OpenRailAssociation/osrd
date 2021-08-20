@@ -11,8 +11,8 @@ import { Feature, LineString, MultiLineString, Point } from '@turf/helpers';
 import { Layer, Source } from 'react-map-gl';
 
 import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
-import { EditorState, createLine } from '../../../reducers/editor';
-import { Entity } from '../../../types';
+import { EditorState, createEntity } from '../../../reducers/editor';
+import { EntityModel } from '../data/entity';
 import EditorZone from '../../../common/Map/Layers/EditorZone';
 import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../common/Map/Consts/colors';
@@ -22,7 +22,6 @@ import { EntityForm } from '../components/EntityForm';
 
 export type CreateLineState = CommonToolState & {
   linePoints: [number, number][];
-  lineProperties: string;
   showPropertiesModal: boolean;
   anchorLinePoints: boolean;
   nearestPoint: Feature<Point> | null;
@@ -50,7 +49,6 @@ export const CreateLine: Tool<CreateLineState> = {
     return {
       ...DEFAULT_COMMON_TOOL_STATE,
       linePoints: [],
-      lineProperties: '{}',
       showPropertiesModal: false,
       anchorLinePoints: true,
       nearestPoint: null,
@@ -197,24 +195,27 @@ export const CreateLine: Tool<CreateLineState> = {
       </>
     );
   },
-  getDOM({ setState, dispatch, t }, toolState) {
-    let isConfirmEnabled = true;
-
-    try {
-      JSON.parse(toolState.lineProperties);
-    } catch (e) {
-      isConfirmEnabled = false;
-    }
-
+  getDOM({ setState, dispatch, t }, toolState, editorState) {
+    // Create the entity model
+    const entity = new EntityModel(
+      'track_section',
+      editorState.editorEntitiesDefinition,
+      editorState.editorComponentsDefinition,
+    );
+    // Set the geo
+    entity.setGeometry({
+      type: 'LineString',
+      coordinates: toolState.linePoints,
+    });
     return toolState.showPropertiesModal ? (
       <Modal
         onClose={() => setState({ ...toolState, showPropertiesModal: false, linePoints: [] })}
         title={t('Editor.tools.create-line.label')}
       >
         <EntityForm
-          entity={new Entity('track_section')}
-          onSubmit={(data: Entity) => {
-            dispatch<any>(createLine(toolState.linePoints, data));
+          entity={entity}
+          onSubmit={(data: EntityModel) => {
+            dispatch<any>(createEntity(data));
             setState({ ...toolState, linePoints: [], showPropertiesModal: false });
           }}
         />

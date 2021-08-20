@@ -14,9 +14,10 @@ import {
 import { setLoading, setSuccess, setFailure } from './main';
 import {
   getEditorModelDefinition,
-  getEditorLayers,
-  saveEditorOperations,
-} from '../applications/editor/api';
+  getEditorEntities,
+  saveEditorEntities,
+} from '../applications/editor/data/api';
+import { EntityModel } from '../applications/editor/data/entity';
 import { clip } from '../utils/mapboxHelper';
 
 //
@@ -34,7 +35,7 @@ export function selectZone(
   layers: Array<string>,
   zone: Zone | null,
 ): ThunkAction<ActionSelectZone> {
-  return async (dispatch: any) => {
+  return async (dispatch: any, getState) => {
     dispatch({
       type: SELECT_ZONE,
       zone,
@@ -43,10 +44,16 @@ export function selectZone(
     if (zone) {
       dispatch(setLoading());
       try {
-        const data = await getEditorLayers(infra, layers, zone);
+        const { editor } = getState();
+        const data = await getEditorEntities(
+          infra,
+          layers,
+          zone,
+          editor.editorEntitiesDefinition,
+          editor.editorComponentsDefinition,
+        );
         dispatch(setSuccess());
         dispatch(setEditorData(data));
-        dispatch(loadDataModel());
       } catch (e) {
         dispatch(setFailure(e));
       }
@@ -60,13 +67,13 @@ export function selectZone(
 const SELECTED_ZONE_LOADED = 'editor/SELECTED_ZONE_LOADED';
 type ActionSelectedZoneLoaded = {
   type: typeof SELECTED_ZONE_LOADED;
-  data: Array<GeoJSON> | null;
+  data: Array<EntityModel>;
 };
-export function setEditorData(geojsons: Array<GeoJSON>): ThunkAction<ActionSelectedZoneLoaded> {
+export function setEditorData(data: Array<EntityModel>): ThunkAction<ActionSelectedZoneLoaded> {
   return (dispatch) => {
     dispatch({
       type: SELECTED_ZONE_LOADED,
-      data: geojsons,
+      data,
     });
   };
 }
@@ -104,8 +111,8 @@ export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
   return async (dispatch, getState) => {
     // check if we need to load the model
     if (
-      !getState().editor.editorEntitiesDefinintion ||
-      !getState().editor.editorComponentsDefinintion
+      !getState().editor.editorEntitiesDefinition ||
+      !getState().editor.editorComponentsDefinition
     ) {
       dispatch(setLoading());
       try {
@@ -122,82 +129,38 @@ export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
   };
 }
 
-const CREATE_LINE = 'editor/CREATE_LINE';
-type ActionCreateLine = { type: typeof CREATE_LINE; feature: Feature };
-export function createLine(line: Path, entity: Entity): ThunkAction<ActionCreateLine> {
+const CREATE_ENTITY = 'editor/CREATE_ENTITY';
+type ActionCreateEntity = { type: typeof CREATE_ENTITY; entity: EntityModel };
+export function createEntity(entity: EntityModel): ThunkAction<ActionCreateEntity> {
   return (dispatch) => {
-    const geometry = {
-      type: 'LineString',
-      coordinates: line,
-    };
     dispatch({
-      type: CREATE_LINE,
-      feature: {
-        type: 'Feature',
-        properties: entity.toObject(),
-        geometry: geometry,
-      },
+      type: CREATE_ENTITY,
+      entity,
     });
-    // add the geo component
-    entity.components.push({
-      component_type: 'geo_line_location',
-      geographic: geometry,
-      schematic: geometry,
-    });
-    dispatch(addOperations(entity.toOperations()));
+    dispatch(save());
   };
 }
 
-const ADD_OPERATIONS = 'editor/ADD_OPERATIONS';
-type ActionAddOperations = {
-  type: typeof ADD_ADD_OPERATIONS;
-  operation: EditorOperation;
+const SAVE = 'editor/SAVE';
+type ActionSave = {
+  type: typeof SAVE;
 };
-export function addOperations(
-  operations: array<EditorOperation>,
-): ThunkAction<ActionAddOperations> {
-  return (dispatch) => {
-    dispatch({
-      type: ADD_OPERATIONS,
-      operations,
-    });
-    // TODO: need to be triggered from an other way
-    dispatch(saveOperations());
-  };
-}
-
-const CLEAR_OPERATIONS = 'editor/CLEAR_OPERATIONS';
-type ActionClearOperations = {
-  type: typeof CLEAR_OPERATIONS;
-};
-export function clearOperations(): ThunkAction<ActionClearOperations> {
-  return (dispatch) => {
-    dispatch({
-      type: CLEAR_OPERATIONS,
-    });
-  };
-}
-
-const SAVE_OPERATIONS = 'editor/SAVE_OPERATIONS';
-type ActionSaveOperations = {
-  type: typeof SAVE_OPERATIONS;
-};
-export function saveOperations(): ThunkAction<ActionSaveOperations> {
+export function save(): ThunkAction<ActionSave> {
   return async (dispatch, getState) => {
     const state = getState();
     dispatch(setLoading());
     try {
-      const data = await saveEditorOperations(
+      const data = await saveEditorEntities(
         state.editor.editorInfrastructure.id,
-        state.editor.editorOperations,
+        state.editor.editorEntities,
       );
       dispatch(
         setSuccess({
           title: 'Modifications enregistrées',
-          text: `Vos ${state.editor.editorOperations.length} modifications ont été publiées`,
+          text: `Vos modifications ont été publiées`,
         }),
       );
-      dispatch(clearOperations());
+      // TODO: parse the response and update the  state.editor.editorEntities
     } catch (e) {
       dispatch(setFailure(e));
     }
@@ -209,40 +172,34 @@ type Actions =
   | ActionSelectedZoneLoaded
   | ActionLoadDataModel
   | ActionSetInfra
-  | ActionCreateLine
-  | ActionAddOperation
-  | ActionSaveOperations
-  | ActionClearOperations;
+  | ActionCreateEntity
+  | ActionSave;
 
 //
 // State definition
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 export interface EditorState {
-  editorEntitiesDefinintion: EditorEntitiesDefinition | null;
+  editorEntitiesDefinition: EditorEntitiesDefinition | null;
   editorComponentsDefinition: EditorComponentsDefinition | null;
   editorInfrastructure: ApiInfrastructure | null;
   editorLayers: Array<string>;
   editorZone: Zone | null;
-  editorData: Array<GeoJSON> | null;
-  editorOperations: Array<EditorOperation>;
+  editorEntities: Array<EntityModel>;
 }
 
 export const initialState: EditorState = {
   // Definition of the composition of an entity, ie. it's list of components
-  editorEntitiesDefinintion: null,
+  editorEntitiesDefinition: null,
   // Definition of component, ie. it's list of fields with theirs types, and if they are required
   editorComponentsDefinition: null,
   // ID of the infrastructure on which we are working
   editorInfrastructure: null,
   // ID of selected layers on which we are working
-  editorLayers: ['osrd_track_section', 'osrd_signal', 'map_midi_circuitdevoie'],
+  editorLayers: ['osrd_track_section'],
   // Edition zone:
   editorZone: null,
-  // Data of the edition zone
-  // An array of GeoJSONs (one per layer)
-  editorData: null,
-  // List of modification operation
-  editorOperations: [],
+  // An array of Entities
+  editorEntities: [],
 };
 
 //
@@ -257,31 +214,13 @@ export default function reducer(state = initialState, action: Actions) {
         draft.editorZone = action.zone;
         break;
       case SELECTED_ZONE_LOADED:
-        draft.editorData = action.data;
+        draft.editorEntities = action.data;
         break;
-      case CREATE_LINE:
-        const layers = state.editorData || [];
-        const layer = layers[0] as FeatureCollection | null;
-        draft.editorData = layer
-          ? [
-              {
-                ...layer,
-                features: layer.features.concat([action.feature]),
-                // @ts-ignore
-                count: layer.count + 1,
-              },
-              ...layers.slice(1),
-            ]
-          : [{ type: 'FeatureCollection', count: 1, features: action.feature }];
-        break;
-      case ADD_OPERATIONS:
-        draft.editorOperations = state.editorOperations.concat(action.operations);
-        break;
-      case CLEAR_OPERATIONS:
-        draft.editorOperations = [];
+      case CREATE_ENTITY:
+        draft.editorEntities = state.editorEntities.concat(action.entity);
         break;
       case LOAD_DATA_MODEL:
-        draft.editorEntitiesDefinintion = action.data.entities;
+        draft.editorEntitiesDefinition = action.data.entities;
         draft.editorComponentsDefinition = action.data.components;
         break;
     }
@@ -291,10 +230,17 @@ export default function reducer(state = initialState, action: Actions) {
 //
 // Derived data selector
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-export const dataSelector = (state: EditorState) => state.editorData;
+export const dataSelector = (state: EditorState) => state.editorEntities;
 export const zoneSelector = (state: EditorState) => state.editorZone;
 export const clippedDataSelector = createSelector(dataSelector, zoneSelector, (data, zone) => {
-  return zone && data
-    ? data.map((geoJSON) => clip(geoJSON as FeatureCollection, zone) as FeatureCollection)
-    : [];
+  if (zone && data) {
+    return [
+      {
+        type: 'FeatureCollection',
+        features: data.map((entity: EntityModel) => clip(entity.toGeoJSON(), zone)),
+      } as FeatureCollection,
+    ];
+  } else {
+    return [];
+  }
 });

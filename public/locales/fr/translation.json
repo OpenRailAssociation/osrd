@@ -249,6 +249,10 @@
           }
         }
       }
+    },
+    "entities": {
+      "track_section": "Track section",
+      "track_section-length": "Taille"
     }
   },
   "Logs": {

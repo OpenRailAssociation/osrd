@@ -1,13 +1,15 @@
 import { GeoJSON } from 'geojson';
 import { JSONSchema7 } from 'json-schema';
-import { get, post } from '../../common/requests';
+import { get, post } from '../../../common/requests';
 import {
   EditorOperation,
   Zone,
   EditorComponentsDefintion,
   EditorModelsDefinition,
 } from '../../types';
-import { zoneToFeature } from '../../utils/mapboxHelper';
+import { zoneToFeature } from '../../../utils/mapboxHelper';
+import { EntityModel } from './entity';
+import i18n from './../../../i18n';
 
 interface ApiInfrastructure {
   id: number;
@@ -23,7 +25,7 @@ interface ApiSchemaResponseEntity {
 }
 interface ApiSchemaResponseComponent {
   component_name: string;
-  fields: Array<string>;
+  fields: Array<{ name: string; type: string }>;
 }
 interface ApiSchemaResponse {
   entities: Array<ApiSchemaResponseEntity>;
@@ -78,6 +80,7 @@ export async function getEditorModelDefinition(): Promise<{
   data.components.forEach((component: ApiSchemaResponseComponent) => {
     const jsonSchema: JSONSchema7 = {
       type: 'object',
+      title: i18n.t(`Editor.entities.${component.component_name}`),
       properties: {},
       required: [],
     };
@@ -86,20 +89,22 @@ export async function getEditorModelDefinition(): Promise<{
         (field: { name: string; type: string }) => !['component_id', 'entity'].includes(field.name),
       )
       .forEach((field: { name: string; type: string }) => {
-        jsonSchema.properties[field.name] = { type: field.type };
+        jsonSchema.properties[field.name] = {
+          title: i18n.t(`Editor.entities.${component.component_name}-${field.name}`),
+        };
         switch (field.type) {
           case 'integer':
           case 'string':
-            jsonSchema.properties[field.name] = { type: field.type };
+            jsonSchema.properties[field.name].type = field.type;
             jsonSchema.required.push(field.name);
             break;
           case 'float':
-            jsonSchema.properties[field.name] = { type: 'number' };
+            jsonSchema.properties[field.name].type = 'number';
             jsonSchema.required.push(field.name);
             break;
           // for PK
           default:
-            jsonSchema.properties[field.name] = { type: 'integer' };
+            jsonSchema.properties[field.name].type = 'integer';
             break;
         }
       });
@@ -111,13 +116,15 @@ export async function getEditorModelDefinition(): Promise<{
 /**
  * Call the API for geojson.
  */
-export async function getEditorLayers(
+export async function getEditorEntities(
   infra: number,
   layers: Array<string>,
   zone: Zone,
-): Promise<Array<GeoJSON>> {
+  entitiesDefinintion: EditorEntitiesDefinition | null,
+  componentsDefinition: EditorComponentsDefinition | null,
+): Promise<Array<EntityModel>> {
   const geoJson = zoneToFeature(zone, true);
-  return Promise.all(
+  const responses = await Promise.all(
     layers.map((layer) =>
       get(
         `/osrd/infra/${infra}/geojson`,
@@ -128,15 +135,20 @@ export async function getEditorLayers(
       ),
     ),
   );
+  return responses.flatMap((response) =>
+    response.features.map(
+      (obj) => new EntityModel(obj.properties, entitiesDefinintion, componentsDefinition),
+    ),
+  );
 }
 
 /**
  * Call the API to update the database.
  */
-export async function saveEditorOperations(
+export async function saveEditorEntities(
   infra: number,
-  actions: Array<EditorOperation>,
+  entities: Array<EntityModel>,
 ): Promise<void> {
-  const data = await post(`/osrd/infra/${infra}/edit/`, actions, {}, true);
-  return data;
+  const operations = entities.flatMap((entity: EntityModel) => entity.getOperations());
+  return await post(`/osrd/infra/${infra}/edit/`, operations, {}, true);
 }

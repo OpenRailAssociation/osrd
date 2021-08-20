@@ -12,13 +12,13 @@ import './Editor.scss';
 
 import { useParams } from 'react-router-dom';
 import { Tool, Tools } from './tools';
-import { EditorState, setInfrastructure } from '../../reducers/editor';
+import { EditorState, setInfrastructure, loadDataModel } from '../../reducers/editor';
 import { MainState, setFailure } from '../../reducers/main';
 import Map from './Map';
 import Tipped from './components/Tipped';
 import NavButtons from './nav';
 import { updateViewport } from '../../reducers/map';
-import { getInfrastructure, getInfrastructures } from './api';
+import { getInfrastructure, getInfrastructures } from './data//api';
 
 const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const dispatch = useDispatch();
@@ -43,6 +43,8 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
 
   // Initial viewport:
   useEffect(() => {
+    // load the data model
+    dispatch(loadDataModel());
     if (urlLat) {
       setViewport({
         ...viewport,
@@ -59,7 +61,6 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   // We take the one define in the url, and if it is absent or equals to '-1'
   // we call the api to find the latest infrastructure modified
   useEffect(() => {
-    console.log('infra', infra);
     if (infra && infra !== '-1') {
       getInfrastructure(parseInt(infra))
         .then((infrastructure) => dispatch(setInfrastructure(infrastructure)))
