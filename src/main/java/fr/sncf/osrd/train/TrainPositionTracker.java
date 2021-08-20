@@ -144,7 +144,7 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         // TODO : implement the case of a switch like in nextTrackSectionPosition
 
         var prevTrackSectionDirection = prevTrackSection.getDirection(
-                curTrackSectionPos.edge, curTrackSectionPos.direction);
+                curTrackSectionPos.edge, curTrackSectionPos.direction.opposite()).opposite();
         return TrackSectionRange.makePrev(prevTrackSection, prevTrackSectionDirection, delta);
     }
 
@@ -164,11 +164,10 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
             currentTrainLength += section.length();
 
         var tailDisplacement = currentTrainLength - expectedTrainLength;
-        if (abs(tailDisplacement) > 1e-3)
-            if (tailDisplacement >= 0)
-                updateTailPosition(tailDisplacement);
-            else
-                updateTailPositionBackwards(tailDisplacement);
+        if (tailDisplacement > 0 && positionDelta > 0)
+            updateTailPosition(tailDisplacement);
+        else if (tailDisplacement < 0 && positionDelta < 0)
+            updateTailPositionBackwards(tailDisplacement);
     }
 
     /** TODO: Check if it's the wanted behavior...
@@ -227,7 +226,6 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
     }
 
     private void updateTailPositionBackwards(double positionDelta) {
-
         var remainingDist = abs(positionDelta);
         var tailPos = trackSectionRanges.getLast();
         var edgeSpaceBehind = tailPos.backwardsSpace();

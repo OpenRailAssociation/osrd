@@ -158,6 +158,7 @@ public final class TrackSectionRange extends Range implements DeepComparable<Tra
         assert end >= 0.;
     }
 
+    /** Expand the range of the track section backwards by following its direction */
     public void expandBackwards(double delta) {
         if (direction == EdgeDirection.START_TO_STOP) {
             end -= delta;
@@ -179,6 +180,7 @@ public final class TrackSectionRange extends Range implements DeepComparable<Tra
         assert begin >= end;
     }
 
+    /** Shrink the range of the track section backwards by following its direction */
     public void shrinkBackwards(double delta) {
         if (direction == EdgeDirection.START_TO_STOP) {
             begin -= delta;
