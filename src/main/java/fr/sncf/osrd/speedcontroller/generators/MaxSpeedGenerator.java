@@ -45,6 +45,8 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
             var stopController = new MaxSpeedController(0, targetPosition, Double.POSITIVE_INFINITY);
             slowController.linkedStopIndex = i;
             stopController.linkedStopIndex = i;
+            controllers.add(slowController);
+            controllers.add(stopController);
         }
 
         var offset = 0;
