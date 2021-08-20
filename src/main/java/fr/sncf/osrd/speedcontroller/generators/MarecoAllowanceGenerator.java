@@ -162,7 +162,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         // TODO optimize this
         var announcers = findLimitSpeedAnnouncers(maxSpeedControllers);
         for (var announcer : announcers) {
-            if (announcer.isActive(position))
+            if (announcer.isActive(position, 0))
                 return true;
         }
         return false;
