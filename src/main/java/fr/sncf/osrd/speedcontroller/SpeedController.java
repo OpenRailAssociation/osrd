@@ -34,7 +34,7 @@ public abstract class SpeedController implements DeepComparable<SpeedController>
     public boolean isActive(double position, int currentStopIndex) {
         if (position < beginPosition || position >= endPosition)
             return false;
-        return linkedStopIndex < 0 || currentStopIndex > linkedStopIndex;
+        return linkedStopIndex < 0 || currentStopIndex <= linkedStopIndex;
     }
 
     public boolean isActive(TrainState state) {
