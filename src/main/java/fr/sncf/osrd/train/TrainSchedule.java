@@ -1,6 +1,5 @@
 package fr.sncf.osrd.train;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.speedcontroller.SpeedInstructions;
@@ -9,6 +8,7 @@ import fr.sncf.osrd.train.phases.NavigatePhase;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class TrainSchedule {
@@ -55,7 +55,10 @@ public final class TrainSchedule {
         this.initialSpeed = initialSpeed;
         this.phases = phases;
         this.plannedPath = plannedPath;
-        this.stops = stops != null ? stops : new ArrayList<>();
+        if (stops == null)
+            this.stops = Collections.singletonList(new TrainStop(plannedPath.length - 1e-3, 0));
+        else
+            this.stops = stops;
         if (trainDecisionMaker == null)
             trainDecisionMaker = new TrainDecisionMaker.DefaultTrainDecisionMaker();
         this.trainDecisionMaker = trainDecisionMaker;
