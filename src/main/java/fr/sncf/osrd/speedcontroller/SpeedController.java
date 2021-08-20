@@ -16,22 +16,30 @@ public abstract class SpeedController implements DeepComparable<SpeedController>
     @SerializableDouble
     public final double endPosition;
 
+    /** Index of the stop the controller depends on if any, otherwise -1 */
+    public int linkedStopIndex;
+
+    public SpeedController(double beginPosition, double endPosition, int linkedStopIndex) {
+        this.beginPosition = beginPosition;
+        this.endPosition = endPosition;
+        this.linkedStopIndex = linkedStopIndex;
+    }
+
     public SpeedController(double beginPosition, double endPosition) {
         this.beginPosition = beginPosition;
         this.endPosition = endPosition;
+        this.linkedStopIndex = -1;
     }
 
-    public boolean isActive(double position) {
-        return (position >= beginPosition && position < endPosition);
-    }
-
-    public boolean isActive(TrainPositionTracker positionTracker) {
-        var position = positionTracker.getPathPosition();
-        return isActive(position);
+    public boolean isActive(double position, int currentStopIndex) {
+        if (position < beginPosition || position >= endPosition)
+            return false;
+        return linkedStopIndex < 0 || currentStopIndex > linkedStopIndex;
     }
 
     public boolean isActive(TrainState state) {
-        return isActive(state.location.getPathPosition() + state.speed * SpeedControllerGenerator.TIME_STEP);
+        return isActive(state.location.getPathPosition() + state.speed * SpeedControllerGenerator.TIME_STEP,
+                state.stopIndex);
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST", "FE_FLOATING_POINT_EQUALITY"})
@@ -53,10 +61,10 @@ public abstract class SpeedController implements DeepComparable<SpeedController>
      * @param pathPosition a position on the train's path
      * @return the merged speed directive
      */
-    public static SpeedDirective getDirective(Set<SpeedController> controllers, double pathPosition) {
+    public static SpeedDirective getDirective(Set<SpeedController> controllers, double pathPosition, int stopIndex) {
         var profile = SpeedDirective.getMax();
         for (var controller : controllers)
-            if (controller.isActive(pathPosition))
+            if (controller.isActive(pathPosition, stopIndex))
                 profile.mergeWith(controller.getDirective(pathPosition));
         return profile;
     }

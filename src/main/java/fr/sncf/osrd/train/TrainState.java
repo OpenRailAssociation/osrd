@@ -319,20 +319,4 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         }
         return trainSchedule.phases.get(currentPhaseIndex + 1);
     }
-
-    /** Returns the speed controllers associated with remaining stops */
-    public Set<SpeedController> getStopSpeedControllers() {
-        var res = new HashSet<SpeedController>();
-        for (int i = stopIndex; i < trainSchedule.stops.size(); i++) {
-            var targetPosition = trainSchedule.stops.get(i).position;
-            res.add(LimitAnnounceSpeedController.create(
-                    trainSchedule.rollingStock.maxSpeed,
-                    0,
-                    targetPosition,
-                    trainSchedule.rollingStock.gamma
-            ));
-            res.add(new MaxSpeedController(0, targetPosition, Double.POSITIVE_INFINITY));
-        }
-        return res;
-    }
 }

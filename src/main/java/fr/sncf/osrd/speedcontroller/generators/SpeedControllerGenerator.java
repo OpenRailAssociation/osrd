@@ -44,8 +44,13 @@ public abstract class SpeedControllerGenerator {
                 = getUpdatesAtPositions(sim, schedule, controllers, timestep, begin, end, initialSpeed);
         var res = new SortedDoubleMap();
         double time = schedule.departureTime;
+        int stopIndex = 0;
         for (var k : updatesMap.keySet()) {
             time += updatesMap.get(k).timeDelta;
+            if (stopIndex < schedule.stops.size() && schedule.stops.get(stopIndex).position >= k) {
+                time += schedule.stops.get(stopIndex).stopDuration;
+                stopIndex++;
+            }
             res.put(k, time);
         }
         return res;
@@ -105,15 +110,17 @@ public abstract class SpeedControllerGenerator {
         totalLength = min(totalLength, end);
 
         var res = new TreeMap<Double, PositionUpdate>();
+        var stopIndex = 0;
 
         double speed = initialSpeed;
         do {
             var nextPosition = location.getPathPosition() + speed * timestep;
             final var finalNextPosition = min(nextPosition, end);
+            final int finalStopIndex = stopIndex;
             var activeControllers = controllers.stream()
-                    .filter(x -> x.isActive(finalNextPosition))
+                    .filter(x -> x.isActive(finalNextPosition, finalStopIndex))
                     .collect(Collectors.toSet());
-            var directive = SpeedController.getDirective(activeControllers, nextPosition);
+            var directive = SpeedController.getDirective(activeControllers, nextPosition, stopIndex);
 
             var integrator = TrainPhysicsIntegrator.make(timestep, schedule.rollingStock,
                     speed, location.meanTrainGrade());
@@ -124,7 +131,12 @@ public abstract class SpeedControllerGenerator {
 
             location.updatePosition(schedule.rollingStock.length, update.positionDelta);
             res.put(location.getPathPosition(), update);
-        } while (location.getPathPosition() + timestep * speed < totalLength && speed > 0);
+            if (speed <= 0) {
+                stopIndex++;
+                if (stopIndex >= schedule.stops.size())
+                    break;
+            }
+        } while (location.getPathPosition() + timestep * speed < totalLength);
         return res;
     }
 

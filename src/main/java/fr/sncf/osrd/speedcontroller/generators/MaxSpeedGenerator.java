@@ -33,6 +33,20 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
                 Double.POSITIVE_INFINITY
         ));
 
+        for (int i = 0; i < schedule.stops.size(); i++) {
+            var stop = schedule.stops.get(i);
+            var targetPosition = stop.position;
+            var slowController = LimitAnnounceSpeedController.create(
+                    schedule.rollingStock.maxSpeed,
+                    0,
+                    targetPosition,
+                    schedule.rollingStock.gamma
+            );
+            var stopController = new MaxSpeedController(0, targetPosition, Double.POSITIVE_INFINITY);
+            slowController.linkedStopIndex = i;
+            stopController.linkedStopIndex = i;
+        }
+
         var offset = 0;
         for (var trackSectionRange : trainPath) {
             var edge = trackSectionRange.edge;
