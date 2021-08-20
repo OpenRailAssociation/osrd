@@ -20,7 +20,7 @@ export class EntityModel {
   /**
    * Entity identifier. <code>-1</code> means a new entity.
    */
-  entity_id: number = -1;
+  entity_id: number = -1 * Date.now();
 
   /**
    * Type of the entity.
@@ -180,9 +180,11 @@ export class EntityModel {
 
   /**
    * Get the list of operations that can be send to the API.
+   * IMPORTANT: for create entity we add the entity_id field which is not valid
+   * for the API, but usefull to update the data with the response.
    */
   getOperations(): Array<EditorOperation> {
-    const operations: Array<EditorOperation> = [];
+    let operations: Array<EditorOperation> = [];
     if (this.isDeleted) {
       operations.push({ operation: 'delete_entity', entity_id: this.entity_id });
     } else {
@@ -190,6 +192,7 @@ export class EntityModel {
         operations.push({
           operation: 'create_entity',
           entity_type: this.entity_type,
+          entity_id: this.entity_id,
           components: this.components
             .filter(
               (component) =>

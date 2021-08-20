@@ -1,6 +1,7 @@
 import { GeoJSON } from 'geojson';
 import { JSONSchema7 } from 'json-schema';
 import { get, post } from '../../../common/requests';
+import { omit } from 'lodash';
 import {
   EditorOperation,
   Zone,
@@ -148,7 +149,41 @@ export async function getEditorEntities(
 export async function saveEditorEntities(
   infra: number,
   entities: Array<EntityModel>,
-): Promise<void> {
+): Promise<Array<EntityModel>> {
   const operations = entities.flatMap((entity: EntityModel) => entity.getOperations());
-  return await post(`/osrd/infra/${infra}/edit/`, operations, {}, true);
+  const response = await post(
+    `/osrd/infra/${infra}/edit/`,
+    operations.map((operation) => {
+      if (operation.operation === 'create_entity') return omit(operation, ['entity_id']);
+      else return operation;
+    }),
+    {},
+    true,
+  );
+
+  // rebuild the entities list
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  let newEntities = [...entities];
+
+  // parse the response to add ids to new entities
+  response.forEach((result, index) => {
+    const operation = operations[index];
+
+    if (operation.operation === 'create_entity') {
+      const entity = newEntities.find((entity) => entity.entity_id === operation.entity_id);
+      entity.entity_id = result.entity_id;
+      entity.components = entity.components.map((component, index) => {
+        component.component_id = result.component_ids[index];
+        return component;
+      });
+      newEntities = newEntities.filter((entity) => entity.entity_id !== operation.entity_id);
+      newEntities.push(entity);
+    }
+
+    if (operation.operation === 'delete_entity') {
+      newEntities = newEntities.filter((entity) => entity.entity_id !== operation.entity_id);
+    }
+  });
+
+  return newEntities;
 }

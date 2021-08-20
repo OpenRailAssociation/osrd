@@ -12,13 +12,13 @@ import { Layer, Source } from 'react-map-gl';
 
 import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
 import { EditorState, createEntity } from '../../../reducers/editor';
-import { EntityModel } from '../data/entity';
 import EditorZone from '../../../common/Map/Layers/EditorZone';
 import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../common/Map/Consts/colors';
 import Modal from '../components/Modal';
 import { getNearestPoint } from '../../../utils/mapboxHelper';
 import { EntityForm } from '../components/EntityForm';
+import { EntityModel } from '../data/entity';
 
 export type CreateLineState = CommonToolState & {
   linePoints: [number, number][];

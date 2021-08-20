@@ -64,15 +64,15 @@ export function selectZone(
 //
 // When the selected data are loaded, we store them in the state
 //
-const SELECTED_ZONE_LOADED = 'editor/SELECTED_ZONE_LOADED';
-type ActionSelectedZoneLoaded = {
-  type: typeof SELECTED_ZONE_LOADED;
+const SET_DATA = 'editor/SET_DATA';
+type ActionSetData = {
+  type: typeof SET_DATA;
   data: Array<EntityModel>;
 };
-export function setEditorData(data: Array<EntityModel>): ThunkAction<ActionSelectedZoneLoaded> {
+export function setEditorData(data: Array<EntityModel>): ThunkAction<ActionSetData> {
   return (dispatch) => {
     dispatch({
-      type: SELECTED_ZONE_LOADED,
+      type: SET_DATA,
       data,
     });
   };
@@ -154,6 +154,7 @@ export function save(): ThunkAction<ActionSave> {
         state.editor.editorInfrastructure.id,
         state.editor.editorEntities,
       );
+      dispatch(setEditorData(data));
       dispatch(
         setSuccess({
           title: 'Modifications enregistrées',
@@ -213,7 +214,7 @@ export default function reducer(state = initialState, action: Actions) {
       case SELECT_ZONE:
         draft.editorZone = action.zone;
         break;
-      case SELECTED_ZONE_LOADED:
+      case SET_DATA:
         draft.editorEntities = action.data;
         break;
       case CREATE_ENTITY:
