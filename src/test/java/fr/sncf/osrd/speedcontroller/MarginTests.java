@@ -16,6 +16,8 @@ import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.utils.TrackSectionLocation;
+
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -236,15 +238,24 @@ public class MarginTests {
     @ValueSource(ints = {0, 1, 2})
     public void testDifferentSlopes(int slopeProfile) throws InvalidInfraException {
         // inputs
-        double margin = 10.0;
-        List<RJSSlope> slopes = List.of(
-                List.of(new RJSSlope(0, 10000, -10)),
-                List.of(new RJSSlope(0, 10000, 0)),
-                List.of(new RJSSlope(0, 10000, +10))
-        ).get(slopeProfile);
+        final double margin = 10.0;
+        var slopes = new ArrayList<RJSSlope>();
+        switch (slopeProfile) {
+            case 0:
+                slopes.add(new RJSSlope(0, 10000, -10));
+                break;
+            case 1:
+                slopes.add(new RJSSlope(0, 10000, 0));
+                break;
+            case 2:
+                slopes.add(new RJSSlope(0, 10000, +10));
+                break;
+            default:
+                throw new InvalidInfraException("Unable to handle this parameter in testDifferentSlopes");
+        }
 
         // build sims
-        final var infra = getBaseInfra();
+        var infra = getBaseInfra();
         assert infra != null;
         for (var trackSection : infra.trackSections)
             if ("ne.micro.foo_to_bar".equals(trackSection.id))
