@@ -141,6 +141,33 @@ export function createEntity(entity: EntityModel): ThunkAction<ActionCreateEntit
   };
 }
 
+const UPDATE_ENTITY = 'editor/UPDATE_ENTITY';
+type ActionUpdateEntity = { type: typeof UPDATE_ENTITY; entity: EntityModel };
+export function updateEntity(entity: EntityModel): ThunkAction<ActionUpdateEntity> {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_ENTITY,
+      entity,
+    });
+    dispatch(save());
+  };
+}
+
+const DELETE_ENTITY = 'editor/DELETE_ENTITY';
+type ActionDeleteEntities = { type: typeof DELETE_ENTITY; entity: EntityModel };
+export function deleteEntities(entities: Array<EntityModel>): ThunkAction<ActionDeleteEntities> {
+  return (dispatch) => {
+    entities.forEach((entity) => {
+      entity.delete();
+      dispatch({
+        type: DELETE_ENTITY,
+        entity,
+      });
+    });
+    dispatch(save());
+  };
+}
+
 const SAVE = 'editor/SAVE';
 type ActionSave = {
   type: typeof SAVE;
@@ -219,6 +246,12 @@ export default function reducer(state = initialState, action: Actions) {
         break;
       case CREATE_ENTITY:
         draft.editorEntities = state.editorEntities.concat(action.entity);
+        break;
+      case UPDATE_ENTITY:
+      case DELETE_ENTITY:
+        draft.editorEntities = state.editorEntities
+          .filter((item) => item.entity_id !== action.entity.entity_id)
+          .concat(action.entity);
         break;
       case LOAD_DATA_MODEL:
         draft.editorEntitiesDefinition = action.data.entities;

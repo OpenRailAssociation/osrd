@@ -15,7 +15,7 @@ interface EntityFormProps {
  *
  */
 export const EntityForm: FC<EntityFormProps> = ({ entity, onSubmit }) => {
-  console.log(entity, entity.getJsonSchema());
+  console.log(entity, entity.getJsonSchema(), entity.toObject());
   return (
     <Form
       formData={entity.toObject()}

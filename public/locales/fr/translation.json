@@ -210,7 +210,7 @@
             "label": "Voir les informations sur la sélection"
           },
           "edit-info": {
-            "label": "[TODO] Modifier les métadonnées de l'élément sélectionné"
+            "label": "Modifier les métadonnées de l'élément sélectionné"
           },
           "single": {
             "label": "Sélection Simple"
@@ -222,7 +222,8 @@
             "label": "Sélection Polygône"
           },
           "delete-selection": {
-            "label": "[TODO] Supprimer les éléments sélectionnés"
+            "label": "Supprimer les éléments sélectionnés",
+            "confirmation": "Êtes-vous sur de vouloir supprimer les éléments de la selection ?"
           }
         }
       },

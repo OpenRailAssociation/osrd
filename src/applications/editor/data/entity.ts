@@ -95,6 +95,7 @@ export class EntityModel {
     );
     if (!geoComponent) throw new Error('Entity has no geo component');
     return {
+      id: this.entity_id,
       type: 'Feature',
       // per convention, the geo component start with `geo_`
       geometry: geoComponent.geographic,
@@ -206,7 +207,7 @@ export class EntityModel {
             }),
         });
       } else {
-        operations = this.operations;
+        operations = this.operations.filter((component) => component.component_id);
       }
     }
     return operations;
@@ -220,7 +221,13 @@ export class EntityModel {
       ? arg.components
       : omit(arg, ['entity_id', 'entity_type']);
     this.components = Object.keys(componentsData).map((type: string) => {
-      return { ...componentsData[type], component_type: type };
+      // TODO: CHeck why we've got sometime an array.
+      // Does an entity can have multiple components of same type ??
+      if (Array.isArray(componentsData[type])) {
+        return { ...componentsData[type][0], component_type: type };
+      } else {
+        return { ...componentsData[type], component_type: type };
+      }
     });
   }
 }
