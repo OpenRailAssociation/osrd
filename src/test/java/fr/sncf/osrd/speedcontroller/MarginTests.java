@@ -5,6 +5,7 @@ import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope;
 import fr.sncf.osrd.speedcontroller.generators.ConstructionAllowanceGenerator;
 import fr.sncf.osrd.speedcontroller.generators.LinearAllowanceGenerator;
@@ -233,52 +234,61 @@ public class MarginTests {
         assertEquals(expected, marginsSimTime, 5);
     }
 
-    /** Test slopes */
+    /** Test mareco with different slopes*/
     @ParameterizedTest
     @ValueSource(ints = {0, 1, 2})
     public void testDifferentSlopes(int slopeProfile) throws InvalidInfraException {
         // inputs
-        final double margin = 10.0;
+        final double margin = 40.0;
         var slopes = new ArrayList<RJSSlope>();
         switch (slopeProfile) {
             case 0:
-                slopes.add(new RJSSlope(0, 10000, -10));
+                slopes.add(new RJSSlope(0, 5000, 10));
+                slopes.add(new RJSSlope(5000, 6000, -10));
+                slopes.add(new RJSSlope(6000, 10000, 0));
                 break;
             case 1:
-                slopes.add(new RJSSlope(0, 10000, 0));
+                slopes.add(new RJSSlope(0, 5000, -10));
+                slopes.add(new RJSSlope(5000, 6000, 10));
+                slopes.add(new RJSSlope(6000, 10000, 0));
                 break;
             case 2:
-                slopes.add(new RJSSlope(0, 10000, +10));
+                slopes.add(new RJSSlope(0, 10000, -10));
                 break;
             default:
                 throw new InvalidInfraException("Unable to handle this parameter in testDifferentSlopes");
         }
 
         // build sims
-        var infra = getBaseInfra();
-        assert infra != null;
-        for (var trackSection : infra.trackSections)
+        var rjsInfra = getBaseInfra();
+        assert rjsInfra != null;
+        for (var trackSection : rjsInfra.trackSections)
             if ("ne.micro.foo_to_bar".equals(trackSection.id))
                 trackSection.slopes = slopes;
 
+        var infra = RailJSONParser.parse(rjsInfra);
+
         // Run with mareco
-        final var marginsConfig = getConfigWithSpeedInstructions(SpeedInstructions.fromController(
+        var marginsConfig = getConfigWithSpeedInstructionsAndInfra(SpeedInstructions.fromController(
                 new MarecoAllowanceGenerator(
                         0,
                         POSITIVE_INFINITY,
                         margin,
                         RJSAllowance.MarecoAllowance.MarginType.TIME
                 )
-        ));
-        var marginsSim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        run(marginsSim, marginsConfig);
+        ), infra);
+        var marginsSim = Simulation.createFromInfraAndEmptySuccessions(infra, 0, null);
+        var events = run(marginsSim, marginsConfig);
         var marginsSimTime = marginsSim.getTime();
 
         // base run, no margin
         final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        run(sim, config);
+        var sim = Simulation.createFromInfraAndEmptySuccessions(infra, 0, null);
+        var eventsBase = run(sim, config);
         var simTime = sim.getTime();
+
+        saveGraph(eventsBase, "..\\mareco-slope-base.csv");
+        saveGraph(events, "..\\mareco-slope-out.csv");
 
         var expected = simTime * (1 + margin / 100);
         assertEquals(expected, marginsSimTime, 5);
