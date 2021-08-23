@@ -6,8 +6,8 @@ import { withTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import frenchFlag from '@sncf/bootstrap-sncf.metier/dist/assets/img/flags/french.svg';
-import englishFlag from '@sncf/bootstrap-sncf.metier/dist/assets/img/flags/english.svg';
+import frenchFlag from '@sncf/bootstrap-sncf.metier.reseau/dist/assets/img/flags/french.svg';
+import englishFlag from '@sncf/bootstrap-sncf.metier.reseau/dist/assets/img/flags/english.svg';
 import * as allUserActions from '../../reducers/user';
 import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from './DropdownSNCF';
 

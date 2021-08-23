@@ -15,7 +15,7 @@ import ButtonFullscreen from 'common/ButtonFullscreen';
 import FiltersMenu from 'applications/smartflows/FiltersMenu';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import dgexSolLogoOnly from 'assets/pictures/dgexsollogo_only.png';
-import sncfReseauLogo from '@sncf/bootstrap-sncf.metier/dist/assets/img/brand/sncf-reseau-logo.png';
+import sncfReseauLogo from '@sncf/bootstrap-sncf.metier.reseau/dist/assets/img/brand/sncf-reseau-logo.png';
 import garesetcologo from 'assets/pictures/garesetcologo.png';
 
 import Map from './Map';

@@ -2258,15 +2258,16 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@sncf/bootstrap-sncf.metier@^4.3.1-r5":
-  version "4.3.1-r5"
-  resolved "https://registry.yarnpkg.com/@sncf/bootstrap-sncf.metier/-/bootstrap-sncf.metier-4.3.1-r5.tgz#9d9d0ff144cc6f355687f149aa0933d5d3ba6010"
-  integrity sha512-2TjKXokg0ssXtodqe7tdOQE7HncNGfhuhVSTi+c7zjmP1WuE5GebVaifS3KQ7oSKvkN4eiyzOJXxPUH/X+nWgQ==
+"@sncf/bootstrap-sncf.metier.reseau@^4.3.1-r6-beta":
+  version "4.3.1-r6-beta"
+  resolved "https://registry.yarnpkg.com/@sncf/bootstrap-sncf.metier.reseau/-/bootstrap-sncf.metier.reseau-4.3.1-r6-beta.tgz#8d1482131a657582cf7de2d33b3bbed804dd80c7"
+  integrity sha512-WkSSoW2fU2Lm/lJnAm/CAmAb0uOBuxTK25guZFtcgj/fkBwpJOoCKgFTkF7VFzE0JgL0rBiviYJTQMYtfYvO1Q==
   dependencies:
     bootstrap "4.3.1"
     chart.js "^2.7.2"
     chartjs-plugin-zoom "^0.6.3"
     flatpickr "^4.6.2"
+    get-root-node-polyfill "^1.0.0"
     hugo-bin "^0.44.1"
     ion-rangeslider "^2.2.0"
     jquery "^3.3.1"
@@ -7697,6 +7698,11 @@ get-proxy@^2.0.0:
   integrity sha512-zmZIaQTWnNQb4R4fJUEp/FC51eZsc6EkErspy3xtIYStaq8EB/hDIWipxsal+E8rz0qD7f2sL/NA9Xee4RInJw==
   dependencies:
     npm-conf "^1.1.0"
+
+get-root-node-polyfill@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/get-root-node-polyfill/-/get-root-node-polyfill-1.0.0.tgz#58e34431c0b7fee66823b2a5fab4d33bc0aac36d"
+  integrity sha512-AzucsG1DdepagLF8tkxfjUqn3cCQ63MgH/tBWwPSy0BIDt8iLFZYDwnTxA08d+zdgL8l2dkPdZDe+Qkd+RMl9Q==
 
 get-stream@3.0.0, get-stream@^3.0.0:
   version "3.0.0"

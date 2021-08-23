@@ -3,7 +3,7 @@ import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import Card from 'common/BootstrapSNCF/CardSNCF/CardSNCF';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import sncfReseauLogo from '@sncf/bootstrap-sncf.metier/dist/assets/img/brand/sncf-reseau-logo.png';
+import sncfReseauLogo from '@sncf/bootstrap-sncf.metier.reseau/dist/assets/img/brand/sncf-reseau-logo.png';
 // import dgexSolLogo from 'assets/pictures/dgexsollogo.png';
 import osrdLogo from 'assets/pictures/osrd.png';
 import logo from 'assets/logo_osrd_seul_blanc.svg';

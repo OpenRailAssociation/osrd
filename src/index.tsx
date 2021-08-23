@@ -13,7 +13,7 @@ import Loader from 'common/Loader';
 import './i18n';
 import 'config/variables.css';
 import 'main/App/App.scss';
-import '@sncf/bootstrap-sncf.metier/dist/bootstrap-sncf.min.css';
+import '@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.min.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 // Sentry
@@ -22,7 +22,7 @@ import * as Sentry from '@sentry/browser';
 import { version } from '../package.json';
 
 // Must be required and not imported to be included in production build (strange bug ?)
-require('@sncf/bootstrap-sncf.metier');
+require('@sncf/bootstrap-sncf.metier.reseau');
 
 Sentry.init({
   dsn: 'https://6797a40408f64fc5a38f1d894cf29a50@sentry.shared.dgexsol.fr/4',
