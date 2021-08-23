@@ -217,6 +217,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         double speed = speeds.interpolate(endLocation);
 
         var location = convertPosition(schedule, sim, endLocation);
+        location.ignoreInfraState = true;
 
         do {
             var integrator = TrainPhysicsIntegrator.make(timestep, schedule.rollingStock,

@@ -1,5 +1,6 @@
 package fr.sncf.osrd;
 
+import static fr.sncf.osrd.config.Config.makeWithGivenInfra;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.squareup.moshi.JsonReader;
@@ -11,6 +12,7 @@ import fr.sncf.osrd.infra.SuccessionTable;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
+import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.infra.InvalidInfraException;
@@ -44,7 +46,7 @@ import java.util.function.Supplier;
 
 public class Helpers {
 
-    private static final boolean saveCSVFiles = false;
+    private static final boolean saveCSVFiles = true;
 
     public static final class TestEvent extends TimelineEvent {
         public final String data;
@@ -216,6 +218,14 @@ public class Helpers {
     }
 
     /**
+     * Generates the defaults config from tiny_infra/config_railjson.json without allowances and with a
+     * specified infra
+     */
+    public static Config getBaseConfigWithInfra(Infra infra) {
+        return getConfigWithSpeedInstructionsAndInfra(new SpeedInstructions(null), infra);
+    }
+
+    /**
      * Generates the config from the file passed in arguments without allowances
      */
     public static Config getBaseConfigNoAllowance(String path) {
@@ -235,6 +245,7 @@ public class Helpers {
         config.trainSchedules.forEach(schedule -> schedule.speedInstructions = instructions);
         return config;
     }
+
 
     /** Loads the given config, but replaces the given stops in the schedule */
     public static Config makeConfigWithGivenStops(String baseConfigPath, RJSTrainStop[] stops) {
@@ -269,6 +280,35 @@ public class Helpers {
             throw new RuntimeException();
         }
     }
+
+
+    /** Gets the config from the file passed in arguments but with the given SpeedInstruction in train schedules
+     * and a given infrastructure */
+    public static Config getConfigWithSpeedInstructionsAndInfra(SpeedInstructions instructions, Infra infra) {
+        try {
+            var path = "tiny_infra/config_railjson.json";
+            var config = makeWithGivenInfra(getResourcePath(path), infra);
+            config.trainSchedules.forEach(schedule -> schedule.speedInstructions = instructions);
+            return config;
+        } catch (IOException | InvalidRollingStock | InvalidSchedule | InvalidSuccession e) {
+            fail(e);
+            throw new RuntimeException();
+        }
+    }
+
+
+    /** Loads the phases in the given simulation file
+     * The purpose of this function is to edit the phases and call makeCOnfigWithGivenPhases afterwards */
+    public static RJSTrainPhase[] loadRJSPhases(String simulationPath) {
+        try {
+            var path = getResourcePath(simulationPath);
+            var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, path);
+            return schedule.trainSchedules.stream().findAny().orElseThrow().phases;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     /** Go through all the events in the simulation, fails if an exception is thrown */
     public static ArrayList<TimelineEvent> run(Simulation sim) {
