@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 
-from service_core.internal_views import HealthView
+from osrd_infra.views import health
 
 
 root_path = ""
@@ -24,8 +24,9 @@ service_urlpatterns = [
     path('matr/', include('matr.urls')),
 ]
 
+
 urlpatterns = [
     path('admin/' if not settings.WORKSPACE else prefix_path('admin/'), admin.site.urls),
-    path('health/', HealthView.as_view()),
+    path('health/', health),
     path(root_path, include(service_urlpatterns)),
 ]
