@@ -17,7 +17,6 @@ import { updateViewport } from 'reducers/map';
 import { updateTimePosition, updateSimulation } from 'reducers/osrdsimulation';
 import { simplifyData } from 'applications/osrd/components/Helpers/ChartHelpers';
 import './OSRDSimulation.scss';
-// import './OSRDSimulationDarkMode.scss';
 import { sec2time } from 'utils/timeManipulation';
 
 const timetableURI = '/osrd/timetable';
@@ -27,7 +26,7 @@ const SIMPLIFICATION_FACTOR = 10; // Division of steps
 
 const OSRDSimulation = () => {
   const { t } = useTranslation(['translation', 'simulation']);
-  const { fullscreen } = useSelector((state) => state.main);
+  const { fullscreen, darkmode } = useSelector((state) => state.main);
   const [extViewport, setExtViewport] = useState(undefined);
   const [waitingMessage, setWaitingMessage] = useState(t('simulation:waiting'));
   const [isEmpty, setIsEmpty] = useState(true);
@@ -37,6 +36,10 @@ const OSRDSimulation = () => {
     hoverPosition, selectedTrain, simulation,
   } = useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();
+
+  if (darkmode) {
+    import('./OSRDSimulationDarkMode.scss');
+  }
 
   const WaitingLoader = () => {
     if (isEmpty) {

@@ -30,6 +30,11 @@ const userWhiteList = [
   'account',
 ];
 
+const mainWhiteList = [
+  'fullscreen',
+  'darkmode',
+];
+
 const saveMapFilter = createFilter(
   'map',
   mapWhiteList,
@@ -38,6 +43,11 @@ const saveMapFilter = createFilter(
 const saveUserFilter = createFilter(
   'user',
   userWhiteList,
+);
+
+const saveMainFilter = createFilter(
+  'main',
+  mainWhiteList,
 );
 
 // Useful to only blacklist a sub-propertie of osrdconf
@@ -50,9 +60,9 @@ const osrdconfPersistConfig = {
 const persistConfig = {
   key: 'root',
   storage,
-  transforms: [compressor, saveMapFilter, saveUserFilter],
+  transforms: [compressor, saveMapFilter, saveUserFilter, saveMainFilter],
   blacklist: ['osrdconf'],
-  whitelist: ['user', 'map', 'hermes'],
+  whitelist: ['user', 'map', 'main'],
 };
 
 const rootReducer = {

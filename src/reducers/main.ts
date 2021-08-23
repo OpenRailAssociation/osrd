@@ -5,6 +5,16 @@ import { ThunkAction, Notification } from '../types';
 //
 // Actions
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+export const TOGGLE_DARKMODE = 'main/TOGGLE_DARKMODE';
+type ActionToggleDarkmode = { type: typeof TOGGLE_DARKMODE };
+export function toggleDarkmode(): ThunkAction<ActionToggleDarkmode> {
+  return (dispatch: any) => {
+    dispatch({
+      type: TOGGLE_DARKMODE,
+    });
+  };
+}
+
 export const TOGGLE_FULLSCREEN = 'main/TOGGLE_FULLSCREEN';
 type ActionToggleFullscreen = { type: typeof TOGGLE_FULLSCREEN };
 export function toggleFullscreen(): ThunkAction<ActionToggleFullscreen> {
@@ -76,6 +86,7 @@ type Actions =
   | ActionFailure
   | ActionSuccess
   | ActionLoading
+  | ActionToggleDarkmode
   | ActionToggleFullscreen
   | ActionNotificationAdd
   | ActionNotificationDelete;
@@ -84,11 +95,13 @@ type Actions =
 // State definition
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 export interface MainState {
+  darkmode: boolean;
   fullscreen: boolean;
   loading: number;
   notifications: Array<Notification>;
 }
 export const initialState: MainState = {
+  darkmode: false,
   fullscreen: false,
   // Number of running task
   loading: 0,
@@ -102,6 +115,9 @@ export const initialState: MainState = {
 export default function reducer(state = initialState, action: Actions) {
   return produce(state, (draft) => {
     switch (action.type) {
+      case TOGGLE_DARKMODE:
+        draft.darkmode = !state.darkmode;
+        break;
       case TOGGLE_FULLSCREEN:
         draft.fullscreen = !state.fullscreen;
         break;

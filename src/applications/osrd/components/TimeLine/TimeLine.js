@@ -11,9 +11,8 @@ const drawTrains = (trains, selectedTrain, xScale, svg, height) => {
   trains.forEach((train, idx) => {
     const startTime = train.stops[0].time;
     const endTime = train.stops[train.stops.length - 1].time;
-    const strokeColor = (selectedTrain === idx) ? '#0088ce' : '#777';
     svg.append('line')
-      .style('stroke', strokeColor)
+      .attr('class', selectedTrain === idx ? 'timeline-train selected' : 'timeline-train')
       .style('stroke-width', 2)
       .attr('x1', xScale(sec2datetime(startTime)))
       .attr('y1', height - 4)

@@ -23,7 +23,7 @@
   .area {
     fill: url(#hatchPatternDarkGray);
     &.selected {
-      fill: rgba(0, 136, 207, 0.2);
+      fill: rgba(130, 190, 0, 0.2);
     }
   }
   .start-block {
@@ -58,10 +58,23 @@
   .head {
     stroke: var(--coolgray7);
     &.selected {
-      stroke: var(--blue);
+      stroke: var(--green);
     }
     &.pointer {
-      fill: var(--blue);
+      fill: var(--green);
+    }
+  }
+}
+
+/* SPEEDSPACE */
+.speedspace-chart {
+  .area {
+    fill: rgba(130, 190, 0, 0.2);
+  }
+  .speed {
+    stroke: var(--green);
+    &.pointer {
+      fill: var(--green);
     }
   }
 }
@@ -80,6 +93,11 @@
   }
   .grid .tick line {
     stroke: var(--coolgray3);
+  }
+  .timeline-train {
+    &.selected {
+      stroke: var(--green);
+    }
   }
 }
 

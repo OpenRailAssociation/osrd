@@ -1,8 +1,6 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { Router, Route, Switch } from 'react-router-dom';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import PropTypes from 'prop-types';
+import { useSelector, useDispatch } from 'react-redux';
 
 import Loader from 'common/Loader';
 import HomeOSRD from 'applications/osrd/Home';
@@ -10,62 +8,55 @@ import HomeSmartFlows from 'applications/smartflows/Home';
 import HomeCarto from 'applications/carto/Home';
 import HomeEditor from 'applications/editor/Home';
 
-import * as allUserActions from 'reducers/user';
+import { attemptLoginOnLaunch } from 'reducers/user';
 import Home from 'main/Home';
 import history from 'main/history';
 
-class App extends React.Component {
-  static propTypes = {
-    userActions: PropTypes.object.isRequired,
-    user: PropTypes.object.isRequired,
-  };
+export default function App() {
+  const user = useSelector((state) => state.user);
+  const { darkmode } = useSelector((state) => state.main);
+  const dispatch = useDispatch();
 
-  async componentDidMount() {
-    const { userActions } = this.props;
-    await userActions.attemptLoginOnLaunch();
-  }
+  useEffect(() => {
+    dispatch(attemptLoginOnLaunch());
+  }, []);
 
-  render() {
-    const { user } = this.props;
+  // Conditionnal theming
+  useEffect(() => {
+    if (darkmode) {
+      import('@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.dark.min.css');
+    } else {
+      import('@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.min.css');
+    }
+  }, [darkmode]);
 
-    return (
-      <Suspense fallback={<Loader />}>
-        {user.isLogged && (
-          <Router history={history}>
-            <Switch>
-              <Route exact path="/">
-                <Home />
-              </Route>
-              <Route path="/osrd">
-                <HomeOSRD />
-              </Route>
-              <Route path="/smartflows">
-                <HomeSmartFlows />
-              </Route>
-              <Route path="/carto">
-                <HomeCarto />
-              </Route>
-              <Route path="/editor">
-                <HomeEditor />
-              </Route>
-            </Switch>
-          </Router>
-        )}
-        {!user.isLogged && (
-          <Loader />
-        )}
-      </Suspense>
-    );
-  }
+  return (
+    <Suspense fallback={<Loader />}>
+      {user.isLogged && (
+        <Router history={history}>
+          <Switch>
+            <Route exact path="/">
+              <Home />
+            </Route>
+            <Route path="/osrd">
+              <HomeOSRD />
+            </Route>
+            <Route path="/smartflows">
+              <HomeSmartFlows />
+            </Route>
+            <Route path="/carto">
+              <HomeCarto />
+            </Route>
+            <Route path="/editor">
+              <HomeEditor />
+            </Route>
+          </Switch>
+        </Router>
+      )}
+      {!user.isLogged && (
+        <Loader />
+      )}
+
+    </Suspense>
+  );
 }
-
-const mapStateToProps = (state) => ({
-  user: state.user,
-  map: state.map,
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  userActions: bindActionCreators(allUserActions, dispatch),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(App);

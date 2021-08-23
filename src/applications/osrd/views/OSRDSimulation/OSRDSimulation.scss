@@ -51,7 +51,7 @@ svg text {
   .area {
     fill: url(#hatchPatternGray);
     &.selected {
-      fill: rgba(0, 136, 207, 0.2);
+      fill: rgba(48, 51, 131, 0.2);
     }
   }
   .start-block {
@@ -111,7 +111,7 @@ svg text {
     bottom: 2.5rem;
   }
   .area {
-    fill: rgba(0, 136, 207, 0.2);
+    fill: rgba(48, 51, 131, 0.2);
   }
   .speed {
     stroke: var(--blue);
@@ -155,6 +155,12 @@ svg text {
   }
   .grid .tick line {
     stroke: var(--coolgray11);
+  }
+  .timeline-train {
+    stroke: var(--coolgray9);
+    &.selected {
+      stroke: var(--primary);      
+    }
   }
 }
 

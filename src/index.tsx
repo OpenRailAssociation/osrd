@@ -13,7 +13,6 @@ import Loader from 'common/Loader';
 import './i18n';
 import 'config/variables.css';
 import 'main/App/App.scss';
-import '@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.min.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 // Sentry
