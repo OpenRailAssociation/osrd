@@ -20,6 +20,7 @@ import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSuccession;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
@@ -235,20 +236,8 @@ public class Helpers {
         return config;
     }
 
-    /** Loads the phases in the given simulation file
-     * The purpose of this function is to edit the phases and call makeCOnfigWithGivenPhases afterwards */
-    public static RJSTrainPhase[] loadRJSPhases(String simulationPath) {
-        try {
-            var path = getResourcePath(simulationPath);
-            var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, path);
-            return schedule.trainSchedules.stream().findAny().orElseThrow().phases;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /** Loads the given config, but replaces the given phases in the schedule */
-    public static Config makeConfigWithGivenPhases(RJSTrainPhase[] phases, String baseConfigPath) {
+    /** Loads the given config, but replaces the given stops in the schedule */
+    public static Config makeConfigWithGivenStops(String baseConfigPath, RJSTrainStop[] stops) {
         try {
             var path = getResourcePath(baseConfigPath);
             var baseDirPath = path.getParent();
@@ -258,7 +247,7 @@ public class Helpers {
             var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
             var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
             for (var trainSchedule : schedule.trainSchedules) {
-                trainSchedule.phases = phases;
+                trainSchedule.stops = stops;
             }
             var trainSchedules = RJSSimulationParser.parse(infra, schedule);
             var successionTables = new ArrayList<SuccessionTable>();
@@ -401,13 +390,6 @@ public class Helpers {
             }
         }
         return res;
-    }
-
-    /** Get a list of 2 phases on the base infra, with the transition happening roughly half-way */
-    public static RJSTrainPhase[] loadPhasesLongerFirstPhase() {
-        var phases = loadRJSPhases("tiny_infra/simulation_several_phases.json");
-        phases[0].endLocation = new RJSTrackLocation(new ID<>("ne.micro.foo_to_bar"), 4000);
-        return phases;
     }
 
     /** Create a tvd section given waypoints */

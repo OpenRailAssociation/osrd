@@ -26,10 +26,8 @@ import fr.sncf.osrd.train.phases.NavigatePhase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.HashSet;
-import java.util.Set;
+
+import java.util.*;
 import java.util.function.Function;
 
 public class RJSTrainScheduleParser {
@@ -248,10 +246,12 @@ public class RJSTrainScheduleParser {
                 res.add(new TrainStop(position, stop.duration));
             }
         } else {
-            // The last stop needs to be slightly before the actual end
-            // to avoid reaching the end of a track because of inaccuracies
-            res.add(new TrainStop(path.length - 1e-3, 0));
+            res.add(new TrainStop(-1, 0));
         }
+        for (var stop : res)
+            if (stop.position < 0)
+                stop.position = path.length - 1e-3;
+        res.sort(Comparator.comparingDouble(stop -> stop.position));
         return res;
     }
 }

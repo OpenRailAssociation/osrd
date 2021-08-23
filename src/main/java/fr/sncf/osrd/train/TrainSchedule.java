@@ -55,13 +55,17 @@ public final class TrainSchedule {
         this.initialSpeed = initialSpeed;
         this.phases = phases;
         this.plannedPath = plannedPath;
-        if (stops == null)
-            this.stops = Collections.singletonList(new TrainStop(plannedPath.length - 1e-3, 0));
-        else
-            this.stops = stops;
         if (trainDecisionMaker == null)
             trainDecisionMaker = new TrainDecisionMaker.DefaultTrainDecisionMaker();
         this.trainDecisionMaker = trainDecisionMaker;
         this.speedInstructions = speedInstructions;
+        initStops(stops);
+    }
+
+    private void initStops(List<TrainStop> stops) {
+        if (stops == null)
+            this.stops = Collections.singletonList(new TrainStop(-1, 0));
+        else
+            this.stops = stops;
     }
 }
