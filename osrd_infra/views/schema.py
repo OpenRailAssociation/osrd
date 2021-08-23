@@ -53,8 +53,10 @@ def get_schema():
     for model in apps.get_app_config("osrd_infra").get_models():
         if Component not in model.__bases__:
             continue
+        component_meta = get_component_meta(model)
         components.append({
-            'component_name': get_component_meta(model).name,
+            'component_name': component_meta.name,
+            'unique': component_meta.unique,
             'fields': [{
                 'name': field.name,
                 'type': get_type(field),
