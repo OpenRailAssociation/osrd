@@ -34,9 +34,6 @@ public final class SignalNavigatePhase extends NavigatePhase {
             TrainPath expectedPath,
             List<TrainStop> stops
     ) {
-        if (stops == null)
-            stops = new ArrayList<>();
-
         var actionPointPath = trackSectionToActionPointPath(driverSightDistance,
                 expectedPath,
                 startLocation,

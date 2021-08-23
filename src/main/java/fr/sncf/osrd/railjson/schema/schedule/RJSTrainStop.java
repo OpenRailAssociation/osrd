@@ -5,7 +5,8 @@ import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
 /** This class represents a stop on the train path */
 public class RJSTrainStop {
 
-    /** Stop position on the track, as a distance to the path start
+    /** Stop position on the track, as a distance to the path start.
+     * With a negative value, the stop will be placed at the end of the path.
      * One must be specified between position and location */
     public Double position;
 
