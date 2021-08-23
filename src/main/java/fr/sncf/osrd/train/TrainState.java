@@ -169,25 +169,48 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         );
     }
 
+    /** Finds the action to reach the speed limit given at nextPosition at the next update */
+    private Action findActionToReachTargetSpeedAtPosition(
+            TrainPhysicsIntegrator integrator,
+            boolean isLate,
+            double nextPosition) {
+        // get the list of active speed controllers
+        var activeSpeedControllers = trainSchedule.trainDecisionMaker.getActiveSpeedControllers(isLate);
+
+        // get the speed directive
+        nextPosition = Double.min(nextPosition, trainSchedule.plannedPath.length);
+        var speedDirective = new SpeedDirective(Double.POSITIVE_INFINITY);
+        for (var controller : activeSpeedControllers)
+            if (controller.isActive(nextPosition, stopIndex))
+                speedDirective.mergeWith(controller.getDirective(nextPosition));
+
+        // get the action the driver
+        return trainSchedule.trainDecisionMaker.getNextAction(speedDirective, integrator);
+    }
+
+    /** Iteratively look for the next action to follow closely the indicated speeds.
+     * At the next update, we want the train to be at the speed limit given at the position it will be */
+    private Action iterateFindNextAction(TrainPhysicsIntegrator integrator, boolean isLate, double timeStep, double distanceStep) {
+        var currentSpeed = this.speed;
+        Action action = Action.coast();
+
+        // We only need several iteration when going at low speed
+        final var nIteration = speed > 2. ? 1 : 3;
+
+        for (int i = 0; i < nIteration; i++) {
+            var nextPosition = location.getPathPosition() + currentSpeed * timeStep;
+            action = findActionToReachTargetSpeedAtPosition(integrator, isLate, nextPosition);
+            var update = integrator.computeUpdate(action, distanceStep);
+            currentSpeed = update.speed;
+        }
+        return action;
+    }
+
     private void step(
             Train.TrainStateChange locationChange,
             @SuppressWarnings("SameParameterValue") double timeStep,
             double distanceStep
     ) {
-        var prevLocation = location.getPathPosition();
-
-        // get the list of active speed controllers
-        var isLate = trainSchedule.speedInstructions.secondsLate(prevLocation, time) > 0;
-        var activeSpeedControllers = trainSchedule.trainDecisionMaker.getActiveSpeedControllers(isLate);
-        locationChange.speedControllersUpdates.dedupAdd(prevLocation, activeSpeedControllers);
-
-        // get the speed directive
-        var nextPosition = location.getPathPosition() + speed * timeStep;
-        nextPosition = Double.min(nextPosition, trainSchedule.plannedPath.length);
-        var speedDirective = new SpeedDirective(Double.POSITIVE_INFINITY);
-        for (var controller : activeSpeedControllers)
-            speedDirective.mergeWith(controller.getDirective(nextPosition));
-
         var rollingStock = trainSchedule.rollingStock;
         var integrator = TrainPhysicsIntegrator.make(
                 timeStep,
@@ -195,8 +218,13 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 speed,
                 location.meanTrainGrade());
 
-        // get the action the driver
-        Action action = trainSchedule.trainDecisionMaker.getNextAction(speedDirective, integrator);
+        var prevLocation = location.getPathPosition();
+        var isLate = trainSchedule.speedInstructions.secondsLate(prevLocation, time) > 0;
+
+        var activeSpeedControllers = trainSchedule.trainDecisionMaker.getActiveSpeedControllers(isLate);
+        locationChange.speedControllersUpdates.dedupAdd(prevLocation, activeSpeedControllers);
+
+        var action = iterateFindNextAction(integrator, isLate, timeStep, distanceStep);
 
         logger.trace("train took action {}", action);
         assert action != null;
