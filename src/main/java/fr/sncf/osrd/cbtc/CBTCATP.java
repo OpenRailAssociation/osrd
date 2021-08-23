@@ -9,14 +9,13 @@ import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPositionTracker;
 import fr.sncf.osrd.speedcontroller.CBTCSpeedController;
+import fr.sncf.osrd.infra.trackgraph.Switch;
+import fr.sncf.osrd.infra.trackgraph.SwitchPosition;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.train.TrackSectionRange;
 
 
 import java.util.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Class dedicated to the calculation of speed constraints related to the CBTC.
@@ -89,41 +88,28 @@ public class CBTCATP {
     }
 
     /**
-     * Calculate the position of the next switch which is not reserved TODO : to
-     * review
+     * Calculates the position of the next swchitch in movement or not reserved
      * 
      * @return Position of the next switch
      */
     private double getNextClosedSwitchPathPosition() {
-        // ArrayList<TrackSectionRange> fullPath = trainSchedule.plannedPath.trackSectionPath;
-        // var curTrackSectionPos = location.trackSectionRanges.getFirst();
+        var fullPath = trainSchedule.plannedPath.trackSectionPath;
 
-        // boolean seen = false;
-        // double switchPosition = 0;
-        // for (int i = 0; i < fullPath.size(); i++) {
-        //     TrackSectionRange range = fullPath.get(i);
-        //     switchPosition += range.length();
-        //     if (!seen && range.edge.id == curTrackSectionPos.edge.id) {
-        //         seen = true;
-        //     }
-        //     if (seen) {
-        //         var nodeIndex = range.edge.getEndNode(range.direction);
-        //         var node = sim.infra.trackGraph.getNode(nodeIndex);
-
-        //         if (node.getClass() == Switch.class) {
-        //             var switchState = sim.infraState.getSwitchState(((Switch) node).switchIndex);
-        //             var nextTrackSection = (i < fullPath.size() - 1) ? fullPath.get(i + 1) : null;
-        //             if (switchState.getPosition() == SwitchPosition.MOVING || nextTrackSection == null
-        //                     || nextTrackSection.edge.id != switchState.getBranch().id
-        //                             && range.edge.id != switchState.getBranch().id) {
-        //                 logger.debug("CLOSED SWITCH POSITION : {} | {}", switchPosition - 50,
-        //                         location.getPathPosition());
-        //                 return switchPosition - 50; // TODO : change 50 for a meaningfull variable
-        //             }
-        //         }
-        //     }
-        // }
-        return Double.POSITIVE_INFINITY;
+        double maLength = 0;
+        for (int i = 0; i < fullPath.size(); i++) {
+            var range = fullPath.get(i);
+            var nodeIndex = range.edge.getEndNode(range.direction);
+            var node = sim.infra.trackGraph.getNode(nodeIndex);
+            if (node.getClass() == Switch.class) {
+                var switchRef = (Switch)node;
+                if (!sim.infraState.towerState.isCurrentAllowed(switchRef.id, trainSchedule.trainID))
+                    break;
+                if (sim.infraState.getSwitchState(switchRef.index).getPosition() == SwitchPosition.MOVING)
+                    break;
+            }
+            maLength += range.edge.length;
+        }
+        return maLength;
     }
 
     /**
