@@ -50,6 +50,7 @@ public class Train {
                 new ArrayDeque<>(),
                 new TrainPath(schedule.plannedPath),
                 0,
+                0,
                 0
         );
 
