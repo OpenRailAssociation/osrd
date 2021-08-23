@@ -61,7 +61,7 @@ const createChart = (chart, dataSimulation, keyValues, ref, rotate) => {
     : chart.y;
 
   const width = parseInt(d3.select(`#container-${CHART_ID}`).style('width'), 10);
-  const chartLocal = defineChart(width, 300, defineX, defineY, ref, rotate, keyValues, CHART_ID);
+  const chartLocal = defineChart(width, 400, defineX, defineY, ref, rotate, keyValues, CHART_ID);
   return (chart === undefined)
     ? chartLocal
     : { ...chartLocal, x: chart.x, y: chart.y };
