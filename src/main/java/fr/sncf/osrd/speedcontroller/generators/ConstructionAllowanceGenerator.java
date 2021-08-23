@@ -101,9 +101,6 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
 
         // backwards acceleration calculation
         double speed = roiSpeeds.interpolate(endPosition);
-        double scaledSpeed = newSpeeds.interpolate(endPosition);
-
-        assert speed >= scaledSpeed;
 
         var location = convertPosition(schedule, sim, endPosition);
 
