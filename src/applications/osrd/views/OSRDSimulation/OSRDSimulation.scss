@@ -11,6 +11,9 @@ svg text {
   height: 50vh;
 }
 
+.btn-selected-train {
+  text-align: left;
+}
 .simulation-trainlist {
   max-height: 17rem;
   overflow: auto;
@@ -122,10 +125,9 @@ svg text {
   }
 }
 
-
 /* TABLE OVERRIDE */
 .table-cell-selected {
-  color: #0088ce;
+  color: var(--blue);
   font-weight: bold;
 }
 .table-shrink {

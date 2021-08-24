@@ -14,7 +14,7 @@ import TrainsList from 'applications/osrd/views/OSRDSimulation/TrainsList';
 import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
 import TimeLine from 'applications/osrd/components/TimeLine/TimeLine';
 import { updateViewport } from 'reducers/map';
-import { updateTimePosition, updateSimulation } from 'reducers/osrdsimulation';
+import { updateMustRedraw, updateTimePosition, updateSimulation } from 'reducers/osrdsimulation';
 import { simplifyData } from 'applications/osrd/components/Helpers/ChartHelpers';
 import './OSRDSimulation.scss';
 import { sec2time } from 'utils/timeManipulation';
@@ -71,6 +71,11 @@ const OSRDSimulation = () => {
     }
   };
 
+  const toggleTrainList = () => {
+    setSpaceTimeFullWidth(!spaceTimeFullWidth);
+    dispatch(updateMustRedraw(true));
+  };
+
   useEffect(() => {
     if (simulation.trains[selectedTrain]
       && simulation.trains[selectedTrain].steps[hoverPosition]) {
@@ -105,12 +110,39 @@ const OSRDSimulation = () => {
               <div className="osrd-simulation-container mb-2">
                 <div className="row">
                   {spaceTimeFullWidth ? (
-                    <div className="col-1">
-                      {simulation.trains[selectedTrain].name}
+                    <div className="col-1 d-flex">
+                      <button
+                        type="button"
+                        className="btn btn-white btn-only-icon btn-sm d-flex"
+                        onClick={toggleTrainList}
+                      >
+                        <div className="btn-selected-train">
+                          <div className="">
+                            {simulation.trains[selectedTrain].name}
+                          </div>
+                          <div className="small">
+                            {sec2time(simulation.trains[selectedTrain].stops[0].time)}
+                          </div>
+                          <div className="small">
+                            {sec2time(simulation.trains[selectedTrain]
+                              .stops[simulation.trains[selectedTrain].stops.length - 1].time)}
+                          </div>
+                        </div>
+                        <i className="ml-1 icons-arrow-next" />
+                      </button>
                     </div>
                   ) : (
-                    <div className="col-md-6">
-                      <TrainsList />
+                    <div className="col-md-6 d-flex">
+                      <button
+                        type="button"
+                        className="btn btn-white btn-only-icon btn-sm mr-2"
+                        onClick={toggleTrainList}
+                      >
+                        <i className="icons-arrow-prev" />
+                      </button>
+                      <div className="flex-fill">
+                        <TrainsList />
+                      </div>
                     </div>
                   )}
                   <div className={spaceTimeFullWidth ? 'col-11' : 'col-md-6'}>
