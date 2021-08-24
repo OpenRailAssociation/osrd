@@ -190,7 +190,10 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
     /** Iteratively look for the next action to follow closely the indicated speeds.
      * At the next update, we want the train to be at the speed limit given at the position it will be */
-    private Action iterateFindNextAction(TrainPhysicsIntegrator integrator, boolean isLate, double timeStep, double distanceStep) {
+    private Action iterateFindNextAction(TrainPhysicsIntegrator integrator,
+                                         boolean isLate,
+                                         double timeStep,
+                                         double distanceStep) {
         var currentSpeed = this.speed;
         Action action = Action.coast();
 
