@@ -76,49 +76,54 @@ public class SimulationEndpoint implements Take {
             InvalidSchedule,
             InvalidSuccession,
             SimulationError {
-        // Parse request input
-        var body = new RqPrint(req).printBody();
-        var request = adapterRequest.fromJson(body);
-        if (request == null)
-            return new RsWithStatus(new RsText("missing request body"), 400);
-
-        // load infra
-        Infra infra;
         try {
-            infra = infraManager.load(request.infra);
-        } catch (InfraLoadException | InterruptedException e) {
-            return new RsWithStatus(new RsText(
-                    String.format("Error loading infrastructure '%s'%n%s", request.infra, e.getMessage())), 400);
+            // Parse request input
+            var body = new RqPrint(req).printBody();
+            var request = adapterRequest.fromJson(body);
+            if (request == null)
+                return new RsWithStatus(new RsText("missing request body"), 400);
+
+            // load infra
+            Infra infra;
+            try {
+                infra = infraManager.load(request.infra);
+            } catch (InfraLoadException | InterruptedException e) {
+                return new RsWithStatus(new RsText(
+                        String.format("Error loading infrastructure '%s'%n%s", request.infra, e.getMessage())), 400);
+            }
+
+            // load train schedules
+            var rjsSimulation = new RJSSimulation(request.rollingStocks, request.trainSchedules);
+            var trainSchedules = RJSSimulationParser.parse(infra, rjsSimulation);
+
+            // load trains successions tables
+            var successions = new ArrayList<SuccessionTable>();
+            if (request.successions != null) {
+                var rjsSuccessions = new RJSSuccessions(request.successions);
+                successions = RJSSuccessionsParser.parse(rjsSuccessions);
+            }
+
+            // create the simulation and his changelog
+            var changeConsumers = new ArrayList<ChangeConsumer>();
+            var multiplexer = new ChangeConsumerMultiplexer(changeConsumers);
+            var sim = Simulation.createFromInfraAndSuccessions(infra, successions, 0, multiplexer);
+            var resultLog = new ArrayResultLog(infra, sim);
+            multiplexer.add(resultLog);
+
+            // insert the train start events into the simulation
+            for (var trainSchedule : trainSchedules)
+                TrainCreatedEvent.plan(sim, trainSchedule);
+
+            // run the simulation loop
+            while (!sim.isSimulationOver())
+                sim.step();
+
+            var simulationResponse = resultLog.getResults();
+            return new RsJson(new RsWithBody(adapterResult.toJson(simulationResponse)));
+        } catch (Throwable ex) {
+            ex.printStackTrace(System.err);
+            throw ex;
         }
-
-        // load train schedules
-        var rjsSimulation = new RJSSimulation(request.rollingStocks, request.trainSchedules);
-        var trainSchedules = RJSSimulationParser.parse(infra, rjsSimulation);
-
-        // load trains successions tables
-        var successions = new ArrayList<SuccessionTable>();
-        if (request.successions != null) {
-            var rjsSuccessions = new RJSSuccessions(request.successions);
-            successions = RJSSuccessionsParser.parse(rjsSuccessions);
-        }
-
-        // create the simulation and his changelog
-        var changeConsumers = new ArrayList<ChangeConsumer>();
-        var multiplexer = new ChangeConsumerMultiplexer(changeConsumers);
-        var sim = Simulation.createFromInfraAndSuccessions(infra, successions, 0, multiplexer);
-        var resultLog = new ArrayResultLog(infra, sim);
-        multiplexer.add(resultLog);
-
-        // insert the train start events into the simulation
-        for (var trainSchedule : trainSchedules)
-            TrainCreatedEvent.plan(sim, trainSchedule);
-
-        // run the simulation loop
-        while (!sim.isSimulationOver())
-            sim.step();
-
-        var simulationResponse = resultLog.getResults();
-        return new RsJson(new RsWithBody(adapterResult.toJson(simulationResponse)));
     }
 
     public static final class SimulationRequest {
