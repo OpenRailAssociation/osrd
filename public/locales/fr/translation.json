@@ -118,6 +118,11 @@
     "notice": "Nous rencontrons quelques problèmes ",
     "reloadButton": "Rafraîchir"
   },
+  "Home": {
+    "map": "Cartographie",
+    "editor": "Éditeur d'infrastructure",
+    "timetable": "Grilles horaires"
+  },
   "Login": {
     "connect": "Se connecter",
     "englishFlag": "drapeau anglais",
