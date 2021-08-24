@@ -172,6 +172,9 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             @SuppressWarnings("SameParameterValue") double timeStep,
             double distanceStep
     ) {
+        if(timeStep < 10e-9) {
+            return;
+        }
         var prevLocation = location.getPathPosition();
 
         // get the list of active speed controllers
