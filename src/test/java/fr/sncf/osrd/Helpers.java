@@ -421,7 +421,7 @@ public class Helpers {
     }
 
     /** Throws an error if the (interpolated) speed per position is equal or above the base run
-     * between begin + 1 and end - 1 (avoiding errors because of the edges point) */
+     * between begin and end (avoiding errors because of the edges point) */
     public static void assertLowerSpeedPerPositionBetween(Iterable<TimelineEvent> eventsBase,
                                                           Iterable<TimelineEvent> events,
                                                           double begin,
@@ -430,10 +430,10 @@ public class Helpers {
         var speedPerPosition = getSpeedPerPosition(events);
         end = Double.min(end, baseSpeedPerPosition.lastKey());
         begin = Double.max(baseSpeedPerPosition.firstKey(), begin);
-        for (double d = begin + 1; d < end - 1; d += 1) {
+        for (double d = begin; d < end; d += 1) {
             var base = baseSpeedPerPosition.interpolate(d);
             var result = speedPerPosition.interpolate(d);
-            assert base > result;
+            assert result - base <= 1E-3;
         }
     }
 

@@ -140,16 +140,21 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
         // coasting before deceleration phases
         for (var announcer : limitAnnounceSpeedControllers) {
-            // deceleration phases that are entirely above vf
-            if (announcer.targetSpeedLimit > vf)
-                res.add(announcer.endPosition);
-            // deceleration phases that are entirely above vf
-            else {
-                double targetSpeed = announcer.targetSpeedLimit;
-                double gamma = schedule.rollingStock.gamma;
-                // TODO : adapt this to non-constant deceleration
-                var requiredBrakingDistance = (vf * vf - targetSpeed * targetSpeed) / (2 * gamma);
-                res.add(announcer.endPosition - requiredBrakingDistance);
+            // if that LimitAnnounceSpeedController is above v1 that means it will never apply here
+            if (v1 < announcer.targetSpeedLimit) {
+                continue;
+            } else {
+                // deceleration phases that are entirely above vf
+                if (announcer.targetSpeedLimit > vf)
+                    res.add(announcer.endPosition);
+                    // deceleration phases that are entirely above vf
+                else {
+                    double targetSpeed = announcer.targetSpeedLimit;
+                    double gamma = schedule.rollingStock.gamma;
+                    // TODO : adapt this to non-constant deceleration
+                    var requiredBrakingDistance = (vf * vf - targetSpeed * targetSpeed) / (2 * gamma);
+                    res.add(announcer.endPosition - requiredBrakingDistance);
+                }
             }
         }
         // coasting before accelerating slopes
