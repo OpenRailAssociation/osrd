@@ -8,4 +8,9 @@ public final class MissingRollingStockField extends InvalidRollingStock {
     public MissingRollingStockField(String fieldName) {
         this.fieldName = fieldName;
     }
+
+    @Override
+    public String getMessage() {
+        return String.format("MissingRollingStockField exception: missing field {%s}", fieldName);
+    }
 }
