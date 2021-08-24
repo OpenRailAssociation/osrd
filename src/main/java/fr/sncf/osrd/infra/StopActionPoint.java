@@ -33,7 +33,9 @@ public class StopActionPoint implements ActionPoint {
 
     @Override
     public void interact(Simulation sim, Train train, InteractionType interactionType) throws SimulationError {
-        var time = sim.getTime() + duration;
+        var time = sim.getTime();
+        if (duration > 0)
+            time += duration;
         RestartTrainEvent.plan(sim, time, train, stopIndex);
     }
 

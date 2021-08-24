@@ -93,4 +93,32 @@ public class StopTests {
         }
         run(sim, config);
     }
+
+    @Test
+    public void testNoStopWhenNegativeTimes() throws InvalidInfraException {
+        final var infra = getBaseInfra();
+        final var config = makeConfigWithGivenStops("tiny_infra/config_railjson.json",
+                new RJSTrainStop[]{
+                        new RJSTrainStop(200., null, -1),
+                        new RJSTrainStop(1000., null, -1),
+                        new RJSTrainStop(3000., null, -1),
+                        new RJSTrainStop(5000., null, -1),
+                        new RJSTrainStop(-1., null, 0)
+                }
+        );
+        var simWithStops = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var eventsWithStops = run(simWithStops, config);
+        var lastPositionWithStop = lastTrainPosition(eventsWithStops);
+        var timeWithStops = simWithStops.getTime();
+
+
+        var simNoStop = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var eventsNoStop = run(simNoStop);
+        var lastPositionNoStop = lastTrainPosition(eventsNoStop);
+        var timeNoStop = simNoStop.getTime();
+
+
+        assertEquals(lastPositionNoStop, lastPositionWithStop, 0.1);
+        assertEquals(timeWithStops, timeNoStop, 0.1);
+    }
 }
