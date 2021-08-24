@@ -105,7 +105,7 @@ export default function TimetableSelectorModal() {
                   <button
                     type="button"
                     onClick={() => deleteTimetable(timetable)}
-                    className="btn btn-sm btn-only-icon btn-white"
+                    className="ml-1 btn btn-sm btn-only-icon btn-white"
                   >
                     <i className="icons-close" />
                   </button>

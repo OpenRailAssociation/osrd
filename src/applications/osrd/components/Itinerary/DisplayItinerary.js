@@ -26,7 +26,7 @@ export default function DisplayItinerary(props) {
         ? '' : 'osrd-config-anchor'
       }
     >
-      <h2 className="d-flex align-items-center mb-0 pl-4 bg-white">
+      <h2 className="d-flex align-items-center mb-0 pl-4">
         <span className="mr-1 h2 text-success"><RiMapPin2Fill /></span>
         <span>{t('osrdconf:origin')}</span>
         <small className="ml-1">{osrdconf.pathfindingID}</small>

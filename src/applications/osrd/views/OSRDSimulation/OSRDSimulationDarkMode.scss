@@ -1,6 +1,17 @@
 /* COMMON */
+
+.btn-transparent {
+  &:hover, &:focus {
+    color: #585eea;
+  }
+}
+
+.osrd-simulation-container {
+  background-color: var(--coolgray15);
+}
+
 .spacetime-chart, .speedspace-chart, .timeline {
-  background-color: var(--coolgray11);
+  background-color: var(--gray);
   padding: 1rem;
   border-radius: 4px;
   .tick {
@@ -23,7 +34,7 @@
   .area {
     fill: url(#hatchPatternDarkGray);
     &.selected {
-      fill: rgba(130, 190, 0, 0.2);
+      fill: rgba(88, 94, 235, 0.2);
     }
   }
   .start-block {
@@ -58,10 +69,10 @@
   .head {
     stroke: var(--coolgray7);
     &.selected {
-      stroke: var(--green);
+      stroke: #585eea;
     }
     &.pointer {
-      fill: var(--green);
+      fill: #585eea;
     }
   }
 }
@@ -69,12 +80,12 @@
 /* SPEEDSPACE */
 .speedspace-chart {
   .area {
-    fill: rgba(130, 190, 0, 0.2);
+    fill: rgba(88, 94, 235, 0.2);
   }
   .speed {
-    stroke: var(--green);
+    stroke: #585eea;
     &.pointer {
-      fill: var(--green);
+      fill: #585eea;
     }
   }
 }
@@ -96,7 +107,7 @@
   }
   .timeline-train {
     &.selected {
-      stroke: var(--green);
+      stroke: #585eea;
     }
   }
 }

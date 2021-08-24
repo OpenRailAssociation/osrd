@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Loader from 'common/Loader';
+import { useSelector } from 'react-redux';
 import { get } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
@@ -12,6 +13,7 @@ import 'applications/osrd/components/RollingStock/RollingStock.scss';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
 export default function RollingStock() {
+  const { darkmode } = useSelector((state) => state.main);
   const { t } = useTranslation(['translation', 'rollingstock']);
   const [rollingStock, setRollingStock] = useState(undefined);
   const [resultContent, setResultContent] = useState(undefined);
@@ -22,6 +24,10 @@ export default function RollingStock() {
     sort: true, // true for ASC, false for DESC
   });
   const [isFiltering, setIsFiltering] = useState(false);
+
+  if (darkmode) {
+    import('./RollingStockDarkMode.scss');
+  }
 
   const searchMateriel = (e) => {
     setFilters({ ...filters, text: e.target.value.toLowerCase() });

@@ -2258,10 +2258,10 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@sncf/bootstrap-sncf.metier.reseau@^4.3.1-r6-beta":
-  version "4.3.1-r6-beta"
-  resolved "https://registry.yarnpkg.com/@sncf/bootstrap-sncf.metier.reseau/-/bootstrap-sncf.metier.reseau-4.3.1-r6-beta.tgz#8d1482131a657582cf7de2d33b3bbed804dd80c7"
-  integrity sha512-WkSSoW2fU2Lm/lJnAm/CAmAb0uOBuxTK25guZFtcgj/fkBwpJOoCKgFTkF7VFzE0JgL0rBiviYJTQMYtfYvO1Q==
+"@sncf/bootstrap-sncf.metier.reseau@^4.3.1-r6-beta2":
+  version "4.3.1-r6-beta2"
+  resolved "https://registry.yarnpkg.com/@sncf/bootstrap-sncf.metier.reseau/-/bootstrap-sncf.metier.reseau-4.3.1-r6-beta2.tgz#e1188b901ad32d1c8aebd3fa4661d6c6f889efd3"
+  integrity sha512-ioL4xZaUxTPAxlGPzUdfk07vrJ2kPPNHB8DCtL25uNd9j6pKhO5bMlJUhrJ2OmswTvd3X8jQggMBMQcXIVQGOw==
   dependencies:
     bootstrap "4.3.1"
     chart.js "^2.7.2"

@@ -9,7 +9,7 @@
     "@react-three/drei": "^5.1.2",
     "@react-three/fiber": "^6.1.5",
     "@sentry/browser": "^5.19.2",
-    "@sncf/bootstrap-sncf.metier.reseau": "^4.3.1-r6-beta",
+    "@sncf/bootstrap-sncf.metier.reseau": "^4.3.1-r6-beta2",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",

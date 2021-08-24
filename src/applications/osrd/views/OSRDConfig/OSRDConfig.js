@@ -13,11 +13,15 @@ import AddTrainLabels from 'applications/osrd/views/OSRDConfig/AddTrainLabels';
 import 'applications/osrd/views/OSRDConfig/OSRDConfig.scss';
 
 export default function OSRDConfig() {
-  const { fullscreen } = useSelector((state) => state.main);
+  const { fullscreen, darkmode } = useSelector((state) => state.main);
   const dispatch = useDispatch();
   const { t } = useTranslation(['translation', 'osrdconf']);
   const [extViewport, setExtViewport] = useState(undefined);
   const [mustUpdateTimetable, setMustUpdateTimetable] = useState(true);
+
+  if (darkmode) {
+    import('./OSRDConfigDarkMode.scss');
+  }
 
   useEffect(() => {
     if (extViewport !== undefined) {

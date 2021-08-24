@@ -17,7 +17,7 @@ const DropdownSNCF = ({ titleContent, items, type }) => {
   return (
     <div className="btn-group dropdown">
       <button
-        className={`${type} btn dropdown-toggle toolbar-item-spacing}`}
+        className={`${type} btn dropdown-toggle toolbar-item-spacing`}
         type="button"
         id="dropdownMenuButton"
         data-toggle="dropdown"

@@ -58,14 +58,22 @@ export default function LegacyNavBarSNCF(props) {
             <span className="ml-2 text-black"><FaMoon /></span>
           </div>
         </li>
-        <li className="toolbar-item toolbar-item-spacing separator-gray-500">
-          <button type="button" className="btn btn-transparent px-0 mr-2" onClick={() => changeLanguage('fr')}>
+        {/* <li className="toolbar-item toolbar-item-spacing separator-gray-500">
+          <button
+            type="button"
+            className="btn btn-transparent px-0 mr-2"
+            onClick={() => changeLanguage('fr')}
+          >
             <img src={frenchFlag} alt={t('Login.frenchFlag')} />
           </button>
-          <button type="button" className="btn btn-transparent px-0" onClick={() => changeLanguage('en')}>
+          <button
+            type="button"
+            className="btn btn-transparent px-0"
+            onClick={() => changeLanguage('en')}
+          >
             <img src={englishFlag} alt={t('Login.englishFlag')} />
           </button>
-        </li>
+        </li> */}
         <li className="toolbar-item separator-gray-500">
           <DropdownSNCF
             titleContent={(

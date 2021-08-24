@@ -1,0 +1,49 @@
+.osrd-config-item-container {
+  background-color: var(--coolgray15);
+  border-color: var(--coolgray15);
+}
+.map-modal {
+  background-color: var(--black);
+  border-color: var(--coolgray15);
+}
+
+.osrd-config-item-container {
+  &.osrd-config-item-clickable {
+    &:hover {
+      background-color: var(--coolgray11);
+    }
+  }
+}
+.timetable-trainlist {
+  .timetable-trainlist-train {
+    &:hover {
+      background-color: var(--gray);
+    }
+  }
+}
+
+.osrd-config-infraselector {
+  .osrd-config-infraselector-item {
+    background-color: var(--coolgray15);
+    &:hover {
+      background-color: var(--coolgray13);
+    }
+  }
+}
+
+.osrd-config-anchor {
+  background-image: linear-gradient(0deg, var(--coolgray11) 50%, transparent 50%);
+  &::before {
+    background-color: var(--coolgray15);
+  }
+}
+.osrd-config-place {
+  .hover {
+    &:hover {
+      background-color: var(--coolgray11);
+    }
+  }
+  &:not(.osrd-config-place-via):last-child::after {
+    background-color: var(--coolgray15);
+  }
+}
