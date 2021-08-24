@@ -51,7 +51,7 @@ import java.util.function.Supplier;
 
 public class Helpers {
 
-    private static final boolean saveCSVFiles = true;
+    private static final boolean saveCSVFiles = false;
 
     public static final class TestEvent extends TimelineEvent {
         public final String data;
@@ -220,14 +220,6 @@ public class Helpers {
      */
     public static Config getBaseConfigNoAllowance() {
         return getConfigWithSpeedInstructions(new SpeedInstructions(null));
-    }
-
-    /**
-     * Generates the defaults config from tiny_infra/config_railjson.json without allowances and with a
-     * specified infra
-     */
-    public static Config getBaseConfigWithInfra(Infra infra) {
-        return getConfigWithSpeedInstructionsAndInfra(new SpeedInstructions(null), infra);
     }
 
     /**
