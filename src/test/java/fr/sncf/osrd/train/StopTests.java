@@ -1,6 +1,7 @@
 package fr.sncf.osrd.train;
 
 import static fr.sncf.osrd.Helpers.*;
+import static fr.sncf.osrd.speedcontroller.SpeedInstructionsTests.isLate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
@@ -75,37 +76,21 @@ public class StopTests {
     }
 
     @Test
-    @Disabled("WIP")
-    public void testCorrectExpectedTimes() throws InvalidInfraException, FileNotFoundException, UnsupportedEncodingException {
+    public void testCorrectExpectedTimes() throws InvalidInfraException {
         final var infra = getBaseInfra();
         final var config = makeConfigWithGivenStops("tiny_infra/config_railjson.json",
                 new RJSTrainStop[]{
-                        //new RJSTrainStop(200., null, 10),
-                        //new RJSTrainStop(1000., null, 10),
+                        new RJSTrainStop(200., null, 10),
+                        new RJSTrainStop(1000., null, 10),
+                        new RJSTrainStop(3000., null, 0),
+                        new RJSTrainStop(5000., null, 60),
                         new RJSTrainStop(-1., null, 0)
                 }
         );
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         for (int i = 10; i < 150; i++) {
-            makeFunctionEvent(sim, i, () -> {
-                var train = sim.trains.values().stream().findFirst().orElseThrow();
-                if (train.getLastState().speed > 5) {
-                    var position = train.getLastState().location.getPathPosition();
-                    var secondsLate = train.schedule.speedInstructions.secondsLate(position, sim.getTime());
-                    assert secondsLate <= 10.;
-                }
-            });
+            makeAssertEvent(sim, i, () -> !isLate(sim));
         }
-        makeFunctionEvent(sim, 30, () -> {
-                    PrintWriter writer = new PrintWriter("foo-base.csv", "UTF-8");
-                    writer.println("position;time");
-                    var expectedTimes = sim.trains.values().stream().findFirst().orElseThrow().schedule.speedInstructions.expectedTimes;
-                    for (var position : expectedTimes.navigableKeySet()) {
-                        writer.println(String.format("%f;%f", position, expectedTimes.interpolate(position)));
-                    }
-                    writer.close();
-                });
-        var events = run(sim, getBaseConfig());
-        saveGraph(events, "foo-out.csv");
+        run(sim, config);
     }
 }
