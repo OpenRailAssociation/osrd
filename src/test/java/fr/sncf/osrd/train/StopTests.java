@@ -31,11 +31,9 @@ public class StopTests {
         var eventsWithStops = run(simWithStops, config);
         var lastPositionWithStop = lastTrainPosition(eventsWithStops);
 
-
         var simNoStop = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var eventsNoStop = run(simNoStop);
         var lastPositionNoStop = lastTrainPosition(eventsNoStop);
-
 
         assertEquals(lastPositionNoStop, lastPositionWithStop, 0.1);
     }
@@ -60,7 +58,6 @@ public class StopTests {
         var simShort = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         run(simShort, configShort);
         var timeShort = simShort.getTime();
-
 
         var simLong = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         run(simLong, configLong);
@@ -105,12 +102,10 @@ public class StopTests {
         var lastPositionWithStop = lastTrainPosition(eventsWithStops);
         var timeWithStops = simWithStops.getTime();
 
-
         var simNoStop = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         var eventsNoStop = run(simNoStop);
         var lastPositionNoStop = lastTrainPosition(eventsNoStop);
         var timeNoStop = simNoStop.getTime();
-
 
         assertEquals(lastPositionNoStop, lastPositionWithStop, 0.1);
         assertEquals(timeWithStops, timeNoStop, 0.1);
