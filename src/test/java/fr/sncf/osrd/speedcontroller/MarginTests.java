@@ -236,30 +236,44 @@ public class MarginTests {
 
     /** Test mareco with different slopes*/
     @ParameterizedTest
-    @ValueSource(ints = {0, 1, 2, 3, 4})
-    //@ValueSource(ints = {1})
+    //@ValueSource(ints = {0, 1, 2, 3, 4})
+    @ValueSource(ints = {6})
     public void testDifferentSlopes(int slopeProfile) throws InvalidInfraException {
         // inputs
         final double margin = 40.0;
         var slopes = new ArrayList<RJSSlope>();
         switch (slopeProfile) {
-            case 0:
+            case 0: // no slope / ramp
                 slopes.add(new RJSSlope(0, 10000, 0));
                 break;
-            case 1:
+            case 1: // ramp
                 slopes.add(new RJSSlope(0, 10000, 10));
                 break;
-            case 2:
+            case 2: // low slope
+                slopes.add(new RJSSlope(0, 10000, -2));
+                break;
+            case 3: // high slope
                 slopes.add(new RJSSlope(0, 10000, -10));
                 break;
-            case 3:
+            case 4: // high slope on a short segment
                 slopes.add(new RJSSlope(0, 5000, 0));
                 slopes.add(new RJSSlope(5000, 6000, -10));
                 slopes.add(new RJSSlope(6000, 10000, 0));
                 break;
-            case 4:
+            case 5: // high slope on half
                 slopes.add(new RJSSlope(0, 5000, 0));
                 slopes.add(new RJSSlope(5000, 10000, -10));
+                break;
+            case 6: // plenty of different slopes
+                slopes.add(new RJSSlope(0, 3000, 0));
+                slopes.add(new RJSSlope(3000, 3100, -20));
+                slopes.add(new RJSSlope(3100, 3200, 10));
+                slopes.add(new RJSSlope(3200, 3500, -15));
+                slopes.add(new RJSSlope(3500, 4000, 5));
+                slopes.add(new RJSSlope(4000, 5000, -2));
+                slopes.add(new RJSSlope(5000, 7000, 0));
+                slopes.add(new RJSSlope(7000, 7500, -10));
+                slopes.add(new RJSSlope(7500, 10000, 10));
                 break;
             default:
                 throw new InvalidInfraException("Unable to handle this parameter in testDifferentSlopes");
@@ -300,7 +314,7 @@ public class MarginTests {
         saveGraph(events, "..\\mareco-slope-out.csv");
 
         var expected = simTime * (1 + margin / 100);
-        assertEquals(expected, marginsSimTime, 5);
+        assertEquals(expected, marginsSimTime, 5 + 0.001 * expected);
 
         var coastingSpeedControllers =
                 findCoastingSpeedControllers(marginsConfig.trainSchedules.get(0).speedInstructions.targetSpeedControllers);
