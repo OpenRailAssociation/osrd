@@ -218,12 +218,16 @@ public class RailJSONParser {
             signalsBuilder.build();
 
             // Parse slopes and curves
+            if (trackSection.slopes == null)
+                trackSection.slopes = new ArrayList<>();
+            if (trackSection.curves == null)
+                trackSection.curves = new ArrayList<>();
             if (RJSTrackRange.isOverlaping(trackSection.slopes)) {
                 throw new InvalidInfraException(
-                        String.format("Track section '%s' has overlaping slopes", trackSection.id));
+                        String.format("Track section '%s' has overlapping slopes", trackSection.id));
             } else if (RJSTrackRange.isOverlaping(trackSection.curves)) {
                 throw new InvalidInfraException(
-                        String.format("Track section '%s' has overlaping curves", trackSection.id));
+                        String.format("Track section '%s' has overlapping curves", trackSection.id));
             }
 
             // Add an initial flat gradient slope
