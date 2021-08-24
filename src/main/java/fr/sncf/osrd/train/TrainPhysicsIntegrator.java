@@ -96,9 +96,14 @@ public class TrainPhysicsIntegrator {
         // normally the train speed should be positive
         assert currentSpeed >= 0;
 
-        // this is used to compute Mareco allowance
+        // if the train is supposed to coast
         if (Double.isNaN(speedDirective.allowedSpeed)) {
-            return Action.coast();
+            // make sure there's not a more restraining speedController active
+            if (currentSpeed <= speedDirective.lowestNotNaNSpeed)
+                return Action.coast();
+            else {
+                speedDirective.allowedSpeed = speedDirective.lowestNotNaNSpeed;
+            }
         }
 
         // if we're calculating backwards currentSpeed is > speedDirective.allowedSpeed
