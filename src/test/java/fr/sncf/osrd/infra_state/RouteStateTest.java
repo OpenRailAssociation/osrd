@@ -138,9 +138,13 @@ public class RouteStateTest {
         var newSwitch = new RJSSwitch("switch-foo-42", oldSwitch.base, oldSwitch.left,
                 oldSwitch.right, 42);
         infra.switches.add(newSwitch);
-        for (var route : infra.routes)
-            if (route.id.equals("rt.C3-S7"))
+        for (var route : infra.routes) {
+            if ("rt.C3-S7".equals(route.id) || "rt.C6-buffer_stop_b".equals(route.id)) {
                 route.switchesPosition.put(new ID<>(newSwitch.id), RJSSwitch.Position.LEFT);
+            } else if ("rt.C6-buffer_stop_a".equals(route.id)) {
+                route.switchesPosition.put(new ID<>(newSwitch.id), RJSSwitch.Position.RIGHT);
+            }
+        }
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);
@@ -171,9 +175,13 @@ public class RouteStateTest {
         var oldSwitch = infra.switches.iterator().next();
         var newSwitch = new RJSSwitch("switch-foo-42", oldSwitch.base, oldSwitch.left, oldSwitch.right, 42);
         infra.switches.add(newSwitch);
-        for (var route : infra.routes)
-            if (route.id.equals("rt.C3-S7"))
+        for (var route : infra.routes) {
+            if ("rt.C3-S7".equals(route.id) || "rt.C6-buffer_stop_b".equals(route.id)) {
                 route.switchesPosition.put(new ID<>(newSwitch.id), RJSSwitch.Position.LEFT);
+            } else if ("rt.C6-buffer_stop_a".equals(route.id)) {
+                route.switchesPosition.put(new ID<>(newSwitch.id), RJSSwitch.Position.RIGHT);
+            }
+        }
 
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         sim.infraState.getSwitchState(0).setPosition(sim, SwitchPosition.RIGHT);

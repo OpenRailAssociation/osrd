@@ -8,6 +8,8 @@ import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.SuccessionTable;
+import fr.sncf.osrd.infra.TVDSection;
+import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
@@ -29,11 +31,13 @@ import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.PathUtils;
 import fr.sncf.osrd.utils.SortedDoubleMap;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
+import net.bytebuddy.utility.RandomString;
 import okio.Okio;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
@@ -404,6 +408,26 @@ public class Helpers {
         var phases = loadRJSPhases("tiny_infra/simulation_several_phases.json");
         phases[0].endLocation = new RJSTrackLocation(new ID<>("ne.micro.foo_to_bar"), 4000);
         return phases;
+    }
+
+    /** Create a tvd section given waypoints */
+    public static TVDSection makeTVDSection(Waypoint...waypoints) {
+        var tvd = new TVDSection();
+        tvd.waypoints.addAll(Arrays.asList(waypoints));
+        tvd.id = RandomString.make();
+        return tvd;
+    }
+
+    /** Assign before tvd section to all given waypoints */
+    public static void assignBeforeTVDSection(TVDSection tvdSection, Waypoint...waypoints) {
+        for (var waypoint : waypoints)
+            waypoint.beforeTvdSection = tvdSection;
+    }
+
+    /** Assign after tvd section to all given waypoints */
+    public static void assignAfterTVDSection(TVDSection tvdSection, Waypoint...waypoints) {
+        for (var waypoint : waypoints)
+            waypoint.afterTvdSection = tvdSection;
     }
 
     /** Saves a csv files with the time, speed and positions. For debugging purpose. */

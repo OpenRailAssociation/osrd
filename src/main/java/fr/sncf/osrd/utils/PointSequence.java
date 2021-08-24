@@ -1,11 +1,14 @@
 package fr.sncf.osrd.utils;
 
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 import java.util.function.DoubleUnaryOperator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -119,6 +122,22 @@ public final class PointSequence<E> extends SortedSequence<E> implements Iterabl
             }
 
             valueList.add(value);
+        }
+
+        public interface DuplicateConsumer<E> {
+            void registerDuplicates(List<E> dups) throws InvalidInfraException;
+        }
+
+        /** Builds the PointSequence, ensuring unicity. */
+        public void buildUnique(DuplicateConsumer<E> duplicatesConsumer) throws InvalidInfraException {
+            for (var mapEntry : data.entrySet()) {
+                var position = mapEntry.getKey();
+                var values = mapEntry.getValue();
+                if (values.size() > 1)
+                    duplicatesConsumer.registerDuplicates(values);
+                res.add(position, values.get(0));
+            }
+            data.clear();
         }
 
         /**

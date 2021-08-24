@@ -1,5 +1,6 @@
 package fr.sncf.osrd.train;
 
+import static fr.sncf.osrd.Helpers.*;
 import static fr.sncf.osrd.train.TestTrains.FAST_NO_FRICTION_TRAIN;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -74,14 +75,15 @@ public class StaticSpeedLimitTest {
         limits.add(new RangeValue<>(0, 10000, new SpeedSection(false, 30.0)));
         limits.add(new RangeValue<>(5000, 6000, new SpeedSection(false, 25.0)));
 
-        var tvdSections = new HashMap<String, TVDSection>();
+        final var tvdSections = new HashMap<String, TVDSection>();
 
-        var waypointsAB = new ArrayList<Waypoint>(Arrays.asList(bufferStopA, bufferStopB));
-        var tvdSection = new TVDSection("TVDSectionAB", 0, waypointsAB, false);
+        var tvdSection = makeTVDSection(bufferStopA, bufferStopB);
+        tvdSection.index = 0;
+        assignAfterTVDSection(tvdSection, bufferStopA);
+        assignBeforeTVDSection(tvdSection, bufferStopB);
         tvdSections.put(tvdSection.id, tvdSection);
 
-        var waypointGraph = Infra.buildWaypointGraph(trackGraph, tvdSections);
-        final var routeGraphBuilder = new RouteGraph.Builder(waypointGraph);
+        final var routeGraphBuilder = new RouteGraph.Builder(trackGraph, 2);
 
         var tvdSectionsR1 = new SortedArraySet<TVDSection>();
         tvdSectionsR1.add(tvdSection);
@@ -89,10 +91,10 @@ public class StaticSpeedLimitTest {
         var releaseGroup = new SortedArraySet<TVDSection>();
         releaseGroup.add(tvdSection);
         releaseGroups.add(releaseGroup);
-        var route = routeGraphBuilder.makeRoute(
-                "R1", tvdSectionsR1, releaseGroups, new HashMap<>(), waypointsAB.get(0), null, null);
+        var route = routeGraphBuilder.makeRoute("R1", tvdSectionsR1, releaseGroups,
+                new HashMap<>(), bufferStopA, bufferStopB, null, EdgeDirection.START_TO_STOP);
 
-        final var infra = Infra.build(trackGraph, waypointGraph, routeGraphBuilder.build(),
+        final var infra = Infra.build(trackGraph, routeGraphBuilder.build(),
                 tvdSections, new HashMap<>(), new ArrayList<>(), new ArrayList<>());
 
         // initialize the simulation

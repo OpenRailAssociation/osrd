@@ -1,7 +1,7 @@
 package fr.sncf.osrd.train;
 
 import fr.sncf.osrd.infra.routegraph.Route;
-import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
+import fr.sncf.osrd.infra.TVDSectionPath;
 import fr.sncf.osrd.infra_state.RouteStatus;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -46,11 +46,9 @@ public class ActivateRoute {
         for (var i = 0; i < route.tvdSectionsPaths.size(); i++) {
             var currentTvdSectionPath = route.tvdSectionsPaths.get(i);
             occupyTvdSectionPath(sim, currentTvdSectionPath);
-            var currentTvdSectionPathDirection = route.tvdSectionsPathDirections.get(i);
-            for (var trackSection : currentTvdSectionPath.getTrackSections(currentTvdSectionPathDirection)) {
+            for (var trackSection : currentTvdSectionPath.trackSections)
                 if (trainPosition.intersect(trackSection))
                     return;
-            }
             freeTvdSectionPath(sim, currentTvdSectionPath);
         }
     }

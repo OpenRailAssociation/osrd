@@ -3,7 +3,18 @@ package fr.sncf.osrd.utils;
 import java.util.ArrayList;
 
 public class UnionFind {
-    private final ArrayList<Integer> parents = new ArrayList<>();
+    private final ArrayList<Integer> parents;
+
+    public UnionFind() {
+        this.parents = new ArrayList<>();
+    }
+
+    /** Create an union find with nbGroup */
+    public UnionFind(int nbGroup) {
+        this();
+        for (int i = 0; i < nbGroup; i++)
+            this.parents.add(-1);
+    }
 
     /**
      * Creates a new group.

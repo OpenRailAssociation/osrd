@@ -60,6 +60,13 @@ public final class TrackSection extends BiNEdge<TrackSection> {
     public final PointSequence<ActionPoint> forwardActionPoints = new PointSequence<>();
     public final PointSequence<ActionPoint> backwardActionPoints = new PointSequence<>();
 
+    /** Clamp an offset between 0 and the length of the track section */
+    public double clamp(double offset) {
+        if (offset < 0)
+            return 0;
+        return Math.min(offset, length);
+    }
+
     /** Return routes the track section is part of given a direction */
     public IntervalTree<RouteFragment> getRoutes(EdgeDirection direction) {
         if (direction == EdgeDirection.START_TO_STOP)

@@ -10,4 +10,11 @@ public enum EdgeEndpoint {
     EdgeEndpoint(int id) {
         this.id = id;
     }
+
+    /** Return the first met endpoint along the edge in the given direction */
+    public static EdgeEndpoint startEndpoint(EdgeDirection dir) {
+        if (dir == EdgeDirection.START_TO_STOP)
+            return BEGIN;
+        return END;
+    }
 }
