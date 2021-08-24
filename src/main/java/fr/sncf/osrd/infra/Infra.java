@@ -9,12 +9,10 @@ import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
-import fr.sncf.osrd.infra.waypointgraph.WaypointGraph;
 import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railml.RailMLParser;
-import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import okio.Okio;
 import java.io.IOException;
@@ -81,7 +79,6 @@ import java.util.HashMap;
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public final class Infra {
     public final TrackGraph trackGraph;
-    public final WaypointGraph waypointGraph;
     public final RouteGraph routeGraph;
     public final HashMap<String, TVDSection> tvdSections;
     public final HashMap<String, Aspect> aspects;
@@ -90,7 +87,6 @@ public final class Infra {
 
     private Infra(
             TrackGraph trackGraph,
-            WaypointGraph waypointGraph,
             RouteGraph routeGraph,
             HashMap<String, TVDSection> tvdSections,
             HashMap<String, Aspect> aspects,
@@ -103,20 +99,18 @@ public final class Infra {
         this.aspects = aspects;
         this.signals = signals;
         this.switches = switches;
-        this.waypointGraph = waypointGraph;
     }
 
     /** Create an OSRD Infra */
     public static Infra build(
             TrackGraph trackGraph,
-            WaypointGraph waypointGraph,
             RouteGraph routeGraph,
             HashMap<String, TVDSection> tvdSections,
             HashMap<String, Aspect> aspects,
             ArrayList<Signal> signals,
             ArrayList<Switch> switches
     ) throws InvalidInfraException {
-        var infra = new Infra(trackGraph, waypointGraph, routeGraph, tvdSections, aspects, signals, switches);
+        var infra = new Infra(trackGraph, routeGraph, tvdSections, aspects, signals, switches);
 
         for (var trackSection : trackGraph.iterEdges()) {
             var forwardBuilder = trackSection.forwardActionPoints.builder();
@@ -153,18 +147,6 @@ public final class Infra {
         return infra;
     }
 
-    /**
-     * Build a the WaypointGraph once track graph is filled
-     */
-    public static WaypointGraph buildWaypointGraph(
-            TrackGraph trackGraph, HashMap<String,
-            TVDSection> tvdSections
-    ) throws InvalidInfraException {
-        var waypointGraph = WaypointGraph.buildDetectorGraph(trackGraph);
-        linkTVDSectionToPath(waypointGraph, tvdSections);
-        return waypointGraph;
-    }
-
     private static ArrayList<Signal> buildTopologicalSignalOrder(
             ArrayList<Signal> signals
     ) throws InvalidInfraException {
@@ -199,44 +181,6 @@ public final class Infra {
         return order;
     }
 
-    /**
-     * Link TVD Sections with TVDSectionPath of a given detectorGraph
-     * Each TVDSection references TVDSectionPaths, and reciprocally.
-     */
-    private static void linkTVDSectionToPath(
-            WaypointGraph waypointGraph,
-            HashMap<String, TVDSection> tvdSections
-    ) throws InvalidInfraException {
-        // Initialize reverse map DetectorNode -> TVDSections
-        var nbDetector = waypointGraph.getNodeCount();
-        var detectorNodeToTVDSections = new ArrayList<SortedArraySet<TVDSection>>(nbDetector);
-        for (int i = 0; i < nbDetector; i++)
-            detectorNodeToTVDSections.add(new SortedArraySet<>());
-        for (var tvdSection : tvdSections.values()) {
-            for (var waypoint : tvdSection.waypoints) {
-                var nodeIndex = waypointGraph.waypointNodeMap.get(waypoint.id).index;
-                detectorNodeToTVDSections.get(nodeIndex).add(tvdSection);
-            }
-        }
-
-        // Compute which TVDSection belongs to each TVDSectionPath
-        for (var tvdSectionPath : waypointGraph.tvdSectionPathMap.values()) {
-            // Set intersection
-            var tvdSectionsStart = detectorNodeToTVDSections.get(tvdSectionPath.startNode);
-            var tvdSectionsEnd = detectorNodeToTVDSections.get(tvdSectionPath.endNode);
-            var tvdSectionIntersection = tvdSectionsStart.intersect(tvdSectionsEnd);
-            // Check only one tvd section is in the intersection
-            if (tvdSectionIntersection.size() != 1) {
-                throw new InvalidInfraException(String.format(
-                        "Tvd section path have %d tvd section available. Should be 1.",
-                        tvdSectionIntersection.size()));
-            }
-            // Fill data structures
-            var tvdSection = tvdSectionIntersection.get(0);
-            tvdSectionPath.tvdSection = tvdSection;
-            tvdSection.sections.add(tvdSectionPath);
-        }
-    }
 
     /** Load an infra from a given RailML or RailJSON file */
     @SuppressFBWarnings(

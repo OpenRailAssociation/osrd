@@ -73,13 +73,11 @@ public class RJSTrainScheduleParser {
         // find from what direction the train arrives on the initial location
         EdgeDirection initialDirection = null;
         var tvdSectionPaths = initialRoute.tvdSectionsPaths;
-        var tvdSectionPathDirs = initialRoute.tvdSectionsPathDirections;
 
         trackSectionLoop:
         for (int i = 0; i < tvdSectionPaths.size(); i++) {
             var tvdSectionPath = tvdSectionPaths.get(i);
-            var tvdSectionPathDir = tvdSectionPathDirs.get(i);
-            for (var trackSectionRange : tvdSectionPath.getTrackSections(tvdSectionPathDir)) {
+            for (var trackSectionRange : tvdSectionPath.trackSections) {
                 if (trackSectionRange.containsLocation(initialLocation)) {
                     initialDirection = trackSectionRange.direction;
                     break trackSectionLoop;

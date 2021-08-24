@@ -54,6 +54,8 @@
     {
       "id": "rt.buffer_stop_a-C1",
       "entry_point": "buffer_stop_a",
+      "exit_point": "tde.foo_a-switch_foo",
+      "entry_direction": "START_TO_STOP",
       "switches_position": {},
       "release_groups": [
         [
@@ -64,6 +66,8 @@
     {
       "id": "rt.buffer_stop_b-C3",
       "entry_point": "buffer_stop_b",
+      "exit_point": "tde.foo_b-switch_foo",
+      "entry_direction": "START_TO_STOP",
       "switches_position": {},
       "release_groups": [
         [
@@ -74,6 +78,8 @@
     {
       "id": "rt.C1-S7",
       "entry_point": "tde.foo_a-switch_foo",
+      "exit_point": "tde.track-bar",
+      "entry_direction": "START_TO_STOP",
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
@@ -89,6 +95,8 @@
     {
       "id": "rt.C3-S7",
       "entry_point": "tde.foo_b-switch_foo",
+      "exit_point": "tde.track-bar",
+      "entry_direction": "START_TO_STOP",
       "switches_position": {
         "il.switch_foo": "LEFT"
       },
@@ -104,6 +112,8 @@
     {
       "id": "rt.S7-buffer_stop_c",
       "entry_point": "tde.track-bar",
+      "exit_point": "buffer_stop_c",
+      "entry_direction": "START_TO_STOP",
       "switches_position": {},
       "release_groups": [
         [
@@ -114,6 +124,8 @@
     {
       "id": "rt.buffer_stop_c-C2",
       "entry_point": "buffer_stop_c",
+      "exit_point": "tde.track-bar",
+      "entry_direction": "STOP_TO_START",
       "switches_position": {},
       "release_groups": [
         [
@@ -124,6 +136,8 @@
     {
       "id": "rt.C2-C6",
       "entry_point": "tde.track-bar",
+      "exit_point": "tde.switch_foo-track",
+      "entry_direction": "STOP_TO_START",
       "switches_position": {},
       "release_groups": [
         [
@@ -134,6 +148,8 @@
     {
       "id": "rt.C6-buffer_stop_a",
       "entry_point": "tde.switch_foo-track",
+      "exit_point": "buffer_stop_a",
+      "entry_direction": "STOP_TO_START",
       "switches_position": {
         "il.switch_foo": "RIGHT"
       },
@@ -149,6 +165,8 @@
     {
       "id": "rt.C6-buffer_stop_b",
       "entry_point": "tde.switch_foo-track",
+      "exit_point": "buffer_stop_b",
+      "entry_direction": "STOP_TO_START",
       "switches_position": {
         "il.switch_foo": "LEFT"
       },

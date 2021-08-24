@@ -11,6 +11,19 @@ public enum EdgeDirection {
         this.id = id;
     }
 
+    /** Parse an ApplicableDirection into EdgeDirection */
+    public static EdgeDirection from(ApplicableDirection dir) {
+        switch (dir) {
+            case BOTH:
+                return null;
+            case NORMAL:
+                return START_TO_STOP;
+            case REVERSE:
+                return STOP_TO_START;
+        }
+        throw new RuntimeException("invalid applicable direction");
+    }
+
     /**
      * Gets the opposite of this direction
      * @return this opposite of this direction

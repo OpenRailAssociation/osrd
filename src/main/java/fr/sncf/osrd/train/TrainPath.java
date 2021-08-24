@@ -3,7 +3,7 @@ package fr.sncf.osrd.train;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
-import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
+import fr.sncf.osrd.infra.TVDSectionPath;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -24,9 +24,6 @@ public class TrainPath {
     /** Full train path as a list of TVD sections */
     public final ArrayList<TVDSectionPath> tvdSectionPaths;
 
-    /** Directions of each tvd section on the route */
-    public final ArrayList<EdgeDirection> tvdSectionDirections;
-
     /** Path length in meters */
     public final double length;
 
@@ -36,7 +33,6 @@ public class TrainPath {
                      TrackSectionLocation endLocation) throws InvalidSchedule {
         this.routePath = routePath;
         tvdSectionPaths = new ArrayList<>();
-        tvdSectionDirections = new ArrayList<>();
         initTVD(routePath);
         try {
             trackSectionPath = Route.routesToTrackSectionRange(routePath, startLocation, endLocation);
@@ -51,42 +47,36 @@ public class TrainPath {
     public TrainPath(TrainPath other) {
         this.routePath = new ArrayList<>(other.routePath);
         this.tvdSectionPaths = new ArrayList<>(other.tvdSectionPaths);
-        this.tvdSectionDirections = new ArrayList<>(other.tvdSectionDirections);
         this.trackSectionPath = new ArrayList<>(other.trackSectionPath);
         this.length = other.length;
     }
 
     /** Initializes the lists of tvd sections and directions */
     private void initTVD(List<Route> routePath) {
-        for (var route : routePath) {
-            for (int i = 0; i < route.tvdSectionsPaths.size(); i++) {
+        for (var route : routePath)
+            for (int i = 0; i < route.tvdSectionsPaths.size(); i++)
                 tvdSectionPaths.add(route.tvdSectionsPaths.get(i));
-                tvdSectionDirections.add(route.tvdSectionsPathDirections.get(i));
-            }
-        }
     }
 
     private void validate() throws InvalidSchedule {
-        for (int i = 1; i < routePath.size(); i++) {
+        for (int i = 1; i < routePath.size(); i++)
             if (routePath.get(i).id.equals(routePath.get(i - 1).id))
                 throw new InvalidSchedule("Train path contains duplicate routes");
-        }
+
         for (int i = 1; i < trackSectionPath.size(); i++) {
             var previous = trackSectionPath.get(i - 1);
             var next = trackSectionPath.get(i);
-            
+
             if (previous.getEndLocation().equals(next.getBeginLocation()))
                 continue;
-            
-            var endNeighbors =
-                    (previous.direction == EdgeDirection.START_TO_STOP) ?
-                            previous.edge.endNeighbors : previous.edge.startNeighbors;
-            var startNeighbors =
-                    (next.direction == EdgeDirection.START_TO_STOP) ?
-                            next.edge.startNeighbors : next.edge.endNeighbors;
+
+            var endNeighbors = (previous.direction == EdgeDirection.START_TO_STOP)
+                    ? previous.edge.endNeighbors : previous.edge.startNeighbors;
+            var startNeighbors = (next.direction == EdgeDirection.START_TO_STOP)
+                    ? next.edge.startNeighbors : next.edge.endNeighbors;
             if (endNeighbors.contains(next.edge) && startNeighbors.contains(previous.edge))
                 continue;
-            
+
             String err = "Invalid path: the beginning of a track section isn't the start of the next "
                     + "(previous=%s, next=%s)";
 
@@ -99,8 +89,7 @@ public class TrainPath {
         // TODO: Find a faster and smarter way to do it
         for (var j = 0; j < tvdSectionPaths.size(); j++) {
             var tvdSectionPath = tvdSectionPaths.get(j);
-            var tvdSectionPathDirection = tvdSectionDirections.get(j);
-            if (tvdSectionPath.getStartNode(tvdSectionPathDirection) == waypoint.index)
+            if (tvdSectionPath.startWaypoint == waypoint)
                 return tvdSectionPath.tvdSection;
         }
         // No tvd section could be found forward this waypoint
@@ -112,8 +101,7 @@ public class TrainPath {
         // TODO: Find a faster and smarter way to do it
         for (var j = 0; j < tvdSectionPaths.size(); j++) {
             var tvdSectionPath = tvdSectionPaths.get(j);
-            var tvdSectionPathDirection = tvdSectionDirections.get(j);
-            if (tvdSectionPath.getEndNode(tvdSectionPathDirection) == waypoint.index)
+            if (tvdSectionPath.endWaypoint == waypoint)
                 return tvdSectionPath.tvdSection;
         }
 

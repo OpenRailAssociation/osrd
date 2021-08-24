@@ -16,6 +16,7 @@ import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
+import fr.sncf.osrd.railjson.schema.infra.RJSTVDSection;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
@@ -28,9 +29,9 @@ import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import okio.BufferedSource;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @SuppressFBWarnings({"NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"})
 public class RailJSONParser {
@@ -166,7 +167,11 @@ public class RailJSONParser {
                 }
                 waypointIndex++;
             }
-            waypointsBuilder.build();
+
+            waypointsBuilder.buildUnique((duplicates) -> {
+                var ids = duplicates.stream().map(e -> e.id).collect(Collectors.joining(", "));
+                throw new InvalidInfraException("duplicate waypoints " + ids);
+            });
 
             // Parse signals
             var signalsBuilder = infraTrackSection.signals.builder();
@@ -252,37 +257,29 @@ public class RailJSONParser {
             linkEdges(beginEdge, begin.endpoint, endEdge, end.endpoint);
         }
 
-        // Parse TVDSections
-        var tvdSectionIndex = 0;
-        var tvdSectionsMap = new HashMap<String, TVDSection>();
-        for (var rjsonTVD : railJSON.tvdSections) {
-            var tvdWaypoints = new ArrayList<Waypoint>();
-            findWaypoints(tvdWaypoints, waypointsMap, rjsonTVD.trainDetectors);
-            findWaypoints(tvdWaypoints, waypointsMap, rjsonTVD.bufferStops);
-            var tvd = new TVDSection(rjsonTVD.id, tvdSectionIndex++, tvdWaypoints, rjsonTVD.isBerthingTrack);
-            tvdSectionsMap.put(tvd.id, tvd);
-        }
-
         // build name maps to prepare resolving names in expressions
         var signalNames = new HashMap<String, Signal>();
         for (var signal : signals)
             signalNames.put(signal.id, signal);
 
-        // Build waypoint Graph
-        var waypointGraph = Infra.buildWaypointGraph(trackGraph, tvdSectionsMap);
+        // Build tvd sections
+        var tvdSections = TvdSectionBuilder.build(trackGraph);
+
+        // Link tvd sections created with tvd sections parsed
+        var tvdSectionsMap = finalizeTvdSection(tvdSections, railJSON.tvdSections, waypointsMap);
 
         // Build route Graph
-        var routeGraph = new RouteGraph.Builder(waypointGraph);
+        var routeGraphBuilder = new RouteGraph.Builder(trackGraph, waypointsMap.size());
 
         for (var rjsRoute : railJSON.routes) {
             // Parse release groups
             var releaseGroups = new ArrayList<SortedArraySet<TVDSection>>();
-            var tvdSections = new SortedArraySet<TVDSection>();
+            var routeTvdSections = new SortedArraySet<TVDSection>();
             for (var rjsReleaseGroup : rjsRoute.releaseGroups) {
                 var releaseGroup = new SortedArraySet<TVDSection>();
                 for (var rjsTvdSection : rjsReleaseGroup) {
                     var tvdSection = tvdSectionsMap.get(rjsTvdSection.id);
-                    tvdSections.add(tvdSection);
+                    routeTvdSections.add(tvdSection);
                     if (tvdSection == null)
                         throw new InvalidInfraException(String.format(
                                 "A release group contains an unknown tvd section (%s)",
@@ -301,23 +298,28 @@ public class RailJSONParser {
             }
 
             var entryPoint = waypointsMap.get(rjsRoute.entryPoint.id);
+            var exitPoint = waypointsMap.get(rjsRoute.exitPoint.id);
 
-            var entrySignalNormal = detectorIdToSignalNormalMap.getOrDefault(entryPoint.id, null);
-            var entrySignalReverse = detectorIdToSignalReverseMap.getOrDefault(entryPoint.id, null);
+            var entrySignal = detectorIdToSignalNormalMap.getOrDefault(entryPoint.id, null);
+            if (rjsRoute.entryDirection == EdgeDirection.STOP_TO_START)
+                entrySignal = detectorIdToSignalReverseMap.getOrDefault(entryPoint.id, null);
 
-            routeGraph.makeRoute(
+            routeGraphBuilder.makeRoute(
                     rjsRoute.id,
-                    tvdSections,
+                    routeTvdSections,
                     releaseGroups,
                     switchesPosition,
                     entryPoint,
-                    entrySignalNormal,
-                    entrySignalReverse
+                    exitPoint,
+                    entrySignal,
+                    rjsRoute.entryDirection
             );
         }
 
+        var routeGraph = routeGraphBuilder.build();
+
         var routeNames = new HashMap<String, Route>();
-        for (var route : routeGraph.routeGraph.iterEdges())
+        for (var route : routeGraph.iterEdges())
             routeNames.put(route.id, route);
 
         // resolve names of routes and signals
@@ -342,8 +344,44 @@ public class RailJSONParser {
         for (var signal : signals)
             signal.expr.accept(nameResolver);
 
-        return Infra.build(trackGraph, waypointGraph, routeGraph.build(),
+        return Infra.build(trackGraph, routeGraphBuilder.build(),
                 tvdSectionsMap, aspectsMap, signals, switches);
+    }
+
+    private static HashMap<String, TVDSection> finalizeTvdSection(
+            ArrayList<TVDSection> tvdSections,
+            Collection<RJSTVDSection> rjstvdSections,
+            HashMap<String, Waypoint> waypointMap
+    ) throws InvalidInfraException {
+        var tvdSectionsMap = new HashMap<String, TVDSection>();
+
+        // Setup map
+        var waypointsToRJSTvd = new HashMap<ArrayList<Integer>, RJSTVDSection>();
+        for (var rjsTVD : rjstvdSections) {
+            var indexKeys = new ArrayList<Integer>();
+            for (var rjsDetector : rjsTVD.trainDetectors)
+                indexKeys.add(waypointMap.get(rjsDetector.id).index);
+            for (var rjsBufferStop : rjsTVD.bufferStops)
+                indexKeys.add(waypointMap.get(rjsBufferStop.id).index);
+            Collections.sort(indexKeys);
+            waypointsToRJSTvd.put(indexKeys, rjsTVD);
+        }
+
+        // Link tvdSection with rjsTvdSection
+        for (var tvd : tvdSections) {
+            var indexKeys = new ArrayList<Integer>();
+            for (var waypoint : tvd.waypoints)
+                indexKeys.add(waypoint.index);
+            Collections.sort(indexKeys);
+            var rjsTvdSection = waypointsToRJSTvd.get(indexKeys);
+            if (rjsTvdSection == null)
+                throw new InvalidInfraException("TVD section waypoint don't match any tvd section in railjson");
+            tvd.id = rjsTvdSection.id;
+            tvd.isBerthingTrack = rjsTvdSection.isBerthingTrack;
+            tvdSectionsMap.put(tvd.id, tvd);
+        }
+
+        return tvdSectionsMap;
     }
 
     private static void addCurvesToGradients(DoubleRangeMap gradients, RJSTrackSection trackSection) {
@@ -361,19 +399,6 @@ public class RailJSONParser {
 
             for (var slopeEntry : gradients.subMap(rjsCurve.begin, rjsCurve.end).entrySet())
                 gradients.put(slopeEntry.getKey(), slopeEntry.getValue() + 800. / rjsCurve.radius);
-        }
-    }
-
-    private static <E extends RJSRouteWaypoint> void findWaypoints(
-            ArrayList<Waypoint> foundWaypoints,
-            HashMap<String, Waypoint> waypointHashMap,
-            Collection<ID<E>> source
-    ) throws InvalidInfraException {
-        for (var waypointID : source) {
-            var waypoint = waypointHashMap.get(waypointID.id);
-            if (waypoint == null)
-                throw new InvalidInfraException(String.format("cannot find waypoint %s", waypointID.id));
-            foundWaypoints.add(waypoint);
         }
     }
 }

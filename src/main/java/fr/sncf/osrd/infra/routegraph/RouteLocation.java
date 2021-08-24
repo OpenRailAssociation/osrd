@@ -17,8 +17,7 @@ public class RouteLocation {
         double offsetLeft = offset;
         for (int i = 0; i < route.tvdSectionsPaths.size(); i++) {
             var tvdSectionPath = route.tvdSectionsPaths.get(i);
-            var tvdSectionPathDir = route.tvdSectionsPathDirections.get(i);
-            for (var trackSection : tvdSectionPath.getTrackSections(tvdSectionPathDir)) {
+            for (var trackSection : tvdSectionPath.trackSections) {
                 if (trackSection.length() >= offsetLeft) {
                     var track = new TrackSectionRange(trackSection);
                     track.shrinkForward(offsetLeft);
