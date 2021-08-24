@@ -5,18 +5,12 @@ import static fr.sncf.osrd.speedcontroller.SpeedInstructionsTests.isLate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.StopActionPoint;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.TimelineEvent;
-import fr.sncf.osrd.train.events.TrainMoveEvent;
-import fr.sncf.osrd.train.events.TrainReachesActionPoint;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 
 public class StopTests {
 
@@ -120,5 +114,26 @@ public class StopTests {
 
         assertEquals(lastPositionNoStop, lastPositionWithStop, 0.1);
         assertEquals(timeWithStops, timeNoStop, 0.1);
+    }
+
+    @Test
+    public void testCorrectNumberGeneratedEvents() throws InvalidInfraException {
+        final var infra = getBaseInfra();
+        final var config = makeConfigWithGivenStops("tiny_infra/config_railjson.json",
+                new RJSTrainStop[]{
+                        new RJSTrainStop(200., null, -1),
+                        new RJSTrainStop(1000., null, 0),
+                        new RJSTrainStop(3000., null, 10),
+                        new RJSTrainStop(5000., null, -1),
+                        new RJSTrainStop(6000., null, 0),
+                        new RJSTrainStop(-1., null, 0)
+                }
+        );
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var events = run(sim, config);
+        var nStops = events.stream()
+                .filter(event -> event instanceof StopActionPoint.RestartTrainEvent)
+                .count();
+        assertEquals(6, nStops);
     }
 }
