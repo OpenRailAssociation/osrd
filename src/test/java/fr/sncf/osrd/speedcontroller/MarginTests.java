@@ -18,16 +18,13 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 
 public class MarginTests {
 
@@ -236,7 +233,7 @@ public class MarginTests {
 
     /** Test mareco with different slopes*/
     @ParameterizedTest
-    @ValueSource(ints = {6})
+    @ValueSource(ints = {1, 2, 3, 4, 5, 6})
     public void testDifferentSlopes(int slopeProfile) throws InvalidInfraException {
         // inputs
         final double margin = 40.0;
@@ -320,7 +317,9 @@ public class MarginTests {
         assertEquals(expected, marginsSimTime, 5 + 0.001 * expected);
 
         var coastingSpeedControllers =
-                findCoastingSpeedControllers(marginsConfig.trainSchedules.get(0).speedInstructions.targetSpeedControllers);
+                findCoastingSpeedControllers(
+                        marginsConfig.trainSchedules.get(0).speedInstructions.targetSpeedControllers
+                );
         for (var controller : coastingSpeedControllers) {
             assertLowerSpeedPerPositionBetween(eventsBase, events, controller.beginPosition, controller.endPosition);
         }
