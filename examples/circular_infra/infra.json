@@ -56,7 +56,9 @@
           "tvd.12"
         ]
       ],
-      "entry_point": "tde.1"
+      "entry_point": "tde.1",
+      "exit_point": "tde.2",
+      "entry_direction": "START_TO_STOP"
     },
     {
       "id": "rt.23",
@@ -66,7 +68,9 @@
           "tvd.23"
         ]
       ],
-      "entry_point": "tde.2"
+      "entry_point": "tde.2",
+      "exit_point": "tde.3",
+      "entry_direction": "START_TO_STOP"
     },
     {
       "id": "rt.34",
@@ -76,7 +80,9 @@
           "tvd.34"
         ]
       ],
-      "entry_point": "tde.3"
+      "entry_point": "tde.3",
+      "exit_point": "tde.4",
+      "entry_direction": "START_TO_STOP"
     },
     {
       "id": "rt.45",
@@ -86,7 +92,9 @@
           "tvd.45"
         ]
       ],
-      "entry_point": "tde.4"
+      "entry_point": "tde.4",
+      "exit_point": "tde.5",
+      "entry_direction": "START_TO_STOP"
     },
     {
       "id": "rt.56",
@@ -96,7 +104,9 @@
           "tvd.56"
         ]
       ],
-      "entry_point": "tde.5"
+      "entry_point": "tde.5",
+      "exit_point": "tde.6",
+      "entry_direction": "START_TO_STOP"
     },
     {
       "id": "rt.67",
@@ -106,7 +116,9 @@
           "tvd.67"
         ]
       ],
-      "entry_point": "tde.6"
+      "entry_point": "tde.6",
+      "exit_point": "tde.7",
+      "entry_direction": "START_TO_STOP"
     },
     {
       "id": "rt.78",
@@ -116,7 +128,9 @@
           "tvd.78"
         ]
       ],
-      "entry_point": "tde.7"
+      "entry_point": "tde.7",
+      "exit_point": "tde.8",
+      "entry_direction": "START_TO_STOP"
     },
     {
       "id": "rt.81",
@@ -126,7 +140,9 @@
           "tvd.81"
         ]
       ],
-      "entry_point": "tde.8"
+      "entry_point": "tde.8",
+      "exit_point": "tde.1",
+      "entry_direction": "START_TO_STOP"
     }
   ],
   "script_functions": [

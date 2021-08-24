@@ -3,30 +3,17 @@ package fr.sncf.osrd.infra;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
-import fr.sncf.osrd.infra.waypointgraph.TVDSectionPath;
 
 import java.util.ArrayList;
 
 public final class TVDSection implements Comparable<TVDSection> {
-    public final String id;
-    public final int index;
-    public final ArrayList<Waypoint> waypoints;
-    public final ArrayList<TVDSectionPath> sections = new ArrayList<>();
+    public String id = null;
+    public int index = -1;
+    public final ArrayList<Waypoint> waypoints = new ArrayList<>();
     public final ArrayList<Route> routeSubscribers = new ArrayList<>();
 
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public final boolean isBerthingTrack;
-
-    /**
-     * Instantiate a TVDSection.
-     * Note: The list of TVDSectionPath will be automatically be filled building the infra.
-     */
-    public TVDSection(String id, int index, ArrayList<Waypoint> waypoints, boolean isBerthingTrack) {
-        this.id = id;
-        this.index = index;
-        this.waypoints = waypoints;
-        this.isBerthingTrack = isBerthingTrack;
-    }
+    public boolean isBerthingTrack = false;
 
     @Override
     public int compareTo(TVDSection o) {

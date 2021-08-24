@@ -53,10 +53,18 @@ public class RMLRoute {
 
             var entrySignal = parseEntrySignal(route, signalTrackNetElementMap,
                     signalTrackNetElementMap, rjsTrackSections);
-            if (entrySignal != null)
-                entrySignal.linkedDetector = new ID<>(entryWaypoint.id);
 
-            res.add(new RJSRoute(id, switchesPosition, releaseGroups, entryWaypoint));
+            // TODO: deduce the direction from the entry waypoint
+            EdgeDirection entryDirection = EdgeDirection.START_TO_STOP;
+
+            if (entrySignal != null) {
+                entrySignal.linkedDetector = new ID<>(entryWaypoint.id);
+                entryDirection = EdgeDirection.from(entrySignal.applicableDirection);
+            }
+
+            var exitWaypoint = parseExitWaypoint(route,
+                    rmlRouteGraph, rjsTrackSections, graph, signalTrackNetElementMap);
+            res.add(new RJSRoute(id, switchesPosition, releaseGroups, entryWaypoint, exitWaypoint, entryDirection));
         }
         return res;
     }
@@ -72,6 +80,26 @@ public class RMLRoute {
         }
         return res;
     }
+
+    private static ID<RJSRouteWaypoint> parseExitWaypoint(
+            Element route,
+            RMLRouteGraph rmlRouteGraph,
+            HashMap<String, RJSTrackSection> rjsTrackSections,
+            RMLTrackSectionGraph rmlTrackSectionGraph,
+            HashMap<String, TrackNetElement> signalTrackNetElementMap
+    ) throws InvalidInfraException {
+        var element = "routeExit";
+        var entryElement = route.element(element).element("refersTo").attributeValue("ref");
+        var waypoint = findAssociatedWaypoint(
+                entryElement,
+                rmlRouteGraph,
+                rjsTrackSections,
+                rmlTrackSectionGraph,
+                signalTrackNetElementMap
+        );
+        return new ID<>(waypoint.id);
+    }
+
 
     private static ID<RJSRouteWaypoint> parseEntryWaypoint(
             Element route,

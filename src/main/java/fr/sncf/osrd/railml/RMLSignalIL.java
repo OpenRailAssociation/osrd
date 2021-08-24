@@ -5,6 +5,8 @@ import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr;
 import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspect;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
+
 import org.dom4j.Document;
 import org.dom4j.Element;
 
@@ -36,8 +38,13 @@ public class RMLSignalIL {
             // add the signal to the RJSTrackSection
             var rmlSignalIS = rmlSignalsIS.get(refSignalIS);
             var rjsTrackSection = rmlSignalIS.rjsTrackSection;
+
+            var navigability = rmlSignalIS.navigability;
+            if (navigability == null || navigability == ApplicableDirection.BOTH)
+                throw new InvalidInfraException(String.format("signal %s doesn't have valid navigability"));
+
             rjsTrackSection.signals.add(new RJSSignal(
-                    id, rmlSignalIS.navigability, rmlSignalIS.position, sightDistance, expr));
+                    id, navigability, rmlSignalIS.position, sightDistance, expr));
         }
     }
 }

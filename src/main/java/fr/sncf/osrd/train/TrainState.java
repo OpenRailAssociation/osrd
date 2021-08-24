@@ -275,8 +275,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         var currentRoute = path.routePath.get(routeIndex);
         var tvdSectionPathIndex = currentRoute.tvdSectionsPaths.size() - 1;
         var lastTvdSectionPath = currentRoute.tvdSectionsPaths.get(tvdSectionPathIndex);
-        var lastTvdSectionPathDir = currentRoute.tvdSectionsPathDirections.get(tvdSectionPathIndex);
-        if (lastTvdSectionPath.getEndNode(lastTvdSectionPathDir) == detector.index)
+        if (lastTvdSectionPath.endWaypoint == detector)
             routeIndex++;
 
         // Occupy the next tvdSection

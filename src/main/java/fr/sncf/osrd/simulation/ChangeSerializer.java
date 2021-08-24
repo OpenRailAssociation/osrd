@@ -17,10 +17,7 @@ import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.signaling.Signal;
-import fr.sncf.osrd.infra.trackgraph.BufferStop;
-import fr.sncf.osrd.infra.trackgraph.Detector;
-import fr.sncf.osrd.infra.trackgraph.Switch;
-import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.infra_state.SwitchState;
@@ -60,6 +57,7 @@ public class ChangeSerializer {
             .add(new SignalAdapter())
             .add(new SwitchAdapter())
             .add(new TVDSectionAdapter())
+            .add(new WaypointAdapter())
             .add(new AspectAdapter())
             .add(new TimelineEventAdapter())
             .add(CollectionJsonAdapter.of(CryoList.class, CryoList::new))
@@ -231,6 +229,18 @@ public class ChangeSerializer {
 
         @FromJson
         TVDSection fromJson(IdentifiedObject id) {
+            throw new RuntimeException("not implemented");
+        }
+    }
+
+    private static class WaypointAdapter {
+        @ToJson
+        IdentifiedObject toJson(Waypoint waypoint) {
+            return new IdentifiedObject(waypoint.id);
+        }
+
+        @FromJson
+        Waypoint fromJson(IdentifiedObject id) {
             throw new RuntimeException("not implemented");
         }
     }
