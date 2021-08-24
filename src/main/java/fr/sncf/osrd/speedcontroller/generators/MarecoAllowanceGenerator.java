@@ -170,8 +170,8 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             var integrator = TrainPhysicsIntegrator.make(TIME_STEP, rollingStock,
                     speed, location.meanTrainGrade());
             var effectiveOppositeForces = Math.copySign(rollingStock.rollingResistance(speed), -speed);
-            var naturalAcceleration = integrator.computeTotalForce(effectiveOppositeForces, 0) /
-                    (rollingStock.inertiaCoefficient * rollingStock.mass);
+            var naturalAcceleration = integrator.computeTotalForce(effectiveOppositeForces, 0)
+                    / (rollingStock.inertiaCoefficient * rollingStock.mass);
             if (speed < vf || speed > previousSpeed) {
                 previousAcceleration = naturalAcceleration;
                 previousSpeed = speed;
@@ -183,9 +183,10 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
                 currentAcceleratingSlope.acceleration = naturalAcceleration;
                 currentAcceleratingSlope.previousAcceleration = previousAcceleration;
                 currentAcceleratingSlope.beginPosition = location.getPathPosition();
-            }
-            // end of accelerating slope
-            else if (naturalAcceleration < 0 && previousAcceleration > 0 && currentAcceleratingSlope.acceleration != 0) {
+            } else if (naturalAcceleration < 0
+                    && previousAcceleration > 0
+                    && currentAcceleratingSlope.acceleration != 0) {
+                // end of accelerating slope
                 currentAcceleratingSlope.endPosition = previousPosition;
                 currentAcceleratingSlope.targetSpeed = speed;
                 acceleratingSlopes.add(currentAcceleratingSlope);
@@ -201,7 +202,8 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             // giving the optimized speed v the train should have when entering the accelerating slope
             // this speed v might not be reached if the slope is not long enough, then we just enter the slope with
             // the lowest possible speed that will catch up with target speed at the end
-            double v = 1 / (rollingStock.rollingResistance(v1) / (wle * (1 - slope.previousAcceleration / slope.acceleration)) + 1 / v1);
+            double v = 1 / (rollingStock.rollingResistance(v1)
+                    / (wle * (1 - slope.previousAcceleration / slope.acceleration)) + 1 / v1);
             double target = slope.targetSpeed;
             double requiredAcceleratingDistance = Math.max((target * target - v * v) / (2 * slope.acceleration), 0);
             double positionWhereTargetSpeedIsReached = slope.beginPosition + requiredAcceleratingDistance;
