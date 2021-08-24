@@ -236,24 +236,30 @@ public class MarginTests {
 
     /** Test mareco with different slopes*/
     @ParameterizedTest
-    @ValueSource(ints = {0, 1, 2})
+    @ValueSource(ints = {0, 1, 2, 3, 4})
+    //@ValueSource(ints = {1})
     public void testDifferentSlopes(int slopeProfile) throws InvalidInfraException {
         // inputs
         final double margin = 40.0;
         var slopes = new ArrayList<RJSSlope>();
         switch (slopeProfile) {
             case 0:
-                slopes.add(new RJSSlope(0, 5000, 10));
-                slopes.add(new RJSSlope(5000, 6000, -10));
-                slopes.add(new RJSSlope(6000, 10000, 0));
+                slopes.add(new RJSSlope(0, 10000, 0));
                 break;
             case 1:
-                slopes.add(new RJSSlope(0, 5000, -10));
-                slopes.add(new RJSSlope(5000, 6000, 10));
-                slopes.add(new RJSSlope(6000, 10000, 0));
+                slopes.add(new RJSSlope(0, 10000, 10));
                 break;
             case 2:
                 slopes.add(new RJSSlope(0, 10000, -10));
+                break;
+            case 3:
+                slopes.add(new RJSSlope(0, 5000, 0));
+                slopes.add(new RJSSlope(5000, 6000, -10));
+                slopes.add(new RJSSlope(6000, 10000, 0));
+                break;
+            case 4:
+                slopes.add(new RJSSlope(0, 5000, 0));
+                slopes.add(new RJSSlope(5000, 10000, -10));
                 break;
             default:
                 throw new InvalidInfraException("Unable to handle this parameter in testDifferentSlopes");
@@ -269,14 +275,17 @@ public class MarginTests {
         var infra = RailJSONParser.parse(rjsInfra);
 
         // Run with mareco
-        var marginsConfig = getConfigWithSpeedInstructionsAndInfra(SpeedInstructions.fromController(
-                new MarecoAllowanceGenerator(
-                        0,
-                        POSITIVE_INFINITY,
-                        margin,
-                        RJSAllowance.MarecoAllowance.MarginType.TIME
-                )
-        ), infra);
+        var marginsConfig = getConfigWithSpeedInstructionsAndInfra(
+                SpeedInstructions.fromController(
+                        new MarecoAllowanceGenerator(
+                                0,
+                                POSITIVE_INFINITY,
+                                margin,
+                                RJSAllowance.MarecoAllowance.MarginType.TIME
+                        )
+                ),
+                infra
+        );
         var marginsSim = Simulation.createFromInfraAndEmptySuccessions(infra, 0, null);
         var events = run(marginsSim, marginsConfig);
         var marginsSimTime = marginsSim.getTime();
@@ -292,6 +301,12 @@ public class MarginTests {
 
         var expected = simTime * (1 + margin / 100);
         assertEquals(expected, marginsSimTime, 5);
+
+        var coastingSpeedControllers =
+                findCoastingSpeedControllers(marginsConfig.trainSchedules.get(0).speedInstructions.targetSpeedControllers);
+        for (var controller : coastingSpeedControllers) {
+            assertLowerSpeedPerPositionBetween(eventsBase, events, controller.beginPosition, controller.endPosition);
+        }
     }
 
     /** Test the linear allowance type TIME */

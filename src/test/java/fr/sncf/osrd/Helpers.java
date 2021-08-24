@@ -27,6 +27,9 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.simulation.TimelineEventId;
+import fr.sncf.osrd.speedcontroller.CoastingSpeedController;
+import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
+import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
@@ -41,6 +44,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
@@ -397,7 +402,7 @@ public class Helpers {
                 Double.POSITIVE_INFINITY, 1);
     }
 
-    /** Throws an error if the (interpolated) time per position differ too much between begin and end
+    /** Throws an error if the (interpolated) speed per position differ too much between begin and end
      * The expected speeds are scaled by expectedScale */
     public static void assertSameSpeedPerPositionBetween(Iterable<TimelineEvent> eventsExpected,
                                                          Iterable<TimelineEvent> events,
@@ -412,6 +417,23 @@ public class Helpers {
             var expected = expectedSpeedPerPosition.interpolate(t) * expectedScale;
             var result = speedPerPosition.interpolate(t);
             assertEquals(expected, result, 0.2 + expected * 0.02);
+        }
+    }
+
+    /** Throws an error if the (interpolated) speed per position is equal or above the base run
+     * between begin + 1 and end - 1 (avoiding errors because of the edges point) */
+    public static void assertLowerSpeedPerPositionBetween(Iterable<TimelineEvent> eventsBase,
+                                                          Iterable<TimelineEvent> events,
+                                                          double begin,
+                                                          double end) {
+        var baseSpeedPerPosition = getSpeedPerPosition(eventsBase);
+        var speedPerPosition = getSpeedPerPosition(events);
+        end = Double.min(end, baseSpeedPerPosition.lastKey());
+        begin = Double.max(baseSpeedPerPosition.firstKey(), begin);
+        for (double d = begin + 1; d < end - 1; d += 1) {
+            var base = baseSpeedPerPosition.interpolate(d);
+            var result = speedPerPosition.interpolate(d);
+            assert base > result;
         }
     }
 
@@ -478,5 +500,15 @@ public class Helpers {
         } catch (FileNotFoundException | UnsupportedEncodingException e) {
             e.printStackTrace();
         }
+    }
+
+    /** Returns all the CoastingSpeedControllers that are in a set of SpeedControllers. */
+    public static Set<CoastingSpeedController> findCoastingSpeedControllers(Set<SpeedController> controllers) {
+        var res = new HashSet<CoastingSpeedController>();
+        for (var c : controllers) {
+            if (c instanceof CoastingSpeedController)
+                res.add((CoastingSpeedController) c);
+        }
+        return res;
     }
 }
