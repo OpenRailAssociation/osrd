@@ -47,7 +47,7 @@ public abstract class SpeedControllerGenerator {
         int stopIndex = 0;
         for (var k : updatesMap.keySet()) {
             time += updatesMap.get(k).timeDelta;
-            if (stopIndex < schedule.stops.size() && schedule.stops.get(stopIndex).position >= k) {
+            if (stopIndex < schedule.stops.size() && schedule.stops.get(stopIndex).position <= k) {
                 var duration = schedule.stops.get(stopIndex).stopDuration;
                 if (duration > 0)
                     time += duration;
