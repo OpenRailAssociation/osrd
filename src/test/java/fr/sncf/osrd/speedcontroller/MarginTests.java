@@ -236,7 +236,6 @@ public class MarginTests {
 
     /** Test mareco with different slopes*/
     @ParameterizedTest
-    //@ValueSource(ints = {0, 1, 2, 3, 4})
     @ValueSource(ints = {6})
     public void testDifferentSlopes(int slopeProfile) throws InvalidInfraException {
         // inputs
@@ -264,7 +263,11 @@ public class MarginTests {
                 slopes.add(new RJSSlope(0, 5000, 0));
                 slopes.add(new RJSSlope(5000, 10000, -10));
                 break;
-            case 6: // plenty of different slopes
+            case 6: // high slope on acceleration
+                slopes.add(new RJSSlope(0, 1000, -10));
+                slopes.add(new RJSSlope(1000, 10000, 0));
+                break;
+            case 7: // plenty of different slopes
                 slopes.add(new RJSSlope(0, 3000, 0));
                 slopes.add(new RJSSlope(3000, 3100, -20));
                 slopes.add(new RJSSlope(3100, 3200, 10));
