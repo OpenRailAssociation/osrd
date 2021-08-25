@@ -3,6 +3,7 @@ package fr.sncf.osrd.speedcontroller.generators;
 import static java.util.Collections.max;
 import static java.util.Collections.min;
 
+import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarecoAllowance.MarginType;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -73,6 +74,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         var a = schedule.rollingStock.A;
         var b = schedule.rollingStock.B;
         var c = schedule.rollingStock.C;
+        // formula given by MARECO
         double vf = (2 * c * v1 * v1 * v1 + b * v1 * v1) / (3 * c * v1 * v1 + 2 * b * v1 + a);
         return vf;
     }
@@ -132,6 +134,11 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         return (this.getFirstHighEstimate() + this.getFirstLowEstimate()) / 2;
     }
 
+    /** Finds the end position of the coasting phases, that will then be generated backwards
+     * with generateCoastingSpeedControllerAtPosition()
+     * Coasting phases can be generated for two different reasons
+     * - a deceleration phase where braking will be replaced by coasting
+     * - before an accelerating slope */
     private List<Double> findEndOfCoastingPositions(SortedDoubleMap speeds, double v1) {
         var res = new ArrayList<Double>();
         var rollingStock = schedule.rollingStock;
@@ -140,15 +147,12 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
         // coasting before deceleration phases
         for (var announcer : limitAnnounceSpeedControllers) {
-            // if that LimitAnnounceSpeedController is above v1 that means it will never apply here
-            if (v1 < announcer.targetSpeedLimit) {
-                continue;
-            } else {
+            // if that LimitAnnounceSpeedController is above v1 that means it will not have an impact here
+            if (v1 >= announcer.targetSpeedLimit) {
                 // deceleration phases that are entirely above vf
                 if (announcer.targetSpeedLimit > vf)
                     res.add(announcer.endPosition);
-                    // deceleration phases that are entirely above vf
-                else {
+                else { // deceleration phases that cross vf
                     double targetSpeed = announcer.targetSpeedLimit;
                     double gamma = schedule.rollingStock.gamma;
                     // TODO : adapt this to non-constant deceleration
@@ -158,7 +162,28 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             }
         }
         // coasting before accelerating slopes
-        var acceleratingSlopes = new ArrayList<AcceleratingSlope>();
+        var acceleratingSlopes = findAcceleratingSlopes(speeds, rollingStock, vf);
+        double wle = rollingStock.rollingResistance(v1) * v1 * vf / (v1 - vf);
+        for (var slope : acceleratingSlopes) {
+            // formulas given my MARECO
+            // giving the optimized speed v the train should have when entering the accelerating slope
+            // this speed v might not be reached if the slope is not long enough, then we just enter the slope with
+            // the lowest possible speed that will catch up with target speed at the end
+            double v = 1 / (rollingStock.rollingResistance(v1)
+                    / (wle * (1 - slope.previousAcceleration / slope.acceleration)) + 1 / v1);
+            double target = slope.targetSpeed;
+            double requiredAcceleratingDistance = Math.max((target * target - v * v) / (2 * slope.acceleration), 0);
+            double positionWhereTargetSpeedIsReached = slope.beginPosition + requiredAcceleratingDistance;
+            res.add(Math.min(slope.endPosition, positionWhereTargetSpeedIsReached));
+        }
+        return res;
+    }
+
+    private ArrayList<AcceleratingSlope> findAcceleratingSlopes (
+            SortedDoubleMap speeds,
+            RollingStock rollingStock,
+            double vf) {
+        var res = new ArrayList<AcceleratingSlope>();
         double previousPosition = 0.0;
         double previousSpeed = 0.0;
         double previousAcceleration = 0.0;
@@ -172,7 +197,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             var effectiveOppositeForces = Math.copySign(rollingStock.rollingResistance(speed), -speed);
             var naturalAcceleration = integrator.computeTotalForce(effectiveOppositeForces, 0)
                     / (rollingStock.inertiaCoefficient * rollingStock.mass);
-            if (speed < vf || speed > previousSpeed) {
+            if (speed < vf || speed > previousSpeed) { // if v < vf or the train is accelerating, just update variables
                 previousAcceleration = naturalAcceleration;
                 previousSpeed = speed;
                 previousPosition = location.getPathPosition();
@@ -189,25 +214,12 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
                 // end of accelerating slope
                 currentAcceleratingSlope.endPosition = previousPosition;
                 currentAcceleratingSlope.targetSpeed = speed;
-                acceleratingSlopes.add(currentAcceleratingSlope);
+                res.add(currentAcceleratingSlope);
                 currentAcceleratingSlope = new AcceleratingSlope(0, 0, 0, 0, 0);
             }
             previousAcceleration = naturalAcceleration;
             previousSpeed = speed;
             previousPosition = location.getPathPosition();
-        }
-        double wle = rollingStock.rollingResistance(v1) * v1 * vf / (v1 - vf);
-        for (var slope : acceleratingSlopes) {
-            // formulas given my MARECO
-            // giving the optimized speed v the train should have when entering the accelerating slope
-            // this speed v might not be reached if the slope is not long enough, then we just enter the slope with
-            // the lowest possible speed that will catch up with target speed at the end
-            double v = 1 / (rollingStock.rollingResistance(v1)
-                    / (wle * (1 - slope.previousAcceleration / slope.acceleration)) + 1 / v1);
-            double target = slope.targetSpeed;
-            double requiredAcceleratingDistance = Math.max((target * target - v * v) / (2 * slope.acceleration), 0);
-            double positionWhereTargetSpeedIsReached = slope.beginPosition + requiredAcceleratingDistance;
-            res.add(Math.min(slope.endPosition, positionWhereTargetSpeedIsReached));
         }
         return res;
     }
