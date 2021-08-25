@@ -27,6 +27,15 @@ def ApplicableDirectionField():
     return models.IntegerField(choices=ApplicableDirection.choices)
 
 
+class EdgeDirection(models.IntegerChoices):
+    START_TO_STOP = 0
+    STOP_TO_START = 1
+
+
+def EdgeDirectionField():
+    return models.IntegerField(choices=EdgeDirection.choices)
+
+
 class SwitchPosition(models.IntegerChoices):
     LEFT = 0
     RIGHT = 1
@@ -361,7 +370,13 @@ class ReleaseGroupComponent(Component):
 
 
 class RouteComponent(Component):
-    entry_point = models.ForeignKey("WaypointEntity", on_delete=models.CASCADE)
+    entry_point = models.ForeignKey(
+        "WaypointEntity", on_delete=models.CASCADE, related_name="entry_routes"
+    )
+    entry_direction = EdgeDirectionField()
+    exit_point = models.ForeignKey(
+        "WaypointEntity", on_delete=models.CASCADE, related_name="exit_routes"
+    )
 
     class ComponentMeta:
         name = "route"

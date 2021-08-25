@@ -4,20 +4,21 @@ from osrd_infra.utils import Benchmarker
 from osrd_infra.models import (
     ApplicableDirection,
     AspectEntity,
-    SwitchEntity,
-    ScriptFunctionEntity,
-    SignalEntity,
-    TrackSectionEntity,
-    TrackSectionLinkEntity,
-    TVDSectionEntity,
+    EdgeDirection,
     Endpoint,
     OperationalPointEntity,
     OperationalPointPartEntity,
-    RouteEntity,
     ReleaseGroupComponent,
+    RouteEntity,
+    ScriptFunctionEntity,
+    SignalEntity,
     SpeedSectionEntity,
     SpeedSectionPartEntity,
+    SwitchEntity,
     SwitchPosition,
+    TVDSectionEntity,
+    TrackSectionEntity,
+    TrackSectionLinkEntity,
     WaypointEntity,
     WaypointType,
     fetch_entities,
@@ -87,6 +88,10 @@ def serialize_applicable_direction(applicable_direction: int):
     return ApplicableDirection(applicable_direction).name
 
 
+def serialize_edge_direction(edge_direction: int):
+    return EdgeDirection(edge_direction).name
+
+
 def serialize_signal(cached_entities, entity):
     applicable_direction = entity.applicable_direction.applicable_direction
     position = entity.point_location.offset
@@ -123,7 +128,7 @@ def serialize_waypoint(cached_entities, entity):
 
 def serialize_op_part(cached_entities, op_part_entity):
     # .all() is used instead of .get to make django's orm use prefetching
-    op_part_component, = op_part_entity.operational_point_part_set.all()
+    (op_part_component,) = op_part_entity.operational_point_part_set.all()
     op_id = op_part_component.operational_point_id
     op = cached_entities["op"][op_id]
     position = op_part_entity.point_location.offset
@@ -135,11 +140,11 @@ def serialize_op_part(cached_entities, op_part_entity):
 
 def serialize_speed_section_part(cached_entities, entity):
     # .all() is used instead of .get to make django's orm use prefetching
-    speed_section_part_component, = entity.speed_section_part_set.all()
+    (speed_section_part_component,) = entity.speed_section_part_set.all()
     # from the prefetched component, get the reference to the speed section
     speed_section_id = speed_section_part_component.speed_section_id
     speed_section = cached_entities["speed_sections"][speed_section_id]
-    range_loc, = entity.range_location_set.all()
+    (range_loc,) = entity.range_location_set.all()
     applicable_direction = entity.applicable_direction.applicable_direction
     return {
         "applicable_direction": serialize_applicable_direction(applicable_direction),
@@ -180,7 +185,9 @@ def serialize_track_section(track_section_entity, **cached_entities):
             if point_object.entity_id in op_parts
         ],
         "speed_sections": [
-            serialize_speed_section_part(cached_entities, speed_section_parts[range_object.entity_id])
+            serialize_speed_section_part(
+                cached_entities, speed_section_parts[range_object.entity_id]
+            )
             for range_object in range_objects
             if range_object.entity_id in speed_section_parts
         ],
@@ -292,19 +299,20 @@ def serialize_routes(cached_entities, namespace):
     )
 
     prefetched_release_group_rels = (
-        ReleaseGroupComponent.tvd_sections.through
-        .objects
-        .filter(releasegroupcomponent_id__in=release_group_ids)
+        ReleaseGroupComponent.tvd_sections.through.objects.filter(
+            releasegroupcomponent_id__in=release_group_ids
+        )
     )
 
     prefetched_release_groups = defaultdict(list)
     for rel in prefetched_release_group_rels:
-        prefetched_release_groups[rel.releasegroupcomponent_id].append(rel.tvdsectionentity_id)
+        prefetched_release_groups[rel.releasegroupcomponent_id].append(
+            rel.tvdsectionentity_id
+        )
 
     return [
         serialize_route(cached_entities, entity, prefetched_release_groups)
-        for entity
-        in entities
+        for entity in entities
     ]
 
 
@@ -312,6 +320,8 @@ def serialize_route(cached_entities, route_entity, prefetched_release_groups):
     switch_position_components = route_entity.switch_position_set.all()
     release_groups = route_entity.release_group_set.all()
     entry_point = cached_entities["waypoints"][route_entity.route.entry_point_id]
+    exit_point = cached_entities["waypoints"][route_entity.route.exit_point_id]
+    entry_direction = route_entity.route.entry_direction
 
     return {
         "id": format_route_id(route_entity.entity_id),
@@ -324,11 +334,15 @@ def serialize_route(cached_entities, route_entity, prefetched_release_groups):
         "release_groups": [
             [
                 format_tvd_section_id(tvd_section_id)
-                for tvd_section_id in prefetched_release_groups[release_group.component_id]
+                for tvd_section_id in prefetched_release_groups[
+                    release_group.component_id
+                ]
             ]
             for release_group in release_groups
         ],
         "entry_point": format_waypoint_id(entry_point),
+        "entry_direction": serialize_edge_direction(entry_direction),
+        "exit_point": format_waypoint_id(exit_point),
     }
 
 
@@ -357,8 +371,11 @@ def railjson_serialize_infra(infra):
         "signals": fetch_and_map(SignalEntity, namespace),
         "waypoints": fetch_and_map(WaypointEntity, namespace),
         "op": fetch_and_map(OperationalPointEntity, namespace),
-        "op_parts": fetch_and_map(OperationalPointPartEntity, namespace,
-                                  prefetch_related=("operational_point_part_set",)),
+        "op_parts": fetch_and_map(
+            OperationalPointPartEntity,
+            namespace,
+            prefetch_related=("operational_point_part_set",),
+        ),
         "speed_sections": fetch_and_map(SpeedSectionEntity, namespace),
         "speed_section_parts": fetch_and_map(SpeedSectionPartEntity, namespace),
         "track_section_links": fetch_and_map(TrackSectionLinkEntity, namespace),
@@ -369,8 +386,9 @@ def railjson_serialize_infra(infra):
     res["track_sections"] = [
         serialize_track_section(entity, **cached_entities)
         for entity in (
-            fetch_entities(TrackSectionEntity, namespace)
-            .prefetch_related("point_objects", "range_objects")
+            fetch_entities(TrackSectionEntity, namespace).prefetch_related(
+                "point_objects", "range_objects"
+            )
         )
     ]
 
@@ -408,8 +426,9 @@ def railjson_serialize_infra(infra):
     res["tvd_sections"] = [
         serialize_tvd_section(entity, **cached_entities)
         for entity in (
-            fetch_entities(TVDSectionEntity, namespace)
-            .prefetch_related("tvd_section_components")
+            fetch_entities(TVDSectionEntity, namespace).prefetch_related(
+                "tvd_section_components"
+            )
         )
     ]
 
@@ -418,8 +437,7 @@ def railjson_serialize_infra(infra):
 
     bench.step("serializing aspects")
     res["aspects"] = [
-        serialize_aspect(entity)
-        for entity in fetch_entities(AspectEntity, namespace)
+        serialize_aspect(entity) for entity in fetch_entities(AspectEntity, namespace)
     ]
 
     bench.step("creating the response")
