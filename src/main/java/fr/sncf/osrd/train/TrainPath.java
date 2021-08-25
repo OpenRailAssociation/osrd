@@ -126,13 +126,13 @@ public class TrainPath {
         double sumPreviousSections = 0;
         for (var edge : trackSectionPath) {
             if (edge.containsLocation(location)) {
-                return sumPreviousSections + location.offset - edge.getBeginPosition();
+                if (edge.direction == EdgeDirection.START_TO_STOP) {
+                    return sumPreviousSections + location.offset - edge.getBeginPosition();
+                } else {
+                    return sumPreviousSections + edge.getBeginPosition() - location.offset;
+                }
             }
-            if(edge.direction == EdgeDirection.START_TO_STOP) {
-                sumPreviousSections += edge.getEndPosition() - edge.getBeginPosition();
-            } else {
-                sumPreviousSections += edge.getBeginPosition() - edge.getEndPosition();
-            }
+            sumPreviousSections += Math.abs(edge.getBeginPosition() - edge.getEndPosition());
         }
         throw new RuntimeException("Can't find location in path");
     }
