@@ -115,7 +115,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                         costFunction,
                         (pathNode) -> {
                             for (var goalEdge : destinationWaypoints) {
-                                if (goalEdge.route != pathNode.edge)
+                                if (goalEdge.route != pathNode.edge || goalEdge.offset < pathNode.position)
                                     continue;
                                 var addedCost = costFunction.evaluate(
                                         goalEdge.route,
