@@ -4,6 +4,7 @@ import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.train.TrainState;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.train.TrackSectionRange;
+import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
@@ -29,9 +30,10 @@ public final class CBTCSpeedController extends SpeedController {
 
     // TODO : use realistic value based on the documentation
     private final double timeErre = .4;
-    private final double timeReact = .4;
+    private final double timeReact = 0.0;
 
-    private final double jerk = .06;
+    private final double jerkComfort = .06;
+    private final double jerk = 0.;
 
     private static final double dt = 0.2;
 
@@ -54,6 +56,7 @@ public final class CBTCSpeedController extends SpeedController {
         this.gamma = gamma;
         this.state = state;
         this.schedule = schedule;
+        assert(targetSpeedLimit>=0.);
     }
 
     /** Create CBTCSpeedController from initial speed */
@@ -65,81 +68,74 @@ public final class CBTCSpeedController extends SpeedController {
     @Override
     public SpeedDirective getDirective(double pathPosition) {
 
-        double nextDangerDistance = endPosition - state.location.getPathPosition();
+        var nextDangerDistance = endPosition - state.location.getPathPosition();
 
-        if (nextDangerDistance > 4000)
+        if (nextDangerDistance > 2000)
             return new SpeedDirective(Double.POSITIVE_INFINITY);
 
         var li = getDistanceStart(nextDangerDistance, this.state.speed);
 
-        double startDistance = li.startDistance;
-        double marginBehindDanger = li.margin;
-        double finalSpeed = li.finalSpeed;
+        var startDistance = li.startDistance;
+        var marginBehindDanger = li.margin;
+        var finalSpeed = li.finalSpeed;
 
-        double gamma = this.schedule.rollingStock.gamma;
-        double kineticEnergy = kineticEnergy(finalSpeed) - kineticEnergy(targetSpeedLimit);
+        var gamma = this.schedule.rollingStock.gamma;
+        var kineticEnergy = kineticEnergy(finalSpeed) - kineticEnergy(targetSpeedLimit);
 
-        double distanceSecure = nextDangerDistance - 5 * marginBehindDanger - startDistance;
+        var distanceSecure = nextDangerDistance - 5 * marginBehindDanger - startDistance;
 
         if ((kineticEnergy + potentialEnergy(startDistance, distanceSecure) + lostBrakeEnergy(distanceSecure) < 0
-                && nextDangerDistance > 30) || kineticEnergy < 0) {
+                && nextDangerDistance > 40) || kineticEnergy < 0) {
             System.err.println(schedule.trainID + " " + state.location.getPathPosition() + " " + state.accel + " " + 0
                     + " " + state.speed + " " + state.speed);
             return new SpeedDirective(Double.POSITIVE_INFINITY);
         }
 
         if (kineticEnergy < 15) {
-            System.err.println(schedule.trainID + " " + state.location.getPathPosition() + " " + state.accel + " " + 3
+            System.err.println(schedule.trainID + " " + state.location.getPathPosition() + " " + state.accel + " " + 5
                     + " " + targetSpeedLimit + " " + state.speed);
             return new SpeedDirective(Math.max(targetSpeedLimit, 0.)); // max is only for test!
         }
 
         distanceSecure = nextDangerDistance - 4 * marginBehindDanger - startDistance;
-
         if (kineticEnergy + potentialEnergy(startDistance, distanceSecure) + lostBrakeEnergy(distanceSecure) < 0) {
-            var targetSpeed = state.speed 
+            var targetSpeed = state.speed
                     + (state.accel + schedule.rollingStock.rollingResistance(state.speed) / schedule.rollingStock.mass)
                             * dt;
             System.err.println(schedule.trainID + " " + state.location.getPathPosition() + " " + state.accel + " " + 1
                     + " " + targetSpeed + " " + state.speed);
             return new SpeedDirective(targetSpeed);
-
         }
-        distanceSecure = nextDangerDistance - marginBehindDanger - startDistance;
 
+        distanceSecure = nextDangerDistance - 2* marginBehindDanger - startDistance;
         if (kineticEnergy + potentialEnergy(startDistance, distanceSecure) + lostBrakeEnergy(distanceSecure) < 0) {
-
-            var targetSpeed = state.speed;
-
-            if (state.accel < -jerk * dt)
-                targetSpeed = state.speed + (state.accel + jerk * dt / 2) * dt;
+            var targetSpeed =  state.speed + (state.accel + jerkComfort * dt) * dt;
+            if (state.accel > -jerkComfort / 10)
+                targetSpeed = state.speed;
             System.err.println(schedule.trainID + " " + state.location.getPathPosition() + " " + state.accel + " " + 2
                     + " " + targetSpeed + " " + state.speed);
-
             return new SpeedDirective(targetSpeed);
         }
 
+
         distanceSecure = nextDangerDistance - marginBehindDanger - startDistance;
-
         if (kineticEnergy + potentialEnergy(startDistance, distanceSecure) + lostBrakeEnergy(distanceSecure) < 0) {
-            var targetSpeed = Math.max(state.speed + (state.accel - jerk * dt / 2) * dt, targetSpeedLimit);
-
-            System.err.println(schedule.trainID + " " + state.location.getPathPosition() + " " + state.accel + " " + 2
+            var targetSpeed = state.speed + (state.accel - jerkComfort * dt) * dt;
+            System.err.println(schedule.trainID + " " + state.location.getPathPosition() + " " + state.accel + " " + 3
                     + " " + targetSpeed + " " + state.speed);
-
             return new SpeedDirective(targetSpeed);
         }
 
         distanceSecure = nextDangerDistance - startDistance;
 
         if (kineticEnergy + potentialEnergy(startDistance, nextDangerDistance) + lostBrakeEnergy(distanceSecure) <= 0) {
-            var targetSpeed = Math.max(state.speed + (state.accel - jerk * dt ) * dt, targetSpeedLimit);
+            var targetSpeed =targetSpeedLimit;
             System.err.println(schedule.trainID + " " + state.location.getPathPosition() + " " + state.accel + " " + 4
                     + " " + targetSpeed + " " + state.speed);
             return new SpeedDirective(targetSpeed);
 
         } // Enter EMERGENCY_BRAKING
-        double brakingDistance = (kineticEnergy + potentialEnergy(startDistance, distanceSecure)) / gamma;
+        var brakingDistance = (kineticEnergy + potentialEnergy(startDistance, distanceSecure)) / gamma;
         throw new RuntimeException("Enter Emergency Breaking " + schedule.trainID
                 + (nextDangerDistance - startDistance - brakingDistance) / marginBehindDanger);
     }
@@ -180,11 +176,23 @@ public final class CBTCSpeedController extends SpeedController {
         double gamma = this.schedule.rollingStock.gamma;
 
         // Distance travelled by the train at the next time
-        double distance = speed * dt + dt * dt / 2. + (speed * accel * dt + accel * accel * dt * dt / 2.) / gamma;
+        var distance = speed * dt + accel * dt * dt / 2. ;
+        
+        // Kinetic Energy won
+        distance += (speed * accel * dt + accel * accel * dt * dt / 2.) / gamma;
 
-        /* Time to settle braking */
-        /* TODO : add freewheeling */
-        distance += schedule.rollingStock.getMaxEffort(speed) * Math.pow(dt, 3) / 6.;
+        // No potential energy won
+
+        /* Distance travelled more due to settle braking */
+        // var time = (accel - this.accel) /schedule.rollingStock.mass/ jerk ;
+        // distance + = jerk * Math.pow(time, 3) / 6.;
+
+        /* TODO : add freewheeling :
+        distance + = distanceTravelledFreeWilling( t + dt ) - distanceTravelledFreeWilling( t ) 
+        */
+
+        // var time = schedule.rollingStock.getMaxEffort(speed) /schedule.rollingStock.mass/ jerk ;
+        // distance + = jerk * Math.pow(time, 3) / 6.;
 
         return distance + 10.;
     }
@@ -194,7 +202,7 @@ public final class CBTCSpeedController extends SpeedController {
      */
     private double lostBrakeEnergy(double distance) {
         // Only working with constant Gamma//
-        double gamma = this.schedule.rollingStock.gamma;
+        var gamma = this.schedule.rollingStock.gamma;
         return -gamma * distance;
     }
 
@@ -203,7 +211,7 @@ public final class CBTCSpeedController extends SpeedController {
      * @return Kinetic energy divided by the mass of the train
      */
     public double kineticEnergy(double speed) {
-        return 1.0 / 2.0 * Math.pow(speed, 2);
+        return 1.0 / 2.0 * speed * speed;
     }
 
     /**
@@ -239,21 +247,15 @@ public final class CBTCSpeedController extends SpeedController {
     }
 
     private double startingDistance(double speed, double finalSpeed, double accel, double i) {
-        double gamma = this.schedule.rollingStock.gamma;
-        var brakingSettlingTime = (accel + gamma) / jerk;
-        double updatePosition = brakingSettlingTime * finalSpeed - jerk * Math.pow(brakingSettlingTime, 3) / 6.;
+        var gamma = this.schedule.rollingStock.gamma;
+        // var brakingSettlingTime = (accel + gamma) / jerk;
+        // double updatePosition = brakingSettlingTime * finalSpeed;
 
-        return updatePosition;
-
-        // TODO : add freewheeling
-        // updatePosition = Math.pow(this.timeReact, 2) * (accel + 9.81 * Math.sin(i)) /
-        // 2. + this.timeReact * (speed);
-        // updatePosition += this.timeErre * finalSpeed;
-        // return updatePosition;
+        return 0.;
     }
 
     private double accel_erre(double i, double speed) {
-        double mass = this.schedule.rollingStock.mass;
+        var mass = this.schedule.rollingStock.mass;
         return -Math.sin(i) * 9.81
                 + Math.max(state.accel + jerk * dt, this.schedule.rollingStock.getMaxEffort(this.state.speed) / mass);
     }
@@ -271,13 +273,13 @@ public final class CBTCSpeedController extends SpeedController {
      */
     private margeCalculation getDistanceStart(double nextDangerDistance, double speed) {
         ArrayDeque<TrackSectionRange> listTrack = getListTrackSectionRangeUntilDistance(nextDangerDistance);
-        double grad = maxGradient(listTrack);
-        double i = Math.atan(grad / 1000);
-        double accel = accel_erre(i, speed);
-        double finalSpeed = final_speed(accel, speed);
-        double startDistance = startingDistance(speed, finalSpeed, accel, i);
+        var grad = maxGradient(listTrack);
+        var i = Math.atan(grad / 1000);
+        var accel = accel_erre(i, speed);
+        var finalSpeed = Math.max(final_speed(accel, speed), 0.);
+        var startDistance = startingDistance(speed, finalSpeed, accel, i);
 
-        double margin = marginBehindNextDanger(speed, accel);
+        var margin = marginBehindNextDanger(speed, accel);
         var marge = new margeCalculation(startDistance, margin, finalSpeed);
 
         return marge;
@@ -329,7 +331,7 @@ public final class CBTCSpeedController extends SpeedController {
             gradients = track.edge.backwardGradients;
         Set<Double> entries = gradients.keySet();
         for (var end : entries) {
-            double grad = gradients.get(begin);
+            var grad = gradients.get(begin);
             var slope = Math.atan(grad / 1000);
             if (end >= track.getEndPosition() && begin <= track.getBeginPosition()) {
                 // logger.debug("height : {}", slope);
@@ -360,7 +362,7 @@ public final class CBTCSpeedController extends SpeedController {
 
     private ArrayDeque<TrackSectionRange> getListTrackSectionRangeUntilDistance(TrackSectionRange tr, double distance) {
         ArrayDeque<TrackSectionRange> tracks = new ArrayDeque<>();
-        double begin = tr.getEndPosition();
+        var begin = tr.getEndPosition();
         TrackSection edge = tr.edge;
         while (distance > 0 && edge != null) {
             tracks.add(new TrackSectionRange(edge, state.location.trackSectionRanges.getFirst().direction, begin,
