@@ -55,8 +55,8 @@ export default function TrainDetails() {
               </div>
             </div>
             <div className="col-md-2">
-              <div className="rounded px-2 h-100 py-1 mb-1 small bg-danger text-white">
-                <div className="font-weight-bold mr-1">FREINAGE</div>
+              <div className="rounded px-2 h-100 py-1 mb-1 small bg-red text-white">
+                <div className="font-weight-bold mr-1">FIN CANTON</div>
                 {Math.round(
                   dataSimulation[selectedTrain].endBlockOccupancy[hoverPosition].value,
                 ) / 1000}
@@ -64,8 +64,8 @@ export default function TrainDetails() {
               </div>
             </div>
             <div className="col-md-2">
-              <div className="rounded px-2 h-100 py-1 mb-1 small bg-orange text-white">
-                <div className="font-weight-bold mr-1">BLOCK</div>
+              <div className="rounded px-2 h-100 py-1 mb-1 small bg-yellow text-black">
+                <div className="font-weight-bold mr-1">DÉBUT CANTON</div>
                 {Math.round(
                   dataSimulation[selectedTrain].startBlockOccupancy[hoverPosition].value,
                 ) / 1000}
@@ -74,7 +74,7 @@ export default function TrainDetails() {
             </div>
             <div className="col-md-2">
               <div className="rounded px-2 h-100 py-1 mb-1 small bg-secondary text-white">
-                <div className="font-weight-bold mr-1">CANTON</div>
+                <div className="font-weight-bold mr-1">TAILLE CANTON</div>
                 {Math.round(
                   dataSimulation[selectedTrain].endBlockOccupancy[hoverPosition].value
                   - dataSimulation[selectedTrain].startBlockOccupancy[hoverPosition].value,
