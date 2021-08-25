@@ -1,13 +1,21 @@
 package fr.sncf.osrd.api;
 
+import static fr.sncf.osrd.Helpers.getBaseInfra;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.api.PathfindingEndpoint.PathfindingWaypoint;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.takes.rq.RqFake;
 import org.takes.rs.RsPrint;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Random;
+import java.util.stream.IntStream;
 
 public class PathfindingTest extends ApiTest {
     private static PathfindingWaypoint[] makeBidirectionalEndPoint(PathfindingWaypoint point) {
@@ -186,5 +194,47 @@ public class PathfindingTest extends ApiTest {
         assert response != null;
         assertEquals(1, response.length);
         assertEquals(1, response[0].length);
+    }
+
+    /** Tests that we can always find a path between any two points on circular_infra */
+    @ParameterizedTest
+    @MethodSource("range")
+    public void randomTestsCircularInfra(int seed) throws Exception {
+        var random = new Random(seed);
+        var infraPath = "circular_infra/infra.json";
+        var infra = getBaseInfra(infraPath);
+        var edges = new ArrayList<>(infra.trackSections);
+        Collections.shuffle(edges, random);
+        var begin = edges.get(0);
+        var end = edges.get(1);
+        var waypointStart = new PathfindingWaypoint(
+                begin.id,
+                random.nextDouble() * begin.length,
+                EdgeDirection.START_TO_STOP
+        );
+        var waypointEnd = new PathfindingWaypoint(
+                end.id,
+                random.nextDouble() * end.length,
+                EdgeDirection.START_TO_STOP
+        );
+        var waypointsStart = makeBidirectionalEndPoint(waypointStart);
+        var waypointsEnd = makeBidirectionalEndPoint(waypointEnd);
+        var waypoints = new PathfindingWaypoint[2][];
+        waypoints[0] = waypointsStart;
+        waypoints[1] = waypointsEnd;
+        var requestBody = PathfindingRoutesEndpoint.adapterRequest.toJson(
+                new PathfindingRoutesEndpoint.PathfindingRequest(waypoints, infraPath));
+
+        var result = new RsPrint(
+                new PathfindingTracksEndpoint(infraHandlerMock).act(
+                        new RqFake("POST", "/pathfinding/tracks", requestBody))
+        ).printBody();
+
+        var response = PathfindingTracksEndpoint.adapterResult.fromJson(result);
+        assert response != null;
+    }
+
+    static IntStream range() {
+        return IntStream.range(0, 100);
     }
 }

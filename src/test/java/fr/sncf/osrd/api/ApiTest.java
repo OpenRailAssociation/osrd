@@ -6,24 +6,29 @@ import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.InfraManager.InfraLoadException;
 import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.InvalidInfraException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.io.IOException;
 
 @ExtendWith(MockitoExtension.class)
 public class ApiTest {
     @Mock
     static InfraManager infraHandlerMock;
 
-    /** Setup infra handler mock */
+    /**
+     * Setup infra handler mock
+     */
     @BeforeEach
-    public void setUp() throws InvalidInfraException, IOException, InfraLoadException, InterruptedException {
-        final var infra = "tiny_infra/infra.json";
-        var tinyInfra = Infra.parseFromFile(JsonConfig.InfraType.UNKNOWN, Helpers.getResourcePath(infra).toString());
-        when(infraHandlerMock.load(infra)).thenReturn(tinyInfra);
+    public void setUp() throws InfraLoadException, InterruptedException {
+        ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+        when(infraHandlerMock.load(argument.capture())).thenAnswer(
+                invocation ->
+                        Infra.parseFromFile(
+                                JsonConfig.InfraType.UNKNOWN,
+                                Helpers.getResourcePath(argument.getValue()).toString()
+                        )
+        );
     }
 }
