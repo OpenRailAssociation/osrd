@@ -425,7 +425,7 @@ public class Helpers {
         for (double d = begin; d < end; d += 1) {
             var base = baseSpeedPerPosition.interpolate(d);
             var result = speedPerPosition.interpolate(d);
-            assert result - base <= 1E-3;
+            assert result - base <= 1E-2;
         }
     }
 
