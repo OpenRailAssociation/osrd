@@ -69,7 +69,6 @@ public class TrainPath {
 
             if (previous.getEndLocation().equals(next.getBeginLocation()))
                 continue;
-
             var endNeighbors = (previous.direction == EdgeDirection.START_TO_STOP)
                     ? previous.edge.endNeighbors : previous.edge.startNeighbors;
             var startNeighbors = (next.direction == EdgeDirection.START_TO_STOP)
