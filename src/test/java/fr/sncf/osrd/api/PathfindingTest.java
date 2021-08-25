@@ -83,6 +83,7 @@ public class PathfindingTest extends ApiTest {
         assert response != null;
     }
 
+    /** Tests that we find a route path between two points on the same edge */
     @org.junit.jupiter.params.ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void simpleRoutesSameEdge(boolean inverted) throws Exception {
@@ -149,6 +150,7 @@ public class PathfindingTest extends ApiTest {
         assertEquals(3, response[0].length);
     }
 
+    /** Tests that we find a track path between two points on the same edge */
     @org.junit.jupiter.params.ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void simpleTracksSameEdge(boolean inverted) throws Exception {
