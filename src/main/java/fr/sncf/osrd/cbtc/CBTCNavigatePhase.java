@@ -171,9 +171,16 @@ public final class CBTCNavigatePhase extends NavigatePhase {
                 activeControllers.add(controller);
             }
             
-            for (SpeedController controller : activeControllers){
+            for (SpeedController controller : activeControllers) {
                 if (controller instanceof LimitAnnounceSpeedController) {
-                    CBTCSpeedController cbtcspeed = new CBTCSpeedController(((LimitAnnounceSpeedController)controller).targetSpeedLimit, trainState.location.getPathPosition(), controller.endPosition, ((LimitAnnounceSpeedController)controller).gamma, trainState, schedule);
+                    CBTCSpeedController cbtcspeed = new CBTCSpeedController(
+                            ((LimitAnnounceSpeedController) controller).targetSpeedLimit,
+                            trainState.location.getPathPosition(),
+                            controller.endPosition,
+                            ((LimitAnnounceSpeedController) controller).gamma,
+                            trainState,
+                            schedule
+                    );
                     controllers.add(cbtcspeed);
                 }
             }

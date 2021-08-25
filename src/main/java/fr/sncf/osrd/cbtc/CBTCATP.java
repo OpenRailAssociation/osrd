@@ -101,10 +101,10 @@ public class CBTCATP {
             var nodeIndex = range.edge.getEndNode(range.direction);
             var node = sim.infra.trackGraph.getNode(nodeIndex);
             if (node.getClass() == Switch.class) {
-                var switchRef = (Switch)node;
+                var switchRef = (Switch) node;
                 if (!sim.infraState.towerState.isCurrentAllowed(switchRef.id, trainSchedule.trainID))
                     break;
-                if (sim.infraState.getSwitchState(switchRef.index).getPosition() == SwitchPosition.MOVING)
+                if (sim.infraState.getSwitchState(switchRef.switchIndex).getPosition() == SwitchPosition.MOVING)
                     break;
             }
             maLength += range.edge.length;

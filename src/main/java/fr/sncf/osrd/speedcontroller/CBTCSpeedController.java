@@ -68,19 +68,19 @@ public final class CBTCSpeedController extends SpeedController {
     @Override
     public SpeedDirective getDirective(double pathPosition) {
 
-        var nextDangerDistance = endPosition - state.location.getPathPosition();
+        final double nextDangerDistance = endPosition - state.location.getPathPosition();
 
         if (nextDangerDistance > 2000)
             return new SpeedDirective(Double.POSITIVE_INFINITY);
 
-        var li = getDistanceStart(nextDangerDistance, this.state.speed);
+        final var li = getDistanceStart(nextDangerDistance, this.state.speed);
 
-        var startDistance = li.startDistance;
-        var marginBehindDanger = li.margin;
-        var finalSpeed = li.finalSpeed;
+        final double startDistance = li.startDistance;
+        final double marginBehindDanger = li.margin;
+        final double finalSpeed = li.finalSpeed;
 
-        var gamma = this.schedule.rollingStock.gamma;
-        var kineticEnergy = kineticEnergy(finalSpeed) - kineticEnergy(targetSpeedLimit);
+        final double gamma = this.schedule.rollingStock.gamma;
+        final double kineticEnergy = kineticEnergy(finalSpeed) - kineticEnergy(targetSpeedLimit);
 
         var distanceSecure = nextDangerDistance - 5 * marginBehindDanger - startDistance;
 
