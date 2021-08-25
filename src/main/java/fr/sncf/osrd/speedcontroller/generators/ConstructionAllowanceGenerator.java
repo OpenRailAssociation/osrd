@@ -120,6 +120,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
         // scaled MapSpeedControllers only between the end of the braking phase and the beginning of the acceleration
         var speedsEndingEarlier = getExpectedSpeeds(sim, schedule, initialSpeedControllers, TIME_STEP,
                 endBrakingPosition, location.getPathPosition(), initialSpeed);
+        speedsEndingEarlier.put(endBrakingPosition, targetSpeed); // add first point to the future MapSpeedController
         res.add(new MapSpeedController(speedsEndingEarlier).scaled(scaleFactor));
 
         return res;
