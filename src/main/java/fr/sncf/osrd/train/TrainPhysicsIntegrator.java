@@ -230,12 +230,12 @@ public class TrainPhysicsIntegrator {
         var fullStepAcceleration =  computeTotalForce(effectiveOppositeForces, actionTractionForce) / inertia;
 
         // the variation of the acceleration can't realistically be infinite, we have to limit it, with the jerk
-        if (Math.abs(fullStepAcceleration - this.currentAccel) / timeStep > jerk) {
-            if (fullStepAcceleration > currentAccel)
-                fullStepAcceleration = currentAccel + jerk * timeStep;
-            else
-                fullStepAcceleration = currentAccel - jerk * timeStep;
-        }
+        // if (Math.abs(fullStepAcceleration - this.currentAccel) / timeStep > jerk) {
+        //     if (fullStepAcceleration > currentAccel)
+        //         fullStepAcceleration = currentAccel + jerk * timeStep;
+        //     else
+        //         fullStepAcceleration = currentAccel - jerk * timeStep;
+        // }
 
         var newSpeed = currentSpeed + directionSign * fullStepAcceleration * timeStep;
         var newAccel = fullStepAcceleration;
