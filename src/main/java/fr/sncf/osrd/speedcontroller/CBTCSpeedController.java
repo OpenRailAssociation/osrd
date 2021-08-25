@@ -88,7 +88,6 @@ public final class CBTCSpeedController extends SpeedController {
     public SpeedDirective getDirective(double pathPosition) {
 
         final double nextDangerDistance = endPosition - state.location.getPathPosition();
-        System.err.println(schedule.trainID + " " + nextDangerDistance);
 
         if (nextDangerDistance > 4000)
             return new SpeedDirective(Double.POSITIVE_INFINITY);
@@ -107,15 +106,11 @@ public final class CBTCSpeedController extends SpeedController {
         // first zone
         if ((kineticEnergy + potentialEnergy(startDistance, distanceSecure) + lostBrakeEnergy(distanceSecure) < 0
                 && nextDangerDistance > 40) || kineticEnergy < 0) {
-            System.err.println(schedule.trainID + " " + state.location.getPathPosition() + " " + state.accel + " " + 0
-                    + " " + state.speed + " " + state.speed);
             return new SpeedDirective(Double.POSITIVE_INFINITY);
         }
 
         // It's necessary if we want the train to stop
         if (kineticEnergy < 15) {
-            System.err.println(schedule.trainID + " " + state.location.getPathPosition() + " " + state.accel + " " + 5
-                    + " " + targetSpeedLimit + " " + state.speed);
             return new SpeedDirective(Math.max(targetSpeedLimit, 0.)); // max is only for test!
         }
 
@@ -126,8 +121,6 @@ public final class CBTCSpeedController extends SpeedController {
             var targetSpeed = state.speed
                     + (state.accel + schedule.rollingStock.rollingResistance(state.speed) / schedule.rollingStock.mass)
                             * dt;
-            System.err.println(schedule.trainID + " " + state.location.getPathPosition() + " " + state.accel + " " + 1
-                    + " " + targetSpeed + " " + state.speed);
             return new SpeedDirective(targetSpeed);
         }
 
@@ -138,8 +131,6 @@ public final class CBTCSpeedController extends SpeedController {
             var targetSpeed =  state.speed + (state.accel + jerkComfort * dt) * dt;
             if (state.accel > -jerkComfort / 10)
                 targetSpeed = state.speed;
-            System.err.println(schedule.trainID + " " + state.location.getPathPosition() + " " + state.accel + " " + 2
-                    + " " + targetSpeed + " " + state.speed);
             return new SpeedDirective(targetSpeed);
         }
         
@@ -148,8 +139,6 @@ public final class CBTCSpeedController extends SpeedController {
         //fourth zone
         if (kineticEnergy + potentialEnergy(startDistance, distanceSecure) + lostBrakeEnergy(distanceSecure) < 0) {
             var targetSpeed = state.speed + (state.accel - jerkComfort * dt) * dt;
-            System.err.println(schedule.trainID + " " + state.location.getPathPosition() + " " + state.accel + " " + 3
-                    + " " + targetSpeed + " " + state.speed);
             return new SpeedDirective(targetSpeed);
         }
 
@@ -158,8 +147,6 @@ public final class CBTCSpeedController extends SpeedController {
         //fifth zone
         if (kineticEnergy + potentialEnergy(startDistance, nextDangerDistance) + lostBrakeEnergy(distanceSecure) <= 0) {
             var targetSpeed =targetSpeedLimit;
-            System.err.println(schedule.trainID + " " + state.location.getPathPosition() + " " + state.accel + " " + 4
-                    + " " + targetSpeed + " " + state.speed);
             return new SpeedDirective(targetSpeed);
 
         } // Enter EMERGENCY_BRAKING
