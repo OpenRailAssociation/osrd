@@ -102,7 +102,7 @@
                 "C": 12.0
             },
             "length": 400,
-            "max_speed": 15,
+            "max_speed": 10,
             "startup_time": 10,
             "startup_acceleration": 0.05,
             "comfort_acceleration": 0.25,

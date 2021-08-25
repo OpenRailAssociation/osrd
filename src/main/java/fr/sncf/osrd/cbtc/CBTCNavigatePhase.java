@@ -153,10 +153,12 @@ public final class CBTCNavigatePhase extends NavigatePhase {
                 controllers.addAll(signalControllers);
 
             TrainState trainState = sim.trains.get(schedule.trainID).getLastState();
-            if (trainState != null) {
-                CBTCATP atp = new CBTCATP(sim, schedule, trainState);
-                controllers.addAll(atp.directive());
-            }
+
+            if (trainState == null)
+                return controllers;
+                
+            CBTCATP atp = new CBTCATP(sim, schedule, trainState);
+            controllers.addAll(atp.directive());
 
             var activeControllers = new ArrayList<SpeedController>();
             var speedInstructions = trainState.trainSchedule.speedInstructions;
@@ -168,9 +170,16 @@ public final class CBTCNavigatePhase extends NavigatePhase {
                 activeControllers.add(controller);
             }
             
-            for (SpeedController controller : activeControllers){
+            for (SpeedController controller : activeControllers) {
                 if (controller instanceof LimitAnnounceSpeedController) {
-                    CBTCSpeedController cbtcspeed = new CBTCSpeedController(((LimitAnnounceSpeedController)controller).targetSpeedLimit, trainState.location.getPathPosition(), controller.endPosition, ((LimitAnnounceSpeedController)controller).gamma, trainState, schedule);
+                    CBTCSpeedController cbtcspeed = new CBTCSpeedController(
+                            ((LimitAnnounceSpeedController) controller).targetSpeedLimit,
+                            trainState.location.getPathPosition(),
+                            controller.endPosition,
+                            ((LimitAnnounceSpeedController) controller).gamma,
+                            trainState,
+                            schedule
+                    );
                     controllers.add(cbtcspeed);
                 }
             }

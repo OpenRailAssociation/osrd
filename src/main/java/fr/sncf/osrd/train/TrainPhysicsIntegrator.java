@@ -66,6 +66,15 @@ public class TrainPhysicsIntegrator {
                 inertia);
     }
 
+    /**
+     * Create a new TrainPhysicsIntegrator object
+     * @param timeStep the timeStep of the physic integration
+     * @param rollingStock the rolling stock associated to the train
+     * @param currentSpeed the current speed of the train
+     * @param currentAccel the current acceleration of the train
+     * @param meanTrainGrade the mean grade of the train
+     * @return a new TrainPhysicsIntegrator with the given characteristics
+     */
     public static TrainPhysicsIntegrator make(
             double timeStep,
             RollingStock rollingStock,
