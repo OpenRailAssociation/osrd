@@ -148,4 +148,41 @@ public class PathfindingTest extends ApiTest {
         assertEquals(1, response.length);
         assertEquals(3, response[0].length);
     }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    public void simpleTracksSameEdge(boolean inverted) throws Exception {
+        var waypointStart = new PathfindingWaypoint(
+                "ne.micro.bar_a",
+                100,
+                EdgeDirection.START_TO_STOP
+        );
+        var waypointEnd = new PathfindingWaypoint(
+                "ne.micro.bar_a",
+                110,
+                EdgeDirection.START_TO_STOP
+        );
+        if (inverted) {
+            var tmp = waypointEnd;
+            waypointEnd = waypointStart;
+            waypointStart = tmp;
+        }
+        var waypointsStart = makeBidirectionalEndPoint(waypointStart);
+        var waypointsEnd = makeBidirectionalEndPoint(waypointEnd);
+        var waypoints = new PathfindingWaypoint[2][];
+        waypoints[0] = waypointsStart;
+        waypoints[1] = waypointsEnd;
+        var requestBody = PathfindingRoutesEndpoint.adapterRequest.toJson(
+                new PathfindingRoutesEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json"));
+
+        var result = new RsPrint(
+                new PathfindingTracksEndpoint(infraHandlerMock).act(
+                        new RqFake("POST", "/pathfinding/tracks", requestBody))
+        ).printBody();
+
+        var response = PathfindingTracksEndpoint.adapterResult.fromJson(result);
+        assert response != null;
+        assertEquals(1, response.length);
+        assertEquals(1, response[0].length);
+    }
 }
