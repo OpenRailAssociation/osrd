@@ -128,7 +128,11 @@ public class TrainPath {
             if (edge.containsLocation(location)) {
                 return sumPreviousSections + location.offset - edge.getBeginPosition();
             }
-            sumPreviousSections += edge.getEndPosition() - edge.getBeginPosition();
+            if(edge.direction == EdgeDirection.START_TO_STOP) {
+                sumPreviousSections += edge.getEndPosition() - edge.getBeginPosition();
+            } else {
+                sumPreviousSections += edge.getBeginPosition() - edge.getEndPosition();
+            }
         }
         throw new RuntimeException("Can't find location in path");
     }
