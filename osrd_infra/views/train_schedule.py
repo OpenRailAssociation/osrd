@@ -256,6 +256,15 @@ def get_train_stops(path):
     return stops
 
 
+def _convert_route_list(path):
+    res = []
+    for route in path.payload["path"]:
+        route_str = format_route_id(route["route"])
+        if len(res) == 0 or res[-1] != route_str:
+            res.append(route_str)
+    return res
+
+
 def get_train_schedule_payload(train_schedule):
     path = train_schedule.path
     return {
@@ -266,7 +275,7 @@ def get_train_schedule_payload(train_schedule):
         "initial_route": format_route_id(path.get_initial_route()),
         "initial_speed": train_schedule.initial_speed,
         "phases": get_train_phases(path),
-        "routes": [format_route_id(route["route"]) for route in path.payload["path"]],
+        "routes": _convert_route_list(path),
         "stops": get_train_stops(path),
     }
 
