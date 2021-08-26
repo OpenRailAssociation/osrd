@@ -1056,6 +1056,10 @@ class Infra:
                 {
                     "id": oname_route_between(uget_begin(utrack), uget_end(utrack)),
                     "entry_point": uname_tde_begin(utrack),
+                    "exit_point": uname_tde_end(utrack)
+                    if self.degree[utrack] == 2
+                    else uname_buffer_stop(utrack),
+                    "entry_direction": "START_TO_STOP",
                     "switches_position": {},
                     "release_groups": [[uname_tvd_track(utrack)]],
                 }
@@ -1066,6 +1070,8 @@ class Infra:
                     "entry_point": uname_tde_end(utrack)
                     if self.degree[utrack] == 2
                     else uname_buffer_stop(utrack),
+                    "exit_point": uname_tde_begin(utrack),
+                    "entry_direction": "STOP_TO_START",
                     "switches_position": {},
                     "release_groups": [[uname_tvd_track(utrack)]],
                 }
@@ -1076,6 +1082,8 @@ class Infra:
                 {
                     "id": oname_route_between(ofirst, osecond),
                     "entry_point": oname_tde(ofirst),
+                    "exit_point": oname_tde(osecond),
+                    "entry_direction": "STOP_TO_START" if ofirst % 2 == 0 else "START_TO_STOP",
                     "switches_position": {},
                     "release_groups": [[oname_tvd_link(ofirst, osecond)]],
                 }
@@ -1084,6 +1092,8 @@ class Infra:
                 {
                     "id": oname_route_between(osecond, ofirst),
                     "entry_point": oname_tde(osecond),
+                    "exit_point": oname_tde(ofirst),
+                    "entry_direction": "STOP_TO_START" if osecond % 2 == 0 else "START_TO_STOP",
                     "switches_position": {},
                     "release_groups": [[oname_tvd_link(ofirst, osecond)]],
                 }
@@ -1094,6 +1104,8 @@ class Infra:
                 {
                     "id": oname_route_between(obase, oleft),
                     "entry_point": oname_tde(obase),
+                    "exit_point": oname_tde(oleft),
+                    "entry_direction": "STOP_TO_START" if obase % 2 == 0 else "START_TO_STOP",
                     "switches_position": {oname_switch(obase, oleft, oright): "LEFT"},
                     "release_groups": [[oname_tvd_switch(obase, oleft, oright)]],
                 }
@@ -1102,6 +1114,8 @@ class Infra:
                 {
                     "id": oname_route_between(obase, oright),
                     "entry_point": oname_tde(obase),
+                    "exit_point": oname_tde(oright),
+                    "entry_direction": "STOP_TO_START" if obase % 2 == 0 else "START_TO_STOP",
                     "switches_position": {oname_switch(obase, oleft, oright): "RIGHT"},
                     "release_groups": [[oname_tvd_switch(obase, oleft, oright)]],
                 }
@@ -1110,6 +1124,8 @@ class Infra:
                 {
                     "id": oname_route_between(oleft, obase),
                     "entry_point": oname_tde(oleft),
+                    "exit_point": oname_tde(obase),
+                    "entry_direction": "STOP_TO_START" if oleft % 2 == 0 else "START_TO_STOP",
                     "switches_position": {oname_switch(obase, oleft, oright): "LEFT"},
                     "release_groups": [[oname_tvd_switch(obase, oleft, oright)]],
                 }
@@ -1118,6 +1134,8 @@ class Infra:
                 {
                     "id": oname_route_between(oright, obase),
                     "entry_point": oname_tde(oright),
+                    "exit_point": oname_tde(obase),
+                    "entry_direction": "STOP_TO_START" if oright % 2 == 0 else "START_TO_STOP",
                     "switches_position": {oname_switch(obase, oleft, oright): "RIGHT"},
                     "release_groups": [[oname_tvd_switch(obase, oleft, oright)]],
                 }
