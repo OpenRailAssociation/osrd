@@ -214,7 +214,7 @@ export const findPathsToKey = (obj, key) => {
         }
       });
     }
-  })(obj, key);
+  }(obj, key));
 
   // const results = findKey(obj, key, undefined, []);
 
@@ -228,11 +228,9 @@ export const findPathsToKey = (obj, key) => {
  * @param {string} str - Raw string to normalize
  * @returns {string} Normalized string
  */
-export const normalizeString = (str) =>
-  str
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
+export const normalizeString = (str) => str.toLowerCase()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '');
 
 /**
  * Soft compare 2 strings, not taking into account case and accents
@@ -365,7 +363,7 @@ export const updateChildElementSelect = (draft, action, selected) => {
         };
       }
       return element;
-    }
+    },
   );
 };
 

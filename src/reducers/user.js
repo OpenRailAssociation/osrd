@@ -3,7 +3,6 @@
 import produce from 'immer';
 import keycloak from 'keycloak';
 import jwtDecode from 'jwt-decode';
-import { get } from 'common/requests';
 
 // Action Types
 export const LOGIN_SUCCESS = 'user/LOGIN_SUCCESS';
@@ -121,11 +120,11 @@ export function login() {
 
       const decoded = jwtDecode(accessToken);
       const account = {
-        'id': decoded.id,
-        'username': decoded.preferred_username,
-        'firstName': decoded.given_name,
-        'lastName': decoded.family_name,
-        'email': decoded.email,
+        id: decoded.id,
+        username: decoded.preferred_username,
+        firstName: decoded.given_name,
+        lastName: decoded.family_name,
+        email: decoded.email,
       };
 
       dispatch(updateAccount(account));

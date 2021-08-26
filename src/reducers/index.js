@@ -3,10 +3,10 @@ import createCompressor from 'redux-persist-transform-compress';
 import { createFilter } from 'redux-persist-transform-filter';
 import storage from 'redux-persist/lib/storage'; // defaults to localStorage
 
-import mainReducer from './main';
+import mainReducer from './main.ts';
 import userReducer from './user';
 import mapReducer from './map';
-import editorReducer from './editor';
+import editorReducer from './editor.ts';
 import osrdconfReducer from './osrdconf';
 import osrdsimulationReducer from './osrdsimulation';
 import rollingStockReducer from './rollingstock';

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import { LIST_VALUES_NAME_SPEED_SPACE } from 'applications/osrd/components/Simulation/consts';
-import { SNCFCOLORS } from 'applications/osrd/consts';
 import {
   defineLinear, expandAndFormatData, formatStepsWithSpace, handleWindowResize, mergeDatasArea,
 } from 'applications/osrd/components/Helpers/ChartHelpers';

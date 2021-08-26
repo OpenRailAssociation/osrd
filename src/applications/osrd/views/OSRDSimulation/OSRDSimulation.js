@@ -48,7 +48,7 @@ const OSRDSimulation = () => {
     return <CenterLoader message={waitingMessage} />;
   };
 
-  const getTimetable = async (timetableID) => {
+  const getTimetable = async () => {
     try {
       const simulationLocal = [];
       const timetable = await get(`${timetableURI}/${timetableID}`);
@@ -88,7 +88,7 @@ const OSRDSimulation = () => {
   }, [hoverPosition, selectedTrain]);
 
   useEffect(() => {
-    getTimetable(timetableID);
+    getTimetable();
   }, []);
 
   useEffect(() => {
