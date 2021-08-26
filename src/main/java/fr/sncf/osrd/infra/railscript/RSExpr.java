@@ -712,7 +712,7 @@ public abstract class RSExpr<T extends RSValue> {
         /**
          * Evaluate the expression to an optional route
          * @param state the global state of the program
-         * @return the current reserved route preceding the signal, if any. Else an empty optional
+         * @return the current reserved or occupied route preceding the signal, if any. Else an empty optional
          */
         @Override
         public RSOptional<RouteState> evaluate(RSExprState<?> state) {
@@ -722,7 +722,10 @@ public abstract class RSExpr<T extends RSValue> {
                 );
             for (var route : routes) {
                 var routeState = state.infraState.getRouteState(route.index); 
-                if (routeState.status == RouteStatus.RESERVED) {
+                if (routeState.status == RouteStatus.RESERVED
+                        || routeState.status == RouteStatus.CBTC_RESERVED
+                        || routeState.status == RouteStatus.OCCUPIED
+                        || routeState.status == RouteStatus.CBTC_OCCUPIED) {
                     return new RSOptional<>(routeState);
                 }
             }
