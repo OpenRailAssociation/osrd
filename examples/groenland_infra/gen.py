@@ -182,7 +182,4 @@ succession.add_table(60, 61, 66, []) # G2
 succession.add_table(62, 61, 67, []) # H2
 succession.add_table(62, 63, 68, []) # J2
 
-gen.write_json("config.json", gen.CONFIG_JSON)
-gen.write_json("infra.json", infra.to_json())
-gen.write_json("simulation.json", sim.to_json())
-gen.write_json("succession.json", succession.to_json())
+gen.write_all_files(infra, sim, succession)

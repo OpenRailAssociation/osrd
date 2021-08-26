@@ -8,6 +8,17 @@ def write_json(filename, data):
     out.close()
 
 
+def write_all_files(infra, sim, succession, cbtc=True):
+    write_json("config.json", CONFIG_JSON)
+    write_json("infra.json", infra.to_json())
+    write_json("simulation.json", sim.to_json())
+    write_json("succession.json", succession.to_json())
+    if cbtc:
+        write_json("config_cbtc.json", CONFIG_CBTC_JSON)
+        write_json("infra_cbtc.json", infra.to_json(cbtc=True))
+        write_json("simulation_cbtc.json", sim.to_json(cbtc=True))
+
+
 def uget_begin(track):
     return 2 * track
 
