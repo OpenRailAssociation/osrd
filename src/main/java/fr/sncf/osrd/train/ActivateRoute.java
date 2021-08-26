@@ -19,12 +19,20 @@ public class ActivateRoute {
     ) throws SimulationError {
         // TODO have a smarter way to reserve routes
         var lastState = train.getLastState();
-        if (lastState.routeIndex + 1 >= lastState.path.routePath.size())
+        // If we have requested the last route of the path, we do nothing.
+        if (lastState.requestedRouteIndex + 1 >= lastState.path.routePath.size())
             return;
-        var nextRoute = lastState.path.routePath.get(lastState.routeIndex + 1);
+        // If we have requested at least two routes in advance, we do nothing.
+        if (lastState.routeIndex + 1 < lastState.requestedRouteIndex)
+            return;
+        // If a route has been reserved in advance and this route contains at least two tvdSection, we do nothing
+        if (lastState.routeIndex + 1 == lastState.requestedRouteIndex
+                && train.schedule.plannedPath.routePath.get(lastState.requestedRouteIndex).tvdSectionsPaths.size() > 1)
+            return;
+        var nextRoute = lastState.path.routePath.get(lastState.requestedRouteIndex + 1);
         var nextRouteState = sim.infraState.getRouteState(nextRoute.index);
         sim.infraState.towerState.request(sim, nextRouteState, train);
-        reserveNextIfNeeded(sim, train, lastState.routeIndex + 1);
+        reserveNextIfNeeded(sim, train, lastState.requestedRouteIndex);
     }
 
     /** Reserve the initial routes, mark occupied tvd sections and add interactable elements that are under the train
@@ -55,7 +63,11 @@ public class ActivateRoute {
 
     /** If the current route is a single TVD section long, we need to reserve the next one as well. */
     private static void reserveNextIfNeeded(Simulation sim, Train train, int routeIndex) throws SimulationError {
+        // If we have requested the last route of the path, we do nothing.
         if (train.schedule.plannedPath.routePath.size() <= routeIndex + 1)
+            return;
+        // If we have requested at least two routes in advance, we do nothing.
+        if (train.getLastState().routeIndex + 1 < train.getLastState().requestedRouteIndex)
             return;
         var route = train.schedule.plannedPath.routePath.get(routeIndex);
         if (route.tvdSectionsPaths.size() > 1)

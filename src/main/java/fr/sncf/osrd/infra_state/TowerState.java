@@ -179,6 +179,7 @@ public class TowerState {
             System.out.println("TOWER REQUEST : " + train.getName() + " : " + routeState.route.id);
 
             var request = new Request(train, routeState);
+            train.getLastState().requestedRouteIndex += 1;
             for (var tvdSectionPath : routeState.route.tvdSectionsPaths) {
                 var tvdSectionID = tvdSectionPath.tvdSection.id;
                 waitingList.get(tvdSectionID).add(request);

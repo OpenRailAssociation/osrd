@@ -47,6 +47,9 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     /** Index of the route the train is currently on in routePath */
     public int routeIndex;
 
+    /** Index of the last route requested by the train. */
+    public int requestedRouteIndex;
+
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     public boolean deepEquals(TrainState o) {
@@ -57,6 +60,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         if (status != o.status)
             return false;
         if (routeIndex != o.routeIndex)
+            return false;
+        if (requestedRouteIndex != o.requestedRouteIndex)
             return false;
         if (trainSchedule != o.trainSchedule)
             return false;
@@ -79,7 +84,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             NavigatePhaseState currentPhaseState,
             ArrayDeque<Interaction> actionPointsUnderTrain,
             TrainPath path,
-            int routeIndex
+            int routeIndex,
+            int requestedRouteIndex
     ) {
         this.time = time;
         this.location = location;
@@ -92,6 +98,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         trainSchedule.trainDecisionMaker.setTrainState(this);
         this.path = path;
         this.routeIndex = routeIndex;
+        this.requestedRouteIndex = requestedRouteIndex;
     }
 
     /** Create a clone */
@@ -107,7 +114,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 currentPhaseState.clone(),
                 new ArrayDeque<>(actionPointsUnderTrain),
                 new TrainPath(path),
-                routeIndex
+                routeIndex,
+                requestedRouteIndex
         );
     }
 
@@ -129,7 +137,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                     currentPhaseState,
                     new ArrayDeque<>(actionPointsUnderTrain),
                     new TrainPath(path),
-                    routeIndex
+                    routeIndex,
+                    requestedRouteIndex
                     );
 
         var nextPhase = currentPhaseIndex + 1;
@@ -145,7 +154,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 nextPhaseState,
                 new ArrayDeque<>(actionPointsUnderTrain),
                 new TrainPath(path),
-                routeIndex
+                routeIndex,
+                requestedRouteIndex
         );
     }
 
