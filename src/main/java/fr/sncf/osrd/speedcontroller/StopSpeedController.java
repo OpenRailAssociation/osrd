@@ -11,7 +11,7 @@ public abstract class StopSpeedController extends SpeedController {
 
     public StopSpeedController(double beginPosition, double endPosition, int linkedStopIndex) {
         super(beginPosition, endPosition);
-        linkedStopIndex = linkedStopIndex;
+        this.linkedStopIndex = linkedStopIndex;
     }
 
     /** Returns true if the position is in the active interval and the linked stop (if any) is still active */
