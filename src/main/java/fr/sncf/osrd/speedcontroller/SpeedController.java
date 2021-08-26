@@ -16,9 +16,6 @@ public abstract class SpeedController implements DeepComparable<SpeedController>
     @SerializableDouble
     public final double endPosition;
 
-    /** Index of the stop the controller depends on if any, otherwise -1 */
-    public int linkedStopIndex;
-
     /** Creates a speed controller with its delimiters
      * @param beginPosition First position where the speed controller is effective
      * @param endPosition Last position where the speed controller is effective
@@ -26,25 +23,11 @@ public abstract class SpeedController implements DeepComparable<SpeedController>
     public SpeedController(double beginPosition, double endPosition) {
         this.beginPosition = beginPosition;
         this.endPosition = endPosition;
-        this.linkedStopIndex = -1;
-    }
-
-    /** Creates a speed controller linked to a stop, to be disabled once it's passed
-     * @param beginPosition First position where the speed controller is effective
-     * @param endPosition Last position where the speed controller is effective
-     * @param linkedStopIndex Index of the linked stop
-     * */
-    public SpeedController(double beginPosition, double endPosition, int linkedStopIndex) {
-        this.beginPosition = beginPosition;
-        this.endPosition = endPosition;
-        this.linkedStopIndex = linkedStopIndex;
     }
 
     /** Returns true if the position is in the active interval and the linked stop (if any) is still active */
     public boolean isActive(double position, int currentStopIndex) {
-        if (position < beginPosition || position >= endPosition)
-            return false;
-        return linkedStopIndex < 0 || currentStopIndex <= linkedStopIndex;
+        return position >= beginPosition && position <= endPosition;
     }
 
     /** Returns true if the speed controller is active for the given train state (right position and stop index) */
