@@ -18,7 +18,6 @@ import java.util.*;
  * the MA. The speed controller used to slow down the train from the
  * announcement of a speed limit, or a train or a switch up to its enforcement
  * signal.
- * 
  * How does it work?
  *  1) Compute the energy to dissipate to arrive at the right speed:
  *      - kinetic
@@ -64,12 +63,17 @@ public final class CBTCSpeedController extends SpeedController {
         this.gamma = gamma;
         this.state = state;
         this.schedule = schedule;
-        assert(targetSpeedLimit>=0.);
+        assert (targetSpeedLimit >= 0);
     }
 
     /** Create CBTCSpeedController from initial speed */
-    public static CBTCSpeedController create(double targetSpeed, double targetPosition, double gamma, TrainState state,
-            TrainSchedule schedule) {
+    public static CBTCSpeedController create(
+            double targetSpeed,
+            double targetPosition,
+            double gamma,
+            TrainState state,
+            TrainSchedule schedule
+    ) {
         return new CBTCSpeedController(targetSpeed, 0., targetPosition, gamma, state, schedule);
     }
 
@@ -124,7 +128,7 @@ public final class CBTCSpeedController extends SpeedController {
             return new SpeedDirective(targetSpeed);
         }
 
-        distanceSecure = nextDangerDistance - 2* marginBehindDanger - startDistance;
+        distanceSecure = nextDangerDistance - 2 * marginBehindDanger - startDistance;
 
         // third zone
         if (kineticEnergy + potentialEnergy(startDistance, distanceSecure) + lostBrakeEnergy(distanceSecure) < 0) {
@@ -146,7 +150,7 @@ public final class CBTCSpeedController extends SpeedController {
 
         //fifth zone
         if (kineticEnergy + potentialEnergy(startDistance, nextDangerDistance) + lostBrakeEnergy(distanceSecure) <= 0) {
-            var targetSpeed =targetSpeedLimit;
+            var targetSpeed = targetSpeedLimit;
             return new SpeedDirective(targetSpeed);
 
         } // Enter EMERGENCY_BRAKING
@@ -191,7 +195,7 @@ public final class CBTCSpeedController extends SpeedController {
         double gamma = this.schedule.rollingStock.gamma;
 
         // Distance travelled by the train at the next time
-        var distance = speed * dt + accel * dt * dt / 2. ;
+        var distance = speed * dt + accel * dt * dt / 2.;
         
         // Kinetic Energy won
         distance += (speed * accel * dt + accel * accel * dt * dt / 2.) / gamma;
@@ -222,6 +226,7 @@ public final class CBTCSpeedController extends SpeedController {
     }
 
     /**
+     * Compute the kinetic energy of the train 1/2 * m * v^2
      * @param speed current speed of the train
      * @return Kinetic energy divided by the mass of the train
      */
@@ -264,11 +269,11 @@ public final class CBTCSpeedController extends SpeedController {
 
     //TODO: need to be implement when it will be considered in the simulation
     private double distanceTravelledFreeWilling(double speed, double finalSpeed, double accel, double i) {
-        var gamma = this.schedule.rollingStock.gamma;
-        // var brakingSettlingTime = (accel + gamma) / jerk;
-        // double updatePosition = brakingSettlingTime * finalSpeed;
-
-        return 0.;
+        if (jerk > 0) {
+            var brakingSettlingTime = (accel + gamma) / jerk;
+            return brakingSettlingTime * finalSpeed;
+        }
+        return 0;
     }
 
     private double accel_erre(double i, double speed) {
@@ -282,13 +287,14 @@ public final class CBTCSpeedController extends SpeedController {
     }
 
     /**
-     * Compute the distance he will travelled during free whilling and the needed margin due to time step behind the next danger
+     * Compute the distance he will travelled during free whilling and the needed margin due to time step 
+     * behind the next danger
      * @param nextDangerDistance distance to the next danger
      * @param speed              speed of the train
      * @return the marge behind the next danger, the distance when the braking will
      *         be established and the speed when the speed will be established
      */
-    private margeCalculation getDistanceStart(double nextDangerDistance, double speed) {
+    private MargeCalculation getDistanceStart(double nextDangerDistance, double speed) {
         ArrayDeque<TrackSectionRange> listTrack = getListTrackSectionRangeUntilDistance(nextDangerDistance);
         var grad = maxGradient(listTrack);
         var i = Math.atan(grad / 1000);
@@ -297,24 +303,24 @@ public final class CBTCSpeedController extends SpeedController {
         var startDistance = distanceTravelledFreeWilling(speed, finalSpeed, accel, i);
 
         var margin = marginBehindNextDanger(speed, accel);
-        var marge = new margeCalculation(startDistance, margin, finalSpeed);
+        var marge = new MargeCalculation(startDistance, margin, finalSpeed);
 
         return marge;
     }
 
-    private class margeCalculation {
+    private static class MargeCalculation {
         public final double startDistance;
         public final double margin;
         public final double finalSpeed;
 
         /**
+         * Constructor of MargeCalculation
          * @param startDistance the distance when the braking will be established
-         * @param margin        the marge behind the next danger, due to the time
-         *                      step
+         * @param margin        the marge behind the next danger, due to the time step
          * @param finalSpeed    the speed of the train when the braking will be
          *                      established
          */
-        public margeCalculation(double startDistance, double margin, double finalSpeed) {
+        public MargeCalculation(double startDistance, double margin, double finalSpeed) {
             this.startDistance = startDistance;
             this.margin = margin;
             this.finalSpeed = finalSpeed;

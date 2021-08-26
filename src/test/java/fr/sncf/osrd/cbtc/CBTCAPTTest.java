@@ -1,22 +1,19 @@
 package fr.sncf.osrd.cbtc;
 
-import fr.sncf.osrd.simulation.Simulation;
-
 import static fr.sncf.osrd.Helpers.*;
 
+import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
 import fr.sncf.osrd.infra.InvalidInfraException;
 
 public class CBTCAPTTest {
 
     /**
      * Test if the distance to the end of the track is correct
-     * 
-     * @throws InvalidInfraException
+     * @throws InvalidInfraException when it encounters problems while loading the infra
      */
     @Test
     public void testDistanceMarche() throws InvalidInfraException {
@@ -63,7 +60,7 @@ public class CBTCAPTTest {
      * less than 400 seconds
      * 
      * @param path Different infra paths for different speeds
-     * @throws InvalidInfraException
+     * @throws InvalidInfraException when it encounters problems while loading the infra
      */
     @ParameterizedTest
     @ValueSource(strings = { "_10", "_15", "_20" })

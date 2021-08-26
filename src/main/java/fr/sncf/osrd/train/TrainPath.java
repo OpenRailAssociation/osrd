@@ -69,11 +69,13 @@ public class TrainPath {
 
             if (previous.getEndLocation().equals(next.getBeginLocation()))
                 continue;
-
+            
             var endNeighbors = (previous.direction == EdgeDirection.START_TO_STOP)
-                    ? previous.edge.endNeighbors : previous.edge.startNeighbors;
+                    ? previous.edge.endNeighbors
+                    : previous.edge.startNeighbors;
             var startNeighbors = (next.direction == EdgeDirection.START_TO_STOP)
-                    ? next.edge.startNeighbors : next.edge.endNeighbors;
+                    ? next.edge.startNeighbors
+                    : next.edge.endNeighbors;
             if (endNeighbors.contains(next.edge) && startNeighbors.contains(previous.edge))
                 continue;
 
