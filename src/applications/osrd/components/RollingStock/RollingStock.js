@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Loader from 'common/Loader';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { setFailure } from 'reducers/main.ts';
 import { get } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
@@ -13,6 +14,7 @@ import 'applications/osrd/components/RollingStock/RollingStock.scss';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
 export default function RollingStock() {
+  const dispatch = useDispatch();
   const { darkmode } = useSelector((state) => state.main);
   const { t } = useTranslation(['translation', 'rollingstock']);
   const [rollingStock, setRollingStock] = useState(undefined);
@@ -81,8 +83,11 @@ export default function RollingStock() {
         const data = await get('/osrd/rolling_stock/');
         setRollingStock(data.results);
         setResultContent(data.results);
-        console.log(data.results);
       } catch (e) {
+        dispatch(setFailure({
+          name: t('osrdconf:errorMessages.unableToRetrieveRollingStock'),
+          message: e.message,
+        }));
         console.log(e);
       }
     }

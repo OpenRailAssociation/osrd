@@ -11,7 +11,13 @@
     "noOriginTime": "Veuillez renseigner l'horaire de départ à l'origine",
     "noRollingStock": "La composition de train n'est pas renseignée",
     "noTimetable": "Veuillez choisir ou créer une grille horaire",
-    "title": "Une erreur est survenue"
+    "trainScheduleTitle": "Une erreur est survenue",
+    "unableToRetrieveInfra": "Récupération infra impossible",
+    "unableToRetrieveInfraList": "Récupération liste d'infra impossible",
+    "unableToRetrievePathfinding": "Impossible de tracer un chemin",
+    "unableToRetrieveRollingStock": "Récupération matériel impossible",
+    "unableToRetrieveTimetable": "Récupération grille horaire impossible",
+    "unableToRetrieveTimetableList": "Récupération liste de grilles horaires impossible"
   },
   "gare": "Gare, poste",
   "infrachoose": "Choix de l'infrastructure",

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
+import { setFailure } from 'reducers/main.ts';
 import {
   updateItinerary, updatePathfindingID, updateOrigin, updateDestination, replaceVias,
 } from 'reducers/osrdconf';
@@ -30,6 +32,7 @@ const Itinerary = (props) => {
   const dispatch = useDispatch();
   const map = useSelector((state) => state.map);
   const osrdconf = useSelector((state) => state.osrdconf);
+  const { t } = useTranslation(['osrdconf']);
 
   const zoomToFeature = (boundingBox, id = undefined, source = undefined) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
@@ -136,6 +139,10 @@ const Itinerary = (props) => {
         console.log(params);
         console.log(itineraryCreated);
       } catch (e) {
+        dispatch(setFailure({
+          name: t('errorMessages.unableToRetrievePathfinding'),
+          message: `${e.message} : ${e.response.data.detail}`,
+        }));
         console.log('ERROR', e);
       }
     }

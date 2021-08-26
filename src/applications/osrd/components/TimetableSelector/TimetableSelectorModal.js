@@ -8,7 +8,7 @@ import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { setSuccess } from 'reducers/main.ts';
+import { setSuccess, setFailure } from 'reducers/main.ts';
 import icon from 'assets/pictures/timetable.svg';
 
 const timetableURL = '/osrd/timetable';
@@ -25,6 +25,10 @@ export default function TimetableSelectorModal() {
       const timetablesListQuery = await get(timetableURL, { infra: infraID });
       settimetablesList(timetablesListQuery);
     } catch (e) {
+      dispatch(setFailure({
+        name: t('osrdconf:errorMessages.unableToRetrieveTimetableList'),
+        message: e.message,
+      }));
       console.log('ERROR', e);
     }
   };

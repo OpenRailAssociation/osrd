@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { setFailure } from 'reducers/main.ts';
 import { useTranslation } from 'react-i18next';
 import { get, deleteRequest } from 'common/requests';
 import TimetableSelectorModal from 'applications/osrd/components/TimetableSelector/TimetableSelectorModal';
@@ -17,6 +18,7 @@ export default function TimetableSelector(props) {
   const [selectedTimetable, setselectedTimetable] = useState(undefined);
   const [trainList, setTrainList] = useState(undefined);
   const { timetableID } = useSelector((state) => state.osrdconf);
+  const dispatch = useDispatch();
   const { t } = useTranslation();
 
   const getTimetable = async (id) => {
@@ -26,6 +28,10 @@ export default function TimetableSelector(props) {
       setselectedTimetable(timetableQuery);
       setTrainList(timetableQuery.train_schedules);
     } catch (e) {
+      dispatch(setFailure({
+        name: t('osrdconf:errorMessages.unableToRetrieveTimetable'),
+        message: e.message,
+      }));
       console.log('ERROR', e);
     }
   };

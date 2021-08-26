@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateInfraID } from 'reducers/osrdconf';
+import { setFailure } from 'reducers/main.ts';
 import { get } from 'common/requests';
 import icon from 'assets/pictures/tracks.svg';
 import InfraSelectorModal from 'applications/osrd/components/InfraSelector/InfraSelectorModal';
@@ -14,13 +15,17 @@ export default function InfraSelector() {
   const [infrasList, setInfrasList] = useState(undefined);
   const [selectedInfra, setSelectedInfra] = useState(undefined);
   const { infraID } = useSelector((state) => state.osrdconf);
-  const { t } = useTranslation();
+  const { t } = useTranslation(['osrdconf']);
 
   const getInfra = async (id) => {
     try {
       const infraQuery = await get(`${infraURL}/${id}`, {});
       setSelectedInfra(infraQuery);
     } catch (e) {
+      dispatch(setFailure({
+        name: t('errorMessages.unableToRetrieveInfra'),
+        message: e.message,
+      }));
       console.log('ERROR', e);
     }
   };
@@ -30,6 +35,10 @@ export default function InfraSelector() {
       const infrasListQuery = await get(infraURL, {});
       setInfrasList(infrasListQuery);
     } catch (e) {
+      dispatch(setFailure({
+        name: t('errorMessages.unableToRetrieveInfraList'),
+        message: e.message,
+      }));
       console.log('ERROR', e);
     }
   };
@@ -62,7 +71,7 @@ export default function InfraSelector() {
         >
           <div className="h2 mb-0">
             <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
-            <span className="text-muted">{t('osrdconf:infrastructure')}</span>
+            <span className="text-muted">{t('infrastructure')}</span>
             {selectedInfra !== undefined ? (
               <>
                 <span className="ml-1">{selectedInfra.name}</span>
