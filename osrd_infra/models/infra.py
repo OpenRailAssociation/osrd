@@ -201,13 +201,6 @@ class IdentifierComponent(Component):
     def __repr__(self):
         return f"<IdentifierComponent database={self.database}, name={self.name}>"
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["database", "name"], name="identifier_unique_in_database"
-            )
-        ]
-
     class ComponentMeta:
         name = "identifier"
 
