@@ -49,6 +49,7 @@ public class Train {
                 phaseState,
                 new ArrayDeque<>(),
                 new TrainPath(schedule.plannedPath),
+                0,
                 0
         );
 
