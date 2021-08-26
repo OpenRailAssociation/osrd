@@ -86,14 +86,14 @@ public class StopTests {
     }
 
     @Test
-    public void testNoStopWhenNegativeTimes() throws InvalidInfraException {
+    public void testNoStopWhenNegativeOrZeroTimes() throws InvalidInfraException {
         final var infra = getBaseInfra();
         final var config = makeConfigWithGivenStops("tiny_infra/config_railjson.json",
                 new RJSTrainStop[]{
                         new RJSTrainStop(200., null, -1),
-                        new RJSTrainStop(1000., null, -1),
+                        new RJSTrainStop(1000., null, 0),
                         new RJSTrainStop(3000., null, -1),
-                        new RJSTrainStop(5000., null, -1),
+                        new RJSTrainStop(5000., null, 0),
                         new RJSTrainStop(-1., null, 0)
                 }
         );
