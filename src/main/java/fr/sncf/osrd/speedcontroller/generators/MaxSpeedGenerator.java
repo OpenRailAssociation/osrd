@@ -45,7 +45,7 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
                     targetPosition,
                     schedule.rollingStock.gamma
             );
-            var stopController = new MaxSpeedController(0, targetPosition, Double.POSITIVE_INFINITY);
+            var stopController = new MaxSpeedController(0, targetPosition, Double.POSITIVE_INFINITY, i);
             slowController.linkedStopIndex = i;
             stopController.linkedStopIndex = i;
             controllers.add(slowController);

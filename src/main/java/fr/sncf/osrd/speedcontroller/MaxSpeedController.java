@@ -2,11 +2,16 @@ package fr.sncf.osrd.speedcontroller;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-public class MaxSpeedController extends SpeedController {
+public class MaxSpeedController extends StopSpeedController {
     public final double speedLimit;
 
     public MaxSpeedController(double speedLimit, double beginPathOffset, double endPathOffset) {
         super(beginPathOffset, endPathOffset);
+        this.speedLimit = speedLimit;
+    }
+
+    public MaxSpeedController(double speedLimit, double beginPathOffset, double endPathOffset, int linkedStopIndex) {
+        super(beginPathOffset, endPathOffset, linkedStopIndex);
         this.speedLimit = speedLimit;
     }
 

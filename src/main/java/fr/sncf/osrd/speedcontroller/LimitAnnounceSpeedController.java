@@ -5,7 +5,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 /**
  * The speed controller used to slow down the train from the announce of a speed limit up to its enforcement signal.
  */
-public final class LimitAnnounceSpeedController extends SpeedController {
+public final class LimitAnnounceSpeedController extends StopSpeedController {
     public final double targetSpeedLimit;
     public final double gamma;
 
@@ -17,6 +17,19 @@ public final class LimitAnnounceSpeedController extends SpeedController {
             double gamma
     ) {
         super(startPosition, endPosition);
+        this.targetSpeedLimit = targetSpeedLimit;
+        this.gamma = gamma;
+    }
+
+    /** Creates a speed controller meant to slow down the train before a speed limit. */
+    public LimitAnnounceSpeedController(
+            double targetSpeedLimit,
+            double startPosition,
+            double endPosition,
+            double gamma,
+            int linkedStopIndex
+    ) {
+        super(startPosition, endPosition, linkedStopIndex);
         this.targetSpeedLimit = targetSpeedLimit;
         this.gamma = gamma;
     }
@@ -34,6 +47,24 @@ public final class LimitAnnounceSpeedController extends SpeedController {
                 targetPosition - requiredBrakingDistance,
                 targetPosition,
                 gamma
+        );
+    }
+
+    /** Create LimitannouceSpeedController from initial speed and target position */
+    public static LimitAnnounceSpeedController create(
+            double initialSpeed,
+            double targetSpeed,
+            double targetPosition,
+            double gamma,
+            int linkedStopIndex
+    ) {
+        var requiredBrakingDistance = (initialSpeed * initialSpeed - targetSpeed * targetSpeed) / (2 * gamma);
+        return new LimitAnnounceSpeedController(
+                targetSpeed,
+                targetPosition - requiredBrakingDistance,
+                targetPosition,
+                gamma,
+                linkedStopIndex
         );
     }
 
