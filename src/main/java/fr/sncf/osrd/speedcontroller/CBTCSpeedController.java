@@ -183,37 +183,39 @@ public final class CBTCSpeedController extends SpeedController {
 
     /**
      * Return margin behind next danger due to the time to establish braking
+     * Margin that takes into account the energy gain, and the distance covered at the next calculation step 
+     * estimateStartDistance(t+dt) - startDistance(t) + estimateDistancetoStop(t +dt) - distancetoStop(t)
+     * + distanceTravelled(dt)
+     * @param speed the speed of the train
+     * @param accel the acceleration of the train
+     * @param i the max slope between the train and the danger
+     * @return the marge behind the next danger
      */
-    private double marginBehindNextDanger(
-            double speed,
-            double finalSpeed,
-            double accel,
-            double i,
-            double startdistance,
-            double nextDangerDistance
-    ) {
-        double gamma = this.schedule.rollingStock.gamma;
+    private double marginBehindNextDanger(double speed, double accel, double i) {
+        var gamma = this.schedule.rollingStock.gamma;
+
+        var nextSpeed = speed + schedule.rollingStock.getMaxEffort(speed) * dt / schedule.rollingStock.mass
+                + accel * dt;
 
         // Distance travelled by the train at the next time
-        var distance = speed * dt + accel * dt * dt / 2.;
+        var distance = nextSpeed * dt;
         
         // Kinetic Energy won
-        distance += (speed * accel * dt + accel * accel * dt * dt / 2.) / gamma;
+        distance += (speed * accel * dt + accel * accel * dt * dt / 2) / gamma;
 
         // No potential energy won
 
         /* Distance travelled more due to settle braking */
-        // var time = (accel - this.accel) /schedule.rollingStock.mass/ jerk ;
-        // distance + = jerk * Math.pow(time, 3) / 6.;
+        if (jerk > 1e-9) {
+            var time = (accel - accel) / schedule.rollingStock.mass / jerk;
+            distance += jerk * Math.pow(time, 3) / 6;
+        }
 
-        /* TODO : add freewheeling :
-        distance + = estimatedDistanceTravelledFreeWilling( t + dt ) - distanceTravelledFreeWilling( t ) 
-        */
+        var nextAccel = accel_erre(i, nextSpeed);
+        var nextFinalSpeed = Math.max(final_speed(nextAccel, nextSpeed), 0.);
+        var nextStartDistance = distanceTravelledFreeWilling(nextSpeed, nextFinalSpeed, nextAccel, i);
 
-        // var time = schedule.rollingStock.getMaxEffort(speed) /schedule.rollingStock.mass/ jerk ;
-        // distance + = jerk * Math.pow(time, 3) / 6.;
-
-        return distance + 10.;
+        return distance + nextStartDistance + 10.;
     }
 
     /**
@@ -269,7 +271,7 @@ public final class CBTCSpeedController extends SpeedController {
 
     //TODO: need to be implement when it will be considered in the simulation
     private double distanceTravelledFreeWilling(double speed, double finalSpeed, double accel, double i) {
-        if (jerk > 0) {
+        if (jerk > 1e-9) {
             var brakingSettlingTime = (accel + gamma) / jerk;
             return brakingSettlingTime * finalSpeed;
         }
@@ -301,10 +303,8 @@ public final class CBTCSpeedController extends SpeedController {
         var accel = accel_erre(i, speed);
         var finalSpeed = Math.max(final_speed(accel, speed), 0.);
         var startDistance = distanceTravelledFreeWilling(speed, finalSpeed, accel, i);
-
-        var margin = marginBehindNextDanger(speed, accel);
+        var margin = marginBehindNextDanger(speed, accel, i) - startDistance;
         var marge = new MargeCalculation(startDistance, margin, finalSpeed);
-
         return marge;
     }
 
