@@ -119,10 +119,27 @@ public class SimulationEndpoint implements Take {
                 sim.step();
 
             var simulationResponse = resultLog.getResults();
+
+            validate(simulationResponse, trainSchedules);
+
             return new RsJson(new RsWithBody(adapterResult.toJson(simulationResponse)));
         } catch (Throwable ex) {
             ex.printStackTrace(System.err);
             throw ex;
+        }
+    }
+
+    private void validate(SimulationResultChange[] changes, List<TrainSchedule> schedules) throws SimulationError {
+        var nStopReached = Arrays.stream(changes)
+                .filter(change -> change instanceof SimulationResultChange.ResponseStopReachedUpdate)
+                .count();
+        var expectedStopReached = schedules.stream()
+                .mapToInt(schedule -> schedule.stops.size())
+                .sum();
+        if (nStopReached != expectedStopReached) {
+            var err = String.format("Unexpected train stop number: expected %d, got %d",
+                    expectedStopReached, nStopReached);
+            throw new SimulationError(err);
         }
     }
 
