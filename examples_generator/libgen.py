@@ -1500,7 +1500,7 @@ class Simulation:
         path = [oget_other_side(path[0])] + path + [oget_other_side(path[-1])]
         return [oname_route_between(path[i], path[i + 1]) for i in range(len(path) - 1)]
 
-    def add_schedule(self, departure_time, departure_utrack, arrival_utrack):
+    def add_schedule(self, departure_time, departure_utrack, arrival_utrack, cbtc=False):
         assert departure_utrack != arrival_utrack
         path = self.route_path(departure_utrack, arrival_utrack)
         index = len(self.json["train_schedules"])
@@ -1522,19 +1522,27 @@ class Simulation:
                             "track_section": uname_track(arrival_utrack),
                             "offset": self.lengths[arrival_utrack] // 2,
                         },
-                        "type": "navigate",
+                        "type": "cbtc" if cbtc else "navigate",
                     }
                 ],
             }
         )
 
     def to_json(self, cbtc=False):
-        if cbtc:
+        """Returns the json corresponding to simulation.json
+
+        Args:
+            cbtc (bool, optional): If False, all the train with cbtc status will be remove of the simulation. Defaults to False.
+        """
+        schedules = self.json["train_schedules"].copy()
+        if not cbtc:
             for schedule in self.json["train_schedules"]:
                 for phase in schedule["phases"]:
-                    if phase["type"] == "navigate":
-                        phase["type"] = "cbtc"
-        return self.json
+                    if phase["type"] == "cbtc":
+                        schedules.remove(schedule)
+        simulation = self.json.copy()
+        simulation["train_schedules"] = schedules
+        return simulation
 
 
 class Succession:
