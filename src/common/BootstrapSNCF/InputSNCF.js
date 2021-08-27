@@ -34,6 +34,8 @@ class InputSNCF extends React.Component {
     value: PropTypes.string,
     readonly: PropTypes.bool,
     inputProps: PropTypes.object,
+    min: PropTypes.number,
+    max: PropTypes.number,
     // Error handling
     isInvalid: PropTypes.bool,
     errorMsg: PropTypes.string,
@@ -49,7 +51,7 @@ class InputSNCF extends React.Component {
       name: PropTypes.string.isRequired,
     }),
     // Styling props
-    seconds: PropTypes.bool,
+    unit: PropTypes.string,
     sm: PropTypes.bool,
     whiteBG: PropTypes.bool,
     noMargin: PropTypes.bool,
@@ -73,7 +75,9 @@ class InputSNCF extends React.Component {
     // Options for the appened icon
     appendOptions: undefined,
     // Styling props
-    seconds: false,
+    unit: undefined,
+    min: undefined,
+    max: undefined,
     sm: false,
     whiteBG: false,
     noMargin: false,
@@ -123,8 +127,9 @@ class InputSNCF extends React.Component {
   // Renders a basic input field without any underlying list
   renderBasicInput = () => {
     const {
-      isInvalid, errorMsg, focus, label, id, type, onChange, seconds, sm,
+      isInvalid, errorMsg, focus, label, id, type, onChange, unit, sm,
       readonly, whiteBG, clearButton, value, placeholder, inputProps,
+      min, max,
     } = this.props;
 
     // Build custom classes
@@ -151,7 +156,7 @@ class InputSNCF extends React.Component {
         <label className="font-weight-medium mb-2" htmlFor={id}>{label}</label>
         )}
         <div className="input-group">
-          <div className={`form-control-container ${invalidClass}`}>
+          <div className={`form-control-container ${invalidClass} ${unit ? 'has-left-icon' : null}`}>
             <input
               type={type}
               onChange={onChange}
@@ -159,11 +164,13 @@ class InputSNCF extends React.Component {
               id={id}
               value={value}
               placeholder={placeholder}
-              step={seconds ? 1 : 60}
               ref={(input) => ((focus) ? input && input.focus() : null)}
+              min={min || null}
+              max={max || null}
               {...inputProps}
             />
             <span className="form-control-state" />
+            {unit ? <span className="form-control-icon small">{unit}</span> : null}
             {this.renderClearButton()}
           </div>
           {this.renderAppendButton(sm)}

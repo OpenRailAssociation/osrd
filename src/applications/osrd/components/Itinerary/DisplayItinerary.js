@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { store } from 'Store';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   RiMapPin2Fill,
@@ -11,10 +11,11 @@ import {
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import DisplayVias from 'applications/osrd/components/Itinerary/DisplayVias';
 import { updateOriginTime } from 'applications/osrd/components/Itinerary/helpers';
-import { updateOrigin, updateDestination } from 'reducers/osrdconf';
+import { updateOrigin, updateOriginSpeed, updateDestination } from 'reducers/osrdconf';
 
 export default function DisplayItinerary(props) {
   const osrdconf = useSelector((state) => state.osrdconf);
+  const dispatch = useDispatch();
   const { t } = useTranslation(['osrdconf']);
   const { zoomToFeaturePoint } = props;
 
@@ -44,19 +45,28 @@ export default function DisplayItinerary(props) {
                 tabIndex={0}
               >
                 <strong className="mr-1 text-nowrap">
-                  {`${osrdconf.origin.id} ${osrdconf.origin.nomVoie}`}
+                  {osrdconf.origin.id}
                 </strong>
-                <small className="text-nowrap">
-                  {`${osrdconf.origin.pkSncfDe} • ${osrdconf.origin.pkSncfFi}`}
-                </small>
               </div>
-              <div className="ml-auto osrd-config-time">
+              <div className="ml-auto osrd-config-speed mr-1">
+                <InputSNCF
+                  type="number"
+                  id="osrd-config-speed-origin"
+                  onChange={(e) => dispatch(updateOriginSpeed(e.target.value))}
+                  value={osrdconf.originSpeed}
+                  unit="km/h"
+                  min={0}
+                  max={1000}
+                  sm
+                  noMargin
+                />
+              </div>
+              <div className="osrd-config-time">
                 <InputSNCF
                   type="time"
                   id="osrd-config-time-origin"
                   onChange={(e) => updateOriginTime(e.target.value)}
                   value={osrdconf.originTime}
-                  seconds
                   sm
                   noMargin
                 />
@@ -105,11 +115,8 @@ export default function DisplayItinerary(props) {
                 className="flex-grow-1"
               >
                 <strong className="mr-1 text-nowrap">
-                  {`${osrdconf.destination.id} ${osrdconf.destination.nomVoie}`}
+                  {osrdconf.destination.id}
                 </strong>
-                <small className="text-nowrap">
-                  {`${osrdconf.destination.pkSncfDe} • ${osrdconf.destination.pkSncfFi}`}
-                </small>
               </div>
               <button className="btn btn-sm btn-only-icon btn-white" type="button" onClick={() => store.dispatch(updateDestination(undefined))}>
                 <i className="icons-circle-delete" />

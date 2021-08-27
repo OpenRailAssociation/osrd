@@ -76,7 +76,6 @@ export default function AddTrainSchedule(props) {
               id="osrdconf-traincount"
               onChange={(e) => setTrainCount(e.target.value)}
               value={trainCount}
-              seconds
               noMargin
               sm
             />
@@ -88,8 +87,8 @@ export default function AddTrainSchedule(props) {
               id="osrdconf-delta"
               onChange={(e) => setTrainDelta(e.target.value)}
               value={trainDelta}
+              unit="min"
               noMargin
-              seconds
               sm
             />
           </span>

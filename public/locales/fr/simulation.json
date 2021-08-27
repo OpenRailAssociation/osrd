@@ -1,5 +1,8 @@
 {
   "departureTime": "Départ",
+  "errorMessages": {
+    "unableToRetrieveTrainSchedule": "Calcul de marche impossible"
+  },
   "isWorking": "Calcul de la simulation en cours...",
   "labels": "Etiquettes",
   "loadingTrain": "Chargement du train",

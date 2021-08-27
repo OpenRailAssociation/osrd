@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { get } from 'common/requests';
+import { setFailure } from 'reducers/main.ts';
 import { FlyToInterpolator } from 'react-map-gl';
 import ButtonFullscreen from 'common/ButtonFullscreen';
 import CenterLoader from 'common/CenterLoader/CenterLoader';
@@ -60,6 +61,10 @@ const OSRDSimulation = () => {
           await setWaitingMessage(`${t('simulation:loadingTrain')} ${idx + 1}/${timetable.train_schedules.length}`);
           simulationLocal.push({ ...trainResult, labels: trainDetails.labels});
         } catch (e) {
+          dispatch(setFailure({
+            name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
+            message: `${e.message} : ${e.response.data.detail}`,
+          }));
           console.log('ERROR', e);
         }
       }

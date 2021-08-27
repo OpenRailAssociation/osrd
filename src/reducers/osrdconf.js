@@ -9,6 +9,7 @@ export const UPDATE_PATHFINDING_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
 export const UPDATE_TIMETABLE_ID = 'osrdconf/UPDATE_TIMETABLE_ID';
 export const UPDATE_ROLLINGSTOCK_ID = 'osrdconf/UPDATE_ROLLINGSTOCK_ID';
 export const UPDATE_ORIGIN = 'osrdconf/UPDATE_ORIGIN';
+export const UPDATE_ORIGIN_SPEED = 'osrdconf/UPDATE_ORIGIN_SPEED';
 export const UPDATE_ORIGIN_TIME = 'osrdconf/UPDATE_ORIGIN_TIME';
 export const REPLACE_VIAS = 'osrdconf/REPLACE_VIAS';
 export const UPDATE_VIAS = 'osrdconf/UPDATE_VIAS';
@@ -30,6 +31,7 @@ export const initialState = {
   timetableID: undefined,
   rollingStockID: undefined,
   origin: undefined,
+  originSpeed: 0,
   originTime: undefined,
   destination: undefined,
   vias: [],
@@ -61,6 +63,9 @@ export default function reducer(state = initialState, action) {
         break;
       case UPDATE_ORIGIN:
         draft.origin = action.origin;
+        break;
+      case UPDATE_ORIGIN_SPEED:
+        draft.originSpeed = Math.abs(action.originSpeed / 3.6);
         break;
       case UPDATE_ORIGIN_TIME:
         draft.originTime = action.originTime;
@@ -158,6 +163,14 @@ export function updateOrigin(origin) {
     dispatch({
       type: UPDATE_ORIGIN,
       origin,
+    });
+  };
+}
+export function updateOriginSpeed(originSpeed) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_ORIGIN_SPEED,
+      originSpeed,
     });
   };
 }
