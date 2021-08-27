@@ -118,7 +118,7 @@
                         "track_section": "ne.micro.1",
                         "offset": 500
                     },
-                    "type": "navigate"
+                    "type": "cbtc"
                 }
             ]
         },
@@ -143,7 +143,7 @@
                         "track_section": "ne.micro.0",
                         "offset": 500
                     },
-                    "type": "navigate"
+                    "type": "cbtc"
                 }
             ]
         }

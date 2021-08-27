@@ -101,49 +101,58 @@
             "id": "train.0",
             "rolling_stock": "fast_rolling_stock",
             "initial_head_location": {
-                "track_section": "ne.micro.0",
-                "offset": 500
+                "track_section": "ne.micro.22",
+                "offset": 250
             },
             "departure_time": 0,
             "initial_speed": 0,
             "routes": [
-                "rt.0_END-0_BEGIN",
-                "rt.0_BEGIN-1_BEGIN",
-                "rt.1_BEGIN-1_END"
+                "rt.22_END-22_BEGIN",
+                "rt.22_BEGIN-41_END",
+                "rt.41_END-41_BEGIN",
+                "rt.41_BEGIN-1_BEGIN",
+                "rt.1_BEGIN-1_END",
+                "rt.1_END-2_BEGIN",
+                "rt.2_BEGIN-2_END",
+                "rt.2_END-3_BEGIN",
+                "rt.3_BEGIN-3_END",
+                "rt.3_END-4_BEGIN",
+                "rt.4_BEGIN-4_END",
+                "rt.4_END-5_BEGIN",
+                "rt.5_BEGIN-5_END",
+                "rt.5_END-6_BEGIN",
+                "rt.6_BEGIN-6_END",
+                "rt.6_END-7_BEGIN",
+                "rt.7_BEGIN-7_END",
+                "rt.7_END-8_BEGIN",
+                "rt.8_BEGIN-8_END",
+                "rt.8_END-9_BEGIN",
+                "rt.9_BEGIN-9_END",
+                "rt.9_END-54_BEGIN",
+                "rt.54_BEGIN-54_END",
+                "rt.54_END-56_BEGIN",
+                "rt.56_BEGIN-56_END",
+                "rt.56_END-58_BEGIN",
+                "rt.58_BEGIN-58_END",
+                "rt.58_END-59_BEGIN",
+                "rt.59_BEGIN-59_END",
+                "rt.59_END-60_BEGIN",
+                "rt.60_BEGIN-60_END",
+                "rt.60_END-61_BEGIN",
+                "rt.61_BEGIN-61_END",
+                "rt.61_END-62_BEGIN",
+                "rt.62_BEGIN-62_END",
+                "rt.62_END-68_BEGIN",
+                "rt.68_BEGIN-68_END"
             ],
             "phases": [
                 {
                     "driver_sight_distance": 400,
                     "end_location": {
-                        "track_section": "ne.micro.1",
-                        "offset": 500
+                        "track_section": "ne.micro.68",
+                        "offset": 559
                     },
-                    "type": "navigate"
-                }
-            ]
-        },
-        {
-            "id": "train.1",
-            "rolling_stock": "fast_rolling_stock",
-            "initial_head_location": {
-                "track_section": "ne.micro.2",
-                "offset": 500
-            },
-            "departure_time": 0,
-            "initial_speed": 0,
-            "routes": [
-                "rt.2_END-2_BEGIN",
-                "rt.2_BEGIN-0_BEGIN",
-                "rt.0_BEGIN-0_END"
-            ],
-            "phases": [
-                {
-                    "driver_sight_distance": 400,
-                    "end_location": {
-                        "track_section": "ne.micro.0",
-                        "offset": 500
-                    },
-                    "type": "navigate"
+                    "type": "cbtc"
                 }
             ]
         }
