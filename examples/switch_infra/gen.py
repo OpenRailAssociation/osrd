@@ -18,7 +18,4 @@ sim.add_schedule(0, 2, 0)
 succession = gen.Succession()
 succession.add_table(0, 1, 2, [0, 1])
 
-gen.write_json("config.json", gen.CONFIG_JSON)
-gen.write_json("infra.json", infra.to_json())
-gen.write_json("simulation.json", sim.to_json())
-gen.write_json("succession.json", succession.to_json())
+gen.write_all_files(infra, sim, succession)
