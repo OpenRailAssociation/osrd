@@ -48,7 +48,17 @@ export default function DisplayItinerary(props) {
                   {osrdconf.origin.id}
                 </strong>
               </div>
-              <div className="ml-auto osrd-config-speed mr-1">
+              <div className="ml-auto osrd-config-time mr-1">
+                <InputSNCF
+                  type="time"
+                  id="osrd-config-time-origin"
+                  onChange={(e) => updateOriginTime(e.target.value)}
+                  value={osrdconf.originTime}
+                  sm
+                  noMargin
+                />
+              </div>
+              <div className="osrd-config-speed">
                 <InputSNCF
                   type="number"
                   id="osrd-config-speed-origin"
@@ -57,16 +67,6 @@ export default function DisplayItinerary(props) {
                   unit="km/h"
                   min={0}
                   max={1000}
-                  sm
-                  noMargin
-                />
-              </div>
-              <div className="osrd-config-time">
-                <InputSNCF
-                  type="time"
-                  id="osrd-config-time-origin"
-                  onChange={(e) => updateOriginTime(e.target.value)}
-                  value={osrdconf.originTime}
                   sm
                   noMargin
                 />

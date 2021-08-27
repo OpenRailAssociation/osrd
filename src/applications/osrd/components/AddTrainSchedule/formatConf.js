@@ -49,7 +49,7 @@ export default function formatConf(dispatch, setFailure, t, osrdconf, originTime
       labels: osrdconf.labels,
       departure_time: originTime,
       phases: [],
-      initial_speed: osrdconf.originSpeed,
+      initial_speed: Math.abs(osrdconf.originSpeed / 3.6),
       timetable: osrdconf.timetableID,
       rolling_stock: osrdconf.rollingStockID,
       path: osrdconf.pathfindingID,

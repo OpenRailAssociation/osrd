@@ -65,7 +65,7 @@ export default function reducer(state = initialState, action) {
         draft.origin = action.origin;
         break;
       case UPDATE_ORIGIN_SPEED:
-        draft.originSpeed = Math.abs(action.originSpeed / 3.6);
+        draft.originSpeed = action.originSpeed;
         break;
       case UPDATE_ORIGIN_TIME:
         draft.originTime = action.originTime;
