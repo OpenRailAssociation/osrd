@@ -71,6 +71,14 @@ application {
     mainClassName = 'fr.sncf.osrd.App'
 }
 
+sourceSets {
+    test {
+        resources {
+            srcDirs = ["examples"]
+        }
+    }
+}
+
 shadowJar {
     archiveBaseName = 'osrd'
 }
