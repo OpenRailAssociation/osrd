@@ -178,7 +178,16 @@ paths:
                   train_schedule:
                     type: array
                     items:
-                      type: number
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                        train_name:
+                          type: string
+                        departure_time:
+                          type: number
+                        train_path:
+                          type: number
     delete:
       tags:
       - timetable

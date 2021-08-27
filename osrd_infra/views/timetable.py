@@ -32,6 +32,7 @@ class TimetableView(
                 "id": train.pk,
                 "train_name": train.train_name,
                 "departure_time": train.departure_time,
+                "train_path": train.path_id,
             }
             for train in timetable.train_schedules.all()
         ]
