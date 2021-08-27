@@ -256,10 +256,16 @@ def get_train_stops(path):
     return stops
 
 
-def _convert_route_list(path):
+def convert_route_list_for_simulation(path):
+    """
+    Generates a list of route for the simulation using the path data
+    """
     res = []
     for route in path.payload["path"]:
         route_str = format_route_id(route["route"])
+        # We need to drop duplicates because the path is split at each step,
+        # making it possible to have an input such as :
+        # [{route: 1, track_sections: [1, 2]}, {route: 1, track_sections: [2, 3, 4]}]
         if len(res) == 0 or res[-1] != route_str:
             res.append(route_str)
     return res
@@ -275,7 +281,7 @@ def get_train_schedule_payload(train_schedule):
         "initial_route": format_route_id(path.get_initial_route()),
         "initial_speed": train_schedule.initial_speed,
         "phases": get_train_phases(path),
-        "routes": _convert_route_list(path),
+        "routes": convert_route_list_for_simulation(path),
         "stops": get_train_stops(path),
     }
 
