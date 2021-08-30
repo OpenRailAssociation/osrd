@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { get } from 'common/requests';
+import { get, post } from 'common/requests';
 import { setFailure } from 'reducers/main.ts';
 import { FlyToInterpolator } from 'react-map-gl';
 import ButtonFullscreen from 'common/ButtonFullscreen';
@@ -51,12 +51,27 @@ const OSRDSimulation = () => {
 
   const getTimetable = async () => {
     try {
-      const simulationLocal = [];
+      let simulationLocal = [];
       const timetable = await get(`${timetableURI}/${timetableID}`);
       if (timetable.train_schedules.length > 0) { setIsEmpty(false); }
-      for (const [idx, trainschedule] of timetable.train_schedules.entries()) {
+      const trainSchedulesIDs = timetable.train_schedules.map((train) => train.id);
+      try {
+        const trainsResult = await post(`${trainscheduleURI}/results/`, trainSchedulesIDs);
+        simulationLocal = trainsResult;
+        setWaitingMessage(t('simulation:simplify'));
+        console.log(simulationLocal);
+        simulationLocal.sort((a, b) => a.stops[0].time > b.stops[0].time);
+        dispatch(updateSimulation({ trains: simplifyData(simulationLocal, SIMPLIFICATION_FACTOR) }));
+      } catch (e) {
+        dispatch(setFailure({
+          name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
+          message: `${e.message} : ${e.response.data.detail}`,
+        }));
+        console.log('ERROR', e);
+      }
+      /* for (const [idx, trainschedule] of timetable.train_schedules.entries()) {
         try {
-          const trainResult = await get(`${trainscheduleURI}/${trainschedule.id}/result/`);
+          const trainResult = await post(`${trainscheduleURI}/${trainschedule.id}/result/`);
           const trainDetails = await get(`${trainscheduleURI}/${trainschedule.id}`);
           await setWaitingMessage(`${t('simulation:loadingTrain')} ${idx + 1}/${timetable.train_schedules.length}`);
           simulationLocal.push({ ...trainResult, labels: trainDetails.labels});
@@ -67,10 +82,7 @@ const OSRDSimulation = () => {
           }));
           console.log('ERROR', e);
         }
-      }
-      setWaitingMessage(t('simulation:simplify'));
-      simulationLocal.sort((a, b) => a.stops[0].time > b.stops[0].time);
-      dispatch(updateSimulation({ trains: simplifyData(simulationLocal, SIMPLIFICATION_FACTOR) }));
+      } */
     } catch (e) {
       console.log('ERROR', e);
     }

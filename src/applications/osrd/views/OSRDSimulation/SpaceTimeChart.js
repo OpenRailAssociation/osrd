@@ -101,14 +101,21 @@ const drawTrain = (
     .attr('class', 'chartTrain')
     .call(drag);
 
-  drawArea(
-    chart, `${isSelected ? 'selected' : ''} area`, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
-    'areaBlock', rotate,
-  );
-  drawCurve(chart, `${isSelected ? 'selected' : ''} end-block`, dataSimulation, groupID,
-    'curveStepAfter', keyValues, 'endBlockOccupancy', rotate, isSelected);
-  drawCurve(chart, `${isSelected ? 'selected' : ''} start-block`, dataSimulation, groupID,
-    'curveStepAfter', keyValues, 'startBlockOccupancy', rotate, isSelected);
+  // Test direction to avoid displaying block
+  const direction = dataSimulation.tailPosition[0].value
+    < dataSimulation.tailPosition[dataSimulation.tailPosition.length - 1].value;
+
+  if (direction) {
+    drawArea(
+      chart, `${isSelected ? 'selected' : ''} area`, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
+      'areaBlock', rotate,
+    );
+    drawCurve(chart, `${isSelected ? 'selected' : ''} end-block`, dataSimulation, groupID,
+      'curveStepAfter', keyValues, 'endBlockOccupancy', rotate, isSelected);
+    drawCurve(chart, `${isSelected ? 'selected' : ''} start-block`, dataSimulation, groupID,
+      'curveStepAfter', keyValues, 'startBlockOccupancy', rotate, isSelected);
+  }
+
   drawCurve(chart, `${isSelected ? 'selected' : ''} tail`, dataSimulation, groupID,
     'curveLinear', keyValues, 'tailPosition', rotate, isSelected);
   drawCurve(chart, `${isSelected ? 'selected' : ''} head`, dataSimulation, groupID,
