@@ -1,0 +1,19 @@
+apiVersion: gateway.dgexsol.fr/v1
+kind: ApiDefinition
+metadata:
+  name: osrd-core-tmp-def-dev
+  labels:
+    gateway/target: dev
+spec:
+  app_name: /osrd_core
+  forward_path: ""
+  host: osrd-core-dev-osrd-core:8000
+  mode:
+    endpoints:
+    - method: POST
+      path: /simulation/
+    - method: PSOT
+      path: /pathfinding/routes/
+    - method: POST
+      path: /pathfinding/tracks/
+    kind: forward_strict
