@@ -315,7 +315,7 @@ class TrainScheduleView(
         self.generate_schedule_result(train_schedule)
         return Response(serializer.data)
 
-    @action(detail=True, methods=["get"])
+    @action(detail=True, methods=["post"])
     def result(self, request, pk=None):
         train_schedule = self.get_object()
         try:
@@ -325,7 +325,7 @@ class TrainScheduleView(
 
         return Response(self.convert_result(train_schedule, result, request.query_params.get("path", None)))
 
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=["post"])
     def results(self, request):
         if type(request.data) is not list:
             raise ParseError(f"Request data expected 'list' but got '{type(request.data).__name__}'")
