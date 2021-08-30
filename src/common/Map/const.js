@@ -4,7 +4,7 @@ export { LAYER_VARIABLES } from 'common/Map/Consts/LayerVariables';
 export * from 'common/Map/Consts/SignalsNames';
 
 // Map constants
-export const MAP_URL = config.proxy;
+export const MAP_URL = config.proxy_chartis;
 export const OSM_URL = 'https://osm.osrd.fr/data/v3.json';
 
 export const MAP_MODES = {

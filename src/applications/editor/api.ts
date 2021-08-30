@@ -11,7 +11,7 @@ export async function getChartisLayers(zone: Zone, layers: Array<String>): Promi
   return await Promise.all(
     layers.map((layer) =>
       get(
-        `/chartis/layer/${layer}/geojson/geo`,
+        `/layer/${layer}/geojson/geo`,
         {
           bbox: geoJson.geometry,
           no_pagination: true,

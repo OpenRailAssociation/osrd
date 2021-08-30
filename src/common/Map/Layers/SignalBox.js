@@ -34,7 +34,7 @@ const SignalBox = () => {
     <Source
       id="map_midi_poste"
       type="vector"
-      url={`${MAP_URL}/chartis/layer/map_midi_circuitdevoie/mvt/${geomType}/`}
+      url={`${MAP_URL}/layer/map_midi_circuitdevoie/mvt/${geomType}/`}
     >
       <Layer {...layerdef} id="chartis/signal-box" />
     </Source>

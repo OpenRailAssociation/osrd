@@ -13,6 +13,8 @@ import 'applications/osrd/components/RollingStock/RollingStock.scss';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
+const ROLLING_STOCK_URL = '/rolling_stock/';
+
 export default function RollingStock() {
   const dispatch = useDispatch();
   const { darkmode } = useSelector((state) => state.main);
@@ -80,7 +82,7 @@ export default function RollingStock() {
   const getAllMateriel = async () => {
     if (rollingStock === undefined) {
       try {
-        const data = await get('/osrd/rolling_stock/');
+        const data = await get(ROLLING_STOCK_URL);
         setRollingStock(data.results);
         setResultContent(data.results);
       } catch (e) {

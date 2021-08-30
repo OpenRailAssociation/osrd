@@ -1,9 +1,10 @@
 export const MAIN_API = {
-  // proxy: 'https://api.dev.dgexsol.fr',
-  proxy: 'https://gateway.dev.dgexsol.fr',
-  api: process.env.REACT_APP_USE_LOCAL_BACKEND
+  proxy: process.env.REACT_APP_LOCAL_BACKEND
     ? `http://${window.location.hostname}:8000`
-    : 'https://api.dev.dgexsol.fr',
+    : 'https://gateway.dev.dgexsol.fr/osrd',
+  proxy_chartis: process.env.REACT_APP_LOCAL_BACKEND
+    ? `http://${window.location.hostname}:7000/chartis`
+    : 'https://gateway.dev.dgexsol.fr/chartis',
   version: '0.0.1.20200408.1',
 };
 

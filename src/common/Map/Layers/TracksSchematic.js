@@ -8,7 +8,7 @@ import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
 const TracksSchematic = (props) => {
   const { colors, idHover } = props;
   return (
-    <Source type="vector" url={`${MAP_URL}/chartis/layer/map_midi_tronconditinerairevoie/mvt/sch/`} source-layer={MAP_TRACK_SOURCES.schematic}>
+    <Source type="vector" url={`${MAP_URL}/layer/map_midi_tronconditinerairevoie/mvt/sch/`} source-layer={MAP_TRACK_SOURCES.schematic}>
       <Layer
         {...schematicServiceLayer(colors)}
         source-layer={MAP_TRACK_SOURCES.schematic}

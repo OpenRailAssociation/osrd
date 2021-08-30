@@ -20,8 +20,8 @@ import { simplifyData } from 'applications/osrd/components/Helpers/ChartHelpers'
 import './OSRDSimulation.scss';
 import { sec2time } from 'utils/timeManipulation';
 
-const timetableURI = '/osrd/timetable';
-const trainscheduleURI = '/osrd/train_schedule';
+const timetableURI = '/timetable';
+const trainscheduleURI = '/train_schedule';
 
 const SIMPLIFICATION_FACTOR = 10; // Division of steps
 

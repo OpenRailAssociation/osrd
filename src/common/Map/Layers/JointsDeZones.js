@@ -40,7 +40,7 @@ const JointsDeZones = (props) => {
     <Source
       id={`map_midi_jointdezone_${geomType}`}
       type="vector"
-      url={`${MAP_URL}/chartis/layer/map_midi_jointdezone/mvt/${geomType}/`}
+      url={`${MAP_URL}/layer/map_midi_jointdezone/mvt/${geomType}/`}
     >
       <Layer {...layerdef} id={`chartis/joint-de-zone/${geomType}`} />
     </Source>

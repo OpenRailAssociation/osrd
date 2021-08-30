@@ -8,7 +8,7 @@ import icon from 'assets/pictures/tracks.svg';
 import InfraSelectorModal from 'applications/osrd/components/InfraSelector/InfraSelectorModal';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 
-const infraURL = '/osrd/infra';
+const infraURL = '/infra';
 
 export default function InfraSelector() {
   const dispatch = useDispatch();

@@ -11,7 +11,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { setSuccess, setFailure } from 'reducers/main.ts';
 import icon from 'assets/pictures/timetable.svg';
 
-const timetableURL = '/osrd/timetable';
+const timetableURL = '/timetable';
 
 export default function TimetableSelectorModal() {
   const dispatch = useDispatch();
