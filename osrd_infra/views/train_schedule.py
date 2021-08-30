@@ -1,5 +1,6 @@
 import requests
 from django.conf import settings
+from django.http import Http404
 from rest_framework import mixins
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError
@@ -326,15 +327,26 @@ class TrainScheduleView(
 
     @action(detail=False, methods=["get"])
     def results(self, request):
-        results = TrainScheduleResult.objects.filter(train_schedule_id__in=request.data)
-        schedules = TrainSchedule.objects.filter(pk__in=request.data)
-        schedules_map = dict()
-        for schedule in schedules:
-            schedules_map[schedule.id] = schedule
-        path = request.query_params.get("path", None)
+        if type(request.data) is not list:
+            raise ParseError(f"Request data expected 'list' but got '{type(request.data).__name__}'")
+        if len(request.data) == 0:
+            raise ParseError("Request data expected non empty 'list'")
+        for train_id in request.data:
+            if type(train_id) is not int:
+                raise ParseError(f"Request data expected list of 'int' but got list of '{type(train_id).__name__}'")
+        train_ids = request.data
+
+        schedules = TrainSchedule.objects.filter(pk__in=train_ids).prefetch_related('output')
+        if len(schedules) != len(train_ids):
+            raise Http404("Some train schedule couldn't be found")
+
+        schedules_map = {schedule.id: schedule for schedule in schedules}
+        path = request.query_params.get("path", schedules_map[train_ids[0]].path_id)
         res = []
-        for result in results:
-            res.append(self.convert_result(schedules_map[result.train_schedule_id], result, path))
+        for train_id in train_ids:
+            train_schedule = schedules_map[train_id]
+            result = train_schedule.output.get()
+            res.append(self.convert_result(train_schedule, result, path))
         return Response(res)
 
     def create(self, request):
