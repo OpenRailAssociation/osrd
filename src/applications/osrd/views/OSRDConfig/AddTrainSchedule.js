@@ -26,6 +26,7 @@ export default function AddTrainSchedule(props) {
     // First train tested, and next we put the other trains
     const osrdConfig = formatConf(dispatch, setFailure, t, osrdconf, osrdconf.originTime);
     if (osrdConfig) {
+      setIsWorking(true);
       const originTime = time2sec(osrdconf.originTime);
       try {
         for (let nb = 1; nb <= trainCount; nb += 1) {
@@ -38,12 +39,14 @@ export default function AddTrainSchedule(props) {
             ),
             {},
           );
+          setIsWorking(false);
           dispatch(setSuccess({
             title: t('osrdconf:trainAdded'),
             text: sec2time(newOriginTime),
           }));
         }
       } catch (e) {
+        setIsWorking(false);
         dispatch(setFailure({
           name: e.name,
           message: e.message,
