@@ -11,23 +11,29 @@ import {
 } from 'react-icons/all';
 import { isEqual } from 'lodash';
 
+import { Popup } from 'react-map-gl';
 import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
 import { Item, Zone } from '../../../types';
-import { clippedDataSelector, EditorState } from '../../../reducers/editor';
+import {
+  EditorState,
+  clippedDataSelector,
+  deleteEntities,
+  updateEntity,
+} from '../../../reducers/editor';
 import { selectInZone } from '../../../utils/mapboxHelper';
 import EditorZone from '../../../common/Map/Layers/EditorZone';
 import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../common/Map/Consts/colors';
-import { Popup } from 'react-map-gl';
 import Modal from '../components/Modal';
+import { EntityForm } from '../components/EntityForm';
+import { EntityModel } from '../data/entity';
 
 export type SelectItemsState = CommonToolState & {
   mode: 'rectangle' | 'single' | 'polygon';
-  selection: Item[];
+  selection: EntityForm[];
   polygonPoints: [number, number][];
   rectangleTopLeft: [number, number] | null;
   showModal: 'info' | 'edit' | null;
-  editProperties: string | null;
 };
 
 export const SelectItems: Tool<SelectItemsState> = {
@@ -36,7 +42,7 @@ export const SelectItems: Tool<SelectItemsState> = {
   labelTranslationKey: 'Editor.tools.select-items.label',
   descriptionTranslationKeys: ['Editor.tools.select-items.description-1'],
   isDisabled(editorState: EditorState) {
-    return !editorState.editionZone;
+    return !editorState.editorZone;
   },
   getInitialState() {
     return {
@@ -46,7 +52,6 @@ export const SelectItems: Tool<SelectItemsState> = {
       polygonPoints: [],
       rectangleTopLeft: null,
       showModal: null,
-      editProperties: null,
     };
   },
   actions: [
@@ -101,7 +106,6 @@ export const SelectItems: Tool<SelectItemsState> = {
           setState({
             ...state,
             showModal: 'edit',
-            editProperties: JSON.stringify(state.selection[0].properties, null, '  '),
           });
         },
       },
@@ -161,7 +165,7 @@ export const SelectItems: Tool<SelectItemsState> = {
         onClick({ setState }, state) {
           setState({
             ...state,
-            mode: 'polygon',
+            showModal: 'delete',
           });
         },
       },
@@ -169,25 +173,30 @@ export const SelectItems: Tool<SelectItemsState> = {
   ],
 
   // Interactions:
-  onClickFeature(feature, e, { setState }, toolState) {
+  onClickFeature(feature, e, { setState }, toolState, editorState) {
     if (toolState.mode !== 'single') return;
 
-    let selection: Item[] = toolState.selection;
-    const isAlreadySelected = selection.find((item) => item.id === feature.id);
-
-    if (!isAlreadySelected) {
-      if (e.srcEvent.ctrlKey) {
-        selection = selection.concat([feature]);
-      } else {
-        selection = [feature];
-      }
-    } else {
-      if (e.srcEvent.ctrlKey) {
-        selection = selection.filter((item) => item.id !== feature.id);
+    let { selection } = toolState;
+    const isAlreadySelected = selection.find(
+      (item) => item.entity_id === feature.properties.entity_id,
+    );
+    const current: EntityModel | undefined = editorState.editorEntities.find(
+      (item) => item.entity_id === feature.properties.entity_id,
+    );
+    console.log('current', current, editorState.editorEntities, feature);
+    if (current) {
+      if (!isAlreadySelected) {
+        if (e.srcEvent.ctrlKey) {
+          selection = selection.concat([current]);
+        } else {
+          selection = [current];
+        }
+      } else if (e.srcEvent.ctrlKey) {
+        selection = selection.filter((item) => item.entity_id !== feature.properties.entity_id);
       } else if (selection.length === 1) {
         selection = [];
       } else {
-        selection = [feature];
+        selection = [current];
       }
     }
 
@@ -207,7 +216,7 @@ export const SelectItems: Tool<SelectItemsState> = {
           setState({
             ...toolState,
             rectangleTopLeft: null,
-            selection: selectInZone(editorState.editionData || [], {
+            selection: selectInZone(editorState.editorData || [], {
               type: 'rectangle',
               points: [toolState.rectangleTopLeft, position],
             }),
@@ -228,9 +237,9 @@ export const SelectItems: Tool<SelectItemsState> = {
           setState({
             ...toolState,
             polygonPoints: [],
-            selection: selectInZone(editorState.editionData || [], {
+            selection: selectInZone(editorState.editorData || [], {
               type: 'polygon',
-              points: points,
+              points,
             }),
           });
         }
@@ -294,7 +303,7 @@ export const SelectItems: Tool<SelectItemsState> = {
   getInteractiveLayers() {
     return [GEOJSON_LAYER_ID];
   },
-  getDOM({ setState, t }, toolState) {
+  getDOM({ setState, dispatch, t }, toolState) {
     switch (toolState.showModal) {
       case 'info':
         return (
@@ -309,46 +318,45 @@ export const SelectItems: Tool<SelectItemsState> = {
           </Modal>
         );
       case 'edit':
-        let isConfirmEnabled = true;
-
-        try {
-          JSON.parse(toolState.editProperties || '');
-        } catch (e) {
-          isConfirmEnabled = false;
-        }
-
         return (
           <Modal
             onClose={() => setState({ ...toolState, showModal: null })}
             title={t('Editor.tools.select-items.edit-line')}
           >
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                // TODO:
-                // Save changes in editor state
-                setState({ ...toolState, showModal: null, editProperties: null });
+            <EntityForm
+              entity={toolState.selection[0]}
+              onSubmit={(data: EntityModel) => {
+                dispatch<any>(updateEntity(data));
+                setState({ ...toolState, showModal: null });
               }}
-            >
-              <div className="form-group">
-                <label htmlFor="new-line-properties">
-                  {t('Editor.tools.create-line.properties')} :
-                </label>
-                <div className="form-control-container">
-                  <textarea
-                    id="new-line-properties"
-                    className="form-control "
-                    value={toolState.editProperties || ''}
-                    onChange={(e) => setState({ ...toolState, editProperties: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div className="text-right">
-                <button type="submit" className="btn btn-primary" disabled={!isConfirmEnabled}>
-                  [TODO] {t('common.confirm')}
-                </button>
-              </div>
-            </form>
+            />
+          </Modal>
+        );
+      case 'delete':
+        return (
+          <Modal
+            onClose={() => setState({ ...toolState, showModal: null })}
+            title={t('Editor.tools.select-items.actions.delete-selection.label')}
+          >
+            <p>{t('Editor.tools.select-items.actions.delete-selection.confirmation')}</p>
+
+            <div className="">
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  dispatch<any>(deleteEntities(toolState.selection));
+                  setState({ ...toolState, showModal: null });
+                }}
+              >
+                {t('common.confirm')}
+              </button>
+              <button
+                className="btn btn-danger"
+                onClick={() => setState({ ...toolState, showModal: null })}
+              >
+                {t('common.cancel')}
+              </button>
+            </div>
           </Modal>
         );
     }

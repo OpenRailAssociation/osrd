@@ -31,7 +31,7 @@ export interface NavButton {
       viewport: ViewportProps;
       setViewport: (newViewport: ViewportProps) => void;
     },
-    editorState: EditorState
+    editorState: EditorState,
   ) => void;
 }
 
@@ -70,8 +70,8 @@ const NavButtons: NavButton[][] = [
       icon: BiTargetLock,
       labelTranslationKey: 'Editor.nav.recenter',
       onClick({ setViewport, viewport }, editorState) {
-        const newViewport = editorState.editionZone
-          ? getZoneViewport(editorState.editionZone, {
+        const newViewport = editorState.editorZone
+          ? getZoneViewport(editorState.editorZone, {
               width: +(viewport.width || 1),
               height: +(viewport.height || 1),
             })

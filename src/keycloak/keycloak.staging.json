@@ -1,5 +1,5 @@
 {
-  "realm": "shared",
+  "realm": "staging",
   "url": "https://keycloak.shared.dgexsol.fr/auth/",
   "ssl-required": "external",
   "resource": "gateway",

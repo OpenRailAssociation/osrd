@@ -1,6 +1,7 @@
 import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
 import { Action } from 'redux';
-import { GeoJSON, Position } from 'geojson';
+import { Position } from 'geojson';
+import { JSONSchema7 } from 'json-schema';
 
 //
 //  Redux types
@@ -29,52 +30,7 @@ export type Zone = RectangleZone | PolygonZone;
 //
 type uuid = string;
 type flags = string; // Should match /[01]{7}/
-export type LineExtremity = Partial<{
-  OP_id: uuid;
-  V_nom: string; // should match /V\d+.*/
-  id_pk: number;
-  L_code: string; // should match /\d+/
-  pk_sncf: string; // should match /\d+\+\d+/
-  OP_id_voie: uuid;
-  RLJDZ_sens: string; // should match /[CD]/
-  OP_id_ligne: uuid;
-  P_pkInterne: number;
-  OP_id_localisation: uuid;
-  OP_id_localisationpk: uuid;
-  OP_id_relationjointdezone: uuid;
-  OP_id_tronconditineraireofpk: uuid;
-  OP_id_tronconditinerairevoie: uuid;
-  OP_id_relationlocalisationjdz: uuid;
-  id_circuitdevoie_CDV_extremites: number;
-  id_localisation_L_localisationPk: number;
-  id_relationjointdezone_RJDZ_localisations: number;
-  id_installationfixelocalisee_IFL_localisations: number;
-}>;
-export type LineProperties = Partial<{
-  default_id: number;
-  id_lrs: number;
-  OP_id_poste: uuid;
-  OP_id_nyx_gare_G_postesId: number;
-  OP_id_gare: uuid;
-  RA_libelle: string;
-  extremites: LineExtremity[];
-  RA_libelle_poste: string;
-  RA_libelle_gare: string;
-  isVerifie: [];
-  isReverifie: [];
-  isValidSch: boolean;
-  isValidGeo: boolean;
-  flagInvalidSch: flags;
-  flagInvalidGeo: flags;
-  OP_id: uuid;
-  isGeomSchFromLRS: boolean;
-  isGeomGeoFromLRS: boolean;
-  extremites_agg: string | null;
-  OP_id_poste_metier: string | null;
-  RA_libelle_poste_metier: string | null;
-  table_responsable: string | null;
-  last_midi_update: string; // ISO 8601 date
-}>;
+
 export interface Item {
   id: string;
   properties: Record<string, any>;
@@ -93,27 +49,34 @@ export interface Notification {
 }
 
 //
-// Chartis update
+// Editor actions
 //
-export interface ChartisActionInsert {
-  type: 'insert';
-  layer: string;
-  geometry: GeoJSON;
-  properties: LineProperties;
+export interface EditorOperationCreateEntity {
+  operation: 'create_entity';
+  entity_type: string;
+  components: Array<{ component_type: string; component: unknown }>;
 }
-export interface ChartisActionUpdate {
-  type: 'update';
-  layer: string;
-  id: number;
-  geometry: GeoJSON;
+export interface EditorOperationUpdateComponent {
+  operation: 'update_component';
+  component_id: number;
+  component_type: string;
+  update: { [key: string]: unknown };
 }
-export interface ChartisActionDelete {
-  type: 'delete';
-  layer: string;
-  id: number;
+export interface EditorOperationDeleteEntity {
+  operation: 'delete_entity';
+  entity_id: number;
 }
 
-export type ChartisAction = ChartisActionInsert | ChartisActionUpdate | ChartisActionDelete;
+export type EditorOperation =
+  | EditorOperationCreateEntity
+  | EditorOperationUpdateComponent
+  | EditorOperationDeleteEntity;
+
+//
+// Editor data model
+//
+export type EditorComponentsDefintion = { [key: string]: JSONSchema7 };
+export type EditorEntitiesDefinition = { [key: string]: Array<keyof EditorComponentDefintion> };
 
 //
 //  Misc

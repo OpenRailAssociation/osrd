@@ -10,8 +10,8 @@ import icon from 'assets/pictures/timetable.svg';
 import { sec2time } from 'utils/timeManipulation';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 
-const timetableURL = '/osrd/timetable';
-const scheduleURL = '/osrd/train_schedule';
+const timetableURL = '/timetable';
+const scheduleURL = '/train_schedule';
 
 export default function TimetableSelector(props) {
   const { mustUpdateTimetable } = props;

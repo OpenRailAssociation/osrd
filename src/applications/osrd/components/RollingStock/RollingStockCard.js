@@ -9,7 +9,6 @@ import { MdLocalGasStation } from 'react-icons/md';
 import { IoIosSpeedometer } from 'react-icons/io';
 import { FaWeightHanging } from 'react-icons/fa';
 import { AiOutlineColumnWidth } from 'react-icons/ai';
-import { imageCompo, displayCompo } from 'applications/osrd/components/RollingStock/Helpers';
 import { powerClasses } from 'applications/osrd/components/RollingStock/consts';
 
 export default function RollingStockCard(props) {

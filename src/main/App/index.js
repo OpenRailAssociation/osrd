@@ -18,7 +18,11 @@ export default function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(attemptLoginOnLaunch());
+    if (process.env.REACT_APP_LOCAL_BACKEND) {
+      console.log('*** USING LOCAL BACKEND ***');
+    } else {
+      dispatch(attemptLoginOnLaunch());
+    }
   }, []);
 
   // Conditionnal theming
@@ -32,7 +36,7 @@ export default function App() {
 
   return (
     <Suspense fallback={<Loader />}>
-      {user.isLogged && (
+      {(user.isLogged || process.env.REACT_APP_LOCAL_BACKEND) && (
         <Router history={history}>
           <Switch>
             <Route exact path="/">
@@ -53,7 +57,7 @@ export default function App() {
           </Switch>
         </Router>
       )}
-      {!user.isLogged && (
+      {(!user.isLogged && !process.env.REACT_APP_LOCAL_BACKEND) && (
         <Loader />
       )}
 

@@ -168,6 +168,7 @@ class InputSNCF extends React.Component {
               min={min || null}
               max={max || null}
               {...inputProps}
+              step={1}
             />
             <span className="form-control-state" />
             {unit ? <span className="form-control-icon small">{unit}</span> : null}

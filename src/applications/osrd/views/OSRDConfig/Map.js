@@ -41,6 +41,8 @@ import Signals from 'common/Map/Layers/Signals';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import SnappedMarker from 'common/Map/Layers/SnappedMarker';
 
+const TRACK_SECTION_URI = '/ecs/entity/track_section/';
+
 const Map = () => {
   const {
     viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM,
@@ -107,7 +109,7 @@ const Map = () => {
       || feature.properties.entity_id !== trackSectionHover.properties.entity_id) {
       setTrackSectionHover(feature);
       try {
-        const geojson = await get(`/osrd/ecs/entity/track_section/${feature.properties.entity_id}/`);
+        const geojson = await get(`${TRACK_SECTION_URI}${feature.properties.entity_id}/`);
         setTrackSectionGeoJSON(geojson.components.geo_line_location.geographic);
       } catch (e) {
         console.log('ERROR', e);

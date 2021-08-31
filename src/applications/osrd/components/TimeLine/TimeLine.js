@@ -9,15 +9,22 @@ import { updateChart, updateMustRedraw } from 'reducers/osrdsimulation';
 
 const drawTrains = (trains, selectedTrain, xScale, svg, height) => {
   trains.forEach((train, idx) => {
+    console.log(train);
     const startTime = train.stops[0].time;
     const endTime = train.stops[train.stops.length - 1].time;
+    const direction = train.steps[0].head_position
+      < train.steps[train.steps.length - 1].head_position;
+
+    const y1 = direction ? height - 4 : 4;
+    const y2 = direction ? 4 : height - 4;
+
     svg.append('line')
       .attr('class', selectedTrain === idx ? 'timeline-train selected' : 'timeline-train')
       .style('stroke-width', 2)
       .attr('x1', xScale(sec2datetime(startTime)))
-      .attr('y1', height - 4)
+      .attr('y1', y1)
       .attr('x2', xScale(sec2datetime(endTime)))
-      .attr('y2', 4);
+      .attr('y2', y2);
   });
 };
 
@@ -114,18 +121,13 @@ export default function TimeLine() {
 
     const drag = d3.drag()
       .on('end', () => {
-        console.log('drag end', dragValue);
         const delta = xScale.invert(dragValue) - xScale.domain()[0];
         const newX0 = (new Date(chartRect[0].getTime() + delta));
         const newX1 = (new Date(chartRect[1].getTime() + delta));
-        console.log(xScale.invert(dragValue), delta, chartRect, [newX0, newX1]);
-        // console.log(chart.x.domain());
         dispatch(updateChart({ ...chart, x: chart.x.domain([newX0, newX1]) }));
         dispatch(updateMustRedraw(true));
       })
       .on('start', () => {
-        // dragValue = 0;
-        console.log('drag start');
       })
       .on('drag', () => {
         dragValue += d3.event.dx;

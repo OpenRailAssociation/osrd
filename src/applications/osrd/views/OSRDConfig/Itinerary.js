@@ -12,7 +12,7 @@ import bbox from '@turf/bbox';
 import { WebMercatorViewport } from 'react-map-gl';
 import DisplayItinerary from 'applications/osrd/components/Itinerary/DisplayItinerary';
 
-const itineraryURI = '/osrd/pathfinding';
+const itineraryURI = '/pathfinding';
 
 // Obtain only asked vias
 const convertPathfindingVias = (steps) => {

@@ -8,7 +8,7 @@ import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import RollingStock from 'applications/osrd/components/RollingStock/RollingStock';
 import icon from 'assets/pictures/train.svg';
 
-const ROLLINGSTOCK_URL = '/osrd/rolling_stock';
+const ROLLINGSTOCK_URL = '/rolling_stock';
 
 export default function RollingStockSelector() {
   const { rollingStockID } = useSelector((state) => state.osrdconf);

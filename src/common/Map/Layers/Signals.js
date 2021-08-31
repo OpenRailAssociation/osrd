@@ -295,7 +295,7 @@ const Signals = (props) => {
   };
 
   return (
-    <Source type="vector" url={`${MAP_URL}/chartis/layer/${sourceTable}/mvt/${sourceLayer}/`}>
+    <Source type="vector" url={`${MAP_URL}/layer/${sourceTable}/mvt/${sourceLayer}/`}>
       <Layer {...signalMat()} id="chartis/signal/mat" />
       <Layer {...point()} id="chartis/signal/point" />
       {signalList.map((sig) => {
