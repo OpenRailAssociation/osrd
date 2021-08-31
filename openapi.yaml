@@ -501,6 +501,12 @@ components:
           type: integer
         name:
           type: string
+        labels:
+          type: array
+          items:
+            type: string
+        path:
+          type: integer
         steps:
           type: array
           items:

@@ -30,6 +30,8 @@ def format_result(train_schedule_result, projection_path):
     steps = format_steps(logs, train_schedule.path, projection_path)
     return {
         "id": train_schedule_result.train_schedule.pk,
+        "labels": [label.label for label in train_schedule.labels.all()],
+        "path": train_schedule.path_id,
         "name": train_schedule_result.train_schedule.train_name,
         "steps": steps,
         "stops": format_stops(logs, train_schedule),
