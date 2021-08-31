@@ -37,7 +37,7 @@ interface ApiSchemaResponse {
  * Call the API to get an infra
  */
 export async function getInfrastructure(id: number): Promise<ApiInfrastructure> {
-  const data = await get(`/osrd/infra/${id}`, {}, true);
+  const data = await get(`/infra/${id}`, {}, true);
   return {
     ...data,
     created: new Date(data.created),
@@ -48,7 +48,7 @@ export async function getInfrastructure(id: number): Promise<ApiInfrastructure> 
  * Call the API to get the list of infra
  */
 export async function getInfrastructures(): Promise<Array<ApiInfrastructure>> {
-  const data = await get(`/osrd/infra/`, {}, true);
+  const data = await get(`/infra/`, {}, true);
   return data.results.map((infra: ApiInfrastructure) => {
     return {
       ...infra,
@@ -72,7 +72,7 @@ export async function getEditorModelDefinition(): Promise<{
     components: {},
     entities: {},
   };
-  const data: ApiSchemaResponse = await get('/osrd/schema/', {}, true);
+  const data: ApiSchemaResponse = await get('/schema/', {}, true);
 
   // parse the response and build the result
   data.entities.forEach((entity: ApiSchemaResponseEntity) => {
@@ -128,7 +128,7 @@ export async function getEditorEntities(
   const responses = await Promise.all(
     layers.map((layer) =>
       get(
-        `/osrd/infra/${infra}/geojson`,
+        `/infra/${infra}/geojson`,
         {
           query: geoJson.geometry,
         },
@@ -152,7 +152,7 @@ export async function saveEditorEntities(
 ): Promise<Array<EntityModel>> {
   const operations = entities.flatMap((entity: EntityModel) => entity.getOperations());
   const response = await post(
-    `/osrd/infra/${infra}/edit/`,
+    `/infra/${infra}/edit/`,
     operations.map((operation) => {
       if (operation.operation === 'create_entity') return omit(operation, ['entity_id']);
       else return operation;

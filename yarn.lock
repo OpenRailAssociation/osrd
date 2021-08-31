@@ -2154,13 +2154,6 @@
     utility-types "^3.10.0"
     zustand "^3.5.1"
 
-"@rjsf/bootstrap-4@^3.1.0":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@rjsf/bootstrap-4/-/bootstrap-4-3.1.0.tgz#5c70197c6d07f14246148b7d273adac86d4b11db"
-  integrity sha512-m3LutQx4912LkBBai8Y0gy3Lqgk/xTBjFJ6quX8JFCZjz57MJTVcix3u7LUC835k4EidDVG0GSmuqU0prnTlWQ==
-  dependencies:
-    react-icons "^3.10.0"
-
 "@rjsf/core@^3.1.0":
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/@rjsf/core/-/core-3.1.0.tgz#7667364a4532e25c164abbc2adabe39157ffec4c"
@@ -12709,7 +12702,7 @@ react-i18next@^11.3.1:
     "@babel/runtime" "^7.13.6"
     html-parse-stringify "^3.0.1"
 
-react-icons@^3.10.0, react-icons@^3.11.0:
+react-icons@^3.11.0:
   version "3.11.0"
   resolved "https://registry.yarnpkg.com/react-icons/-/react-icons-3.11.0.tgz#2ca2903dfab8268ca18ebd8cc2e879921ec3b254"
   integrity sha512-JRgiI/vdF6uyBgyZhVyYJUZAop95Sy4XDe/jmT3R/bKliFWpO/uZBwvSjWEdxwzec7SYbEPNPck0Kff2tUGM2Q==
