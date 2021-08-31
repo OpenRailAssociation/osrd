@@ -1,7 +1,7 @@
 image: registry.gitlab.com/osrdata/osrd
 realm: staging
 
-middleware_base_url: https://gateway.staging.dgexsol.fr/osrd/
+middleware_base_url: http://osrd-staging-osrd:8000/osrd/
 
 sentry:
   dsn: https://01790fdaa7044a7fa2338e7b732bace6@sentry-testing.shared.dgexsol.fr/20
