@@ -26,10 +26,9 @@ export const get = async (path, params = undefined) => {
   return res.data;
 };
 
-export const post = async (path, payload, config = {}, proxyGateway = false) => {
+export const post = async (path, payload, config = {}) => {
   config = { ...getAuthConfig(), ...config };
-  const formattedPath = proxyGateway ? formatPathGateway(path) : formatPath(path);
-  const res = await axios.post(formattedPath, payload, config);
+  const res = await axios.post(formatPath(path), payload, config);
   return res.data;
 };
 
