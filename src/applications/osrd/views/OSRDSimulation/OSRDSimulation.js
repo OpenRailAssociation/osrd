@@ -52,6 +52,7 @@ const OSRDSimulation = () => {
   const getTimetable = async () => {
     try {
       let simulationLocal = [];
+      dispatch(updateSimulation({ trains: [] }));
       const timetable = await get(`${timetableURI}/${timetableID}`);
       if (timetable.train_schedules.length > 0) { setIsEmpty(false); }
       const trainSchedulesIDs = timetable.train_schedules.map((train) => train.id);
@@ -59,7 +60,6 @@ const OSRDSimulation = () => {
         const trainsResult = await post(`${trainscheduleURI}/results/`, trainSchedulesIDs);
         simulationLocal = trainsResult;
         setWaitingMessage(t('simulation:simplify'));
-        console.log(simulationLocal);
         simulationLocal.sort((a, b) => a.stops[0].time > b.stops[0].time);
         dispatch(updateSimulation({ trains: simplifyData(simulationLocal, SIMPLIFICATION_FACTOR) }));
       } catch (e) {

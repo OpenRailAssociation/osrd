@@ -49,7 +49,7 @@ export default function TrainsList() {
             </td>
             <td><div className="cell-inner">{sec2time(train.stops[0].time)}</div></td>
             <td><div className="cell-inner">{sec2time(train.stops[train.stops.length - 1].time)}</div></td>
-            <td><div className="cell-inner">{train.labels.join(' / ')}</div></td>
+            <td><div className="cell-inner">{train.labels && train.labels.join(' / ')}</div></td>
           </tr>
         );
       }
