@@ -6,10 +6,14 @@ import java.util.Objects;
 
 public final class SpeedDirective {
     public double allowedSpeed;
+    // when coasting, memorize the lowest speed directive
+    // this is necessary because allowedSpeed is Nan when coasting
+    public double lowestNotNaNSpeed;
 
     /** Creates a new speed directive */
     public SpeedDirective(double allowedSpeed) {
         this.allowedSpeed = allowedSpeed;
+        this.lowestNotNaNSpeed = Double.POSITIVE_INFINITY;
     }
 
     public static SpeedDirective getMax() {
@@ -28,6 +32,8 @@ public final class SpeedDirective {
     public void mergeWith(SpeedDirective directive) {
         if (directive.allowedSpeed < allowedSpeed || Double.isNaN(directive.allowedSpeed))
             allowedSpeed = directive.allowedSpeed;
+        if (directive.allowedSpeed < lowestNotNaNSpeed)
+            lowestNotNaNSpeed = directive.allowedSpeed;
     }
 
     @Override
