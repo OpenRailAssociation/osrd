@@ -12,7 +12,7 @@ spec:
     endpoints:
     - method: POST
       path: /simulation/
-    - method: PSOT
+    - method: POST
       path: /pathfinding/routes/
     - method: POST
       path: /pathfinding/tracks/
