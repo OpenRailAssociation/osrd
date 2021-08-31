@@ -5,7 +5,6 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 
 import fr.sncf.osrd.railjson.schema.successiontable.RJSSuccessionTable;
-
 import java.util.Collection;
 
 public final class RJSSuccessions {

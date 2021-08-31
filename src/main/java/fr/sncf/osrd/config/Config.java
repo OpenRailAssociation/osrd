@@ -60,6 +60,16 @@ public class Config {
         var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, mainConfigPath);
         var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
         var infra = Infra.parseFromFile(jsonConfig.infraType, infraPath.toString());
+        return makeWithGivenInfra(mainConfigPath, infra);
+    }
+
+    /** Create the configuration from a file and a given Infra */
+    public static Config makeWithGivenInfra(
+            Path mainConfigPath,
+            Infra infra
+    ) throws IOException, InvalidRollingStock, InvalidSchedule, InvalidSuccession {
+        var baseDirPath = mainConfigPath.getParent();
+        var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, mainConfigPath);
         var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
         var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
         var trainSchedules = RJSSimulationParser.parse(infra, schedule);
@@ -76,7 +86,6 @@ public class Config {
             var succession = MoshiUtils.deserialize(RJSSuccessions.adapter, successionPath);
             switchSuccessions = RJSSuccessionsParser.parse(succession);
         }
-
         return new Config(
                 jsonConfig.simulationTimeStep,
                 infra,

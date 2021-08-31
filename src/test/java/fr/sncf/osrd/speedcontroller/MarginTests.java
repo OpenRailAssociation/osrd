@@ -233,7 +233,7 @@ public class MarginTests {
 
     /** Test mareco with different slopes*/
     @ParameterizedTest
-    @ValueSource(ints = {0, 1, 2, 3, 4, 5, 6})
+    @ValueSource(ints = {0, 1, 2, 3, 4, 5, 6, 7})
     public void testDifferentSlopes(int slopeProfile) throws InvalidInfraException {
         // inputs
         final double margin = 40.0;

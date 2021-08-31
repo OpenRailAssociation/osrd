@@ -70,8 +70,8 @@ public class SpeedInstructions {
             targetSpeedControllers.addAll(newControllers);
         }
 
-        expectedTimes = SpeedControllerGenerator.getExpectedTimes(sim, schedule, targetSpeedControllers, 1,
-                0, Double.POSITIVE_INFINITY, schedule.initialSpeed);
+        expectedTimes = SpeedControllerGenerator.getExpectedTimes(sim, schedule, targetSpeedControllers,
+                SpeedControllerGenerator.TIME_STEP, 0, Double.POSITIVE_INFINITY, schedule.initialSpeed);
     }
 
     /** Returns how late we are compared to the expected time, in seconds. The result may be negative if we are
