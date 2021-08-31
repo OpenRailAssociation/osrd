@@ -105,9 +105,7 @@ public final class TrackSectionRange extends Range implements DeepComparable<Tra
             EdgeDirection direction,
             double desiredLength
     ) {
-        if (direction == EdgeDirection.START_TO_STOP)
-            return new TrackSectionRange(edge, direction, edge.length, Double.max(edge.length - desiredLength, 0));
-        return new TrackSectionRange(edge, direction, 0, Double.min(desiredLength, edge.length));
+        return makeNext(edge, direction.opposite(), desiredLength);
     }
 
     /** Check if a location is contained in the track section range */

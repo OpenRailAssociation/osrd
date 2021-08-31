@@ -136,13 +136,8 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
                 curTrackSectionPos.direction
         );
 
-        // TODO : avoid having a negative begin on TrackSectionRanges
         if (neighbors.isEmpty())
-            return new TrackSectionRange(
-                    curTrackSectionPos.edge,
-                    curTrackSectionPos.direction,
-                    curTrackSectionPos.getBeginPosition() - delta,
-                    curTrackSectionPos.getEndPosition());
+            return null;
 
         var prev = neighbors.get(neighbors.size() - 1);
         var prevTrackSection = prev.getEdge(curTrackSectionPos.edge, curTrackSectionPos.direction);
@@ -256,6 +251,8 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         // add edges to the current edges queue as the train moves backwards
         while (remainingDist > 0) {
             var previousPos = previousTrackSectionPosition(remainingDist);
+            if (previousPos == null)
+                break;
             // this should kind of be previousPos.length(), but doing it this way avoids float compare errors
             remainingDist -= previousPos.length();
             trackSectionRanges.addLast(previousPos);

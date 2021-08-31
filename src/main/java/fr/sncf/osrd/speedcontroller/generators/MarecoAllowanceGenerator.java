@@ -148,18 +148,19 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         // coasting before deceleration phases
         for (var announcer : limitAnnounceSpeedControllers) {
             // if that LimitAnnounceSpeedController is above v1 that means it will not have an impact here
-            if (v1 >= announcer.targetSpeedLimit) {
-                // deceleration phases that are entirely above vf
-                if (announcer.targetSpeedLimit > vf)
-                    res.add(announcer.endPosition);
-                else { // deceleration phases that cross vf
-                    double targetSpeed = announcer.targetSpeedLimit;
-                    double gamma = schedule.rollingStock.gamma;
-                    // TODO : adapt this to non-constant deceleration
-                    var requiredBrakingDistance = (vf * vf - targetSpeed * targetSpeed) / (2 * gamma);
-                    res.add(announcer.endPosition - requiredBrakingDistance);
-                }
+            if (announcer.targetSpeedLimit > v1)
+                continue;
+            // deceleration phases that are entirely above vf
+            if (announcer.targetSpeedLimit > vf) {
+                res.add(announcer.endPosition);
+                continue;
             }
+            // deceleration phases that cross vf
+            double targetSpeed = announcer.targetSpeedLimit;
+            double gamma = schedule.rollingStock.gamma;
+            // TODO : adapt this to non-constant deceleration
+            var requiredBrakingDistance = (vf * vf - targetSpeed * targetSpeed) / (2 * gamma);
+            res.add(announcer.endPosition - requiredBrakingDistance);
         }
         // coasting before accelerating slopes
         var acceleratingSlopes = findAcceleratingSlopes(speeds, rollingStock, vf);
@@ -230,19 +231,18 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         return location;
     }
 
-    @SuppressWarnings("checkstyle:WhitespaceAfter")
     private CoastingSpeedController generateCoastingSpeedControllerAtPosition(SortedDoubleMap speeds,
-                                                                              double endLocation, double timestep) {
+                                                                              double endLocation) {
         double speed = speeds.interpolate(endLocation);
 
         var location = convertPosition(schedule, sim, endLocation);
         location.ignoreInfraState = true;
 
         do {
-            var integrator = TrainPhysicsIntegrator.make(timestep, schedule.rollingStock,
+            var integrator = TrainPhysicsIntegrator.make(TIME_STEP, schedule.rollingStock,
                     speed, location.meanTrainGrade());
             var action = Action.coast();
-            var update =  integrator.computeUpdate(action, location.getPathPosition(),-1);
+            var update =  integrator.computeUpdate(action, location.getPathPosition(), -1);
             speed = update.speed;
             if (speed == 0)
                 return null;
@@ -250,16 +250,6 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
         } while (speed < speeds.interpolate(location.getPathPosition()));
         return new CoastingSpeedController(location.getPathPosition(), endLocation);
-    }
-
-    private boolean isDecelerating(double position) {
-        // TODO optimize this
-        var announcers = findLimitSpeedAnnouncers(maxSpeedControllers);
-        for (var announcer : announcers) {
-            if (announcer.isActive(position, 0))
-                return true;
-        }
-        return false;
     }
 
     private Set<LimitAnnounceSpeedController> findLimitSpeedAnnouncers(Set<SpeedController> controllers) {
@@ -281,7 +271,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         var expectedSpeeds = getExpectedSpeeds(sim, schedule, currentSpeedControllers, TIME_STEP);
         var endOfCoastingPositions = findEndOfCoastingPositions(expectedSpeeds, v1);
         for (var location : endOfCoastingPositions) {
-            var controller = generateCoastingSpeedControllerAtPosition(expectedSpeeds, location, TIME_STEP);
+            var controller = generateCoastingSpeedControllerAtPosition(expectedSpeeds, location);
             if (controller != null)
                 currentSpeedControllers.add(controller);
         }
