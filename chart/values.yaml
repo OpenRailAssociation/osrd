@@ -1,4 +1,5 @@
 image: registry.gitlab.com/osrdata/osrd
+realm: dev
 
 middleware_base_url: https://gateway.dev.dgexsol.fr/osrd/
 

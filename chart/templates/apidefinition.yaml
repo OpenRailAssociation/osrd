@@ -1,13 +1,13 @@
 apiVersion: gateway.dgexsol.fr/v1
 kind: ApiDefinition
 metadata:
-  name: osrd-core-tmp-def-dev
+  name: osrd-core-tmp-def-{{ .Values.realm }}
   labels:
-    gateway/target: dev
+    gateway/target: {{ .Values.realm }}
 spec:
   app_name: /osrd_core
   forward_path: ""
-  host: osrd-core-dev-osrd-core:8000
+  host: osrd-core-{{ .Values.realm }}-osrd-core:8000
   mode:
     endpoints:
     - method: POST
