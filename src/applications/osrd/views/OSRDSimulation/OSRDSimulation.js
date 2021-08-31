@@ -15,7 +15,7 @@ import TrainsList from 'applications/osrd/views/OSRDSimulation/TrainsList';
 import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
 import TimeLine from 'applications/osrd/components/TimeLine/TimeLine';
 import { updateViewport } from 'reducers/map';
-import { updateMustRedraw, updateTimePosition, updateSimulation } from 'reducers/osrdsimulation';
+import { updateMustRedraw, updateSelectedTrain, updateTimePosition, updateSimulation } from 'reducers/osrdsimulation';
 import { simplifyData } from 'applications/osrd/components/Helpers/ChartHelpers';
 import './OSRDSimulation.scss';
 import { sec2time } from 'utils/timeManipulation';
@@ -52,6 +52,7 @@ const OSRDSimulation = () => {
   const getTimetable = async () => {
     try {
       let simulationLocal = [];
+      dispatch(updateSelectedTrain(0));
       dispatch(updateSimulation({ trains: [] }));
       const timetable = await get(`${timetableURI}/${timetableID}`);
       if (timetable.train_schedules.length > 0) { setIsEmpty(false); }
