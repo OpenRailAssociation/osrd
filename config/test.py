@@ -29,3 +29,7 @@ ROOT_PATH = ''
 STATIC_URL = ROOT_PATH + '/static/'
 
 ROOT_URLCONF = 'config.workspace_urls'
+
+INSTALLED_APPS.append("corsheaders")
+MIDDLEWARE.append('corsheaders.middleware.CorsMiddleware')
+CORS_ORIGIN_ALLOW_ALL = True
