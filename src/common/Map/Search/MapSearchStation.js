@@ -25,7 +25,6 @@ export default function MapSearchStation(props) {
   const updateSearch = async (params) => {
     try {
       const data = await get(searchURI, params);
-      console.log('coucou', data);
       setSearchResults(data);
     } catch (e) {
       console.log(e);
