@@ -6,6 +6,9 @@ export const MAIN_API = {
     ? `http://${window.location.hostname}:7000/chartis`
     : 'https://gateway.dev.dgexsol.fr/chartis',
   version: '0.0.1.20200408.1',
+  editor: {
+    component_identifier: { database: 'gaia', name: 'Test' },
+  },
 };
 
 export default MAIN_API;

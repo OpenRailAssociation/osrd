@@ -18,14 +18,19 @@
     "train(s)": "train(s)"
   },
   "Editor": {
+    "title": "Éditeur",
+    "tool-help": "Voir la description de l'outil actif",
     "nav": {
       "recenter": "Recentrer la carte",
       "toggle-layers": "[TODO] Choisir les couches à afficher",
       "zoom-in": "Zoomer",
       "zoom-out": "Dézoomer"
     },
-    "title": "Éditeur",
-    "tool-help": "Voir la description de l'outil actif",
+    "errors": {
+      "infra-not-found": "L'infrastructure {{id}} non trouvée",
+      "no-infra-available": "Votre compte n'est lié à aucune infrastructure",
+      "technical": "Une erreur technique est survenue : {{msg}}"
+    },
     "tools": {
       "create-line": {
         "actions": {
@@ -56,7 +61,7 @@
             "label": "[TODO] Supprimer les éléments sélectionnés"
           },
           "edit-info": {
-            "label": "[TODO] Modifier les métadonnées de l'élément sélectionné"
+            "label": "Modifier les métadonnées de l'élément sélectionné"
           },
           "polygon": {
             "label": "Sélection Polygône"
@@ -67,14 +72,9 @@
           "select-all": {
             "label": "Tout sélectionner"
           },
-          "show-info": {
-            "label": "Voir les informations sur la sélection"
-          },
-          "single": {
-            "label": "Sélection Simple"
-          },
-          "unselect-all": {
-            "label": "Tout désélectionner"
+          "delete-selection": {
+            "label": "Supprimer les éléments sélectionnés",
+            "confirmation": "Êtes-vous sur de vouloir supprimer les éléments de la selection ?"
           }
         },
         "description-1": "Clic sur un élément : Affichage de ses propriétés",
@@ -111,6 +111,10 @@
         "description-3": "Touch Échap : Annulation de la sélection en cours",
         "label": "Sélection de la zone d'édition"
       }
+    },
+    "entities": {
+      "track_section": "Track section",
+      "track_section-length": "Taille"
     }
   },
   "errorBoundary": {

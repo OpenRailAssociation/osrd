@@ -131,7 +131,7 @@ export function login() {
       dispatch(loginSuccess(accessToken, username));
       console.log('Connecté');
     } catch (e) {
-      console.log('Login ERROR', e.response.status, e.response.data);
+      console.log('Login ERROR', e.response);
       dispatch(loginError());
     }
   };

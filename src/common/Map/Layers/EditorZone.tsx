@@ -7,12 +7,12 @@ import { zoneToFeature } from '../../../utils/mapboxHelper';
 import { Zone } from '../../../types';
 
 const EditorZone: FC<{ newZone?: Zone }> = ({ newZone }) => {
-  const { editionZone } = useSelector((state: { editor: EditorState }) => state.editor);
+  const { editorZone } = useSelector((state: { editor: EditorState }) => state.editor);
 
   return (
     <>
-      {editionZone ? (
-        <Source type="geojson" data={zoneToFeature(editionZone, true)}>
+      {editorZone ? (
+        <Source type="geojson" data={zoneToFeature(editorZone, true)}>
           <Layer
             type="line"
             paint={{ 'line-color': '#333', 'line-width': 2, 'line-dasharray': [3, 3] }}

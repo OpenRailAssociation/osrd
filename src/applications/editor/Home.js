@@ -10,7 +10,7 @@ import Editor from './Editor.tsx';
 class HomeEditorUnplugged extends React.Component {
   static propTypes = {
     t: PropTypes.func.isRequired,
-  }
+  };
 
   render() {
     const { t } = this.props;
@@ -19,10 +19,10 @@ class HomeEditorUnplugged extends React.Component {
         <NavBarSNCF appName={t('Editor.title')} logo={logo} />
         <div className="no-mastnav">
           <Switch>
-            <Route exact path="/editor">
+            <Route exact path="/editor/">
               <Editor urlmap={config.proxy} />
             </Route>
-            <Route path="/editor/:urlLat/:urlLon/:urlZoom/:urlBearing/:urlPitch">
+            <Route path="/editor/:infra/:urlLat/:urlLon/:urlZoom/:urlBearing/:urlPitch">
               <Editor urlmap={config.proxy} />
             </Route>
           </Switch>

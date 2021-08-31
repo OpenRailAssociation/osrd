@@ -11,16 +11,17 @@ import { Feature, LineString, MultiLineString, Point } from '@turf/helpers';
 import { Layer, Source } from 'react-map-gl';
 
 import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
-import { EditorState, createLine } from '../../../reducers/editor';
+import { EditorState, createEntity } from '../../../reducers/editor';
 import EditorZone from '../../../common/Map/Layers/EditorZone';
 import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../common/Map/Consts/colors';
 import Modal from '../components/Modal';
 import { getNearestPoint } from '../../../utils/mapboxHelper';
+import { EntityForm } from '../components/EntityForm';
+import { EntityModel } from '../data/entity';
 
 export type CreateLineState = CommonToolState & {
   linePoints: [number, number][];
-  lineProperties: string;
   showPropertiesModal: boolean;
   anchorLinePoints: boolean;
   nearestPoint: Feature<Point> | null;
@@ -39,7 +40,7 @@ export const CreateLine: Tool<CreateLineState> = {
     'Editor.tools.create-line.description-5',
   ],
   isDisabled(editorState: EditorState) {
-    return !editorState.editionZone;
+    return !editorState.editorZone;
   },
   getRadius() {
     return 50;
@@ -48,7 +49,6 @@ export const CreateLine: Tool<CreateLineState> = {
     return {
       ...DEFAULT_COMMON_TOOL_STATE,
       linePoints: [],
-      lineProperties: '{}',
       showPropertiesModal: false,
       anchorLinePoints: true,
       nearestPoint: null,
@@ -153,7 +153,7 @@ export const CreateLine: Tool<CreateLineState> = {
     if (e.features && e.features.length) {
       const nearestPoint = getNearestPoint(
         e.features as Feature<LineString | MultiLineString>[],
-        e.lngLat
+        e.lngLat,
       );
       setState({ ...toolState, nearestPoint });
     } else {
@@ -195,46 +195,30 @@ export const CreateLine: Tool<CreateLineState> = {
       </>
     );
   },
-  getDOM({ setState, dispatch, t }, toolState) {
-    let isConfirmEnabled = true;
-
-    try {
-      JSON.parse(toolState.lineProperties);
-    } catch (e) {
-      isConfirmEnabled = false;
-    }
-
+  getDOM({ setState, dispatch, t }, toolState, editorState) {
+    // Create the entity model
+    const entity = new EntityModel(
+      'track_section',
+      editorState.editorEntitiesDefinition,
+      editorState.editorComponentsDefinition,
+    );
+    // Set the geo
+    entity.setGeometry({
+      type: 'LineString',
+      coordinates: toolState.linePoints,
+    });
     return toolState.showPropertiesModal ? (
       <Modal
         onClose={() => setState({ ...toolState, showPropertiesModal: false, linePoints: [] })}
         title={t('Editor.tools.create-line.label')}
       >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            dispatch<any>(createLine(toolState.linePoints, JSON.parse(toolState.lineProperties)));
+        <EntityForm
+          entity={entity}
+          onSubmit={(data: EntityModel) => {
+            dispatch<any>(createEntity(data));
             setState({ ...toolState, linePoints: [], showPropertiesModal: false });
           }}
-        >
-          <div className="form-group">
-            <label htmlFor="new-line-properties">
-              {t('Editor.tools.create-line.properties')} :
-            </label>
-            <div className="form-control-container">
-              <textarea
-                id="new-line-properties"
-                className="form-control"
-                value={toolState.lineProperties}
-                onChange={(e) => setState({ ...toolState, lineProperties: e.target.value })}
-              />
-            </div>
-          </div>
-          <div className="text-right">
-            <button type="submit" className="btn btn-primary" disabled={!isConfirmEnabled}>
-              {t('common.confirm')}
-            </button>
-          </div>
-        </form>
+        />
       </Modal>
     ) : null;
   },

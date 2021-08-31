@@ -1,31 +1,59 @@
 import produce from 'immer';
 import { createSelector } from 'reselect';
 import { Feature, FeatureCollection, GeoJSON } from 'geojson';
-
-import { ThunkAction, Path, ChartisAction, LineProperties, Zone } from '../types';
+import {
+  ThunkAction,
+  Path,
+  EditorOperation,
+  LineProperties,
+  Zone,
+  EditorComponentsDefintion,
+  EditorEntitiesDefinition,
+  ApiInfrastructure,
+} from '../types';
 import { setLoading, setSuccess, setFailure } from './main';
-import { getChartisLayers, saveChartisActions } from '../applications/editor/api';
+import {
+  getEditorModelDefinition,
+  getEditorEntities,
+  saveEditorEntities,
+} from '../applications/editor/data/api';
+import { EntityModel } from '../applications/editor/data/entity';
 import { clip } from '../utils/mapboxHelper';
 
 //
 // Actions
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 const SELECT_ZONE = 'editor/SELECT_ZONE';
-type ActionSelectZone = { type: typeof SELECT_ZONE; zone: Zone | null };
-export function selectZone(zone: Zone | null): ThunkAction<ActionSelectZone> {
-  return async (dispatch: any) => {
+type ActionSelectZone = {
+  type: typeof SELECT_ZONE;
+  zone: Zone | null;
+  infra: number;
+  layers: Array<string>;
+};
+export function selectZone(
+  infra: number,
+  layers: Array<string>,
+  zone: Zone | null,
+): ThunkAction<ActionSelectZone> {
+  return async (dispatch: any, getState) => {
     dispatch({
       type: SELECT_ZONE,
       zone,
     });
-
     // load the data
     if (zone) {
       dispatch(setLoading());
       try {
-        const data = await getChartisLayers(zone, ['map_midi_circuitdevoie']);
+        const { editor } = getState();
+        const data = await getEditorEntities(
+          infra,
+          layers,
+          zone,
+          editor.editorEntitiesDefinition,
+          editor.editorComponentsDefinition,
+        );
         dispatch(setSuccess());
-        dispatch(setEditionData(data));
+        dispatch(setEditorData(data));
       } catch (e) {
         dispatch(setFailure(e));
       }
@@ -33,97 +61,134 @@ export function selectZone(zone: Zone | null): ThunkAction<ActionSelectZone> {
   };
 }
 
-const SELECTED_ZONE_LOADED = 'editor/SELECTED_ZONE_LOADED';
-type ActionSelectedZoneLoaded = {
-  type: typeof SELECTED_ZONE_LOADED;
-  data: Array<GeoJSON> | null;
+//
+// When the selected data are loaded, we store them in the state
+//
+const SET_DATA = 'editor/SET_DATA';
+type ActionSetData = {
+  type: typeof SET_DATA;
+  data: Array<EntityModel>;
 };
-export function setEditionData(geojsons: Array<GeoJSON>): ThunkAction<ActionSelectedZoneLoaded> {
+export function setEditorData(data: Array<EntityModel>): ThunkAction<ActionSetData> {
   return (dispatch) => {
     dispatch({
-      type: SELECTED_ZONE_LOADED,
-      data: geojsons,
+      type: SET_DATA,
+      data,
     });
   };
 }
 
-const CREATE_LINE = 'editor/CREATE_LINE';
-type ActionCreateLine = { type: typeof CREATE_LINE; feature: Feature };
-export function createLine(line: Path, properties: LineProperties): ThunkAction<ActionCreateLine> {
-  return (dispatch) => {
-    dispatch({
-      type: CREATE_LINE,
-      feature: {
-        type: 'Feature',
-        properties,
-        geometry: {
-          type: 'LineString',
-          coordinates: line,
-        },
-      },
-    });
-    dispatch(
-      createModificationAction({
-        layer: 'map_midi_circuitdevoie',
-        type: 'insert',
-        properties,
-        geometry: {
-          type: 'LineString',
-          coordinates: line,
-        },
-      })
-    );
-  };
-}
-
-const CREATE_MODIFICATION_ACTION = 'editor/CREATE_MODIFICATION_ACTION';
-type ActionCreateModificationAction = {
-  type: typeof CREATE_MODIFICATION_ACTION;
-  action: ChartisAction;
+//
+// Set the current infrastructure
+//
+const SET_INFRASTRUCTURE = 'editor/SET_INFRASTRUCTURE';
+type ActionSetInfra = {
+  type: typeof SET_INFRASTRUCTURE;
+  data: ApiInfrastructure;
 };
-export function createModificationAction(
-  action: ChartisAction
-): ThunkAction<ActionCreateModificationAction> {
+export function setInfrastructure(infra: ApiInfrastructure): ThunkAction<ActionSetInfra> {
   return (dispatch) => {
     dispatch({
-      type: CREATE_MODIFICATION_ACTION,
-      action,
-    });
-    // TODO: need to be triggered from an other way
-    dispatch(saveModificationActions());
-  };
-}
-
-const CLEAR_MODIFICATION_ACTIONS = 'editor/CLEAR_MODIFICATION_ACTIONS';
-type ActionClearModificationActions = {
-  type: typeof CLEAR_MODIFICATION_ACTIONS;
-};
-export function clearModificationActions(): ThunkAction<ActionClearModificationActions> {
-  return (dispatch) => {
-    dispatch({
-      type: CLEAR_MODIFICATION_ACTIONS,
+      type: SET_INFRASTRUCTURE,
+      data: infra,
     });
   };
 }
 
-const SAVE_MODIFICATION_ACTIONS = 'editor/SAVE_MODIFICATION_ACTIONS';
-type ActionSaveModificationActions = {
-  type: typeof SAVE_MODIFICATION_ACTIONS;
+//
+// Verify if the data model definition is already loaded.
+// If not we do it and store it in the state
+//
+const LOAD_DATA_MODEL = 'editor/LOAD_DATA_MODEL';
+type ActionLoadDataModel = {
+  type: typeof LOAD_DATA_MODEL;
+  data: {
+    entities: EditorEntitiesDefinition;
+    components: EditorComponentsDefintion;
+  };
 };
-export function saveModificationActions(): ThunkAction<ActionSaveModificationActions> {
+export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
+  return async (dispatch, getState) => {
+    // check if we need to load the model
+    if (
+      !getState().editor.editorEntitiesDefinition ||
+      !getState().editor.editorComponentsDefinition
+    ) {
+      dispatch(setLoading());
+      try {
+        const data = await getEditorModelDefinition();
+        dispatch(setSuccess());
+        dispatch({
+          type: LOAD_DATA_MODEL,
+          data,
+        });
+      } catch (e) {
+        dispatch(setFailure(e));
+      }
+    }
+  };
+}
+
+const CREATE_ENTITY = 'editor/CREATE_ENTITY';
+type ActionCreateEntity = { type: typeof CREATE_ENTITY; entity: EntityModel };
+export function createEntity(entity: EntityModel): ThunkAction<ActionCreateEntity> {
+  return (dispatch) => {
+    dispatch({
+      type: CREATE_ENTITY,
+      entity,
+    });
+    dispatch(save());
+  };
+}
+
+const UPDATE_ENTITY = 'editor/UPDATE_ENTITY';
+type ActionUpdateEntity = { type: typeof UPDATE_ENTITY; entity: EntityModel };
+export function updateEntity(entity: EntityModel): ThunkAction<ActionUpdateEntity> {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_ENTITY,
+      entity,
+    });
+    dispatch(save());
+  };
+}
+
+const DELETE_ENTITY = 'editor/DELETE_ENTITY';
+type ActionDeleteEntities = { type: typeof DELETE_ENTITY; entity: EntityModel };
+export function deleteEntities(entities: Array<EntityModel>): ThunkAction<ActionDeleteEntities> {
+  return (dispatch) => {
+    entities.forEach((entity) => {
+      entity.delete();
+      dispatch({
+        type: DELETE_ENTITY,
+        entity,
+      });
+    });
+    dispatch(save());
+  };
+}
+
+const SAVE = 'editor/SAVE';
+type ActionSave = {
+  type: typeof SAVE;
+};
+export function save(): ThunkAction<ActionSave> {
   return async (dispatch, getState) => {
     const state = getState();
-    console.log(state);
     dispatch(setLoading());
     try {
-      const data = await saveChartisActions(state.editor.editionActions);
+      const data = await saveEditorEntities(
+        state.editor.editorInfrastructure.id,
+        state.editor.editorEntities,
+      );
+      dispatch(setEditorData(data));
       dispatch(
         setSuccess({
           title: 'Modifications enregistrées',
-          text: `Vos ${state.editor.editionActions.length} modifications ont été publiées`,
-        })
+          text: `Vos modifications ont été publiées`,
+        }),
       );
-      dispatch(clearModificationActions());
+      // TODO: parse the response and update the  state.editor.editorEntities
     } catch (e) {
       dispatch(setFailure(e));
     }
@@ -133,28 +198,36 @@ export function saveModificationActions(): ThunkAction<ActionSaveModificationAct
 type Actions =
   | ActionSelectZone
   | ActionSelectedZoneLoaded
-  | ActionCreateLine
-  | ActionCreateModificationAction
-  | ActionSaveModificationActions
-  | ActionClearModificationActions;
+  | ActionLoadDataModel
+  | ActionSetInfra
+  | ActionCreateEntity
+  | ActionSave;
 
 //
 // State definition
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 export interface EditorState {
-  editionZone: Zone | null;
-  editionData: Array<GeoJSON> | null;
-  editionActions: Array<ChartisAction>;
+  editorEntitiesDefinition: EditorEntitiesDefinition | null;
+  editorComponentsDefinition: EditorComponentsDefinition | null;
+  editorInfrastructure: ApiInfrastructure | null;
+  editorLayers: Array<string>;
+  editorZone: Zone | null;
+  editorEntities: Array<EntityModel>;
 }
 
 export const initialState: EditorState = {
+  // Definition of the composition of an entity, ie. it's list of components
+  editorEntitiesDefinition: null,
+  // Definition of component, ie. it's list of fields with theirs types, and if they are required
+  editorComponentsDefinition: null,
+  // ID of the infrastructure on which we are working
+  editorInfrastructure: null,
+  // ID of selected layers on which we are working
+  editorLayers: ['osrd_track_section'],
   // Edition zone:
-  editionZone: null,
-  // Data of the edition zone
-  // An array of GeoJSONs (one per layer)
-  editionData: null,
-  // List of modification actions
-  editionActions: [],
+  editorZone: null,
+  // An array of Entities
+  editorEntities: [],
 };
 
 //
@@ -163,33 +236,26 @@ export const initialState: EditorState = {
 export default function reducer(state = initialState, action: Actions) {
   return produce(state, (draft) => {
     switch (action.type) {
+      case SET_INFRASTRUCTURE:
+        draft.editorInfrastructure = action.data;
       case SELECT_ZONE:
-        draft.editionZone = action.zone;
+        draft.editorZone = action.zone;
         break;
-      case SELECTED_ZONE_LOADED:
-        draft.editionData = action.data;
+      case SET_DATA:
+        draft.editorEntities = action.data;
         break;
-      case CREATE_LINE: {
-        const layers = state.editionData || [];
-        const layer = layers[0] as FeatureCollection | null;
-        draft.editionData = layer
-          ? [
-              {
-                ...layer,
-                features: layer.features.concat([action.feature]),
-                // @ts-ignore
-                count: layer.count + 1,
-              },
-              ...layers.slice(1),
-            ]
-          : [{ type: 'FeatureCollection', count: 1, features: action.feature }];
+      case CREATE_ENTITY:
+        draft.editorEntities = state.editorEntities.concat(action.entity);
         break;
-      }
-      case CREATE_MODIFICATION_ACTION:
-        draft.editionActions = state.editionActions.concat([action.action]);
+      case UPDATE_ENTITY:
+      case DELETE_ENTITY:
+        draft.editorEntities = state.editorEntities
+          .filter((item) => item.entity_id !== action.entity.entity_id)
+          .concat(action.entity);
         break;
-      case CLEAR_MODIFICATION_ACTIONS:
-        draft.editionActions = [];
+      case LOAD_DATA_MODEL:
+        draft.editorEntitiesDefinition = action.data.entities;
+        draft.editorComponentsDefinition = action.data.components;
         break;
     }
   });
@@ -198,10 +264,17 @@ export default function reducer(state = initialState, action: Actions) {
 //
 // Derived data selector
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-export const dataSelector = (state: EditorState) => state.editionData;
-export const zoneSelector = (state: EditorState) => state.editionZone;
+export const dataSelector = (state: EditorState) => state.editorEntities;
+export const zoneSelector = (state: EditorState) => state.editorZone;
 export const clippedDataSelector = createSelector(dataSelector, zoneSelector, (data, zone) => {
-  return zone && data
-    ? data.map((geoJSON) => clip(geoJSON as FeatureCollection, zone) as FeatureCollection)
-    : [];
+  if (zone && data) {
+    return [
+      {
+        type: 'FeatureCollection',
+        features: data.map((entity: EntityModel) => clip(entity.toGeoJSON(), zone)),
+      } as FeatureCollection,
+    ];
+  } else {
+    return [];
+  }
 });
