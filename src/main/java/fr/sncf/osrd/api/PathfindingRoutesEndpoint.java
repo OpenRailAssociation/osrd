@@ -29,9 +29,11 @@ import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     static final Logger logger = LoggerFactory.getLogger(PathfindingRoutesEndpoint.class);
@@ -103,11 +105,13 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             for (var startWaypoint : waypoints[0])
                 candidatePaths.add(new BasicPathNode<>(startWaypoint.route, startWaypoint.offset));
 
-            var pathsToGoal = new ArrayList<BasicPathNode<Route>>();
+            var pathsToGoal = new ArrayList<ArrayList<BasicPathNode<Route>>>();
 
             // Compute the paths from the entry waypoint to the exit waypoint
             for (int i = 1; i < waypoints.length; i++) {
                 var destinationWaypoints = waypoints[i];
+                var pathsToStep = new ArrayList<BasicPathNode<Route>>();
+                var isLastStep = i == waypoints.length - 1;
 
                 var found = Dijkstra.findPaths(
                         infra.routeGraph,
@@ -126,25 +130,32 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                             }
                             return null;
                         },
+                        (pathNode) -> {
+                            // If we already found a path, limit the exploration to twice the current length
+                            if (pathsToStep.isEmpty())
+                                return false;
+                            return pathNode.cost > pathsToStep.get(0).cost * 2;
+                        },
                         (pathToGoal) -> {
-                            pathsToGoal.add(pathToGoal);
-                            return false;
+                            pathsToStep.add(pathToGoal);
+                            return !isLastStep;
                         });
 
                 if (found == 0)
                     return new RsWithStatus(new RsText("No path could be found"), 400);
 
+                pathsToGoal.add(pathsToStep);
+
+                // Clear the list of candidates and fill it with the new ones
                 candidatePaths.clear();
-                var lastStop = pathsToGoal.get(pathsToGoal.size() - 1);
-                var newCandidate = new BasicPathNode<>(lastStop.edge, lastStop.position);
-                candidatePaths.add(newCandidate);
+                for (var nodeStep : pathsToStep)
+                    candidatePaths.add(new BasicPathNode<>(nodeStep.edge, nodeStep.position));
             }
 
+            var finalPathsToGoal = filterPathSteps(pathsToGoal);
+
             var res = new PathfindingResult();
-
-            for (var routeBasicPathNode : pathsToGoal) {
-                var path = FullPathArray.from(routeBasicPathNode);
-
+            for (var path : finalPathsToGoal) {
                 var routeBeginLoc = pathNodeToRouteLocation(path.pathNodes.get(0));
                 var beginLoc = routeBeginLoc.getTrackSectionLocation();
                 var routeEndLoc = pathNodeToRouteLocation(path.pathNodes.get(path.pathNodes.size() - 1));
@@ -186,6 +197,34 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             ex.printStackTrace(System.err);
             throw ex;
         }
+    }
+
+    /** This function select for each step the path to use. To do so we start from the end (since there is only
+     *  one path). Then we take paths following the chain.
+     */
+    @SuppressFBWarnings(value = "FE_FLOATING_POINT_EQUALITY", justification = "No operation is done after the copy")
+    private ArrayDeque<FullPathArray<Route, BasicPathNode<Route>>> filterPathSteps(
+            ArrayList<ArrayList<BasicPathNode<Route>>> pathsToGoal
+    ) {
+        var res = new ArrayDeque<FullPathArray<Route, BasicPathNode<Route>>>();
+
+        // There should be only one path for the last step
+        var lastPathsToGoal = pathsToGoal.get(pathsToGoal.size() - 1);
+        assert lastPathsToGoal.size() == 1;
+        var currentStepPath = FullPathArray.from(lastPathsToGoal.get(0));
+        res.addFirst(currentStepPath);
+        for (int i = pathsToGoal.size() - 2; i >= 0; i--) {
+            for (var candidate : pathsToGoal.get(i)) {
+                if (candidate.edge == currentStepPath.start.edge
+                        && candidate.position == currentStepPath.start.position) {
+                    currentStepPath = FullPathArray.from(candidate);
+                    res.addFirst(currentStepPath);
+                    break;
+                }
+            }
+            assert res.size() == pathsToGoal.size() - i;
+        }
+        return res;
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
