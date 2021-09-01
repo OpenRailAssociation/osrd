@@ -12,6 +12,10 @@ public abstract class Dijkstra {
         BasicPathNode<EdgeT> findGoalOnPathEdge(BasicPathNode<EdgeT> node);
     }
 
+    public interface StopChecker<EdgeT extends Edge> {
+        boolean stopResearch(BasicPathNode<EdgeT> node);
+    }
+
     public interface GoalReachedCallback<EdgeT extends Edge> {
         boolean onGoalReached(BasicPathNode<EdgeT> pathToGoal);
     }
@@ -37,6 +41,7 @@ public abstract class Dijkstra {
             PriorityQueue<BasicPathNode<EdgeT>> candidatePaths,
             CostFunction<EdgeT> costFunction,
             GoalChecker<EdgeT> goalChecker,
+            StopChecker<EdgeT> stopChecker,
             GoalReachedCallback<EdgeT> goalReachedCallback
     ) {
         int foundPaths = 0;
@@ -62,6 +67,10 @@ public abstract class Dijkstra {
 
             // otherwise, we have to continue exploring this path
             markAsVisited(visitedState, currentEdge.index, currentPath.position);
+
+            // check if we have to stop the research
+            if (stopChecker.stopResearch(currentPath))
+                continue;
 
             // check if by continuing this path, we find a goal on the last edge of our path
             // if a goal is found, add it to the queue, but don't explore this branch further.
