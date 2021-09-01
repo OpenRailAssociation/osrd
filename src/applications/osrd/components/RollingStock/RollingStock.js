@@ -25,7 +25,6 @@ export default function RollingStock() {
     text: '',
     elec: true,
     diesel: true,
-    sort: true, // true for ASC, false for DESC
   });
   const [isFiltering, setIsFiltering] = useState(false);
 
@@ -52,9 +51,8 @@ export default function RollingStock() {
       resultContentNew = resultContentNew.filter((el) => el.modetraction !== 'D');
     }
 
-    resultContentNew = (filters.sort)
-      ? resultContentNew.sort((a, b) => a.name.localeCompare(b.name))
-      : resultContentNew.sort((a, b) => b.name.localeCompare(a.name));
+    // ASC sort by default
+    resultContentNew = resultContentNew.sort((a, b) => a.name.localeCompare(b.name));
 
     setTimeout(() => {
       setResultContent(resultContentNew);
@@ -122,44 +120,38 @@ export default function RollingStock() {
                 sm
               />
             </div>
-            <div className="col-md-6 mb-3 select-osrd-sm">
-              <SelectSNCF
-                id="sortfilter"
-                name="sort"
-                title={t('translation:common.sort')}
-                options={optionsSort}
-                selectedValue={{ id: 'asc', name: t('translation:common.asc') }}
-                onChange={toggleFilter}
-              />
+            <div className="col-md-6 mb-3 d-flex align-items-end">
+              <div className="mr-5">
+                <CheckboxRadioSNCF
+                  onChange={toggleFilter}
+                  name="elec"
+                  id="elec"
+                  label={(
+                    <>
+                      <span className="text-primary mr-1"><BsLightningFill /></span>
+                      Électrique
+                    </>
+                  )}
+                  type="checkbox"
+                  checked
+                />
+              </div>
+              <div>
+                <CheckboxRadioSNCF
+                  onChange={toggleFilter}
+                  name="diesel"
+                  id="diesel"
+                  label={(
+                    <>
+                      <span className="text-pink mr-1"><MdLocalGasStation /></span>
+                      Diesel
+                    </>
+                  )}
+                  type="checkbox"
+                  checked
+                />
+              </div>
             </div>
-          </div>
-          <div className="">
-            <CheckboxRadioSNCF
-              onChange={toggleFilter}
-              name="elec"
-              id="elec"
-              label={(
-                <>
-                  <span className="text-primary mr-1"><BsLightningFill /></span>
-                  Électrique
-                </>
-              )}
-              type="checkbox"
-              checked
-            />
-            <CheckboxRadioSNCF
-              onChange={toggleFilter}
-              name="diesel"
-              id="diesel"
-              label={(
-                <>
-                  <span className="text-pink mr-1"><MdLocalGasStation /></span>
-                  Diesel
-                </>
-              )}
-              type="checkbox"
-              checked
-            />
           </div>
           <div className="pt-3 text-center">
             {resultContent !== undefined && resultContent.length > 0

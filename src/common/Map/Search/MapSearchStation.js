@@ -102,7 +102,7 @@ export default function MapSearchStation(props) {
             clearButton
             noMargin
             sm
-            focus
+            // focus
           />
         </span>
       </div>

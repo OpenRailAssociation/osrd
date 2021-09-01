@@ -1,20 +1,16 @@
 import React from 'react';
 import { ResponsiveLine } from '@nivo/line';
+import { BasicTooltip } from '@nivo/tooltip';
 import PropTypes from 'prop-types';
 
-const COLORS = ['#0088ce', '#6e1e78', '#a1006b', '#cd0037', '#e05206', '#ffb612', '#82be00', '#d2e100', '#009aa6', '#333'];
+const COLORS = ['#e05206', '#303383', '#6e1e78', '#a1006b', '#cd0037', '#e05206', '#ffb612', '#82be00', '#d2e100', '#009aa6', '#333'];
 
 // Format GOC Curves to NIVO format
-const parseCourbeGOC = (label, color, data) => {
-  const regex = /'/g;
-  const curveJson = JSON.parse(data.replace(regex, '"'));
-  const curveFormatted = [];
-  Object.keys(curveJson).forEach((key) => {
-    curveFormatted.push({ x: key, y: curveJson[key] });
-  });
+const parseData = (label, color, curve) => {
+  const curveFormatted = curve.map((item) => ({ x: item.speed * 3.6, y: item.max_effort / 1000 }));
 
   const curveFormattedSorted = curveFormatted.sort(
-    (a, b) => a.x.localeCompare(b.x, undefined, { numeric: true }),
+    (a, b) => a.x > b.x,
   );
 
   return {
@@ -30,10 +26,18 @@ const curveColor = (index) => {
   return COLORS[indexShort];
 };
 
-export default function TrainCompoDetailsCurve(props) {
+const formatTooltip = (props) => (
+  <BasicTooltip
+    id={`${props.point.data.y}kN`}
+    value={`${Math.floor(props.point.data.x)}km/h`}
+    color={props.point.color}
+  />
+);
+
+export default function RollingStockCurve(props) {
   const { data } = props;
-  const curves = data.map((curve, index) => parseCourbeGOC(
-    curve.profil_mode, curveColor(index), curve.referencegoc.courbeeffortvitesse,
+  const curves = Object.keys(data).map((name, index) => parseData(
+    name, curveColor(index), data[name],
   ));
 
   return (
@@ -43,7 +47,7 @@ export default function TrainCompoDetailsCurve(props) {
         top: 20,
         right: 20,
         bottom: 50,
-        left: 70,
+        left: 55,
       }}
       xScale={{
         type: 'linear',
@@ -72,18 +76,19 @@ export default function TrainCompoDetailsCurve(props) {
         tickSize: 5,
         tickPadding: 5,
         tickRotation: 0,
-        legend: 'kN/t',
-        legendOffset: -65,
+        legend: 'kN',
+        legendOffset: -50,
         legendPosition: 'middle',
       }}
       colors={{ datum: 'color' }}
-      lineWidth={1}
+      lineWidth={2}
       enablePoints={false}
       useMesh
+      tooltip={formatTooltip}
     />
   );
 }
 
-TrainCompoDetailsCurve.propTypes = {
-  data: PropTypes.array.isRequired,
+RollingStockCurve.propTypes = {
+  data: PropTypes.object.isRequired,
 };
