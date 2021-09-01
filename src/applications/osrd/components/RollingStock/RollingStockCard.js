@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { updateRollingStockID } from 'reducers/osrdconf';
 import { useDispatch } from 'react-redux';
 import ProgressSNCF from 'common/BootstrapSNCF/ProgressSNCF';
+import RollingStockCurve from 'applications/osrd/components/RollingStock/RollingStockCurve';
 import { BsLightningFill } from 'react-icons/bs';
 import { MdLocalGasStation } from 'react-icons/md';
 import { IoIosSpeedometer } from 'react-icons/io';
@@ -77,41 +78,61 @@ export default function RollingStockCard(props) {
               <table className="rollingstock-details-table">
                 <tbody>
                   <tr>
-                    <td>{t('startupTime')}</td>
-                    <td>{data.startup_time}</td>
+                    <td className="text-primary">{t('startupTime')}</td>
+                    <td>
+                      {data.startup_time}
+                      <span className="small text-muted ml-1">s</span>
+                    </td>
                   </tr>
                   <tr>
-                    <td>{t('startupAcceleration')}</td>
-                    <td>{data.startup_acceleration}</td>
+                    <td className="text-primary">{t('startupAcceleration')}</td>
+                    <td>
+                      {data.startup_acceleration}
+                      <span className="small text-muted ml-1">m/s²</span>
+                    </td>
                   </tr>
                   <tr>
-                    <td>{t('comfortAcceleration')}</td>
-                    <td>{data.comfort_acceleration}</td>
+                    <td className="text-primary">{t('comfortAcceleration')}</td>
+                    <td>
+                      {data.comfort_acceleration}
+                      <span className="small text-muted ml-1">m/s²</span>
+                    </td>
                   </tr>
                   <tr>
-                    <td>{t('intertiaCoefficient')}</td>
-                    <td>{data.inertia_coefficient}</td>
+                    <td className="text-primary">{t('intertiaCoefficient')}</td>
+                    <td>
+                      {data.inertia_coefficient}
+                    </td>
                   </tr>
                   <tr>
-                    <td>{t('timetableGamma')}</td>
-                    <td>{data.timetable_gamma}</td>
+                    <td className="text-primary">{t('timetableGamma')}</td>
+                    <td>
+                      {data.timetable_gamma * -1}
+                      <span className="small text-muted ml-1">m/s²</span>
+                    </td>
                   </tr>
                 </tbody>
               </table>
             </div>
             <div className="col-sm-6">
               {data.power_class && data.power_class < 7 ? (
-                <div>
-                  <small className="mr-1 text-primary">
-                    {t('powerClass')}
-                  </small>
-                  {data.power_class}
-                  <span>: </span>
-                  {powerClasses[data.power_class].a}
-                  <span>A / </span>
-                  {powerClasses[data.power_class].kw}
-                  <small>kW</small>
-                </div>
+                <>
+                  <div>
+                    <small className="mr-1 text-primary">
+                      {t('powerClass')}
+                    </small>
+                    {data.power_class}
+                    <span>: </span>
+                    {powerClasses[data.power_class].a}
+                    <span>A / </span>
+                    {powerClasses[data.power_class].kw}
+                    <small>kW</small>
+                  </div>
+                  <ProgressSNCF
+                    value={Math.floor(data.power_class * 16.67)}
+                    small
+                  />
+                </>
               ) : null}
               {data.capabilities.length > 0 ? (
                 <div>
@@ -123,32 +144,42 @@ export default function RollingStockCard(props) {
               ) : null}
               <div className="pt-1">
                 {t('rollingResistance')}
-                <span className="mx-1">:</span>
-                {data.rolling_resistance.type}
+                <div className="text-muted small">{t('rollingResistanceFormula')}</div>
               </div>
-              <div className="ml-2">
-                <small className="text-primary mr-1">
-                  A (
-                  {t('rollingResistanceA')}
-                  )
-                </small>
-                {data.rolling_resistance.A}
-              </div>
-              <div className="ml-2">
-                <small className="text-primary mr-1">
-                  B (
-                  {t('rollingResistanceB')}
-                  )
-                </small>
-                {data.rolling_resistance.B}
-              </div>
-              <div className="ml-2">
-                <small className="text-primary mr-1">
-                  C (
-                  {t('rollingResistanceC')}
-                  )
-                </small>
-                {data.rolling_resistance.C}
+              <table className="rollingstock-details-table ml-2">
+                <tbody>
+                  <tr>
+                    <td className="text-primary">a</td>
+                    <td>
+                      {Math.floor(data.rolling_resistance.A * 10000) / 10000}
+                      <span className="small ml-1 text-muted">N</span>
+                    </td>
+                    <td className="text-primary">{t('rollingResistanceA')}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-primary">b</td>
+                    <td>
+                      {Math.floor(data.rolling_resistance.B * 10000) / 10000}
+                      <span className="small ml-1 text-muted">N/(m/s)</span>
+                    </td>
+                    <td className="text-primary">{t('rollingResistanceB')}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-primary">c</td>
+                    <td>
+                      {Math.floor(data.rolling_resistance.C * 10000) / 10000}
+                      <span className="small ml-1 text-muted">N/(m/s²)</span>
+                    </td>
+                    <td className="text-primary">{t('rollingResistanceC')}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-md-12">
+              <div className="curve-container">
+                <RollingStockCurve data={data.tractive_effort_curves} />
               </div>
             </div>
           </div>

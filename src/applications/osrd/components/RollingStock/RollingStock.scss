@@ -11,7 +11,6 @@
   padding: 1rem;
   margin-bottom: 1rem;
   border-radius: 4px;
-  height: 12rem;
 
   @media screen and (max-width: 767px) {
     height: 17rem;
@@ -23,7 +22,7 @@
   display: block;
   position: relative;
   overflow: auto;
-  height: 50vh;
+  height: 60vh;
   padding-right: .5rem;
 
   .loader {
@@ -94,6 +93,9 @@
   font-size: .8rem;
   font-weight: lighter;
   .rollingstock-details-table {
+  }
+  .curve-container {
+    height: 15rem;
   }
 }
 
