@@ -4,6 +4,8 @@ info:
   description: OSRD master race
   version: 1.0.0
 tags:
+- name: infra
+  description: Infra
 - name: rolling_stock
   description: Rolling Stock
 - name: timetable
@@ -12,6 +14,160 @@ tags:
   description: Train Schedule
 
 paths:
+  /infra/:
+    get:
+      tags:
+      - infra
+      summary: List all available infra
+      responses:
+        200:
+          description: The infra list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                  next: {}
+                  previous: {}
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Infra'
+    post:
+      tags:
+      - infra
+      summary: Create an infra
+      requestBody:
+        description: Name of the infra to create
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        201:
+          description: The infra list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Infra'
+  /infra/{id}/:
+    get:
+      tags:
+      - infra
+      summary: Retrieve an infra
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra ID
+          required: true
+      responses:
+        200:
+          description: The infra information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Infra'
+    delete:
+      tags:
+      - infra
+      summary: Delete an infra, his namespace and all entities linked to it
+      parameters:
+          - in: path
+            name: id
+            schema:
+              type: integer
+            description: Timetable ID
+            required: true
+      responses:
+        204:
+          description: No content
+  /infra/{id}/railjson/:
+    get:
+      tags:
+      - infra
+      summary: Serialize an infra to railjson
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra ID
+          required: true
+      responses:
+        200:
+          description: The infra in railjson format
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Follows railjson format
+                example:
+                  version: 1
+                  track_sections: []
+                  track_section_links: []
+                  switches: []
+                  script_functions: []
+                  operational_points: []
+                  speed_sections: []
+                  tvd_sections: []
+                  routes: []
+                  aspects: []
+  /infra/{id}/edit/:
+    post:
+      tags:
+      - infra
+      summary: Edit an infra
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra ID
+          required: true
+      requestBody:
+        description: List of operations
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              items:
+                oneOf:
+                - $ref: '#/components/schemas/CreateEntity'
+                - $ref: '#/components/schemas/DeleteEntity'
+                - $ref: '#/components/schemas/AddComponent'
+                - $ref: '#/components/schemas/UpdateComponent'
+                - $ref: '#/components/schemas/DeleteComponent'
+                discriminator:
+                  propertyName: operation
+                  mapping:
+                    create_entity: '#/components/schemas/CreateEntity'
+                    delete_entity: '#/components/schemas/DeleteEntity'
+                    add_component: '#/components/schemas/AddComponent'
+                    update_component: '#/components/schemas/UpdateComponent'
+                    delete_component: '#/components/schemas/DeleteComponent'
+      responses:
+        200:
+          description: The infra in railjson format
+          content:
+            application/json:
+              schema:
+                type: array
+                description: List of result for each operation
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      example: success
+
   /rolling_stock/:
     get:
       tags:
@@ -495,6 +651,71 @@ paths:
                                 type: string
 components:
   schemas:
+    Infra:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        owner:
+          type: string
+          format: uuid
+        created:
+          type: string
+          format: date-time
+        modified:
+          type: string
+          format: date-time
+    CreateEntity:
+      properties:
+        operation:
+          type: string
+          enum: [create_entity]
+        entity_type:
+          type: string
+        components:
+          type: array
+          items:
+            type: object
+            description: List of the component field
+    DeleteEntity:
+      properties:
+        operation:
+          type: string
+          enum: [delete_entity]
+        entity_id:
+          type: integer
+    AddComponent:
+      properties:
+        operation:
+          type: string
+          enum: [add_component]
+        entity_id:
+          type: integer
+        component_type:
+          type: string
+        component:
+          type: object
+          description: List of the component field
+    UpdateComponent:
+      properties:
+        operation:
+          type: string
+          enum: [update_component]
+        component_type:
+          type: string
+        update:
+          type: object
+          description: List of the component field
+    DeleteComponent:
+      properties:
+        operation:
+          type: string
+          enum: [delete_component]
+        component_id:
+          type: integer
+        component_type:
+          type: string
     TrainScheduleResult:
       properties:
         id:
