@@ -6,7 +6,7 @@ public class UnknownTrackSection extends InvalidSchedule {
     public final String trackSectionID;
 
     public UnknownTrackSection(String message, String trackSectionID) {
-        super(message);
+        super(String.format("%s %s", message, trackSectionID));
         this.trackSectionID = trackSectionID;
     }
 }
