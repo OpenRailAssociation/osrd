@@ -10,7 +10,7 @@ const parseData = (label, color, curve) => {
   const curveFormatted = curve.map((item) => ({ x: item.speed * 3.6, y: item.max_effort / 1000 }));
 
   const curveFormattedSorted = curveFormatted.sort(
-    (a, b) => a.x > b.x,
+    (a, b) => (a.x > b.x ? 1 : -1),
   );
 
   return {
