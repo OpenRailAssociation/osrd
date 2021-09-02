@@ -85,6 +85,11 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                                 stopWaypoint.offset,
                                 stopWaypoint.trackSection)),
                                 400);
+                    if (edge.forwardRoutes.root == null && edge.backwardRoutes.root == null)
+                        return new RsWithStatus(new RsText(
+                                String.format("Path location %d is placed on a track section that has no route (%s)",
+                                        i, edge.id)
+                        ), 400);
                     edge.getRoutes(stopWaypoint.direction).findOverlappingIntervals(
                             routeFragment -> {
                                 var trackOffset = stopWaypoint.offset - routeFragment.begin;
