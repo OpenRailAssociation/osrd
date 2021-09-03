@@ -147,7 +147,10 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                         });
 
                 if (found == 0)
-                    return new RsWithStatus(new RsText("No path could be found"), 400);
+                    return new RsWithStatus(new RsText(String.format(
+                            "No path could be found between steps %d and %d",
+                            i - 1, i
+                    )), 400);
 
                 pathsToGoal.add(pathsToStep);
 
