@@ -29,10 +29,7 @@ import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
 import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
@@ -47,6 +44,40 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
 
     public PathfindingRoutesEndpoint(InfraManager infraHandler) {
         super(infraHandler);
+    }
+
+    private int tryFindPath(Infra infra,
+                            PriorityQueue<BasicPathNode<Route>> candidatePaths,
+                            DistCostFunction<Route> costFunction, ArrayList<RouteLocation> destinationWaypoints,
+                            boolean isLastStep,
+                            ArrayList<BasicPathNode<Route>> pathsToStep) {
+        return Dijkstra.findPaths(
+                infra.routeGraph,
+                candidatePaths,
+                costFunction,
+                (pathNode) -> {
+                    for (var goalEdge : destinationWaypoints) {
+                        if (goalEdge.route != pathNode.edge || goalEdge.offset < pathNode.position)
+                            continue;
+                        var addedCost = costFunction.evaluate(
+                                goalEdge.route,
+                                pathNode.position,
+                                goalEdge.route.length
+                        );
+                        return pathNode.end(addedCost, goalEdge.route, goalEdge.offset);
+                    }
+                    return null;
+                },
+                (pathNode) -> {
+                    // If we already found a path, limit the exploration to twice the current length
+                    if (pathsToStep.isEmpty())
+                        return false;
+                    return pathNode.cost > pathsToStep.get(0).cost * 2;
+                },
+                (pathToGoal) -> {
+                    pathsToStep.add(pathToGoal);
+                    return !isLastStep;
+                });
     }
 
     @Override
@@ -118,39 +149,26 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                 var pathsToStep = new ArrayList<BasicPathNode<Route>>();
                 var isLastStep = i == waypoints.length - 1;
 
-                var found = Dijkstra.findPaths(
-                        infra.routeGraph,
-                        candidatePaths,
-                        costFunction,
-                        (pathNode) -> {
-                            for (var goalEdge : destinationWaypoints) {
-                                if (goalEdge.route != pathNode.edge || goalEdge.offset < pathNode.position)
-                                    continue;
-                                var addedCost = costFunction.evaluate(
-                                        goalEdge.route,
-                                        pathNode.position,
-                                        goalEdge.route.length
-                                );
-                                return pathNode.end(addedCost, goalEdge.route, goalEdge.offset);
-                            }
-                            return null;
-                        },
-                        (pathNode) -> {
-                            // If we already found a path, limit the exploration to twice the current length
-                            if (pathsToStep.isEmpty())
-                                return false;
-                            return pathNode.cost > pathsToStep.get(0).cost * 2;
-                        },
-                        (pathToGoal) -> {
-                            pathsToStep.add(pathToGoal);
-                            return !isLastStep;
-                        });
+                var found = tryFindPath(infra, candidatePaths, costFunction,
+                        destinationWaypoints, isLastStep, pathsToStep);
 
-                if (found == 0)
-                    return new RsWithStatus(new RsText(String.format(
+                if (found == 0) {
+                    // If we can find a path from the start to the next point, it means the intermediate
+                    // steps were most likely in the wrong order
+                    candidatePaths.clear();
+                    for (var startWaypoint : waypoints[0])
+                        candidatePaths.add(new BasicPathNode<>(startWaypoint.route, startWaypoint.offset));
+                    var isValidPath = tryFindPath(infra, candidatePaths, costFunction,
+                            destinationWaypoints, isLastStep, pathsToStep) > 0;
+
+                    var error = String.format(
                             "No path could be found between steps %d and %d",
                             i - 1, i
-                    )), 400);
+                    );
+                    if (isValidPath)
+                        error += " (intermediate steps are likely in the wrong order)";
+                    return new RsWithStatus(new RsText(error), 400);
+                }
 
                 pathsToGoal.add(pathsToStep);
 
