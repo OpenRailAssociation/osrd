@@ -50,7 +50,7 @@ public class SpeedInstructionsTests {
         return new SpeedControllerGenerator(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY) {
             @Override
             public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController>
-                    controllers) {
+                    maxSpeeds) {
                 return new HashSet<>(Collections.singletonList(new StaticSpeedController(maxSpeed)));
             }
         };

@@ -15,11 +15,9 @@ public class RollingStock {
     public final double A; // in newtons
     public final double B; // in newtons / (m/s)
     public final double C; // in newtons / (m/s^2)
-    public final Double maxGamma = null;
 
     public final RollingStock.GammaType gammaType;
     public final double gamma;
-
 
     /** the length of the train, in meters. */
     public final double length;
