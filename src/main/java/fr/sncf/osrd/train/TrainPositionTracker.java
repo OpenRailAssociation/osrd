@@ -8,10 +8,8 @@ import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.DeepEqualsUtils;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.lang.Math.abs;
 
@@ -31,6 +29,9 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
     /** If set to true, we follow the given path rather than the switch positions. Used for margin computations */
     public boolean ignoreInfraState = false;
 
+    /** Used for assertions only */
+    private Set<String> trackSectionsOnPath;
+
     /**
      * Create a new position tracker on some given infrastructure and path.
      * @param infraState the infrastructure to navigate on
@@ -45,6 +46,9 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         this.infraState = infraState;
         this.trackSectionRanges = trackSectionRanges;
         this.trackSectionPath = trackSectionPath;
+        trackSectionsOnPath = trackSectionPath.stream()
+                .map(range -> range.edge.id)
+                .collect(Collectors.toSet());
     }
 
     private TrainPositionTracker(TrainPositionTracker tracker) {
@@ -121,6 +125,7 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
                 nextTrackSection = switchState.getBranch();
                 if (nextTrackSection == null)
                     throw new RuntimeException("Can't move the train further because a switch is in motion.");
+                assert trackSectionsOnPath.contains(nextTrackSection.id);
             }
         }
 
