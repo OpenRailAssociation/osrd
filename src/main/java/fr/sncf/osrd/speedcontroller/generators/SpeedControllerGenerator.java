@@ -9,7 +9,6 @@ import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator.PositionUpdate;
 import fr.sncf.osrd.utils.SortedDoubleMap;
-
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
@@ -30,7 +29,7 @@ public abstract class SpeedControllerGenerator {
 
     /** Generates the set of SpeedController */
     public abstract Set<SpeedController> generate(Simulation sim, TrainSchedule schedule,
-                                                  Set<SpeedController> maxSpeed);
+                                                  Set<SpeedController> maxSpeeds);
 
     /** Generates a map of location -> expected time if we follow the given controllers. */
     public static SortedDoubleMap getExpectedTimes(Simulation sim,

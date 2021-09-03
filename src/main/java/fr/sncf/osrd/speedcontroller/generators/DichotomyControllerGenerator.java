@@ -4,7 +4,6 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.utils.SortedDoubleMap;
-
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -37,11 +36,11 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     /** Generates a set of speed controller using dichotomy */
     @Override
     public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule,
-                                         Set<SpeedController> speedControllers) {
+                                         Set<SpeedController> maxSpeeds) {
         sectionEnd = Double.min(sectionEnd, schedule.plannedPath.length);
         this.sim = sim;
         this.schedule = schedule;
-        this.maxSpeedControllers = speedControllers;
+        this.maxSpeedControllers = maxSpeeds;
         return binarySearch(sim, schedule);
     }
 

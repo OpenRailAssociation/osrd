@@ -1,6 +1,8 @@
 package fr.sncf.osrd.train;
 
+
 import static java.lang.Math.abs;
+import static fr.sncf.osrd.RollingStock.GammaType.CONST;
 
 import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
@@ -126,10 +128,13 @@ public class TrainPhysicsIntegrator {
 
         // if the resulting force is negative limit the value to the maxBrakingForce
         var maxBrakingForce = getBrakingForce(rollingStock);
-        // TODO implement speed controllers with non constant deceleration
-        if (actionForce < maxBrakingForce)
-            actionForce = maxBrakingForce - rollingResistance - weightForce;
-        return Action.brake(abs(actionForce));
+
+        if (actionForce < maxBrakingForce) {
+            actionForce = maxBrakingForce;
+            if (rollingStock.gammaType == CONST)
+                actionForce -= rollingResistance + weightForce;
+        }
+        return Action.brake(Math.abs(actionForce));
     }
 
     public static class PositionUpdate {

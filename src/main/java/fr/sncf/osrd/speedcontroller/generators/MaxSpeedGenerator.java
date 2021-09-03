@@ -1,16 +1,20 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
-import fr.sncf.osrd.train.TrainSchedule;
+import static fr.sncf.osrd.RollingStock.GammaType.CONST;
+
+import fr.sncf.osrd.RollingStock;
+import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
+import fr.sncf.osrd.speedcontroller.BrakingSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.train.TrackSectionRange;
+import fr.sncf.osrd.utils.SortedDoubleMap;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
-
 import java.util.HashSet;
 import java.util.Set;
+
 
 /** This is a SpeedControllerGenerator that generates the maximum allowed speed at any given point. */
 public class MaxSpeedGenerator extends SpeedControllerGenerator {
@@ -19,7 +23,7 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
     }
 
     @Override
-    public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed) {
+    public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeeds) {
         // the path is computed at the beginning of the simulation, as it is (for now) part of the event
         var trainPath = schedule.plannedPath.trackSectionPath;
         var rollingStock = schedule.rollingStock;
@@ -77,12 +81,20 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
                 var end = begin + speedTrackRange.length();
 
                 // Add the speed controller corresponding to the approach to the restricted speed section
-                controllers.add(LimitAnnounceSpeedController.create(
-                        rollingStock.maxSpeed,
-                        speedSection.speedLimit,
-                        begin,
-                        rollingStock.gamma
-                ));
+                var isBrakingValueConstant = rollingStock.gammaType == CONST;
+                if (isBrakingValueConstant) {
+                    controllers.add(LimitAnnounceSpeedController.create(rollingStock.maxSpeed,
+                                speedSection.speedLimit,
+                                begin,
+                                rollingStock.gamma));
+                } else {
+                    var expectedSpeeds = getExpectedSpeedsBackwards(sim,
+                            schedule,
+                            speedSection.speedLimit,
+                            begin,
+                            TIME_STEP);
+                    controllers.add(BrakingSpeedController.create(expectedSpeeds));
+                }
 
                 // Add the speed controller corresponding to the restricted speed section
                 controllers.add(new MaxSpeedController(speedSection.speedLimit, begin, end));
@@ -90,5 +102,40 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
             offset += trackSectionRange.length();
         }
         return controllers;
+    }
+
+    private SortedDoubleMap getExpectedSpeedsBackwards(
+            Simulation sim,
+            TrainSchedule schedule,
+            double speedLimit,
+            double endPosition,
+            double timestep) {
+
+        SortedDoubleMap expectedSpeeds = new SortedDoubleMap();
+        var speed = speedLimit;
+        var inertia = schedule.rollingStock.mass * schedule.rollingStock.inertiaCoefficient;
+        var location = convertPosition(schedule, sim, endPosition);
+
+        do {
+            expectedSpeeds.put(location.getPathPosition(), speed);
+            var integrator = TrainPhysicsIntegrator.make(timestep, schedule.rollingStock,
+                                speed, location.meanTrainGrade());
+            // TODO: max Gamma could have different values depending on the speed like in ERTMS
+            var action = Action.brake(Math.abs(schedule.rollingStock.gamma * inertia));
+            var update =  integrator.computeUpdate(action, location.getPathPosition(),
+                               -1);
+            speed = update.speed;
+            //TODO: We can now just call updatePosition with a negative delta
+            location = convertPosition(schedule, sim, location.getPathPosition() + update.positionDelta);
+        } while (speed < schedule.rollingStock.maxSpeed && location.getPathPosition() >= 0.0001);
+
+        return expectedSpeeds;
+    }
+
+    //TODO: put into the abstract class
+    private static TrainPositionTracker convertPosition(TrainSchedule schedule, Simulation sim, double position) {
+        var location = Train.getInitialLocation(schedule, sim);
+        location.updatePosition(schedule.rollingStock.length, position);
+        return location;
     }
 }
