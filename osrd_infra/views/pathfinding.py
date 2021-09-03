@@ -194,7 +194,6 @@ class PathfindingView(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
     GenericViewSet,
 ):
     serializer_class = PathSerializer
@@ -228,4 +227,4 @@ class PathfindingView(
 
         path = Path()
         compute_path(path, data, self.request.user.sub)
-        return Response(self.format_response(path))
+        return Response(self.format_response(path), status=201)

@@ -12,6 +12,8 @@ tags:
   description: Timetable
 - name: train_schedule
   description: Train Schedule
+- name: pathfinding
+  description: Pathfinding
 
 paths:
   /infra/:
@@ -167,7 +169,87 @@ paths:
                     type:
                       type: string
                       example: success
-
+  /pathfinding/:
+    post:
+      tags:
+      - pathfinding
+      summary: Create a Path
+      requestBody:
+        description: Steps of the path
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PathQuery'
+      responses:
+        201:
+          description: The path
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Path'
+  /pathfinding/{id}/:
+    get:
+      tags:
+      - pathfinding
+      summary: Retrieve a Path
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Path ID
+          required: true
+      responses:
+        200:
+          description: The path
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Path'
+    put:
+      tags:
+      - pathfinding
+      summary: Update a path
+      parameters:
+          - in: path
+            name: id
+            schema:
+              type: integer
+            description: Path ID
+            required: true
+      requestBody:
+        description: Steps of the path
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PathQuery'
+      responses:
+        200:
+          description: The path
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Path'
+    delete:
+      tags:
+      - pathfinding
+      summary: Delete a path
+      parameters:
+          - in: path
+            name: id
+            schema:
+              type: integer
+            description: Path ID
+            required: true
+      responses:
+        204:
+          description: No content
   /rolling_stock/:
     get:
       tags:
@@ -735,13 +817,20 @@ components:
             properties:
               time: {type: number, format: float}
               speed: {type: number, format: float}
-              projection: {type: number, format: float}
-              head_track: {type: number, format: float}
-              head_offset: {type: number, format: float}
-              tail_track: {type: number, format: float}
-              tail_offset: {type: number, format: float}
-              start_block_occupation: {type: number, format: float}
-              end_block_occupation: {type: number, format: float}
+              head_position: {type: number, format: float}
+              tail_position: {type: number, format: float}
+              geo_position:
+                type: array
+                items: {type: number, format: float}
+                minItems: 2
+                maxItems: 2
+              schema_position:
+                type: array
+                items: {type: number, format: float}
+                minItems: 2
+                maxItems: 2
+              start_block_occupancy: {type: number, format: float}
+              end_block_occupancy: {type: number, format: float}
         stops:
           type: array
           items:
@@ -760,5 +849,81 @@ components:
                 type: array
                 items:
                   type: string
-              geo_position: {type: object}
-              schema_position: {type: object}
+              geo_position:
+                type: array
+                items: {type: number, format: float}
+                minItems: 2
+                maxItems: 2
+              schema_position:
+                type: array
+                items: {type: number, format: float}
+                minItems: 2
+                maxItems: 2
+    PathQuery:
+      properties:
+        infra:
+          type: integer
+        name:
+          type: string
+        steps:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            properties:
+              stop_time:
+                type: number
+                format: float
+              waypoints:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    track_section:
+                      type: integer
+                    geo_coordinate:
+                      type: array
+                      items: {type: number, format: float}
+                      minItems: 2
+                      maxItems: 2
+    Path:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        owner:
+          type: string
+          format: uuid
+        created:
+          type: string
+          format: date-time
+        geographic:
+          type: object
+          description: GeoJson format
+        schematic:
+          type: object
+          description: GeoJson format
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              name: {type: string}
+              position:
+                type: object
+                properties:
+                  offset: {type: number, format: float}
+                  track_section: {type: integer}
+              schematic:
+                type: array
+                items: {type: number, format: float}
+                minItems: 2
+                maxItems: 2
+              geographic:
+                type: array
+                items: {type: number, format: float}
+                minItems: 2
+                maxItems: 2
+              stop_time: {type: number, format: float}
+              suggestion: {type: boolean}
