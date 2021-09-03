@@ -33,14 +33,10 @@ public final class Interaction implements DeepComparable<Interaction>, Comparabl
         return o.actionPoint == actionPoint && o.interactionType == interactionType && o.position == position;
     }
 
-    @Override
-    @SuppressFBWarnings(
-            value = "FE_FLOATING_POINT_EQUALITY",
-            justification = "there is no need for tolerance here for now"
-    )
     public int compareTo(Interaction o) {
-        if (o.position == position && o.interactionType == InteractionType.SEEN)
-            return -1;
+        if (Math.abs(o.position - position) < 1e-5)
+            // For the same position, we need to consider SEEN interaction first
+            return interactionType.compareTo(o.interactionType);
         return Double.compare(position, o.position);
     }
 
