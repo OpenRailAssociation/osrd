@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: OSRD
-  description: OSRD master race
+  description: OSRD middleware api documentation
   version: 1.0.0
 tags:
 - name: infra
