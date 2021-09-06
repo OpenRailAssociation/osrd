@@ -282,6 +282,8 @@ public class RouteGraphTest {
      *           ->     /       \     <-
      * outerC +-o------+---------+---------o-+ outerB
      *          DC   innerC <- innerB      DB
+     *
+     * Left and right switch positions are defined when looking from the outside of the triangle
      */
     @Test
     @SuppressWarnings("checkstyle:VariableDeclarationUsageDistance")
@@ -372,18 +374,18 @@ public class RouteGraphTest {
         var routeGraphBuilder = new RouteGraph.Builder(trackGraph, 3);
 
         var switchGroupsR1 = new HashMap<Switch, String>();
-        switchGroupsR1.put(switchA, "RIGHT");
-        switchGroupsR1.put(switchB, "LEFT");
+        switchGroupsR1.put(switchA, "LEFT");
+        switchGroupsR1.put(switchB, "RIGHT");
         routeGraphBuilder.makeRoute("R1", tvdSectionsSet, releaseGroups, switchGroupsR1,
                 da, db, null, START_TO_STOP);
         var switchGroupsR2 = new HashMap<Switch, String>();
-        switchGroupsR2.put(switchB, "RIGHT");
-        switchGroupsR2.put(switchC, "LEFT");
+        switchGroupsR2.put(switchB, "LEFT");
+        switchGroupsR2.put(switchC, "RIGHT");
         routeGraphBuilder.makeRoute("R2", tvdSectionsSet, releaseGroups, switchGroupsR2,
                 db, dc, null, START_TO_STOP);
         var switchGroupsR3 = new HashMap<Switch, String>();
-        switchGroupsR3.put(switchC, "RIGHT");
-        switchGroupsR3.put(switchA, "LEFT");
+        switchGroupsR3.put(switchC, "LEFT");
+        switchGroupsR3.put(switchA, "RIGHT");
         routeGraphBuilder.makeRoute("R3", tvdSectionsSet, releaseGroups, switchGroupsR3,
                 dc, da, null, START_TO_STOP);
     }
