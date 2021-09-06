@@ -104,7 +104,8 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
         return controllers;
     }
 
-    private SortedDoubleMap getExpectedSpeedsBackwards(
+    /** Generates a map of location -> expected speed starting from (endPosition, speedLimit) and going backwards */
+    public SortedDoubleMap getExpectedSpeedsBackwards(
             Simulation sim,
             TrainSchedule schedule,
             double speedLimit,
@@ -119,11 +120,11 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
         do {
             expectedSpeeds.put(location.getPathPosition(), speed);
             var integrator = TrainPhysicsIntegrator.make(timestep, schedule.rollingStock,
-                                speed, location.meanTrainGrade());
+                    speed, location.meanTrainGrade());
             // TODO: max Gamma could have different values depending on the speed like in ERTMS
             var action = Action.brake(Math.abs(schedule.rollingStock.gamma * inertia));
             var update =  integrator.computeUpdate(action, location.getPathPosition(),
-                               -1);
+                    -1);
             speed = update.speed;
             //TODO: We can now just call updatePosition with a negative delta
             location = convertPosition(schedule, sim, location.getPathPosition() + update.positionDelta);
@@ -132,10 +133,4 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
         return expectedSpeeds;
     }
 
-    //TODO: put into the abstract class
-    private static TrainPositionTracker convertPosition(TrainSchedule schedule, Simulation sim, double position) {
-        var location = Train.getInitialLocation(schedule, sim);
-        location.updatePosition(schedule.rollingStock.length, position);
-        return location;
-    }
 }
