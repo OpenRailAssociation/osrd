@@ -58,6 +58,7 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         this.pathPosition = tracker.pathPosition;
         this.trackSectionPath = new ArrayList<>(tracker.trackSectionPath);
         this.ignoreInfraState = tracker.ignoreInfraState;
+        this.trackSectionsOnPath = tracker.trackSectionsOnPath;
     }
 
     // region STD_OVERRIDES
