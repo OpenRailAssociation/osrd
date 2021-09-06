@@ -189,7 +189,7 @@ public class RouteStateTest {
                   RJSSwitchType.CLASSIC_NAME,
                   Map.of(
                     "base", oldSwitch.ports.get("base"),
-                    "left", oldSwitch.ports.get("base"),
+                    "left", oldSwitch.ports.get("left"),
                     "right", oldSwitch.ports.get("right")
                 ),
                 42
