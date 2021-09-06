@@ -1,7 +1,10 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
+import static java.lang.Math.min;
 import static java.util.Collections.max;
+import static java.util.Collections.replaceAll;
 
+import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MapSpeedController;
@@ -11,9 +14,14 @@ import fr.sncf.osrd.train.Action;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator;
 import fr.sncf.osrd.train.TrainPositionTracker;
+import fr.sncf.osrd.train.TrainPhysicsIntegrator.PositionUpdate;
 import fr.sncf.osrd.train.TrainSchedule;
+import fr.sncf.osrd.utils.SortedDoubleMap;
+
 import java.util.HashSet;
+import java.util.NavigableMap;
 import java.util.Set;
+import java.util.TreeMap;
 
 /** Adds a construction margin to the given speed limits
  * The allowanceValue is in seconds, added over the whole phase */
@@ -52,13 +60,6 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
         return ((this.getFirstHighEstimate() - this.getFirstLowEstimate()) * time / (time + 2 * value));
     }
 
-    private static TrainPositionTracker convertPosition(TrainSchedule schedule, Simulation sim, double position) {
-        var location = Train.getInitialLocation(schedule, sim);
-        location.ignoreInfraState = true;
-        location.updatePosition(schedule.rollingStock.length, position);
-        return location;
-    }
-
     @Override
     protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
                                                        double targetSpeed,
@@ -70,9 +71,9 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
         var expectedSpeeds = getExpectedSpeeds(sim, schedule, currentSpeedControllers, TIME_STEP,
                 0, initialPosition, schedule.initialSpeed);
         var initialSpeed = expectedSpeeds.interpolate(initialPosition);
-        // TODO: adapt this to non-constant deceleration
         var requiredBrakingDistance = Double.max(0,
-                (initialSpeed * initialSpeed - targetSpeed * targetSpeed) / (2 * schedule.rollingStock.gamma));
+                computeBrakingDistance(initialPosition, endPosition, initialSpeed, targetSpeed, schedule));
+
         var endBrakingPosition = initialPosition + requiredBrakingDistance;
         // running calculation starting where the braking ends, to create a scaled MapSpeedController from it
         var roiSpeeds = getExpectedSpeeds(sim, schedule, currentSpeedControllers, TIME_STEP,
@@ -125,4 +126,5 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
 
         return res;
     }
+
 }

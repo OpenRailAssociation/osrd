@@ -2,11 +2,9 @@ package fr.sncf.osrd.speedcontroller.generators;
 
 import static java.lang.Math.min;
 
-import fr.sncf.osrd.train.TrainSchedule;
+import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.TrainPhysicsIntegrator;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator.PositionUpdate;
 import fr.sncf.osrd.utils.SortedDoubleMap;
 import java.util.NavigableMap;
@@ -94,6 +92,14 @@ public abstract class SpeedControllerGenerator {
         return res;
     }
 
+    /** used to convert the double position into a TrainPositionTracker*/
+    public static TrainPositionTracker convertPosition(TrainSchedule schedule, Simulation sim, double position) {
+        var location = Train.getInitialLocation(schedule, sim);
+        location.ignoreInfraState = true;
+        location.updatePosition(schedule.rollingStock.length, position);
+        return location;
+    }
+
     /** Generates a map of location -> updates if we follow the given controllers. */
     public static NavigableMap<Double, PositionUpdate> getUpdatesAtPositions(Simulation sim,
                                                                       TrainSchedule schedule,
@@ -102,9 +108,7 @@ public abstract class SpeedControllerGenerator {
                                                                       double begin,
                                                                       double end,
                                                                       double initialSpeed) {
-        var location = Train.getInitialLocation(schedule, sim);
-        location.ignoreInfraState = true;
-        location.updatePosition(schedule.rollingStock.length, begin);
+        var location = convertPosition(schedule, sim, begin);
         var totalLength = 0.;
         for (var range : schedule.plannedPath.trackSectionPath)
             totalLength += range.length();
@@ -150,4 +154,6 @@ public abstract class SpeedControllerGenerator {
                 0, sectionBegin, schedule.initialSpeed);
         return speeds.lastEntry().getValue();
     }
+
+
 }
