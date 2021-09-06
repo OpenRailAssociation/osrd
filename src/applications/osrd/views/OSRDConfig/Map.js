@@ -52,6 +52,7 @@ const Map = () => {
   const [idHover, setIdHover] = useState(undefined);
   const [trackSectionHover, setTrackSectionHover] = useState(undefined);
   const [lngLatHover, setLngLatHover] = useState(undefined);
+  const [trackSectionGeoJSONList, setTrackSectionGeoJSONList] = useState({});
   const [trackSectionGeoJSON, setTrackSectionGeoJSON] = useState(undefined);
   const [snappedPoint, setSnappedPoint] = useState(undefined);
   const {
@@ -108,11 +109,22 @@ const Map = () => {
     if (trackSectionHover === undefined
       || feature.properties.entity_id !== trackSectionHover.properties.entity_id) {
       setTrackSectionHover(feature);
-      try {
-        const geojson = await get(`${TRACK_SECTION_URI}${feature.properties.entity_id}/`);
-        setTrackSectionGeoJSON(geojson.components.geo_line_location.geographic);
-      } catch (e) {
-        console.log('ERROR', e);
+
+      if (trackSectionGeoJSONList[feature.properties.entity_id]) {
+        setTrackSectionGeoJSON(trackSectionGeoJSONList[feature.properties.entity_id]);
+      } else {
+        try {
+          const geojson = await get(`${TRACK_SECTION_URI}${feature.properties.entity_id}/`);
+          setTrackSectionGeoJSON(geojson.components.geo_line_location.geographic);
+          setTrackSectionGeoJSONList(
+            {
+              ...trackSectionGeoJSONList,
+              [feature.properties.entity_id]: geojson.components.geo_line_location.geographic,
+            },
+          );
+        } catch (e) {
+          console.log('ERROR', e);
+        }
       }
     }
   };
