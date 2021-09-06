@@ -106,21 +106,21 @@ const Map = () => {
     }
   };
 
-  const getGeoJSONFeature = async (e) => {
+  const getGeoJSONFeature = (e) => {
     if (trackSectionHover === undefined
       || e.features[0].properties.entity_id !== trackSectionHover.properties.entity_id) {
       setTrackSectionHover(e.features[0]);
+    }
 
-      // Get GEOJSON of features hovered for snapping
-      const width = 10;
-      const height = 10;
-      const features = mapRef.current.queryRenderedFeatures([
-        [e.point[0] - width / 2, e.point[1] - height / 2],
-        [e.point[0] + width / 2, e.point[1] + height / 2],
-      ], { layers: ['chartis/tracks-geo/service'] });
-      if (features[0] !== undefined) {
-        setTrackSectionGeoJSON(features[0].geometry);
-      }
+    // Get GEOJSON of features hovered for snapping
+    const width = 5;
+    const height = 5;
+    const features = mapRef.current.queryRenderedFeatures([
+      [e.point[0] - width / 2, e.point[1] - height / 2],
+      [e.point[0] + width / 2, e.point[1] + height / 2],
+    ], { layers: ['chartis/tracks-geo/service'] });
+    if (features[0] !== undefined) {
+      setTrackSectionGeoJSON(features[0].geometry);
     }
   };
 
