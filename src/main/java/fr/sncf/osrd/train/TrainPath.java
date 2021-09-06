@@ -10,6 +10,7 @@ import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /** Describes the planned path for a train
  * For now it is considered read-only, but eventually it may be possible to modify the path */
@@ -80,6 +81,25 @@ public class TrainPath {
                     + "(previous=%s, next=%s)";
 
             throw new InvalidSchedule(String.format(err, previous, next));
+        }
+
+        for (int i = 1; i < routePath.size(); i++) {
+            var prevRoute = routePath.get(i - 1);
+            var nextRoute = routePath.get(i);
+            var prevRouteTVDs = prevRoute.tvdSectionsPaths.stream()
+                    .map(path -> path.tvdSection.id)
+                    .collect(Collectors.toSet());
+            var nextRouteTVDs = nextRoute.tvdSectionsPaths.stream()
+                    .map(path -> path.tvdSection.id)
+                    .collect(Collectors.toSet());
+            prevRouteTVDs.retainAll(nextRouteTVDs);
+            for (var conflict : prevRouteTVDs) {
+                    throw new InvalidSchedule(String.format(
+                            "Trains goes over the same TVD section twice in consecutive routes, "
+                                    + "this is not supported yet (routes: %s and %s, tvd: %s)",
+                            prevRoute.id, nextRoute.id, conflict
+                    ));
+            }
         }
     }
 
