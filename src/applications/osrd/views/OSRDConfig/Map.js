@@ -1,12 +1,15 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {
+  useCallback, useEffect, useState, useRef,
+} from 'react';
 import { useParams } from 'react-router-dom';
-import ReactMapGL, { ScaleControl, AttributionControl, FlyToInterpolator } from 'react-map-gl';
+import ReactMapGL, {
+  ScaleControl, AttributionControl, FlyToInterpolator,
+} from 'react-map-gl';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import colors from 'common/Map/Consts/colors.ts';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateViewport } from 'reducers/map';
 import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';
-import { get } from 'common/requests';
 import { point as turfPoint, lineString as turfLineString } from '@turf/helpers';
 import turfNearestPointOnLine from '@turf/nearest-point-on-line';
 
@@ -41,8 +44,6 @@ import Signals from 'common/Map/Layers/Signals';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import SnappedMarker from 'common/Map/Layers/SnappedMarker';
 
-const TRACK_SECTION_URI = '/ecs/entity/track_section/';
-
 const Map = () => {
   const {
     viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM,
@@ -52,7 +53,6 @@ const Map = () => {
   const [idHover, setIdHover] = useState(undefined);
   const [trackSectionHover, setTrackSectionHover] = useState(undefined);
   const [lngLatHover, setLngLatHover] = useState(undefined);
-  const [trackSectionGeoJSONList, setTrackSectionGeoJSONList] = useState({});
   const [trackSectionGeoJSON, setTrackSectionGeoJSON] = useState(undefined);
   const [snappedPoint, setSnappedPoint] = useState(undefined);
   const {
@@ -62,6 +62,7 @@ const Map = () => {
   const updateViewportChange = useCallback(
     (value) => dispatch(updateViewport(value, undefined)), [dispatch],
   );
+  const mapRef = useRef(null);
 
   const scaleControlStyle = {
     left: 20,
@@ -105,33 +106,27 @@ const Map = () => {
     }
   };
 
-  const getGeoJSONFeature = async (feature) => {
+  const getGeoJSONFeature = async (e) => {
     if (trackSectionHover === undefined
-      || feature.properties.entity_id !== trackSectionHover.properties.entity_id) {
-      setTrackSectionHover(feature);
+      || e.features[0].properties.entity_id !== trackSectionHover.properties.entity_id) {
+      setTrackSectionHover(e.features[0]);
 
-      if (trackSectionGeoJSONList[feature.properties.entity_id]) {
-        setTrackSectionGeoJSON(trackSectionGeoJSONList[feature.properties.entity_id]);
-      } else {
-        try {
-          const geojson = await get(`${TRACK_SECTION_URI}${feature.properties.entity_id}/`);
-          setTrackSectionGeoJSON(geojson.components.geo_line_location.geographic);
-          setTrackSectionGeoJSONList(
-            {
-              ...trackSectionGeoJSONList,
-              [feature.properties.entity_id]: geojson.components.geo_line_location.geographic,
-            },
-          );
-        } catch (e) {
-          console.log('ERROR', e);
-        }
+      // Get GEOJSON of features hovered for snapping
+      const width = 10;
+      const height = 10;
+      const features = mapRef.current.queryRenderedFeatures([
+        [e.point[0] - width / 2, e.point[1] - height / 2],
+        [e.point[0] + width / 2, e.point[1] + height / 2],
+      ], { layers: ['chartis/tracks-geo/service'] });
+      if (features[0] !== undefined) {
+        setTrackSectionGeoJSON(features[0].geometry);
       }
     }
   };
 
   const onFeatureHover = (e) => {
     if (e.features !== null && e.features[0] !== undefined) {
-      getGeoJSONFeature(e.features[0]);
+      getGeoJSONFeature(e);
       setIdHover(e.features[0].properties.entity_id);
       setLngLatHover(e.lngLat);
     } else {
@@ -179,6 +174,7 @@ const Map = () => {
         <MapSettingsSignals />
       </MapSettings>
       <ReactMapGL
+        ref={mapRef}
         {...viewport}
         style={{ cursor: 'pointer' }}
         width="100%"
