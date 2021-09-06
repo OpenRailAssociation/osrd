@@ -159,7 +159,8 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             double targetSpeed = announcer.targetSpeedLimit;
             double gamma = schedule.rollingStock.gamma;
             // TODO : adapt this to non-constant deceleration
-            var requiredBrakingDistance = (vf * vf - targetSpeed * targetSpeed) / (2 * gamma);
+            var requiredBrakingDistance = Double.max(0,
+                    computeBrakingDistance(announcer.beginPosition, announcer.endPosition, vf, targetSpeed, schedule));
             res.add(announcer.endPosition - requiredBrakingDistance);
         }
         // coasting before accelerating slopes
@@ -181,9 +182,8 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     }
 
     private ArrayList<AcceleratingSlope> findAcceleratingSlopes(
-            SortedDoubleMap speeds,
-            RollingStock rollingStock,
-            double vf) {
+            SortedDoubleMap speeds, RollingStock rollingStock, double vf) {
+
         var res = new ArrayList<AcceleratingSlope>();
         double previousPosition = 0.0;
         double previousSpeed = 0.0;
@@ -223,12 +223,6 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             previousPosition = location.getPathPosition();
         }
         return res;
-    }
-
-    private static TrainPositionTracker convertPosition(TrainSchedule schedule, Simulation sim, double position) {
-        var location = Train.getInitialLocation(schedule, sim);
-        location.updatePosition(schedule.rollingStock.length, position);
-        return location;
     }
 
     private CoastingSpeedController generateCoastingSpeedControllerAtPosition(SortedDoubleMap speeds,
