@@ -28,7 +28,6 @@ def push_layer(layer_slug: str, version: int, payload: List[Dict]):
         json=payload,
         headers={"Authorization": "Bearer " + settings.CHARTIS_TOKEN},
     )
-    print(response.status_code, response.text)
     assert response.status_code == 201
 
 
@@ -73,4 +72,6 @@ def generate_layer(infra: Infra, entity_type: Type[Entity]):
         layer.append(entity_payload)
 
     entity_type_name = entity_type._entity_meta.name
-    push_layer(f"osrd_{entity_type_name}", infra.id, layer)
+    PAYLOAD_SIZE = 512
+    for i in range(0, len(layer), PAYLOAD_SIZE):
+        push_layer(f"osrd_{entity_type_name}", infra.id, layer[i:i + PAYLOAD_SIZE])
