@@ -15,7 +15,6 @@ from osrd_infra.views.railjson import format_route_id, format_track_section_id
 from collections import defaultdict
 
 from osrd_infra.models import (
-    TrackSectionEntity,
     TrainSchedule,
     TrainScheduleResult,
     SignalEntity,
@@ -24,18 +23,41 @@ from osrd_infra.models import (
 )
 
 
+def compute_projection(projection_path):
+    projection_tracks = []
+    for route in projection_path.payload["path"]:
+        projection_tracks += route["track_sections"]
+    return Projection(projection_tracks)
+
+
 def format_result(train_schedule_result, projection_path):
     train_schedule = train_schedule_result.train_schedule
     logs = classify_logs(train_schedule_result)
-    steps = format_steps(logs, train_schedule.path, projection_path)
+
+    # Compute projection object
+    projection = compute_projection(projection_path)
+
+    # Format data for charts
+    head_positions = format_head_positions(logs["train_location"], projection)
+    tail_positions = format_tail_positions(logs["train_location"], projection)
+    speeds = format_speeds(logs["train_location"], train_schedule.path)
+    end_time = head_positions[-1][-1]["time"]
+    route_begin_occupancy, route_end_occupancy = format_route_occupancy(
+        logs["route_status"], projection_path, projection, end_time
+    )
+
     return {
         "id": train_schedule_result.train_schedule.pk,
         "labels": [label.label for label in train_schedule.labels.all()],
         "path": train_schedule.path_id,
         "name": train_schedule_result.train_schedule.train_name,
-        "steps": steps,
         "stops": format_stops(logs, train_schedule),
         "signals": format_signals(train_schedule_result),
+        "head_positions": head_positions,
+        "tail_positions": tail_positions,
+        "route_begin_occupancy": route_begin_occupancy,
+        "route_end_occupancy": route_end_occupancy,
+        "speeds": speeds,
     }
 
 
@@ -44,35 +66,6 @@ def classify_logs(train_schedule_result):
     for log in train_schedule_result.log:
         classification[log["type"]].append(log)
     return classification
-
-
-def format_step(
-    time,
-    speed,
-    projection,
-    head_track,
-    head_offset,
-    tail_track,
-    tail_offset,
-    start_block_occupation,
-    end_block_occupation,
-):
-    assert head_offset <= head_track.track_section.length
-    head_offset_normalized = head_offset / head_track.track_section.length
-    geo_line = geo_transform(head_track.geo_line_location.geographic)
-    schema_line = geo_transform(head_track.geo_line_location.schematic)
-    return {
-        "time": time,
-        "speed": speed,
-        "head_position": projection.track_position(head_track.pk, head_offset),
-        "tail_position": projection.track_position(tail_track.pk, tail_offset),
-        "geo_position": geo_line.interpolate_normalized(head_offset_normalized).tuple,
-        "schema_position": schema_line.interpolate_normalized(
-            head_offset_normalized
-        ).tuple,
-        "start_block_occupancy": start_block_occupation,
-        "end_block_occupancy": end_block_occupation,
-    }
 
 
 def get_move_location(path, track_id, offset, distance, start=0):
@@ -97,87 +90,99 @@ def get_move_location(path, track_id, offset, distance, start=0):
     raise ParseError("Internal error: interpolation exceed end path location")
 
 
-def format_steps(logs, train_path, projection_path):
-    # Compute projection path
-    projection_tracks = []
-    tracks = set()
-    for route in projection_path.payload["path"]:
-        projection_tracks += route["track_sections"]
-        [tracks.add(track["track_section"]) for track in route["track_sections"]]
-    projection = Projection(projection_tracks)
-
-    # Compute train path
-    train_tracks = []
-    for route in train_path.payload["path"]:
-        train_tracks += route["track_sections"]
-        [tracks.add(track["track_section"]) for track in route["track_sections"]]
-
-    # Compute block occupation
-    block_occupied = set()
-    start_occupancy = []
-    end_occupancy = []
-    for log in logs["route_status"]:
-        if log["status"] == "OCCUPIED":
-            track = reverse_format(log["end_track_section"])
-            pos = (
-                projection.track_position(track, log["end_offset"]) or projection.end()
-            )
-            start_occupancy.append((log["time"], pos))
-            block_occupied.add(log["id"])
-        elif log["status"] == "FREE" and log["id"] in block_occupied:
-            track = reverse_format(log["end_track_section"])
-            pos = projection.track_position(track, log["end_offset"])
-            if pos:
-                end_occupancy.append((log["time"], pos))
-    start_occupancy.append((float("inf"), float("inf")))
-    end_occupancy.append((float("inf"), float("inf")))
-
-    res = []
-    start_block_occupation = 0
-    end_block_occupation = 0
-    qs = TrackSectionEntity.objects.filter(pk__in=list(tracks))
-    prefetch_tracks = entities_prefetch_components(TrackSectionEntity, qs)
-    tracks = {track.pk: track for track in prefetch_tracks}
-    step = None
-    for log in logs["train_location"]:
+def format_train_positions(train_locations, projection, field_name):
+    results = [[]]
+    for log in train_locations:
         time = log["time"]
-        while step and time - step["time"] > 1.0:
-            head_track, head_offset = get_move_location(
-                train_tracks, step["head_track"].pk, step["head_offset"], step["speed"]
-            )
-            tail_track, tail_offset = get_move_location(
-                train_tracks, step["tail_track"].pk, step["tail_offset"], step["speed"]
-            )
-            step.update(
-                time=step["time"] + 1,
-                head_track=tracks[head_track],
-                head_offset=head_offset,
-                tail_track=tracks[tail_track],
-                tail_offset=tail_offset,
-            )
-            res.append(format_step(**step))
+        head_track = reverse_format(log[f"{field_name}_track_section"])
+        head_offset = log[f"{field_name}_offset"]
+        position = projection.track_position(head_track, head_offset)
+        if position is None:
+            if len(results[-1]) > 0:
+                results.append([])
+            continue
+        results[-1].append({"time": time, "position": position})
+    return results
 
-        head_track = tracks[reverse_format(log["head_track_section"])]
-        tail_track = tracks[reverse_format(log["tail_track_section"])]
 
-        while time >= start_occupancy[0][0]:
-            end_block_occupation = start_occupancy.pop(0)[1]
-        while time >= end_occupancy[0][0]:
-            start_block_occupation = end_occupancy.pop(0)[1]
+def format_head_positions(train_locations, projection):
+    return format_train_positions(train_locations, projection, "head")
 
-        step = {
-            "time": time,
-            "speed": log["speed"],
-            "projection": projection,
-            "head_track": head_track,
-            "head_offset": log["head_offset"],
-            "tail_track": tail_track,
-            "tail_offset": log["tail_offset"],
-            "start_block_occupation": start_block_occupation,
-            "end_block_occupation": end_block_occupation,
-        }
-        res.append(format_step(**step))
-    return res
+
+def format_tail_positions(train_locations, projection):
+    return format_train_positions(train_locations, projection, "tail")
+
+
+def format_speeds(train_locations, train_path):
+    projection = compute_projection(train_path)
+    results = []
+    for log in train_locations:
+        head_track = reverse_format(log["head_track_section"])
+        head_offset = log["head_offset"]
+        position = projection.track_position(head_track, head_offset)
+        assert position is not None
+        results.append({"position": position, "speed": log["speed"]})
+    return results
+
+
+def format_route_occupancy(route_status, projection_path, projection, end_time):
+    route_path = set()
+    for route in projection_path.payload["path"]:
+        route_path.add(route["route"])
+
+    route_begin_occupancy = []
+    route_end_occupancy = []
+    occupied_route = {}
+    for log in route_status:
+        route_id = reverse_format(log["id"])
+        if route_id not in route_path:
+            continue
+        time = log["time"]
+
+        end_track = reverse_format(log["end_track_section"])
+        end_offset = log["end_offset"]
+        end_position = projection.track_position(end_track, end_offset)
+        if end_position is None:
+            end_position = projection.end()
+
+        begin_track = reverse_format(log["start_track_section"])
+        begin_offset = log["start_offset"]
+        begin_position = projection.track_position(begin_track, begin_offset)
+        if begin_position is None:
+            begin_position = 0
+
+        if log["status"] in ("OCCUPIED", "CONFLICT", "CBTC_OCCUPIED"):
+            occupied_route[route_id] = (begin_position, end_position)
+            route_end_occupancy.append(
+                {
+                    "time": time,
+                    "position": max((pos for _, pos in occupied_route.values())),
+                }
+            )
+            if len(route_begin_occupancy) == 0:
+                route_begin_occupancy.append({"time": time, "position": begin_position})
+        elif log["status"] == "FREE":
+            occupied_route.pop(route_id)
+            route_begin_occupancy.append(
+                {
+                    "time": time,
+                    "position": min((pos for pos, _ in occupied_route.values())),
+                }
+            )
+    if occupied_route:
+        route_begin_occupancy.append(
+            {
+                "time": end_time,
+                "position": min((pos for pos, _ in occupied_route.values())),
+            }
+        )
+        route_end_occupancy.append(
+            {
+                "time": end_time,
+                "position": max((pos for pos, _ in occupied_route.values())),
+            }
+        )
+    return route_begin_occupancy, route_end_occupancy
 
 
 def format_stops(logs, train_schedule):
@@ -325,20 +330,30 @@ class TrainScheduleView(
         except TrainScheduleResult.DoesNotExist:
             result = self.generate_schedule_result(train_schedule)
 
-        return Response(self.convert_result(train_schedule, result, request.query_params.get("path", None)))
+        return Response(
+            self.convert_result(
+                train_schedule, result, request.query_params.get("path", None)
+            )
+        )
 
     @action(detail=False, methods=["post"])
     def results(self, request):
         if type(request.data) is not list:
-            raise ParseError(f"Request data expected 'list' but got '{type(request.data).__name__}'")
+            raise ParseError(
+                f"Request data expected 'list' but got '{type(request.data).__name__}'"
+            )
         if len(request.data) == 0:
             raise ParseError("Request data expected non empty 'list'")
         for train_id in request.data:
             if type(train_id) is not int:
-                raise ParseError(f"Request data expected list of 'int' but got list of '{type(train_id).__name__}'")
+                raise ParseError(
+                    f"Request data expected list of 'int' but got list of '{type(train_id).__name__}'"
+                )
         train_ids = request.data
 
-        schedules = TrainSchedule.objects.filter(pk__in=train_ids).prefetch_related('output')
+        schedules = TrainSchedule.objects.filter(pk__in=train_ids).prefetch_related(
+            "output"
+        )
         if len(schedules) != len(train_ids):
             raise Http404("Some train schedule couldn't be found")
 
