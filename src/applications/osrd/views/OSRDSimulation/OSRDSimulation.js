@@ -15,7 +15,9 @@ import TrainsList from 'applications/osrd/views/OSRDSimulation/TrainsList';
 import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
 import TimeLine from 'applications/osrd/components/TimeLine/TimeLine';
 import { updateViewport } from 'reducers/map';
-import { updateMustRedraw, updateSelectedTrain, updateTimePosition, updateSimulation } from 'reducers/osrdsimulation';
+import {
+  updateMustRedraw, updateSelectedTrain, updateTimePosition, updateSimulation,
+} from 'reducers/osrdsimulation';
 import { simplifyData } from 'applications/osrd/components/Helpers/ChartHelpers';
 import './OSRDSimulation.scss';
 import { sec2time } from 'utils/timeManipulation';
@@ -62,7 +64,9 @@ const OSRDSimulation = () => {
         simulationLocal = trainsResult;
         setWaitingMessage(t('simulation:simplify'));
         simulationLocal.sort((a, b) => a.stops[0].time > b.stops[0].time);
-        dispatch(updateSimulation({ trains: simplifyData(simulationLocal, SIMPLIFICATION_FACTOR) }));
+        dispatch(updateSimulation({
+          trains: simplifyData(simulationLocal, SIMPLIFICATION_FACTOR),
+        }));
       } catch (e) {
         dispatch(setFailure({
           name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
@@ -126,43 +130,7 @@ const OSRDSimulation = () => {
           ? <div className="pt-5 mt-5"><WaitingLoader /></div> : (
             <div className="m-0 p-3">
               <div className="osrd-simulation-container d-flex mb-2">
-                <div className={`trainlist-container ${spaceTimeFullWidth ? 'shrinked' : ''}`}>
-                  {spaceTimeFullWidth ? (
-                    <button
-                      type="button"
-                      className="btn btn-white btn-only-icon btn-sm d-flex"
-                      onClick={toggleTrainList}
-                    >
-                      <div className="btn-selected-train">
-                        <div className="">
-                          {simulation.trains[selectedTrain].name}
-                        </div>
-                        <div className="small">
-                          {sec2time(simulation.trains[selectedTrain].stops[0].time)}
-                        </div>
-                        <div className="small">
-                          {sec2time(simulation.trains[selectedTrain]
-                            .stops[simulation.trains[selectedTrain].stops.length - 1].time)}
-                        </div>
-                      </div>
-                      <i className="ml-1 icons-arrow-next" />
-                    </button>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        className="btn btn-white btn-only-icon btn-sm mr-2"
-                        onClick={toggleTrainList}
-                      >
-                        <i className="icons-arrow-prev" />
-                      </button>
-                      <div className="flex-fill">
-                        <TrainsList />
-                      </div>
-                    </>
-                  )}
-                </div>
-                <div className={`spacetimechart-container ${spaceTimeFullWidth ? '' : 'shrinked'}`}>
+                <div className="spacetimechart-container">
                   {simulation.trains.length > 0 ? (
                     <SpaceTimeChart />
                   ) : null}
@@ -171,6 +139,32 @@ const OSRDSimulation = () => {
               <div className="mb-2">
                 <TimeLine />
               </div>
+              {spaceTimeFullWidth ? (
+                <div
+                  role="button"
+                  tabIndex="-1"
+                  className="btn-selected-train d-flex align-items-center mb-2"
+                  onClick={toggleTrainList}
+                >
+                  <div className="mr-2">
+                    {simulation.trains[selectedTrain].name}
+                  </div>
+                  <div className="small mr-1">
+                    {sec2time(simulation.trains[selectedTrain].stops[0].time)}
+                  </div>
+                  <div className="small">
+                    {sec2time(simulation.trains[selectedTrain]
+                      .stops[simulation.trains[selectedTrain].stops.length - 1].time)}
+                  </div>
+                  <i className="ml-1 icons-arrow-down ml-auto" />
+                </div>
+              ) : (
+                <div className="osrd-simulation-container mb-2">
+                  <div className="flex-fill">
+                    <TrainsList toggleTrainList={toggleTrainList} />
+                  </div>
+                </div>
+              )}
               <div className="osrd-simulation-container mb-2">
                 <div className="row">
                   <div className="col-md-4">

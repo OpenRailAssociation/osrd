@@ -9,7 +9,6 @@ import { updateChart, updateMustRedraw } from 'reducers/osrdsimulation';
 
 const drawTrains = (trains, selectedTrain, xScale, svg, height) => {
   trains.forEach((train, idx) => {
-    console.log(train);
     const startTime = train.stops[0].time;
     const endTime = train.stops[train.stops.length - 1].time;
     const direction = train.steps[0].head_position

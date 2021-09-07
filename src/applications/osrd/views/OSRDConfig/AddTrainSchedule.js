@@ -61,7 +61,6 @@ export default function AddTrainSchedule(props) {
             text: `${trainName}: ${sec2time(newOriginTime)}`,
           }));
           actualTrainCount += trainStep;
-          console.log(typeof trainStep);
         }
       } catch (e) {
         setIsWorking(false);

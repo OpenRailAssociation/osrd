@@ -87,7 +87,6 @@ const Map = () => {
   };
 
   const onFeatureClick = (e) => {
-    console.log(e);
     if (e.features
       && e.features.length > 0
       && e.features[0].properties.entity_id !== undefined
