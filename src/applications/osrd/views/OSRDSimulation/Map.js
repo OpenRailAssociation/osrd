@@ -211,7 +211,7 @@ const Map = (props) => {
         <ButtonMapSettings toggleMapSettings={toggleMapSettings} />
         <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
       </div>
-      {/* }<MapSearch active={showSearch} toggleMapSearch={toggleMapSearch} /> */}
+      <MapSearch active={showSearch} toggleMapSearch={toggleMapSearch} />
       <MapSettings active={showSettings} toggleMapSettings={toggleMapSettings}>
         <MapSettingsMapStyle />
         <div className="my-2" />

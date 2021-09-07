@@ -9,6 +9,14 @@ svg text {
 }
 .osrd-simulation-map {
   height: 50vh;
+  .btn-map-container {
+    top: 1.5rem;
+    right: 2rem;
+  }
+  .map-modal {
+    top: .5rem;
+    min-width: calc(100% - 7rem);
+  }
 }
 
 .spacetimechart-container {
