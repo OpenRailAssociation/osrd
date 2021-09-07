@@ -224,7 +224,39 @@ def serialize_track_section_link(track_section_link_entity):
     }
 
 
-def serialize_switch(cached_entities, switch_entity):
+def switch_types():
+    """
+    Generates the switch models in the infra.
+    For now it only contains bidirectional switches
+    """
+    return {
+        "classic_switch": {
+            "ports": [
+                "base",
+                "left",
+                "right"
+            ],
+            "groups": {
+                "LEFT": [
+                    {
+                        "src": "base",
+                        "dst": "left",
+                        "bidirectional": True
+                    }
+                ],
+                "RIGHT": [
+                    {
+                        "src": "base",
+                        "dst": "right",
+                        "bidirectional": True
+                    }
+                ]
+            }
+        }
+    }
+
+
+def serialize_classic_switch(cached_entities, switch_entity):
     track_section_links = cached_entities["track_section_links"]
     left_link = track_section_links[switch_entity.switch.left_id].track_section_link
     right_link = track_section_links[switch_entity.switch.right_id].track_section_link
@@ -247,9 +279,13 @@ def serialize_switch(cached_entities, switch_entity):
 
     return {
         "id": format_switch_id(switch_entity.entity_id),
-        "base": serialize_endpoint(*base_endpoint),
-        "left": serialize_endpoint(*left_endpoint),
-        "right": serialize_endpoint(*right_endpoint),
+        "switch_type": "classic_switch",  # TODO: add different switch types
+        "ports": {
+            "base": serialize_endpoint(*base_endpoint),
+            "left": serialize_endpoint(*left_endpoint),
+            "right": serialize_endpoint(*right_endpoint),
+        },
+        "group_change_delay": 6  # TODO: add change delay
     }
 
 
@@ -325,7 +361,7 @@ def serialize_route(cached_entities, route_entity, prefetched_release_groups):
 
     return {
         "id": format_route_id(route_entity.entity_id),
-        "switches_position": {
+        "switches_group": {
             format_switch_id(position_component.switch_id): SwitchPosition(
                 position_component.position
             ).name
@@ -400,9 +436,12 @@ def railjson_serialize_infra(infra):
 
     bench.step("serializing switches")
     res["switches"] = [
-        serialize_switch(cached_entities, entity)
+        serialize_classic_switch(cached_entities, entity)
         for entity in fetch_entities(SwitchEntity, namespace)
     ]
+
+    bench.step("serializing switch models")
+    res["switch_types"] = switch_types()
 
     bench.step("serializing script functions")
     res["script_functions"] = [
