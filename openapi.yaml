@@ -639,7 +639,7 @@ paths:
                     items:
                       type: string
   /train_schedule/{id}/result/:
-    post:
+    get:
       tags:
       - train_schedule
       summary: Compute and format the simulation result
@@ -663,7 +663,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TrainScheduleResult'
   /train_schedule/results/:
-    post:
+    get:
       tags:
       - train_schedule
       summary: Compute and format the simulation result of multiple train schedule
@@ -673,17 +673,16 @@ paths:
             schema:
               type: integer
             description: Path id used to project the train path
-      requestBody:
-          description: List of train schedule ids
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: integer
-                uniqueItems: true
-                minItems: 1
-          required: true
+          - in: query
+            name: train_ids
+            schema:
+              type: array
+              uniqueItems: true
+              minItems: 1
+              items:
+                type: integer
+            description: List of train schedule ids
+            required: true
       responses:
         200:
           description: The train schedules results
@@ -810,27 +809,54 @@ components:
             type: string
         path:
           type: integer
-        steps:
+          description: id of the path used for projection
+        speeds:
           type: array
+          minItems: 1
           items:
             type: object
             properties:
               time: {type: number, format: float}
+              position: {type: number, format: float}
               speed: {type: number, format: float}
-              head_position: {type: number, format: float}
-              tail_position: {type: number, format: float}
-              geo_position:
-                type: array
-                items: {type: number, format: float}
-                minItems: 2
-                maxItems: 2
-              schema_position:
-                type: array
-                items: {type: number, format: float}
-                minItems: 2
-                maxItems: 2
-              start_block_occupancy: {type: number, format: float}
-              end_block_occupancy: {type: number, format: float}
+        head_positions:
+          type: array
+          minItems: 1
+          items:
+            type: array
+            minItems: 1
+            items:
+              type: object
+              properties:
+                time: {type: number, format: float}
+                position: {type: number, format: float}
+        tail_positions:
+          type: array
+          minItems: 1
+          items:
+            type: array
+            minItems: 1
+            items:
+              type: object
+              properties:
+                time: {type: number, format: float}
+                position: {type: number, format: float}
+        route_begin_occupancy:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            properties:
+              time: {type: number, format: float}
+              position: {type: number, format: float}
+        route_end_occupancy:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            properties:
+              time: {type: number, format: float}
+              position: {type: number, format: float}
         stops:
           type: array
           items:
