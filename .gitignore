@@ -135,5 +135,9 @@ dmypy.json
 # tmp file
 .read_file
 
+# emacs
+\#*\#
+*~
+
 #env files
 *env
