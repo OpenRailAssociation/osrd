@@ -207,11 +207,11 @@ const Map = (props) => {
   return (
     <>
       <div className="btn-map-container">
-        <ButtonMapSearch toggleMapSearch={toggleMapSearch} />
+        {/* <ButtonMapSearch toggleMapSearch={toggleMapSearch} /> */}
         <ButtonMapSettings toggleMapSettings={toggleMapSettings} />
         <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
       </div>
-      <MapSearch active={showSearch} toggleMapSearch={toggleMapSearch} />
+      {/* <MapSearch active={showSearch} toggleMapSearch={toggleMapSearch} /> */}
       <MapSettings active={showSettings} toggleMapSettings={toggleMapSettings}>
         <MapSettingsMapStyle />
         <div className="my-2" />
