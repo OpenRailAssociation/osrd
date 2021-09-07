@@ -5,7 +5,7 @@ import svgDefs from 'applications/osrd/components/Simulation/svgDefs';
 
 const defineChart = (svgWidth, svgHeight, defineX, defineY, ref, rotate, keyValues, id) => {
   const margin = {
-    top: 1, right: 1, bottom: 30, left: 40,
+    top: 1, right: 1, bottom: 30, left: 45,
   };
   const width = svgWidth - margin.left - margin.right;
   const height = svgHeight - margin.top - margin.bottom;
