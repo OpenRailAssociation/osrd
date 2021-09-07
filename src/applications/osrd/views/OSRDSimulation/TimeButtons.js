@@ -99,18 +99,19 @@ export default function TimeButtons() {
           id="simulation-time"
           value={timePosition}
           onChange={changeTimePosition}
+          sm
         />
       </span>
       <button
         type="button"
-        className="btn btn-only-icon btn-danger mr-1"
+        className="btn btn-only-icon btn-danger mr-1 btn-sm"
         onClick={stop}
       >
         <FaStop />
       </button>
       <button
         type="button"
-        className={`btn btn-only-icon mr-1 ${playReverse ? 'btn-primary' : 'btn-white'}`}
+        className={`btn btn-only-icon btn-sm mr-1 ${playReverse ? 'btn-primary' : 'btn-white'}`}
         onClick={changeReverse}
       >
         <FaBackward />
@@ -118,7 +119,7 @@ export default function TimeButtons() {
       {playInterval ? (
         <button
           type="button"
-          className="btn btn-only-icon btn-warning mr-1"
+          className="btn btn-only-icon btn-sm btn-warning mr-1"
           onClick={pause}
         >
           <FaPause />
@@ -126,7 +127,7 @@ export default function TimeButtons() {
       ) : (
         <button
           type="button"
-          className="btn btn-only-icon btn-success mr-1"
+          className="btn btn-only-icon btn-sm btn-success mr-1"
           onClick={() => play(playReverse)}
         >
           <FaPlay />
@@ -139,6 +140,7 @@ export default function TimeButtons() {
         value={simulationSpeed}
         onChange={(e) => changeSimulationSpeed(e.target.value)}
         seconds
+        sm
       />
     </div>
   );

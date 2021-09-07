@@ -41,21 +41,21 @@ export default function TrainDetails() {
         ? (
           <div className="row">
             <div className="col-md-2">
-              <div className="rounded px-2 h-100 py-1 mb-1 small bg-blue text-white">
+              <div className="rounded px-2 h-100 py-1 mb-1 small bg-blue text-white text-nowrap">
                 <div className="font-weight-bold mr-1">TÊTE</div>
                 {Math.round(dataSimulation[selectedTrain].headPosition[hoverPosition].value) / 1000}
                 km
               </div>
             </div>
             <div className="col-md-2">
-              <div className="rounded px-2 h-100 py-1 mb-1 small bg-cyan text-white">
+              <div className="rounded px-2 h-100 py-1 mb-1 small bg-cyan text-white text-nowrap">
                 <div className="font-weight-bold mr-1">QUEUE</div>
                 {Math.round(dataSimulation[selectedTrain].tailPosition[hoverPosition].value) / 1000}
                 km
               </div>
             </div>
             <div className="col-md-2">
-              <div className="rounded px-2 h-100 py-1 mb-1 small bg-red text-white">
+              <div className="rounded px-2 h-100 py-1 mb-1 small bg-red text-white text-nowrap">
                 <div className="font-weight-bold mr-1">FIN CANTON</div>
                 {Math.round(
                   dataSimulation[selectedTrain].endBlockOccupancy[hoverPosition].value,
@@ -64,7 +64,7 @@ export default function TrainDetails() {
               </div>
             </div>
             <div className="col-md-2">
-              <div className="rounded px-2 h-100 py-1 mb-1 small bg-yellow text-black">
+              <div className="rounded px-2 h-100 py-1 mb-1 small bg-yellow text-black text-nowrap">
                 <div className="font-weight-bold mr-1">DÉBUT CANTON</div>
                 {Math.round(
                   dataSimulation[selectedTrain].startBlockOccupancy[hoverPosition].value,
@@ -73,7 +73,7 @@ export default function TrainDetails() {
               </div>
             </div>
             <div className="col-md-2">
-              <div className="rounded px-2 h-100 py-1 mb-1 small bg-secondary text-white">
+              <div className="rounded px-2 h-100 py-1 mb-1 small bg-secondary text-white text-nowrap">
                 <div className="font-weight-bold mr-1">TAILLE CANTON</div>
                 {Math.round(
                   dataSimulation[selectedTrain].endBlockOccupancy[hoverPosition].value
