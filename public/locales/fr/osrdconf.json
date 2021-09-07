@@ -40,6 +40,7 @@
   "trainScheduleCount": "Nombre",
   "trainScheduleDelta": "Délai",
   "trainScheduleName": "Nom",
+  "trainScheduleStep": "Pas",
   "via": "Étape",
   "vias": "Points de passage, arrêts"
 }

@@ -13,10 +13,22 @@ import formatConf from 'applications/osrd/components/AddTrainSchedule/formatConf
 
 const scheduleURL = '/train_schedule';
 
+const trainNameWithNum = (name, actualTrainCount, total) => {
+  if (total === 1) {
+    return name;
+  }
+  // Test if numeric & integer in a good way
+  if (/^\d+$/.test(name)) {
+    return parseInt(name, 10) + (actualTrainCount - 1);
+  }
+  return `${name} ${actualTrainCount}`;
+};
+
 export default function AddTrainSchedule(props) {
   const { mustUpdateTimetable, setMustUpdateTimetable } = props;
   const [isWorking, setIsWorking] = useState(false);
   const [trainCount, setTrainCount] = useState(1);
+  const [trainStep, setTrainStep] = useState(1);
   const [trainDelta, setTrainDelta] = useState(60);
   const osrdconf = useSelector((state) => state.osrdconf);
   const { t } = useTranslation(['translation', 'osrdconf']);
@@ -28,22 +40,28 @@ export default function AddTrainSchedule(props) {
     if (osrdConfig) {
       setIsWorking(true);
       const originTime = time2sec(osrdconf.originTime);
+      let actualTrainCount = 1;
       try {
         for (let nb = 1; nb <= trainCount; nb += 1) {
           const newOriginTime = originTime + (60 * trainDelta * (nb - 1));
+          const trainName = trainNameWithNum(osrdconf.name, actualTrainCount, trainCount);
           /* eslint no-await-in-loop: 0 */
           await post(
             scheduleURL,
             formatConf(
-              dispatch, setFailure, t, osrdconf, newOriginTime,
+              dispatch, setFailure, t,
+              { ...osrdconf, name: trainName },
+              newOriginTime,
             ),
             {},
           );
           setIsWorking(false);
           dispatch(setSuccess({
             title: t('osrdconf:trainAdded'),
-            text: sec2time(newOriginTime),
+            text: `${trainName}: ${sec2time(newOriginTime)}`,
           }));
+          actualTrainCount += trainStep;
+          console.log(typeof trainStep);
         }
       } catch (e) {
         setIsWorking(false);
@@ -51,7 +69,6 @@ export default function AddTrainSchedule(props) {
           name: e.name,
           message: e.message,
         }));
-        console.log(e);
       }
       setMustUpdateTimetable(!mustUpdateTimetable);
     }
@@ -68,6 +85,17 @@ export default function AddTrainSchedule(props) {
               id="osrdconf-name"
               onChange={(e) => dispatch(updateName(e.target.value))}
               value={osrdconf.name}
+              noMargin
+              sm
+            />
+          </span>
+          <span className="mr-2">
+            <InputSNCF
+              type="number"
+              label={t('osrdconf:trainScheduleStep')}
+              id="osrdconf-traincount"
+              onChange={(e) => setTrainStep(parseInt(e.target.value, 10))}
+              value={trainStep}
               noMargin
               sm
             />
