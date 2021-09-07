@@ -17,7 +17,7 @@ export const get = async (path, params = undefined) => {
   let newPath;
   // ULGY HACK https://gateway.dev.dgexsol.fr/osrd
   if (path.substr(0, 5) === '/gaia') {
-    newPath = `${mainConfig.proxy.substr(0, 30)}${path}${path.slice(-1) !== '/' ? '/' : ''}`;
+    newPath = `${mainConfig.proxy.replace('/osrd', '')}${path}${path.slice(-1) !== '/' ? '/' : ''}`;
   } else {
     newPath = formatPath(path);
   }
