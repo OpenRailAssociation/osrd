@@ -15,7 +15,6 @@ from osrd_infra.models import (
     # timetable
     Timetable,
     TrainSchedule,
-    TrainScheduleResult,
     Simulation,
     TrainScheduleLabel,
 )
@@ -59,7 +58,6 @@ admin.site.register(
         # timetable
         Timetable,
         TrainSchedule,
-        TrainScheduleResult,
         Simulation,
         TrainScheduleLabel,
     ]

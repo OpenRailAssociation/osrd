@@ -19,13 +19,7 @@ class TrainSchedule(models.Model):
     path = models.ForeignKey(Path, on_delete=models.CASCADE)
     initial_speed = models.FloatField()
     labels = models.ManyToManyField("TrainScheduleLabel", blank=True)
-
-
-class TrainScheduleResult(models.Model):
-    train_schedule = models.ForeignKey(
-        TrainSchedule, on_delete=models.CASCADE, related_name="output", unique=True
-    )
-    log = models.JSONField()
+    simulation_log = models.JSONField(null=True)
 
 
 class Simulation(models.Model):

@@ -1,8 +1,4 @@
 from rest_framework.exceptions import ParseError
-from osrd_infra.models import (
-    SignalEntity,
-    entities_prefetch_components,
-)
 
 
 def validate_path(path):
@@ -24,7 +20,6 @@ class Projection:
     def __init__(self, path):
         validate_path(path)
         self._init_tracks(path)
-        self._init_signals()
 
     def _init_tracks(self, path):
         self.tracks = {}
@@ -43,25 +38,6 @@ class Projection:
             self.tracks[track_id] = (begin, end, offset)
             offset += abs(end - begin)
 
-    def _init_signals(self):
-        self.signals = {}
-        track_section_ids = [track for track in self.tracks]
-        qs = SignalEntity.objects.filter(
-            point_location__track_section__in=track_section_ids
-        )
-        signals = entities_prefetch_components(SignalEntity, qs)
-        for signal in signals:
-            location = signal.point_location
-            track = location.track_section
-            pos = location.offset
-            if track.entity_id not in self.tracks:
-                continue
-
-            (begin, end, offset) = self.tracks[track.entity_id]
-            if (pos < begin and pos < end) or (pos > begin and pos > end):
-                continue
-            self.signals[signal.entity_id] = offset + abs(pos - begin)
-
     def track_position(self, track_id, pos):
         """
         Returns the position projected in the path.
@@ -75,15 +51,6 @@ class Projection:
             return None
 
         return abs(pos - begin) + offset
-
-    def signal(self, signal):
-        """
-        Returns the position of a signal projected in the path.
-        If the signal position isn't contained in the path then return `None`.
-        """
-        if signal.entity_id not in self.signals:
-            return None
-        return self.signals[signal.entity_id]
 
     def end(self):
         """
