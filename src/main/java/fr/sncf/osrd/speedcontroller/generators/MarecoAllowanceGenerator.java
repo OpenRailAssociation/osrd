@@ -157,8 +157,6 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             }
             // deceleration phases that cross vf
             double targetSpeed = announcer.targetSpeedLimit;
-            double gamma = schedule.rollingStock.gamma;
-            // TODO : adapt this to non-constant deceleration
             var requiredBrakingDistance = Double.max(0,
                     computeBrakingDistance(announcer.beginPosition, announcer.endPosition, vf, targetSpeed, schedule));
             res.add(announcer.endPosition - requiredBrakingDistance);
