@@ -18,13 +18,20 @@ export default function TrainsList(props) {
   const [formattedList, setFormattedList] = useState(undefined);
   const [filter, setFilter] = useState('');
   const [trainIDX, setTrainIDX] = useState(undefined);
+  const [trainNameClickedIDX, setTrainNameClickedIDX] = useState(undefined);
+  const [trainStartTimeClickedIDX, setTrainStartTimeClickedIDX] = useState(undefined);
 
   const { t } = useTranslation(['simulation']);
 
   const changeSelectedTrain = (idx) => {
     dispatch(updateMustRedraw(true));
     dispatch(updateSelectedTrain(idx));
+    setTrainNameClickedIDX(idx);
   };
+
+  const changeTrainName = (newName, idx) => {
+
+  }
 
   const formatTrainsList = () => {
     const newFormattedList = simulation.trains.map((train, idx) => {
@@ -49,27 +56,36 @@ export default function TrainsList(props) {
                 onClick={() => changeSelectedTrain(idx)}
                 tabIndex={0}
               >
-                <InputSNCF
-                  type="text"
-                  id="trainlist-modal-name"
-                  onChange={() => {}}
-                  value={train.name}
-                  noMargin
-                  sm
-                />
+                {trainNameClickedIDX === idx ? (
+                  <InputSNCF
+                    type="text"
+                    id="trainlist-name"
+                    onChange={(e) => changeTrainName(e.target.value)}
+                    value={train.name}
+                    noMargin
+                    focus
+                    sm
+                  />
+                ) : train.name}
               </div>
             </td>
             <td>
-              <div className="cell-inner">
-                <InputSNCF
-                  type="time"
-                  id="trainlist-modal-name"
-                  onChange={() => {}}
-                  value={sec2time(train.stops[0].time)}
-                  noMargin
-                  sm
-                />
-
+              <div
+                className="cell-inner cell-inner-button"
+                role="button"
+                onClick={() => changeSelectedTrain(idx)}
+                tabIndex={0}
+              >
+                {trainNameClickedIDX === idx ? (
+                  <InputSNCF
+                    type="time"
+                    id="trainlist-time"
+                    onChange={() => {}}
+                    value={sec2time(train.stops[0].time)}
+                    noMargin
+                    sm
+                  />
+                ) : sec2time(train.stops[0].time)}
               </div>
             </td>
             <td><div className="cell-inner">{sec2time(train.stops[train.stops.length - 1].time)}</div></td>

@@ -7,6 +7,7 @@
   "labels": "Etiquettes",
   "loadingTrain": "Chargement du train",
   "ManualOffset": "Ajout de secondes au train",
+  "ModalEdit": "Edition d'un train",
   "name": "Nom",
   "noData": "Aucune donnée disponible",
   "null": "Lieu non renseigné",
