@@ -33,6 +33,8 @@ public final class Interaction implements DeepComparable<Interaction>, Comparabl
         return o.actionPoint == actionPoint && o.interactionType == interactionType && o.position == position;
     }
 
+    /** Compare two interactions
+     * Returns < 0 if this is placed before the other Interaction, so that the interaction list can be .sorted() */
     public int compareTo(Interaction o) {
         if (Math.abs(o.position - position) < 1e-5)
             // For the same position, we need to consider SEEN interaction first

@@ -174,14 +174,14 @@ public class Helpers {
     }
 
     /**
-     * Generates the defaults infra from tiny_infra/infra.json, to be edited for each test
+     * Generates the default infra from tiny_infra/infra.json, to be edited for each test
      */
     public static RJSInfra getBaseInfra() {
         return getBaseInfra("tiny_infra/infra.json");
     }
 
     /**
-     * Generates the defaults infra from the specified path
+     * Generates the default infra from the specified path
      */
     public static RJSInfra getBaseInfra(String path) {
         try {
@@ -196,7 +196,7 @@ public class Helpers {
     }
 
     /**
-     * Generates the defaults config from tiny_infra/config_railjson.json
+     * Generates the default config from tiny_infra/config_railjson.json
      */
     public static Config getBaseConfig(String path) {
         try {
@@ -208,25 +208,17 @@ public class Helpers {
     }
 
     /**
-     * Generates the defaults config from tiny_infra/config_railjson.json
+     * Generates the default config from tiny_infra/config_railjson.json
      */
     public static Config getBaseConfig() {
         return getBaseConfig("tiny_infra/config_railjson.json");
     }
 
     /**
-     * Generates the defaults config from tiny_infra/config_railjson.json without allowances
+     * Generates the default config from tiny_infra/config_railjson.json without allowances
      */
     public static Config getBaseConfigNoAllowance() {
         return getConfigWithSpeedInstructions(new SpeedInstructions(null));
-    }
-
-    /**
-     * Generates the defaults config from tiny_infra/config_railjson.json without allowances and with a
-     * specified infra
-     */
-    public static Config getBaseConfigWithInfra(Infra infra) {
-        return getConfigWithSpeedInstructionsAndInfra(new SpeedInstructions(null), infra);
     }
 
     /**
