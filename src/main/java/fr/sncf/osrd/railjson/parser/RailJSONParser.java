@@ -74,7 +74,7 @@ public class RailJSONParser {
         var switchNames = new HashMap<String, Switch>();
         var switchIndex = 0;
         for (var rjsSwitch : railJSON.switches) {
-            // get the first port of the switch that will be consider as the base
+            // get the first port of the switch that will be considered as the base
             if (rjsSwitch.ports.isEmpty()) {
                 throw new InvalidInfraException("The switch should have at least one port");
             }

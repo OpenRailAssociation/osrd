@@ -1,10 +1,10 @@
 package fr.sncf.osrd.train;
 
+import static java.lang.Math.abs;
+
 import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.utils.Constants;
-
-import static java.lang.Math.abs;
 
 /**
  * An utility class to help simulate the train, using forward numerical integration.

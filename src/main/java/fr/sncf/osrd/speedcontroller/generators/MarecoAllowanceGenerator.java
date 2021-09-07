@@ -180,7 +180,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         return res;
     }
 
-    private ArrayList<AcceleratingSlope> findAcceleratingSlopes (
+    private ArrayList<AcceleratingSlope> findAcceleratingSlopes(
             SortedDoubleMap speeds,
             RollingStock rollingStock,
             double vf) {
