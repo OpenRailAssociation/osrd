@@ -269,7 +269,7 @@ public class RouteGraphTest {
         checkRoute(route4, 2, 75, bsD, d3);
     }
 
-    /**
+    /** Left and right switch positions are defined when looking from the outside of the triangle
      *                      +  outerA
      *                      |
      *                   DA o  |
@@ -283,7 +283,6 @@ public class RouteGraphTest {
      * outerC +-o------+---------+---------o-+ outerB
      *          DC   innerC <- innerB      DB
      *
-     * Left and right switch positions are defined when looking from the outside of the triangle
      */
     @Test
     @SuppressWarnings("checkstyle:VariableDeclarationUsageDistance")

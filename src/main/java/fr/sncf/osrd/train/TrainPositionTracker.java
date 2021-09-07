@@ -1,5 +1,7 @@
 package fr.sncf.osrd.train;
 
+import static java.lang.Math.abs;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.trackgraph.Switch;
@@ -10,8 +12,10 @@ import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static java.lang.Math.abs;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public final class TrainPositionTracker implements Cloneable, DeepComparable<TrainPositionTracker> {
     private final transient Infra infra;

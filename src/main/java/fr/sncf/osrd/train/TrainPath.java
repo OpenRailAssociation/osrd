@@ -94,11 +94,11 @@ public class TrainPath {
                     .collect(Collectors.toSet());
             prevRouteTVDs.retainAll(nextRouteTVDs);
             for (var conflict : prevRouteTVDs) {
-                    throw new InvalidSchedule(String.format(
-                            "Trains goes over the same TVD section twice in consecutive routes, "
-                                    + "this is not supported yet (routes: %s and %s, tvd: %s)",
-                            prevRoute.id, nextRoute.id, conflict
-                    ));
+                throw new InvalidSchedule(String.format(
+                        "Trains goes over the same TVD section twice in consecutive routes, "
+                                + "this is not supported yet (routes: %s and %s, tvd: %s)",
+                        prevRoute.id, nextRoute.id, conflict
+                ));
             }
         }
     }
