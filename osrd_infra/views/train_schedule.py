@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from osrd_infra.serializers import TrainScheduleSerializer
-from osrd_infra.views.format_schedule_result import format_result
+from osrd_infra.views.convert_simulation_log import convert_simulation_log
 from osrd_infra.views.simulation_log import generate_simulation_log
 
 from osrd_infra.models import (
@@ -48,7 +48,7 @@ class TrainScheduleView(
 
         path_id = request.query_params.get("path", train_schedule.path_id)
         path = get_object_or_404(Path, pk=path_id)
-        res = format_result(train_schedule, path)
+        res = convert_simulation_log(train_schedule, path)
         return Response(res)
 
     @action(detail=False)
@@ -89,7 +89,7 @@ class TrainScheduleView(
             get_or_create_simulation_log(train_schedule)
 
             # convert the simulation result to something frontend-friendly
-            res.append(format_result(train_schedule, path))
+            res.append(convert_simulation_log(train_schedule, path))
         return Response(res)
 
     def create(self, request):
