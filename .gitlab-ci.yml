@@ -44,7 +44,7 @@ push_openapi_dev:
   image: registry.gitlab.com/osrdata/infra/openapi_format:dev
   stage: build
   script:
-    - "[ -z \"$(ls openapi.yaml)\" ] && exit 0"
+    - "[ -z \"$(ls specifications/openapi.yaml)\" ] && exit 0"
     - python /format.py specifications/openapi.yaml ${SERVICE_NAME} dev gateway.dev.dgexsol.fr cerbere.dev.dgexsol.fr https://keycloak.shared.dgexsol.fr/auth/realms/shared/.well-known/openid-configuration > openapi_formated.yaml
     - git config --global user.email "$SERVICE_NAME@dgexsol.fr"
     - git config --global user.name "$SERVICE_NAME"
@@ -63,7 +63,7 @@ push_openapi_dev:
     refs:
       - dev
     changes:
-      - openapi.yaml
+      - specifications/openapi.yaml
 
 trigger_docs_dev:
   stage: build
@@ -74,7 +74,7 @@ trigger_docs_dev:
     refs:
       - dev
     changes:
-      - openapi.yaml
+      - specifications/openapi.yaml
   needs: ['push_openapi_dev']
 
 test:
