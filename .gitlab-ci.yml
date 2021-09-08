@@ -9,6 +9,7 @@ stages:
 
 variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  SERVICE_NAME: "osrd_core"
 
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
@@ -38,6 +39,43 @@ docker_build:
       - prod
       - staging
       - dev
+
+push_openapi_dev:
+  image: registry.gitlab.com/osrdata/infra/openapi_format:dev
+  stage: build
+  script:
+    - "[ -z \"$(ls openapi.yaml)\" ] && exit 0"
+    - python /format.py specifications/openapi.yaml ${SERVICE_NAME} dev gateway.dev.dgexsol.fr cerbere.dev.dgexsol.fr https://keycloak.shared.dgexsol.fr/auth/realms/shared/.well-known/openid-configuration > openapi_formated.yaml
+    - git config --global user.email "$SERVICE_NAME@dgexsol.fr"
+    - git config --global user.name "$SERVICE_NAME"
+    - rm -rf remote_docs
+    - git clone https://${WRITE_OPENAPIS_USER}:${WRITE_OPENAPIS_PASSWD}@gitlab.com/osrdata/infra/openapi_files.git remote_docs
+    - git checkout ${CI_COMMIT_BRANCH} || git checkout -b ${CI_COMMIT_BRANCH}
+    - cd remote_docs
+    - mkdir -p openapis
+    - touch openapis/${SERVICE_NAME}.yaml
+    - diff -u ../openapi_formated.yaml openapis/${SERVICE_NAME}.yaml && if [ $? -eq 0 ]; then exit 0; else echo "change to commit"; fi
+    - cp ../openapi_formated.yaml openapis/${SERVICE_NAME}.yaml
+    - git add openapis/${SERVICE_NAME}.yaml
+    - "git commit -m \"$SERVICE_NAME: `date`\""
+    - git push https://${WRITE_OPENAPIS_USER}:${WRITE_OPENAPIS_PASSWD}@gitlab.com/osrdata/infra/openapi_files.git ${CI_COMMIT_BRANCH}:${CI_COMMIT_BRANCH}
+  only:
+    refs:
+      - dev
+    changes:
+      - openapi.yaml
+
+trigger_docs_dev:
+  stage: build
+  trigger:
+    project: osrdata/infra/docs
+    branch: dev
+  only:
+    refs:
+      - dev
+    changes:
+      - openapi.yaml
+  needs: ['push_openapi_dev']
 
 test:
   stage: test
