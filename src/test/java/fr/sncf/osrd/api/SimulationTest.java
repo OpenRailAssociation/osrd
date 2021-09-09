@@ -35,7 +35,7 @@ public class SimulationTest extends ApiTest {
             assert positions[i - 1].time <= positions[i].time;
         var speeds = trainResult.speeds.toArray(new SimulationEndpoint.SimulationResultSpeed[0]);
         for (int i = 1; i < speeds.length; i++)
-            assert speeds[i - 1].time <= speeds[i].time;
+            assert speeds[i - 1].position <= speeds[i].position;
     }
 
     @Test
