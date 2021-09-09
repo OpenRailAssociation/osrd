@@ -34,6 +34,7 @@ import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
+import fr.sncf.osrd.utils.CurveSimplification;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -119,10 +120,10 @@ public class SimulationEndpoint implements Take {
             // Check number of reached stops is what we expect
             resultLog.validate();
 
-            // TODO Simplify data
-            // resultLog.simplify();
+            // Simplify data
+            resultLog.simplify();
 
-            return new RsJson(new RsWithBody(adapterResult.toJson(resultLog.getResult())));
+            return new RsJson(new RsWithBody(adapterResult.toJson(resultLog.result)));
         } catch (Throwable ex) {
             ex.printStackTrace(System.err);
             throw ex;
@@ -130,6 +131,8 @@ public class SimulationEndpoint implements Take {
     }
 
 
+
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static final class SimulationRequest {
         /** Infra id */
         public final String infra;
@@ -161,17 +164,17 @@ public class SimulationEndpoint implements Take {
 
 
     private static final class ArrayResultLog extends ChangeConsumer {
-        private final SimulationResult result = new SimulationResult();
-        private final Infra infra;
-        private final HashMap<String, TrainSchedule> trainSchedules = new HashMap<>();
-        private final Simulation sim;
+        public final SimulationResult result = new SimulationResult();
+        public final Infra infra;
+        public final HashMap<String, TrainSchedule> trainSchedules = new HashMap<>();
+        public final Simulation sim;
 
-        private ArrayResultLog(Infra infra, Simulation sim) {
+        public ArrayResultLog(Infra infra, Simulation sim) {
             this.infra = infra;
             this.sim = sim;
         }
 
-        private SimulationResultTrain getTrainResult(String trainId) {
+        public SimulationResultTrain getTrainResult(String trainId) {
             var trainResult = result.trains.get(trainId);
             if (trainResult == null) {
                 trainResult = new SimulationResultTrain();
@@ -211,7 +214,7 @@ public class SimulationEndpoint implements Take {
                 var train = trainSchedules.get(trainStateChange.trainID);
                 for (var pos : trainStateChange.positionUpdates) {
                     trainResult.positions.add(new SimulationResultPosition(pos.time, pos.pathPosition, train));
-                    trainResult.speeds.add(new SimulationResultSpeed(pos.time, pos.speed));
+                    trainResult.speeds.add(new SimulationResultSpeed(pos.time, pos.speed, pos.pathPosition));
                 }
             } else if (change.getClass() == TrainCreatedEvent.TrainCreationPlanned.class) {
                 var trainCreationPlanned = (TrainCreatedEvent.TrainCreationPlanned) change;
@@ -230,11 +233,38 @@ public class SimulationEndpoint implements Take {
             }
         }
 
-        public SimulationResult getResult() {
-            return result;
+        public void simplify() {
+            for (var train : result.trains.values()) {
+                var positions = (ArrayList<SimulationResultPosition>) train.positions;
+                train.positions = CurveSimplification.rdp(
+                        positions,
+                        5.,
+                        (point, start, end) -> {
+                            if (Math.abs(start.time - end.time) < 0.000001)
+                                return Math.abs(point.pathOffset - start.pathOffset);
+                            var proj = start.pathOffset + (point.time - start.time)
+                                    * (end.pathOffset - start.pathOffset) / (end.time - start.time);
+                            return Math.abs(point.pathOffset - proj);
+                        }
+                );
+
+                var speeds = (ArrayList<SimulationResultSpeed>) train.speeds;
+                train.speeds = CurveSimplification.rdp(
+                        speeds,
+                        0.2,
+                        (point, start, end) -> {
+                            if (Math.abs(start.position - end.position) < 0.000001)
+                                return Math.abs(point.speed - start.speed);
+                            var proj = start.speed + (point.position - start.position)
+                                    * (end.speed - start.speed) / (end.position - start.position);
+                            return Math.abs(point.speed - proj);
+                        }
+                );
+            }
         }
     }
 
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class SimulationResult {
         public Map<String, SimulationResultTrain> trains = new HashMap<>();
         @Json(name = "routes_status")
@@ -243,6 +273,7 @@ public class SimulationEndpoint implements Take {
         public Collection<SimulationResultSignalChange> signalChanges = new ArrayList<>();
     }
 
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class SimulationResultTrain {
         public Collection<SimulationResultSpeed> speeds = new ArrayList<>();
         public Collection<SimulationResultPosition> positions = new ArrayList<>();
@@ -250,16 +281,20 @@ public class SimulationEndpoint implements Take {
         public Collection<SimulationResultStopReach> stopReaches = new ArrayList<>();
     }
 
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class SimulationResultSpeed {
         public final double time;
+        public final double position;
         public final double speed;
 
-        public SimulationResultSpeed(double time, double speed) {
+        SimulationResultSpeed(double time, double speed, double position) {
             this.time = time;
             this.speed = speed;
+            this.position = position;
         }
     }
 
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class SimulationResultPosition {
         public final double time;
         @Json(name = "head_track_section")
@@ -270,7 +305,7 @@ public class SimulationEndpoint implements Take {
         public final String tailTrackSection;
         @Json(name = "tail_offset")
         public final double tailOffset;
-        transient public final double pathOffset;
+        public final transient double pathOffset;
 
         SimulationResultPosition(double time, double pathOffset, TrainSchedule trainSchedule) {
             this.time = time;
@@ -285,19 +320,20 @@ public class SimulationEndpoint implements Take {
         }
     }
 
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class SimulationResultRouteStatus {
         public final double time;
         @Json(name = "route_id")
-        private final String routeId;
-        private final RouteStatus status;
+        public final String routeId;
+        public final RouteStatus status;
         @Json(name = "start_track_section")
-        private final String startTrackSection;
+        public final String startTrackSection;
         @Json(name = "start_offset")
-        private final double startOffset;
+        public final double startOffset;
         @Json(name = "end_track_section")
-        private final String endTrackSection;
+        public final String endTrackSection;
         @Json(name = "end_offset")
-        private final double endOffset;
+        public final double endOffset;
 
         SimulationResultRouteStatus(double time, Route route, RouteStatus status) {
             this.time = time;
@@ -314,6 +350,7 @@ public class SimulationEndpoint implements Take {
         }
     }
 
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class SimulationResultSignalChange {
         public final double time;
         @Json(name = "signal_id")
@@ -327,10 +364,11 @@ public class SimulationEndpoint implements Take {
         }
     }
 
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class SimulationResultStopReach {
         public final double time;
         @Json(name = "stop_index")
-        private final int stopIndex;
+        public final int stopIndex;
 
         public SimulationResultStopReach(double time, int stopIndex) {
             this.time = time;

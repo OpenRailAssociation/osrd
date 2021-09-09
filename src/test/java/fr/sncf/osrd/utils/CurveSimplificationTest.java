@@ -2,6 +2,7 @@ package fr.sncf.osrd.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,14 +19,14 @@ class CurveSimplificationTest {
     }
 
     private double customSin(double x, double freq) {
-        return Math.sin(x / 3.1415 * freq);
+        return Math.sin(x / Math.PI * freq);
     }
 
     private static class Dist implements CurveSimplification.RDPDist<Point> {
 
         @Override
         public double dist(Point point, Point start, Point end) {
-            if (start.x == end.x)
+            if (Math.abs(start.x - end.x) < 0.000001)
                 return Math.abs(point.y - start.y);
             var proj = start.y + (point.x - start.x) * (end.y - start.y) / (end.x - start.x);
             return Math.abs(point.y - proj);
