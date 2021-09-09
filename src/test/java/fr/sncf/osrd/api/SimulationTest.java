@@ -2,7 +2,6 @@ package fr.sncf.osrd.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import fr.sncf.osrd.api.SimulationEndpoint.SimulationResultChange.ResponseStopReachedUpdate;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import org.junit.jupiter.api.Test;
@@ -10,7 +9,6 @@ import org.takes.rq.RqFake;
 import org.takes.rs.RsPrint;
 
 import java.nio.file.Paths;
-import java.util.Arrays;
 
 public class SimulationTest extends ApiTest {
     @Test
@@ -29,10 +27,15 @@ public class SimulationTest extends ApiTest {
                 new SimulationEndpoint(infraHandlerMock).act(new RqFake("POST", "/simulation", requestBody))
         ).printBody();
 
-        var simResultChanges =  SimulationEndpoint.adapterResult.fromJson(result);
-        assert simResultChanges != null;
-        for (int i = 1; i < simResultChanges.length; i++)
-            assert simResultChanges[i - 1].time <= simResultChanges[i].time;
+        var simResult =  SimulationEndpoint.adapterResult.fromJson(result);
+        assert simResult != null;
+        var trainResult = simResult.trains.get("Test.");
+        var positions = trainResult.positions.toArray(new SimulationEndpoint.SimulationResultPosition[0]);
+        for (int i = 1; i < positions.length; i++)
+            assert positions[i - 1].time <= positions[i].time;
+        var speeds = trainResult.speeds.toArray(new SimulationEndpoint.SimulationResultSpeed[0]);
+        for (int i = 1; i < speeds.length; i++)
+            assert speeds[i - 1].time <= speeds[i].time;
     }
 
     @Test
@@ -51,12 +54,9 @@ public class SimulationTest extends ApiTest {
                 new SimulationEndpoint(infraHandlerMock).act(new RqFake("POST", "/simulation", requestBody))
         ).printBody();
 
-        var simResultChanges =  SimulationEndpoint.adapterResult.fromJson(result);
-        assert simResultChanges != null;
-
-        var nPhaseEnd = Arrays.stream(simResultChanges)
-                .filter(change -> change instanceof ResponseStopReachedUpdate)
-                .count();
-        assertEquals(1, nPhaseEnd);
+        var simResult =  SimulationEndpoint.adapterResult.fromJson(result);
+        assert simResult != null;
+        var trainResult = simResult.trains.get("Test.");
+        assertEquals(1, trainResult.stopReaches.size());
     }
 }
