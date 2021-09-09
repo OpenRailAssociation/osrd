@@ -1,5 +1,6 @@
 import requests
 from django.conf import settings
+from osrd_infra.utils import reverse_format
 from osrd_infra.views.railjson import format_route_id, format_track_section_id
 from rest_framework.exceptions import ParseError
 
@@ -66,6 +67,54 @@ def get_train_schedule_payload(train_schedule):
     }
 
 
+def preprocess_stops(stop_reaches, train_schedule):
+    path = train_schedule.path.payload
+    phase_times = {}
+    for stop in stop_reaches:
+        phase_times[stop["stop_index"] + 1] = stop["time"]
+    stops = [
+        {
+            "name": path["steps"][0]["name"],
+            "time": train_schedule.departure_time,
+            "stop_time": 0,
+        }
+    ]
+    for phase_index in range(1, len(path["steps"])):
+        assert phase_index in phase_times
+        stops.append(
+            {
+                "name": path["steps"][phase_index]["name"],
+                "time": phase_times[phase_index],
+                "stop_time": path["steps"][phase_index]["stop_time"],
+            }
+        )
+    return stops
+
+
+def preprocess_response(response, train_schedule):
+    assert len(response["trains"]) == 1
+    train = next(iter(response["trains"].values()))
+
+    # Reformat objects id
+    for position in train["positions"]:
+        position["head_track_section"] = reverse_format(position["head_track_section"])
+        position["tail_track_section"] = reverse_format(position["tail_track_section"])
+    for route in response["routes_status"]:
+        route["route_id"] = reverse_format(route["route_id"])
+        route["start_track_section"] = reverse_format(route["start_track_section"])
+        route["end_track_section"] = reverse_format(route["end_track_section"])
+    for signal in response["signal_changes"]:
+        signal["signal_id"] = reverse_format(signal["signal_id"])
+
+    return {
+        "speeds": train["speeds"],
+        "positions": train["positions"],
+        "routes_status": response["routes_status"],
+        "signals": response["signal_changes"],
+        "stops": preprocess_stops(train["stop_reaches"], train_schedule),
+    }
+
+
 def generate_simulation_log(train_schedule):
     payload = {
         "infra": train_schedule.timetable.infra_id,
@@ -87,7 +136,7 @@ def generate_simulation_log(train_schedule):
     if not response:
         raise ParseError(response.content)
 
-    result = response.json()
+    result = preprocess_response(response.json(), train_schedule)
     train_schedule.simulation_log = result
     train_schedule.save()
     return result

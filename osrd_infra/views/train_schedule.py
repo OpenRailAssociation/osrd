@@ -19,7 +19,6 @@ from osrd_infra.models import (
 def get_or_create_simulation_log(train_schedule):
     if train_schedule.simulation_log is not None:
         return train_schedule.simulation_log
-
     return generate_simulation_log(train_schedule)
 
 
@@ -97,5 +96,5 @@ class TrainScheduleView(
         serializer.is_valid(raise_exception=True)
         train_schedule = serializer.save()
 
-        self.generate_schedule_result(train_schedule)
+        get_or_create_simulation_log(train_schedule)
         return Response({"id": train_schedule.pk})

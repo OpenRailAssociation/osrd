@@ -18,8 +18,16 @@ def validate_path(path):
 
 class Projection:
     def __init__(self, path):
-        validate_path(path)
-        self._init_tracks(path)
+        tracks = self._path_to_tracks(path)
+        validate_path(tracks)
+        self._init_tracks(tracks)
+
+    @staticmethod
+    def _path_to_tracks(path):
+        tracks = []
+        for route in path.payload["path"]:
+            tracks += route["track_sections"]
+        return tracks
 
     def _init_tracks(self, path):
         self.tracks = {}
