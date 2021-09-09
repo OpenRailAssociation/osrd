@@ -217,8 +217,15 @@ public class SimulationEndpoint implements Take {
                     trainResult.speeds.add(new SimulationResultSpeed(pos.time, pos.speed, pos.pathPosition));
                 }
             } else if (change.getClass() == TrainCreatedEvent.TrainCreationPlanned.class) {
+                // Cache train schedule
                 var trainCreationPlanned = (TrainCreatedEvent.TrainCreationPlanned) change;
                 trainSchedules.put(trainCreationPlanned.schedule.trainID, trainCreationPlanned.schedule);
+                // Initial position and speed
+                var train = trainCreationPlanned.schedule;
+                var trainResult = getTrainResult(train.trainID);
+                var creationTime = trainCreationPlanned.eventId.scheduledTime;
+                trainResult.positions.add(new SimulationResultPosition(creationTime, 0, train));
+                trainResult.speeds.add(new SimulationResultSpeed(creationTime, train.initialSpeed, 0));
             } else if (change.getClass() == SignalState.SignalAspectChange.class) {
                 var aspectChange = (SignalState.SignalAspectChange) change;
                 var signal = infra.signals.get(aspectChange.signalIndex).id;
