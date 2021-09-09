@@ -3,7 +3,6 @@ package fr.sncf.osrd.api;
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
-import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.StopActionPoint.RestartTrainEvent.RestartTrainPlanned;
 import fr.sncf.osrd.train.TrainSchedule;
@@ -59,11 +58,10 @@ public class SimulationEndpoint implements Take {
             .build()
             .adapter(SimulationRequest.class);
 
-    public static final JsonAdapter<SimulationResultChange[]> adapterResult = new Moshi
+    public static final JsonAdapter<SimulationResult> adapterResult = new Moshi
             .Builder()
-            .add(SimulationResultChange.adapter)
             .build()
-            .adapter(SimulationResultChange[].class);
+            .adapter(SimulationResult.class);
 
     public SimulationEndpoint(InfraManager infraManager) {
         this.infraManager = infraManager;
@@ -118,30 +116,19 @@ public class SimulationEndpoint implements Take {
             while (!sim.isSimulationOver())
                 sim.step();
 
-            var simulationResponse = resultLog.getResults();
+            // Check number of reached stops is what we expect
+            resultLog.validate();
 
-            validate(simulationResponse, trainSchedules);
+            // TODO Simplify data
+            // resultLog.simplify();
 
-            return new RsJson(new RsWithBody(adapterResult.toJson(simulationResponse)));
+            return new RsJson(new RsWithBody(adapterResult.toJson(resultLog.getResult())));
         } catch (Throwable ex) {
             ex.printStackTrace(System.err);
             throw ex;
         }
     }
 
-    private void validate(SimulationResultChange[] changes, List<TrainSchedule> schedules) throws SimulationError {
-        var nStopReached = Arrays.stream(changes)
-                .filter(change -> change instanceof SimulationResultChange.ResponseStopReachedUpdate)
-                .count();
-        var expectedStopReached = schedules.stream()
-                .mapToInt(schedule -> schedule.stops.size())
-                .sum();
-        if (nStopReached != expectedStopReached) {
-            var err = String.format("Unexpected train stop number: expected %d, got %d",
-                    expectedStopReached, nStopReached);
-            throw new SimulationError(err);
-        }
-    }
 
     public static final class SimulationRequest {
         /** Infra id */
@@ -159,19 +146,6 @@ public class SimulationEndpoint implements Take {
         @Json(name = "successions")
         public Collection<RJSSuccessionTable> successions;
 
-        /** Create SimulationRequest */
-        public SimulationRequest(
-                String infra,
-                Collection<RJSRollingStock> rollingStocks,
-                Collection<RJSTrainSchedule> trainSchedules,
-                Collection<RJSSuccessionTable> successions
-        ) {
-            this.infra = infra;
-            this.rollingStocks = rollingStocks;
-            this.trainSchedules = trainSchedules;
-            this.successions = successions;
-        }
-
         /** Create SimulationRequest with empty successions tables */
         public SimulationRequest(
                 String infra,
@@ -187,7 +161,7 @@ public class SimulationEndpoint implements Take {
 
 
     private static final class ArrayResultLog extends ChangeConsumer {
-        private final ArrayList<SimulationResultChange> changes = new ArrayList<>();
+        private final SimulationResult result = new SimulationResult();
         private final Infra infra;
         private final HashMap<String, TrainSchedule> trainSchedules = new HashMap<>();
         private final Simulation sim;
@@ -195,6 +169,29 @@ public class SimulationEndpoint implements Take {
         private ArrayResultLog(Infra infra, Simulation sim) {
             this.infra = infra;
             this.sim = sim;
+        }
+
+        private SimulationResultTrain getTrainResult(String trainId) {
+            var trainResult = result.trains.get(trainId);
+            if (trainResult == null) {
+                trainResult = new SimulationResultTrain();
+                result.trains.put(trainId, trainResult);
+            }
+            return trainResult;
+        }
+
+        public void validate() throws SimulationError {
+            for (var trainName : result.trains.keySet()) {
+                var trainResult = result.trains.get(trainName);
+                var nStopReached = trainResult.stopReaches.size();
+                var trainSchedule = trainSchedules.get(trainName);
+                var expectedStopReached = trainSchedule.stops.size();
+                if (nStopReached != expectedStopReached) {
+                    var err = String.format("Train '%s', unexpected stop number: expected %d, got %d",
+                            trainName, expectedStopReached, nStopReached);
+                    throw new SimulationError(err);
+                }
+            }
         }
 
         @Override
@@ -206,14 +203,16 @@ public class SimulationEndpoint implements Take {
             if (change.getClass() == RouteState.RouteStatusChange.class) {
                 var routeStatusChange = (RouteState.RouteStatusChange) change;
                 var route = infra.routeGraph.getEdge(routeStatusChange.routeIndex);
-                changes.add(new SimulationResultChange.ResponseRouteStatus(
-                        route, routeStatusChange.newStatus, sim.getTime()));
+                var newStatus = routeStatusChange.newStatus;
+                result.routesStatus.add(new SimulationResultRouteStatus(sim.getTime(), route, newStatus));
             } else if (change.getClass() == Train.TrainStateChange.class) {
                 var trainStateChange = (Train.TrainStateChange) change;
+                var trainResult = getTrainResult(trainStateChange.trainID);
                 var train = trainSchedules.get(trainStateChange.trainID);
-                for (var pos : trainStateChange.positionUpdates)
-                    changes.add(new SimulationResultChange.ResponseTrainLocationUpdate(
-                            train, pos.pathPosition, pos.time, pos.speed));
+                for (var pos : trainStateChange.positionUpdates) {
+                    trainResult.positions.add(new SimulationResultPosition(pos.time, pos.pathPosition, train));
+                    trainResult.speeds.add(new SimulationResultSpeed(pos.time, pos.speed));
+                }
             } else if (change.getClass() == TrainCreatedEvent.TrainCreationPlanned.class) {
                 var trainCreationPlanned = (TrainCreatedEvent.TrainCreationPlanned) change;
                 trainSchedules.put(trainCreationPlanned.schedule.trainID, trainCreationPlanned.schedule);
@@ -223,121 +222,119 @@ public class SimulationEndpoint implements Take {
                 var aspects = new ArrayList<String>();
                 for (var aspect : aspectChange.aspects)
                     aspects.add(aspect.id);
-                changes.add(new SimulationResultChange.ResponseSignalChange(signal, aspects, sim.getTime()));
+                result.signalChanges.add(new SimulationResultSignalChange(sim.getTime(), signal, aspects));
             } else if (change.getClass() == RestartTrainPlanned.class) {
                 var stopReached = (RestartTrainPlanned) change;
-                changes.add(new SimulationResultChange.ResponseStopReachedUpdate(stopReached.train,
-                        stopReached.stopIndex, sim.getTime()));
+                var trainResult = getTrainResult(stopReached.train.getName());
+                trainResult.stopReaches.add(new SimulationResultStopReach(sim.getTime(), stopReached.stopIndex));
             }
         }
 
-        public SimulationResultChange[] getResults() {
-            Collections.sort(changes);
-            return changes.toArray(new SimulationResultChange[changes.size()]);
+        public SimulationResult getResult() {
+            return result;
         }
     }
 
-    @SuppressFBWarnings({"EQ_COMPARETO_USE_OBJECT_EQUALS"})
-    public abstract static class SimulationResultChange implements Comparable<SimulationResultChange> {
-        public static final PolymorphicJsonAdapterFactory<SimulationResultChange> adapter = (
-                PolymorphicJsonAdapterFactory.of(SimulationResultChange.class, "type")
-                        // boolean operators
-                        .withSubtype(SimulationResultChange.ResponseRouteStatus.class, "route_status")
-                        .withSubtype(SimulationResultChange.ResponseTrainLocationUpdate.class, "train_location")
-                        .withSubtype(SimulationResultChange.ResponseSignalChange.class, "signal_change")
-                        .withSubtype(SimulationResultChange.ResponseStopReachedUpdate.class, "stop_reached")
-        );
+    public static class SimulationResult {
+        public Map<String, SimulationResultTrain> trains = new HashMap<>();
+        @Json(name = "routes_status")
+        public Collection<SimulationResultRouteStatus> routesStatus = new ArrayList<>();
+        @Json(name = "signal_changes")
+        public Collection<SimulationResultSignalChange> signalChanges = new ArrayList<>();
+    }
 
+    public static class SimulationResultTrain {
+        public Collection<SimulationResultSpeed> speeds = new ArrayList<>();
+        public Collection<SimulationResultPosition> positions = new ArrayList<>();
+        @Json(name = "stop_reaches")
+        public Collection<SimulationResultStopReach> stopReaches = new ArrayList<>();
+    }
+
+    public static class SimulationResultSpeed {
         public final double time;
+        public final double speed;
 
-        @Override
-        public int compareTo(SimulationResultChange o) {
-            if (time < o.time)
-                return -1;
-            return 1;
-        }
-
-        protected SimulationResultChange(double time) {
+        public SimulationResultSpeed(double time, double speed) {
             this.time = time;
+            this.speed = speed;
         }
+    }
 
-        public static final class ResponseRouteStatus extends SimulationResultChange {
-            private final String id;
-            private final RouteStatus status;
-            @Json(name = "start_track_section")
-            private final String startTrackSection;
-            @Json(name = "start_offset")
-            private final double startOffset;
-            @Json(name = "end_track_section")
-            private final String endTrackSection;
-            @Json(name = "end_offset")
-            private final double endOffset;
+    public static class SimulationResultPosition {
+        public final double time;
+        @Json(name = "head_track_section")
+        public final String headTrackSection;
+        @Json(name = "head_offset")
+        public final double headOffset;
+        @Json(name = "tail_track_section")
+        public final String tailTrackSection;
+        @Json(name = "tail_offset")
+        public final double tailOffset;
+        transient public final double pathOffset;
 
-            ResponseRouteStatus(Route route, RouteStatus status, double time) {
-                super(time);
-                this.id = route.id;
-                this.status = status;
-                var start = route.tvdSectionsPaths.get(0).trackSections[0];
-                this.startTrackSection = start.edge.id;
-                this.startOffset = start.getBeginPosition();
-                var lastIndex = route.tvdSectionsPaths.size() - 1;
-                var lastTracks = route.tvdSectionsPaths.get(lastIndex).trackSections;
-                var end = lastTracks[lastTracks.length - 1];
-                this.endTrackSection = end.edge.id;
-                this.endOffset = end.getEndPosition();
-            }
+        SimulationResultPosition(double time, double pathOffset, TrainSchedule trainSchedule) {
+            this.time = time;
+            this.pathOffset = pathOffset;
+            var headLocation = trainSchedule.plannedPath.findLocation(pathOffset);
+            this.headTrackSection = headLocation.edge.id;
+            this.headOffset = headLocation.offset;
+            var tailLocation = trainSchedule.plannedPath.findLocation(
+                    Math.max(0, pathOffset - trainSchedule.rollingStock.length));
+            this.tailTrackSection = tailLocation.edge.id;
+            this.tailOffset = tailLocation.offset;
         }
+    }
 
-        public static final class ResponseTrainLocationUpdate extends SimulationResultChange {
-            @Json(name = "train_name")
-            private final String trainName;
-            @Json(name = "head_track_section")
-            private final String headTrackSection;
-            @Json(name = "head_offset")
-            private final double headOffset;
-            @Json(name = "tail_track_section")
-            private final String tailTrackSection;
-            @Json(name = "tail_offset")
-            private final double tailOffset;
-            private final double speed;
+    public static class SimulationResultRouteStatus {
+        public final double time;
+        @Json(name = "route_id")
+        private final String routeId;
+        private final RouteStatus status;
+        @Json(name = "start_track_section")
+        private final String startTrackSection;
+        @Json(name = "start_offset")
+        private final double startOffset;
+        @Json(name = "end_track_section")
+        private final String endTrackSection;
+        @Json(name = "end_offset")
+        private final double endOffset;
 
-            ResponseTrainLocationUpdate(TrainSchedule trainSchedule, double pathOffset,
-                                               double time, double speed) {
-                super(time);
-                var headLocation = trainSchedule.plannedPath.findLocation(pathOffset);
-                this.trainName = trainSchedule.trainID;
-                this.headTrackSection = headLocation.edge.id;
-                this.headOffset = headLocation.offset;
-                var tailLocation = trainSchedule.plannedPath.findLocation(
-                        Math.max(0, pathOffset - trainSchedule.rollingStock.length));
-                this.tailTrackSection = tailLocation.edge.id;
-                this.tailOffset = tailLocation.offset;
-                this.speed = speed;
-            }
+        SimulationResultRouteStatus(double time, Route route, RouteStatus status) {
+            this.time = time;
+            this.routeId = route.id;
+            this.status = status;
+            var start = route.tvdSectionsPaths.get(0).trackSections[0];
+            this.startTrackSection = start.edge.id;
+            this.startOffset = start.getBeginPosition();
+            var lastIndex = route.tvdSectionsPaths.size() - 1;
+            var lastTracks = route.tvdSectionsPaths.get(lastIndex).trackSections;
+            var end = lastTracks[lastTracks.length - 1];
+            this.endTrackSection = end.edge.id;
+            this.endOffset = end.getEndPosition();
         }
+    }
 
-        public static final class ResponseStopReachedUpdate extends SimulationResultChange {
-            @Json(name = "train_name")
-            private final String trainName;
-            @Json(name = "stop_index")
-            private final int stopIndex;
+    public static class SimulationResultSignalChange {
+        public final double time;
+        @Json(name = "signal_id")
+        public final String signalId;
+        public final List<String> aspects;
 
-            ResponseStopReachedUpdate(Train train, int stopIndex, double time) {
-                super(time);
-                this.trainName = train.getName();
-                this.stopIndex = stopIndex;
-            }
+        SimulationResultSignalChange(double time, String signalId, List<String> aspects) {
+            this.time = time;
+            this.signalId = signalId;
+            this.aspects = aspects;
         }
+    }
 
-        public static final class ResponseSignalChange extends SimulationResultChange {
-            private final String signal;
-            private final List<String> aspects;
+    public static class SimulationResultStopReach {
+        public final double time;
+        @Json(name = "stop_index")
+        private final int stopIndex;
 
-            ResponseSignalChange(String signal, ArrayList<String> aspects, double time) {
-                super(time);
-                this.signal = signal;
-                this.aspects = aspects;
-            }
+        public SimulationResultStopReach(double time, int stopIndex) {
+            this.time = time;
+            this.stopIndex = stopIndex;
         }
     }
 }
