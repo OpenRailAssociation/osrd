@@ -3,11 +3,14 @@ import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
-import { sec2time } from 'utils/timeManipulation';
-import { updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation';
+import { time2datetime, sec2time, sec2datetime } from 'utils/timeManipulation';
+import { updateMustRedraw, updateSelectedTrain, updateSimulation } from 'reducers/osrdsimulation';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import TrainListModal from 'applications/osrd/components/TrainList/TrainListModal';
 import { IoMdEye } from 'react-icons/io';
+import { useDebounce } from 'utils/helpers';
+import { timeShiftTrain, timeShiftStops } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHelpers';
 
 export default function TrainsList(props) {
   const { toggleTrainList } = props;
@@ -19,19 +22,58 @@ export default function TrainsList(props) {
   const [filter, setFilter] = useState('');
   const [trainIDX, setTrainIDX] = useState(undefined);
   const [trainNameClickedIDX, setTrainNameClickedIDX] = useState(undefined);
-  const [trainStartTimeClickedIDX, setTrainStartTimeClickedIDX] = useState(undefined);
+  const [typeOfInputFocused, setTypeOfInputFocused] = useState(undefined);
+  const [inputName, setInputName] = useState(undefined);
+  const [inputTime, setInputTime] = useState(undefined);
 
   const { t } = useTranslation(['simulation']);
 
-  const changeSelectedTrain = (idx) => {
-    dispatch(updateMustRedraw(true));
-    dispatch(updateSelectedTrain(idx));
-    setTrainNameClickedIDX(idx);
+  const changeSelectedTrain = (idx, typeOfInputToFocus, trainName, trainStartTime) => {
+    if (selectedTrain !== idx) {
+      dispatch(updateMustRedraw(true));
+      dispatch(updateSelectedTrain(idx));
+      setTrainNameClickedIDX(idx);
+      setTypeOfInputFocused(typeOfInputToFocus);
+      setInputTime(trainStartTime);
+    }
   };
 
   const changeTrainName = (newName, idx) => {
+    setInputName(newName);
+    const newTrain = { ...simulation.trains[idx], name: newName };
+    const newSimulation = {
+      ...simulation,
+      trains: simulation.trains.map((train, currentIdx) => {
+        if (idx === currentIdx) {
+          return newTrain;
+        }
+        return train;
+      }),
+    };
+    dispatch(updateSimulation(newSimulation));
+  };
 
-  }
+  const debouncedInputName = useDebounce(inputName, 500);
+  const debouncedInputTime = useDebounce(inputTime, 500);
+
+  useEffect(() => {
+    if (debouncedInputName) {
+      dispatch(updateMustRedraw(true));
+    }
+    if (debouncedInputTime) {
+      /* const offset = Math.floor(
+        (time2datetime(newStartTime) - sec2datetime(simulation.trains[idx].stops[0].time)) / 1000,
+      );
+      const trains = Array.from(simulation.trains);
+      trains[idx] = {
+        ...trains[idx],
+        steps: timeShiftTrain(trains[selectedTrain].steps, offset),
+        stops: timeShiftStops(trains[selectedTrain].stops, offset),
+      };
+      dispatch(updateSimulation({ ...simulation, trains })); */
+      dispatch(updateMustRedraw(true));
+    }
+  }, [debouncedInputName, debouncedInputTime]);
 
   const formatTrainsList = () => {
     const newFormattedList = simulation.trains.map((train, idx) => {
@@ -53,17 +95,17 @@ export default function TrainsList(props) {
               <div
                 className="cell-inner cell-inner-button"
                 role="button"
-                onClick={() => changeSelectedTrain(idx)}
+                onClick={() => changeSelectedTrain(idx, 'name', train.name, sec2time(train.stops[0].time))}
                 tabIndex={0}
               >
                 {trainNameClickedIDX === idx ? (
                   <InputSNCF
                     type="text"
                     id="trainlist-name"
-                    onChange={(e) => changeTrainName(e.target.value)}
+                    onChange={(e) => changeTrainName(e.target.value, idx)}
                     value={train.name}
                     noMargin
-                    focus
+                    focus={typeOfInputFocused === 'name'}
                     sm
                   />
                 ) : train.name}
@@ -73,16 +115,17 @@ export default function TrainsList(props) {
               <div
                 className="cell-inner cell-inner-button"
                 role="button"
-                onClick={() => changeSelectedTrain(idx)}
+                onClick={() => changeSelectedTrain(idx, 'time', train.name, sec2time(train.stops[0].time))}
                 tabIndex={0}
               >
                 {trainNameClickedIDX === idx ? (
                   <InputSNCF
                     type="time"
                     id="trainlist-time"
-                    onChange={() => {}}
-                    value={sec2time(train.stops[0].time)}
+                    onChange={(e) => setInputTime(e.target.value)}
+                    value={inputTime}
                     noMargin
+                    focus={typeOfInputFocused === 'time'}
                     sm
                   />
                 ) : sec2time(train.stops[0].time)}

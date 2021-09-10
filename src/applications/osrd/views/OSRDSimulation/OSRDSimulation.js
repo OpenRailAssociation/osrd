@@ -11,7 +11,7 @@ import SpeedSpaceChart from 'applications/osrd/views/OSRDSimulation/SpeedSpaceCh
 import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
 import Map from 'applications/osrd/views/OSRDSimulation/Map';
 import TrainDetails from 'applications/osrd/views/OSRDSimulation/TrainDetails';
-import TrainsList from 'applications/osrd/views/OSRDSimulation/TrainsList';
+import TrainList from 'applications/osrd/views/OSRDSimulation/TrainList';
 import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
 import TimeLine from 'applications/osrd/components/TimeLine/TimeLine';
 import { updateViewport } from 'reducers/map';
@@ -161,7 +161,7 @@ const OSRDSimulation = () => {
               ) : (
                 <div className="osrd-simulation-container mb-2">
                   <div className="flex-fill">
-                    <TrainsList toggleTrainList={toggleTrainList} />
+                    <TrainList toggleTrainList={toggleTrainList} />
                   </div>
                 </div>
               )}
