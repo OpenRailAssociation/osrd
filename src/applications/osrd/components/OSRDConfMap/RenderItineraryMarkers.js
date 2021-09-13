@@ -38,7 +38,7 @@ export default function RenderItineraryMarkers() {
     );
   }
   if (osrdconf.vias.length > 0) {
-    osrdconf.vias.forEach((via) => {
+    osrdconf.vias.forEach((via, idx) => {
       markers.push(
         <Marker
           longitude={via.clickLngLat[0]}
@@ -48,6 +48,7 @@ export default function RenderItineraryMarkers() {
           key={nextId()}
         >
           <img src={viaSVG} alt="Destination" style={{ height: '1.5rem' }} />
+          <span className="osrd-conf-map-via-number">{idx + 1}</span>
         </Marker>,
       );
     });
