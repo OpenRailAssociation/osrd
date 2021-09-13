@@ -54,6 +54,36 @@ def WaypointTypeField():
     return models.IntegerField(choices=WaypointType.choices)
 
 
+class SignalingType(models.IntegerChoices):
+    BAL = 0
+    BAL_VB = 1
+    BAPR_DV = 2
+    BAPR_VB = 3
+    BM_VU = 4
+    BM_VU_SE = 5
+    BM_CV = 6
+    BM_U = 7
+    BM_AMU = 8
+    BM_NB = 9
+    BM_LU = 10
+    BM_LUS = 11
+    BM_SEUS = 12
+    CAPI = 13
+    CT_DV = 14
+    CT_VU = 15
+    TVM300 = 16
+    TVM430 = 18
+    ETCS_1 = 19
+    ETCS_2 = 20
+    ETCS_3 = 21
+    TRMW = 22
+    AUTRE = 23
+
+
+def SignalingTypeField():
+    return models.IntegerField(choices=SignalingType.choices)
+
+
 class Infra(models.Model):
     name = models.CharField(max_length=128)
     owner = models.UUIDField(
@@ -192,6 +222,17 @@ class TrackSectionCurveComponent(Component):
 
     class ComponentMeta:
         name = "curve"
+
+
+class TrackSectionSignalingTypeComponent(Component):
+    """A track section component that define a curve in a specific range"""
+
+    signaling_type = SignalingTypeField()
+    start_offset = models.FloatField()
+    end_offset = models.FloatField()
+
+    class ComponentMeta:
+        name = "signaling_type"
 
 
 class IdentifierComponent(Component):
@@ -386,6 +427,7 @@ class TrackSectionEntity(Entity):
         BelongsToTrackComponent,
         TrackSectionSlopeComponent,
         TrackSectionCurveComponent,
+        TrackSectionSignalingTypeComponent,
     ]
 
 
