@@ -6,7 +6,7 @@ celery==4.4.7
 django-redis==4.12.1
 
 --extra-index-url https://gitlab+deploy-token-215547:tneDsrg6in6tG_wM8N9B@gitlab.com/api/v4/projects/24487626/packages/pypi/simple
-service-core==0.0.23
+service-core==0.0.26
 
 Pillow==8.1.2
 jsonschema==3.2.0
