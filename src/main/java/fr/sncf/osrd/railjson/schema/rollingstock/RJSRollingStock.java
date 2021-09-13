@@ -1,10 +1,19 @@
 package fr.sncf.osrd.railjson.schema.rollingstock;
 
 import com.squareup.moshi.Json;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+
 import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 
 public class RJSRollingStock implements Identified {
+    public static final JsonAdapter<RJSRollingStock> adapter = new Moshi
+            .Builder()
+            .add(RJSRollingResistance.adapter)
+            .build()
+            .adapter(RJSRollingStock.class);
+
     /** An unique train identifier */
     public String id;
 

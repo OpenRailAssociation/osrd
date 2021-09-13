@@ -12,45 +12,25 @@ public final class JsonConfig {
             .failOnUnknown();
 
     @Json(name = "simulation_time_step")
-    public final float simulationTimeStep;
+    public float simulationTimeStep;
     @Json(name = "infra_type")
-    public final InfraType infraType;
+    public InfraType infraType;
     @Json(name = "infra_path")
-    public final String infraPath;
+    public String infraPath;
     @Json(name = "simulation_path")
-    public final String simulationPath;
+    public String simulationPath;
+    @Json(name = "extra_rolling_stock_dirs")
+    public String[] extraRollingStockDirs;
     @Json(name = "succession_path")
-    public final String successionPath;
+    public String successionPath;
     @Json(name = "show_viewer")
-    public final boolean showViewer;
+    public boolean showViewer;
     @Json(name = "realtime_viewer")
-    public final boolean realTimeViewer;
+    public boolean realTimeViewer;
     @Json(name = "change_replay_check")
-    public final boolean changeReplayCheck;
+    public boolean changeReplayCheck;
     @Json(name = "simulation_step_pause")
-    public final double simulationStepPause;
-
-    JsonConfig(
-            float simulationTimeStep,
-            InfraType infraType,
-            String infraPath,
-            String simulationPath,
-            String successionPath,
-            boolean showViewer,
-            boolean realTimeViewer,
-            boolean changeReplayCheck,
-            double simulationStepPause
-    ) {
-        this.simulationTimeStep = simulationTimeStep;
-        this.infraType = infraType;
-        this.infraPath = infraPath;
-        this.simulationPath = simulationPath;
-        this.successionPath = successionPath;
-        this.showViewer = showViewer;
-        this.realTimeViewer = realTimeViewer;
-        this.changeReplayCheck = changeReplayCheck;
-        this.simulationStepPause = simulationStepPause;
-    }
+    public double simulationStepPause;
 
     public enum InfraType {
         RAILML,
