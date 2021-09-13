@@ -151,6 +151,8 @@ export default function SpaceTimeChart() {
   const [rotate, setRotate] = useState(false);
   const [isResizeActive, setResizeActive] = useState(false);
   const [chart, setChart] = useState(undefined);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [yPosition, setYPosition] = useState(0);
   const [dataSimulation, setDataSimulation] = useState(createTrain(keyValues, simulation.trains));
   const [showModal, setShowModal] = useState('');
   const [dragOffset, setDragOffset] = useState(0);
@@ -192,7 +194,8 @@ export default function SpaceTimeChart() {
       });
       enableInteractivity(
         chartLocal, dataSimulation[selectedTrain], dispatch, keyValues,
-        LIST_VALUES_NAME_SPACE_TIME, rotate, setChart,
+        LIST_VALUES_NAME_SPACE_TIME, rotate,
+        setChart, setYPosition, setZoomLevel, yPosition, zoomLevel,
       );
       // findConflicts(chartLocal, dataSimulation, rotate);
       setChart(chartLocal);
@@ -248,6 +251,7 @@ export default function SpaceTimeChart() {
         onClick={() => toggleRotation(rotate, setRotate)}
       >
         <i className="icons-refresh" />
+        {yPosition}
       </button>
     </div>
   );

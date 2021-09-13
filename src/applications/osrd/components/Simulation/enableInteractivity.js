@@ -101,7 +101,8 @@ export const traceVerticalLine = (
 
 const enableInteractivity = (
   chart, dataSimulation, dispatch, keyValues,
-  listValues, rotate, setChart,
+  listValues, rotate,
+  setChart, setYPosition, setZoomLevel, yPosition, zoomLevel,
 ) => {
   let newHoverPosition;
 
@@ -109,12 +110,21 @@ const enableInteractivity = (
     .scaleExtent([0.5, 20]) // This control how much you can unzoom (x0.5) and zoom (x20)
     .extent([[0, 0], [chart.width, chart.height]])
     .on('zoom', () => {
-      const zoomFunctions = updateChart(chart, keyValues, rotate);
-      const newChart = { ...chart, x: zoomFunctions.newX, y: zoomFunctions.newY };
-      setChart(newChart);
-      updatePointers(
-        newChart, dataSimulation, newHoverPosition, keyValues, listValues, rotate,
-      );
+      // Permit zoom if shift pressed, if only move or if factor > .5
+      if ((d3.event.sourceEvent.shiftKey
+        || d3.event.transform.k >= 1
+        || zoomLevel >= 0.5)
+        && (chart.y.domain()[0] >= 0 || d3.event.transform.y >= 0 || d3.event.transform.k !== 1)) {
+        console.log(chart.y.domain()[0]);
+        setZoomLevel(zoomLevel * d3.event.transform.k);
+        setYPosition(yPosition + d3.event.transform.y);
+        const zoomFunctions = updateChart(chart, keyValues, rotate);
+        const newChart = { ...chart, x: zoomFunctions.newX, y: zoomFunctions.newY };
+        setChart(newChart);
+        updatePointers(
+          newChart, dataSimulation, newHoverPosition, keyValues, listValues, rotate,
+        );
+      }
     })
     .filter(() => d3.event.button === 0 || d3.event.button === 1)
     .on('end', () => dispatch(updateMustRedraw(true)));

@@ -38,6 +38,8 @@ export default function SpeedSpaceChart() {
   } = useSelector((state) => state.osrdsimulation);
   const [rotate, setRotate] = useState(false);
   const [chart, setChart] = useState(undefined);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [yPosition, setYPosition] = useState(0);
   const [isResizeActive, setResizeActive] = useState(false);
   const ref = useRef();
   const keyValues = ['space', 'value'];
@@ -85,7 +87,8 @@ export default function SpeedSpaceChart() {
       drawCurve(chartLocal, 'speed', dataSimulation, 'speedSpaceChart', 'curveLinear', keyValues, 'speed', rotate);
       enableInteractivity(
         chartLocal, dataSimulation, dispatch, keyValues,
-        LIST_VALUES_NAME_SPEED_SPACE, rotate, setChart,
+        LIST_VALUES_NAME_SPEED_SPACE, rotate,
+        setChart, setYPosition, setZoomLevel, yPosition, zoomLevel,
       );
       setChart(chartLocal);
       dispatch(updateMustRedraw(false));
