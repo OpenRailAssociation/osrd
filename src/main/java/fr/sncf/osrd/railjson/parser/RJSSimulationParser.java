@@ -10,14 +10,26 @@ import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class RJSSimulationParser {
-    /** Parse the description of a simulation */
+    /** Parse a simulation manifest, without any extra rolling stocks */
     public static List<TrainSchedule> parse(
             Infra infra,
             RJSSimulation rjsSimulation
     ) throws InvalidSchedule, InvalidRollingStock {
+        return parse(infra, rjsSimulation, new TreeMap<>());
+    }
+
+    /** Parse a simulation manifest */
+    public static List<TrainSchedule> parse(
+            Infra infra,
+            RJSSimulation rjsSimulation,
+            Map<String, RollingStock> extraRollingStocks
+    ) throws InvalidSchedule, InvalidRollingStock {
         var rollingStocks = new HashMap<String, RollingStock>();
+        rollingStocks.putAll(extraRollingStocks);
         for (var rjsRollingStock : rjsSimulation.rollingStocks) {
             var rollingStock = RJSRollingStockParser.parse(rjsRollingStock);
             rollingStocks.put(rollingStock.id, rollingStock);
