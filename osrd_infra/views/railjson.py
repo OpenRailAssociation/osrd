@@ -398,11 +398,13 @@ def fetch_and_map(entity_type, namespace, prefetch_related=None):
 
 
 def railjson_serialize_infra(infra):
+    return railjson_serialize_infra_namespace(infra.namespace)
+
+
+def railjson_serialize_infra_namespace(namespace):
     bench = Benchmarker()
 
     bench.step("caching entities")
-
-    namespace = infra.namespace
     cached_entities = {
         "signals": fetch_and_map(SignalEntity, namespace),
         "waypoints": fetch_and_map(WaypointEntity, namespace),
