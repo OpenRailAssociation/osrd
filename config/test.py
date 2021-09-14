@@ -33,3 +33,6 @@ ROOT_URLCONF = 'config.workspace_urls'
 INSTALLED_APPS.append("corsheaders")
 MIDDLEWARE.append('corsheaders.middleware.CorsMiddleware')
 CORS_ORIGIN_ALLOW_ALL = True
+
+CHARTIS_URL = getenv("CHARTIS_URL", "http://localhost:7000/chartis/")
+CHARTIS_TOKEN = getenv("CHARTIS_TOKEN", "")
