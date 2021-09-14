@@ -9,7 +9,8 @@ COPIED_KEYS_V1_TO_V2 = (
     "startup_time",
     "startup_acceleration",
     "comfort_acceleration",
-    "timetable_gamma",
+    "gamma",
+    "gamma_type",
     "inertia_coefficient",
     "features",
 )
