@@ -1,4 +1,5 @@
 import jsonschema
+from django.contrib.gis.geos import LineString, Point
 from django.core.validators import BaseValidator
 from rest_framework.exceptions import ValidationError
 from time import perf_counter
@@ -21,6 +22,40 @@ def geo_transform(gis_object):
 
 def reverse_format(object_id):
     return int(object_id.split(".")[1])
+
+
+def line_string_slice(line_string, begin_normalized, end_normalized):
+    if begin_normalized > end_normalized:
+        # Compute the line string from end to start then reverse the result
+        res = line_string_slice(line_string, end_normalized, begin_normalized)
+        res.reverse()
+        return res
+
+    positions = [begin_normalized]
+    for point in line_string.tuple:
+        projection = line_string.project_normalized(Point(point))
+        if projection <= begin_normalized:
+            continue
+        elif projection >= end_normalized:
+            break
+        positions.append(projection)
+    positions.append(end_normalized)
+    return [line_string.interpolate_normalized(pos) for pos in positions]
+
+
+def track_section_range_geom(range_component):
+    track_section = range_component.track_section
+    length = track_section.track_section.length
+    begin_normalized = range_component.start_offset / length
+    end_normalized = range_component.end_offset / length
+    geo = track_section.geo_line_location.geographic
+    sch = track_section.geo_line_location.schematic
+    res = []
+    for geom in (geo, sch):
+        sliced = line_string_slice(geo, begin_normalized, end_normalized)
+        sliced = LineString(sliced)
+        res.append(sliced)
+    return tuple(res)
 
 
 @dataclass

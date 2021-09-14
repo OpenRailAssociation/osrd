@@ -7,7 +7,7 @@ import requests
 from django.conf import settings
 from osrd_infra.views.railjson import format_track_section_id
 from rest_framework.response import Response
-from osrd_infra.utils import geo_transform, reverse_format
+from osrd_infra.utils import geo_transform, reverse_format, line_string_slice
 
 from osrd_infra.serializers import (
     PathSerializer,
@@ -92,25 +92,6 @@ def fetch_track_sections_from_payload(payload):
         for track in route["track_sections"]:
             ids.append(track["track_section"])
     return fetch_track_sections(ids)
-
-
-def line_string_slice(line_string, begin_normalized, end_normalized):
-    if begin_normalized > end_normalized:
-        # Compute the line string from end to start then reverse the result
-        res = line_string_slice(line_string, end_normalized, begin_normalized)
-        res.reverse()
-        return res
-
-    positions = [begin_normalized]
-    for point in line_string.tuple:
-        projection = line_string.project_normalized(Point(point))
-        if projection <= begin_normalized:
-            continue
-        elif projection >= end_normalized:
-            break
-        positions.append(projection)
-    positions.append(end_normalized)
-    return [line_string.interpolate_normalized(pos) for pos in positions]
 
 
 def get_geojson_path(payload, track_map):

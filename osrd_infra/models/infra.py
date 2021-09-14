@@ -491,6 +491,7 @@ class SpeedSectionPartComponent(Component):
 
     class ComponentMeta:
         name = "speed_section_part"
+        unique = True
 
 
 class SpeedSectionPartEntity(Entity):
