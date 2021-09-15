@@ -42,12 +42,12 @@ export default function SpeedSpaceChart() {
   const [yPosition, setYPosition] = useState(0);
   const [isResizeActive, setResizeActive] = useState(false);
   const ref = useRef();
-  const keyValues = ['space', 'value'];
+  const keyValues = ['position', 'speed'];
 
   // Prepare data
   const dataSimulation = {};
-  dataSimulation.speed = formatStepsWithSpace(3.6, simulation.trains[selectedTrain], 'speed');
-  dataSimulation.areaBlock = mergeDatasArea(dataSimulation.speed, undefined, keyValues);
+  dataSimulation.speeds = Array.from(simulation.trains[selectedTrain].speeds);
+  dataSimulation.areaBlock = mergeDatasArea(dataSimulation.speeds, undefined, keyValues);
   /* dataSimulation.emergency = expandAndFormatData(
     dataSimulation.speed, simulation.trains[selectedTrain].emergency,
   );
@@ -84,7 +84,8 @@ export default function SpeedSpaceChart() {
       chartLocal.drawZone.append('g').attr('id', 'speedSpaceChart').attr('class', 'chartTrain');
       drawAxisTitle(chartLocal, rotate);
       drawArea(chartLocal, 'area', dataSimulation, dispatch, 'speedSpaceChart', 'curveLinear', keyValues, 'areaBlock', rotate);
-      drawCurve(chartLocal, 'speed', dataSimulation, 'speedSpaceChart', 'curveLinear', keyValues, 'speed', rotate);
+      drawCurve(chartLocal, 'speed', dataSimulation.speeds, 'speedSpaceChart', 'curveLinear', keyValues, 'speed', rotate);
+
       enableInteractivity(
         chartLocal, dataSimulation, dispatch, keyValues,
         LIST_VALUES_NAME_SPEED_SPACE, rotate,
@@ -100,12 +101,12 @@ export default function SpeedSpaceChart() {
     handleWindowResize(CHART_ID, dispatch, drawTrain, isResizeActive, setResizeActive);
   }, [chart, mustRedraw, rotate]);
 
-  useEffect(() => {
+  /* useEffect(() => {
     traceVerticalLine(
       chart, dataSimulation, hoverPosition, keyValues,
-      LIST_VALUES_NAME_SPEED_SPACE, 'speed', rotate, timePosition,
+      LIST_VALUES_NAME_SPEED_SPACE, 'speeds', rotate, timePosition,
     );
-  }, [chart, hoverPosition, mustRedraw, timePosition]);
+  }, [chart, hoverPosition, mustRedraw, timePosition]); */
 
   return (
     <div id={`container-${CHART_ID}`} className="speedspace-chart w-100">

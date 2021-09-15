@@ -4,15 +4,14 @@ import React, {
 import { useSelector, useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import { sec2datetime, time2datetime } from 'utils/timeManipulation';
-import { gridX } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { getDirection, gridX } from 'applications/osrd/components/Helpers/ChartHelpers';
 import { updateChart, updateMustRedraw } from 'reducers/osrdsimulation';
 
 const drawTrains = (trains, selectedTrain, xScale, svg, height) => {
   trains.forEach((train, idx) => {
     const startTime = train.stops[0].time;
     const endTime = train.stops[train.stops.length - 1].time;
-    const direction = train.steps[0].head_position
-      < train.steps[train.steps.length - 1].head_position;
+    const direction = getDirection(train.head_positions);
 
     const y1 = direction ? height - 4 : 4;
     const y2 = direction ? 4 : height - 4;
@@ -36,8 +35,12 @@ export default function TimeLine() {
   const [svgState, setSvg] = useState(undefined);
 
   const dataRange = [
-    d3.min(simulation.trains, (trains) => d3.min(trains.steps, (steps) => steps.time)),
-    d3.max(simulation.trains, (trains) => d3.max(trains.steps, (steps) => steps.time)),
+    d3.min(simulation.trains, (train) => d3.min(
+      train.head_positions, (section) => d3.min(section, (step) => step.time),
+    )),
+    d3.max(simulation.trains, (train) => d3.max(
+      train.head_positions, (section) => d3.max(section, (step) => step.time),
+    )),
   ];
 
   const dimensions = {

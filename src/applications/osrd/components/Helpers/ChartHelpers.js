@@ -19,22 +19,25 @@ const offsetSeconds = (seconds) => {
   return seconds;
 };
 
+export const getDirection = (data) => data[0][0].position
+  < data[data.length - 1][
+    data[data.length - 1].length - 1].position;
+
 export const defineTime = (extent) => d3.scaleTime()
   .domain(extent);
 
 export const defineLinear = (max, pctMarge = 0) => d3.scaleLinear()
   .domain([0 - (max * pctMarge), max + (max * pctMarge)]);
 
-export const formatStepsWithTime = (train, valueName) => train.steps
-  .map((step) => ({ time: sec2d3datetime(step.time), value: step[valueName] }));
+export const formatStepsWithTimeMulti = (data) => data.map(
+  (section) => section.map(
+    (step) => ({ time: sec2d3datetime(step.time), position: step.position }),
+  ),
+);
 
-export const formatStepsWithSpace = (
-  multiplier, train, valueName,
-) => train.steps
-  .map((step) => ({ space: step.head_position, value: step[valueName] * multiplier }));
+export const formatStepsWithTime = (data) => data
+  .map((step) => ({ time: sec2d3datetime(step.time), position: step.position }));
 
-export const formatData = (trains, trainNumber, dataName) => trains[trainNumber][dataName]
-  .map((step) => ({ space: step.space, value: step.speed }));
 
 export const handleWindowResize = (
   chartID, dispatch, drawTrain, isResizeActive, setResizeActive,
@@ -85,9 +88,9 @@ export const mergeDatasArea = (data1, data2, keyValues) => data1.map(
 // Transform little arrays of data (staircases values like emergency or indication)
 // along all steps values
 export const expandAndFormatData = (reference, dataToExpand) => reference.map((step) => {
-  const idx = dataToExpand.findIndex((item) => item.space >= step.space);
+  const idx = dataToExpand.findIndex((item) => item.position >= step.position);
   return {
-    space: step.space,
+    position: step.position,
     value: (
       (dataToExpand[idx - 1] !== undefined)
         ? dataToExpand[idx - 1].speed
@@ -109,3 +112,26 @@ export const gridY = (y, width) => (
     .tickSize(-width)
     .tickFormat('')
 );
+
+export const interpolator = (dataSimulation, keyValues, listValues, timePositionLocal) => {
+  const bisect = d3.bisector((d) => d[keyValues[0]]).left;
+  const positionInterpolated = {};
+  listValues.forEach((listValue) => {
+    let bisection;
+    dataSimulation[listValue].forEach((section) => {
+      const index = bisect(section, timePositionLocal, 1);
+      if (index !== section.length) {
+        bisection = [section[index - 1], section[index]];
+      }
+    });
+    if (bisection[1]) {
+      const duration = bisection[1].time - bisection[0].time;
+      const timePositionFromTime = timePositionLocal - bisection[0].time;
+      const proportion = timePositionFromTime / duration;
+      positionInterpolated[listValue] = d3.interpolateNumber(
+        bisection[0].position, bisection[1].position,
+      )(proportion);
+    }
+  });
+  return positionInterpolated;
+};

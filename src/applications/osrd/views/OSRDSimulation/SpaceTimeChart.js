@@ -5,8 +5,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simulation/consts';
 import {
-  defineLinear, defineTime, formatStepsWithTime,
-  handleWindowResize, mergeDatasArea, timeShiftTrain, timeShiftStops,
+  defineLinear, defineTime, formatStepsWithTime, formatStepsWithTimeMulti,
+  getDirection, handleWindowResize, mergeDatasArea, timeShiftTrain, timeShiftStops,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
 import {
   updateChart, updateMustRedraw, updateSimulation, updateSelectedTrain,
@@ -35,22 +35,22 @@ const createChart = (chart, dataSimulation, keyValues, ref, rotate) => {
   d3.select(`#${CHART_ID}`).remove();
 
   const dataSimulationTime = d3.extent([].concat(...dataSimulation.map(
-    (train) => d3.extent(train.headPosition, (d) => d[keyValues[0]]),
+    (train) => d3.extent(train.routeBeginOccupancy, (d) => d[keyValues[0]]),
   )));
 
   const dataSimulationLinearMax = d3.max([
     d3.max([].concat(...dataSimulation.map(
-      (train) => d3.max(train.endBlockOccupancy.map((step) => step[keyValues[1]])),
+      (train) => d3.max(train.routeEndOccupancy.map((step) => step[keyValues[1]])),
     ))),
     d3.max([].concat(...dataSimulation.map(
-      (train) => d3.max(train.startBlockOccupancy.map((step) => step[keyValues[1]])),
+      (train) => d3.max(train.routeBeginOccupancy.map((step) => step[keyValues[1]])),
     ))),
-    d3.max([].concat(...dataSimulation.map(
+    /* d3.max([].concat(...dataSimulation.map(
       (train) => d3.max(train.headPosition.map((step) => step[keyValues[1]])),
     ))),
     d3.max([].concat(...dataSimulation.map(
       (train) => d3.max(train.tailPosition.map((step) => step[keyValues[1]])),
-    ))),
+    ))), */
   ]);
 
   const defineX = (chart === undefined)
@@ -102,24 +102,27 @@ const drawTrain = (
     .call(drag);
 
   // Test direction to avoid displaying block
-  const direction = dataSimulation.tailPosition[0].value
-    < dataSimulation.tailPosition[dataSimulation.tailPosition.length - 1].value;
+  const direction = getDirection(dataSimulation.headPosition);
 
   if (direction) {
     drawArea(
       chart, `${isSelected ? 'selected' : ''} area`, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
       'areaBlock', rotate,
     );
-    drawCurve(chart, `${isSelected ? 'selected' : ''} end-block`, dataSimulation, groupID,
-      'curveStepAfter', keyValues, 'endBlockOccupancy', rotate, isSelected);
-    drawCurve(chart, `${isSelected ? 'selected' : ''} start-block`, dataSimulation, groupID,
-      'curveStepAfter', keyValues, 'startBlockOccupancy', rotate, isSelected);
+    drawCurve(chart, `${isSelected ? 'selected' : ''} end-block`, dataSimulation.routeEndOccupancy, groupID,
+      'curveStepAfter', keyValues, 'routeEndOccupancy', rotate, isSelected);
+    drawCurve(chart, `${isSelected ? 'selected' : ''} start-block`, dataSimulation.routeBeginOccupancy, groupID,
+      'curveStepAfter', keyValues, 'routeBeginOccupancy', rotate, isSelected);
   }
 
-  drawCurve(chart, `${isSelected ? 'selected' : ''} tail`, dataSimulation, groupID,
-    'curveLinear', keyValues, 'tailPosition', rotate, isSelected);
-  drawCurve(chart, `${isSelected ? 'selected' : ''} head`, dataSimulation, groupID,
-    'curveLinear', keyValues, 'headPosition', rotate, isSelected);
+  dataSimulation.tailPosition.forEach((tailPositionSection) => drawCurve(
+    chart, `${isSelected ? 'selected' : ''} tail`, tailPositionSection, groupID,
+    'curveLinear', keyValues, 'tailPosition', rotate, isSelected,
+  ));
+  dataSimulation.headPosition.forEach((headPositionSection) => drawCurve(
+    chart, `${isSelected ? 'selected' : ''} head`, headPositionSection, groupID,
+    'curveLinear', keyValues, 'headPosition', rotate, isSelected,
+  ));
   drawText(chart, groupID, dataSimulation);
 };
 
@@ -129,12 +132,12 @@ const createTrain = (keyValues, simulationTrains) => {
     const dataSimulationTrain = {};
     dataSimulationTrain.name = train.name;
     dataSimulationTrain.trainNumber = trainNumber;
-    dataSimulationTrain.headPosition = formatStepsWithTime(train, 'head_position');
-    dataSimulationTrain.tailPosition = formatStepsWithTime(train, 'tail_position');
-    dataSimulationTrain.endBlockOccupancy = formatStepsWithTime(train, 'end_block_occupancy');
-    dataSimulationTrain.startBlockOccupancy = formatStepsWithTime(train, 'start_block_occupancy');
+    dataSimulationTrain.headPosition = formatStepsWithTimeMulti(train.head_positions);
+    dataSimulationTrain.tailPosition = formatStepsWithTimeMulti(train.tail_positions);
+    dataSimulationTrain.routeEndOccupancy = formatStepsWithTime(train.route_end_occupancy);
+    dataSimulationTrain.routeBeginOccupancy = formatStepsWithTime(train.route_begin_occupancy);
     dataSimulationTrain.areaBlock = mergeDatasArea(
-      dataSimulationTrain.endBlockOccupancy, dataSimulationTrain.startBlockOccupancy, keyValues,
+      dataSimulationTrain.routeEndOccupancy, dataSimulationTrain.routeBeginOccupancy, keyValues,
     );
     return dataSimulationTrain;
   });
@@ -145,9 +148,9 @@ export default function SpaceTimeChart() {
   const ref = useRef();
   const dispatch = useDispatch();
   const {
-    hoverPosition, mustRedraw, selectedTrain, simulation, timePosition,
+    hoverPosition, mustRedraw, positionValues, selectedTrain, simulation, timePosition,
   } = useSelector((state) => state.osrdsimulation);
-  const keyValues = ['time', 'value'];
+  const keyValues = ['time', 'position'];
   const [rotate, setRotate] = useState(false);
   const [isResizeActive, setResizeActive] = useState(false);
   const [chart, setChart] = useState(undefined);
@@ -209,7 +212,9 @@ export default function SpaceTimeChart() {
   }, []);
 
   useEffect(() => {
-    offsetTimeByDragging(dragOffset);
+    if (dragOffset !== 0) {
+      offsetTimeByDragging(dragOffset);
+    }
   }, [dragOffset]);
 
   useEffect(() => {
@@ -251,7 +256,7 @@ export default function SpaceTimeChart() {
         onClick={() => toggleRotation(rotate, setRotate)}
       >
         <i className="icons-refresh" />
-        {yPosition}
+        {positionValues.headPosition}
       </button>
     </div>
   );

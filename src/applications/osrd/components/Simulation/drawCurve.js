@@ -7,7 +7,7 @@ const drawCurve = (
   const drawZone = chart.drawZone.select(`#${groupID}`);
   drawZone.append('path')
     .attr('class', `line zoomable ${classes}`)
-    .datum(dataSimulation[name])
+    .datum(dataSimulation)
     .attr('fill', 'none')
     .attr('stroke-width', 1)
     .attr('d', d3.line()

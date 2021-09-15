@@ -1,7 +1,9 @@
 import * as d3 from 'd3';
 import drawGuideLines from 'applications/osrd/components/Simulation/drawGuideLines';
-import { gridX, gridY } from 'applications/osrd/components/Helpers/ChartHelpers';
-import { updateHoverPosition, updateMustRedraw, updateTimePosition } from 'reducers/osrdsimulation';
+import { gridX, gridY, interpolator } from 'applications/osrd/components/Helpers/ChartHelpers';
+import {
+  updateHoverPosition, updateMustRedraw, updatePositionValues, updateTimePosition,
+} from 'reducers/osrdsimulation';
 import { time2datetime } from 'utils/timeManipulation';
 
 export const displayGuide = (chart, opacity) => {
@@ -121,9 +123,9 @@ const enableInteractivity = (
         const zoomFunctions = updateChart(chart, keyValues, rotate);
         const newChart = { ...chart, x: zoomFunctions.newX, y: zoomFunctions.newY };
         setChart(newChart);
-        updatePointers(
+        /* updatePointers(
           newChart, dataSimulation, newHoverPosition, keyValues, listValues, rotate,
-        );
+        ); */
       }
     })
     .filter(() => d3.event.button === 0 || d3.event.button === 1)
@@ -131,13 +133,16 @@ const enableInteractivity = (
 
   const mousemove = () => {
     // recover coordinate we need
-    const valuePosition = rotate
+    const timePositionLocal = rotate
       ? chart.y.invert(d3.mouse(d3.event.currentTarget)[1])
       : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
-    const bisect = d3.bisector((d) => d[keyValues[0]]).left;
-    newHoverPosition = bisect(dataSimulation[listValues[0]], valuePosition, 1);
+
+    dispatch(updatePositionValues(
+      interpolator(dataSimulation, keyValues, listValues, timePositionLocal),
+    ));
+
     if (keyValues[0] === 'time') {
-      dispatch(updateTimePosition(valuePosition.toLocaleTimeString('fr-FR')));
+      dispatch(updateTimePosition(timePositionLocal.toLocaleTimeString('fr-FR')));
     }
 
     // Update guideLines
@@ -148,7 +153,7 @@ const enableInteractivity = (
       .attr('y1', d3.mouse(d3.event.currentTarget)[1])
       .attr('y2', d3.mouse(d3.event.currentTarget)[1]);
 
-    dispatch(updateHoverPosition(newHoverPosition));
+    // dispatch(updateHoverPosition(newHoverPosition));
   };
 
   chart.svg // .selectAll('.zoomable')

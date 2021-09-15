@@ -59,16 +59,17 @@ const OSRDSimulation = () => {
       if (timetable.train_schedules.length > 0) { setIsEmpty(false); }
       const trainSchedulesIDs = timetable.train_schedules.map((train) => train.id);
       try {
-        const simulationLocal = await get(
+        /* const simulationLocal = await get(
           `${trainscheduleURI}results`,
           { train_ids: trainSchedulesIDs.join(',') },
-        );
-        console.log(simulationLocal);
-        setWaitingMessage(t('simulation:simplify'));
-        simulationLocal.sort((a, b) => a.stops[0].time > b.stops[0].time);
-        dispatch(updateSimulation({
+        ); */
+        const simulationLocal = await get(`${trainscheduleURI}${trainSchedulesIDs[0]}/result/`);
+        // setWaitingMessage(t('simulation:simplify'));
+        // simulationLocal.sort((a, b) => a.stops[0].time > b.stops[0].time);
+        /* dispatch(updateSimulation({
           trains: simplifyData(simulationLocal, SIMPLIFICATION_FACTOR),
-        }));
+        })); */
+        dispatch(updateSimulation({ trains: [simulationLocal] }));
       } catch (e) {
         dispatch(setFailure({
           name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
@@ -101,14 +102,14 @@ const OSRDSimulation = () => {
   };
 
   useEffect(() => {
-    if (simulation.trains[selectedTrain]
+    /* if (simulation.trains[selectedTrain]
       && simulation.trains[selectedTrain].steps[hoverPosition]) {
       dispatch(
         updateTimePosition(
           sec2time(simulation.trains[selectedTrain].steps[hoverPosition].time),
         ),
       );
-    }
+    } */
   }, [hoverPosition, selectedTrain]);
 
   useEffect(() => {
@@ -167,7 +168,7 @@ const OSRDSimulation = () => {
                   </div>
                 </div>
               )}
-              <div className="osrd-simulation-container mb-2">
+              {/* <div className="osrd-simulation-container mb-2">
                 <div className="row">
                   <div className="col-md-4">
                     <TimeButtons />
@@ -178,13 +179,13 @@ const OSRDSimulation = () => {
                     ) : null}
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className="mb-2">
                 {simulation.trains.length > 0 ? (
                   <SpeedSpaceChart />
                 ) : null}
               </div>
-              <div className="row">
+              {/* <div className="row">
                 <div className="col-md-6">
                   <div className="osrd-simulation-container mb-2">
                     {simulation.trains.length > 0 ? (
@@ -198,7 +199,7 @@ const OSRDSimulation = () => {
                   </div>
                 </div>
               </div>
-              <ButtonFullscreen />
+              <ButtonFullscreen /> */}
             </div>
           )}
       </main>

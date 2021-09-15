@@ -5,6 +5,7 @@ import produce from 'immer';
 export const UPDATE_CHART = 'osrdsimu/UPDATE_CHART';
 export const UPDATE_HOVER_POSITION = 'osrdsimu/UPDATE_HOVER_POSITION';
 export const UPDATE_MUST_REDRAW = 'osrdsimu/UPDATE_MUST_REDRAW';
+export const UPDATE_POSITION_VALUES = 'osrdsimu/UPDATE_POSITION_VALUES';
 export const UPDATE_SELECTED_TRAIN = 'osrdsimu/UPDATE_SELECTED_TRAIN';
 export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
 export const UPDATE_TIME_POSITION = 'osrdsimu/UPDATE_TIME_POSITION';
@@ -14,6 +15,12 @@ export const initialState = {
   chart: undefined,
   hoverPosition: undefined,
   mustRedraw: true,
+  positionValues: {
+    headPosition: 0,
+    tailPosition: 0,
+    routeEndOccupancy: 0,
+    routeBeginOccupancy: 0,
+  },
   selectedTrain: 0,
   simulation: {
     trains: [],
@@ -32,6 +39,9 @@ export default function reducer(state = initialState, action) {
         break;
       case UPDATE_MUST_REDRAW:
         draft.mustRedraw = action.mustRedraw;
+        break;
+      case UPDATE_POSITION_VALUES:
+        draft.positionValues = action.positionValues;
         break;
       case UPDATE_SELECTED_TRAIN:
         draft.selectedTrain = action.selectedTrain;
@@ -68,6 +78,14 @@ export function updateMustRedraw(mustRedraw) {
     dispatch({
       type: UPDATE_MUST_REDRAW,
       mustRedraw,
+    });
+  };
+}
+export function updatePositionValues(positionValues) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_POSITION_VALUES,
+      positionValues,
     });
   };
 }
