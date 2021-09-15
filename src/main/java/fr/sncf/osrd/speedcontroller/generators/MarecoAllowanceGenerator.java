@@ -7,12 +7,9 @@ import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarecoAllowance.MarginType;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.speedcontroller.*;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.simulation.Simulation;
-import fr.sncf.osrd.speedcontroller.CoastingSpeedController;
-import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
-import fr.sncf.osrd.speedcontroller.MaxSpeedController;
-import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.train.Action;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator;
@@ -143,9 +140,9 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         var res = new ArrayList<Double>();
         var rollingStock = schedule.rollingStock;
         double vf = vf(v1);
-        var limitAnnounceSpeedControllers = findLimitSpeedAnnouncers(maxSpeedControllers);
 
         // coasting before deceleration phases
+        var limitAnnounceSpeedControllers = findLimitSpeedAnnouncers(maxSpeedControllers);
         for (var announcer : limitAnnounceSpeedControllers) {
             // if that LimitAnnounceSpeedController is above v1 that means it will not have an impact here
             if (announcer.targetSpeedLimit > v1)
@@ -157,10 +154,32 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             }
             // deceleration phases that cross vf
             double targetSpeed = announcer.targetSpeedLimit;
-            var requiredBrakingDistance = Double.max(0,
+            // From vf to targetSpeedLimit
+            double requiredBrakingDistance = Double.max(0,
+                    vf * vf - targetSpeed * targetSpeed) / (2 * schedule.rollingStock.gamma);
+            res.add(announcer.endPosition - requiredBrakingDistance);
+        }
+
+        var brakingSpeedControllers = findBrakingSpeedControllers(maxSpeedControllers);
+        for (var announcer : brakingSpeedControllers) {
+            // if that BrakingSpeedController is above v1 that means it will not have an impact here
+            var targetSpeedLimit = announcer.speeds.lastEntry().getValue();
+            if (targetSpeedLimit > v1)
+                continue;
+            // deceleration phases that are entirely above vf
+            if (targetSpeedLimit > vf) {
+                res.add(announcer.endPosition);
+                continue;
+            }
+            // deceleration phases that cross vf
+            double targetSpeed = targetSpeedLimit;
+            // From vf to targetSpeedLimit
+            double requiredBrakingDistance;
+            requiredBrakingDistance = Double.max(0,
                     computeBrakingDistance(announcer.beginPosition, announcer.endPosition, vf, targetSpeed, schedule));
             res.add(announcer.endPosition - requiredBrakingDistance);
         }
+
         // coasting before accelerating slopes
         var acceleratingSlopes = findAcceleratingSlopes(speeds, rollingStock, vf);
         double wle = rollingStock.rollingResistance(v1) * v1 * vf / (v1 - vf);
@@ -238,6 +257,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             speed = update.speed;
             if (speed == 0)
                 return null;
+            //TODO: We can now just call updatePosition with a negative delta
             location.updatePosition(schedule.rollingStock.length, update.positionDelta);
 
         } while (speed < speeds.interpolate(location.getPathPosition()));
@@ -249,6 +269,15 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         for (var c : controllers) {
             if (c instanceof LimitAnnounceSpeedController)
                 res.add((LimitAnnounceSpeedController) c);
+        }
+        return res;
+    }
+
+    private Set<BrakingSpeedController> findBrakingSpeedControllers(Set<SpeedController> controllers) {
+        var res = new HashSet<BrakingSpeedController>();
+        for (var c : controllers) {
+            if (c instanceof BrakingSpeedController)
+                res.add((BrakingSpeedController) c);
         }
         return res;
     }
@@ -268,5 +297,18 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
                 currentSpeedControllers.add(controller);
         }
         return currentSpeedControllers;
+    }
+
+    @Override
+    protected double computeBrakingDistance(double initialPosition,
+                                            double endPosition,
+                                            double initialSpeed,
+                                            double targetSpeed,
+                                            TrainSchedule schedule) {
+        if (schedule.rollingStock.gammaType == RollingStock.GammaType.CONST)
+            return (initialSpeed * initialSpeed - targetSpeed * targetSpeed) / (2 * schedule.rollingStock.gamma);
+
+        var res = getExpectedSpeedsBackwards(sim, schedule, targetSpeed, endPosition, initialSpeed, TIME_STEP);
+        return res.lastKey() - res.firstKey();
     }
 }
