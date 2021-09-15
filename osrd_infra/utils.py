@@ -43,11 +43,10 @@ def line_string_slice(line_string, begin_normalized, end_normalized):
     return [line_string.interpolate_normalized(pos) for pos in positions]
 
 
-def track_section_range_geom(range_component):
-    track_section = range_component.track_section
+def track_section_range_geom(track_section, start_offset, end_offset):
     length = track_section.track_section.length
-    begin_normalized = range_component.start_offset / length
-    end_normalized = range_component.end_offset / length
+    begin_normalized = start_offset / length
+    end_normalized = end_offset / length
     geo = track_section.geo_line_location.geographic
     sch = track_section.geo_line_location.schematic
     res = []

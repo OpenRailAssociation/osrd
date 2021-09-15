@@ -2,17 +2,19 @@ from typing import Type
 from .layer_creator import LayerCreator
 
 from osrd_infra.serializers import serialize_components
+from osrd_infra.utils import track_section_range_geom
 
 from osrd_infra.models import (
-    Infra,
-    fetch_entities,
-    TrackSectionEntity,
-    SignalEntity,
-    SpeedSectionPartEntity,
     Entity,
+    GeoAreaLocationComponent,
     GeoLineLocationComponent,
     GeoPointLocationComponent,
-    GeoAreaLocationComponent,
+    Infra,
+    SignalEntity,
+    SignalingType,
+    SpeedSectionPartEntity,
+    TrackSectionEntity,
+    fetch_entities,
 )
 
 
@@ -20,6 +22,7 @@ def generate_layers(infra: Infra):
     generate_ecs_layer(infra, TrackSectionEntity)
     generate_ecs_layer(infra, SignalEntity)
     generate_speed_layer(infra)
+    generate_signaling_type_layer(infra)
 
 
 def get_geo_attribute_name(entity_type: Type[Entity]):
@@ -71,3 +74,19 @@ def generate_speed_layer(infra: Infra):
             speed = speed_section.speed_section_part.speed_section.speed_section.speed
             layer_object.add_metadata("speed", speed)
             layer_object.add_metadata("entity_id", speed_section.entity_id)
+
+
+def generate_signaling_type_layer(infra: Infra):
+    with LayerCreator("signaling_type", infra.id) as creator:
+        for ts in fetch_entities(TrackSectionEntity, infra.namespace):
+            for signaling_type in ts.signaling_type_set.all():
+                # Get geometry of the object
+                geo, sch = track_section_range_geom(
+                    ts, signaling_type.start_offset, signaling_type.end_offset
+                )
+
+                # Add entity to layer
+                layer_object = creator.create_object(geo, sch)
+                s_type = SignalingType(signaling_type.signaling_type).name
+                layer_object.add_metadata("signaling_type", s_type)
+                layer_object.add_metadata("component_id", signaling_type.component_id)
