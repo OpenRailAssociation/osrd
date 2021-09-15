@@ -15,7 +15,6 @@ from osrd_infra.models import (
     SpeedSectionEntity,
     SpeedSectionPartEntity,
     SwitchEntity,
-    SwitchPosition,
     TVDSectionEntity,
     TrackSectionEntity,
     TrackSectionLinkEntity,

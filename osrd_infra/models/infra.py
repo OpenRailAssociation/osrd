@@ -36,13 +36,8 @@ def EdgeDirectionField():
     return models.IntegerField(choices=EdgeDirection.choices)
 
 
-class SwitchPosition(models.IntegerChoices):
-    LEFT = 0
-    RIGHT = 1
-
-
 def SwitchPositionField():
-    return models.IntegerField(choices=SwitchPosition.choices)
+    return models.IntegerField()
 
 
 class WaypointType(models.IntegerChoices):
@@ -280,16 +275,7 @@ class TrackSectionLinkComponent(Component):
 
 
 class SwitchComponent(Component):
-    left = models.ForeignKey(
-        "TrackSectionLinkEntity",
-        on_delete=models.CASCADE,
-        related_name="left_switch",
-    )
-    right = models.ForeignKey(
-        "TrackSectionLinkEntity",
-        on_delete=models.CASCADE,
-        related_name="right_switch",
-    )
+    links = models.JSONField(default=list)
 
     class ComponentMeta:
         name = "switch"
