@@ -87,7 +87,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
                         endBrakingPosition,
                         schedule.rollingStock.gamma);
             } else {
-                //TODO: optimise this calculation is done twice
+                //TODO: optimise, this calculation is done twice
                 var updatesMap = getUpdatesAtPositionsToTarget(sim, schedule,
                         initialPosition, initialSpeed, endBrakingPosition, initialSpeed * scaleFactor);
                 var speeds = new SortedDoubleMap();
@@ -115,7 +115,6 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
             var action = integrator.actionToTargetSpeed(directive, schedule.rollingStock, -1);
             var update = integrator.computeUpdate(action, location.getPathPosition(), -1);
             speed = update.speed;
-            //TODO: We can now just call updatePosition with a negative delta
             location.updatePosition(schedule.rollingStock.length, update.positionDelta);
         }
 

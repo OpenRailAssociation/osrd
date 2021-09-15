@@ -257,7 +257,6 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             speed = update.speed;
             if (speed == 0)
                 return null;
-            //TODO: We can now just call updatePosition with a negative delta
             location.updatePosition(schedule.rollingStock.length, update.positionDelta);
 
         } while (speed < speeds.interpolate(location.getPathPosition()));
