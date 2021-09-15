@@ -1,21 +1,14 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
-import static java.lang.Math.min;
 
-import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.train.Action;
-import fr.sncf.osrd.train.TrainPhysicsIntegrator;
-import fr.sncf.osrd.train.TrainPhysicsIntegrator.PositionUpdate;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.utils.SortedDoubleMap;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.NavigableMap;
 import java.util.Set;
-import java.util.TreeMap;
 
 /** Generates a set of speed controller using a generic dichotomy */
 public abstract class DichotomyControllerGenerator extends SpeedControllerGenerator {
@@ -74,6 +67,10 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     protected abstract Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
                                                                 double value, double begin, double end);
 
+    /** compute the braking distance from initialSpeed to a given target speed */
+    protected abstract double computeBrakingDistance(double initialPosition, double endPosition,
+                                         double initialSpeed, double targetSpeed, TrainSchedule schedule);
+
     /** Runs the dichotomy */
     private Set<SpeedController> binarySearch(Simulation sim, TrainSchedule schedule) {
         var lowerBound = getFirstLowEstimate();
@@ -115,53 +112,5 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         } catch (FileNotFoundException | UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-    }
-
-    /** compute the braking distance from (initialPosition, initialSpeed) to a given target speed */
-    public double computeBrakingDistance(double initialPosition, double endPosition,
-                                          double initialSpeed, double targetSpeed, TrainSchedule schedule) {
-
-        if (schedule.rollingStock.gammaType == RollingStock.GammaType.CONST)
-            return (initialSpeed * initialSpeed - targetSpeed * targetSpeed) / (2 * schedule.rollingStock.gamma);
-
-        var res = getUpdatesAtPositionsToTarget(sim, schedule,
-                initialPosition, initialSpeed, endPosition, targetSpeed);
-        return res.lastKey() - res.firstKey();
-    }
-
-    private NavigableMap<Double, PositionUpdate> getUpdatesAtPositionsToTarget(Simulation sim,
-                                                                               TrainSchedule schedule,
-                                                                               double initialPosition,
-                                                                               double initialSpeed,
-                                                                               double endPosition,
-                                                                               double targetSpeed) {
-
-        var res = new TreeMap<Double, TrainPhysicsIntegrator.PositionUpdate>();
-        var stopIndex = 0;
-        var location = convertPosition(schedule, sim, initialPosition);
-        var totalLength = 0.;
-        for (var range : schedule.plannedPath.trackSectionPath)
-            totalLength += range.length();
-        totalLength = min(totalLength, endPosition);
-        double speed = initialSpeed;
-
-        do {
-            var integrator = TrainPhysicsIntegrator.make(TIME_STEP, schedule.rollingStock,
-                    speed, location.meanTrainGrade());
-            var inertia = schedule.rollingStock.mass * schedule.rollingStock.inertiaCoefficient;
-            var action = Action.brake(schedule.rollingStock.gamma * inertia);
-            var distanceLeft = min(totalLength - location.getPathPosition(), endPosition - location.getPathPosition());
-            var update = integrator.computeUpdate(action, distanceLeft);
-            speed = update.speed;
-
-            location.updatePosition(schedule.rollingStock.length, update.positionDelta);
-            res.put(location.getPathPosition(), update);
-            if (speed <= 0) {
-                stopIndex++;
-                if (stopIndex >= schedule.stops.size())
-                    break;
-            }
-        } while (speed > targetSpeed && location.getPathPosition() + TIME_STEP * speed < totalLength);
-        return res;
     }
 }

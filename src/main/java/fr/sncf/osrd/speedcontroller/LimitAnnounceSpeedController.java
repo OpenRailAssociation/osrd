@@ -10,7 +10,7 @@ public final class LimitAnnounceSpeedController extends StopSpeedController {
     public final double gamma;
 
     /** Creates a speed controller meant to slow down the train before a speed limit. */
-    public LimitAnnounceSpeedController(
+    public  LimitAnnounceSpeedController(
             double targetSpeedLimit,
             double startPosition,
             double endPosition,
