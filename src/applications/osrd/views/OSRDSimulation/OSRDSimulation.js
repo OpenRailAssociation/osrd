@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { get, post } from 'common/requests';
+import { get } from 'common/requests';
 import { setFailure } from 'reducers/main.ts';
 import { FlyToInterpolator } from 'react-map-gl';
 import ButtonFullscreen from 'common/ButtonFullscreen';
@@ -22,8 +22,8 @@ import { simplifyData } from 'applications/osrd/components/Helpers/ChartHelpers'
 import './OSRDSimulation.scss';
 import { sec2time } from 'utils/timeManipulation';
 
-const timetableURI = '/timetable';
-const trainscheduleURI = '/train_schedule';
+const timetableURI = '/timetable/';
+const trainscheduleURI = '/train_schedule/';
 
 const SIMPLIFICATION_FACTOR = 10; // Division of steps
 
@@ -53,15 +53,17 @@ const OSRDSimulation = () => {
 
   const getTimetable = async () => {
     try {
-      let simulationLocal = [];
       dispatch(updateSelectedTrain(0));
       dispatch(updateSimulation({ trains: [] }));
-      const timetable = await get(`${timetableURI}/${timetableID}`);
+      const timetable = await get(`${timetableURI}${timetableID}/`);
       if (timetable.train_schedules.length > 0) { setIsEmpty(false); }
       const trainSchedulesIDs = timetable.train_schedules.map((train) => train.id);
       try {
-        const trainsResult = await post(`${trainscheduleURI}/results/`, trainSchedulesIDs);
-        simulationLocal = trainsResult;
+        const simulationLocal = await get(
+          `${trainscheduleURI}results`,
+          { train_ids: trainSchedulesIDs.join(',') },
+        );
+        console.log(simulationLocal);
         setWaitingMessage(t('simulation:simplify'));
         simulationLocal.sort((a, b) => a.stops[0].time > b.stops[0].time);
         dispatch(updateSimulation({

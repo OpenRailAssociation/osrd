@@ -12,7 +12,7 @@ import bbox from '@turf/bbox';
 import { WebMercatorViewport } from 'react-map-gl';
 import DisplayItinerary from 'applications/osrd/components/Itinerary/DisplayItinerary';
 
-const itineraryURI = '/pathfinding';
+const itineraryURI = '/pathfinding/';
 
 // Obtain only asked vias
 const convertPathfindingVias = (steps) => {
@@ -130,13 +130,13 @@ const Itinerary = (props) => {
         }],
       });
 
+      console.log(params);
       try {
         const itineraryCreated = await post(itineraryURI, params, {}, true);
         correctWaypointsGPS(itineraryCreated);
         dispatch(updateItinerary(itineraryCreated.geographic));
         dispatch(updatePathfindingID(itineraryCreated.id));
         if (zoom) zoomToFeature(bbox(itineraryCreated.geographic));
-        console.log(params);
         console.log(itineraryCreated);
       } catch (e) {
         dispatch(setFailure({

@@ -10,8 +10,8 @@ import icon from 'assets/pictures/timetable.svg';
 import { sec2time } from 'utils/timeManipulation';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 
-const timetableURL = '/timetable';
-const scheduleURL = '/train_schedule';
+const timetableURL = '/timetable/';
+const scheduleURL = '/train_schedule/';
 
 export default function TimetableSelector(props) {
   const { mustUpdateTimetable } = props;
@@ -23,7 +23,7 @@ export default function TimetableSelector(props) {
 
   const getTimetable = async (id) => {
     try {
-      const timetableQuery = await get(`${timetableURL}/${id}`, {});
+      const timetableQuery = await get(`${timetableURL}${id}/`, {});
       timetableQuery.train_schedules.sort((a, b) => a.departure_time > b.departure_time);
       setselectedTimetable(timetableQuery);
       setTrainList(timetableQuery.train_schedules);
@@ -37,7 +37,7 @@ export default function TimetableSelector(props) {
   };
 
   const deleteTrainSchedule = async (id) => {
-    await deleteRequest(`${scheduleURL}/${id}`);
+    await deleteRequest(`${scheduleURL}${id}/`);
     getTimetable(timetableID);
   };
 

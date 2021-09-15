@@ -11,7 +11,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { setSuccess, setFailure } from 'reducers/main.ts';
 import icon from 'assets/pictures/timetable.svg';
 
-const timetableURL = '/timetable';
+const timetableURL = '/timetable/';
 
 export default function TimetableSelectorModal() {
   const dispatch = useDispatch();
@@ -39,7 +39,7 @@ export default function TimetableSelectorModal() {
 
   const deleteTimetable = async (timetable) => {
     try {
-      await deleteRequest(`${timetableURL}/${timetable.id}`);
+      await deleteRequest(`${timetableURL}${timetable.id}`);
       getTimetablesList();
       dispatch(setSuccess({
         title: t('osrdconf:timetabledelete'),

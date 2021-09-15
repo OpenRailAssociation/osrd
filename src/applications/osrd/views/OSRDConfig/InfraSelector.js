@@ -8,7 +8,7 @@ import icon from 'assets/pictures/tracks.svg';
 import InfraSelectorModal from 'applications/osrd/components/InfraSelector/InfraSelectorModal';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 
-const infraURL = '/infra';
+const infraURL = '/infra/';
 
 export default function InfraSelector() {
   const dispatch = useDispatch();
@@ -19,7 +19,7 @@ export default function InfraSelector() {
 
   const getInfra = async (id) => {
     try {
-      const infraQuery = await get(`${infraURL}/${id}`, {});
+      const infraQuery = await get(`${infraURL}${id}/`, {});
       setSelectedInfra(infraQuery);
     } catch (e) {
       dispatch(setFailure({

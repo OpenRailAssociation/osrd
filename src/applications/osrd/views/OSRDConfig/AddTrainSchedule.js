@@ -11,7 +11,7 @@ import { time2sec, sec2time } from 'utils/timeManipulation';
 
 import formatConf from 'applications/osrd/components/AddTrainSchedule/formatConf';
 
-const scheduleURL = '/train_schedule';
+const scheduleURL = '/train_schedule/';
 
 const trainNameWithNum = (name, actualTrainCount, total) => {
   if (total === 1) {

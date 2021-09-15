@@ -1,7 +1,7 @@
 import axios from 'axios';
 import mainConfig from 'config/config';
 
-const formatPath = (path) => `${mainConfig.proxy}${path}${path.slice(-1) !== '/' ? '/' : ''}`;
+const formatPath = (path) => `${mainConfig.proxy}${path}`;
 
 const getAuthConfig = () => ({
   headers: {
@@ -17,7 +17,7 @@ export const get = async (path, params = undefined) => {
   let newPath;
   // ULGY HACK https://gateway.dev.dgexsol.fr/osrd
   if (path.substr(0, 5) === '/gaia') {
-    newPath = `${mainConfig.proxy.replace('/osrd', '')}${path}${path.slice(-1) !== '/' ? '/' : ''}`;
+    newPath = `${mainConfig.proxy.replace('/osrd', '')}${path}`;
   } else {
     newPath = formatPath(path);
   }
