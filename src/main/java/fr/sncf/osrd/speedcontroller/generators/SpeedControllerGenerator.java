@@ -180,7 +180,6 @@ public abstract class SpeedControllerGenerator {
             var update =  integrator.computeUpdate(action, location.getPathPosition(),
                     -1);
             speed = update.speed;
-            //TODO: We can now just call updatePosition with a negative delta
             location = convertPosition(schedule, sim, location.getPathPosition() + update.positionDelta);
         } while (speed < maxSpeed && location.getPathPosition() >= 0.0001);
 
