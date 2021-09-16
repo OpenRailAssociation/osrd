@@ -23,6 +23,7 @@ def generate_layers(infra: Infra):
     generate_ecs_layer(infra, SignalEntity)
     generate_speed_layer(infra)
     generate_signaling_type_layer(infra)
+    generate_electrification_type_layer(infra)
 
 
 def get_geo_attribute_name(entity_type: Type[Entity]):
@@ -90,3 +91,24 @@ def generate_signaling_type_layer(infra: Infra):
                 s_type = SignalingType(signaling_type.signaling_type).name
                 layer_object.add_metadata("signaling_type", s_type)
                 layer_object.add_metadata("component_id", signaling_type.component_id)
+
+
+def generate_electrification_type_layer(infra: Infra):
+    with LayerCreator("electrification_type", infra.id) as creator:
+        for ts in fetch_entities(TrackSectionEntity, infra.namespace):
+            for electrification_type in ts.electrification_type_set.all():
+                # Get geometry of the object
+                geo, sch = track_section_range_geom(
+                    ts,
+                    electrification_type.start_offset,
+                    electrification_type.end_offset,
+                )
+
+                # Add entity to layer
+                layer_object = creator.create_object(geo, sch)
+                layer_object.add_metadata(
+                    "electrification_type", electrification_type.electrification_type
+                )
+                layer_object.add_metadata(
+                    "component_id", electrification_type.component_id
+                )
