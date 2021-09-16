@@ -140,7 +140,7 @@ def serialize_op_part(cached_entities, op_part_entity):
 
 def serialize_speed_section_part(cached_entities, entity):
     # .all() is used instead of .get to make django's orm use prefetching
-    (speed_section_part_component,) = entity.speed_section_part_set.all()
+    speed_section_part_component = entity.speed_section_part
     # from the prefetched component, get the reference to the speed section
     speed_section_id = speed_section_part_component.speed_section_id
     speed_section = cached_entities["speed_sections"][speed_section_id]
