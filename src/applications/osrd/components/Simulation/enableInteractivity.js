@@ -2,9 +2,8 @@ import * as d3 from 'd3';
 import drawGuideLines from 'applications/osrd/components/Simulation/drawGuideLines';
 import { gridX, gridY, interpolator } from 'applications/osrd/components/Helpers/ChartHelpers';
 import {
-  updateHoverPosition, updateMustRedraw, updatePositionValues, updateTimePosition,
+  updateMustRedraw, updatePositionValues, updateTimePosition,
 } from 'reducers/osrdsimulation';
-import { time2datetime } from 'utils/timeManipulation';
 
 export const displayGuide = (chart, opacity) => {
   chart.svg.selectAll('#vertical-line').style('opacity', opacity);
@@ -13,17 +12,17 @@ export const displayGuide = (chart, opacity) => {
 };
 
 export const updatePointers = (
-  chart, dataSimulation, hoverPosition, keyValues, listValues, rotate,
+  chart, keyValues, listValues, positionValues, rotate,
 ) => {
   listValues.forEach((name) => {
-    if (dataSimulation[name][hoverPosition] !== undefined) {
+    if (positionValues[name]) {
       chart.svg.selectAll(`#pointer-${name}`)
         .attr('cx', (rotate
-          ? chart.x(dataSimulation[name][hoverPosition][keyValues[1]])
-          : chart.x(dataSimulation[name][hoverPosition][keyValues[0]])))
+          ? chart.x(positionValues[name][keyValues[1]])
+          : chart.x(positionValues[name][keyValues[0]])))
         .attr('cy', (rotate
-          ? chart.y(dataSimulation[name][hoverPosition][keyValues[0]])
-          : chart.y(dataSimulation[name][hoverPosition][keyValues[1]])));
+          ? chart.y(positionValues[name][keyValues[0]])
+          : chart.y(positionValues[name][keyValues[1]])));
     }
   });
 };
@@ -73,37 +72,33 @@ const updateChart = (chart, keyValues, rotate) => {
 };
 
 export const traceVerticalLine = (
-  chart, dataSimulation, hoverPosition, keyValues, listValues,
-  refValueName, rotate, timePosition,
+  chart, dataSimulation, keyValues, listValues,
+  positionValues, refValueName, rotate, timePosition,
 ) => {
   if (chart !== undefined
     && d3.event === null) {
     displayGuide(chart, 1);
-    const valuePosition = time2datetime(timePosition);
-    /* const valuePosition = dataSimulation[refValueName][hoverPosition][keyValues[0]]; */
     if (rotate) {
       // chart.svg.selectAll('#vertical-line').style('opacity', 0);
       chart.svg.selectAll('#horizontal-line')
-        .attr('y1', chart.y(valuePosition))
-        .attr('y2', chart.y(valuePosition));
+        .attr('y1', chart.y(timePosition))
+        .attr('y2', chart.y(timePosition));
     } else {
       // chart.svg.selectAll('#horizontal-line').style('opacity', 0);
       chart.svg.selectAll('#vertical-line')
-        .attr('x1', chart.x(valuePosition))
-        .attr('x2', chart.x(valuePosition));
+        .attr('x1', chart.x(timePosition))
+        .attr('x2', chart.x(timePosition));
     }
-    if (dataSimulation[refValueName][hoverPosition] !== undefined) {
-      updatePointers(
-        chart, dataSimulation, hoverPosition, keyValues,
-        listValues, rotate,
-      );
-    }
+    updatePointers(
+      chart, keyValues,
+      listValues, positionValues, rotate,
+    );
   }
 };
 
 const enableInteractivity = (
   chart, dataSimulation, dispatch, keyValues,
-  listValues, rotate,
+  listValues, positionValues, rotate,
   setChart, setYPosition, setZoomLevel, yPosition, zoomLevel,
 ) => {
   let newHoverPosition;
@@ -123,9 +118,6 @@ const enableInteractivity = (
         const zoomFunctions = updateChart(chart, keyValues, rotate);
         const newChart = { ...chart, x: zoomFunctions.newX, y: zoomFunctions.newY };
         setChart(newChart);
-        /* updatePointers(
-          newChart, dataSimulation, newHoverPosition, keyValues, listValues, rotate,
-        ); */
       }
     })
     .filter(() => d3.event.button === 0 || d3.event.button === 1)
@@ -142,7 +134,7 @@ const enableInteractivity = (
     ));
 
     if (keyValues[0] === 'time') {
-      dispatch(updateTimePosition(timePositionLocal.toLocaleTimeString('fr-FR')));
+      dispatch(updateTimePosition(timePositionLocal));
     }
 
     // Update guideLines
@@ -152,8 +144,6 @@ const enableInteractivity = (
     chart.svg.selectAll('#horizontal-line')
       .attr('y1', d3.mouse(d3.event.currentTarget)[1])
       .attr('y2', d3.mouse(d3.event.currentTarget)[1]);
-
-    // dispatch(updateHoverPosition(newHoverPosition));
   };
 
   chart.svg // .selectAll('.zoomable')

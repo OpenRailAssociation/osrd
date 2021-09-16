@@ -5,6 +5,11 @@ export function datetime2string(ts) {
   return datetime.toLocaleString();
 }
 
+export function datetime2time(datetime) {
+  const formatTime = d3.timeFormat('%H:%M:%S');
+  return formatTime(datetime);
+}
+
 export function time2datetime(time) {
   return d3.timeParse('%H:%M:%S')(time);
 }

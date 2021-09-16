@@ -5,11 +5,11 @@ import { useSelector, useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simulation/consts';
 import {
-  defineLinear, defineTime, formatStepsWithTime, formatStepsWithTimeMulti,
-  getDirection, handleWindowResize, mergeDatasArea, timeShiftTrain, timeShiftStops,
+  defineLinear, defineTime, formatStepsWithTime, formatStepsWithTimeMulti, getDirection,
+  handleWindowResize, interpolator, makeStairCase, mergeDatasArea, timeShiftTrain, timeShiftStops,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
 import {
-  updateChart, updateMustRedraw, updateSimulation, updateSelectedTrain,
+  updateChart, updateMustRedraw, updatePositionValues, updateSimulation, updateSelectedTrain,
 } from 'reducers/osrdsimulation';
 import ChartModal from 'applications/osrd/components/Simulation/ChartModal';
 import defineChart from 'applications/osrd/components/Simulation/defineChart';
@@ -110,9 +110,9 @@ const drawTrain = (
       'areaBlock', rotate,
     );
     drawCurve(chart, `${isSelected ? 'selected' : ''} end-block`, dataSimulation.routeEndOccupancy, groupID,
-      'curveStepAfter', keyValues, 'routeEndOccupancy', rotate, isSelected);
+      'curveLinear', keyValues, 'routeEndOccupancy', rotate, isSelected);
     drawCurve(chart, `${isSelected ? 'selected' : ''} start-block`, dataSimulation.routeBeginOccupancy, groupID,
-      'curveStepAfter', keyValues, 'routeBeginOccupancy', rotate, isSelected);
+      'curveLinear', keyValues, 'routeBeginOccupancy', rotate, isSelected);
   }
 
   dataSimulation.tailPosition.forEach((tailPositionSection) => drawCurve(
@@ -134,8 +134,12 @@ const createTrain = (keyValues, simulationTrains) => {
     dataSimulationTrain.trainNumber = trainNumber;
     dataSimulationTrain.headPosition = formatStepsWithTimeMulti(train.head_positions);
     dataSimulationTrain.tailPosition = formatStepsWithTimeMulti(train.tail_positions);
-    dataSimulationTrain.routeEndOccupancy = formatStepsWithTime(train.route_end_occupancy);
-    dataSimulationTrain.routeBeginOccupancy = formatStepsWithTime(train.route_begin_occupancy);
+    dataSimulationTrain.routeEndOccupancy = formatStepsWithTime(
+      makeStairCase(train.route_end_occupancy),
+    );
+    dataSimulationTrain.routeBeginOccupancy = formatStepsWithTime(
+      makeStairCase(train.route_begin_occupancy),
+    );
     dataSimulationTrain.areaBlock = mergeDatasArea(
       dataSimulationTrain.routeEndOccupancy, dataSimulationTrain.routeBeginOccupancy, keyValues,
     );
@@ -148,7 +152,7 @@ export default function SpaceTimeChart() {
   const ref = useRef();
   const dispatch = useDispatch();
   const {
-    hoverPosition, mustRedraw, positionValues, selectedTrain, simulation, timePosition,
+    mustRedraw, positionValues, selectedTrain, simulation, timePosition,
   } = useSelector((state) => state.osrdsimulation);
   const keyValues = ['time', 'position'];
   const [rotate, setRotate] = useState(false);
@@ -197,7 +201,7 @@ export default function SpaceTimeChart() {
       });
       enableInteractivity(
         chartLocal, dataSimulation[selectedTrain], dispatch, keyValues,
-        LIST_VALUES_NAME_SPACE_TIME, rotate,
+        LIST_VALUES_NAME_SPACE_TIME, positionValues, rotate,
         setChart, setYPosition, setZoomLevel, yPosition, zoomLevel,
       );
       // findConflicts(chartLocal, dataSimulation, rotate);
@@ -224,11 +228,18 @@ export default function SpaceTimeChart() {
   }, [mustRedraw, rotate, selectedTrain, simulation.trains[selectedTrain]]);
 
   useEffect(() => {
-    traceVerticalLine(
-      chart, dataSimulation[selectedTrain], hoverPosition, keyValues,
-      LIST_VALUES_NAME_SPACE_TIME, 'headPosition', rotate, timePosition,
-    );
-  }, [chart, hoverPosition, mustRedraw, timePosition]);
+    if (timePosition) {
+      dispatch(updatePositionValues(
+        interpolator(
+          dataSimulation[selectedTrain], keyValues, LIST_VALUES_NAME_SPACE_TIME, timePosition,
+        ),
+      ));
+      traceVerticalLine(
+        chart, dataSimulation[selectedTrain], keyValues,
+        LIST_VALUES_NAME_SPACE_TIME, positionValues, 'headPosition', rotate, timePosition,
+      );
+    }
+  }, [chart, mustRedraw, timePosition]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKey);
@@ -256,7 +267,6 @@ export default function SpaceTimeChart() {
         onClick={() => toggleRotation(rotate, setRotate)}
       >
         <i className="icons-refresh" />
-        {positionValues.headPosition}
       </button>
     </div>
   );

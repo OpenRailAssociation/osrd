@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import * as d3 from 'd3';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { updateHoverPosition, updateTimePosition } from 'reducers/osrdsimulation';
+import { updateTimePosition } from 'reducers/osrdsimulation';
+import { datetime2time, time2datetime } from 'utils/timeManipulation';
 import {
-  FaStop, FaPause, FaPlay, FaBackward,
+  FaPause, FaPlay, FaBackward,
 } from 'react-icons/fa';
-import { time2sec } from 'utils/timeManipulation';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
 // transform a speed ratio (X2 X10 X20, etc.) to interval time & step to bypass
@@ -17,21 +16,11 @@ const factor2ms = (factor) => {
 
 export default function TimeButtons() {
   const dispatch = useDispatch();
-  const {
-    hoverPosition, selectedTrain, simulation, timePosition, chart,
-  } = useSelector((state) => state.osrdsimulation);
+  const { timePosition } = useSelector((state) => state.osrdsimulation);
   const [playInterval, setPlayInterval] = useState(undefined);
-  const [playState, setPlayState] = useState(hoverPosition);
   const [playReverse, setPlayReverse] = useState(false);
   const [simulationSpeed, setSimulationSpeed] = useState(1);
-  const simulationLength = simulation.trains[selectedTrain].steps.length;
 
-  const stop = () => {
-    clearInterval(playInterval);
-    setPlayInterval(undefined);
-    setPlayState(0);
-    dispatch(updateHoverPosition(0));
-  };
   const pause = () => {
     clearInterval(playInterval);
     setPlayInterval(undefined);
@@ -40,24 +29,16 @@ export default function TimeButtons() {
     clearInterval(playInterval); // Kill interval playing if concerned
     setPlayInterval(undefined);
     const factor = factor2ms(simulationSpeedLocal);
-    let i = (playReverseLocal && playState === 0) ? simulationLength : playState;
+    let i = timePosition.getTime() / 1000;
     const playIntervalLocal = setInterval(() => {
-      dispatch(updateHoverPosition(i));
       if (playReverseLocal) {
         i -= factor.steps;
       } else {
         i += factor.steps;
       }
-      if (i >= simulationLength || i < 0) {
-        clearInterval(playIntervalLocal);
-        setPlayInterval(undefined);
-        setPlayState(0);
-      } else {
-        setPlayState(i);
-      }
+      dispatch(updateTimePosition(new Date(i * 1000)));
     }, factor.ms);
     setPlayInterval(playIntervalLocal);
-    setPlayState(0);
   };
 
   const changeReverse = () => {
@@ -75,20 +56,8 @@ export default function TimeButtons() {
   };
 
   const changeTimePosition = (e) => {
-    if (simulation.trains[selectedTrain]) {
-      const bisect = d3.bisector((d) => d.time).left;
-      dispatch(
-        updateHoverPosition(
-          bisect(simulation.trains[selectedTrain].steps, time2sec(e.target.value), 1),
-        ),
-      );
-    }
-    dispatch(updateTimePosition(e.target.value));
+    dispatch(updateTimePosition(time2datetime(e.target.value)));
   };
-
-  useEffect(() => {
-    setPlayState(hoverPosition);
-  }, [hoverPosition]);
 
   return (
     <div className="d-flex align-items-start">
@@ -97,21 +66,13 @@ export default function TimeButtons() {
           noMargin
           type="time"
           id="simulation-time"
-          value={timePosition}
+          value={timePosition ? datetime2time(timePosition) : null}
           onChange={changeTimePosition}
-          sm
         />
       </span>
       <button
         type="button"
-        className="btn btn-only-icon btn-danger mr-1 btn-sm"
-        onClick={stop}
-      >
-        <FaStop />
-      </button>
-      <button
-        type="button"
-        className={`btn btn-only-icon btn-sm mr-1 ${playReverse ? 'btn-primary' : 'btn-white'}`}
+        className={`btn btn-only-icon mr-1 ${playReverse ? 'btn-primary' : 'btn-white'}`}
         onClick={changeReverse}
       >
         <FaBackward />
@@ -119,7 +80,7 @@ export default function TimeButtons() {
       {playInterval ? (
         <button
           type="button"
-          className="btn btn-only-icon btn-sm btn-warning mr-1"
+          className="btn btn-only-icon btn-warning mr-1"
           onClick={pause}
         >
           <FaPause />
@@ -127,7 +88,7 @@ export default function TimeButtons() {
       ) : (
         <button
           type="button"
-          className="btn btn-only-icon btn-sm btn-success mr-1"
+          className="btn btn-only-icon btn-success mr-1"
           onClick={() => play(playReverse)}
         >
           <FaPlay />
@@ -140,7 +101,6 @@ export default function TimeButtons() {
         value={simulationSpeed}
         onChange={(e) => changeSimulationSpeed(e.target.value)}
         seconds
-        sm
       />
     </div>
   );

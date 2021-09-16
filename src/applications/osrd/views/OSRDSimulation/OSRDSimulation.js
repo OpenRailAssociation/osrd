@@ -35,9 +35,7 @@ const OSRDSimulation = () => {
   const [isEmpty, setIsEmpty] = useState(true);
   const [spaceTimeFullWidth, setSpaceTimeFullWidth] = useState(true);
   const { timetableID } = useSelector((state) => state.osrdconf);
-  const {
-    hoverPosition, selectedTrain, simulation,
-  } = useSelector((state) => state.osrdsimulation);
+  const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();
 
   if (darkmode) {
@@ -102,17 +100,6 @@ const OSRDSimulation = () => {
   };
 
   useEffect(() => {
-    /* if (simulation.trains[selectedTrain]
-      && simulation.trains[selectedTrain].steps[hoverPosition]) {
-      dispatch(
-        updateTimePosition(
-          sec2time(simulation.trains[selectedTrain].steps[hoverPosition].time),
-        ),
-      );
-    } */
-  }, [hoverPosition, selectedTrain]);
-
-  useEffect(() => {
     getTimetable();
   }, []);
 
@@ -168,7 +155,7 @@ const OSRDSimulation = () => {
                   </div>
                 </div>
               )}
-              {/* <div className="osrd-simulation-container mb-2">
+              <div className="osrd-simulation-container mb-2">
                 <div className="row">
                   <div className="col-md-4">
                     <TimeButtons />
@@ -179,13 +166,13 @@ const OSRDSimulation = () => {
                     ) : null}
                   </div>
                 </div>
-              </div> */}
+              </div>
+              {/*
               <div className="mb-2">
                 {simulation.trains.length > 0 ? (
                   <SpeedSpaceChart />
                 ) : null}
-              </div>
-              {/* <div className="row">
+              </div><div className="row">
                 <div className="col-md-6">
                   <div className="osrd-simulation-container mb-2">
                     {simulation.trains.length > 0 ? (

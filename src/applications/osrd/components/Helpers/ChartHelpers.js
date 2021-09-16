@@ -35,9 +35,23 @@ export const formatStepsWithTimeMulti = (data) => data.map(
   ),
 );
 
+export const makeStairCase = (data) => {
+  const newData = [];
+  const { length } = data;
+  data.forEach((step, idx) => {
+    newData.push(step);
+    if (idx < (length - 1)) {
+      newData.push({
+        time: data[idx + 1].time,
+        position: step.position,
+      });
+    }
+  });
+  return newData;
+};
+
 export const formatStepsWithTime = (data) => data
   .map((step) => ({ time: sec2d3datetime(step.time), position: step.position }));
-
 
 export const handleWindowResize = (
   chartID, dispatch, drawTrain, isResizeActive, setResizeActive,
@@ -113,24 +127,33 @@ export const gridY = (y, width) => (
     .tickFormat('')
 );
 
+// Interpolation of cursor
 export const interpolator = (dataSimulation, keyValues, listValues, timePositionLocal) => {
   const bisect = d3.bisector((d) => d[keyValues[0]]).left;
   const positionInterpolated = {};
   listValues.forEach((listValue) => {
     let bisection;
-    dataSimulation[listValue].forEach((section) => {
-      const index = bisect(section, timePositionLocal, 1);
-      if (index !== section.length) {
-        bisection = [section[index - 1], section[index]];
-      }
-    });
-    if (bisection[1]) {
+    if (listValue === 'headPosition' || listValue === 'tailPosition') {
+      dataSimulation[listValue].forEach((section) => {
+        const index = bisect(section, timePositionLocal, 1);
+        if (index !== section.length && timePositionLocal >= section[0][keyValues[0]]) {
+          bisection = [section[index - 1], section[index]];
+        }
+      });
+    } else if (timePositionLocal >= dataSimulation[listValue][0][keyValues[0]]) {
+      const index = bisect(dataSimulation[listValue], timePositionLocal, 1);
+      bisection = [dataSimulation[listValue][index - 1], dataSimulation[listValue][index]];
+    }
+    if (bisection && bisection[1]) {
       const duration = bisection[1].time - bisection[0].time;
       const timePositionFromTime = timePositionLocal - bisection[0].time;
       const proportion = timePositionFromTime / duration;
-      positionInterpolated[listValue] = d3.interpolateNumber(
-        bisection[0].position, bisection[1].position,
-      )(proportion);
+      positionInterpolated[listValue] = {
+        position: d3.interpolateNumber(
+          bisection[0].position, bisection[1].position,
+        )(proportion),
+        time: timePositionLocal,
+      };
     }
   });
   return positionInterpolated;
