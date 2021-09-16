@@ -225,7 +225,7 @@ class TrackSectionCurveComponent(Component):
 
 
 class TrackSectionSignalingTypeComponent(Component):
-    """A track section component that define a curve in a specific range"""
+    """A track section component that define a signaling system in a specific range"""
 
     signaling_type = SignalingTypeField()
     start_offset = models.FloatField()
@@ -233,6 +233,17 @@ class TrackSectionSignalingTypeComponent(Component):
 
     class ComponentMeta:
         name = "signaling_type"
+
+
+class TrackSectionElectrificationTypeComponent(Component):
+    """A track section component that define a type of electrification in a specific range"""
+
+    electrification_type = models.IntegerField()
+    start_offset = models.FloatField()
+    end_offset = models.FloatField()
+
+    class ComponentMeta:
+        name = "electrification_type"
 
 
 class IdentifierComponent(Component):
@@ -428,6 +439,7 @@ class TrackSectionEntity(Entity):
         TrackSectionSlopeComponent,
         TrackSectionCurveComponent,
         TrackSectionSignalingTypeComponent,
+        TrackSectionElectrificationTypeComponent,
     ]
 
 
