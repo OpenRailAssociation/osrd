@@ -171,24 +171,6 @@ class TrackSectionLocationComponent(Component):
         unique = True
 
 
-class BelongsToTrackComponent(Component):
-    track = models.ForeignKey(
-        "TrackEntity", on_delete=models.CASCADE, related_name="track_components"
-    )
-
-    class ComponentMeta:
-        name = "belong_to_track"
-
-
-class BelongsToLineComponent(Component):
-    line = models.ForeignKey(
-        "LineEntity", on_delete=models.CASCADE, related_name="line_components"
-    )
-
-    class ComponentMeta:
-        name = "belong_to_line"
-
-
 class TrackSectionRangeComponent(Component):
     """A component for entities which are ranges on a track section"""
 
@@ -260,6 +242,10 @@ class IdentifierComponent(Component):
 class TrackSectionComponent(Component):
     # the length of the track section, in meters
     length = models.FloatField()
+    line_code = models.IntegerField()
+    line_name = models.CharField(max_length=255)
+    track_number = models.IntegerField()
+    track_name = models.CharField(max_length=255)
 
     class ComponentMeta:
         name = "track_section"
@@ -435,7 +421,6 @@ class TrackSectionEntity(Entity):
         TrackSectionComponent,
         GeoLineLocationComponent,
         IdentifierComponent,
-        BelongsToTrackComponent,
         TrackSectionSlopeComponent,
         TrackSectionCurveComponent,
         TrackSectionSignalingTypeComponent,
@@ -503,23 +488,6 @@ class SignalEntity(Entity):
         ApplicableDirectionComponent,
         RailScriptComponent,
         SignalComponent,
-    ]
-
-
-class TrackEntity(Entity):
-    name = "track"
-    verbose_name_plural = "tracks"
-    components = [
-        IdentifierComponent,
-        BelongsToLineComponent,
-    ]
-
-
-class LineEntity(Entity):
-    name = "line"
-    verbose_name_plural = "lines"
-    components = [
-        IdentifierComponent,
     ]
 
 
