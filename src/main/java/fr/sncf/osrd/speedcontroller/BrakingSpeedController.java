@@ -50,14 +50,14 @@ public class BrakingSpeedController extends SpeedController {
     }
 
     @Override
-    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST", "FE_FLOATING_POINT_EQUALITY"})
+    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
     public boolean deepEquals(SpeedController other) {
         if (!equalRange(other))
             return false;
         if (other.getClass() != BrakingSpeedController.class)
             return false;
         var o = (BrakingSpeedController) other;
-        return o.speeds == speeds;
+        return o.speeds.equals(speeds);
     }
 }
 

@@ -11,7 +11,6 @@ import fr.sncf.osrd.train.TrainPhysicsIntegrator;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator.PositionUpdate;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.utils.SortedDoubleMap;
-import org.takes.rs.xe.XeLinkSelf;
 
 import java.util.HashSet;
 import java.util.NavigableMap;
