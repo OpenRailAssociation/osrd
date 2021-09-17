@@ -33,17 +33,21 @@ def convert_simulation_log(train_schedule, projection_path):
 
 
 def convert_train_positions(train_locations, projection, field_name):
-    results = [[]]
+    results = []
+    current_curve = []
     for log in train_locations:
         time = log["time"]
         track = log[f"{field_name}_track_section"]
         offset = log[f"{field_name}_offset"]
         position = projection.track_position(track, offset)
         if position is None:
-            if len(results[-1]) > 0:
-                results.append([])
+            if current_curve:
+                results.append(current_curve)
+                current_curve = []
             continue
-        results[-1].append({"time": time, "position": position})
+        current_curve.append({"time": time, "position": position})
+    if current_curve:
+        results.append(current_curve)
     return results
 
 
