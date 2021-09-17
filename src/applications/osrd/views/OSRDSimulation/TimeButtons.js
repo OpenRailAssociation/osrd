@@ -66,7 +66,7 @@ export default function TimeButtons() {
           noMargin
           type="time"
           id="simulation-time"
-          value={timePosition ? datetime2time(timePosition) : null}
+          value={timePosition ? datetime2time(timePosition) : ''}
           onChange={changeTimePosition}
         />
       </span>

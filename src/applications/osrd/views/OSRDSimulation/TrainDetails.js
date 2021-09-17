@@ -7,22 +7,24 @@ export default function TrainDetails() {
 
   const { t } = useTranslation(['simulation']);
 
-  return positionValues.headPosition !== undefined ? (
+  return positionValues.routeEndOccupancy ? (
     <>
-      { timePosition !== undefined && positionValues.headPosition
+      { timePosition
         ? (
           <div className="row">
             <div className="col-md-2">
               <div className="rounded px-2 h-100 py-1 mb-1 small bg-blue text-white text-nowrap">
                 <div className="font-weight-bold mr-1">TÊTE</div>
-                {Math.round(positionValues.headPosition.position) / 1000}
+                {positionValues.headPosition
+                  && Math.round(positionValues.headPosition.position) / 1000}
                 km
               </div>
             </div>
             <div className="col-md-2">
               <div className="rounded px-2 h-100 py-1 mb-1 small bg-cyan text-white text-nowrap">
                 <div className="font-weight-bold mr-1">QUEUE</div>
-                {Math.round(positionValues.tailPosition.position) / 1000}
+                {positionValues.tailPosition
+                  && Math.round(positionValues.tailPosition.position) / 1000}
                 km
               </div>
             </div>
@@ -57,7 +59,7 @@ export default function TrainDetails() {
             <div className="col-md-2">
               <div className="rounded px-2 h-100 py-1 mb-1 small bg-pink text-white">
                 <div className="font-weight-bold mr-1">VITESSE</div>
-                {/* Math.round(simulation.trains[selectedTrain].steps[hoverPosition].speed * 3.6) */}
+                {positionValues.speed && Math.round(positionValues.speed.speed * 3.6)}
                 km/h
               </div>
             </div>

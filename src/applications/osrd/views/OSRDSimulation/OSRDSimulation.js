@@ -145,12 +145,12 @@ const OSRDSimulation = () => {
                   </div>
                 </div>
               </div>
-              {/*
               <div className="mb-2">
                 {simulation.trains.length > 0 ? (
                   <SpeedSpaceChart />
                 ) : null}
-              </div><div className="row">
+              </div>
+              {/* <div className="row">
                 <div className="col-md-6">
                   <div className="osrd-simulation-container mb-2">
                     {simulation.trains.length > 0 ? (

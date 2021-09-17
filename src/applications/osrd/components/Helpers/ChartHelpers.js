@@ -4,11 +4,6 @@ import { updateMustRedraw } from 'reducers/osrdsimulation';
 
 export const sec2d3datetime = (time) => d3.timeParse('%H:%M:%S')(sec2time(time));
 
-const addSeconds = (dateOrig, seconds) => {
-  const date = new Date(`2021-01-01 ${dateOrig}`);
-  return new Date(date.getTime() + (seconds * 1000)).toLocaleTimeString();
-};
-
 const offsetSeconds = (seconds) => {
   if (seconds > 85399) {
     return seconds - 86400;
@@ -51,7 +46,7 @@ export const makeStairCase = (data) => {
 };
 
 export const formatStepsWithTime = (data) => data
-  .map((step) => ({ time: sec2d3datetime(step.time), position: step.position }));
+  .map((step) => ({ ...step, time: sec2d3datetime(step.time) }));
 
 export const handleWindowResize = (
   chartID, dispatch, drawTrain, isResizeActive, setResizeActive,
@@ -89,6 +84,9 @@ export const timeShiftTrain = (train, value) => ({
     (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
   ),
   route_begin_occupancy: train.route_begin_occupancy.map(
+    (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+  ),
+  speeds: train.speeds.map(
     (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
   ),
   stops: train.stops.map(
@@ -149,6 +147,7 @@ export const gridY = (y, width) => (
 export const interpolator = (dataSimulation, keyValues, listValues, timePositionLocal) => {
   const bisect = d3.bisector((d) => d[keyValues[0]]).left;
   const positionInterpolated = {};
+  console.log(dataSimulation);
   listValues.forEach((listValue) => {
     let bisection;
     if (listValue === 'headPosition' || listValue === 'tailPosition') {
@@ -169,6 +168,9 @@ export const interpolator = (dataSimulation, keyValues, listValues, timePosition
       positionInterpolated[listValue] = {
         position: d3.interpolateNumber(
           bisection[0].position, bisection[1].position,
+        )(proportion),
+        speed: d3.interpolateNumber(
+          bisection[0].speed, bisection[1].speed,
         )(proportion),
         time: timePositionLocal,
       };

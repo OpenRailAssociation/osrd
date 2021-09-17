@@ -143,6 +143,7 @@ const createTrain = (keyValues, simulationTrains) => {
     dataSimulationTrain.areaBlock = mergeDatasArea(
       dataSimulationTrain.routeEndOccupancy, dataSimulationTrain.routeBeginOccupancy, keyValues,
     );
+    dataSimulationTrain.speed = formatStepsWithTime(train.speeds);
     return dataSimulationTrain;
   });
   return dataSimulation;

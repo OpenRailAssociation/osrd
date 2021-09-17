@@ -34,7 +34,7 @@ const drawAxisTitle = (chart, rotate) => {
 export default function SpeedSpaceChart() {
   const dispatch = useDispatch();
   const {
-    hoverPosition, mustRedraw, selectedTrain, simulation, timePosition,
+    mustRedraw, positionValues, selectedTrain, simulation, timePosition,
   } = useSelector((state) => state.osrdsimulation);
   const [rotate, setRotate] = useState(false);
   const [chart, setChart] = useState(undefined);
@@ -46,7 +46,9 @@ export default function SpeedSpaceChart() {
 
   // Prepare data
   const dataSimulation = {};
-  dataSimulation.speeds = Array.from(simulation.trains[selectedTrain].speeds);
+  dataSimulation.speeds = simulation.trains[selectedTrain].speeds.map(
+    (step) => ({ ...step, speed: step.speed * 3.6 }),
+  );
   dataSimulation.areaBlock = mergeDatasArea(dataSimulation.speeds, undefined, keyValues);
   /* dataSimulation.emergency = expandAndFormatData(
     dataSimulation.speed, simulation.trains[selectedTrain].emergency,
@@ -88,7 +90,7 @@ export default function SpeedSpaceChart() {
 
       enableInteractivity(
         chartLocal, dataSimulation, dispatch, keyValues,
-        LIST_VALUES_NAME_SPEED_SPACE, rotate,
+        LIST_VALUES_NAME_SPEED_SPACE, positionValues, rotate,
         setChart, setYPosition, setZoomLevel, yPosition, zoomLevel,
       );
       setChart(chartLocal);
@@ -101,12 +103,12 @@ export default function SpeedSpaceChart() {
     handleWindowResize(CHART_ID, dispatch, drawTrain, isResizeActive, setResizeActive);
   }, [chart, mustRedraw, rotate]);
 
-  /* useEffect(() => {
+  useEffect(() => {
     traceVerticalLine(
-      chart, dataSimulation, hoverPosition, keyValues,
-      LIST_VALUES_NAME_SPEED_SPACE, 'speeds', rotate, timePosition,
+      chart, dataSimulation, keyValues,
+      LIST_VALUES_NAME_SPEED_SPACE, positionValues, 'speeds', rotate, timePosition,
     );
-  }, [chart, hoverPosition, mustRedraw, timePosition]); */
+  }, [chart, mustRedraw, timePosition]);
 
   return (
     <div id={`container-${CHART_ID}`} className="speedspace-chart w-100">
