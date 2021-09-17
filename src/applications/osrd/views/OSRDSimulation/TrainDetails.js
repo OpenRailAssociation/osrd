@@ -59,7 +59,7 @@ export default function TrainDetails() {
             <div className="col-md-2">
               <div className="rounded px-2 h-100 py-1 mb-1 small bg-pink text-white">
                 <div className="font-weight-bold mr-1">VITESSE</div>
-                {positionValues.speed && Math.round(positionValues.speed.speed * 3.6)}
+                {positionValues.speed && Math.round(positionValues.speed.speed)}
                 km/h
               </div>
             </div>

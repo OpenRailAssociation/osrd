@@ -147,7 +147,6 @@ export const gridY = (y, width) => (
 export const interpolator = (dataSimulation, keyValues, listValues, timePositionLocal) => {
   const bisect = d3.bisector((d) => d[keyValues[0]]).left;
   const positionInterpolated = {};
-  console.log(dataSimulation);
   listValues.forEach((listValue) => {
     let bisection;
     if (listValue === 'headPosition' || listValue === 'tailPosition') {
@@ -171,7 +170,7 @@ export const interpolator = (dataSimulation, keyValues, listValues, timePosition
         )(proportion),
         speed: d3.interpolateNumber(
           bisection[0].speed, bisection[1].speed,
-        )(proportion),
+        )(proportion) * 3.6,
         time: timePositionLocal,
       };
     }

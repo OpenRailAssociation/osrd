@@ -81,13 +81,13 @@ export const traceVerticalLine = (
     if (rotate) {
       // chart.svg.selectAll('#vertical-line').style('opacity', 0);
       chart.svg.selectAll('#horizontal-line')
-        .attr('y1', chart.y(timePosition))
-        .attr('y2', chart.y(timePosition));
+        .attr('y1', chart.y(keyValues[0] !== 'time' && positionValues.speed ? positionValues.speed.position : timePosition))
+        .attr('y2', chart.y(keyValues[0] !== 'time' && positionValues.speed ? positionValues.speed.position : timePosition));
     } else {
       // chart.svg.selectAll('#horizontal-line').style('opacity', 0);
       chart.svg.selectAll('#vertical-line')
-        .attr('x1', chart.x(timePosition))
-        .attr('x2', chart.x(timePosition));
+        .attr('x1', chart.x(keyValues[0] !== 'time' && positionValues.speed ? positionValues.speed.position : timePosition))
+        .attr('x2', chart.x(keyValues[0] !== 'time' && positionValues.speed ? positionValues.speed.position : timePosition));
     }
     updatePointers(
       chart, keyValues,

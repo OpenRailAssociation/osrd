@@ -46,10 +46,10 @@ export default function SpeedSpaceChart() {
 
   // Prepare data
   const dataSimulation = {};
-  dataSimulation.speeds = simulation.trains[selectedTrain].speeds.map(
+  dataSimulation.speed = simulation.trains[selectedTrain].speeds.map(
     (step) => ({ ...step, speed: step.speed * 3.6 }),
   );
-  dataSimulation.areaBlock = mergeDatasArea(dataSimulation.speeds, undefined, keyValues);
+  dataSimulation.areaBlock = mergeDatasArea(dataSimulation.speed, undefined, keyValues);
   /* dataSimulation.emergency = expandAndFormatData(
     dataSimulation.speed, simulation.trains[selectedTrain].emergency,
   );
@@ -86,7 +86,7 @@ export default function SpeedSpaceChart() {
       chartLocal.drawZone.append('g').attr('id', 'speedSpaceChart').attr('class', 'chartTrain');
       drawAxisTitle(chartLocal, rotate);
       drawArea(chartLocal, 'area', dataSimulation, dispatch, 'speedSpaceChart', 'curveLinear', keyValues, 'areaBlock', rotate);
-      drawCurve(chartLocal, 'speed', dataSimulation.speeds, 'speedSpaceChart', 'curveLinear', keyValues, 'speed', rotate);
+      drawCurve(chartLocal, 'speed', dataSimulation.speed, 'speedSpaceChart', 'curveLinear', keyValues, 'speed', rotate);
 
       enableInteractivity(
         chartLocal, dataSimulation, dispatch, keyValues,
@@ -106,9 +106,9 @@ export default function SpeedSpaceChart() {
   useEffect(() => {
     traceVerticalLine(
       chart, dataSimulation, keyValues,
-      LIST_VALUES_NAME_SPEED_SPACE, positionValues, 'speeds', rotate, timePosition,
+      LIST_VALUES_NAME_SPEED_SPACE, positionValues, 'speed', rotate, timePosition,
     );
-  }, [chart, mustRedraw, timePosition]);
+  }, [chart, mustRedraw, positionValues, timePosition]);
 
   return (
     <div id={`container-${CHART_ID}`} className="speedspace-chart w-100">

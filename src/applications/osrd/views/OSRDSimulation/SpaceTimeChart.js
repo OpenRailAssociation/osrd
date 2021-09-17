@@ -239,6 +239,13 @@ export default function SpaceTimeChart() {
   }, [chart, mustRedraw, timePosition]);
 
   useEffect(() => {
+    traceVerticalLine(
+      chart, dataSimulation[selectedTrain], keyValues,
+      LIST_VALUES_NAME_SPACE_TIME, positionValues, 'headPosition', rotate, timePosition,
+    );
+  }, [positionValues]);
+
+  useEffect(() => {
     window.addEventListener('keydown', handleKey);
     return () => {
       window.removeEventListener('keydown', handleKey);
