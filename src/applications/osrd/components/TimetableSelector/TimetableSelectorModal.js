@@ -39,7 +39,7 @@ export default function TimetableSelectorModal() {
 
   const deleteTimetable = async (timetable) => {
     try {
-      await deleteRequest(`${timetableURL}${timetable.id}`);
+      await deleteRequest(`${timetableURL}${timetable.id}/`);
       getTimetablesList();
       dispatch(setSuccess({
         title: t('osrdconf:timetabledelete'),

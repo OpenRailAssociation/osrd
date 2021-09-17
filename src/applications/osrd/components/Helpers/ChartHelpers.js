@@ -73,10 +73,28 @@ export const handleWindowResize = (
 };
 
 // Time shift a train
-export const timeShiftTrain = (steps, value) => steps
-  .map((step) => ({ ...step, time: offsetSeconds(step.time + value) }));
-export const timeShiftStops = (stops, value) => stops
-  .map((stop) => ({ ...stop, time: offsetSeconds(stop.time + value) }));
+export const timeShiftTrain = (train, value) => ({
+  ...train,
+  head_positions: train.head_positions.map(
+    (section) => section.map(
+      (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+    ),
+  ),
+  tail_positions: train.tail_positions.map(
+    (section) => section.map(
+      (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+    ),
+  ),
+  route_end_occupancy: train.route_end_occupancy.map(
+    (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+  ),
+  route_begin_occupancy: train.route_begin_occupancy.map(
+    (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+  ),
+  stops: train.stops.map(
+    (stop) => ({ ...stop, time: offsetSeconds(stop.time + value) }),
+  ),
+});
 
 // Simplify data, 50% by default
 export const simplifyData = (simulationTrains, factor = 2) => simulationTrains.map((train) => {

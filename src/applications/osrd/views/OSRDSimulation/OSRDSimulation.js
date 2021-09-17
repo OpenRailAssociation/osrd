@@ -16,16 +16,13 @@ import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
 import TimeLine from 'applications/osrd/components/TimeLine/TimeLine';
 import { updateViewport } from 'reducers/map';
 import {
-  updateMustRedraw, updateSelectedTrain, updateTimePosition, updateSimulation,
+  updateMustRedraw, updateSelectedTrain, updateSimulation,
 } from 'reducers/osrdsimulation';
-import { simplifyData } from 'applications/osrd/components/Helpers/ChartHelpers';
 import './OSRDSimulation.scss';
 import { sec2time } from 'utils/timeManipulation';
 
 const timetableURI = '/timetable/';
 const trainscheduleURI = '/train_schedule/';
-
-const SIMPLIFICATION_FACTOR = 10; // Division of steps
 
 const OSRDSimulation = () => {
   const { t } = useTranslation(['translation', 'simulation']);
@@ -61,7 +58,6 @@ const OSRDSimulation = () => {
           `${trainscheduleURI}results/`,
           { train_ids: trainSchedulesIDs.join(',') },
         );
-        // const simulationLocal = await get(`${trainscheduleURI}${trainSchedulesIDs[0]}/result/`);
         simulationLocal.sort((a, b) => a.stops[0].time > b.stops[0].time);
         dispatch(updateSimulation({ trains: simulationLocal }));
       } catch (e) {
@@ -71,20 +67,6 @@ const OSRDSimulation = () => {
         }));
         console.log('ERROR', e);
       }
-      /* for (const [idx, trainschedule] of timetable.train_schedules.entries()) {
-        try {
-          const trainResult = await post(`${trainscheduleURI}/${trainschedule.id}/result/`);
-          const trainDetails = await get(`${trainscheduleURI}/${trainschedule.id}`);
-          await setWaitingMessage(`${t('simulation:loadingTrain')} ${idx + 1}/${timetable.train_schedules.length}`);
-          simulationLocal.push({ ...trainResult, labels: trainDetails.labels});
-        } catch (e) {
-          dispatch(setFailure({
-            name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
-            message: `${e.message} : ${e.response.data.detail}`,
-          }));
-          console.log('ERROR', e);
-        }
-      } */
     } catch (e) {
       console.log('ERROR', e);
     }

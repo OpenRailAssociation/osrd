@@ -6,7 +6,7 @@ import * as d3 from 'd3';
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simulation/consts';
 import {
   defineLinear, defineTime, formatStepsWithTime, formatStepsWithTimeMulti, getDirection,
-  handleWindowResize, interpolator, makeStairCase, mergeDatasArea, timeShiftTrain, timeShiftStops,
+  handleWindowResize, interpolator, makeStairCase, mergeDatasArea, timeShiftTrain,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
 import {
   updateChart, updateMustRedraw, updatePositionValues, updateSimulation, updateSelectedTrain,
@@ -101,7 +101,6 @@ const drawTrain = (
     .attr('class', 'chartTrain')
     .call(drag);
 
-console.log(dataSimulation);
   // Test direction to avoid displaying block
   const direction = getDirection(dataSimulation.headPosition);
 
@@ -173,11 +172,7 @@ export default function SpaceTimeChart() {
 
   const offsetTimeByDragging = (offset) => {
     const trains = Array.from(simulation.trains);
-    trains[selectedTrain] = {
-      ...trains[selectedTrain],
-      steps: timeShiftTrain(trains[selectedTrain].steps, offset),
-      stops: timeShiftStops(trains[selectedTrain].stops, offset),
-    };
+    trains[selectedTrain] = timeShiftTrain(trains[selectedTrain], offset);
     dispatch(updateSimulation({ ...simulation, trains }));
   };
 
