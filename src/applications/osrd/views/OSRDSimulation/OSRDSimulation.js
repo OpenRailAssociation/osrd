@@ -57,17 +57,13 @@ const OSRDSimulation = () => {
       if (timetable.train_schedules.length > 0) { setIsEmpty(false); }
       const trainSchedulesIDs = timetable.train_schedules.map((train) => train.id);
       try {
-        /* const simulationLocal = await get(
-          `${trainscheduleURI}results`,
+        const simulationLocal = await get(
+          `${trainscheduleURI}results/`,
           { train_ids: trainSchedulesIDs.join(',') },
-        ); */
-        const simulationLocal = await get(`${trainscheduleURI}${trainSchedulesIDs[0]}/result/`);
-        // setWaitingMessage(t('simulation:simplify'));
-        // simulationLocal.sort((a, b) => a.stops[0].time > b.stops[0].time);
-        /* dispatch(updateSimulation({
-          trains: simplifyData(simulationLocal, SIMPLIFICATION_FACTOR),
-        })); */
-        dispatch(updateSimulation({ trains: [simulationLocal] }));
+        );
+        // const simulationLocal = await get(`${trainscheduleURI}${trainSchedulesIDs[0]}/result/`);
+        simulationLocal.sort((a, b) => a.stops[0].time > b.stops[0].time);
+        dispatch(updateSimulation({ trains: simulationLocal }));
       } catch (e) {
         dispatch(setFailure({
           name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),

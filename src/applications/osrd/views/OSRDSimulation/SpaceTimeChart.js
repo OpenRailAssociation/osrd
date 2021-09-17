@@ -101,6 +101,7 @@ const drawTrain = (
     .attr('class', 'chartTrain')
     .call(drag);
 
+console.log(dataSimulation);
   // Test direction to avoid displaying block
   const direction = getDirection(dataSimulation.headPosition);
 
