@@ -52,6 +52,7 @@ const OSRDSimulation = () => {
       dispatch(updateSimulation({ trains: [] }));
       const timetable = await get(`${timetableURI}${timetableID}/`);
       if (timetable.train_schedules.length > 0) { setIsEmpty(false); }
+      console.log(timetable);
       const trainSchedulesIDs = timetable.train_schedules.map((train) => train.id);
       try {
         const simulationLocal = await get(
@@ -150,7 +151,7 @@ const OSRDSimulation = () => {
                   <SpeedSpaceChart />
                 ) : null}
               </div>
-              {/* <div className="row">
+              <div className="row">
                 <div className="col-md-6">
                   <div className="osrd-simulation-container mb-2">
                     {simulation.trains.length > 0 ? (
@@ -164,7 +165,7 @@ const OSRDSimulation = () => {
                   </div>
                 </div>
               </div>
-              <ButtonFullscreen /> */}
+              <ButtonFullscreen />
             </div>
           )}
       </main>

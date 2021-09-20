@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
+import { get } from 'common/requests';
 import ReactMapGL, {
   ScaleControl, AttributionControl, FlyToInterpolator, WebMercatorViewport,
 } from 'react-map-gl';
@@ -11,6 +12,8 @@ import { updateViewport } from 'reducers/map';
 import { updateHoverPosition } from 'reducers/osrdsimulation';
 import { sec2time, time2sec } from 'utils/timeManipulation';
 import bbox from '@turf/bbox';
+import along from '@turf/along';
+import { lineString } from '@turf/helpers';
 
 import 'common/Map/Map.scss';
 
@@ -42,6 +45,8 @@ import Signals from 'common/Map/Layers/Signals';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import RenderItinerary from 'applications/osrd/components/SimulationMap/RenderItinerary';
 
+const PATHFINDING_URI = '/pathfinding/';
+
 const createOtherPoint = (trains, selectedTrain, timePosition) => {
   // const actualTime = trains[selectedTrain].steps[hoverPosition].time;
   const actualTime = time2sec(timePosition);
@@ -65,58 +70,17 @@ const createOtherPoint = (trains, selectedTrain, timePosition) => {
   return results;
 };
 
-const createGeoJSONPath = (steps) => {
-  const features = {
-    type: 'Feature',
-    geometry: {
-      type: 'LineString',
-      coordinates: steps.map((step) => step.geo_position),
-    },
-    properties: {},
-  };
-  return features;
-};
-
-const createGeoJSONPoints = (steps) => {
-  const features = [];
-  steps.forEach((step, idx) => {
-    if (steps[idx + 1] !== undefined) {
-      features.push({
-        type: 'Feature',
-        geometry: {
-          type: 'Point',
-          coordinates: step.geo_position,
-        },
-        properties: {
-          end_block_occupancy: step.end_block_occupancy,
-          head_position: step.head_position,
-          hover_position: idx,
-          speed: step.speed,
-          start_block_occupancy: step.start_block_occupancy,
-          tail_position: step.tail_position,
-          time: sec2time(step.time),
-        },
-      });
-    }
-  });
-  return {
-    type: 'FeatureCollection',
-    features,
-  };
-};
-
 const Map = (props) => {
   const { setExtViewport } = props;
   const {
     viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM,
   } = useSelector((state) => state.map);
   const {
-    hoverPosition, selectedTrain, simulation, timePosition,
+    selectedTrain, simulation, positionValues, timePosition,
   } = useSelector((state) => state.osrdsimulation);
   const [showSearch, setShowSearch] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [geojsonPath, setGeojsonPath] = useState(undefined);
-  const [geojsonPoints, setGeojsonPoints] = useState(undefined);
   const [trainHoverPositionOthers, setTrainHoverPositionOthers] = useState(undefined);
   const [trainHoverPosition, setTrainHoverPosition] = useState(undefined);
   const [idHover, setIdHover] = useState(undefined);
@@ -127,6 +91,20 @@ const Map = (props) => {
   const updateViewportChange = useCallback(
     (value) => dispatch(updateViewport(value, undefined)), [dispatch],
   );
+
+  const getSimulationPositions = () => {
+    const line = lineString(geojsonPath.geometry.coordinates);
+    const position = along(
+      line,
+      positionValues.headPosition.position / 1000,
+      { units: 'kilometers' },
+    );
+    // setTrainHoverPosition(position);
+    setTrainHoverPosition({
+      ...position,
+      properties: positionValues.speed,
+    });
+  };
 
   const zoomToFeature = (boundingBox) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
@@ -141,6 +119,24 @@ const Map = (props) => {
       latitude,
       zoom,
     });
+  };
+
+  const getGeoJSONPath = async (pathID) => {
+    try {
+      const path = await get(`${PATHFINDING_URI}${pathID}/`);
+      const features = {
+        type: 'Feature',
+        geometry: {
+          type: 'LineString',
+          coordinates: path.geographic.coordinates,
+        },
+        properties: {},
+      };
+      setGeojsonPath(features);
+      zoomToFeature(bbox(features));
+    } catch (e) {
+      console.log('ERROR', e);
+    }
   };
 
   const scaleControlStyle = {
@@ -167,16 +163,14 @@ const Map = (props) => {
 
   const onFeatureHover = (e) => {
     if (e.features !== null && e.features[0] !== undefined) {
-      dispatch(updateHoverPosition(e.features[0].properties.hover_position));
+      // dispatch(updateHoverPosition(e.features[0].properties.hover_position));
     }
   };
 
   const displayPath = () => {
     if (simulation.trains.length > 0) {
-      const geojson = createGeoJSONPath(simulation.trains[selectedTrain].steps);
-      setGeojsonPath(geojson);
-      zoomToFeature(bbox(geojson));
-      setGeojsonPoints(createGeoJSONPoints(simulation.trains[selectedTrain].steps));
+      getGeoJSONPath(simulation.trains[selectedTrain].path);
+      // setGeojsonPoints(createGeoJSONPoints(simulation.trains[selectedTrain].steps));
     }
   };
 
@@ -198,9 +192,10 @@ const Map = (props) => {
   }, [simulation.train, selectedTrain]);
 
   useEffect(() => {
-    if (simulation.trains.length > 0 && timePosition) {
-      setTrainHoverPosition(simulation.trains[selectedTrain].steps[hoverPosition]);
-      setTrainHoverPositionOthers(createOtherPoint(simulation.trains, selectedTrain, timePosition));
+    if (timePosition && geojsonPath && positionValues.headPosition) {
+      getSimulationPositions();
+      // setTrainHoverPosition(simulation.trains[selectedTrain].steps[hoverPosition]);
+      // setTrainHoverPositionOthers(createOtherPoint(simulation.trains, selectedTrain, timePosition));
     }
   }, [timePosition]);
 
@@ -230,8 +225,8 @@ const Map = (props) => {
         onViewportChange={updateViewportChange}
         clickRadius={10}
         attributionControl={false} // Defined below
-        onHover={onFeatureHover}
-        interactiveLayerIds={geojsonPath ? ['geojsonPoints'] : []}
+        // onHover={onFeatureHover}
+        // interactiveLayerIds={geojsonPath ? ['geojsonPoints'] : []}
         touchRotate
         asyncRender
       >
@@ -272,10 +267,9 @@ const Map = (props) => {
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         ) : null}
 
-        {geojsonPath !== undefined && geojsonPoints !== undefined ? (
+        {geojsonPath !== undefined ? (
           <RenderItinerary
             geojsonPath={geojsonPath}
-            geojsonPoints={geojsonPoints}
           />
         ) : null}
 
