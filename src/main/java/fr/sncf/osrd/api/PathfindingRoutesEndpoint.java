@@ -30,7 +30,6 @@ import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     static final Logger logger = LoggerFactory.getLogger(PathfindingRoutesEndpoint.class);
@@ -307,20 +306,19 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
         }
 
         public static class StepResult {
-            public String name;
+            public String id;
             public PositionResult position;
             public boolean suggestion;
 
             /** Suggested operational points */
             StepResult(PointValue<OperationalPoint> op, TrackSection trackSection) {
-                this.name = op.value.id;
+                this.id = op.value.id;
                 this.position = new PositionResult(trackSection.id, op.position);
                 this.suggestion = true;
             }
 
             /** Given step */
             StepResult(TrackSection trackSection, double offset) {
-                this.name = "Unknown";
                 this.position = new PositionResult(trackSection.id, offset);
                 this.suggestion = false;
             }
@@ -338,7 +336,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                 if (!other.suggestion)
                     return;
                 position = other.position;
-                name = other.name;
+                id = other.id;
             }
         }
 
