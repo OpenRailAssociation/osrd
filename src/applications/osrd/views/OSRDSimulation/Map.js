@@ -9,11 +9,13 @@ import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import colors from 'common/Map/Consts/colors.ts';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateViewport } from 'reducers/map';
-import { updateHoverPosition } from 'reducers/osrdsimulation';
 import { sec2time, time2sec } from 'utils/timeManipulation';
 import bbox from '@turf/bbox';
 import along from '@turf/along';
-import { lineString } from '@turf/helpers';
+import lineSlice from '@turf/line-slice';
+import lineLength from '@turf/length';
+import { lineString, point } from '@turf/helpers';
+import nearestPointOnLine from '@turf/nearest-point-on-line';
 
 import 'common/Map/Map.scss';
 
@@ -44,6 +46,9 @@ import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import Signals from 'common/Map/Layers/Signals';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import RenderItinerary from 'applications/osrd/components/SimulationMap/RenderItinerary';
+
+import { interpolateOnPosition } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { updateTimePosition } from 'reducers/osrdsimulation';
 
 const PATHFINDING_URI = '/pathfinding/';
 
@@ -162,15 +167,35 @@ const Map = (props) => {
   };
 
   const onFeatureHover = (e) => {
-    if (e.features !== null && e.features[0] !== undefined) {
-      // dispatch(updateHoverPosition(e.features[0].properties.hover_position));
+    if (e) {
+      const line = lineString(geojsonPath.geometry.coordinates);
+      const cursorPoint = point(e.lngLat);
+      // const stop = nearestPointOnLine(line, cursorPoint);
+      const start = {
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'Point',
+          coordinates: [
+            geojsonPath.geometry.coordinates[0][0],
+            geojsonPath.geometry.coordinates[0][1],
+          ],
+        },
+      };
+      const sliced = lineSlice(start, cursorPoint, line);
+      const positionLocal = lineLength(sliced, { units: 'kilometers' }) * 1000;
+      const timePositionLocal = interpolateOnPosition(
+        { speed: simulation.trains[selectedTrain].speeds },
+        ['position', 'speed'],
+        positionLocal,
+      );
+      dispatch(updateTimePosition(timePositionLocal));
     }
   };
 
   const displayPath = () => {
     if (simulation.trains.length > 0) {
       getGeoJSONPath(simulation.trains[selectedTrain].path);
-      // setGeojsonPoints(createGeoJSONPoints(simulation.trains[selectedTrain].steps));
     }
   };
 
@@ -225,8 +250,8 @@ const Map = (props) => {
         onViewportChange={updateViewportChange}
         clickRadius={10}
         attributionControl={false} // Defined below
-        // onHover={onFeatureHover}
-        // interactiveLayerIds={geojsonPath ? ['geojsonPoints'] : []}
+        onHover={onFeatureHover}
+        interactiveLayerIds={geojsonPath ? ['geojsonPath'] : []}
         touchRotate
         asyncRender
       >
