@@ -1,8 +1,8 @@
 import * as d3 from 'd3';
 import drawGuideLines from 'applications/osrd/components/Simulation/drawGuideLines';
-import { gridX, gridY, interpolator } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { gridX, gridY, interpolateOnPosition } from 'applications/osrd/components/Helpers/ChartHelpers';
 import {
-  updateMustRedraw, updatePositionValues, updateTimePosition,
+  updateMustRedraw, updateTimePosition,
 } from 'reducers/osrdsimulation';
 
 export const displayGuide = (chart, opacity) => {
@@ -123,17 +123,22 @@ const enableInteractivity = (
     .on('end', () => dispatch(updateMustRedraw(true)));
 
   const mousemove = () => {
-    // recover coordinate we need
-    const timePositionLocal = rotate
-      ? chart.y.invert(d3.mouse(d3.event.currentTarget)[1])
-      : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
-
-    dispatch(updatePositionValues(
-      interpolator(dataSimulation, keyValues, listValues, timePositionLocal),
-    ));
-
+    // If GET
     if (keyValues[0] === 'time') {
+      // recover coordinate we need
+      const timePositionLocal = rotate
+        ? chart.y.invert(d3.mouse(d3.event.currentTarget)[1])
+        : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
       dispatch(updateTimePosition(timePositionLocal));
+    } else {
+      // If GEV
+      const positionLocal = rotate
+        ? chart.y.invert(d3.mouse(d3.event.currentTarget)[1])
+        : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
+      const timePositionLocal = interpolateOnPosition(dataSimulation, keyValues, positionLocal);
+      if (timePositionLocal) {
+        dispatch(updateTimePosition(timePositionLocal));
+      }
     }
 
     // Update guideLines

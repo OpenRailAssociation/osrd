@@ -143,8 +143,24 @@ export const gridY = (y, width) => (
     .tickFormat('')
 );
 
-// Interpolation of cursor
-export const interpolator = (dataSimulation, keyValues, listValues, timePositionLocal) => {
+// Interpolation of cursor based on space position
+export const interpolateOnPosition = (dataSimulation, keyValues, positionLocal) => {
+  const bisect = d3.bisector((d) => d[keyValues[0]]).left;
+  const index = bisect(dataSimulation.speed, positionLocal, 1);
+  const bisection = [dataSimulation.speed[index - 1], dataSimulation.speed[index]];
+  if (bisection[1]) {
+    const distance = bisection[1].position - bisection[0].position;
+    const distanceFromPosition = positionLocal - bisection[0].position;
+    const proportion = distanceFromPosition / distance;
+    return sec2d3datetime(d3.interpolateNumber(
+      bisection[0].time, bisection[1].time,
+    )(proportion));
+  }
+  return false;
+};
+
+// Interpolation of cursor based on time position
+export const interpolateOnTime = (dataSimulation, keyValues, listValues, timePositionLocal) => {
   const bisect = d3.bisector((d) => d[keyValues[0]]).left;
   const positionInterpolated = {};
   listValues.forEach((listValue) => {

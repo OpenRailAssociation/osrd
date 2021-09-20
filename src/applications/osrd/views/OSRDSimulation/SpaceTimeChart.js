@@ -6,7 +6,7 @@ import * as d3 from 'd3';
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simulation/consts';
 import {
   defineLinear, defineTime, formatStepsWithTime, formatStepsWithTimeMulti, getDirection,
-  handleWindowResize, interpolator, makeStairCase, mergeDatasArea, timeShiftTrain,
+  handleWindowResize, interpolateOnTime, makeStairCase, mergeDatasArea, timeShiftTrain,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
 import {
   updateChart, updateMustRedraw, updatePositionValues, updateSimulation, updateSelectedTrain,
@@ -227,7 +227,7 @@ export default function SpaceTimeChart() {
   useEffect(() => {
     if (timePosition) {
       dispatch(updatePositionValues(
-        interpolator(
+        interpolateOnTime(
           dataSimulation[selectedTrain], keyValues, LIST_VALUES_NAME_SPACE_TIME, timePosition,
         ),
       ));
