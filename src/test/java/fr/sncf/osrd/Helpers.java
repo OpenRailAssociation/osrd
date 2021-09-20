@@ -228,6 +228,13 @@ public class Helpers {
         return getConfigWithSpeedInstructions(path, new SpeedInstructions(null));
     }
 
+    /**
+     * Generates the default config from tiny_infra/config_railjson.json without allowances
+     */
+    public static Config getBaseConfigNoAllowanceNonConstantDec() {
+        return getConfigWithSpeedInstructionsNonConstantDec(new SpeedInstructions(null));
+    }
+
     /** Gets the default config but with the given SpeedInstruction in train schedules */
     public static Config getConfigWithSpeedInstructions(SpeedInstructions instructions) {
         var config = getBaseConfig("tiny_infra/config_railjson.json");
@@ -242,6 +249,12 @@ public class Helpers {
         return config;
     }
 
+    /** Gets the default config but with the given SpeedInstruction in train schedules */
+    public static Config getConfigWithSpeedInstructionsNonConstantDec(SpeedInstructions instructions) {
+        var config = getBaseConfig("tiny_infra/config_railjson_nonconstdec.json");
+        config.trainSchedules.forEach(schedule -> schedule.speedInstructions = instructions);
+        return config;
+    }
 
     /** Loads the given config, but replaces the given stops in the schedule */
     public static Config makeConfigWithGivenStops(String baseConfigPath, RJSTrainStop[] stops) {
@@ -283,6 +296,22 @@ public class Helpers {
     public static Config getConfigWithSpeedInstructionsAndInfra(SpeedInstructions instructions, Infra infra) {
         try {
             var path = "tiny_infra/config_railjson.json";
+            var config = makeWithGivenInfra(getResourcePath(path), infra);
+            config.trainSchedules.forEach(schedule -> schedule.speedInstructions = instructions);
+            return config;
+        } catch (IOException | InvalidRollingStock | InvalidSchedule | InvalidSuccession e) {
+            fail(e);
+            throw new RuntimeException();
+        }
+    }
+
+    /** Gets the config from the file passed in arguments but with the given SpeedInstruction in train schedules
+     * and a given infrastructure */
+    public static Config getConfigWithSpeedInstructionsAndInfraNonConstDec(
+            SpeedInstructions instructions,
+            Infra infra) {
+        try {
+            var path = "tiny_infra/config_railjson_nonconstdec.json";
             var config = makeWithGivenInfra(getResourcePath(path), infra);
             config.trainSchedules.forEach(schedule -> schedule.speedInstructions = instructions);
             return config;
