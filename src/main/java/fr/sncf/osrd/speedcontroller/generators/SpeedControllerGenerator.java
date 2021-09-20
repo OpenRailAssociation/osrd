@@ -170,8 +170,8 @@ public abstract class SpeedControllerGenerator {
         var inertia = schedule.rollingStock.mass * schedule.rollingStock.inertiaCoefficient;
         // It starts from the endPosition going backwards
         var location = convertPosition(schedule, sim, endPosition);
-
-        do {
+        expectedSpeeds.put(location.getPathPosition(), speed);
+        while (speed < maxSpeed && location.getPathPosition() >= 0.0001) {
             expectedSpeeds.put(location.getPathPosition(), speed);
             var integrator = TrainPhysicsIntegrator.make(timestep, schedule.rollingStock,
                     speed, location.meanTrainGrade());
@@ -181,7 +181,7 @@ public abstract class SpeedControllerGenerator {
                     -1);
             speed = update.speed;
             location = convertPosition(schedule, sim, location.getPathPosition() + update.positionDelta);
-        } while (speed < maxSpeed && location.getPathPosition() >= 0.0001);
+        };
 
         return expectedSpeeds;
     }
