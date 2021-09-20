@@ -14,10 +14,7 @@ from osrd_infra.serializers import (
     PathInputSerializer,
 )
 
-from osrd_infra.models import (
-    Path,
-    TrackSectionEntity,
-)
+from osrd_infra.models import Path, TrackSectionEntity, OperationalPointEntity
 
 
 def status_missing_field_keyerror(key_error: KeyError):
@@ -52,6 +49,11 @@ def payload_fill_steps(payload, step_stop_times, track_map):
             stop_time_index += 1
         else:
             step["stop_time"] = 0
+
+        if "id" in step:
+            step["id"] = reverse_format(step["id"])
+            op = OperationalPointEntity.objects.get(entity_id=step["id"])
+            step["name"] = op.operational_point.name
 
         track = track_map[step["position"]["track_section"]]
         offset = step["position"]["offset"] / track.track_section.length

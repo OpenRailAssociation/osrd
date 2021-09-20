@@ -448,13 +448,24 @@ class TrackSectionLinkEntity(Entity):
     ]
 
 
+class OperationalPointComponent(Component):
+    ci = models.IntegerField()
+    ch = models.CharField(max_length=2)
+    ch_short_label = models.CharField(max_length=255, null=True)
+    ch_long_label = models.CharField(max_length=255, null=True)
+    name = models.CharField(max_length=255)
+
+    class ComponentMeta:
+        name = "operational_point"
+        unique = True
+
+
 class OperationalPointEntity(Entity):
     name = "operational_point"
     verbose_name_plural = "operational point entities"
     components = [
         IdentifierComponent,
-        GeoPointLocationComponent,
-        KilometricPointComponent,
+        OperationalPointComponent,
     ]
 
 
@@ -465,6 +476,7 @@ class OperationalPointPartComponent(Component):
 
     class ComponentMeta:
         name = "operational_point_part"
+        unique = True
 
 
 class OperationalPointPartEntity(Entity):
@@ -503,7 +515,6 @@ class SpeedSectionEntity(Entity):
     components = [
         IdentifierComponent,
         GeoAreaLocationComponent,
-        KilometricPointComponent,
         SpeedSectionComponent,
     ]
 

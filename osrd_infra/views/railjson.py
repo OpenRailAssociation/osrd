@@ -128,7 +128,7 @@ def serialize_waypoint(cached_entities, entity):
 
 def serialize_op_part(cached_entities, op_part_entity):
     # .all() is used instead of .get to make django's orm use prefetching
-    (op_part_component,) = op_part_entity.operational_point_part_set.all()
+    op_part_component = op_part_entity.operational_point_part
     op_id = op_part_component.operational_point_id
     op = cached_entities["op"][op_id]
     position = op_part_entity.point_location.offset
@@ -410,7 +410,7 @@ def railjson_serialize_infra(infra):
         "op_parts": fetch_and_map(
             OperationalPointPartEntity,
             namespace,
-            prefetch_related=("operational_point_part_set",),
+            prefetch_related=("operational_point_part",),
         ),
         "speed_sections": fetch_and_map(SpeedSectionEntity, namespace),
         "speed_section_parts": fetch_and_map(SpeedSectionPartEntity, namespace),

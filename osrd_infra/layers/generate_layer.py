@@ -10,6 +10,7 @@ from osrd_infra.models import (
     GeoLineLocationComponent,
     GeoPointLocationComponent,
     Infra,
+    OperationalPointPartEntity,
     SignalEntity,
     SignalingType,
     SpeedSectionPartEntity,
@@ -24,6 +25,7 @@ def generate_layers(infra: Infra):
     generate_speed_layer(infra)
     generate_signaling_type_layer(infra)
     generate_electrification_type_layer(infra)
+    generate_operational_point_layer(infra)
 
 
 def get_geo_attribute_name(entity_type: Type[Entity]):
@@ -112,3 +114,24 @@ def generate_electrification_type_layer(infra: Infra):
                 layer_object.add_metadata(
                     "component_id", electrification_type.component_id
                 )
+
+
+def generate_operational_point_layer(infra: Infra):
+    with LayerCreator("operational_point", infra.id) as creator:
+        for op_part in fetch_entities(OperationalPointPartEntity, infra.namespace):
+            # Get geometry of the object
+            geo = op_part.geo_point_location.geographic
+            sch = op_part.geo_point_location.schematic
+
+            # Fetch operational point component
+            op = op_part.operational_point_part.operational_point
+            op_comp = op.operational_point
+
+            # Add entity to layer
+            layer_object = creator.create_object(geo, sch)
+            layer_object.add_metadata("entity_id", op_part.entity_id)
+            layer_object.add_metadata("name", op_comp.name)
+            layer_object.add_metadata("ci", op_comp.ci)
+            layer_object.add_metadata("ch", op_comp.ch)
+            layer_object.add_metadata("ch_short_label", op_comp.ch_short_label)
+            layer_object.add_metadata("ch_long_label", op_comp.ch_long_label)
