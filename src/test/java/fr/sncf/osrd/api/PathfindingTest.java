@@ -58,8 +58,8 @@ public class PathfindingTest extends ApiTest {
         assertEquals("rt.S7-buffer_stop_c", response.path.get(2).route);
 
         assertEquals(2, response.steps.size());
-        assertEquals("op.station_foo", response.steps.get(0).name);
-        assertEquals("op.station_bar", response.steps.get(1).name);
+        assertEquals("op.station_foo", response.steps.get(0).id);
+        assertEquals("op.station_bar", response.steps.get(1).id);
     }
 
     @Test
