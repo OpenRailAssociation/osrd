@@ -1,3 +1,6 @@
+import json
+from typing import Dict, Tuple, List
+
 from rest_framework.response import Response
 
 from osrd_infra.utils import Benchmarker
@@ -23,7 +26,7 @@ from osrd_infra.models import (
     fetch_entities,
 )
 
-from collections import Counter, defaultdict
+from collections import defaultdict
 import logging
 
 
@@ -219,71 +222,75 @@ def serialize_track_section_link(track_section_link_entity):
         "end": serialize_endpoint(
             track_section_link.end_endpoint, track_section_link.end_track_section_id
         ),
-        "navigability": "BOTH",
+        "navigability": "NORMAL",
     }
 
 
-def switch_types():
+def convert_endpoint_to_tuple(endpoint: Dict) -> Tuple[int, int]:
+    return endpoint["endpoint"], endpoint["track_section"]
+
+
+def make_switch_template(branches: List[Tuple[int, int]], links: List[Dict]) -> Dict:
     """
-    Generates the switch models in the infra.
-    For now it only contains bidirectional switches
+    Generates a switch template for a specific switch.
+    We merge the duplicated templates later on.
+    Branches are represented as tuples of (endpoint, track_section_id)
+    TODO: import group data that isn't one link at a time
+    TODO: reduce the amount of duplicate templates (this requires changing switch positions in routes)
     """
+    ports = [str(i) for i in range(len(branches))]
+    groups = dict()
+    for i, link in enumerate(links):
+        origin_tuple = convert_endpoint_to_tuple(link["origin"])
+        destination_tuple = convert_endpoint_to_tuple(link["destination"])
+        src_index = branches.index(origin_tuple)
+        dst_index = branches.index(destination_tuple)
+        groups[str(i)] = [{
+            "src": str(src_index),
+            "dst": str(dst_index),
+            "bidirectional": False
+        }]
+
     return {
-        "classic_switch": {
-            "ports": [
-                "base",
-                "left",
-                "right"
-            ],
-            "groups": {
-                "LEFT": [
-                    {
-                        "src": "base",
-                        "dst": "left",
-                        "bidirectional": True
-                    }
-                ],
-                "RIGHT": [
-                    {
-                        "src": "base",
-                        "dst": "right",
-                        "bidirectional": True
-                    }
-                ]
-            }
-        }
+        "ports": ports,
+        "groups": groups
     }
 
 
-def serialize_classic_switch(cached_entities, switch_entity):
-    track_section_links = cached_entities["track_section_links"]
-    left_link = track_section_links[switch_entity.switch.left_id].track_section_link
-    right_link = track_section_links[switch_entity.switch.right_id].track_section_link
+def serialize_switch_templates(switch_templates: Dict[str, int]):
+    res = dict()
+    for template_str, template_id in switch_templates.items():
+        template = json.loads(template_str)
+        res[str(template_id)] = template
+    return res
 
-    # amongst these two links, there has to be a single common base and no more
-    endpoints = []
-    for link in (left_link, right_link):
-        endpoints.append((link.begin_endpoint, link.begin_track_section_id))
-        endpoints.append((link.end_endpoint, link.end_track_section_id))
-    endpoint_counter = Counter(endpoints)
 
-    (
-        (base_endpoint, base_occ),
-        (left_endpoint, left_occ),
-        (right_endpoint, right_occ),
-    ) = endpoint_counter.most_common()
-    assert base_occ == 2
-    assert left_occ == 1
-    assert right_occ == 1
+def serialize_switch(switch_entity: SwitchEntity, switch_templates: Dict[str, int]) -> Dict:
+    links = switch_entity.switch.links
+
+    #  We sort branches according to their link count to reduce the number of different templates generated
+    branch_count = defaultdict(lambda: 0)
+    for link in links:
+        branch_count[convert_endpoint_to_tuple(link["origin"])] += 1
+        branch_count[convert_endpoint_to_tuple(link["destination"])] += 1
+    branches = sorted(branch_count, key=branch_count.get)
+
+    ports = dict()
+    for i, branch in enumerate(branches):
+        ports[str(i)] = serialize_endpoint(*branch)
+
+    template = make_switch_template(branches, links)
+    template_str = json.dumps(template)
+    if template_str in switch_templates:
+        template_id = switch_templates[template_str]
+    else:
+        template_id = len(switch_templates)
+        switch_templates[template_str] = template_id
 
     return {
         "id": format_switch_id(switch_entity.entity_id),
-        "switch_type": "classic_switch",  # TODO: add different switch types
-        "ports": {
-            "base": serialize_endpoint(*base_endpoint),
-            "left": serialize_endpoint(*left_endpoint),
-            "right": serialize_endpoint(*right_endpoint),
-        },
+        "switch_type": str(template_id),
+        "ports": ports,
         "group_change_delay": 6  # TODO: add change delay
     }
 
@@ -361,9 +368,7 @@ def serialize_route(cached_entities, route_entity, prefetched_release_groups):
     return {
         "id": format_route_id(route_entity.entity_id),
         "switches_group": {
-            format_switch_id(position_component.switch_id): SwitchPosition(
-                position_component.position
-            ).name
+            format_switch_id(position_component.switch_id): str(position_component.position)
             for position_component in switch_position_components
         },
         "release_groups": [
@@ -436,13 +441,17 @@ def railjson_serialize_infra_namespace(namespace):
     ]
 
     bench.step("serializing switches")
+
+    # keys are a json dump of the template, values are the template ids
+    # using json dumps makes it easier to detect duplicates
+    switch_templates = dict()
     res["switches"] = [
-        serialize_classic_switch(cached_entities, entity)
+        serialize_switch(entity, switch_templates)
         for entity in fetch_entities(SwitchEntity, namespace)
     ]
 
     bench.step("serializing switch models")
-    res["switch_types"] = switch_types()
+    res["switch_types"] = serialize_switch_templates(switch_templates)
 
     bench.step("serializing script functions")
     res["script_functions"] = [
