@@ -9,13 +9,12 @@ import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import colors from 'common/Map/Consts/colors.ts';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateViewport } from 'reducers/map';
-import { sec2time, time2sec } from 'utils/timeManipulation';
+import { datetime2sec } from 'utils/timeManipulation';
 import bbox from '@turf/bbox';
 import along from '@turf/along';
 import lineSlice from '@turf/line-slice';
 import lineLength from '@turf/length';
 import { lineString, point } from '@turf/helpers';
-import nearestPointOnLine from '@turf/nearest-point-on-line';
 
 import 'common/Map/Map.scss';
 
@@ -47,33 +46,10 @@ import Signals from 'common/Map/Layers/Signals';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import RenderItinerary from 'applications/osrd/components/SimulationMap/RenderItinerary';
 
-import { interpolateOnPosition } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { interpolateOnPosition, interpolateOnTime } from 'applications/osrd/components/Helpers/ChartHelpers';
 import { updateTimePosition } from 'reducers/osrdsimulation';
 
 const PATHFINDING_URI = '/pathfinding/';
-
-const createOtherPoint = (trains, selectedTrain, timePosition) => {
-  // const actualTime = trains[selectedTrain].steps[hoverPosition].time;
-  const actualTime = time2sec(timePosition);
-
-  // First find trains where actual time from position is between start & stop
-  const concernedTrains = [];
-  trains.forEach((train, idx) => {
-    if (actualTime >= train.steps[0].time
-      && actualTime <= train.steps[train.steps.length - 1].time
-      && idx !== selectedTrain) {
-      concernedTrains.push(idx);
-    }
-  });
-  const results = [];
-
-  // For each train founded, search for nearest time point and send it
-  concernedTrains.forEach((trainIdx) => {
-    const trainTimes = trains[trainIdx].steps.filter((step) => step.time >= actualTime);
-    results.push({ ...trainTimes[0], name: trains[trainIdx].name, id: trainIdx });
-  });
-  return results;
-};
 
 const Map = (props) => {
   const { setExtViewport } = props;
@@ -97,18 +73,52 @@ const Map = (props) => {
     (value) => dispatch(updateViewport(value, undefined)), [dispatch],
   );
 
+  const createOtherPoints = () => {
+    const actualTime = datetime2sec(timePosition);
+
+    // First find trains where actual time from position is between start & stop
+    const concernedTrains = [];
+    simulation.trains.forEach((train, idx) => {
+      if (actualTime >= train.stops[0].time
+        && actualTime <= train.stops[train.stops.length - 1].time
+        && idx !== selectedTrain) {
+        concernedTrains.push({
+          ...interpolateOnTime(train, ['time', 'position'], ['speeds'], actualTime),
+          name: train.name,
+          id: idx,
+        });
+      }
+    });
+    return concernedTrains;
+  };
+
   const getSimulationPositions = () => {
     const line = lineString(geojsonPath.geometry.coordinates);
-    const position = along(
-      line,
-      positionValues.headPosition.position / 1000,
-      { units: 'kilometers' },
-    );
-    // setTrainHoverPosition(position);
-    setTrainHoverPosition({
-      ...position,
-      properties: positionValues.speed,
-    });
+
+    if (positionValues.headPosition) {
+      const position = along(
+        line,
+        positionValues.headPosition.position / 1000,
+        { units: 'kilometers' },
+      );
+      setTrainHoverPosition({
+        ...position,
+        properties: positionValues.speed,
+      });
+    }
+
+    // Found trains including timePosition, and organize them with geojson collection of points
+    setTrainHoverPositionOthers(createOtherPoints().map((train) => ({
+      ...along(
+        line,
+        train.speeds.position / 1000,
+        { units: 'kilometers' },
+      ),
+      properties: {
+        ...train.speeds,
+        name: train.name,
+      },
+    })));
   };
 
   const zoomToFeature = (boundingBox) => {
@@ -217,10 +227,8 @@ const Map = (props) => {
   }, [simulation.train, selectedTrain]);
 
   useEffect(() => {
-    if (timePosition && geojsonPath && positionValues.headPosition) {
+    if (timePosition && geojsonPath) {
       getSimulationPositions();
-      // setTrainHoverPosition(simulation.trains[selectedTrain].steps[hoverPosition]);
-      // setTrainHoverPositionOthers(createOtherPoint(simulation.trains, selectedTrain, timePosition));
     }
   }, [timePosition]);
 

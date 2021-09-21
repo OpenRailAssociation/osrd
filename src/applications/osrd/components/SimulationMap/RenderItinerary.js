@@ -11,26 +11,15 @@ export default function RenderItinerary(props) {
           id="geojsonPath"
           type="line"
           paint={{
-            'line-width': 2,
+            'line-width': 3,
             'line-color': '#e05206',
           }}
         />
       </Source>
-      {/* <Source type="geojson" data={geojsonPoints}>
-        <Layer
-          id="geojsonPoints"
-          type="circle"
-          paint={{
-            'circle-color': '#e05206',
-            'circle-radius': 1,
-          }}
-        />
-      </Source> */}
     </>
   );
 }
 
 RenderItinerary.propTypes = {
   geojsonPath: PropTypes.object.isRequired,
-  // geojsonPoints: PropTypes.object.isRequired,
 };
