@@ -1,7 +1,14 @@
 from django.core.management.base import BaseCommand, CommandError
-from osrd_infra.models import Infra, TrackSectionEntity, WaypointEntity, SignalEntity
 from pathlib import Path
 import csv
+
+from osrd_infra.models import (
+    Infra,
+    TrackSectionEntity,
+    WaypointEntity,
+    SignalEntity,
+    TVDSectionEntity,
+)
 
 
 def formatter(name, prefetch=None):
@@ -14,6 +21,7 @@ def formatter(name, prefetch=None):
             prefetch = [prefetch]
         f.prefetch = prefetch
         return f
+
     return _wrapper
 
 
@@ -42,12 +50,21 @@ def format_line_sch(entity):
     return str(entity.geo_line_location.schematic)
 
 
+@formatter("lines_geo", prefetch="geo_lines_location")
+def format_lines_geo(entity):
+    return str(entity.geo_lines_location.geographic)
+
+
+@formatter("lines_sch", prefetch="geo_lines_location")
+def format_lines_sch(entity):
+    return str(entity.geo_lines_location.schematic)
+
+
 @formatter("identifiers", prefetch="identifier_set")
 def format_identifiers(entity):
     return ",".join(
         f"{identifier.database}:{identifier.name}"
-        for identifier
-        in entity.identifier_set.all()
+        for identifier in entity.identifier_set.all()
     )
 
 
@@ -65,8 +82,8 @@ class Command(BaseCommand):
     help = "Dumps the database into something QGis can import"
 
     def add_arguments(self, parser):
-        parser.add_argument('infra_id', type=int)
-        parser.add_argument('out_dir', type=str)
+        parser.add_argument("infra_id", type=int)
+        parser.add_argument("out_dir", type=str)
 
     def handle(self, *args, **options):
         # get the infrastructure
@@ -85,19 +102,41 @@ class Command(BaseCommand):
             dump_entities(
                 csv.writer(fp),
                 TrackSectionEntity.objects.filter(namespace=infra_namespace),
-                [format_osrd_id, format_line_geo, format_line_sch, format_identifiers]
+                [format_osrd_id, format_line_geo, format_line_sch, format_identifiers],
             )
 
         with (out_dir / "waypoints.csv").open("w") as fp:
             dump_entities(
                 csv.writer(fp),
                 WaypointEntity.objects.filter(namespace=infra_namespace),
-                [format_osrd_id, format_point_geo, format_point_sch, format_identifiers]
+                [
+                    format_osrd_id,
+                    format_point_geo,
+                    format_point_sch,
+                    format_identifiers,
+                ],
             )
 
         with (out_dir / "signals.csv").open("w") as fp:
             dump_entities(
                 csv.writer(fp),
                 SignalEntity.objects.filter(namespace=infra_namespace),
-                [format_osrd_id, format_point_geo, format_point_sch, format_identifiers]
+                [
+                    format_osrd_id,
+                    format_point_geo,
+                    format_point_sch,
+                    format_identifiers,
+                ],
+            )
+
+        with (out_dir / "tvd_sections.csv").open("w") as fp:
+            dump_entities(
+                csv.writer(fp),
+                TVDSectionEntity.objects.filter(namespace=infra_namespace),
+                [
+                    format_osrd_id,
+                    format_lines_geo,
+                    format_lines_sch,
+                    format_identifiers,
+                ],
             )
