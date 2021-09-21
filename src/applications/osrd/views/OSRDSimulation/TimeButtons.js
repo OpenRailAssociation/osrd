@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateTimePosition } from 'reducers/osrdsimulation';
-import { datetime2time, time2datetime } from 'utils/timeManipulation';
+import { datetime2time, time2datetime, sec2datetime } from 'utils/timeManipulation';
 import {
-  FaPause, FaPlay, FaBackward,
+  FaPause, FaPlay, FaBackward, FaStop,
 } from 'react-icons/fa';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
@@ -16,11 +16,16 @@ const factor2ms = (factor) => {
 
 export default function TimeButtons() {
   const dispatch = useDispatch();
-  const { timePosition } = useSelector((state) => state.osrdsimulation);
+  const { timePosition, simulation, selectedTrain } = useSelector((state) => state.osrdsimulation);
   const [playInterval, setPlayInterval] = useState(undefined);
   const [playReverse, setPlayReverse] = useState(false);
   const [simulationSpeed, setSimulationSpeed] = useState(1);
 
+  const stop = () => {
+    clearInterval(playInterval);
+    setPlayInterval(undefined);
+    dispatch(updateTimePosition(sec2datetime(simulation.trains[selectedTrain].stops[0].time)));
+  };
   const pause = () => {
     clearInterval(playInterval);
     setPlayInterval(undefined);
@@ -70,6 +75,13 @@ export default function TimeButtons() {
           onChange={changeTimePosition}
         />
       </span>
+      <button
+        type="button"
+        className="btn btn-only-icon mr-1 btn-danger"
+        onClick={stop}
+      >
+        <FaStop />
+      </button>
       <button
         type="button"
         className={`btn btn-only-icon mr-1 ${playReverse ? 'btn-primary' : 'btn-white'}`}

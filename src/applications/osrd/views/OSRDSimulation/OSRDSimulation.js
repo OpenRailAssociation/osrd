@@ -136,10 +136,10 @@ const OSRDSimulation = () => {
               )}
               <div className="osrd-simulation-container mb-2">
                 <div className="row">
-                  <div className="col-md-4">
+                  <div className="col-xl-4">
                     <TimeButtons />
                   </div>
-                  <div className="col-md-8">
+                  <div className="col-xl-8">
                     {simulation.trains.length > 0 ? (
                       <TrainDetails />
                     ) : null}
