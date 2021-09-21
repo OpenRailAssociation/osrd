@@ -57,7 +57,7 @@ const Map = (props) => {
     viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM,
   } = useSelector((state) => state.map);
   const {
-    selectedTrain, simulation, positionValues, timePosition,
+    isPlaying, selectedTrain, simulation, positionValues, timePosition,
   } = useSelector((state) => state.osrdsimulation);
   const [showSearch, setShowSearch] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -177,7 +177,7 @@ const Map = (props) => {
   };
 
   const onFeatureHover = (e) => {
-    if (e) {
+    if (!isPlaying && e) {
       const line = lineString(geojsonPath.geometry.coordinates);
       const cursorPoint = point(e.lngLat);
       // const stop = nearestPointOnLine(line, cursorPoint);

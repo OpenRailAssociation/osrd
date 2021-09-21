@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+import { store } from 'Store';
 import drawGuideLines from 'applications/osrd/components/Simulation/drawGuideLines';
 import { gridX, gridY, interpolateOnPosition } from 'applications/osrd/components/Helpers/ChartHelpers';
 import {
@@ -123,31 +124,34 @@ const enableInteractivity = (
     .on('end', () => dispatch(updateMustRedraw(true)));
 
   const mousemove = () => {
-    // If GET
-    if (keyValues[0] === 'time') {
-      // recover coordinate we need
-      const timePositionLocal = rotate
-        ? chart.y.invert(d3.mouse(d3.event.currentTarget)[1])
-        : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
-      dispatch(updateTimePosition(timePositionLocal));
-    } else {
-      // If GEV
-      const positionLocal = rotate
-        ? chart.y.invert(d3.mouse(d3.event.currentTarget)[1])
-        : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
-      const timePositionLocal = interpolateOnPosition(dataSimulation, keyValues, positionLocal);
-      if (timePositionLocal) {
+    // If GET && not playing
+    const { osrdsimulation } = store.getState();
+    if (!osrdsimulation.isPlaying) {
+      if (keyValues[0] === 'time') {
+        // recover coordinate we need
+        const timePositionLocal = rotate
+          ? chart.y.invert(d3.mouse(d3.event.currentTarget)[1])
+          : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
         dispatch(updateTimePosition(timePositionLocal));
+      } else {
+        // If GEV
+        const positionLocal = rotate
+          ? chart.y.invert(d3.mouse(d3.event.currentTarget)[1])
+          : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
+        const timePositionLocal = interpolateOnPosition(dataSimulation, keyValues, positionLocal);
+        if (timePositionLocal) {
+          dispatch(updateTimePosition(timePositionLocal));
+        }
       }
-    }
 
-    // Update guideLines
-    chart.svg.selectAll('#vertical-line')
-      .attr('x1', d3.mouse(d3.event.currentTarget)[0])
-      .attr('x2', d3.mouse(d3.event.currentTarget)[0]);
-    chart.svg.selectAll('#horizontal-line')
-      .attr('y1', d3.mouse(d3.event.currentTarget)[1])
-      .attr('y2', d3.mouse(d3.event.currentTarget)[1]);
+      // Update guideLines
+      chart.svg.selectAll('#vertical-line')
+        .attr('x1', d3.mouse(d3.event.currentTarget)[0])
+        .attr('x2', d3.mouse(d3.event.currentTarget)[0]);
+      chart.svg.selectAll('#horizontal-line')
+        .attr('y1', d3.mouse(d3.event.currentTarget)[1])
+        .attr('y2', d3.mouse(d3.event.currentTarget)[1]);
+    }
   };
 
   chart.svg // .selectAll('.zoomable')

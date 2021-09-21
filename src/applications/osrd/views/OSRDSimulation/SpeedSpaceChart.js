@@ -34,7 +34,7 @@ const drawAxisTitle = (chart, rotate) => {
 export default function SpeedSpaceChart() {
   const dispatch = useDispatch();
   const {
-    mustRedraw, positionValues, selectedTrain, simulation, timePosition,
+    isPlaying, mustRedraw, positionValues, selectedTrain, simulation, timePosition,
   } = useSelector((state) => state.osrdsimulation);
   const [rotate, setRotate] = useState(false);
   const [chart, setChart] = useState(undefined);

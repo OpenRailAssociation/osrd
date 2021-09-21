@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { updateTimePosition } from 'reducers/osrdsimulation';
+import { updateTimePosition, updateIsPlaying } from 'reducers/osrdsimulation';
 import { datetime2time, time2datetime, sec2datetime } from 'utils/timeManipulation';
 import {
   FaPause, FaPlay, FaBackward, FaStop,
@@ -25,10 +25,12 @@ export default function TimeButtons() {
     clearInterval(playInterval);
     setPlayInterval(undefined);
     dispatch(updateTimePosition(sec2datetime(simulation.trains[selectedTrain].stops[0].time)));
+    dispatch(updateIsPlaying(false));
   };
   const pause = () => {
     clearInterval(playInterval);
     setPlayInterval(undefined);
+    dispatch(updateIsPlaying(false));
   };
   const play = (playReverseLocal, simulationSpeedLocal = simulationSpeed) => {
     clearInterval(playInterval); // Kill interval playing if concerned
@@ -44,6 +46,7 @@ export default function TimeButtons() {
       dispatch(updateTimePosition(new Date(i * 1000)));
     }, factor.ms);
     setPlayInterval(playIntervalLocal);
+    dispatch(updateIsPlaying(true));
   };
 
   const changeReverse = () => {

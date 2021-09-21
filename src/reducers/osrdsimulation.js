@@ -4,6 +4,7 @@ import produce from 'immer';
 // Action Types
 export const UPDATE_CHART = 'osrdsimu/UPDATE_CHART';
 export const UPDATE_HOVER_POSITION = 'osrdsimu/UPDATE_HOVER_POSITION';
+export const UPDATE_IS_PLAYING = 'osrdsimu/UPDATE_IS_PLAYING';
 export const UPDATE_MUST_REDRAW = 'osrdsimu/UPDATE_MUST_REDRAW';
 export const UPDATE_POSITION_VALUES = 'osrdsimu/UPDATE_POSITION_VALUES';
 export const UPDATE_SELECTED_TRAIN = 'osrdsimu/UPDATE_SELECTED_TRAIN';
@@ -14,6 +15,7 @@ export const UPDATE_TIME_POSITION = 'osrdsimu/UPDATE_TIME_POSITION';
 export const initialState = {
   chart: undefined,
   hoverPosition: undefined,
+  isPlaying: false,
   mustRedraw: true,
   positionValues: {
     headPosition: 0,
@@ -36,6 +38,9 @@ export default function reducer(state = initialState, action) {
         break;
       case UPDATE_HOVER_POSITION:
         draft.hoverPosition = action.hoverPosition;
+        break;
+      case UPDATE_IS_PLAYING:
+        draft.isPlaying = action.isPlaying;
         break;
       case UPDATE_MUST_REDRAW:
         draft.mustRedraw = action.mustRedraw;
@@ -70,6 +75,14 @@ export function updateHoverPosition(hoverPosition) {
     dispatch({
       type: UPDATE_HOVER_POSITION,
       hoverPosition,
+    });
+  };
+}
+export function updateIsPlaying(isPlaying) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_IS_PLAYING,
+      isPlaying,
     });
   };
 }
