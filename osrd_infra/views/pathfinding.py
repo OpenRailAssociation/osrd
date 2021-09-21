@@ -7,7 +7,7 @@ import requests
 from django.conf import settings
 from osrd_infra.views.railjson import format_track_section_id
 from rest_framework.response import Response
-from osrd_infra.utils import geo_transform, reverse_format, line_string_slice
+from osrd_infra.utils import geo_transform, reverse_format, line_string_slice_points
 
 from osrd_infra.serializers import (
     PathSerializer,
@@ -112,8 +112,8 @@ def get_geojson_path(payload, track_map):
             assert begin >= 0.0 and begin <= 1.0
             assert end >= 0.0 and end <= 1.0
 
-            geographic += line_string_slice(geo, begin, end)
-            schematic += line_string_slice(schema, begin, end)
+            geographic += line_string_slice_points(geo, begin, end)
+            schematic += line_string_slice_points(schema, begin, end)
     return LineString(geographic).json, LineString(schematic).json
 
 

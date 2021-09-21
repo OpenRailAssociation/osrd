@@ -14,6 +14,7 @@ from osrd_infra.models import (
     SignalEntity,
     SignalingType,
     SpeedSectionPartEntity,
+    TVDSectionEntity,
     TrackSectionEntity,
     fetch_entities,
 )
@@ -26,6 +27,7 @@ def generate_layers(infra: Infra):
     generate_signaling_type_layer(infra)
     generate_electrification_type_layer(infra)
     generate_operational_point_layer(infra)
+    generate_tvd_section_layer(infra)
 
 
 def get_geo_attribute_name(entity_type: Type[Entity]):
@@ -135,3 +137,15 @@ def generate_operational_point_layer(infra: Infra):
             layer_object.add_metadata("ch", op_comp.ch)
             layer_object.add_metadata("ch_short_label", op_comp.ch_short_label)
             layer_object.add_metadata("ch_long_label", op_comp.ch_long_label)
+
+
+def generate_tvd_section_layer(infra: Infra):
+    with LayerCreator("tvd_section", infra.id) as creator:
+        for tvd in fetch_entities(TVDSectionEntity, infra.namespace):
+            # Get geometry of the object
+            geo = tvd.geo_lines_location.geographic
+            sch = tvd.geo_lines_location.schematic
+
+            # Add entity to layer
+            layer_object = creator.create_object(geo, sch)
+            layer_object.add_metadata("entity_id", tvd.entity_id)

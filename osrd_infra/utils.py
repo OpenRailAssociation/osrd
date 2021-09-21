@@ -24,7 +24,7 @@ def reverse_format(object_id):
     return int(object_id.split(".")[1])
 
 
-def line_string_slice(line_string, begin_normalized, end_normalized):
+def line_string_slice_points(line_string, begin_normalized, end_normalized):
     if begin_normalized > end_normalized:
         # Compute the line string from end to start then reverse the result
         res = line_string_slice(line_string, end_normalized, begin_normalized)
@@ -43,6 +43,11 @@ def line_string_slice(line_string, begin_normalized, end_normalized):
     return [line_string.interpolate_normalized(pos) for pos in positions]
 
 
+def line_string_slice(line_string, begin_normalized, end_normalized):
+    points = line_string_slice_points(line_string, begin_normalized, end_normalized)
+    return LineString(points)
+
+
 def track_section_range_geom(track_section, start_offset, end_offset):
     length = track_section.track_section.length
     begin_normalized = start_offset / length
@@ -52,7 +57,6 @@ def track_section_range_geom(track_section, start_offset, end_offset):
     res = []
     for geom in (geo, sch):
         sliced = line_string_slice(geo, begin_normalized, end_normalized)
-        sliced = LineString(sliced)
         res.append(sliced)
     return tuple(res)
 

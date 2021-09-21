@@ -137,6 +137,15 @@ class GeoLineLocationComponent(Component):
         unique = True
 
 
+class GeoLinesLocationComponent(Component):
+    geographic = models.MultiLineStringField(srid=settings.OSRD_INFRA_SRID)
+    schematic = models.MultiLineStringField(srid=settings.OSRD_INFRA_SRID)
+
+    class ComponentMeta:
+        name = "geo_lines_location"
+        unique = True
+
+
 class TrackAngleComponent(Component):
     geographic = models.PositiveSmallIntegerField(validators=[MaxValueValidator(379)])
     schematic = models.PositiveSmallIntegerField(validators=[MaxValueValidator(379)])
@@ -557,6 +566,7 @@ class TVDSectionEntity(Entity):
     components = [
         IdentifierComponent,
         BerthingComponent,
+        GeoLinesLocationComponent,
     ]
 
 
