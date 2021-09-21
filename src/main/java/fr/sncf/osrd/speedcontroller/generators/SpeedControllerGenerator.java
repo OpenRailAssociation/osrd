@@ -172,7 +172,6 @@ public abstract class SpeedControllerGenerator {
         var location = convertPosition(schedule, sim, endPosition);
         expectedSpeeds.put(location.getPathPosition(), speed);
         while (speed < maxSpeed && location.getPathPosition() >= 0.0001) {
-            expectedSpeeds.put(location.getPathPosition(), speed);
             var integrator = TrainPhysicsIntegrator.make(timestep, schedule.rollingStock,
                     speed, location.meanTrainGrade());
             // TODO: max Gamma could have different values depending on the speed like in ERTMS
@@ -180,6 +179,8 @@ public abstract class SpeedControllerGenerator {
             var update =  integrator.computeUpdate(action, location.getPathPosition(),
                     -1);
             speed = update.speed;
+            expectedSpeeds.put(location.getPathPosition(), speed);
+            if (location.getPathPosition() + update.positionDelta < 0) break;
             location = convertPosition(schedule, sim, location.getPathPosition() + update.positionDelta);
         };
 
