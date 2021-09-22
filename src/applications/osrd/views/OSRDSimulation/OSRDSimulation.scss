@@ -65,6 +65,9 @@ svg text {
   fill: #777;
   font-size: .70rem;
   font-weight: bold;
+  &.selected {
+    fill: var(--primary);
+  }
 }
 
 /* SPACETIME */

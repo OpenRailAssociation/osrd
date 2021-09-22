@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import { LIST_VALUES_NAME_SPEED_SPACE } from 'applications/osrd/components/Simulation/consts';
 import {
-  defineLinear, expandAndFormatData, formatStepsWithSpace, handleWindowResize, mergeDatasArea,
+  defineLinear, expandAndFormatData, handleWindowResize, mergeDatasArea,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
 import { updateMustRedraw } from 'reducers/osrdsimulation';
 import defineChart from 'applications/osrd/components/Simulation/defineChart';
@@ -34,7 +34,7 @@ const drawAxisTitle = (chart, rotate) => {
 export default function SpeedSpaceChart() {
   const dispatch = useDispatch();
   const {
-    isPlaying, mustRedraw, positionValues, selectedTrain, simulation, timePosition,
+    mustRedraw, positionValues, selectedTrain, simulation, timePosition,
   } = useSelector((state) => state.osrdsimulation);
   const [rotate, setRotate] = useState(false);
   const [chart, setChart] = useState(undefined);
@@ -69,11 +69,11 @@ export default function SpeedSpaceChart() {
 
     const defineX = (chart === undefined)
       ? defineLinear(d3.max(Object.values(dataSimulation),
-        (data) => d3.max(data, (d) => d[(rotate ? keyValues[1] : keyValues[0])])))
+        (data) => d3.max(data, (d) => d[(rotate ? keyValues[1] : keyValues[0])] + 100)))
       : chart.x;
     const defineY = (chart === undefined)
       ? defineLinear(d3.max(Object.values(dataSimulation),
-        (data) => d3.max(data, (d) => d[(rotate ? keyValues[0] : keyValues[1])])))
+        (data) => d3.max(data, (d) => d[(rotate ? keyValues[0] : keyValues[1])] + 10)))
       : chart.y;
 
     const width = parseInt(d3.select(`#container-${CHART_ID}`).style('width'), 10);

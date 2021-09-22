@@ -106,24 +106,24 @@ const drawTrain = (
 
   if (direction) {
     drawArea(
-      chart, `${isSelected ? 'selected' : ''} area`, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
+      chart, `${isSelected && 'selected'} area`, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
       'areaBlock', rotate,
     );
-    drawCurve(chart, `${isSelected ? 'selected' : ''} end-block`, dataSimulation.routeEndOccupancy, groupID,
+    drawCurve(chart, `${isSelected && 'selected'} end-block`, dataSimulation.routeEndOccupancy, groupID,
       'curveLinear', keyValues, 'routeEndOccupancy', rotate, isSelected);
-    drawCurve(chart, `${isSelected ? 'selected' : ''} start-block`, dataSimulation.routeBeginOccupancy, groupID,
+    drawCurve(chart, `${isSelected && 'selected'} start-block`, dataSimulation.routeBeginOccupancy, groupID,
       'curveLinear', keyValues, 'routeBeginOccupancy', rotate, isSelected);
   }
 
   dataSimulation.tailPosition.forEach((tailPositionSection) => drawCurve(
-    chart, `${isSelected ? 'selected' : ''} tail`, tailPositionSection, groupID,
+    chart, `${isSelected && 'selected'} tail`, tailPositionSection, groupID,
     'curveLinear', keyValues, 'tailPosition', rotate, isSelected,
   ));
   dataSimulation.headPosition.forEach((headPositionSection) => drawCurve(
-    chart, `${isSelected ? 'selected' : ''} head`, headPositionSection, groupID,
+    chart, `${isSelected && 'selected'} head`, headPositionSection, groupID,
     'curveLinear', keyValues, 'headPosition', rotate, isSelected,
   ));
-  drawText(chart, groupID, dataSimulation, direction);
+  drawText(chart, dataSimulation, direction, groupID, isSelected);
 };
 
 const createTrain = (keyValues, simulationTrains) => {
