@@ -163,7 +163,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         var brakingSpeedControllers = findBrakingSpeedControllers(maxSpeedControllers);
         for (var announcer : brakingSpeedControllers) {
             // if that BrakingSpeedController is above v1 that means it will not have an impact here
-            var targetSpeedLimit = announcer.speeds.lastEntry().getValue();
+            var targetSpeedLimit = announcer.values.lastEntry().getValue();
             if (targetSpeedLimit > v1)
                 continue;
             // deceleration phases that are entirely above vf

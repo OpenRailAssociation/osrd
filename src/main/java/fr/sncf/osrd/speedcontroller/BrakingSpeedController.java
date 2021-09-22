@@ -7,44 +7,18 @@ import fr.sncf.osrd.utils.SortedDoubleMap;
  + * The speed controller used to slow down the train from the announce of a speed limit up to its enforcement signal.
  + */
 
-public class BrakingSpeedController extends SpeedController {
-    public final SortedDoubleMap speeds;
-
-    /**
-     * Creates a speed controller meant to slow down the train before a speed limit.
-     */
-
-    public BrakingSpeedController(double startPosition, double endPosition, SortedDoubleMap speeds) {
-        super(startPosition, endPosition);
-        this.speeds = speeds;
+public class BrakingSpeedController extends MapSpeedController {
+    public BrakingSpeedController(SortedDoubleMap values, double begin, double end) {
+        super(values, begin, end);
     }
 
-    /**
-     * Create LimitAnnounceSpeedController from initial speed
-     */
-    public static BrakingSpeedController create(SortedDoubleMap speeds) {
-        var start = speeds.firstKey();
-        var end = speeds.lastKey();
-        return new BrakingSpeedController(start, end, speeds);
-    }
-
-    @Override
-    public SpeedDirective getDirective(double pathPosition) {
-        return new SpeedDirective(speeds.interpolate(pathPosition));
-    }
-
-    @Override
-    public SpeedController scaled(double scalingFactor) {
-        var newSpeeds = new SortedDoubleMap();
-        for (var entry : speeds.entrySet()) {
-            newSpeeds.put(entry.getKey(), entry.getValue() * scalingFactor);
-        }
-        return new BrakingSpeedController(beginPosition, endPosition, newSpeeds);
+    public BrakingSpeedController(SortedDoubleMap values) {
+        super(values);
     }
 
     @Override
     public String toString() {
-        var targetSpeedLimit = speeds.lastEntry().getValue();
+        var targetSpeedLimit = values.lastEntry().getValue();
         return String.format("LimitAnnounceSpeedController { targetSpeed=%.3f, begin=%.3f, end=%.3f }",
                 targetSpeedLimit, beginPosition, endPosition);
     }
@@ -57,7 +31,7 @@ public class BrakingSpeedController extends SpeedController {
         if (other.getClass() != BrakingSpeedController.class)
             return false;
         var o = (BrakingSpeedController) other;
-        return o.speeds.equals(speeds);
+        return o.values.equals(values);
     }
 }
 

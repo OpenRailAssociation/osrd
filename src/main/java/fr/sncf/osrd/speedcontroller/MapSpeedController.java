@@ -5,7 +5,7 @@ import fr.sncf.osrd.utils.SortedDoubleMap;
 public class MapSpeedController extends SpeedController {
 
     /** Keys are positions in space, values are speed */
-    private final transient SortedDoubleMap values;
+    public final transient SortedDoubleMap values;
 
     public MapSpeedController(SortedDoubleMap values, double begin, double end) {
         super(begin, end);
