@@ -446,7 +446,7 @@ public class NonConstantDecTest {
         var marginsSimTime = marginsSim.getTime();
 
         // base run, no margin
-        final var config = getBaseConfigNoAllowanceNonConstantDec();
+        final var config = getConfigWithSpeedInstructionsAndInfraNonConstDec(new SpeedInstructions(null), infra);
         var sim = Simulation.createFromInfraAndEmptySuccessions(infra, 0, null);
         var eventsBase = run(sim, config);
         var simTime = sim.getTime();
