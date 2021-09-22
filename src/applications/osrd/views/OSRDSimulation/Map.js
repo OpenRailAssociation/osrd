@@ -46,7 +46,9 @@ import Signals from 'common/Map/Layers/Signals';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import RenderItinerary from 'applications/osrd/components/SimulationMap/RenderItinerary';
 
-import { interpolateOnPosition, interpolateOnTime } from 'applications/osrd/components/Helpers/ChartHelpers';
+import {
+  getDirection, interpolateOnPosition, interpolateOnTime,
+} from 'applications/osrd/components/Helpers/ChartHelpers';
 import { updateTimePosition } from 'reducers/osrdsimulation';
 
 const PATHFINDING_URI = '/pathfinding/';
@@ -79,11 +81,13 @@ const Map = (props) => {
     // First find trains where actual time from position is between start & stop
     const concernedTrains = [];
     simulation.trains.forEach((train, idx) => {
-      if (actualTime >= train.stops[0].time
-        && actualTime <= train.stops[train.stops.length - 1].time
+      if (actualTime >= train.head_positions[0][0].time
+        && actualTime <= train.head_positions[
+          train.head_positions.length - 1][
+          train.head_positions[train.head_positions.length - 1].length - 1].time
         && idx !== selectedTrain) {
         concernedTrains.push({
-          ...interpolateOnTime(train, ['time', 'position'], ['speeds'], actualTime),
+          ...interpolateOnTime(train, ['time', 'position'], ['head_positions', 'speeds'], actualTime),
           name: train.name,
           id: idx,
         });
@@ -105,17 +109,20 @@ const Map = (props) => {
         ...position,
         properties: positionValues.speed,
       });
+    } else {
+      setTrainHoverPosition(undefined);
     }
 
     // Found trains including timePosition, and organize them with geojson collection of points
     setTrainHoverPositionOthers(createOtherPoints().map((train) => ({
       ...along(
         line,
-        train.speeds.position / 1000,
+        train.head_positions.position / 1000,
         { units: 'kilometers' },
       ),
       properties: {
-        ...train.speeds,
+        ...train.head_positions,
+        speed: train.speeds.speed,
         name: train.name,
       },
     })));
@@ -180,16 +187,21 @@ const Map = (props) => {
     if (!isPlaying && e) {
       const line = lineString(geojsonPath.geometry.coordinates);
       const cursorPoint = point(e.lngLat);
-      // const stop = nearestPointOnLine(line, cursorPoint);
+      const startCoordinates = getDirection(simulation.trains[selectedTrain].head_positions)
+        ? [
+          geojsonPath.geometry.coordinates[0][0],
+          geojsonPath.geometry.coordinates[0][1],
+        ]
+        : [
+          geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][0],
+          geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][1],
+        ];
       const start = {
         type: 'Feature',
         properties: {},
         geometry: {
           type: 'Point',
-          coordinates: [
-            geojsonPath.geometry.coordinates[0][0],
-            geojsonPath.geometry.coordinates[0][1],
-          ],
+          coordinates: startCoordinates,
         },
       };
       const sliced = lineSlice(start, cursorPoint, line);
@@ -205,7 +217,7 @@ const Map = (props) => {
 
   const displayPath = () => {
     if (simulation.trains.length > 0) {
-      getGeoJSONPath(simulation.trains[selectedTrain].path);
+      getGeoJSONPath(simulation.trains[0].path);
     }
   };
 
