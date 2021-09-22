@@ -182,7 +182,7 @@ public abstract class SpeedControllerGenerator {
             expectedSpeeds.put(location.getPathPosition(), speed);
             if (location.getPathPosition() + update.positionDelta < 0) break;
             location = convertPosition(schedule, sim, location.getPathPosition() + update.positionDelta);
-        };
+        }
 
         return expectedSpeeds;
     }
