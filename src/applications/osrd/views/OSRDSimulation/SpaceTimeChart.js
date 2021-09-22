@@ -153,7 +153,7 @@ export default function SpaceTimeChart() {
   const ref = useRef();
   const dispatch = useDispatch();
   const {
-    isPlaying, mustRedraw, positionValues, selectedTrain, simulation, timePosition,
+    mustRedraw, positionValues, selectedTrain, simulation, timePosition,
   } = useSelector((state) => state.osrdsimulation);
   const keyValues = ['time', 'position'];
   const [rotate, setRotate] = useState(false);

@@ -86,11 +86,14 @@ const Map = (props) => {
           train.head_positions.length - 1][
           train.head_positions[train.head_positions.length - 1].length - 1].time
         && idx !== selectedTrain) {
-        concernedTrains.push({
-          ...interpolateOnTime(train, ['time', 'position'], ['head_positions', 'speeds'], actualTime),
-          name: train.name,
-          id: idx,
-        });
+        const interpolation = interpolateOnTime(train, ['time', 'position'], ['head_positions', 'speeds'], actualTime);
+        if (interpolation.head_positions) {
+          concernedTrains.push({
+            ...interpolation,
+            name: train.name,
+            id: idx,
+          });
+        }
       }
     });
     return concernedTrains;

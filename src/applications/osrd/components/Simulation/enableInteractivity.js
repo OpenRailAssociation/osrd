@@ -116,7 +116,7 @@ const enableInteractivity = (
       if ((d3.event.sourceEvent.shiftKey
         || d3.event.transform.k >= 1
         || zoomLevel >= 0.5)
-        && (chart.y.domain()[0] >= 0 || d3.event.transform.y >= 0 || d3.event.transform.k !== 1)) {
+        && (chart.y.domain()[0] >= -100 || d3.event.transform.y >= 0 || d3.event.transform.k !== 1)) {
         setZoomLevel(zoomLevel * d3.event.transform.k);
         setYPosition(yPosition + d3.event.transform.y);
         const zoomFunctions = updateChart(chart, keyValues, rotate);

@@ -5,11 +5,11 @@ const drawText = (
   drawZone.append('text')
     .attr('class', 'curve-label')
     .attr('x', direction
-      ? chart.x(dataSimulation.routeBeginOccupancy[0].time)
-      : chart.x(dataSimulation.routeEndOccupancy[0].time) + 20)
+      ? chart.x(dataSimulation.headPosition[0][0].time)
+      : chart.x(dataSimulation.headPosition[0][0].time))
     .attr('y', direction
-      ? chart.y(dataSimulation.routeBeginOccupancy[0].position) + 12
-      : chart.y(dataSimulation.routeEndOccupancy[0].position))
+      ? chart.y(dataSimulation.headPosition[0][0].position) + 15
+      : chart.y(dataSimulation.headPosition[0][0].position) - 5)
     .text(dataSimulation.name);
 };
 
