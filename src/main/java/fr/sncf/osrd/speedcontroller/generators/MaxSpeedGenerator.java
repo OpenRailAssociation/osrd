@@ -93,7 +93,7 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
                             begin,
                             rollingStock.maxSpeed,
                             TIME_STEP);
-                    controllers.add(BrakingSpeedController.create(expectedSpeeds));
+                    controllers.add(new BrakingSpeedController(expectedSpeeds));
                 }
 
                 // Add the speed controller corresponding to the restricted speed section
