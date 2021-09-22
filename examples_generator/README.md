@@ -49,10 +49,6 @@ succession.add_table(2, 0, 1, [2, 0, 1])
 succession.add_table(2, 3, 6, [2, 0, 1])
 succession.add_table(3, 4, 5, [0, 1])
 
-# build the train succession tables
-succession = gen.Succession
-sim.add_table(3, 4, 5, [0])
-
 gen.write_json("config.json", gen.CONFIG_JSON)
 gen.write_json("infra.json", infra.to_json())
 gen.write_json("simulation.json", sim.to_json())
@@ -61,8 +57,8 @@ gen.write_json("succession.json", succession.to_json())
 
 generates the infrastructure below
 
-```                                                              
-                                                                            <           
+```
+                                                                            <
                                                                         +--o---------o--#
                                                                       v/  >    6
                                                                       o
@@ -158,7 +154,7 @@ o--+
 --o--+
  »    \
        o
-        \ 
+        \
 ```
 
 

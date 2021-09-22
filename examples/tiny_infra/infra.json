@@ -380,19 +380,15 @@
       }
     },
     {
-			"name": "switch_signal",
-			"arguments": [
-				{
-					"type": "SIGNAL",
-					"name": "signal"
-				},
-				{
-					"type": "SWITCH",
-					"name": "switch"
-				}
-			],
-			"return_type": "ASPECT_SET",
-			"body": {
+      "name": "switch_signal",
+      "arguments": [
+        {
+          "type": "SIGNAL",
+          "name": "signal"
+        }
+      ],
+      "return_type": "ASPECT_SET",
+      "body": {
         "type": "optional_match",
         "name": "route",
         "expr": {
@@ -440,7 +436,6 @@
                 "state": "REQUESTED"
               }
             ]
-
           },
           "then": {
             "type": "aspect_set",
@@ -458,9 +453,9 @@
               }
             ]
           }
-				}
-			}
-		}
+        }
+      }
+    }
   ],
   "speed_sections": [
     {
@@ -568,7 +563,16 @@
           "radius": 2000
         }
       ],
-      "endpoints_coords": [[10341, -141], [10200, 0]],
+      "endpoints_coords": [
+        [
+          10341,
+          -141
+        ],
+        [
+          10200,
+          0
+        ]
+      ],
       "operational_points": [
         {
           "position": 100,
@@ -630,7 +634,16 @@
         }
       ],
       "curves": [],
-      "endpoints_coords": [[10200, 0], [200, 0]],
+      "endpoints_coords": [
+        [
+          10200,
+          0
+        ],
+        [
+          200,
+          0
+        ]
+      ],
       "operational_points": [],
       "route_waypoints": [
         {
@@ -681,10 +694,6 @@
               {
                 "type": "signal",
                 "signal": "il.sig.C6"
-              },
-              {
-                "type": "switch",
-                "switch": "il.switch_foo"
               }
             ]
           },
@@ -732,7 +741,16 @@
           "radius": 2000
         }
       ],
-      "endpoints_coords": [[10341, 141], [10200, 0]],
+      "endpoints_coords": [
+        [
+          10341,
+          141
+        ],
+        [
+          10200,
+          0
+        ]
+      ],
       "operational_points": [
         {
           "position": 100,
@@ -783,7 +801,16 @@
       "length": 200,
       "slopes": [],
       "curves": [],
-      "endpoints_coords": [[200, 0], [0, 0]],
+      "endpoints_coords": [
+        [
+          200,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
       "operational_points": [
         {
           "position": 100,
