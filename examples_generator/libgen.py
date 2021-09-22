@@ -359,95 +359,54 @@ class Infra:
             },
             {
                 "name": "switch_signal",
-                "arguments": [
-                    {"type": "SWITCH", "name": "switch"},
-                    {"type": "ROUTE", "name": "left_route"},
-                    {"type": "SIGNAL", "name": "left_master_signal"},
-                    {"type": "ROUTE", "name": "right_route"},
-                    {"type": "SIGNAL", "name": "right_master_signal"},
-                ],
+                "arguments": [{"type": "SIGNAL", "name": "signal"}],
                 "return_type": "ASPECT_SET",
                 "body": {
-                    "type": "match",
-                    "expr": {"type": "argument_ref", "argument_name": "switch"},
-                    "branches": {
-                        "LEFT": {
-                            "type": "call",
-                            "function": "sncf_filter",
-                            "arguments": [
+                    "type": "optional_match",
+                    "name": "route",
+                    "expr": {
+                        "type": "reserved_route",
+                        "signal": {"type": "argument_ref", "argument_name": "signal"},
+                    },
+                    "case_none": {"type": "aspect_set", "members": [{"aspect": "RED"}]},
+                    "case_some": {
+                        "type": "condition",
+                        "if": {
+                            "type": "or",
+                            "exprs": [
                                 {
-                                    "type": "aspect_set",
-                                    "members": [
-                                        {
-                                            "aspect": "RED",
-                                            "condition": {
-                                                "type": "not",
-                                                "expr": {
-                                                    "type": "route_has_state",
-                                                    "route": {
-                                                        "type": "argument_ref",
-                                                        "argument_name": "left_route",
-                                                    },
-                                                    "state": "RESERVED",
-                                                },
-                                            },
-                                        },
-                                        {
-                                            "aspect": "YELLOW",
-                                            "condition": {
-                                                "type": "signal_has_aspect",
-                                                "signal": {
-                                                    "type": "argument_ref",
-                                                    "argument_name": "left_master_signal",
-                                                },
-                                                "aspect": "RED",
-                                            },
-                                        },
-                                        {"aspect": "GREEN"},
-                                    ],
-                                }
+                                    "type": "route_has_state",
+                                    "route": {
+                                        "type": "optional_match_ref",
+                                        "match_name": "route",
+                                    },
+                                    "state": "CONFLICT",
+                                },
+                                {
+                                    "type": "route_has_state",
+                                    "route": {
+                                        "type": "optional_match_ref",
+                                        "match_name": "route",
+                                    },
+                                    "state": "OCCUPIED",
+                                },
+                                {
+                                    "type": "route_has_state",
+                                    "route": {
+                                        "type": "optional_match_ref",
+                                        "match_name": "route",
+                                    },
+                                    "state": "REQUESTED",
+                                },
                             ],
                         },
-                        "RIGHT": {
-                            "type": "call",
-                            "function": "sncf_filter",
-                            "arguments": [
-                                {
-                                    "type": "aspect_set",
-                                    "members": [
-                                        {
-                                            "aspect": "RED",
-                                            "condition": {
-                                                "type": "not",
-                                                "expr": {
-                                                    "type": "route_has_state",
-                                                    "route": {
-                                                        "type": "argument_ref",
-                                                        "argument_name": "right_route",
-                                                    },
-                                                    "state": "RESERVED",
-                                                },
-                                            },
-                                        },
-                                        {
-                                            "aspect": "YELLOW",
-                                            "condition": {
-                                                "type": "signal_has_aspect",
-                                                "signal": {
-                                                    "type": "argument_ref",
-                                                    "argument_name": "right_master_signal",
-                                                },
-                                                "aspect": "RED",
-                                            },
-                                        },
-                                        {"aspect": "GREEN"},
-                                    ],
-                                }
-                            ],
-                        },
-                        "MOVING": {
+                        "then": {
                             "type": "aspect_set",
-                            "members": [{"aspect": "RED"}],
+                            "members": [{"aspect": "YELLOW"}],
+                        },
+                        "else": {
+                            "type": "aspect_set",
+                            "members": [{"aspect": "GREEN"}],
                         },
                     },
                 },
@@ -635,7 +594,7 @@ class Infra:
                                                                 "type": "argument_ref",
                                                                 "argument_name": "left_route",
                                                             },
-                                                            "state": "RESERVED"
+                                                            "state": "RESERVED",
                                                         },
                                                         {
                                                             "type": "route_has_state",
@@ -643,9 +602,9 @@ class Infra:
                                                                 "type": "argument_ref",
                                                                 "argument_name": "left_route",
                                                             },
-                                                            "state": "CBTC_RESERVED"
+                                                            "state": "CBTC_RESERVED",
                                                         },
-                                                    ]
+                                                    ],
                                                 },
                                             },
                                         },
@@ -685,7 +644,7 @@ class Infra:
                                                                 "type": "argument_ref",
                                                                 "argument_name": "right_route",
                                                             },
-                                                            "state": "RESERVED"
+                                                            "state": "RESERVED",
                                                         },
                                                         {
                                                             "type": "route_has_state",
@@ -693,9 +652,9 @@ class Infra:
                                                                 "type": "argument_ref",
                                                                 "argument_name": "right_route",
                                                             },
-                                                            "state": "CBTC_RESERVED"
+                                                            "state": "CBTC_RESERVED",
                                                         },
-                                                    ]
+                                                    ],
                                                 },
                                             },
                                         },
@@ -975,10 +934,6 @@ class Infra:
                     "slopes": [],
                     "curves": [],
                     "speed_sections": [],
-                    "endpoints_coords": [
-                        self.coordinates[uget_begin(utrack)],
-                        self.coordinates[uget_end(utrack)],
-                    ],
                 }
             )
         self.build_tde()
@@ -1094,7 +1049,9 @@ class Infra:
                     "id": oname_route_between(ofirst, osecond),
                     "entry_point": oname_tde(ofirst),
                     "exit_point": oname_tde(osecond),
-                    "entry_direction": "STOP_TO_START" if ofirst % 2 == 0 else "START_TO_STOP",
+                    "entry_direction": "STOP_TO_START"
+                    if ofirst % 2 == 0
+                    else "START_TO_STOP",
                     "switches_group": {},
                     "release_groups": [[oname_tvd_link(ofirst, osecond)]],
                 }
@@ -1104,7 +1061,9 @@ class Infra:
                     "id": oname_route_between(osecond, ofirst),
                     "entry_point": oname_tde(osecond),
                     "exit_point": oname_tde(ofirst),
-                    "entry_direction": "STOP_TO_START" if osecond % 2 == 0 else "START_TO_STOP",
+                    "entry_direction": "STOP_TO_START"
+                    if osecond % 2 == 0
+                    else "START_TO_STOP",
                     "switches_group": {},
                     "release_groups": [[oname_tvd_link(ofirst, osecond)]],
                 }
@@ -1116,7 +1075,9 @@ class Infra:
                     "id": oname_route_between(obase, oleft),
                     "entry_point": oname_tde(obase),
                     "exit_point": oname_tde(oleft),
-                    "entry_direction": "STOP_TO_START" if obase % 2 == 0 else "START_TO_STOP",
+                    "entry_direction": "STOP_TO_START"
+                    if obase % 2 == 0
+                    else "START_TO_STOP",
                     "switches_group": {oname_switch(obase, oleft, oright): "LEFT"},
                     "release_groups": [[oname_tvd_switch(obase, oleft, oright)]],
                 }
@@ -1126,7 +1087,9 @@ class Infra:
                     "id": oname_route_between(obase, oright),
                     "entry_point": oname_tde(obase),
                     "exit_point": oname_tde(oright),
-                    "entry_direction": "STOP_TO_START" if obase % 2 == 0 else "START_TO_STOP",
+                    "entry_direction": "STOP_TO_START"
+                    if obase % 2 == 0
+                    else "START_TO_STOP",
                     "switches_group": {oname_switch(obase, oleft, oright): "RIGHT"},
                     "release_groups": [[oname_tvd_switch(obase, oleft, oright)]],
                 }
@@ -1136,7 +1099,9 @@ class Infra:
                     "id": oname_route_between(oleft, obase),
                     "entry_point": oname_tde(oleft),
                     "exit_point": oname_tde(obase),
-                    "entry_direction": "STOP_TO_START" if oleft % 2 == 0 else "START_TO_STOP",
+                    "entry_direction": "STOP_TO_START"
+                    if oleft % 2 == 0
+                    else "START_TO_STOP",
                     "switches_group": {oname_switch(obase, oleft, oright): "LEFT"},
                     "release_groups": [[oname_tvd_switch(obase, oleft, oright)]],
                 }
@@ -1146,7 +1111,9 @@ class Infra:
                     "id": oname_route_between(oright, obase),
                     "entry_point": oname_tde(oright),
                     "exit_point": oname_tde(obase),
-                    "entry_direction": "STOP_TO_START" if oright % 2 == 0 else "START_TO_STOP",
+                    "entry_direction": "STOP_TO_START"
+                    if oright % 2 == 0
+                    else "START_TO_STOP",
                     "switches_group": {oname_switch(obase, oleft, oright): "RIGHT"},
                     "release_groups": [[oname_tvd_switch(obase, oleft, oright)]],
                 }
@@ -1272,6 +1239,7 @@ class Infra:
             self.build_signal_bal3(ofirst, osecond)
 
     def build_switch_signal(self, obase, oleft, oright, cbtc=False):
+        current_signal = oname_sig_switch(obase, oleft, oright)
         left_next_signal = oname_sig_bal3(oleft, oget_other_side(oleft))
         right_next_signal = oname_sig_bal3(oright, oget_other_side(oright))
         if cbtc:
@@ -1281,7 +1249,10 @@ class Infra:
                         "type": "call",
                         "function": "cbtc_switch_signal",
                         "arguments": [
-                            {"type": "signal", "signal": oname_sig_switch(obase, oleft, oright)},
+                            {
+                                "type": "signal",
+                                "signal": oname_sig_switch(obase, oleft, oright),
+                            },
                             {
                                 "type": "switch",
                                 "switch": oname_switch(obase, oleft, oright),
@@ -1298,7 +1269,7 @@ class Infra:
                             {"type": "signal", "signal": right_next_signal},
                         ],
                     },
-                    "id": oname_sig_switch(obase, oleft, oright),
+                    "id": current_signal,
                     "linked_detector": oname_tde(obase),
                     "applicable_direction": oget_direction(obase, oleft),
                     "position": self.oget_signal_position(obase, oleft),
@@ -1311,24 +1282,9 @@ class Infra:
                     "expr": {
                         "type": "call",
                         "function": "switch_signal",
-                        "arguments": [
-                            {
-                                "type": "switch",
-                                "switch": oname_switch(obase, oleft, oright),
-                            },
-                            {
-                                "type": "route",
-                                "route": oname_route_between(obase, oleft),
-                            },
-                            {"type": "signal", "signal": left_next_signal},
-                            {
-                                "type": "route",
-                                "route": oname_route_between(obase, oright),
-                            },
-                            {"type": "signal", "signal": right_next_signal},
-                        ],
+                        "arguments": [{"type": "signal", "signal": current_signal}],
                     },
-                    "id": oname_sig_switch(obase, oleft, oright),
+                    "id": current_signal,
                     "linked_detector": oname_tde(obase),
                     "applicable_direction": oget_direction(obase, oleft),
                     "position": self.oget_signal_position(obase, oleft),
@@ -1352,49 +1308,36 @@ class Infra:
     def build_switch_types(self):
         self.json["switch_types"] = {
             "classic_switch": {
-                "ports": [
-                    "base",
-                    "left",
-                    "right"
-                ],
+                "ports": ["base", "left", "right"],
                 "groups": {
-                    "LEFT": [
-                        {
-                            "src": "base",
-                            "dst": "left",
-                            "bidirectional": True
-                        }
-                    ],
-                    "RIGHT": [
-                        {
-                            "src": "base",
-                            "dst": "right",
-                            "bidirectional": True
-                        }
-                    ]
-                }
+                    "LEFT": [{"src": "base", "dst": "left", "bidirectional": True}],
+                    "RIGHT": [{"src": "base", "dst": "right", "bidirectional": True}],
+                },
             }
         }
-        
+
     def build_switches(self):
         self.json["switches"] = []
         for obase, oleft, oright in self.switches:
             self.json["switches"].append(
                 {
-                    "base": {
-                        "endpoint": oget_side(obase),
-                        "section": oname_track(obase),
-                    },
-                    "left": {
-                        "endpoint": oget_side(oleft),
-                        "section": oname_track(oleft),
-                    },
-                    "right": {
-                        "endpoint": oget_side(oright),
-                        "section": oname_track(oright),
-                    },
                     "id": oname_switch(obase, oleft, oright),
                     "position_change_delay": self.GROUP_CHANGE_DELAY,
+                    "switch_type": "classic_switch",
+                    "ports": {
+                        "base": {
+                            "endpoint": oget_side(obase),
+                            "section": oname_track(obase),
+                        },
+                        "left": {
+                            "endpoint": oget_side(oleft),
+                            "section": oname_track(oleft),
+                        },
+                        "right": {
+                            "endpoint": oget_side(oright),
+                            "section": oname_track(oright),
+                        },
+                    },
                 }
             )
 

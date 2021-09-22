@@ -18,6 +18,7 @@ import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.geom.Point3;
 import org.graphstream.ui.graphicGraph.GraphicGraph;
+import org.graphstream.ui.layout.Layouts;
 import org.graphstream.ui.spriteManager.Sprite;
 import org.graphstream.ui.spriteManager.SpriteManager;
 import org.graphstream.ui.swing_viewer.DefaultView;
@@ -54,6 +55,7 @@ public class DebugViewer extends ChangeConsumer {
     private final Map<String, TrainData> trains = new HashMap<>();
     private final Map<Signal, Sprite> signalSprites = new HashMap<>();
     private double currentTime = Double.NaN;
+    private boolean useGeographicCoord = false;
 
     static final class TrainData {
         final String name;
@@ -129,6 +131,7 @@ public class DebugViewer extends ChangeConsumer {
             graphEdge.setAttribute("layout.weight", edge.length / referenceEdgeSize);
 
             if (edge.endpointCoords != null) {
+                viewer.useGeographicCoord = true;
                 assert edge.endpointCoords.size() == 2;
                 assert edge.endpointCoords.get(0).size() == 2;
                 assert edge.endpointCoords.get(1).size() == 2;
@@ -170,8 +173,11 @@ public class DebugViewer extends ChangeConsumer {
         // create the graphstream swing infrastructure needed
         SwingViewer viewer = new SwingViewer(graph, SwingViewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
         var view = (DefaultView) viewer.addDefaultView(false);
-        viewer.disableAutoLayout();
-        //viewer.enableAutoLayout(Layouts.newLayoutAlgorithm());
+        if (this.useGeographicCoord) {
+            viewer.disableAutoLayout();
+        } else {
+            viewer.enableAutoLayout(Layouts.newLayoutAlgorithm());
+        }
         view.setMouseManager(new MouseManager() {
             @Override
             public void init(GraphicGraph graph, View view) {
