@@ -862,7 +862,12 @@ components:
           items:
             type: object
             properties:
-              name: {type: string}
+              id:
+                type: number
+                description: Can be null if it's not an operational point
+              name:
+                type: string
+                description: Can be 'Unknown' if it's not an operational point
               time: {type: number, format: float}
               stop_time: {type: number, format: float}
         signals:
