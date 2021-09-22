@@ -66,6 +66,10 @@ const updateChart = (chart, keyValues, rotate) => {
         .y1((d) => newY(d.value1))));
 
   chart.drawZone
+    .selectAll('.curve-label')
+    .attr('transform', d3.event.transform);
+
+  chart.drawZone
     .selectAll('.conflictsPoints')
     .attr('cx', (d) => newX((rotate ? d[keyValues[1]] : d[keyValues[0]])))
     .attr('cy', (d) => newY((rotate ? d[keyValues[0]] : d[keyValues[1]])));

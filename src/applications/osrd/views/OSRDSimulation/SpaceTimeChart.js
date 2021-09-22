@@ -123,7 +123,7 @@ const drawTrain = (
     chart, `${isSelected ? 'selected' : ''} head`, headPositionSection, groupID,
     'curveLinear', keyValues, 'headPosition', rotate, isSelected,
   ));
-  drawText(chart, groupID, dataSimulation);
+  drawText(chart, groupID, dataSimulation, direction);
 };
 
 const createTrain = (keyValues, simulationTrains) => {
