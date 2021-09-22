@@ -93,7 +93,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
                 for (var k : updatesMap.keySet()) {
                     speeds.put(k, updatesMap.get(k).speed);
                 }
-                brakingSpeedController = new BrakingSpeedController(initialPosition, endBrakingPosition, speeds);
+                brakingSpeedController = new BrakingSpeedController(speeds, initialPosition, endBrakingPosition);
             }
             currentSpeedControllers.add(brakingSpeedController);
             res.add(brakingSpeedController);
