@@ -1,5 +1,12 @@
 package fr.sncf.osrd.train;
 
+import static fr.sncf.osrd.Helpers.*;
+import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.TIME;
+import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN_MAX_DEC_TYPE;
+import static java.lang.Double.POSITIVE_INFINITY;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.*;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
@@ -34,13 +41,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.stream.Collectors;
-
-import static fr.sncf.osrd.Helpers.*;
-import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.TIME;
-import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN_MAX_DEC_TYPE;
-import static java.lang.Double.POSITIVE_INFINITY;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class NonConstantDecTest {
     // kept for debugging
