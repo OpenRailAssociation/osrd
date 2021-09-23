@@ -36,6 +36,7 @@ import SignalingType from 'common/Map/Layers/SignalingType';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
 import SpeedLimitsColors from 'common/Map/Layers/SpeedLimitsColors';
 import ElectrificationType from 'common/Map/Layers/ElectrificationType';
+import TVDs from 'common/Map/Layers/TVDs';
 import JointsDeZones from 'common/Map/Layers/JointsDeZones';
 import Signals from 'common/Map/Layers/Signals';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
@@ -131,7 +132,7 @@ const Map = () => {
         attributionControl={false} // Defined below
         onClick={onFeatureClick}
         onHover={onFeatureHover}
-        interactiveLayerIds={['chartis/osrd_signaling_type/geo']} // {mapTrackSources === 'geographic' ? ['chartis/tracks-geo/main'] : ['schematicMainLayer']}
+        interactiveLayerIds={mapTrackSources === 'geographic' ? ['chartis/tracks-geo/main'] : ['schematicMainLayer']}
         touchRotate
         asyncRender
         antialiasing
@@ -165,6 +166,7 @@ const Map = () => {
             <SignalingType geomType="geo" />
             <ElectrificationType geomType="geo" colors={colors[mapStyle]} />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
+            <TVDs geomType="geo" colors={colors[mapStyle]} />
             <Signals sourceTable="map_midi_signal" colors={colors[mapStyle]} sourceLayer="geo" />
           </>
         ) : (

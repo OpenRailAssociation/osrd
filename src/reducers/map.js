@@ -48,6 +48,7 @@ export const initialState = {
     speedlimitscolor: false,
     operationalpoints: false,
     signalingtype: true,
+    tvds: false,
   },
   mapSearchMarker: undefined,
 };

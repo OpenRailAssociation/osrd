@@ -6,6 +6,7 @@ import { updateLayersSettings } from 'reducers/map';
 import { GiElectric } from 'react-icons/gi';
 import { IoMdSpeedometer } from 'react-icons/io';
 import { AiOutlineBlock } from 'react-icons/ai';
+import { MdSpaceBar } from 'react-icons/md';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 
 const FormatSwitch = (props) => {
@@ -59,6 +60,10 @@ export default function MapSettingsLayers() {
         name="speedlimitscolor"
         icon={<IoMdSpeedometer />}
         color="text-green"
+      />
+      <FormatSwitch
+        name="tvds"
+        icon={<MdSpaceBar />}
       />
     </div>
   );
