@@ -15,6 +15,7 @@ export const UPDATE_MAP_SEARCH_MARKER = 'map/UPDATE_MAP_SEARCH_MARKER';
 export const UPDATE_SHOW_OSM = 'map/UPDATE_SHOW_OSM';
 export const UPDATE_FEATURE_INFO_HOVER = 'map/UPDATE_FEATURE_INFO_HOVER';
 export const UPDATE_FEATURE_INFO_CLICK = 'map/UPDATE_FEATURE_INFO_CLICK';
+export const UPDATE_LAYERS_SETTINGS = 'osrdconf/UPDATE_LAYERS_SETTINGS';
 export const UPDATE_SIGNALS_SETTINGS = 'osrdconf/UPDATE_SIGNALS_SETTINGS';
 
 // Reducer
@@ -40,6 +41,13 @@ export const initialState = {
     stops: true,
     lights: false,
     tivs: false,
+  },
+  layersSettings: {
+    electrification: false,
+    speedlimits: true,
+    speedlimitscolor: false,
+    operationalpoints: false,
+    signalingtype: true,
   },
   mapSearchMarker: undefined,
 };
@@ -81,6 +89,9 @@ export default function reducer(state = initialState, action) {
         break;
       case UPDATE_FEATURE_INFO_CLICK:
         draft.featureInfoClickID = action.featureInfoClickID;
+        break;
+      case UPDATE_LAYERS_SETTINGS:
+        draft.layersSettings = action.layersSettings;
         break;
       case UPDATE_SIGNALS_SETTINGS:
         draft.signalsSettings = action.signalsSettings;
@@ -159,6 +170,15 @@ export function updateFeatureInfoClick(featureInfoClickID, featureSource) {
       type: UPDATE_FEATURE_INFO_CLICK,
       featureInfoClickID,
       featureSource,
+    });
+  };
+}
+
+export function updateLayersSettings(layersSettings) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_LAYERS_SETTINGS,
+      layersSettings,
     });
   };
 }

@@ -22,6 +22,7 @@ const mapWhiteList = [
   'mapTrackSources',
   'trackSource',
   'layers',
+  'layersSettings',
   'userPreference',
   'signalsSettings',
 ];

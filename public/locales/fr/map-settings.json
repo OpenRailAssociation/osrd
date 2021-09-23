@@ -1,0 +1,24 @@
+{
+  "all": "Tous les signaux",
+  "electrification": "Électrification",
+  "jdz": "Joints de zone",
+  "layers": "Couches de données",
+  "lights": "Signaux lumineux",
+  "mapSettings": "Paramètres cartographie",
+  "mapstyles": {
+    "blueprint": "Blueprint",
+    "darkmode": "Sombre",
+    "normal": "Normal"
+  },
+  "operationalpoints": "Points remarquables",
+  "signalingtype": "Type de block",
+  "showOSM": "Afficher le fond de carte",
+  "speedlimits": "Vitesses limites",
+  "speedlimitscolor": "Vitesses en couleurs",
+  "stops": "Pancartes d'arrêt",
+  "tivs": "Limites de vitesse",
+  "tracksources": {
+    "geographic": "Géographique",
+    "schematic": "Schématique"
+  }
+}

@@ -289,11 +289,6 @@
         "title": "Voies"
       }
     },
-    "mapstyles": {
-      "blueprint": "Blueprint",
-      "darkmode": "Sombre",
-      "normal": "Normal"
-    },
     "multipopupitems": {
       "adv": "Appareil de voie",
       "itemsfounds": "élément(s) trouvé(s)",
@@ -348,14 +343,6 @@
     },
     "search": {
       "placeholder": "Rechercher..."
-    },
-    "settings": {
-      "showOSM": "Afficher le fond de carte"
-    },
-    "title": "Cartographie",
-    "tracksources": {
-      "geographic": "Géographique",
-      "schematic": "Schématique"
     }
   },
   "nav": {
@@ -374,14 +361,6 @@
     "disconnect": "Déconnexion"
   },
   "osrd": {
-    "map": {
-      "all": "Tous les signaux",
-      "jdz": "Joints de zone",
-      "lights": "Signaux lumineux",
-      "mapSettings": "Paramètres cartographie",
-      "stops": "Pancartes d'arrêt",
-      "tivs": "Limites de vitesse"
-    },
     "nav": {
       "about": "A propos",
       "contact": "Contact",

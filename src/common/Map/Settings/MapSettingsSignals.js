@@ -10,7 +10,7 @@ import lightsIcon from 'assets/pictures/layersicons/layer_signal.svg';
 export default function MapSettingsSignals() {
   const { signalsSettings } = useSelector((state) => state.map);
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t } = useTranslation(['map-settings']);
   const CONSTS_SETTINGS = ['all', 'stops', 'tivs', 'lights'];
   const CONSTS_SVG = {
     stops: stopsIcon,
@@ -38,11 +38,11 @@ export default function MapSettingsSignals() {
               checked={signalsSettings[setting]}
             />
             {setting === 'all' ? (
-              <small className="ml-2 font-weight-bold">{t('osrd.map.all')}</small>
+              <small className="ml-2 font-weight-bold">{t('all')}</small>
             ) : (
               <>
                 <img className="mx-2" src={CONSTS_SVG[setting]} alt={`${setting} Icon`} height="20" />
-                <small>{t(`osrd.map.${setting}`)}</small>
+                <small>{t(setting)}</small>
               </>
             )}
           </div>

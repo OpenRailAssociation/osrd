@@ -2,6 +2,7 @@ import React, {
   useCallback, useEffect, useState, useRef,
 } from 'react';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ReactMapGL, {
   ScaleControl, AttributionControl, FlyToInterpolator,
 } from 'react-map-gl';
@@ -21,6 +22,7 @@ import ButtonResetViewport from 'common/Map/ButtonResetViewport';
 import ButtonMapSettings from 'common/Map/ButtonMapSettings';
 import MapSearch from 'common/Map/Search/MapSearch';
 import MapSettings from 'common/Map/Settings/MapSettings';
+import MapSettingsLayers from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsSignals from 'common/Map/Settings/MapSettingsSignals';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
 import MapSettingsTrackSources from 'common/Map/Settings/MapSettingsTrackSources';
@@ -40,6 +42,11 @@ import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 
 /* Objects & various */
+import OperationalPoints from 'common/Map/Layers/OperationalPoints';
+import SignalingType from 'common/Map/Layers/SignalingType';
+import SpeedLimits from 'common/Map/Layers/SpeedLimits';
+import SpeedLimitsColors from 'common/Map/Layers/SpeedLimitsColors';
+import ElectrificationType from 'common/Map/Layers/ElectrificationType';
 import Signals from 'common/Map/Layers/Signals';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import SnappedMarker from 'common/Map/Layers/SnappedMarker';
@@ -48,6 +55,7 @@ const Map = () => {
   const {
     viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM,
   } = useSelector((state) => state.map);
+  const { t } = useTranslation(['map-settings']);
   const [showSearch, setShowSearch] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [idHover, setIdHover] = useState(undefined);
@@ -171,6 +179,8 @@ const Map = () => {
         <MapSettingsShowOSM />
         <div className="mb-1 mt-3 border-bottom">Signalisation</div>
         <MapSettingsSignals />
+        <div className="mb-1 mt-3 border-bottom">{t('map-settings:layers')}</div>
+        <MapSettingsLayers />
       </MapSettings>
       <ReactMapGL
         ref={mapRef}
@@ -210,8 +220,13 @@ const Map = () => {
         {/* Have to  duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
+            <SpeedLimitsColors geomType="geo" />
             <Platform colors={colors[mapStyle]} />
             <TracksGeographic colors={colors[mapStyle]} idHover={idHover} />
+            <OperationalPoints geomType="geo" />
+            <SignalingType geomType="geo" />
+            <ElectrificationType geomType="geo" colors={colors[mapStyle]} />
+            <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
             <Signals sourceTable="map_midi_signal" colors={colors[mapStyle]} sourceLayer="geo" />
             <RenderPopup />
           </>

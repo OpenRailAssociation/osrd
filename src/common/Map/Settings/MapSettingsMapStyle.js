@@ -7,7 +7,7 @@ import picDarkMode from 'assets/pictures/mapstyle-dark.jpg';
 import picBlueprint from 'assets/pictures/mapstyle-blueprint.jpg';
 
 export default function MapSettingsMapStyle() {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['map-settings']);
   const { mapStyle } = useSelector((state) => state.map);
   const dispatch = useDispatch();
   return (
@@ -18,7 +18,7 @@ export default function MapSettingsMapStyle() {
         onClick={() => dispatch(updateMapStyle('normal'))}
       >
         <img src={picNormalMode} alt="normal mode" />
-        <span>{t('Map.mapstyles.normal')}</span>
+        <span>{t('mapstyles.normal')}</span>
       </button>
       <button
         className={`col-xs-4 mb-2 mapstyle-style-select ${mapStyle === 'dark' ? 'active' : null}`}
@@ -26,7 +26,7 @@ export default function MapSettingsMapStyle() {
         onClick={() => dispatch(updateMapStyle('dark'))}
       >
         <img src={picDarkMode} alt="normal mode" />
-        <span>{t('Map.mapstyles.darkmode')}</span>
+        <span>{t('mapstyles.darkmode')}</span>
       </button>
       <button
         className={`col-xs-4 mb-2 mapstyle-style-select ${mapStyle === 'blueprint' ? 'active' : null}`}
@@ -34,7 +34,7 @@ export default function MapSettingsMapStyle() {
         onClick={() => dispatch(updateMapStyle('blueprint'))}
       >
         <img src={picBlueprint} alt="normal mode" />
-        <span>{t('Map.mapstyles.blueprint')}</span>
+        <span>{t('mapstyles.blueprint')}</span>
       </button>
     </div>
   );

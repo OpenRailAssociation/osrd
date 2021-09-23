@@ -6,7 +6,7 @@ import { MAP_TRACK_SOURCES } from 'common/Map/const';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 
 export default function MapSettingsTrackSources() {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['map-settings']);
   const { mapTrackSources } = useSelector((state) => state.map);
   const dispatch = useDispatch();
 
@@ -14,7 +14,7 @@ export default function MapSettingsTrackSources() {
   Object.entries(MAP_TRACK_SOURCES).forEach(([key]) => {
     switchTrackSourceOptions.push({
       value: key,
-      label: t(`Map.tracksources.${key}`),
+      label: t(`tracksources.${key}`),
     });
   });
 
