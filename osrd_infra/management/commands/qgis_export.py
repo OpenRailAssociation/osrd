@@ -1,4 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
+from django.contrib.gis.geos import LineString
+from osrd_infra.models import SwitchEntity, fetch_entities, Endpoint, TrackSectionLinkEntity
 from pathlib import Path
 import csv
 
@@ -85,6 +87,54 @@ def dump_entities(writer, entities, formatters):
         writer.writerow((f(entity) for f in formatters))
 
 
+def get_geo_point_near_endpoint(track_id, endpoint, cached_track_sections):
+    track_entity = cached_track_sections[track_id]
+    length = track_entity.track_section.length
+    endpoint = Endpoint(endpoint)
+    offset = min(0.5, 5 / length)
+    if endpoint == Endpoint.END:
+        offset = 1 - offset
+    geo_line = track_entity.geo_line_location.geographic
+    return geo_line.interpolate_normalized(offset)
+
+
+def make_link(cached_track_sections, src_track, src_endpoint, dst_track, dst_endpoint):
+    origin = get_geo_point_near_endpoint(src_track, src_endpoint, cached_track_sections)
+    destination = get_geo_point_near_endpoint(dst_track, dst_endpoint, cached_track_sections)
+    line = LineString(origin, destination)
+    return line
+
+
+def export_track_section_links(fp, namespace, cached_track_sections):
+    writer = csv.writer(fp)
+    writer.writerow(["id", "track_section_link"])
+    for track_section_link_entity in TrackSectionLinkEntity.objects.filter(namespace=namespace):
+        link = track_section_link_entity.track_section_link
+        line = make_link(
+            cached_track_sections,
+            link.begin_track_section_id,
+            link.begin_endpoint,
+            link.end_track_section_id,
+            link.end_endpoint,
+        )
+        writer.writerow([track_section_link_entity.entity_id, line])
+
+
+def export_switches(fp, namespace, cached_track_sections):
+    writer = csv.writer(fp)
+    writer.writerow(["id", "switch_link"])
+    for switch_entity in SwitchEntity.objects.filter(namespace=namespace):
+        for link in switch_entity.switch.links:
+            line = make_link(
+                cached_track_sections,
+                link["origin"]["track_section"],
+                link["origin"]["endpoint"],
+                link["destination"]["track_section"],
+                link["destination"]["endpoint"]
+            )
+            writer.writerow([switch_entity.entity_id, line])
+
+
 class Command(BaseCommand):
     help = "Dumps the database into something QGis can import"
 
@@ -101,9 +151,18 @@ class Command(BaseCommand):
             raise CommandError('Infra "%s" does not exist' % infra_id)
         infra_namespace = infra.namespace_id
 
+        query = fetch_entities(TrackSectionEntity, namespace=infra_namespace)
+        cached_track_sections = {entity.entity_id: entity for entity in query}
+
         # make the output directory
         out_dir = Path(options["out_dir"])
         out_dir.mkdir(parents=True, exist_ok=True)
+
+        with (out_dir / "track_section_links.csv").open("w") as fp:
+            export_track_section_links(fp, infra_namespace, cached_track_sections)
+
+        with (out_dir / "switches.csv").open("w") as fp:
+            export_switches(fp, infra_namespace, cached_track_sections)
 
         with (out_dir / "track_sections.csv").open("w") as fp:
             dump_entities(
