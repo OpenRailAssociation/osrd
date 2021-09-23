@@ -93,9 +93,10 @@ def preprocess_response(response, train_schedule):
     train = next(iter(response["trains"].values()))
 
     # Reformat objects id
-    for position in train["positions"]:
-        position["head_track_section"] = reverse_format(position["head_track_section"])
-        position["tail_track_section"] = reverse_format(position["tail_track_section"])
+    for position in train["head_positions"]:
+        position["track_section"] = reverse_format(position["track_section"])
+    for position in train["tail_positions"]:
+        position["track_section"] = reverse_format(position["track_section"])
     for route in response["routes_status"]:
         route["route_id"] = reverse_format(route["route_id"])
         route["start_track_section"] = reverse_format(route["start_track_section"])
@@ -105,7 +106,8 @@ def preprocess_response(response, train_schedule):
 
     return {
         "speeds": train["speeds"],
-        "positions": train["positions"],
+        "head_positions": train["head_positions"],
+        "tail_positions": train["tail_positions"],
         "routes_status": response["routes_status"],
         "signals": response["signal_changes"],
         "stops": preprocess_stops(train["stop_reaches"], train_schedule),

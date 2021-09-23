@@ -10,9 +10,13 @@ def convert_simulation_log(train_schedule, projection_path):
     projection = Projection(projection_path)
 
     # Format data for charts
-    head_positions = convert_head_positions(simulation_result["positions"], projection)
-    tail_positions = convert_tail_positions(simulation_result["positions"], projection)
-    end_time = simulation_result["positions"][-1]["time"]
+    head_positions = convert_positions(
+        simulation_result["head_positions"], projection, train_schedule.path
+    )
+    tail_positions = convert_positions(
+        simulation_result["tail_positions"], projection, train_schedule.path
+    )
+    end_time = simulation_result["head_positions"][-1]["time"]
     route_begin_occupancy, route_end_occupancy = convert_route_occupancy(
         simulation_result["routes_status"], projection_path, projection, end_time
     )
@@ -32,31 +36,61 @@ def convert_simulation_log(train_schedule, projection_path):
     }
 
 
-def convert_train_positions(train_locations, projection, field_name):
+def interpolate_locations(loc_a, loc_b, path_position):
+    diff_time = loc_b["time"] - loc_a["time"]
+    diff_space = loc_b["path_offset"] - loc_a["path_offset"]
+    if diff_space == 0:
+        return loc_a["time"]
+    coef = diff_time / diff_space
+    return loc_a["time"] + path_position * coef
+
+
+def convert_positions(train_locations, projection, train_path):
     results = []
-    current_curve = []
-    for log in train_locations:
-        time = log["time"]
-        track = log[f"{field_name}_track_section"]
-        offset = log[f"{field_name}_offset"]
-        position = projection.track_position(track, offset)
-        if position is None:
-            if current_curve:
-                results.append(current_curve)
-                current_curve = []
-            continue
-        current_curve.append({"time": time, "position": position})
-    if current_curve:
+    loc_index = 0
+    intersections = projection.intersections(train_path)
+    for path_range in intersections:
+        current_curve = []
+        begin_loc = path_range.begin
+        # Skip points that doesn't intersect the range
+        while train_locations[loc_index + 1]["path_offset"] < begin_loc.path_offset:
+            loc_index += 1
+
+        # Add begin point
+        begin_time = interpolate_locations(
+            train_locations[loc_index],
+            train_locations[loc_index + 1],
+            begin_loc.path_offset,
+        )
+        begin_position = projection.track_position(begin_loc.track, begin_loc.offset)
+        assert begin_position is not None
+        current_curve.append({"time": begin_time, "position": begin_position})
+
+        # Add intermediate points
+        end_loc = path_range.end
+        while (
+            loc_index + 1 < len(train_locations)
+            and train_locations[loc_index + 1]["path_offset"] < end_loc.path_offset
+        ):
+            loc_index += 1
+            loc = train_locations[loc_index]
+            position = projection.track_position(loc["track_section"], loc["offset"])
+            assert position is not None
+            current_curve.append({"time": loc["time"], "position": position})
+
+        if loc_index + 1 < len(train_locations):
+            # Add end points
+            end_time = interpolate_locations(
+                train_locations[loc_index],
+                train_locations[loc_index + 1],
+                end_loc.path_offset,
+            )
+            end_position = projection.track_position(end_loc.track, end_loc.offset)
+            assert end_position is not None
+            current_curve.append({"time": end_time, "position": end_position})
+
         results.append(current_curve)
     return results
-
-
-def convert_head_positions(train_locations, projection):
-    return convert_train_positions(train_locations, projection, "head")
-
-
-def convert_tail_positions(train_locations, projection):
-    return convert_train_positions(train_locations, projection, "tail")
 
 
 @dataclass
@@ -79,7 +113,9 @@ OccupancyEvent = Union[OccupancyStart, OccupancyEnd]
 OCCUPIED_STATUSES = {"OCCUPIED", "CONFLICT", "CBTC_OCCUPIED"}
 
 
-def extract_occupancy_events(route_status_log, projection_path, projection) -> Iterator[OccupancyEvent]:
+def extract_occupancy_events(
+    route_status_log, projection_path, projection
+) -> Iterator[OccupancyEvent]:
     """
     Turns a raw simulation log into a clean log of occupation events on a given path
     """
@@ -127,15 +163,27 @@ def convert_route_occupancy(route_status_log, projection_path, projection, end_t
     occupied_routes: Dict[str, OccupancyStart] = {}
 
     def update_occupancy_lists(event_time, force_add=False):
+        if not occupied_routes:
+            return
         min_occ = min(occ.start_pos for occ in occupied_routes.values())
         max_occ = max(occ.end_pos for occ in occupied_routes.values())
 
-        if force_add or not route_begin_occupancy or route_begin_occupancy[-1].position != min_occ:
+        if (
+            force_add
+            or not route_begin_occupancy
+            or route_begin_occupancy[-1].position != min_occ
+        ):
             route_begin_occupancy.append(OccupancyPoint(event_time, min_occ))
-        if force_add or not route_end_occupancy or route_end_occupancy[-1].position != max_occ:
+        if (
+            force_add
+            or not route_end_occupancy
+            or route_end_occupancy[-1].position != max_occ
+        ):
             route_end_occupancy.append(OccupancyPoint(event_time, max_occ))
 
-    for occupancy_event in extract_occupancy_events(route_status_log, projection_path, projection):
+    for occupancy_event in extract_occupancy_events(
+        route_status_log, projection_path, projection
+    ):
         if isinstance(occupancy_event, OccupancyStart):
             occupied_routes[occupancy_event.route_id] = occupancy_event
         else:
