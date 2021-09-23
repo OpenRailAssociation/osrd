@@ -30,7 +30,10 @@ public class SimulationTest extends ApiTest {
         var simResult =  SimulationEndpoint.adapterResult.fromJson(result);
         assert simResult != null;
         var trainResult = simResult.trains.get("Test.");
-        var positions = trainResult.positions.toArray(new SimulationEndpoint.SimulationResultPosition[0]);
+        var positions = trainResult.headPositions.toArray(new SimulationEndpoint.SimulationResultPosition[0]);
+        for (int i = 1; i < positions.length; i++)
+            assert positions[i - 1].time <= positions[i].time;
+        positions = trainResult.tailPositions.toArray(new SimulationEndpoint.SimulationResultPosition[0]);
         for (int i = 1; i < positions.length; i++)
             assert positions[i - 1].time <= positions[i].time;
         var speeds = trainResult.speeds.toArray(new SimulationEndpoint.SimulationResultSpeed[0]);
