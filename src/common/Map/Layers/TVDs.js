@@ -33,7 +33,11 @@ export default function TVDs(props) {
       type="vector"
       url={`${MAP_URL}/layer/osrd_tvd_section/mvt/${geomType}/?version=${infraID}`}
     >
-      <Layer {...layerdef} id={`chartis/osrd_tvd_section/${geomType}`} />
+      <Layer
+        {...layerdef}
+        id={`chartis/osrd_tvd_section/${geomType}`}
+        beforeId={`chartis/tracks-${geomType}/main`}
+      />
     </Source>
   ) : null;
 }

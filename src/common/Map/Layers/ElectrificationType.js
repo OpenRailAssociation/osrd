@@ -74,8 +74,16 @@ export default function ElectrificationType(props) {
       type="vector"
       url={`${MAP_URL}/layer/osrd_electrification_type/mvt/${geomType}/?version=${infraID}`}
     >
-      <Layer {...electrificationParams} id={`chartis/osrd_electrification_type/${geomType}`} />
-      <Layer {...electrificationTextParams} id={`chartis/osrd_electrification_type_names/${geomType}`} />
+      <Layer
+        {...electrificationParams}
+        beforeId={`chartis/tracks-${geomType}/main`}
+        id={`chartis/osrd_electrification_type/${geomType}`}
+      />
+      <Layer
+        {...electrificationTextParams}
+        beforeId={`chartis/tracks-${geomType}/main`}
+        id={`chartis/osrd_electrification_type_names/${geomType}`}
+      />
     </Source>
   );
 }

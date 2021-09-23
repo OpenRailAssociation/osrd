@@ -160,13 +160,13 @@ const Map = () => {
         {mapTrackSources === 'geographic' ? (
           <>
             <SpeedLimitsColors geomType="geo" />
+            <ElectrificationType geomType="geo" colors={colors[mapStyle]} />
+            <TVDs geomType="geo" colors={colors[mapStyle]} />
             <Platform colors={colors[mapStyle]} />
             <TracksGeographic colors={colors[mapStyle]} idHover={idHover} />
             <OperationalPoints geomType="geo" />
             <SignalingType geomType="geo" />
-            <ElectrificationType geomType="geo" colors={colors[mapStyle]} />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
-            <TVDs geomType="geo" colors={colors[mapStyle]} />
             <Signals sourceTable="map_midi_signal" colors={colors[mapStyle]} sourceLayer="geo" />
           </>
         ) : (

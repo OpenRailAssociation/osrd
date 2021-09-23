@@ -42,7 +42,11 @@ export default function SpeedLimitsColors(props) {
       type="vector"
       url={`${MAP_URL}/layer/osrd_speed_limit/mvt/${geomType}/?version=${infraID}`}
     >
-      <Layer {...speedLineParams} id={`chartis/osrd_speed_limit_colors/${geomType}`} />
+      <Layer
+        {...speedLineParams}
+        id={`chartis/osrd_speed_limit_colors/${geomType}`}
+        beforeId={`chartis/osrd_speed_limit_points/${geomType}`}
+      />
     </Source>
   );
 }

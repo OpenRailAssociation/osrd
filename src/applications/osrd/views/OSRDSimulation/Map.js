@@ -44,6 +44,7 @@ import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 
 /* Objects & various */
+import TVDs from 'common/Map/Layers/TVDs';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import SignalingType from 'common/Map/Layers/SignalingType';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
@@ -311,11 +312,12 @@ const Map = (props) => {
         {mapTrackSources === 'geographic' ? (
           <>
             <SpeedLimitsColors geomType="geo" />
+            <ElectrificationType geomType="geo" colors={colors[mapStyle]} />
+            <TVDs geomType="geo" colors={colors[mapStyle]} />
             <Platform colors={colors[mapStyle]} />
             <TracksGeographic colors={colors[mapStyle]} idHover={idHover} />
             <OperationalPoints geomType="geo" />
             <SignalingType geomType="geo" />
-            <ElectrificationType geomType="geo" colors={colors[mapStyle]} />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
             <Signals sourceTable="map_midi_signal" colors={colors[mapStyle]} sourceLayer="geo" />
           </>
