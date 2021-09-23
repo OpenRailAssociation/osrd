@@ -213,7 +213,9 @@ public class SimulationEndpoint implements Take {
                 var trainResult = getTrainResult(trainStateChange.trainID);
                 var train = trainSchedules.get(trainStateChange.trainID);
                 for (var pos : trainStateChange.positionUpdates) {
-                    trainResult.positions.add(new SimulationResultPosition(pos.time, pos.pathPosition, train));
+                    trainResult.headPositions.add(new SimulationResultPosition(pos.time, pos.pathPosition, train));
+                    var tailPathPosition = Math.max(0, pos.pathPosition - train.rollingStock.length);
+                    trainResult.tailPositions.add(new SimulationResultPosition(pos.time, tailPathPosition, train));
                     trainResult.speeds.add(new SimulationResultSpeed(pos.time, pos.speed, pos.pathPosition));
                 }
             } else if (change.getClass() == TrainCreatedEvent.TrainCreationPlanned.class) {
@@ -224,7 +226,8 @@ public class SimulationEndpoint implements Take {
                 var train = trainCreationPlanned.schedule;
                 var trainResult = getTrainResult(train.trainID);
                 var creationTime = trainCreationPlanned.eventId.scheduledTime;
-                trainResult.positions.add(new SimulationResultPosition(creationTime, 0, train));
+                trainResult.headPositions.add(new SimulationResultPosition(creationTime, 0, train));
+                trainResult.tailPositions.add(new SimulationResultPosition(creationTime, 0, train));
                 trainResult.speeds.add(new SimulationResultSpeed(creationTime, train.initialSpeed, 0));
             } else if (change.getClass() == SignalState.SignalAspectChange.class) {
                 var aspectChange = (SignalState.SignalAspectChange) change;
@@ -240,20 +243,25 @@ public class SimulationEndpoint implements Take {
             }
         }
 
+        private ArrayList<SimulationResultPosition> simplifyPositions(
+                ArrayList<SimulationResultPosition> positions) {
+            return CurveSimplification.rdp(
+                    positions,
+                    5.,
+                    (point, start, end) -> {
+                        if (Math.abs(start.time - end.time) < 0.000001)
+                            return Math.abs(point.pathOffset - start.pathOffset);
+                        var proj = start.pathOffset + (point.time - start.time)
+                                * (end.pathOffset - start.pathOffset) / (end.time - start.time);
+                        return Math.abs(point.pathOffset - proj);
+                    }
+            );
+        }
+
         public void simplify() {
             for (var train : result.trains.values()) {
-                var positions = (ArrayList<SimulationResultPosition>) train.positions;
-                train.positions = CurveSimplification.rdp(
-                        positions,
-                        5.,
-                        (point, start, end) -> {
-                            if (Math.abs(start.time - end.time) < 0.000001)
-                                return Math.abs(point.pathOffset - start.pathOffset);
-                            var proj = start.pathOffset + (point.time - start.time)
-                                    * (end.pathOffset - start.pathOffset) / (end.time - start.time);
-                            return Math.abs(point.pathOffset - proj);
-                        }
-                );
+                train.headPositions = simplifyPositions((ArrayList<SimulationResultPosition>) train.headPositions);
+                train.tailPositions = simplifyPositions((ArrayList<SimulationResultPosition>) train.tailPositions);
 
                 var speeds = (ArrayList<SimulationResultSpeed>) train.speeds;
                 train.speeds = CurveSimplification.rdp(
@@ -283,7 +291,10 @@ public class SimulationEndpoint implements Take {
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class SimulationResultTrain {
         public Collection<SimulationResultSpeed> speeds = new ArrayList<>();
-        public Collection<SimulationResultPosition> positions = new ArrayList<>();
+        @Json(name = "head_positions")
+        public Collection<SimulationResultPosition> headPositions = new ArrayList<>();
+        @Json(name = "tail_positions")
+        public Collection<SimulationResultPosition> tailPositions = new ArrayList<>();
         @Json(name = "stop_reaches")
         public Collection<SimulationResultStopReach> stopReaches = new ArrayList<>();
     }
@@ -304,26 +315,18 @@ public class SimulationEndpoint implements Take {
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class SimulationResultPosition {
         public final double time;
-        @Json(name = "head_track_section")
-        public final String headTrackSection;
-        @Json(name = "head_offset")
-        public final double headOffset;
-        @Json(name = "tail_track_section")
-        public final String tailTrackSection;
-        @Json(name = "tail_offset")
-        public final double tailOffset;
-        public final transient double pathOffset;
+        @Json(name = "track_section")
+        public final String trackSection;
+        public final double offset;
+        @Json(name = "path_offset")
+        public final double pathOffset;
 
         SimulationResultPosition(double time, double pathOffset, TrainSchedule trainSchedule) {
             this.time = time;
             this.pathOffset = pathOffset;
-            var headLocation = trainSchedule.plannedPath.findLocation(pathOffset);
-            this.headTrackSection = headLocation.edge.id;
-            this.headOffset = headLocation.offset;
-            var tailLocation = trainSchedule.plannedPath.findLocation(
-                    Math.max(0, pathOffset - trainSchedule.rollingStock.length));
-            this.tailTrackSection = tailLocation.edge.id;
-            this.tailOffset = tailLocation.offset;
+            var location = trainSchedule.plannedPath.findLocation(pathOffset);
+            this.trackSection = location.edge.id;
+            this.offset = location.offset;
         }
     }
 
