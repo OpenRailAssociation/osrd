@@ -181,13 +181,12 @@ public final class Infra {
         return order;
     }
 
-
-    /** Load an infra from a given RailML or RailJSON file */
+    /** Parse the RailJSON file at the given Path */
     @SuppressFBWarnings(
             value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
             justification = "that's a spotbugs bug :)"
     )
-    public static Infra parseFromFile(
+    public static RJSInfra parseRailJSONFromFile(
             JsonConfig.InfraType infraType,
             String path
     ) throws InvalidInfraException, IOException {
@@ -203,8 +202,7 @@ public final class Infra {
 
         switch (infraType) {
             case RAILML: {
-                var rjsRoot = RailMLParser.parse(path);
-                return RailJSONParser.parse(rjsRoot);
+                return RailMLParser.parse(path);
             }
             case RAILJSON:
                 try (
@@ -213,10 +211,23 @@ public final class Infra {
                 ) {
                     var rjsRoot = RJSInfra.adapter.fromJson(bufferedSource);
                     assert rjsRoot != null;
-                    return RailJSONParser.parse(rjsRoot);
+                    return rjsRoot;
                 }
             default:
                 throw new RuntimeException("invalid infrastructure type value");
         }
+    }
+
+    /** Load an infra from a given RailML or RailJSON file */
+    @SuppressFBWarnings(
+            value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+            justification = "that's a spotbugs bug :)"
+    )
+    public static Infra parseFromFile(
+            JsonConfig.InfraType infraType,
+            String path
+    ) throws InvalidInfraException, IOException {
+        var rjsInfra = parseRailJSONFromFile(infraType, path);
+        return RailJSONParser.parse(rjsInfra);
     }
 }

@@ -4,16 +4,18 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 
+import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 
-import java.util.Arrays;
 import java.util.Map;
 
 public class RJSRollingStock implements Identified {
     public static final JsonAdapter<RJSRollingStock> adapter = new Moshi
             .Builder()
             .add(RJSRollingResistance.adapter)
+            .add(RJSMode.adapter)
             .build()
             .adapter(RJSRollingStock.class);
 
@@ -83,7 +85,7 @@ public class RJSRollingStock implements Identified {
     public double startUpTime = Double.NaN;
 
     /** The acceleration to apply during the startup state. */
-    @Json(name = "start_up_acceleration")
+    @Json(name = "startup_acceleration")
     public double startUpAcceleration = Double.NaN;
 
     /** The maximum acceleration when the train is in its regular operating mode. */
@@ -121,20 +123,22 @@ public class RJSRollingStock implements Identified {
     // region ROLLING_RESISTANCE
 
     public static final class RJSRollingResistanceProfile {
-        @Json(name = "rolling_resistance")
-        public RJSRollingResistance rollingResistance;
+        @Json(name = "resistance")
+        public RJSRollingResistance resistance;
+        @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
         public RJSRollingResistanceProfileCondition condition;
 
         public RJSRollingResistanceProfile(
-                RJSRollingResistance rollingResistance,
+                RJSRollingResistance resistance,
                 RJSRollingResistanceProfileCondition condition
         ) {
-            this.rollingResistance = rollingResistance;
+            this.resistance = resistance;
             this.condition = condition;
         }
     }
 
     public static final class RJSRollingResistanceProfileCondition {
+        @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
         @Json(name = "load_state")
         public RJSLoadState loadState;
 
@@ -148,9 +152,12 @@ public class RJSRollingStock implements Identified {
     // region EFFORT_CURVES
 
     public static final class RJSEffortCurvesProfileCondition {
+        @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
         @Json(name = "climate_control")
         public RJSClimateControl climateControl;
+        @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
         public double voltage = Double.NaN;
+        @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
         @Json(name = "catenary_type")
         public String catenaryType;
 
@@ -165,6 +172,8 @@ public class RJSRollingStock implements Identified {
     public static final class RJSEffortCurvesProfile {
         @Json(name = "effort_curve")
         public String effortCurve;
+
+        @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
         public RJSEffortCurvesProfileCondition condition;
 
         public RJSEffortCurvesProfile(String effortCurves, RJSEffortCurvesProfileCondition condition) {
@@ -179,6 +188,7 @@ public class RJSRollingStock implements Identified {
 
     public static final class RJSTrainMass {
         public double mass;
+        @Json(name = "load_state")
         public RJSLoadState loadState;
 
         public RJSTrainMass(double mass, RJSLoadState loadState) {
@@ -191,12 +201,13 @@ public class RJSRollingStock implements Identified {
 
     // region MODES
 
-    public static final class RJSMode {
-        public String type = null;
-
-        public double voltage = Double.NaN;
-
-        public double frequency = Double.NaN;
+    public static class RJSMode {
+        public static final PolymorphicJsonAdapterFactory<RJSMode> adapter = (
+                PolymorphicJsonAdapterFactory.of(RJSMode.class, "type")
+                        .withSubtype(RJSElectricMode.class, "electric")
+                        .withSubtype(RJSDieselMode.class, "diesel")
+                        .withSubtype(RJSDieselMode.class, "battery")
+        );
 
         @Json(name = "rolling_resistance_profile")
         public String rollingResistanceProfile = null;
@@ -205,15 +216,26 @@ public class RJSRollingStock implements Identified {
         public String effortCurveProfile = null;
     }
 
+    public static final class RJSDieselMode extends RJSMode {
+    }
+
+    public static final class RJSElectricMode extends RJSMode {
+        public double voltage = Double.NaN;
+        public double frequency = Double.NaN;
+    }
+
     // endregion
 
     // region LIVERIES
 
     public static final class RJSLivery {
+        @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
         public String id = null;
 
+        @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
         public String name = null;
 
+        @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
         public String[] components = null;
     }
 
