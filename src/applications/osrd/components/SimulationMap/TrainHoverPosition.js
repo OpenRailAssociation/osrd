@@ -16,11 +16,11 @@ const TrainHoverPosition = (props) => {
         <circle style={{ fill: '#e05206', fillOpacity: '0.75' }} cx="16" cy="16" r="8" />
       </svg>
       <span className="small font-weight-bold text-orange">
-        {Math.round(point.properties.speed)}
+        {point.properties && Math.round(point.properties.speed)}
         km/h
       </span>
       <span className="ml-2 small">
-        {datetime2time(point.properties.time)}
+        {point.properties && datetime2time(point.properties.time)}
       </span>
     </Marker>
   );

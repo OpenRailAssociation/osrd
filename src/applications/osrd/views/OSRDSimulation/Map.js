@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
 import { get } from 'common/requests';
-import { useTranslation } from 'react-i18next';
 import ReactMapGL, {
   ScaleControl, AttributionControl, FlyToInterpolator, WebMercatorViewport,
 } from 'react-map-gl';
@@ -16,6 +15,7 @@ import along from '@turf/along';
 import lineSlice from '@turf/line-slice';
 import lineLength from '@turf/length';
 import { lineString, point } from '@turf/helpers';
+import { useTranslation } from 'react-i18next';
 
 import 'common/Map/Map.scss';
 
@@ -86,7 +86,6 @@ const Map = (props) => {
 
   const createOtherPoints = () => {
     const actualTime = datetime2sec(timePosition);
-
     // First find trains where actual time from position is between start & stop
     const concernedTrains = [];
     simulation.trains.forEach((train, idx) => {
@@ -96,7 +95,7 @@ const Map = (props) => {
           train.head_positions[train.head_positions.length - 1].length - 1].time
         && idx !== selectedTrain) {
         const interpolation = interpolateOnTime(train, ['time', 'position'], ['head_positions', 'speeds'], actualTime);
-        if (interpolation.head_positions) {
+        if (interpolation.head_positions && interpolation.speeds) {
           concernedTrains.push({
             ...interpolation,
             name: train.name,
@@ -259,11 +258,11 @@ const Map = (props) => {
   return (
     <>
       <div className="btn-map-container">
-        {/* <ButtonMapSearch toggleMapSearch={toggleMapSearch} /> */}
+        <ButtonMapSearch toggleMapSearch={toggleMapSearch} />
         <ButtonMapSettings toggleMapSettings={toggleMapSettings} />
         <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
       </div>
-      {/* <MapSearch active={showSearch} toggleMapSearch={toggleMapSearch} /> */}
+      <MapSearch active={showSearch} toggleMapSearch={toggleMapSearch} />
       <MapSettings active={showSettings} toggleMapSettings={toggleMapSettings}>
         <MapSettingsMapStyle />
         <div className="my-2" />
@@ -272,7 +271,7 @@ const Map = (props) => {
         <MapSettingsShowOSM />
         <div className="mb-1 mt-3 border-bottom">Signalisation</div>
         <MapSettingsSignals />
-        <div className="mb-1 mt-3 border-bottom">{t('map-settings:layers')}</div>
+        <div className="mb-1 mt-3 border-bottom">Coucou</div>
         <MapSettingsLayers />
       </MapSettings>
       <ReactMapGL

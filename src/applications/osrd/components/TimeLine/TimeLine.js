@@ -33,7 +33,6 @@ export default function TimeLine() {
   const dispatch = useDispatch();
   const ref = useRef();
   const [svgState, setSvg] = useState(undefined);
-
   const dataRange = [
     d3.min(simulation.trains, (train) => d3.min(
       train.head_positions, (section) => d3.min(section, (step) => step.time),
