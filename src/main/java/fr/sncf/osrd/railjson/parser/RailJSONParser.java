@@ -177,7 +177,11 @@ public class RailJSONParser {
                 trackSection.catenarySections = new ArrayList<>();
             for (var rjsCatenarySections : trackSection.catenarySections) {
                 var catenarySection = catenaryTypes.get(rjsCatenarySections.ref.id);
-                var rangeCatenarySection = new RangeValue<>(rjsCatenarySections.begin, rjsCatenarySections.end, catenarySection);
+                var rangeCatenarySection = new RangeValue<>(
+                        rjsCatenarySections.begin,
+                        rjsCatenarySections.end,
+                        catenarySection
+                );
                 if (rjsCatenarySections.applicableDirection.appliesToNormal())
                     infraTrackSection.forwardCatenarySections.add(rangeCatenarySection);
                 if (rjsCatenarySections.applicableDirection.appliesToReverse())

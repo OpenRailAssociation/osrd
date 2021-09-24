@@ -11,7 +11,8 @@ import java.util.*;
 
 
 public class RJSRollingStockParser {
-    static RollingStock parse(RJSRollingStock rjsRollingStock) throws InvalidRollingStock {
+    /** Parse the RailJSON  rolling stock into something the backend can work with */
+    public static RollingStock parse(RJSRollingStock rjsRollingStock) throws InvalidRollingStock {
         // parse tractive effort curves
         Map<String, RollingStock.TractiveEffortPoint[]> tractiveEffortCurves = new HashMap<>();
         for (var curve : rjsRollingStock.effortCurves.entrySet()) {
@@ -31,21 +32,6 @@ public class RJSRollingStockParser {
 
         if (rjsRollingStock.verboseName == null)
             throw new MissingRollingStockField("verbose_name");
-
-        if (rjsRollingStock.type == null)
-            throw new MissingRollingStockField("type");
-
-        if (rjsRollingStock.subType == null)
-            throw new MissingRollingStockField("sub_type");
-
-        if (rjsRollingStock.series == null)
-            throw new MissingRollingStockField("series");
-
-        if (rjsRollingStock.subSeries == null)
-            throw new MissingRollingStockField("sub_series");
-
-        if (rjsRollingStock.variant == null)
-            throw new MissingRollingStockField("variant");
 
         if (rjsRollingStock.unitsCount < 0)
             throw new MissingRollingStockField("units_count");
@@ -95,7 +81,7 @@ public class RJSRollingStockParser {
 
         // TODO: handle rolling resistance profiles
         var resistanceProfile = rjsRollingStock.rollingResistanceProfiles.get(firstMode.rollingResistanceProfile);
-        var rollingResistance = parseRollingResistance(resistanceProfile[0].rollingResistance);
+        var rollingResistance = parseRollingResistance(resistanceProfile[0].resistance);
 
         var features = new TrainFeature[rjsRollingStock.features.length];
         for (int i = 0; i < rjsRollingStock.features.length; i++)
@@ -128,11 +114,11 @@ public class RJSRollingStockParser {
     }
 
     private static Map<LoadState, Double> parseMasses(
-            RJSRollingStock rjsRollingStockFamily
+            RJSRollingStock rjsRollingStock
     ) throws InvalidRollingStock {
         Map<LoadState, Double> masses = new HashMap<>();
-        for (int i = 0; i < rjsRollingStockFamily.masses.length; i++) {
-            var rjsTrainMass = rjsRollingStockFamily.masses[i];
+        for (int i = 0; i < rjsRollingStock.masses.length; i++) {
+            var rjsTrainMass = rjsRollingStock.masses[i];
             var loadState = parseLoad(rjsTrainMass.loadState);
             masses.put(loadState, rjsTrainMass.mass);
         }

@@ -3,6 +3,7 @@ package fr.sncf.osrd.infra_state;
 import static fr.sncf.osrd.Helpers.*;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.simulation.Simulation;
@@ -12,15 +13,13 @@ import org.junit.jupiter.api.Test;
 
 public class TVDSectionStateTest {
     @Test
-    public void testSimpleReserve() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        assert infra != null;
-        final var config = getBaseConfig();
-        assert config != null;
+    public void testSimpleReserve() {
         var changelog = new ArrayChangeLog();
-        config.trainSchedules.clear();
-
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, changelog);
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json")
+                        .withChangeConsumer(changelog);
+        testConfig.rjsSimulation.trainSchedules.clear();
+        var preparedSim = testConfig.prepare();
+        var sim = preparedSim.sim;
 
         var tvd = sim.infra.tvdSections.get("tvd.foo_a");
         var tvdState = sim.infraState.getTvdSectionState(tvd.index);
@@ -38,19 +37,18 @@ public class TVDSectionStateTest {
         makeAssertEvent(sim, 2.1, () -> routeAC1State.status == RouteStatus.FREE);
         makeAssertEvent(sim, 2.1, () -> routeC6AState.status == RouteStatus.FREE);
         makeAssertEvent(sim, 2.1, () -> ! tvdState.isReserved());
-        run(sim, config);
+
+        preparedSim.run();
     }
 
     @Test
-    public void testOccupy() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
-        assert infra != null;
-        final var config = getBaseConfig();
-        assert config != null;
+    public void testOccupy() throws SimulationError {
         var changelog = new ArrayChangeLog();
-        config.trainSchedules.clear();
-
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, changelog);
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json")
+                .withChangeConsumer(changelog);
+        testConfig.rjsSimulation.trainSchedules.clear();
+        var preparedSim = testConfig.prepare();
+        var sim = preparedSim.sim;
 
         var tvd = sim.infra.tvdSections.get("tvd.foo_a");
         var tvdState = sim.infraState.getTvdSectionState(tvd.index);
@@ -65,6 +63,6 @@ public class TVDSectionStateTest {
         makeAssertEvent(sim, 1.1, () -> routeState.status == RouteStatus.OCCUPIED);
         makeAssertEvent(sim, 2.1, () -> routeState.status == RouteStatus.FREE);
 
-        run(sim, config);
+        preparedSim.run();
     }
 }
