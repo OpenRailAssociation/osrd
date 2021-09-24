@@ -3,6 +3,7 @@ package fr.sncf.osrd.train;
 import static fr.sncf.osrd.Helpers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.RouteStatus;
@@ -10,55 +11,50 @@ import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.speedcontroller.SpeedInstructions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class PhasesTest {
 
     @Test
-    public void testSameSimulationEndTime() throws InvalidInfraException {
-        final var infra = getBaseInfra();
+    public void testSameSimulationEndTime() {
+        var configA = TestConfig.readResource("tiny_infra/config_railjson_several_phases.json");
+        var stateA = configA.prepare();
+        stateA.run();
 
-        final var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        run(sim, config);
-        var actualEndTime = sim.getTime();
+        var configB = TestConfig.readResource("tiny_infra/config_railjson.json");
+        var stateB = configB.prepare();
+        stateB.run();
 
-        final var configBase = getBaseConfig();
-        var simBase = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        run(simBase, configBase);
-        var baseEndTime = simBase.getTime();
-
-        assertEquals(baseEndTime, actualEndTime, baseEndTime * 0.1);
+        var endTimeA = stateA.sim.getTime();
+        var endTimeB = stateB.sim.getTime();
+        assertEquals(endTimeB, endTimeA, endTimeB * 0.1);
     }
 
     @Test
-    public void testSameSimulationEndTimeCBTC() throws InvalidInfraException {
-        final var infra = getBaseInfra();
+    public void testSameSimulationEndTimeCBTC() {
+        var configA = TestConfig.readResource("tiny_infra/config_railjson_several_phases_cbtc.json");
+        var stateA = configA.prepare();
+        stateA.run();
 
-        final var config = getBaseConfig("tiny_infra/config_railjson_several_phases_cbtc.json");
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        run(sim, config);
-        var actualEndTime = sim.getTime();
+        var configB = TestConfig.readResource("tiny_infra/config_railjson_cbtc.json");
+        var stateB = configB.prepare();
+        stateB.run();
 
-        final var configBase = getBaseConfig("tiny_infra/config_railjson_cbtc.json");
-        var simBase = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        run(simBase, configBase);
-        var baseEndTime = simBase.getTime();
-
-        assertEquals(baseEndTime, actualEndTime, baseEndTime * 0.1);
+        var endTimeA = stateA.sim.getTime();
+        var endTimeB = stateB.sim.getTime();
+        assertEquals(endTimeB, endTimeA, endTimeB * 0.1);
     }
 
     @Test
-    public void testSameEventTimes() throws InvalidInfraException {
-        final var infra = getBaseInfra();
+    public void testSameEventTimes() {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson_several_phases.json");
+        var events = testConfig.run();
 
-        final var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim, config);
-
-        final var configBase = getBaseConfigNoAllowance();
-        var simBase = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var eventsRef = run(simBase, configBase);
+        var baseConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
+        baseConfig.clearAllowances();
+        var eventsRef = baseConfig.run();
 
         assertEquals(eventsRef.size(), events.size());
 
@@ -73,27 +69,20 @@ public class PhasesTest {
     }
 
     @Test
-    public void testSameEventTimesCBTC() throws InvalidInfraException {
-        final var infra = getBaseInfra();
+    @Disabled("we need to add WHITE_CROSS in order to the train to move")
+    public void testSameEventTimesCBTC() {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson_several_phases_cbtc.json");
+        var events = testConfig.run();
 
-        final var config = getBaseConfig("tiny_infra/config_railjson_several_phases_cbtc.json");
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim, config);
-
-        final var configBase = getBaseConfigNoAllowance("tiny_infra/config_railjson_cbtc.json");
-        var simBase = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var eventsRef = run(simBase, configBase);
+        var baseConfig = TestConfig.readResource("tiny_infra/config_railjson_cbtc.json");
+        baseConfig.clearAllowances();
+        var eventsRef = baseConfig.run();
 
         assertEquals(eventsRef.size(), events.size());
 
         var resultTimePerPosition = getTimePerPosition(events);
         var expectedTimePerPosition = getTimePerPosition(eventsRef);
 
-        // Temporary : we need to add WHITE_CROSS in order to the train to move
-        // TODO : add WHITE_CROSS
-        if (resultTimePerPosition.isEmpty() && expectedTimePerPosition.isEmpty()) {
-            return;
-        }
         for (double t = expectedTimePerPosition.firstKey(); t < expectedTimePerPosition.lastKey(); t += 1) {
             var expected = expectedTimePerPosition.interpolate(t);
             var result = resultTimePerPosition.interpolate(t);
@@ -102,42 +91,38 @@ public class PhasesTest {
     }
 
     @Test
-    public void testReactToSignals() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
+    public void testReactToSignals() throws SimulationError {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson_several_phases.json");
+        testConfig.rjsInfra.switches.iterator().next().groupChangeDelay = 500;
 
-        infra.switches.iterator().next().groupChangeDelay = 500;
-
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var preparedSim = testConfig.prepare();
+        var sim = preparedSim.sim;
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         // If the train ignores the signals, an exception will be thrown when it runs over the moving switch
-        run(sim, config);
+        preparedSim.run();
     }
 
     @Test
-    public void testReactToSignalsCBTC() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig("tiny_infra/config_railjson_several_phases_cbtc.json");
+    public void testReactToSignalsCBTC() throws SimulationError {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson_several_phases_cbtc.json");
+        testConfig.rjsInfra.switches.iterator().next().groupChangeDelay = 500;
 
-        infra.switches.iterator().next().groupChangeDelay = 500;
-
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var preparedSim = testConfig.prepare();
+        var sim = preparedSim.sim;
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
-        // If the train ignores the signals, an exception will be thrown when it runs
-        // over the moving switch
-        run(sim, config);
+        // If the train ignores the signals, an exception will be thrown when it runs over the moving switch
+        preparedSim.run();
     }
 
     @Test
-    public void testTriggerSwitchChangeAtRightTime() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig("tiny_infra/config_railjson_several_phases.json");
+    public void testTriggerSwitchChangeAtRightTime() throws SimulationError {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson_several_phases.json");
+        testConfig.rjsInfra.switches.iterator().next().groupChangeDelay = 42;
 
-        infra.switches.iterator().next().groupChangeDelay = 42;
-
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var preparedSim = testConfig.prepare();
+        var sim = preparedSim.sim;
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         SwitchState switchState = sim.infraState.getSwitchState(0);
@@ -148,17 +133,16 @@ public class PhasesTest {
         makeAssertEvent(sim, 43, () -> switchState.getGroup().equals("LEFT"));
         makeAssertEvent(sim, 43, () -> routeState.status == RouteStatus.RESERVED);
 
-        run(sim, config);
+        preparedSim.run();
     }
 
     @Test
-    public void testTriggerSwitchChangeAtRightTimeCBTC() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig("tiny_infra/config_railjson_several_phases_cbtc.json");
+    public void testTriggerSwitchChangeAtRightTimeCBTC() throws SimulationError {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson_several_phases_cbtc.json");
+        testConfig.rjsInfra.switches.iterator().next().groupChangeDelay = 42;
 
-        infra.switches.iterator().next().groupChangeDelay = 42;
-
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var preparedSim = testConfig.prepare();
+        var sim = preparedSim.sim;
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         SwitchState switchState = sim.infraState.getSwitchState(0);
@@ -169,6 +153,6 @@ public class PhasesTest {
         makeAssertEvent(sim, 43, () -> "LEFT".equals(switchState.getGroup()));
         makeAssertEvent(sim, 43, () -> routeState.status == RouteStatus.CBTC_RESERVED);
 
-        run(sim, config);
+        preparedSim.run();
     }
 }

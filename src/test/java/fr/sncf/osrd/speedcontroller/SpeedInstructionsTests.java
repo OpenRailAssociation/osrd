@@ -67,7 +67,7 @@ public class SpeedInstructionsTests {
 
         for (int i = 10; i < 150; i++)
             makeAssertEvent(sim, i, () -> getLastTrainSpeed(sim) < 5.5);
-        run(sim, config);
+        runSimulation(sim, config);
     }
 
     @Test
@@ -83,7 +83,7 @@ public class SpeedInstructionsTests {
 
         makeAssertEvent(sim, 43, () -> isLate(sim));
         makeAssertEvent(sim, 150, () -> !isLate(sim));
-        run(sim, config);
+        runSimulation(sim, config);
     }
 
     @Test
@@ -96,7 +96,7 @@ public class SpeedInstructionsTests {
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         makeAssertEvent(sim, 30, () -> isLate(sim));
-        run(sim, config);
+        runSimulation(sim, config);
     }
 
     @Test
@@ -108,7 +108,7 @@ public class SpeedInstructionsTests {
 
         for (int i = 1; i < 150; i++)
             makeAssertEvent(sim, i, () -> !isLate(sim));
-        run(sim, config);
+        runSimulation(sim, config);
     }
 
     /** Helper function: returns true if the train is late at the time it is called */

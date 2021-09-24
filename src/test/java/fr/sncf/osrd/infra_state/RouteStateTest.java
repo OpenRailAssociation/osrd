@@ -1,80 +1,63 @@
 package fr.sncf.osrd.infra_state;
 
-import static fr.sncf.osrd.Helpers.getBaseConfig;
-import static fr.sncf.osrd.Helpers.getBaseInfra;
-import static fr.sncf.osrd.Helpers.getResourcePath;
 import static fr.sncf.osrd.Helpers.makeAssertEvent;
 import static fr.sncf.osrd.Helpers.makeFunctionEvent;
-import static fr.sncf.osrd.Helpers.run;
-import static fr.sncf.osrd.infra.Infra.parseFromFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.IOException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import fr.sncf.osrd.TestConfig;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import fr.sncf.osrd.config.Config;
-import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
-import fr.sncf.osrd.railjson.parser.RailJSONParser;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
-import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
-import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
-import fr.sncf.osrd.utils.PathUtils;
-import fr.sncf.osrd.utils.moshi.MoshiUtils;
 
 import java.util.Map;
 
 public class RouteStateTest {
-    
     /**
      * Test if a simple reservation work
      */
     @Test
-    public void testSimpleReserve() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
+    public void testSimpleReserve() {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
+        testConfig.rjsSimulation.trainSchedules.clear();
 
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-
-        config.trainSchedules.clear();
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
 
         RouteState routeState = sim.infraState.getRouteState(3);
         makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
         makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.RESERVED);
         makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
         makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(6).status == RouteStatus.CONFLICT);
-        run(sim, config);
+        simState.run();
     }
 
     /**
      * Test if a simple cbtc reservation work
      */
     @Test
-    public void testSimpleCBTCReserve() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
+    public void testSimpleCBTCReserve() {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
+        testConfig.rjsSimulation.trainSchedules.clear();
 
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-
-        config.trainSchedules.clear();
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
 
         RouteState routeState = sim.infraState.getRouteState(3);
         makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
         makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.CBTC_RESERVED);
         makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
         makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(6).status == RouteStatus.CONFLICT);
-        run(sim, config);
+        simState.run();
     }
 
     /**
@@ -82,15 +65,14 @@ public class RouteStateTest {
      * going into the RESERVED state.
      */
     @Test
-    public void testAwaitSwitchChange() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
+    public void testAwaitSwitchChange() throws SimulationError {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
+        testConfig.rjsSimulation.trainSchedules.clear();
+        var rjsInfra = testConfig.rjsInfra;
+        rjsInfra.switches.iterator().next().groupChangeDelay = 10;
 
-        config.trainSchedules.clear();
-
-        infra.switches.iterator().next().groupChangeDelay = 10;
-
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         RouteState routeState = sim.infraState.getRouteState(3);
@@ -98,7 +80,7 @@ public class RouteStateTest {
         makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
         makeAssertEvent(sim, 19, () -> routeState.status == RouteStatus.REQUESTED);
         makeAssertEvent(sim, 21, () -> routeState.status == RouteStatus.RESERVED);
-        run(sim, config);
+        simState.run();
     }
 
     /**
@@ -106,15 +88,15 @@ public class RouteStateTest {
      * going into the CBTC_RESERVED state.
      */
     @Test
-    public void testAwaitSwitchChangeCBTC() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
+    public void testAwaitSwitchChangeCBTC() throws SimulationError {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
+        testConfig.rjsSimulation.trainSchedules.clear();
+        var rjsInfra = testConfig.rjsInfra;
+        rjsInfra.switches.iterator().next().groupChangeDelay = 10;
 
-        config.trainSchedules.clear();
+        var simState = testConfig.prepare();
 
-        infra.switches.iterator().next().groupChangeDelay = 10;
-
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var sim = simState.sim;
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         RouteState routeState = sim.infraState.getRouteState(3);
@@ -122,7 +104,7 @@ public class RouteStateTest {
         makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
         makeAssertEvent(sim, 19, () -> routeState.status == RouteStatus.CBTC_REQUESTED);
         makeAssertEvent(sim, 21, () -> routeState.status == RouteStatus.CBTC_RESERVED);
-        run(sim, config);
+        simState.run();
     }
 
     /**
@@ -130,14 +112,13 @@ public class RouteStateTest {
      * before going into the RESERVED state.
      */
     @Test
-    public void testSeveralSwitches() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
+    public void testSeveralSwitches() throws SimulationError {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
+        testConfig.rjsSimulation.trainSchedules.clear();
+        var rjsInfra = testConfig.rjsInfra;
 
-        config.trainSchedules.clear();
-
-        infra.switchTypes.put(RJSSwitchType.CLASSIC_NAME, RJSSwitchType.CLASSIC_TYPE);
-        var oldSwitch = infra.switches.iterator().next();
+        rjsInfra.switchTypes.put(RJSSwitchType.CLASSIC_NAME, RJSSwitchType.CLASSIC_TYPE);
+        var oldSwitch = rjsInfra.switches.iterator().next();
         var newSwitch = new RJSSwitch(
                 "switch-foo-42",
                 RJSSwitchType.CLASSIC_NAME,
@@ -148,15 +129,17 @@ public class RouteStateTest {
                 ),
                 42
         );
-        infra.switches.add(newSwitch);
-        for (var route : infra.routes) {
+        rjsInfra.switches.add(newSwitch);
+        for (var route : rjsInfra.routes) {
             if (route.id.equals("rt.C3-S7") || "rt.C6-buffer_stop_b".equals(route.id))
                 route.switchesGroup.put(new ID<>(newSwitch.id), "LEFT");
             else if ("rt.C6-buffer_stop_a".equals(route.id))
                 route.switchesGroup.put(new ID<>(newSwitch.id), "RIGHT");
         }
 
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
+
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
         sim.infraState.getSwitchState(1).setGroup(sim, "RIGHT");
 
@@ -168,7 +151,7 @@ public class RouteStateTest {
         // at t=43, both switches have moved
         makeAssertEvent(sim, 43, () -> routeState.status == RouteStatus.RESERVED);
 
-        run(sim, config);
+        simState.run();
     }
 
     /**
@@ -177,44 +160,44 @@ public class RouteStateTest {
      */
     @Test
     public void testSeveralSwitchesCBTC() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
-
-        config.trainSchedules.clear();
-
-        infra.switchTypes.put(RJSSwitchType.CLASSIC_NAME, RJSSwitchType.CLASSIC_TYPE);
-        var oldSwitch = infra.switches.iterator().next();
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
+        testConfig.rjsSimulation.trainSchedules.clear();
+        var rjsInfra = testConfig.rjsInfra;
+        rjsInfra.switchTypes.put(RJSSwitchType.CLASSIC_NAME, RJSSwitchType.CLASSIC_TYPE);
+        var oldSwitch = rjsInfra.switches.iterator().next();
         var newSwitch = new RJSSwitch(
                 "switch-foo-42",
-                  RJSSwitchType.CLASSIC_NAME,
-                  Map.of(
-                    "base", oldSwitch.ports.get("base"),
-                    "left", oldSwitch.ports.get("left"),
-                    "right", oldSwitch.ports.get("right")
+                RJSSwitchType.CLASSIC_NAME,
+                Map.of(
+                        "base", oldSwitch.ports.get("base"),
+                        "left", oldSwitch.ports.get("left"),
+                        "right", oldSwitch.ports.get("right")
                 ),
                 42
         );
-        infra.switches.add(newSwitch);
-        for (var route : infra.routes) {
+        rjsInfra.switches.add(newSwitch);
+        for (var route : rjsInfra.routes) {
             if (route.id.equals("rt.C3-S7") || "rt.C6-buffer_stop_b".equals(route.id))
                 route.switchesGroup.put(new ID<>(newSwitch.id), "LEFT");
             else if ("rt.C6-buffer_stop_a".equals(route.id))
                 route.switchesGroup.put(new ID<>(newSwitch.id), "RIGHT");
         }
 
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
+
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
         sim.infraState.getSwitchState(1).setGroup(sim, "RIGHT");
 
         RouteState routeState = sim.infraState.getRouteState(3);
         makeFunctionEvent(sim, 0, () -> routeState.cbtcReserve(sim));
-    
+
         // at t=41, one switch is done moving but not the other
         makeAssertEvent(sim, 41, () -> routeState.status == RouteStatus.CBTC_REQUESTED);
         // at t=43, both switches have moved
         makeAssertEvent(sim, 43, () -> routeState.status == RouteStatus.CBTC_RESERVED);
 
-        run(sim, config);
+        simState.run();
     }
 
     /**
@@ -222,13 +205,12 @@ public class RouteStateTest {
      * occupied and that it becomes FREE when all tvdSection are unoccupied.
      */
     @Test
-    public void testOccupied() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
+    public void testOccupied() {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
+        testConfig.rjsSimulation.trainSchedules.clear();
 
-        config.trainSchedules.clear();
-
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
 
         RouteState routeState = sim.infraState.getRouteState(3);
         makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
@@ -241,7 +223,7 @@ public class RouteStateTest {
         });
         makeAssertEvent(sim, 20, () -> routeState.status == RouteStatus.FREE);
 
-        run(sim, config);
+        simState.run();
     }
 
     /**
@@ -249,13 +231,12 @@ public class RouteStateTest {
      * occupied and that it becomes FREE when all tvdSection are unoccupied.
      */
     @Test
-    public void testCBTCOccupied() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
+    public void testCBTCOccupied() {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
+        testConfig.rjsSimulation.trainSchedules.clear();
 
-        config.trainSchedules.clear();
-
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
 
         RouteState routeState = sim.infraState.getRouteState(3);
         makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
@@ -268,26 +249,26 @@ public class RouteStateTest {
         });
         makeAssertEvent(sim, 20, () -> routeState.status == RouteStatus.FREE);
 
-        run(sim, config);
+        simState.run();
     }
 
     /**
      * Check that the route status changes are correct and in the right order.
      */
     @Test
-    public void testReserveStatusChanges() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
-
+    public void testReserveStatusChanges() throws SimulationError {
         var changelog = new ArrayChangeLog();
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json")
+                .withChangeConsumer(changelog);
+        testConfig.rjsSimulation.trainSchedules.clear();
 
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, changelog);
-
-        config.trainSchedules.clear();
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
 
         RouteState routeState = sim.infraState.getRouteState(3);
         routeState.reserve(sim);
-        run(sim, config);
+
+        simState.run();
 
         var changesSet = changelog.publishedChanges.stream()
                 .filter(x -> x instanceof RouteState.RouteStatusChange)
@@ -311,19 +292,19 @@ public class RouteStateTest {
      * Check that the route status changes are correct and in the right order.
      */
     @Test
-    public void testReserveStatusChangesCBTC() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
-
+    public void testReserveStatusChangesCBTC() throws SimulationError {
         var changelog = new ArrayChangeLog();
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json")
+                .withChangeConsumer(changelog);
+        testConfig.rjsSimulation.trainSchedules.clear();
 
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, changelog);
-
-        config.trainSchedules.clear();
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
 
         RouteState routeState = sim.infraState.getRouteState(3);
         routeState.cbtcReserve(sim);
-        run(sim, config);
+
+        simState.run();
 
         var changesSet = changelog.publishedChanges.stream().filter(x -> x instanceof RouteState.RouteStatusChange)
                 .map(Object::toString).collect(Collectors.toSet());
@@ -343,10 +324,12 @@ public class RouteStateTest {
      * Test that a normal reservation fails if a route is already RESERVED.
      */
     @Test
-    public void testReserveFailsIfReserved() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
+    public void testReserveFailsIfReserved() throws SimulationError {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
+        testConfig.rjsSimulation.trainSchedules.clear();
 
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
 
         RouteState routeState = sim.infraState.getRouteState(3);
         routeState.reserve(sim);
@@ -357,10 +340,12 @@ public class RouteStateTest {
      * Test that a normal reservation fails if a route is already CBTC_RESERVED.
      */
     @Test
-    public void testReserveFailsIfCBTCReserved() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
+    public void testReserveFailsIfCBTCReserved() throws SimulationError {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
+        testConfig.rjsSimulation.trainSchedules.clear();
 
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
 
         RouteState routeState = sim.infraState.getRouteState(3);
         routeState.cbtcReserve(sim);
@@ -371,10 +356,12 @@ public class RouteStateTest {
      * Test that a cbtc reservation fails if a route is already RESERVED.
      */
     @Test
-    public void testCBTCReserveFailsIfReserved() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
+    public void testCBTCReserveFailsIfReserved() throws SimulationError {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
+        testConfig.rjsSimulation.trainSchedules.clear();
 
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
 
         RouteState routeState = sim.infraState.getRouteState(3);
         routeState.reserve(sim);
@@ -385,10 +372,12 @@ public class RouteStateTest {
      * Check that we cannot occupy a route if it is not reserved
      */
     @Test
-    public void testOccupiedFailsIfNotReserved() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
+    public void testOccupiedFailsIfNotReserved() {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
+        testConfig.rjsSimulation.trainSchedules.clear();
 
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
 
         RouteState routeState = sim.infraState.getRouteState(3);
         assertThrows(SimulationError.class, () -> routeState.onTvdSectionOccupied(sim));
@@ -398,13 +387,11 @@ public class RouteStateTest {
      * Check that a route can be CBTC_RESERVED several times simultaneously.
      */
     @Test
-    public void testMultipleCBTCReserve() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
-
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-
-        config.trainSchedules.clear();
+    public void testMultipleCBTCReserve() {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
+        testConfig.rjsSimulation.trainSchedules.clear();
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
 
         RouteState routeState = sim.infraState.getRouteState(3);
         // We reserve the route a first time
@@ -435,7 +422,8 @@ public class RouteStateTest {
                 routeState.onTvdSectionUnoccupied(sim, sim.infraState.getTvdSectionState(section.tvdSection.index));
         });
         makeAssertEvent(sim, 19, () -> routeState.status == RouteStatus.FREE);
-        run(sim, config);
+
+        simState.run();
     }
 
     /**
@@ -443,14 +431,14 @@ public class RouteStateTest {
      */
     @Test
     public void testReservedFailsIfRequested() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
 
-        config.trainSchedules.clear();
+        testConfig.rjsSimulation.trainSchedules.clear();
+        testConfig.rjsInfra.switches.iterator().next().groupChangeDelay = 10;
 
-        infra.switches.iterator().next().groupChangeDelay = 10;
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
 
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         RouteState routeState = sim.infraState.getRouteState(3);
@@ -464,14 +452,14 @@ public class RouteStateTest {
      */
     @Test
     public void testCBTCReservedFailsIfRequested() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
 
-        config.trainSchedules.clear();
+        testConfig.rjsSimulation.trainSchedules.clear();
+        testConfig.rjsInfra.switches.iterator().next().groupChangeDelay = 10;
 
-        infra.switches.iterator().next().groupChangeDelay = 10;
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
 
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         RouteState routeState = sim.infraState.getRouteState(3);
@@ -485,14 +473,13 @@ public class RouteStateTest {
      */
     @Test
     public void testReservedFailsIfCBTCRequested() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
 
-        config.trainSchedules.clear();
+        testConfig.rjsInfra.switches.iterator().next().groupChangeDelay = 10;
+        testConfig.rjsSimulation.trainSchedules.clear();
 
-        infra.switches.iterator().next().groupChangeDelay = 10;
-
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         RouteState routeState = sim.infraState.getRouteState(3);
@@ -503,18 +490,10 @@ public class RouteStateTest {
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public void testReserveRouteTrainStartNotOnFirstTrackSection()
-            throws InvalidInfraException, IOException, InvalidRollingStock, InvalidSchedule {
-        final var infra = getBaseInfra();
-        var path = getResourcePath("tiny_infra/config_railjson.json");
-        var baseDirPath = path.getParent();
-        var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, path);
-        final var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
-        final var rjsInfra = parseFromFile(jsonConfig.infraType, infraPath.toString());
-        var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
-        var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
+    public void testReserveRouteTrainStartNotOnFirstTrackSection() {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
 
-        schedule.trainSchedules.forEach(s -> {
+        testConfig.rjsSimulation.trainSchedules.forEach(s -> {
             s.routes = (ID<RJSRoute>[]) new ID[]{
                     new ID<RJSRoute>("rt.C3-S7"),
                     new ID<RJSRoute>("rt.S7-buffer_stop_c"),
@@ -523,37 +502,15 @@ public class RouteStateTest {
             s.initialHeadLocation.offset = 10;
         });
 
-        var trainSchedules = RJSSimulationParser.parse(rjsInfra, schedule);
-        var config = new Config(
-                jsonConfig.simulationTimeStep,
-                rjsInfra,
-                trainSchedules,
-                null,
-                jsonConfig.simulationStepPause,
-                false,
-                jsonConfig.realTimeViewer,
-                jsonConfig.changeReplayCheck
-        );
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra),
-                0, null);
-
-        run(sim, config);
+        testConfig.run();
     }
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public void testReserveRouteTrainStartNotOnFirstTVD()
-            throws InvalidInfraException, IOException, InvalidRollingStock, InvalidSchedule {
-        final var infra = getBaseInfra();
-        var path = getResourcePath("tiny_infra/config_railjson.json");
-        var baseDirPath = path.getParent();
-        var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, path);
-        final var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
-        final var rjsInfra = parseFromFile(jsonConfig.infraType, infraPath.toString());
-        var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
-        var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
+    public void testReserveRouteTrainStartNotOnFirstTVD() {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
 
-        schedule.trainSchedules.forEach(s -> {
+        testConfig.rjsSimulation.trainSchedules.forEach(s -> {
             s.routes = (ID<RJSRoute>[]) new ID[]{
                     new ID<RJSRoute>("rt.C3-S7"),
                     new ID<RJSRoute>("rt.S7-buffer_stop_c"),
@@ -562,37 +519,21 @@ public class RouteStateTest {
             s.initialHeadLocation.offset = 100;
         });
 
-        var trainSchedules = RJSSimulationParser.parse(rjsInfra, schedule);
-        var config = new Config(
-                jsonConfig.simulationTimeStep,
-                rjsInfra,
-                trainSchedules,
-                null,
-                jsonConfig.simulationStepPause,
-                false,
-                jsonConfig.realTimeViewer,
-                jsonConfig.changeReplayCheck
-        );
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra),
-                0, null);
-
-        run(sim, config);
+        testConfig.run();
     }
 
     @Test
-    public void testCircularInfraReserves() throws InvalidInfraException {
-        final var infra = getBaseInfra("circular_infra/infra.json");
-        final var config = getBaseConfig("circular_infra/config.json");
-
+    public void testCircularInfraReserves() {
         var changelog = new ArrayChangeLog();
+        var config = TestConfig.readResource("circular_infra/config.json")
+                .withChangeConsumer(changelog);
 
-        var sim = Simulation.createFromInfraAndSuccessions(RailJSONParser.parse(infra),
-                config.switchSuccessions, 0, changelog);
+        var schedules = config.rjsSimulation.trainSchedules;
+        schedules.remove(2);
+        schedules.remove(1);
 
-        config.trainSchedules.remove(2);
-        config.trainSchedules.remove(1);
-
-        run(sim, config);
+        var simState = config.prepare();
+        simState.run();
 
         var changesSet = changelog.publishedChanges.stream()
                 .filter(x -> x instanceof RouteState.RouteStatusChange)
@@ -600,9 +541,10 @@ public class RouteStateTest {
                 .collect(Collectors.toSet());
 
         // We check that every route has been reserved and occupied at least once
-        for (int i = 0; i < infra.routes.size(); i++) {
+        for (int i = 0; i < config.rjsInfra.routes.size(); i++) {
             for (var status : new RouteStatus[]{RouteStatus.RESERVED, RouteStatus.OCCUPIED}) {
-                var expected = new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(i), status);
+                var routeState = simState.sim.infraState.getRouteState(i);
+                var expected = new RouteState.RouteStatusChange(simState.sim, routeState, status);
                 assert changesSet.contains(expected.toString());
             }
         }
@@ -610,18 +552,15 @@ public class RouteStateTest {
 
     @Test
     @Disabled("Fixing this requires changes in the API and middle/front end, it will be done later")
-    public void testCircularInfraRouteIndexes() throws InvalidInfraException {
-        final var infra = getBaseInfra("circular_infra/infra.json");
-        final var config = getBaseConfig("circular_infra/config.json");
-
+    public void testCircularInfraRouteIndexes() {
         var changelog = new ArrayChangeLog();
+        var config = TestConfig.readResource("circular_infra/config.json")
+                .withChangeConsumer(changelog);
 
-        var sim = Simulation.createFromInfraAndSuccessions(RailJSONParser.parse(infra),
-                config.switchSuccessions, 0, changelog);
+        var simState = config.prepare();
+        simState.run();
 
-        run(sim, config);
-
-        for (var train : sim.trains.values()) {
+        for (var train : simState.sim.trains.values()) {
             var trainState = train.getLastState();
             var path = train.schedule.plannedPath;
             assertEquals(path.routePath.size() - 1, trainState.routeIndex);

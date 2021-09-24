@@ -29,6 +29,10 @@ public abstract class RJSAllowance {
     public Double endPosition = null;
 
     public static final class MarecoAllowance extends RJSAllowance {
+        public MarecoAllowance(MarginType type, double value) {
+            this.allowanceValue = value;
+            this.allowanceType = type;
+        }
 
         @Json(name = "allowance_type")
         public MarecoAllowance.MarginType allowanceType;
@@ -43,6 +47,11 @@ public abstract class RJSAllowance {
     }
 
     public static final class LinearAllowance extends RJSAllowance {
+        public LinearAllowance(MarginType type, double value) {
+            this.allowanceType = type;
+            this.allowanceValue = value;
+        }
+
         @Json(name = "allowance_type")
         public MarginType allowanceType;
 
@@ -59,5 +68,8 @@ public abstract class RJSAllowance {
         @Json(name = "allowance_value")
         public double allowanceValue;
 
+        public ConstructionAllowance(double value) {
+            this.allowanceValue = value;
+        }
     }
 }

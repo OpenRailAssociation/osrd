@@ -217,9 +217,8 @@ public final class TrackSection extends BiNEdge<TrackSection> {
      * Gets the type of catenary on a given track section, according to a given direction.
      * @param edge the track section
      * @param direction the direction
-     * Returns type of catenary
+     * @return type of catenary
      */
-
     public static ArrayList<RangeValue<CatenaryType>> getCatenarySections(TrackSection edge, EdgeDirection direction) {
         if (direction == EdgeDirection.START_TO_STOP)
             return edge.forwardCatenarySections;

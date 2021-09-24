@@ -72,7 +72,8 @@ public class Config {
         return makeWithGivenInfra(mainConfigPath, infra);
     }
 
-    private static void parseExtraRollingStocks(
+    /** Parse all serialized .json rolling stock files and add these to the given map */
+    public static void parseExtraRollingStocks(
             Map<String, RollingStock> res,
             Path dirPath
     ) throws IOException, InvalidRollingStock {

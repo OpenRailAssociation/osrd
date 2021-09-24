@@ -139,21 +139,34 @@ public class SimulationEndpoint implements Take {
 
         /** A list of rolling stocks involved in this simulation */
         @Json(name = "rolling_stocks")
-        public Collection<RJSRollingStock> rollingStocks;
+        public List<RJSRollingStock> rollingStocks;
 
         /** A list of trains plannings */
         @Json(name = "train_schedules")
-        public Collection<RJSTrainSchedule> trainSchedules;
+        public List<RJSTrainSchedule> trainSchedules;
 
         /** A list of trains successions tables */
         @Json(name = "successions")
-        public Collection<RJSSuccessionTable> successions;
+        public List<RJSSuccessionTable> successions;
+
+        /** Create SimulationRequest */
+        public SimulationRequest(
+                String infra,
+                List<RJSRollingStock> rollingStocks,
+                List<RJSTrainSchedule> trainSchedules,
+                List<RJSSuccessionTable> successions
+        ) {
+            this.infra = infra;
+            this.rollingStocks = rollingStocks;
+            this.trainSchedules = trainSchedules;
+            this.successions = successions;
+        }
 
         /** Create SimulationRequest with empty successions tables */
         public SimulationRequest(
                 String infra,
-                Collection<RJSRollingStock> rollingStocks,
-                Collection<RJSTrainSchedule> trainSchedules
+                List<RJSRollingStock> rollingStocks,
+                List<RJSTrainSchedule> trainSchedules
         ) {
             this.infra = infra;
             this.rollingStocks = rollingStocks;

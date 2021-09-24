@@ -2,124 +2,136 @@ package fr.sncf.osrd.speedcontroller;
 
 import static fr.sncf.osrd.Helpers.*;
 import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.TIME;
-import static java.lang.Double.POSITIVE_INFINITY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import fr.sncf.osrd.config.Config;
+import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope;
-import fr.sncf.osrd.speedcontroller.generators.ConstructionAllowanceGenerator;
-import fr.sncf.osrd.speedcontroller.generators.LinearAllowanceGenerator;
-import fr.sncf.osrd.speedcontroller.generators.MarecoAllowanceGenerator;
-import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.ConstructionAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarecoAllowance;
+import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.train.TrainSchedule;
-import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
-import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
+
 
 public class MarginTests {
+    public static class ComparativeTest {
+        public final TestConfig.TestSimulationState baseState;
+        public final ArrayList<TimelineEvent> baseEvents;
+        public final TestConfig.TestSimulationState testedState;
+        public final ArrayList<TimelineEvent> testedEvents;
+
+        private ComparativeTest(
+                TestConfig.TestSimulationState baseState,
+                ArrayList<TimelineEvent> baseEvents,
+                TestConfig.TestSimulationState testedState,
+                ArrayList<TimelineEvent> testedEvents
+        ) {
+            this.baseState = baseState;
+            this.baseEvents = baseEvents;
+            this.testedState = testedState;
+            this.testedEvents = testedEvents;
+        }
+
+        /** Run a comparative test from a configuration, and a function which modifies it slightly */
+        public static ComparativeTest from(TestConfig config, Runnable modifier) {
+            var basePrepared = config.prepare();
+            var baseEvents = basePrepared.run();
+
+            modifier.run();
+
+            var newPrepared = config.prepare();
+            var newEvents = newPrepared.run();
+            return new ComparativeTest(basePrepared, baseEvents, newPrepared, newEvents);
+        }
+
+        /** Save the event logs are CSV using the name of the test */
+        public void saveGraphs(TestInfo testInfo) {
+            var testName = testInfo.getTestMethod().orElseThrow().getName();
+
+            saveGraph(baseEvents, "..\\" + testName + "-base.csv");
+            saveGraph(testedEvents, "..\\" + testName + "-tested.csv");
+        }
+
+        public double baseTime() {
+            return baseState.sim.getTime();
+        }
+
+        public double testedTime() {
+            return testedState.sim.getTime();
+        }
+    }
 
     /** Test the linear allowance */
     @ParameterizedTest
     @ValueSource(doubles = {0, 50, 200})
-    public void testLinearAllowance(double value) throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        assert infra != null;
-        var params = new LinearAllowanceGenerator(0, Double.POSITIVE_INFINITY,
-                value, RJSAllowance.LinearAllowance.MarginType.TIME);
+    public void testLinearAllowance(double value, TestInfo info) {
+        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
 
-        // base run, no margin
-        final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var eventsBase = run(sim, config);
-        var baseSimTime = sim.getTime();
+        var allowance = new LinearAllowance(TIME, value);
+        var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
 
-        // Run with margins
-        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
-        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim2, configMargins);
-        var marginsSimTime = sim2.getTime();
-        var expected = baseSimTime * (1 + value / 100);
-        assertEquals(expected, marginsSimTime, expected * 0.01);
-        saveGraph(eventsBase, "..\\linear-base.csv");
-        saveGraph(events, "..\\linear-out.csv");
+        var expected = test.baseTime() * (1 + value / 100);
+        assertEquals(expected, test.testedTime(), expected * 0.01);
+        test.saveGraphs(info);
     }
 
     /** Test the construction margin */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 30, 100})
-    public void testConstructionMargins(double value) throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        assert infra != null;
-        var params = new ConstructionAllowanceGenerator(0, POSITIVE_INFINITY, value);
+    public void testConstructionMargins(double value, TestInfo info) {
+        var allowance = new ConstructionAllowance(value);
 
-        // base run, no margin
-        final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var eventsBase = run(sim, config);
-        var baseSimTime = sim.getTime();
+        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
+        test.saveGraphs(info);
 
-        // Run with construction margin
-        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
-        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim2, configMargins);
-        var marginsSimTime = sim2.getTime();
-
-        var expected = baseSimTime + params.value;
-
-        assertEquals(expected, marginsSimTime, expected * 0.01);
-        saveGraph(eventsBase, "..\\construction-base.csv");
-        saveGraph(events, "..\\construction-out.csv");
+        var expected = test.baseTime() + value;
+        assertEquals(expected, test.testedTime(), expected * 0.01);
     }
 
     /** Test the construction margin on a small segment */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 30, 100})
-    public void testConstructionMarginsOnSegment(double value) throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        assert infra != null;
-        double begin = 4000;
-        double end = 5000;
-        double tolerance = 0.01; //percentage
-        var params = new ConstructionAllowanceGenerator(begin, end, value);
+    public void testConstructionMarginsOnSegment(double value, TestInfo info) {
+        final double begin = 4000;
+        final double end = 5000;
+        final double tolerance = 0.01; // percentage
 
-        // base run, no margin
-        final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var eventsBase = run(sim, config);
+        var allowance = new ConstructionAllowance(value);
+        allowance.beginPosition = begin;
+        allowance.endPosition = end;
 
-        // Run with construction margin
-        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
-        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim2, configMargins);
+        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
+        test.saveGraphs(info);
 
-        var timesBase = getTimePerPosition(eventsBase);
+        var timesBase = getTimePerPosition(test.baseEvents);
         var timeFirstPointBase = timesBase.interpolate(begin);
         var timeSecondPointBase = timesBase.interpolate(end);
 
-        var times = getTimePerPosition(events);
+        var times = getTimePerPosition(test.testedEvents);
         var timeFirstPoint = times.interpolate(begin);
         var timeSecondPoint = times.interpolate(end);
-        var expectedTimeSecondPoint = timeSecondPointBase + params.value;
+        var expectedTimeSecondPoint = timeSecondPointBase + value;
 
         // make sure begin has the same time before and after margin, and that end is offset by the proper value
         assertEquals(timeFirstPointBase, timeFirstPoint, timeFirstPointBase * tolerance);
         assertEquals(expectedTimeSecondPoint, timeSecondPoint, expectedTimeSecondPoint * tolerance);
 
-        var speedsBase = getSpeedPerPosition(eventsBase);
+        var speedsBase = getSpeedPerPosition(test.baseEvents);
         var speedFirstPointBase = speedsBase.interpolate(begin);
         var speedSecondPointBase = speedsBase.interpolate(end);
 
-        var speeds = getSpeedPerPosition(events);
+        var speeds = getSpeedPerPosition(test.testedEvents);
         var speedFirstPoint = speeds.interpolate(begin);
         var speedSecondPoint = speeds.interpolate(end);
 
@@ -127,114 +139,76 @@ public class MarginTests {
         assertEquals(speedFirstPointBase, speedFirstPoint, speedFirstPointBase * tolerance);
         assertEquals(speedSecondPointBase, speedSecondPoint, speedSecondPointBase * tolerance);
 
-        var baseSimTime = sim.getTime();
-        var marginsSimTime = sim2.getTime();
+        var expectedTotalTime = test.baseTime() + value;
 
-        var expectedTotalTime = baseSimTime + params.value;
-
-        saveGraph(eventsBase, "..\\construction-segment-base.csv");
-        saveGraph(events, "..\\construction-segment-out.csv");
-
-        assertEquals(expectedTotalTime, marginsSimTime, expectedTotalTime * tolerance);
+        assertEquals(expectedTotalTime, test.testedTime(), expectedTotalTime * tolerance);
     }
 
     @Test
-    public void testConstructionOnLinearMargin() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        assert infra != null;
-        var params1 = new LinearAllowanceGenerator(0, POSITIVE_INFINITY,
-                10, TIME);
-        var params2 = new ConstructionAllowanceGenerator(0, POSITIVE_INFINITY, 15);
+    public void testConstructionOnLinearMargin(TestInfo info) {
+        // setup allowances
+        var linearAllowance = new LinearAllowance(TIME, 10);
+        var constructionAllowance = new ConstructionAllowance(15);
+        var allowances = new RJSAllowance[][] {
+                { linearAllowance },
+                { constructionAllowance },
+        };
 
-        var params = new ArrayList<SpeedControllerGenerator>();
-        params.add(params1);
-        params.add(params2);
+        // run the baseline and testing simulation
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var test = ComparativeTest.from(testConfig, () -> testConfig.setAllAllowances(allowances));
+        test.saveGraphs(info);
 
-        // Run with construction margin
-        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromList(params));
-        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim2, configMargins);
-        var marginsSimTime = sim2.getTime();
-
-        // base run, no margin
-        final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var eventsBase = run(sim, config);
-        var baseSimTime = sim.getTime();
-
-        var expected = baseSimTime * (1 + params1.value / 100) + params2.value;
-
-        assertEquals(expected, marginsSimTime, expected * 0.01);
-
-        saveGraph(eventsBase, "..\\linear-time-on-construction-base.csv");
-        saveGraph(events, "..\\linear-time-on-construction-out.csv");
+        // check the results
+        var expectedTime = (
+                test.baseTime() * (1. + linearAllowance.allowanceValue / 100.)
+                        + constructionAllowance.allowanceValue
+        );
+        assertEquals(expectedTime, test.testedTime(), expectedTime * 0.01);
     }
 
     @Test
-    public void testMarecoOnConstructionMargin() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        assert infra != null;
-        var params1 = new ConstructionAllowanceGenerator(3000, 5000, 30);
-        var params2 = new MarecoAllowanceGenerator(0, POSITIVE_INFINITY,
-                10, RJSAllowance.MarecoAllowance.MarginType.TIME);
+    public void testMarecoOnConstructionMargin(TestInfo info) {
+        // setup allowances
+        var constructionAllowance = new ConstructionAllowance(30);
+        constructionAllowance.beginPosition = 3000.;
+        constructionAllowance.endPosition = 5000.;
+        var marecoAllowance = new MarecoAllowance(MarecoAllowance.MarginType.TIME, 10);
+        var allowances = new RJSAllowance[][] { { constructionAllowance }, { marecoAllowance } };
 
-        var params = new ArrayList<SpeedControllerGenerator>();
-        params.add(params1);
-        params.add(params2);
+        // run the baseline and testing simulation
+        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowances));
+        test.saveGraphs(info);
 
-        // Run with construction margin
-        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromList(params));
-        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim2, configMargins);
-        var marginsSimTime = sim2.getTime();
-
-        // base run, no margin
-        final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var eventsBase = run(sim, config);
-        var baseSimTime = sim.getTime();
-
-        var expected = (baseSimTime + params1.value) * (1 + params2.value / 100);
-
-        assertEquals(expected, marginsSimTime, expected * 0.01);
-
-        saveGraph(eventsBase, "..\\mareco-on-construction-base.csv");
-        saveGraph(events, "..\\mareco-on-construction-out.csv");
+        // compare the results
+        var expected = (
+                (test.baseTime() + constructionAllowance.allowanceValue)
+                * (1 + marecoAllowance.allowanceValue / 100)
+        );
+        assertEquals(expected, test.testedTime(), expected * 0.01);
     }
 
     /** Test mareco */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 10, 30, 200})
-    //@ValueSource(doubles = {127})
-    public void testEcoMargin(double value) throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        assert infra != null;
-        var params = new MarecoAllowanceGenerator(0, POSITIVE_INFINITY,
-                value, RJSAllowance.MarecoAllowance.MarginType.TIME);
+    public void testEcoMargin(double value, TestInfo info) {
+        // setup allowances
+        var marecoAllowance = new MarecoAllowance(MarecoAllowance.MarginType.TIME, value);
 
-        // Run with construction margin
-        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
-        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim2, configMargins);
-        var marginsSimTime = sim2.getTime();
+        // run the baseline and testing simulation
+        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var test = ComparativeTest.from(config, () -> config.setAllAllowances(marecoAllowance));
+        test.saveGraphs(info);
 
-        // base run, no margin
-        final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var eventsBase = run(sim, config);
-        var baseSimTime = sim.getTime();
-
-        saveGraph(eventsBase, "..\\mareco-base.csv");
-        saveGraph(events, "..\\mareco-out.csv");
-
-        var expected = baseSimTime * (1 + params.value / 100);
-        assertEquals(expected, marginsSimTime, 5);
+        var expected = test.baseTime() * (1 + value / 100);
+        assertEquals(expected, test.testedTime(), 5);
     }
 
     /** Test mareco with different slopes*/
     @ParameterizedTest
     @ValueSource(ints = {0, 1, 2, 3, 4, 5, 6, 7})
-    public void testDifferentSlopes(int slopeProfile) throws InvalidInfraException {
+    public void testDifferentSlopes(int slopeProfile, TestInfo info) {
         // inputs
         final double margin = 40.0;
         var slopes = new ArrayList<RJSSlope>();
@@ -276,203 +250,131 @@ public class MarginTests {
                 slopes.add(new RJSSlope(7500, 10000, 10));
                 break;
             default:
-                throw new InvalidInfraException("Unable to handle this parameter in testDifferentSlopes");
+                throw new RuntimeException("Unable to handle this parameter in testDifferentSlopes");
         }
 
+        var marecoAllowance = new MarecoAllowance(MarecoAllowance.MarginType.TIME, margin);
+
         // build sims
-        var rjsInfra = getBaseInfra();
-        assert rjsInfra != null;
-        for (var trackSection : rjsInfra.trackSections)
+        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        for (var trackSection : config.rjsInfra.trackSections)
             if ("ne.micro.foo_to_bar".equals(trackSection.id))
                 trackSection.slopes = slopes;
+        var test = ComparativeTest.from(config, () -> config.setAllAllowances(marecoAllowance));
+        test.saveGraphs(info);
 
-        var infra = RailJSONParser.parse(rjsInfra);
-
-        // Run with mareco
-        var marginsConfig = getConfigWithSpeedInstructionsAndInfra(
-                SpeedInstructions.fromController(
-                        new MarecoAllowanceGenerator(
-                                0,
-                                POSITIVE_INFINITY,
-                                margin,
-                                RJSAllowance.MarecoAllowance.MarginType.TIME
-                        )
-                ),
-                infra
-        );
-        var marginsSim = Simulation.createFromInfraAndEmptySuccessions(infra, 0, null);
-        var events = run(marginsSim, marginsConfig);
-        var marginsSimTime = marginsSim.getTime();
-
-        // base run, no margin
-        final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(infra, 0, null);
-        var eventsBase = run(sim, config);
-        var simTime = sim.getTime();
-
-        saveGraph(eventsBase, "..\\mareco-slope-base.csv");
-        saveGraph(events, "..\\mareco-slope-out.csv");
-
-        var expected = simTime * (1 + margin / 100);
-        assertEquals(expected, marginsSimTime, 5 + 0.001 * expected);
+        var expected = test.baseTime() * (1 + margin / 100);
+        assertEquals(expected, test.testedTime(), 5 + 0.001 * expected);
 
         var coastingSpeedControllers =
                 findCoastingSpeedControllers(
-                        marginsConfig.trainSchedules.get(0).speedInstructions.targetSpeedControllers
+                        test.testedState.schedules.get(0).speedInstructions.targetSpeedControllers
                 );
         for (var controller : coastingSpeedControllers) {
-            assertLowerSpeedPerPositionBetween(eventsBase, events, controller.beginPosition, controller.endPosition);
+            assertLowerSpeedPerPositionBetween(
+                    test.baseEvents, test.testedEvents,
+                    controller.beginPosition, controller.endPosition
+            );
         }
     }
 
     /** Test the linear allowance type TIME */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 20, 100})
-    public void testTimeMargin(double value) throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        assert infra != null;
-        var params = new LinearAllowanceGenerator(0, POSITIVE_INFINITY,
-                value, TIME);
+    public void testTimeMargin(double value, TestInfo info) {
+        // setup allowances
+        var allowance = new LinearAllowance(TIME, value);
 
-        // base run, no margin
-        final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var eventsBase = run(sim, config);
-        var baseSimTime = sim.getTime();
+        // run the baseline and testing simulation
+        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
+        test.saveGraphs(info);
 
-        // Run with 20% margins
-        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
-        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim2, configMargins);
-        var marginsSimTime = sim2.getTime();
-
-        var expected = baseSimTime * (1 + params.value / 100);
-
-        saveGraph(eventsBase, "..\\linear-time-base.csv");
-        saveGraph(events, "..\\linear-time-out.csv");
-        assertEquals(expected, marginsSimTime, expected * 0.01);
+        var expected = test.baseTime() * (1 + value / 100);
+        assertEquals(expected, test.testedTime(), expected * 0.01);
     }
 
     /** Test the linear allowance type DISTANCE */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 270})
-    public void testDistanceMargin(double value) throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        assert infra != null;
-        var params = new LinearAllowanceGenerator(0, POSITIVE_INFINITY,
-                value, RJSAllowance.LinearAllowance.MarginType.DISTANCE);
+    public void testDistanceMargin(double value, TestInfo info) {
+        var allowance = new LinearAllowance(LinearAllowance.MarginType.DISTANCE, value);
 
-        // base run, no margin
-        final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var eventsBase = run(sim, config);
-        var baseSimTime = sim.getTime();
+        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
+        test.saveGraphs(info);
 
-        // Run with margin
-        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromController(params));
-        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim2, configMargins);
-        var marginsSimTime = sim2.getTime();
-
-        var schedule = configMargins.trainSchedules.get(0);
+        var schedule = test.testedState.schedules.get(0);
         var start = schedule.initialLocation;
         var end = schedule.phases.get(0).getEndLocation();
         var distance = convertTrackLocation(end, schedule) - convertTrackLocation(start, schedule);
-        var expectedExtraTime = params.value * distance / 100000;
-        var expected = baseSimTime + expectedExtraTime;
+        var expectedExtraTime = value * distance / 100000;
+        var expected = test.baseTime() + expectedExtraTime;
 
-        assertEquals(expected, marginsSimTime, expected * 0.01);
-        saveGraph(eventsBase, "..\\linear-distance-base.csv");
-        saveGraph(events, "..\\linear-distance-out.csv");
+        assertEquals(expected, test.testedTime(), expected * 0.01);
     }
 
     @Test
-    public void testSameSpeedLimits() throws InvalidInfraException {
-        final var infra = getBaseInfra();
+    public void testSameSpeedLimits(TestInfo info) {
+        final var globalAllowance = new LinearAllowance(TIME, 50);
 
         double marginChangeLocation = 5000;
+        var startMargin = new LinearAllowance(TIME, 50);
+        startMargin.beginPosition = 0.;
+        startMargin.endPosition = marginChangeLocation;
+        var endMargin = new LinearAllowance(TIME, 50);
+        endMargin.beginPosition = marginChangeLocation;
+        var splitAllowances = new RJSAllowance[][] { { startMargin, endMargin } };
 
-        var params1 = new LinearAllowanceGenerator(0, marginChangeLocation, 50, TIME);
-        var params2 = new LinearAllowanceGenerator(marginChangeLocation, POSITIVE_INFINITY,
-                50, TIME);
+        var config = TestConfig.readResource("tiny_infra/config_railjson.json")
+                .clearAllowances()
+                .setAllAllowances(globalAllowance);
+        var test = ComparativeTest.from(config,
+                () -> config.setAllAllowances(splitAllowances));
+        test.saveGraphs(info);
 
-        var params = new HashSet<SpeedControllerGenerator>();
-        params.add(params1);
-        params.add(params2);
-
-        // Run with margins
-        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromSet(params));
-        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim2, configMargins);
-
-        // base run, one global margin
-        var globalParams = new LinearAllowanceGenerator(0, POSITIVE_INFINITY, 50, TIME);
-        final var config = getConfigWithSpeedInstructions(SpeedInstructions.fromController(globalParams));
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var eventsBase = run(sim, config);
-
-        saveGraph(eventsBase, "same-margins-base.csv");
-        saveGraph(events, "same-margins-out.csv");
-
-        assertSameSpeedPerPosition(eventsBase, events);
+        assertSameSpeedPerPosition(test.baseEvents, test.testedEvents);
     }
 
-
     @Test
-    public void testDifferentSpeedLimits() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-
+    public void testDifferentSpeedLimits(TestInfo info) {
         double marginChangeLocation = 5000;
+        var startMargin = new LinearAllowance(TIME, 20);
+        startMargin.beginPosition = 0.;
+        startMargin.endPosition = marginChangeLocation;
+        var endMargin = new LinearAllowance(TIME, 60);
+        endMargin.beginPosition = marginChangeLocation;
+        var allowances = new RJSAllowance[][] { { startMargin }, { endMargin } };
 
-        // base run, no margin
-        final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var eventsBase = run(sim, config);
-        var baseTimePerPosition = getTimePerPosition(eventsBase);
+        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowances));
+        test.saveGraphs(info);
+
+        var baseTimePerPosition = getTimePerPosition(test.baseEvents);
         final var marginChangeTime = baseTimePerPosition.interpolate(marginChangeLocation);
-        final var totalTime = sim.getTime();
 
-        var params1 = new LinearAllowanceGenerator(0, marginChangeLocation, 20, TIME);
-        var params2 = new LinearAllowanceGenerator(marginChangeLocation, POSITIVE_INFINITY, 60, TIME);
-
-        var params = new HashSet<SpeedControllerGenerator>();
-        params.add(params1);
-        params.add(params2);
-
-        // Run with margins
-        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromSet(params));
-        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim2, configMargins);
-        var marginTime = sim2.getTime();
-
-        saveGraph(eventsBase, "different-margins-base.csv");
-        saveGraph(events, "different-margins-out.csv");
-
-        var expected = marginChangeTime * (1 + params1.value / 100)
-                + (totalTime - marginChangeTime) * (1 + params2.value / 100);
-        assertEquals(expected, marginTime, expected * 0.01);
+        var expected = marginChangeTime * (1 + startMargin.allowanceValue / 100)
+                + (test.baseTime() - marginChangeTime) * (1 + endMargin.allowanceValue / 100);
+        assertEquals(expected, test.testedTime(), expected * 0.01);
     }
 
     @Test
-    public void testSeveralConstructionMargins() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        var param1 = new ConstructionAllowanceGenerator(0, 5000, 15);
-        var param2 = new ConstructionAllowanceGenerator(5000, POSITIVE_INFINITY, 30);
+    public void testSeveralConstructionMargins(TestInfo info) {
+        double marginChangeLocation = 5000;
+        var startMargin = new ConstructionAllowance(15);
+        startMargin.beginPosition = 0.;
+        startMargin.endPosition = marginChangeLocation;
+        var endMargin = new ConstructionAllowance(30);
+        endMargin.beginPosition = marginChangeLocation;
+        var allowances = new RJSAllowance[][] { { startMargin }, { endMargin } };
 
-        final var config = getConfigWithSpeedInstructions(
-                SpeedInstructions.fromList(Arrays.asList(param1, param2)));
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        saveGraph(run(sim, config), "double-construction-out.csv");
-        var actualEndTime = sim.getTime();
+        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowances));
+        test.saveGraphs(info);
 
-        final var configBase = getBaseConfigNoAllowance();
-        var simBase = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        saveGraph(run(simBase, configBase), "double-construction-base.csv");
-        var baseEndTime = simBase.getTime();
+        var expected = test.baseTime() + startMargin.allowanceValue + endMargin.allowanceValue;
 
-        var expected = baseEndTime + param1.value + param2.value;
-
-        assertEquals(expected, actualEndTime, expected * 0.01);
+        assertEquals(expected, test.testedTime(), expected * 0.01);
     }
 
     private double convertTrackLocation(TrackSectionLocation location, TrainSchedule schedule) {
@@ -487,31 +389,24 @@ public class MarginTests {
     }
 
     @Test
-    public void testDifferentMargins() throws InvalidInfraException {
-        final var infra = getBaseInfra();
+    public void testDifferentMargins(TestInfo info) {
+        double marginChangeLocation = 5000;
+        var startMargin = new LinearAllowance(TIME, 10);
+        startMargin.beginPosition = 0.;
+        startMargin.endPosition = marginChangeLocation;
+        var endMargin = new LinearAllowance(TIME, 60);
+        endMargin.beginPosition = marginChangeLocation;
+        var allowances = new RJSAllowance[][] { { startMargin }, { endMargin } };
 
-        var paramsFirstPhase = new LinearAllowanceGenerator(0, 5000, 10, TIME);
-        var paramsSecondPhase = new LinearAllowanceGenerator(5000, POSITIVE_INFINITY, 60, TIME);
-        var params = new HashSet<SpeedControllerGenerator>();
-        params.add(paramsFirstPhase);
-        params.add(paramsSecondPhase);
-
-        final var configMargins = getConfigWithSpeedInstructions(SpeedInstructions.fromSet(params));
-        var simMargins = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        final var eventsMargins = run(simMargins, configMargins);
-
-        final var config = getBaseConfigNoAllowance();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var baseEvents = run(sim, config);
-
-        saveGraph(eventsMargins, "two-margins-out.csv");
-        saveGraph(baseEvents, "two-margins-base.csv");
+        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowances));
+        test.saveGraphs(info);
 
         // We don't test the whole range as the speeds can be *slightly* different
         // during the transition or when close to 0 (see also issue with shifted speed limits)
-        assertSameSpeedPerPositionBetween(baseEvents, eventsMargins, 10, 2000,
-                1 / (1 + paramsFirstPhase.value / 100));
-        assertSameSpeedPerPositionBetween(baseEvents, eventsMargins, 6000, 9000,
-                1 / (1 + paramsSecondPhase.value / 100));
+        assertSameSpeedPerPositionBetween(test.baseEvents, test.testedEvents, 10, 2000,
+                1 / (1 + startMargin.allowanceValue / 100));
+        assertSameSpeedPerPositionBetween(test.baseEvents, test.testedEvents, 6000, 9000,
+                1 / (1 + endMargin.allowanceValue / 100));
     }
 }

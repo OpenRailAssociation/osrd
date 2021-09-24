@@ -11,6 +11,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 
 import java.util.Collection;
+import java.util.List;
 
 public final class RJSSimulation {
     public static final JsonAdapter<RJSSimulation> adapter = new Moshi
@@ -27,15 +28,15 @@ public final class RJSSimulation {
 
     /** A list of rolling stocks involved in this simulation */
     @Json(name = "rolling_stocks")
-    public Collection<RJSRollingStock> rollingStocks;
+    public List<RJSRollingStock> rollingStocks;
 
     /** A list of trains plannings */
     @Json(name = "train_schedules")
-    public Collection<RJSTrainSchedule> trainSchedules;
+    public List<RJSTrainSchedule> trainSchedules;
 
     public RJSSimulation(
-            Collection<RJSRollingStock> rollingStocks,
-            Collection<RJSTrainSchedule> trainSchedules
+            List<RJSRollingStock> rollingStocks,
+            List<RJSTrainSchedule> trainSchedules
     ) {
         this.rollingStocks = rollingStocks;
         this.trainSchedules = trainSchedules;

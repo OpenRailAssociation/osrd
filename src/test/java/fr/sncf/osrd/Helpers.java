@@ -1,28 +1,20 @@
 package fr.sncf.osrd;
 
-import static fr.sncf.osrd.config.Config.makeWithGivenInfra;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.JsonReader;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.config.Config;
-import fr.sncf.osrd.config.JsonConfig;
-import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.SuccessionTable;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
-import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
-import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
-import fr.sncf.osrd.railjson.schema.common.ID;
-import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSuccession;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
@@ -33,7 +25,6 @@ import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
-import fr.sncf.osrd.utils.PathUtils;
 import fr.sncf.osrd.utils.SortedDoubleMap;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import net.bytebuddy.utility.RandomString;
@@ -41,6 +32,7 @@ import okio.Okio;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -49,6 +41,45 @@ import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 public class Helpers {
+    private static <T> T deserializeResource(
+            ClassLoader loader,
+            JsonAdapter<T> adapter,
+            String resourcePath
+    ) throws Exception {
+        var resourceURL = loader.getResource(resourcePath);
+        if (resourceURL == null)
+            throw new Exception("can't find resource " + resourcePath);
+        return MoshiUtils.deserialize(adapter, Paths.get(resourceURL.toURI()));
+    }
+
+    /** Load a given RJSSimulation at a given resource path */
+    public static RJSSimulation loadExampleSimulationResource(Class<?> klass, String path) throws Exception {
+        var classLoader = klass.getClassLoader();
+        var sim = deserializeResource(classLoader, RJSSimulation.adapter, path);
+
+        // build a map of all rolling stocks declared in the simulation manifest
+        var embedRollingStocks = new HashSet<String>();
+        for (var rollingStock : sim.rollingStocks)
+            embedRollingStocks.add(rollingStock.id);
+
+        // manually load rolling stocks for schedules which are missing a description
+        for (var schedule : sim.trainSchedules) {
+            var rollingStockID = schedule.rollingStock;
+            // if the rolling stock is already embed in the simulation, skip it
+            if (embedRollingStocks.contains(rollingStockID))
+                continue;
+
+            var rjsRollingStock = deserializeResource(
+                    classLoader,
+                    RJSRollingStock.adapter,
+                    String.format("rolling_stocks/%s.json", rollingStockID)
+            );
+            assert rjsRollingStock.id.equals(rollingStockID);
+            sim.rollingStocks.add(rjsRollingStock);
+            embedRollingStocks.add(rollingStockID);
+        }
+        return sim;
+    }
 
     private static final boolean saveCSVFiles = false;
 
@@ -221,20 +252,6 @@ public class Helpers {
         return getConfigWithSpeedInstructions(new SpeedInstructions(null));
     }
 
-    /**
-     * Generates the config from the file passed in arguments without allowances
-     */
-    public static Config getBaseConfigNoAllowance(String path) {
-        return getConfigWithSpeedInstructions(path, new SpeedInstructions(null));
-    }
-
-    /**
-     * Generates the default config from tiny_infra/config_railjson.json without allowances
-     */
-    public static Config getBaseConfigNoAllowanceNonConstantDec() {
-        return getConfigWithSpeedInstructionsNonConstantDec(new SpeedInstructions(null));
-    }
-
     /** Gets the default config but with the given SpeedInstruction in train schedules */
     public static Config getConfigWithSpeedInstructions(SpeedInstructions instructions) {
         var config = getBaseConfig("tiny_infra/config_railjson.json");
@@ -242,107 +259,14 @@ public class Helpers {
         return config;
     }
 
-    /** Gets the config from the file passed in arguments but with the given SpeedInstruction in train schedules */
-    public static Config getConfigWithSpeedInstructions(String path, SpeedInstructions instructions) {
-        var config = getBaseConfig(path);
-        config.trainSchedules.forEach(schedule -> schedule.speedInstructions = instructions);
-        return config;
-    }
-
-    /** Gets the default config but with the given SpeedInstruction in train schedules */
-    public static Config getConfigWithSpeedInstructionsNonConstantDec(SpeedInstructions instructions) {
-        var config = getBaseConfig("tiny_infra/config_railjson_nonconstdec.json");
-        config.trainSchedules.forEach(schedule -> schedule.speedInstructions = instructions);
-        return config;
-    }
-
-    /** Loads the given config, but replaces the given stops in the schedule */
-    public static Config makeConfigWithGivenStops(String baseConfigPath, RJSTrainStop[] stops) {
-        try {
-            var path = getResourcePath(baseConfigPath);
-            var baseDirPath = path.getParent();
-            var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, path);
-            final var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
-            final var infra = Infra.parseFromFile(jsonConfig.infraType, infraPath.toString());
-            var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
-            var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
-            for (var trainSchedule : schedule.trainSchedules) {
-                trainSchedule.stops = stops;
-            }
-            var trainSchedules = RJSSimulationParser.parse(infra, schedule);
-            var successionTables = new ArrayList<SuccessionTable>();
-            for (var s : infra.switches) {
-                successionTables.add(new SuccessionTable(s.id, new ArrayList<String>()));
-            }
-            return new Config(
-                    jsonConfig.simulationTimeStep,
-                    infra,
-                    trainSchedules,
-                    successionTables,
-                    jsonConfig.simulationStepPause,
-                    jsonConfig.showViewer,
-                    jsonConfig.realTimeViewer,
-                    jsonConfig.changeReplayCheck
-            );
-        } catch (IOException | InvalidInfraException | InvalidRollingStock | InvalidSchedule e) {
-            fail(e);
-            throw new RuntimeException();
-        }
-    }
-
-
-    /** Gets the config from the file passed in arguments but with the given SpeedInstruction in train schedules
-     * and a given infrastructure */
-    public static Config getConfigWithSpeedInstructionsAndInfra(SpeedInstructions instructions, Infra infra) {
-        try {
-            var path = "tiny_infra/config_railjson.json";
-            var config = makeWithGivenInfra(getResourcePath(path), infra);
-            config.trainSchedules.forEach(schedule -> schedule.speedInstructions = instructions);
-            return config;
-        } catch (IOException | InvalidRollingStock | InvalidSchedule | InvalidSuccession e) {
-            fail(e);
-            throw new RuntimeException();
-        }
-    }
-
-    /** Gets the config from the file passed in arguments but with the given SpeedInstruction in train schedules
-     * and a given infrastructure */
-    public static Config getConfigWithSpeedInstructionsAndInfraNonConstDec(
-            SpeedInstructions instructions,
-            Infra infra) {
-        try {
-            var path = "tiny_infra/config_railjson_nonconstdec.json";
-            var config = makeWithGivenInfra(getResourcePath(path), infra);
-            config.trainSchedules.forEach(schedule -> schedule.speedInstructions = instructions);
-            return config;
-        } catch (IOException | InvalidRollingStock | InvalidSchedule | InvalidSuccession e) {
-            fail(e);
-            throw new RuntimeException();
-        }
-    }
-
-
-    /** Loads the phases in the given simulation file
-     * The purpose of this function is to edit the phases and call makeCOnfigWithGivenPhases afterwards */
-    public static RJSTrainPhase[] loadRJSPhases(String simulationPath) {
-        try {
-            var path = getResourcePath(simulationPath);
-            var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, path);
-            return schedule.trainSchedules.stream().findAny().orElseThrow().phases;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
     /** Go through all the events in the simulation, fails if an exception is thrown */
-    public static ArrayList<TimelineEvent> run(Simulation sim) {
+    public static ArrayList<TimelineEvent> runSimulation(Simulation sim) {
         final var config = getBaseConfig();
-        return run(sim, config);
+        return runSimulation(sim, config);
     }
 
     /** Go through all the events in the simulation with a specified config, fails if an exception is thrown */
-    public static ArrayList<TimelineEvent> run(Simulation sim, Config config) {
+    public static ArrayList<TimelineEvent> runSimulation(Simulation sim, Config config) {
         try {
             return runWithExceptions(sim, config);
         } catch (SimulationError e) {
@@ -361,12 +285,6 @@ public class Helpers {
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /** Go through all the events in the simulation, exceptions pass through */
-    public static ArrayList<TimelineEvent> runWithExceptions(Simulation sim) throws SimulationError {
-        final var config = getBaseConfig();
-        return runWithExceptions(sim, config);
     }
 
     /** Go through all the events in the simulation with a specified config, exceptions pass through */

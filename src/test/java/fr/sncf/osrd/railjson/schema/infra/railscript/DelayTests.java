@@ -2,23 +2,23 @@ package fr.sncf.osrd.railjson.schema.infra.railscript;
 
 import static fr.sncf.osrd.Helpers.*;
 
+import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.*;
 import fr.sncf.osrd.infra.railscript.value.RSBool;
 import fr.sncf.osrd.infra.railscript.value.RSType;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
-import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.simulation.Simulation;
 import org.junit.jupiter.api.Test;
 
 public class DelayTests {
-
     @Test
-    public void testSimpleDelay() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
-        config.trainSchedules.clear();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+    public void testSimpleDelay() {
+        var config = TestConfig.readResource("tiny_infra/config_railjson.json")
+                .clearSchedules();
+
+        var preparedConfig = config.prepare();
+        var sim = preparedConfig.sim;
 
         var expr = new UpdatableBool();
         var time = 10;
@@ -45,15 +45,15 @@ public class DelayTests {
 
         makeAssertEvent(sim, 16, () -> !state.evalInputChange(sim.infraState, delayHandler).value);
 
-        run(sim, config);
+        preparedConfig.run();
     }
 
     @Test
-    public void testRecursiveDelay() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
-        config.trainSchedules.clear();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+    public void testRecursiveDelay() {
+        var config = TestConfig.readResource("tiny_infra/config_railjson.json")
+                .clearSchedules();
+        var preparedConfig = config.prepare();
+        var sim = preparedConfig.sim;
 
         var expr = new UpdatableBool();
         var time = 10;
@@ -71,15 +71,15 @@ public class DelayTests {
         makeAssertEvent(sim, 12, () -> !state.evalInputChange(sim.infraState, delayHandler).value);
         makeAssertEvent(sim, 21, () -> state.evalInputChange(sim.infraState, delayHandler).value);
 
-        run(sim, config);
+        preparedConfig.run();
     }
 
     @Test
-    public void testDifferentDelays() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
-        config.trainSchedules.clear();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+    public void testDifferentDelays() {
+        var config = TestConfig.readResource("tiny_infra/config_railjson.json")
+                .clearSchedules();
+        var preparedConfig = config.prepare();
+        var sim = preparedConfig.sim;
 
         var expr1 = new UpdatableBool();
         var expr2 = new UpdatableBool();
@@ -101,15 +101,15 @@ public class DelayTests {
         makeAssertEvent(sim, 9, () -> !state.evalInputChange(sim.infraState, delayHandler).value);
         makeAssertEvent(sim, 11, () -> state.evalInputChange(sim.infraState, delayHandler).value);
 
-        run(sim, config);
+        preparedConfig.run();
     }
 
     @Test
-    public void testFunctionDelay() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
-        config.trainSchedules.clear();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+    public void testFunctionDelay() {
+        var config = TestConfig.readResource("tiny_infra/config_railjson.json")
+                .clearSchedules();
+        var preparedConfig = config.prepare();
+        var sim = preparedConfig.sim;
 
         var delayFunc = new RSFunction<RSBool>("delayFunc",
                 new String[]{"arg1"},
@@ -132,15 +132,15 @@ public class DelayTests {
         assert !state.evalInputChange(sim.infraState, delayHandler).value;
         makeAssertEvent(sim, 9, () -> !state.evalInputChange(sim.infraState, delayHandler).value);
         makeAssertEvent(sim, 11, () -> state.evalInputChange(sim.infraState, delayHandler).value);
-        run(sim, config);
+        preparedConfig.run();
     }
 
     @Test
     public void testDoubleFunctionDelay() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        final var config = getBaseConfig();
-        config.trainSchedules.clear();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var config = TestConfig.readResource("tiny_infra/config_railjson.json")
+                .clearSchedules();
+        var preparedConfig = config.prepare();
+        var sim = preparedConfig.sim;
 
         var delayFunc = new RSFunction<RSBool>("delayFunc",
                 new String[]{"arg1"},
@@ -169,7 +169,7 @@ public class DelayTests {
         makeAssertEvent(sim, 15, () -> !state.evalInputChange(sim.infraState, delayHandler).value);
 
         makeAssertEvent(sim, 21, () -> state.evalInputChange(sim.infraState, delayHandler).value);
-        run(sim, config);
+        preparedConfig.run();
     }
 
 

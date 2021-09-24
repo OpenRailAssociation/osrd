@@ -39,7 +39,7 @@ public class RJSTrainScheduleParser {
     ) throws InvalidSchedule {
         var rollingStock = rollingStockGetter.apply(rjsTrainSchedule.rollingStock);
         if (rollingStock == null)
-            throw new UnknownRollingStock(rjsTrainSchedule.rollingStock.toString());
+            throw new UnknownRollingStock(rjsTrainSchedule.rollingStock);
 
         var initialLocation = parseLocation(infra, rjsTrainSchedule.initialHeadLocation);
 

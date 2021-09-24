@@ -1,12 +1,11 @@
 package fr.sncf.osrd.railjson.schema.infra.railscript;
 
-import static fr.sncf.osrd.Helpers.getBaseConfig;
 import static fr.sncf.osrd.Helpers.getBaseInfra;
-import static fr.sncf.osrd.Helpers.run;
-import static fr.sncf.osrd.Helpers.runWithExceptions;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.HashMap;
+
+import fr.sncf.osrd.TestConfig;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import fr.sncf.osrd.infra.InvalidInfraException;
@@ -22,48 +21,49 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 
 public class OptionalTests {
-
     @Test
     @Disabled("See issue https://github.com/DGEXSolutions/osrd-core/issues/129")
-    public void testSignalsFunctionWithOptionals() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra("tiny_infra/infra_optional.json");
-        final var config = getBaseConfig("tiny_infra/config_railjson_optional.json");
+    public void testSignalsFunctionWithOptionals() throws SimulationError {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson_optional.json");
 
         // We force a (very long) switch change, to make sure signals are necessary
-        infra.switches.iterator().next().groupChangeDelay = 42;
+        testConfig.rjsInfra.switches.iterator().next().groupChangeDelay = 42;
 
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
-        run(sim, config);
+
+        simState.run();
     }
 
     @Test
-    public void testSignalsFunctionWithOptionalsForcedGreen() throws InvalidInfraException, SimulationError {
-        // Other half the test above: we check that invalid signals would have failed
-        final var infra = getBaseInfra("tiny_infra/infra_optional.json");
-        final var config = getBaseConfig("tiny_infra/config_railjson_optional.json");
+    public void testSignalsFunctionWithOptionalsForcedGreen() throws SimulationError {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson_optional.json");
 
-        var functions = infra.scriptFunctions;
+        var functions = testConfig.rjsInfra.scriptFunctions;
         var aspect = new RJSRSExpr.AspectSet.AspectSetMember(
                 new ID<>("GREEN"),
                 new RJSRSExpr.True());
         for (var f : functions) {
             f.body = new RJSRSExpr.AspectSet(new RJSRSExpr.AspectSet.AspectSetMember[]{aspect});
         }
-        infra.switches.iterator().next().groupChangeDelay = 42;
+        testConfig.rjsInfra.switches.iterator().next().groupChangeDelay = 42;
 
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
+
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
         assertThrows(SimulationError.class,
-                () -> runWithExceptions(sim, config),
+                simState::runWithExceptions,
                 "Expected a simulation error once the train goes through the switch"
         );
     }
 
     @Test
     void testThrowOnInvalidDelay() throws InvalidInfraException {
-        var infra = getBaseInfra("tiny_infra/infra_optional.json");
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson_optional.json");
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
         var trueExpr = new RJSRSExpr.True();
         var delay = new RJSRSExpr.Delay(0, trueExpr);
         var signalId = new ID<RJSSignal>(sim.infraState.getSignalState(0).signal.id);
@@ -89,8 +89,9 @@ public class OptionalTests {
      */
     @Test
     public void testPreviousReservedRouteTinyInfra() throws InvalidInfraException, SimulationError {
-        final var infra = getBaseInfra();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
 
         // Creation of the SignalRef 
         var signal = new RSExpr.SignalRef("il.sig.C3");
