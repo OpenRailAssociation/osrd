@@ -313,7 +313,8 @@ public class RailJSONParser {
             var end = trackSectionLink.end;
             var beginEdge = infraTrackSections.get(begin.section.id);
             var endEdge = infraTrackSections.get(end.section.id);
-            linkEdges(beginEdge, begin.endpoint, endEdge, end.endpoint);
+            var direction = trackSectionLink.navigability;
+            linkEdges(beginEdge, begin.endpoint, endEdge, end.endpoint, direction);
         }
 
         // build name maps to prepare resolving names in expressions
