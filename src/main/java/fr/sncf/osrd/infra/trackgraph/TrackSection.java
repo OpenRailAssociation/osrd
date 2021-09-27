@@ -8,6 +8,7 @@ import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.utils.*;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.utils.graph.BiNEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
@@ -135,8 +136,20 @@ public final class TrackSection extends BiNEdge<TrackSection> {
             TrackSection edgeB,
             EdgeEndpoint positionOnB
     ) {
-        edgeA.getNeighbors(positionOnA).add(edgeB);
-        edgeB.getNeighbors(positionOnB).add(edgeA);
+        linkEdges(edgeA, positionOnA, edgeB, positionOnB, ApplicableDirection.BOTH);
+    }
+
+    public static void linkEdges(
+            TrackSection edgeA,
+            EdgeEndpoint positionOnA,
+            TrackSection edgeB,
+            EdgeEndpoint positionOnB,
+            ApplicableDirection direction
+    ) {
+        if (direction == ApplicableDirection.BOTH || direction == ApplicableDirection.NORMAL)
+            edgeA.getNeighbors(positionOnA).add(edgeB);
+        if (direction == ApplicableDirection.BOTH || direction == ApplicableDirection.REVERSE)
+            edgeB.getNeighbors(positionOnB).add(edgeA);
     }
 
 
