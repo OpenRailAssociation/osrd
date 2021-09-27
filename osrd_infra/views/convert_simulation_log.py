@@ -42,7 +42,7 @@ def interpolate_locations(loc_a, loc_b, path_position):
     if diff_space == 0:
         return loc_a["time"]
     coef = diff_time / diff_space
-    return loc_a["time"] + path_position * coef
+    return loc_a["time"] + (path_position - loc_a["path_offset"]) * coef
 
 
 def convert_positions(train_locations, projection, train_path):
