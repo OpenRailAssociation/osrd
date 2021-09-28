@@ -923,7 +923,12 @@ class Infra:
 
     def build_track_sections(self, cbtc=False):
         self.json["track_sections"] = []
+        has_coords = False
         for utrack in range(self.nb_tracks):
+            coord_x = self.coordinates[uget_begin(utrack)]
+            coord_y = self.coordinates[uget_end(utrack)]
+            if not has_coords and (coord_x != (0,0) or coord_y != coord_x):
+                has_coords = True
             self.json["track_sections"].append(
                 {
                     "id": uname_track(utrack),
@@ -934,8 +939,13 @@ class Infra:
                     "slopes": [],
                     "curves": [],
                     "speed_sections": [],
+                    "endpoints_coords": [coord_x, coord_y],
                 }
             )
+        if not has_coords:
+            for utrack in range(self.nb_tracks):
+                self.json["track_sections"][utrack].pop("endpoints_coords")
+
         self.build_tde()
         self.build_signals(cbtc=cbtc)
 
