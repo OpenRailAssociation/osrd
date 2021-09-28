@@ -6,5 +6,5 @@
   "show_viewer": true,
   "realtime_viewer": true,
   "change_replay_check": true,
-  "simulation_step_pause": 0.01
+  "simulation_step_pause": 0.1
 }
