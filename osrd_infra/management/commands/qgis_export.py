@@ -8,6 +8,7 @@ from osrd_infra.models import (
     WaypointEntity,
     SignalEntity,
     TVDSectionEntity,
+    OperationalPointPartEntity,
 )
 
 
@@ -66,6 +67,12 @@ def format_identifiers(entity):
         f"{identifier.database}:{identifier.name}"
         for identifier in entity.identifier_set.all()
     )
+
+
+@formatter("op_name")
+def format_operational_point(entity):
+    op = entity.operational_point_part.operational_point
+    return op.operational_point.name
 
 
 def dump_entities(writer, entities, formatters):
@@ -138,5 +145,17 @@ class Command(BaseCommand):
                     format_lines_geo,
                     format_lines_sch,
                     format_identifiers,
+                ],
+            )
+
+        with (out_dir / "operational_points.csv").open("w") as fp:
+            dump_entities(
+                csv.writer(fp),
+                OperationalPointPartEntity.objects.filter(namespace=infra_namespace),
+                [
+                    format_osrd_id,
+                    format_point_geo,
+                    format_point_sch,
+                    format_operational_point,
                 ],
             )
