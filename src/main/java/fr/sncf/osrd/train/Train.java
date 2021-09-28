@@ -103,8 +103,12 @@ public class Train {
     public void restart(Simulation sim) throws SimulationError {
         var clonedState = lastState.clone();
         clonedState.stopIndex++;
-        if (clonedState.stopIndex >= schedule.stops.size())
+        if (clonedState.stopIndex >= schedule.stops.size()) {
+            var change = new TrainState.TrainDisappearChange(sim, lastState);
+            change.apply(sim, lastState);
+            sim.publishChange(change);
             return;
+        }
         logger.info("restarting train {}", getName());
         clonedState.time = sim.getTime();
         lastScheduledEvent = clonedState.simulatePhase(this, sim);

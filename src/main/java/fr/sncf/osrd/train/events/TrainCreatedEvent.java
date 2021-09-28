@@ -52,17 +52,17 @@ public class TrainCreatedEvent extends TimelineEvent {
 
     /** Plan a TrainCreatedEvent creating a change that schedule it and return the created train */
     public static TrainCreatedEvent plan(Simulation sim, TrainSchedule schedule) {
-        var change = new TrainCreationPlanned(sim, schedule);
+        var change = new TrainPlannedCreation(sim, schedule);
         var event = change.apply(sim);
         sim.publishChange(change);
         return event;
     }
 
-    public static class TrainCreationPlanned extends Simulation.TimelineEventCreated {
+    public static class TrainPlannedCreation extends Simulation.TimelineEventCreated {
         public final TrainSchedule schedule;
 
         /** Plans the creation of some train */
-        private TrainCreationPlanned(Simulation sim, TrainSchedule schedule) {
+        private TrainPlannedCreation(Simulation sim, TrainSchedule schedule) {
             super(sim, schedule.departureTime);
             this.schedule = schedule;
         }
