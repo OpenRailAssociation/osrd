@@ -103,8 +103,22 @@ public class Train {
     public void restart(Simulation sim) throws SimulationError {
         var clonedState = lastState.clone();
         clonedState.stopIndex++;
-        if (clonedState.stopIndex >= schedule.stops.size())
+        if (clonedState.stopIndex >= schedule.stops.size()) {
+            var change = new TrainState.TrainDisappearChange(sim, lastState);
+            change.apply(sim, lastState);
+            sim.publishChange(change);
+
+            var route = lastState.trainSchedule.plannedPath.routePath.get(lastState.routeIndex);
+
+            // Free the tvdSection of the route where the train is
+            for (var i = 0; i < route.tvdSectionsPaths.size(); i++) {
+                var currentTvdSectionPath = route.tvdSectionsPaths.get(i);
+                var index = currentTvdSectionPath.tvdSection.index;
+                var tvdSection = sim.infraState.getTvdSectionState(index);
+                tvdSection.free(sim);
+            }
             return;
+        }
         logger.info("restarting train {}", getName());
         clonedState.time = sim.getTime();
         lastScheduledEvent = clonedState.simulatePhase(this, sim);

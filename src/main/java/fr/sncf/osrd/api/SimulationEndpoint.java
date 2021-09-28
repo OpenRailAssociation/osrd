@@ -231,9 +231,9 @@ public class SimulationEndpoint implements Take {
                     trainResult.tailPositions.add(new SimulationResultPosition(pos.time, tailPathPosition, train));
                     trainResult.speeds.add(new SimulationResultSpeed(pos.time, pos.speed, pos.pathPosition));
                 }
-            } else if (change.getClass() == TrainCreatedEvent.TrainCreationPlanned.class) {
+            } else if (change.getClass() == TrainCreatedEvent.TrainPlannedCreation.class) {
                 // Cache train schedule
-                var trainCreationPlanned = (TrainCreatedEvent.TrainCreationPlanned) change;
+                var trainCreationPlanned = (TrainCreatedEvent.TrainPlannedCreation) change;
                 trainSchedules.put(trainCreationPlanned.schedule.trainID, trainCreationPlanned.schedule);
                 // Initial position and speed
                 var train = trainCreationPlanned.schedule;

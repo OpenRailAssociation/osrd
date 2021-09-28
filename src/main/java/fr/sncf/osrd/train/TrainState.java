@@ -2,8 +2,8 @@ package fr.sncf.osrd.train;
 
 import java.util.*;
 
-import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
-import fr.sncf.osrd.speedcontroller.MaxSpeedController;
+import fr.sncf.osrd.infra_state.TVDSectionState;
+import fr.sncf.osrd.simulation.EntityChange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -147,9 +147,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                     new TrainPath(path),
                     routeIndex,
                     requestedRouteIndex,
-                    stopIndex
-                    );
-
+                    stopIndex);
         var nextPhase = currentPhaseIndex + 1;
         var nextPhaseState = trainSchedule.phases.get(nextPhase).getState(sim, trainSchedule);
         nextPhaseState.addAspectConstraints(signalControllers);
@@ -349,5 +347,31 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             return null;
         }
         return trainSchedule.phases.get(currentPhaseIndex + 1);
+    }
+
+    public static final class TrainDisappearChange extends EntityChange<TrainState, Void> {
+        public final String trainID;
+
+        TrainDisappearChange(Simulation sim, TrainState entity) {
+            super(sim);
+            trainID = entity.trainSchedule.trainID;
+        }
+
+        @Override
+        public Void apply(Simulation sim, TrainState entity) {
+            entity.status = TrainStatus.REACHED_DESTINATION;
+            return null;
+        }
+
+        @Override
+        public TrainState getEntity(Simulation sim) {
+            return sim.trains.get(trainID).getLastState();
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "TrainDisappearChange { the train %s disappears }", trainID);
+        }
     }
 }

@@ -246,6 +246,13 @@ public class Helpers {
     }
 
     /**
+     * Generates the default config from tiny_infra/config_railjson.json
+     */
+    public static Config getBaseConfig2Trains() {
+        return getBaseConfig("tiny_infra/config_railjson_2_trains.json");
+    }
+
+    /**
      * Generates the default config from tiny_infra/config_railjson.json without allowances
      */
     public static Config getBaseConfigNoAllowance() {
