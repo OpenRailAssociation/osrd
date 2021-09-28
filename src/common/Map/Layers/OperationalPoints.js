@@ -8,13 +8,37 @@ export default function OperationalPoints(props) {
   const { layersSettings } = useSelector((state) => state.map);
   const { infraID } = useSelector((state) => state.osrdconf);
   const { geomType } = props;
-  const layerdef = {
+  const layerPoint = {
     type: 'circle',
-    minzoom: 9,
     'source-layer': 'osrd_operational_point',
     paint: {
-      'circle-color': '#f00',
-      'circle-radius': 3,
+      'circle-stroke-color': '#82be00',
+      'circle-stroke-width': 2,
+      'circle-color': 'rgba(255, 255, 255, 0)',
+      'circle-radius': 5,
+    },
+  };
+
+  const layerName = {
+    type: 'symbol',
+    'source-layer': 'osrd_operational_point',
+    layout: {
+      'text-field': '{name}',
+      'text-font': [
+        'Roboto Condensed',
+      ],
+      'text-size': 12,
+      'text-anchor': 'left',
+      'text-allow-overlap': false,
+      'text-ignore-placement': false,
+      'text-offset': [0.75, 0.10],
+      visibility: 'visible',
+    },
+    paint: {
+      'text-color': '#202258',
+      'text-halo-width': 2,
+      'text-halo-color': 'rgba(255,255,255,0.75)',
+      'text-halo-blur': 1,
     },
   };
 
@@ -24,7 +48,8 @@ export default function OperationalPoints(props) {
       type="vector"
       url={`${MAP_URL}/layer/osrd_operational_point/mvt/${geomType}/?version=${infraID}`}
     >
-      <Layer {...layerdef} id={`chartis/osrd_operational_point/${geomType}`} />
+      <Layer {...layerPoint} id={`chartis/osrd_operational_point/${geomType}`} />
+      <Layer {...layerName} id={`chartis/osrd_operational_point_name/${geomType}`} />
     </Source>
   );
 }
