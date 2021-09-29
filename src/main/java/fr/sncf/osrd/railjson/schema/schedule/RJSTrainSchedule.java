@@ -40,6 +40,16 @@ public class RJSTrainSchedule implements Identified {
     /** List of stops */
     public RJSTrainStop[] stops;
 
+    /** Identifier of the previous train, if any.
+     * If specified, this train will only leave after the previous train reached its destination */
+    @Json(name = "previous_train_id")
+    public String previousTrainId;
+
+    /** The delay in seconds between the previous train and this train.
+     * Can only be specified if previous_train_id is also set. Defaults to 0. */
+    @Json(name = "train_transition_delay")
+    public double trainTransitionDelay;
+
     /** Create a new train schedule */
     public RJSTrainSchedule(
             String id,
@@ -51,7 +61,9 @@ public class RJSTrainSchedule implements Identified {
             String trainControlMethod,
             RJSAllowance[][] allowances,
             RJSTrainStop[] stops,
-            ID<RJSRoute>[] routes
+            ID<RJSRoute>[] routes,
+            String previousTrainId,
+            double trainTransitionDelay
     ) {
         this.id = id;
         this.rollingStock = rollingStock;
@@ -63,6 +75,8 @@ public class RJSTrainSchedule implements Identified {
         this.allowances = allowances;
         this.stops = stops;
         this.routes = routes;
+        this.previousTrainId = previousTrainId;
+        this.trainTransitionDelay = trainTransitionDelay;
     }
 
     @Override
