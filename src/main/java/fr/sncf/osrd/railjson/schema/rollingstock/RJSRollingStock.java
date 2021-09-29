@@ -22,28 +22,36 @@ public class RJSRollingStock implements Identified {
     /** A unique train identifier */
     public String id = null;
 
+    /** A unique identifier, which encodes where this rolling stock data was extracted from */
     public String source = null;
 
+    /** The complete human-readable name */
     @Json(name = "verbose_name")
     public String verboseName = null;
 
+    /** An optional type */
     public String type = null;
 
+    /** An optional sub-type */
     @Json(name = "sub_type")
     public String subType = null;
 
+    /** An optional series name */
     public String series = null;
 
+    /** An optional sub-series name */
     @Json(name = "sub_series")
     public String subSeries = null;
 
+    /** An optional variant name */
     public String variant = null;
 
+    /** The number of rolling stocks assembled together within this unit */
     @Json(name = "units_count")
     public int unitsCount = -1;
 
     /**
-     * <p>Engineers measured a number of effort curves for each rolling stock. 
+     * <p>Engineers measured a number of effort curves for each rolling stock.
      * These are referenced from effort curve profiles.
      * Effort curves associate a speed to a traction force.
      * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves</p>
