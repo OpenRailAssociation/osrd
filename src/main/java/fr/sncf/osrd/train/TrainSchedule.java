@@ -12,9 +12,9 @@ import java.util.List;
 
 public final class TrainSchedule {
     public final String trainID;
-    public final RollingStock rollingStock;
+    public RollingStock rollingStock;
 
-    public final double departureTime;
+    public double departureTime;
 
     public final TrackSectionLocation initialLocation;
     public final EdgeDirection initialDirection;
@@ -31,6 +31,9 @@ public final class TrainSchedule {
     public SpeedInstructions speedInstructions;
 
     public List<TrainStop> stops;
+
+    /** Information about the train scheduled after this one, null of there isn't any */
+    public TrainSuccession trainSuccession;
 
     /** Create a new train schedule */
     public TrainSchedule(
@@ -74,5 +77,19 @@ public final class TrainSchedule {
         for (var stop : stops)
             totalStopsDuration += stop.stopDuration;
         return totalStopsDuration;
+    }
+
+    /** Contains data about train successions */
+    public static class TrainSuccession {
+        /** Schedule of the next train */
+        public final TrainSchedule nextTrain;
+
+        /** Delay between both trains in seconds */
+        public final double delay;
+
+        public TrainSuccession(TrainSchedule nextTrain, double delay) {
+            this.nextTrain = nextTrain;
+            this.delay = delay;
+        }
     }
 }

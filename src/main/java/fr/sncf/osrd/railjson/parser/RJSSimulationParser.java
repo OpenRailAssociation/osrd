@@ -46,6 +46,7 @@ public class RJSSimulationParser {
         var schedules = new ArrayList<TrainSchedule>();
         for (var rjsSchedule : rjsSimulation.trainSchedules)
             schedules.add(RJSTrainScheduleParser.parse(infra, rollingStocks::get, rjsSchedule, virtualPoints));
+        RJSTrainScheduleParser.resolveScheduleDependencies(rjsSimulation.trainSchedules, schedules);
         return schedules;
     }
 
