@@ -18,6 +18,8 @@ public class RJSRollingStock implements Identified {
             .add(RJSMode.adapter)
             .build()
             .adapter(RJSRollingStock.class);
+    /** The version of the rolling stock format used */
+    public String version = null;
 
     /** A unique train identifier */
     public String id = null;
