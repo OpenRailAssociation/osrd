@@ -7,7 +7,7 @@ import { trackNameLayer, lineNumberLayer, lineNameLayer } from 'common/Map/Layer
 import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
 
 const TracksGeographic = (props) => {
-  const { colors, idHover } = props;
+  const { colors } = props;
   const { infraID } = useSelector((state) => state.osrdconf);
   const infraVersion = infraID !== undefined ? `?version=${infraID}` : null;
 
@@ -70,27 +70,13 @@ const TracksGeographic = (props) => {
         {...lineNameLayer(colors)}
         source-layer={MAP_TRACK_SOURCES.geographic}
       />
-
-      {idHover !== undefined ? (
-        <Layer
-          id="chartis/tracks-geo/hover"
-          type="line"
-          paint={{ 'line-color': '#ffb612', 'line-width': 3 }}
-          filter={['==', 'entity_id', idHover]}
-          source-layer={MAP_TRACK_SOURCES.geographic}
-        />
-      ) : null}
     </Source>
   );
 };
 
 TracksGeographic.propTypes = {
-  idHover: PropTypes.number,
   colors: PropTypes.object.isRequired,
 };
 
-TracksGeographic.defaultProps = {
-  idHover: undefined,
-};
 
 export default TracksGeographic;

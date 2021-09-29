@@ -43,7 +43,7 @@ import SearchMarker from 'common/Map/Layers/SearchMarker';
 
 const Map = () => {
   const {
-    viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM,
+    viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings,
   } = useSelector((state) => state.map);
   const { t } = useTranslation(['map-settings']);
   const [showSettings, setShowSettings] = useState(false);
@@ -79,13 +79,23 @@ const Map = () => {
   };
 
   const onFeatureClick = (e) => {
-    console.log('coucou', e.features[0]);
+    console.log('coucou', e.features);
   };
 
   const onFeatureHover = (e) => {
     if (e.features[0] !== undefined) {
-      setIdHover(e.features[0].properties.OP_id);
+      setIdHover(e.features[0].properties.entity_id);
+    } else {
+      setIdHover(undefined);
     }
+  };
+
+  const defineInteractiveLayers = () => {
+    const interactiveLayersLocal = [];
+    if (layersSettings.tvds) {
+      interactiveLayersLocal.push('chartis/osrd_tvd_section/geo');
+    }
+    return interactiveLayersLocal;
   };
 
   useEffect(() => {
@@ -132,7 +142,7 @@ const Map = () => {
         attributionControl={false} // Defined below
         onClick={onFeatureClick}
         onHover={onFeatureHover}
-        interactiveLayerIds={mapTrackSources === 'geographic' ? ['chartis/tracks-geo/main'] : ['schematicMainLayer']}
+        interactiveLayerIds={defineInteractiveLayers()}
         touchRotate
         asyncRender
         antialiasing
@@ -161,9 +171,9 @@ const Map = () => {
           <>
             <SpeedLimitsColors geomType="geo" />
             <ElectrificationType geomType="geo" colors={colors[mapStyle]} />
-            <TVDs geomType="geo" colors={colors[mapStyle]} />
+            <TVDs geomType="geo" colors={colors[mapStyle]} idHover={idHover} />
             <Platform colors={colors[mapStyle]} />
-            <TracksGeographic colors={colors[mapStyle]} idHover={idHover} />
+            <TracksGeographic colors={colors[mapStyle]} />
             <OperationalPoints geomType="geo" />
             <SignalingType geomType="geo" />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />

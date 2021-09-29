@@ -13,7 +13,7 @@ export default function OperationalPoints(props) {
     'source-layer': 'osrd_operational_point',
     paint: {
       'circle-stroke-color': '#82be00',
-      'circle-stroke-width': 2,
+      'circle-stroke-width': 3,
       'circle-color': 'rgba(255, 255, 255, 0)',
       'circle-radius': 5,
     },

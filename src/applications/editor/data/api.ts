@@ -128,7 +128,7 @@ export async function getEditorEntities(
   const responses = await Promise.all(
     layers.map((layer) =>
       get(
-        `/infra/${infra}/geojson`,
+        `/infra/${infra}/geojson/`,
         {
           query: geoJson.geometry,
         },

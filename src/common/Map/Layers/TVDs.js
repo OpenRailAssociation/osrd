@@ -7,7 +7,7 @@ import { MAP_URL } from 'common/Map/const';
 export default function TVDs(props) {
   const { layersSettings } = useSelector((state) => state.map);
   const { infraID } = useSelector((state) => state.osrdconf);
-  const { geomType } = props;
+  const { geomType, idHover } = props;
 
   const layerdef = {
     type: 'line',
@@ -16,14 +16,9 @@ export default function TVDs(props) {
     maxzoom: 24,
     layout: {
       visibility: 'visible',
-      'line-cap': 'round',
-      'line-join': 'miter',
     },
     paint: {
-      'line-color': '#f00',
-      'line-width': 4,
-      'line-offset': 0,
-      'line-opacity': 1,
+      'line-opacity': 0,
     },
   };
 
@@ -38,10 +33,28 @@ export default function TVDs(props) {
         id={`chartis/osrd_tvd_section/${geomType}`}
         beforeId={`chartis/tracks-${geomType}/main`}
       />
+      {idHover ? (
+        <Layer
+          {...layerdef}
+          paint={{
+            'line-color': '#f00',
+            'line-width': 4,
+            'line-opacity': 1,
+          }}
+          filter={['==', 'entity_id', idHover]}
+          id={`chartis/osrd_tvd_section_visible/${geomType}`}
+          beforeId={`chartis/tracks-${geomType}/main`}
+        />
+      ) : null}
     </Source>
   ) : null;
 }
 
 TVDs.propTypes = {
+  idHover: PropTypes.number,
   geomType: PropTypes.string.isRequired,
+};
+
+TVDs.defaultProps = {
+  idHover: undefined,
 };

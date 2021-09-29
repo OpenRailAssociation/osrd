@@ -43,14 +43,20 @@ export default function TrainsList(props) {
     const newTrain = { ...simulation.trains[idx], name: newName };
     const newSimulation = {
       ...simulation,
-      trains: simulation.trains.map((train, currentIdx) => {
-        if (idx === currentIdx) {
-          return newTrain;
-        }
-        return train;
-      }),
+      trains: simulation.trains.map((train, currentIdx) => (
+        (idx === currentIdx) ? newTrain : train)),
     };
     dispatch(updateSimulation(newSimulation));
+  };
+
+  const changeTrainStartTime = (newStartTime, idx) => {
+    setInputTime(newStartTime);
+    const offset = Math.floor(
+      (time2datetime(debouncedInputTime) - sec2datetime(simulation.trains[idx].stops[0].time)) / 1000,
+    );
+    const trains = Array.from(simulation.trains);
+    trains[idx] = timeShiftTrain(trains[selectedTrain], offset);
+    dispatch(updateSimulation({ ...simulation, trains }));
   };
 
   const debouncedInputName = useDebounce(inputName, 500);
@@ -61,16 +67,6 @@ export default function TrainsList(props) {
       dispatch(updateMustRedraw(true));
     }
     if (debouncedInputTime) {
-      /* const offset = Math.floor(
-        (time2datetime(newStartTime) - sec2datetime(simulation.trains[idx].stops[0].time)) / 1000,
-      );
-      const trains = Array.from(simulation.trains);
-      trains[idx] = {
-        ...trains[idx],
-        steps: timeShiftTrain(trains[selectedTrain].steps, offset),
-        stops: timeShiftStops(trains[selectedTrain].stops, offset),
-      };
-      dispatch(updateSimulation({ ...simulation, trains })); */
       dispatch(updateMustRedraw(true));
     }
   }, [debouncedInputName, debouncedInputTime]);
@@ -119,14 +115,20 @@ export default function TrainsList(props) {
                 tabIndex={0}
               >
                 {trainNameClickedIDX === idx ? (
-                  <InputSNCF
+                  /* <InputSNCF
                     type="time"
                     id="trainlist-time"
-                    onChange={(e) => setInputTime(e.target.value)}
-                    value={inputTime}
+                    onChange={(e) => changeTrainStartTime(e.target.value, idx)}
+                    value={sec2time(train.stops[0].time)}
                     noMargin
                     focus={typeOfInputFocused === 'time'}
                     sm
+                  /> */
+                  <input
+                    type="time"
+                    id="trainlist-time"
+                    onChange={(e) => changeTrainStartTime(e.target.value, idx)}
+                    value={sec2time(train.stops[0].time)}
                   />
                 ) : sec2time(train.stops[0].time)}
               </div>

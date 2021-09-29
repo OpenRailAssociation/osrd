@@ -28,7 +28,7 @@ export default function AddTrainSchedule(props) {
   const { mustUpdateTimetable, setMustUpdateTimetable } = props;
   const [isWorking, setIsWorking] = useState(false);
   const [trainCount, setTrainCount] = useState(1);
-  const [trainStep, setTrainStep] = useState(1);
+  const [trainStep, setTrainStep] = useState(2);
   const [trainDelta, setTrainDelta] = useState(60);
   const osrdconf = useSelector((state) => state.osrdconf);
   const { t } = useTranslation(['translation', 'osrdconf']);

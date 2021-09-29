@@ -94,18 +94,6 @@ export const timeShiftTrain = (train, value) => ({
   ),
 });
 
-// Simplify data, 50% by default
-export const simplifyData = (simulationTrains, factor = 2) => simulationTrains.map((train) => {
-  if (factor > 0) {
-    const newSteps = [];
-    for (let idx = 0; idx < train.steps.length; idx += factor) {
-      newSteps.push(train.steps[idx]);
-    }
-    return { ...train, steps: newSteps };
-  }
-  return train;
-});
-
 // Merge two curves for creating area between
 export const mergeDatasArea = (data1, data2, keyValues) => data1.map(
   (step, i) => ({
