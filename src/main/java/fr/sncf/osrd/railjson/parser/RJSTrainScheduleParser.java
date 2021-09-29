@@ -45,9 +45,18 @@ public class RJSTrainScheduleParser {
             RJSTrainSchedule rjsTrainSchedule,
             List<RJSVirtualPoint> rjsVirtualPoints
     ) throws InvalidSchedule {
-        var rollingStock = rollingStockGetter.apply(rjsTrainSchedule.rollingStock);
-        if (rollingStock == null)
-            throw new UnknownRollingStock(rjsTrainSchedule.rollingStock);
+        RollingStock rollingStock = null;
+        var rollingStockID = rjsTrainSchedule.rollingStock;
+        if (rjsTrainSchedule.previousTrainId != null && !rjsTrainSchedule.previousTrainId.equals("")) {
+            rollingStock = rollingStockGetter.apply(rollingStockID);
+            if (rollingStock == null)
+                throw new UnknownRollingStock(rollingStockID);
+        } else {
+            if (rollingStockID != null && !rollingStockID.equals(""))
+                throw new InvalidSchedule(
+                        String.format("Train %s: can't specify both a rolling stock and a previous train",
+                                rjsTrainSchedule.id));
+        }
 
         var initialLocation = parseLocation(infra, rjsTrainSchedule.initialHeadLocation);
 
@@ -112,6 +121,35 @@ public class RJSTrainScheduleParser {
                 expectedPath,
                 speedInstructions,
                 stops);
+    }
+
+    public static void resolveScheduleDependencies(Collection<RJSTrainSchedule> rjsSchedules, List<TrainSchedule> schedules)
+            throws InvalidSchedule {
+        var schedulesById = new HashMap<String, TrainSchedule>();
+        for (var schedule : schedules)
+            schedulesById.put(schedule.trainID, schedule);
+
+        for (var rjsSchedule : rjsSchedules) {
+            if (rjsSchedule.previousTrainId == null || rjsSchedule.previousTrainId.equals(""))
+                continue;
+            if (!schedulesById.containsKey(rjsSchedule.previousTrainId))
+                throw new InvalidSchedule(String.format("Succession error: train %s depends on non-existent train %s",
+                        rjsSchedule.id, rjsSchedule.previousTrainId));
+            double delay = 0;
+            if (!Double.isNaN(rjsSchedule.trainTransitionDelay))
+                delay = rjsSchedule.trainTransitionDelay;
+            var schedule = schedulesById.get(rjsSchedule.id);
+            var previousTrainSchedule = schedulesById.get(rjsSchedule.previousTrainId);
+
+            if (previousTrainSchedule.trainSuccession != null)
+                throw new InvalidSchedule(String.format("Train %s can't be linked to several next trains (%s and %s)",
+                        previousTrainSchedule.trainID, previousTrainSchedule.trainSuccession.nextTrain.trainID,
+                        rjsSchedule.id));
+
+            previousTrainSchedule.trainSuccession = new TrainSchedule.TrainSuccession(schedule, delay);
+            schedule.departureTime = -1;
+            schedule.rollingStock = previousTrainSchedule.rollingStock;
+        }
     }
 
     private static double[] parseAllowanceBeginEnd(RJSAllowance allowance,

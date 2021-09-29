@@ -50,8 +50,11 @@ public class TrainCreatedEvent extends TimelineEvent {
         return o.schedule == schedule;
     }
 
-    /** Plan a TrainCreatedEvent creating a change that schedule it and return the created train */
+    /** Plan a TrainCreatedEvent creating a change that schedule it and return the created train
+     * If the departure time is negative: nothing is planned, the train doesn't start at a specific time */
     public static TrainCreatedEvent plan(Simulation sim, TrainSchedule schedule) {
+        if (schedule.departureTime < 0)
+            return null;
         var change = new TrainPlannedCreation(sim, schedule);
         var event = change.apply(sim);
         sim.publishChange(change);
