@@ -40,7 +40,10 @@ public abstract class SpeedControllerGenerator {
         var updatesMap
                 = getIntegrationStepsAtPositions(sim, schedule, controllers, timestep, begin, end, initialSpeed);
         var res = new SortedDoubleMap();
+
+        assert schedule.departureTime >= 0; // This could fail if there is a bug with train successions
         double time = schedule.departureTime;
+
         int stopIndex = 0;
         for (var k : updatesMap.keySet()) {
             time += updatesMap.get(k).timeDelta;

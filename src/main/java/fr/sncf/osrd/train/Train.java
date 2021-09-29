@@ -11,6 +11,7 @@ import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
+import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.DeepEqualsUtils;
 import org.slf4j.Logger;
@@ -108,7 +109,6 @@ public class Train {
         lastScheduledEvent = clonedState.simulatePhase(this, sim);
     }
 
-
     /** Frees all the tvd sections currently reserved by the train */
     private void freeAllReservedTVDSections(Simulation sim) throws SimulationError {
 
@@ -126,7 +126,21 @@ public class Train {
             if (tvdSection.isOccupied())
                 tvdSection.unoccupy(sim);
         }
+    }
 
+    private void onTrainReachedDestination(Simulation sim) throws SimulationError {
+        if (schedule.trainSuccession != null) {
+            var nextSchedule = schedule.trainSuccession.nextTrain;
+            nextSchedule.departureTime = sim.getTime() + schedule.trainSuccession.delay;
+            TrainCreatedEvent.plan(sim, nextSchedule);
+        }
+
+        var change = new TrainState.TrainDisappearChange(sim, lastState);
+        change.apply(sim, lastState);
+        sim.publishChange(change);
+
+        // Free the tvdSections the train is on
+        freeAllReservedTVDSections(sim);
     }
 
     /** Restarts the train after a stop */
@@ -135,12 +149,7 @@ public class Train {
         clonedState.time = sim.getTime();
         clonedState.stopIndex++;
         if (clonedState.stopIndex >= schedule.stops.size()) {
-            var change = new TrainState.TrainDisappearChange(sim, lastState);
-            change.apply(sim, lastState);
-            sim.publishChange(change);
-
-            // Free the tvdSections the train is on
-            freeAllReservedTVDSections(sim);
+            onTrainReachedDestination(sim);
             return;
         }
         logger.info("restarting train {}", getID());
