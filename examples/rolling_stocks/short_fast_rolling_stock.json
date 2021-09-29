@@ -1,4 +1,5 @@
 {
+    "version": "2.0",
     "id": "short_fast_rolling_stock",
     "length": 15,
     "max_speed": 20,
