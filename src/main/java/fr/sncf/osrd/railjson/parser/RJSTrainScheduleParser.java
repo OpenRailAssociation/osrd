@@ -47,15 +47,14 @@ public class RJSTrainScheduleParser {
     ) throws InvalidSchedule {
         RollingStock rollingStock = null;
         var rollingStockID = rjsTrainSchedule.rollingStock;
-        if (rjsTrainSchedule.previousTrainId != null && !rjsTrainSchedule.previousTrainId.equals("")) {
+        if (rjsTrainSchedule.previousTrainId == null) {
             rollingStock = rollingStockGetter.apply(rollingStockID);
             if (rollingStock == null)
                 throw new UnknownRollingStock(rollingStockID);
-        } else {
-            if (rollingStockID != null && !rollingStockID.equals(""))
-                throw new InvalidSchedule(
-                        String.format("Train %s: can't specify both a rolling stock and a previous train",
-                                rjsTrainSchedule.id));
+        } else if (rollingStockID != null) {
+            throw new InvalidSchedule(
+                    String.format("Train %s: can't specify both a rolling stock and a previous train",
+                            rjsTrainSchedule.id));
         }
 
         var initialLocation = parseLocation(infra, rjsTrainSchedule.initialHeadLocation);
@@ -130,7 +129,7 @@ public class RJSTrainScheduleParser {
             schedulesById.put(schedule.trainID, schedule);
 
         for (var rjsSchedule : rjsSchedules) {
-            if (rjsSchedule.previousTrainId == null || rjsSchedule.previousTrainId.equals(""))
+            if (rjsSchedule.previousTrainId == null)
                 continue;
             if (!schedulesById.containsKey(rjsSchedule.previousTrainId))
                 throw new InvalidSchedule(String.format("Succession error: train %s depends on non-existent train %s",
