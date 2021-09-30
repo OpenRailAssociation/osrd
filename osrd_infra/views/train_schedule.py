@@ -16,10 +16,9 @@ from osrd_infra.models import (
 )
 
 
-def get_or_create_simulation_log(train_schedule):
-    if train_schedule.simulation_log is not None:
-        return train_schedule.simulation_log
-    return generate_simulation_log(train_schedule)
+def cache_simulation_logs(train_schedule):
+    if train_schedule.base_simulation_log is None:
+        generate_simulation_log(train_schedule)
 
 
 class TrainScheduleView(
@@ -43,7 +42,7 @@ class TrainScheduleView(
     @action(detail=True)
     def result(self, request, pk=None):
         train_schedule = self.get_object()
-        get_or_create_simulation_log(train_schedule)
+        cache_simulation_logs(train_schedule)
 
         path_id = request.query_params.get("path", train_schedule.path_id)
         path = get_object_or_404(Path, pk=path_id)
@@ -72,7 +71,9 @@ class TrainScheduleView(
         schedules_map = {schedule.id: schedule for schedule in schedules}
         missing_schedules = train_ids_set.difference(schedules_map.keys())
         if missing_schedules:
-            raise Http404(f"Invalid schedule IDs: {', '.join(map(str, missing_schedules))}")
+            raise Http404(
+                f"Invalid schedule IDs: {', '.join(map(str, missing_schedules))}"
+            )
 
         # if there's no path argument, use the path of the first train
         if path_id is not None:
@@ -85,7 +86,7 @@ class TrainScheduleView(
             train_schedule = schedules_map[train_id]
 
             # ensure there's a simulation log for this schedule
-            get_or_create_simulation_log(train_schedule)
+            cache_simulation_logs(train_schedule)
 
             # convert the simulation result to something frontend-friendly
             res.append(convert_simulation_log(train_schedule, path))
@@ -96,5 +97,5 @@ class TrainScheduleView(
         serializer.is_valid(raise_exception=True)
         train_schedule = serializer.save()
 
-        get_or_create_simulation_log(train_schedule)
+        cache_simulation_logs(train_schedule)
         return Response({"id": train_schedule.pk})

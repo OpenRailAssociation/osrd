@@ -120,7 +120,7 @@ def generate_simulation_log(train_schedule):
         "rolling_stocks": [train_schedule.rolling_stock.to_railjson()],
         "train_schedules": [get_train_schedule_payload(train_schedule)],
     }
-    train_schedule.simulation_log = None
+    train_schedule.base_simulation_log = None
     train_schedule.save()
 
     try:
@@ -136,6 +136,6 @@ def generate_simulation_log(train_schedule):
         raise ParseError(response.content)
 
     result = preprocess_response(response.json(), train_schedule)
-    train_schedule.simulation_log = result
+    train_schedule.base_simulation_log = result
     train_schedule.save()
     return result

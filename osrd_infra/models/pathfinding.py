@@ -32,7 +32,6 @@ PAYLOAD_SCHEMA = {
                     },
                 },
             },
-            "title": "schema",
         },
         "steps": {
             "type": "array",
@@ -67,7 +66,6 @@ PAYLOAD_SCHEMA = {
                     },
                 },
             },
-            "title": "schema",
         },
     },
 }

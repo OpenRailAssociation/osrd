@@ -4,7 +4,7 @@ from typing import List, Iterator, Union, Dict
 
 
 def convert_simulation_log(train_schedule, projection_path):
-    simulation_result = train_schedule.simulation_log
+    simulation_result = train_schedule.base_simulation_log
 
     # Compute projection object
     projection = Projection(projection_path)

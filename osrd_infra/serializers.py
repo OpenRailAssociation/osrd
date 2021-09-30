@@ -182,7 +182,11 @@ class TrainScheduleSerializer(ModelSerializer):
 
     class Meta:
         model = TrainSchedule
-        fields = "__all__"
+        exclude = [
+            "base_simulation_log",
+            "margins_simulation_log",
+            "eco_simulation_log",
+        ]
 
 
 # COMPONENT SERIALIZERS
