@@ -91,7 +91,7 @@ def get_geo_point_near_endpoint(track_id, endpoint, cached_track_sections):
     track_entity = cached_track_sections[track_id]
     length = track_entity.track_section.length
     endpoint = Endpoint(endpoint)
-    offset = min(0.5, 5 / length)
+    offset = min(0.5, 5 / length) if length > 0 else 0
     if endpoint == Endpoint.END:
         offset = 1 - offset
     geo_line = track_entity.geo_line_location.geographic
