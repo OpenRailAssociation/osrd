@@ -41,6 +41,67 @@ ROLLING_RESISTANCE_SCHEMA = {
 }
 
 
+COPIED_KEYS_V1_TO_V2 = (
+    "id",
+    "length",
+    "max_speed",
+    "startup_time",
+    "startup_acceleration",
+    "comfort_acceleration",
+    "gamma",
+    "gamma_type",
+    "inertia_coefficient",
+    "features",
+)
+
+
+def migrate_v1_to_v2(old):
+    new = {migrated_key: old[migrated_key] for migrated_key in COPIED_KEYS_V1_TO_V2}
+
+    new["version"] = "2"
+    new["source"] = old["id"]
+    new["verbose_name"] = old["id"]
+    new["type"] = None
+    new["sub_type"] = None
+    new["series"] = None
+    new["sub_series"] = None
+    new["variant"] = None
+    new["units_count"] = 1
+
+    new["effort_curves"] = {
+        "default_curve": [
+            (point["speed"], point["max_effort"])
+            for point in old["tractive_effort_curve"]
+        ]
+    }
+
+    new["effort_curve_profiles"] = {
+        "default_curve_profile": [{"condition": None, "effort_curve": "default_curve"}]
+    }
+
+    new["rolling_resistance_profiles"] = {
+        "default_resistance_profile": [
+            {"id": "normal", "condition": None, "resistance": old["rolling_resistance"]}
+        ]
+    }
+
+    new["liveries"] = []
+    new["power_class"] = 5
+
+    new["masses"] = [
+        {"id": "default_mass", "load_state": "NORMAL_LOAD", "mass": old["mass"]}
+    ]
+
+    new["modes"] = [
+        {
+            "type": "diesel",
+            "rolling_resistance_profile": "default_resistance_profile",
+            "effort_curve_profile": "default_curve_profile",
+        }
+    ]
+    return new
+
+
 class RollingStock(models.Model):
     name = models.CharField(
         max_length=255,
@@ -114,7 +175,7 @@ class RollingStock(models.Model):
         return self.name
 
     def to_railjson(self):
-        return {
+        return migrate_v1_to_v2({
             "id": f"rolling_stock.{self.id}",
             "length": self.length,
             "mass": self.mass,
@@ -128,4 +189,4 @@ class RollingStock(models.Model):
             "gamma": self.timetable_gamma,
             "gamma_type": "CONST",
             "tractive_effort_curve": next(iter(self.tractive_effort_curves.values())),
-        }
+        })
