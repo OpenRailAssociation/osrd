@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.infra.*;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.trackgraph.BufferStop;
@@ -19,6 +20,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
+import fr.sncf.osrd.speedcontroller.MarginTests;
 import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.speedcontroller.generators.ConstructionAllowanceGenerator;
 import fr.sncf.osrd.speedcontroller.generators.LinearAllowanceGenerator;
@@ -33,6 +35,7 @@ import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -56,6 +59,8 @@ public class NonConstantDecTest {
             this.position = position;
         }
     }
+
+    public static final String CONFIG_PATH = "tiny_infra/config_railjson_nonconstdec.json";
 
     @Test
     public void simpleSpeedLimitTest() throws InvalidInfraException, SimulationError, InvalidSchedule {
@@ -194,298 +199,44 @@ public class NonConstantDecTest {
     /** Test the construction margin */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 30, 100})
-    public void testConstructionMargins(double value) throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        assert infra != null;
-        var params = new ConstructionAllowanceGenerator(0, POSITIVE_INFINITY, value);
-
-        // base run, no margin
-        final var config = getBaseConfigNoAllowanceNonConstantDec();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var eventsBase = run(sim, config);
-        var baseSimTime = sim.getTime();
-
-        // Run with construction margin
-        final var configMargins = getConfigWithSpeedInstructionsNonConstantDec(
-                SpeedInstructions.fromController(params));
-        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim2, configMargins);
-        var marginsSimTime = sim2.getTime();
-
-        var expected = baseSimTime + params.value;
-
-        assertEquals(expected, marginsSimTime, expected * 0.01);
-        saveGraph(eventsBase, "..\\construction-base-nonconstdec.csv");
-        saveGraph(events, "..\\construction-nonconstdec-out.csv");
+    public void testConstructionMargins(double value, TestInfo info) {
+        MarginTests.testConstructionMargins(CONFIG_PATH, value, info);
     }
 
 
     /** Test the construction margin on a small segment */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 30, 100})
-    public void testConstructionMarginsOnSegment(double value) throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        assert infra != null;
-        double begin = 4000;
-        double end = 5000;
-        double tolerance = 0.01; //percentage
-        var params = new ConstructionAllowanceGenerator(begin, end, value);
-
-        // base run, no margin
-        final var config = getBaseConfigNoAllowanceNonConstantDec();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var eventsBase = run(sim, config);
-
-        // Run with construction margin
-        final var configMargins = getConfigWithSpeedInstructionsNonConstantDec(
-                SpeedInstructions.fromController(params));
-        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim2, configMargins);
-
-        var timesBase = getTimePerPosition(eventsBase);
-        var timeFirstPointBase = timesBase.interpolate(begin);
-        var timeSecondPointBase = timesBase.interpolate(end);
-
-        var times = getTimePerPosition(events);
-        var timeFirstPoint = times.interpolate(begin);
-        var timeSecondPoint = times.interpolate(end);
-        var expectedTimeSecondPoint = timeSecondPointBase + params.value;
-
-        // make sure begin has the same time before and after margin, and that end is offset by the proper value
-        assertEquals(timeFirstPointBase, timeFirstPoint, timeFirstPointBase * tolerance);
-        assertEquals(expectedTimeSecondPoint, timeSecondPoint, expectedTimeSecondPoint * tolerance);
-
-        var speedsBase = getSpeedPerPosition(eventsBase);
-        var speedFirstPointBase = speedsBase.interpolate(begin);
-        var speedSecondPointBase = speedsBase.interpolate(end);
-
-        var speeds = getSpeedPerPosition(events);
-        var speedFirstPoint = speeds.interpolate(begin);
-        var speedSecondPoint = speeds.interpolate(end);
-
-        // make sure begin and end have the same speed before and after margin
-        assertEquals(speedFirstPointBase, speedFirstPoint, speedFirstPointBase * tolerance);
-        assertEquals(speedSecondPointBase, speedSecondPoint, speedSecondPointBase * tolerance);
-
-        var baseSimTime = sim.getTime();
-        var marginsSimTime = sim2.getTime();
-
-        var expectedTotalTime = baseSimTime + params.value;
-
-        saveGraph(eventsBase, "..\\construction-segment-base-nonconstdec.csv");
-        saveGraph(events, "..\\construction-segment-nonconstdec-out.csv");
-
-        assertEquals(expectedTotalTime, marginsSimTime, expectedTotalTime * tolerance);
+    public void testConstructionMarginsOnSegment(double value, TestInfo info) {
+        MarginTests.testConstructionMarginsOnSegment(CONFIG_PATH, value, info);
     }
 
     @Test
-    public void testConstructionOnLinearMargin() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        assert infra != null;
-        var params1 = new LinearAllowanceGenerator(0, POSITIVE_INFINITY,
-                10, TIME);
-        var params2 = new ConstructionAllowanceGenerator(0, POSITIVE_INFINITY, 15);
-
-        var params = new ArrayList<SpeedControllerGenerator>();
-        params.add(params1);
-        params.add(params2);
-
-        // Run with construction margin
-        final var configMargins = getConfigWithSpeedInstructionsNonConstantDec(SpeedInstructions.fromList(params));
-        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim2, configMargins);
-        var marginsSimTime = sim2.getTime();
-
-        // base run, no margin
-        final var config = getBaseConfigNoAllowanceNonConstantDec();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var eventsBase = run(sim, config);
-        var baseSimTime = sim.getTime();
-
-        var expected = baseSimTime * (1 + params1.value / 100) + params2.value;
-
-        assertEquals(expected, marginsSimTime, expected * 0.01);
-
-        saveGraph(eventsBase, "..\\linear-time-on-construction-base-nonconstdec.csv");
-        saveGraph(events, "..\\linear-time-on-construction-nonconstdec-out.csv");
+    public void testConstructionOnLinearMargin(TestInfo info) {
+        MarginTests.testConstructionOnLinearMargin(CONFIG_PATH, info);
     }
 
     @Test
-    public void testMarecoOnConstructionMargin() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        assert infra != null;
-        var params1 = new ConstructionAllowanceGenerator(3000, 5000, 30);
-        var params2 = new MarecoAllowanceGenerator(0, POSITIVE_INFINITY,
-                10, RJSAllowance.MarecoAllowance.MarginType.TIME);
-
-        var params = new ArrayList<SpeedControllerGenerator>();
-        params.add(params1);
-        params.add(params2);
-
-        // Run with construction margin
-        final var configMargins = getConfigWithSpeedInstructionsNonConstantDec(SpeedInstructions.fromList(params));
-        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim2, configMargins);
-        var marginsSimTime = sim2.getTime();
-
-        // base run, no margin
-        final var config = getBaseConfigNoAllowanceNonConstantDec();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var eventsBase = run(sim, config);
-        var baseSimTime = sim.getTime();
-
-        var expected = (baseSimTime + params1.value) * (1 + params2.value / 100);
-
-        assertEquals(expected, marginsSimTime, expected * 0.01);
-
-        saveGraph(eventsBase, "..\\mareco-on-construction-base-nonconstdec.csv");
-        saveGraph(events, "..\\mareco-on-construction-nonconstdec-out.csv");
+    public void testMarecoOnConstructionMargin(TestInfo info) {
+        MarginTests.testMarecoOnConstructionMargin(CONFIG_PATH, info);
     }
 
     /** Test mareco */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 10, 30, 200})
-    //@ValueSource(doubles = {127})
-    public void testEcoMargin(double value) throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        assert infra != null;
-        var params = new MarecoAllowanceGenerator(0, POSITIVE_INFINITY,
-                value, RJSAllowance.MarecoAllowance.MarginType.TIME);
-
-        // Run with construction margin
-        final var configMargins = getConfigWithSpeedInstructionsNonConstantDec(
-                SpeedInstructions.fromController(params));
-        var sim2 = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var events = run(sim2, configMargins);
-        var marginsSimTime = sim2.getTime();
-
-        // base run, no margin
-        final var config = getBaseConfigNoAllowanceNonConstantDec();
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        var eventsBase = run(sim, config);
-        var baseSimTime = sim.getTime();
-
-        saveGraph(eventsBase, "..\\mareco-base-nonconstdec.csv");
-        saveGraph(events, "..\\mareco-nonconstdec-out.csv");
-
-        var expected = baseSimTime * (1 + params.value / 100);
-        assertEquals(expected, marginsSimTime, 5);
+    public void testEcoMargin(double value, TestInfo info) {
+        MarginTests.testEcoMargin(CONFIG_PATH, value, info);
     }
 
     /** Test mareco with different slopes*/
     @ParameterizedTest
     @ValueSource(ints = {0, 1, 2, 3, 4, 5, 6, 7})
-    public void testDifferentSlopes(int slopeProfile) throws InvalidInfraException {
-        // inputs
-        final double margin = 40.0;
-        var slopes = new ArrayList<RJSSlope>();
-        switch (slopeProfile) {
-            case 0: // no slope / ramp
-                slopes.add(new RJSSlope(0, 10000, 0));
-                break;
-            case 1: // ramp
-                slopes.add(new RJSSlope(0, 10000, 10));
-                break;
-            case 2: // low slope
-                slopes.add(new RJSSlope(0, 10000, -2));
-                break;
-            case 3: // high slope
-                slopes.add(new RJSSlope(0, 10000, -10));
-                break;
-            case 4: // high slope on a short segment
-                slopes.add(new RJSSlope(0, 5000, 0));
-                slopes.add(new RJSSlope(5000, 6000, -10));
-                slopes.add(new RJSSlope(6000, 10000, 0));
-                break;
-            case 5: // high slope on half
-                slopes.add(new RJSSlope(0, 5000, 0));
-                slopes.add(new RJSSlope(5000, 10000, -10));
-                break;
-            case 6: // high slope on acceleration
-                slopes.add(new RJSSlope(0, 1000, -10));
-                slopes.add(new RJSSlope(1000, 10000, 0));
-                break;
-            case 7: // plenty of different slopes
-                slopes.add(new RJSSlope(0, 3000, 0));
-                slopes.add(new RJSSlope(3000, 3100, -20));
-                slopes.add(new RJSSlope(3100, 3200, 10));
-                slopes.add(new RJSSlope(3200, 3500, -15));
-                slopes.add(new RJSSlope(3500, 4000, 5));
-                slopes.add(new RJSSlope(4000, 5000, -2));
-                slopes.add(new RJSSlope(5000, 7000, 0));
-                slopes.add(new RJSSlope(7000, 7500, -10));
-                slopes.add(new RJSSlope(7500, 10000, 10));
-                break;
-            default:
-                throw new InvalidInfraException("Unable to handle this parameter in testDifferentSlopes");
-        }
-
-        // build sims
-        var rjsInfra = getBaseInfra();
-        assert rjsInfra != null;
-        for (var trackSection : rjsInfra.trackSections)
-            if ("ne.micro.foo_to_bar".equals(trackSection.id))
-                trackSection.slopes = slopes;
-
-        var infra = RailJSONParser.parse(rjsInfra);
-
-        // Run with mareco
-        var marginsConfig = getConfigWithSpeedInstructionsAndInfraNonConstDec(
-                SpeedInstructions.fromController(
-                        new MarecoAllowanceGenerator(
-                                0,
-                                POSITIVE_INFINITY,
-                                margin,
-                                RJSAllowance.MarecoAllowance.MarginType.TIME
-                        )
-                ),
-                infra
-        );
-        var marginsSim = Simulation.createFromInfraAndEmptySuccessions(infra, 0, null);
-        var events = run(marginsSim, marginsConfig);
-        var marginsSimTime = marginsSim.getTime();
-
-        // base run, no margin
-        final var config = getConfigWithSpeedInstructionsAndInfraNonConstDec(new SpeedInstructions(null), infra);
-        var sim = Simulation.createFromInfraAndEmptySuccessions(infra, 0, null);
-        var eventsBase = run(sim, config);
-        var simTime = sim.getTime();
-
-        saveGraph(eventsBase, "..\\mareco-slope-base-nonconstdec.csv");
-        saveGraph(events, "..\\mareco-slope-nonconstdec-out.csv");
-
-        var expected = simTime * (1 + margin / 100);
-        assertEquals(expected, marginsSimTime, 5 + 0.001 * expected);
-
-        var coastingSpeedControllers =
-                findCoastingSpeedControllers(
-                        marginsConfig.trainSchedules.get(0).speedInstructions.targetSpeedControllers
-                );
-        for (var controller : coastingSpeedControllers) {
-            assertLowerSpeedPerPositionBetween(eventsBase, events, controller.beginPosition, controller.endPosition);
-        }
+    public void testDifferentSlopes(int slopeProfile, TestInfo info) {
+        MarginTests.testDifferentSlopes(CONFIG_PATH, slopeProfile, info);
     }
 
     @Test
-    public void testSeveralConstructionMargins() throws InvalidInfraException {
-        final var infra = getBaseInfra();
-        var param1 = new ConstructionAllowanceGenerator(0, 5000, 15);
-        var param2 = new ConstructionAllowanceGenerator(5000, POSITIVE_INFINITY, 30);
-
-        final var config = getConfigWithSpeedInstructionsNonConstantDec(
-                SpeedInstructions.fromList(Arrays.asList(param1, param2)));
-        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        saveGraph(run(sim, config), "double-construction-nonconstdec-out.csv");
-        var actualEndTime = sim.getTime();
-
-        final var configBase = getBaseConfigNoAllowanceNonConstantDec();
-        var simBase = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
-        saveGraph(run(simBase, configBase), "double-construction-base-nonconstdec.csv");
-        var baseEndTime = simBase.getTime();
-
-        var expected = baseEndTime + param1.value + param2.value;
-
-        assertEquals(expected, actualEndTime, expected * 0.01);
+    public void testSeveralConstructionMargins(TestInfo info) {
+        MarginTests.testSeveralConstructionMargins(CONFIG_PATH, info);
     }
-
 }

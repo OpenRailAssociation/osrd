@@ -70,11 +70,13 @@ public class MarginTests {
         }
     }
 
+    public static final String CONFIG_PATH = "tiny_infra/config_railjson.json";
+
     /** Test the linear allowance */
     @ParameterizedTest
     @ValueSource(doubles = {0, 50, 200})
     public void testLinearAllowance(double value, TestInfo info) {
-        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var config = TestConfig.readResource(CONFIG_PATH).clearAllowances();
 
         var allowance = new LinearAllowance(TIME, value);
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
@@ -85,12 +87,10 @@ public class MarginTests {
     }
 
     /** Test the construction margin */
-    @ParameterizedTest
-    @ValueSource(doubles = {0.0, 30, 100})
-    public void testConstructionMargins(double value, TestInfo info) {
+    public static void testConstructionMargins(String configPath, double value, TestInfo info) {
         var allowance = new ConstructionAllowance(value);
 
-        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var config = TestConfig.readResource(configPath).clearAllowances();
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
         test.saveGraphs(info);
 
@@ -98,10 +98,14 @@ public class MarginTests {
         assertEquals(expected, test.testedTime(), expected * 0.01);
     }
 
-    /** Test the construction margin on a small segment */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 30, 100})
-    public void testConstructionMarginsOnSegment(double value, TestInfo info) {
+    public void testConstructionMargins(double value, TestInfo info) {
+        testConstructionMargins(CONFIG_PATH, value, info);
+    }
+
+    /** Test the construction margin on a small segment */
+    public static void testConstructionMarginsOnSegment(String configPath, double value, TestInfo info) {
         final double begin = 4000;
         final double end = 5000;
         final double tolerance = 0.01; // percentage
@@ -110,7 +114,7 @@ public class MarginTests {
         allowance.beginPosition = begin;
         allowance.endPosition = end;
 
-        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var config = TestConfig.readResource(configPath).clearAllowances();
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
         test.saveGraphs(info);
 
@@ -144,8 +148,14 @@ public class MarginTests {
         assertEquals(expectedTotalTime, test.testedTime(), expectedTotalTime * tolerance);
     }
 
-    @Test
-    public void testConstructionOnLinearMargin(TestInfo info) {
+    @ParameterizedTest
+    @ValueSource(doubles = {0.0, 30, 100})
+    public void testConstructionMarginsOnSegment(double value, TestInfo info) {
+        testConstructionMarginsOnSegment(CONFIG_PATH, value, info);
+    }
+
+    /** Tests stacking construction and linear margins */
+    public static void testConstructionOnLinearMargin(String configPath, TestInfo info) {
         // setup allowances
         var linearAllowance = new LinearAllowance(TIME, 10);
         var constructionAllowance = new ConstructionAllowance(15);
@@ -155,7 +165,7 @@ public class MarginTests {
         };
 
         // run the baseline and testing simulation
-        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var testConfig = TestConfig.readResource(configPath).clearAllowances();
         var test = ComparativeTest.from(testConfig, () -> testConfig.setAllAllowances(allowances));
         test.saveGraphs(info);
 
@@ -168,7 +178,12 @@ public class MarginTests {
     }
 
     @Test
-    public void testMarecoOnConstructionMargin(TestInfo info) {
+    public void testConstructionOnLinearMargin(TestInfo info) {
+        testConstructionOnLinearMargin(CONFIG_PATH, info);
+    }
+
+    /** Tests stacking mareco and construction margins */
+    public static void testMarecoOnConstructionMargin(String configPath, TestInfo info) {
         // setup allowances
         var constructionAllowance = new ConstructionAllowance(30);
         constructionAllowance.beginPosition = 3000.;
@@ -177,27 +192,30 @@ public class MarginTests {
         var allowances = new RJSAllowance[][] { { constructionAllowance }, { marecoAllowance } };
 
         // run the baseline and testing simulation
-        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var config = TestConfig.readResource(configPath).clearAllowances();
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowances));
         test.saveGraphs(info);
 
         // compare the results
         var expected = (
                 (test.baseTime() + constructionAllowance.allowanceValue)
-                * (1 + marecoAllowance.allowanceValue / 100)
+                        * (1 + marecoAllowance.allowanceValue / 100)
         );
         assertEquals(expected, test.testedTime(), expected * 0.01);
     }
 
-    /** Test mareco */
-    @ParameterizedTest
-    @ValueSource(doubles = {0.0, 10, 30, 200})
-    public void testEcoMargin(double value, TestInfo info) {
+    @Test
+    public void testMarecoOnConstructionMargin(TestInfo info) {
+        testMarecoOnConstructionMargin(CONFIG_PATH, info);
+    }
+
+    /** Tests mareco */
+    public static void testEcoMargin(String configPath, double value, TestInfo info) {
         // setup allowances
         var marecoAllowance = new MarecoAllowance(MarecoAllowance.MarginType.TIME, value);
 
         // run the baseline and testing simulation
-        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var config = TestConfig.readResource(configPath).clearAllowances();
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(marecoAllowance));
         test.saveGraphs(info);
 
@@ -205,10 +223,20 @@ public class MarginTests {
         assertEquals(expected, test.testedTime(), 5);
     }
 
-    /** Test mareco with different slopes*/
+    @ParameterizedTest
+    @ValueSource(doubles = {0.0, 10, 30, 200})
+    public void testEcoMargin(double value, TestInfo info) {
+        testEcoMargin(CONFIG_PATH, value, info);
+    }
+
     @ParameterizedTest
     @ValueSource(ints = {0, 1, 2, 3, 4, 5, 6, 7})
     public void testDifferentSlopes(int slopeProfile, TestInfo info) {
+        testDifferentSlopes(CONFIG_PATH, slopeProfile, info);
+    }
+
+    /** Test mareco with different slopes*/
+    public static void testDifferentSlopes(String configPath, int slopeProfile, TestInfo info) {
         // inputs
         final double margin = 40.0;
         var slopes = new ArrayList<RJSSlope>();
@@ -256,7 +284,7 @@ public class MarginTests {
         var marecoAllowance = new MarecoAllowance(MarecoAllowance.MarginType.TIME, margin);
 
         // build sims
-        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var config = TestConfig.readResource(configPath).clearAllowances();
         for (var trackSection : config.rjsInfra.trackSections)
             if ("ne.micro.foo_to_bar".equals(trackSection.id))
                 trackSection.slopes = slopes;
@@ -286,7 +314,7 @@ public class MarginTests {
         var allowance = new LinearAllowance(TIME, value);
 
         // run the baseline and testing simulation
-        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var config = TestConfig.readResource(CONFIG_PATH).clearAllowances();
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
         test.saveGraphs(info);
 
@@ -300,7 +328,7 @@ public class MarginTests {
     public void testDistanceMargin(double value, TestInfo info) {
         var allowance = new LinearAllowance(LinearAllowance.MarginType.DISTANCE, value);
 
-        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var config = TestConfig.readResource(CONFIG_PATH).clearAllowances();
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
         test.saveGraphs(info);
 
@@ -326,7 +354,7 @@ public class MarginTests {
         endMargin.beginPosition = marginChangeLocation;
         var splitAllowances = new RJSAllowance[][] { { startMargin, endMargin } };
 
-        var config = TestConfig.readResource("tiny_infra/config_railjson.json")
+        var config = TestConfig.readResource(CONFIG_PATH)
                 .clearAllowances()
                 .setAllAllowances(globalAllowance);
         var test = ComparativeTest.from(config,
@@ -346,7 +374,7 @@ public class MarginTests {
         endMargin.beginPosition = marginChangeLocation;
         var allowances = new RJSAllowance[][] { { startMargin }, { endMargin } };
 
-        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var config = TestConfig.readResource(CONFIG_PATH).clearAllowances();
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowances));
         test.saveGraphs(info);
 
@@ -358,8 +386,8 @@ public class MarginTests {
         assertEquals(expected, test.testedTime(), expected * 0.01);
     }
 
-    @Test
-    public void testSeveralConstructionMargins(TestInfo info) {
+    /** Test stacking multiple construction margins */
+    public static void testSeveralConstructionMargins(String configPath, TestInfo info) {
         double marginChangeLocation = 5000;
         var startMargin = new ConstructionAllowance(15);
         startMargin.beginPosition = 0.;
@@ -368,7 +396,7 @@ public class MarginTests {
         endMargin.beginPosition = marginChangeLocation;
         var allowances = new RJSAllowance[][] { { startMargin }, { endMargin } };
 
-        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var config = TestConfig.readResource(configPath).clearAllowances();
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowances));
         test.saveGraphs(info);
 
@@ -376,6 +404,12 @@ public class MarginTests {
 
         assertEquals(expected, test.testedTime(), expected * 0.01);
     }
+
+    @Test
+    public void testSeveralConstructionMargins(TestInfo info) {
+        testSeveralConstructionMargins(CONFIG_PATH, info);
+    }
+
 
     private double convertTrackLocation(TrackSectionLocation location, TrainSchedule schedule) {
         double sumPreviousSections = 0;
@@ -398,7 +432,7 @@ public class MarginTests {
         endMargin.beginPosition = marginChangeLocation;
         var allowances = new RJSAllowance[][] { { startMargin }, { endMargin } };
 
-        var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var config = TestConfig.readResource(CONFIG_PATH).clearAllowances();
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowances));
         test.saveGraphs(info);
 

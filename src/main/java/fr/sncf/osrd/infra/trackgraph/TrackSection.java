@@ -142,6 +142,7 @@ public final class TrackSection extends BiNEdge<TrackSection> {
         linkEdges(edgeA, positionOnA, edgeB, positionOnB, ApplicableDirection.BOTH);
     }
 
+    /** Link two track sections together */
     public static void linkEdges(
             TrackSection edgeA,
             EdgeEndpoint positionOnA,
