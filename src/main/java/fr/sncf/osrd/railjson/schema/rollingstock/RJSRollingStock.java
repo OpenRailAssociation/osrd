@@ -69,7 +69,7 @@ public class RJSRollingStock implements Identified {
      * such as line voltage or air conditionning settings, to effort curves
      */
     @Json(name = "effort_curve_profiles")
-    public Map<String, RJSEffortCurvesProfile[]> effortCurvesProfiles;
+    public Map<String, RJSEffortCurvesProfile[]> effortCurveProfiles;
 
     /**
      * Each rolling resistance profile is a set of rules which associate environmental conditions,

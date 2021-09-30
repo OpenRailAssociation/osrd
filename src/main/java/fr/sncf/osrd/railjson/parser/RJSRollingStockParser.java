@@ -75,7 +75,7 @@ public class RJSRollingStockParser {
         var firstMode = rjsRollingStock.modes[0];
 
         // TODO: handle effort curve profiles
-        var effortCurveProfile = rjsRollingStock.effortCurvesProfiles.get(firstMode.effortCurveProfile);
+        var effortCurveProfile = rjsRollingStock.effortCurveProfiles.get(firstMode.effortCurveProfile);
         var randomCurveId = effortCurveProfile[0].effortCurve;
         var curve = tractiveEffortCurves.get(randomCurveId);
 
