@@ -3,6 +3,7 @@ package fr.sncf.osrd.train;
 import static fr.sncf.osrd.Helpers.*;
 import static fr.sncf.osrd.speedcontroller.SpeedInstructionsTests.isLate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.infra.InvalidInfraException;
@@ -65,6 +66,47 @@ public class StopTests {
         var timeLong = preparedLong.sim.getTime();
 
         assertEquals(timeShort - durationStopShort, timeLong - durationStopLong, 0.1);
+    }
+
+    public void testStopDurationNull() throws InvalidInfraException {
+        final var infra = getBaseInfra();
+        final var configStop = makeConfigWithGivenStops("tiny_infra/config_railjson.json",
+                new RJSTrainStop[]{
+                        new RJSTrainStop(2000., null, 100),
+                        new RJSTrainStop(1000., null, 0),
+                        new RJSTrainStop(-1., null, 0)
+                }
+        );
+        final var configNoStop = makeConfigWithGivenStops("tiny_infra/config_railjson.json",
+                new RJSTrainStop[]{
+                        new RJSTrainStop(2000., null, 100),
+                        new RJSTrainStop(-1., null, 0)
+                }
+        );
+        var simStop = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        run(simStop, configStop);
+        var timeWithStop = simStop.getTime();
+
+        var simNoStop = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        run(simNoStop, configNoStop);
+        var timeNoStop = simNoStop.getTime();
+
+        assertEquals(timeNoStop, timeWithStop, 0.1);
+    }
+
+    public void testStopEndDurationNull() throws InvalidInfraException {
+        final var infra = getBaseInfra();
+        final var config = makeConfigWithGivenStops("tiny_infra/config_railjson.json",
+                new RJSTrainStop[]{
+                        new RJSTrainStop(1000., null, 0),
+                        new RJSTrainStop(-1., null, 0)
+                }
+        );
+
+        var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
+        run(sim, config);
+
+        assertTrue(sim.isSimulationOver());
     }
 
     @Test
