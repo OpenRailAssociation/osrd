@@ -359,7 +359,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
         @Override
         public Void apply(Simulation sim, TrainState entity) {
-            sim.trains.remove(trainID);
+            entity.status = TrainStatus.REACHED_DESTINATION;
             return null;
         }
 

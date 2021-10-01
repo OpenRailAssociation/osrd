@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class DisappearTrainTest {
 
     @Test
-    public void simpleSpeedLimitTest() throws InvalidInfraException, SimulationError, InvalidSchedule {
+    public void simpleOccupationTest() throws InvalidInfraException, SimulationError, InvalidSchedule {
         var trackGraph = new TrackGraph();
 
         var nodeA = trackGraph.makePlaceholderNode("A");
@@ -93,8 +93,8 @@ public class DisappearTrainTest {
                 startLocation,
                 new TrackSectionLocation(edge, 10000), path, stops));
 
-        var schedule_1 = new TrainSchedule(
-                "train_1",
+        var schedule1 = new TrainSchedule(
+                "train1",
                 FAST_NO_FRICTION_TRAIN,
                 0,
                 startLocation,
@@ -106,12 +106,12 @@ public class DisappearTrainTest {
                 path,
                 new SpeedInstructions(null),
                 stops);
-        TrainCreatedEvent.plan(sim, schedule_1);
+        TrainCreatedEvent.plan(sim, schedule1);
 
-        var schedule_2 = new TrainSchedule(
-                "train_2",
+        var schedule2 = new TrainSchedule(
+                "train2",
                 FAST_NO_FRICTION_TRAIN,
-                120,
+                1200,
                 startLocation,
                 EdgeDirection.START_TO_STOP,
                 route,
@@ -121,15 +121,15 @@ public class DisappearTrainTest {
                 path,
                 new SpeedInstructions(null),
                 stops);
-        TrainCreatedEvent.plan(sim, schedule_2);
+        TrainCreatedEvent.plan(sim, schedule2);
 
         // run the simulation
         while (!sim.isSimulationOver())
             sim.step();
 
-        var lastPosition_1 = sim.trains.get(0).getLastState().location.getPathPosition();
-        var lastPosition_2 = sim.trains.get(1).getLastState().location.getPathPosition();
+        var lastPosition1 = sim.trains.get("train1").getLastState().location.getPathPosition();
+        var lastPosition2 = sim.trains.get("train2").getLastState().location.getPathPosition();
 
-        assertEquals(lastPosition_1, lastPosition_2, 10);
+        assertEquals(lastPosition1, lastPosition2, 10);
     }
 }
