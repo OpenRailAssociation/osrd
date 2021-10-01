@@ -181,7 +181,7 @@ class RollingStock(models.Model):
             "mass": self.mass,
             "inertia_coefficient": self.inertia_coefficient,
             "rolling_resistance": self.rolling_resistance,
-            "capabilities": self.capabilities,
+            "features": self.capabilities,
             "max_speed": self.max_speed,
             "startup_time": self.startup_time,
             "startup_acceleration": self.startup_acceleration,
