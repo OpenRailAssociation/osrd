@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class DisappearTrainTest {
 
     @Test
-    public void simpleOccupationTest() throws InvalidInfraException, SimulationError, InvalidSchedule {
+    public void finalRouteLiberationTest() throws InvalidInfraException, SimulationError, InvalidSchedule {
         var trackGraph = new TrackGraph();
 
         var nodeA = trackGraph.makePlaceholderNode("A");
@@ -131,5 +131,8 @@ public class DisappearTrainTest {
         var lastPosition2 = sim.trains.get("train2").getLastState().location.getPathPosition();
 
         assertEquals(lastPosition1, lastPosition2, 10);
+
+        assert(sim.trains.get("train1").getLastState().status.equals(TrainStatus.REACHED_DESTINATION));
+        assert(sim.trains.get("train2").getLastState().status.equals(TrainStatus.REACHED_DESTINATION));
     }
 }
