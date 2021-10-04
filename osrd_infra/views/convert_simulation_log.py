@@ -3,18 +3,42 @@ from dataclasses import dataclass, asdict
 from typing import List, Iterator, Union, Dict
 
 
-def convert_simulation_log(train_schedule, projection_path):
-    simulation_result = train_schedule.base_simulation_log
-
+def convert_simulation_logs(train_schedule, projection_path):
+    train_path = train_schedule.path
     # Compute projection object
     projection = Projection(projection_path)
 
+    base = convert_simulation_log(
+        train_schedule.base_simulation_log, train_path, projection, projection_path
+    )
+    res = {
+        "id": train_schedule.pk,
+        "labels": [label.label for label in train_schedule.labels.all()],
+        "path": train_schedule.path_id,
+        "name": train_schedule.train_name,
+        "base": base,
+    }
+    # Add margins and eco results if available
+    if train_schedule.margins_simulation_log:
+        res["margins"] = convert_simulation_log(
+            train_schedule.margins_simulation_log,
+            train_path,
+            projection,
+            projection_path,
+        )
+        res["eco"] = convert_simulation_log(
+            train_schedule.eco_simulation_log, train_path, projection, projection_path
+        )
+    return res
+
+
+def convert_simulation_log(simulation_result, train_path, projection, projection_path):
     # Format data for charts
     head_positions = convert_positions(
-        simulation_result["head_positions"], projection, train_schedule.path
+        simulation_result["head_positions"], projection, train_path
     )
     tail_positions = convert_positions(
-        simulation_result["tail_positions"], projection, train_schedule.path
+        simulation_result["tail_positions"], projection, train_path
     )
     end_time = simulation_result["head_positions"][-1]["time"]
     route_begin_occupancy, route_end_occupancy = convert_route_occupancy(
@@ -22,10 +46,6 @@ def convert_simulation_log(train_schedule, projection_path):
     )
 
     return {
-        "id": train_schedule.pk,
-        "labels": [label.label for label in train_schedule.labels.all()],
-        "path": train_schedule.path_id,
-        "name": train_schedule.train_name,
         "head_positions": head_positions,
         "tail_positions": tail_positions,
         "route_begin_occupancy": route_begin_occupancy,

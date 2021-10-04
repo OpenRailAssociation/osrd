@@ -5,7 +5,6 @@ from osrd_infra.views.railjson import format_route_id, format_track_section_id
 from rest_framework.exceptions import ParseError
 from osrd_infra.models import TrainSchedule
 from enum import IntEnum
-from collections import deque
 
 
 class SimulationType(IntEnum):
@@ -67,26 +66,39 @@ def get_allowances_payload(margins, sim_type: SimulationType):
         return []
     assert margins is not None
 
-    payload = deque()
+    # Add linear margins
     linear_margins = []
-    allowance_type = "linear" if sim_type == SimulationType.MARGIN else "eco"
+    sim_type = "linear" if sim_type == SimulationType.MARGIN else "eco"
     for margin in margins:
-        margin_payload = {"allowance_value": margin["value"]}
-        margin_payload["begin_position"] = margin["begin_position"]
-        margin_payload["end_position"] = margin["end_position"]
         if margin["type"] == "construction":
-            margin_payload["type"] = "construction"
-            payload.append([margin_payload])
             continue
-        elif margin["type"] == "ratio_time":
-            margin_payload["allowance_type"] = "TIME"
-        else:
-            margin_payload["allowance_type"] = "DISTANCE"
-        margin_payload["type"] = allowance_type
-        linear_margins.append(margin_payload)
+        allowance_type = "TIME" if margin["type"] == "ratio_time" else "DISTANCE"
+        linear_margins.append(
+            {
+                "allowance_value": margin["value"],
+                "begin_position": margin["begin_position"],
+                "end_position": margin["end_position"],
+                "type": sim_type,
+                "allowance_type": allowance_type,
+            }
+        )
+    payload = []
     if linear_margins:
-        payload.appendleft(linear_margins)
-    return list(payload)
+        payload.append(linear_margins)
+
+    # Add construction margins
+    for margin in margins:
+        if margin["type"] != "construction":
+            continue
+        payload.append(
+            {
+                "type": "construction",
+                "allowance_value": margin["value"],
+                "begin_position": margin["begin_position"],
+                "end_position": margin["end_position"],
+            }
+        )
+    return payload
 
 
 def get_train_schedule_payload(train_schedule: TrainSchedule, sim_type: SimulationType):
