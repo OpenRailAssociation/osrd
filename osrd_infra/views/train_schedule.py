@@ -8,7 +8,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from osrd_infra.serializers import TrainScheduleSerializer
 from osrd_infra.views.convert_simulation_log import convert_simulation_log
-from osrd_infra.views.simulation_log import generate_simulation_log
+from osrd_infra.views.simulation_log import generate_simulation_logs
 
 from osrd_infra.models import (
     TrainSchedule,
@@ -18,7 +18,7 @@ from osrd_infra.models import (
 
 def cache_simulation_logs(train_schedule):
     if train_schedule.base_simulation_log is None:
-        generate_simulation_log(train_schedule)
+        generate_simulation_logs(train_schedule)
 
 
 class TrainScheduleView(
@@ -36,7 +36,7 @@ class TrainScheduleView(
         serializer = self.get_serializer(train_schedule, data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        generate_simulation_log(train_schedule)
+        generate_simulation_logs(train_schedule)
         return Response(serializer.data)
 
     @action(detail=True)

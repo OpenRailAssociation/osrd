@@ -3,6 +3,15 @@ from django.conf import settings
 from osrd_infra.utils import reverse_format
 from osrd_infra.views.railjson import format_route_id, format_track_section_id
 from rest_framework.exceptions import ParseError
+from osrd_infra.models import TrainSchedule
+from enum import IntEnum
+from collections import deque
+
+
+class SimulationType(IntEnum):
+    BASE = 0
+    MARGIN = 1
+    ECO = 2
 
 
 def get_train_phases(path):
@@ -52,8 +61,38 @@ def convert_route_list_for_simulation(path):
     return res
 
 
-def get_train_schedule_payload(train_schedule):
+def get_allowances_payload(margins, sim_type: SimulationType):
+    # Base simulation doesn't use margins
+    if sim_type == SimulationType.BASE:
+        return []
+    assert margins is not None
+
+    payload = deque()
+    linear_margins = []
+    allowance_type = "linear" if sim_type == SimulationType.MARGIN else "eco"
+    for margin in margins:
+        margin_payload = {"allowance_value": margin["value"]}
+        margin_payload["begin_position"] = margin["begin_position"]
+        margin_payload["end_position"] = margin["end_position"]
+        if margin["type"] == "construction":
+            margin_payload["type"] = "construction"
+            payload.append([margin_payload])
+            continue
+        elif margin["type"] == "ratio_time":
+            margin_payload["allowance_type"] = "TIME"
+        else:
+            margin_payload["allowance_type"] = "DISTANCE"
+        margin_payload["type"] = allowance_type
+        linear_margins.append(margin_payload)
+    if linear_margins:
+        payload.appendleft(linear_margins)
+    return list(payload)
+
+
+def get_train_schedule_payload(train_schedule: TrainSchedule, sim_type: SimulationType):
     path = train_schedule.path
+    margins = train_schedule.margins
+    allowances = get_allowances_payload(margins, sim_type)
     return {
         "id": train_schedule.train_name,
         "rolling_stock": f"rolling_stock.{train_schedule.rolling_stock_id}",
@@ -64,6 +103,7 @@ def get_train_schedule_payload(train_schedule):
         "phases": get_train_phases(path),
         "routes": convert_route_list_for_simulation(path),
         "stops": get_train_stops(path),
+        "allowances": allowances,
     }
 
 
@@ -114,15 +154,12 @@ def preprocess_response(response, train_schedule):
     }
 
 
-def generate_simulation_log(train_schedule):
+def run_simulation(train_schedule: TrainSchedule, sim_type: SimulationType):
     payload = {
         "infra": train_schedule.timetable.infra_id,
         "rolling_stocks": [train_schedule.rolling_stock.to_railjson()],
-        "train_schedules": [get_train_schedule_payload(train_schedule)],
+        "train_schedules": [get_train_schedule_payload(train_schedule, sim_type)],
     }
-    train_schedule.base_simulation_log = None
-    train_schedule.save()
-
     try:
         response = requests.post(
             settings.OSRD_BACKEND_URL + "simulation",
@@ -135,7 +172,27 @@ def generate_simulation_log(train_schedule):
     if not response:
         raise ParseError(response.content)
 
-    result = preprocess_response(response.json(), train_schedule)
-    train_schedule.base_simulation_log = result
+    return preprocess_response(response.json(), train_schedule)
+
+
+def generate_simulation_logs(train_schedule):
+    # Clear logs
+    train_schedule.base_simulation_log = None
+    train_schedule.margins_simulation_log = None
+    train_schedule.eco_simulation_log = None
     train_schedule.save()
-    return result
+
+    train_schedule.base_simulation_log = run_simulation(
+        train_schedule, SimulationType.BASE
+    )
+
+    # Check margins is not None and not empty
+    if train_schedule.margins:
+        train_schedule.margins_simulation_log = run_simulation(
+            train_schedule, SimulationType.MARGIN
+        )
+        train_schedule.eco_simulation_log = run_simulation(
+            train_schedule, SimulationType.ECO
+        )
+
+    train_schedule.save()
