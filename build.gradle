@@ -1,3 +1,17 @@
+// this project is licensed under LGPLv3.
+// DO NOT ADD any dependency which isn't compatible with LGPLv3, such as:
+//  - GPLv2, GPLv2+
+//  - GPLv3, GPLv3+
+//  - EPL 1.0
+//
+// The following licenses were checked for compatibility for use as libraries:
+//  - Apache 2.0
+//  - MIT
+//  - BSD licenses
+//  - LGPLv2, LGPLv2+, LGPLv3
+//  - GPLv2 with classpath exception
+//  - CC Attribution
+
 plugins {
     id 'java'
     id 'application'
@@ -16,55 +30,55 @@ repositories {
 
 dependencies {
     // command line parsing
-    implementation 'com.beust:jcommander:1.78'
+    implementation group: 'com.beust', name: 'jcommander', version: '1.78'  // Apache 2.0
 
     // XML parsing
-    implementation group: 'org.dom4j', name: 'dom4j', version: '2.1.0'
+    implementation group: 'org.dom4j', name: 'dom4j', version: '2.1.0'  // modified BSD, credits should be given to "the DOM4J Project - https://dom4j.github.io/"
 
     // JSON parsing
-    implementation 'com.squareup.moshi:moshi:1.11.0'
-    implementation 'com.squareup.moshi:moshi-adapters:1.11.0'
+    implementation 'com.squareup.moshi:moshi:1.11.0' // Apache 2.0
+    implementation 'com.squareup.moshi:moshi-adapters:1.11.0'  // Apache 2.0
 
     // HTTP server framework
-    implementation group: 'org.takes', name: 'takes', version: '1.19'
-    implementation group: 'javax.json', name: 'javax.json-api', version: '1.1.4'
+    implementation group: 'org.takes', name: 'takes', version: '1.19'  // MIT
+    implementation group: 'javax.json', name: 'javax.json-api', version: '1.1.4'  // GPLv2 with classpath exemption
 
     // HTTP client
-    implementation 'com.squareup.okhttp3:okhttp:4.9.1'
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.1' // Apache 2.0
 
     // ClassGraph (FastClasspathScanner)
-    // https://mvnrepository.com/artifact/io.github.classgraph/classgraph
-    implementation group: 'io.github.classgraph', name: 'classgraph', version: '4.8.102'
+    implementation group: 'io.github.classgraph', name: 'classgraph', version: '4.8.102' // MIT
 
     // for debug UI
-    implementation 'org.graphstream:gs-core:2.0'
-    implementation 'org.graphstream:gs-ui-swing:2.0'
+    implementation 'org.graphstream:gs-core:2.0'  // LGLPv3
+    implementation 'org.graphstream:gs-ui-swing:2.0'  // LGLPv3
 
     // the logging API stub
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'  // MIT
     // the logging API implementation
-    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'  // EPL 1.0 (incompatible) and LGPL 2.1 (compatible)
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 
     // Sentry
-    implementation 'io.sentry:sentry:5.0.1'
+    implementation group: 'io.sentry', name: 'sentry', version: '5.0.1'  // MIT
 
     // Use JUnit Jupiter API for testing.
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7'
+    // EPL2.0 is compatible with LGPLv3 https://www.eclipse.org/legal/epl-2.0/faq.php#h.hsnsfg4e0htq
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'  // EPL 2.0
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7'  // EPL 2.0
     // Use JUnit Jupiter Engine for testing.
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7'  // EPL 2.0
     // jqwik for property based testing
-    testImplementation "net.jqwik:jqwik:1.5.1"
+    testImplementation 'net.jqwik:jqwik:1.5.1'  // EPL 2.0
     // mockito for mocking
-    testImplementation 'org.mockito:mockito-inline:3.9.0'
-    testImplementation 'org.mockito:mockito-junit-jupiter:3.9.0'
+    testImplementation 'org.mockito:mockito-inline:3.9.0'  // MIT
+    testImplementation 'org.mockito:mockito-junit-jupiter:3.9.0'  // MIT
 
     // for linter annotations
-    compileOnly 'net.jcip:jcip-annotations:1.0'
-    compileOnly 'com.github.spotbugs:spotbugs-annotations:4.1.4'
-    testCompileOnly 'net.jcip:jcip-annotations:1.0'
-    testCompileOnly 'com.github.spotbugs:spotbugs-annotations:4.1.4'
+    compileOnly 'net.jcip:jcip-annotations:1.0'  // CC Attribution
+    compileOnly 'com.github.spotbugs:spotbugs-annotations:4.1.4'  // LGPLv2.1
+    testCompileOnly 'net.jcip:jcip-annotations:1.0'  // CC Attribution
+    testCompileOnly 'com.github.spotbugs:spotbugs-annotations:4.1.4'  // LGPLv2.1
 }
 
 application {
