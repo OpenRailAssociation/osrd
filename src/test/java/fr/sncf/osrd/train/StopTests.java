@@ -68,6 +68,7 @@ public class StopTests {
         assertEquals(timeShort - durationStopShort, timeLong - durationStopLong, 0.1);
     }
 
+    @Test
     public void testStopDurationNull() throws InvalidInfraException {
         final var infra = getBaseInfra();
         final var configStop = makeConfigWithGivenStops("tiny_infra/config_railjson.json",
@@ -94,6 +95,7 @@ public class StopTests {
         assertEquals(timeNoStop, timeWithStop, 0.1);
     }
 
+    @Test
     public void testStopEndDurationNull() throws InvalidInfraException {
         final var infra = getBaseInfra();
         final var config = makeConfigWithGivenStops("tiny_infra/config_railjson.json",
@@ -106,7 +108,8 @@ public class StopTests {
         var sim = Simulation.createFromInfraAndEmptySuccessions(RailJSONParser.parse(infra), 0, null);
         run(sim, config);
 
-        assertTrue(sim.isSimulationOver());
+        var lastSpeed = sim.trains.get("Test.").getLastState().speed;
+        assertTrue(lastSpeed > 30);
     }
 
     @Test
