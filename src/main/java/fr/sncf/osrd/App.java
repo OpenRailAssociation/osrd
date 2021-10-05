@@ -17,6 +17,7 @@ public class App {
         commands.put("convert", new ConvertCommand());
         commands.put("pretty-print-signals", new PrettyPrintCommand());
         commands.put("api", new ApiServerCommand());
+        commands.put("interactive", new InteractiveCommand());
 
         // prepare the command line parser
         var argsParserBuilder = JCommander.newBuilder();
