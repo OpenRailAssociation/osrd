@@ -64,7 +64,7 @@ public final class TrainSchedule {
 
     private void initStops(List<TrainStop> stops) {
         if (stops == null)
-            this.stops = Collections.singletonList(new TrainStop(-1, 0));
+            this.stops = Collections.singletonList(new TrainStop(-1, 1));
         else
             this.stops = stops;
     }

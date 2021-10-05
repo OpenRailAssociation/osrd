@@ -38,7 +38,7 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
         for (int i = 0; i < schedule.stops.size(); i++) {
             var stop = schedule.stops.get(i);
             var stopDuration = stop.stopDuration;
-            if (stopDuration <= 0 && i < schedule.stops.size() - 1) // The train doesn't stop
+            if (stopDuration <= 0) // The train doesn't stop
                 continue;
             var targetPosition = stop.position;
             //TODO: Is this to implement also with non constant dec?
