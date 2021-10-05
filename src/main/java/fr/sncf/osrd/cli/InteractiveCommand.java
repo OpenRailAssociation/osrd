@@ -25,11 +25,13 @@ public final class InteractiveCommand implements CliCommand {
 
     /** Runs the command, and return a status code */
     public int run() {
+        var properties = new HashMap<String, Object>();
+        properties.put("test", 42);
         Server server = new Server(
                 "localhost",
                 port,
                 "/websockets",
-                new HashMap<>(),
+                properties,
                 InteractiveEndpoint.class
         );
         try {
