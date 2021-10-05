@@ -87,7 +87,7 @@ public class DisappearTrainTest {
                 startLocation,
                 new TrackSectionLocation(edge, 10000));
         var phases = new ArrayList<NavigatePhase>();
-        var stops = Collections.singletonList(new TrainStop(path.length, 0));
+        var stops = Collections.singletonList(new TrainStop(path.length, 1));
         phases.add(SignalNavigatePhase.from(
                 400,
                 startLocation,
