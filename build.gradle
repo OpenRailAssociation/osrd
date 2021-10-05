@@ -8,6 +8,7 @@
 //  - Apache 2.0
 //  - MIT
 //  - BSD licenses
+//  - EPL2.0 (see https://www.eclipse.org/legal/epl-2.0/faq.php#h.hsnsfg4e0htq)
 //  - LGPLv2, LGPLv2+, LGPLv3
 //  - GPLv2 with classpath exception
 //  - CC Attribution
@@ -42,6 +43,9 @@ dependencies {
     // HTTP server framework
     implementation group: 'org.takes', name: 'takes', version: '1.19'  // MIT
     implementation group: 'javax.json', name: 'javax.json-api', version: '1.1.4'  // GPLv2 with classpath exemption
+    // WebSocket server
+    implementation group: 'org.glassfish.tyrus', name: 'tyrus-server', version: '2.0.1'  // EPL 2.0
+    implementation group: 'org.glassfish.tyrus', name: 'tyrus-container-grizzly-server', version: '2.0.1'  // EPL 2.0
 
     // HTTP client
     implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.1' // Apache 2.0
@@ -63,7 +67,6 @@ dependencies {
     implementation group: 'io.sentry', name: 'sentry', version: '5.0.1'  // MIT
 
     // Use JUnit Jupiter API for testing.
-    // EPL2.0 is compatible with LGPLv3 https://www.eclipse.org/legal/epl-2.0/faq.php#h.hsnsfg4e0htq
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'  // EPL 2.0
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7'  // EPL 2.0
     // Use JUnit Jupiter Engine for testing.
