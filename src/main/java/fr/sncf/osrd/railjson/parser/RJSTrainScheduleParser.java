@@ -245,7 +245,7 @@ public class RJSTrainScheduleParser {
                 res.add(new TrainStop(position, stop.duration));
             }
         } else {
-            res.add(new TrainStop(-1, 0));
+            res.add(new TrainStop(-1, 1));
         }
         for (var stop : res)
             if (stop.position < 0)
