@@ -220,7 +220,7 @@ public class MarginTests {
         test.saveGraphs(info);
 
         var expected = test.baseTime() * (1 + value / 100);
-        assertEquals(expected, test.testedTime(), 5);
+        assertEquals(expected, test.testedTime(), 6);
     }
 
     @ParameterizedTest
