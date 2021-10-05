@@ -1,6 +1,9 @@
 package fr.sncf.osrd.train;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import static fr.sncf.osrd.Helpers.*;
+import static fr.sncf.osrd.train.TestTrains.FAST_NO_FRICTION_TRAIN;
+import static org.junit.jupiter.api.Assertions.*;
+
 import fr.sncf.osrd.infra.*;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.trackgraph.BufferStop;
@@ -13,8 +16,6 @@ import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import fr.sncf.osrd.train.phases.NavigatePhase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
-import fr.sncf.osrd.utils.RangeValue;
-import fr.sncf.osrd.utils.SignAnalyzer;
 import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -23,11 +24,6 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.stream.Collectors;
-
-import static fr.sncf.osrd.Helpers.*;
-import static fr.sncf.osrd.train.TestTrains.FAST_NO_FRICTION_TRAIN;
-import static org.junit.jupiter.api.Assertions.*;
 
 
 public class DisappearTrainTest {
@@ -87,7 +83,7 @@ public class DisappearTrainTest {
                 startLocation,
                 new TrackSectionLocation(edge, 10000));
         var phases = new ArrayList<NavigatePhase>();
-        var stops = Collections.singletonList(new TrainStop(path.length, 0));
+        var stops = Collections.singletonList(new TrainStop(path.length, 1));
         phases.add(SignalNavigatePhase.from(
                 400,
                 startLocation,
@@ -132,7 +128,7 @@ public class DisappearTrainTest {
 
         assertEquals(lastPosition1, lastPosition2, 10);
 
-        assert(sim.trains.get("train1").getLastState().status.equals(TrainStatus.REACHED_DESTINATION));
-        assert(sim.trains.get("train2").getLastState().status.equals(TrainStatus.REACHED_DESTINATION));
+        assert sim.trains.get("train1").getLastState().status.equals(TrainStatus.REACHED_DESTINATION);
+        assert sim.trains.get("train2").getLastState().status.equals(TrainStatus.REACHED_DESTINATION);
     }
 }
