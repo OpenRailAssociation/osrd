@@ -6,11 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.TestConfig;
-import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.StopActionPoint;
-import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
-import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import org.junit.jupiter.api.Test;
 
@@ -69,7 +66,7 @@ public class StopTests {
     }
 
     @Test
-    public void testStopDurationNull() throws InvalidInfraException {
+    public void testStopDurationNull() {
         final var configStop = TestConfig.readResource("tiny_infra/config_railjson.json");
         for (var train : configStop.rjsSimulation.trainSchedules)
             train.stops = new RJSTrainStop[]{
@@ -95,7 +92,7 @@ public class StopTests {
     }
 
     @Test
-    public void testStopEndDurationNull() throws InvalidInfraException {
+    public void testStopEndDurationNull() {
         final var config = TestConfig.readResource("tiny_infra/config_railjson.json");
         for (var train : config.rjsSimulation.trainSchedules)
             train.stops = new RJSTrainStop[]{
