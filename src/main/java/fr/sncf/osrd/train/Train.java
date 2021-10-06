@@ -102,25 +102,32 @@ public class Train {
     /** Restarts the train after a stop */
     public void restart(Simulation sim) throws SimulationError {
         var clonedState = lastState.clone();
+        clonedState.time = sim.getTime();
         clonedState.stopIndex++;
         if (clonedState.stopIndex >= schedule.stops.size()) {
             var change = new TrainState.TrainDisappearChange(sim, lastState);
             change.apply(sim, lastState);
             sim.publishChange(change);
 
-            var route = lastState.trainSchedule.plannedPath.routePath.get(lastState.routeIndex);
-
-            // Free the tvdSection of the route where the train is
-            for (var i = 0; i < route.tvdSectionsPaths.size(); i++) {
-                var currentTvdSectionPath = route.tvdSectionsPaths.get(i);
+            // Free the tvdSections the train is on
+            var path = lastState.path;
+            var trainLength = lastState.trainSchedule.rollingStock.length;
+            var firstTVD = path.getTVDSectionPathIndexAtPosition(path.length - trainLength);
+            var lastTVD = path.getTVDSectionPathIndexAtPosition(path.length);
+            for (var i = firstTVD; i <= lastTVD; i++) {
+                var currentTvdSectionPath = path.tvdSectionPaths.get(i);
                 var index = currentTvdSectionPath.tvdSection.index;
                 var tvdSection = sim.infraState.getTvdSectionState(index);
-                tvdSection.free(sim);
+
+                // The condition shouldn't be needed,
+                // but there are cases where the train is on a TVD that isn't reserved
+                if (tvdSection.isReserved())
+                    tvdSection.free(sim);
             }
+
             return;
         }
         logger.info("restarting train {}", getName());
-        clonedState.time = sim.getTime();
         lastScheduledEvent = clonedState.simulatePhase(this, sim);
     }
 

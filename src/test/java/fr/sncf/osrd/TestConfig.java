@@ -131,6 +131,7 @@ public class TestConfig {
         public final List<TrainSchedule> schedules;
         public final Config config;
         public final Simulation sim;
+        public ArrayList<TimelineEvent> events = null;
 
         TestSimulationState(
                 Infra infra,
@@ -149,7 +150,8 @@ public class TestConfig {
         }
 
         public ArrayList<TimelineEvent> run() {
-            return runSimulation(sim, config);
+            events = runSimulation(sim, config);
+            return events;
         }
     }
 

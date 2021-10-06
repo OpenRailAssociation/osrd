@@ -2,13 +2,16 @@ package fr.sncf.osrd.train;
 
 import static fr.sncf.osrd.Helpers.*;
 import static fr.sncf.osrd.train.TestTrains.FAST_NO_FRICTION_TRAIN;
+import static fr.sncf.osrd.train.TrainStatus.REACHED_DESTINATION;
 import static org.junit.jupiter.api.Assertions.*;
 
+import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.infra.*;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.trackgraph.BufferStop;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
@@ -130,5 +133,17 @@ public class DisappearTrainTest {
 
         assert sim.trains.get("train1").getLastState().status.equals(TrainStatus.REACHED_DESTINATION);
         assert sim.trains.get("train2").getLastState().status.equals(TrainStatus.REACHED_DESTINATION);
+    }
+
+
+    @Test
+    public void testEveryTVDSectionIsFree() {
+        final var config = TestConfig.readResource("tiny_infra/config_railjson.json");
+
+        var prepared = config.prepare();
+        prepared.run();
+
+        for (int i = 0; i < prepared.infra.tvdSections.size(); i++)
+            assert !prepared.sim.infraState.getTvdSectionState(i).isReserved();
     }
 }
