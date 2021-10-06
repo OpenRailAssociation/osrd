@@ -13,6 +13,7 @@ public abstract class ServerMessage {
                     .add(PolymorphicJsonAdapterFactory.of(ServerMessage.class, "message_type")
                             .withSubtype(SessionInitialized.class, "session_initialized")
                             .withSubtype(SimulationCreated.class, "simulation_created")
+                            .withSubtype(SimulationFinished.class, "simulation_finished")
                             .withSubtype(Error.class, "error"))
                     .build()
                     .adapter(ServerMessage.class)
@@ -22,6 +23,9 @@ public abstract class ServerMessage {
     }
 
     public static final class SimulationCreated extends ServerMessage {
+    }
+
+    public static final class SimulationFinished extends ServerMessage {
     }
 
     public static final class Error extends ServerMessage {
