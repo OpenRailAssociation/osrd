@@ -18,6 +18,7 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.railjson.schema.successiontable.RJSSuccessionTable;
 import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 
 import java.util.*;
@@ -93,6 +94,23 @@ public class InteractiveSimulation {
             return ServerMessage.Error.withReason("failed to parse rolling stock", e.getMessage());
         } catch (InvalidSuccession e) {
             return ServerMessage.Error.withReason("failed to parse succession table", e.getMessage());
+        }
+    }
+
+    /**
+     * Start or resume simulation.
+     * @throws ServerError if session isn't running.
+     */
+    public ServerMessage run() throws ServerError {
+        checkState(SessionState.RUNNING);
+        // run the simulation loop
+        try {
+            while (!simulation.isSimulationOver())
+                simulation.step();
+            state = SessionState.INITIALIZED;
+            return new ServerMessage.SimulationFinished();
+        } catch (SimulationError e) {
+            return ServerMessage.Error.withReason("failed to run simulation", e.getMessage());
         }
     }
 }
