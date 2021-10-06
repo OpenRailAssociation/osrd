@@ -181,6 +181,7 @@ public class DisappearTrainTest {
                     new ID<RJSRoute>("rt.S7-buffer_stop_c"),
             };
             var phase = Arrays.stream(s.phases).findFirst();
+            assert phase.isPresent();
             phase.get().endLocation.trackSection.id =  "ne.micro.foo_to_bar";
             phase.get().endLocation.offset = 100;
         });
@@ -193,5 +194,4 @@ public class DisappearTrainTest {
 
         assertThrows(InvalidSchedule.class, () -> RJSSimulationParser.parse(rjsInfra, schedule));
     }
-
 }
