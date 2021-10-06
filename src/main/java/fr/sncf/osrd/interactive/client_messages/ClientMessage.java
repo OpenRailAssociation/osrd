@@ -20,7 +20,8 @@ public abstract class ClientMessage {
     public static final JsonAdapter<ClientMessage> adapter = new Moshi.Builder()
                 .add(PolymorphicJsonAdapterFactory.of(ClientMessage.class, "message_type")
                         .withSubtype(InitMessage.class, "init")
-                        .withSubtype(CreateSimulationMessage.class, "create_simulation"))
+                        .withSubtype(CreateSimulationMessage.class, "create_simulation")
+                        .withSubtype(RunMessage.class, "run"))
                 // for RJSInfra
                 .add(ID.Adapter.FACTORY)
                 .add(RJSRSExpr.adapter)
