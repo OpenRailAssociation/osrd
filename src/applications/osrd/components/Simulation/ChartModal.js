@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { updateMustRedraw } from 'reducers/osrdsimulation';
 import 'applications/osrd/components/Simulation/ChartModal.scss';
+import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHelpers';
 
 const ChartModal = (props) => {
   const {
     type, setShowModal, trainName, offsetTimeByDragging,
   } = props;
+  const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();
   const { t } = useTranslation(['simulation']);
   const [offset, setOffset] = useState('');
@@ -18,6 +20,9 @@ const ChartModal = (props) => {
       setShowModal('');
       const seconds = parseInt(type === '-' ? offset * -1 : offset, 10);
       offsetTimeByDragging(seconds);
+      changeTrain({
+        departure_time: simulation.trains[selectedTrain].stops[0].time + seconds,
+      }, simulation.trains[selectedTrain].id);
       dispatch(updateMustRedraw(true));
     }
   };

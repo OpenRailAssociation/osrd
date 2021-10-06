@@ -18,6 +18,8 @@ import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import drawText from 'applications/osrd/components/Simulation/drawText';
 import findConflicts from 'applications/osrd/components/Simulation/findConflicts';
 import enableInteractivity, { traceVerticalLine } from 'applications/osrd/components/Simulation/enableInteractivity';
+import { sec2time } from 'utils/timeManipulation';
+import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHelpers';
 
 const CHART_ID = 'SpaceTimeChart';
 
@@ -69,7 +71,7 @@ const createChart = (chart, dataSimulation, keyValues, ref, rotate) => {
 
 const drawTrain = (
   chart, dispatch, dataSimulation, isSelected, keyValues,
-  offsetTimeByDragging, rotate, setDragOffset,
+  offsetTimeByDragging, rotate, setDragEnding, setDragOffset,
 ) => {
   const groupID = `spaceTime-${dataSimulation.trainNumber}`;
 
@@ -78,22 +80,27 @@ const drawTrain = (
     : chart.x.invert(0);
   let dragValue = 0;
 
+  const dragTimeOffset = () => {
+    dragValue += rotate ? d3.event.dy : d3.event.dx;
+    const translation = rotate ? `0,${dragValue}` : `${dragValue},0`;
+    d3.select(`#${groupID}`)
+      .attr('transform', `translate(${translation})`);
+    const value = rotate
+      ? Math.floor((chart.y.invert(d3.event.dy) - initialDrag) / 1000)
+      : Math.floor((chart.x.invert(d3.event.dx) - initialDrag) / 1000);
+    setDragOffset(value);
+  };
+
   const drag = d3.drag()
     .on('end', () => {
+      setDragEnding(true);
       dispatch(updateMustRedraw(true));
     })
     .on('start', () => {
       dispatch(updateSelectedTrain(dataSimulation.trainNumber));
     })
     .on('drag', () => {
-      dragValue += rotate ? d3.event.dy : d3.event.dx;
-      const translation = rotate ? `0,${dragValue}` : `${dragValue},0`;
-      d3.select(`#${groupID}`)
-        .attr('transform', `translate(${translation})`);
-      const value = rotate
-        ? Math.floor((chart.y.invert(d3.event.dy) - initialDrag) / 1000)
-        : Math.floor((chart.x.invert(d3.event.dx) - initialDrag) / 1000);
-      setDragOffset(value);
+      dragTimeOffset();
     });
 
   chart.drawZone.append('g')
@@ -130,6 +137,7 @@ const createTrain = (keyValues, simulationTrains) => {
   // Prepare data
   const dataSimulation = simulationTrains.map((train, trainNumber) => {
     const dataSimulationTrain = {};
+    dataSimulationTrain.id = train.id;
     dataSimulationTrain.name = train.name;
     dataSimulationTrain.trainNumber = trainNumber;
     dataSimulationTrain.headPosition = formatStepsWithTimeMulti(train.head_positions);
@@ -164,6 +172,7 @@ export default function SpaceTimeChart() {
   const [dataSimulation, setDataSimulation] = useState(createTrain(keyValues, simulation.trains));
   const [showModal, setShowModal] = useState('');
   const [dragOffset, setDragOffset] = useState(0);
+  const [dragEnding, setDragEnding] = useState(false);
 
   const handleKey = ({ key }) => {
     if (['+', '-'].includes(key)) {
@@ -193,7 +202,7 @@ export default function SpaceTimeChart() {
       dataSimulation.forEach((train, idx) => {
         drawTrain(
           chartLocal, dispatch, train, (idx === selectedTrain),
-          keyValues, offsetTimeByDragging, rotate, setDragOffset,
+          keyValues, offsetTimeByDragging, rotate, setDragEnding, setDragOffset,
         );
       });
       enableInteractivity(
@@ -217,6 +226,16 @@ export default function SpaceTimeChart() {
       offsetTimeByDragging(dragOffset);
     }
   }, [dragOffset]);
+
+  useEffect(() => {
+    if (dragEnding) {
+      console.log('pouet', sec2time(simulation.trains[selectedTrain].stops[0].time));
+      changeTrain({
+        departure_time: simulation.trains[selectedTrain].stops[0].time,
+      }, simulation.trains[selectedTrain].id);
+      setDragEnding(false);
+    }
+  }, [dragEnding]);
 
   useEffect(() => {
     setDataSimulation(createTrain(keyValues, simulation.trains));

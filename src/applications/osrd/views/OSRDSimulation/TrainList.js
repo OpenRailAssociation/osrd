@@ -52,7 +52,9 @@ export default function TrainsList(props) {
   const changeTrainStartTime = (newStartTime, idx) => {
     setInputTime(newStartTime);
     const offset = Math.floor(
-      (time2datetime(debouncedInputTime) - sec2datetime(simulation.trains[idx].stops[0].time)) / 1000,
+      (time2datetime(debouncedInputTime) - sec2datetime(
+        simulation.trains[idx].stops[0].time,
+      )) / 1000,
     );
     const trains = Array.from(simulation.trains);
     trains[idx] = timeShiftTrain(trains[selectedTrain], offset);
@@ -64,12 +66,16 @@ export default function TrainsList(props) {
 
   useEffect(() => {
     if (debouncedInputName) {
+      changeTrain({ train_name: debouncedInputName }, simulation.trains[trainNameClickedIDX].id);
       dispatch(updateMustRedraw(true));
     }
+  }, [debouncedInputName]);
+
+  useEffect(() => {
     if (debouncedInputTime) {
       dispatch(updateMustRedraw(true));
     }
-  }, [debouncedInputName, debouncedInputTime]);
+  }, [debouncedInputTime]);
 
   const formatTrainsList = () => {
     const newFormattedList = simulation.trains.map((train, idx) => {
@@ -98,7 +104,7 @@ export default function TrainsList(props) {
                   <InputSNCF
                     type="text"
                     id="trainlist-name"
-                    onChange={(e) => changeTrainName(e.target.value, idx)}
+                    onChange={(e) => changeTrainName(e.target.value, idx, train)}
                     value={train.name}
                     noMargin
                     focus={typeOfInputFocused === 'name'}
