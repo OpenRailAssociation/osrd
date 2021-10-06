@@ -1,4 +1,4 @@
-from django.contrib.gis.db.models import PointField, PolygonField, LineStringField
+from django.contrib.gis.db.models import PointField, PolygonField, LineStringField, MultiLineStringField
 from django.db.models import BigAutoField, OneToOneField, PositiveSmallIntegerField, ForeignKey, FloatField, \
     CharField, IntegerField, JSONField, BooleanField
 from rest_framework.response import Response
@@ -26,6 +26,8 @@ def get_type(klass):
         return 'geom_polygon'
     if isinstance(klass, LineStringField):
         return 'geom_line'
+    if isinstance(klass, MultiLineStringField):
+        return 'geom_multiline'
     if isinstance(klass, JSONField):
         return 'json'
     if isinstance(klass, (OneToOneField, ForeignKey)):
