@@ -156,12 +156,16 @@ public final class Simulation implements DeepComparable<Simulation> {
         return timeline.isEmpty();
     }
 
+    public TimelineEvent peekNextEvent() {
+        return timeline.get(timeline.firstKey());
+    }
+
     /**
      * Executes the next event in the simulation.
      * @throws SimulationError {@inheritDoc}
      */
     public TimelineEvent step() throws SimulationError {
-        var event = timeline.get(timeline.firstKey());
+        var event = peekNextEvent();
 
         // step the simulation time forward
         logger.debug("changing the simulation clock from {} to {}", time, event.eventId.scheduledTime);
