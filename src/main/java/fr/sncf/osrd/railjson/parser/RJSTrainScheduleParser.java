@@ -122,7 +122,9 @@ public class RJSTrainScheduleParser {
                 stops);
     }
 
-    public static void resolveScheduleDependencies(Collection<RJSTrainSchedule> rjsSchedules, List<TrainSchedule> schedules)
+    /** Resolves references between schedules, in particular train successions */
+    public static void resolveScheduleDependencies(Collection<RJSTrainSchedule> rjsSchedules,
+                                                   List<TrainSchedule> schedules)
             throws InvalidSchedule {
         var schedulesById = new HashMap<String, TrainSchedule>();
         for (var schedule : schedules)

@@ -79,6 +79,13 @@ public class RJSTrainSchedule implements Identified {
         this.trainTransitionDelay = trainTransitionDelay;
     }
 
+    /** Copy constructor */
+    public RJSTrainSchedule(RJSTrainSchedule other) {
+        this(other.id, other.rollingStock, other.departureTime, other.initialHeadLocation, other.initialSpeed,
+                other.phases, other.trainControlMethod, other.allowances, other.stops, other.routes,
+                other.previousTrainId, other.trainTransitionDelay);
+    }
+
     @Override
     public String getID() {
         return id;
