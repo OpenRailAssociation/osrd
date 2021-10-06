@@ -17,7 +17,12 @@ public class InteractiveEndpoint {
     static final Logger logger = LoggerFactory.getLogger(InteractiveEndpoint.class);
 
     private Session session;
-    private InteractiveSimulation interactiveSimulation = new InteractiveSimulation();
+    private InteractiveSimulation interactiveSimulation;
+
+    public InteractiveEndpoint() {
+        this.interactiveSimulation = new InteractiveSimulation(this::sendResponse);
+    }
+
     @OnOpen
     public void onOpen(Session session) {
         logger.info("opened session");
@@ -27,15 +32,7 @@ public class InteractiveEndpoint {
     @OnMessage
     public void onMessage(Session session, ClientMessage message) throws IOException {
         logger.info("received message");
-        try {
-            var response = message.run(interactiveSimulation);
-            if (response == null)
-                return;
-
-            sendResponse(response);
-        } catch (ServerError e) {
-            sendResponse(e.message);
-        }
+        message.run(interactiveSimulation);
     }
 
     @OnClose
