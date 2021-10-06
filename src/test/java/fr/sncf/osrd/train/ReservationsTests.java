@@ -48,7 +48,9 @@ public class ReservationsTests {
                 firstSchedule.trainControlMethod,
                 firstSchedule.allowances,
                 firstSchedule.stops,
-                firstSchedule.routes
+                firstSchedule.routes,
+                null,
+                0
         ));
         var prepared = config.prepare();
         var error = assertThrows(SimulationError.class, prepared::runWithExceptions);
