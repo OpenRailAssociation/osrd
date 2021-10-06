@@ -52,13 +52,17 @@ class InteractiveSimulation:
         await self.websocket.send(json.dumps(message))
         print(await self.websocket.recv())
 
-
+    async def run(self):
+        message = {"message_type": "run"}
+        await self.websocket.send(json.dumps(message))
+        print(await self.websocket.recv())
 
 async def main():
     async with websockets.connect("ws://localhost:9000/websockets/simulate") as websocket:
         simulation = InteractiveSimulation(websocket)
         await simulation.init("../../examples/tiny_infra/infra.json", "../../examples/rolling_stocks")
         await simulation.create_simulation("../../examples/tiny_infra/simulation.json")
+        await simulation.run()
 
 
 asyncio.run(main())
