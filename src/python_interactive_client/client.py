@@ -33,17 +33,32 @@ class InteractiveSimulation:
             "infra": infra,
             "extra_rolling_stocks": rolling_stocks
         }
-        print("sending message")
         await self.websocket.send(json.dumps(message))
-        print("message sent, waiting for a response")
         print(await self.websocket.recv())
-        print("got a response")
+
+    async def create_simulation(self, simulation_path, successions_path = None):
+        sim = load_json(Path(simulation_path))
+        if successions_path is None:
+            successions = None
+        else:
+            successions = load_json(successions_path)
+
+        message = {
+            "message_type": "create_simulation",
+            "train_schedules": sim["train_schedules"],
+            "rolling_stocks": sim["rolling_stocks"],
+            "successions": successions,
+        }
+        await self.websocket.send(json.dumps(message))
+        print(await self.websocket.recv())
+
 
 
 async def main():
     async with websockets.connect("ws://localhost:9000/websockets/simulate") as websocket:
         simulation = InteractiveSimulation(websocket)
-        await simulation.init("examples/tiny_infra/infra.json")
+        await simulation.init("../../examples/tiny_infra/infra.json", "../../examples/rolling_stocks")
+        await simulation.create_simulation("../../examples/tiny_infra/simulation.json")
 
 
 asyncio.run(main())
