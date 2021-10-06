@@ -12,12 +12,16 @@ public abstract class ServerMessage {
             new Moshi.Builder()
                     .add(PolymorphicJsonAdapterFactory.of(ServerMessage.class, "message_type")
                             .withSubtype(SessionInitialized.class, "session_initialized")
+                            .withSubtype(SimulationCreated.class, "simulation_created")
                             .withSubtype(Error.class, "error"))
                     .build()
                     .adapter(ServerMessage.class)
     );
 
     public static final class SessionInitialized extends ServerMessage {
+    }
+
+    public static final class SimulationCreated extends ServerMessage {
     }
 
     public static final class Error extends ServerMessage {
