@@ -4,6 +4,7 @@ import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.SuccessionTable;
+import fr.sncf.osrd.interactive.client_messages.EventType;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
 import fr.sncf.osrd.railjson.parser.RJSSuccessionsParser;
@@ -21,6 +22,7 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 
+import java.io.IOException;
 import java.util.*;
 
 public class InteractiveSimulation {
@@ -28,24 +30,33 @@ public class InteractiveSimulation {
     private Map<String, RollingStock> extraRollingStocks = new HashMap<>();
     private SessionState state = SessionState.UNINITIALIZED;
     private Simulation simulation = null;
+    private final ResponseCallback responseCallback;
 
-    private void checkState(SessionState expectedState) throws ServerError {
+    public InteractiveSimulation(ResponseCallback responseCallback) {
+        this.responseCallback = responseCallback;
+    }
+
+    public void sendResponse(ServerMessage message) throws IOException {
+        responseCallback.send(message);
+    }
+
+    private boolean checkState(SessionState expectedState) throws IOException {
         if (this.state == expectedState)
-            return;
+            return true;
 
         var details = new TreeMap<String, String>();
         details.put("expected", expectedState.name());
         details.put("got", this.state.name());
-        var message = new ServerMessage.Error("unexpected session state", details);
-        throw new ServerError(message);
+        sendResponse(new ServerMessage.Error("unexpected session state", details));
+        return false;
     }
 
     /**
      * Initialize session, building infra and extra rolling stocks
-     * @throws ServerError if session isn't uninitialized
      */
-    public ServerMessage init(RJSInfra rjsInfra, Collection<RJSRollingStock> extraRJSRollingStocks) throws ServerError {
-        checkState(SessionState.UNINITIALIZED);
+    public void init(RJSInfra rjsInfra, Collection<RJSRollingStock> extraRJSRollingStocks) throws IOException {
+        if (!checkState(SessionState.UNINITIALIZED))
+            return;
 
         try {
             var infra = RailJSONParser.parse(rjsInfra);
@@ -55,24 +66,25 @@ public class InteractiveSimulation {
             }
             this.infra = infra;
             state = SessionState.INITIALIZED;
-            return new ServerMessage.SessionInitialized();
+            sendResponse(new ServerMessage.SessionInitialized());
         } catch (InvalidInfraException e) {
-            return ServerMessage.Error.withReason("failed to parse infra", e.getMessage());
+            sendResponse(ServerMessage.Error.withReason("failed to parse infra", e.getMessage()));
         } catch (InvalidRollingStock e) {
-            return ServerMessage.Error.withReason("failed to parse rolling stocks", e.getMessage());
+            sendResponse(ServerMessage.Error.withReason("failed to parse rolling stocks", e.getMessage()));
         }
     }
 
     /**
      * Create simulation given train schedules, rolling stocks and succession tables.
-     * @throws ServerError if session isn't initialized.
      */
-    public ServerMessage createSimulation(
+    public void createSimulation(
             List<RJSTrainSchedule> rjsTrainSchedules,
             List<RJSRollingStock> rollingStocks,
             List<RJSSuccessionTable> rjsSuccessions
-    ) throws ServerError {
-        checkState(SessionState.INITIALIZED);
+    ) throws IOException {
+        if (!checkState(SessionState.INITIALIZED))
+            return;
+
         var rjsSimulation = new RJSSimulation(rollingStocks, rjsTrainSchedules);
         try {
             var trainSchedules = RJSSimulationParser.parse(infra, rjsSimulation, extraRollingStocks);
@@ -87,30 +99,40 @@ public class InteractiveSimulation {
             for (var trainSchedule : trainSchedules)
                 TrainCreatedEvent.plan(simulation, trainSchedule);
             state = SessionState.RUNNING;
-            return new ServerMessage.SimulationCreated();
+            sendResponse(new ServerMessage.SimulationCreated());
         } catch (InvalidSchedule e) {
-            return ServerMessage.Error.withReason("failed to parse train schedule", e.getMessage());
+            sendResponse(ServerMessage.Error.withReason("failed to parse train schedule", e.getMessage()));
         } catch (InvalidRollingStock e) {
-            return ServerMessage.Error.withReason("failed to parse rolling stock", e.getMessage());
+            sendResponse(ServerMessage.Error.withReason("failed to parse rolling stock", e.getMessage()));
         } catch (InvalidSuccession e) {
-            return ServerMessage.Error.withReason("failed to parse succession table", e.getMessage());
+            sendResponse(ServerMessage.Error.withReason("failed to parse succession table", e.getMessage()));
         }
     }
 
     /**
      * Start or resume simulation.
-     * @throws ServerError if session isn't running.
+     * @param untilEvents A list of event types after which the simulation must pause
      */
-    public ServerMessage run() throws ServerError {
-        checkState(SessionState.RUNNING);
+    public void run(Set<EventType> untilEvents) throws IOException {
+        if (!checkState(SessionState.RUNNING))
+            return;
+
         // run the simulation loop
         try {
-            while (!simulation.isSimulationOver())
-                simulation.step();
+            while (!simulation.isSimulationOver()) {
+                var event = simulation.step();
+                if (event.getClass() == TrainCreatedEvent.class)
+                    System.out.println("loul");
+                var eventType = EventType.fromEvent(event);
+                if (eventType != null && untilEvents.contains(eventType)) {
+                    sendResponse(new ServerMessage.SimulationPaused(eventType));
+                    return;
+                }
+            }
             state = SessionState.INITIALIZED;
-            return new ServerMessage.SimulationFinished();
+            sendResponse(new ServerMessage.SimulationComplete());
         } catch (SimulationError e) {
-            return ServerMessage.Error.withReason("failed to run simulation", e.getMessage());
+            sendResponse(ServerMessage.Error.withReason("failed to run simulation", e.getMessage()));
         }
     }
 }
