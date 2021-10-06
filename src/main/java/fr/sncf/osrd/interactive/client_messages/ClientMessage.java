@@ -12,12 +12,15 @@ import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspectConstraint;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 
 
 public abstract class ClientMessage {
     public static final JsonAdapter<ClientMessage> adapter = new Moshi.Builder()
                 .add(PolymorphicJsonAdapterFactory.of(ClientMessage.class, "message_type")
-                        .withSubtype(InitMessage.class, "init"))
+                        .withSubtype(InitMessage.class, "init")
+                        .withSubtype(CreateSimulationMessage.class, "create_simulation"))
                 // for RJSInfra
                 .add(ID.Adapter.FACTORY)
                 .add(RJSRSExpr.adapter)
@@ -26,6 +29,9 @@ public abstract class ClientMessage {
                 // for RJSRollingStock
                 .add(RJSRollingResistance.adapter)
                 .add(RJSRollingStock.RJSMode.adapter)
+                // for RJSTrainSchedule
+                .add(RJSTrainPhase.adapter)
+                .add(RJSAllowance.adapter)
                 .build()
                 .adapter(ClientMessage.class);
 
