@@ -115,7 +115,8 @@ public class Train {
                 var currentTvdSectionPath = route.tvdSectionsPaths.get(i);
                 var index = currentTvdSectionPath.tvdSection.index;
                 var tvdSection = sim.infraState.getTvdSectionState(index);
-                tvdSection.free(sim);
+                if (tvdSection.isReserved())
+                    tvdSection.free(sim);
             }
             return;
         }
