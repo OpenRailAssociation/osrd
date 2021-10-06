@@ -4,10 +4,17 @@ import static fr.sncf.osrd.Helpers.makeAssertEvent;
 import static fr.sncf.osrd.Helpers.makeFunctionEvent;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import fr.sncf.osrd.TestConfig;
+import java.util.ArrayList;
+import fr.sncf.osrd.infra.SuccessionTable;
+import fr.sncf.osrd.railjson.schema.RJSSuccessions;
+import fr.sncf.osrd.railjson.schema.successiontable.RJSSuccessionTable;
+import fr.sncf.osrd.train.Train;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import fr.sncf.osrd.infra.InvalidInfraException;
@@ -546,6 +553,60 @@ public class RouteStateTest {
                 assert changesSet.contains(expected.toString());
             }
         }
+    }
+
+    @Test
+    public void testTinyInfra2Trains() throws InvalidInfraException {
+        final var config = TestConfig.readResource("tiny_infra/config_railjson_2trains.json");
+        
+        var infra = config.rjsInfra;
+        var switchID = infra.switches.stream().findFirst().get().id;
+        var trainOrderedList = new ArrayList<String>();
+        trainOrderedList.add("First");
+        trainOrderedList.add("Second");
+
+        var initTable = new RJSSuccessionTable(switchID, trainOrderedList.toArray(new String[2]));
+        config.rjsSuccessions = new RJSSuccessions(Collections.singletonList(initTable));
+
+        var simState = config.prepare();
+        simState.run();
+        var sim = simState.sim;
+        var secondTrain = sim.trains.get("Second");
+        var finalPosition = secondTrain.getLastState().location.getPathPosition();
+        var initialPosition = Train.getInitialLocation(secondTrain.schedule, sim).getPathPosition();
+
+        // Check that the second train moves
+        assertNotEquals(initialPosition, finalPosition);
+    }
+
+    @Test
+    public void testChangeSuccessionTable() throws InvalidInfraException {
+        final var config = TestConfig.readResource("tiny_infra/config_railjson_2trains.json");
+
+        var switchID = config.rjsInfra.switches.stream().findFirst().get().id;
+        var trainOrderedList = new ArrayList<String>();
+        trainOrderedList.add("First");
+        trainOrderedList.add("Second");
+
+        var initTable = new RJSSuccessionTable(switchID, trainOrderedList.toArray(new String[2]));
+        config.rjsSuccessions = new RJSSuccessions(Collections.singletonList(initTable));
+
+        var simState = config.prepare();
+        var sim = simState.sim;
+
+        // Change the succession Table
+        var newTrainOrderedList = new ArrayList<String>();
+        newTrainOrderedList.add("Second");
+        newTrainOrderedList.add("First");
+        var state = sim.infraState.towerState.state.get(switchID);
+        state.table.trainOrderedList = newTrainOrderedList;
+
+        simState.run();
+
+        var secondTrain = sim.trains.get("Second");
+        var firstTrain = sim.trains.get("First");
+        // Check that second train arrives first
+        assert secondTrain.getLastState().time < firstTrain.getLastState().time;
     }
 
     @Test

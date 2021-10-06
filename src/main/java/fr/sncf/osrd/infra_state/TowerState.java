@@ -15,11 +15,11 @@ public class TowerState {
 
     public final List<SuccessionTable> initTables;
     // map switchID -> SwitchState
-    private HashMap<String, State> state;
+    public HashMap<String, State> state;
     // map tvdSectionId -> HashSet<Request>
-    private HashMap<String, HashSet<Request>> waitingList;
+    private final HashMap<String, HashSet<Request>> waitingList;
     // map trainID -> routeID
-    private HashMap<String, String> lastRequestedRoute;
+    private final HashMap<String, String> lastRequestedRoute;
 
     /**
      * Create a switch post without theoric trains successions tables
@@ -62,7 +62,7 @@ public class TowerState {
         var sps = new TowerState(initTables, state, waitingList, lastRequestedRoute);
 
         for (var table : initTables) {
-            for (var trainID : table.table) {
+            for (var trainID : table.trainOrderedList) {
                 sps.plan(table.switchID, trainID);
             }
         }
@@ -99,7 +99,7 @@ public class TowerState {
     private boolean isPlanned(String switchID, String trainID) {
         assert state.containsKey(switchID);
         var q = state.get(switchID);
-        return q.trainCount.getOrDefault(trainID, 0) > 0;
+        return q.table.trainOrderedList.contains(trainID);
     }
 
     private boolean isNext(String switchID, String trainID) {
@@ -110,18 +110,15 @@ public class TowerState {
 
     private void plan(String switchID, String trainID) {
         assert state.containsKey(switchID);
+        if (isPlanned(switchID, trainID))
+            return;
         var q = state.get(switchID);
         q.table.add(trainID);
-        var count = q.trainCount.getOrDefault(trainID, 0);
-        q.trainCount.put(trainID, count + 1);
     }
 
     private void next(String switchID) {
         assert state.containsKey(switchID);
         var q = state.get(switchID);
-        var trainID = q.table.get(q.currentIndex);
-        var count = q.trainCount.get(trainID);
-        q.trainCount.put(trainID, count - 1);
         q.currentIndex++;
     }
 
@@ -168,7 +165,7 @@ public class TowerState {
      * enqueue a route reservation request in the waiting lists of the TowerState
      * @param sim the infra
      * @param routeState the routeState of the request
-     * @param train the train that emited the request
+     * @param train the train that emitted the request
      * @throws SimulationError thrown when an error happens
      */
     public void request(Simulation sim, RouteState routeState, Train train) throws SimulationError {
@@ -231,13 +228,13 @@ public class TowerState {
         }
     }
 
-    private static class State {
+    public static class State {
         
-        SuccessionTable table;
+        public SuccessionTable table;
         int currentIndex;
         String currentTrainAllowed;
-        HashMap<String, Integer> trainCount;
 
+        /** state constructor */
         public State(
                 SuccessionTable table,
                 int currentIndex,
@@ -247,7 +244,6 @@ public class TowerState {
             this.table = table;
             this.currentIndex = currentIndex;
             this.currentTrainAllowed = currentTrainAllowed;
-            this.trainCount = trainCount;
         }
     }
 }

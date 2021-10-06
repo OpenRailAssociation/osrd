@@ -12,24 +12,24 @@ public class SuccessionTable {
     public final String switchID;
 
     /** the table itself, an ordered list of trains identifier */
-    public final ArrayList<String> table;
+    public ArrayList<String> trainOrderedList;
 
     /** Creates a new succession table */
-    public SuccessionTable(String switchID, ArrayList<String> table) {
+    public SuccessionTable(String switchID, ArrayList<String> trainOrderedList) {
         this.switchID = switchID;
-        this.table = table;
+        this.trainOrderedList = trainOrderedList;
     }
 
     public SuccessionTable(SuccessionTable st) {
         this.switchID = st.switchID;
-        this.table = new ArrayList<>(st.table);
+        this.trainOrderedList = new ArrayList<>(st.trainOrderedList);
     }
 
     public void add(String trainID) {
-        table.add(trainID);
+        trainOrderedList.add(trainID);
     }
 
     public String get(int index) {
-        return table.get(index);
+        return trainOrderedList.get(index);
     }
 }
