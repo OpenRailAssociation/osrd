@@ -9,11 +9,8 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarecoAllowance.Margin
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.speedcontroller.*;
 import fr.sncf.osrd.train.TrainSchedule;
-import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.train.Action;
-import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator;
-import fr.sncf.osrd.train.TrainPositionTracker;
 import fr.sncf.osrd.utils.SortedDoubleMap;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -250,10 +247,15 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         location.ignoreInfraState = true;
 
         do {
-            var integrator = TrainPhysicsIntegrator.make(TIME_STEP, schedule.rollingStock,
-                    speed, location.meanTrainGrade());
-            var action = Action.coast();
-            var update =  integrator.computeUpdate(action, location.getPathPosition(), -1);
+            var update = TrainPhysicsIntegrator.computeNextStepFromAction(
+                    location,
+                    speed,
+                    Action.coast(),
+                    schedule.rollingStock,
+                    TIME_STEP,
+                    location.getPathPosition(),
+                    -1
+            );
             speed = update.speed;
             if (speed == 0)
                 return null;

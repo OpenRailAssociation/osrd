@@ -47,11 +47,8 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
 
     @Override
     protected double getFirstGuess() {
-        // first guess will be underestimated on purpose to make the dichotomy run in a smaller interval
-        // lowering it twice compared to its approximate value
-        // keeping getFirstLowEstimate() at 0.0 prevents mistakes
-        var time = evalRunTime(sim, schedule, maxSpeedControllers);
-        return ((this.getFirstHighEstimate() - this.getFirstLowEstimate()) * time / (time + 2 * value));
+        // first guess is the mean value between max and min
+        return (this.getFirstHighEstimate() + this.getFirstLowEstimate()) / 2;
     }
 
     @Override
@@ -108,11 +105,16 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
         double speed = roiSpeeds.interpolate(endPosition); //The speed is calculated from the old running time
         var location = convertPosition(schedule, sim, endPosition);
         while (speed > newSpeeds.interpolate(location.getPathPosition()) && location.getPathPosition() > 0.) {
-            var integrator = TrainPhysicsIntegrator.make(TIME_STEP, schedule.rollingStock,
-                    speed, location.meanTrainGrade());
             var directive = new SpeedDirective(newSpeeds.interpolate(location.getPathPosition()));
-            var action = integrator.actionToTargetSpeed(directive, schedule.rollingStock, -1);
-            var update = integrator.computeUpdate(action, location.getPathPosition(), -1);
+            var update = TrainPhysicsIntegrator.computeNextStepFromDirective(
+                    location,
+                    speed,
+                    directive,
+                    schedule.rollingStock,
+                    TIME_STEP,
+                    location.getPathPosition(),
+                    -1
+            );
             speed = update.speed;
             location.updatePosition(schedule.rollingStock.length, update.positionDelta);
         }
@@ -156,14 +158,18 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
             totalLength += range.length();
         totalLength = min(totalLength, endPosition);
         double speed = initialSpeed;
-
+        var inertia = schedule.rollingStock.mass * schedule.rollingStock.inertiaCoefficient;
+        var action = Action.brake(schedule.rollingStock.gamma * inertia);
         do {
-            var integrator = TrainPhysicsIntegrator.make(TIME_STEP, schedule.rollingStock,
-                    speed, location.meanTrainGrade());
-            var inertia = schedule.rollingStock.mass * schedule.rollingStock.inertiaCoefficient;
-            var action = Action.brake(schedule.rollingStock.gamma * inertia);
-            var distanceLeft = min(totalLength - location.getPathPosition(), endPosition - location.getPathPosition());
-            var update = integrator.computeUpdate(action, distanceLeft);
+            var update = TrainPhysicsIntegrator.computeNextStepFromAction(
+                    location,
+                    speed,
+                    action,
+                    schedule.rollingStock,
+                    TIME_STEP,
+                    totalLength,
+                    1
+            );
             speed = update.speed;
 
             location.updatePosition(schedule.rollingStock.length, update.positionDelta);
