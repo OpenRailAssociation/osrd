@@ -123,7 +123,7 @@ const Itinerary = (props) => {
 
       // Adding end point
       params.steps.push({
-        stop_time: 0,
+        stop_time: 1,
         waypoints: [{
           track_section: osrdconf.destination.id,
           geo_coordinate: osrdconf.destination.clickLngLat,
