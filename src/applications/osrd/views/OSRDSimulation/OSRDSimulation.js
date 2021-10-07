@@ -6,6 +6,7 @@ import { setFailure } from 'reducers/main.ts';
 import { FlyToInterpolator } from 'react-map-gl';
 import ButtonFullscreen from 'common/ButtonFullscreen';
 import CenterLoader from 'common/CenterLoader/CenterLoader';
+import ContextMenu from 'applications/osrd/components/Simulation/ContextMenu';
 import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
 import SpeedSpaceChart from 'applications/osrd/views/OSRDSimulation/SpeedSpaceChart';
 import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
@@ -28,7 +29,6 @@ const OSRDSimulation = () => {
   const { t } = useTranslation(['translation', 'simulation']);
   const { fullscreen, darkmode } = useSelector((state) => state.main);
   const [extViewport, setExtViewport] = useState(undefined);
-  const [waitingMessage, setWaitingMessage] = useState(t('simulation:waiting'));
   const [isEmpty, setIsEmpty] = useState(true);
   const [spaceTimeFullWidth, setSpaceTimeFullWidth] = useState(true);
   const { timetableID } = useSelector((state) => state.osrdconf);
@@ -43,7 +43,7 @@ const OSRDSimulation = () => {
     if (isEmpty) {
       return <h1 className="text-center">{t('simulation:noData')}</h1>;
     }
-    return <CenterLoader message={waitingMessage} />;
+    return <CenterLoader message={t('simulation:waiting')} />;
   };
 
   const getTimetable = async () => {
@@ -103,6 +103,7 @@ const OSRDSimulation = () => {
                   {simulation.trains.length > 0 ? (
                     <SpaceTimeChart />
                   ) : null}
+                  <ContextMenu />
                 </div>
               </div>
               <div className="mb-2">

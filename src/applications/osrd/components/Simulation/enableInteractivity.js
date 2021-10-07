@@ -3,7 +3,7 @@ import { store } from 'Store';
 import drawGuideLines from 'applications/osrd/components/Simulation/drawGuideLines';
 import { gridX, gridY, interpolateOnPosition } from 'applications/osrd/components/Helpers/ChartHelpers';
 import {
-  updateMustRedraw, updateTimePosition,
+  updateMustRedraw, updateTimePosition, updateContextMenu,
 } from 'reducers/osrdsimulation';
 
 export const displayGuide = (chart, opacity) => {
@@ -112,6 +112,7 @@ const enableInteractivity = (
     .scaleExtent([0.5, 20]) // This control how much you can unzoom (x0.5) and zoom (x20)
     .extent([[0, 0], [chart.width, chart.height]])
     .on('zoom', () => {
+      dispatch(updateContextMenu(undefined));
       // Permit zoom if shift pressed, if only move or if factor > .5
       if ((d3.event.sourceEvent.shiftKey
         || d3.event.transform.k >= 1

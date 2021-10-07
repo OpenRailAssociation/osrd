@@ -18,10 +18,6 @@ const drawArea = (
       .curve(d3[interpolation]);
 
   chart.drawZone.select(`#${groupID}`).append('path')
-    .on('click', () => {
-      dispatch(updateSelectedTrain(dataSimulation.trainNumber));
-      dispatch(updateMustRedraw(true));
-    })
     .attr('class', `area zoomable ${classes}`)
     .datum(dataSimulation[name])
     .attr('d', dataDefinition);

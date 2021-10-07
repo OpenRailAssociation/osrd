@@ -1,5 +1,8 @@
 {
+  "copy": "copie",
   "departureTime": "Départ",
+  "delete": "Supprimer",
+  "duplicate": "Dupliquer",
   "errorMessages": {
     "unableToRetrieveTrainSchedule": "Calcul de marche impossible"
   },
@@ -20,6 +23,7 @@
   "stopStopTime": "Durée d'arrêt",
   "timetable": "Tableau horaire",
   "train": "Train",
+  "trainDeleted": "Train supprimé",
   "trainList": "Liste des trains",
   "waiting": "Chargement en cours..."
 }

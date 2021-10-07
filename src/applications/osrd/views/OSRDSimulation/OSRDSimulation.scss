@@ -23,6 +23,24 @@ svg text {
   display: flex;
   width: 100%;
   transition: .2s;
+  .dropdown .dropdown-menu:not(.dropdown-menu-right)::before {
+    border-right-color: #d7d7d7;
+    left: -0.625rem;
+    top: 0;
+  }
+  .dropdown .dropdown-menu:not(.dropdown-menu-right)::after {
+    border-right-color: #fff;
+    left: -0.525rem;
+    top: 0;
+  }
+  .get-context-menu {
+    button {
+      color: var(--gray);
+      &:hover {
+        color: var(--primary);
+      }
+    }
+  }
 }
 
 .btn-selected-train {

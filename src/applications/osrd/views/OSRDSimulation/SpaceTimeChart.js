@@ -9,7 +9,8 @@ import {
   handleWindowResize, interpolateOnTime, makeStairCase, mergeDatasArea, timeShiftTrain,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
 import {
-  updateChart, updateMustRedraw, updatePositionValues, updateSimulation, updateSelectedTrain,
+  updateChart, updateContextMenu, updateMustRedraw,
+  updatePositionValues, updateSimulation, updateSelectedTrain,
 } from 'reducers/osrdsimulation';
 import ChartModal from 'applications/osrd/components/Simulation/ChartModal';
 import defineChart from 'applications/osrd/components/Simulation/defineChart';
@@ -106,7 +107,15 @@ const drawTrain = (
   chart.drawZone.append('g')
     .attr('id', groupID)
     .attr('class', 'chartTrain')
-    .call(drag);
+    .call(drag)
+    .on('contextmenu', () => {
+      d3.event.preventDefault();
+      dispatch(updateContextMenu({
+        id: dataSimulation.id, xPos: d3.event.pageX, yPos: d3.event.pageY,
+      }));
+      dispatch(updateSelectedTrain(dataSimulation.trainNumber));
+      dispatch(updateMustRedraw(true));
+    });
 
   // Test direction to avoid displaying block
   const direction = getDirection(dataSimulation.headPosition);
@@ -198,6 +207,11 @@ export default function SpaceTimeChart() {
       const chartLocal = createChart(
         chart, dataSimulation, keyValues, ref, rotate,
       );
+
+      chartLocal.svg.on('click', () => {
+        dispatch(updateContextMenu(undefined));
+      });
+
       drawAxisTitle(chartLocal, rotate);
       dataSimulation.forEach((train, idx) => {
         drawTrain(
@@ -229,7 +243,6 @@ export default function SpaceTimeChart() {
 
   useEffect(() => {
     if (dragEnding) {
-      console.log('pouet', sec2time(simulation.trains[selectedTrain].stops[0].time));
       changeTrain({
         departure_time: simulation.trains[selectedTrain].stops[0].time,
       }, simulation.trains[selectedTrain].id);
