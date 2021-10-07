@@ -34,11 +34,11 @@ svg text {
     top: 0;
   }
   .get-context-menu {
-    button {
-      color: var(--gray);
-      &:hover {
-        color: var(--primary);
-      }
+    .dropdown-menu {
+      padding: 1rem;
+    }
+    input.form-control {
+      min-width: 7rem;
     }
   }
 }

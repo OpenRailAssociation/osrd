@@ -10,19 +10,9 @@ import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { time2sec, sec2time } from 'utils/timeManipulation';
 
 import formatConf from 'applications/osrd/components/AddTrainSchedule/formatConf';
+import trainNameWithNum from 'applications/osrd/components/AddTrainSchedule/trainNameHelper';
 
 const scheduleURL = '/train_schedule/';
-
-const trainNameWithNum = (name, actualTrainCount, total) => {
-  if (total === 1) {
-    return name;
-  }
-  // Test if numeric & integer in a good way
-  if (/^\d+$/.test(name)) {
-    return parseInt(name, 10) + (actualTrainCount - 1);
-  }
-  return `${name} ${actualTrainCount}`;
-};
 
 export default function AddTrainSchedule(props) {
   const { mustUpdateTimetable, setMustUpdateTimetable } = props;

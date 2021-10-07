@@ -9,14 +9,21 @@ import {
 } from 'reducers/osrdsimulation';
 import { setSuccess, setFailure } from 'reducers/main.ts';
 import { timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import trainNameWithNum from 'applications/osrd/components/AddTrainSchedule/trainNameHelper';
+import { sec2time } from 'utils/timeManipulation';
 
 const TRAINSCHEDULE_URI = '/train_schedule/';
 
 export default function ContextMenu() {
   const { contextMenu, selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
-  const { t } = useTranslation(['translation', 'simulation']);
+  const { t } = useTranslation(['translation', 'simulation', 'osrdconf']);
   const dispatch = useDispatch();
   const [goUpdate, setGoUpdate] = useState(false);
+  const [trainName, setTrainName] = useState(simulation.trains[selectedTrain].name);
+  const [trainCount, setTrainCount] = useState(1);
+  const [trainStep, setTrainStep] = useState(2);
+  const [trainDelta, setTrainDelta] = useState(20);
 
   const deleteTrain = () => {
     setGoUpdate(true);
@@ -45,30 +52,41 @@ export default function ContextMenu() {
   };
 
   const duplicateTrain = async () => {
+    setGoUpdate(true);
     const trains = Array.from(simulation.trains);
-    const newTrain = { ...timeShiftTrain(trains[selectedTrain], 300), name: `${trains[selectedTrain].name} (${t('simulation:copy')})` };
     try {
       const trainDetail = await get(`${TRAINSCHEDULE_URI}${trains[selectedTrain].id}/`);
       try {
-        const params = {
-          departure_time: newTrain.stops[0].time,
-          initial_speed: trainDetail.initial_speed,
-          labels: trainDetail.labels,
-          path: trainDetail.path,
-          rolling_stock: trainDetail.rolling_stock,
-          timetable: trainDetail.timetable,
-          train_name: newTrain.name,
-        };
-        setGoUpdate(true);
-        newTrain.id = await post(TRAINSCHEDULE_URI, params);
-        trains.splice(selectedTrain + 1, 0, newTrain);
-        dispatch(updateSelectedTrain(selectedTrain + 1));
+        let actualTrainCount = 1;
+        for (let nb = 1; nb <= trainCount; nb += 1) {
+          const newTrainDelta = (60 * trainDelta * nb);
+          const newOriginTime = trainDetail.departure_time + newTrainDelta;
+          const newTrainName = trainNameWithNum(trainName, actualTrainCount, trainCount);
+          const params = {
+            departure_time: newOriginTime,
+            initial_speed: trainDetail.initial_speed,
+            labels: trainDetail.labels,
+            path: trainDetail.path,
+            rolling_stock: trainDetail.rolling_stock,
+            timetable: trainDetail.timetable,
+            train_name: newTrainName,
+          };
+          const newTrain = {
+            ...timeShiftTrain(trains[selectedTrain], newTrainDelta),
+            name: newTrainName,
+          };
+          /* eslint no-await-in-loop: 0 */
+          // newTrain.id = await post(TRAINSCHEDULE_URI, params);
+          newTrain.id *= 2;
+          actualTrainCount += trainStep;
+          trains.splice(selectedTrain + nb, 0, newTrain);
+          dispatch(setSuccess({
+            title: t('osrdconf:trainAdded'),
+            text: `${trainName}: ${sec2time(newOriginTime)}`,
+          }));
+        }
         dispatch(updateSimulation({ ...simulation, trains }));
-        dispatch(updateContextMenu(undefined));
-        dispatch(setSuccess({
-          title: t('simulation:trainDuplicated'),
-          text: `Train ID ${newTrain.id}`,
-        }));
+        dispatch(updateSelectedTrain(selectedTrain + 1));
       } catch (e) {
         console.log('ERROR', e);
         dispatch(setFailure({
@@ -83,6 +101,7 @@ export default function ContextMenu() {
         message: e.message,
       }));
     }
+    dispatch(updateContextMenu(undefined));
   };
 
   useEffect(() => {
@@ -91,6 +110,10 @@ export default function ContextMenu() {
       setGoUpdate(false);
     }
   }, [simulation.trains]);
+
+  useEffect(() => {
+    setTrainName(simulation.trains[selectedTrain].name);
+  }, [selectedTrain]);
 
   const closeContextMenu = () => {
     dispatch(updateContextMenu(undefined));
@@ -106,28 +129,66 @@ export default function ContextMenu() {
       }}
     >
       <div className="dropdown-menu show">
-        <ul>
-          <li className="dropdown-item">
-            <button type="button" className="btn btn-link d-flex align-items-center" onClick={duplicateTrain}>
-              <MdContentCopy />
-              <span className="ml-1">{t('simulation:duplicate')}</span>
-            </button>
-          </li>
-          <li className="dropdown-item">
-            <button type="button" className="btn btn-link d-flex align-items-center" onClick={deleteTrain}>
-              <MdDelete />
-              <span className="ml-1">{t('simulation:delete')}</span>
-            </button>
-          </li>
-        </ul>
-        <div className="dropdown-divider" />
-        <ul>
-          <li className="dropdown-item">
-            <button type="button" className="btn btn-link d-flex align-items-center" onClick={closeContextMenu}>
-              {t('translation:common.cancel')}
-            </button>
-          </li>
-        </ul>
+        <div className="d-flex mb-3">
+          <span className="mr-2 flex-grow-1">
+            <InputSNCF
+              type="text"
+              label={t('osrdconf:trainScheduleName')}
+              id="osrdsimu-name"
+              onChange={(e) => setTrainName(e.target.value)}
+              value={trainName}
+              noMargin
+              sm
+            />
+          </span>
+          <span className="mr-2">
+            <InputSNCF
+              type="number"
+              label={t('osrdconf:trainScheduleStep')}
+              id="osrdsimu-traincount"
+              onChange={(e) => setTrainStep(parseInt(e.target.value, 10))}
+              value={trainStep}
+              noMargin
+              sm
+            />
+          </span>
+        </div>
+        <div className="d-flex mb-3">
+          <span className="mr-2">
+            <InputSNCF
+              type="number"
+              label={t('osrdconf:trainScheduleCount')}
+              id="osrdsimu-traincount"
+              onChange={(e) => setTrainCount(e.target.value)}
+              value={trainCount}
+              noMargin
+              sm
+            />
+          </span>
+          <span className="mr-2">
+            <InputSNCF
+              type="number"
+              label={t('osrdconf:trainScheduleDelta')}
+              id="osrdsimu-delta"
+              onChange={(e) => setTrainDelta(e.target.value)}
+              value={trainDelta}
+              unit="min"
+              noMargin
+              sm
+            />
+          </span>
+        </div>
+        <button type="button" className="btn btn-primary btn-block btn-sm" onClick={duplicateTrain}>
+          <MdContentCopy />
+          <span className="ml-1">{t('simulation:duplicate')}</span>
+        </button>
+        <button type="button" className="btn btn-danger btn-block btn-sm" onClick={deleteTrain}>
+          <MdDelete />
+          <span className="ml-1">{t('simulation:delete')}</span>
+        </button>
+        <button type="button" className="btn btn-secondary btn-block btn-sm" onClick={closeContextMenu}>
+          {t('translation:common.cancel')}
+        </button>
       </div>
     </div>
   ) : null;
