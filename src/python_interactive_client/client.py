@@ -4,6 +4,20 @@ import asyncio
 import websockets
 import json
 from pathlib import Path
+from enum import IntEnum
+
+class EventType(IntEnum):
+    TRAIN_CREATED = 0
+    TRAIN_MOVE_EVENT = 1
+    TRAIN_REACHES_ACTION_POINT = 2
+    TRAIN_RESTARTS = 3
+
+    def serialize(self):
+        return self.name
+
+    @staticmethod
+    def all():
+        return list(EventType)
 
 
 def load_json(path):
@@ -85,10 +99,10 @@ class InteractiveSimulation:
         check_response_type(response, {"simulation_created"})
         return response
 
-    async def run(self, until_events=()):
+    async def run(self, until_events=[]):
         await self.send_json({
             "message_type": "run",
-            "until_events": until_events
+            "until_events": [event.serialize() for event in until_events],
         })
         response = json.loads(await self.websocket.recv())
         check_response_type(response, {
@@ -105,7 +119,7 @@ async def test(infra_path: Path, simulation_path: Path, rolling_stocks_path: Pat
         print(await simulation.create_simulation(simulation_path))
 
         while True:
-            stop_message = await simulation.run(["TRAIN_MOVE_EVENT", "TRAIN_CREATED", "TRAIN_REACHES_ACTION_POINT"])
+            stop_message = await simulation.run(until_events=EventType.all())
             print(stop_message)
             if stop_message["message_type"] == "simulation_complete":
                 break
