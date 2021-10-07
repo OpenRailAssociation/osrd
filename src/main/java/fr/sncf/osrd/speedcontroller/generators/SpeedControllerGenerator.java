@@ -10,7 +10,6 @@ import fr.sncf.osrd.utils.SortedDoubleMap;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 /** This class is used to generate a set of SpeedController (similar to a speed at any given point). */
 public abstract class SpeedControllerGenerator {
@@ -113,25 +112,21 @@ public abstract class SpeedControllerGenerator {
         for (var range : schedule.plannedPath.trackSectionPath)
             totalLength += range.length();
         totalLength = min(totalLength, end);
-
         var res = new TreeMap<Double, PositionUpdate>();
         var stopIndex = 0;
 
         double speed = initialSpeed;
         do {
-            var nextPosition = location.getPathPosition() + speed * timestep;
-            final var finalNextPosition = min(nextPosition, end);
-            final int finalStopIndex = stopIndex;
-            var activeControllers = controllers.stream()
-                    .filter(x -> x.isActive(finalNextPosition, finalStopIndex))
-                    .collect(Collectors.toSet());
-            var directive = SpeedController.getDirective(activeControllers, nextPosition, stopIndex);
-
-            var integrator = TrainPhysicsIntegrator.make(timestep, schedule.rollingStock,
-                    speed, location.meanTrainGrade());
-            var action = integrator.actionToTargetSpeed(directive, schedule.rollingStock);
-            var distanceLeft = min(totalLength - location.getPathPosition(), end - location.getPathPosition());
-            var update =  integrator.computeUpdate(action, distanceLeft);
+            var update = TrainPhysicsIntegrator.computeNextStepFromControllers(
+                    location,
+                    speed,
+                    controllers,
+                    schedule.rollingStock,
+                    timestep,
+                    totalLength,
+                    stopIndex,
+                    1
+            );
             speed = update.speed;
 
             location.updatePosition(schedule.rollingStock.length, update.positionDelta);
@@ -171,13 +166,18 @@ public abstract class SpeedControllerGenerator {
         // It starts from the endPosition going backwards
         var location = convertPosition(schedule, sim, endPosition);
         expectedSpeeds.put(location.getPathPosition(), speed);
+        // TODO: max Gamma could have different values depending on the speed like in ERTMS
+        var action = Action.brake(Math.abs(schedule.rollingStock.gamma * inertia));
         while (speed < maxSpeed && location.getPathPosition() >= 0.0001) {
-            var integrator = TrainPhysicsIntegrator.make(timestep, schedule.rollingStock,
-                    speed, location.meanTrainGrade());
-            // TODO: max Gamma could have different values depending on the speed like in ERTMS
-            var action = Action.brake(Math.abs(schedule.rollingStock.gamma * inertia));
-            var update =  integrator.computeUpdate(action, location.getPathPosition(),
-                    -1);
+            var update = TrainPhysicsIntegrator.computeNextStepFromAction(
+                    location,
+                    speed,
+                    action,
+                    schedule.rollingStock,
+                    timestep,
+                    location.getPathPosition(),
+                    -1
+            );
             speed = update.speed;
             expectedSpeeds.put(location.getPathPosition(), speed);
             if (location.getPathPosition() + update.positionDelta < 0) break;
