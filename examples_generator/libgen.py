@@ -927,7 +927,7 @@ class Infra:
         for utrack in range(self.nb_tracks):
             coord_x = self.coordinates[uget_begin(utrack)]
             coord_y = self.coordinates[uget_end(utrack)]
-            if not has_coords and (coord_x != (0,0) or coord_y != coord_x):
+            if not has_coords and (coord_x != (0, 0) or coord_y != coord_x):
                 has_coords = True
             self.json["track_sections"].append(
                 {
@@ -1480,9 +1480,9 @@ class Simulation:
             infra.lengths[oget_track(otrack)] for otrack in range(2 * infra.nb_tracks)
         ]
 
-    def route_path(self, departure_utrack, arrival_utrack):
-        s1, s2 = uget_begin(departure_utrack), uget_end(departure_utrack)
-        t1, t2 = uget_begin(arrival_utrack), uget_end(arrival_utrack)
+    def route_path_simple(self, departure_track, arrival_track):
+        s1, s2 = uget_begin(departure_track), uget_end(departure_track)
+        t1, t2 = uget_begin(arrival_track), uget_end(arrival_track)
         parent = [None for u in self.neighboors]
         q = [(0, s1, -1), (0, s2, -1)]
         while q != [] and parent[t1] == None and parent[t2] == None:
@@ -1500,17 +1500,26 @@ class Simulation:
         path = [oget_other_side(path[0])] + path + [oget_other_side(path[-1])]
         return [oname_route_between(path[i], path[i + 1]) for i in range(len(path) - 1)]
 
-    def add_schedule(self, departure_time, departure_utrack, arrival_utrack, cbtc=False):
-        assert departure_utrack != arrival_utrack
-        path = self.route_path(departure_utrack, arrival_utrack)
+    def route_path_list(self, track_list):
+        final_path = []
+        for i in range(len(track_list) - 1):
+            path = self.route_path_simple(track_list[i], track_list[i + 1])
+            if final_path != []:
+                final_path.pop()
+            final_path += path
+        return final_path
+
+    def add_schedule(self, departure_time, *track_list):
+        assert track_list[0] != track_list[-1]
+        path = self.route_path_list(track_list)
         index = len(self.json["train_schedules"])
         self.json["train_schedules"].append(
             {
                 "id": f"train.{index}",
                 "rolling_stock": "fast_rolling_stock",
                 "initial_head_location": {
-                    "track_section": uname_track(departure_utrack),
-                    "offset": self.lengths[departure_utrack] // 2,
+                    "track_section": uname_track(track_list[0]),
+                    "offset": self.lengths[track_list[0]] // 2,
                 },
                 "departure_time": departure_time,
                 "initial_speed": 0,
@@ -1519,8 +1528,8 @@ class Simulation:
                     {
                         "driver_sight_distance": 400,
                         "end_location": {
-                            "track_section": uname_track(arrival_utrack),
-                            "offset": self.lengths[arrival_utrack] // 2,
+                            "track_section": uname_track(track_list[-1]),
+                            "offset": self.lengths[track_list[-1]] // 2,
                         },
                         "type": "cbtc" if cbtc else "navigate",
                     }
@@ -1566,7 +1575,7 @@ CONFIG_JSON = {
     "infra_path": "infra.json",
     "simulation_path": "simulation.json",
     "succession_path": "succession.json",
-    "extra_rolling_stock_dirs": ["../rolling_stocks"],
+    "extra_rolling_stock_dirs": ["../../examples/rolling_stocks"],
     "show_viewer": True,
     "realtime_viewer": True,
     "change_replay_check": True,
