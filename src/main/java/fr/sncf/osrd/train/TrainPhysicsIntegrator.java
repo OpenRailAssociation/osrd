@@ -3,10 +3,15 @@ package fr.sncf.osrd.train;
 
 import static java.lang.Math.abs;
 import static fr.sncf.osrd.RollingStock.GammaType.CONST;
+import static java.lang.Math.min;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.RollingStock;
+import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.utils.Constants;
+
+import java.util.Set;
 
 /**
  * An utility class to help simulate the train, using forward numerical integration.
@@ -20,28 +25,28 @@ public class TrainPhysicsIntegrator {
     private final double weightForce;
     private final double rollingResistance;
     private final double inertia;
+    private final RollingStock rollingStock;
 
     /**
      * The class to simulate the train physics
      * @param currentSpeed the current speed of the train
      * @param weightForce is the force due to the slope under the train
-     * @param rollingResistance is the rolling resistance = A + B * currentSpeed + C * currentSpeed * currentSpeed
-     * @param inertia is the mass * inertial coefficient
+     * @param rollingStock is the rolling stock used
      */
     private TrainPhysicsIntegrator(
             double timeStep,
             double currentSpeed,
             double weightForce,
-            double rollingResistance,
-            double inertia
+            RollingStock rollingStock
     ) {
         this.timeStep = timeStep;
         this.currentSpeed = currentSpeed;
         this.weightForce = weightForce;
+        this.rollingStock = rollingStock;
+        this.rollingResistance = rollingStock.rollingResistance(currentSpeed);
         assert rollingResistance >= 0.;
-        this.rollingResistance = rollingResistance;
-        this.inertia = inertia;
         assert timeStep > 0;
+        this.inertia = rollingStock.mass * rollingStock.inertiaCoefficient;
     }
 
     /**
@@ -61,13 +66,11 @@ public class TrainPhysicsIntegrator {
         // the curve's radius is taken into account in meanTrainGrade
         var angle = Math.atan(meanTrainGrade / 1000.0);  // from m/km to m/m
         var weightForce = - rollingStock.mass * Constants.GRAVITY * Math.sin(angle);
-        var inertia = rollingStock.mass * rollingStock.inertiaCoefficient;
         return new TrainPhysicsIntegrator(
                 timeStep,
                 currentSpeed,
                 weightForce,
-                rollingStock.rollingResistance(currentSpeed),
-                inertia);
+                rollingStock);
     }
 
     /**
@@ -142,11 +145,15 @@ public class TrainPhysicsIntegrator {
         public final double timeDelta;
         public final double positionDelta;
         public final double speed;
+        public final double acceleration;
+        public final double motorForce;
 
-        PositionUpdate(double timeDelta, double positionDelta, double speed) {
+        PositionUpdate(double timeDelta, double positionDelta, double speed, double acceleration, double motorForce) {
             this.timeDelta = timeDelta;
             this.positionDelta = positionDelta;
             this.speed = speed;
+            this.acceleration = acceleration;
+            this.motorForce = motorForce;
         }
     }
 
@@ -164,6 +171,92 @@ public class TrainPhysicsIntegrator {
         var numerator = -currentSpeed + Math.sqrt(currentSpeed * currentSpeed + 2 * positionDelta * acceleration);
         return numerator / acceleration;
     }
+
+    /** Computes the next step of the integration method, based on an integrator and an action. */
+    public static PositionUpdate computeNextStep(TrainPhysicsIntegrator integrator,
+                                                 Action action,
+                                                 double distanceLeft,
+                                                 int directionSign) {
+
+        assert action != null;
+        assert action.type != Action.ActionType.EMERGENCY_BRAKING;
+        // run the physics sim
+        var update = integrator.computeUpdate(action, distanceLeft, directionSign);
+        return update;
+    }
+
+    /** Computes the next step of the integration method, based on location, speed, and a directive. */
+    public static PositionUpdate computeNextStepFromDirective(TrainPositionTracker currentLocation,
+                                                              double currentSpeed,
+                                                              SpeedDirective directive,
+                                                              RollingStock rollingStock,
+                                                              double timeStep,
+                                                              double distanceLeft,
+                                                              int directionSign) {
+
+        var integrator = TrainPhysicsIntegrator.make(
+                timeStep,
+                rollingStock,
+                currentSpeed,
+                currentLocation.meanTrainGrade());
+        var action = integrator.actionToTargetSpeed(directive, rollingStock, directionSign);
+        return computeNextStep(
+                integrator,
+                action,
+                distanceLeft,
+                directionSign);
+    }
+
+    /** Computes the next step of the integration method, based on location, speed, and a specified action. */
+    public static PositionUpdate computeNextStepFromAction(TrainPositionTracker currentLocation,
+                                                           double currentSpeed,
+                                                           Action action,
+                                                           RollingStock rollingStock,
+                                                           double timeStep,
+                                                           double end,
+                                                           int directionSign) {
+
+        var integrator = TrainPhysicsIntegrator.make(
+                timeStep,
+                rollingStock,
+                currentSpeed,
+                currentLocation.meanTrainGrade());
+        var distanceLeft = end - currentLocation.getPathPosition();
+        return computeNextStep(
+                integrator,
+                action,
+                distanceLeft,
+                directionSign);
+    }
+
+    /** Computes the next step of the integration method, based on location, speed, and a set of controllers. */
+    public static PositionUpdate computeNextStepFromControllers(TrainPositionTracker currentLocation,
+                                                                double currentSpeed,
+                                                                Set<SpeedController> controllers,
+                                                                RollingStock rollingStock,
+                                                                double timeStep,
+                                                                double end,
+                                                                int stopIndex,
+                                                                int directionSign) {
+        var integrator = TrainPhysicsIntegrator.make(
+                timeStep,
+                rollingStock,
+                currentSpeed,
+                currentLocation.meanTrainGrade()
+        );
+        var nextPosition = currentLocation.getPathPosition() + currentSpeed * timeStep;
+        final var finalNextPosition = min(nextPosition, end);
+        var directive = SpeedController.getDirective(controllers, finalNextPosition, stopIndex);
+        var action = integrator.actionToTargetSpeed(directive, rollingStock);
+        var distanceLeft = end - finalNextPosition;
+        return computeNextStep(
+                integrator,
+                action,
+                distanceLeft,
+                directionSign
+        );
+    }
+
 
     /**
      * Compute the train's acceleration given an action
@@ -188,6 +281,7 @@ public class TrainPhysicsIntegrator {
      * @param actionTractionForce the force directly applied by the driver
      * @param actionBrakingForce the braking force directly applied by the driver
      * @param maxDistance the maximum distance the train can go
+     * @param directionSign +1 if the train is going forward, -1 if the train is going backwards
      * @return the new speed of the train
      */
     public PositionUpdate computeUpdate(double actionTractionForce, double actionBrakingForce, double maxDistance,
@@ -204,7 +298,7 @@ public class TrainPhysicsIntegrator {
             // if the train is stopped and the rolling resistance is greater in amplitude than the other forces,
             // the train won't move
             if (abs(totalOtherForce) < oppositeForce)
-                return new PositionUpdate(timeStep, 0.0, 0.0);
+                return new PositionUpdate(timeStep, 0.0, 0.0, 0.0, 0.0);
             // if the sum of other forces isn't sufficient to keep the train still, the rolling resistance
             // will be opposed to the movement direction (which is the direction of the other forces)
             effectiveOppositeForces = Math.copySign(oppositeForce, -totalOtherForce);
@@ -218,7 +312,6 @@ public class TrainPhysicsIntegrator {
         // compute the acceleration on only a part of the integration step below
         var fullStepAcceleration =  computeTotalForce(effectiveOppositeForces, actionTractionForce) / inertia;
         var newSpeed = currentSpeed + directionSign * fullStepAcceleration * timeStep;
-
         var timeDelta = timeStep;
 
         // if the speed change sign or is very low we integrate only the step at which the speed is zero
@@ -231,11 +324,11 @@ public class TrainPhysicsIntegrator {
         var newPositionDelta = computePositionDelta(currentSpeed, fullStepAcceleration, timeDelta, directionSign);
 
         if (newPositionDelta <= maxDistance)
-            return new PositionUpdate(timeDelta, newPositionDelta, newSpeed);
+            return new PositionUpdate(timeDelta, newPositionDelta, newSpeed, fullStepAcceleration, actionTractionForce);
 
         timeDelta = computeTimeDelta(currentSpeed, fullStepAcceleration, maxDistance);
         assert timeDelta < timeStep && timeDelta >= 0;
         newSpeed = currentSpeed + fullStepAcceleration * timeDelta;
-        return  new PositionUpdate(timeDelta, maxDistance, newSpeed);
+        return  new PositionUpdate(timeDelta, maxDistance, newSpeed, fullStepAcceleration, actionTractionForce);
     }
 }

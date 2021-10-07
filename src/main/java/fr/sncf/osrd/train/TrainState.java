@@ -2,7 +2,6 @@ package fr.sncf.osrd.train;
 
 import java.util.*;
 
-import fr.sncf.osrd.infra_state.TVDSectionState;
 import fr.sncf.osrd.simulation.EntityChange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -221,21 +220,20 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 rollingStock,
                 speed,
                 location.meanTrainGrade());
-
         var prevLocation = location.getPathPosition();
         var isLate = trainSchedule.speedInstructions.secondsLate(prevLocation, time) > 0;
 
         var activeSpeedControllers = trainSchedule.trainDecisionMaker.getActiveSpeedControllers(isLate);
         locationChange.speedControllersUpdates.dedupAdd(prevLocation, activeSpeedControllers);
-
         var action = iterateFindNextAction(integrator, isLate, timeStep, distanceStep);
-
         logger.trace("train took action {}", action);
-        assert action != null;
-        assert action.type != Action.ActionType.EMERGENCY_BRAKING;
-
         // run the physics sim
-        var update = integrator.computeUpdate(action, distanceStep);
+        var update = TrainPhysicsIntegrator.computeNextStep(
+                integrator,
+                action,
+                distanceStep,
+                1
+        );
 
         // update location
         location.updatePosition(rollingStock.length, update.positionDelta);
