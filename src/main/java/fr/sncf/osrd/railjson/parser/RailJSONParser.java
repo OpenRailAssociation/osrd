@@ -14,12 +14,10 @@ import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.signaling.AspectConstraint;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.*;
-import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSTVDSection;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
-import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSTrackRange;
 import fr.sncf.osrd.utils.DoubleRangeMap;
@@ -30,7 +28,6 @@ import fr.sncf.osrd.utils.graph.EdgeDirection;
 import okio.BufferedSource;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @SuppressFBWarnings({"NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"})
@@ -58,6 +55,12 @@ public class RailJSONParser {
      * @return an OSRD infrastructure
      */
     public static Infra parse(RJSInfra railJSON) throws InvalidInfraException {
+        if (!railJSON.version.equals(RJSInfra.CURRENT_VERSION)) {
+            throw new InvalidInfraException(
+                    String.format("Invalid railjson format version: got '%s' expected '%s'",
+                            railJSON.version, RJSInfra.CURRENT_VERSION));
+        }
+
         var trackGraph = new TrackGraph();
 
         // register operational points
