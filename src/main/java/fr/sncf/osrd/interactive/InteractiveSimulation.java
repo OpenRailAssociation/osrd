@@ -4,6 +4,7 @@ import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.SuccessionTable;
+import fr.sncf.osrd.interactive.client_messages.ChangeType;
 import fr.sncf.osrd.interactive.client_messages.EventType;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
@@ -27,10 +28,11 @@ import java.util.*;
 
 public class InteractiveSimulation {
     private Infra infra = null;
-    private Map<String, RollingStock> extraRollingStocks = new HashMap<>();
+    private final Map<String, RollingStock> extraRollingStocks = new HashMap<>();
     private SessionState state = SessionState.UNINITIALIZED;
-    private Simulation simulation = null;
+    public Simulation simulation = null;
     private final ResponseCallback responseCallback;
+    public Set<ChangeType> watchedChangeTypes = new HashSet<>();
 
     public InteractiveSimulation(ResponseCallback responseCallback) {
         this.responseCallback = responseCallback;
@@ -94,8 +96,10 @@ public class InteractiveSimulation {
                 var rjsSuccession = new RJSSuccessions(rjsSuccessions);
                 successions = RJSSuccessionsParser.parse(rjsSuccession);
             }
+            // Create stream changes consumer
+            var streamChangesConsumer = new StreamChangesConsumer(this);
             // insert the train start events into the simulation
-            simulation = Simulation.createFromInfraAndSuccessions(infra, successions, 0, null);
+            simulation = Simulation.createFromInfraAndSuccessions(infra, successions, 0, streamChangesConsumer);
             for (var trainSchedule : trainSchedules)
                 TrainCreatedEvent.plan(simulation, trainSchedule);
             state = SessionState.RUNNING;
@@ -121,8 +125,6 @@ public class InteractiveSimulation {
         try {
             while (!simulation.isSimulationOver()) {
                 var event = simulation.step();
-                if (event.getClass() == TrainCreatedEvent.class)
-                    System.out.println("loul");
                 var eventType = EventType.fromEvent(event);
                 if (eventType != null && untilEvents.contains(eventType)) {
                     sendResponse(new ServerMessage.SimulationPaused(eventType));
@@ -134,5 +136,10 @@ public class InteractiveSimulation {
         } catch (SimulationError e) {
             sendResponse(ServerMessage.Error.withReason("failed to run simulation", e.getMessage()));
         }
+    }
+
+    public void watchChangesTypes(Set<ChangeType> changeTypes) throws IOException {
+        watchedChangeTypes = changeTypes;
+        sendResponse(new ServerMessage.WatchChanges());
     }
 }

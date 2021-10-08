@@ -21,6 +21,7 @@ public abstract class ClientMessage {
                 .add(PolymorphicJsonAdapterFactory.of(ClientMessage.class, "message_type")
                         .withSubtype(InitMessage.class, "init")
                         .withSubtype(CreateSimulationMessage.class, "create_simulation")
+                        .withSubtype(WatchChangesMessage.class, "watch_changes")
                         .withSubtype(RunUntilMessage.class, "run"))
                 // for RJSInfra
                 .add(ID.Adapter.FACTORY)
