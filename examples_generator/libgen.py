@@ -1437,7 +1437,7 @@ class Infra:
         self.build_track_section_links()
         self.build_track_sections(cbtc=cbtc)
         self.build_tvd_sections()
-        self.json["version"] = "1"
+        self.json["version"] = "1.0"
         return self.json
 
     def __init__(self, lengths, space_tde=200, space_sig=25, sight_distance=400):
