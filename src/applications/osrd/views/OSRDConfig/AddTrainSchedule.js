@@ -112,9 +112,15 @@ export default function AddTrainSchedule(props) {
               sm
             />
           </span>
-          <button className="btn btn-sm btn-primary" type="button" onClick={submitConf}>
-            {isWorking ? <DotsLoader /> : t('osrdconf:addTrainSchedule')}
-          </button>
+          {isWorking ? (
+            <button className="btn btn-sm btn-primary disabled" type="button">
+              <DotsLoader />
+            </button>
+          ) : (
+            <button className="btn btn-sm btn-primary" type="button" onClick={submitConf}>
+              {t('osrdconf:addTrainSchedule')}
+            </button>
+          )}
         </div>
       </div>
     </>

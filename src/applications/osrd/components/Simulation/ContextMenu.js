@@ -12,6 +12,7 @@ import { timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelper
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import trainNameWithNum from 'applications/osrd/components/AddTrainSchedule/trainNameHelper';
 import { sec2time } from 'utils/timeManipulation';
+import DotsLoader from 'common/DotsLoader/DotsLoader';
 
 const TRAINSCHEDULE_URI = '/train_schedule/';
 
@@ -63,8 +64,8 @@ export default function ContextMenu() {
         timetable: trainDetail.timetable,
         train_name: newTrainName,
       };
-      const newTrainId = await post(TRAINSCHEDULE_URI, params);
-      return newTrainId;
+      const result = await post(TRAINSCHEDULE_URI, params);
+      return result.id;
     } catch (e) {
       console.log('ERROR', e);
       dispatch(setFailure({
@@ -75,7 +76,7 @@ export default function ContextMenu() {
     return false;
   };
 
-  const duplicateTrain = () => {
+  const duplicateTrain = async () => {
     setGoUpdate(true);
     const trains = Array.from(simulation.trains);
     let actualTrainCount = 1;
@@ -87,7 +88,7 @@ export default function ContextMenu() {
         ...timeShiftTrain(trains[selectedTrain], newTrainDelta),
         name: newTrainName,
       };
-      newTrain.id = getAndDuplicateTrain(
+      newTrain.id = await getAndDuplicateTrain(
         simulation.trains[selectedTrain].id, newOriginTime, newTrainName,
       );
       if (newTrain.id) {
@@ -106,7 +107,8 @@ export default function ContextMenu() {
 
   useEffect(() => {
     if (goUpdate) {
-      dispatch(updateMustRedraw(true));
+      console.log('redraw', simulation);
+      setTimeout(() => { dispatch(updateMustRedraw(true)); }, 0);
       setGoUpdate(false);
     }
   }, [simulation.trains]);
@@ -178,10 +180,16 @@ export default function ContextMenu() {
             />
           </span>
         </div>
-        <button type="button" className="btn btn-primary btn-block btn-sm" onClick={duplicateTrain}>
-          <MdContentCopy />
-          <span className="ml-1">{t('simulation:duplicate')}</span>
-        </button>
+        {goUpdate ? (
+          <button type="button" className="btn btn-primary btn-block btn-sm disabled">
+            <DotsLoader />
+          </button>
+        ) : (
+          <button type="button" className="btn btn-primary btn-block btn-sm" onClick={duplicateTrain}>
+            <MdContentCopy />
+            <span className="ml-1">{t('simulation:duplicate')}</span>
+          </button>
+        )}
         <button type="button" className="btn btn-danger btn-block btn-sm" onClick={deleteTrain}>
           <MdDelete />
           <span className="ml-1">{t('simulation:delete')}</span>

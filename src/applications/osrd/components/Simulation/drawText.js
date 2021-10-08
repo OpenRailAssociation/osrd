@@ -10,7 +10,7 @@ const drawText = (
     .attr('y', direction
       ? chart.y(dataSimulation.headPosition[0][0].position) + 15
       : chart.y(dataSimulation.headPosition[0][0].position) - 5)
-    .text(dataSimulation.name);
+    .text(`ID${dataSimulation.id} ${dataSimulation.name}`);
 };
 
 export default drawText;

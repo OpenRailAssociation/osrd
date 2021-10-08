@@ -29,12 +29,13 @@ export default function TrainsList(props) {
   const { t } = useTranslation(['simulation']);
 
   const changeSelectedTrain = (idx, typeOfInputToFocus, trainName, trainStartTime) => {
+    console.log('coucou', typeOfInputToFocus);
     if (selectedTrain !== idx) {
-      dispatch(updateMustRedraw(true));
       dispatch(updateSelectedTrain(idx));
       setTrainNameClickedIDX(idx);
       setTypeOfInputFocused(typeOfInputToFocus);
       setInputTime(trainStartTime);
+      dispatch(updateMustRedraw(true));
     }
   };
 
@@ -49,6 +50,9 @@ export default function TrainsList(props) {
     dispatch(updateSimulation(newSimulation));
   };
 
+  const debouncedInputName = useDebounce(inputName, 500);
+  const debouncedInputTime = useDebounce(inputTime, 500);
+
   const changeTrainStartTime = (newStartTime, idx) => {
     setInputTime(newStartTime);
     const offset = Math.floor(
@@ -60,9 +64,6 @@ export default function TrainsList(props) {
     trains[idx] = timeShiftTrain(trains[selectedTrain], offset);
     dispatch(updateSimulation({ ...simulation, trains }));
   };
-
-  const debouncedInputName = useDebounce(inputName, 500);
-  const debouncedInputTime = useDebounce(inputTime, 500);
 
   useEffect(() => {
     if (debouncedInputName) {
@@ -100,7 +101,7 @@ export default function TrainsList(props) {
                 onClick={() => changeSelectedTrain(idx, 'name', train.name, sec2time(train.stops[0].time))}
                 tabIndex={0}
               >
-                {trainNameClickedIDX === idx ? (
+                {trainNameClickedIDX === idx && typeOfInputFocused === 'name' ? (
                   <InputSNCF
                     type="text"
                     id="trainlist-name"
@@ -120,8 +121,8 @@ export default function TrainsList(props) {
                 onClick={() => changeSelectedTrain(idx, 'time', train.name, sec2time(train.stops[0].time))}
                 tabIndex={0}
               >
-                {trainNameClickedIDX === idx ? (
-                  /* <InputSNCF
+                {trainNameClickedIDX === idx && typeOfInputFocused === 'time' ? (
+                  <InputSNCF
                     type="time"
                     id="trainlist-time"
                     onChange={(e) => changeTrainStartTime(e.target.value, idx)}
@@ -129,12 +130,6 @@ export default function TrainsList(props) {
                     noMargin
                     focus={typeOfInputFocused === 'time'}
                     sm
-                  /> */
-                  <input
-                    type="time"
-                    id="trainlist-time"
-                    onChange={(e) => changeTrainStartTime(e.target.value, idx)}
-                    value={sec2time(train.stops[0].time)}
                   />
                 ) : sec2time(train.stops[0].time)}
               </div>
@@ -229,9 +224,9 @@ export default function TrainsList(props) {
           </table>
         </div>
       </div>
-      <TrainListModal
+      {/* <TrainListModal
         trainIDX={trainIDX}
-      />
+      /> */}
     </>
   );
 }
