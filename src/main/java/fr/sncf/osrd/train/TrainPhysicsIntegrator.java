@@ -145,7 +145,9 @@ public class TrainPhysicsIntegrator {
         public final double timeDelta;
         public final double positionDelta;
         public final double speed;
+        @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
         public final double acceleration;
+        @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
         public final double motorForce;
 
         PositionUpdate(double timeDelta, double positionDelta, double speed, double acceleration, double motorForce) {
