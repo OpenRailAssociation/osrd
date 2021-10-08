@@ -58,7 +58,7 @@ COPIED_KEYS_V1_TO_V2 = (
 def migrate_v1_to_v2(old):
     new = {migrated_key: old[migrated_key] for migrated_key in COPIED_KEYS_V1_TO_V2}
 
-    new["version"] = "2"
+    new["version"] = "2.0"
     new["source"] = old["id"]
     new["verbose_name"] = old["id"]
     new["type"] = None
