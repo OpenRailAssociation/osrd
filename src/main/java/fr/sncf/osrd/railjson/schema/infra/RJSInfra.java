@@ -27,8 +27,10 @@ public class RJSInfra {
             .build()
             .adapter(RJSInfra.class);
 
-    /** An incremental format version number, which may be used for migrations */
-    public final int version = 1;
+    public static final transient String CURRENT_VERSION = "1.0";
+
+    /** The version of the infra format used */
+    public String version;
 
     /** A simple graph of track sections. */
     @Json(name = "track_sections")
