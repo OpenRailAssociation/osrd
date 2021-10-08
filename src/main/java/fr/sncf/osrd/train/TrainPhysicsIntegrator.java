@@ -41,6 +41,7 @@ public class TrainPhysicsIntegrator {
         assert rollingResistance >= 0.;
         this.rollingResistance = rollingResistance;
         this.inertia = inertia;
+        assert timeStep > 0;
     }
 
     /**
