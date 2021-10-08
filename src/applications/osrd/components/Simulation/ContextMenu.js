@@ -51,49 +51,20 @@ export default function ContextMenu() {
     }
   };
 
-  const duplicateTrain = async () => {
-    setGoUpdate(true);
-    const trains = Array.from(simulation.trains);
+  const getAndDuplicateTrain = async (id, newOriginTime, newTrainName) => {
     try {
-      const trainDetail = await get(`${TRAINSCHEDULE_URI}${trains[selectedTrain].id}/`);
-      try {
-        let actualTrainCount = 1;
-        for (let nb = 1; nb <= trainCount; nb += 1) {
-          const newTrainDelta = (60 * trainDelta * nb);
-          const newOriginTime = trainDetail.departure_time + newTrainDelta;
-          const newTrainName = trainNameWithNum(trainName, actualTrainCount, trainCount);
-          const params = {
-            departure_time: newOriginTime,
-            initial_speed: trainDetail.initial_speed,
-            labels: trainDetail.labels,
-            path: trainDetail.path,
-            rolling_stock: trainDetail.rolling_stock,
-            timetable: trainDetail.timetable,
-            train_name: newTrainName,
-          };
-          const newTrain = {
-            ...timeShiftTrain(trains[selectedTrain], newTrainDelta),
-            name: newTrainName,
-          };
-          /* eslint no-await-in-loop: 0 */
-          // newTrain.id = await post(TRAINSCHEDULE_URI, params);
-          newTrain.id *= 2;
-          actualTrainCount += trainStep;
-          trains.splice(selectedTrain + nb, 0, newTrain);
-          dispatch(setSuccess({
-            title: t('osrdconf:trainAdded'),
-            text: `${trainName}: ${sec2time(newOriginTime)}`,
-          }));
-        }
-        dispatch(updateSimulation({ ...simulation, trains }));
-        dispatch(updateSelectedTrain(selectedTrain + 1));
-      } catch (e) {
-        console.log('ERROR', e);
-        dispatch(setFailure({
-          name: e.name,
-          message: e.message,
-        }));
-      }
+      const trainDetail = await get(`${TRAINSCHEDULE_URI}${id}/`);
+      const params = {
+        departure_time: newOriginTime,
+        initial_speed: trainDetail.initial_speed,
+        labels: trainDetail.labels,
+        path: trainDetail.path,
+        rolling_stock: trainDetail.rolling_stock,
+        timetable: trainDetail.timetable,
+        train_name: newTrainName,
+      };
+      const newTrainId = await post(TRAINSCHEDULE_URI, params);
+      return newTrainId;
     } catch (e) {
       console.log('ERROR', e);
       dispatch(setFailure({
@@ -101,6 +72,35 @@ export default function ContextMenu() {
         message: e.message,
       }));
     }
+    return false;
+  };
+
+  const duplicateTrain = () => {
+    setGoUpdate(true);
+    const trains = Array.from(simulation.trains);
+    let actualTrainCount = 1;
+    for (let nb = 1; nb <= trainCount; nb += 1) {
+      const newTrainDelta = (60 * trainDelta * nb);
+      const newOriginTime = simulation.trains[selectedTrain].stops[0].time + newTrainDelta;
+      const newTrainName = trainNameWithNum(trainName, actualTrainCount, trainCount);
+      const newTrain = {
+        ...timeShiftTrain(trains[selectedTrain], newTrainDelta),
+        name: newTrainName,
+      };
+      newTrain.id = getAndDuplicateTrain(
+        simulation.trains[selectedTrain].id, newOriginTime, newTrainName,
+      );
+      if (newTrain.id) {
+        trains.splice(selectedTrain + nb, 0, newTrain);
+        dispatch(setSuccess({
+          title: t('osrdconf:trainAdded'),
+          text: `${trainName}: ${sec2time(newOriginTime)}`,
+        }));
+      }
+      actualTrainCount += trainStep;
+    }
+    dispatch(updateSimulation({ ...simulation, trains }));
+    dispatch(updateSelectedTrain(selectedTrain + 1));
     dispatch(updateContextMenu(undefined));
   };
 
