@@ -1,5 +1,7 @@
 package fr.sncf.osrd.train;
 
+import static java.lang.Double.max;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Detector;
@@ -112,7 +114,7 @@ public class Train {
             // Free the tvdSections the train is on
             var path = lastState.path;
             var trainLength = lastState.trainSchedule.rollingStock.length;
-            var firstTVD = path.getTVDSectionPathIndexAtPosition(path.length - trainLength);
+            var firstTVD = path.getTVDSectionPathIndexAtPosition(max(0, path.length - trainLength));
             var lastTVD = path.getTVDSectionPathIndexAtPosition(path.length);
             for (var i = firstTVD; i <= lastTVD; i++) {
                 var currentTvdSectionPath = path.tvdSectionPaths.get(i);
