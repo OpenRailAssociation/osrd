@@ -29,6 +29,7 @@ from osrd_infra.models import (
 from collections import defaultdict
 import logging
 
+RAILJSON_VERSION = "1.0"
 
 logger = logging.getLogger(__name__)
 
@@ -423,7 +424,7 @@ def railjson_serialize_infra_namespace(namespace):
         "track_section_links": fetch_and_map(TrackSectionLinkEntity, namespace),
     }
 
-    res = {"version": 1}
+    res = {"version": RAILJSON_VERSION}
     bench.step("serializing track sections")
     res["track_sections"] = [
         serialize_track_section(entity, **cached_entities)
