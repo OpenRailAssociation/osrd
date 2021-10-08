@@ -214,6 +214,9 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             @SuppressWarnings("SameParameterValue") double timeStep,
             double distanceStep
     ) {
+        if (timeStep <= 0 || distanceStep <= 0)
+            return;
+
         var rollingStock = trainSchedule.rollingStock;
         var integrator = TrainPhysicsIntegrator.make(
                 timeStep,
