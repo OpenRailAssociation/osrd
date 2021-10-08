@@ -292,7 +292,10 @@ def serialize_switch(switch_entity: SwitchEntity, switch_templates: Dict[str, in
         "id": format_switch_id(switch_entity.entity_id),
         "switch_type": str(template_id),
         "ports": ports,
-        "group_change_delay": 6  # TODO: add change delay
+
+        # TODO: import and store this information
+        # TODO: without importing the signalisation, we can't have delays here
+        "group_change_delay": 0
     }
 
 
