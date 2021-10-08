@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 @ServerEndpoint(
-        value="/simulate",
+        value = "/simulate",
         encoders = ServerMessageEncoder.class,
         decoders = ClientMessageDecoder.class
 )
@@ -17,7 +17,7 @@ public class InteractiveEndpoint {
     static final Logger logger = LoggerFactory.getLogger(InteractiveEndpoint.class);
 
     private Session session;
-    private InteractiveSimulation interactiveSimulation;
+    private final InteractiveSimulation interactiveSimulation;
 
     public InteractiveEndpoint() {
         this.interactiveSimulation = new InteractiveSimulation(this::sendResponse);
