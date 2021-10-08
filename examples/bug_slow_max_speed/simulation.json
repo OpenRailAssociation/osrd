@@ -1,0 +1,71 @@
+{
+    "rolling_stocks": [],
+    "train_schedules": [
+        {
+            "id": "train.0",
+            "rolling_stock": "slow_rolling_stock",
+            "initial_head_location": {
+                "track_section": "ne.micro.0",
+                "offset": 500
+            },
+            "departure_time": 0,
+            "initial_speed": 0,
+            "routes": [
+                "rt.0_END-0_BEGIN",
+                "rt.0_BEGIN-1_BEGIN",
+                "rt.1_BEGIN-1_END",
+                "rt.1_END-4_BEGIN",
+                "rt.4_BEGIN-4_END",
+                "rt.4_END-5_BEGIN",
+                "rt.5_BEGIN-5_END",
+                "rt.5_END-6_BEGIN",
+                "rt.6_BEGIN-6_END",
+                "rt.6_END-7_BEGIN",
+                "rt.7_BEGIN-7_END"
+            ],
+            "phases": [
+                {
+                    "driver_sight_distance": 400,
+                    "end_location": {
+                        "track_section": "ne.micro.7",
+                        "offset": 500
+                    },
+                    "type": "navigate"
+                }
+            ]
+        },
+        {
+            "id": "train.1",
+            "rolling_stock": "fast_rolling_stock",
+            "initial_head_location": {
+                "track_section": "ne.micro.2",
+                "offset": 500
+            },
+            "departure_time": 30,
+            "initial_speed": 0,
+            "routes": [
+                "rt.2_END-2_BEGIN",
+                "rt.2_BEGIN-3_BEGIN",
+                "rt.3_BEGIN-3_END",
+                "rt.3_END-4_BEGIN",
+                "rt.4_BEGIN-4_END",
+                "rt.4_END-5_BEGIN",
+                "rt.5_BEGIN-5_END",
+                "rt.5_END-6_BEGIN",
+                "rt.6_BEGIN-6_END",
+                "rt.6_END-7_BEGIN",
+                "rt.7_BEGIN-7_END"
+            ],
+            "phases": [
+                {
+                    "driver_sight_distance": 400,
+                    "end_location": {
+                        "track_section": "ne.micro.7",
+                        "offset": 500
+                    },
+                    "type": "navigate"
+                }
+            ]
+        }
+    ]
+}

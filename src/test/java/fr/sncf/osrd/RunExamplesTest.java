@@ -24,42 +24,46 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class RunExamplesTest {
-    private static void runGivenConfigInfra(String path) {
-        try {
-            Config config = Config.readFromFile(getResourcePath(path));
+    private static void runGivenConfigInfra(String path) throws InvalidRollingStock, InvalidSuccession,
+            InvalidSchedule, IOException, InvalidInfraException, SimulationError {
+        Config config = Config.readFromFile(getResourcePath(path));
 
-            var changeConsumers = new ArrayList<ChangeConsumer>();
-            var changelog = new ArrayChangeLog();
-            changeConsumers.add(changelog);
+        var changeConsumers = new ArrayList<ChangeConsumer>();
+        var changelog = new ArrayChangeLog();
+        changeConsumers.add(changelog);
 
-            var multiplexer = new ChangeConsumerMultiplexer(changeConsumers);
-            var sim = Simulation.createFromInfraAndSuccessions(config.infra,
-                    config.switchSuccessions, 0, multiplexer);
+        var multiplexer = new ChangeConsumerMultiplexer(changeConsumers);
+        var sim = Simulation.createFromInfraAndSuccessions(config.infra,
+                config.switchSuccessions, 0, multiplexer);
 
-            multiplexer.add(ChangeReplayChecker.from(sim));
+        multiplexer.add(ChangeReplayChecker.from(sim));
 
-            for (var trainSchedule : config.trainSchedules)
-                TrainCreatedEvent.plan(sim, trainSchedule);
+        for (var trainSchedule : config.trainSchedules)
+            TrainCreatedEvent.plan(sim, trainSchedule);
 
-            while (!sim.isSimulationOver())
-                sim.step();
+        while (!sim.isSimulationOver())
+            sim.step();
 
-            ChangeLogSummarizer.summarize(changelog);
+        ChangeLogSummarizer.summarize(changelog);
 
-            ChangeSerializer.serializeChangeLog(changelog, new Buffer());
-        } catch (InvalidRollingStock | IOException | SimulationError
-                | InvalidInfraException | InvalidSchedule | InvalidSuccession e) {
-            fail(e);
-        }
+        ChangeSerializer.serializeChangeLog(changelog, new Buffer());
     }
 
     @Test
-    public void testTinyInfra() {
+    public void testTinyInfra() throws InvalidRollingStock, InvalidSuccession,
+            InvalidSchedule, IOException, InvalidInfraException, SimulationError {
         runGivenConfigInfra("tiny_infra/config_railjson.json");
     }
 
     @Test
-    public void testCircularInfra() {
+    public void testCircularInfra() throws InvalidRollingStock, InvalidSuccession,
+            InvalidSchedule, IOException, InvalidInfraException, SimulationError {
         runGivenConfigInfra("circular_infra/config.json");
+    }
+
+    @Test
+    public void testSlowMaxSpeedInfra() throws InvalidRollingStock, InvalidSuccession,
+            InvalidSchedule, IOException, InvalidInfraException, SimulationError {
+        runGivenConfigInfra("bug_slow_max_speed/config.json");
     }
 }
