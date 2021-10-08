@@ -1,6 +1,10 @@
 package fr.sncf.osrd.train;
 
+import static fr.sncf.osrd.infra.signaling.AspectConstraint.ConstraintPosition.Element.CURRENT_SIGNAL;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.signaling.Aspect;
+import fr.sncf.osrd.infra.signaling.AspectConstraint;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra_state.SignalState;
@@ -158,7 +162,7 @@ public class Train {
     }
 
     /** Make the train interact with a signal */
-    public void interact(Simulation sim, Signal signal, InteractionType interactionType) {
+    public void interact(Simulation sim, Signal signal, InteractionType interactionType) throws SimulationError {
         var signalState = sim.infraState.getSignalState(signal.index);
 
         switch (interactionType) {
@@ -167,11 +171,30 @@ public class Train {
                 lastState.setAspectConstraints(signalState);
                 break;
             case HEAD:
-                signalState.unsubscribeTrain();
+                onTrainReachSignal(signalState);
                 break;
             default:
                 throw new RuntimeException("Unexpected signal interaction type");
         }
+    }
+
+    private void onTrainReachSignal(SignalState signalState) throws SimulationError {
+        for (var aspect : signalState.aspects) {
+            for (var constraint : aspect.constraints) {
+                if (constraint.getClass() != AspectConstraint.SpeedLimit.class)
+                    continue;
+                var speedLimit = (AspectConstraint.SpeedLimit) constraint;
+                if (!(speedLimit.appliesAt.element.equals(CURRENT_SIGNAL) && speedLimit.appliesAt.offset <= 0))
+                    continue;
+                if (speedLimit.until.element.equals(CURRENT_SIGNAL) && speedLimit.until.offset < 0)
+                    continue;
+                if (speedLimit.speed <= 0)
+                    throw new SimulationError(String.format("Train %s has reached a blocking signal %s",
+                            schedule.trainID, signalState.signal.id));
+            }
+        }
+
+        signalState.unsubscribeTrain();
     }
 
     /** Notify the train that a signal has change aspects and it have to re-evaluate its planned state */

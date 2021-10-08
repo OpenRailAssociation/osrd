@@ -72,4 +72,21 @@ public class TrainReactionTest {
 
         preparedSim.run();
     }
+
+    @Test
+    public void testExceptionIfReachRedSignal() throws SimulationError {
+        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
+        testConfig.rjsInfra.switches.iterator().next().groupChangeDelay = 42;
+        testConfig.rjsSimulation.trainSchedules.get(0).phases[0].driverSightDistance = 0;
+
+        var simState = testConfig.prepare();
+        var sim = simState.sim;
+
+        sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
+
+        assertThrows(SimulationError.class,
+                simState::runWithExceptions,
+                "Expected a simulation error once the train goes through the red signal"
+        );
+    }
 }
