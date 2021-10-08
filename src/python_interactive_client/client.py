@@ -19,6 +19,16 @@ class EventType(IntEnum):
     def all():
         return list(EventType)
 
+class ChangeType(IntEnum):
+    ROUTE_STATUS_CHANGE = 0
+
+    def serialize(self):
+        return self.name
+
+    @staticmethod
+    def all():
+        return list(ChangeType)
+
 
 def load_json(path):
     with path.open() as f:
@@ -99,6 +109,16 @@ class InteractiveSimulation:
         check_response_type(response, {"simulation_created"})
         return response
 
+    async def watch_changes(self, change_types):
+        await self.send_json({
+            "message_type": "watch_changes",
+            "change_types": [change_type.serialize() for change_type in change_types],
+        })
+        response = json.loads(await self.websocket.recv())
+        check_response_type(response, {"watch_changes"})
+        return response
+
+
     async def run(self, until_events=[]):
         await self.send_json({
             "message_type": "run",
@@ -107,7 +127,8 @@ class InteractiveSimulation:
         response = json.loads(await self.websocket.recv())
         check_response_type(response, {
             "simulation_complete",
-            "simulation_paused"
+            "simulation_paused",
+            "change_occurred"
         })
         return response
 
@@ -117,6 +138,7 @@ async def test(infra_path: Path, simulation_path: Path, rolling_stocks_path: Pat
     async with InteractiveSimulation.open_websocket("ws://localhost:9000/websockets/simulate") as simulation:
         print(await simulation.init(infra_path, rolling_stocks_path))
         print(await simulation.create_simulation(simulation_path))
+        print(await simulation.watch_changes(ChangeType.all()))
 
         while True:
             stop_message = await simulation.run(until_events=EventType.all())
