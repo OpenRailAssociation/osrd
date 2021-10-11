@@ -54,10 +54,17 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
                 .collect(Collectors.toSet());
     }
 
+    private ArrayDeque<TrackSectionRange> cloneTrackSectionRanges(ArrayDeque<TrackSectionRange> other) {
+        var res = new ArrayDeque<TrackSectionRange>();
+        for (var range : other)
+            res.add(new TrackSectionRange(range));
+        return res;
+    }
+
     private TrainPositionTracker(TrainPositionTracker tracker) {
         this.infra = tracker.infra;
         this.infraState = tracker.infraState;
-        this.trackSectionRanges = tracker.trackSectionRanges.clone();
+        this.trackSectionRanges = cloneTrackSectionRanges(tracker.trackSectionRanges);
         this.pathPosition = tracker.pathPosition;
         this.trackSectionPath = new ArrayList<>(tracker.trackSectionPath);
         this.ignoreInfraState = tracker.ignoreInfraState;

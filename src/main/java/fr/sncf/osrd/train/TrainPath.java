@@ -170,16 +170,4 @@ public class TrainPath {
 
         return null;
     }
-
-    /** Returns the index in tvdSectionPaths of the tvd section that contains the given position.
-     * If position > length, the last tvd section path is returned */
-    public int getTVDSectionPathIndexAtPosition(double position) {
-        double totalPosition = 0;
-        int i = 0;
-        while (position >= totalPosition && i < tvdSectionPaths.size()) {
-            totalPosition += tvdSectionPaths.get(i).length;
-            i++;
-        }
-        return i - 1;
-    }
 }
