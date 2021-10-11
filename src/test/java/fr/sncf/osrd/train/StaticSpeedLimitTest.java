@@ -9,7 +9,6 @@ import fr.sncf.osrd.infra.*;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.trackgraph.BufferStop;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
-import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -25,7 +24,6 @@ import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.stream.Collectors;
@@ -107,10 +105,11 @@ public class StaticSpeedLimitTest {
                 new TrackSectionLocation(edge, 10000));
         var phases = new ArrayList<NavigatePhase>();
         var stops = Collections.singletonList(new TrainStop(path.length, 1));
+        var virtualPoints = new ArrayList<VirtualPoint>();
         phases.add(SignalNavigatePhase.from(
                 400,
                 startLocation,
-                new TrackSectionLocation(edge, 10000), path, stops));
+                new TrackSectionLocation(edge, 10000), path, stops, virtualPoints));
 
         var schedule = new TrainSchedule(
                 "test_train",
