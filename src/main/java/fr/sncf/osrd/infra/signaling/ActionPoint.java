@@ -9,8 +9,8 @@ import fr.sncf.osrd.train.Train;
 public interface ActionPoint {
     InteractionTypeSet getInteractionsType();
 
-    /** Gets the distance from the object at which the action occurs */
-    double getActionDistance();
+    /** Gets the distance at the object can be seen */
+    double getSightDistance();
 
     /**
      * A method called by a train when its head arrives on it.

@@ -1,5 +1,6 @@
 package fr.sncf.osrd.interactive.client_messages;
 
+import fr.sncf.osrd.infra_state.events.SwitchMoveEvent;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
@@ -14,6 +15,7 @@ public enum EventType {
     TRAIN_MOVE_EVENT(TrainMoveEvent.class),
     TRAIN_REACHES_ACTION_POINT(TrainReachesActionPoint.class),
     TRAIN_RESTARTS(TrainRestarts.class),
+    SWITCH_MOVE(SwitchMoveEvent.class),
     ;
 
     public final Class<? extends TimelineEvent> internalEventType;

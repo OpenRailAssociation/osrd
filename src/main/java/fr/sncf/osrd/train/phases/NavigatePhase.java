@@ -6,18 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import fr.sncf.osrd.infra.StopActionPoint;
+import fr.sncf.osrd.infra.VirtualActionPoint;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.simulation.Change;
 import fr.sncf.osrd.simulation.Simulation;
-import fr.sncf.osrd.train.Interaction;
-import fr.sncf.osrd.train.InteractionType;
-import fr.sncf.osrd.train.InteractionTypeSet;
-import fr.sncf.osrd.train.TrackSectionRange;
-import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.TrainPath;
-import fr.sncf.osrd.train.TrainSchedule;
-import fr.sncf.osrd.train.TrainStop;
+import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
 public abstract class NavigatePhase {
@@ -49,6 +43,25 @@ public abstract class NavigatePhase {
                         InteractionType.HEAD,
                         stop.position,
                         new StopActionPoint(i, stop.stopDuration)));
+            }
+        }
+        interactions.sort(Comparator.comparingDouble(x -> x.position));
+    }
+
+    protected static void addVirtualInteractions(
+            ArrayList<Interaction> interactions,
+            TrackSectionLocation startLocation,
+            TrackSectionLocation endLocation,
+            TrainPath expectedPath,
+            List<VirtualPoint> virtualPoints) {
+        double startPathPosition = expectedPath.convertTrackLocation(startLocation);
+        double endPathPosition = expectedPath.convertTrackLocation(endLocation);
+        for (var virtualPoint : virtualPoints) {
+            if (startPathPosition <= virtualPoint.position && virtualPoint.position <= endPathPosition) {
+                interactions.add(new Interaction(
+                        InteractionType.HEAD,
+                        virtualPoint.position,
+                        new VirtualActionPoint(virtualPoint.name)));
             }
         }
         interactions.sort(Comparator.comparingDouble(x -> x.position));
@@ -129,7 +142,7 @@ public abstract class NavigatePhase {
                 eventPath.add(new Interaction(InteractionType.HEAD, distance, interactable));
             }
             if (interactable.getInteractionsType().interactWhenSeen()) {
-                var sightDistance = Double.min(interactable.getActionDistance(), driverSightDistance);
+                var sightDistance = Double.min(interactable.getSightDistance(), driverSightDistance);
                 var distance = pathLength + edgeDistToObj - sightDistance;
                 if (distance < 0)
                     distance = 0;
@@ -158,7 +171,7 @@ public abstract class NavigatePhase {
         }
 
         @Override
-        public double getActionDistance() {
+        public double getSightDistance() {
             return 0;
         }
 

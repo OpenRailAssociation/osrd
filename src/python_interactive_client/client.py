@@ -11,6 +11,7 @@ class EventType(IntEnum):
     TRAIN_MOVE_EVENT = 1
     TRAIN_REACHES_ACTION_POINT = 2
     TRAIN_RESTARTS = 3
+    SWITCH_MOVE = 3
 
     def serialize(self):
         return self.name
@@ -93,7 +94,7 @@ class InteractiveSimulation:
         check_response_type(response, {"session_initialized"})
         return response
 
-    async def create_simulation(self, simulation_path, successions_path=None):
+    async def create_simulation(self, simulation_path, successions_path=None, virtual_points=[]):
         sim = load_json(Path(simulation_path))
         successions = None
         if successions_path is not None:
@@ -104,6 +105,7 @@ class InteractiveSimulation:
             "train_schedules": sim["train_schedules"],
             "rolling_stocks": sim["rolling_stocks"],
             "successions": successions,
+            "virtual_points": virtual_points,
         })
         response = json.loads(await self.websocket.recv())
         check_response_type(response, {"simulation_created"})
@@ -137,7 +139,14 @@ class InteractiveSimulation:
 async def test(infra_path: Path, simulation_path: Path, rolling_stocks_path: Path):
     async with InteractiveSimulation.open_websocket("ws://localhost:9000/websockets/simulate") as simulation:
         print(await simulation.init(infra_path, rolling_stocks_path))
-        print(await simulation.create_simulation(simulation_path))
+        virtual_points = [{
+            "name": "virtual_point_test",
+            "location": {
+                "track_section": "ne.micro.foo_b",
+                "offset": 150
+                }
+            }]
+        print(await simulation.create_simulation(simulation_path, virtual_points=virtual_points))
         print(await simulation.watch_changes(ChangeType.all()))
 
         while True:

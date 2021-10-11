@@ -18,6 +18,7 @@ import fr.sncf.osrd.railjson.schema.RJSSuccessions;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
+import fr.sncf.osrd.railjson.schema.schedule.RJSVirtualPoint;
 import fr.sncf.osrd.railjson.schema.successiontable.RJSSuccessionTable;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -82,14 +83,15 @@ public class InteractiveSimulation {
     public void createSimulation(
             List<RJSTrainSchedule> rjsTrainSchedules,
             List<RJSRollingStock> rollingStocks,
-            List<RJSSuccessionTable> rjsSuccessions
+            List<RJSSuccessionTable> rjsSuccessions,
+            List<RJSVirtualPoint> virtualPoints
     ) throws IOException {
         if (!checkState(SessionState.INITIALIZED))
             return;
 
         var rjsSimulation = new RJSSimulation(rollingStocks, rjsTrainSchedules);
         try {
-            var trainSchedules = RJSSimulationParser.parse(infra, rjsSimulation, extraRollingStocks);
+            var trainSchedules = RJSSimulationParser.parse(infra, rjsSimulation, extraRollingStocks, virtualPoints);
             // load trains successions tables
             var successions = new ArrayList<SuccessionTable>();
             if (rjsSuccessions != null) {

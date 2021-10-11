@@ -36,7 +36,7 @@ public class OperationalPoint implements ActionPoint {
     }
 
     @Override
-    public double getActionDistance() {
+    public double getSightDistance() {
         return 0;
     }
 

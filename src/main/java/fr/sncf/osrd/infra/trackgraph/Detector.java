@@ -21,7 +21,7 @@ public class Detector extends Waypoint {
     }
 
     @Override
-    public double getActionDistance() {
+    public double getSightDistance() {
         return 0;
     }
 

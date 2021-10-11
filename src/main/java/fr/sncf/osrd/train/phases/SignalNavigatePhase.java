@@ -7,12 +7,7 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.train.Interaction;
-import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.TrainPath;
-import fr.sncf.osrd.train.TrainSchedule;
-import fr.sncf.osrd.train.TrainState;
-import fr.sncf.osrd.train.TrainStop;
+import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
@@ -32,14 +27,15 @@ public final class SignalNavigatePhase extends NavigatePhase {
             TrackSectionLocation startLocation,
             TrackSectionLocation endLocation,
             TrainPath expectedPath,
-            List<TrainStop> stops
-    ) {
+            List<TrainStop> stops,
+            List<VirtualPoint> virtualPoints) {
         var actionPointPath = trackSectionToActionPointPath(driverSightDistance,
                 expectedPath,
                 startLocation,
                 endLocation,
                 expectedPath.trackSectionPath);
         addStopInteractions(actionPointPath, startLocation, endLocation, expectedPath, stops);
+        addVirtualInteractions(actionPointPath, startLocation, endLocation, expectedPath, virtualPoints);
         return new SignalNavigatePhase(startLocation, endLocation, actionPointPath, expectedPath);
     }
 

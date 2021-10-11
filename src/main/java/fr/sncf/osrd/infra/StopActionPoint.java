@@ -22,7 +22,7 @@ public class StopActionPoint implements ActionPoint {
     }
 
     @Override
-    public double getActionDistance() {
+    public double getSightDistance() {
         return 0;
     }
 

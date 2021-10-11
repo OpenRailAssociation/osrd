@@ -4,6 +4,7 @@ import com.squareup.moshi.Json;
 import fr.sncf.osrd.interactive.InteractiveSimulation;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
+import fr.sncf.osrd.railjson.schema.schedule.RJSVirtualPoint;
 import fr.sncf.osrd.railjson.schema.successiontable.RJSSuccessionTable;
 
 import java.io.IOException;
@@ -19,8 +20,11 @@ public class CreateSimulationMessage extends ClientMessage {
     @Json(name = "successions")
     public List<RJSSuccessionTable> successions;
 
+    @Json(name = "virtual_points")
+    public List<RJSVirtualPoint> virtualPoints;
+
     @Override
     public void run(InteractiveSimulation interactiveSimulation) throws IOException {
-        interactiveSimulation.createSimulation(trainSchedules, rollingStocks, successions);
+        interactiveSimulation.createSimulation(trainSchedules, rollingStocks, successions, virtualPoints);
     }
 }
