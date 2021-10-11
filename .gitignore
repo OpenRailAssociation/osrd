@@ -2,6 +2,7 @@
 # Edit at https://www.gitignore.io/?templates=django
 
 setup.py
+report.xml
 
 ### Django ###
 *.log
@@ -134,10 +135,6 @@ dmypy.json
 .vscode/
 # tmp file
 .read_file
-
-# emacs
-\#*\#
-*~
 
 #env files
 *env

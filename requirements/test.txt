@@ -1,3 +1,0 @@
--r base.txt
-
-django-cors-headers==3.8.0
