@@ -4,7 +4,7 @@ import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.cbtc.CBTCNavigatePhase;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
+import fr.sncf.osrd.railjson.schema.schedule.*;
 import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.infra.Infra;
@@ -14,12 +14,10 @@ import fr.sncf.osrd.railjson.parser.exceptions.UnknownRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.UnknownRoute;
 import fr.sncf.osrd.railjson.parser.exceptions.UnknownTrackSection;
 import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.speedcontroller.generators.*;
 import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.train.TrainStop;
+import fr.sncf.osrd.train.VirtualPoint;
 import fr.sncf.osrd.train.decisions.KeyboardInput;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.train.phases.NavigatePhase;
@@ -37,6 +35,17 @@ public class RJSTrainScheduleParser {
             Function<String, RollingStock> rollingStockGetter,
             RJSTrainSchedule rjsTrainSchedule
     ) throws InvalidSchedule {
+        return parse(infra, rollingStockGetter, rjsTrainSchedule, null);
+    }
+
+
+    /** Parses a RailJSON train schedule */
+    public static TrainSchedule parse(
+            Infra infra,
+            Function<String, RollingStock> rollingStockGetter,
+            RJSTrainSchedule rjsTrainSchedule,
+            List<RJSVirtualPoint> rjsVirtualPoints
+    ) throws InvalidSchedule {
         var rollingStock = rollingStockGetter.apply(rjsTrainSchedule.rollingStock);
         if (rollingStock == null)
             throw new UnknownRollingStock(rjsTrainSchedule.rollingStock);
@@ -46,6 +55,8 @@ public class RJSTrainScheduleParser {
         var expectedPath = parsePath(infra, rjsTrainSchedule.phases, rjsTrainSchedule.routes, initialLocation);
 
         var stops = parseStops(rjsTrainSchedule.stops, infra, expectedPath);
+
+        var virtualPoints = parseVirtualPoints(rjsVirtualPoints, infra, expectedPath);
 
         var initialRouteID = rjsTrainSchedule.routes[0].id;
         var initialRoute = infra.routeGraph.routeMap.get(initialRouteID);
@@ -60,7 +71,7 @@ public class RJSTrainScheduleParser {
         var phases = new ArrayList<NavigatePhase>();
         var beginLocation = initialLocation;
         for (var rjsPhase : rjsTrainSchedule.phases) {
-            var phase = parsePhase(infra, beginLocation, rjsPhase, expectedPath, stops);
+            var phase = parsePhase(infra, beginLocation, rjsPhase, expectedPath, stops, virtualPoints);
             var endLocation = phase.getEndLocation();
             if (endLocation != null)
                 beginLocation = endLocation;
@@ -187,7 +198,8 @@ public class RJSTrainScheduleParser {
             TrackSectionLocation startLocation,
             RJSTrainPhase rjsPhase,
             TrainPath expectedPath,
-            List<TrainStop> stops
+            List<TrainStop> stops,
+            List<VirtualPoint> virtualPoints
     ) throws InvalidSchedule {
         var endLocation = parseLocation(infra, rjsPhase.endLocation);
         var driverSightDistance = rjsPhase.driverSightDistance;
@@ -196,9 +208,11 @@ public class RJSTrainScheduleParser {
             throw new InvalidSchedule("invalid driver sight distance");
 
         if (rjsPhase.getClass() == RJSTrainPhase.Navigate.class) {
-            return SignalNavigatePhase.from(driverSightDistance, startLocation, endLocation, expectedPath, stops);
+            return SignalNavigatePhase.from(driverSightDistance, startLocation, endLocation,
+                    expectedPath, stops, virtualPoints);
         } else if (rjsPhase.getClass() == RJSTrainPhase.CBTC.class) {
-            return CBTCNavigatePhase.from(driverSightDistance, startLocation, endLocation, expectedPath, stops);
+            return CBTCNavigatePhase.from(driverSightDistance, startLocation, endLocation,
+                    expectedPath, stops, virtualPoints);
         }
         throw new RuntimeException("unknown train phase");
     }
@@ -249,6 +263,23 @@ public class RJSTrainScheduleParser {
         for (var stop : res)
             if (stop.position < 0)
                 stop.position = path.length - 1e-3;
+        res.sort(Comparator.comparingDouble(stop -> stop.position));
+        return res;
+    }
+
+    private static List<VirtualPoint> parseVirtualPoints(
+            List<RJSVirtualPoint> rjsVirtualPoints,
+            Infra infra,
+            TrainPath path
+    ) throws InvalidSchedule {
+        var res = new ArrayList<VirtualPoint>();
+        if (rjsVirtualPoints == null)  {
+            return res;
+        }
+        for (var rjsVirtualPoint : rjsVirtualPoints) {
+            var position = path.convertTrackLocation(parseLocation(infra, rjsVirtualPoint.location));
+            res.add(new VirtualPoint(rjsVirtualPoint.name, position));
+        }
         res.sort(Comparator.comparingDouble(stop -> stop.position));
         return res;
     }

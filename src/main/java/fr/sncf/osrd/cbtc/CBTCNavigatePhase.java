@@ -7,13 +7,7 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.train.Interaction;
-import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.TrainPath;
-import fr.sncf.osrd.train.TrainSchedule;
-import fr.sncf.osrd.train.TrainState;
-import fr.sncf.osrd.train.TrainStatus;
-import fr.sncf.osrd.train.TrainStop;
+import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.phases.NavigatePhase;
 import fr.sncf.osrd.train.phases.NavigatePhaseState;
@@ -50,11 +44,17 @@ public final class CBTCNavigatePhase extends NavigatePhase {
      * @param stops the list of stopping points that the train will cross during the phase
      * @return The new CBTC navigation phase.
      */
-    public static CBTCNavigatePhase from(double driverSightDistance, TrackSectionLocation startLocation,
-            TrackSectionLocation endLocation, TrainPath expectedPath, List<TrainStop> stops) {
+    public static CBTCNavigatePhase from(
+            double driverSightDistance,
+            TrackSectionLocation startLocation,
+            TrackSectionLocation endLocation,
+            TrainPath expectedPath,
+            List<TrainStop> stops,
+            List<VirtualPoint> virtualPoints) {
         var actionPointPath = trackSectionToActionPointPath(driverSightDistance, expectedPath, startLocation,
                 endLocation, expectedPath.trackSectionPath);
         addStopInteractions(actionPointPath, startLocation, endLocation, expectedPath, stops);
+        addVirtualInteractions(actionPointPath, startLocation, endLocation, expectedPath, virtualPoints);
         return new CBTCNavigatePhase(startLocation, endLocation, actionPointPath, expectedPath);
     }
 

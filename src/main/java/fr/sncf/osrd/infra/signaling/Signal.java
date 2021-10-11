@@ -54,7 +54,7 @@ public class Signal implements ActionPoint {
     }
 
     @Override
-    public double getActionDistance() {
+    public double getSightDistance() {
         return sightDistance;
     }
 
