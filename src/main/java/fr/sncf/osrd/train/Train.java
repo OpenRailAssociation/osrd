@@ -115,8 +115,7 @@ public class Train {
             var path = lastState.path;
             var trainLength = lastState.trainSchedule.rollingStock.length;
             var firstTVD = path.getTVDSectionPathIndexAtPosition(max(0, path.length - trainLength));
-            var lastTVD = path.getTVDSectionPathIndexAtPosition(path.length);
-            for (var i = firstTVD; i <= lastTVD; i++) {
+            for (var i = firstTVD; i < path.tvdSectionPaths.size(); i++) {
                 var currentTvdSectionPath = path.tvdSectionPaths.get(i);
                 var index = currentTvdSectionPath.tvdSection.index;
                 var tvdSection = sim.infraState.getTvdSectionState(index);
