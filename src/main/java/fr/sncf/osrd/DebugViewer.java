@@ -10,6 +10,7 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainSchedule;
+import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.TrackSectionLocation;
@@ -280,6 +281,14 @@ public class DebugViewer extends ChangeConsumer {
         trains.put(trainName, trainData);
     }
 
+    private void deleteTrain(String trainId) {
+        var trainData = trains.get(trainId);
+        var spriteHead = trainData.spriteHead;
+        var spriteTail = trainData.spriteTail;
+        spriteManager.removeSprite(spriteHead.getId());
+        spriteManager.removeSprite(spriteTail.getId());
+    }
+
     private void updateTrain(TrainData trainData) {
         var spriteHead = trainData.spriteHead;
         var nextMove = trainData.nextMove;
@@ -355,6 +364,11 @@ public class DebugViewer extends ChangeConsumer {
         if (change.getClass() == Train.TrainCreatedChange.class) {
             var trainCreated = (Train.TrainCreatedChange) change;
             createTrain(trainCreated.schedule);
+            return;
+        }
+        if (change.getClass() == TrainState.TrainDisappearChange.class) {
+            var trainDisappear = (TrainState.TrainDisappearChange) change;
+            deleteTrain(trainDisappear.trainID);
             return;
         }
 
