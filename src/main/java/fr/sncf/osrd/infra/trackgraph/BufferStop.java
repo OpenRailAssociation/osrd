@@ -22,7 +22,7 @@ public class BufferStop extends Waypoint {
     }
 
     @Override
-    public double getActionDistance() {
+    public double getSightDistance() {
         return 0;
     }
 

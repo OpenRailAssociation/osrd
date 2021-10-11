@@ -1,31 +1,21 @@
 package fr.sncf.osrd.train;
 
 import static fr.sncf.osrd.Helpers.*;
-import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.TIME;
 import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN_MAX_DEC_TYPE;
-import static java.lang.Double.POSITIVE_INFINITY;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.infra.*;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.trackgraph.BufferStop;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
-import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import fr.sncf.osrd.speedcontroller.MarginTests;
 import fr.sncf.osrd.speedcontroller.SpeedInstructions;
-import fr.sncf.osrd.speedcontroller.generators.ConstructionAllowanceGenerator;
-import fr.sncf.osrd.speedcontroller.generators.LinearAllowanceGenerator;
-import fr.sncf.osrd.speedcontroller.generators.MarecoAllowanceGenerator;
-import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import fr.sncf.osrd.train.phases.NavigatePhase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
@@ -40,7 +30,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.stream.Collectors;
@@ -123,10 +112,11 @@ public class NonConstantDecTest {
                 new TrackSectionLocation(edge, 10000));
         var phases = new ArrayList<NavigatePhase>();
         var stops = Collections.singletonList(new TrainStop(path.length, 1));
+        var virtualPoints = new ArrayList<VirtualPoint>();
         phases.add(SignalNavigatePhase.from(
                 400,
                 startLocation,
-                new TrackSectionLocation(edge, 10000), path, stops));
+                new TrackSectionLocation(edge, 10000), path, stops, virtualPoints));
 
         var schedule = new TrainSchedule(
                 "test_train",

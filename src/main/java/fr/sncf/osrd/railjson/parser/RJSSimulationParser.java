@@ -1,5 +1,6 @@
 package fr.sncf.osrd.railjson.parser;
 
+import fr.sncf.osrd.railjson.schema.schedule.RJSVirtualPoint;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.infra.Infra;
@@ -19,14 +20,23 @@ public class RJSSimulationParser {
             Infra infra,
             RJSSimulation rjsSimulation
     ) throws InvalidSchedule, InvalidRollingStock {
-        return parse(infra, rjsSimulation, new TreeMap<>());
+        return parse(infra, rjsSimulation, new TreeMap<>(), null);
+    }
+
+    public static List<TrainSchedule> parse(
+            Infra infra,
+            RJSSimulation rjsSimulation,
+            Map<String, RollingStock> extraRollingStocks
+    ) throws InvalidSchedule, InvalidRollingStock {
+        return parse(infra, rjsSimulation, extraRollingStocks, null);
     }
 
     /** Parse a simulation manifest */
     public static List<TrainSchedule> parse(
             Infra infra,
             RJSSimulation rjsSimulation,
-            Map<String, RollingStock> extraRollingStocks
+            Map<String, RollingStock> extraRollingStocks,
+            List<RJSVirtualPoint> virtualPoints
     ) throws InvalidSchedule, InvalidRollingStock {
         var rollingStocks = new HashMap<String, RollingStock>();
         rollingStocks.putAll(extraRollingStocks);
@@ -37,7 +47,7 @@ public class RJSSimulationParser {
 
         var schedules = new ArrayList<TrainSchedule>();
         for (var rjsSchedule : rjsSimulation.trainSchedules)
-            schedules.add(RJSTrainScheduleParser.parse(infra, rollingStocks::get, rjsSchedule));
+            schedules.add(RJSTrainScheduleParser.parse(infra, rollingStocks::get, rjsSchedule, virtualPoints));
         return schedules;
     }
 }
