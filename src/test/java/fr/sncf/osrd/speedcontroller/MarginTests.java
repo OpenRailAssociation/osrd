@@ -75,16 +75,16 @@ public class MarginTests {
 
     /** Test the linear allowance */
     @ParameterizedTest
-    @ValueSource(doubles = {0, 50, 200})
+    @ValueSource(doubles = {149.9999, 150})
     public void testLinearAllowance(double value, TestInfo info) {
         var config = TestConfig.readResource(CONFIG_PATH).clearAllowances();
 
         var allowance = new LinearAllowance(TIME, value);
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
 
+        test.saveGraphs(info);
         var expected = test.baseTime() * (1 + value / 100);
         assertEquals(expected, test.testedTime(), expected * 0.01);
-        test.saveGraphs(info);
     }
 
     /** Test the construction margin */
@@ -93,8 +93,8 @@ public class MarginTests {
 
         var config = TestConfig.readResource(configPath).clearAllowances();
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
-        test.saveGraphs(info);
 
+        test.saveGraphs(info);
         var expected = test.baseTime() + value;
         assertEquals(expected, test.testedTime(), expected * 0.01);
     }

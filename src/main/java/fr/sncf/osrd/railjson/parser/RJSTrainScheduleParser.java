@@ -233,19 +233,18 @@ public class RJSTrainScheduleParser {
     private static List<TrainStop> parseStops(RJSTrainStop[] stops, Infra infra, TrainPath path)
             throws InvalidSchedule {
         var res = new ArrayList<TrainStop>();
-        if (stops != null) {
-            for (var stop : stops) {
-                if ((stop.position == null) == (stop.location == null))
-                    throw new InvalidSchedule("Train stop must specify exactly one of position or location");
-                double position;
-                if (stop.position != null)
-                    position = stop.position;
-                else
-                    position = path.convertTrackLocation(parseLocation(infra, stop.location));
-                res.add(new TrainStop(position, stop.duration));
-            }
-        } else {
-            res.add(new TrainStop(-1, 1));
+        if (stops == null) {
+            throw new InvalidSchedule("At least one train stop mst be created in simulation.json");
+        }
+        for (var stop : stops) {
+            if ((stop.position == null) == (stop.location == null))
+                throw new InvalidSchedule("Train stop must specify exactly one of position or location");
+            double position;
+            if (stop.position != null)
+                position = stop.position;
+            else
+                position = path.convertTrackLocation(parseLocation(infra, stop.location));
+            res.add(new TrainStop(position, stop.duration));
         }
         for (var stop : res)
             if (stop.position < 0)
