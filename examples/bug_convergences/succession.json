@@ -1,0 +1,36 @@
+{
+    "successions": [
+        {
+            "switch": "il.switch.4-3-1",
+            "table": [
+                "train.0",
+                "train.2",
+                "train.1"
+            ]
+        },
+        {
+            "switch": "il.switch.4-5-6",
+            "table": [
+                "train.0",
+                "train.2",
+                "train.1"
+            ]
+        },
+        {
+            "switch": "il.switch.11-10-9",
+            "table": [
+                "train.0",
+                "train.2",
+                "train.1"
+            ]
+        },
+        {
+            "switch": "il.switch.17-13-12",
+            "table": [
+                "train.0",
+                "train.2",
+                "train.1"
+            ]
+        }
+    ]
+}

@@ -2,6 +2,7 @@ package fr.sncf.osrd.infra;
 
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.train.TrackSectionRange;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +38,10 @@ public class TVDSectionPath {
 
     public EdgeDirection getStartTrackDirection() {
         return trackSections[0].direction;
+    }
+
+    public boolean contains(TrackSectionLocation location) {
+        return Arrays.stream(trackSections).anyMatch(range -> range.containsLocation(location));
     }
 
     @Override

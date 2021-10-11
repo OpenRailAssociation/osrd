@@ -1,5 +1,7 @@
 package fr.sncf.osrd.train;
 
+import static java.lang.Math.abs;
+
 import java.util.*;
 import fr.sncf.osrd.simulation.EntityChange;
 import org.slf4j.Logger;

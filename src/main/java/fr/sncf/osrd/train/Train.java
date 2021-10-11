@@ -1,11 +1,11 @@
 package fr.sncf.osrd.train;
 
-import static java.lang.Double.max;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.TVDSectionPath;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra_state.SignalState;
+import fr.sncf.osrd.infra_state.TVDSectionState;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
@@ -15,6 +15,8 @@ import fr.sncf.osrd.utils.DeepEqualsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 
 public class Train {
@@ -101,6 +103,35 @@ public class Train {
         lastScheduledEvent = clonedState.simulatePhase(this, sim);
     }
 
+
+    /** Frees all the tvd sections currently reserved by the train */
+    private void freeAllReservedTVDSections(Simulation sim) throws SimulationError {
+        var path = lastState.path;
+        var trainTailLocation = lastState.location.trackSectionRanges.getLast().getBeginLocation();
+
+        // all the TVD sections in routes we have already reached
+        var tvdSectionsOnOnceReservedRoutes = new ArrayList<TVDSectionPath>();
+        for (int i = 0; i <= lastState.requestedRouteIndex; i++)
+            tvdSectionsOnOnceReservedRoutes.addAll(path.routePath.get(i).tvdSectionsPaths);
+
+        var beforeTrainTail = true;
+        for (var currentTvdSectionPath : tvdSectionsOnOnceReservedRoutes) {
+
+            if (currentTvdSectionPath.contains(trainTailLocation))
+                beforeTrainTail = false;
+
+            // ignores the tvd sections before the start of the train (already freed)
+            if (beforeTrainTail)
+                continue;
+
+            var index = currentTvdSectionPath.tvdSection.index;
+            var tvdSection = sim.infraState.getTvdSectionState(index);
+
+            tvdSection.free(sim);
+        }
+
+    }
+
     /** Restarts the train after a stop */
     public void restart(Simulation sim) throws SimulationError {
         var clonedState = lastState.clone();
@@ -112,20 +143,7 @@ public class Train {
             sim.publishChange(change);
 
             // Free the tvdSections the train is on
-            var path = lastState.path;
-            var trainLength = lastState.trainSchedule.rollingStock.length;
-            var firstTVD = path.getTVDSectionPathIndexAtPosition(max(0, path.length - trainLength));
-            for (var i = firstTVD; i < path.tvdSectionPaths.size(); i++) {
-                var currentTvdSectionPath = path.tvdSectionPaths.get(i);
-                var index = currentTvdSectionPath.tvdSection.index;
-                var tvdSection = sim.infraState.getTvdSectionState(index);
-
-                // The condition shouldn't be needed,
-                // but there are cases where the train is on a TVD that isn't reserved
-                if (tvdSection.isReserved())
-                    tvdSection.free(sim);
-            }
-
+            freeAllReservedTVDSections(sim);
             return;
         }
         logger.info("restarting train {}", getID());
