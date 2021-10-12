@@ -8,7 +8,6 @@ public class ClientMessageDecoder implements Decoder.Text<ClientMessage> {
 
     @Override
     public ClientMessage decode(String s) throws DecodeException {
-        System.out.println("decoding stuff");
         try {
             return ClientMessage.adapter.fromJson(s);
         } catch (IOException e) {

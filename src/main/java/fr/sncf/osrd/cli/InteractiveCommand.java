@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
+import java.nio.charset.StandardCharsets;
 import org.glassfish.tyrus.server.Server;
 import jakarta.websocket.DeploymentException;
 
@@ -25,24 +25,23 @@ public final class InteractiveCommand implements CliCommand {
 
     /** Runs the command, and return a status code */
     public int run() {
-        var properties = new HashMap<String, Object>();
-        properties.put("test", 42);
         Server server = new Server(
                 "localhost",
                 port,
                 "/websockets",
-                properties,
+                null,
                 InteractiveEndpoint.class
         );
         try {
-            logger.info("Lancement du serveur");
+            logger.info("The server is starting...");
             server.start();
-            System.out.print("Appuyer sur Entree pour arreter le serveur.");
-            new BufferedReader(new InputStreamReader(System.in)).readLine();
+            System.out.print("Press enter to stop the server.");
+            var inputStream = new InputStreamReader(System.in, StandardCharsets.UTF_8);
+            new BufferedReader(inputStream).readLine();
         } catch (IOException | DeploymentException e) {
             throw new RuntimeException(e);
         } finally {
-            logger.info("Arret du serveur");
+            logger.info("The server is shutting down...");
             server.stop();
         }
         return 0;
