@@ -1,5 +1,6 @@
 from heapq import heappush, heappop
 import json
+from pathlib import Path
 
 
 def write_json(filename, data):
@@ -1457,7 +1458,9 @@ class Infra:
 
 class Simulation:
     def build_rolling_stocks(self):
-        self.json["rolling_stocks"] = []
+        rolling_stock_path = Path(__file__).parent.parent / "examples/rolling_stocks/fast_rolling_stock.json"
+        with open(rolling_stock_path) as f:
+            self.json["rolling_stocks"] = [json.load(f)]
 
     def __init__(self, infra):
         self.json = dict()
@@ -1510,7 +1513,8 @@ class Simulation:
         return final_path
 
     def add_schedule(self, departure_time, *track_list):
-        assert track_list[0] != track_list[-1]
+        if len(track_list) < 2:
+            raise Exception("Schedule must have at least two path points")
         path = self.route_path_list(track_list)
         index = len(self.json["train_schedules"])
         self.json["train_schedules"].append(
@@ -1531,7 +1535,7 @@ class Simulation:
                             "track_section": uname_track(track_list[-1]),
                             "offset": self.lengths[track_list[-1]] // 2,
                         },
-                        "type": "cbtc" if cbtc else "navigate",
+                        "type": "navigate",
                     }
                 ],
             }
@@ -1575,7 +1579,7 @@ CONFIG_JSON = {
     "infra_path": "infra.json",
     "simulation_path": "simulation.json",
     "succession_path": "succession.json",
-    "extra_rolling_stock_dirs": ["../../examples/rolling_stocks"],
+    "extra_rolling_stock_dirs": [],
     "show_viewer": True,
     "realtime_viewer": True,
     "change_replay_check": True,
