@@ -10,6 +10,7 @@ CODEOWNERS        @DGEXSolutions/osrd-backend-maintainers
 /src/main/java/fr/sncf/osrd/config            @DGEXSolutions/osrd-backend-maintainers
 /src/main/java/fr/sncf/osrd/infra             @multun @DGEXSolutions/osrd-backend-maintainers
 /src/main/java/fr/sncf/osrd/infra_state       @multun @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/interactive       @flomonster @multun @DGEXSolutions/osrd-backend-maintainers
 /src/main/java/fr/sncf/osrd/railjson          @DGEXSolutions/osrd-backend-maintainers
 /src/main/java/fr/sncf/osrd/railml            @flomonster @multun @DGEXSolutions/osrd-backend-maintainers
 /src/main/java/fr/sncf/osrd/simulation        @multun @DGEXSolutions/osrd-backend-maintainers
@@ -19,6 +20,9 @@ CODEOWNERS        @DGEXSolutions/osrd-backend-maintainers
 /src/main/java/fr/sncf/osrd/DebugViewer.java  @DGEXSolutions/osrd-backend-maintainers
 *Physics*.java                                @DGEXSolutions/osrd-physics
 *Integrator*.java                             @DGEXSolutions/osrd-physics
+
+# Python Interactive Client
+/src/python_interactive_client                @flomonster @multun
 
 # buildsystem stuff
 /*.gradle         @multun
