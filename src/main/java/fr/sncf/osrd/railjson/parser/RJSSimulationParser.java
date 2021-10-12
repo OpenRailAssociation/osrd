@@ -1,6 +1,6 @@
 package fr.sncf.osrd.railjson.parser;
 
-import fr.sncf.osrd.RollingStock;
+import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
