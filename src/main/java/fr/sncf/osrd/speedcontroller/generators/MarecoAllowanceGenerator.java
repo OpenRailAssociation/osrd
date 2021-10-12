@@ -3,7 +3,7 @@ package fr.sncf.osrd.speedcontroller.generators;
 import static java.util.Collections.max;
 import static java.util.Collections.min;
 
-import fr.sncf.osrd.RollingStock;
+import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarecoAllowance.MarginType;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;

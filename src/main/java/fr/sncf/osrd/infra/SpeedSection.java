@@ -1,6 +1,6 @@
 package fr.sncf.osrd.infra;
 
-import fr.sncf.osrd.RollingStock;
+import fr.sncf.osrd.train.RollingStock;
 
 public class SpeedSection {
     /**

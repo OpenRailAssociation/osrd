@@ -1,8 +1,7 @@
-package fr.sncf.osrd;
+package fr.sncf.osrd.train;
 
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.train.TrainFeature;
 
 
 /**

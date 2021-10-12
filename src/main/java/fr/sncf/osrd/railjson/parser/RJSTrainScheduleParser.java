@@ -1,6 +1,6 @@
 package fr.sncf.osrd.railjson.parser;
 
-import fr.sncf.osrd.RollingStock;
+import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.cbtc.CBTCNavigatePhase;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
