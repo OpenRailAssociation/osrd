@@ -59,8 +59,9 @@ const OSRDSimulation = () => {
           `${trainscheduleURI}results/`,
           { train_ids: trainSchedulesIDs.join(',') },
         );
-        simulationLocal.sort((a, b) => a.stops[0].time > b.stops[0].time);
+        // simulationLocal.sort((a, b) => a.stops[0].time > b.stops[0].time);
         dispatch(updateSimulation({ trains: simulationLocal }));
+        console.log('coucou', simulationLocal);
       } catch (e) {
         dispatch(setFailure({
           name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
@@ -120,11 +121,11 @@ const OSRDSimulation = () => {
                     {simulation.trains[selectedTrain].name}
                   </div>
                   <div className="small mr-1">
-                    {sec2time(simulation.trains[selectedTrain].stops[0].time)}
+                    {sec2time(simulation.trains[selectedTrain].base.stops[0].time)}
                   </div>
                   <div className="small">
                     {sec2time(simulation.trains[selectedTrain]
-                      .stops[simulation.trains[selectedTrain].stops.length - 1].time)}
+                      .base.stops[simulation.trains[selectedTrain].base.stops.length - 1].time)}
                   </div>
                   <i className="ml-1 icons-arrow-down ml-auto" />
                 </div>

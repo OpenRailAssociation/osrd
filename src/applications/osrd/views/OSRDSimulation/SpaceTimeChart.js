@@ -149,18 +149,18 @@ const createTrain = (keyValues, simulationTrains) => {
     dataSimulationTrain.id = train.id;
     dataSimulationTrain.name = train.name;
     dataSimulationTrain.trainNumber = trainNumber;
-    dataSimulationTrain.headPosition = formatStepsWithTimeMulti(train.head_positions);
-    dataSimulationTrain.tailPosition = formatStepsWithTimeMulti(train.tail_positions);
+    dataSimulationTrain.headPosition = formatStepsWithTimeMulti(train.base.head_positions);
+    dataSimulationTrain.tailPosition = formatStepsWithTimeMulti(train.base.tail_positions);
     dataSimulationTrain.routeEndOccupancy = formatStepsWithTime(
-      makeStairCase(train.route_end_occupancy),
+      makeStairCase(train.base.route_end_occupancy),
     );
     dataSimulationTrain.routeBeginOccupancy = formatStepsWithTime(
-      makeStairCase(train.route_begin_occupancy),
+      makeStairCase(train.base.route_begin_occupancy),
     );
     dataSimulationTrain.areaBlock = mergeDatasArea(
       dataSimulationTrain.routeEndOccupancy, dataSimulationTrain.routeBeginOccupancy, keyValues,
     );
-    dataSimulationTrain.speed = formatStepsWithTime(train.speeds);
+    dataSimulationTrain.speed = formatStepsWithTime(train.base.speeds);
     return dataSimulationTrain;
   });
   return dataSimulation;
@@ -244,7 +244,7 @@ export default function SpaceTimeChart() {
   useEffect(() => {
     if (dragEnding) {
       changeTrain({
-        departure_time: simulation.trains[selectedTrain].stops[0].time,
+        departure_time: simulation.trains[selectedTrain].base.stops[0].time,
       }, simulation.trains[selectedTrain].id);
       setDragEnding(false);
     }

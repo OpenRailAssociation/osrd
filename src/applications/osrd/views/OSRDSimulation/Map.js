@@ -89,12 +89,12 @@ const Map = (props) => {
     // First find trains where actual time from position is between start & stop
     const concernedTrains = [];
     simulation.trains.forEach((train, idx) => {
-      if (actualTime >= train.head_positions[0][0].time
-        && actualTime <= train.head_positions[
-          train.head_positions.length - 1][
-          train.head_positions[train.head_positions.length - 1].length - 1].time
+      if (actualTime >= train.base.head_positions[0][0].time
+        && actualTime <= train.base.head_positions[
+          train.base.head_positions.length - 1][
+          train.base.head_positions[train.base.head_positions.length - 1].length - 1].time
         && idx !== selectedTrain) {
-        const interpolation = interpolateOnTime(train, ['time', 'position'], ['head_positions', 'speeds'], actualTime);
+        const interpolation = interpolateOnTime(train.base, ['time', 'position'], ['head_positions', 'speeds'], actualTime);
         if (interpolation.head_positions && interpolation.speeds) {
           concernedTrains.push({
             ...interpolation,
@@ -198,7 +198,7 @@ const Map = (props) => {
     if (!isPlaying && e) {
       const line = lineString(geojsonPath.geometry.coordinates);
       const cursorPoint = point(e.lngLat);
-      const startCoordinates = getDirection(simulation.trains[selectedTrain].head_positions)
+      const startCoordinates = getDirection(simulation.trains[selectedTrain].base.head_positions)
         ? [
           geojsonPath.geometry.coordinates[0][0],
           geojsonPath.geometry.coordinates[0][1],
@@ -218,7 +218,7 @@ const Map = (props) => {
       const sliced = lineSlice(start, cursorPoint, line);
       const positionLocal = lineLength(sliced, { units: 'kilometers' }) * 1000;
       const timePositionLocal = interpolateOnPosition(
-        { speed: simulation.trains[selectedTrain].speeds },
+        { speed: simulation.trains[selectedTrain].base.speeds },
         ['position', 'speed'],
         positionLocal,
       );

@@ -28,11 +28,11 @@ export const updatePointers = (
   });
 };
 
-const updateChart = (chart, keyValues, rotate) => {
+const updateChart = (chart, keyValues, rotate, fixedAxe) => {
   // recover the new scale
-  const newX = d3.event.sourceEvent.shiftKey && rotate
+  const newX = d3.event.sourceEvent.shiftKey && fixedAxe === 'x' && rotate
     ? chart.x : d3.event.transform.rescaleX(chart.x);
-  const newY = d3.event.sourceEvent.shiftKey && !rotate
+  const newY = d3.event.sourceEvent.shiftKey && fixedAxe === 'y' && !rotate
     ? chart.y : d3.event.transform.rescaleY(chart.y);
 
   // update axes with these new boundaries
@@ -114,10 +114,10 @@ const enableInteractivity = (
     .on('zoom', () => {
       dispatch(updateContextMenu(undefined));
       // Permit zoom if shift pressed, if only move or if factor > .5
-      if ((d3.event.sourceEvent.shiftKey
+      if (d3.event.sourceEvent.shiftKey
         || d3.event.transform.k >= 1
-        || zoomLevel >= 0.5)
-        && (chart.y.domain()[0] >= -100 || d3.event.transform.y >= 0 || d3.event.transform.k !== 1)) {
+        || zoomLevel >= 0.25) {
+        // (chart.y.domain()[0] >= -100 || d3.event.transform.y >= 0 || d3.event.transform.k !== 1)
         setZoomLevel(zoomLevel * d3.event.transform.k);
         setYPosition(yPosition + d3.event.transform.y);
         const zoomFunctions = updateChart(chart, keyValues, rotate);

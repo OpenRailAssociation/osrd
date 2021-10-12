@@ -27,7 +27,7 @@ function formatStops(stop) {
 export default function TimeTable() {
   const { t } = useTranslation(['simulation']);
   const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
-  const data = simulation.trains[selectedTrain].stops;
+  const data = simulation.trains[selectedTrain].base.stops;
 
   return (
     <>

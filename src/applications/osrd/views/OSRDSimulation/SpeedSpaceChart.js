@@ -46,7 +46,7 @@ export default function SpeedSpaceChart() {
 
   // Prepare data
   const dataSimulation = {};
-  dataSimulation.speed = simulation.trains[selectedTrain].speeds.map(
+  dataSimulation.speed = simulation.trains[selectedTrain].base.speeds.map(
     (step) => ({ ...step, speed: step.speed * 3.6 }),
   );
   dataSimulation.areaBlock = mergeDatasArea(dataSimulation.speed, undefined, keyValues);

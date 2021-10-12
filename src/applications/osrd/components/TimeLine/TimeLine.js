@@ -9,9 +9,9 @@ import { updateChart, updateMustRedraw } from 'reducers/osrdsimulation';
 
 const drawTrains = (trains, selectedTrain, xScale, svg, height) => {
   trains.forEach((train, idx) => {
-    const startTime = train.stops[0].time;
-    const endTime = train.stops[train.stops.length - 1].time;
-    const direction = getDirection(train.head_positions);
+    const startTime = train.base.stops[0].time;
+    const endTime = train.base.stops[train.base.stops.length - 1].time;
+    const direction = getDirection(train.base.head_positions);
 
     const y1 = direction ? height - 4 : 4;
     const y2 = direction ? 4 : height - 4;
@@ -35,10 +35,10 @@ export default function TimeLine() {
   const [svgState, setSvg] = useState(undefined);
   const dataRange = [
     d3.min(simulation.trains, (train) => d3.min(
-      train.head_positions, (section) => d3.min(section, (step) => step.time),
+      train.base.head_positions, (section) => d3.min(section, (step) => step.time),
     )),
     d3.max(simulation.trains, (train) => d3.max(
-      train.head_positions, (section) => d3.max(section, (step) => step.time),
+      train.base.head_positions, (section) => d3.max(section, (step) => step.time),
     )),
   ];
 

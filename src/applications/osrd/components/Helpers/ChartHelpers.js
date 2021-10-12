@@ -70,28 +70,30 @@ export const handleWindowResize = (
 // Time shift a train
 export const timeShiftTrain = (train, value) => ({
   ...train,
-  head_positions: train.head_positions.map(
-    (section) => section.map(
+  base: {
+    head_positions: train.base.head_positions.map(
+      (section) => section.map(
+        (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+      ),
+    ),
+    tail_positions: train.base.tail_positions.map(
+      (section) => section.map(
+        (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+      ),
+    ),
+    route_end_occupancy: train.base.route_end_occupancy.map(
       (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
     ),
-  ),
-  tail_positions: train.tail_positions.map(
-    (section) => section.map(
+    route_begin_occupancy: train.base.route_begin_occupancy.map(
       (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
     ),
-  ),
-  route_end_occupancy: train.route_end_occupancy.map(
-    (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
-  ),
-  route_begin_occupancy: train.route_begin_occupancy.map(
-    (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
-  ),
-  speeds: train.speeds.map(
-    (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
-  ),
-  stops: train.stops.map(
-    (stop) => ({ ...stop, time: offsetSeconds(stop.time + value) }),
-  ),
+    speeds: train.base.speeds.map(
+      (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+    ),
+    stops: train.base.stops.map(
+      (stop) => ({ ...stop, time: offsetSeconds(stop.time + value) }),
+    ),
+  },
 });
 
 // Merge two curves for creating area between

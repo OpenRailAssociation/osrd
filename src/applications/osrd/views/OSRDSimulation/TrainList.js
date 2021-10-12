@@ -57,7 +57,7 @@ export default function TrainsList(props) {
     setInputTime(newStartTime);
     const offset = Math.floor(
       (time2datetime(debouncedInputTime) - sec2datetime(
-        simulation.trains[idx].stops[0].time,
+        simulation.trains[idx].base.stops[0].time,
       )) / 1000,
     );
     const trains = Array.from(simulation.trains);
@@ -98,7 +98,7 @@ export default function TrainsList(props) {
               <div
                 className="cell-inner cell-inner-button"
                 role="button"
-                onClick={() => changeSelectedTrain(idx, 'name', train.name, sec2time(train.stops[0].time))}
+                onClick={() => changeSelectedTrain(idx, 'name', train.name, sec2time(train.base.stops[0].time))}
                 tabIndex={0}
               >
                 {trainNameClickedIDX === idx && typeOfInputFocused === 'name' ? (
@@ -118,7 +118,7 @@ export default function TrainsList(props) {
               <div
                 className="cell-inner cell-inner-button"
                 role="button"
-                onClick={() => changeSelectedTrain(idx, 'time', train.name, sec2time(train.stops[0].time))}
+                onClick={() => changeSelectedTrain(idx, 'time', train.name, sec2time(train.base.stops[0].time))}
                 tabIndex={0}
               >
                 {trainNameClickedIDX === idx && typeOfInputFocused === 'time' ? (
@@ -126,15 +126,15 @@ export default function TrainsList(props) {
                     type="time"
                     id="trainlist-time"
                     onChange={(e) => changeTrainStartTime(e.target.value, idx)}
-                    value={sec2time(train.stops[0].time)}
+                    value={sec2time(train.base.stops[0].time)}
                     noMargin
                     focus={typeOfInputFocused === 'time'}
                     sm
                   />
-                ) : sec2time(train.stops[0].time)}
+                ) : sec2time(train.base.stops[0].time)}
               </div>
             </td>
-            <td><div className="cell-inner">{sec2time(train.stops[train.stops.length - 1].time)}</div></td>
+            <td><div className="cell-inner">{sec2time(train.base.stops[train.base.stops.length - 1].time)}</div></td>
             <td><div className="cell-inner">{train.labels && train.labels.join(' / ')}</div></td>
             <td>
               <div className="cell-inner">
