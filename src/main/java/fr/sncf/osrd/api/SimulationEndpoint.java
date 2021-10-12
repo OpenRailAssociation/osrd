@@ -251,7 +251,7 @@ public class SimulationEndpoint implements Take {
                 result.signalChanges.add(new SimulationResultSignalChange(sim.getTime(), signal, aspects));
             } else if (change.getClass() == RestartTrainPlanned.class) {
                 var stopReached = (RestartTrainPlanned) change;
-                var trainResult = getTrainResult(stopReached.train.getName());
+                var trainResult = getTrainResult(stopReached.train.getID());
                 trainResult.stopReaches.add(new SimulationResultStopReach(sim.getTime(), stopReached.stopIndex));
             }
         }

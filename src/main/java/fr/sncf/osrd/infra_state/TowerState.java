@@ -133,7 +133,7 @@ public class TowerState {
         for (var tvdSectionPath : request.routeState.route.tvdSectionsPaths) {
             var tvdSectionIndex = tvdSectionPath.tvdSection.index;
             if (sim.infraState.getTvdSectionState(tvdSectionIndex).isReserved()) {
-                System.out.println("TOWER NOT FREE : " + request.train.getName() + " : " + request.routeState.route.id);
+                System.out.println("TOWER NOT FREE : " + request.train.getID() + " : " + request.routeState.route.id);
                 return;
             }
         }
@@ -143,7 +143,7 @@ public class TowerState {
                 plan(s.id, trainID);
             }
             if (!isNext(s.id, trainID)) { // check if next
-                System.out.println("TOWER NOT NEXT : " + request.train.getName() + " : " + request.routeState.route.id);
+                System.out.println("TOWER NOT NEXT : " + request.train.getID() + " : " + request.routeState.route.id);
                 return;
             }
         }
@@ -156,11 +156,11 @@ public class TowerState {
         // go to next train to each switch of the route
         for (var s : request.routeState.route.switchesGroup.keySet()) {
             next(s.id);
-            state.get(s.id).currentTrainAllowed = request.train.getName();
+            state.get(s.id).currentTrainAllowed = request.train.getID();
         }
 
         // reserve the route
-        System.out.println("TOWER ACCEPTED : " + request.train.getName() + " : " + request.routeState.route.id);
+        System.out.println("TOWER ACCEPTED : " + request.train.getID() + " : " + request.routeState.route.id);
         request.routeState.reserve(sim, request.train);
     }
 
@@ -176,7 +176,7 @@ public class TowerState {
         if (!lastRequestedRoute.containsKey(trainID) || !lastRequestedRoute.get(trainID).equals(routeState.route.id)) {
             lastRequestedRoute.put(trainID, routeState.route.id);
 
-            System.out.println("TOWER REQUEST : " + train.getName() + " : " + routeState.route.id);
+            System.out.println("TOWER REQUEST : " + train.getID() + " : " + routeState.route.id);
 
             var request = new Request(train, routeState);
             train.getLastState().requestedRouteIndex += 1;

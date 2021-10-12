@@ -177,7 +177,7 @@ public abstract class NavigatePhase {
 
         @Override
         public void interact(Simulation sim, Train train, InteractionType actionType) {
-            var change = new PassageOnSwitch(sim, train.getName(), switchId);
+            var change = new PassageOnSwitch(sim, train.getID(), switchId);
             sim.publishChange(change);
         }
 

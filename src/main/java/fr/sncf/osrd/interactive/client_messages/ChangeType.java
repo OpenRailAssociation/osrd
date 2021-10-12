@@ -11,6 +11,13 @@ import java.util.Map;
 public enum ChangeType {
     ROUTE_STATUS_CHANGE(RouteState.RouteStatusChange.class, SerializedRouteStatus.class);
 
+    private static final Map<Class<? extends Change>, ChangeType> changeTypeMap = new HashMap<>();
+
+    static {
+        for (var changeType : ChangeType.values())
+            changeTypeMap.put(changeType.internalChangeType, changeType);
+    }
+
     public final Class<? extends Change> internalChangeType;
     public final Class<? extends SerializedChange> serializedChangeType;
 
@@ -27,10 +34,4 @@ public enum ChangeType {
         return changeTypeMap.get(internalType);
     }
 
-    private static final Map<Class<? extends Change>, ChangeType> changeTypeMap = new HashMap<>();
-
-    static {
-        for (var changeType : ChangeType.values())
-            changeTypeMap.put(changeType.internalChangeType, changeType);
-    }
 }

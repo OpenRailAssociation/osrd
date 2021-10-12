@@ -20,7 +20,7 @@ import java.util.Set;
 public class Train {
     static final Logger logger = LoggerFactory.getLogger(Train.class);
 
-    public String getName() {
+    public String getID() {
         return schedule.trainID;
     }
 
@@ -91,11 +91,11 @@ public class Train {
         if (lastScheduledEvent != null && lastScheduledEvent.getState() == TimelineEvent.State.SCHEDULED)
             return;
         if (lastState.status == TrainStatus.REACHED_DESTINATION) {
-            logger.info("train {} reached destination, aborting planning", getName());
+            logger.info("train {} reached destination, aborting planning", getID());
             return;
         }
 
-        logger.info("planning the next move for train {}", getName());
+        logger.info("planning the next move for train {}", getID());
         var clonedState = lastState.clone();
         clonedState.time = sim.getTime();
         lastScheduledEvent = clonedState.simulatePhase(this, sim);
@@ -129,7 +129,7 @@ public class Train {
 
             return;
         }
-        logger.info("restarting train {}", getName());
+        logger.info("restarting train {}", getID());
         lastScheduledEvent = clonedState.simulatePhase(this, sim);
     }
 
@@ -202,7 +202,7 @@ public class Train {
         @Override
         public Train apply(Simulation sim) {
             var train = new Train(schedule, initialState.clone());
-            sim.trains.put(train.getName(), train);
+            sim.trains.put(train.getID(), train);
             return train;
         }
 

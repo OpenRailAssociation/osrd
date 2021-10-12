@@ -46,7 +46,7 @@ public final class TrainMoveEvent extends TimelineEvent {
         if (other.getClass() != TrainMoveEvent.class)
             return false;
         var o = (TrainMoveEvent) other;
-        return o.train.getName().equals(train.getName())
+        return o.train.getID().equals(train.getID())
                 && o.trainStateChange.deepEquals(trainStateChange);
     }
 
@@ -57,7 +57,7 @@ public final class TrainMoveEvent extends TimelineEvent {
             Train train,
             Train.TrainStateChange trainStateChange
     ) {
-        var change = new TrainPlannedMove(sim, actionTime, train.getName(), trainStateChange);
+        var change = new TrainPlannedMove(sim, actionTime, train.getID(), trainStateChange);
         var event = change.apply(sim, train);
         sim.publishChange(change);
         return event;
