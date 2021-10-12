@@ -1,0 +1,30 @@
+CODEOWNERS        @DGEXSolutions/osrd-backend-maintainers
+
+/specifications   @flomonster
+
+# java stuff
+/src/main/java/fr/sncf/osrd/api               @flomonster
+/src/main/java/fr/sncf/osrd/cbtc              @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/cli               @multun
+/src/main/java/fr/sncf/osrd/config            @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/infra             @multun
+/src/main/java/fr/sncf/osrd/infra_state       @multun
+/src/main/java/fr/sncf/osrd/railjson          @flomonster @multun @eckter
+/src/main/java/fr/sncf/osrd/railml            @flomonster @multun
+/src/main/java/fr/sncf/osrd/simulation        @multun
+/src/main/java/fr/sncf/osrd/speedcontroller   @eckter
+/src/main/java/fr/sncf/osrd/train             @eckter @multun
+/src/main/java/fr/sncf/osrd/utils             @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/DebugViewer.java  @DGEXSolutions/osrd-backend-maintainers
+*Physics*.java                                @DGEXSolutions/osrd-physics
+*Integrator*.java                             @DGEXSolutions/osrd-physics
+
+# buildsystem stuff
+/*.gradle         @multun
+/gradle           @multun
+/config           @multun
+/README.md        @multun
+/.gitlab-ci.yml   @pguenezan @theophanevie @multun
+/Dockerfile       @pguenezan @theophanevie @multun
+/chart            @pguenezan @theophanevie
+/chart/templates/apidefinition.yaml  @flomonster
