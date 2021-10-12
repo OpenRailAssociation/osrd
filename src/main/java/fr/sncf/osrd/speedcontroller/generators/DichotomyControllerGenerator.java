@@ -1,6 +1,7 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
 
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.train.TrainSchedule;
@@ -77,9 +78,14 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         var higherBound = getFirstHighEstimate();
         var firstGuess = getFirstGuess();
 
-        // marche de base
-        // the binary search condition should be on the total time
-        var time = evalRunTime(sim, schedule, maxSpeedControllers);
+        var totalStopsDuration = 0;
+        for (var stop : schedule.stops)
+            totalStopsDuration += stop.stopDuration;
+
+        // base run
+        // the binary search condition should be on the total time,
+        // without the total time the train is stopped
+        var time = evalRunTime(sim, schedule, maxSpeedControllers) - totalStopsDuration;
         var targetTime = getTargetTime(time);
 
         double nextValue = firstGuess;
@@ -87,7 +93,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         int i = 0;
         do {
             nextSpeedControllers = getSpeedControllers(schedule, nextValue, sectionBegin, sectionEnd);
-            time = evalRunTime(sim, schedule, nextSpeedControllers);
+            time = evalRunTime(sim, schedule, nextSpeedControllers) - totalStopsDuration;
             if (time > targetTime)
                 lowerBound = nextValue;
             else

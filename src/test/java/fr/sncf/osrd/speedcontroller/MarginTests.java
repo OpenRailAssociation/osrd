@@ -75,7 +75,7 @@ public class MarginTests {
 
     /** Test the linear allowance */
     @ParameterizedTest
-    @ValueSource(doubles = {149.9999, 150})
+    @ValueSource(doubles = {0, 50, 200})
     public void testLinearAllowance(double value, TestInfo info) {
         var config = TestConfig.readResource(CONFIG_PATH).clearAllowances();
 
