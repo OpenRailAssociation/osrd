@@ -10,7 +10,7 @@ from dataclasses import dataclass, asdict
 
 class EventType(IntEnum):
     TRAIN_CREATED = 0
-    TRAIN_MOVE_EVENT = 1
+    TRAIN_MOVE = 1
     TRAIN_REACHES_ACTION_POINT = 2
     TRAIN_RESTARTS = 3
     SWITCH_MOVE = 4

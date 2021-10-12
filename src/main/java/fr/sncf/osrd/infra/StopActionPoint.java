@@ -68,7 +68,7 @@ public class StopActionPoint implements ActionPoint {
         public boolean deepEquals(TimelineEvent other) {
             if (!(other instanceof RestartTrainEvent))
                 return false;
-            return train.getName().equals(((RestartTrainEvent) other).train.getName());
+            return train.getID().equals(((RestartTrainEvent) other).train.getID());
         }
 
         public static class RestartTrainPlanned extends Simulation.TimelineEventCreated {
@@ -95,7 +95,7 @@ public class StopActionPoint implements ActionPoint {
 
             @Override
             public String toString() {
-                return String.format("RestartTrainPlanned { train=%s, stop_index=%s }", train.getName(), stopIndex);
+                return String.format("RestartTrainPlanned { train=%s, stop_index=%s }", train.getID(), stopIndex);
             }
         }
     }

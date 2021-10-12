@@ -87,7 +87,7 @@ public class CBTCEvent extends TimelineEvent {
         public String toString() {
             return String.format(
                     "CBTCEventPlanned { trainId=%s - scheduledTime=%f}",
-                    train.getName(),
+                    train.getID(),
                     eventId.scheduledTime
                 );
         }

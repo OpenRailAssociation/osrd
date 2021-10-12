@@ -3,7 +3,7 @@ package fr.sncf.osrd.train.phases;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.Predicate;
-import fr.sncf.osrd.infra.StopActionPoint;
+
 import fr.sncf.osrd.infra.signaling.AspectConstraint;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra_state.SignalState;
@@ -122,7 +122,7 @@ public abstract class NavigatePhaseState implements DeepComparable<NavigatePhase
      */
     protected TimelineEvent nextPhase(Train train, TrainState trainState) throws SimulationError {
         var nextState = trainState.nextPhase(sim, signalControllers);
-        var change = new Train.TrainStateChange(sim, train.getName(), nextState);
+        var change = new Train.TrainStateChange(sim, train.getID(), nextState);
         change.apply(sim, train);
         sim.publishChange(change);
         if (trainState.isDuringLastPhase())

@@ -1,11 +1,11 @@
 package fr.sncf.osrd.interactive;
 
-import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.SuccessionTable;
 import fr.sncf.osrd.interactive.client_messages.ChangeType;
 import fr.sncf.osrd.interactive.client_messages.EventType;
+import fr.sncf.osrd.interactive.events_adapters.SerializedEvent;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
 import fr.sncf.osrd.railjson.parser.RJSSuccessionsParser;
@@ -22,6 +22,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSVirtualPoint;
 import fr.sncf.osrd.railjson.schema.successiontable.RJSSuccessionTable;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 
 import java.io.IOException;
@@ -129,7 +130,8 @@ public class InteractiveSimulation {
                 var event = simulation.step();
                 var eventType = EventType.fromEvent(event);
                 if (eventType != null && untilEvents.contains(eventType)) {
-                    sendResponse(new ServerMessage.SimulationPaused(eventType));
+                    var serializedEvent = SerializedEvent.from(event);
+                    sendResponse(new ServerMessage.SimulationPaused(serializedEvent));
                     return;
                 }
             }

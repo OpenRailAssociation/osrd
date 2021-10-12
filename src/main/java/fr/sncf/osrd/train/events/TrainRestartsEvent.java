@@ -7,12 +7,12 @@ import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.simulation.TimelineEventId;
 import fr.sncf.osrd.train.Train;
 
-public final class TrainRestarts extends TimelineEvent {
+public final class TrainRestartsEvent extends TimelineEvent {
     public final Train train;
     public final Train.TrainStateChange stateChange;
 
     /** Creates a state train state change timeline event */
-    private TrainRestarts(TimelineEventId eventId, Train train, Train.TrainStateChange stateChange) {
+    private TrainRestartsEvent(TimelineEventId eventId, Train train, Train.TrainStateChange stateChange) {
         super(eventId);
         this.train = train;
         this.stateChange = stateChange;
@@ -32,13 +32,13 @@ public final class TrainRestarts extends TimelineEvent {
     }
 
     /** Plan a move to an action point */
-    public static TrainRestarts plan(
+    public static TrainRestartsEvent plan(
             Simulation sim,
             double actionTime,
             Train train,
             Train.TrainStateChange stateChange
     ) {
-        var change = new TrainPlannedRestart(sim, actionTime, train.getName(), stateChange);
+        var change = new TrainPlannedRestart(sim, actionTime, train.getID(), stateChange);
         var event = change.apply(sim, train);
         sim.publishChange(change);
         return event;
@@ -59,8 +59,8 @@ public final class TrainRestarts extends TimelineEvent {
             this.stateChange = stateChange;
         }
 
-        private TrainRestarts apply(Simulation sim, Train train) {
-            var event = new TrainRestarts(eventId, train, stateChange);
+        private TrainRestartsEvent apply(Simulation sim, Train train) {
+            var event = new TrainRestartsEvent(eventId, train, stateChange);
             super.scheduleEvent(sim, event);
             return event;
         }
@@ -79,10 +79,10 @@ public final class TrainRestarts extends TimelineEvent {
     @Override
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
     public boolean deepEquals(TimelineEvent other) {
-        if (other.getClass() != TrainRestarts.class)
+        if (other.getClass() != TrainRestartsEvent.class)
             return false;
-        var o = (TrainRestarts) other;
-        return train.getName().equals(o.train.getName())
+        var o = (TrainRestartsEvent) other;
+        return train.getID().equals(o.train.getID())
                 && o.stateChange.deepEquals(stateChange);
     }
 }

@@ -55,7 +55,7 @@ public final class TrainReachesActionPoint extends TimelineEvent {
         if (other.getClass() != TrainReachesActionPoint.class)
             return false;
         var o = (TrainReachesActionPoint) other;
-        return o.train.getName().equals(train.getName())
+        return o.train.getID().equals(train.getID())
                 && o.trainStateChange.deepEquals(trainStateChange)
                 && o.interaction.deepEquals(interaction);
     }
@@ -69,7 +69,7 @@ public final class TrainReachesActionPoint extends TimelineEvent {
             Interaction interaction
     ) {
         var change = new TrainPlannedMoveToActionPoint(
-                sim, actionTime, train.getName(), trainStateChange, interaction
+                sim, actionTime, train.getID(), trainStateChange, interaction
         );
         var event = change.apply(sim, train);
         sim.publishChange(change);

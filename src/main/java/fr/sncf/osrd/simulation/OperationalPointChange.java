@@ -19,6 +19,6 @@ public class OperationalPointChange extends Change {
 
     @Override
     public String toString() {
-        return String.format("OperationalPointChange { train: %s, op: %s }", train.getName(), op.id);
+        return String.format("OperationalPointChange { train: %s, op: %s }", train.getID(), op.id);
     }
 }
