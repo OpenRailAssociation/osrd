@@ -1,6 +1,5 @@
 package fr.sncf.osrd.train;
 
-import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker;

@@ -3,7 +3,7 @@ package fr.sncf.osrd.speedcontroller.generators;
 import static java.lang.Math.min;
 import static java.util.Collections.max;
 
-import fr.sncf.osrd.RollingStock;
+import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.*;
 import fr.sncf.osrd.train.Action;

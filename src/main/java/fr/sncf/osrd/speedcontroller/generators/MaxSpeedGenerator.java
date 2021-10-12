@@ -1,6 +1,6 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
-import static fr.sncf.osrd.RollingStock.GammaType.CONST;
+import static fr.sncf.osrd.train.RollingStock.GammaType.CONST;
 
 import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;

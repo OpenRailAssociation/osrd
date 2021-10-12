@@ -2,11 +2,10 @@ package fr.sncf.osrd.train;
 
 
 import static java.lang.Math.abs;
-import static fr.sncf.osrd.RollingStock.GammaType.CONST;
+import static fr.sncf.osrd.train.RollingStock.GammaType.CONST;
 import static java.lang.Math.min;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.RollingStock;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.utils.Constants;
