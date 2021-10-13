@@ -2,7 +2,6 @@ package fr.sncf.osrd.utils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.ChangeSerializer.SerializableDouble;
-
 import java.util.Objects;
 
 public class Range implements Comparable<Range> {

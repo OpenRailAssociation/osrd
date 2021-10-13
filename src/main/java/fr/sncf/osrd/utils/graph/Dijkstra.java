@@ -2,7 +2,6 @@ package fr.sncf.osrd.utils.graph;
 
 import fr.sncf.osrd.utils.graph.path.BasicPathNode;
 import fr.sncf.osrd.utils.graph.path.PathNode;
-
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.PriorityQueue;

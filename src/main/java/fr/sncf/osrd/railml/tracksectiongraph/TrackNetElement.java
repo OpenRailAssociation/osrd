@@ -2,7 +2,6 @@ package fr.sncf.osrd.railml.tracksectiongraph;
 
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import org.dom4j.Element;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

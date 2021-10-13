@@ -11,13 +11,11 @@ import fr.sncf.osrd.infra.TVDSectionPath;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
-import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.DirNGraph;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
-
 import java.util.*;
 
 public class RouteGraph extends DirNGraph<Route, Waypoint> {

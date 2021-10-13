@@ -5,7 +5,6 @@ import static fr.sncf.osrd.utils.graph.EdgeDirection.START_TO_STOP;
 import fr.sncf.osrd.utils.graph.BiNGraph;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import fr.sncf.osrd.utils.graph.UndirectedBiEdgeID;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

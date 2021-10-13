@@ -3,18 +3,9 @@ package fr.sncf.osrd.api;
 import static fr.sncf.osrd.Helpers.loadExampleSimulationResource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.squareup.moshi.JsonAdapter;
-import fr.sncf.osrd.railjson.schema.RJSSimulation;
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
-import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import org.junit.jupiter.api.Test;
 import org.takes.rq.RqFake;
 import org.takes.rs.RsPrint;
-
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 
 public class SimulationTest extends ApiTest {
     @Test

@@ -7,7 +7,6 @@ import fr.sncf.osrd.infra.TVDSectionPath;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

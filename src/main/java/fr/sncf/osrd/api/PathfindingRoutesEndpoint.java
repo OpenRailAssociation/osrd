@@ -18,7 +18,6 @@ import fr.sncf.osrd.utils.graph.DistCostFunction;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.path.BasicPathNode;
 import fr.sncf.osrd.utils.graph.path.FullPathArray;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.takes.Request;

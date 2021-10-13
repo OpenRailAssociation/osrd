@@ -6,7 +6,6 @@ import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import org.dom4j.Document;
 import org.dom4j.Element;
-
 import java.util.HashMap;
 import java.util.Map;
 

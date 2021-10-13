@@ -10,7 +10,6 @@ import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.DirNEdge;
-
 import java.util.*;
 
 public class Route extends DirNEdge {

@@ -1,7 +1,6 @@
 package fr.sncf.osrd.infra.signaling;
 
 import fr.sncf.osrd.utils.DeepComparable;
-
 import java.util.ArrayList;
 
 public final class Aspect implements Comparable<Aspect>, DeepComparable<Aspect> {

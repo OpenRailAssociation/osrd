@@ -1,7 +1,6 @@
 package fr.sncf.osrd.utils;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collections;

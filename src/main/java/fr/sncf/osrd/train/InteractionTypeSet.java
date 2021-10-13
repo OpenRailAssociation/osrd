@@ -1,7 +1,6 @@
 package fr.sncf.osrd.train;
 
 import fr.sncf.osrd.utils.SortedArraySet;
-
 import java.util.Arrays;
 
 public class InteractionTypeSet extends SortedArraySet<InteractionType> {

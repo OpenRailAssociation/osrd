@@ -5,7 +5,6 @@ import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

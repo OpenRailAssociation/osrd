@@ -1,8 +1,6 @@
 package fr.sncf.osrd.railml;
 
-import fr.sncf.osrd.infra.CatenaryType;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.railjson.schema.infra.RJSCatenaryType;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
@@ -18,7 +16,6 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;

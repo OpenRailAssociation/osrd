@@ -1,7 +1,6 @@
 package fr.sncf.osrd.speedcontroller;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import java.util.Objects;
 
 public final class SpeedDirective {

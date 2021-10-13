@@ -1,7 +1,6 @@
 package fr.sncf.osrd.simulation.changelog;
 
 import fr.sncf.osrd.simulation.Change;
-
 import java.util.ArrayList;
 
 public class ChangeConsumerMultiplexer extends ChangeConsumer {

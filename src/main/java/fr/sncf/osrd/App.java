@@ -3,7 +3,6 @@ package fr.sncf.osrd;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import fr.sncf.osrd.cli.*;
-
 import java.util.HashMap;
 
 public class App {

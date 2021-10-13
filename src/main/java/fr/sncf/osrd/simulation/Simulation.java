@@ -9,7 +9,6 @@ import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.utils.DeepComparable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.SortedMap;

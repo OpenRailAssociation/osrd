@@ -1,7 +1,6 @@
 package fr.sncf.osrd;
 
 import static fr.sncf.osrd.Helpers.*;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.infra.InvalidInfraException;
@@ -19,7 +18,6 @@ import fr.sncf.osrd.simulation.changelog.ChangeLogSummarizer;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import okio.Buffer;
 import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.util.ArrayList;
 

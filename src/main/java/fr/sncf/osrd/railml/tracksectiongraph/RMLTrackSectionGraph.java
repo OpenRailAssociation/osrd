@@ -2,7 +2,6 @@ package fr.sncf.osrd.railml.tracksectiongraph;
 
 import fr.sncf.osrd.utils.graph.BiGraph;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-
 import java.util.HashMap;
 import java.util.List;
 

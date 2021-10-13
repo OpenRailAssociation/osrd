@@ -5,7 +5,6 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.generators.MaxSpeedGenerator;
 import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
 import fr.sncf.osrd.utils.SortedDoubleMap;
-
 import java.util.*;
 
 /** Contains all the pre-computed speed controller and indications.
