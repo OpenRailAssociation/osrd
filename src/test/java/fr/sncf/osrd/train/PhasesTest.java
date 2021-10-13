@@ -149,9 +149,9 @@ public class PhasesTest {
         RouteState routeState = sim.infraState.getRouteState(3);
         makeAssertEvent(sim, 0, () -> "RIGHT".equals(switchState.getGroup()));
         makeAssertEvent(sim, 41, () -> switchState.getGroup() == null);
-        makeAssertEvent(sim, 41, () -> routeState.status == RouteStatus.CBTC_REQUESTED);
+        makeAssertEvent(sim, 41, () -> routeState.status == RouteStatus.REQUESTED);
         makeAssertEvent(sim, 43, () -> "LEFT".equals(switchState.getGroup()));
-        makeAssertEvent(sim, 43, () -> routeState.status == RouteStatus.CBTC_RESERVED);
+        makeAssertEvent(sim, 43, () -> routeState.status == RouteStatus.RESERVED);
 
         preparedSim.run();
     }

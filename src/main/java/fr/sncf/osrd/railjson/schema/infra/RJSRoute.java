@@ -62,9 +62,6 @@ public class RJSRoute implements Identified {
         REQUESTED,
         RESERVED,
         OCCUPIED,
-        CBTC_REQUESTED,
-        CBTC_RESERVED,
-        CBTC_OCCUPIED,
         CONFLICT
     }
 }

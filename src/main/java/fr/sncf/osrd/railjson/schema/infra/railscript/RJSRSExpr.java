@@ -115,6 +115,7 @@ public abstract class RJSRSExpr {
                     .withSubtype(ReservedRoute.class, "reserved_route")
                     .withSubtype(NextSignal.class, "next_signal")
                     .withSubtype(PreviousReservedRoute.class, "previous_reserved_route")
+                    .withSubtype(HasCBTCStatus.class, "has_cbtc_status")
     );
 
     // region BOOLEAN_LOGIC
@@ -420,6 +421,20 @@ public abstract class RJSRSExpr {
 
         public PreviousReservedRoute(RJSRSExpr signal) {
             this.signal = signal;
+        }
+    }
+
+    /**
+     * Returns true if the route is in a CBTC status
+     */
+    public static final class HasCBTCStatus extends RJSRSExpr {
+        /**
+         * The expression giving the route to check.
+         */
+        public RJSRSExpr route;
+
+        public HasCBTCStatus(RJSRSExpr route) {
+            this.route = route;
         }
     }
     // endregion
