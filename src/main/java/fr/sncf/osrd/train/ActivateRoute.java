@@ -2,7 +2,7 @@ package fr.sncf.osrd.train;
 
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.TVDSectionPath;
-import fr.sncf.osrd.infra_state.RouteStatus;
+import fr.sncf.osrd.infra_state.routes.RouteStatus;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 

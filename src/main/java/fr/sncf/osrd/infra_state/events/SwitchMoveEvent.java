@@ -1,7 +1,7 @@
 package fr.sncf.osrd.infra_state.events;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra_state.RouteState;
+import fr.sncf.osrd.infra_state.routes.RouteState;
 import fr.sncf.osrd.infra_state.SwitchState;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;

@@ -11,7 +11,7 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.railscript.RSExpr;
 import fr.sncf.osrd.infra.railscript.RSExprState;
 import fr.sncf.osrd.infra.signaling.Signal;
-import fr.sncf.osrd.infra_state.RouteState;
+import fr.sncf.osrd.infra_state.routes.RouteState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.RailScriptExprParser;
 import fr.sncf.osrd.railjson.schema.common.ID;
