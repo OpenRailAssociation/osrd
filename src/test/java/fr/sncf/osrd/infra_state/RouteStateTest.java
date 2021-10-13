@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import fr.sncf.osrd.railjson.schema.RJSSuccessions;
 import fr.sncf.osrd.railjson.schema.successiontable.RJSSuccessionTable;
 import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.infra_state.routes.RouteState;
+import fr.sncf.osrd.infra_state.routes.RouteStatus;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import fr.sncf.osrd.infra.InvalidInfraException;

@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.infra_state.events.SwitchMoveEvent;
+import fr.sncf.osrd.infra_state.routes.RouteState;
+import fr.sncf.osrd.infra_state.routes.RouteStatus;
 import fr.sncf.osrd.simulation.SimulationError;
 import org.junit.jupiter.api.Test;
 

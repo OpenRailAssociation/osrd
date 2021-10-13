@@ -9,7 +9,7 @@ import fr.sncf.osrd.infra.railscript.RSFunction;
 import fr.sncf.osrd.infra.railscript.value.RSBool;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.signaling.Aspect;
-import fr.sncf.osrd.infra_state.RouteStatus;
+import fr.sncf.osrd.infra_state.routes.RouteStatus;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.RailScriptExprParser;
 import fr.sncf.osrd.railjson.schema.common.ID;

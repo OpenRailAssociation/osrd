@@ -4,9 +4,7 @@ import static fr.sncf.osrd.Helpers.*;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import fr.sncf.osrd.TestConfig;
-import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.railjson.parser.RailJSONParser;
-import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.infra_state.routes.RouteStatus;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import org.junit.jupiter.api.Test;
