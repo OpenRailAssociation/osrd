@@ -28,11 +28,16 @@ public class Train {
 
     private TrainState lastState;
     public final TrainSchedule schedule;
-    public TimelineEvent lastScheduledEvent = null;
+    public TrainEvolutionEvent lastScheduledEvent = null;
 
     private Train(TrainSchedule schedule, TrainState initialState) {
         this.schedule = schedule;
         this.lastState = initialState;
+    }
+
+    public double getDelay(double time) {
+        var position = lastScheduledEvent.interpolatePosition(time);
+        return schedule.speedInstructions.secondsLate(position, time);
     }
 
     /** Create a train */
@@ -228,6 +233,34 @@ public class Train {
         public final PathUpdates<Set<SpeedController>> speedControllersUpdates = new PathUpdates<>();
         public final PathUpdates<SpeedDirective> speedDirectivesUpdates = new PathUpdates<>();
 
+        /**
+         * Returns the interpolated position of the train at the current time,
+         * or null if the requested time isn't in range
+         */
+        public Double interpolatePosition(double time) {
+            var lastUpdate = findLastSpeedUpdate(time);
+            if (lastUpdate == null)
+                return null;
+            return lastUpdate.interpolatePosition(time);
+        }
+
+        /**
+         * Finds the most recent integration step at the given time,
+         * or null if the given time isn't in the integration range
+         */
+        public SpeedUpdate findLastSpeedUpdate(double time) {
+            if (time > newState.time)
+                return null;
+
+            SpeedUpdate lastUpdate = null;
+            for (var update : positionUpdates) {
+                if (update.time > time)
+                    break;
+                lastUpdate = update;
+            }
+            return lastUpdate;
+        }
+
         /** Creates a change corresponding to the movement of a train */
         public TrainStateChange(Simulation sim, String trainID, TrainState newState) {
             super(sim);
@@ -342,22 +375,6 @@ public class Train {
 
                 add(new SpeedUpdate(pathPosition, time, speed));
             }
-        }
-
-        /**
-         * Finds the last speed update at a given time
-         * @param time the reference time
-         * @return the last speed update at a given time
-         */
-        public SpeedUpdate findLastSpeedUpdate(double time) {
-            SpeedUpdate lastUpdate = null;
-
-            for (var update : positionUpdates) {
-                if (update.time > time)
-                    break;
-                lastUpdate = update;
-            }
-            return lastUpdate;
         }
 
         @Override

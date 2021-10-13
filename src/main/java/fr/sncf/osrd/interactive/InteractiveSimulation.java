@@ -26,6 +26,7 @@ import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class InteractiveSimulation {
     private Infra infra = null;
@@ -43,22 +44,24 @@ public class InteractiveSimulation {
         responseCallback.send(message);
     }
 
-    private boolean checkState(SessionState expectedState) throws IOException {
-        if (this.state == expectedState)
-            return true;
+    private boolean hasUnexpectedState(SessionState... validStates) throws IOException {
+        for (var validState : validStates)
+            if (validState == this.state)
+                return false;
 
+        var validStateNames = Arrays.stream(validStates).map(Enum::name).collect(Collectors.joining(" or "));
         var details = new TreeMap<String, String>();
-        details.put("expected", expectedState.name());
+        details.put("expected", validStateNames);
         details.put("got", this.state.name());
         sendResponse(new ServerMessage.Error("unexpected session state", details));
-        return false;
+        return true;
     }
 
     /**
      * Initialize session, building infra and extra rolling stocks
      */
     public void init(RJSInfra rjsInfra, Collection<RJSRollingStock> extraRJSRollingStocks) throws IOException {
-        if (!checkState(SessionState.UNINITIALIZED))
+        if (hasUnexpectedState(SessionState.UNINITIALIZED))
             return;
 
         try {
@@ -86,7 +89,7 @@ public class InteractiveSimulation {
             List<RJSSuccessionTable> rjsSuccessions,
             List<RJSVirtualPoint> virtualPoints
     ) throws IOException {
-        if (!checkState(SessionState.INITIALIZED))
+        if (hasUnexpectedState(SessionState.INITIALIZED))
             return;
 
         var rjsSimulation = new RJSSimulation(rollingStocks, rjsTrainSchedules);
@@ -120,7 +123,7 @@ public class InteractiveSimulation {
      * @param untilEvents A list of event types after which the simulation must pause
      */
     public void run(Set<EventType> untilEvents) throws IOException {
-        if (!checkState(SessionState.RUNNING))
+        if (hasUnexpectedState(SessionState.RUNNING))
             return;
 
         // run the simulation loop
@@ -129,6 +132,7 @@ public class InteractiveSimulation {
                 var event = simulation.step();
                 var eventType = EventType.fromEvent(event);
                 if (eventType != null && untilEvents.contains(eventType)) {
+                    state = SessionState.PAUSED;
                     var serializedEvent = SerializedEvent.from(event);
                     sendResponse(new ServerMessage.SimulationPaused(serializedEvent));
                     return;
@@ -144,5 +148,26 @@ public class InteractiveSimulation {
     public void watchChangesTypes(Set<ChangeType> changeTypes) throws IOException {
         watchedChangeTypes = changeTypes;
         sendResponse(new ServerMessage.WatchChanges());
+    }
+
+    /** Sends back to the client the list of delays for all requested trains */
+    public void sendTrainDelays(Collection<String> trains) throws IOException {
+        if (hasUnexpectedState(SessionState.INITIALIZED, SessionState.PAUSED))
+            return;
+
+        var curTime = simulation.getTime();
+        var trainDelays = new HashMap<String, Double>();
+        if (trains != null) {
+            for (var trainId : trains) {
+                var train = simulation.trains.get(trainId);
+                // when a train can't be found, its delay is set to null
+                var delay = train == null ? null : train.getDelay(curTime);
+                trainDelays.put(trainId, delay);
+            }
+        } else {
+            for (var train : simulation.trains.values())
+                trainDelays.put(train.getID(), train.getDelay(curTime));
+        }
+        sendResponse(new ServerMessage.TrainDelays(trainDelays));
     }
 }

@@ -24,6 +24,7 @@ import fr.sncf.osrd.simulation.changelog.ChangeLog;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.Train.TrainStateChange;
+import fr.sncf.osrd.train.TrainEvolutionEvent;
 import fr.sncf.osrd.train.decisions.InteractiveInput;
 import fr.sncf.osrd.train.decisions.KeyboardInput;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
@@ -59,6 +60,7 @@ public class ChangeSerializer {
             .add(new WaypointAdapter())
             .add(new AspectAdapter())
             .add(new TimelineEventAdapter())
+            .add(new TrainEvolutionEventAdapter())
             .add(CollectionJsonAdapter.of(CryoList.class, CryoList::new))
             .add(CollectionJsonAdapter.of(ArrayList.class, ArrayList::new))
             .add(CollectionJsonAdapter.of(ArrayDeque.class, ArrayDeque::new))
@@ -251,6 +253,18 @@ public class ChangeSerializer {
 
         @FromJson
         Aspect fromJson(IdentifiedObject id) {
+            throw new RuntimeException("not implemented");
+        }
+    }
+
+    private static class TrainEvolutionEventAdapter {
+        @ToJson
+        TimelineEvent toJson(TrainEvolutionEvent timelineEvent) {
+            return timelineEvent;
+        }
+
+        @FromJson
+        TrainEvolutionEvent fromJson(TimelineEvent id) {
             throw new RuntimeException("not implemented");
         }
     }

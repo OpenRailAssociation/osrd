@@ -12,11 +12,7 @@ import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.LimitAnnounceSpeedController;
 import fr.sncf.osrd.speedcontroller.MaxSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.train.Interaction;
-import fr.sncf.osrd.train.InteractionType;
-import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.TrainSchedule;
-import fr.sncf.osrd.train.TrainState;
+import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.train.Train.TrainStateChange;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.DeepComparable;
@@ -43,7 +39,7 @@ public abstract class NavigatePhaseState implements DeepComparable<NavigatePhase
         this.sim = state.sim;
     }
 
-    public abstract TimelineEvent simulate(Train train, TrainState trainState) throws SimulationError;
+    public abstract TrainEvolutionEvent simulate(Train train, TrainState trainState) throws SimulationError;
 
     @Override
     public abstract NavigatePhaseState clone();
@@ -119,7 +115,7 @@ public abstract class NavigatePhaseState implements DeepComparable<NavigatePhase
      * @param train      the train that changes phase
      * @param trainState the state of the train
      */
-    protected TimelineEvent nextPhase(Train train, TrainState trainState) throws SimulationError {
+    protected TrainEvolutionEvent nextPhase(Train train, TrainState trainState) throws SimulationError {
         var nextState = trainState.nextPhase(sim, signalControllers);
         var change = new Train.TrainStateChange(sim, train.getID(), nextState);
         change.apply(sim, train);
@@ -192,7 +188,7 @@ public abstract class NavigatePhaseState implements DeepComparable<NavigatePhase
      * Checks if the train has reached the next interaction and, if so, returns a new TrainReachesActionPoint event
      * @return the TrainReachesActionPoint event or null.
      */
-    public TimelineEvent reachedActionPoint(Train train, TrainState trainState, Interaction nextInteraction,
+    public TrainEvolutionEvent reachedActionPoint(Train train, TrainState trainState, Interaction nextInteraction,
             TrainStateChange simulationResult) {
         if (trainState.location.getPathPosition() + 1e-2 >= nextInteraction.position) {
             popInteraction(trainState);

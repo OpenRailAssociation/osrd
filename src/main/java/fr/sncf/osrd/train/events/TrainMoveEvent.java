@@ -6,12 +6,13 @@ import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.simulation.TimelineEventId;
 import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.TrainEvolutionEvent;
 
 /**
  * This event represents a regular train move.
  * Use this event when you want to move a train without interacting with an action point.
  */
-public final class TrainMoveEvent extends TimelineEvent {
+public final class TrainMoveEvent extends TrainEvolutionEvent {
     public final Train train;
     public final Train.TrainStateChange trainStateChange;
 
@@ -61,6 +62,11 @@ public final class TrainMoveEvent extends TimelineEvent {
         var event = change.apply(sim, train);
         sim.publishChange(change);
         return event;
+    }
+
+    @Override
+    public double interpolatePosition(double time) {
+        return trainStateChange.interpolatePosition(time);
     }
 
     public static class TrainPlannedMove extends Simulation.TimelineEventCreated {
