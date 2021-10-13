@@ -5,7 +5,6 @@ import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import fr.sncf.osrd.interactive.changes_adapters.SerializedChange;
 import fr.sncf.osrd.interactive.events_adapters.*;
-
 import java.util.Map;
 import java.util.TreeMap;
 

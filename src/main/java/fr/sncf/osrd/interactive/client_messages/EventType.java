@@ -9,7 +9,6 @@ import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.train.events.TrainRestartsEvent;
-
 import java.util.HashMap;
 import java.util.Map;
 

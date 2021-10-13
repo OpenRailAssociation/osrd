@@ -12,9 +12,7 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
-
 import java.io.IOException;
-
 
 public abstract class ClientMessage {
     public static final JsonAdapter<ClientMessage> adapter = new Moshi.Builder()
