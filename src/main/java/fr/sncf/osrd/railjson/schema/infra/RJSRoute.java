@@ -31,6 +31,10 @@ public class RJSRoute implements Identified {
     @Json(name = "entry_direction")
     public EdgeDirection entryDirection;
 
+    /** Is the route controlled and needs explicit reservation. If unspecified, set to true if it covers a switch */
+    @Json(name = "is_controlled")
+    public Boolean isControlled;
+
     /** Routes are described as a list of TVD Sections, Switches in specific positions, and an entry point */
     public RJSRoute(
             String id,

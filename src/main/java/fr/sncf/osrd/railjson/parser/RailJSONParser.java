@@ -401,7 +401,8 @@ public class RailJSONParser {
                     entryPoint,
                     exitPoint,
                     entrySignal,
-                    rjsRoute.entryDirection
+                    rjsRoute.entryDirection,
+                    rjsRoute.isControlled
             );
         }
 
