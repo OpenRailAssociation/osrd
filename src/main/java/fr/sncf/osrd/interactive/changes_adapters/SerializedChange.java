@@ -10,7 +10,7 @@ import java.lang.reflect.Method;
 public class SerializedChange {
     public static final PolymorphicJsonAdapterFactory<SerializedChange> adapter = (
             PolymorphicJsonAdapterFactory.of(SerializedChange.class, "change_type")
-                    .withSubtype(SerializedRouteStatus.class, ChangeType.ROUTE_STATUS_CHANGE.name())
+                    .withSubtype(SerializedRouteStatus.class, ChangeType.ROUTE_STATUS.name())
     );
 
     /** Serialize change */
