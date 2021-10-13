@@ -68,7 +68,7 @@ public final class SignalNavigatePhase extends NavigatePhase {
         }
 
         @Override
-        public TimelineEvent simulate(Train train, TrainState trainState) throws SimulationError {
+        public TrainEvolutionEvent simulate(Train train, TrainState trainState) throws SimulationError {
             // Check if we reached our goal
             if (hasPhaseEnded()) {
                 return nextPhase(train, trainState);

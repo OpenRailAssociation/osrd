@@ -18,7 +18,7 @@ public abstract class InteractiveInput extends TrainDecisionMaker {
     }
 
     @Override
-    public TimelineEvent simulatePhase(Train train, Simulation sim) {
+    public TrainMoveEvent simulatePhase(Train train, Simulation sim) {
         double nextTime = sim.getTime() + dt;
         var simulationResult = trainState.evolveStateUntilTime(sim, nextTime);
         if (!quit)

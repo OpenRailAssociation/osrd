@@ -2,13 +2,9 @@ package fr.sncf.osrd.train.decisions;
 
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
-import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
-import fr.sncf.osrd.train.Action;
-import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.TrainPhysicsIntegrator;
-import fr.sncf.osrd.train.TrainState;
+import fr.sncf.osrd.train.*;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,7 +18,7 @@ public abstract class TrainDecisionMaker {
 
     public abstract Action getNextAction(SpeedDirective speedDirective, TrainPhysicsIntegrator integrator);
 
-    public TimelineEvent simulatePhase(Train train, Simulation sim) throws SimulationError {
+    public TrainEvolutionEvent simulatePhase(Train train, Simulation sim) throws SimulationError {
         return trainState.currentPhaseState.simulate(train, trainState);
     }
 

@@ -1,5 +1,6 @@
 package fr.sncf.osrd.interactive;
 
+import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
@@ -19,7 +20,9 @@ public abstract class ServerMessage {
                             .withSubtype(SimulationPaused.class, "simulation_paused")
                             .withSubtype(ChangeOccurred.class, "change_occurred")
                             .withSubtype(WatchChanges.class, "watch_changes")
-                            .withSubtype(Error.class, "error"))
+                            .withSubtype(TrainDelays.class, "train_delays")
+                            .withSubtype(Error.class, "error")
+                    )
                     .add(SerializedChange.adapter)
                     .add(SerializedEvent.adapter)
                     .add(SerializedActionPoint.adapter)
@@ -50,6 +53,15 @@ public abstract class ServerMessage {
     }
 
     public static final class WatchChanges extends ServerMessage {}
+
+    public static final class TrainDelays extends ServerMessage {
+        @Json(name = "train_delays")
+        public Map<String, Double> trainDelays;
+
+        TrainDelays(Map<String, Double> trainDelays) {
+            this.trainDelays = trainDelays;
+        }
+    }
 
     public static final class Error extends ServerMessage {
         public String message;

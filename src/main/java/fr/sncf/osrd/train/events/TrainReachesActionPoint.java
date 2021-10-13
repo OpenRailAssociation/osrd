@@ -8,9 +8,10 @@ import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.simulation.TimelineEventId;
 import fr.sncf.osrd.train.Interaction;
 import fr.sncf.osrd.train.Train;
+import fr.sncf.osrd.train.TrainEvolutionEvent;
 
 /** This event represents a train's interaction with an action point. */
-public final class TrainReachesActionPoint extends TimelineEvent {
+public final class TrainReachesActionPoint extends TrainEvolutionEvent {
     public final Train train;
     public final Train.TrainStateChange trainStateChange;
     public final Interaction interaction;
@@ -74,6 +75,11 @@ public final class TrainReachesActionPoint extends TimelineEvent {
         var event = change.apply(sim, train);
         sim.publishChange(change);
         return event;
+    }
+
+    @Override
+    public double interpolatePosition(double time) {
+        return trainStateChange.interpolatePosition(time);
     }
 
     public static class TrainPlannedMoveToActionPoint extends Simulation.TimelineEventCreated {
