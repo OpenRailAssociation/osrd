@@ -143,9 +143,6 @@ class PrettyPrinterTest {
                         RSExpr.False.INSTANCE,
                         RSExpr.False.INSTANCE,
                         RSExpr.False.INSTANCE,
-                        RSExpr.False.INSTANCE,
-                        RSExpr.False.INSTANCE,
-                        RSExpr.False.INSTANCE,
                         RSExpr.False.INSTANCE
                 }
         );
@@ -157,9 +154,6 @@ class PrettyPrinterTest {
                 "    REQUESTED: false,",
                 "    RESERVED: false,",
                 "    OCCUPIED: false,",
-                "    CBTC_REQUESTED: false,",
-                "    CBTC_RESERVED: false,",
-                "    CBTC_OCCUPIED: false,",
                 "    CONFLICT: false",
                 "}"
         );

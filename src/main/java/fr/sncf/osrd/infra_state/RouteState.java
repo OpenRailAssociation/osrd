@@ -21,6 +21,7 @@ public final class RouteState implements RSMatchable {
     public final Route route;
     public RouteStatus status;
     private int movingSwitchesLeft;
+    private boolean isCBTCReserved;
 
     public RouteState(Route route) {
         this.route = route;
@@ -29,7 +30,7 @@ public final class RouteState implements RSMatchable {
 
     /** Notify the route that one of his tvd section isn't occupied anymore */
     public void onTvdSectionUnoccupied(Simulation sim, TVDSectionState tvdSectionUnoccupied) throws SimulationError {
-        if (status != RouteStatus.OCCUPIED && status != RouteStatus.CBTC_OCCUPIED)
+        if (status != RouteStatus.OCCUPIED)
             return;
 
         // TODO This function could be optimized.
@@ -66,6 +67,7 @@ public final class RouteState implements RSMatchable {
                 return;
         }
 
+        this.isCBTCReserved = false;
         var change = new RouteStatusChange(sim, this, RouteStatus.FREE);
         change.apply(sim, this);
         sim.publishChange(change);
@@ -85,15 +87,13 @@ public final class RouteState implements RSMatchable {
     /** Notify the route that one of his tvd section is occupied */
     public void onTvdSectionOccupied(Simulation sim) throws SimulationError {
 
-        if (status == RouteStatus.REQUESTED || status == RouteStatus.CBTC_REQUESTED || status == RouteStatus.FREE) {
+        if (status == RouteStatus.REQUESTED || status == RouteStatus.FREE) {
             throw new SimulationError("The TVD section we try to occupy isn't reserved yet");
         }
 
         RouteStatusChange change;
         if (status == RouteStatus.RESERVED) {
             change = new RouteStatusChange(sim, this, RouteStatus.OCCUPIED);
-        } else if (status == RouteStatus.CBTC_RESERVED) {
-            change = new RouteStatusChange(sim, this, RouteStatus.CBTC_OCCUPIED);
         } else {
             return;
         }
@@ -170,6 +170,8 @@ public final class RouteState implements RSMatchable {
     public void reserve(Simulation sim) throws SimulationError {
         assert status == RouteStatus.FREE;
 
+        isCBTCReserved = false;
+
         requestSwitchPositionChange(sim);
 
         RouteStatus newStatus = movingSwitchesLeft > 0 ? RouteStatus.REQUESTED : RouteStatus.RESERVED;
@@ -191,9 +193,11 @@ public final class RouteState implements RSMatchable {
     public void cbtcReserve(Simulation sim) throws SimulationError {
         assert status == RouteStatus.FREE || hasCBTCStatus();
 
+        isCBTCReserved = true;
+
         requestSwitchPositionChange(sim);
 
-        RouteStatus newStatus = movingSwitchesLeft > 0 ? RouteStatus.CBTC_REQUESTED : RouteStatus.CBTC_RESERVED;
+        RouteStatus newStatus = movingSwitchesLeft > 0 ? RouteStatus.REQUESTED : RouteStatus.RESERVED;
 
         var change = new RouteStatusChange(sim, this, newStatus);
         change.apply(sim, this);
@@ -208,7 +212,6 @@ public final class RouteState implements RSMatchable {
      * 
      * @param sim the current simulation
      * @param trainState the initial state of the train
-     * @throws SimulationError
      * */
     public void initialReserve(Simulation sim, TrainState trainState) throws SimulationError {
         // Set the switches, no delay and waiting this time
@@ -239,10 +242,8 @@ public final class RouteState implements RSMatchable {
             // request mode
             if (status == RouteStatus.REQUESTED) {
                 change = new RouteStatusChange(sim, this, RouteStatus.RESERVED);
-            } else if (status == RouteStatus.CBTC_REQUESTED) {
-                change = new RouteStatusChange(sim, this, RouteStatus.CBTC_RESERVED);
             } else {
-                throw new SimulationError("The Route needs to be either REQUESTED or CBTC_REQUESTED if a switch move");
+                throw new SimulationError("The Route needs to be REQUESTED if a switch moves");
             }
             change.apply(sim, this);
             sim.publishChange(change);
@@ -267,13 +268,12 @@ public final class RouteState implements RSMatchable {
     }
 
     /**
-     * Check if the route has a CBTC status (CBTC_REQUESTED, CBTC_RESERVED OR CBTC_OCCUPIED)
+     * Check if the route has a CBTC status
      * 
      * @return True if the status of the route is CBTC, else False
      */
     public boolean hasCBTCStatus() {
-        return status == RouteStatus.CBTC_REQUESTED || status == RouteStatus.CBTC_RESERVED
-                || status == RouteStatus.CBTC_OCCUPIED;
+        return isCBTCReserved;
     }
 
     public static class RouteStatusChange extends EntityChange<RouteState, Void> {
