@@ -6,13 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import fr.sncf.osrd.TestConfig;
 import java.util.ArrayList;
-import fr.sncf.osrd.infra.SuccessionTable;
 import fr.sncf.osrd.railjson.schema.RJSSuccessions;
 import fr.sncf.osrd.railjson.schema.successiontable.RJSSuccessionTable;
 import fr.sncf.osrd.train.Train;
