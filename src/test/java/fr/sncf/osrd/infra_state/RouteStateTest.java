@@ -608,6 +608,28 @@ public class RouteStateTest {
     }
 
     @Test
+    public void testChangeSuccessionTableDuringSim() throws InvalidInfraException {
+        final var config = TestConfig.readResource("tiny_infra/config_railjson_2trains.json");
+
+        var switchID = config.rjsInfra.switches.stream().findFirst().get().id;
+
+        var simState = config.prepare();
+        var sim = simState.sim;
+
+        // Change the succession Table
+        var newTrainOrderedList = new ArrayList<String>();
+        newTrainOrderedList.add("Second");
+        newTrainOrderedList.add("First");
+        makeFunctionEvent(sim, 0, () -> sim.infraState.towerState.changeTable(newTrainOrderedList, switchID));
+
+        // Test that the second train is now the first of the list
+        makeAssertEvent(sim, 0, () -> sim.infraState.towerState.getTable(switchID).get(0).equals("Second"));
+        // Test that the request of the second train is accepted
+        makeAssertEvent(sim, 6, () -> sim.infraState.towerState.isCurrentAllowed(switchID,"Second"));
+        simState.run();
+    }
+
+    @Test
     @Disabled("Fixing this requires changes in the API and middle/front end, it will be done later")
     public void testCircularInfraRouteIndexes() {
         var changelog = new ArrayChangeLog();
