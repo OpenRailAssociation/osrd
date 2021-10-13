@@ -9,7 +9,6 @@ import fr.sncf.osrd.utils.graph.ApplicableDirection;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
-
 import java.util.HashMap;
 
 public class RMLSignalIL {

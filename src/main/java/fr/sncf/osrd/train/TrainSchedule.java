@@ -68,6 +68,7 @@ public final class TrainSchedule {
             this.stops = stops;
     }
 
+    /** Computes the total stop duration in a train schedule */
     public double getStopDuration() {
         var totalStopsDuration = 0;
         for (var stop : stops)

@@ -183,7 +183,8 @@ public class StopTests {
         double value = 10;
         var allowance = new RJSAllowance.LinearAllowance(TIME, value);
 
-        final var configWithShortStop = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        final var configWithShortStop =
+                TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
 
         for (var schedule : configWithShortStop.rjsSimulation.trainSchedules)
             schedule.stops = new RJSTrainStop[]{
@@ -192,9 +193,12 @@ public class StopTests {
             };
 
         var testWithShortStop =
-                MarginTests.ComparativeTest.from(configWithShortStop, () -> configWithShortStop.setAllAllowances(allowance));
+                MarginTests.ComparativeTest.from(
+                        configWithShortStop, () -> configWithShortStop.setAllAllowances(allowance)
+                );
 
-        final var configWithLongStop = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        final var configWithLongStop =
+                TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
 
         for (var schedule : configWithLongStop.rjsSimulation.trainSchedules)
             schedule.stops = new RJSTrainStop[]{
@@ -203,7 +207,9 @@ public class StopTests {
             };
 
         var testWithLongStop =
-                MarginTests.ComparativeTest.from(configWithLongStop, () -> configWithLongStop.setAllAllowances(allowance));
+                MarginTests.ComparativeTest.from(
+                        configWithLongStop, () -> configWithLongStop.setAllAllowances(allowance)
+                );
 
         var timeShortStopNoMargin = testWithShortStop.baseTime();
         var timeShortStopWithMargin = testWithShortStop.testedTime();
@@ -211,11 +217,21 @@ public class StopTests {
         var timeLongStopWithMargin = testWithLongStop.testedTime();
 
         var expectedTimeShortStopWithMargin = timeShortStopNoMargin * (1 + value / 100);
-        assertEquals(expectedTimeShortStopWithMargin, timeShortStopWithMargin, expectedTimeShortStopWithMargin * 0.01);
+        assertEquals(
+                expectedTimeShortStopWithMargin,
+                timeShortStopWithMargin,
+                expectedTimeShortStopWithMargin * 0.01);
         var expectedTimeLongStopNoMargin = timeShortStopNoMargin - durationStopShort + durationStopLong;
-        assertEquals(expectedTimeLongStopNoMargin, timeLongStopNoMargin, expectedTimeLongStopNoMargin * 0.01);
-        var expectedTimeLongStopWithMargin = timeShortStopNoMargin * (1 + value / 100) - durationStopShort + durationStopLong;
-        assertEquals(expectedTimeLongStopWithMargin, timeLongStopWithMargin, expectedTimeLongStopWithMargin * 0.01);
+        assertEquals(
+                expectedTimeLongStopNoMargin,
+                timeLongStopNoMargin,
+                expectedTimeLongStopNoMargin * 0.01);
+        var expectedTimeLongStopWithMargin =
+                timeShortStopNoMargin * (1 + value / 100) - durationStopShort + durationStopLong;
+        assertEquals(
+                expectedTimeLongStopWithMargin,
+                timeLongStopWithMargin,
+                expectedTimeLongStopWithMargin * 0.01);
     }
 
     @Test
@@ -239,9 +255,12 @@ public class StopTests {
             };
 
         var testWithShortStop =
-                MarginTests.ComparativeTest.from(configWithShortStop, () -> configWithShortStop.setAllAllowances(allowance));
+                MarginTests.ComparativeTest.from(
+                        configWithShortStop, () -> configWithShortStop.setAllAllowances(allowance)
+                );
 
-        final var configWithLongStop = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        final var configWithLongStop =
+                TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
 
         for (var schedule : configWithLongStop.rjsSimulation.trainSchedules)
             schedule.stops = new RJSTrainStop[]{
@@ -250,7 +269,9 @@ public class StopTests {
             };
 
         var testWithLongStop =
-                MarginTests.ComparativeTest.from(configWithLongStop, () -> configWithLongStop.setAllAllowances(allowance));
+                MarginTests.ComparativeTest.from(
+                        configWithLongStop, () -> configWithLongStop.setAllAllowances(allowance)
+                );
 
         var timeShortStopNoMargin = testWithShortStop.baseTime();
         var timeShortStopWithMargin = testWithShortStop.testedTime();
@@ -281,9 +302,12 @@ public class StopTests {
             };
 
         var testWithShortStop =
-                MarginTests.ComparativeTest.from(configWithShortStop, () -> configWithShortStop.setAllAllowances(allowance));
+                MarginTests.ComparativeTest.from(
+                        configWithShortStop, () -> configWithShortStop.setAllAllowances(allowance)
+                );
 
-        final var configWithLongStop = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        final var configWithLongStop =
+                TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
 
         for (var schedule : configWithLongStop.rjsSimulation.trainSchedules)
             schedule.stops = new RJSTrainStop[]{
@@ -292,7 +316,9 @@ public class StopTests {
             };
 
         var testWithLongStop =
-                MarginTests.ComparativeTest.from(configWithLongStop, () -> configWithLongStop.setAllAllowances(allowance));
+                MarginTests.ComparativeTest.from(
+                        configWithLongStop, () -> configWithLongStop.setAllAllowances(allowance)
+                );
 
         var timeShortStopNoMargin = testWithShortStop.baseTime();
         var timeShortStopWithMargin = testWithShortStop.testedTime();
@@ -300,10 +326,20 @@ public class StopTests {
         var timeLongStopWithMargin = testWithLongStop.testedTime();
 
         var expectedTimeShortStopWithMargin = timeShortStopNoMargin * (1 + value / 100);
-        assertEquals(expectedTimeShortStopWithMargin, timeShortStopWithMargin, expectedTimeShortStopWithMargin * 0.01);
+        assertEquals(
+                expectedTimeShortStopWithMargin,
+                timeShortStopWithMargin,
+                expectedTimeShortStopWithMargin * 0.01);
         var expectedTimeLongStopNoMargin = timeShortStopNoMargin - durationStopShort + durationStopLong;
-        assertEquals(expectedTimeLongStopNoMargin, timeLongStopNoMargin, expectedTimeLongStopNoMargin * 0.01);
-        var expectedTimeLongStopWithMargin = timeShortStopNoMargin * (1 + value / 100) - durationStopShort + durationStopLong;
-        assertEquals(expectedTimeLongStopWithMargin, timeLongStopWithMargin, expectedTimeLongStopWithMargin * 0.01);
+        assertEquals(
+                expectedTimeLongStopNoMargin,
+                timeLongStopNoMargin,
+                expectedTimeLongStopNoMargin * 0.01);
+        var expectedTimeLongStopWithMargin =
+                timeShortStopNoMargin * (1 + value / 100) - durationStopShort + durationStopLong;
+        assertEquals(
+                expectedTimeLongStopWithMargin,
+                timeLongStopWithMargin,
+                expectedTimeLongStopWithMargin * 0.01);
     }
 }

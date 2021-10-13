@@ -8,7 +8,6 @@ import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.railjson.schema.common.Identified;
-
 import java.util.Map;
 
 public class RJSRollingStock implements Identified {
