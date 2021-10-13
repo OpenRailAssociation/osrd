@@ -6,7 +6,6 @@ import fr.sncf.osrd.simulation.Change;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 
 public class StreamChangesConsumer extends ChangeConsumer {

@@ -3,7 +3,6 @@ package fr.sncf.osrd.interactive.events_adapters;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import fr.sncf.osrd.interactive.client_messages.EventType;
 import fr.sncf.osrd.simulation.TimelineEvent;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 

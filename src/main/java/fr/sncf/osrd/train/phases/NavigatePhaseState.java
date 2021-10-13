@@ -3,7 +3,6 @@ package fr.sncf.osrd.train.phases;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.Predicate;
-
 import fr.sncf.osrd.infra.signaling.AspectConstraint;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra_state.SignalState;
