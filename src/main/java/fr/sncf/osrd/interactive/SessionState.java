@@ -4,4 +4,5 @@ public enum SessionState {
     UNINITIALIZED,
     INITIALIZED,
     RUNNING,
+    PAUSED,
 }

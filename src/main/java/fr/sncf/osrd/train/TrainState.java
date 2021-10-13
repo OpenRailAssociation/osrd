@@ -317,7 +317,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         return locationChange;
     }
 
-    public TimelineEvent simulatePhase(Train train, Simulation sim) throws SimulationError {
+    public TrainEvolutionEvent simulatePhase(Train train, Simulation sim) throws SimulationError {
         return trainSchedule.trainDecisionMaker.simulatePhase(train, sim);
     }
 
