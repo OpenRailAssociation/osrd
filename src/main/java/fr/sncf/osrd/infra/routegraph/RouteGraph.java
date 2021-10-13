@@ -54,7 +54,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
         }
 
         /**
-         * Add a route to the Route Graph
+         * Add a route to the Route Graph without specifying isControlled
          */
         public Route makeRoute(
                 String id,
@@ -65,6 +65,24 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 Waypoint exitPoint,
                 Signal entrySignal,
                 EdgeDirection entryDirection
+        ) throws InvalidInfraException {
+            return makeRoute(id, tvdSections, releaseGroups, switchesGroup, entryPoint,
+                    exitPoint, entrySignal, entryDirection, null);
+        }
+
+        /**
+         * Add a route to the Route Graph
+         */
+        public Route makeRoute(
+                String id,
+                SortedArraySet<TVDSection> tvdSections,
+                List<SortedArraySet<TVDSection>> releaseGroups,
+                HashMap<Switch, String> switchesGroup,
+                Waypoint entryPoint,
+                Waypoint exitPoint,
+                Signal entrySignal,
+                EdgeDirection entryDirection,
+                Boolean isControlled
         ) throws InvalidInfraException {
             try {
                 var tvdSectionsPath = generatePath(id, entryPoint, exitPoint, entryDirection, switchesGroup);
@@ -99,7 +117,8 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                         releaseGroups,
                         tvdSectionsPath,
                         switchesGroup,
-                        entrySignal);
+                        entrySignal,
+                        isControlled);
 
                 routeGraph.routeMap.put(id, route);
 
