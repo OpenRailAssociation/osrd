@@ -248,7 +248,6 @@ public class TowerState {
     }
 
     public void changeTable(ArrayList<String> newTable, String switchID){
-        System.out.println("Change TST");
         var thisState = state.get(switchID);
         thisState.table.trainOrderedList = newTable;
     }
