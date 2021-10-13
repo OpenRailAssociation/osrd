@@ -82,7 +82,7 @@ export default function ContextMenu() {
     let actualTrainCount = 1;
     for (let nb = 1; nb <= trainCount; nb += 1) {
       const newTrainDelta = (60 * trainDelta * nb);
-      const newOriginTime = simulation.trains[selectedTrain].stops[0].time + newTrainDelta;
+      const newOriginTime = simulation.trains[selectedTrain].base.stops[0].time + newTrainDelta;
       const newTrainName = trainNameWithNum(trainName, actualTrainCount, trainCount);
       const newTrain = {
         ...timeShiftTrain(trains[selectedTrain], newTrainDelta),

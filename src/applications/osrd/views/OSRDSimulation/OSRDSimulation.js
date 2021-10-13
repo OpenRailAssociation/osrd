@@ -59,7 +59,7 @@ const OSRDSimulation = () => {
           `${trainscheduleURI}results/`,
           { train_ids: trainSchedulesIDs.join(',') },
         );
-        // simulationLocal.sort((a, b) => a.stops[0].time > b.stops[0].time);
+        simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);
         dispatch(updateSimulation({ trains: simulationLocal }));
         console.log('coucou', simulationLocal);
       } catch (e) {

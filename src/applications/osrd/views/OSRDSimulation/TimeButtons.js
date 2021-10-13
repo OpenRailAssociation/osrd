@@ -24,7 +24,7 @@ export default function TimeButtons() {
   const stop = () => {
     clearInterval(playInterval);
     setPlayInterval(undefined);
-    dispatch(updateTimePosition(sec2datetime(simulation.trains[selectedTrain].stops[0].time)));
+    dispatch(updateTimePosition(sec2datetime(simulation.trains[selectedTrain].base.stops[0].time)));
     dispatch(updateIsPlaying(false));
   };
   const pause = () => {
