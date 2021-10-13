@@ -106,28 +106,20 @@ public class Train {
 
     /** Frees all the tvd sections currently reserved by the train */
     private void freeAllReservedTVDSections(Simulation sim) throws SimulationError {
+
+        for (var interaction : lastState.actionPointsUnderTrain) {
+            if (interaction.interactionType.equals(InteractionType.TAIL)) {
+                interaction.interact(sim, this);
+            }
+        }
+
         var path = lastState.path;
-        var trainTailLocation = lastState.location.trackSectionRanges.getLast().getBeginLocation();
-
-        // all the TVD sections in routes we have already reached
-        var tvdSectionsOnOnceReservedRoutes = new ArrayList<TVDSectionPath>();
-        for (int i = 0; i <= lastState.requestedRouteIndex; i++)
-            tvdSectionsOnOnceReservedRoutes.addAll(path.routePath.get(i).tvdSectionsPaths);
-
-        var beforeTrainTail = true;
-        for (var currentTvdSectionPath : tvdSectionsOnOnceReservedRoutes) {
-
-            if (currentTvdSectionPath.contains(trainTailLocation))
-                beforeTrainTail = false;
-
-            // ignores the tvd sections before the start of the train (already freed)
-            if (beforeTrainTail)
-                continue;
-
+        for (var currentTvdSectionPath : path.routePath.get(lastState.routeIndex).tvdSectionsPaths) {
             var index = currentTvdSectionPath.tvdSection.index;
             var tvdSection = sim.infraState.getTvdSectionState(index);
 
-            tvdSection.free(sim);
+            if (tvdSection.isReserved())
+                tvdSection.free(sim);
         }
 
     }
