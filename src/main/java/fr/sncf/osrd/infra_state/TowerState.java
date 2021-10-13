@@ -247,6 +247,11 @@ public class TowerState {
         }
     }
 
+    public ArrayList<String> getTable(String switchID){
+        var thisState = state.get(switchID);
+        return thisState.table.trainOrderedList;
+    }
+
     public void changeTable(ArrayList<String> newTable, String switchID){
         var thisState = state.get(switchID);
         thisState.table.trainOrderedList = newTable;
