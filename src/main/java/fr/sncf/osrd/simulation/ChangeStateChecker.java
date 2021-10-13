@@ -3,7 +3,6 @@ package fr.sncf.osrd.simulation;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 
 public class ChangeStateChecker extends ChangeConsumer {

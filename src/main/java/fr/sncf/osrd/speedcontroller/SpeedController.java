@@ -3,10 +3,8 @@ package fr.sncf.osrd.speedcontroller;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.ChangeSerializer.SerializableDouble;
 import fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator;
-import fr.sncf.osrd.train.TrainPositionTracker;
 import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.utils.DeepComparable;
-
 import java.util.Set;
 
 public abstract class SpeedController implements DeepComparable<SpeedController> {

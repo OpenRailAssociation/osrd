@@ -5,7 +5,5 @@
         "https://checkstyle.org/dtds/suppressions_1_2.dtd">
 
 <suppressions>
-    <suppress message="Extra separation in import group before"/>
-    <suppress message="Using the '.*' form of import should be avoided"/>
     <suppress files=".*package-info\.java" checks="LineLength"/>
 </suppressions>

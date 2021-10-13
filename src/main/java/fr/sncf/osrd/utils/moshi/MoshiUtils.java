@@ -3,7 +3,6 @@ package fr.sncf.osrd.utils.moshi;
 import com.squareup.moshi.JsonAdapter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import okio.Okio;
-
 import java.io.IOException;
 import java.nio.file.Path;
 

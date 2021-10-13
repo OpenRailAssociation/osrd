@@ -26,7 +26,6 @@ import fr.sncf.osrd.train.phases.NavigatePhase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
-
 import java.util.*;
 import java.util.function.Function;
 

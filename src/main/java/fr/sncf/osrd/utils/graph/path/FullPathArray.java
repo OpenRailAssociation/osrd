@@ -2,7 +2,6 @@ package fr.sncf.osrd.utils.graph.path;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.utils.graph.Edge;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 

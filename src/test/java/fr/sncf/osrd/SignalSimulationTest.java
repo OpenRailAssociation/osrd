@@ -7,7 +7,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.simulation.*;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 
 @SuppressWarnings("MissingJavadocMethod")

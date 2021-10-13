@@ -2,7 +2,6 @@ package fr.sncf.osrd.railml.routegraph;
 
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.Node;
-
 import java.util.ArrayList;
 
 public class RMLRouteWaypoint extends Node {

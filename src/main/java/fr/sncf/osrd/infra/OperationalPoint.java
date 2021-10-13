@@ -8,7 +8,6 @@ import fr.sncf.osrd.train.InteractionType;
 import fr.sncf.osrd.train.InteractionTypeSet;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.utils.PointSequence;
-
 import java.util.ArrayList;
 
 public class OperationalPoint implements ActionPoint {

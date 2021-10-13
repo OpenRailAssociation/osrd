@@ -15,7 +15,6 @@ import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.utils.PathUtils;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 
 public class PathTest {

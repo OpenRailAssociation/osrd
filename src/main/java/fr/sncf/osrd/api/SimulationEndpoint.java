@@ -43,7 +43,6 @@ import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
-
 import java.io.IOException;
 import java.util.*;
 

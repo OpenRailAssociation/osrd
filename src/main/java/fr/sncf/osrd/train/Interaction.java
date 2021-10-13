@@ -5,7 +5,6 @@ import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.utils.DeepComparable;
-
 import java.util.Objects;
 
 public final class Interaction implements DeepComparable<Interaction>, Comparable<Interaction> {

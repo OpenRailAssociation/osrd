@@ -3,7 +3,6 @@ package fr.sncf.osrd.infra.railscript;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.utils.DeepComparable;
-
 import java.util.Arrays;
 import java.util.HashMap;
 

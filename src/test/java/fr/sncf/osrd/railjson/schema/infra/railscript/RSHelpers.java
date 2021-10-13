@@ -17,7 +17,6 @@ import fr.sncf.osrd.simulation.Simulation;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Provide;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;

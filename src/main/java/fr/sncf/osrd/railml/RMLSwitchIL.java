@@ -3,7 +3,6 @@ package fr.sncf.osrd.railml;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
 import java.util.ArrayList;

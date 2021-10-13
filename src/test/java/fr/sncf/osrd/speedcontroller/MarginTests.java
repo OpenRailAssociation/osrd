@@ -13,13 +13,11 @@ import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.utils.TrackSectionLocation;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import java.util.ArrayList;
-
 
 public class MarginTests {
     public static class ComparativeTest {

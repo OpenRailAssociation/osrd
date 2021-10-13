@@ -16,7 +16,6 @@ import fr.sncf.osrd.railml.tracksectiongraph.TrackNetElement;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
 import java.util.*;

@@ -6,7 +6,6 @@ import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr;
 import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspect;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
-
 import org.dom4j.Document;
 import org.dom4j.Element;
 import java.util.HashMap;

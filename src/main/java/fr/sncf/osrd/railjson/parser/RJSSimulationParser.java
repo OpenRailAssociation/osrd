@@ -6,7 +6,6 @@ import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

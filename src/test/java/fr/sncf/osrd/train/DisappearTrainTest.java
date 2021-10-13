@@ -2,7 +2,6 @@ package fr.sncf.osrd.train;
 
 import static fr.sncf.osrd.Helpers.*;
 import static fr.sncf.osrd.train.TestTrains.FAST_NO_FRICTION_TRAIN;
-import static fr.sncf.osrd.train.TrainStatus.REACHED_DESTINATION;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.TestConfig;
@@ -11,7 +10,6 @@ import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.trackgraph.BufferStop;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
@@ -23,7 +21,6 @@ import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;

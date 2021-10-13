@@ -2,7 +2,6 @@ package fr.sncf.osrd.api;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;

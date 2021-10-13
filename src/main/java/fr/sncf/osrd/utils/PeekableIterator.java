@@ -1,10 +1,8 @@
 package fr.sncf.osrd.utils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-
 
 public interface PeekableIterator<E> extends Iterator<E> {
     /**

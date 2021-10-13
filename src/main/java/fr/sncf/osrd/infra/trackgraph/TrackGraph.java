@@ -1,11 +1,9 @@
 package fr.sncf.osrd.infra.trackgraph;
 
-import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.utils.CryoMap;
 import fr.sncf.osrd.utils.graph.BiNGraph;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-
 import java.util.List;
 import java.util.Map;
 

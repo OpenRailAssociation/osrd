@@ -29,7 +29,6 @@ import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.utils.PathUtils;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
-
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;

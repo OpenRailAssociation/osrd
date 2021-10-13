@@ -6,7 +6,6 @@ import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.Range;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
-
 import java.util.Objects;
 
 public final class TrackSectionRange extends Range implements DeepComparable<TrackSectionRange> {

@@ -3,7 +3,6 @@ package fr.sncf.osrd.simulation.changelog;
 import fr.sncf.osrd.simulation.Change;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.HashMap;
 
 public class ChangeLogSummarizer {

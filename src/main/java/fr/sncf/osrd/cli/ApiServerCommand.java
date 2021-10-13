@@ -2,7 +2,6 @@ package fr.sncf.osrd.cli;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-
 import fr.sncf.osrd.api.InfraCacheStatusEndpoint;
 import fr.sncf.osrd.api.InfraManager;
 import fr.sncf.osrd.api.PathfindingRoutesEndpoint;
