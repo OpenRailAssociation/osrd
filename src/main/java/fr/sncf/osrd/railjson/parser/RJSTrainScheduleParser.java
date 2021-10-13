@@ -247,7 +247,7 @@ public class RJSTrainScheduleParser {
             throws InvalidSchedule {
         var res = new ArrayList<TrainStop>();
         if (stops == null) {
-            throw new InvalidSchedule("At least one train stop mst be created in simulation.json");
+            throw new InvalidSchedule("The train schedule must have at least one train stop");
         }
         for (var stop : stops) {
             if ((stop.position == null) == (stop.location == null))
