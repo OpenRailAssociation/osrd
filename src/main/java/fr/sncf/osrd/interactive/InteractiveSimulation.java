@@ -44,7 +44,7 @@ public class InteractiveSimulation {
         responseCallback.send(message);
     }
 
-    private boolean hasUnexpectedState(SessionState... validStates) throws IOException {
+    private boolean expectState(SessionState... validStates) throws IOException {
         for (var validState : validStates)
             if (validState == this.state)
                 return false;
@@ -61,7 +61,7 @@ public class InteractiveSimulation {
      * Initialize session, building infra and extra rolling stocks
      */
     public void init(RJSInfra rjsInfra, Collection<RJSRollingStock> extraRJSRollingStocks) throws IOException {
-        if (hasUnexpectedState(SessionState.UNINITIALIZED))
+        if (expectState(SessionState.UNINITIALIZED))
             return;
 
         try {
@@ -71,7 +71,7 @@ public class InteractiveSimulation {
                 extraRollingStocks.put(rollingStock.id, rollingStock);
             }
             this.infra = infra;
-            state = SessionState.INITIALIZED;
+            state = SessionState.WAITING_FOR_SIMULATION;
             sendResponse(new ServerMessage.SessionInitialized());
         } catch (InvalidInfraException e) {
             sendResponse(ServerMessage.Error.withReason("failed to parse infra", e.getMessage()));
@@ -89,7 +89,7 @@ public class InteractiveSimulation {
             List<RJSSuccessionTable> rjsSuccessions,
             List<RJSVirtualPoint> virtualPoints
     ) throws IOException {
-        if (hasUnexpectedState(SessionState.INITIALIZED))
+        if (expectState(SessionState.WAITING_FOR_SIMULATION))
             return;
 
         var rjsSimulation = new RJSSimulation(rollingStocks, rjsTrainSchedules);
@@ -107,7 +107,7 @@ public class InteractiveSimulation {
             simulation = Simulation.createFromInfraAndSuccessions(infra, successions, 0, streamChangesConsumer);
             for (var trainSchedule : trainSchedules)
                 TrainCreatedEvent.plan(simulation, trainSchedule);
-            state = SessionState.RUNNING;
+            state = SessionState.PAUSED;
             sendResponse(new ServerMessage.SimulationCreated());
         } catch (InvalidSchedule e) {
             sendResponse(ServerMessage.Error.withReason("failed to parse train schedule", e.getMessage()));
@@ -123,11 +123,12 @@ public class InteractiveSimulation {
      * @param untilEvents A list of event types after which the simulation must pause
      */
     public void run(Set<EventType> untilEvents) throws IOException {
-        if (hasUnexpectedState(SessionState.RUNNING))
+        if (expectState(SessionState.PAUSED))
             return;
 
         // run the simulation loop
         try {
+            state = SessionState.RUNNING;
             while (!simulation.isSimulationOver()) {
                 var event = simulation.step();
                 var eventType = EventType.fromEvent(event);
@@ -138,7 +139,7 @@ public class InteractiveSimulation {
                     return;
                 }
             }
-            state = SessionState.INITIALIZED;
+            state = SessionState.WAITING_FOR_SIMULATION;
             sendResponse(new ServerMessage.SimulationComplete());
         } catch (SimulationError e) {
             sendResponse(ServerMessage.Error.withReason("failed to run simulation", e.getMessage()));
@@ -152,7 +153,7 @@ public class InteractiveSimulation {
 
     /** Sends back to the client the list of delays for all requested trains */
     public void sendTrainDelays(Collection<String> trains) throws IOException {
-        if (hasUnexpectedState(SessionState.INITIALIZED, SessionState.PAUSED))
+        if (expectState(SessionState.PAUSED))
             return;
 
         var curTime = simulation.getTime();
