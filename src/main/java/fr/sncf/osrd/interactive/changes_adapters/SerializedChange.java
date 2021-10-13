@@ -4,7 +4,6 @@ import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.interactive.client_messages.ChangeType;
 import fr.sncf.osrd.simulation.Change;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 

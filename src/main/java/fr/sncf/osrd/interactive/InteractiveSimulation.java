@@ -24,7 +24,6 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
-
 import java.io.IOException;
 import java.util.*;
 

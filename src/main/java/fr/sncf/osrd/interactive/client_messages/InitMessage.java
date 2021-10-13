@@ -4,7 +4,6 @@ import com.squareup.moshi.Json;
 import fr.sncf.osrd.interactive.InteractiveSimulation;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
-
 import java.io.IOException;
 import java.util.Collection;
 
