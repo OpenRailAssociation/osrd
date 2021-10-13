@@ -3,6 +3,8 @@ package fr.sncf.osrd.infra_state;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.SuccessionTable;
+import fr.sncf.osrd.infra_state.routes.RouteState;
+import fr.sncf.osrd.infra_state.routes.ControlledRouteState;
 import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.DeepEqualsUtils;
 import java.util.Arrays;
@@ -86,7 +88,7 @@ public final class InfraState implements DeepComparable<InfraState> {
         var routeCount = infra.routeGraph.getEdgeCount();
         var routeStates = new RouteState[routeCount];
         for (int i = 0; i < routeCount; i++)
-            routeStates[i] = new RouteState(infra.routeGraph.getEdge(i));
+            routeStates[i] = new ControlledRouteState(infra.routeGraph.getEdge(i));
 
         var switchCount = infra.switches.size();
         var switchStates = new SwitchState[switchCount];

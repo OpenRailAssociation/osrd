@@ -4,14 +4,10 @@ import static fr.sncf.osrd.Helpers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.TestConfig;
-import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra_state.RouteState;
-import fr.sncf.osrd.infra_state.RouteStatus;
+import fr.sncf.osrd.infra_state.routes.RouteState;
+import fr.sncf.osrd.infra_state.routes.RouteStatus;
 import fr.sncf.osrd.infra_state.SwitchState;
-import fr.sncf.osrd.railjson.parser.RailJSONParser;
-import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
-import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 

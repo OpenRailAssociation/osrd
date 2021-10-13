@@ -3,6 +3,7 @@ package fr.sncf.osrd.infra_state;
 import fr.sncf.osrd.infra.SuccessionTable;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.simulation.EntityChange;
+import fr.sncf.osrd.infra_state.routes.RouteState;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
