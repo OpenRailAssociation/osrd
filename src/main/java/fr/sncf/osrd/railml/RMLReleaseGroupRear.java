@@ -4,7 +4,6 @@ import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSTVDSection;
 import org.dom4j.Document;
 import org.dom4j.Element;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;

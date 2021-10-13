@@ -9,7 +9,6 @@ import fr.sncf.osrd.utils.graph.UndirectedBiEdgeID;
 import fr.sncf.osrd.utils.graph.overlay.BiGraphOverlayBuilder;
 import fr.sncf.osrd.utils.graph.overlay.OverlayPathNode;
 import fr.sncf.osrd.utils.graph.path.FullPathArray;
-
 import java.util.HashMap;
 import java.util.List;
 

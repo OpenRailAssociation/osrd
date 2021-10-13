@@ -5,7 +5,6 @@ import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.utils.UnionFind;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.Function;

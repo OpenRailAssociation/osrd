@@ -2,13 +2,11 @@ package fr.sncf.osrd.utils;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.function.Consumer;
 import java.util.function.DoubleUnaryOperator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;

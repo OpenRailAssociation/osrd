@@ -20,7 +20,6 @@ import fr.sncf.osrd.simulation.changelog.ChangeLogSummarizer;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;

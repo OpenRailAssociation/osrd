@@ -3,7 +3,6 @@ package fr.sncf.osrd.infra;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 

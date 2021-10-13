@@ -2,7 +2,6 @@ package fr.sncf.osrd.utils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.utils.graph.IPointValue;
-
 import java.util.Objects;
 
 public final class PointValue<ValueT> implements IPointValue<ValueT> {

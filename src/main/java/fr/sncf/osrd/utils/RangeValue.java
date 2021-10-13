@@ -1,7 +1,6 @@
 package fr.sncf.osrd.utils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import java.util.Objects;
 
 /** A range of position with an associated value. */

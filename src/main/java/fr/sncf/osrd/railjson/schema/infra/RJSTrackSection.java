@@ -12,7 +12,6 @@ import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCurve;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSectionPart;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenarySectionPart;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

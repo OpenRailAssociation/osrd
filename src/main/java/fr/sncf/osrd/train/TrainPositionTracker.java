@@ -9,7 +9,6 @@ import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.DeepEqualsUtils;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
-
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.ArrayDeque;

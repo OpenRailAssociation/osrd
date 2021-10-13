@@ -5,7 +5,6 @@ import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSectionLink;
 import fr.sncf.osrd.utils.UnionFind;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;

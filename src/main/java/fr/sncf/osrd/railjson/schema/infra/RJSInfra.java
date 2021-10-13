@@ -9,7 +9,6 @@ import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSFunction;
 import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspect;
 import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspectConstraint;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

@@ -19,7 +19,6 @@ import fr.sncf.osrd.simulation.SimulationError;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.lifecycle.AfterTry;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;

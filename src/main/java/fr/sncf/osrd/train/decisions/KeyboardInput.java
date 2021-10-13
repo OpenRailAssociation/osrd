@@ -4,7 +4,6 @@ import fr.sncf.osrd.DebugViewer;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.train.Action;
 import fr.sncf.osrd.train.TrainPhysicsIntegrator;
-
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 

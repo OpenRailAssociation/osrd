@@ -17,7 +17,6 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.infra.SuccessionTable;
 import fr.sncf.osrd.utils.PathUtils;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
-
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;

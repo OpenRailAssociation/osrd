@@ -14,7 +14,6 @@ import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import org.junit.jupiter.api.Test;
-
 import java.util.*;
 
 public class RouteGraphTest {

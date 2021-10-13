@@ -3,7 +3,6 @@ package fr.sncf.osrd.train;
 import static fr.sncf.osrd.Helpers.*;
 import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN_MAX_DEC_TYPE;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.*;
@@ -28,7 +27,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;

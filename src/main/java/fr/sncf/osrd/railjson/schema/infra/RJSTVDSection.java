@@ -5,7 +5,6 @@ import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;

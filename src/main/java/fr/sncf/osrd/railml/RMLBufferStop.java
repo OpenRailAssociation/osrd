@@ -6,7 +6,6 @@ import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.railml.tracksectiongraph.NetElement;
 import org.dom4j.Document;
 import org.dom4j.Element;
-
 import java.util.HashMap;
 import java.util.Map;
 

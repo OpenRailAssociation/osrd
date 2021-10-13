@@ -4,7 +4,6 @@ import static fr.sncf.osrd.Helpers.getBaseInfra;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.HashMap;
-
 import fr.sncf.osrd.TestConfig;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

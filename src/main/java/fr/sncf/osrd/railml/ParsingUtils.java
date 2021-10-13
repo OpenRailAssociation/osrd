@@ -8,7 +8,6 @@ import fr.sncf.osrd.utils.FloatCompare;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import org.dom4j.Element;
-
 import java.util.Locale;
 import java.util.Map;
 

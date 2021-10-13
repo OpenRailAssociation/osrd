@@ -3,7 +3,6 @@ package fr.sncf.osrd.infra;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
-
 import java.util.ArrayList;
 
 public final class TVDSection implements Comparable<TVDSection> {

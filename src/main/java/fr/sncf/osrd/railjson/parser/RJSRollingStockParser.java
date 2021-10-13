@@ -6,7 +6,6 @@ import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStockField;
 import fr.sncf.osrd.railjson.parser.exceptions.MissingRollingStockField;
 import fr.sncf.osrd.railjson.schema.rollingstock.*;
 import fr.sncf.osrd.train.TrainFeature;
-
 import java.util.*;
 
 
