@@ -28,6 +28,12 @@
                     },
                     "type": "navigate"
                 }
+            ],
+            "stops": [
+                {
+                    "duration": 1,
+                    "position": -1
+                }
             ]
         },
         {
@@ -57,6 +63,12 @@
                     },
                     "type": "navigate"
                 }
+            ],
+            "stops": [
+                {
+                    "duration": 1,
+                    "position": -1
+                }
             ]
         },
         {
@@ -83,6 +95,12 @@
                         "offset": 500
                     },
                     "type": "navigate"
+                }
+            ],
+            "stops": [
+                {
+                    "duration": 1,
+                    "position": -1
                 }
             ]
         }

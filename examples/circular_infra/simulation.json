@@ -32,6 +32,12 @@
             "offset": 200
           }
         }
+      ],
+      "stops": [
+        {
+          "duration": 1,
+          "position": -1
+        }
       ]
     },{
       "id": "Test_2.",
@@ -64,6 +70,12 @@
             "offset": 200
           }
         }
+      ],
+      "stops": [
+        {
+          "duration": 1,
+          "position": -1
+        }
       ]
     },{
       "id": "Test_3.",
@@ -95,6 +107,12 @@
             "track_section": "tr.81",
             "offset": 200
           }
+        }
+      ],
+      "stops": [
+        {
+          "duration": 1,
+          "position": -1
         }
       ]
     }

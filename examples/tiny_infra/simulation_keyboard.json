@@ -21,6 +21,12 @@
             "offset": 100
           }
         }
+      ],
+      "stops": [
+        {
+          "duration": 1,
+          "position": -1
+        }
       ]
     }
   ]
