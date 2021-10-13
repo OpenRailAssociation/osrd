@@ -119,4 +119,8 @@ public class RSExprVisitor {
     public void visit(RSExpr.PreviousReservedRoute previousReservedRoute) throws InvalidInfraException {
         previousReservedRoute.signal.accept(this);
     }
+
+    public void visit(RSExpr.HasCBTCStatus hasCBTCStatus) throws InvalidInfraException {
+        hasCBTCStatus.routeExpr.accept(this);
+    }
 }

@@ -540,22 +540,6 @@
                                 "type": "argument_ref",
                                 "argument_name": "route"
                             },
-                            "state": "CBTC_OCCUPIED"
-                        },
-                        {
-                            "type": "route_has_state",
-                            "route": {
-                                "type": "argument_ref",
-                                "argument_name": "route"
-                            },
-                            "state": "CBTC_REQUESTED"
-                        },
-                        {
-                            "type": "route_has_state",
-                            "route": {
-                                "type": "argument_ref",
-                                "argument_name": "route"
-                            },
                             "state": "CONFLICT"
                         }
                     ]
@@ -622,25 +606,12 @@
                                         "condition": {
                                             "type": "not",
                                             "expr": {
-                                                "type": "or",
-                                                "exprs": [
-                                                    {
-                                                        "type": "route_has_state",
-                                                        "route": {
-                                                            "type": "argument_ref",
-                                                            "argument_name": "left_route"
-                                                        },
-                                                        "state": "RESERVED"
-                                                    },
-                                                    {
-                                                        "type": "route_has_state",
-                                                        "route": {
-                                                            "type": "argument_ref",
-                                                            "argument_name": "left_route"
-                                                        },
-                                                        "state": "CBTC_RESERVED"
-                                                    }
-                                                ]
+                                                "type": "route_has_state",
+                                                "route": {
+                                                    "type": "argument_ref",
+                                                    "argument_name": "left_route"
+                                                },
+                                                "state": "RESERVED"
                                             }
                                         }
                                     },
@@ -674,25 +645,12 @@
                                         "condition": {
                                             "type": "not",
                                             "expr": {
-                                                "type": "or",
-                                                "exprs": [
-                                                    {
-                                                        "type": "route_has_state",
-                                                        "route": {
-                                                            "type": "argument_ref",
-                                                            "argument_name": "right_route"
-                                                        },
-                                                        "state": "RESERVED"
-                                                    },
-                                                    {
-                                                        "type": "route_has_state",
-                                                        "route": {
-                                                            "type": "argument_ref",
-                                                            "argument_name": "right_route"
-                                                        },
-                                                        "state": "CBTC_RESERVED"
-                                                    }
-                                                ]
+                                                "type": "route_has_state",
+                                                "route": {
+                                                    "type": "argument_ref",
+                                                    "argument_name": "right_route"
+                                                },
+                                                "state": "RESERVED"
                                             }
                                         }
                                     },

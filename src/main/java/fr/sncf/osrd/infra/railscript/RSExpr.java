@@ -583,6 +583,29 @@ public abstract class RSExpr<T extends RSValue> {
         }
     }
 
+    public static final class HasCBTCStatus extends RSExpr<RSBool> {
+        public final RSExpr<RouteState> routeExpr;
+
+        public HasCBTCStatus(RSExpr<RouteState> routeExpr) {
+            this.routeExpr = routeExpr;
+        }
+
+        @Override
+        public RSBool evaluate(RSExprState<?> state) {
+            return RSBool.from(routeExpr.evaluate(state).hasCBTCStatus());
+        }
+
+        @Override
+        public RSType getType(RSType[] argumentTypes) {
+            return RSType.BOOLEAN;
+        }
+
+        @Override
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+        }
+    }
+
     public static final class RouteStateCheck extends RSExpr<RSBool> {
         public final RSExpr<RouteState> routeExpr;
         public final RouteStatus status;
@@ -723,9 +746,7 @@ public abstract class RSExpr<T extends RSValue> {
             for (var route : routes) {
                 var routeState = state.infraState.getRouteState(route.index); 
                 if (routeState.status == RouteStatus.RESERVED
-                        || routeState.status == RouteStatus.CBTC_RESERVED
-                        || routeState.status == RouteStatus.OCCUPIED
-                        || routeState.status == RouteStatus.CBTC_OCCUPIED) {
+                        || routeState.status == RouteStatus.OCCUPIED) {
                     return new RSOptional<>(routeState);
                 }
             }

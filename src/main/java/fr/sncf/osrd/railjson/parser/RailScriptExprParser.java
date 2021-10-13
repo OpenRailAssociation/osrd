@@ -220,11 +220,16 @@ public class RailScriptExprParser {
             var signalExpr = parseSignalExpr(nextSignalExpr.signal);
             var routeExpr = parseRouteExpr(nextSignalExpr.route);
             return new RSExpr.NextSignal(signalExpr, routeExpr);
-        } 
+        }
         if (type == RJSRSExpr.PreviousReservedRoute.class) {
             var previousReservedRouteExpr = (RJSRSExpr.PreviousReservedRoute) expr;
             var signalExpr = parseSignalExpr(previousReservedRouteExpr.signal);
             return new RSExpr.PreviousReservedRoute(signalExpr);
+        }
+        if (type == RJSRSExpr.HasCBTCStatus.class) {
+            var hasCBTCStatusExpr = (RJSRSExpr.HasCBTCStatus) expr;
+            var routeExpr = parseRouteExpr(hasCBTCStatusExpr.route);
+            return new RSExpr.HasCBTCStatus(routeExpr);
         }
 
         throw new InvalidInfraException(String.format("'%s' unsupported signal expression", type));
@@ -296,12 +301,6 @@ public class RailScriptExprParser {
                 return RouteStatus.RESERVED;
             case OCCUPIED:
                 return RouteStatus.OCCUPIED;
-            case CBTC_REQUESTED:
-                return RouteStatus.CBTC_REQUESTED;
-            case CBTC_RESERVED:
-                return RouteStatus.CBTC_RESERVED;
-            case CBTC_OCCUPIED:
-                return RouteStatus.CBTC_OCCUPIED;
             case CONFLICT:
                 return RouteStatus.CONFLICT;
         }

@@ -58,7 +58,8 @@ public class RouteStateTest {
 
         RouteState routeState = sim.infraState.getRouteState(3);
         makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
-        makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.CBTC_RESERVED);
+        makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.RESERVED);
+        makeAssertEvent(sim, 11, routeState::hasCBTCStatus);
         makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
         makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(6).status == RouteStatus.CONFLICT);
         simState.run();
@@ -106,8 +107,10 @@ public class RouteStateTest {
         RouteState routeState = sim.infraState.getRouteState(3);
         makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
         makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
-        makeAssertEvent(sim, 19, () -> routeState.status == RouteStatus.CBTC_REQUESTED);
-        makeAssertEvent(sim, 21, () -> routeState.status == RouteStatus.CBTC_RESERVED);
+        makeAssertEvent(sim, 19, () -> routeState.status == RouteStatus.REQUESTED);
+        makeAssertEvent(sim, 19, routeState::hasCBTCStatus);
+        makeAssertEvent(sim, 21, () -> routeState.status == RouteStatus.RESERVED);
+        makeAssertEvent(sim, 21, routeState::hasCBTCStatus);
         simState.run();
     }
 
@@ -197,9 +200,9 @@ public class RouteStateTest {
         makeFunctionEvent(sim, 0, () -> routeState.cbtcReserve(sim));
 
         // at t=41, one switch is done moving but not the other
-        makeAssertEvent(sim, 41, () -> routeState.status == RouteStatus.CBTC_REQUESTED);
+        makeAssertEvent(sim, 41, () -> routeState.status == RouteStatus.REQUESTED);
         // at t=43, both switches have moved
-        makeAssertEvent(sim, 43, () -> routeState.status == RouteStatus.CBTC_RESERVED);
+        makeAssertEvent(sim, 43, () -> routeState.status == RouteStatus.RESERVED);
 
         simState.run();
     }
@@ -244,9 +247,9 @@ public class RouteStateTest {
 
         RouteState routeState = sim.infraState.getRouteState(3);
         makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
-        makeAssertEvent(sim, 10, () -> routeState.status == RouteStatus.CBTC_RESERVED);
+        makeAssertEvent(sim, 10, () -> routeState.status == RouteStatus.RESERVED);
         makeFunctionEvent(sim, 15, () -> routeState.onTvdSectionOccupied(sim));
-        makeAssertEvent(sim, 15, () -> routeState.status == RouteStatus.CBTC_OCCUPIED);
+        makeAssertEvent(sim, 15, () -> routeState.status == RouteStatus.OCCUPIED);
         makeFunctionEvent(sim, 20, () -> {
             for (var section : routeState.route.tvdSectionsPaths)
                 routeState.onTvdSectionUnoccupied(sim, sim.infraState.getTvdSectionState(section.tvdSection.index));
@@ -319,7 +322,7 @@ public class RouteStateTest {
                 new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(7), RouteStatus.CONFLICT),
                 new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(8), RouteStatus.CONFLICT),
 
-                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(3), RouteStatus.CBTC_RESERVED))
+                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(3), RouteStatus.RESERVED))
                 .map(Object::toString).collect(Collectors.toSet());
         assertEquals(expectedChanges, changesSet);
     }
@@ -400,26 +403,26 @@ public class RouteStateTest {
         RouteState routeState = sim.infraState.getRouteState(3);
         // We reserve the route a first time
         makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
-        makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.CBTC_RESERVED);
+        makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.RESERVED);
         makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
         makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(6).status == RouteStatus.CONFLICT);
         // We reserve the route a second time
         makeFunctionEvent(sim, 12, () -> routeState.cbtcReserve(sim));
-        makeAssertEvent(sim, 13, () -> routeState.status == RouteStatus.CBTC_RESERVED);
+        makeAssertEvent(sim, 13, () -> routeState.status == RouteStatus.RESERVED);
         makeAssertEvent(sim, 13, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
         makeAssertEvent(sim, 13, () -> sim.infraState.getRouteState(6).status == RouteStatus.CONFLICT);
         // The first train enters the route
         makeFunctionEvent(sim, 14, () -> routeState.onTvdSectionOccupied(sim));
-        makeAssertEvent(sim, 14, () -> routeState.status == RouteStatus.CBTC_OCCUPIED);
+        makeAssertEvent(sim, 14, () -> routeState.status == RouteStatus.OCCUPIED);
         // The second train enters the route
         makeFunctionEvent(sim, 15, () -> routeState.onTvdSectionOccupied(sim));
-        makeAssertEvent(sim, 15, () -> routeState.status == RouteStatus.CBTC_OCCUPIED);
+        makeAssertEvent(sim, 15, () -> routeState.status == RouteStatus.OCCUPIED);
         // The first train leaves the route, but there is still the second train on the route
         makeFunctionEvent(sim, 16, () -> {
             for (var section : routeState.route.tvdSectionsPaths)
                 routeState.onTvdSectionUnoccupied(sim, sim.infraState.getTvdSectionState(section.tvdSection.index));
         });
-        makeAssertEvent(sim, 17, () -> routeState.status == RouteStatus.CBTC_OCCUPIED);
+        makeAssertEvent(sim, 17, () -> routeState.status == RouteStatus.OCCUPIED);
         // The second train leaves the route, the route is now FREE
         makeFunctionEvent(sim, 18, () -> {
             for (var section : routeState.route.tvdSectionsPaths)
@@ -488,7 +491,8 @@ public class RouteStateTest {
 
         RouteState routeState = sim.infraState.getRouteState(3);
         routeState.cbtcReserve(sim);
-        assert routeState.status == RouteStatus.CBTC_REQUESTED;
+        assert routeState.status == RouteStatus.REQUESTED;
+        assert routeState.hasCBTCStatus();
         assertThrows(AssertionError.class, () -> routeState.reserve(sim));
     }
 
