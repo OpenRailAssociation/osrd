@@ -78,9 +78,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         var higherBound = getFirstHighEstimate();
         var firstGuess = getFirstGuess();
 
-        var totalStopsDuration = 0;
-        for (var stop : schedule.stops)
-            totalStopsDuration += stop.stopDuration;
+        var totalStopsDuration = schedule.getStopDuration();
 
         // base run
         // the binary search condition should be on the total time,

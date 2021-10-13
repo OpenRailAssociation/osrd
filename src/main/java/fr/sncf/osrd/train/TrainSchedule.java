@@ -67,4 +67,11 @@ public final class TrainSchedule {
         else
             this.stops = stops;
     }
+
+    public double getStopDuration() {
+        var totalStopsDuration = 0;
+        for (var stop : stops)
+            totalStopsDuration += stop.stopDuration;
+        return totalStopsDuration;
+    }
 }
