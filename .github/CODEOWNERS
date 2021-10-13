@@ -1,19 +1,20 @@
 CODEOWNERS        @DGEXSolutions/osrd-backend-maintainers
 
-/specifications   @flomonster
+/specifications   @flomonster @DGEXSolutions/osrd-backend-maintainers
 
 # java stuff
-/src/main/java/fr/sncf/osrd/api               @flomonster
+/src/main/java/fr/sncf/osrd                   @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/api               @flomonster @DGEXSolutions/osrd-backend-maintainers
 /src/main/java/fr/sncf/osrd/cbtc              @DGEXSolutions/osrd-backend-maintainers
-/src/main/java/fr/sncf/osrd/cli               @multun
+/src/main/java/fr/sncf/osrd/cli               @multun @DGEXSolutions/osrd-backend-maintainers
 /src/main/java/fr/sncf/osrd/config            @DGEXSolutions/osrd-backend-maintainers
-/src/main/java/fr/sncf/osrd/infra             @multun
-/src/main/java/fr/sncf/osrd/infra_state       @multun
-/src/main/java/fr/sncf/osrd/railjson          @flomonster @multun @eckter
-/src/main/java/fr/sncf/osrd/railml            @flomonster @multun
-/src/main/java/fr/sncf/osrd/simulation        @multun
-/src/main/java/fr/sncf/osrd/speedcontroller   @eckter
-/src/main/java/fr/sncf/osrd/train             @eckter @multun
+/src/main/java/fr/sncf/osrd/infra             @multun @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/infra_state       @multun @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/railjson          @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/railml            @flomonster @multun @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/simulation        @multun @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/speedcontroller   @eckter @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/train             @eckter @multun @DGEXSolutions/osrd-backend-maintainers
 /src/main/java/fr/sncf/osrd/utils             @DGEXSolutions/osrd-backend-maintainers
 /src/main/java/fr/sncf/osrd/DebugViewer.java  @DGEXSolutions/osrd-backend-maintainers
 *Physics*.java                                @DGEXSolutions/osrd-physics
