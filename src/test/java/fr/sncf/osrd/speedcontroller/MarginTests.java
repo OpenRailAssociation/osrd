@@ -14,12 +14,10 @@ import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
 import java.util.ArrayList;
 
 
@@ -82,9 +80,9 @@ public class MarginTests {
         var allowance = new LinearAllowance(TIME, value);
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
 
+        test.saveGraphs(info);
         var expected = test.baseTime() * (1 + value / 100);
         assertEquals(expected, test.testedTime(), expected * 0.01);
-        test.saveGraphs(info);
     }
 
     /** Test the construction margin */
@@ -93,8 +91,8 @@ public class MarginTests {
 
         var config = TestConfig.readResource(configPath).clearAllowances();
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
-        test.saveGraphs(info);
 
+        test.saveGraphs(info);
         var expected = test.baseTime() + value;
         assertEquals(expected, test.testedTime(), expected * 0.01);
     }

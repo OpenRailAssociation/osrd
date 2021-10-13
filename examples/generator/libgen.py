@@ -1538,6 +1538,12 @@ class Simulation:
                         "type": "navigate",
                     }
                 ],
+                "stops": [
+                    {
+                        "duration": 1,
+                        "position": -1
+                    }
+                ]
             }
         )
 

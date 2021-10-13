@@ -19,7 +19,6 @@ import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
-
 import java.util.*;
 
 public class RMLRoute {
