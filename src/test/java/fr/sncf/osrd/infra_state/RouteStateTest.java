@@ -342,7 +342,7 @@ public class RouteStateTest {
 
         RouteState routeState = sim.infraState.getRouteState(3);
         routeState.reserve(sim);
-        assertThrows(AssertionError.class, () -> routeState.reserve(sim));
+        assertThrows(SimulationError.class, () -> routeState.reserve(sim));
     }
 
     /**
@@ -358,7 +358,7 @@ public class RouteStateTest {
 
         RouteState routeState = sim.infraState.getRouteState(3);
         routeState.cbtcReserve(sim);
-        assertThrows(AssertionError.class, () -> routeState.reserve(sim));
+        assertThrows(SimulationError.class, () -> routeState.reserve(sim));
     }
 
     /**
@@ -374,7 +374,7 @@ public class RouteStateTest {
 
         RouteState routeState = sim.infraState.getRouteState(3);
         routeState.reserve(sim);
-        assertThrows(AssertionError.class, () -> routeState.cbtcReserve(sim));
+        assertThrows(SimulationError.class, () -> routeState.cbtcReserve(sim));
     }
 
     /**
@@ -453,7 +453,7 @@ public class RouteStateTest {
         RouteState routeState = sim.infraState.getRouteState(3);
         routeState.reserve(sim);
         assert routeState.status == RouteStatus.REQUESTED;
-        assertThrows(AssertionError.class, () -> routeState.reserve(sim));
+        assertThrows(SimulationError.class, () -> routeState.reserve(sim));
     }
 
     /**
@@ -474,7 +474,7 @@ public class RouteStateTest {
         RouteState routeState = sim.infraState.getRouteState(3);
         routeState.reserve(sim);
         assert routeState.status == RouteStatus.REQUESTED;
-        assertThrows(AssertionError.class, () -> routeState.cbtcReserve(sim));
+        assertThrows(SimulationError.class, () -> routeState.cbtcReserve(sim));
     }
     
     /**
@@ -495,7 +495,7 @@ public class RouteStateTest {
         routeState.cbtcReserve(sim);
         assert routeState.status == RouteStatus.REQUESTED;
         assert routeState.hasCBTCStatus();
-        assertThrows(AssertionError.class, () -> routeState.reserve(sim));
+        assertThrows(SimulationError.class, () -> routeState.reserve(sim));
     }
 
     @Test

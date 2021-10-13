@@ -1,5 +1,7 @@
 package fr.sncf.osrd.infra_state.routes;
 
+import static fr.sncf.osrd.infra_state.routes.RouteStatus.*;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.cbtc.CBTCNavigatePhase;
 import fr.sncf.osrd.infra.TVDSection;
@@ -9,7 +11,6 @@ import fr.sncf.osrd.infra_state.TVDSectionState;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.TrainState;
-import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.SortedArraySet;
 
 public class ControlledRouteState extends RouteState {
@@ -17,7 +18,6 @@ public class ControlledRouteState extends RouteState {
 
     public ControlledRouteState(Route route) {
         super(route);
-        this.status = RouteStatus.FREE;
     }
 
     /** Notify the route that one of his tvd section isn't occupied anymore */
@@ -51,7 +51,7 @@ public class ControlledRouteState extends RouteState {
     /** Notify the route that one of his tvd section was freed */
     @Override
     public void onTvdSectionFreed(Simulation sim) throws SimulationError {
-        if (status == RouteStatus.FREE)
+        if (status == FREE)
             return;
 
         // Check that all tvd sections are free to free the route
@@ -62,47 +62,28 @@ public class ControlledRouteState extends RouteState {
         }
 
         this.isCBTCReserved = false;
-        var change = new RouteStatusChange(sim, this, RouteStatus.FREE);
-        change.apply(sim, this);
-        sim.publishChange(change);
-        notifySignals(sim);
+        updateStatus(sim, FREE);
     }
 
     /** Notify the route that one of his tvd section is reserved */
     @Override
     public void onTvdSectionReserved(Simulation sim) throws SimulationError {
-        if (status != RouteStatus.FREE)
+        if (status != FREE)
             return;
-        var change = new RouteStatusChange(sim, this, RouteStatus.CONFLICT);
-        change.apply(sim, this);
-        sim.publishChange(change);
-        notifySignals(sim);
+        updateStatus(sim, CONFLICT);
     }
 
     /** Notify the route that one of his tvd section is occupied */
     @Override
     public void onTvdSectionOccupied(Simulation sim) throws SimulationError {
 
-        if (status == RouteStatus.REQUESTED || status == RouteStatus.FREE) {
+        if (status == REQUESTED || status == FREE) {
             throw new SimulationError("The TVD section we try to occupy isn't reserved yet");
         }
-
-        RouteStatusChange change;
-        if (status == RouteStatus.RESERVED) {
-            change = new RouteStatusChange(sim, this, RouteStatus.OCCUPIED);
-        } else {
+        if (status != RouteStatus.RESERVED)
             return;
-        }
-        change.apply(sim, this);
-        sim.publishChange(change);
-        notifySignals(sim);
-    }
 
-    private void notifySignals(Simulation sim) throws SimulationError {
-        for (var signal : route.signalSubscribers) {
-            var signalState = sim.infraState.getSignalState(signal.index);
-            signalState.notifyChange(sim);
-        }
+        updateStatus(sim, OCCUPIED);
     }
 
     /**
@@ -139,49 +120,21 @@ public class ControlledRouteState extends RouteState {
     }
 
     /**
-     * Reserve a route and his tvd sections. Routes that share tvd sections will
+     * Reserve a route and his tvd sections, in CBTC mode if specified. Routes that share tvd sections will
      * have the status CONFLICT
-     *
-     * @param sim the current simulation
      */
     @Override
-    public void reserve(Simulation sim) throws SimulationError {
-        assert status == RouteStatus.FREE;
+    protected void reserveWithGivenCBTC(Simulation sim, boolean cbtc) throws SimulationError {
+        if (!(status == FREE || (cbtc && hasCBTCStatus())))
+            throw new SimulationError("The route we try to reserve isn't free");
 
-        isCBTCReserved = false;
+        isCBTCReserved = cbtc;
 
         requestSwitchPositionChange(sim);
 
         RouteStatus newStatus = movingSwitchesLeft > 0 ? RouteStatus.REQUESTED : RouteStatus.RESERVED;
 
-        var change = new RouteStatusChange(sim, this, newStatus);
-        change.apply(sim, this);
-        sim.publishChange(change);
-        notifySignals(sim);
-
-        reserveTvdSection(sim);
-    }
-
-    /**
-     * Reserve a route and his tvd sections in CBTC. Routes that share tvd sections will
-     * have the status CONFLICT
-     *
-     * @param sim the current simulation
-     */
-    @Override
-    public void cbtcReserve(Simulation sim) throws SimulationError {
-        assert status == RouteStatus.FREE || hasCBTCStatus();
-
-        isCBTCReserved = true;
-
-        requestSwitchPositionChange(sim);
-
-        RouteStatus newStatus = movingSwitchesLeft > 0 ? RouteStatus.REQUESTED : RouteStatus.RESERVED;
-
-        var change = new RouteStatusChange(sim, this, newStatus);
-        change.apply(sim, this);
-        sim.publishChange(change);
-        notifySignals(sim);
+        updateStatus(sim, newStatus);
 
         reserveTvdSection(sim);
     }
@@ -205,11 +158,8 @@ public class ControlledRouteState extends RouteState {
         // Get the current phase of the train
         var phase = trainState.trainSchedule.phases.get(trainState.currentPhaseIndex);
         // Call the reservation function corresponding to the current phase type
-        if (phase instanceof SignalNavigatePhase) {
-            reserve(sim);
-        } else if (phase instanceof CBTCNavigatePhase) {
-            cbtcReserve(sim);
-        }
+        var cbtc = phase instanceof CBTCNavigatePhase;
+        reserveWithGivenCBTC(sim, cbtc);
     }
 
     /** Should be called when a switch is done moving and is in the position we requested */
@@ -218,23 +168,11 @@ public class ControlledRouteState extends RouteState {
         movingSwitchesLeft--;
         // If all switches are in the requested position, we mark the route as reserved
         if (movingSwitchesLeft == 0) {
-            RouteStatusChange change;
-            // We mark the route in the reservation mode corresponding to the current
-            // request mode
-            if (status == RouteStatus.REQUESTED) {
-                change = new RouteStatusChange(sim, this, RouteStatus.RESERVED);
-            } else {
+            if (status != RouteStatus.REQUESTED) {
                 throw new SimulationError("The Route needs to be REQUESTED if a switch moves");
             }
-            change.apply(sim, this);
-            sim.publishChange(change);
-            notifySignals(sim);
+            updateStatus(sim, RESERVED);
         }
-    }
-
-    @Override
-    public int getEnumValue() {
-        return status.ordinal();
     }
 
     @Override
