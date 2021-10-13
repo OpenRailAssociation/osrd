@@ -35,6 +35,32 @@ public abstract class RouteState implements RSMatchable {
         return isCBTCReserved;
     }
 
+    protected void notifySignals(Simulation sim) throws SimulationError {
+        for (var signal : route.signalSubscribers) {
+            var signalState = sim.infraState.getSignalState(signal.index);
+            signalState.notifyChange(sim);
+        }
+    }
+
+    protected void updateStatus(Simulation sim, RouteStatus newStatus) throws SimulationError {
+        var change = new RouteStatusChange(sim, this, newStatus);
+        change.apply(sim, this);
+        sim.publishChange(change);
+        notifySignals(sim);
+    }
+
+    public int getEnumValue() {
+        return status.ordinal();
+    }
+
+    public void cbtcReserve(Simulation sim) throws SimulationError {
+        reserveWithGivenCBTC(sim, true);
+    }
+
+    public void reserve(Simulation sim) throws SimulationError {
+        reserveWithGivenCBTC(sim, false);
+    }
+
     /**
      * Reserve a route and his tvd sections. Routes that share tvd sections will
      * have the status CONFLICT
@@ -54,7 +80,6 @@ public abstract class RouteState implements RSMatchable {
         }
     }
 
-    public abstract void reserve(Simulation sim) throws SimulationError;
 
     public abstract void onTvdSectionUnoccupied(Simulation sim, TVDSectionState tvdSectionUnoccupied)
             throws SimulationError;
@@ -65,7 +90,7 @@ public abstract class RouteState implements RSMatchable {
 
     public abstract void onTvdSectionOccupied(Simulation sim) throws SimulationError;
 
-    public abstract void cbtcReserve(Simulation sim) throws SimulationError;
+    protected abstract void reserveWithGivenCBTC(Simulation sim, boolean cbtc) throws SimulationError;
 
     public abstract void initialReserve(Simulation sim, TrainState trainState) throws SimulationError;
 
