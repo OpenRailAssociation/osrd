@@ -12,7 +12,7 @@ import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.ArrayList;
 
-public class Signal implements ActionPoint {
+public final class Signal implements ActionPoint {
     public final int index;
     public final double sightDistance;
     public final String id;

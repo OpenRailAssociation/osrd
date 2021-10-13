@@ -4,7 +4,7 @@ import com.squareup.moshi.Json;
 import fr.sncf.osrd.infra.VirtualActionPoint;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 
-public class SerializedTrainReachesBreakpoint extends SerializedEvent {
+public final class SerializedTrainReachesBreakpoint extends SerializedEvent {
     @Json(name = "breakpoint_name")
     public final String breakpointName;
     @Json(name = "train_id")

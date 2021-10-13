@@ -5,7 +5,7 @@ import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.infra_state.RouteState;
 import fr.sncf.osrd.infra_state.RouteStatus;
 
-public class SerializedRouteStatus extends SerializedChange {
+public final class SerializedRouteStatus extends SerializedChange {
     @Json(name = "new_status")
     public final RouteStatus newStatus;
     public final String route;
