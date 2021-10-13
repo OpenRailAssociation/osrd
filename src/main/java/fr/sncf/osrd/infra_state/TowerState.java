@@ -15,7 +15,7 @@ public class TowerState {
 
     public final List<SuccessionTable> initTables;
     // map switchID -> SwitchState
-    public HashMap<String, State> state;
+    private HashMap<String, State> state;
     // map tvdSectionId -> HashSet<Request>
     private final HashMap<String, HashSet<Request>> waitingList;
     // map trainID -> routeID
@@ -228,9 +228,9 @@ public class TowerState {
         }
     }
 
-    public static class State {
+    private static class State {
         
-        public SuccessionTable table;
+        SuccessionTable table;
         int currentIndex;
         String currentTrainAllowed;
 
@@ -245,5 +245,11 @@ public class TowerState {
             this.currentIndex = currentIndex;
             this.currentTrainAllowed = currentTrainAllowed;
         }
+    }
+
+    public void changeTable(ArrayList<String> newTable, String switchID){
+        System.out.println("Change TST");
+        var thisState = state.get(switchID);
+        thisState.table.trainOrderedList = newTable;
     }
 }

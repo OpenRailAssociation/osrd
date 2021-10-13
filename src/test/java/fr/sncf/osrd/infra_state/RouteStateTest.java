@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -598,8 +599,7 @@ public class RouteStateTest {
         var newTrainOrderedList = new ArrayList<String>();
         newTrainOrderedList.add("Second");
         newTrainOrderedList.add("First");
-        var state = sim.infraState.towerState.state.get(switchID);
-        state.table.trainOrderedList = newTrainOrderedList;
+        sim.infraState.towerState.changeTable(newTrainOrderedList, switchID);
 
         simState.run();
 
