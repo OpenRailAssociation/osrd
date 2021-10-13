@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 public class SwitchMoveEvent extends TimelineEvent {
     static final Logger logger = LoggerFactory.getLogger(SwitchMoveEvent.class);
     private final String newGroup;
-    private final SwitchState switchState;
+    public final SwitchState switchState;
     private final RouteState routeState;
 
     private SwitchMoveEvent(TimelineEventId eventId,

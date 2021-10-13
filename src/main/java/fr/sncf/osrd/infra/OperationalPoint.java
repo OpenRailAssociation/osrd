@@ -10,7 +10,7 @@ import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.utils.PointSequence;
 import java.util.ArrayList;
 
-public class OperationalPoint implements ActionPoint {
+public final class OperationalPoint implements ActionPoint {
     public final String id;
     public final transient ArrayList<TrackSection> refs = new ArrayList<>();
 

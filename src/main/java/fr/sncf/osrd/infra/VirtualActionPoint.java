@@ -7,7 +7,7 @@ import fr.sncf.osrd.train.InteractionType;
 import fr.sncf.osrd.train.InteractionTypeSet;
 import fr.sncf.osrd.train.Train;
 
-public class VirtualActionPoint implements ActionPoint {
+public final class VirtualActionPoint implements ActionPoint {
     public final String name;
 
     public VirtualActionPoint(String name) {

@@ -158,7 +158,7 @@ public abstract class NavigatePhase {
     /** This class represent the location of a switch */
     public static final class SwitchActionPoint implements ActionPoint {
 
-        private final String switchId;
+        public final String switchId;
 
         public SwitchActionPoint(String switchId) {
             super();

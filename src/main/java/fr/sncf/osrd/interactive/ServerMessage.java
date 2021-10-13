@@ -3,6 +3,7 @@ package fr.sncf.osrd.interactive;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
+import fr.sncf.osrd.interactive.action_point_adapters.SerializedActionPoint;
 import fr.sncf.osrd.interactive.changes_adapters.SerializedChange;
 import fr.sncf.osrd.interactive.events_adapters.*;
 import java.util.Map;
@@ -21,6 +22,7 @@ public abstract class ServerMessage {
                             .withSubtype(Error.class, "error"))
                     .add(SerializedChange.adapter)
                     .add(SerializedEvent.adapter)
+                    .add(SerializedActionPoint.adapter)
                     .build()
                     .adapter(ServerMessage.class)
     );

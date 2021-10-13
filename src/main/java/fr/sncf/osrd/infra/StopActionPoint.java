@@ -7,8 +7,7 @@ import fr.sncf.osrd.train.InteractionTypeSet;
 import fr.sncf.osrd.train.Train;
 
 public class StopActionPoint implements ActionPoint {
-
-    private final int stopIndex;
+    public final int stopIndex;
     private final double duration;
 
     public StopActionPoint(int stopIndex, double duration) {

@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum ChangeType {
-    ROUTE_STATUS_CHANGE(RouteState.RouteStatusChange.class, SerializedRouteStatus.class);
+    ROUTE_STATUS(RouteState.RouteStatusChange.class, SerializedRouteStatus.class);
 
     private static final Map<Class<? extends Change>, ChangeType> changeTypeMap = new HashMap<>();
 
