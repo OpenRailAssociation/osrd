@@ -222,9 +222,10 @@ public class RouteStateTest {
         var sim = simState.sim;
 
         RouteState routeState = sim.infraState.getRouteState(3);
+        var tvd = routeState.route.tvdSectionsPaths.get(0).tvdSection;
         makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
         makeAssertEvent(sim, 10, () -> routeState.status == RouteStatus.RESERVED);
-        makeFunctionEvent(sim, 15, () -> routeState.onTvdSectionOccupied(sim));
+        makeFunctionEvent(sim, 15, () -> routeState.onTvdSectionOccupied(sim, tvd));
         makeAssertEvent(sim, 15, () -> routeState.status == RouteStatus.OCCUPIED);
         makeFunctionEvent(sim, 20, () -> {
             for (var section : routeState.route.tvdSectionsPaths)
@@ -248,9 +249,10 @@ public class RouteStateTest {
         var sim = simState.sim;
 
         RouteState routeState = sim.infraState.getRouteState(3);
+        var tvd = routeState.route.tvdSectionsPaths.get(0).tvdSection;
         makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
         makeAssertEvent(sim, 10, () -> routeState.status == RouteStatus.RESERVED);
-        makeFunctionEvent(sim, 15, () -> routeState.onTvdSectionOccupied(sim));
+        makeFunctionEvent(sim, 15, () -> routeState.onTvdSectionOccupied(sim, tvd));
         makeAssertEvent(sim, 15, () -> routeState.status == RouteStatus.OCCUPIED);
         makeFunctionEvent(sim, 20, () -> {
             for (var section : routeState.route.tvdSectionsPaths)
@@ -389,7 +391,8 @@ public class RouteStateTest {
         var sim = simState.sim;
 
         RouteState routeState = sim.infraState.getRouteState(3);
-        assertThrows(SimulationError.class, () -> routeState.onTvdSectionOccupied(sim));
+        var tvd = routeState.route.tvdSectionsPaths.get(0).tvdSection;
+        assertThrows(SimulationError.class, () -> routeState.onTvdSectionOccupied(sim, tvd));
     }
 
     /**
@@ -403,6 +406,7 @@ public class RouteStateTest {
         var sim = simState.sim;
 
         RouteState routeState = sim.infraState.getRouteState(3);
+        final var tvd = routeState.route.tvdSectionsPaths.get(0).tvdSection;
         // We reserve the route a first time
         makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
         makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.RESERVED);
@@ -414,10 +418,10 @@ public class RouteStateTest {
         makeAssertEvent(sim, 13, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
         makeAssertEvent(sim, 13, () -> sim.infraState.getRouteState(6).status == RouteStatus.CONFLICT);
         // The first train enters the route
-        makeFunctionEvent(sim, 14, () -> routeState.onTvdSectionOccupied(sim));
+        makeFunctionEvent(sim, 14, () -> routeState.onTvdSectionOccupied(sim, tvd));
         makeAssertEvent(sim, 14, () -> routeState.status == RouteStatus.OCCUPIED);
         // The second train enters the route
-        makeFunctionEvent(sim, 15, () -> routeState.onTvdSectionOccupied(sim));
+        makeFunctionEvent(sim, 15, () -> routeState.onTvdSectionOccupied(sim, tvd));
         makeAssertEvent(sim, 15, () -> routeState.status == RouteStatus.OCCUPIED);
         // The first train leaves the route, but there is still the second train on the route
         makeFunctionEvent(sim, 16, () -> {

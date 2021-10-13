@@ -1,10 +1,8 @@
 package fr.sncf.osrd.infra_state.routes;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.cbtc.CBTCNavigatePhase;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.railscript.value.RSMatchable;
-import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra_state.TVDSectionState;
 import fr.sncf.osrd.simulation.EntityChange;
@@ -13,7 +11,6 @@ import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
-import fr.sncf.osrd.utils.SortedArraySet;
 
 /**
  * The state of the route is the actual entity which interacts with the rest of the infrastructure
@@ -88,7 +85,7 @@ public abstract class RouteState implements RSMatchable {
 
     public abstract void onTvdSectionReserved(Simulation sim) throws SimulationError;
 
-    public abstract void onTvdSectionOccupied(Simulation sim) throws SimulationError;
+    public abstract void onTvdSectionOccupied(Simulation sim, TVDSection tvdSection) throws SimulationError;
 
     protected abstract void reserveWithGivenCBTC(Simulation sim, boolean cbtc) throws SimulationError;
 

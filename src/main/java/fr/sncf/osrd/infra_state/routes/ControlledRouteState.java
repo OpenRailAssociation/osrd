@@ -75,7 +75,7 @@ public class ControlledRouteState extends RouteState {
 
     /** Notify the route that one of his tvd section is occupied */
     @Override
-    public void onTvdSectionOccupied(Simulation sim) throws SimulationError {
+    public void onTvdSectionOccupied(Simulation sim, TVDSection tvdSection) throws SimulationError {
 
         if (status == REQUESTED || status == FREE) {
             throw new SimulationError("The TVD section we try to occupy isn't reserved yet");

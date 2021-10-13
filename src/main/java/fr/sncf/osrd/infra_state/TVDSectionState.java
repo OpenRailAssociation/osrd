@@ -61,7 +61,7 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
         assert isReserved();
         for (var route : tvdSection.routeSubscribers) {
             var routeState = sim.infraState.getRouteState(route.index);
-            routeState.onTvdSectionOccupied(sim);
+            routeState.onTvdSectionOccupied(sim, tvdSection);
         }
     }
 
