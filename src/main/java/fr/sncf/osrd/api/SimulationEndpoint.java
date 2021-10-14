@@ -251,7 +251,9 @@ public class SimulationEndpoint implements Take {
             } else if (change.getClass() == RestartTrainPlanned.class) {
                 var stopReached = (RestartTrainPlanned) change;
                 var trainResult = getTrainResult(stopReached.train.getID());
-                trainResult.stopReaches.add(new SimulationResultStopReach(sim.getTime(), stopReached.stopIndex));
+                var stopIndex = stopReached.stopIndex;
+                var stopPosition = stopReached.train.schedule.stops.get(stopIndex).position;
+                trainResult.stopReaches.add(new SimulationResultStopReach(sim.getTime(), stopIndex, stopPosition));
             }
         }
 
@@ -391,10 +393,12 @@ public class SimulationEndpoint implements Take {
         public final double time;
         @Json(name = "stop_index")
         public final int stopIndex;
+        public final double position;
 
-        public SimulationResultStopReach(double time, int stopIndex) {
+        SimulationResultStopReach(double time, int stopIndex, double position) {
             this.time = time;
             this.stopIndex = stopIndex;
+            this.position = position;
         }
     }
 }
