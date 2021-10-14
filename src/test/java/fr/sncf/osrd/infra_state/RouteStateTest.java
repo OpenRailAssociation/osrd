@@ -593,7 +593,10 @@ public class RouteStateTest {
         newTrainOrderedList.add("First");
         var tstChange = new TowerState.SuccessionTableChange(sim, switchID, newTrainOrderedList);
         tstChange.apply(sim, tstChange.getEntity(sim));
-        makeFunctionEvent(sim, 0, () -> sim.publishChange(tstChange));
+        makeFunctionEvent(sim, 0, () -> {
+            tstChange.apply(sim, tstChange.getEntity(sim));
+            sim.publishChange(tstChange);
+        });
 
         // Test that the second train is now the first of the list
         makeAssertEvent(sim, 0.5, () -> tstChange.getTable().get(0).equals("Second"));
