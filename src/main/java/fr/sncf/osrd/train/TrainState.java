@@ -3,16 +3,14 @@ package fr.sncf.osrd.train;
 import static java.lang.Math.abs;
 
 import java.util.*;
-import fr.sncf.osrd.simulation.EntityChange;
+
+import fr.sncf.osrd.simulation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra_state.SignalState;
-import fr.sncf.osrd.simulation.Simulation;
-import fr.sncf.osrd.simulation.SimulationError;
-import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.train.phases.NavigatePhase;
@@ -201,7 +199,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         for (int i = 0; i < nIteration; i++) {
             var nextPosition = location.getPathPosition() + currentSpeed * timeStep;
             action = findActionToReachTargetSpeedAtPosition(integrator, isLate, nextPosition);
-            var update = integrator.computeUpdate(action, distanceStep);
+            var update = integrator.computeUpdate(action, distanceStep, 1);
             currentSpeed = update.speed;
         }
         return action;
@@ -240,7 +238,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         var action = iterateFindNextAction(integrator, isLate, timeStep, distanceStep);
         logger.trace("train took action {}", action);
         // run the physics sim
-        var update = TrainPhysicsIntegrator.computeNextStep(
+        var update = IntegrationStep.computeNextStep(
                 integrator,
                 action,
                 distanceStep,

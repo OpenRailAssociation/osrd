@@ -3,12 +3,11 @@ package fr.sncf.osrd.speedcontroller.generators;
 import static java.lang.Math.min;
 import static java.util.Collections.max;
 
+import fr.sncf.osrd.simulation.IntegrationStep;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.*;
 import fr.sncf.osrd.train.Action;
-import fr.sncf.osrd.train.TrainPhysicsIntegrator;
-import fr.sncf.osrd.train.TrainPhysicsIntegrator.PositionUpdate;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.utils.SortedDoubleMap;
 import java.util.HashSet;
@@ -105,7 +104,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
         var location = convertPosition(schedule, sim, endPosition);
         while (speed > newSpeeds.interpolate(location.getPathPosition()) && location.getPathPosition() > 0.) {
             var directive = new SpeedDirective(newSpeeds.interpolate(location.getPathPosition()));
-            var update = TrainPhysicsIntegrator.computeNextStepFromDirective(
+            var update = IntegrationStep.computeNextStepFromDirective(
                     location,
                     speed,
                     directive,
@@ -142,14 +141,14 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
     }
 
     /** compute the running time calculation from (initialPosition,initialSpeed) to a given target speed */
-    private NavigableMap<Double, PositionUpdate> getUpdatesAtPositionsToTarget(Simulation sim,
+    private NavigableMap<Double, IntegrationStep> getUpdatesAtPositionsToTarget(Simulation sim,
                                                                                TrainSchedule schedule,
                                                                                double initialPosition,
                                                                                double initialSpeed,
                                                                                double endPosition,
                                                                                double targetSpeed) {
 
-        var res = new TreeMap<Double, TrainPhysicsIntegrator.PositionUpdate>();
+        var res = new TreeMap<Double, IntegrationStep>();
         var stopIndex = 0;
         var location = convertPosition(schedule, sim, initialPosition);
         var totalLength = 0.;
@@ -160,7 +159,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
         var inertia = schedule.rollingStock.mass * schedule.rollingStock.inertiaCoefficient;
         var action = Action.brake(schedule.rollingStock.gamma * inertia);
         do {
-            var update = TrainPhysicsIntegrator.computeNextStepFromAction(
+            var update = IntegrationStep.computeNextStepFromAction(
                     location,
                     speed,
                     action,

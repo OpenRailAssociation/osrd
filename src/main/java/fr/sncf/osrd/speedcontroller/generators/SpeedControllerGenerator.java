@@ -2,10 +2,10 @@ package fr.sncf.osrd.speedcontroller.generators;
 
 import static java.lang.Math.min;
 
+import fr.sncf.osrd.simulation.IntegrationStep;
 import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.SpeedController;
-import fr.sncf.osrd.train.TrainPhysicsIntegrator.PositionUpdate;
 import fr.sncf.osrd.utils.SortedDoubleMap;
 import java.util.NavigableMap;
 import java.util.Set;
@@ -100,24 +100,24 @@ public abstract class SpeedControllerGenerator {
     }
 
     /** Generates a map of location -> updates if we follow the given controllers. */
-    public static NavigableMap<Double, PositionUpdate> getUpdatesAtPositions(Simulation sim,
-                                                                      TrainSchedule schedule,
-                                                                      Set<SpeedController> controllers,
-                                                                      double timestep,
-                                                                      double begin,
-                                                                      double end,
-                                                                      double initialSpeed) {
+    public static NavigableMap<Double, IntegrationStep> getUpdatesAtPositions(Simulation sim,
+                                                                              TrainSchedule schedule,
+                                                                              Set<SpeedController> controllers,
+                                                                              double timestep,
+                                                                              double begin,
+                                                                              double end,
+                                                                              double initialSpeed) {
         var location = convertPosition(schedule, sim, begin);
         var totalLength = 0.;
         for (var range : schedule.plannedPath.trackSectionPath)
             totalLength += range.length();
         totalLength = min(totalLength, end);
-        var res = new TreeMap<Double, PositionUpdate>();
+        var res = new TreeMap<Double, IntegrationStep>();
         var stopIndex = 0;
 
         double speed = initialSpeed;
         do {
-            var update = TrainPhysicsIntegrator.computeNextStepWithRK4(
+            var update = IntegrationStep.computeNextStepFromControllers(
                     location,
                     speed,
                     controllers,
@@ -128,7 +128,6 @@ public abstract class SpeedControllerGenerator {
                     1
             );
             speed = update.speed;
-
             location.updatePosition(schedule.rollingStock.length, update.positionDelta);
             res.put(location.getPathPosition(), update);
             if (speed <= 1e-5) {
@@ -169,7 +168,7 @@ public abstract class SpeedControllerGenerator {
         // TODO: max Gamma could have different values depending on the speed like in ERTMS
         var action = Action.brake(Math.abs(schedule.rollingStock.gamma * inertia));
         while (speed < maxSpeed && location.getPathPosition() >= 0.0001) {
-            var update = TrainPhysicsIntegrator.computeNextStepFromAction(
+            var update = IntegrationStep.computeNextStepFromAction(
                     location,
                     speed,
                     action,
