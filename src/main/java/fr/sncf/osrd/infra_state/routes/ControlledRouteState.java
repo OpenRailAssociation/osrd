@@ -16,7 +16,7 @@ import fr.sncf.osrd.utils.SortedArraySet;
 public class ControlledRouteState extends RouteState {
     private int movingSwitchesLeft;
 
-    public ControlledRouteState(Route route) {
+    ControlledRouteState(Route route) {
         super(route);
     }
 
@@ -46,23 +46,6 @@ public class ControlledRouteState extends RouteState {
                     tvdSection.free(sim);
             }
         }
-    }
-
-    /** Notify the route that one of his tvd section was freed */
-    @Override
-    public void onTvdSectionFreed(Simulation sim) throws SimulationError {
-        if (status == FREE)
-            return;
-
-        // Check that all tvd sections are free to free the route
-        for (var tvdSectionPath : route.tvdSectionsPaths) {
-            var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
-            if (tvdSection.isReserved())
-                return;
-        }
-
-        this.isCBTCReserved = false;
-        updateStatus(sim, FREE);
     }
 
     /** Notify the route that one of his tvd section is reserved */
