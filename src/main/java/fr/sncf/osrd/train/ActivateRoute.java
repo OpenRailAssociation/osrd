@@ -17,22 +17,30 @@ public class ActivateRoute {
             Simulation sim,
             Train train
     ) throws SimulationError {
-        // TODO have a smarter way to reserve routes
         var lastState = train.getLastState();
-        // If we have requested the last route of the path, we do nothing.
-        if (lastState.requestedRouteIndex + 1 >= lastState.path.routePath.size())
-            return;
-        // If we have requested at least two routes in advance, we do nothing.
-        if (lastState.routeIndex + 1 < lastState.requestedRouteIndex)
-            return;
-        // If a route has been reserved in advance and this route contains at least two tvdSection, we do nothing
-        if (lastState.routeIndex + 1 == lastState.requestedRouteIndex
-                && train.schedule.plannedPath.routePath.get(lastState.requestedRouteIndex).tvdSectionsPaths.size() > 1)
-            return;
-        var nextRoute = lastState.path.routePath.get(lastState.requestedRouteIndex + 1);
-        var nextRouteState = sim.infraState.getRouteState(nextRoute.index);
-        sim.infraState.towerState.request(sim, nextRouteState, train);
-        reserveNextIfNeeded(sim, train, lastState.requestedRouteIndex);
+        var path = lastState.path;
+        for (var routeIndex = lastState.routeIndex + 1; routeIndex < path.routePath.size(); routeIndex++) {
+            var route = path.routePath.get(routeIndex);
+            var routeState = sim.infraState.getRouteState(route.index);
+            if (!route.isControlled) {
+                // passive route
+                if (routeState.status.equals(RouteStatus.OCCUPIED)) {
+                    // occupied, we can't look any further
+                    break;
+                }  // otherwise, not occupied, we can keep looking forward
+
+            } else {
+                // controlled route
+                final var towerState = sim.infraState.towerState;
+                if (!towerState.isCurrentRouteAllowedForTrain(route, train.getName())) {
+                    // we need to request it
+                    sim.infraState.towerState.request(sim, routeState, train);
+                    // we stop looking any further
+                    break;
+                }  // otherwise, already allowed, we can keep going
+
+            }
+        }
     }
 
     /** Reserve the initial routes, mark occupied tvd sections and add interactable elements that are under the train
@@ -46,7 +54,6 @@ public class ActivateRoute {
             throw new SimulationError(String.format(
                     "Impossible to reserve the route '%s' since it is not available.", routeState.route.id));
         routeState.initialReserve(sim, trainState);
-        reserveNextIfNeeded(sim, sim.trains.get(trainState.trainSchedule.trainID), 0);
 
         // Reserve the tvdSection where the train is created
         var trainPosition = trainState.location.trackSectionRanges.getFirst();
@@ -59,23 +66,8 @@ public class ActivateRoute {
                     return;
             freeTvdSectionPath(sim, currentTvdSectionPath);
         }
-    }
 
-    /** If the current route is a single TVD section long, we need to reserve the next one as well. */
-    private static void reserveNextIfNeeded(Simulation sim, Train train, int routeIndex) throws SimulationError {
-        // If we have requested the last route of the path, we do nothing.
-        if (train.schedule.plannedPath.routePath.size() <= routeIndex + 1)
-            return;
-        // If we have requested at least two routes in advance, we do nothing.
-        if (train.getLastState().routeIndex + 1 < train.getLastState().requestedRouteIndex)
-            return;
-        var route = train.schedule.plannedPath.routePath.get(routeIndex);
-        if (route.tvdSectionsPaths.size() > 1)
-            return;
-        var nextRoute = train.schedule.plannedPath.routePath.get(routeIndex + 1);
-        var state = sim.infraState.getRouteState(nextRoute.index);
-        if (state.status == RouteStatus.FREE)
-            sim.infraState.towerState.request(sim, state, train);
+        reserveRoutes(sim, sim.trains.get(trainState.trainSchedule.trainID));
     }
 
     private static void occupyTvdSectionPath(Simulation sim, TVDSectionPath tvdSectionPath) throws SimulationError {
