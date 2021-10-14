@@ -4,6 +4,7 @@ package fr.sncf.osrd.train;
 import static java.lang.Math.abs;
 import static fr.sncf.osrd.train.RollingStock.GammaType.CONST;
 import static java.lang.Math.min;
+import static java.lang.Math.max;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.speedcontroller.SpeedController;
@@ -204,7 +205,8 @@ public class TrainPhysicsIntegrator {
                 integrator,
                 action,
                 distanceLeft,
-                directionSign);
+                directionSign
+        );
     }
 
     /** Computes the next step of the integration method, based on location, speed, and a specified action. */
@@ -255,6 +257,78 @@ public class TrainPhysicsIntegrator {
                 distanceLeft,
                 directionSign
         );
+    }
+
+    /** Computes the next step of Runge-Kutta 4 integration method, based on location, speed, and a set of controllers. */
+    public static PositionUpdate computeNextStepWithRK4(TrainPositionTracker currentLocation,
+                                                        double currentSpeed,
+                                                        Set<SpeedController> controllers,
+                                                        RollingStock rollingStock,
+                                                        double timeStep,
+                                                        double end,
+                                                        int stopIndex,
+                                                        int directionSign) {
+        var update = computeNextStepFromControllers(
+                currentLocation,
+                currentSpeed,
+                controllers,
+                rollingStock,
+                timeStep / 2,
+                end,
+                stopIndex,
+                directionSign
+        );
+        var k1 = update.acceleration;
+        var f1 = update.motorForce;
+        var nextSpeed = update.speed;
+        update = computeNextStepFromControllers(
+                currentLocation,
+                nextSpeed,
+                controllers,
+                rollingStock,
+                timeStep / 2,
+                end,
+                stopIndex,
+                directionSign
+        );
+        var k2 = update.acceleration;
+        var f2 = update.motorForce;
+        nextSpeed = currentSpeed + k2 * timeStep / 2;
+        update = computeNextStepFromControllers(
+                currentLocation,
+                nextSpeed,
+                controllers,
+                rollingStock,
+                timeStep,
+                end,
+                stopIndex,
+                directionSign
+        );
+        var k3 = update.acceleration;
+        var f3 = update.motorForce;
+        currentLocation.updatePosition(rollingStock.length, update.positionDelta / 2);
+        nextSpeed = currentSpeed + k3 * timeStep;
+        update = computeNextStepFromControllers(
+                currentLocation,
+                nextSpeed,
+                controllers,
+                rollingStock,
+                timeStep,
+                end,
+                stopIndex,
+                directionSign
+        );
+        var k4 = update.acceleration;
+        var f4 = update.motorForce;
+        var meanAcceleration = (1 / 6) * (k1 + 2 * k2 + 2 * k3 + k4);
+        var meanMotorForce = (1 / 6) * (f1 + 2 * f2 + 2 * f3 + f4);
+        var distanceLeft = end - currentLocation.getPathPosition();
+        var integrator = TrainPhysicsIntegrator.make(
+                timeStep,
+                rollingStock,
+                currentSpeed,
+                currentLocation.meanTrainGrade());
+        return integrator.computeUpdateWithGivenAcceleration(meanAcceleration, meanMotorForce, distanceLeft, directionSign);
     }
 
 
@@ -330,5 +404,38 @@ public class TrainPhysicsIntegrator {
         assert timeDelta < timeStep && timeDelta >= 0;
         newSpeed = currentSpeed + fullStepAcceleration * timeDelta;
         return  new PositionUpdate(timeDelta, maxDistance, newSpeed, fullStepAcceleration, actionTractionForce);
+    }
+
+    /**
+     * Compute the train's acceleration given an action force
+     * @param acceleration the acceleration of the train at this step
+     * @param maxDistance the maximum distance the train can go
+     * @param directionSign +1 if the train is going forward, -1 if the train is going backwards
+     * @return the new speed of the train
+     */
+    public PositionUpdate computeUpdateWithGivenAcceleration(double acceleration,
+                                                             double motorForce,
+                                                             double maxDistance,
+                                                             double directionSign) {
+
+        var newSpeed = currentSpeed + directionSign * acceleration * timeStep;
+        var timeDelta = timeStep;
+
+        // if the speed change sign or is very low we integrate only the step at which the speed is zero
+        if (currentSpeed != 0.0 && (Math.signum(newSpeed) != Math.signum(currentSpeed) || abs(newSpeed) < 1E-10)) {
+            timeDelta = -currentSpeed / (directionSign * acceleration);
+            newSpeed = 0.;
+        }
+
+        // TODO the integration of the rolling resistance
+        var newPositionDelta = computePositionDelta(currentSpeed, acceleration, timeDelta, directionSign);
+
+        if (newPositionDelta <= maxDistance)
+            return new PositionUpdate(timeDelta, newPositionDelta, newSpeed, acceleration, motorForce);
+
+        timeDelta = computeTimeDelta(currentSpeed, acceleration, maxDistance);
+        assert timeDelta < timeStep && timeDelta >= 0;
+        newSpeed = currentSpeed + acceleration * timeDelta;
+        return  new PositionUpdate(timeDelta, maxDistance, newSpeed, acceleration, motorForce);
     }
 }

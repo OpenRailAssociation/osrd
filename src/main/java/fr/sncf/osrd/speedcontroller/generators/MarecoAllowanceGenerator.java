@@ -207,8 +207,8 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             double position = element.getKey();
             var location = convertPosition(schedule, sim, position);
             double speed = element.getValue();
-            var integrator = TrainPhysicsIntegrator.make(TIME_STEP, rollingStock,
-                    speed, location.meanTrainGrade());
+            var integrator =
+                    TrainPhysicsIntegrator.make(TIME_STEP, rollingStock, speed, location.meanTrainGrade());
             var effectiveOppositeForces = Math.copySign(rollingStock.rollingResistance(speed), -speed);
             var naturalAcceleration = integrator.computeTotalForce(effectiveOppositeForces, 0)
                     / (rollingStock.inertiaCoefficient * rollingStock.mass);

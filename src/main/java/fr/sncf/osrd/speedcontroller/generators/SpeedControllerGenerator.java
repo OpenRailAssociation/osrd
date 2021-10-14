@@ -117,7 +117,7 @@ public abstract class SpeedControllerGenerator {
 
         double speed = initialSpeed;
         do {
-            var update = TrainPhysicsIntegrator.computeNextStepFromControllers(
+            var update = TrainPhysicsIntegrator.computeNextStepWithRK4(
                     location,
                     speed,
                     controllers,

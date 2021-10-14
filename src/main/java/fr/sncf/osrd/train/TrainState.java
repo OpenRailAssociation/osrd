@@ -230,7 +230,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
                 timeStep,
                 rollingStock,
                 speed,
-                location.meanTrainGrade());
+                location.meanTrainGrade()
+                );
         var prevLocation = location.getPathPosition();
         var isLate = trainSchedule.speedInstructions.secondsLate(prevLocation, time) > 0;
 
