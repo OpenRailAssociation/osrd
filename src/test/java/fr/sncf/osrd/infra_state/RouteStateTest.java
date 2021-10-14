@@ -579,35 +579,6 @@ public class RouteStateTest {
     }
 
     @Test
-    public void testChangeSuccessionTable() throws InvalidInfraException {
-        final var config = TestConfig.readResource("tiny_infra/config_railjson_2trains.json");
-
-        var switchID = config.rjsInfra.switches.stream().findFirst().get().id;
-        var trainOrderedList = new ArrayList<String>();
-        trainOrderedList.add("First");
-        trainOrderedList.add("Second");
-
-        var initTable = new RJSSuccessionTable(switchID, trainOrderedList.toArray(new String[2]));
-        config.rjsSuccessions = new RJSSuccessions(Collections.singletonList(initTable));
-
-        var simState = config.prepare();
-        var sim = simState.sim;
-
-        // Change the succession Table
-        var newTrainOrderedList = new ArrayList<String>();
-        newTrainOrderedList.add("Second");
-        newTrainOrderedList.add("First");
-        sim.infraState.towerState.changeTable(newTrainOrderedList, switchID);
-
-        simState.run();
-
-        var secondTrain = sim.trains.get("Second");
-        var firstTrain = sim.trains.get("First");
-        // Check that second train arrives first
-        assert secondTrain.getLastState().time < firstTrain.getLastState().time;
-    }
-
-    @Test
     public void testChangeSuccessionTableDuringSim() throws InvalidInfraException {
         final var config = TestConfig.readResource("tiny_infra/config_railjson_2trains.json");
 
@@ -620,12 +591,14 @@ public class RouteStateTest {
         var newTrainOrderedList = new ArrayList<String>();
         newTrainOrderedList.add("Second");
         newTrainOrderedList.add("First");
-        makeFunctionEvent(sim, 0, () -> sim.infraState.towerState.changeTable(newTrainOrderedList, switchID));
+        var tstChange = new TowerState.SuccessionTableChange(sim, switchID, newTrainOrderedList);
+        tstChange.apply(sim, tstChange.getEntity(sim));
+        makeFunctionEvent(sim, 0, () -> sim.publishChange(tstChange));
 
         // Test that the second train is now the first of the list
-        makeAssertEvent(sim, 0, () -> sim.infraState.towerState.getTable(switchID).get(0).equals("Second"));
+        makeAssertEvent(sim, 0.5, () -> tstChange.getTable().get(0).equals("Second"));
         // Test that the request of the second train is accepted
-        makeAssertEvent(sim, 6, () -> sim.infraState.towerState.isCurrentAllowed(switchID,"Second"));
+        makeAssertEvent(sim, 6, () -> sim.infraState.towerState.isCurrentAllowed(switchID, "Second"));
         simState.run();
     }
 
