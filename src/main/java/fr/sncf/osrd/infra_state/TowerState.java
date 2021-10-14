@@ -3,6 +3,7 @@ package fr.sncf.osrd.infra_state;
 import fr.sncf.osrd.infra.SuccessionTable;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.simulation.EntityChange;
+import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra_state.routes.RouteState;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.simulation.Simulation;
@@ -98,6 +99,12 @@ public class TowerState {
         return trainID.equals(q.currentTrainAllowed);
     }
 
+    public boolean isCurrentRouteAllowedForTrain(Route route, String trainID) {
+        return route.switchesGroup.keySet().stream()
+                .map(aSwitch -> aSwitch.id)
+                .allMatch(switchID -> isCurrentAllowed(switchID, trainID));
+    }
+
     private boolean isPlanned(String switchID, String trainID) {
         assert state.containsKey(switchID);
         var q = state.get(switchID);
@@ -178,10 +185,12 @@ public class TowerState {
             System.out.println("TOWER REQUEST : " + train.getID() + " : " + routeState.route.id);
 
             var request = new Request(train, routeState);
-            train.getLastState().requestedRouteIndex += 1;
             for (var tvdSectionPath : routeState.route.tvdSectionsPaths) {
                 var tvdSectionID = tvdSectionPath.tvdSection.id;
-                waitingList.get(tvdSectionID).add(request);
+                var tvdWaitingList = waitingList.get(tvdSectionID);
+                if (tvdWaitingList.contains(request))
+                    return;
+                tvdWaitingList.add(request);
             }
             process(sim, request);
         }
