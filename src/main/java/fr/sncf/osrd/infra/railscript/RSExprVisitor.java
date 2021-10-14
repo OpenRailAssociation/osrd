@@ -123,4 +123,8 @@ public class RSExprVisitor {
     public void visit(RSExpr.HasCBTCStatus hasCBTCStatus) throws InvalidInfraException {
         hasCBTCStatus.routeExpr.accept(this);
     }
+
+    public void visit(RSExpr.IsPassiveRoute isPassiveRoute) throws InvalidInfraException {
+        isPassiveRoute.routeExpr.accept(this);
+    }
 }

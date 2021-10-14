@@ -606,6 +606,29 @@ public abstract class RSExpr<T extends RSValue> {
         }
     }
 
+    public static final class IsPassiveRoute extends RSExpr<RSBool> {
+        public final RSExpr<RouteState> routeExpr;
+
+        public IsPassiveRoute(RSExpr<RouteState> routeExpr) {
+            this.routeExpr = routeExpr;
+        }
+
+        @Override
+        public RSBool evaluate(RSExprState<?> state) {
+            return RSBool.from(!routeExpr.evaluate(state).route.isControlled);
+        }
+
+        @Override
+        public RSType getType(RSType[] argumentTypes) {
+            return RSType.BOOLEAN;
+        }
+
+        @Override
+        public void accept(RSExprVisitor visitor) throws InvalidInfraException {
+            visitor.visit(this);
+        }
+    }
+
     public static final class RouteStateCheck extends RSExpr<RSBool> {
         public final RSExpr<RouteState> routeExpr;
         public final RouteStatus status;
