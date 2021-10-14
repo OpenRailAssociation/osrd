@@ -231,6 +231,11 @@ public class RailScriptExprParser {
             var routeExpr = parseRouteExpr(hasCBTCStatusExpr.route);
             return new RSExpr.HasCBTCStatus(routeExpr);
         }
+        if (type == RJSRSExpr.IsPassiveRoute.class) {
+            var isPassiveRoute = (RJSRSExpr.IsPassiveRoute) expr;
+            var routeExpr = parseRouteExpr(isPassiveRoute.route);
+            return new RSExpr.IsPassiveRoute(routeExpr);
+        }
 
         throw new InvalidInfraException(String.format("'%s' unsupported signal expression", type));
     }

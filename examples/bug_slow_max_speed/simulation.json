@@ -42,7 +42,7 @@
         },
         {
             "id": "train.1",
-            "rolling_stock": "fast_rolling_stock",
+            "rolling_stock": "slow_rolling_stock",
             "initial_head_location": {
                 "track_section": "ne.micro.2",
                 "offset": 500
