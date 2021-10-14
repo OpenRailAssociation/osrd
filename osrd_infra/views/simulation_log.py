@@ -123,17 +123,20 @@ def preprocess_stops(stop_reaches, train_schedule):
     path = train_schedule.path.payload
     assert len(path["steps"]) == len(stop_reaches) + 1
 
-    phase_times = [-1] * (len(stop_reaches) + 1)
-    phase_times[0] = train_schedule.departure_time
+    stop_times = [-1] * (len(stop_reaches) + 1)
+    stop_times[0] = train_schedule.departure_time
+    stop_positions = [0] * (len(stop_reaches) + 1)
     for stop in stop_reaches:
-        phase_times[stop["stop_index"] + 1] = stop["time"]
+        stop_times[stop["stop_index"] + 1] = stop["time"]
+        stop_positions[stop["stop_index"] + 1] = stop["position"]
     stops = []
     for phase_index, step in enumerate(path["steps"]):
         stops.append(
             {
                 "name": step.get("name", "Unknown"),
                 "id": step.get("id", None),
-                "time": phase_times[phase_index],
+                "time": stop_times[phase_index],
+                "position": stop_positions[phase_index],
                 "stop_time": step["stop_time"],
             }
         )
