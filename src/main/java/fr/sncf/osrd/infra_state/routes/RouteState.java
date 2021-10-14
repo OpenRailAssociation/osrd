@@ -12,6 +12,8 @@ import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 
+import static fr.sncf.osrd.infra_state.routes.RouteStatus.FREE;
+
 /**
  * The state of the route is the actual entity which interacts with the rest of the infrastructure
  */
@@ -25,6 +27,14 @@ public abstract class RouteState implements RSMatchable {
         this.status = RouteStatus.FREE;
     }
 
+    /** Creates an instance of RouteState from the given route */
+    public static RouteState from(Route route) {
+        if (route.isControlled)
+            return new ControlledRouteState(route);
+        else
+            return new PassiveRouteState(route);
+    }
+
     /**
      * Check if the route has a CBTC status
      */
@@ -36,6 +46,17 @@ public abstract class RouteState implements RSMatchable {
         for (var signal : route.signalSubscribers) {
             var signalState = sim.infraState.getSignalState(signal.index);
             signalState.notifyChange(sim);
+        }
+    }
+
+    public void onTvdSectionFreed(Simulation sim) throws SimulationError {
+        var isFree = route.tvdSectionsPaths.stream()
+                .map(path -> path.tvdSection)
+                .map(tvdSection -> sim.infraState.getTvdSectionState(tvdSection.index))
+                .noneMatch(TVDSectionState::isReserved);
+        if (isFree) {
+            isCBTCReserved = false;
+            updateStatus(sim, FREE);
         }
     }
 
@@ -80,8 +101,6 @@ public abstract class RouteState implements RSMatchable {
 
     public abstract void onTvdSectionUnoccupied(Simulation sim, TVDSectionState tvdSectionUnoccupied)
             throws SimulationError;
-
-    public abstract void onTvdSectionFreed(Simulation sim) throws SimulationError;
 
     public abstract void onTvdSectionReserved(Simulation sim) throws SimulationError;
 

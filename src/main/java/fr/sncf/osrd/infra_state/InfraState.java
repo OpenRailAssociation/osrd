@@ -88,7 +88,7 @@ public final class InfraState implements DeepComparable<InfraState> {
         var routeCount = infra.routeGraph.getEdgeCount();
         var routeStates = new RouteState[routeCount];
         for (int i = 0; i < routeCount; i++)
-            routeStates[i] = new ControlledRouteState(infra.routeGraph.getEdge(i));
+            routeStates[i] = RouteState.from(infra.routeGraph.getEdge(i));
 
         var switchCount = infra.switches.size();
         var switchStates = new SwitchState[switchCount];
