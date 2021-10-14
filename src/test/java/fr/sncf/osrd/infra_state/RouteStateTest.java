@@ -43,7 +43,7 @@ public class RouteStateTest {
         makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
         makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.RESERVED);
         makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
-        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(6).status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(7).status == RouteStatus.CONFLICT);
         simState.run();
     }
 
@@ -63,7 +63,7 @@ public class RouteStateTest {
         makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.RESERVED);
         makeAssertEvent(sim, 11, routeState::hasCBTCStatus);
         makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
-        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(6).status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(7).status == RouteStatus.CONFLICT);
         simState.run();
     }
 
@@ -288,7 +288,6 @@ public class RouteStateTest {
 
         var expectedChanges = Stream.of(
                     new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(2), RouteStatus.CONFLICT),
-                    new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(6), RouteStatus.CONFLICT),
                     new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(7), RouteStatus.CONFLICT),
                     new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(8), RouteStatus.CONFLICT),
     
@@ -322,7 +321,6 @@ public class RouteStateTest {
 
         var expectedChanges = Stream.of(
                 new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(2), RouteStatus.CONFLICT),
-                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(6), RouteStatus.CONFLICT),
                 new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(7), RouteStatus.CONFLICT),
                 new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(8), RouteStatus.CONFLICT),
 
@@ -411,12 +409,12 @@ public class RouteStateTest {
         makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
         makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.RESERVED);
         makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
-        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(6).status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(7).status == RouteStatus.CONFLICT);
         // We reserve the route a second time
         makeFunctionEvent(sim, 12, () -> routeState.cbtcReserve(sim));
         makeAssertEvent(sim, 13, () -> routeState.status == RouteStatus.RESERVED);
         makeAssertEvent(sim, 13, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
-        makeAssertEvent(sim, 13, () -> sim.infraState.getRouteState(6).status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 13, () -> sim.infraState.getRouteState(7).status == RouteStatus.CONFLICT);
         // The first train enters the route
         makeFunctionEvent(sim, 14, () -> routeState.onTvdSectionOccupied(sim, tvd));
         makeAssertEvent(sim, 14, () -> routeState.status == RouteStatus.OCCUPIED);
@@ -558,6 +556,8 @@ public class RouteStateTest {
         for (int i = 0; i < config.rjsInfra.routes.size(); i++) {
             for (var status : new RouteStatus[]{RouteStatus.RESERVED, RouteStatus.OCCUPIED}) {
                 var routeState = simState.sim.infraState.getRouteState(i);
+                if (!routeState.route.isControlled && status == RouteStatus.RESERVED)
+                    continue;
                 var expected = new RouteState.RouteStatusChange(simState.sim, routeState, status);
                 assert changesSet.contains(expected.toString());
             }

@@ -58,7 +58,6 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
      * @param sim the current simulation
      */
     public void occupy(Simulation sim) throws SimulationError {
-        assert isReserved();
         for (var route : tvdSection.routeSubscribers) {
             var routeState = sim.infraState.getRouteState(route.index);
             routeState.onTvdSectionOccupied(sim, tvdSection);
@@ -71,7 +70,6 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
      * @param sim the current simulation
      */
     public void unoccupy(Simulation sim) throws SimulationError {
-        assert isReserved();
         for (var route : tvdSection.routeSubscribers) {
             var routeState = sim.infraState.getRouteState(route.index);
             routeState.onTvdSectionUnoccupied(sim, this);

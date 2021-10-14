@@ -16,33 +16,24 @@ import java.util.Set;
 
 public class PassiveRouteState extends RouteState {
 
-    private final Set<String> occupied = new HashSet<>();
-
     PassiveRouteState(Route route) {
         super(route);
     }
 
     @Override
     public void onTvdSectionUnoccupied(Simulation sim, TVDSectionState tvdSectionUnoccupied) throws SimulationError {
-        var id = tvdSectionUnoccupied.tvdSection.id;
-        assert occupied.contains(id);
-        occupied.remove(id);
-        if (occupied.isEmpty())
-            updateStatus(sim, FREE);
+        if (tvdSectionUnoccupied.isReserved())
+            tvdSectionUnoccupied.free(sim);
     }
-
-    @Override
-    public void onTvdSectionFreed(Simulation sim) throws SimulationError {}
 
     @Override
     public void onTvdSectionReserved(Simulation sim) throws SimulationError {}
 
     @Override
     public void onTvdSectionOccupied(Simulation sim, TVDSection tvdSection) throws SimulationError {
-        var id = tvdSection.id;
-        if (occupied.contains(id))
-            throw new SimulationError(String.format("TVD section %s is already occupied", id));
-        occupied.add(id);
+        var state = sim.infraState.getTvdSectionState(tvdSection.index);
+        if (!state.isReserved())
+            state.reserve(sim);
         updateStatus(sim, OCCUPIED);
     }
 
