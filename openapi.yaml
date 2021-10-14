@@ -270,60 +270,19 @@ paths:
                   results:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        id:
-                          type: number
-                        name:
-                          type: string
-                        owner:
-                          type: string
-                        length:
-                          type: number
-                        mass:
-                          type: number
-                        inertia_coefficient:
-                          type: number
-                        rolling_resistance:
-                          type: object
-                          properties:
-                            A:
-                              type: number
-                            B:
-                              type: number
-                            C:
-                              type: number
-                            type:
-                              type: string
-                        capabilities:
-                          type: array
-                          items:
-                            type: string
-                        max_speed:
-                          type: number
-                        startup_time:
-                          type: number
-                        startup_acceleration:
-                          type: number
-                        comfort_acceleration:
-                          type: number
-                        timetable_gamma:
-                          type: number
-                        tractive_effort_curves:
-                          type: object
-                          properties:
-                            SC:
-                              type: array
-                              items:
-                                type: object
-                                properties:
-                                  speed: {}
-                                  max_effort: {}
-                        traction_mode:
-                          type: string
-                        power_class:
-                          type: number
-                        image: {}
+                      $ref: '#/components/schemas/RollingStock'
+  /rolling_stock/{id}/:
+    get:
+      tags:
+      - rolling_stock
+      summary: Retrieve a rolling stock
+      responses:
+        200:
+          description: The rolling stock information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RollingStock'
   /timetable/:
     get:
       tags:
@@ -926,6 +885,7 @@ components:
                 type: string
                 description: Can be 'Unknown' if it's not an operational point
               time: {type: number, format: float}
+              position: {type: number, format: float}
               stop_time: {type: number, format: float}
         signals:
           type: array
@@ -1035,3 +995,57 @@ components:
                 maxItems: 2
               stop_time: {type: number, format: float}
               suggestion: {type: boolean}
+    RollingStock:
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        owner:
+          type: string
+        length:
+          type: number
+        mass:
+          type: number
+        inertia_coefficient:
+          type: number
+        rolling_resistance:
+          type: object
+          properties:
+            A:
+              type: number
+            B:
+              type: number
+            C:
+              type: number
+            type:
+              type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        max_speed:
+          type: number
+        startup_time:
+          type: number
+        startup_acceleration:
+          type: number
+        comfort_acceleration:
+          type: number
+        timetable_gamma:
+          type: number
+        tractive_effort_curves:
+          type: object
+          properties:
+            SC:
+              type: array
+              items:
+                type: object
+                properties:
+                  speed: {}
+                  max_effort: {}
+        traction_mode:
+          type: string
+        power_class:
+          type: number
+        image: {}
