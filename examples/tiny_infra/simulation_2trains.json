@@ -33,6 +33,12 @@
           },
           "type": "navigate"
         }
+      ],
+      "stops": [
+        {
+          "duration": 1,
+          "position": -1
+        }
       ]
     },
     {
@@ -66,6 +72,12 @@
             "offset": 100
           },
           "type": "navigate"
+        }
+      ],
+      "stops": [
+        {
+          "duration": 1,
+          "position": -1
         }
       ]
     }

@@ -7,7 +7,6 @@ import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.infra.Infra;
-
 import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
