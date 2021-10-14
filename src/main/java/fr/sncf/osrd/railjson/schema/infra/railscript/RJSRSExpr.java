@@ -116,6 +116,7 @@ public abstract class RJSRSExpr {
                     .withSubtype(NextSignal.class, "next_signal")
                     .withSubtype(PreviousReservedRoute.class, "previous_reserved_route")
                     .withSubtype(HasCBTCStatus.class, "has_cbtc_status")
+                    .withSubtype(IsPassiveRoute.class, "is_passive_route")
     );
 
     // region BOOLEAN_LOGIC
@@ -434,6 +435,20 @@ public abstract class RJSRSExpr {
         public RJSRSExpr route;
 
         public HasCBTCStatus(RJSRSExpr route) {
+            this.route = route;
+        }
+    }
+
+    /**
+     * Returns true if the route is passive
+     */
+    public static final class IsPassiveRoute extends RJSRSExpr {
+        /**
+         * The expression giving the route to check.
+         */
+        public RJSRSExpr route;
+
+        public IsPassiveRoute(RJSRSExpr route) {
             this.route = route;
         }
     }

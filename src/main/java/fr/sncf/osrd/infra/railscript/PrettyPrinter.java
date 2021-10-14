@@ -339,4 +339,11 @@ public class PrettyPrinter extends RSExprVisitor {
         hasCBTCStatus.routeExpr.accept(this);
         out.print(")");
     }
+
+    @Override
+    public void visit(RSExpr.IsPassiveRoute isPassiveRoute) throws InvalidInfraException {
+        out.print("isPassiveRoute(");
+        isPassiveRoute.routeExpr.accept(this);
+        out.print(")");
+    }
 }
