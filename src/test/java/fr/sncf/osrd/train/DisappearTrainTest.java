@@ -12,7 +12,7 @@ import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.trackgraph.BufferStop;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
+import fr.sncf.osrd.infra_state.routes.RouteStatus;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import fr.sncf.osrd.railjson.schema.common.ID;
@@ -154,6 +154,11 @@ public class DisappearTrainTest {
 
         for (int i = 0; i < prepared.infra.tvdSections.size(); i++)
             assert !prepared.sim.infraState.getTvdSectionState(i).isReserved();
+
+        for (var r : prepared.infra.routeGraph.routeMap.values()) {
+            var state = prepared.sim.infraState.getRouteState(r.index);
+            assert state.status == RouteStatus.FREE;
+        }
     }
 
     @Test
