@@ -569,7 +569,10 @@ public abstract class RSExpr<T extends RSValue> {
         @Override
         public RSBool evaluate(RSExprState<?> state) {
             var someSignal = signalExpr.evaluate(state);
-            return RSBool.from(someSignal.aspects.contains(aspect));
+            if (state.evalMode.equals(RSExprState.RSExprEvalMode.INITIALIZE))
+                return RSBool.from(someSignal.signal.getInitialAspects().contains(aspect));
+            else
+                return RSBool.from(someSignal.aspects.contains(aspect));
         }
 
         @Override

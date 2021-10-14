@@ -141,8 +141,9 @@ public final class Infra {
         // Evaluate initial aspects of signals
         var topologicalSignalOrder = buildTopologicalSignalOrder(signals);
         var initialState = InfraState.from(infra);
-        for (var i = topologicalSignalOrder.size() - 1; i >= 0; i--)
-            signals.get(topologicalSignalOrder.get(i).index).evalInitialAspect(initialState);
+        for (var signal : topologicalSignalOrder) {
+            signal.evalInitialAspect(initialState);
+        }
 
         return infra;
     }
