@@ -99,9 +99,10 @@ public class TowerState {
         return trainID.equals(q.currentTrainAllowed);
     }
 
+    /** Is the train the next allowed train on all switches on the route */
     public boolean isCurrentRouteAllowedForTrain(Route route, String trainID) {
         return route.switchesGroup.keySet().stream()
-                .map(aSwitch -> aSwitch.id)
+                .map(s -> s.id)
                 .allMatch(switchID -> isCurrentAllowed(switchID, trainID));
     }
 

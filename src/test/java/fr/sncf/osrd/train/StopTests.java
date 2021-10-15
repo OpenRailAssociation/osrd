@@ -153,7 +153,7 @@ public class StopTests {
         var timeNoStop = preparedConfigNoStops.sim.getTime();
 
         assertEquals(lastPositionNoStop, lastPositionWithStop, 0.1);
-        assertEquals(timeWithStops, timeNoStop, 0.1);
+        assertEquals(timeWithStops, timeNoStop, 0.2);
     }
 
     @Test

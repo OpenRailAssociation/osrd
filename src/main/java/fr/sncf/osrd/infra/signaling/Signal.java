@@ -44,6 +44,7 @@ public final class Signal implements ActionPoint {
         this.linkedDetector = linkedDetector; 
     }
 
+    /** First evaluatoin of the signal aspects */
     public void evalInitialAspect(InfraState initialState) {
         initialAspects = initialState.getSignalState(index).exprState.evalInit(initialState);
     }
