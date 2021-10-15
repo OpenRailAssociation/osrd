@@ -63,5 +63,15 @@
                 }
             ]
         }
+    ],
+    "train_succession_tables": [
+        {
+            "switch": "il.switch.0-1-2",
+            "train_order": [
+                "train.0",
+                "train.1"
+            ]
+        }
     ]
+
 }

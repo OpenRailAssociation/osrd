@@ -21,8 +21,6 @@ public final class JsonConfig {
     public String simulationPath;
     @Json(name = "extra_rolling_stock_dirs")
     public String[] extraRollingStockDirs;
-    @Json(name = "succession_path")
-    public String successionPath;
     @Json(name = "show_viewer")
     public boolean showViewer;
     @Json(name = "realtime_viewer")

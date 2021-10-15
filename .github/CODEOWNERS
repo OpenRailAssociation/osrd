@@ -3,24 +3,25 @@ CODEOWNERS        @DGEXSolutions/osrd-backend-maintainers
 /specifications   @flomonster @DGEXSolutions/osrd-backend-maintainers
 
 # java stuff
-/src/main/java/fr/sncf/osrd                   @DGEXSolutions/osrd-backend-maintainers
-/src/main/java/fr/sncf/osrd/api               @flomonster @DGEXSolutions/osrd-backend-maintainers
-/src/main/java/fr/sncf/osrd/cbtc              @DGEXSolutions/osrd-backend-maintainers
-/src/main/java/fr/sncf/osrd/cli               @multun @DGEXSolutions/osrd-backend-maintainers
-/src/main/java/fr/sncf/osrd/config            @DGEXSolutions/osrd-backend-maintainers
-/src/main/java/fr/sncf/osrd/infra             @multun @DGEXSolutions/osrd-backend-maintainers
-/src/main/java/fr/sncf/osrd/infra_state       @multun @DGEXSolutions/osrd-backend-maintainers
-/src/main/java/fr/sncf/osrd/interactive       @flomonster @multun @DGEXSolutions/osrd-backend-maintainers
-/src/main/java/fr/sncf/osrd/railjson          @DGEXSolutions/osrd-backend-maintainers
-/src/main/java/fr/sncf/osrd/railml            @flomonster @multun @DGEXSolutions/osrd-backend-maintainers
-/src/main/java/fr/sncf/osrd/simulation        @multun @DGEXSolutions/osrd-backend-maintainers
-/src/main/java/fr/sncf/osrd/speedcontroller   @eckter @DGEXSolutions/osrd-backend-maintainers
-/src/main/java/fr/sncf/osrd/train             @eckter @multun @DGEXSolutions/osrd-backend-maintainers
-/src/main/java/fr/sncf/osrd/utils             @DGEXSolutions/osrd-backend-maintainers
-/src/main/java/fr/sncf/osrd/DebugViewer.java  @DGEXSolutions/osrd-backend-maintainers
-*Physics*.java                                @DGEXSolutions/osrd-physics
-*Integrator*.java                             @DGEXSolutions/osrd-physics
-*Integration*.java                            @DGEXSolutions/osrd-physics
+/src/main/java/fr/sncf/osrd                         @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/api                     @flomonster @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/cbtc                    @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/cli                     @multun @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/config                  @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/infra                   @multun @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/infra_state             @multun @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/infra_state/regulator   @flomonster @bgiuliana @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/interactive             @flomonster @multun @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/railjson                @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/railml                  @flomonster @multun @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/simulation              @multun @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/speedcontroller         @eckter @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/train                   @eckter @multun @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/utils                   @DGEXSolutions/osrd-backend-maintainers
+/src/main/java/fr/sncf/osrd/DebugViewer.java        @DGEXSolutions/osrd-backend-maintainers
+*Physics*.java                                      @DGEXSolutions/osrd-physics
+*Integrator*.java                                   @DGEXSolutions/osrd-physics
+*Integration*.java                                  @DGEXSolutions/osrd-physics
 
 # Python Interactive Client
 /src/python_interactive_client                @flomonster @multun

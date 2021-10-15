@@ -2,7 +2,6 @@
     "simulation_time_step": 1,
     "infra_path": "infra_delayed.json",
     "simulation_path": "simulation_delayed.json",
-    "succession_path": "succession_delayed.json",
     "extra_rolling_stock_dirs": ["../rolling_stocks"],
     "show_viewer": true,
     "realtime_viewer": true,

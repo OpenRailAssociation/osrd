@@ -2,27 +2,21 @@ package fr.sncf.osrd.railjson.schema.successiontable;
 
 import com.squareup.moshi.Json;
 
-public class RJSSuccessionTable {
+public class RJSTrainSuccessionTable {
     /** The switch identifier */
     @Json(name = "switch")
     public String switchID;
 
     /** The succession table, an ordered list of trains identifiers */
-    @Json(name = "table")
-    public String[] table;
+    @Json(name = "train_order")
+    public String[] trainOrder;
 
     /** Creates a new succesion table */
-    public RJSSuccessionTable(
+    public RJSTrainSuccessionTable(
             String switchId,
-            String[] table
+            String[] trainOrder
     ) {
         this.switchID = switchId;
-        this.table = table;
-    }
-
-    /** Creates an empty succesion table */
-    public RJSSuccessionTable() {
-        this.switchID = null;
-        this.table = new String[0];
+        this.trainOrder = trainOrder;
     }
 }

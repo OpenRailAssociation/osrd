@@ -12,13 +12,11 @@ import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
-import fr.sncf.osrd.railjson.parser.RJSSuccessionsParser;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSuccession;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
-import fr.sncf.osrd.railjson.schema.RJSSuccessions;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.simulation.Simulation;
@@ -38,7 +36,6 @@ import java.util.List;
 public class TestConfig {
     public RJSInfra rjsInfra;
     public RJSSimulation rjsSimulation;
-    public RJSSuccessions rjsSuccessions;
     public ChangeConsumer changeConsumer = null;
     public HashMap<String, RollingStock> extraRollingStocks;
     public float timeStep = 1;
@@ -46,12 +43,10 @@ public class TestConfig {
     private TestConfig(
             RJSInfra rjsInfra,
             RJSSimulation rjsSimulation,
-            RJSSuccessions rjsSuccessions,
             HashMap<String, RollingStock> extraRollingStocks
     ) {
         this.rjsInfra = rjsInfra;
         this.rjsSimulation = rjsSimulation;
-        this.rjsSuccessions = rjsSuccessions;
         this.extraRollingStocks = extraRollingStocks;
     }
 
@@ -78,12 +73,6 @@ public class TestConfig {
             var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
             var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
 
-            RJSSuccessions successions = null;
-            if (jsonConfig.successionPath != null) {
-                var successionPath = PathUtils.relativeTo(baseDirPath, jsonConfig.successionPath);
-                successions = MoshiUtils.deserialize(RJSSuccessions.adapter, successionPath);
-            }
-
             var extraRollingStocks = new HashMap<String, RollingStock>();
             if (jsonConfig.extraRollingStockDirs != null) {
                 for (var extraRollingStockDir : jsonConfig.extraRollingStockDirs) {
@@ -91,7 +80,7 @@ public class TestConfig {
                     parseExtraRollingStocks(extraRollingStocks, extraRollingStocksPath);
                 }
             }
-            return new TestConfig(infra, schedule, successions, extraRollingStocks);
+            return new TestConfig(infra, schedule, extraRollingStocks);
         } catch (RuntimeException e) {
             fail(e);
             return null;  // appease the compiler
@@ -171,14 +160,8 @@ public class TestConfig {
                     false,
                     true
             );
-
-            Simulation sim;
-            if (this.rjsSuccessions == null)
-                sim = Simulation.createFromInfraAndEmptySuccessions(infra, 0, changeConsumer);
-            else {
-                var succession = RJSSuccessionsParser.parse(rjsSuccessions);
-                sim = Simulation.createFromInfraAndSuccessions(infra, succession, 0, null);
-            }
+            var succession = RJSSimulationParser.parseTrainSuccessionTables(rjsSimulation);
+            var sim = Simulation.createFromInfraAndSuccessions(infra, succession, 0, changeConsumer);
             return new TestSimulationState(infra, trainSchedules, config, sim);
         } catch (InvalidInfraException | InvalidSuccession | InvalidSchedule | InvalidRollingStock e) {
             fail(e);
