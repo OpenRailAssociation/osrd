@@ -44,8 +44,9 @@ export default function DisplayVias(props) {
                         tabIndex={0}
                       >
                         <small className="font-weight-bold text-muted mr-1">{index + 1}</small>
-                        <small className="mr-1 text-nowrap">{`${place.id} ${place.nomVoie}`}</small>
-                        <div className="small text-nowrap ml-3">{`${place.pkSncfDe} • ${place.pkSncfFi}`}</div>
+                        <small className="mr-1 text-nowrap">{`${place.id} ${place.name}`}</small>
+                        {/* <div className="small text-nowrap ml-3">
+                          {`${place.pkSncfDe} • ${place.pkSncfFi}`}</div> */}
                       </div>
                       <div className="osrd-config-stoptime">
                         <InputSNCF

@@ -10,6 +10,7 @@ import { updateFeatureInfoClick } from 'reducers/map';
 import { post } from 'common/requests';
 import bbox from '@turf/bbox';
 import { WebMercatorViewport } from 'react-map-gl';
+import { FaLongArrowAltUp, FaLongArrowAltDown } from 'react-icons/fa';
 import DisplayItinerary from 'applications/osrd/components/Itinerary/DisplayItinerary';
 
 const itineraryURI = '/pathfinding/';
@@ -19,8 +20,8 @@ const convertPathfindingVias = (steps) => {
   const count = steps.length - 1;
   const vias = [];
   steps.forEach((step, idx) => {
-    if (!step.suggestion && idx !== 0 && idx !== count) {
-      vias.push(step);
+    if (idx !== 0 && idx !== count) {
+      vias.push({ ...step, clickLngLat: [step.geographic[0], step.geographic[1]] });
     }
   });
   return vias;
@@ -75,10 +76,12 @@ const Itinerary = (props) => {
       ...osrdconf.origin, clickLngLat: pathfindingData.steps[0].geographic,
     }));
 
-    if (osrdconf.vias.length > 0 && pathfindingData.steps.length > 2) {
+    if (osrdconf.vias.length > 0 || pathfindingData.steps.length > 2) {
       const stepsVias = convertPathfindingVias(pathfindingData.steps);
-      dispatch(replaceVias(osrdconf.vias.map((via, idx) => (
-        { ...via, clickLngLat: stepsVias[idx].geographic }))));
+      console.log(osrdconf.vias, stepsVias);
+      dispatch(replaceVias(stepsVias));
+      /* dispatch(replaceVias(osrdconf.vias.map((via, idx) => (
+        { ...via, clickLngLat: stepsVias[idx].geographic })))); */
     }
 
     dispatch(updateDestination({
@@ -130,7 +133,6 @@ const Itinerary = (props) => {
         }],
       });
 
-      console.log(params);
       try {
         const itineraryCreated = await post(itineraryURI, params, {}, true);
         correctWaypointsGPS(itineraryCreated);
@@ -145,6 +147,19 @@ const Itinerary = (props) => {
         }));
         console.log('ERROR', e);
       }
+    }
+  };
+
+  const inverseOD = () => {
+    if (osrdconf.origin && osrdconf.destination) {
+      const origin = { ...osrdconf.origin };
+      dispatch(updateOrigin(osrdconf.destination));
+      dispatch(updateDestination(origin));
+      if (osrdconf.vias && osrdconf.vias.length > 1) {
+        const vias = Array.from(osrdconf.vias);
+        dispatch(replaceVias(vias.reverse()));
+      }
+      setLaunchPathfinding(true);
     }
   };
 
@@ -172,7 +187,13 @@ const Itinerary = (props) => {
   return (
     <>
       <div className="osrd-config-item mb-2">
-        <div className="osrd-config-item-container d-flex align-items-end">
+        <div className="osrd-config-item-container">
+          <div className="d-flex">
+            <button className="btn btn-only-icon btn-primary btn-sm ml-auto" type="button" onClick={inverseOD} title={t('inverseOD')}>
+              <FaLongArrowAltUp />
+              <FaLongArrowAltDown />
+            </button>
+          </div>
           <DisplayItinerary zoomToFeaturePoint={zoomToFeaturePoint} />
         </div>
       </div>

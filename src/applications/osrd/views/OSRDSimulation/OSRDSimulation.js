@@ -52,7 +52,6 @@ const OSRDSimulation = () => {
       dispatch(updateSimulation({ trains: [] }));
       const timetable = await get(`${timetableURI}${timetableID}/`);
       if (timetable.train_schedules.length > 0) { setIsEmpty(false); }
-      console.log(timetable);
       const trainSchedulesIDs = timetable.train_schedules.map((train) => train.id);
       try {
         const simulationLocal = await get(
@@ -61,7 +60,6 @@ const OSRDSimulation = () => {
         );
         simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);
         dispatch(updateSimulation({ trains: simulationLocal }));
-        console.log('coucou', simulationLocal);
       } catch (e) {
         dispatch(setFailure({
           name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),

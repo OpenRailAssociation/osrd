@@ -139,6 +139,7 @@ export default function TrainsList(props) {
                     idx={idx}
                     changeTrainName={changeTrainName}
                     name={train.name}
+                    typeOfInputFocused={typeOfInputFocused}
                   />
                 ) : train.name}
               </div>
@@ -155,6 +156,7 @@ export default function TrainsList(props) {
                     idx={idx}
                     changeTrainStartTime={changeTrainStartTime}
                     time={sec2time(train.base.stops[0].time)}
+                    typeOfInputFocused={typeOfInputFocused}
                   />
                 ) : sec2time(train.base.stops[0].time)}
               </div>

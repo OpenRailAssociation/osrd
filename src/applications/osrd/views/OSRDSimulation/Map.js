@@ -233,7 +233,7 @@ const Map = (props) => {
 
   const displayPath = () => {
     if (simulation.trains.length > 0) {
-      getGeoJSONPath(simulation.trains[0].path);
+      getGeoJSONPath(simulation.trains[selectedTrain].path);
     }
   };
 
@@ -263,7 +263,7 @@ const Map = (props) => {
 
   useEffect(() => {
     displayPath();
-  }, [simulation.train, selectedTrain]);
+  }, [simulation.trains, selectedTrain]);
 
   useEffect(() => {
     if (timePosition && geojsonPath) {
