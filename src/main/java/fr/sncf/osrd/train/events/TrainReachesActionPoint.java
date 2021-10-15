@@ -24,8 +24,11 @@ public final class TrainReachesActionPoint extends TrainEvolutionEvent {
             Interaction interaction
     ) {
         super(eventId);
+        assert train != null : "missing train";
         this.train = train;
+        assert trainStateChange != null : "missing trainStateChange";
         this.trainStateChange = trainStateChange;
+        assert interaction != null : "missing interaction";
         this.interaction = interaction;
     }
 

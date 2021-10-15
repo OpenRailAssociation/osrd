@@ -30,7 +30,7 @@ public class InteractiveEndpoint {
 
     @OnMessage
     public void onMessage(Session session, ClientMessage message) throws IOException {
-        logger.info("received message");
+        logger.info("received message: {}", message.getClass().getSimpleName());
         message.run(interactiveSimulation);
     }
 
@@ -40,6 +40,7 @@ public class InteractiveEndpoint {
 
     private void sendResponse(ServerMessage message) throws IOException {
         try {
+            logger.info("sent response: {}", message.getClass().getSimpleName());
             session.getBasicRemote().sendObject(message);
         } catch (EncodeException e) {
             throw new IOException("failed to encode the response", e);
