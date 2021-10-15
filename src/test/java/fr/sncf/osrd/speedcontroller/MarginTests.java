@@ -289,7 +289,7 @@ public class MarginTests {
         test.saveGraphs(info);
 
         var expected = test.baseTime() * (1 + margin / 100);
-        assertEquals(expected, test.testedTime(), 5 + 0.001 * expected);
+        assertEquals(expected, test.testedTime(), 5 + 0.0015 * expected);
 
         var coastingSpeedControllers =
                 findCoastingSpeedControllers(

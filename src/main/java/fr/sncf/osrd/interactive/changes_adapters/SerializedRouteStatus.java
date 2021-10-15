@@ -2,8 +2,8 @@ package fr.sncf.osrd.interactive.changes_adapters;
 
 import com.squareup.moshi.Json;
 import fr.sncf.osrd.infra_state.InfraState;
-import fr.sncf.osrd.infra_state.RouteState;
-import fr.sncf.osrd.infra_state.RouteStatus;
+import fr.sncf.osrd.infra_state.routes.RouteState;
+import fr.sncf.osrd.infra_state.routes.RouteStatus;
 
 public final class SerializedRouteStatus extends SerializedChange {
     @Json(name = "new_status")

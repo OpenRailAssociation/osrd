@@ -1,6 +1,6 @@
 package fr.sncf.osrd.interactive.client_messages;
 
-import fr.sncf.osrd.infra_state.RouteState;
+import fr.sncf.osrd.infra_state.routes.RouteState;
 import fr.sncf.osrd.interactive.changes_adapters.SerializedChange;
 import fr.sncf.osrd.interactive.changes_adapters.SerializedRouteStatus;
 import fr.sncf.osrd.simulation.Change;

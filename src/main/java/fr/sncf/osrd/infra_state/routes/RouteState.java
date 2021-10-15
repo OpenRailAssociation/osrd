@@ -1,5 +1,7 @@
 package fr.sncf.osrd.infra_state.routes;
 
+import static fr.sncf.osrd.infra_state.routes.RouteStatus.FREE;
+
 import fr.sncf.osrd.cbtc.CBTCNavigatePhase;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.railscript.value.RSMatchable;
@@ -11,8 +13,6 @@ import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
-
-import static fr.sncf.osrd.infra_state.routes.RouteStatus.FREE;
 
 /**
  * The state of the route is the actual entity which interacts with the rest of the infrastructure
@@ -49,6 +49,7 @@ public abstract class RouteState implements RSMatchable {
         }
     }
 
+    /** Called when a tvd section of the route is freed */
     public void onTvdSectionFreed(Simulation sim) throws SimulationError {
         var isFree = route.tvdSectionsPaths.stream()
                 .map(path -> path.tvdSection)

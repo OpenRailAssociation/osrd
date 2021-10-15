@@ -11,9 +11,6 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.TrainState;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class PassiveRouteState extends RouteState {
 
     PassiveRouteState(Route route) {
