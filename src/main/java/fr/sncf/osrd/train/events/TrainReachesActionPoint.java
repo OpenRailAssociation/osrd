@@ -81,7 +81,8 @@ public final class TrainReachesActionPoint extends TrainEvolutionEvent {
     }
 
     @Override
-    public double interpolatePosition(double time) {
+    public Double interpolatePosition(double time) {
+        assert this.trainStateChange != null : "missing trainStateChange";
         return trainStateChange.interpolatePosition(time);
     }
 

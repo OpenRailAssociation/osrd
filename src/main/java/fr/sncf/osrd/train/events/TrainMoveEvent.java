@@ -65,7 +65,7 @@ public final class TrainMoveEvent extends TrainEvolutionEvent {
     }
 
     @Override
-    public double interpolatePosition(double time) {
+    public Double interpolatePosition(double time) {
         return trainStateChange.interpolatePosition(time);
     }
 

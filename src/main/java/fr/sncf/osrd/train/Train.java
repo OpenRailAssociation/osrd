@@ -35,8 +35,14 @@ public class Train {
         this.lastState = initialState;
     }
 
+    /** Returns the delay of the train, in seconds, compared to its scheduled trip */
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     public double getDelay(double time) {
-        var position = lastScheduledEvent.interpolatePosition(time);
+        double position;
+        if (time == lastState.time)
+            position = lastState.location.getPathPosition();
+        else
+            position = lastScheduledEvent.interpolatePosition(time);
         return schedule.speedInstructions.secondsLate(position, time);
     }
 
