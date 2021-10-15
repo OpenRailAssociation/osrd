@@ -105,14 +105,8 @@ public class OptionalTests {
         // Creation of the state for the evaluation
         var state = new RSExprState<>(previousReserveRoute, 0, 0);
         
-        // First, the route preceding the signal is free, so the evaluation must return null
+        // The previous route doesn't need to be reserved, so it should be returned even with no reservation
         var result = state.evalInit(sim.infraState);
-        assert result.value == null;
-
-        // In a second time, we reserve the route preceding the signal, the result must not be null anymore
-        RouteState routeState = sim.infraState.getRouteState(1);
-        routeState.reserve(sim);
-        result = state.evalInputChange(sim.infraState, null);
         assert result.value != null;
         assert result.value.route.id.equals("rt.buffer_stop_b-C3");
     }
@@ -137,15 +131,9 @@ public class OptionalTests {
         var previousReserveRoute = new RSExpr.PreviousReservedRoute(signal);
         // Creation of the state for the evaluation
         var state = new RSExprState<>(previousReserveRoute, 0, 0);
-        
-        // First, the route preceding the signal is free, so the evaluation must return null
-        var result = state.evalInit(sim.infraState);
-        assert result.value == null;
 
-        // In a second time, we reserve the route preceding the signal, the result must not be null anymore
-        RouteState routeState = sim.infraState.getRouteState(7);
-        routeState.reserve(sim);
-        result = state.evalInputChange(sim.infraState, null);
+        // The previous route doesn't need to be reserved, so it should be returned even with no reservation
+        var result = state.evalInit(sim.infraState);
         assert result.value != null;
         assert result.value.route.id.equals("rt.81");
     }
