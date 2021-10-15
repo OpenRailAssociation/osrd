@@ -1,4 +1,12 @@
-from osrd_interactive import Breakpoint, Location, ChangeType, EventType, InteractiveSimulation
+from osrd_interactive import (
+    Breakpoint,
+    Location,
+    ChangeType,
+    EventType,
+    InteractiveSimulation,
+    SimulationState,
+)
+
 from pathlib import Path
 import logging
 import asyncio
@@ -13,11 +21,13 @@ async def test(infra_path: Path, simulation_path: Path, rolling_stocks_path: Pat
         await simulation.create_simulation(simulation_path, breakpoints=breakpoints)
         await simulation.watch_changes(ChangeType.all())
 
-        while True:
-            stop_message = await simulation.run(until_events=EventType.all())
-            print(stop_message)
-            if stop_message["message_type"] == "simulation_complete":
-                break
+        while not simulation.is_complete:
+            async for _ in simulation.run(until_events=EventType.all()):
+                pass
+
+            # if the simulation
+            if simulation.is_paused:
+                print(await simulation.get_train_delays())
 
 
 if __name__ == "__main__":
