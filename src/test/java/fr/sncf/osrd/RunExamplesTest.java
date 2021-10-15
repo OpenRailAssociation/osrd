@@ -83,22 +83,9 @@ public class RunExamplesTest {
         runGivenConfigInfra("bug_convergences/config_delayed.json", 3);
     }
 
-    @Disabled("requires the ongoing route rework")
     @Test
     public void testConvergences() throws InvalidRollingStock, InvalidSuccession,
             InvalidSchedule, IOException, InvalidInfraException, SimulationError {
         runGivenConfigInfra("bug_convergences/config.json", 3);
-    }
-
-    @Test
-    public void testConvergencesDelayed() throws InvalidRollingStock, InvalidSuccession,
-            InvalidSchedule, IOException, InvalidInfraException, SimulationError {
-        runGivenConfigInfra("bug_convergences/config_delayed.json");
-    }
-
-    @Test
-    public void testConvergences() throws InvalidRollingStock, InvalidSuccession,
-            InvalidSchedule, IOException, InvalidInfraException, SimulationError {
-        runGivenConfigInfra("bug_convergences/config.json");
     }
 }

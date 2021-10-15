@@ -2,7 +2,6 @@ package fr.sncf.osrd.train;
 
 import fr.sncf.osrd.TestConfig;
 import org.junit.jupiter.api.Test;
-
 import java.util.Optional;
 
 public class ReservationsTests {

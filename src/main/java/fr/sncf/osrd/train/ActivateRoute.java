@@ -32,7 +32,7 @@ public class ActivateRoute {
             } else {
                 // controlled route
                 final var towerState = sim.infraState.towerState;
-                if (!towerState.isCurrentRouteAllowedForTrain(route, train.getName())) {
+                if (!towerState.isCurrentRouteAllowedForTrain(route, train.schedule.trainID)) {
                     // we need to request it
                     sim.infraState.towerState.request(sim, routeState, train);
                     // we stop looking any further
