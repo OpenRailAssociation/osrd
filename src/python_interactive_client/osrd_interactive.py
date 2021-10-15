@@ -60,9 +60,10 @@ class Breakpoint:
     location: Location
 
 
-def check_response_type(response, allowed_types):
-    if response["message_type"] in allowed_types:
-        return
+def check_response_type(response, allowed_types) -> str:
+    message_type = response["message_type"]
+    if message_type in allowed_types:
+        return message_type
     raise SimulationError(response)
 
 
@@ -82,11 +83,35 @@ class InteractiveSimulationManager:
         await self.ws_manager.__aexit__(exc_type, exc, tb)
 
 
+class SimulationState(IntEnum):
+    UNINITIALIZED = 0
+    WAITING_FOR_SIMULATION = 1
+    PAUSED = 2
+    RUNNING = 3
+
+
+STATE_CHANGE_MESSAGES = {
+    "session_initialized": SimulationState.WAITING_FOR_SIMULATION,
+    "simulation_created": SimulationState.PAUSED,
+    "simulation_complete": SimulationState.WAITING_FOR_SIMULATION,
+    "simulation_paused": SimulationState.PAUSED,
+}
+
+
 class InteractiveSimulation:
-    __slots__ = ("websocket",)
+    __slots__ = ("websocket", "state")
 
     def __init__(self, websocket):
         self.websocket = websocket
+        self.state = SimulationState.UNINITIALIZED
+
+    @property
+    def is_complete(self):
+        return self.state is SimulationState.WAITING_FOR_SIMULATION
+
+    @property
+    def is_paused(self):
+        return self.state is SimulationState.PAUSED
 
     async def recv_json(self):
         message = json.loads(await self.websocket.recv())
@@ -123,6 +148,7 @@ class InteractiveSimulation:
         )
         response = await self.recv_json()
         check_response_type(response, {"session_initialized"})
+        self.state = SimulationState.WAITING_FOR_SIMULATION
         return response
 
     async def create_simulation(
@@ -144,6 +170,7 @@ class InteractiveSimulation:
         )
         response = await self.recv_json()
         check_response_type(response, {"simulation_created"})
+        self.state = SimulationState.PAUSED
         return response
 
     async def watch_changes(self, change_types):
@@ -159,15 +186,29 @@ class InteractiveSimulation:
         check_response_type(response, {"watch_changes"})
         return response
 
-    async def run(self, until_events=[]):
+    async def get_train_delays(self, trains=None):
+        await self.send_json(
+            {
+                "message_type": "get_train_delays",
+                "trains": trains,
+            }
+        )
+        response = await self.recv_json()
+        check_response_type(response, {"train_delays"})
+        return response
+
+    async def run(self, until_events=()):
         await self.send_json(
             {
                 "message_type": "run",
                 "until_events": [event.serialize() for event in until_events],
             }
         )
-        response = json.loads(await self.websocket.recv())
-        check_response_type(
-            response, {"simulation_complete", "simulation_paused", "change_occurred"}
-        )
-        return response
+
+        while True:
+            response = await self.recv_json()
+            new_state = STATE_CHANGE_MESSAGES.get(response["message_type"])
+            if new_state is not None:
+                self.state = new_state
+                break
+            yield response
