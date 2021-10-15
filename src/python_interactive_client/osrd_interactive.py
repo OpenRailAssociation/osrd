@@ -3,9 +3,13 @@
 import asyncio
 import websockets
 import json
+import logging
 from pathlib import Path
 from enum import IntEnum
 from dataclasses import dataclass, asdict
+
+
+logger = logging.getLogger(__name__)
 
 
 class EventType(IntEnum):
@@ -84,8 +88,17 @@ class InteractiveSimulation:
     def __init__(self, websocket):
         self.websocket = websocket
 
+    async def recv_json(self):
+        message = json.loads(await self.websocket.recv())
+        message_type = message["message_type"]
+        logger.debug("received %s", message_type)
+        return message
+
     def send_json(self, message):
-        return self.websocket.send(json.dumps(message))
+        response = self.websocket.send(json.dumps(message))
+        message_type = message["message_type"]
+        logger.debug("sent %s", message_type)
+        return response
 
     @staticmethod
     def open_websocket(ws_uri):
@@ -108,7 +121,7 @@ class InteractiveSimulation:
                 "extra_rolling_stocks": rolling_stocks,
             }
         )
-        response = json.loads(await self.websocket.recv())
+        response = await self.recv_json()
         check_response_type(response, {"session_initialized"})
         return response
 
@@ -129,7 +142,7 @@ class InteractiveSimulation:
                 "breakpoints": [asdict(b) for b in breakpoints],
             }
         )
-        response = json.loads(await self.websocket.recv())
+        response = await self.recv_json()
         check_response_type(response, {"simulation_created"})
         return response
 
@@ -142,7 +155,7 @@ class InteractiveSimulation:
                 ],
             }
         )
-        response = json.loads(await self.websocket.recv())
+        response = await self.recv_json()
         check_response_type(response, {"watch_changes"})
         return response
 
