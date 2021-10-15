@@ -2,6 +2,7 @@ package fr.sncf.osrd.train;
 
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.TVDSectionPath;
+import fr.sncf.osrd.infra_state.regulator.Request;
 import fr.sncf.osrd.infra_state.routes.RouteStatus;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -24,22 +25,25 @@ public class ActivateRoute {
             var routeState = sim.infraState.getRouteState(route.index);
             if (!route.isControlled) {
                 // passive route
-                if (routeState.status.equals(RouteStatus.OCCUPIED)) {
+                if (routeState.status != RouteStatus.FREE) {
                     // occupied, we can't look any further
                     break;
-                }  // otherwise, not occupied, we can keep looking forward
-
-            } else {
-                // controlled route
-                final var towerState = sim.infraState.towerState;
-                if (!towerState.isCurrentRouteAllowedForTrain(route, train.schedule.trainID)) {
-                    // we need to request it
-                    sim.infraState.towerState.request(sim, routeState, train);
-                    // we stop looking any further
-                    break;
-                }  // otherwise, already allowed, we can keep going
-
+                }
+                // otherwise, free, we can keep looking forward
+                continue;
             }
+            // controlled route
+            final var towerState = sim.infraState.towerState;
+            var request = new Request(train, routeState);
+            // Request already approved
+            if (towerState.isRequestApproved(sim, request))
+                continue;
+            // Request in waiting list
+            if (towerState.isRequestPending(sim, request))
+                break;
+            // The request was denied and put in a waiting list
+            if (!sim.infraState.towerState.request(sim, request))
+                break;
         }
     }
 
@@ -66,7 +70,6 @@ public class ActivateRoute {
                     return;
             freeTvdSectionPath(sim, currentTvdSectionPath);
         }
-
         reserveRoutes(sim, sim.trains.get(trainState.trainSchedule.trainID));
     }
 
@@ -77,6 +80,6 @@ public class ActivateRoute {
 
     private static void freeTvdSectionPath(Simulation sim, TVDSectionPath tvdSectionPath) throws SimulationError {
         var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
-        tvdSection.unoccupy(sim);
+        tvdSection.free(sim);
     }
 }

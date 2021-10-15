@@ -8,25 +8,22 @@ import fr.sncf.osrd.infra.StopActionPoint.RestartTrainEvent.RestartTrainPlanned;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.api.InfraManager.InfraLoadException;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.SuccessionTable;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra_state.routes.RouteState;
 import fr.sncf.osrd.infra_state.routes.RouteStatus;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
-import fr.sncf.osrd.railjson.parser.RJSSuccessionsParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSuccession;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
-import fr.sncf.osrd.railjson.schema.RJSSuccessions;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
-import fr.sncf.osrd.railjson.schema.successiontable.RJSSuccessionTable;
+import fr.sncf.osrd.railjson.schema.successiontable.RJSTrainSuccessionTable;
 import fr.sncf.osrd.simulation.Change;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -91,20 +88,14 @@ public class SimulationEndpoint implements Take {
             }
 
             // load train schedules
-            var rjsSimulation = new RJSSimulation(request.rollingStocks, request.trainSchedules);
+            var rjsSimulation = new RJSSimulation(request.rollingStocks, request.trainSchedules, request.trainSuccessionTables);
             var trainSchedules = RJSSimulationParser.parse(infra, rjsSimulation);
-
-            // load trains successions tables
-            var successions = new ArrayList<SuccessionTable>();
-            if (request.successions != null) {
-                var rjsSuccessions = new RJSSuccessions(request.successions);
-                successions = RJSSuccessionsParser.parse(rjsSuccessions);
-            }
+            var trainSuccessionTables = RJSSimulationParser.parseTrainSuccessionTables(rjsSimulation);
 
             // create the simulation and his changelog
             var changeConsumers = new ArrayList<ChangeConsumer>();
             var multiplexer = new ChangeConsumerMultiplexer(changeConsumers);
-            var sim = Simulation.createFromInfraAndSuccessions(infra, successions, 0, multiplexer);
+            var sim = Simulation.createFromInfraAndSuccessions(infra, trainSuccessionTables, 0, multiplexer);
             var resultLog = new ArrayResultLog(infra, sim);
             multiplexer.add(resultLog);
 
@@ -145,20 +136,20 @@ public class SimulationEndpoint implements Take {
         public List<RJSTrainSchedule> trainSchedules;
 
         /** A list of trains successions tables */
-        @Json(name = "successions")
-        public List<RJSSuccessionTable> successions;
+        @Json(name = "train_succession_tables")
+        public List<RJSTrainSuccessionTable> trainSuccessionTables;
 
         /** Create SimulationRequest */
         public SimulationRequest(
                 String infra,
                 List<RJSRollingStock> rollingStocks,
                 List<RJSTrainSchedule> trainSchedules,
-                List<RJSSuccessionTable> successions
+                List<RJSTrainSuccessionTable> trainSuccessionTables
         ) {
             this.infra = infra;
             this.rollingStocks = rollingStocks;
             this.trainSchedules = trainSchedules;
-            this.successions = successions;
+            this.trainSuccessionTables = trainSuccessionTables;
         }
 
         /** Create SimulationRequest with empty successions tables */
@@ -170,7 +161,7 @@ public class SimulationEndpoint implements Take {
             this.infra = infra;
             this.rollingStocks = rollingStocks;
             this.trainSchedules = trainSchedules;
-            this.successions = null;
+            this.trainSuccessionTables = null;
         }
     }
 

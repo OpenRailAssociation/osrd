@@ -3,6 +3,7 @@ package fr.sncf.osrd.simulation;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.ArrayList;
 
 public class ChangeReplayChecker extends ChangeConsumer {
     static final Logger logger = LoggerFactory.getLogger(ChangeReplayChecker.class);
@@ -21,8 +22,8 @@ public class ChangeReplayChecker extends ChangeConsumer {
         var refInfra = refSim.infra;
         Simulation replaySim;
         if (refInfra != null) {
-            var refInitTables = refSim.infraState.towerState.initTables;
-            replaySim = Simulation.createFromInfraAndSuccessions(refInfra, refInitTables, refSim.startTime, null);
+            var initTST = new ArrayList<>(refSim.infraState.towerState.trainSuccessionTables.values());
+            replaySim = Simulation.createFromInfraAndSuccessions(refInfra, initTST, refSim.startTime, null);
         } else {
             replaySim = Simulation.createWithoutInfra(refSim.startTime, null);
         }

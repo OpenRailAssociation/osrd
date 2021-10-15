@@ -5,7 +5,7 @@ import fr.sncf.osrd.interactive.InteractiveSimulation;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSVirtualPoint;
-import fr.sncf.osrd.railjson.schema.successiontable.RJSSuccessionTable;
+import fr.sncf.osrd.railjson.schema.successiontable.RJSTrainSuccessionTable;
 import java.io.IOException;
 import java.util.List;
 
@@ -17,7 +17,7 @@ public class CreateSimulationMessage extends ClientMessage {
     public List<RJSRollingStock> rollingStocks;
 
     @Json(name = "successions")
-    public List<RJSSuccessionTable> successions;
+    public List<RJSTrainSuccessionTable> successions;
 
     public List<RJSVirtualPoint> breakpoints;
 

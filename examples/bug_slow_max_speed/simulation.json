@@ -79,5 +79,13 @@
                 }
             ]
         }
-    ]
+    ],
+    "train_succession_tables": [
+        {
+        "switch": "il.switch.4-3-1",
+        "train_order": [
+            "train.0",
+            "train.1"
+        ]
+    }]
 }

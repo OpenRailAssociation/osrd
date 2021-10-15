@@ -1,17 +1,18 @@
 package fr.sncf.osrd.railjson.parser;
 
+import fr.sncf.osrd.infra_state.regulator.TrainSuccessionTable;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidSuccession;
+import fr.sncf.osrd.railjson.parser.exceptions.MissingSuccessionTableField;
 import fr.sncf.osrd.railjson.schema.schedule.RJSVirtualPoint;
+import fr.sncf.osrd.railjson.schema.successiontable.RJSTrainSuccessionTable;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+
+import java.util.*;
 
 public class RJSSimulationParser {
     /** Parse a simulation manifest, without any extra rolling stocks */
@@ -48,5 +49,26 @@ public class RJSSimulationParser {
         for (var rjsSchedule : rjsSimulation.trainSchedules)
             schedules.add(RJSTrainScheduleParser.parse(infra, rollingStocks::get, rjsSchedule, virtualPoints));
         return schedules;
+    }
+
+    /** Parses succession tables */
+    public static List<TrainSuccessionTable> parseTrainSuccessionTables(
+            RJSSimulation rjsSimulation
+    ) throws InvalidSuccession {
+        var results = new ArrayList<TrainSuccessionTable>();
+        if (rjsSimulation.trainSuccessionTables == null)
+            return results;
+
+        for (var rjsTrainSuccessionTable : rjsSimulation.trainSuccessionTables) {
+            if (rjsTrainSuccessionTable.switchID == null)
+                throw new MissingSuccessionTableField("switch");
+
+            if (rjsTrainSuccessionTable.trainOrder == null)
+                throw new MissingSuccessionTableField("train_order");
+
+            var trainOrder = new ArrayDeque<>(Arrays.asList(rjsTrainSuccessionTable.trainOrder));
+            results.add(new TrainSuccessionTable(rjsTrainSuccessionTable.switchID, trainOrder));
+        }
+        return results;
     }
 }

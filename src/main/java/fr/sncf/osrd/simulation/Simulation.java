@@ -2,7 +2,7 @@ package fr.sncf.osrd.simulation;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.SuccessionTable;
+import fr.sncf.osrd.infra_state.regulator.TrainSuccessionTable;
 import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.train.Train;
@@ -93,7 +93,7 @@ public final class Simulation implements DeepComparable<Simulation> {
     /** Creates a simulation and initialize infrastructure entities */
     public static Simulation createFromInfraAndSuccessions(
             Infra infra,
-            List<SuccessionTable> initTables,
+            List<TrainSuccessionTable> initTables,
             double simStartTime,
             ChangeConsumer changeConsumer
     ) {

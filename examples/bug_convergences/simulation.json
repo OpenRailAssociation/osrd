@@ -148,5 +148,39 @@
                 }
             ]
         }
+    ],
+    "train_succession_tables": [
+        {
+            "switch": "il.switch.4-3-1",
+            "train_order": [
+                "train.0",
+                "train.2",
+                "train.1"
+            ]
+        },
+        {
+            "switch": "il.switch.4-5-6",
+            "train_order": [
+                "train.0",
+                "train.2",
+                "train.1"
+            ]
+        },
+        {
+            "switch": "il.switch.11-10-9",
+            "train_order": [
+                "train.0",
+                "train.2",
+                "train.1"
+            ]
+        },
+        {
+            "switch": "il.switch.17-13-12",
+            "train_order": [
+                "train.0",
+                "train.2",
+                "train.1"
+            ]
+        }
     ]
 }
