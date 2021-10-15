@@ -695,13 +695,21 @@ public abstract class RSExpr<T extends RSValue> {
         @Override
         public RSOptional<RouteState> evaluate(RSExprState<?> state) {
             var currentSignal = signal.evaluate(state).signal;
-            var route = routeCandidates.stream()
-                    .map(x -> state.infraState.getRouteState(x.index))
-                    .filter(x -> x.status == RouteStatus.RESERVED)
-                    .filter(x -> x.route.signalsWithEntry.contains(currentSignal))
-                    .findFirst()
-                    .orElse(null);
-            return new RSOptional<>(route);
+            RouteState matchingPassiveRoute = null;
+            for (Route route : routeCandidates) {
+                RouteState routeState = state.infraState.getRouteState(route.index);
+                if (routeState.status == RouteStatus.RESERVED) {
+                    if (routeState.route.signalsWithEntry.contains(currentSignal)) {
+                        return new RSOptional<>(routeState);
+                    }
+                }
+                if (!route.isControlled && route.entrySignal != null && route.entrySignal.id.equals(currentSignal.id))
+                    matchingPassiveRoute = routeState;
+            }
+
+            // No explicitly reserved route, we return the passive route guarded by the signal (if any).
+            // If there is no such passive route, it returns an empty optional
+            return new RSOptional<>(matchingPassiveRoute);
         }
 
         @Override
@@ -772,7 +780,8 @@ public abstract class RSExpr<T extends RSValue> {
             for (var route : routes) {
                 var routeState = state.infraState.getRouteState(route.index); 
                 if (routeState.status == RouteStatus.RESERVED
-                        || routeState.status == RouteStatus.OCCUPIED) {
+                        || routeState.status == RouteStatus.OCCUPIED
+                        || !route.isControlled) {
                     return new RSOptional<>(routeState);
                 }
             }
