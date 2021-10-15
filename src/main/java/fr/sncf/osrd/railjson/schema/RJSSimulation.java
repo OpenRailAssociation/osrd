@@ -9,6 +9,9 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
+import fr.sncf.osrd.railjson.schema.successiontable.RJSTrainSuccessionTable;
+
+import java.util.Collection;
 import java.util.List;
 
 public final class RJSSimulation {
@@ -32,11 +35,17 @@ public final class RJSSimulation {
     @Json(name = "train_schedules")
     public List<RJSTrainSchedule> trainSchedules;
 
+    /** A list of TST */
+    @Json(name = "train_succession_tables")
+    public List<RJSTrainSuccessionTable> trainSuccessionTables;
+
     public RJSSimulation(
             List<RJSRollingStock> rollingStocks,
-            List<RJSTrainSchedule> trainSchedules
+            List<RJSTrainSchedule> trainSchedules,
+            List<RJSTrainSuccessionTable> rjsTrainSuccessionTables
     ) {
         this.rollingStocks = rollingStocks;
         this.trainSchedules = trainSchedules;
+        this.trainSuccessionTables = rjsTrainSuccessionTables;
     }
 }

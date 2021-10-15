@@ -6,13 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import fr.sncf.osrd.TestConfig;
 import java.util.ArrayList;
-import fr.sncf.osrd.railjson.schema.RJSSuccessions;
-import fr.sncf.osrd.railjson.schema.successiontable.RJSSuccessionTable;
+import fr.sncf.osrd.infra_state.regulator.TrainSuccessionTable;
+import fr.sncf.osrd.railjson.schema.successiontable.RJSTrainSuccessionTable;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.infra_state.routes.RouteState;
 import fr.sncf.osrd.infra_state.routes.RouteStatus;
@@ -574,8 +575,8 @@ public class RouteStateTest {
         trainOrderedList.add("First");
         trainOrderedList.add("Second");
 
-        var initTable = new RJSSuccessionTable(switchID, trainOrderedList.toArray(new String[2]));
-        config.rjsSuccessions = new RJSSuccessions(Collections.singletonList(initTable));
+        var switchTST = new RJSTrainSuccessionTable(switchID, trainOrderedList.toArray(new String[2]));
+        config.rjsSimulation.trainSuccessionTables = Collections.singletonList(switchTST);
 
         var simState = config.prepare();
         simState.run();
@@ -589,7 +590,7 @@ public class RouteStateTest {
     }
 
     @Test
-    public void testChangeSuccessionTableDuringSim() throws InvalidInfraException {
+    public void testChangeSuccessionTableDuringSim() throws InvalidInfraException, SimulationError {
         final var config = TestConfig.readResource("tiny_infra/config_railjson_2trains.json");
 
         var switchID = config.rjsInfra.switches.stream().findFirst().get().id;
@@ -598,20 +599,18 @@ public class RouteStateTest {
         var sim = simState.sim;
 
         // Change the succession Table
-        var newTrainOrderedList = new ArrayList<String>();
-        newTrainOrderedList.add("Second");
+        var newTrainOrderedList = new ArrayDeque<String>();
         newTrainOrderedList.add("First");
-        var tstChange = new TowerState.SuccessionTableChange(sim, switchID, newTrainOrderedList);
-        tstChange.apply(sim, tstChange.getEntity(sim));
-        makeFunctionEvent(sim, 0, () -> {
-            tstChange.apply(sim, tstChange.getEntity(sim));
-            sim.publishChange(tstChange);
-        });
+        newTrainOrderedList.add("Second");
+        var tst = sim.infraState.towerState.getTrainSuccessionTable(switchID);
+        tst.changeTrainOrder(sim, newTrainOrderedList);
 
-        // Test that the second train is now the first of the list
-        makeAssertEvent(sim, 0.5, () -> tstChange.getTable().get(0).equals("Second"));
-        // Test that the request of the second train is accepted
-        makeAssertEvent(sim, 6, () -> sim.infraState.towerState.isCurrentAllowed(switchID, "Second"));
+        // Test the first train of the list
+        assertEquals("First", tst.peekTrain());
+        // Test that the second train of the list
+        makeAssertEvent(sim, 6, () -> tst.peekTrain().equals("Second"));
+        // Test that the request of the first train is accepted and log
+        makeAssertEvent(sim, 6, () -> sim.infraState.towerState.trainSuccessionLog.get(switchID).contains("First"));
         simState.run();
     }
 

@@ -2,13 +2,11 @@ package fr.sncf.osrd.infra_state;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.SuccessionTable;
+import fr.sncf.osrd.infra_state.regulator.TowerState;
+import fr.sncf.osrd.infra_state.regulator.TrainSuccessionTable;
 import fr.sncf.osrd.infra_state.routes.RouteState;
-import fr.sncf.osrd.infra_state.routes.ControlledRouteState;
 import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.DeepEqualsUtils;
-import java.util.Arrays;
-import java.util.stream.Stream;
 import java.util.List;
 
 public final class InfraState implements DeepComparable<InfraState> {
@@ -44,10 +42,6 @@ public final class InfraState implements DeepComparable<InfraState> {
         return routeStates[routeIndex];
     }
 
-    public Stream<RouteState> getRoutesStream() {
-        return Arrays.stream(routeStates);
-    }
-
     public SwitchState getSwitchState(int switchIndex) {
         return switchStates[switchIndex];
     }
@@ -79,7 +73,7 @@ public final class InfraState implements DeepComparable<InfraState> {
 
     /** Initializes a state for the infrastructure */
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST_OF_RETURN_VALUE"})
-    public static InfraState from(Infra infra, List<SuccessionTable> initTables) {
+    public static InfraState from(Infra infra, List<TrainSuccessionTable> initTables) {
         var signalCount = infra.signals.size();
         var signalStates = new SignalState[signalCount];
         for (int i = 0; i < signalCount; i++)
@@ -100,12 +94,8 @@ public final class InfraState implements DeepComparable<InfraState> {
         for (var tvdSection : infra.tvdSections.values())
             tvdSectionStates[tvdSection.index] = new TVDSectionState(tvdSection);
 
-        TowerState towerState;
-        if (initTables != null)
-            towerState = TowerState.makeTowerState(infra, initTables);
-        else
-            towerState = TowerState.makeTowerStateWithoutTables(infra);
-
+        var towerState = TowerState.makeTowerState(infra, initTables);
+        
         return new InfraState(infra, signalStates, routeStates, switchStates, tvdSectionStates, towerState);
     }
 }
