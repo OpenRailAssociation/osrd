@@ -35,8 +35,9 @@ public class Train {
         this.lastState = initialState;
     }
 
+    /** Returns the delay of the train, in seconds, compared to its scheduled trip */
     public double getDelay(double time) {
-        var position = lastScheduledEvent.interpolatePosition(time);
+        double position = lastScheduledEvent.interpolatePosition(lastState, time);
         return schedule.speedInstructions.secondsLate(position, time);
     }
 
@@ -237,7 +238,17 @@ public class Train {
          * Returns the interpolated position of the train at the current time,
          * or null if the requested time isn't in range
          */
-        public Double interpolatePosition(double time) {
+        public Double interpolatePosition(TrainState previousState, double time) {
+            if (previousState != null) {
+                if (time < previousState.time)
+                    return null;
+
+                if (time < positionUpdates.first().time) {
+                    double position = previousState.location.getPathPosition();
+                    return SpeedUpdate.interpolatePosition(position, previousState.time, previousState.speed, time);
+                }
+            }
+
             var lastUpdate = findLastSpeedUpdate(time);
             if (lastUpdate == null)
                 return null;
@@ -246,12 +257,9 @@ public class Train {
 
         /**
          * Finds the most recent integration step at the given time,
-         * or null if the given time isn't in the integration range
+         * or null if the given time is before the change.
          */
         public SpeedUpdate findLastSpeedUpdate(double time) {
-            if (time > newState.time)
-                return null;
-
             SpeedUpdate lastUpdate = null;
             for (var update : positionUpdates) {
                 if (update.time > time)
@@ -319,9 +327,13 @@ public class Train {
                 this.speed = speed;
             }
 
-            public double interpolatePosition(double nextTime) {
+            public static double interpolatePosition(double pathPosition, double time, double speed, double nextTime) {
                 double delta = nextTime - time;
                 return pathPosition + delta * speed;
+            }
+
+            public double interpolatePosition(double nextTime) {
+                return interpolatePosition(pathPosition, time, speed, nextTime);
             }
 
             @Override
