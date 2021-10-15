@@ -1,9 +1,9 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
+import static fr.sncf.osrd.train.TrainPhysicsIntegrator.nextStepFromAction;
 import static java.util.Collections.max;
 import static java.util.Collections.min;
 
-import fr.sncf.osrd.simulation.IntegrationStep;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarecoAllowance.MarginType;
@@ -209,9 +209,8 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             var location = convertPosition(schedule, sim, position);
             double speed = element.getValue();
             var integrator =
-                    TrainPhysicsIntegrator.make(TIME_STEP, rollingStock, speed, location.meanTrainGrade());
-            var effectiveOppositeForces = Math.copySign(rollingStock.rollingResistance(speed), -speed);
-            var naturalAcceleration = integrator.computeAcceleration(Action.brake(effectiveOppositeForces));
+                    new TrainPhysicsIntegrator(TIME_STEP, rollingStock, speed, location.meanTrainGrade());
+            var naturalAcceleration = integrator.computeAcceleration(Action.coast());
             if (speed < vf || speed > previousSpeed) { // if v < vf or the train is accelerating, just update variables
                 previousAcceleration = naturalAcceleration;
                 previousSpeed = speed;
@@ -247,7 +246,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         location.ignoreInfraState = true;
 
         do {
-            var update = IntegrationStep.computeNextStepFromAction(
+            var step = nextStepFromAction(
                     location,
                     speed,
                     Action.coast(),
@@ -256,10 +255,10 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
                     location.getPathPosition(),
                     -1
             );
-            speed = update.speed;
+            speed = step.finalSpeed;
             if (speed == 0)
                 return null;
-            location.updatePosition(schedule.rollingStock.length, update.positionDelta);
+            location.updatePosition(schedule.rollingStock.length, step.positionDelta);
 
         } while (speed < speeds.interpolate(location.getPathPosition()));
         return new CoastingSpeedController(location.getPathPosition(), endLocation);

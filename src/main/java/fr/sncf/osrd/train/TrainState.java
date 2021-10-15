@@ -3,7 +3,6 @@ package fr.sncf.osrd.train;
 import static java.lang.Math.abs;
 
 import java.util.*;
-
 import fr.sncf.osrd.simulation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -199,8 +198,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         for (int i = 0; i < nIteration; i++) {
             var nextPosition = location.getPathPosition() + currentSpeed * timeStep;
             action = findActionToReachTargetSpeedAtPosition(integrator, isLate, nextPosition);
-            var update = integrator.computeUpdate(action, distanceStep, 1);
-            currentSpeed = update.speed;
+            var step = integrator.stepFromAction(action, distanceStep, 1);
+            currentSpeed = step.finalSpeed;
         }
         return action;
     }
@@ -224,12 +223,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         assertLocationIntegrity();
 
         var rollingStock = trainSchedule.rollingStock;
-        var integrator = TrainPhysicsIntegrator.make(
-                timeStep,
-                rollingStock,
-                speed,
-                location.meanTrainGrade()
-                );
+        var integrator = new TrainPhysicsIntegrator(timeStep, rollingStock, speed, location.meanTrainGrade());
         var prevLocation = location.getPathPosition();
         var isLate = trainSchedule.speedInstructions.secondsLate(prevLocation, time) > 0;
 
@@ -238,21 +232,21 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         var action = iterateFindNextAction(integrator, isLate, timeStep, distanceStep);
         logger.trace("train took action {}", action);
         // run the physics sim
-        var update = IntegrationStep.computeNextStep(
-                integrator,
+        assert action != null;
+        assert action.type != Action.ActionType.EMERGENCY_BRAKING;
+        var step = integrator.stepFromAction(
                 action,
                 distanceStep,
                 1
         );
-
         // update location
-        location.updatePosition(rollingStock.length, update.positionDelta);
-        this.time += update.timeDelta;
+        location.updatePosition(rollingStock.length, step.positionDelta);
+        this.time += step.timeDelta;
         var newLocation = location.getPathPosition();
 
-        logger.trace("speed changed from {} to {}", speed, update.speed);
-        locationChange.positionUpdates.addSpeedUpdate(newLocation, time, update.speed);
-        speed = update.speed;
+        logger.trace("speed changed from {} to {}", speed, step.finalSpeed);
+        locationChange.positionUpdates.addSpeedUpdate(newLocation, time, step.finalSpeed);
+        speed = step.finalSpeed;
     }
 
     /**  Create a location change from the current state to the given position.

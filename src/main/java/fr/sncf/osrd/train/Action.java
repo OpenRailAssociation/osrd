@@ -50,7 +50,7 @@ public class Action implements Comparable<Action> {
         return force;
     }
 
-    final ActionType type;
+    public final ActionType type;
 
     /**
      * Encodes the force the driver decided to apply, in newton.
