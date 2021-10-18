@@ -1,4 +1,5 @@
 from heapq import heappush, heappop
+from collections import defaultdict
 import json
 from pathlib import Path
 
@@ -126,6 +127,23 @@ def oname_sig_bal3(ofirst, osecond):
 
 
 class Infra:
+
+    def __init__(self, lengths, space_tde=200, space_sig=25, sight_distance=400):
+        self.GROUP_CHANGE_DELAY = 6
+        self.SPACE_TDE = space_tde
+        self.SPACE_SIG = space_sig
+        self.SIGHT_DISTANCE = sight_distance
+
+        self.json = dict()
+        self.nb_tracks = len(lengths)
+        self.lengths = lengths
+        self.degree = [0 for utrack in range(self.nb_tracks)]
+        self.links = []
+        self.switches = []
+        self.operational_points = defaultdict(list)
+        self.coordinates = [(0, 0) for otrack in range(2 * self.nb_tracks)]
+
+
     def oget_signal_position(self, ofirst, osecond):
         length = self.lengths[oget_track(ofirst)]
         if oget_direction(ofirst, osecond) == "NORMAL" and oget_side(ofirst) == "BEGIN":
@@ -920,7 +938,7 @@ class Infra:
         self.json["speed_sections"] = []
 
     def build_operational_points(self):
-        self.json["operational_points"] = []
+        self.json["operational_points"] = [{"id": key} for key in self.operational_points]
 
     def build_track_sections(self, cbtc=False):
         self.json["track_sections"] = []
@@ -930,11 +948,16 @@ class Infra:
             coord_y = self.coordinates[uget_end(utrack)]
             if not has_coords and (coord_x != (0, 0) or coord_y != coord_x):
                 has_coords = True
+            filter_op = []
+            for op in self.operational_points:
+                for op_part in self.operational_points[op]:
+                    if op_part["track"] == utrack:
+                        filter_op.append({"ref": op, "position": op_part["offset"]})
             self.json["track_sections"].append(
                 {
                     "id": uname_track(utrack),
                     "length": self.lengths[utrack],
-                    "operational_points": [],
+                    "operational_points": filter_op,
                     "route_waypoints": None,
                     "signals": [],
                     "slopes": [],
@@ -949,6 +972,11 @@ class Infra:
 
         self.build_tde()
         self.build_signals(cbtc=cbtc)
+
+    def add_operational_point(self, track, offset, label):
+        assert 0 <= track < len(self.lengths)
+        assert 0 <= offset <= self.lengths[track]
+        self.operational_points[label].append({"track": track, "offset": offset})
 
     def build_tde(self):
         for utrack in range(self.nb_tracks):
@@ -1441,24 +1469,9 @@ class Infra:
         self.json["version"] = "1.0"
         return self.json
 
-    def __init__(self, lengths, space_tde=200, space_sig=25, sight_distance=400):
-        self.GROUP_CHANGE_DELAY = 6
-        self.SPACE_TDE = space_tde
-        self.SPACE_SIG = space_sig
-        self.SIGHT_DISTANCE = sight_distance
-
-        self.json = dict()
-        self.nb_tracks = len(lengths)
-        self.lengths = lengths
-        self.degree = [0 for utrack in range(self.nb_tracks)]
-        self.links = []
-        self.switches = []
-        self.coordinates = [(0, 0) for otrack in range(2 * self.nb_tracks)]
-
-
 class Simulation:
     def build_rolling_stocks(self):
-        rolling_stock_path = Path(__file__).parent.parent / "examples/rolling_stocks/fast_rolling_stock.json"
+        rolling_stock_path = Path(__file__).resolve().parent.parent / "rolling_stocks/fast_rolling_stock.json"
         with open(rolling_stock_path) as f:
             self.json["rolling_stocks"] = [json.load(f)]
 
