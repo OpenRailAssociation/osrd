@@ -276,6 +276,13 @@ paths:
       tags:
       - rolling_stock
       summary: Retrieve a rolling stock
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Rolling Stock ID
+          required: true
       responses:
         200:
           description: The rolling stock information
