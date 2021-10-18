@@ -20,7 +20,6 @@ import fr.sncf.osrd.simulation.changelog.ChangeLogSummarizer;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import okio.Buffer;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -76,7 +75,6 @@ public class RunExamplesTest {
         runGivenConfigInfra("bug_slow_max_speed/config.json", 2);
     }
 
-    @Disabled("requires the ongoing route rework")
     @Test
     public void testConvergencesDelayed() throws InvalidRollingStock, InvalidSuccession,
             InvalidSchedule, IOException, InvalidInfraException, SimulationError {
@@ -87,5 +85,11 @@ public class RunExamplesTest {
     public void testConvergences() throws InvalidRollingStock, InvalidSuccession,
             InvalidSchedule, IOException, InvalidInfraException, SimulationError {
         runGivenConfigInfra("bug_convergences/config.json", 3);
+    }
+
+    @Test
+    public void testLineInfra() throws InvalidRollingStock, InvalidSuccession,
+            InvalidSchedule, IOException, InvalidInfraException, SimulationError {
+        runGivenConfigInfra("one_line/config.json", 0);
     }
 }
