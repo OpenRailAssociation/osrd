@@ -116,12 +116,14 @@ public abstract class RouteState implements RSMatchable {
     public static class RouteStatusChange extends EntityChange<RouteState, Void> {
         public final RouteStatus newStatus;
         public final int routeIndex;
+        public final String routeID;
 
         /** create a RouteStatusChange */
         public RouteStatusChange(Simulation sim, RouteState entity, RouteStatus newStatus) {
             super(sim);
             this.newStatus = newStatus;
             this.routeIndex = entity.route.index;
+            this.routeID = entity.route.id;
         }
 
         @Override
@@ -137,7 +139,7 @@ public abstract class RouteState implements RSMatchable {
 
         @Override
         public String toString() {
-            return String.format("RouteStatusChange { route: %d, status: %s }", routeIndex, newStatus);
+            return String.format("RouteStatusChange { route: %d, id: %s, status: %s }", routeIndex, routeID, newStatus);
         }
     }
 }

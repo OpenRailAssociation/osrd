@@ -77,6 +77,6 @@ public class ActivateRoute {
 
     private static void freeTvdSectionPath(Simulation sim, TVDSectionPath tvdSectionPath) throws SimulationError {
         var tvdSection = sim.infraState.getTvdSectionState(tvdSectionPath.tvdSection.index);
-        tvdSection.free(sim);
+        tvdSection.unoccupy(sim);
     }
 }

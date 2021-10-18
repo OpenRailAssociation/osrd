@@ -2,6 +2,8 @@ package fr.sncf.osrd.infra_state;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.TVDSection;
+import fr.sncf.osrd.infra.routegraph.Route;
+import fr.sncf.osrd.infra_state.routes.RouteState;
 import fr.sncf.osrd.simulation.EntityChange;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -10,8 +12,11 @@ import fr.sncf.osrd.utils.DeepComparable;
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class TVDSectionState implements DeepComparable<TVDSectionState> {
     public final TVDSection tvdSection;
-    /** Number of train for wich the tvd section is reserved */
+    /** Number of train for which the tvd section is reserved */
     int reservation;
+
+    /** Is the tvd section currently occupied */
+    private boolean isOccupied = false;
 
     public TVDSectionState(TVDSection tvdSection) {
         this.tvdSection = tvdSection;
@@ -20,7 +25,7 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
 
     /**
      * Create an event to reserve the tvd section
-     * 
+     *
      * @param sim the current simulation
      */
     public void reserve(Simulation sim) throws SimulationError {
@@ -35,7 +40,7 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
 
     /**
      * Create an event to free the tvd section
-     * 
+     *
      * @param sim the current simulation
      */
     public void free(Simulation sim) throws SimulationError {
@@ -52,24 +57,28 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
         sim.infraState.towerState.notifyFreed(sim, this.tvdSection);
     }
 
-    /** 
+    /**
      * Create an event to notify route that the tvd section is occupied
-     * 
+     *
      * @param sim the current simulation
      */
     public void occupy(Simulation sim) throws SimulationError {
+        if (isOccupied)
+            throw new SimulationError("TVD section we try to occupy is already occupied");
+        isOccupied = true;
         for (var route : tvdSection.routeSubscribers) {
             var routeState = sim.infraState.getRouteState(route.index);
             routeState.onTvdSectionOccupied(sim, tvdSection);
         }
     }
 
-    /** 
+    /**
      * Create an event to notify route that the tvd section is not occupied anymore
-     * 
+     *
      * @param sim the current simulation
      */
     public void unoccupy(Simulation sim) throws SimulationError {
+        isOccupied = false;
         for (var route : tvdSection.routeSubscribers) {
             var routeState = sim.infraState.getRouteState(route.index);
             routeState.onTvdSectionUnoccupied(sim, this);
@@ -78,11 +87,16 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
 
     /**
      * Check if the tvdSection is reserved
-     * 
+     *
      * @return True if the tvdSection is reserved by at least one train
      */
     public boolean isReserved() {
         return reservation != 0;
+    }
+
+    /** Is the tvd section currently occupied */
+    public boolean isOccupied() {
+        return isOccupied;
     }
 
     @Override
@@ -102,7 +116,7 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
 
         @Override
         public Void apply(Simulation sim, TVDSectionState entity) {
-            if (!newReservation) 
+            if (!newReservation)
                 assert entity.isReserved();
             entity.reservation += (newReservation) ? 1 : -1;
             return null;
