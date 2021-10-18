@@ -7,6 +7,7 @@ import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.simulation.TimelineEventId;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.TrainEvolutionEvent;
+import fr.sncf.osrd.train.TrainState;
 
 /**
  * This event represents a regular train move.
@@ -65,8 +66,8 @@ public final class TrainMoveEvent extends TrainEvolutionEvent {
     }
 
     @Override
-    public Double interpolatePosition(double time) {
-        return trainStateChange.interpolatePosition(time);
+    public Double interpolatePosition(TrainState lastState, double time) {
+        return trainStateChange.interpolatePosition(lastState, time);
     }
 
     public static class TrainPlannedMove extends Simulation.TimelineEventCreated {

@@ -8,5 +8,5 @@ public abstract class TrainEvolutionEvent extends TimelineEvent {
         super(eventId);
     }
 
-    public abstract Double interpolatePosition(double time);
+    public abstract Double interpolatePosition(TrainState lastState, double time);
 }
