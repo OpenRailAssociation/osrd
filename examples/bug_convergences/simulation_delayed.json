@@ -3,7 +3,7 @@
   "train_schedules": [
     {
       "id": "train.0",
-      "rolling_stock": "fast_rolling_stock",
+      "rolling_stock": "slow_rolling_stock",
       "initial_head_location": {
         "track_section": "ne.micro.0",
         "offset": 500
@@ -38,11 +38,17 @@
           },
           "type": "navigate"
         }
+      ],
+      "stops": [
+        {
+          "duration": 1,
+          "position": -1
+        }
       ]
     },
     {
       "id": "train.1",
-      "rolling_stock": "fast_rolling_stock",
+      "rolling_stock": "slow_rolling_stock",
       "initial_head_location": {
         "track_section": "ne.micro.14",
         "offset": 500
@@ -77,11 +83,17 @@
           },
           "type": "navigate"
         }
+      ],
+      "stops": [
+        {
+          "duration": 1,
+          "position": -1
+        }
       ]
     },
     {
       "id": "train.2",
-      "rolling_stock": "fast_rolling_stock",
+      "rolling_stock": "slow_rolling_stock",
       "initial_head_location": {
         "track_section": "ne.micro.2",
         "offset": 500
@@ -115,6 +127,12 @@
             "offset": 500
           },
           "type": "navigate"
+        }
+      ],
+      "stops": [
+        {
+          "duration": 1,
+          "position": -1
         }
       ]
     }
