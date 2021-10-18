@@ -21,7 +21,6 @@ import fr.sncf.osrd.simulation.SimulationError;
 
 public class OptionalTests {
     @Test
-    @Disabled("See issue https://github.com/DGEXSolutions/osrd-core/issues/129")
     public void testSignalsFunctionWithOptionals() throws SimulationError {
         var testConfig = TestConfig.readResource("tiny_infra/config_railjson_optional.json");
 
