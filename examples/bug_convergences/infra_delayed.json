@@ -1039,14 +1039,32 @@
                             {
                                 "aspect": "RED",
                                 "condition": {
-                                    "type": "not",
-                                    "expr": {
+                                    "type": "condition",
+                                    "if": {
+                                        "type": "is_passive_route",
+                                        "route": {
+                                            "type": "argument_ref",
+                                            "argument_name": "route"
+                                        }
+                                    },
+                                    "then": {
                                         "type": "route_has_state",
                                         "route": {
                                             "type": "argument_ref",
                                             "argument_name": "route"
                                         },
-                                        "state": "RESERVED"
+                                        "state": "OCCUPIED"
+                                    },
+                                    "else": {
+                                        "type": "not",
+                                        "expr": {
+                                            "type": "route_has_state",
+                                            "route": {
+                                                "type": "argument_ref",
+                                                "argument_name": "route"
+                                            },
+                                            "state": "RESERVED"
+                                        }
                                     }
                                 }
                             },
