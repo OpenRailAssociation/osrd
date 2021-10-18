@@ -1,0 +1,2093 @@
+{
+    "aspects": [
+        {
+            "id": "GREEN",
+            "color": "#2a850c",
+            "constraints": []
+        },
+        {
+            "id": "YELLOW",
+            "color": "#f08a05",
+            "constraints": [
+                {
+                    "type": "speed_limit",
+                    "speed": 8.33333333333333,
+                    "applies_at": {
+                        "element": "NEXT_SIGNAL",
+                        "offset": -100
+                    },
+                    "until": {
+                        "element": "NEXT_SIGNAL",
+                        "offset": 0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "RED",
+            "color": "#db0c04",
+            "constraints": [
+                {
+                    "type": "speed_limit",
+                    "speed": 0,
+                    "applies_at": {
+                        "element": "CURRENT_SIGNAL",
+                        "offset": -5
+                    },
+                    "until": {
+                        "element": "END",
+                        "offset": 0
+                    }
+                }
+            ]
+        }
+    ],
+    "switch_types": {
+        "classic_switch": {
+            "ports": [
+                "base",
+                "left",
+                "right"
+            ],
+            "groups": {
+                "LEFT": [
+                    {
+                        "src": "base",
+                        "dst": "left",
+                        "bidirectional": true
+                    }
+                ],
+                "RIGHT": [
+                    {
+                        "src": "base",
+                        "dst": "right",
+                        "bidirectional": true
+                    }
+                ]
+            }
+        }
+    },
+    "operational_points": [],
+    "routes": [
+        {
+            "id": "rt.0_BEGIN-0_END",
+            "entry_point": "tde.0_BEGIN",
+            "exit_point": "buffer_stop.0",
+            "entry_direction": "START_TO_STOP",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.0"
+                ]
+            ]
+        },
+        {
+            "id": "rt.0_END-0_BEGIN",
+            "entry_point": "buffer_stop.0",
+            "exit_point": "tde.0_BEGIN",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.0"
+                ]
+            ]
+        },
+        {
+            "id": "rt.1_BEGIN-1_END",
+            "entry_point": "tde.1_BEGIN",
+            "exit_point": "tde.1_END",
+            "entry_direction": "START_TO_STOP",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.1"
+                ]
+            ]
+        },
+        {
+            "id": "rt.1_END-1_BEGIN",
+            "entry_point": "tde.1_END",
+            "exit_point": "tde.1_BEGIN",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.1"
+                ]
+            ]
+        },
+        {
+            "id": "rt.2_BEGIN-2_END",
+            "entry_point": "tde.2_BEGIN",
+            "exit_point": "tde.2_END",
+            "entry_direction": "START_TO_STOP",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.2"
+                ]
+            ]
+        },
+        {
+            "id": "rt.2_END-2_BEGIN",
+            "entry_point": "tde.2_END",
+            "exit_point": "tde.2_BEGIN",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.2"
+                ]
+            ]
+        },
+        {
+            "id": "rt.3_BEGIN-3_END",
+            "entry_point": "tde.3_BEGIN",
+            "exit_point": "tde.3_END",
+            "entry_direction": "START_TO_STOP",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.3"
+                ]
+            ]
+        },
+        {
+            "id": "rt.3_END-3_BEGIN",
+            "entry_point": "tde.3_END",
+            "exit_point": "tde.3_BEGIN",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.3"
+                ]
+            ]
+        },
+        {
+            "id": "rt.4_BEGIN-4_END",
+            "entry_point": "tde.4_BEGIN",
+            "exit_point": "tde.4_END",
+            "entry_direction": "START_TO_STOP",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.4"
+                ]
+            ]
+        },
+        {
+            "id": "rt.4_END-4_BEGIN",
+            "entry_point": "tde.4_END",
+            "exit_point": "tde.4_BEGIN",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.4"
+                ]
+            ]
+        },
+        {
+            "id": "rt.5_BEGIN-5_END",
+            "entry_point": "tde.5_BEGIN",
+            "exit_point": "tde.5_END",
+            "entry_direction": "START_TO_STOP",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.5"
+                ]
+            ]
+        },
+        {
+            "id": "rt.5_END-5_BEGIN",
+            "entry_point": "tde.5_END",
+            "exit_point": "tde.5_BEGIN",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.5"
+                ]
+            ]
+        },
+        {
+            "id": "rt.6_BEGIN-6_END",
+            "entry_point": "tde.6_BEGIN",
+            "exit_point": "tde.6_END",
+            "entry_direction": "START_TO_STOP",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.6"
+                ]
+            ]
+        },
+        {
+            "id": "rt.6_END-6_BEGIN",
+            "entry_point": "tde.6_END",
+            "exit_point": "tde.6_BEGIN",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.6"
+                ]
+            ]
+        },
+        {
+            "id": "rt.7_BEGIN-7_END",
+            "entry_point": "tde.7_BEGIN",
+            "exit_point": "tde.7_END",
+            "entry_direction": "START_TO_STOP",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.7"
+                ]
+            ]
+        },
+        {
+            "id": "rt.7_END-7_BEGIN",
+            "entry_point": "tde.7_END",
+            "exit_point": "tde.7_BEGIN",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.7"
+                ]
+            ]
+        },
+        {
+            "id": "rt.8_BEGIN-8_END",
+            "entry_point": "tde.8_BEGIN",
+            "exit_point": "tde.8_END",
+            "entry_direction": "START_TO_STOP",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.8"
+                ]
+            ]
+        },
+        {
+            "id": "rt.8_END-8_BEGIN",
+            "entry_point": "tde.8_END",
+            "exit_point": "tde.8_BEGIN",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.8"
+                ]
+            ]
+        },
+        {
+            "id": "rt.9_BEGIN-9_END",
+            "entry_point": "tde.9_BEGIN",
+            "exit_point": "buffer_stop.9",
+            "entry_direction": "START_TO_STOP",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.9"
+                ]
+            ]
+        },
+        {
+            "id": "rt.9_END-9_BEGIN",
+            "entry_point": "buffer_stop.9",
+            "exit_point": "tde.9_BEGIN",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.9"
+                ]
+            ]
+        },
+        {
+            "id": "rt.0_BEGIN-1_BEGIN",
+            "entry_point": "tde.0_BEGIN",
+            "exit_point": "tde.1_BEGIN",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.0-1"
+                ]
+            ]
+        },
+        {
+            "id": "rt.1_BEGIN-0_BEGIN",
+            "entry_point": "tde.1_BEGIN",
+            "exit_point": "tde.0_BEGIN",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.0-1"
+                ]
+            ]
+        },
+        {
+            "id": "rt.1_END-2_BEGIN",
+            "entry_point": "tde.1_END",
+            "exit_point": "tde.2_BEGIN",
+            "entry_direction": "START_TO_STOP",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.1-2"
+                ]
+            ]
+        },
+        {
+            "id": "rt.2_BEGIN-1_END",
+            "entry_point": "tde.2_BEGIN",
+            "exit_point": "tde.1_END",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.1-2"
+                ]
+            ]
+        },
+        {
+            "id": "rt.2_END-3_BEGIN",
+            "entry_point": "tde.2_END",
+            "exit_point": "tde.3_BEGIN",
+            "entry_direction": "START_TO_STOP",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.2-3"
+                ]
+            ]
+        },
+        {
+            "id": "rt.3_BEGIN-2_END",
+            "entry_point": "tde.3_BEGIN",
+            "exit_point": "tde.2_END",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.2-3"
+                ]
+            ]
+        },
+        {
+            "id": "rt.3_END-4_BEGIN",
+            "entry_point": "tde.3_END",
+            "exit_point": "tde.4_BEGIN",
+            "entry_direction": "START_TO_STOP",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.3-4"
+                ]
+            ]
+        },
+        {
+            "id": "rt.4_BEGIN-3_END",
+            "entry_point": "tde.4_BEGIN",
+            "exit_point": "tde.3_END",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.3-4"
+                ]
+            ]
+        },
+        {
+            "id": "rt.4_END-5_BEGIN",
+            "entry_point": "tde.4_END",
+            "exit_point": "tde.5_BEGIN",
+            "entry_direction": "START_TO_STOP",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.4-5"
+                ]
+            ]
+        },
+        {
+            "id": "rt.5_BEGIN-4_END",
+            "entry_point": "tde.5_BEGIN",
+            "exit_point": "tde.4_END",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.4-5"
+                ]
+            ]
+        },
+        {
+            "id": "rt.5_END-6_BEGIN",
+            "entry_point": "tde.5_END",
+            "exit_point": "tde.6_BEGIN",
+            "entry_direction": "START_TO_STOP",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.5-6"
+                ]
+            ]
+        },
+        {
+            "id": "rt.6_BEGIN-5_END",
+            "entry_point": "tde.6_BEGIN",
+            "exit_point": "tde.5_END",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.5-6"
+                ]
+            ]
+        },
+        {
+            "id": "rt.6_END-7_BEGIN",
+            "entry_point": "tde.6_END",
+            "exit_point": "tde.7_BEGIN",
+            "entry_direction": "START_TO_STOP",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.6-7"
+                ]
+            ]
+        },
+        {
+            "id": "rt.7_BEGIN-6_END",
+            "entry_point": "tde.7_BEGIN",
+            "exit_point": "tde.6_END",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.6-7"
+                ]
+            ]
+        },
+        {
+            "id": "rt.7_END-8_BEGIN",
+            "entry_point": "tde.7_END",
+            "exit_point": "tde.8_BEGIN",
+            "entry_direction": "START_TO_STOP",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.7-8"
+                ]
+            ]
+        },
+        {
+            "id": "rt.8_BEGIN-7_END",
+            "entry_point": "tde.8_BEGIN",
+            "exit_point": "tde.7_END",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.7-8"
+                ]
+            ]
+        },
+        {
+            "id": "rt.8_END-9_BEGIN",
+            "entry_point": "tde.8_END",
+            "exit_point": "tde.9_BEGIN",
+            "entry_direction": "START_TO_STOP",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.8-9"
+                ]
+            ]
+        },
+        {
+            "id": "rt.9_BEGIN-8_END",
+            "entry_point": "tde.9_BEGIN",
+            "exit_point": "tde.8_END",
+            "entry_direction": "STOP_TO_START",
+            "switches_group": {},
+            "release_groups": [
+                [
+                    "tvd.8-9"
+                ]
+            ]
+        }
+    ],
+    "script_functions": [
+        {
+            "name": "sncf_filter",
+            "arguments": [
+                {
+                    "type": "ASPECT_SET",
+                    "name": "aspects"
+                }
+            ],
+            "return_type": "ASPECT_SET",
+            "body": {
+                "type": "condition",
+                "if": {
+                    "type": "aspect_set_contains",
+                    "aspect_set": {
+                        "type": "argument_ref",
+                        "argument_name": "aspects"
+                    },
+                    "aspect": "RED"
+                },
+                "then": {
+                    "type": "aspect_set",
+                    "members": [
+                        {
+                            "aspect": "RED"
+                        }
+                    ]
+                },
+                "else": {
+                    "type": "condition",
+                    "if": {
+                        "type": "aspect_set_contains",
+                        "aspect_set": {
+                            "type": "argument_ref",
+                            "argument_name": "aspects"
+                        },
+                        "aspect": "YELLOW"
+                    },
+                    "then": {
+                        "type": "aspect_set",
+                        "members": [
+                            {
+                                "aspect": "YELLOW"
+                            }
+                        ]
+                    },
+                    "else": {
+                        "type": "argument_ref",
+                        "argument_name": "aspects"
+                    }
+                }
+            }
+        },
+        {
+            "name": "warn_signal",
+            "arguments": [
+                {
+                    "type": "SIGNAL",
+                    "name": "master_signal"
+                }
+            ],
+            "return_type": "ASPECT_SET",
+            "body": {
+                "type": "call",
+                "function": "sncf_filter",
+                "arguments": [
+                    {
+                        "type": "aspect_set",
+                        "members": [
+                            {
+                                "aspect": "YELLOW",
+                                "condition": {
+                                    "type": "signal_has_aspect",
+                                    "signal": {
+                                        "type": "argument_ref",
+                                        "argument_name": "master_signal"
+                                    },
+                                    "aspect": "RED"
+                                }
+                            },
+                            {
+                                "aspect": "GREEN"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "name": "check_route",
+            "arguments": [
+                {
+                    "type": "ROUTE",
+                    "name": "route"
+                }
+            ],
+            "return_type": "ASPECT_SET",
+            "body": {
+                "type": "condition",
+                "if": {
+                    "type": "or",
+                    "exprs": [
+                        {
+                            "type": "route_has_state",
+                            "route": {
+                                "type": "argument_ref",
+                                "argument_name": "route"
+                            },
+                            "state": "OCCUPIED"
+                        },
+                        {
+                            "type": "route_has_state",
+                            "route": {
+                                "type": "argument_ref",
+                                "argument_name": "route"
+                            },
+                            "state": "REQUESTED"
+                        },
+                        {
+                            "type": "route_has_state",
+                            "route": {
+                                "type": "argument_ref",
+                                "argument_name": "route"
+                            },
+                            "state": "CONFLICT"
+                        }
+                    ]
+                },
+                "then": {
+                    "type": "aspect_set",
+                    "members": [
+                        {
+                            "aspect": "RED"
+                        }
+                    ]
+                },
+                "else": {
+                    "type": "aspect_set",
+                    "members": [
+                        {
+                            "aspect": "YELLOW"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "bal3_line_signal",
+            "arguments": [
+                {
+                    "type": "SIGNAL",
+                    "name": "master_signal"
+                },
+                {
+                    "type": "ROUTE",
+                    "name": "route"
+                }
+            ],
+            "return_type": "ASPECT_SET",
+            "body": {
+                "type": "call",
+                "function": "sncf_filter",
+                "arguments": [
+                    {
+                        "type": "aspect_set",
+                        "members": [
+                            {
+                                "aspect": "RED",
+                                "condition": {
+                                    "type": "condition",
+                                    "if": {
+                                        "type": "is_passive_route",
+                                        "route": {
+                                            "type": "argument_ref",
+                                            "argument_name": "route"
+                                        }
+                                    },
+                                    "then": {
+                                        "type": "route_has_state",
+                                        "route": {
+                                            "type": "argument_ref",
+                                            "argument_name": "route"
+                                        },
+                                        "state": "OCCUPIED"
+                                    },
+                                    "else": {
+                                        "type": "not",
+                                        "expr": {
+                                            "type": "route_has_state",
+                                            "route": {
+                                                "type": "argument_ref",
+                                                "argument_name": "route"
+                                            },
+                                            "state": "RESERVED"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "aspect": "YELLOW",
+                                "condition": {
+                                    "type": "signal_has_aspect",
+                                    "signal": {
+                                        "type": "argument_ref",
+                                        "argument_name": "master_signal"
+                                    },
+                                    "aspect": "RED"
+                                }
+                            },
+                            {
+                                "aspect": "GREEN"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "name": "switch_signal",
+            "arguments": [
+                {
+                    "type": "SIGNAL",
+                    "name": "signal"
+                }
+            ],
+            "return_type": "ASPECT_SET",
+            "body": {
+                "type": "optional_match",
+                "name": "route",
+                "expr": {
+                    "type": "reserved_route",
+                    "signal": {
+                        "type": "argument_ref",
+                        "argument_name": "signal"
+                    }
+                },
+                "case_none": {
+                    "type": "aspect_set",
+                    "members": [
+                        {
+                            "aspect": "RED"
+                        }
+                    ]
+                },
+                "case_some": {
+                    "type": "condition",
+                    "if": {
+                        "type": "or",
+                        "exprs": [
+                            {
+                                "type": "route_has_state",
+                                "route": {
+                                    "type": "optional_match_ref",
+                                    "match_name": "route"
+                                },
+                                "state": "CONFLICT"
+                            },
+                            {
+                                "type": "route_has_state",
+                                "route": {
+                                    "type": "optional_match_ref",
+                                    "match_name": "route"
+                                },
+                                "state": "OCCUPIED"
+                            },
+                            {
+                                "type": "route_has_state",
+                                "route": {
+                                    "type": "optional_match_ref",
+                                    "match_name": "route"
+                                },
+                                "state": "REQUESTED"
+                            }
+                        ]
+                    },
+                    "then": {
+                        "type": "aspect_set",
+                        "members": [
+                            {
+                                "aspect": "YELLOW"
+                            }
+                        ]
+                    },
+                    "else": {
+                        "type": "aspect_set",
+                        "members": [
+                            {
+                                "aspect": "GREEN"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ],
+    "speed_sections": [],
+    "switches": [],
+    "track_section_links": [
+        {
+            "begin": {
+                "endpoint": "BEGIN",
+                "section": "ne.micro.0"
+            },
+            "end": {
+                "endpoint": "BEGIN",
+                "section": "ne.micro.1"
+            },
+            "navigability": "BOTH"
+        },
+        {
+            "begin": {
+                "endpoint": "END",
+                "section": "ne.micro.1"
+            },
+            "end": {
+                "endpoint": "BEGIN",
+                "section": "ne.micro.2"
+            },
+            "navigability": "BOTH"
+        },
+        {
+            "begin": {
+                "endpoint": "END",
+                "section": "ne.micro.2"
+            },
+            "end": {
+                "endpoint": "BEGIN",
+                "section": "ne.micro.3"
+            },
+            "navigability": "BOTH"
+        },
+        {
+            "begin": {
+                "endpoint": "END",
+                "section": "ne.micro.3"
+            },
+            "end": {
+                "endpoint": "BEGIN",
+                "section": "ne.micro.4"
+            },
+            "navigability": "BOTH"
+        },
+        {
+            "begin": {
+                "endpoint": "END",
+                "section": "ne.micro.4"
+            },
+            "end": {
+                "endpoint": "BEGIN",
+                "section": "ne.micro.5"
+            },
+            "navigability": "BOTH"
+        },
+        {
+            "begin": {
+                "endpoint": "END",
+                "section": "ne.micro.5"
+            },
+            "end": {
+                "endpoint": "BEGIN",
+                "section": "ne.micro.6"
+            },
+            "navigability": "BOTH"
+        },
+        {
+            "begin": {
+                "endpoint": "END",
+                "section": "ne.micro.6"
+            },
+            "end": {
+                "endpoint": "BEGIN",
+                "section": "ne.micro.7"
+            },
+            "navigability": "BOTH"
+        },
+        {
+            "begin": {
+                "endpoint": "END",
+                "section": "ne.micro.7"
+            },
+            "end": {
+                "endpoint": "BEGIN",
+                "section": "ne.micro.8"
+            },
+            "navigability": "BOTH"
+        },
+        {
+            "begin": {
+                "endpoint": "END",
+                "section": "ne.micro.8"
+            },
+            "end": {
+                "endpoint": "BEGIN",
+                "section": "ne.micro.9"
+            },
+            "navigability": "BOTH"
+        }
+    ],
+    "track_sections": [
+        {
+            "id": "ne.micro.0",
+            "length": 1000,
+            "operational_points": [],
+            "route_waypoints": [
+                {
+                    "type": "detector",
+                    "applicable_direction": "BOTH",
+                    "id": "tde.0_BEGIN",
+                    "position": 200
+                },
+                {
+                    "type": "buffer_stop",
+                    "applicable_direction": "NORMAL",
+                    "id": "buffer_stop.0",
+                    "position": 1000
+                }
+            ],
+            "signals": [
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "check_route",
+                        "arguments": [
+                            {
+                                "type": "route",
+                                "route": "rt.0_BEGIN-0_END"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.0_BEGIN-0_END",
+                    "linked_detector": "tde.0_BEGIN",
+                    "applicable_direction": "NORMAL",
+                    "position": 175,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.1_BEGIN-1_END"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.0_BEGIN-1_BEGIN"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.0_BEGIN-1_BEGIN",
+                    "linked_detector": "tde.0_BEGIN",
+                    "applicable_direction": "REVERSE",
+                    "position": 225,
+                    "sight_distance": 400
+                }
+            ],
+            "slopes": [],
+            "curves": [],
+            "speed_sections": []
+        },
+        {
+            "id": "ne.micro.1",
+            "length": 1000,
+            "operational_points": [],
+            "route_waypoints": [
+                {
+                    "type": "detector",
+                    "applicable_direction": "BOTH",
+                    "id": "tde.1_BEGIN",
+                    "position": 200
+                },
+                {
+                    "type": "detector",
+                    "applicable_direction": "BOTH",
+                    "id": "tde.1_END",
+                    "position": 800
+                }
+            ],
+            "signals": [
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.1_END-2_BEGIN"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.1_BEGIN-1_END"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.1_BEGIN-1_END",
+                    "linked_detector": "tde.1_BEGIN",
+                    "applicable_direction": "NORMAL",
+                    "position": 175,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.1_BEGIN-0_BEGIN"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.1_END-1_BEGIN"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.1_END-1_BEGIN",
+                    "linked_detector": "tde.1_END",
+                    "applicable_direction": "REVERSE",
+                    "position": 825,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.0_BEGIN-0_END"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.1_BEGIN-0_BEGIN"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.1_BEGIN-0_BEGIN",
+                    "linked_detector": "tde.1_BEGIN",
+                    "applicable_direction": "REVERSE",
+                    "position": 225,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.2_BEGIN-2_END"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.1_END-2_BEGIN"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.1_END-2_BEGIN",
+                    "linked_detector": "tde.1_END",
+                    "applicable_direction": "NORMAL",
+                    "position": 775,
+                    "sight_distance": 400
+                }
+            ],
+            "slopes": [],
+            "curves": [],
+            "speed_sections": []
+        },
+        {
+            "id": "ne.micro.2",
+            "length": 1000,
+            "operational_points": [],
+            "route_waypoints": [
+                {
+                    "type": "detector",
+                    "applicable_direction": "BOTH",
+                    "id": "tde.2_BEGIN",
+                    "position": 200
+                },
+                {
+                    "type": "detector",
+                    "applicable_direction": "BOTH",
+                    "id": "tde.2_END",
+                    "position": 800
+                }
+            ],
+            "signals": [
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.2_END-3_BEGIN"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.2_BEGIN-2_END"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.2_BEGIN-2_END",
+                    "linked_detector": "tde.2_BEGIN",
+                    "applicable_direction": "NORMAL",
+                    "position": 175,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.2_BEGIN-1_END"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.2_END-2_BEGIN"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.2_END-2_BEGIN",
+                    "linked_detector": "tde.2_END",
+                    "applicable_direction": "REVERSE",
+                    "position": 825,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.1_END-1_BEGIN"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.2_BEGIN-1_END"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.2_BEGIN-1_END",
+                    "linked_detector": "tde.2_BEGIN",
+                    "applicable_direction": "REVERSE",
+                    "position": 225,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.3_BEGIN-3_END"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.2_END-3_BEGIN"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.2_END-3_BEGIN",
+                    "linked_detector": "tde.2_END",
+                    "applicable_direction": "NORMAL",
+                    "position": 775,
+                    "sight_distance": 400
+                }
+            ],
+            "slopes": [],
+            "curves": [],
+            "speed_sections": []
+        },
+        {
+            "id": "ne.micro.3",
+            "length": 1000,
+            "operational_points": [],
+            "route_waypoints": [
+                {
+                    "type": "detector",
+                    "applicable_direction": "BOTH",
+                    "id": "tde.3_BEGIN",
+                    "position": 200
+                },
+                {
+                    "type": "detector",
+                    "applicable_direction": "BOTH",
+                    "id": "tde.3_END",
+                    "position": 800
+                }
+            ],
+            "signals": [
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.3_END-4_BEGIN"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.3_BEGIN-3_END"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.3_BEGIN-3_END",
+                    "linked_detector": "tde.3_BEGIN",
+                    "applicable_direction": "NORMAL",
+                    "position": 175,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.3_BEGIN-2_END"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.3_END-3_BEGIN"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.3_END-3_BEGIN",
+                    "linked_detector": "tde.3_END",
+                    "applicable_direction": "REVERSE",
+                    "position": 825,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.2_END-2_BEGIN"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.3_BEGIN-2_END"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.3_BEGIN-2_END",
+                    "linked_detector": "tde.3_BEGIN",
+                    "applicable_direction": "REVERSE",
+                    "position": 225,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.4_BEGIN-4_END"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.3_END-4_BEGIN"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.3_END-4_BEGIN",
+                    "linked_detector": "tde.3_END",
+                    "applicable_direction": "NORMAL",
+                    "position": 775,
+                    "sight_distance": 400
+                }
+            ],
+            "slopes": [],
+            "curves": [],
+            "speed_sections": []
+        },
+        {
+            "id": "ne.micro.4",
+            "length": 1000,
+            "operational_points": [],
+            "route_waypoints": [
+                {
+                    "type": "detector",
+                    "applicable_direction": "BOTH",
+                    "id": "tde.4_BEGIN",
+                    "position": 200
+                },
+                {
+                    "type": "detector",
+                    "applicable_direction": "BOTH",
+                    "id": "tde.4_END",
+                    "position": 800
+                }
+            ],
+            "signals": [
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.4_END-5_BEGIN"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.4_BEGIN-4_END"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.4_BEGIN-4_END",
+                    "linked_detector": "tde.4_BEGIN",
+                    "applicable_direction": "NORMAL",
+                    "position": 175,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.4_BEGIN-3_END"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.4_END-4_BEGIN"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.4_END-4_BEGIN",
+                    "linked_detector": "tde.4_END",
+                    "applicable_direction": "REVERSE",
+                    "position": 825,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.3_END-3_BEGIN"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.4_BEGIN-3_END"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.4_BEGIN-3_END",
+                    "linked_detector": "tde.4_BEGIN",
+                    "applicable_direction": "REVERSE",
+                    "position": 225,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.5_BEGIN-5_END"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.4_END-5_BEGIN"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.4_END-5_BEGIN",
+                    "linked_detector": "tde.4_END",
+                    "applicable_direction": "NORMAL",
+                    "position": 775,
+                    "sight_distance": 400
+                }
+            ],
+            "slopes": [],
+            "curves": [],
+            "speed_sections": []
+        },
+        {
+            "id": "ne.micro.5",
+            "length": 1000,
+            "operational_points": [],
+            "route_waypoints": [
+                {
+                    "type": "detector",
+                    "applicable_direction": "BOTH",
+                    "id": "tde.5_BEGIN",
+                    "position": 200
+                },
+                {
+                    "type": "detector",
+                    "applicable_direction": "BOTH",
+                    "id": "tde.5_END",
+                    "position": 800
+                }
+            ],
+            "signals": [
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.5_END-6_BEGIN"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.5_BEGIN-5_END"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.5_BEGIN-5_END",
+                    "linked_detector": "tde.5_BEGIN",
+                    "applicable_direction": "NORMAL",
+                    "position": 175,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.5_BEGIN-4_END"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.5_END-5_BEGIN"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.5_END-5_BEGIN",
+                    "linked_detector": "tde.5_END",
+                    "applicable_direction": "REVERSE",
+                    "position": 825,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.4_END-4_BEGIN"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.5_BEGIN-4_END"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.5_BEGIN-4_END",
+                    "linked_detector": "tde.5_BEGIN",
+                    "applicable_direction": "REVERSE",
+                    "position": 225,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.6_BEGIN-6_END"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.5_END-6_BEGIN"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.5_END-6_BEGIN",
+                    "linked_detector": "tde.5_END",
+                    "applicable_direction": "NORMAL",
+                    "position": 775,
+                    "sight_distance": 400
+                }
+            ],
+            "slopes": [],
+            "curves": [],
+            "speed_sections": []
+        },
+        {
+            "id": "ne.micro.6",
+            "length": 1000,
+            "operational_points": [],
+            "route_waypoints": [
+                {
+                    "type": "detector",
+                    "applicable_direction": "BOTH",
+                    "id": "tde.6_BEGIN",
+                    "position": 200
+                },
+                {
+                    "type": "detector",
+                    "applicable_direction": "BOTH",
+                    "id": "tde.6_END",
+                    "position": 800
+                }
+            ],
+            "signals": [
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.6_END-7_BEGIN"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.6_BEGIN-6_END"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.6_BEGIN-6_END",
+                    "linked_detector": "tde.6_BEGIN",
+                    "applicable_direction": "NORMAL",
+                    "position": 175,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.6_BEGIN-5_END"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.6_END-6_BEGIN"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.6_END-6_BEGIN",
+                    "linked_detector": "tde.6_END",
+                    "applicable_direction": "REVERSE",
+                    "position": 825,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.5_END-5_BEGIN"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.6_BEGIN-5_END"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.6_BEGIN-5_END",
+                    "linked_detector": "tde.6_BEGIN",
+                    "applicable_direction": "REVERSE",
+                    "position": 225,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.7_BEGIN-7_END"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.6_END-7_BEGIN"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.6_END-7_BEGIN",
+                    "linked_detector": "tde.6_END",
+                    "applicable_direction": "NORMAL",
+                    "position": 775,
+                    "sight_distance": 400
+                }
+            ],
+            "slopes": [],
+            "curves": [],
+            "speed_sections": []
+        },
+        {
+            "id": "ne.micro.7",
+            "length": 1000,
+            "operational_points": [],
+            "route_waypoints": [
+                {
+                    "type": "detector",
+                    "applicable_direction": "BOTH",
+                    "id": "tde.7_BEGIN",
+                    "position": 200
+                },
+                {
+                    "type": "detector",
+                    "applicable_direction": "BOTH",
+                    "id": "tde.7_END",
+                    "position": 800
+                }
+            ],
+            "signals": [
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.7_END-8_BEGIN"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.7_BEGIN-7_END"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.7_BEGIN-7_END",
+                    "linked_detector": "tde.7_BEGIN",
+                    "applicable_direction": "NORMAL",
+                    "position": 175,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.7_BEGIN-6_END"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.7_END-7_BEGIN"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.7_END-7_BEGIN",
+                    "linked_detector": "tde.7_END",
+                    "applicable_direction": "REVERSE",
+                    "position": 825,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.6_END-6_BEGIN"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.7_BEGIN-6_END"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.7_BEGIN-6_END",
+                    "linked_detector": "tde.7_BEGIN",
+                    "applicable_direction": "REVERSE",
+                    "position": 225,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.8_BEGIN-8_END"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.7_END-8_BEGIN"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.7_END-8_BEGIN",
+                    "linked_detector": "tde.7_END",
+                    "applicable_direction": "NORMAL",
+                    "position": 775,
+                    "sight_distance": 400
+                }
+            ],
+            "slopes": [],
+            "curves": [],
+            "speed_sections": []
+        },
+        {
+            "id": "ne.micro.8",
+            "length": 1000,
+            "operational_points": [],
+            "route_waypoints": [
+                {
+                    "type": "detector",
+                    "applicable_direction": "BOTH",
+                    "id": "tde.8_BEGIN",
+                    "position": 200
+                },
+                {
+                    "type": "detector",
+                    "applicable_direction": "BOTH",
+                    "id": "tde.8_END",
+                    "position": 800
+                }
+            ],
+            "signals": [
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.8_END-9_BEGIN"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.8_BEGIN-8_END"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.8_BEGIN-8_END",
+                    "linked_detector": "tde.8_BEGIN",
+                    "applicable_direction": "NORMAL",
+                    "position": 175,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.8_BEGIN-7_END"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.8_END-8_BEGIN"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.8_END-8_BEGIN",
+                    "linked_detector": "tde.8_END",
+                    "applicable_direction": "REVERSE",
+                    "position": 825,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.7_END-7_BEGIN"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.8_BEGIN-7_END"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.8_BEGIN-7_END",
+                    "linked_detector": "tde.8_BEGIN",
+                    "applicable_direction": "REVERSE",
+                    "position": 225,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.9_BEGIN-9_END"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.8_END-9_BEGIN"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.8_END-9_BEGIN",
+                    "linked_detector": "tde.8_END",
+                    "applicable_direction": "NORMAL",
+                    "position": 775,
+                    "sight_distance": 400
+                }
+            ],
+            "slopes": [],
+            "curves": [],
+            "speed_sections": []
+        },
+        {
+            "id": "ne.micro.9",
+            "length": 1000,
+            "operational_points": [],
+            "route_waypoints": [
+                {
+                    "type": "detector",
+                    "applicable_direction": "BOTH",
+                    "id": "tde.9_BEGIN",
+                    "position": 200
+                },
+                {
+                    "type": "buffer_stop",
+                    "applicable_direction": "NORMAL",
+                    "id": "buffer_stop.9",
+                    "position": 1000
+                }
+            ],
+            "signals": [
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "check_route",
+                        "arguments": [
+                            {
+                                "type": "route",
+                                "route": "rt.9_BEGIN-9_END"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.9_BEGIN-9_END",
+                    "linked_detector": "tde.9_BEGIN",
+                    "applicable_direction": "NORMAL",
+                    "position": 175,
+                    "sight_distance": 400
+                },
+                {
+                    "expr": {
+                        "type": "call",
+                        "function": "bal3_line_signal",
+                        "arguments": [
+                            {
+                                "type": "signal",
+                                "signal": "il.sig.bal3.8_END-8_BEGIN"
+                            },
+                            {
+                                "type": "route",
+                                "route": "rt.9_BEGIN-8_END"
+                            }
+                        ]
+                    },
+                    "id": "il.sig.bal3.9_BEGIN-8_END",
+                    "linked_detector": "tde.9_BEGIN",
+                    "applicable_direction": "REVERSE",
+                    "position": 225,
+                    "sight_distance": 400
+                }
+            ],
+            "slopes": [],
+            "curves": [],
+            "speed_sections": []
+        }
+    ],
+    "tvd_sections": [
+        {
+            "id": "tvd.0",
+            "is_berthing_track": true,
+            "buffer_stops": [
+                "buffer_stop.0"
+            ],
+            "train_detectors": [
+                "tde.0_BEGIN"
+            ]
+        },
+        {
+            "id": "tvd.1",
+            "is_berthing_track": true,
+            "buffer_stops": [],
+            "train_detectors": [
+                "tde.1_BEGIN",
+                "tde.1_END"
+            ]
+        },
+        {
+            "id": "tvd.2",
+            "is_berthing_track": true,
+            "buffer_stops": [],
+            "train_detectors": [
+                "tde.2_BEGIN",
+                "tde.2_END"
+            ]
+        },
+        {
+            "id": "tvd.3",
+            "is_berthing_track": true,
+            "buffer_stops": [],
+            "train_detectors": [
+                "tde.3_BEGIN",
+                "tde.3_END"
+            ]
+        },
+        {
+            "id": "tvd.4",
+            "is_berthing_track": true,
+            "buffer_stops": [],
+            "train_detectors": [
+                "tde.4_BEGIN",
+                "tde.4_END"
+            ]
+        },
+        {
+            "id": "tvd.5",
+            "is_berthing_track": true,
+            "buffer_stops": [],
+            "train_detectors": [
+                "tde.5_BEGIN",
+                "tde.5_END"
+            ]
+        },
+        {
+            "id": "tvd.6",
+            "is_berthing_track": true,
+            "buffer_stops": [],
+            "train_detectors": [
+                "tde.6_BEGIN",
+                "tde.6_END"
+            ]
+        },
+        {
+            "id": "tvd.7",
+            "is_berthing_track": true,
+            "buffer_stops": [],
+            "train_detectors": [
+                "tde.7_BEGIN",
+                "tde.7_END"
+            ]
+        },
+        {
+            "id": "tvd.8",
+            "is_berthing_track": true,
+            "buffer_stops": [],
+            "train_detectors": [
+                "tde.8_BEGIN",
+                "tde.8_END"
+            ]
+        },
+        {
+            "id": "tvd.9",
+            "is_berthing_track": true,
+            "buffer_stops": [
+                "buffer_stop.9"
+            ],
+            "train_detectors": [
+                "tde.9_BEGIN"
+            ]
+        },
+        {
+            "id": "tvd.0-1",
+            "is_berthing_track": true,
+            "buffer_stops": [],
+            "train_detectors": [
+                "tde.0_BEGIN",
+                "tde.1_BEGIN"
+            ]
+        },
+        {
+            "id": "tvd.1-2",
+            "is_berthing_track": true,
+            "buffer_stops": [],
+            "train_detectors": [
+                "tde.1_END",
+                "tde.2_BEGIN"
+            ]
+        },
+        {
+            "id": "tvd.2-3",
+            "is_berthing_track": true,
+            "buffer_stops": [],
+            "train_detectors": [
+                "tde.2_END",
+                "tde.3_BEGIN"
+            ]
+        },
+        {
+            "id": "tvd.3-4",
+            "is_berthing_track": true,
+            "buffer_stops": [],
+            "train_detectors": [
+                "tde.3_END",
+                "tde.4_BEGIN"
+            ]
+        },
+        {
+            "id": "tvd.4-5",
+            "is_berthing_track": true,
+            "buffer_stops": [],
+            "train_detectors": [
+                "tde.4_END",
+                "tde.5_BEGIN"
+            ]
+        },
+        {
+            "id": "tvd.5-6",
+            "is_berthing_track": true,
+            "buffer_stops": [],
+            "train_detectors": [
+                "tde.5_END",
+                "tde.6_BEGIN"
+            ]
+        },
+        {
+            "id": "tvd.6-7",
+            "is_berthing_track": true,
+            "buffer_stops": [],
+            "train_detectors": [
+                "tde.6_END",
+                "tde.7_BEGIN"
+            ]
+        },
+        {
+            "id": "tvd.7-8",
+            "is_berthing_track": true,
+            "buffer_stops": [],
+            "train_detectors": [
+                "tde.7_END",
+                "tde.8_BEGIN"
+            ]
+        },
+        {
+            "id": "tvd.8-9",
+            "is_berthing_track": true,
+            "buffer_stops": [],
+            "train_detectors": [
+                "tde.8_END",
+                "tde.9_BEGIN"
+            ]
+        }
+    ],
+    "version": "1.0"
+}
