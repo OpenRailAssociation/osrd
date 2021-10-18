@@ -66,9 +66,18 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
         if (isOccupied)
             throw new SimulationError("TVD section we try to occupy is already occupied");
         isOccupied = true;
+        // We need to notify the passive route first, as it may put the controlled routes in the CONFLICT state
+        callbackAllRoutes(sim, false);
+        callbackAllRoutes(sim, true);
+    }
+
+    /** Notifies all the passive or controlled routes that go through this TVD section */
+    private void callbackAllRoutes(Simulation sim, boolean controlled) throws SimulationError {
         for (var route : tvdSection.routeSubscribers) {
-            var routeState = sim.infraState.getRouteState(route.index);
-            routeState.onTvdSectionOccupied(sim, tvdSection);
+            if (route.isControlled == controlled) {
+                var routeState = sim.infraState.getRouteState(route.index);
+                routeState.onTvdSectionOccupied(sim, tvdSection);
+            }
         }
     }
 
