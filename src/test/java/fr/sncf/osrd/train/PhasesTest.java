@@ -65,7 +65,6 @@ public class PhasesTest {
     }
 
     @Test
-    @Disabled("we need to add WHITE_CROSS in order to the train to move")
     public void testSameEventTimesCBTC() {
         var testConfig = TestConfig.readResource("tiny_infra/config_railjson_several_phases_cbtc.json");
         var events = testConfig.run();
