@@ -105,14 +105,9 @@ public class TrainPhysicsIntegrator {
         // normally the train speed should be positive
         assert currentSpeed >= 0;
 
-        // if the train is supposed to coast
-        if (Double.isNaN(speedDirective.allowedSpeed)) {
-            // make sure there's not a more restraining speedController active
-            if (currentSpeed <= speedDirective.lowestNotNaNSpeed)
-                return Action.coast();
-            else {
-                speedDirective.allowedSpeed = speedDirective.lowestNotNaNSpeed;
-            }
+        // if the train is supposed to coast, make sure there's not a more restraining speedController active
+        if (speedDirective.isCoasting && currentSpeed <= speedDirective.allowedSpeed) {
+            return Action.coast();
         }
 
         // the total force the train needs to reach target speed
