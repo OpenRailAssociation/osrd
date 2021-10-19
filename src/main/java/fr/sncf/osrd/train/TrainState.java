@@ -213,7 +213,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         assertLocationIntegrity();
 
         var rollingStock = trainSchedule.rollingStock;
-        var integrator = new TrainPhysicsIntegrator(timeStep, rollingStock, speed, location.meanTrainGrade());
+        var integrator = new TrainPhysicsIntegrator(timeStep, rollingStock, location, speed);
         var prevLocation = location.getPathPosition();
         var isLate = trainSchedule.speedInstructions.secondsLate(prevLocation, time) > 0;
 

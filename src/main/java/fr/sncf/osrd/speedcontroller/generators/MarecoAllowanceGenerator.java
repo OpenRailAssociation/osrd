@@ -209,7 +209,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             var location = convertPosition(schedule, sim, position);
             double speed = element.getValue();
             var integrator =
-                    new TrainPhysicsIntegrator(TIME_STEP, rollingStock, speed, location.meanTrainGrade());
+                    new TrainPhysicsIntegrator(TIME_STEP, rollingStock, location, speed);
             var naturalAcceleration = integrator.computeAcceleration(Action.coast());
             if (speed < vf || speed > previousSpeed) { // if v < vf or the train is accelerating, just update variables
                 previousAcceleration = naturalAcceleration;
