@@ -1,5 +1,7 @@
 package fr.sncf.osrd.train;
 
+import static fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator.TIME_STEP;
+import static fr.sncf.osrd.train.TrainPhysicsIntegrator.nextStepFromAction;
 import static java.lang.Math.abs;
 
 import java.util.*;
@@ -224,9 +226,13 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         // run the physics sim
         assert action != null;
         assert action.type != Action.ActionType.EMERGENCY_BRAKING;
-        var step = integrator.stepFromAction(
+        var step = nextStepFromAction(
+                location,
+                speed,
                 action,
-                distanceStep,
+                rollingStock,
+                timeStep,
+                distanceStep + location.getPathPosition(),
                 1
         );
         // update location
@@ -249,10 +255,10 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         var locationChange = new Train.TrainStateChange(sim, trainSchedule.trainID, this);
 
         for (int i = 0; location.getPathPosition() < goalPathPosition; i++) {
-            if (i >= 10000 / SpeedControllerGenerator.TIME_STEP)
+            if (i >= 10000 / TIME_STEP)
                 throw new SimulationError("train physics numerical integration doesn't seem to stop");
             var distanceStep = goalPathPosition - location.getPathPosition();
-            step(locationChange, SpeedControllerGenerator.TIME_STEP, distanceStep);
+            step(locationChange, TIME_STEP, distanceStep);
             // Stop the evolution if the train has stopped
             if (speed < 0.0000001)
                 break;
@@ -270,8 +276,8 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     public Train.TrainStateChange evolveStateUntilTime(Simulation sim, double targetTime) {
         var locationChange = new Train.TrainStateChange(sim, trainSchedule.trainID, this);
 
-        while (this.time + SpeedControllerGenerator.TIME_STEP < targetTime)
-            step(locationChange, SpeedControllerGenerator.TIME_STEP, Double.POSITIVE_INFINITY);
+        while (this.time + TIME_STEP < targetTime)
+            step(locationChange, TIME_STEP, Double.POSITIVE_INFINITY);
         step(locationChange, targetTime - this.time, Double.POSITIVE_INFINITY);
 
         return locationChange;
@@ -287,7 +293,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
 
         while (location.getPathPosition() < goalPathPosition && this.time + 1.0 < targetTime) {
             var distanceStep = goalPathPosition - location.getPathPosition();
-            step(locationChange, SpeedControllerGenerator.TIME_STEP, distanceStep);
+            step(locationChange, TIME_STEP, distanceStep);
         }
 
         // If the position goal has not been reached, 
