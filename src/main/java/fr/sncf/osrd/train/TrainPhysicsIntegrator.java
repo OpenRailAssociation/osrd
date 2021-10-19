@@ -100,11 +100,22 @@ public class TrainPhysicsIntegrator {
      * @return the acceleration of the train
      */
     public double computeAccelerationFromControllers(Set<SpeedController> controllers, double end, int stopIndex) {
+        var action = computeActionFromControllers(controllers, end, stopIndex);
+        return computeAcceleration(action);
+    }
+
+    /**
+     * Computes the action of the train, given a set of speedControllers
+     * @param controllers the set of speedControllers we're gonna get the action from
+     * @param end end position of the route
+     * @param stopIndex number of stops in the route
+     * @return the action of the train
+     */
+    public Action computeActionFromControllers(Set<SpeedController> controllers, double end, int stopIndex) {
         var currentPosition = currentLocation.getPathPosition();
         final var finalNextPosition = min(currentPosition, end);
         var directive = SpeedController.getDirective(controllers, finalNextPosition, stopIndex);
-        var action = actionToTargetSpeed(directive, rollingStock);
-        return computeAcceleration(action);
+        return actionToTargetSpeed(directive, rollingStock);
     }
 
     /** Get the max braking force if it exists or the average time table braking force. */
@@ -271,8 +282,8 @@ public class TrainPhysicsIntegrator {
         );
     }
 
-
-    /** Computes the next step of the integration method, based on location, speed, and a set of controllers.*/
+    /*
+    /** Computes the next step of the integration method, based on location, speed, and a set of controllers.
     public static IntegrationStep nextStepFromControllers(TrainPositionTracker currentLocation,
                                                                  double currentSpeed,
                                                                  Set<SpeedController> controllers,
@@ -299,11 +310,12 @@ public class TrainPhysicsIntegrator {
                 directionSign
         );
     }
+    */
 
     // endregion
 
-    /*
-    /** Computes the next step of the integration method, based on location, speed, and a set of controllers.
+
+    /** Computes the next step of the integration method, based on location, speed, and a set of controllers.*/
     public static IntegrationStep nextStepFromControllers(TrainPositionTracker currentLocation,
                                                                  double currentSpeed,
                                                                  Set<SpeedController> controllers,
@@ -314,33 +326,52 @@ public class TrainPhysicsIntegrator {
                                                                  int directionSign) {
 
         var k1Integrator = new TrainPhysicsIntegrator(
-                timeStep / 2,
+                timeStep,
                 rollingStock,
                 currentLocation,
                 currentSpeed
         );
         var k1 = k1Integrator.computeAccelerationFromControllers(controllers, end, stopIndex);
+        var f1 = k1Integrator.computeActionFromControllers(controllers, end, stopIndex).tractionForce();
         var newSpeed = currentSpeed + k1 * timeStep / 2;
-        var positionDelta = newSpeed * timeStep / 2 + k1 * timeStep * timeStep / 4;
+        var positionDelta = computePositionDelta(newSpeed, k1, timeStep / 2, directionSign);
         var newLocation = currentLocation.clone();
         newLocation.updatePosition(rollingStock.length, positionDelta);
         var k2Integrator = new TrainPhysicsIntegrator(
                 timeStep / 2,
                 rollingStock,
-                newSpeed,
-                newLocation.meanTrainGrade()
+                newLocation,
+                newSpeed
         );
         var k2 = k2Integrator.computeAccelerationFromControllers(controllers, end, stopIndex);
+        var f2 = k2Integrator.computeActionFromControllers(controllers, end, stopIndex).tractionForce();
         newSpeed = currentSpeed + k2 * timeStep / 2;
-        positionDelta = newSpeed * timeStep / 2 + k2 * timeStep * timeStep / 4;
-        var k3Integrator = k1Integrator.updateLocationAndSpeed(positionDelta, newSpeed);
+        positionDelta = computePositionDelta(newSpeed, k2, timeStep / 2, directionSign);
+        newLocation = currentLocation.clone();
+        newLocation.updatePosition(rollingStock.length, positionDelta);
+        var k3Integrator = new TrainPhysicsIntegrator(
+                timeStep,
+                rollingStock,
+                newLocation,
+                newSpeed
+        );
         var k3 = k3Integrator.computeAccelerationFromControllers(controllers, end, stopIndex);
+        var f3 = k3Integrator.computeActionFromControllers(controllers, end, stopIndex).tractionForce();
         newSpeed = currentSpeed + k3 * timeStep;
-        positionDelta = newSpeed * timeStep / 2 + k2 * timeStep * timeStep / 4;
-        var k3Integrator = k1Integrator.updateLocationAndSpeed(positionDelta, newSpeed);
-        var k3 = k3Integrator.computeAccelerationFromControllers(controllers, end, stopIndex);
+        positionDelta = computePositionDelta(newSpeed, k3, timeStep, directionSign);
+        newLocation = currentLocation.clone();
+        newLocation.updatePosition(rollingStock.length, positionDelta);
+        var k4Integrator = new TrainPhysicsIntegrator(
+                timeStep,
+                rollingStock,
+                newLocation,
+                newSpeed
+        );
+        var k4 = k4Integrator.computeAccelerationFromControllers(controllers, end, stopIndex);
+        var f4 = k4Integrator.computeActionFromControllers(controllers, end, stopIndex).tractionForce();
 
-        return finalUpdate;
+        var meanAcceleration = (1 / 6) * (k1 + 2 * k2 + 2 * k3 + k4);
+        var meanTractionForce = (1 / 6) * (f1 + 2 * f2 + 2 * f3 + f4);
+        return k1Integrator.stepFromAcceleration(meanAcceleration, meanTractionForce, end - currentLocation.getPathPosition(), directionSign);
     }
-    */
 }
