@@ -9,6 +9,7 @@ import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.utils.Constants;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * An utility class to help simulate the train, using numerical integration.
@@ -89,19 +90,6 @@ public class TrainPhysicsIntegrator {
         // compute the acceleration on all the integration step. the variable is named this way because we
         // compute the acceleration on only a part of the integration step below
         return (actionTractionForce + weightForce + effectiveOppositeForces) / inertia;
-    }
-
-    /**
-     * Computes the acceleration of the train, given a set of speedControllers,
-     * as the sum of forces acting on the train divided by its inertia
-     * @param controllers the set of speedControllers we're gonna get the action from
-     * @param end end position of the route
-     * @param stopIndex number of stops in the route
-     * @return the acceleration of the train
-     */
-    public double computeAccelerationFromControllers(Set<SpeedController> controllers, double end, int stopIndex) {
-        var action = computeActionFromControllers(controllers, end, stopIndex);
-        return computeAcceleration(action);
     }
 
     /**
@@ -235,108 +223,64 @@ public class TrainPhysicsIntegrator {
     // region NEXT_STEP_HELPERS
 
     /** Computes the next step of the integration method, based on location, speed, and a directive. */
-    public static IntegrationStep nextStepFromDirective(TrainPositionTracker currentLocation,
-                                                        double currentSpeed,
+    public static IntegrationStep nextStepFromDirective(TrainPositionTracker initialLocation,
+                                                        double initialSpeed,
                                                         SpeedDirective directive,
                                                         RollingStock rollingStock,
                                                         double timeStep,
-                                                        double distanceLeft,
+                                                        double end,
                                                         int directionSign) {
 
-        var integrator = new TrainPhysicsIntegrator(
-                timeStep,
+        return nextStep(initialLocation,
+                initialSpeed,
                 rollingStock,
-                currentLocation,
-                currentSpeed);
-        var action = integrator.actionToTargetSpeed(directive, rollingStock, directionSign);
-        assert action != null;
-        assert action.type != Action.ActionType.EMERGENCY_BRAKING;
-        return integrator.stepFromAction(
-                action,
-                distanceLeft,
-                directionSign
-        );
+                timeStep,
+                end,
+                directionSign,
+                (integrator) -> integrator.actionToTargetSpeed(directive, rollingStock, directionSign));
     }
 
     /** Computes the next step of the integration method, based on location, speed, and a specified action. */
-    public static IntegrationStep nextStepFromAction(TrainPositionTracker currentLocation,
-                                                            double currentSpeed,
-                                                            Action action,
-                                                            RollingStock rollingStock,
-                                                            double timeStep,
-                                                            double end,
-                                                            int directionSign) {
-
-        var integrator = new TrainPhysicsIntegrator(
-                timeStep,
+    public static IntegrationStep nextStepFromAction(TrainPositionTracker initialLocation,
+                                                     double initialSpeed,
+                                                     Action action,
+                                                     RollingStock rollingStock,
+                                                     double timeStep,
+                                                     double end,
+                                                     int directionSign) {
+        return nextStep(initialLocation,
+                initialSpeed,
                 rollingStock,
-                currentLocation,
-                currentSpeed);
-        var distanceLeft = end - currentLocation.getPathPosition();
-        assert action != null;
-        assert action.type != Action.ActionType.EMERGENCY_BRAKING;
-        return integrator.stepFromAction(
-                action,
-                distanceLeft,
-                directionSign
-        );
-    }
-
-    /*
-    /** Computes the next step of the integration method, based on location, speed, and a set of controllers.
-    public static IntegrationStep nextStepFromControllers(TrainPositionTracker currentLocation,
-                                                                 double currentSpeed,
-                                                                 Set<SpeedController> controllers,
-                                                                 RollingStock rollingStock,
-                                                                 double timeStep,
-                                                                 double end,
-                                                                 int stopIndex,
-                                                                 int directionSign) {
-        var integrator = new TrainPhysicsIntegrator(
                 timeStep,
-                rollingStock,
-                currentLocation,
-                currentSpeed);
-        var nextPosition = currentLocation.getPathPosition() + currentSpeed * timeStep;
-        final var finalNextPosition = min(nextPosition, end);
-        var directive = SpeedController.getDirective(controllers, finalNextPosition, stopIndex);
-        var action = integrator.actionToTargetSpeed(directive, rollingStock);
-        var distanceLeft = end - finalNextPosition;
-        assert action != null;
-        assert action.type != Action.ActionType.EMERGENCY_BRAKING;
-        return integrator.stepFromAction(
-                action,
-                distanceLeft,
-                directionSign
-        );
+                end,
+                directionSign,
+                (integrator) -> action);
     }
-    */
 
     // endregion
 
     private static IntegrationStep makeRKStep(TrainPositionTracker currentLocation,
                                               double currentSpeed,
-                                              Set<SpeedController> controllers,
+                                              Function<TrainPhysicsIntegrator, Action> makeAction,
                                               RollingStock rollingStock,
                                               double timeStep,
-                                              double end,
-                                              int stopIndex,
                                               int directionSign,
                                               double initialSpeed,
                                               double offset) {
         var newLocation = currentLocation.clone();
         newLocation.updatePosition(rollingStock.length, offset);
-        var k1Integrator = new TrainPhysicsIntegrator(
+        var integrator = new TrainPhysicsIntegrator(
                 timeStep,
                 rollingStock,
                 newLocation,
                 currentSpeed
         );
-        var k1 = k1Integrator.computeAccelerationFromControllers(controllers, end, stopIndex);
-        var f1 = k1Integrator.computeActionFromControllers(controllers, end, stopIndex).tractionForce();
-        var newSpeed = initialSpeed + k1 * timeStep;
-        var positionDelta = computePositionDelta(newSpeed, k1, timeStep, directionSign);
-        return new IntegrationStep(timeStep, positionDelta, newSpeed, k1, f1);
+        var action = makeAction.apply(integrator);
+        var acceleration = integrator.computeAcceleration(action);
+        var tractionForce = action.tractionForce();
+        var newSpeed = initialSpeed + acceleration * timeStep;
+        var positionDelta = computePositionDelta(newSpeed, acceleration, timeStep, directionSign);
+        return new IntegrationStep(timeStep, positionDelta, newSpeed, acceleration, tractionForce);
     }
 
     /** Computes the next step of the integration method, based on location, speed, and a set of controllers.*/
@@ -348,17 +292,33 @@ public class TrainPhysicsIntegrator {
                                                                  double end,
                                                                  int stopIndex,
                                                                  int directionSign) {
-        var step1 = makeRKStep(initialLocation, initialSpeed, controllers,
-                rollingStock, timeStep / 2, end, stopIndex, directionSign, initialSpeed, 0);
+        return nextStep(initialLocation,
+                initialSpeed,
+                rollingStock,
+                timeStep,
+                end,
+                directionSign,
+                (integrator) -> integrator.computeActionFromControllers(controllers, end, stopIndex));
+    }
 
-        var step2 = makeRKStep(initialLocation, step1.finalSpeed, controllers,
-                rollingStock, timeStep / 2, end, stopIndex, directionSign, initialSpeed, step1.positionDelta);
+    private static IntegrationStep nextStep(TrainPositionTracker initialLocation,
+                                            double initialSpeed,
+                                            RollingStock rollingStock,
+                                            double timeStep,
+                                            double end,
+                                            int directionSign,
+                                            Function<TrainPhysicsIntegrator, Action> makeAction) {
+        var step1 = makeRKStep(initialLocation, initialSpeed,  makeAction,
+                rollingStock, timeStep / 2, directionSign, initialSpeed, 0);
 
-        var step3 = makeRKStep(initialLocation, step2.finalSpeed, controllers,
-                rollingStock, timeStep, end, stopIndex, directionSign, initialSpeed, step2.positionDelta);
+        var step2 = makeRKStep(initialLocation, step1.finalSpeed,  makeAction,
+                rollingStock, timeStep / 2, directionSign, initialSpeed, step1.positionDelta);
 
-        var step4 = makeRKStep(initialLocation, step3.finalSpeed, controllers,
-                rollingStock, timeStep, end, stopIndex, directionSign, initialSpeed, step3.positionDelta);
+        var step3 = makeRKStep(initialLocation, step2.finalSpeed,  makeAction,
+                rollingStock, timeStep, directionSign, initialSpeed, step2.positionDelta);
+
+        var step4 = makeRKStep(initialLocation, step3.finalSpeed,  makeAction,
+                rollingStock, timeStep, directionSign, initialSpeed, step3.positionDelta);
 
 
         var meanAcceleration = (1. / 6.) * (step1.acceleration + 2 * step2.acceleration
