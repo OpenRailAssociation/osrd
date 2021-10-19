@@ -314,64 +314,64 @@ public class TrainPhysicsIntegrator {
 
     // endregion
 
+    private static IntegrationStep makeRKStep(TrainPositionTracker currentLocation,
+                                              double currentSpeed,
+                                              Set<SpeedController> controllers,
+                                              RollingStock rollingStock,
+                                              double timeStep,
+                                              double end,
+                                              int stopIndex,
+                                              int directionSign,
+                                              double initialSpeed,
+                                              double offset) {
+        var newLocation = currentLocation.clone();
+        newLocation.updatePosition(rollingStock.length, offset);
+        var k1Integrator = new TrainPhysicsIntegrator(
+                timeStep,
+                rollingStock,
+                newLocation,
+                currentSpeed
+        );
+        var k1 = k1Integrator.computeAccelerationFromControllers(controllers, end, stopIndex);
+        var f1 = k1Integrator.computeActionFromControllers(controllers, end, stopIndex).tractionForce();
+        var newSpeed = initialSpeed + k1 * timeStep;
+        var positionDelta = computePositionDelta(newSpeed, k1, timeStep, directionSign);
+        return new IntegrationStep(timeStep, positionDelta, newSpeed, k1, f1);
+    }
 
     /** Computes the next step of the integration method, based on location, speed, and a set of controllers.*/
-    public static IntegrationStep nextStepFromControllers(TrainPositionTracker currentLocation,
-                                                                 double currentSpeed,
+    public static IntegrationStep nextStepFromControllers(TrainPositionTracker initialLocation,
+                                                                 double initialSpeed,
                                                                  Set<SpeedController> controllers,
                                                                  RollingStock rollingStock,
                                                                  double timeStep,
                                                                  double end,
                                                                  int stopIndex,
                                                                  int directionSign) {
+        var step1 = makeRKStep(initialLocation, initialSpeed, controllers,
+                rollingStock, timeStep / 2, end, stopIndex, directionSign, initialSpeed, 0);
 
-        var k1Integrator = new TrainPhysicsIntegrator(
-                timeStep,
-                rollingStock,
-                currentLocation,
-                currentSpeed
-        );
-        var k1 = k1Integrator.computeAccelerationFromControllers(controllers, end, stopIndex);
-        var f1 = k1Integrator.computeActionFromControllers(controllers, end, stopIndex).tractionForce();
-        var newSpeed = currentSpeed + k1 * timeStep / 2;
-        var positionDelta = computePositionDelta(newSpeed, k1, timeStep / 2, directionSign);
-        var newLocation = currentLocation.clone();
-        newLocation.updatePosition(rollingStock.length, positionDelta);
-        var k2Integrator = new TrainPhysicsIntegrator(
-                timeStep / 2,
-                rollingStock,
-                newLocation,
-                newSpeed
-        );
-        var k2 = k2Integrator.computeAccelerationFromControllers(controllers, end, stopIndex);
-        var f2 = k2Integrator.computeActionFromControllers(controllers, end, stopIndex).tractionForce();
-        newSpeed = currentSpeed + k2 * timeStep / 2;
-        positionDelta = computePositionDelta(newSpeed, k2, timeStep / 2, directionSign);
-        newLocation = currentLocation.clone();
-        newLocation.updatePosition(rollingStock.length, positionDelta);
-        var k3Integrator = new TrainPhysicsIntegrator(
-                timeStep,
-                rollingStock,
-                newLocation,
-                newSpeed
-        );
-        var k3 = k3Integrator.computeAccelerationFromControllers(controllers, end, stopIndex);
-        var f3 = k3Integrator.computeActionFromControllers(controllers, end, stopIndex).tractionForce();
-        newSpeed = currentSpeed + k3 * timeStep;
-        positionDelta = computePositionDelta(newSpeed, k3, timeStep, directionSign);
-        newLocation = currentLocation.clone();
-        newLocation.updatePosition(rollingStock.length, positionDelta);
-        var k4Integrator = new TrainPhysicsIntegrator(
-                timeStep,
-                rollingStock,
-                newLocation,
-                newSpeed
-        );
-        var k4 = k4Integrator.computeAccelerationFromControllers(controllers, end, stopIndex);
-        var f4 = k4Integrator.computeActionFromControllers(controllers, end, stopIndex).tractionForce();
+        var step2 = makeRKStep(initialLocation, step1.finalSpeed, controllers,
+                rollingStock, timeStep / 2, end, stopIndex, directionSign, initialSpeed, step1.positionDelta);
 
-        var meanAcceleration = (1 / 6) * (k1 + 2 * k2 + 2 * k3 + k4);
-        var meanTractionForce = (1 / 6) * (f1 + 2 * f2 + 2 * f3 + f4);
-        return k1Integrator.stepFromAcceleration(meanAcceleration, meanTractionForce, end - currentLocation.getPathPosition(), directionSign);
+        var step3 = makeRKStep(initialLocation, step2.finalSpeed, controllers,
+                rollingStock, timeStep, end, stopIndex, directionSign, initialSpeed, step2.positionDelta);
+
+        var step4 = makeRKStep(initialLocation, step3.finalSpeed, controllers,
+                rollingStock, timeStep, end, stopIndex, directionSign, initialSpeed, step3.positionDelta);
+
+
+        var meanAcceleration = (1. / 6.) * (step1.acceleration + 2 * step2.acceleration
+                + 2 * step3.acceleration + step4.acceleration);
+        var meanTractionForce = (1. / 6.) * (step1.tractionForce + 2 * step2.tractionForce
+                + 2 * step3.tractionForce + step4.tractionForce);
+
+        var integrator = new TrainPhysicsIntegrator(
+                timeStep,
+                rollingStock,
+                initialLocation,
+                initialSpeed
+        );
+        return integrator.stepFromAcceleration(meanAcceleration, meanTractionForce, end - initialLocation.getPathPosition(), directionSign);
     }
 }
