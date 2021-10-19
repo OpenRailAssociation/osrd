@@ -1,19 +1,19 @@
 package fr.sncf.osrd.infra.trackgraph;
 
 import fr.sncf.osrd.infra.OperationalPoint;
-import fr.sncf.osrd.utils.CryoMap;
 import fr.sncf.osrd.utils.graph.BiNGraph;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public final class TrackGraph extends BiNGraph<TrackSection, TrackNode> {
     // operationalPoints a map from operational point IDs to operational points
-    public final CryoMap<String, OperationalPoint> operationalPoints = new CryoMap<>();
+    public final Map<String, OperationalPoint> operationalPoints = new HashMap<>();
     // trackNodeMap a map from node IDs to nodes
-    public final CryoMap<String, TrackNode> trackNodeMap = new CryoMap<>();
+    public final Map<String, TrackNode> trackNodeMap = new HashMap<>();
     // trackSectionMap a map to track section IDs to track sections
-    public final CryoMap<String, TrackSection> trackSectionMap = new CryoMap<>();
+    public final Map<String, TrackSection> trackSectionMap = new HashMap<>();
 
 
     /** Create a placeholder node */
