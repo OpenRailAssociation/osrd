@@ -32,7 +32,6 @@ import fr.sncf.osrd.train.decisions.TrainDecisionMaker.DefaultTrainDecisionMaker
 import fr.sncf.osrd.train.phases.NavigatePhase;
 import fr.sncf.osrd.train.phases.NavigatePhaseState;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
-import fr.sncf.osrd.utils.CryoList;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
@@ -61,7 +60,6 @@ public class ChangeSerializer {
             .add(new AspectAdapter())
             .add(new TimelineEventAdapter())
             .add(new TrainEvolutionEventAdapter())
-            .add(CollectionJsonAdapter.of(CryoList.class, CryoList::new))
             .add(CollectionJsonAdapter.of(ArrayList.class, ArrayList::new))
             .add(CollectionJsonAdapter.of(ArrayDeque.class, ArrayDeque::new))
             .add(CollectionJsonAdapter.of(RSAspectSet.class, RSAspectSet::new))
