@@ -4,10 +4,28 @@ import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import fr.sncf.osrd.infra.trackgraph.TrackGraph;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
 
 
 public class TrainPhysics {
+
+    public static TrainPositionTracker makeDummyTracker(double trainGrade) {
+        var graph = new TrackGraph();
+        double length = 100000;
+        var track = graph.makeTrackSection(0, 1, "", length, null);
+        track.forwardGradients.addRange(0, length, trainGrade);
+        track.backwardGradients.addRange(0, length, -trainGrade);
+        var range = new TrackSectionRange(track, EdgeDirection.START_TO_STOP, 0, length);
+        var ranges = new ArrayDeque<>(Collections.singletonList(range));
+        return new TrainPositionTracker(null, null, ranges, new ArrayList<>());
+    }
+
     @Test
     public void testSlopeNoTraction() {
         double speed = 0.0;
@@ -15,7 +33,7 @@ public class TrainPhysics {
         // how fast would a train go after 10 steps of 1 sec, coasting on a
         // 40m / km slope?
         for (int i = 0; i < 10; i++) {
-            var simulator = new TrainPhysicsIntegrator(1.0, REALISTIC_FAST_TRAIN, speed, 40);
+            var simulator = new TrainPhysicsIntegrator(1.0, REALISTIC_FAST_TRAIN, makeDummyTracker(40), speed);
             var step = simulator.stepFromAction(
                     Action.coast(),
                     1000.,
@@ -37,7 +55,7 @@ public class TrainPhysics {
         double maxTraction = rollingStock.tractiveEffortCurve[0].maxEffort;
         // how fast would a train go after 10 steps of 1 sec, full throttle on a 45deg slope?
         for (int i = 0; i < 10; i++) {
-            var simulator = new TrainPhysicsIntegrator(1.0, rollingStock, speed, 1000);
+            var simulator = new TrainPhysicsIntegrator(1.0, rollingStock, makeDummyTracker(1000), speed);
             var step = simulator.stepFromAction(
                     Action.accelerate(maxTraction),
                     1000.,
@@ -58,7 +76,7 @@ public class TrainPhysics {
         // go to full speed by cruising for 20 minutes
         for (int i = 0; i < 20 * 60; i++) {
             double maxTraction = rollingStock.getMaxEffort(speed);
-            var simulator = new TrainPhysicsIntegrator(1.0, rollingStock, speed, 0.0);
+            var simulator = new TrainPhysicsIntegrator(1.0, rollingStock, makeDummyTracker(0.0), speed);
             var step = simulator.stepFromAction(
                     Action.accelerate(maxTraction),
                     1000.,
@@ -73,7 +91,7 @@ public class TrainPhysics {
         // continue the simulation, but with some slope
         for (int i = 0; i < 20 * 60; i++) {
             double maxTraction = rollingStock.getMaxEffort(speed);
-            var simulator = new TrainPhysicsIntegrator(1.0, rollingStock, speed, 35.0);
+            var simulator = new TrainPhysicsIntegrator(1.0, rollingStock, makeDummyTracker(35.0), speed);
             var step = simulator.stepFromAction(
                     Action.accelerate(maxTraction),
                     1000.,
@@ -93,7 +111,7 @@ public class TrainPhysics {
         double speed = 0.0;
 
         // make a huge traction effort
-        var simulator = new TrainPhysicsIntegrator(1.0, rollingStock, speed, 0.0);
+        var simulator = new TrainPhysicsIntegrator(1.0, rollingStock, makeDummyTracker(0.0), speed);
         var step = simulator.stepFromAction(
                 Action.accelerate(500000.0),
                 1000.,
@@ -104,7 +122,7 @@ public class TrainPhysics {
 
         // the train should be able to coast for a minute without stopping
         for (int i = 0; i < 60; i++) {
-            simulator = new TrainPhysicsIntegrator(1.0, rollingStock, speed, 0.0);
+            simulator = new TrainPhysicsIntegrator(1.0, rollingStock, makeDummyTracker(0.0), speed);
             double prevSpeed = speed;
             step = simulator.stepFromAction(Action.coast(), 1000., 1);
             speed = step.finalSpeed;
@@ -113,7 +131,7 @@ public class TrainPhysics {
 
         // another minute later
         for (int i = 0; i < 60; i++) {
-            simulator = new TrainPhysicsIntegrator(1.0, rollingStock, speed, 0.0);
+            simulator = new TrainPhysicsIntegrator(1.0, rollingStock, makeDummyTracker(0.0), speed);
             step = simulator.stepFromAction(Action.coast(), 1000., 1);
             speed = step.finalSpeed;
         }
