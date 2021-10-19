@@ -20,6 +20,7 @@ CODEOWNERS        @DGEXSolutions/osrd-backend-maintainers
 /src/main/java/fr/sncf/osrd/DebugViewer.java  @DGEXSolutions/osrd-backend-maintainers
 *Physics*.java                                @DGEXSolutions/osrd-physics
 *Integrator*.java                             @DGEXSolutions/osrd-physics
+*Integration*.java                            @DGEXSolutions/osrd-physics
 
 # Python Interactive Client
 /src/python_interactive_client                @flomonster @multun
