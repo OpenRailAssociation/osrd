@@ -5,14 +5,12 @@ import java.util.Objects;
 
 public final class SpeedDirective {
     public double allowedSpeed;
-    // when coasting, memorize the lowest speed directive
-    // this is necessary because allowedSpeed is Nan when coasting
-    public double lowestNotNaNSpeed;
+    public boolean isCoasting;
 
     /** Creates a new speed directive */
     public SpeedDirective(double allowedSpeed) {
         this.allowedSpeed = allowedSpeed;
-        this.lowestNotNaNSpeed = Double.POSITIVE_INFINITY;
+        this.isCoasting = false;
     }
 
     public static SpeedDirective getMax() {
@@ -21,7 +19,9 @@ public final class SpeedDirective {
 
     /** Creates a speed directive indicating coasting over its range */
     public static SpeedDirective getCoastingController() {
-        return new SpeedDirective(Double.NaN);
+        var directive = new SpeedDirective(Double.POSITIVE_INFINITY);
+        directive.isCoasting = true;
+        return directive;
     }
 
     /**
@@ -29,10 +29,10 @@ public final class SpeedDirective {
      * @param directive the speed limit to merge into the current one
      */
     public void mergeWith(SpeedDirective directive) {
-        if (directive.allowedSpeed < allowedSpeed || Double.isNaN(directive.allowedSpeed))
+        if (directive.isCoasting)
+            isCoasting = true;
+        else if (directive.allowedSpeed < allowedSpeed)
             allowedSpeed = directive.allowedSpeed;
-        if (directive.allowedSpeed < lowestNotNaNSpeed)
-            lowestNotNaNSpeed = directive.allowedSpeed;
     }
 
     @Override
