@@ -4,14 +4,12 @@ import fr.sncf.osrd.infra_state.regulator.TrainSuccessionTable;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSuccession;
 import fr.sncf.osrd.railjson.parser.exceptions.MissingSuccessionTableField;
 import fr.sncf.osrd.railjson.schema.schedule.RJSVirtualPoint;
-import fr.sncf.osrd.railjson.schema.successiontable.RJSTrainSuccessionTable;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
-
 import java.util.*;
 
 public class RJSSimulationParser {

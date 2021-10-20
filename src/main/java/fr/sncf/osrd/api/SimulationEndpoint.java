@@ -88,7 +88,8 @@ public class SimulationEndpoint implements Take {
             }
 
             // load train schedules
-            var rjsSimulation = new RJSSimulation(request.rollingStocks, request.trainSchedules, request.trainSuccessionTables);
+            var rjsSimulation = new RJSSimulation(request.rollingStocks, request.trainSchedules,
+                    request.trainSuccessionTables);
             var trainSchedules = RJSSimulationParser.parse(infra, rjsSimulation);
             var trainSuccessionTables = RJSSimulationParser.parseTrainSuccessionTables(rjsSimulation);
 

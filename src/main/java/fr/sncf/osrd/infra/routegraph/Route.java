@@ -31,9 +31,6 @@ public class Route extends DirNEdge {
     /** Set of signals to be updated on route change */
     public ArrayList<Signal> signalSubscribers;
 
-    /** Does the route require an explicit reservation */
-    public final boolean isControlled;
-
     Route(
             String id,
             RouteGraph graph,
@@ -41,8 +38,8 @@ public class Route extends DirNEdge {
             List<SortedArraySet<TVDSection>> releaseGroups,
             List<TVDSectionPath> tvdSectionsPaths,
             HashMap<Switch, String> switchesGroup,
-            Signal entrySignal,
-            Boolean isControlled) {
+            Signal entrySignal
+    ) {
         super(
                 graph.nextEdgeIndex(),
                 tvdSectionsPaths.get(0).startWaypoint.index,
@@ -56,10 +53,10 @@ public class Route extends DirNEdge {
         this.tvdSectionsPaths = tvdSectionsPaths;
         this.signalSubscribers = new ArrayList<>();
         this.entrySignal = entrySignal;
-        if (isControlled == null)
-            this.isControlled = switchesGroup != null && !switchesGroup.isEmpty();
-        else
-            this.isControlled = isControlled;
+    }
+
+    public boolean isControlled() {
+        return switchesGroup != null && !switchesGroup.isEmpty();
     }
 
     private ArrayList<TrackSectionRange> getTrackSectionRanges() {
