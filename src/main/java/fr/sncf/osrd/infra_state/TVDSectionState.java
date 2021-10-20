@@ -52,9 +52,6 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
             var routeState = sim.infraState.getRouteState(route.index);
             routeState.onTvdSectionFreed(sim);
         }
-
-        // notify the switch post that the TVDSection was freed
-        sim.infraState.towerState.notifyTVDSectionFreed(sim, this.tvdSection);
     }
 
     /**
