@@ -227,7 +227,8 @@ public class MarginTests {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {0, 1, 2, 3, 4, 5, 6, 7})
+    //@ValueSource(ints = {0, 1, 2, 3, 4, 5, 6, 7})
+    @ValueSource(ints = {0})
     public void testDifferentSlopes(int slopeProfile, TestInfo info) {
         testDifferentSlopes(CONFIG_PATH, slopeProfile, info);
     }

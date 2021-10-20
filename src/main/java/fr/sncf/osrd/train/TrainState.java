@@ -1,6 +1,7 @@
 package fr.sncf.osrd.train;
 
 import static fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator.TIME_STEP;
+import static fr.sncf.osrd.train.TrainPhysicsIntegrator.nextStep;
 import static fr.sncf.osrd.train.TrainPhysicsIntegrator.nextStepFromAction;
 import static java.lang.Math.abs;
 
@@ -214,29 +215,24 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
             return;
         assertLocationIntegrity();
 
-        var rollingStock = trainSchedule.rollingStock;
-        var integrator = new TrainPhysicsIntegrator(timeStep, rollingStock, location, speed);
-        var prevLocation = location.getPathPosition();
-        var isLate = trainSchedule.speedInstructions.secondsLate(prevLocation, time) > 0;
-
-        var activeSpeedControllers = trainSchedule.trainDecisionMaker.getActiveSpeedControllers(isLate);
-        locationChange.speedControllersUpdates.dedupAdd(prevLocation, activeSpeedControllers);
-        var action = iterateFindNextAction(integrator, isLate, timeStep, distanceStep);
-        logger.trace("train took action {}", action);
-        // run the physics sim
-        assert action != null;
-        assert action.type != Action.ActionType.EMERGENCY_BRAKING;
-        var step = nextStepFromAction(
+        var step = nextStep(
                 location,
                 speed,
-                action,
-                rollingStock,
+                trainSchedule.rollingStock,
                 timeStep,
                 distanceStep + location.getPathPosition(),
-                1
-        );
+                1,
+                (integrator) -> {
+                    var prevLocation = location.getPathPosition();
+                    var isLate = trainSchedule.speedInstructions.secondsLate(prevLocation, time) > 0;
+                    var activeSpeedControllers = trainSchedule.trainDecisionMaker.getActiveSpeedControllers(isLate);
+                    locationChange.speedControllersUpdates.dedupAdd(prevLocation, activeSpeedControllers);
+                    var action = iterateFindNextAction(integrator, isLate, timeStep, distanceStep);
+                    return action;
+                });
+
         // update location
-        location.updatePosition(rollingStock.length, step.positionDelta);
+        location.updatePosition(trainSchedule.rollingStock.length, step.positionDelta);
         this.time += step.timeDelta;
         var newLocation = location.getPathPosition();
 

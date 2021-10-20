@@ -33,12 +33,12 @@ public abstract class SpeedControllerGenerator {
     public static SortedDoubleMap getExpectedTimes(Simulation sim,
                                             TrainSchedule schedule,
                                             Set<SpeedController> controllers,
-                                            double timestep,
+                                            double timeStep,
                                             double begin,
                                             double end,
                                             double initialSpeed) {
         var updatesMap
-                = getIntegrationStepsAtPositions(sim, schedule, controllers, timestep, begin, end, initialSpeed);
+                = getIntegrationStepsAtPositions(sim, schedule, controllers, timeStep, begin, end, initialSpeed);
         var res = new SortedDoubleMap();
 
         assert schedule.departureTime >= 0; // This could fail if there is a bug with train successions

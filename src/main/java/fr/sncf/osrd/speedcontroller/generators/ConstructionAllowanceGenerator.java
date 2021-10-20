@@ -84,7 +84,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
                         schedule.rollingStock.gamma);
             } else {
                 //TODO: optimise, this calculation is done twice
-                var updatesMap = getUpdatesAtPositionsToTarget(sim, schedule,
+                var updatesMap = getStepsAtPositionsToTarget(sim, schedule,
                         initialPosition, initialSpeed, endBrakingPosition, initialSpeed * scaleFactor);
                 var speeds = new SortedDoubleMap();
                 for (var k : updatesMap.keySet()) {
@@ -137,18 +137,18 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
         if (schedule.rollingStock.gammaType == RollingStock.GammaType.CONST)
             return (initialSpeed * initialSpeed - targetSpeed * targetSpeed) / (2 * schedule.rollingStock.gamma);
 
-        var res = getUpdatesAtPositionsToTarget(sim, schedule,
+        var res = getStepsAtPositionsToTarget(sim, schedule,
                 initialPosition, initialSpeed, endPosition, targetSpeed);
         return res.lastKey() - res.firstKey();
     }
 
     /** compute the running time calculation from (initialPosition,initialSpeed) to a given target speed */
-    private NavigableMap<Double, IntegrationStep> getUpdatesAtPositionsToTarget(Simulation sim,
-                                                                               TrainSchedule schedule,
-                                                                               double initialPosition,
-                                                                               double initialSpeed,
-                                                                               double endPosition,
-                                                                               double targetSpeed) {
+    private NavigableMap<Double, IntegrationStep> getStepsAtPositionsToTarget(Simulation sim,
+                                                                              TrainSchedule schedule,
+                                                                              double initialPosition,
+                                                                              double initialSpeed,
+                                                                              double endPosition,
+                                                                              double targetSpeed) {
 
         var res = new TreeMap<Double, IntegrationStep>();
         var stopIndex = 0;
