@@ -1,6 +1,7 @@
 package fr.sncf.osrd.infra_state.regulator;
 
 import fr.sncf.osrd.infra.TVDSection;
+import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra_state.routes.RouteStatus;
 import fr.sncf.osrd.simulation.EntityChange;
 import fr.sncf.osrd.simulation.Simulation;
@@ -99,12 +100,10 @@ public class TowerState {
     }
 
     /** Notify the towerState that a TVDSection is released and that he can try to process some waiting requests */
-    public void notifyTVDSectionFreed(Simulation sim, TVDSection tvdSection) throws SimulationError {
-        for (var route : tvdSection.routeSubscribers) {
-            for (var switchRef : route.switchesGroup.keySet()) {
-                if (checkWaitingList(sim, switchRef.id))
-                    return;
-            }
+    public void notifyRouteFreed(Simulation sim, Route route) throws SimulationError {
+        for (var switchRef : route.switchesGroup.keySet()) {
+            if (checkWaitingList(sim, switchRef.id))
+                return;
         }
     }
 
