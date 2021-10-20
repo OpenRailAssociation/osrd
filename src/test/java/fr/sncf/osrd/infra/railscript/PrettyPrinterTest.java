@@ -121,7 +121,7 @@ class PrettyPrinterTest {
 
         content.reset();
 
-        var call = new RSExpr.Call<RSBool>(fct, new RSExpr<?>[]{
+        var call = new RSExpr.Call<>(fct, new RSExpr<?>[]{
                 RSExpr.True.INSTANCE,
                 RSExpr.False.INSTANCE
         }, 0, 0);

@@ -8,6 +8,7 @@ import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.railscript.value.RSValue;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra_state.TVDSectionState;
+import fr.sncf.osrd.infra_state.regulator.Request;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.TrainState;
@@ -142,11 +143,11 @@ public class ControlledRouteState extends RouteState {
             switchState.setGroup(sim, group);
         }
 
-        // Get the current phase of the train
-        var phase = trainState.trainSchedule.phases.get(trainState.currentPhaseIndex);
-        // Call the reservation function corresponding to the current phase type
-        var cbtc = phase instanceof CBTCNavigatePhase;
-        reserveWithGivenCBTC(sim, cbtc);
+        // Reserve route via tower state (if denied then throw an error)
+        var request = new Request(sim.trains.get(trainState.trainSchedule.trainID), this);
+        if (!sim.infraState.towerState.request(sim, request))
+            throw new SimulationError(
+                    String.format("Initial route reservation: TowerState denied request for route '%s'", route.id));
     }
 
     /** Should be called when a switch is done moving and is in the position we requested */
