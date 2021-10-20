@@ -12,6 +12,9 @@ import logging
 import asyncio
 
 
+logger = logging.getLogger("test")
+
+
 async def test(infra_path: Path, simulation_path: Path, rolling_stocks_path: Path):
     async with InteractiveSimulation.open_websocket(
         "ws://localhost:9000/websockets/simulate"
@@ -24,10 +27,12 @@ async def test(infra_path: Path, simulation_path: Path, rolling_stocks_path: Pat
         while not simulation.is_complete:
             async for _ in simulation.run(until_events=EventType.all()):
                 pass
+            logger.info("event: %s", simulation.current_event)
 
             # if the simulation
             if simulation.is_paused:
-                print(await simulation.get_train_delays())
+                delays = await simulation.get_train_delays()
+                logger.info("delays: %s", delays)
 
 
 if __name__ == "__main__":
