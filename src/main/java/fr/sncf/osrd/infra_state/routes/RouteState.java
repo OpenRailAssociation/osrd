@@ -29,7 +29,7 @@ public abstract class RouteState implements RSMatchable {
 
     /** Creates an instance of RouteState from the given route */
     public static RouteState from(Route route) {
-        if (route.isControlled)
+        if (route.isControlled())
             return new ControlledRouteState(route);
         else
             return new PassiveRouteState(route);

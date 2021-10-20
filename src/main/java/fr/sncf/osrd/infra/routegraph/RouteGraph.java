@@ -110,15 +110,8 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 var endWaypointDirection = lastTVDSectionPath.getEndTrackDirection();
 
                 // Create route
-                var route = new Route(
-                        id,
-                        routeGraph,
-                        length,
-                        releaseGroups,
-                        tvdSectionsPath,
-                        switchesGroup,
-                        entrySignal,
-                        isControlled);
+                var route = new Route(id, routeGraph, length, releaseGroups, tvdSectionsPath,
+                        switchesGroup, entrySignal);
 
                 routeGraph.routeMap.put(id, route);
 

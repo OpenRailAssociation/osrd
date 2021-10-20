@@ -1,6 +1,5 @@
 package fr.sncf.osrd.infra_state.regulator;
 
-import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra_state.routes.RouteStatus;
 import fr.sncf.osrd.simulation.EntityChange;
