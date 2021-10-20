@@ -165,8 +165,11 @@ public class TrainPhysicsIntegrator {
 
     private static double computeTimeDelta(double currentSpeed, double acceleration, double positionDelta) {
         // Solve: acceleration / 2 * t^2 + currentSpeed * t - positionDelta = 0
-        if (abs(acceleration) < 0.00001)
+        if (abs(acceleration) < 1E-5) {
+            if (abs(currentSpeed) < 1E-5)
+                return 0.0;
             return positionDelta / currentSpeed;
+        }
         var numerator = -currentSpeed + Math.sqrt(currentSpeed * currentSpeed + 2 * positionDelta * acceleration);
         return numerator / acceleration;
     }
