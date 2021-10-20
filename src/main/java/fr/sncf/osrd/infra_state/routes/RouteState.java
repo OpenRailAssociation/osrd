@@ -56,7 +56,9 @@ public abstract class RouteState implements RSMatchable {
                 .map(tvdSection -> sim.infraState.getTvdSectionState(tvdSection.index))
                 .noneMatch(TVDSectionState::isReserved);
         if (isFree) {
-            isCBTCReserved = false;
+            var change = new RouteCBTCChange(sim, this, false);
+            change.apply(sim, this);
+            sim.publishChange(change);
             updateStatus(sim, FREE);
         }
     }
@@ -140,6 +142,36 @@ public abstract class RouteState implements RSMatchable {
         @Override
         public String toString() {
             return String.format("RouteStatusChange { route: %d, id: %s, status: %s }", routeIndex, routeID, newStatus);
+        }
+    }
+
+    public static class RouteCBTCChange extends EntityChange<RouteState, Void> {
+        public final boolean newCBTC;
+        public final int routeIndex;
+        public final String routeID;
+
+        /** create a RouteStatusChange */
+        public RouteCBTCChange(Simulation sim, RouteState entity, boolean newCBTC) {
+            super(sim);
+            this.newCBTC = newCBTC;
+            this.routeIndex = entity.route.index;
+            this.routeID = entity.route.id;
+        }
+
+        @Override
+        public Void apply(Simulation sim, RouteState entity) {
+            entity.isCBTCReserved = newCBTC;
+            return null;
+        }
+
+        @Override
+        public RouteState getEntity(Simulation sim) {
+            return sim.infraState.getRouteState(routeIndex);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("RouteCBTCChange { route: %d, id: %s, cbtc: %s }", routeIndex, routeID, newCBTC);
         }
     }
 }

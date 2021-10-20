@@ -111,7 +111,11 @@ public class ControlledRouteState extends RouteState {
         if (!(status == FREE || (cbtc && hasCBTCStatus())))
             throw new SimulationError("The route we try to reserve isn't free");
 
-        isCBTCReserved = cbtc;
+        if (isCBTCReserved != cbtc) {
+            var change = new RouteCBTCChange(sim, this, cbtc);
+            change.apply(sim, this);
+            sim.publishChange(change);
+        }
 
         requestSwitchPositionChange(sim);
 
