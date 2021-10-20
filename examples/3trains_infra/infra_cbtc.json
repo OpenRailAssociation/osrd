@@ -47,6 +47,31 @@
             ]
         }
     ],
+    "switch_types": {
+        "classic_switch": {
+            "ports": [
+                "base",
+                "left",
+                "right"
+            ],
+            "groups": {
+                "LEFT": [
+                    {
+                        "src": "base",
+                        "dst": "left",
+                        "bidirectional": true
+                    }
+                ],
+                "RIGHT": [
+                    {
+                        "src": "base",
+                        "dst": "right",
+                        "bidirectional": true
+                    }
+                ]
+            }
+        }
+    },
     "operational_points": [],
     "routes": [
         {
@@ -54,7 +79,7 @@
             "entry_point": "tde.0_BEGIN",
             "exit_point": "buffer_stop.0",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.0"
@@ -66,7 +91,7 @@
             "entry_point": "buffer_stop.0",
             "exit_point": "tde.0_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.0"
@@ -78,7 +103,7 @@
             "entry_point": "tde.1_BEGIN",
             "exit_point": "buffer_stop.1",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.1"
@@ -90,7 +115,7 @@
             "entry_point": "buffer_stop.1",
             "exit_point": "tde.1_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.1"
@@ -102,7 +127,7 @@
             "entry_point": "tde.2_BEGIN",
             "exit_point": "tde.2_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.2"
@@ -114,7 +139,7 @@
             "entry_point": "tde.2_END",
             "exit_point": "tde.2_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.2"
@@ -126,7 +151,7 @@
             "entry_point": "tde.3_BEGIN",
             "exit_point": "tde.3_END",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.3"
@@ -138,7 +163,7 @@
             "entry_point": "tde.3_END",
             "exit_point": "tde.3_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.3"
@@ -150,7 +175,7 @@
             "entry_point": "tde.4_BEGIN",
             "exit_point": "buffer_stop.4",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.4"
@@ -162,7 +187,7 @@
             "entry_point": "buffer_stop.4",
             "exit_point": "tde.4_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.4"
@@ -174,7 +199,7 @@
             "entry_point": "tde.5_BEGIN",
             "exit_point": "buffer_stop.5",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.5"
@@ -186,7 +211,7 @@
             "entry_point": "buffer_stop.5",
             "exit_point": "tde.5_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.5"
@@ -198,7 +223,7 @@
             "entry_point": "tde.6_BEGIN",
             "exit_point": "buffer_stop.6",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.6"
@@ -210,7 +235,7 @@
             "entry_point": "buffer_stop.6",
             "exit_point": "tde.6_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {},
+            "switches_group": {},
             "release_groups": [
                 [
                     "tvd.6"
@@ -222,7 +247,7 @@
             "entry_point": "tde.2_BEGIN",
             "exit_point": "tde.0_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.2-0-1": "LEFT"
             },
             "release_groups": [
@@ -236,7 +261,7 @@
             "entry_point": "tde.2_BEGIN",
             "exit_point": "tde.1_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.2-0-1": "RIGHT"
             },
             "release_groups": [
@@ -250,7 +275,7 @@
             "entry_point": "tde.0_BEGIN",
             "exit_point": "tde.2_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.2-0-1": "LEFT"
             },
             "release_groups": [
@@ -264,7 +289,7 @@
             "entry_point": "tde.1_BEGIN",
             "exit_point": "tde.2_BEGIN",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.2-0-1": "RIGHT"
             },
             "release_groups": [
@@ -278,7 +303,7 @@
             "entry_point": "tde.2_END",
             "exit_point": "tde.3_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.2-3-6": "LEFT"
             },
             "release_groups": [
@@ -292,7 +317,7 @@
             "entry_point": "tde.2_END",
             "exit_point": "tde.6_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.2-3-6": "RIGHT"
             },
             "release_groups": [
@@ -306,7 +331,7 @@
             "entry_point": "tde.3_BEGIN",
             "exit_point": "tde.2_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.2-3-6": "LEFT"
             },
             "release_groups": [
@@ -320,7 +345,7 @@
             "entry_point": "tde.6_BEGIN",
             "exit_point": "tde.2_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.2-3-6": "RIGHT"
             },
             "release_groups": [
@@ -334,7 +359,7 @@
             "entry_point": "tde.3_END",
             "exit_point": "tde.4_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.3-4-5": "LEFT"
             },
             "release_groups": [
@@ -348,7 +373,7 @@
             "entry_point": "tde.3_END",
             "exit_point": "tde.5_BEGIN",
             "entry_direction": "START_TO_STOP",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.3-4-5": "RIGHT"
             },
             "release_groups": [
@@ -362,7 +387,7 @@
             "entry_point": "tde.4_BEGIN",
             "exit_point": "tde.3_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.3-4-5": "LEFT"
             },
             "release_groups": [
@@ -376,7 +401,7 @@
             "entry_point": "tde.5_BEGIN",
             "exit_point": "tde.3_END",
             "entry_direction": "STOP_TO_START",
-            "switches_position": {
+            "switches_group": {
                 "il.switch.3-4-5": "RIGHT"
             },
             "release_groups": [
@@ -540,6 +565,22 @@
                                 "type": "argument_ref",
                                 "argument_name": "route"
                             },
+                            "state": "CBTC_OCCUPIED"
+                        },
+                        {
+                            "type": "route_has_state",
+                            "route": {
+                                "type": "argument_ref",
+                                "argument_name": "route"
+                            },
+                            "state": "CBTC_REQUESTED"
+                        },
+                        {
+                            "type": "route_has_state",
+                            "route": {
+                                "type": "argument_ref",
+                                "argument_name": "route"
+                            },
                             "state": "CONFLICT"
                         }
                     ]
@@ -606,12 +647,25 @@
                                         "condition": {
                                             "type": "not",
                                             "expr": {
-                                                "type": "route_has_state",
-                                                "route": {
-                                                    "type": "argument_ref",
-                                                    "argument_name": "left_route"
-                                                },
-                                                "state": "RESERVED"
+                                                "type": "or",
+                                                "exprs": [
+                                                    {
+                                                        "type": "route_has_state",
+                                                        "route": {
+                                                            "type": "argument_ref",
+                                                            "argument_name": "left_route"
+                                                        },
+                                                        "state": "RESERVED"
+                                                    },
+                                                    {
+                                                        "type": "route_has_state",
+                                                        "route": {
+                                                            "type": "argument_ref",
+                                                            "argument_name": "left_route"
+                                                        },
+                                                        "state": "CBTC_RESERVED"
+                                                    }
+                                                ]
                                             }
                                         }
                                     },
@@ -645,12 +699,25 @@
                                         "condition": {
                                             "type": "not",
                                             "expr": {
-                                                "type": "route_has_state",
-                                                "route": {
-                                                    "type": "argument_ref",
-                                                    "argument_name": "right_route"
-                                                },
-                                                "state": "RESERVED"
+                                                "type": "or",
+                                                "exprs": [
+                                                    {
+                                                        "type": "route_has_state",
+                                                        "route": {
+                                                            "type": "argument_ref",
+                                                            "argument_name": "right_route"
+                                                        },
+                                                        "state": "RESERVED"
+                                                    },
+                                                    {
+                                                        "type": "route_has_state",
+                                                        "route": {
+                                                            "type": "argument_ref",
+                                                            "argument_name": "right_route"
+                                                        },
+                                                        "state": "CBTC_RESERVED"
+                                                    }
+                                                ]
                                             }
                                         }
                                     },
@@ -977,52 +1044,61 @@
     "speed_sections": [],
     "switches": [
         {
-            "base": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.2"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.0"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.1"
-            },
             "id": "il.switch.2-0-1",
-            "position_change_delay": 6
+            "position_change_delay": 6,
+            "switch_type": "classic_switch",
+            "ports": {
+                "base": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.2"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.0"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.1"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.2"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.3"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.6"
-            },
             "id": "il.switch.2-3-6",
-            "position_change_delay": 6
+            "position_change_delay": 6,
+            "switch_type": "classic_switch",
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.2"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.3"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.6"
+                }
+            }
         },
         {
-            "base": {
-                "endpoint": "END",
-                "section": "ne.micro.3"
-            },
-            "left": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.4"
-            },
-            "right": {
-                "endpoint": "BEGIN",
-                "section": "ne.micro.5"
-            },
             "id": "il.switch.3-4-5",
-            "position_change_delay": 6
+            "position_change_delay": 6,
+            "switch_type": "classic_switch",
+            "ports": {
+                "base": {
+                    "endpoint": "END",
+                    "section": "ne.micro.3"
+                },
+                "left": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.4"
+                },
+                "right": {
+                    "endpoint": "BEGIN",
+                    "section": "ne.micro.5"
+                }
+            }
         }
     ],
     "track_section_links": [
