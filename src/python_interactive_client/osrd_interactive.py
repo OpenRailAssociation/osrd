@@ -99,11 +99,12 @@ STATE_CHANGE_MESSAGES = {
 
 
 class InteractiveSimulation:
-    __slots__ = ("websocket", "state")
+    __slots__ = ("websocket", "state", "current_event")
 
     def __init__(self, websocket):
         self.websocket = websocket
         self.state = SimulationState.UNINITIALIZED
+        self.current_event = None
 
     @property
     def is_complete(self):
@@ -207,8 +208,14 @@ class InteractiveSimulation:
 
         while True:
             response = await self.recv_json()
-            new_state = STATE_CHANGE_MESSAGES.get(response["message_type"])
+            message_type = response["message_type"]
+            new_state = STATE_CHANGE_MESSAGES.get(message_type)
             if new_state is not None:
                 self.state = new_state
+                self.current_event = (
+                    response["event"]
+                    if message_type == "simulation_paused"
+                    else None
+                )
                 break
             yield response

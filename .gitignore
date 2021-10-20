@@ -6,7 +6,7 @@ gradlew*
 *.iml
 *.jar
 .jqwik-database
-examples_generator/__pycache__/
+__pycache__/
 .classpath
 .project
 .settings/
