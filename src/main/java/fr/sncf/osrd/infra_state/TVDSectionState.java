@@ -73,7 +73,7 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
     /** Notifies all the passive or controlled routes that go through this TVD section */
     private void callbackAllRoutes(Simulation sim, boolean controlled) throws SimulationError {
         for (var route : tvdSection.routeSubscribers) {
-            if (route.isControlled == controlled) {
+            if (route.isControlled() == controlled) {
                 var routeState = sim.infraState.getRouteState(route.index);
                 routeState.onTvdSectionOccupied(sim, tvdSection);
             }

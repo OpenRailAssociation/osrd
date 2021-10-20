@@ -23,7 +23,7 @@ public class ActivateRoute {
         for (var routeIndex = lastState.routeIndex + 1; routeIndex < path.routePath.size(); routeIndex++) {
             var route = path.routePath.get(routeIndex);
             var routeState = sim.infraState.getRouteState(route.index);
-            if (!route.isControlled) {
+            if (!route.isControlled()) {
                 // passive route
                 if (routeState.status != RouteStatus.FREE) {
                     // occupied, we can't look any further

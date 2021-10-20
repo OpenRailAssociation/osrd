@@ -618,7 +618,7 @@ public abstract class RSExpr<T extends RSValue> {
 
         @Override
         public RSBool evaluate(RSExprState<?> state) {
-            return RSBool.from(!routeExpr.evaluate(state).route.isControlled);
+            return RSBool.from(!routeExpr.evaluate(state).route.isControlled());
         }
 
         @Override
@@ -703,7 +703,7 @@ public abstract class RSExpr<T extends RSValue> {
                         return new RSOptional<>(routeState);
                     }
                 }
-                if (!route.isControlled && route.entrySignal != null && route.entrySignal.id.equals(currentSignal.id))
+                if (!route.isControlled() && route.entrySignal != null && route.entrySignal.id.equals(currentSignal.id))
                     matchingPassiveRoute = routeState;
             }
 
@@ -781,7 +781,7 @@ public abstract class RSExpr<T extends RSValue> {
                 var routeState = state.infraState.getRouteState(route.index); 
                 if (routeState.status == RouteStatus.RESERVED
                         || routeState.status == RouteStatus.OCCUPIED
-                        || !route.isControlled) {
+                        || !route.isControlled()) {
                     return new RSOptional<>(routeState);
                 }
             }

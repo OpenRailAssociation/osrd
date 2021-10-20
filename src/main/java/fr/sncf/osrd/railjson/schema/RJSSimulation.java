@@ -10,8 +10,6 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.railjson.schema.successiontable.RJSTrainSuccessionTable;
-
-import java.util.Collection;
 import java.util.List;
 
 public final class RJSSimulation {
@@ -39,6 +37,7 @@ public final class RJSSimulation {
     @Json(name = "train_succession_tables")
     public List<RJSTrainSuccessionTable> trainSuccessionTables;
 
+    /** Create an RJSSimulation */
     public RJSSimulation(
             List<RJSRollingStock> rollingStocks,
             List<RJSTrainSchedule> trainSchedules,

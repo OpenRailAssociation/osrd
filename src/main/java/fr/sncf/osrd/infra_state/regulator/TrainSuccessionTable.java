@@ -1,6 +1,5 @@
 package fr.sncf.osrd.infra_state.regulator;
 
-import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.simulation.EntityChange;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -67,6 +66,7 @@ public class TrainSuccessionTable {
         private final String switchID;
         private final ArrayDeque<String> newTrainList;
 
+        /** Create a TrainSuccessionTableChange */
         public TrainSuccessionTableChange(Simulation sim, String switchID, ArrayDeque<String> newTrainList) {
             super(sim);
             this.switchID = switchID;

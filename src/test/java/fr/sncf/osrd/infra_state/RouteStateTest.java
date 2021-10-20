@@ -557,7 +557,7 @@ public class RouteStateTest {
         for (int i = 0; i < config.rjsInfra.routes.size(); i++) {
             for (var status : new RouteStatus[]{RouteStatus.RESERVED, RouteStatus.OCCUPIED}) {
                 var routeState = simState.sim.infraState.getRouteState(i);
-                if (!routeState.route.isControlled && status == RouteStatus.RESERVED)
+                if (!routeState.route.isControlled() && status == RouteStatus.RESERVED)
                     continue;
                 var expected = new RouteState.RouteStatusChange(simState.sim, routeState, status);
                 assert changesSet.contains(expected.toString());
