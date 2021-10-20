@@ -7,6 +7,7 @@ import { FlyToInterpolator } from 'react-map-gl';
 import ButtonFullscreen from 'common/ButtonFullscreen';
 import CenterLoader from 'common/CenterLoader/CenterLoader';
 import ContextMenu from 'applications/osrd/components/Simulation/ContextMenu';
+import Margins from 'applications/osrd/views/OSRDSimulation/Margins';
 import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
 import SpeedSpaceChart from 'applications/osrd/views/OSRDSimulation/SpeedSpaceChart';
 import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
@@ -145,6 +146,9 @@ const OSRDSimulation = () => {
                     ) : null}
                   </div>
                 </div>
+              </div>
+              <div className="mb-2">
+                <Margins />
               </div>
               <div className="mb-2">
                 {simulation.trains.length > 0 ? (

@@ -28,11 +28,11 @@ export const updatePointers = (
   });
 };
 
-const updateChart = (chart, keyValues, rotate, fixedAxe) => {
+const updateChart = (chart, keyValues, rotate) => {
   // recover the new scale
-  const newX = d3.event.sourceEvent.shiftKey && fixedAxe === 'x' && rotate
+  const newX = d3.event.sourceEvent.shiftKey && rotate
     ? chart.x : d3.event.transform.rescaleX(chart.x);
-  const newY = d3.event.sourceEvent.shiftKey && fixedAxe === 'y' && !rotate
+  const newY = d3.event.sourceEvent.shiftKey && !rotate
     ? chart.y : d3.event.transform.rescaleY(chart.y);
 
   // update axes with these new boundaries

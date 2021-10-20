@@ -21,7 +21,11 @@ const convertPathfindingVias = (steps) => {
   const vias = [];
   steps.forEach((step, idx) => {
     if (idx !== 0 && idx !== count) {
-      vias.push({ ...step, clickLngLat: [step.geographic[0], step.geographic[1]] });
+      vias.push({
+        ...step,
+        id: step.position.track_section,
+        clickLngLat: [step.geographic[0], step.geographic[1]],
+      });
     }
   });
   return vias;

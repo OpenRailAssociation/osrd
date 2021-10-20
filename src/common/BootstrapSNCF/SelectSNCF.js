@@ -16,6 +16,7 @@ export default class SelectSNCF extends Component {
       labelKey: PropTypes.string,
       selectStyle: PropTypes.string,
       mode: PropTypes.string,
+      sm: PropTypes.bool,
       // type: pt
     }
 
@@ -26,6 +27,7 @@ export default class SelectSNCF extends Component {
       name: '',
       mode: '',
       type: 'improved',
+      sm: false,
     }
 
     renderOptions = (options, labelKey) => options.map((option) => {
@@ -51,7 +53,7 @@ export default class SelectSNCF extends Component {
 
     render() {
       const {
-        id, title, name, options, selectedValue, onChange, labelKey, selectStyle, mode,
+        id, title, name, options, selectedValue, onChange, labelKey, selectStyle, mode, sm,
       } = this.props;
 
       return (
@@ -64,7 +66,7 @@ export default class SelectSNCF extends Component {
                 name={name}
                 value={typeof selectedValue === 'string' ? selectedValue : JSON.stringify(selectedValue)}
                 onChange={onChange}
-                className={selectStyle}
+                className={`${selectStyle} ${sm && 'sm'}`}
               >
                 {this.renderOptions(options, labelKey)}
               </select>
@@ -75,7 +77,7 @@ export default class SelectSNCF extends Component {
                 name={name}
                 defaultValue={typeof selectedValue === 'string' ? selectedValue : JSON.stringify(selectedValue)}
                 onChange={onChange}
-                className={selectStyle}
+                className={`${selectStyle} ${sm && 'sm'}`}
               >
                 {this.renderOptions(options, labelKey)}
               </select>
