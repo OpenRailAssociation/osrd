@@ -65,7 +65,9 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
     public void occupy(Simulation sim) throws SimulationError {
         if (isOccupied)
             throw new SimulationError("TVD section we try to occupy is already occupied");
-        isOccupied = true;
+        var change = new TVDSectionOccupationChange(sim, this, true);
+        change.apply(sim, this);
+        sim.publishChange(change);
         // We need to notify the passive route first, as it may put the controlled routes in the CONFLICT state
         callbackAllRoutes(sim, false);
         callbackAllRoutes(sim, true);
@@ -87,7 +89,9 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
      * @param sim the current simulation
      */
     public void unoccupy(Simulation sim) throws SimulationError {
-        isOccupied = false;
+        var change = new TVDSectionOccupationChange(sim, this, false);
+        change.apply(sim, this);
+        sim.publishChange(change);
         for (var route : tvdSection.routeSubscribers) {
             var routeState = sim.infraState.getRouteState(route.index);
             routeState.onTvdSectionUnoccupied(sim, this);
@@ -141,6 +145,36 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
             return String.format(
                     "TVDSectionReservationChange { tvdSection: %d, newReservation: %s }",
                     tvdSectionIndex, newReservation
+            );
+        }
+    }
+
+    public static final class TVDSectionOccupationChange extends EntityChange<TVDSectionState, Void> {
+        public final boolean newOccupation;
+        public final int tvdSectionIndex;
+
+        TVDSectionOccupationChange(Simulation sim, TVDSectionState entity, boolean newOccupation) {
+            super(sim);
+            this.newOccupation = newOccupation;
+            this.tvdSectionIndex = entity.tvdSection.index;
+        }
+
+        @Override
+        public Void apply(Simulation sim, TVDSectionState entity) {
+            entity.isOccupied = newOccupation;
+            return null;
+        }
+
+        @Override
+        public TVDSectionState getEntity(Simulation sim) {
+            return sim.infraState.getTvdSectionState(tvdSectionIndex);
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "TVDSectionOccupationChange { tvdSection: %d, newOccupation: %s }",
+                    tvdSectionIndex, newOccupation
             );
         }
     }
