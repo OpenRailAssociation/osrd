@@ -6,13 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.ArrayDeque;
-import java.util.Collections;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import fr.sncf.osrd.TestConfig;
-import java.util.ArrayList;
-import fr.sncf.osrd.infra_state.regulator.TrainSuccessionTable;
+
 import fr.sncf.osrd.railjson.schema.successiontable.RJSTrainSuccessionTable;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.infra_state.routes.RouteState;
@@ -26,7 +24,6 @@ import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
-import java.util.Map;
 
 public class RouteStateTest {
     /**
@@ -590,7 +587,7 @@ public class RouteStateTest {
     }
 
     @Test
-    public void testChangeSuccessionTableDuringSim() throws InvalidInfraException, SimulationError {
+    public void testChangeSuccessionTableDuringSim() throws SimulationError {
         final var config = TestConfig.readResource("tiny_infra/config_railjson_2trains.json");
 
         var switchID = config.rjsInfra.switches.stream().findFirst().get().id;
@@ -613,6 +610,24 @@ public class RouteStateTest {
         makeAssertEvent(sim, 6, () -> sim.infraState.towerState.trainSuccessionLog.get(switchID).contains("First"));
         simState.run();
     }
+
+    @Test
+    @SuppressWarnings({"unchecked"})
+    public void testSpawnOverReservableRoute() {
+        final var config = TestConfig.readResource("tiny_infra/config_railjson.json");
+        var rjsTrainSchedule = config.rjsSimulation.trainSchedules.get(0);
+        rjsTrainSchedule.initialHeadLocation.offset = 180;
+        rjsTrainSchedule.routes = (ID<RJSRoute>[]) new ID<?>[] {
+                new ID<RJSRoute>("rt.C3-S7"),
+                new ID<RJSRoute>("rt.S7-buffer_stop_c")
+        };
+
+        var simState = config.prepare();
+        simState.run();
+        var towerState = simState.sim.infraState.towerState;
+        assertTrue(towerState.trainSuccessionLog.get("il.switch_foo").contains("Test."));
+    }
+
 
     @Test
     @Disabled("Fixing this requires changes in the API and middle/front end, it will be done later")
