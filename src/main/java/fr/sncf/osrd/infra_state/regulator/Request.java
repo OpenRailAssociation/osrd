@@ -20,7 +20,7 @@ public final class Request {
 
     @Override
     public boolean equals(Object object) {
-        if (object.getClass() != Request.class) {
+        if (object == null || object.getClass() != Request.class) {
             return false;
         }
         var request = (Request) object;

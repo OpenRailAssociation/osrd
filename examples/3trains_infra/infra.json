@@ -629,10 +629,6 @@
                 {
                     "type": "SIGNAL",
                     "name": "signal"
-                },
-                {
-                    "type": "SWITCH",
-                    "name": "switch"
                 }
             ],
             "return_type": "ASPECT_SET",
@@ -709,8 +705,8 @@
     "switches": [
         {
             "id": "il.switch.2-0-1",
+            "position_change_delay": 6,
             "switch_type": "classic_switch",
-            "group_change_delay": 6,
             "ports": {
                 "base": {
                     "endpoint": "BEGIN",
@@ -728,8 +724,8 @@
         },
         {
             "id": "il.switch.2-3-6",
+            "position_change_delay": 6,
             "switch_type": "classic_switch",
-            "group_change_delay": 6,
             "ports": {
                 "base": {
                     "endpoint": "END",
@@ -747,8 +743,8 @@
         },
         {
             "id": "il.switch.3-4-5",
+            "position_change_delay": 6,
             "switch_type": "classic_switch",
-            "group_change_delay": 6,
             "ports": {
                 "base": {
                     "endpoint": "END",
@@ -1047,10 +1043,6 @@
                             {
                                 "type": "signal",
                                 "signal": "il.sig.switch.2-0-1"
-                            },
-                            {
-                                "type": "switch",
-                                "switch": "il.switch.2-0-1"
                             }
                         ]
                     },
@@ -1068,10 +1060,6 @@
                             {
                                 "type": "signal",
                                 "signal": "il.sig.switch.2-3-6"
-                            },
-                            {
-                                "type": "switch",
-                                "switch": "il.switch.2-3-6"
                             }
                         ]
                     },
@@ -1186,10 +1174,6 @@
                             {
                                 "type": "signal",
                                 "signal": "il.sig.switch.3-4-5"
-                            },
-                            {
-                                "type": "switch",
-                                "switch": "il.switch.3-4-5"
                             }
                         ]
                     },

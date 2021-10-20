@@ -166,7 +166,7 @@ public class RouteStateTest {
      * before going into the CBTC_RESERVED state.
      */
     @Test
-    public void testSeveralSwitchesCBTC() throws InvalidInfraException, SimulationError {
+    public void testSeveralSwitchesCBTC() throws SimulationError {
         var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
         testConfig.rjsSimulation.trainSchedules.clear();
         var rjsInfra = testConfig.rjsInfra;
@@ -439,7 +439,7 @@ public class RouteStateTest {
      * Checks that a route that has already been requested cannot be reserved
      */
     @Test
-    public void testReservedFailsIfRequested() throws InvalidInfraException, SimulationError {
+    public void testReservedFailsIfRequested() throws SimulationError {
         var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
 
         testConfig.rjsSimulation.trainSchedules.clear();
@@ -460,7 +460,7 @@ public class RouteStateTest {
      * Checks that a route that has already been requested cannot be cbtc reserved
      */
     @Test
-    public void testCBTCReservedFailsIfRequested() throws InvalidInfraException, SimulationError {
+    public void testCBTCReservedFailsIfRequested() throws SimulationError {
         var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
 
         testConfig.rjsSimulation.trainSchedules.clear();
@@ -481,7 +481,7 @@ public class RouteStateTest {
      * Checks that a route that has already been cbtc requested cannot be reserved
      */
     @Test
-    public void testReservedFailsIfCBTCRequested() throws InvalidInfraException, SimulationError {
+    public void testReservedFailsIfCBTCRequested() throws SimulationError {
         var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
 
         testConfig.rjsInfra.switches.iterator().next().groupChangeDelay = 10;
@@ -563,7 +563,7 @@ public class RouteStateTest {
     }
 
     @Test
-    public void testTinyInfra2Trains() throws InvalidInfraException {
+    public void testTinyInfra2Trains() {
         final var config = TestConfig.readResource("tiny_infra/config_railjson_2trains.json");
         
         var infra = config.rjsInfra;
@@ -587,7 +587,7 @@ public class RouteStateTest {
     }
 
     @Test
-    public void testChangeSuccessionTableDuringSim() throws SimulationError {
+    public void testChangeTSTTinyInfra() {
         final var config = TestConfig.readResource("tiny_infra/config_railjson_2trains.json");
 
         var switchID = config.rjsInfra.switches.stream().findFirst().get().id;
@@ -600,15 +600,48 @@ public class RouteStateTest {
         newTrainOrderedList.add("First");
         newTrainOrderedList.add("Second");
         var tst = sim.infraState.towerState.getTrainSuccessionTable(switchID);
-        tst.changeTrainOrder(sim, newTrainOrderedList);
+        //tst.changeTrainOrder(sim, newTrainOrderedList);
+        makeFunctionEvent(sim, 0, () -> tst.changeTrainOrder(sim, newTrainOrderedList));
 
         // Test the first train of the list
-        assertEquals("First", tst.peekTrain());
-        // Test that the second train of the list
-        makeAssertEvent(sim, 6, () -> tst.peekTrain().equals("Second"));
+        makeAssertEvent(sim, 0, () -> tst.peekTrain().equals("First"));
         // Test that the request of the first train is accepted and log
-        makeAssertEvent(sim, 6, () -> sim.infraState.towerState.trainSuccessionLog.get(switchID).contains("First"));
+        makeAssertEvent(sim, 6, () ->
+                sim.infraState.towerState.trainSuccessionLog.get(switchID).contains("First"));
+        // Test that after that the first train's request has been accepted,
+        // the second train is now the first on the list
+        makeAssertEvent(sim, 6, () -> tst.peekTrain().equals("Second"));
         simState.run();
+    }
+
+    @Test
+    public void testChangeTST3TrainsInfra() {
+        final var config = TestConfig.readResource("3trains_infra/config.json");
+        var simState = config.prepare();
+        var sim = simState.sim;
+
+        var newTrainOrderedList = new ArrayDeque<String>();
+        newTrainOrderedList.add("train.0");
+        newTrainOrderedList.add("train.2");
+
+        var firstTst = sim.infraState.towerState.getTrainSuccessionTable("il.switch.2-0-1");
+        var secondTst = sim.infraState.towerState.getTrainSuccessionTable("il.switch.2-3-6");
+        makeFunctionEvent(sim, 90, () -> {
+            firstTst.changeTrainOrder(sim, newTrainOrderedList);
+            secondTst.changeTrainOrder(sim, newTrainOrderedList);
+        });
+
+        // Test the first train of the list
+        makeAssertEvent(sim, 89, () -> firstTst.peekTrain().equals("train.2"));
+        makeAssertEvent(sim, 91, () -> firstTst.peekTrain().equals("train.0"));
+
+        simState.run();
+        // Test that the request of the train_0 is accepted and log
+        for (var switchID : Arrays.asList("il.switch.2-0-1", "il.switch.2-3-6")) {
+            var log = sim.infraState.towerState.trainSuccessionLog.get(switchID);
+            assertEquals(Arrays.asList("train.1", "train.0", "train.2"), log);
+        }
+        assertTrue(sim.trains.get("train.0").getLastState().time < sim.trains.get("train.2").getLastState().time);
     }
 
     @Test
