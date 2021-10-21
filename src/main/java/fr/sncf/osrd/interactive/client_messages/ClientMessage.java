@@ -23,6 +23,7 @@ public abstract class ClientMessage {
                         .withSubtype(RunUntilMessage.class, "run")
                         .withSubtype(GetTrainDelaysMessage.class, "get_train_delays")
                         .withSubtype(GetTrainSuccessionTablesMessage.class, "get_train_succession_tables")
+                        .withSubtype(UpdateTrainSuccessionTablesMessage.class, "update_train_succession_tables")
                 )
                 // for RJSInfra
                 .add(ID.Adapter.FACTORY)
