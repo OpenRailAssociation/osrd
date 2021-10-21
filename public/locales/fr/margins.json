@@ -1,10 +1,13 @@
 {
-  "endPos": "Fin",
-  "startPos": "Début",
+  "end_position": "Fin",
+  "from": "De",
+  "begin_position": "Début",
+  "marginAdded": "Marge ajoutée",
   "marginType": "Type de marge",
   "marginTypes": {
     "construction": "Construction",
     "ratio_time": "Ratio de temps",
     "ratio_distance": "Ratio de distance"
-  }
+  },
+  "to": "à"
 }
