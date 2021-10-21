@@ -186,6 +186,7 @@ public class TrainPhysicsIntegrator {
                 computeAcceleration(action),
                 action.tractionForce(),
                 maxDistance,
+                false,
                 directionSign
         );
     }
@@ -199,14 +200,15 @@ public class TrainPhysicsIntegrator {
      * @param directionSign +1 if forward circulation, -1 if backwards
      * @return the new speed of the train
      */
-    public IntegrationStep stepFromAcceleration(double acceleration, double tractionForce,
-                                                              double maxDistance, double directionSign) {
+    public IntegrationStep stepFromAcceleration(double acceleration, double tractionForce, double maxDistance,
+                                                boolean isRKStep, double directionSign) {
 
         var newSpeed = currentSpeed + directionSign * acceleration * timeStep;
         var timeDelta = timeStep;
 
         // if the speed change sign or is very low we integrate only the step at which the speed is zero
-        if (currentSpeed != 0.0 && (Math.signum(newSpeed) != Math.signum(currentSpeed) || abs(newSpeed) < 1E-5)) {
+        if ((!isRKStep && currentSpeed != 0.0 && (Math.signum(newSpeed) != Math.signum(currentSpeed) || abs(newSpeed) < 1E-5))
+        || (isRKStep && (newSpeed < 0.0 || abs(newSpeed) < 1E-5))) {
             timeDelta = -currentSpeed / (directionSign * acceleration);
             newSpeed = 0.;
         }
@@ -218,7 +220,7 @@ public class TrainPhysicsIntegrator {
 
         timeDelta = computeTimeDelta(currentSpeed, acceleration, maxDistance);
         assert timeDelta < timeStep && timeDelta >= 0;
-        newSpeed = currentSpeed + acceleration * timeDelta;
+        newSpeed = currentSpeed + directionSign * acceleration * timeDelta;
         return new IntegrationStep(timeDelta, maxDistance, newSpeed, acceleration, tractionForce);
     }
 
@@ -229,7 +231,13 @@ public class TrainPhysicsIntegrator {
                                            double end,
                                            int directionSign,
                                            Function<TrainPhysicsIntegrator, Action> makeAction) {
-        var initialIntegrator = new TrainPhysicsIntegrator(
+        var halfIntegrator = new TrainPhysicsIntegrator(
+                timeStep / 2,
+                rollingStock,
+                initialLocation,
+                initialSpeed
+        );
+        var fullIntegrator = new TrainPhysicsIntegrator(
                 timeStep,
                 rollingStock,
                 initialLocation,
@@ -237,17 +245,17 @@ public class TrainPhysicsIntegrator {
         );
         var maxDistance = end - initialLocation.getPathPosition();
 
-        var step1 = makeRKStep(initialIntegrator, 0, initialSpeed,
-                makeAction, rollingStock, timeStep / 2, directionSign, maxDistance);
+        var step1 = makeRKStep(halfIntegrator, 0, initialSpeed,
+                makeAction, directionSign, maxDistance);
 
-        var step2 = makeRKStep(initialIntegrator,  step1.positionDelta, step1.finalSpeed,
-                makeAction, rollingStock, timeStep / 2, directionSign, maxDistance);
+        var step2 = makeRKStep(halfIntegrator,  step1.positionDelta, step1.finalSpeed,
+                makeAction, directionSign, maxDistance);
 
-        var step3 = makeRKStep(initialIntegrator, step2.positionDelta, step2.finalSpeed,
-                makeAction, rollingStock, timeStep, directionSign, maxDistance);
+        var step3 = makeRKStep(fullIntegrator, step2.positionDelta, step2.finalSpeed,
+                makeAction, directionSign, maxDistance);
 
-        var step4 = makeRKStep(initialIntegrator, step3.positionDelta, step3.finalSpeed,
-                makeAction, rollingStock, timeStep, directionSign, maxDistance);
+        var step4 = makeRKStep(fullIntegrator, step3.positionDelta, step3.finalSpeed,
+                makeAction, directionSign, maxDistance);
 
 
         var meanAcceleration = (1. / 6.) * (step1.acceleration + 2 * step2.acceleration
@@ -261,19 +269,18 @@ public class TrainPhysicsIntegrator {
                 initialLocation,
                 initialSpeed
         );
-        return integrator.stepFromAcceleration(meanAcceleration, meanTractionForce, maxDistance, directionSign);
+        return integrator.stepFromAcceleration(meanAcceleration, meanTractionForce, maxDistance, false, directionSign);
     }
 
     private static IntegrationStep makeRKStep(TrainPhysicsIntegrator initialIntegrator,
                                               double offset,
                                               double intermediateSpeed,
                                               Function<TrainPhysicsIntegrator, Action> makeAction,
-                                              RollingStock rollingStock,
-                                              double timeStep,
                                               int directionSign,
                                               double maxDistance) {
         var initialLocation = initialIntegrator.currentLocation;
-        var initialSpeed = initialIntegrator.currentSpeed;
+        var rollingStock = initialIntegrator.rollingStock;
+        var timeStep = initialIntegrator.timeStep;
 
         var intermediateLocation = initialLocation.clone();
         intermediateLocation.updatePosition(rollingStock.length, offset);
@@ -288,22 +295,6 @@ public class TrainPhysicsIntegrator {
         var acceleration = integrator.computeAcceleration(action);
         var tractionForce = action.tractionForce();
 
-        var newSpeed = initialSpeed + directionSign * acceleration * timeStep;
-        var timeDelta = timeStep;
-        // if the speed become negative or very low we integrate only the step at which the speed is zero
-        if (newSpeed < 0.0 || abs(newSpeed) < 1E-5) {
-            timeDelta = -initialSpeed / (directionSign * acceleration);
-            newSpeed = 0.;
-        }
-
-        var newPositionDelta = computePositionDelta(initialSpeed, acceleration, timeDelta, directionSign);
-
-        if (newPositionDelta <= maxDistance)
-            return new IntegrationStep(timeDelta, newPositionDelta, newSpeed, acceleration, tractionForce);
-
-        timeDelta = computeTimeDelta(initialSpeed, acceleration, maxDistance);
-        assert timeDelta < timeStep && timeDelta >= 0;
-        newSpeed = initialSpeed + acceleration * timeDelta;
-        return new IntegrationStep(timeDelta, maxDistance, newSpeed, acceleration, tractionForce);
+        return initialIntegrator.stepFromAcceleration(acceleration, tractionForce, maxDistance, true, directionSign);
     }
 }
