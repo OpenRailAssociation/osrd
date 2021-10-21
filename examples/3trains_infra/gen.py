@@ -3,7 +3,7 @@ current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfra
 parent_dir = os.path.dirname(current_dir)
 grand_parent_dir = os.path.dirname(parent_dir)
 sys.path.insert(0, grand_parent_dir)
-import libgen as gen
+import examples_generator.libgen as gen
 
 L = 1000 * 2 ** -0.5
 

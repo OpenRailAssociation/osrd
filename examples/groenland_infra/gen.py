@@ -3,7 +3,7 @@ current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfra
 parent_dir = os.path.dirname(current_dir)
 grand_parent_dir = os.path.dirname(parent_dir)
 sys.path.insert(0, grand_parent_dir)
-import examples_generator.libgen as gen
+import libgen as gen
 
 # build the network
 
@@ -149,37 +149,4 @@ sim = gen.Simulation(infra)
 
 sim.add_schedule(0, 22, 68)
 
-# build the successions
-succession = gen.Succession()
-
-succession.add_table(1, 0, 41, []) # B
-succession.add_table(3, 2, 43, []) # D
-succession.add_table(5, 6, 44, []) # G
-succession.add_table(7, 6, 45, []) # H
-succession.add_table(9, 10, 54, []) # K
-succession.add_table(11, 10, 48, []) # L
-succession.add_table(11, 12, 55, []) # M
-succession.add_table(17, 16, 49, []) # R
-succession.add_table(17, 18, 69, []) # S
-succession.add_table(18, 19, 52, []) # T
-succession.add_table(19, 20, 50, []) # U
-succession.add_table(21, 20, 51, []) # V
-succession.add_table(22, 23, 41, []) # A1
-succession.add_table(24, 23, 42, []) # B1
-succession.add_table(24, 25, 43, []) # C1
-succession.add_table(27, 28, 46, []) # G1
-succession.add_table(29, 28, 47, []) # H1
-succession.add_table(31, 32, 48, []) # K1
-succession.add_table(35, 36, 49, []) # O1
-succession.add_table(37, 36, 69, []) # P1
-succession.add_table(37, 38, 53, []) # Q1
-succession.add_table(39, 38, 50, []) # R1
-succession.add_table(39, 40, 51, []) # S1
-succession.add_table(58, 56, 57, []) # C2
-succession.add_table(58, 59, 64, []) # D2
-succession.add_table(60, 59, 65, []) # E2
-succession.add_table(60, 61, 66, []) # G2
-succession.add_table(62, 61, 67, []) # H2
-succession.add_table(62, 63, 68, []) # J2
-
-gen.write_all_files(infra, sim, succession)
+gen.write_all_files(infra, sim)
