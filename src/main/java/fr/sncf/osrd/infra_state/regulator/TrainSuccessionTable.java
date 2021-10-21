@@ -4,6 +4,7 @@ import fr.sncf.osrd.simulation.EntityChange;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import java.util.ArrayDeque;
+import java.util.List;
 
 /**
  * The mutable succesion table for a switch (order of trains on that switch)
@@ -47,7 +48,7 @@ public class TrainSuccessionTable {
     /** Change the train order */
     public void changeTrainOrder(Simulation sim, ArrayDeque<String> newTrainOrder) throws SimulationError {
         // Check newTrainOrder validity
-        var trainLog = sim.infraState.towerState.trainSuccessionLog.get(switchID);
+        List<String> trainLog = sim.infraState.towerState.trainSuccessionLog.get(switchID);
         for (var newTrain : newTrainOrder) {
             if (trainLog.contains(newTrain))
                 throw new SimulationError(String.format(
