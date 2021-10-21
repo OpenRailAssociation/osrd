@@ -43,16 +43,14 @@ infra.add_link(4, 6)
 sim = gen.Simulation(infra)
 sim.add_schedule(0, 0, 6)
 
-# build the successions
-succession = gen.Succession()
-succession.add_table(2, 0, 1, [2, 0, 1])
-succession.add_table(2, 3, 6, [2, 0, 1])
-succession.add_table(3, 4, 5, [0, 1])
+# build the train succession table
+sim.add_tst(2, 0, 1, [2, 0, 1])
+sim.add_tst(2, 3, 6, [2, 0, 1])
+sim.add_tst(3, 4, 5, [0, 1])
 
 gen.write_json("config.json", gen.CONFIG_JSON)
 gen.write_json("infra.json", infra.to_json())
 gen.write_json("simulation.json", sim.to_json())
-gen.write_json("succession.json", succession.to_json())
 ```
 
 generates the infrastructure below

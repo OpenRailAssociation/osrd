@@ -1,7 +1,9 @@
-from heapq import heappush, heappop
 from collections import defaultdict
-import json
+from dataclasses import dataclass, asdict
+from heapq import heappush, heappop
+from typing import List
 from pathlib import Path
+import json
 
 
 def write_json(filename, data):
@@ -10,11 +12,10 @@ def write_json(filename, data):
     out.close()
 
 
-def write_all_files(infra, sim, succession, cbtc=True):
+def write_all_files(infra, sim, cbtc=True):
     write_json("config.json", CONFIG_JSON)
     write_json("infra.json", infra.to_json())
     write_json("simulation.json", sim.to_json())
-    write_json("succession.json", succession.to_json())
     if cbtc:
         write_json("config_cbtc.json", CONFIG_CBTC_JSON)
         write_json("infra_cbtc.json", infra.to_json(cbtc=True))
@@ -1488,17 +1489,13 @@ class Infra:
         return self.json
 
 class Simulation:
-    def build_rolling_stocks(self):
-        rolling_stock_path = Path(__file__).resolve().parent.parent / "rolling_stocks/fast_rolling_stock.json"
-        with open(rolling_stock_path) as f:
-            self.json["rolling_stocks"] = [json.load(f)]
-
     def __init__(self, infra):
         self.json = dict()
         self.build_rolling_stocks()
         self.json["train_schedules"] = []
         self.lengths = infra.lengths
         self.neighboors = [[] for otrack in range(2 * infra.nb_tracks)]
+        self.train_succession_tables = []
         for utrack in range(infra.nb_tracks):
             self.neighboors[uget_begin(utrack)].append(uget_end(utrack))
             self.neighboors[uget_end(utrack)].append(uget_begin(utrack))
@@ -1513,6 +1510,12 @@ class Simulation:
         self.weight = [
             infra.lengths[oget_track(otrack)] for otrack in range(2 * infra.nb_tracks)
         ]
+
+    def build_rolling_stocks(self):
+        rolling_stock_path = Path(__file__).resolve().parent.parent / "rolling_stocks/fast_rolling_stock.json"
+        with open(rolling_stock_path) as f:
+            self.json["rolling_stocks"] = [json.load(f)]
+
 
     def route_path_simple(self, departure_track, arrival_track):
         s1, s2 = uget_begin(departure_track), uget_end(departure_track)
@@ -1578,6 +1581,11 @@ class Simulation:
             }
         )
 
+
+    def add_tst(self, *args):
+        self.train_succession_tables.append(Succession(*args))
+
+
     def to_json(self, cbtc=False):
         """Returns the json corresponding to simulation.json
 
@@ -1592,30 +1600,24 @@ class Simulation:
                         schedules.remove(schedule)
         simulation = self.json.copy()
         simulation["train_schedules"] = schedules
+        simulation["train_succession_tables"] = [asdict(e) for e in self.train_succession_tables]
         return simulation
 
 
+@dataclass
 class Succession:
-    def __init__(self):
-        self.json = {"successions": []}
+    switch: str
+    train_order: List[str]
 
-    def add_table(self, ubase, uleft, uright, trains):
-        self.json["successions"].append(
-            {
-                "switch": uname_switch(ubase, uleft, uright),
-                "table": [f"train.{index}" for index in trains],
-            }
-        )
-
-    def to_json(self):
-        return self.json
+    def __init__(self, ubase, uleft, uright, train_order):
+        self.switch = uname_switch(ubase, uleft, uright)
+        self.train_order = [f"train.{train_index}" for train_index in train_order]
 
 
 CONFIG_JSON = {
     "simulation_time_step": 1,
     "infra_path": "infra.json",
     "simulation_path": "simulation.json",
-    "succession_path": "succession.json",
     "extra_rolling_stock_dirs": [],
     "show_viewer": True,
     "realtime_viewer": True,
@@ -1627,7 +1629,6 @@ CONFIG_CBTC_JSON = {
     "simulation_time_step": 1,
     "infra_path": "infra_cbtc.json",
     "simulation_path": "simulation_cbtc.json",
-    "succession_path": "succession.json",
     "show_viewer": True,
     "realtime_viewer": True,
     "change_replay_check": True,

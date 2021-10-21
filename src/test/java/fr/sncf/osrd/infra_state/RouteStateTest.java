@@ -10,14 +10,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import fr.sncf.osrd.TestConfig;
-
 import fr.sncf.osrd.railjson.schema.successiontable.RJSTrainSuccessionTable;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.infra_state.routes.RouteState;
 import fr.sncf.osrd.infra_state.routes.RouteStatus;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
