@@ -21,7 +21,8 @@ public abstract class ClientMessage {
                         .withSubtype(CreateSimulationMessage.class, "create_simulation")
                         .withSubtype(WatchChangesMessage.class, "watch_changes")
                         .withSubtype(RunUntilMessage.class, "run")
-                        .withSubtype(GetTrainDelays.class, "get_train_delays")
+                        .withSubtype(GetTrainDelaysMessage.class, "get_train_delays")
+                        .withSubtype(GetTrainSuccessionTablesMessage.class, "get_train_succession_tables")
                 )
                 // for RJSInfra
                 .add(ID.Adapter.FACTORY)

@@ -4,7 +4,7 @@ import fr.sncf.osrd.interactive.InteractiveSimulation;
 import java.io.IOException;
 import java.util.Collection;
 
-public class GetTrainDelays extends ClientMessage {
+public class GetTrainDelaysMessage extends ClientMessage {
     Collection<String> trains;
 
     @Override
