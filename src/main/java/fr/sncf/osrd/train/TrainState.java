@@ -2,7 +2,6 @@ package fr.sncf.osrd.train;
 
 import static fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator.TIME_STEP;
 import static fr.sncf.osrd.train.TrainPhysicsIntegrator.nextStep;
-import static fr.sncf.osrd.train.TrainPhysicsIntegrator.nextStepFromAction;
 import static java.lang.Math.abs;
 
 import java.util.*;

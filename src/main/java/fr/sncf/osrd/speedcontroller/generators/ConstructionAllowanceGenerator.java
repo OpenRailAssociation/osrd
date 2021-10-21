@@ -1,7 +1,6 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
-import static fr.sncf.osrd.train.TrainPhysicsIntegrator.nextStepFromAction;
-import static fr.sncf.osrd.train.TrainPhysicsIntegrator.nextStepFromDirective;
+import static fr.sncf.osrd.train.TrainPhysicsIntegrator.*;
 import static java.lang.Math.min;
 import static java.util.Collections.max;
 
@@ -106,15 +105,14 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
         var location = convertPosition(schedule, sim, endPosition);
         while (speed > newSpeeds.interpolate(location.getPathPosition()) && location.getPathPosition() > 0.) {
             var directive = new SpeedDirective(newSpeeds.interpolate(location.getPathPosition()));
-            var step = nextStepFromDirective(
+            var step = nextStep(
                     location,
                     speed,
-                    directive,
                     schedule.rollingStock,
                     TIME_STEP,
                     location.getPathPosition(),
-                    -1
-            );
+                    -1,
+                    (integrator) -> integrator.actionToTargetSpeed(directive, schedule.rollingStock, -1));
             speed = step.finalSpeed;
             location.updatePosition(schedule.rollingStock.length, step.positionDelta);
         }
@@ -161,14 +159,14 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
         var inertia = schedule.rollingStock.mass * schedule.rollingStock.inertiaCoefficient;
         var action = Action.brake(schedule.rollingStock.gamma * inertia);
         do {
-            var step = nextStepFromAction(
+            var step = nextStep(
                     location,
                     speed,
-                    action,
                     schedule.rollingStock,
                     TIME_STEP,
                     totalLength,
-                    1
+                    1,
+                    (integrator) -> action
             );
             speed = step.finalSpeed;
 
