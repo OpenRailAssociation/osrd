@@ -207,8 +207,8 @@ public class TrainPhysicsIntegrator {
         var timeDelta = timeStep;
 
         // if the speed change sign or is very low we integrate only the step at which the speed is zero
-        if ((!isRKStep && currentSpeed != 0.0 && (Math.signum(newSpeed) != Math.signum(currentSpeed) || abs(newSpeed) < 1E-5))
-        || (isRKStep && (newSpeed < 0.0 || abs(newSpeed) < 1E-5))) {
+        if (!isRKStep && currentSpeed != 0.0 && (Math.signum(newSpeed) != Math.signum(currentSpeed) || abs(newSpeed) < 1E-5)
+        || isRKStep && (newSpeed < 0.0 || abs(newSpeed) < 1E-5)) {
             timeDelta = -currentSpeed / (directionSign * acceleration);
             newSpeed = 0.;
         }
