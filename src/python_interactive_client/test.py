@@ -33,7 +33,8 @@ async def test(infra_path: Path, simulation_path: Path, rolling_stocks_path: Pat
             if simulation.is_paused:
                 delays = await simulation.get_train_delays()
                 logger.info("delays: %s", delays)
-
+        tst = await simulation.get_tst("il.switch_foo")
+        logger.info("TST: %s", tst)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)

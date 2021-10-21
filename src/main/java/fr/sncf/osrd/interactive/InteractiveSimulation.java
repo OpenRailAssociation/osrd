@@ -2,7 +2,6 @@ package fr.sncf.osrd.interactive;
 
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra_state.regulator.TrainSuccessionTable;
 import fr.sncf.osrd.interactive.client_messages.ChangeType;
 import fr.sncf.osrd.interactive.client_messages.EventType;
 import fr.sncf.osrd.interactive.events_adapters.SerializedEvent;
@@ -87,7 +86,7 @@ public class InteractiveSimulation {
             List<RJSTrainSuccessionTable> rjsSuccessions,
             List<RJSVirtualPoint> virtualPoints
     ) throws IOException {
-        if (expectState(SessionState.WAITING_FOR_SIMULATION))
+        if (expectState(SessionState.WAITING_FOR_SIMULATION, SessionState.SIMULATION_COMPLETE))
             return;
 
         var rjsSimulation = new RJSSimulation(rollingStocks, rjsTrainSchedules, rjsSuccessions);
@@ -133,7 +132,7 @@ public class InteractiveSimulation {
                     return;
                 }
             }
-            state = SessionState.WAITING_FOR_SIMULATION;
+            state = SessionState.SIMULATION_COMPLETE;
             sendResponse(new ServerMessage.SimulationComplete());
         } catch (SimulationError e) {
             sendResponse(ServerMessage.Error.withReason("failed to run simulation", e.getMessage()));
@@ -164,5 +163,33 @@ public class InteractiveSimulation {
                 trainDelays.put(train.getID(), train.getDelay(curTime));
         }
         sendResponse(new ServerMessage.TrainDelays(trainDelays));
+    }
+
+    /** Sends back to the client the train succession tables.
+     * If waiting for simulation then return the completed TST of last simulation.
+     * @param switches only return tst of the given switches. If `null` or empty then return the whole list.
+     */
+    public void sendTrainSuccessionTables(List<String> switches) throws IOException {
+        if (expectState(SessionState.PAUSED, SessionState.SIMULATION_COMPLETE))
+            return;
+        var tstLogs = simulation.infraState.towerState.trainSuccessionLog;
+        // Return the whole list
+        if (switches == null || switches.isEmpty()) {
+            var tst = new HashMap<String, List<String>>(tstLogs);
+            sendResponse(new ServerMessage.TrainSuccessionTables(tst));
+            return;
+        }
+        // Return tst of the given switch list
+        var tst = new HashMap<String, List<String>>();
+        for (var switchID : switches) {
+            if (!tstLogs.containsKey(switchID)) {
+                sendResponse(ServerMessage.Error.withReason(
+                        "Couldn't send succession tables",
+                        String.format("Switch '%s' doesn't exist", switchID)));
+                return;
+            }
+            tst.put(switchID, tstLogs.get(switchID));
+        }
+        sendResponse(new ServerMessage.TrainSuccessionTables(tst));
     }
 }

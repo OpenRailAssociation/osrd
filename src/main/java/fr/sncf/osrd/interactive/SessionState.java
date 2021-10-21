@@ -9,4 +9,6 @@ public enum SessionState {
     PAUSED,
     /** The simulation is currently running */
     RUNNING,
+    /** The simulation is complete, waiting for a new simulation */
+    SIMULATION_COMPLETE
 }

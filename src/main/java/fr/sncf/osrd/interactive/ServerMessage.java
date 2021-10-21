@@ -7,6 +7,7 @@ import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import fr.sncf.osrd.interactive.action_point_adapters.SerializedActionPoint;
 import fr.sncf.osrd.interactive.changes_adapters.SerializedChange;
 import fr.sncf.osrd.interactive.events_adapters.*;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -21,6 +22,7 @@ public abstract class ServerMessage {
                             .withSubtype(ChangeOccurred.class, "change_occurred")
                             .withSubtype(WatchChanges.class, "watch_changes")
                             .withSubtype(TrainDelays.class, "train_delays")
+                            .withSubtype(TrainSuccessionTables.class, "train_succession_tables")
                             .withSubtype(Error.class, "error")
                     )
                     .add(SerializedChange.adapter)
@@ -60,6 +62,15 @@ public abstract class ServerMessage {
 
         TrainDelays(Map<String, Double> trainDelays) {
             this.trainDelays = trainDelays;
+        }
+    }
+
+    public static final class TrainSuccessionTables extends ServerMessage {
+        @Json(name = "train_succession")
+        public Map<String, List<String>> trainSuccession;
+
+        TrainSuccessionTables(Map<String, List<String>> trainSuccession) {
+            this.trainSuccession = trainSuccession;
         }
     }
 

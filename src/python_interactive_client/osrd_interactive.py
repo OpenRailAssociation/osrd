@@ -64,7 +64,7 @@ def check_response_type(response, allowed_types) -> str:
     message_type = response["message_type"]
     if message_type in allowed_types:
         return message_type
-    raise SimulationError(response)
+    raise SimulationError(f"Expected message type {allowed_types} got: '{response['message_type']}'. More details: '{response}'")
 
 
 class InteractiveSimulationManager:
@@ -88,12 +88,13 @@ class SimulationState(IntEnum):
     WAITING_FOR_SIMULATION = 1
     PAUSED = 2
     RUNNING = 3
+    SIMULATION_COMPLETE = 4
 
 
 STATE_CHANGE_MESSAGES = {
     "session_initialized": SimulationState.WAITING_FOR_SIMULATION,
     "simulation_created": SimulationState.PAUSED,
-    "simulation_complete": SimulationState.WAITING_FOR_SIMULATION,
+    "simulation_complete": SimulationState.SIMULATION_COMPLETE,
     "simulation_paused": SimulationState.PAUSED,
 }
 
@@ -108,7 +109,7 @@ class InteractiveSimulation:
 
     @property
     def is_complete(self):
-        return self.state is SimulationState.WAITING_FOR_SIMULATION
+        return self.state is SimulationState.SIMULATION_COMPLETE
 
     @property
     def is_paused(self):
@@ -207,6 +208,7 @@ class InteractiveSimulation:
         )
 
         while True:
+            self.state = SimulationState.RUNNING
             response = await self.recv_json()
             message_type = response["message_type"]
             new_state = STATE_CHANGE_MESSAGES.get(message_type)
@@ -219,3 +221,15 @@ class InteractiveSimulation:
                 )
                 break
             yield response
+
+    async def get_tst(self, *switches):
+        await self.send_json(
+            {
+                "message_type": "get_train_succession_tables",
+                "switches": switches
+            }
+        )
+        response = await self.recv_json()
+        check_response_type(response, {"train_succession_tables"})
+        return response
+
