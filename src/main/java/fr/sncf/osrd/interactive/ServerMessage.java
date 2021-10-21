@@ -23,6 +23,7 @@ public abstract class ServerMessage {
                             .withSubtype(WatchChanges.class, "watch_changes")
                             .withSubtype(TrainDelays.class, "train_delays")
                             .withSubtype(TrainSuccessionTables.class, "train_succession_tables")
+                            .withSubtype(TrainSuccessionTablesUpdated.class, "train_succession_tables_updated")
                             .withSubtype(Error.class, "error")
                     )
                     .add(SerializedChange.adapter)
@@ -37,6 +38,8 @@ public abstract class ServerMessage {
     public static final class SimulationCreated extends ServerMessage {}
 
     public static final class SimulationComplete extends ServerMessage {}
+
+    public static class TrainSuccessionTablesUpdated extends ServerMessage {}
 
     public static final class SimulationPaused extends ServerMessage {
         public final SerializedEvent event;

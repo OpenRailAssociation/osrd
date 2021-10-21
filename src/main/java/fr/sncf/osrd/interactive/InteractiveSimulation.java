@@ -192,4 +192,21 @@ public class InteractiveSimulation {
         }
         sendResponse(new ServerMessage.TrainSuccessionTables(tst));
     }
+
+    /** Update a train succession tables */
+    public void updateTrainSuccessionTable(List<RJSTrainSuccessionTable> trainSuccessionTables) throws IOException {
+        if (expectState(SessionState.PAUSED))
+            return;
+        var towerState = simulation.infraState.towerState;
+        try {
+            for (var newTST : trainSuccessionTables) {
+                var tst = towerState.trainSuccessionTables.get(newTST.switchID);
+                var trainOrder = new ArrayDeque<>(List.of(newTST.trainOrder));
+                tst.changeTrainOrder(simulation, trainOrder);
+            }
+        } catch (SimulationError e) {
+            sendResponse(ServerMessage.Error.withReason("failed to update train succession tables", e.getMessage()));
+        }
+        sendResponse(new ServerMessage.TrainSuccessionTablesUpdated());
+    }
 }
