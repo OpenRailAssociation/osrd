@@ -156,7 +156,7 @@ class InputSNCF extends React.Component {
         <label className="font-weight-medium mb-2" htmlFor={id}>{label}</label>
         )}
         <div className="input-group">
-          <div className={`form-control-container ${invalidClass} ${unit ? 'has-left-icon' : null}`}>
+          <div className={`form-control-container ${invalidClass} ${unit ? 'has-right-icon' : null}`}>
             <input
               type={type}
               onChange={onChange}

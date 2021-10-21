@@ -7,7 +7,7 @@ export default function InputGroupSNCF(props) {
     id, handleType, options, placeholder, sm, title, value,
   } = props;
   const [selected, setSelected] = useState(title
-    ? { label: title } : { id: options[0].id, label: options[0].label });
+    ? { label: title } : { id: options[0].id, label: options[0].label, unit: options[0].unit });
 
   return (
     <div className={`input-group ${sm && 'input-group-sm'}`}>
