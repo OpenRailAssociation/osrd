@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
+from dataclasses import dataclass, asdict
+from enum import IntEnum
+from pathlib import Path
+from typing import List
 import asyncio
-import websockets
 import json
 import logging
-from pathlib import Path
-from enum import IntEnum
-from dataclasses import dataclass, asdict
+import websockets
 
 
 logger = logging.getLogger(__name__)
@@ -58,6 +59,11 @@ class Location:
 class Breakpoint:
     name: str
     location: Location
+
+@dataclass
+class TST:
+    switch: str
+    train_order: List[str]
 
 
 def check_response_type(response, allowed_types) -> str:
@@ -223,6 +229,10 @@ class InteractiveSimulation:
             yield response
 
     async def get_tst(self, *switches):
+        """
+        Get train succession order. Can be call when simulation is paused or complete.
+        If no switch id is given as argument then return all the tst.
+        """
         await self.send_json(
             {
                 "message_type": "get_train_succession_tables",
@@ -231,5 +241,21 @@ class InteractiveSimulation:
         )
         response = await self.recv_json()
         check_response_type(response, {"train_succession_tables"})
-        return response
+        tst_list = []
+        for switch, train_order in response["train_succession"].items():
+            tst_list.append(TST(switch, train_order))
+        return tst_list
 
+    async def update_tst(self, new_tst_list: List[TST]):
+        """
+        Update train succession order. Can be call when simulation is paused.
+        """
+        await self.send_json(
+            {
+                "message_type": "update_train_succession_tables",
+                "train_succession_tables": [asdict(tst) for tst in new_tst_list],
+            }
+        )
+        response = await self.recv_json()
+        check_response_type(response, {"train_succession_tables_updated"})
+        return response
