@@ -103,12 +103,14 @@ def get_allowances_payload(margins, sim_type: SimulationType):
         if margin["type"] != "construction":
             continue
         payload.append(
-            {
-                "type": "construction",
-                "allowance_value": margin["value"],
-                "begin_position": margin["begin_position"],
-                "end_position": margin["end_position"],
-            }
+            [
+                {
+                    "type": "construction",
+                    "allowance_value": margin["value"],
+                    "begin_position": margin["begin_position"],
+                    "end_position": margin["end_position"],
+                }
+            ]
         )
     return payload
 
