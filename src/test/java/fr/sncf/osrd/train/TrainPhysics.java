@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,6 +14,12 @@ import java.util.Collections;
 
 public class TrainPhysics {
 
+    /**
+     * Creates a pseudo-trainLocationTracker that gives the given slope.
+     * This method is used to get trackers with given slopes in TrainPhysics
+     * @param trainGrade the slope of the tracker
+     * @return a TrainPositionTracker with the given slope
+     */
     public static TrainPositionTracker makeDummyTracker(double trainGrade) {
         var graph = new TrackGraph();
         double length = 100000;

@@ -39,14 +39,13 @@ public class TrainPhysicsIntegrator {
             double currentSpeed
     ) {
         assert timeStep > 0;
+        this.timeStep = timeStep;
+        this.currentLocation = currentLocation;
+        this.currentSpeed = currentSpeed;
         // get an angle from a meter per km elevation difference
         // the curve's radius is taken into account in meanTrainGrade
         var angle = Math.atan(currentLocation.meanTrainGrade() / 1000.0);  // from m/km to m/m
         var weightForce = - rollingStock.mass * Constants.GRAVITY * Math.sin(angle);
-
-        this.timeStep = timeStep;
-        this.currentLocation = currentLocation;
-        this.currentSpeed = currentSpeed;
         this.weightForce = weightForce;
         this.rollingStock = rollingStock;
         this.rollingResistance = rollingStock.rollingResistance(currentSpeed);
@@ -207,8 +206,9 @@ public class TrainPhysicsIntegrator {
         var timeDelta = timeStep;
 
         // if the speed change sign or is very low we integrate only the step at which the speed is zero
-        if (!isRKStep && currentSpeed != 0.0 && (Math.signum(newSpeed) != Math.signum(currentSpeed) || abs(newSpeed) < 1E-5)
-        || isRKStep && (newSpeed < 0.0 || abs(newSpeed) < 1E-5)) {
+        if (!isRKStep && currentSpeed != 0.0
+                && (Math.signum(newSpeed) != Math.signum(currentSpeed) || abs(newSpeed) < 1E-5)
+                || isRKStep && (newSpeed < 0.0 || abs(newSpeed) < 1E-5)) {
             timeDelta = -currentSpeed / (directionSign * acceleration);
             newSpeed = 0.;
         }
@@ -224,6 +224,16 @@ public class TrainPhysicsIntegrator {
         return new IntegrationStep(timeDelta, maxDistance, newSpeed, acceleration, tractionForce);
     }
 
+    /**
+     * Compute the next integration step with runge-kutta 4 method
+     * @param initialLocation the location at the beginning of the step
+     * @param initialSpeed the speed at the beginning of the step
+     * @param rollingStock the rolling stock used for the step
+     * @param timeStep the time step used for the step
+     * @param end the end of the train's path
+     * @param directionSign +1 if forward circulation, -1 if backwards
+     * @return the new speed of the train
+     */
     public static IntegrationStep nextStep(TrainPositionTracker initialLocation,
                                            double initialSpeed,
                                            RollingStock rollingStock,
@@ -256,7 +266,6 @@ public class TrainPhysicsIntegrator {
 
         var step4 = makeRKStep(fullIntegrator, step3.positionDelta, step3.finalSpeed,
                 makeAction, directionSign, maxDistance);
-
 
         var meanAcceleration = (1. / 6.) * (step1.acceleration + 2 * step2.acceleration
                 + 2 * step3.acceleration + step4.acceleration);
