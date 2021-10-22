@@ -196,14 +196,6 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         return action;
     }
 
-    /** Checks that the location / position remain coherent */
-    private void assertLocationIntegrity() {
-        var trackLocation = location.trackSectionRanges.getFirst().getEndLocation();
-        var pathPosition = location.getPathPosition();
-        var diff = abs(pathPosition - path.convertTrackLocation(trackLocation));
-        assert diff < 1e-3;
-
-    }
 
     private void step(
             Train.TrainStateChange locationChange,
@@ -212,7 +204,6 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
     ) {
         if (timeStep <= 0 || distanceStep <= 0)
             return;
-        assertLocationIntegrity();
 
         var step = nextStep(
                 location,

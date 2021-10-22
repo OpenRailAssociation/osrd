@@ -20,6 +20,7 @@ import fr.sncf.osrd.simulation.changelog.ChangeLogSummarizer;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import okio.Buffer;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,6 +64,7 @@ public class RunExamplesTest {
         runGivenConfigInfra("tiny_infra/config_railjson.json", 1);
     }
 
+    @Disabled("see issue https://github.com/DGEXSolutions/osrd-core/issues/216")
     @Test
     public void testCircularInfra() throws InvalidRollingStock, InvalidSuccession,
             InvalidSchedule, IOException, InvalidInfraException, SimulationError {

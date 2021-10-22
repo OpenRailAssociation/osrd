@@ -530,6 +530,7 @@ public class RouteStateTest {
         testConfig.run();
     }
 
+    @Disabled("see issue https://github.com/DGEXSolutions/osrd-core/issues/216")
     @Test
     public void testCircularInfraReserves() {
         var changelog = new ArrayChangeLog();
