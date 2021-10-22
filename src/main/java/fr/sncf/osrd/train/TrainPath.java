@@ -127,16 +127,20 @@ public class TrainPath {
         return null;
     }
 
-    /** Converts a TrackSectionLocation into a position on the track (double) */
-    public double convertTrackLocation(TrackSectionLocation location) {
+    /** Converts a TrackSectionLocation into a position on a given track range path */
+    public static double convertTrackLocation(TrackSectionLocation location, List<TrackSectionRange> trackSectionPath) {
         double sumPreviousSections = 0;
         for (var edge : trackSectionPath) {
-            if (edge.containsLocation(location)) {
+            if (edge.edge.id.equals(location.edge.id))
                 return sumPreviousSections + Math.abs(location.offset - edge.getBeginPosition());
-            }
             sumPreviousSections += Math.abs(edge.getEndPosition() - edge.getBeginPosition());
         }
         throw new RuntimeException("Can't find location in path");
+    }
+
+    /** Converts a TrackSectionLocation into a position on the track (double) */
+    public double convertTrackLocation(TrackSectionLocation location) {
+        return convertTrackLocation(location, trackSectionPath);
     }
 
     /** Return whether a location is part of the path */

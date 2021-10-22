@@ -55,6 +55,13 @@ public abstract class SpeedControllerGenerator {
             }
             res.put(k, time);
         }
+
+        // Adds the duration of the last stop(s) which may not have been reached
+        var lastEntry = res.lastEntry();
+        while (stopIndex < schedule.stops.size()) {
+            res.put(lastEntry.getKey(), lastEntry.getValue() + schedule.stops.get(stopIndex).stopDuration);
+            stopIndex++;
+        }
         return res;
     }
 
