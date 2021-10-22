@@ -1,6 +1,7 @@
 package fr.sncf.osrd.train;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.min;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
@@ -8,6 +9,7 @@ import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.utils.DeepComparable;
 import fr.sncf.osrd.utils.DeepEqualsUtils;
+import fr.sncf.osrd.utils.Range;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,7 +25,8 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
     /** Distance covered since the train has departed */
     private double pathPosition = 0;
 
-    /** The list of edges the train currently spans over. */
+    /** The list of edges the train currently spans over.
+     * First = head of the train, last = tail */
     public final ArrayDeque<TrackSectionRange> trackSectionRanges;
 
     /** The path of the train */
@@ -33,7 +36,7 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
     public boolean ignoreInfraState = false;
 
     /** Used for assertions only */
-    private Set<String> trackSectionsOnPath;
+    private final Set<String> trackSectionsOnPath;
 
     /**
      * Create a new position tracker on some given infrastructure and path.
@@ -192,15 +195,19 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
             updateHeadPositionBackwards(positionDelta);
         pathPosition += positionDelta;
 
-        double currentTrainLength = 0;
-        for (var section : trackSectionRanges)
-            currentTrainLength += section.length();
+        double currentTrainLength = trackSectionRanges.stream().mapToDouble(Range::length).sum();
+
+        expectedTrainLength = min(expectedTrainLength, pathPosition);
 
         var tailDisplacement = currentTrainLength - expectedTrainLength;
         if (tailDisplacement > 0 && positionDelta > 0)
             updateTailPosition(tailDisplacement);
         else if (tailDisplacement < 0 && positionDelta < 0)
             updateTailPositionBackwards(tailDisplacement);
+
+        assertIntegrity();
+        var actualTrainLength = trackSectionRanges.stream().mapToDouble(Range::length).sum();
+        assert abs(actualTrainLength - expectedTrainLength) < 1e-3;
     }
 
     /** TODO: Check if it's the wanted behavior...
@@ -237,11 +244,9 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         remainingDist -= edgeMovement;
 
         // remove edges to the current edges queue as the train moves backwards
-        while (remainingDist > 0) {
+        if (remainingDist > 0) {
             trackSectionRanges.removeFirst();
-            var previousPos = trackSectionRanges.getFirst();
-            // this should kind of be previousPos.length(), but doing it this way avoids float compare errors
-            remainingDist -= previousPos.edge.length;
+            updateHeadPositionBackwards(remainingDist);
         }
     }
 
@@ -261,13 +266,13 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
     private void updateTailPositionBackwards(double positionDelta) {
         var remainingDist = abs(positionDelta);
         var tailPos = trackSectionRanges.getLast();
-        var edgeSpaceBehind = tailPos.backwardsSpace();
+        var edgeSpaceBehind = abs(tailPos.backwardsSpace());
         var edgeMovement = Double.min(abs(positionDelta), edgeSpaceBehind);
         tailPos.shrinkBackwards(edgeMovement);
         remainingDist -= edgeMovement;
 
         // add edges to the current edges queue as the train moves backwards
-        while (remainingDist > 0) {
+        while (remainingDist > 1e-10) {
             var previousPos = previousTrackSectionPosition(remainingDist);
             if (previousPos == null)
                 break;
@@ -307,5 +312,38 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
     public boolean deepEquals(TrainPositionTracker other) {
         return pathPosition == other.pathPosition
                 && DeepEqualsUtils.deepEquals(trackSectionRanges, other.trackSectionRanges);
+    }
+
+    /** Runs some assertions on the integrity of the position tracker */
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"}) // we do want exact equalities here
+    public void assertIntegrity() {
+        // Checks that the location / position remain coherent
+        var trackLocation = trackSectionRanges.getFirst().getEndLocation();
+        var diff = abs(pathPosition - TrainPath.convertTrackLocation(trackLocation, trackSectionPath));
+        assert diff < 1e-3;
+
+        // Asserts that we reach the end of each track section that isn't the last one
+        var itForward = trackSectionRanges.iterator();
+        while (itForward.hasNext()) {
+            var range = itForward.next();
+            if (itForward.hasNext()) {
+                if (range.direction == EdgeDirection.START_TO_STOP)
+                    assert range.getBeginPosition() == 0;
+                else
+                    assert range.getBeginPosition() == range.edge.length;
+            }
+        }
+
+        // Asserts that we reach the beginning of each track section that isn't the first one
+        var itBackward = trackSectionRanges.descendingIterator();
+        while (itBackward.hasNext()) {
+            var range = itBackward.next();
+            if (itBackward.hasNext()) {
+                if (range.direction == EdgeDirection.START_TO_STOP)
+                    assert range.getEndPosition() == range.edge.length;
+                else
+                    assert range.getEndPosition() == 0;
+            }
+        }
     }
 }

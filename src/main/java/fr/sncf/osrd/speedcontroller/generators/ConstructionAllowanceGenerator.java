@@ -41,7 +41,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
     @Override
     protected double getFirstHighEstimate() {
         var speeds = getExpectedSpeeds(sim, schedule, maxSpeedControllers, TIME_STEP);
-        return max(speeds.values());
+        return max(speeds.values()) * 1.1;
     }
 
     @Override
@@ -103,7 +103,8 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
         // backwards acceleration calculation
         double speed = roiSpeeds.interpolate(endPosition); //The speed is calculated from the old running time
         var location = convertPosition(schedule, sim, endPosition);
-        while (speed > newSpeeds.interpolate(location.getPathPosition()) && location.getPathPosition() > 0.) {
+        while (speed > newSpeeds.interpolate(location.getPathPosition())
+                && location.getPathPosition() > 0. && speed >= 1e-5) {
             var directive = new SpeedDirective(newSpeeds.interpolate(location.getPathPosition()));
             var step = nextStep(
                     location,

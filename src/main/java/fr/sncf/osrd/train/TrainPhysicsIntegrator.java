@@ -221,11 +221,16 @@ public class TrainPhysicsIntegrator {
         if (isRKStep && (newSpeed < 0.0 || abs(newSpeed) < limitSpeed)
                 || !isRKStep && currentSpeed != 0.0
                 && (Math.signum(newSpeed) != Math.signum(currentSpeed) || abs(newSpeed) < limitSpeed)) {
-            timeDelta = -currentSpeed / (directionSign * acceleration);
+            if (abs(acceleration) < 1e-5)
+                timeDelta = 0;
+            else
+                timeDelta = -currentSpeed / (directionSign * acceleration);
             newSpeed = 0.;
         }
 
         var newPositionDelta = computePositionDelta(currentSpeed, acceleration, timeDelta, directionSign);
+        if (abs(newPositionDelta) < 1e-6)
+            newPositionDelta = 0;
 
         if (newPositionDelta <= maxDistance)
             return new IntegrationStep(timeDelta, newPositionDelta, newSpeed, acceleration, tractionForce);
