@@ -311,11 +311,15 @@ public class RJSTrainScheduleParser {
             TrainPath path
     ) throws InvalidSchedule {
         var res = new ArrayList<VirtualPoint>();
-        if (rjsVirtualPoints == null)  {
+        if (rjsVirtualPoints == null)
             return res;
-        }
+
         for (var rjsVirtualPoint : rjsVirtualPoints) {
-            var position = path.convertTrackLocation(parseLocation(infra, rjsVirtualPoint.location));
+            var location = parseLocation(infra, rjsVirtualPoint.location);
+            // Skip the virtual point if not part of the path
+            if (!path.containsTrackLocation(location))
+                continue;
+            var position = path.convertTrackLocation(location);
             res.add(new VirtualPoint(rjsVirtualPoint.name, position));
         }
         res.sort(Comparator.comparingDouble(stop -> stop.position));

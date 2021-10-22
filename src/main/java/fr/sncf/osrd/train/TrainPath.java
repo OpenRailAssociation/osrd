@@ -139,6 +139,15 @@ public class TrainPath {
         throw new RuntimeException("Can't find location in path");
     }
 
+    /** Return whether a location is part of the path */
+    public boolean containsTrackLocation(TrackSectionLocation location) {
+        for (var edge : trackSectionPath) {
+            if (edge.containsLocation(location))
+                return true;
+        }
+        return false;
+    }
+
     public TrackSectionLocation getStartLocation() {
         return trackSectionPath.get(0).getBeginLocation();
     }
