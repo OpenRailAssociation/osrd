@@ -1,0 +1,25 @@
+{
+    "classic_switch": {
+        "ports": [
+            "base",
+            "left",
+            "right"
+        ],
+        "groups": {
+            "LEFT": [
+                {
+                    "src": "base",
+                    "dst": "left",
+                    "bidirectional": true
+                }
+            ],
+            "RIGHT": [
+                {
+                    "src": "base",
+                    "dst": "right",
+                    "bidirectional": true
+                }
+            ]
+        }
+    }
+}

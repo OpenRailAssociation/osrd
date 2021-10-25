@@ -2,164 +2,44 @@
 
 ## How to use
 
-### Functions
-- `Infra(lengths)`: build an empty infrastructure whose tracks' lengths are given in `lengths`. The track are indexed from 0 to `nb_tracks - 1` in the same order that they are given in `lengths`
+### Infra Builder
 
-- `Infra.add_link(first, second)`: add an undirected edge between to tracks given their indexes
+- `__init__(self) -> InfraBuilder`: Instantiates an infra builder.
+- `add_track_section(self, length, label="track.X", waypoints=[], signals=[], operational_points=[]) -> TrackSection`: Add a track section.
+- `add_switch(self, base, left, right, label="switch.X", delay=0) -> Switch`: Add a switch.
+- `add_link(self, begin, end, navigability=ApplicableDirection.BOTH) -> Link`: Add a link.
+- `add_operational_point(self, label) -> OperationPoint`: Add an operation point.
+- `build(self) -> Infra`: Build an infra, generating tvd sections, routes and missing bufferstops.
 
-- `Infra.add_switch(base, left, right)`: build a switch given three tracks indexes. The base track should be the first parameter
+### Track Section
 
-- `Simulation(infra)`: build an empty simulation from and infrastructure
+- `add_detector(self, position, label="detector.X", applicable_direction=ApplicableDirection.BOTH) -> Detector`: Add a detector.
+- `add_buffer_stop(self, position, label="buffer_stop.X", applicable_direction=ApplicableDirection.BOTH) -> BufferStop`: Add a buffer_stop.
+- `add_signal(self, position, applicable_direction, linked_detector, label="signal.X", sight_distance=400) -> Signal`: Add a signal.
 
-- `Simulation.add_schedule(departure_time, departure_track, arrival_track)`: add a train which leaves at departure_time from the middle of departure_track and goes to arrival_track
+### Operation point 
 
-- `Succession()`: build an empty train succession table
+- `set_position(self, track, offset)`: Link an operational point to a position.
 
-- `Succession.add_table(base, left, right, list_of_trains)`: add a succession table from a list of trains given by their index to the switch `(base, left, right)` of the infrastructure
+### Infra 
 
-### Some important rules
-- no track can be isolated: a track should appear **at least one time** as argument of `add_link` or `add_switch`
-- each track has only two ends: a track should appear **at most two times** as argument of `add_link`or `add_switch`
-- each switch must have **one and only one** succession table even if it is left empty
+- `save(self, path)`: Format to railjson and save at the given location.
 
-### Example
+### Simulation Builder
 
-```
-import os, sys, inspect
-current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parent_dir = os.path.dirname(current_dir)
-sys.path.insert(0, parent_dir)
-import generator.libgen as gen
+- `__init__(self, infra) -> SimulationBuilder`: Instantiates a simulation builder.
+- `add_train_schedule(self, *locations, label="train.X", rolling_stock="fast_rolling_stock", departure_time=0, initial_speed=0, stops=[]) -> TrainSchedule`: Add a new train schedule, generate path given positions.
+- `add_tst(self, switch, *train_order) -> TST`: Set a train order for the given switch.
+- `build(self) -> Simulation`: Build the simulation configuration.
 
-# build the network
-infra = gen.Infra([1000] * 7)
-infra.add_link(0, 1)
-infra.add_link(1, 2)
-infra.add_link(2, 3)
-infra.add_switch(3, 4, 5)
-infra.add_link(4, 6)
+### Train Schedule
 
-# build the trains
-sim = gen.Simulation(infra)
-sim.add_schedule(0, 0, 6)
+- `add_stop(self, duration, location=None, position=None) -> Stop`: Add a stop, only one of the attributes 'location' or 'position' must be defined.
 
-# build the train succession table
-sim.add_tst(2, 0, 1, [2, 0, 1])
-sim.add_tst(2, 3, 6, [2, 0, 1])
-sim.add_tst(3, 4, 5, [0, 1])
+### Simulation 
 
-gen.write_json("config.json", gen.CONFIG_JSON)
-gen.write_json("infra.json", infra.to_json())
-gen.write_json("simulation.json", sim.to_json())
-```
+- `save(self, path)`: Format to railjson and save at the given location.
 
-generates the infrastructure below
+## Example
 
-```
-                                                                            <
-                                                                        +--o---------o--#
-                                                                      v/  >    6
-                                                                      o
-                                                                     /^
-                                                                  4 /
-                                                                  v/
-                                                                  o
-       0      <     <   1     <     <   2     <     <   3     <  /^
-#--o---------o--+--o---------o--+--o---------o--+--o---------o--+
-            >     >         >     >         >     >         »   v\
-                                                                  o
-                                                                   \^
-                                                                  5 \
-                                                                     \
-                                                                      o
-                                                                       \
-                                                                        #
-```
-
- -----
-## How it works
-
-### Graph theory
-
-Tracks are nodes that can be connected by two types of links
-- link: a bidirectionnal edge between the two tracks
-- switche: a triple (base, left, right) of tracks that creates two bidirectionnal edge: {base, left}, {base, right}
-
-### Detectors, TVD sections, routes
-
-#### Detectors
-Each track can has two detectors at its ends, either buffer stops or TDE detectors according to how many tracks it is linked
-
-- a track with one buffer stop `#` and a TDE detector `o`:
-```
-#------------o--+
-```
-- a track with two TDE detectors `o`
-```
-+--o---------o--+
-```
-
-#### TVD sections
-
-A TVD section is a part of the network delimited by detectors. There are three type of TVD sections
-
-- track: the part of the track between its two detectors
-```
-o---------o
-```
-- link: the part of two tracks linked together that is between the detectors
-```
-o--+--o
-```
-- switch: the part of the tracks delimited by the three detectors of a switch
-```
-     o
-    /
-o--+
-    \
-     o
-```
-
-#### routes
-A route is a oriented path between two consecutive detectors and thus occupy only one TVD section
-
-### Signals
-Each entreance of a TVD section should be protected by a signal place before this entreance (= the detector)
-
-- a `bal3_line_signal` is placed before the entreance detector of a linear TVD section (track or link type) whose other detector is not a buffer_stop, or before the entreance of a left/right detector of a switch TVD section
-```
-    >         >
---+--o---------o--+--o--
-
-     v/
-     o
-    /
-o--+
-    \
-     o
-      \^
-```
-- a `check_route` is placed before the entreance detector of a linear TVD section whose other type is a buffer_stop
-```
-              <
-#--o---------o--+
-```
-- a `switch_signal` is placed before the entreance of the base detector of a switch TVD section
-```
-        /
-       o
-      /
---o--+
- »    \
-       o
-        \
-```
-
-
-Notation on schemas (oriented from left to right) :
-- `>` for a `bal3_line_signal`/`check_route detector`
-- `»` for a `switch_signal`
-
-### Schedules
-
-A train schedule is mainly a path of routes which are pairs of detectors. It is computed in the infrastructure with a shortest path algorithm (Dijkstra). The train start at the middle of a track section and ends at the middle of another track section.
+You can find a complete example [here](gen_example.py).

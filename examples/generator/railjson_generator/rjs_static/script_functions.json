@@ -1,0 +1,251 @@
+[
+    {
+        "name": "sncf_filter",
+        "arguments": [
+            {
+                "type": "ASPECT_SET",
+                "name": "aspects"
+            }
+        ],
+        "return_type": "ASPECT_SET",
+        "body": {
+            "type": "condition",
+            "if": {
+                "type": "aspect_set_contains",
+                "aspect_set": {
+                    "type": "argument_ref",
+                    "argument_name": "aspects"
+                },
+                "aspect": "RED"
+            },
+            "then": {
+                "type": "aspect_set",
+                "members": [
+                    {
+                        "aspect": "RED"
+                    }
+                ]
+            },
+            "else": {
+                "type": "condition",
+                "if": {
+                    "type": "aspect_set_contains",
+                    "aspect_set": {
+                        "type": "argument_ref",
+                        "argument_name": "aspects"
+                    },
+                    "aspect": "YELLOW"
+                },
+                "then": {
+                    "type": "aspect_set",
+                    "members": [
+                        {
+                            "aspect": "YELLOW"
+                        }
+                    ]
+                },
+                "else": {
+                    "type": "argument_ref",
+                    "argument_name": "aspects"
+                }
+            }
+        }
+    },
+    {
+        "name": "check_route",
+        "arguments": [
+            {
+                "type": "ROUTE",
+                "name": "route"
+            }
+        ],
+        "return_type": "ASPECT_SET",
+        "body": {
+            "type": "condition",
+            "if": {
+                "type": "or",
+                "exprs": [
+                    {
+                        "type": "route_has_state",
+                        "route": {
+                            "type": "argument_ref",
+                            "argument_name": "route"
+                        },
+                        "state": "OCCUPIED"
+                    },
+                    {
+                        "type": "route_has_state",
+                        "route": {
+                            "type": "argument_ref",
+                            "argument_name": "route"
+                        },
+                        "state": "REQUESTED"
+                    },
+                    {
+                        "type": "route_has_state",
+                        "route": {
+                            "type": "argument_ref",
+                            "argument_name": "route"
+                        },
+                        "state": "CONFLICT"
+                    }
+                ]
+            },
+            "then": {
+                "type": "aspect_set",
+                "members": [
+                    {
+                        "aspect": "RED"
+                    }
+                ]
+            },
+            "else": {
+                "type": "aspect_set",
+                "members": [
+                    {
+                        "aspect": "YELLOW"
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "name": "bal3_line_signal",
+        "arguments": [
+            {
+                "type": "SIGNAL",
+                "name": "master_signal"
+            },
+            {
+                "type": "ROUTE",
+                "name": "route"
+            }
+        ],
+        "return_type": "ASPECT_SET",
+        "body": {
+            "type": "call",
+            "function": "sncf_filter",
+            "arguments": [
+                {
+                    "type": "aspect_set",
+                    "members": [
+                        {
+                            "aspect": "RED",
+                            "condition": {
+                                "type": "condition",
+                                "if": {
+                                    "type": "is_passive_route",
+                                    "route": {
+                                        "type": "argument_ref",
+                                        "argument_name": "route"
+                                    }
+                                },
+                                "then": {
+                                    "type": "route_has_state",
+                                    "route": {
+                                        "type": "argument_ref",
+                                        "argument_name": "route"
+                                    },
+                                    "state": "OCCUPIED"
+                                },
+                                "else": {
+                                    "type": "not",
+                                    "expr": {
+                                        "type": "route_has_state",
+                                        "route": {
+                                            "type": "argument_ref",
+                                            "argument_name": "route"
+                                        },
+                                        "state": "RESERVED"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "aspect": "YELLOW",
+                            "condition": {
+                                "type": "signal_has_aspect",
+                                "signal": {
+                                    "type": "argument_ref",
+                                    "argument_name": "master_signal"
+                                },
+                                "aspect": "RED"
+                            }
+                        },
+                        {
+                            "aspect": "GREEN"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "name": "bal3",
+        "arguments": [
+            {
+                "type": "SIGNAL",
+                "name": "signal"
+            }
+        ],
+        "return_type": "ASPECT_SET",
+        "body": {
+            "type": "optional_match",
+            "name": "route",
+            "expr": {
+                "type": "reserved_route",
+                "signal": {
+                    "type": "argument_ref",
+                    "argument_name": "signal"
+                }
+            },
+            "case_none": {
+                "type": "aspect_set",
+                "members": [
+                    {
+                        "aspect": "RED"
+                    }
+                ]
+            },
+            "case_some": {
+                "type": "optional_match",
+                "name": "next_signal",
+                "expr": {
+                    "type": "next_signal",
+                    "signal": {
+                        "type": "argument_ref",
+                        "argument_name": "signal"
+                    },
+                    "route": {
+                        "type": "optional_match_ref",
+                        "match_name": "route"
+                    }
+                },
+                "case_none": {
+                    "type": "call",
+                    "function": "check_route",
+                    "arguments": [
+                        {
+                            "type": "optional_match_ref",
+                            "match_name": "route"
+                        }
+                    ]
+                },
+                "case_some": {
+                    "type": "call",
+                    "function": "bal3_line_signal",
+                    "arguments": [
+                        {
+                            "type": "optional_match_ref",
+                            "match_name": "next_signal"
+                        },
+                        {
+                            "type": "optional_match_ref",
+                            "match_name": "route"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+]
