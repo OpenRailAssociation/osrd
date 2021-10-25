@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
@@ -192,7 +193,9 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             double positionWhereTargetSpeedIsReached = slope.beginPosition + requiredAcceleratingDistance;
             res.add(Math.min(slope.endPosition, positionWhereTargetSpeedIsReached));
         }
-        return res;
+        return res.stream()
+                .filter(position -> position > 0)
+                .collect(Collectors.toList());
     }
 
     private ArrayList<AcceleratingSlope> findAcceleratingSlopes(
