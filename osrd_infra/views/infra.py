@@ -42,7 +42,6 @@ class InfraView(
         cache_key = f"osrd.infra.{pk}"
         infra = cache.get(cache_key)
         if infra is not None:
-            print("cached")
             return Response(infra)
         infra = railjson_serialize_infra(self.get_object())
         cache.set(cache_key, infra, timeout=settings.CACHE_TIMEOUT)
