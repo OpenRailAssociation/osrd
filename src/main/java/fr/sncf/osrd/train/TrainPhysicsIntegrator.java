@@ -24,6 +24,10 @@ public class TrainPhysicsIntegrator {
     private final RollingStock rollingStock;
     private final double rollingResistance;
     private final double inertia;
+    // an acceleration lower than this value will be considered zero
+    public static final double limitAcceleration = 1E-5;
+    // a speed lower than this value will be considered zero
+    public static final double limitSpeed = 1E-5;
 
     /**
      * The constructor of the class
@@ -164,8 +168,8 @@ public class TrainPhysicsIntegrator {
 
     private static double computeTimeDelta(double currentSpeed, double acceleration, double positionDelta) {
         // Solve: acceleration / 2 * t^2 + currentSpeed * t - positionDelta = 0
-        if (abs(acceleration) < 1E-5) {
-            if (abs(currentSpeed) < 1E-5)
+        if (abs(acceleration) < limitAcceleration) {
+            if (abs(currentSpeed) < limitSpeed)
                 return 0.0;
             return positionDelta / currentSpeed;
         }
@@ -196,6 +200,8 @@ public class TrainPhysicsIntegrator {
      * @param acceleration the acceleration of the train during that step
      * @param tractionForce the traction force of the train during that step
      * @param maxDistance the maximum distance the train can go
+     * @param isRKStep true if that step is one of the 4 small intermediate steps inside of runge-kutta method
+     *                 false if it is a full integration step, with runge-kutta mean acceleration
      * @param directionSign +1 if forward circulation, -1 if backwards
      * @return the new speed of the train
      */
@@ -205,10 +211,16 @@ public class TrainPhysicsIntegrator {
         var newSpeed = currentSpeed + directionSign * acceleration * timeStep;
         var timeDelta = timeStep;
 
-        // if the speed change sign or is very low we integrate only the step at which the speed is zero
-        if (!isRKStep && currentSpeed != 0.0
-                && (Math.signum(newSpeed) != Math.signum(currentSpeed) || abs(newSpeed) < 1E-5)
-                || isRKStep && (newSpeed < 0.0 || abs(newSpeed) < 1E-5)) {
+        // TODO improve this long condition by stopping differenciation between
+        //  RKSteps and full steps and getting rid of the boolean
+        // 2 possibilities :
+        // - the step is one of the 4 small steps of runge-kutta method :
+        //   in that case, check that the speed never becomes negative
+        // - the step is a full integration step
+        //   in that case check if the speed changes sign or becomes too low
+        if (isRKStep && (newSpeed < 0.0 || abs(newSpeed) < limitSpeed)
+                || !isRKStep && currentSpeed != 0.0
+                && (Math.signum(newSpeed) != Math.signum(currentSpeed) || abs(newSpeed) < limitSpeed)) {
             timeDelta = -currentSpeed / (directionSign * acceleration);
             newSpeed = 0.;
         }
@@ -232,6 +244,7 @@ public class TrainPhysicsIntegrator {
      * @param timeStep the time step used for the step
      * @param end the end of the train's path
      * @param directionSign +1 if forward circulation, -1 if backwards
+     * @param makeAction a function that returns an action given an integrator
      * @return the new speed of the train
      */
     public static IntegrationStep nextStep(TrainPositionTracker initialLocation,
@@ -281,8 +294,19 @@ public class TrainPhysicsIntegrator {
         return integrator.stepFromAcceleration(meanAcceleration, meanTractionForce, maxDistance, false, directionSign);
     }
 
+    /**
+     * Computes next runge-kutta intermediate step.
+     * This step is then used to memorize the acceleration and calculate the runge-kutta 4 mean acceleration.
+     * @param initialIntegrator the integrator with the initial speed and initial position of the step
+     * @param positionDelta the position delta of that runge-kutta intermediate step
+     * @param intermediateSpeed the speed of that runge-kutta intermediate step
+     * @param makeAction the action method
+     * @param directionSign +1 if forward circulation, -1 if backwards
+     * @param maxDistance the maximum distance the train can travel
+     * @return the next runge-kutta intermediate step
+     */
     private static IntegrationStep makeRKStep(TrainPhysicsIntegrator initialIntegrator,
-                                              double offset,
+                                              double positionDelta,
                                               double intermediateSpeed,
                                               Function<TrainPhysicsIntegrator, Action> makeAction,
                                               int directionSign,
@@ -292,7 +316,7 @@ public class TrainPhysicsIntegrator {
         var timeStep = initialIntegrator.timeStep;
 
         var intermediateLocation = initialLocation.clone();
-        intermediateLocation.updatePosition(rollingStock.length, offset);
+        intermediateLocation.updatePosition(rollingStock.length, positionDelta);
         var integrator = new TrainPhysicsIntegrator(
                 timeStep,
                 rollingStock,
