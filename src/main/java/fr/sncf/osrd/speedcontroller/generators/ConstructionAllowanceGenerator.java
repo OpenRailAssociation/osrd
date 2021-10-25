@@ -104,7 +104,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
         double speed = roiSpeeds.interpolate(endPosition); //The speed is calculated from the old running time
         var location = convertPosition(schedule, sim, endPosition);
         while (speed > newSpeeds.interpolate(location.getPathPosition())
-                && location.getPathPosition() > 0. && speed >= 1e-5) {
+                && location.getPathPosition() > 1e-5 && speed >= 1e-5) {
             var directive = new SpeedDirective(newSpeeds.interpolate(location.getPathPosition()));
             var step = nextStep(
                     location,
