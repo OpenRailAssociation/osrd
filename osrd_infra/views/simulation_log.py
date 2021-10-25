@@ -2,9 +2,21 @@ import requests
 from django.conf import settings
 from osrd_infra.utils import reverse_format
 from osrd_infra.views.railjson import format_route_id, format_track_section_id
-from rest_framework.exceptions import ParseError
+from rest_framework.exceptions import APIException
 from osrd_infra.models import TrainSchedule
 from enum import IntEnum
+
+
+class ServiceUnavailable(APIException):
+    status_code = 503
+    default_detail = "Service temporarily unavailable"
+    default_code = "service_unavailable"
+
+
+class SimulationError(APIException):
+    status_code = 500
+    default_detail = "A simulation error occurred"
+    default_code = "simulation_error"
 
 
 class SimulationType(IntEnum):
@@ -182,10 +194,10 @@ def run_simulation(train_schedule: TrainSchedule, sim_type: SimulationType):
             json=payload,
         )
     except requests.exceptions.ConnectionError as e:
-        raise ParseError("Couldn't connect with osrd backend") from e
+        raise ServiceUnavailable("Service OSRD backend unavailable") from e
 
     if not response:
-        raise ParseError(response.content)
+        raise SimulationError(response.content)
 
     return preprocess_response(response.json(), train_schedule)
 
@@ -197,17 +209,14 @@ def generate_simulation_logs(train_schedule):
     train_schedule.eco_simulation_log = None
     train_schedule.save()
 
-    train_schedule.base_simulation_log = run_simulation(
-        train_schedule, SimulationType.BASE
-    )
+    train_schedule.base_simulation_log = run_simulation(train_schedule, SimulationType.BASE)
 
     # Check margins is not None and not empty
     if train_schedule.margins:
-        train_schedule.margins_simulation_log = run_simulation(
-            train_schedule, SimulationType.MARGIN
-        )
-        train_schedule.eco_simulation_log = run_simulation(
-            train_schedule, SimulationType.ECO
-        )
-
+        for attr_name, sim_type in [("eco", SimulationType.ECO), ("margins", SimulationType.MARGIN)]:
+            attr_name = f"{attr_name}_simulation_log"
+            try:
+                setattr(train_schedule, attr_name, run_simulation(train_schedule, sim_type))
+            except SimulationError as e:
+                setattr(train_schedule, attr_name, {"error": str(e)})
     train_schedule.save()

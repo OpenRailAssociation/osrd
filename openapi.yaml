@@ -930,9 +930,17 @@ components:
         base:
           $ref: '#/components/schemas/TrainScheduleResultData'
         margins:
-          $ref: '#/components/schemas/TrainScheduleResultData'
+          oneOf:
+            - $ref: '#/components/schemas/TrainScheduleResultData'
+            - type: object
+              properties:
+                error: {type: string}
         eco:
-          $ref: '#/components/schemas/TrainScheduleResultData'
+          oneOf:
+            - $ref: '#/components/schemas/TrainScheduleResultData'
+            - type: object
+              properties:
+                error: {type: string}
     PathQuery:
       properties:
         infra:

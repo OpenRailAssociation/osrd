@@ -8,9 +8,7 @@ def convert_simulation_logs(train_schedule, projection_path):
     # Compute projection object
     projection = Projection(projection_path)
 
-    base = convert_simulation_log(
-        train_schedule.base_simulation_log, train_path, projection, projection_path
-    )
+    base = convert_simulation_log(train_schedule.base_simulation_log, train_path, projection, projection_path)
     res = {
         "id": train_schedule.pk,
         "labels": [label.label for label in train_schedule.labels.all()],
@@ -20,26 +18,25 @@ def convert_simulation_logs(train_schedule, projection_path):
     }
     # Add margins and eco results if available
     if train_schedule.margins_simulation_log:
-        res["margins"] = convert_simulation_log(
-            train_schedule.margins_simulation_log,
-            train_path,
-            projection,
-            projection_path,
-        )
-        res["eco"] = convert_simulation_log(
-            train_schedule.eco_simulation_log, train_path, projection, projection_path
-        )
+        for margin_type in ("margins", "eco"):
+            attr_name = f"{margin_type}_simulation_log"
+            sim_log = getattr(train_schedule, attr_name)
+            if "error" not in sim_log:
+                res[margin_type] = convert_simulation_log(
+                    sim_log,
+                    train_path,
+                    projection,
+                    projection_path,
+                )
+            else:
+                res[margin_type] = sim_log
     return res
 
 
 def convert_simulation_log(simulation_result, train_path, projection, projection_path):
     # Format data for charts
-    head_positions = convert_positions(
-        simulation_result["head_positions"], projection, train_path
-    )
-    tail_positions = convert_positions(
-        simulation_result["tail_positions"], projection, train_path
-    )
+    head_positions = convert_positions(simulation_result["head_positions"], projection, train_path)
+    tail_positions = convert_positions(simulation_result["tail_positions"], projection, train_path)
     end_time = simulation_result["head_positions"][-1]["time"]
     route_begin_occupancy, route_end_occupancy = convert_route_occupancy(
         simulation_result["routes_status"], projection_path, projection, end_time
@@ -89,8 +86,7 @@ def convert_positions(train_locations, projection, train_path):
         # Add intermediate points
         end_loc = path_range.end
         while (
-            loc_index + 1 < len(train_locations)
-            and train_locations[loc_index + 1]["path_offset"] < end_loc.path_offset
+            loc_index + 1 < len(train_locations) and train_locations[loc_index + 1]["path_offset"] < end_loc.path_offset
         ):
             loc_index += 1
             loc = train_locations[loc_index]
@@ -133,9 +129,7 @@ OccupancyEvent = Union[OccupancyStart, OccupancyEnd]
 OCCUPIED_STATUSES = {"OCCUPIED", "CONFLICT", "CBTC_OCCUPIED"}
 
 
-def extract_occupancy_events(
-    route_status_log, projection_path, projection
-) -> Iterator[OccupancyEvent]:
+def extract_occupancy_events(route_status_log, projection_path, projection) -> Iterator[OccupancyEvent]:
     """
     Turns a raw simulation log into a clean log of occupation events on a given path
     """
@@ -188,22 +182,12 @@ def convert_route_occupancy(route_status_log, projection_path, projection, end_t
         min_occ = min(occ.start_pos for occ in occupied_routes.values())
         max_occ = max(occ.end_pos for occ in occupied_routes.values())
 
-        if (
-            force_add
-            or not route_begin_occupancy
-            or route_begin_occupancy[-1].position != min_occ
-        ):
+        if force_add or not route_begin_occupancy or route_begin_occupancy[-1].position != min_occ:
             route_begin_occupancy.append(OccupancyPoint(event_time, min_occ))
-        if (
-            force_add
-            or not route_end_occupancy
-            or route_end_occupancy[-1].position != max_occ
-        ):
+        if force_add or not route_end_occupancy or route_end_occupancy[-1].position != max_occ:
             route_end_occupancy.append(OccupancyPoint(event_time, max_occ))
 
-    for occupancy_event in extract_occupancy_events(
-        route_status_log, projection_path, projection
-    ):
+    for occupancy_event in extract_occupancy_events(route_status_log, projection_path, projection):
         if isinstance(occupancy_event, OccupancyStart):
             occupied_routes[occupancy_event.route_id] = occupancy_event
         else:
