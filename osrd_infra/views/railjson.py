@@ -493,10 +493,7 @@ def railjson_serialize_infra_namespace(namespace):
         serialize_aspect(entity) for entity in fetch_entities(AspectEntity, namespace)
     ]
 
-    bench.step("creating the response")
-    response = Response(res)
-
     bench.stop()
     bench.print_steps(logger.info)
 
-    return response
+    return res

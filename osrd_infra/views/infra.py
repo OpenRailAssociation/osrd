@@ -1,3 +1,7 @@
+from django.conf import settings
+from django.core.cache import cache
+from rest_framework.response import Response
+
 from osrd_infra.serializers import InfraSerializer
 from osrd_infra.models import Infra
 from rest_framework.viewsets import GenericViewSet
@@ -35,7 +39,15 @@ class InfraView(
 
     @action(detail=True, methods=["get"])
     def railjson(self, request, pk=None):
-        return railjson_serialize_infra(self.get_object())
+        cache_key = f"osrd.infra.{pk}"
+        infra = cache.get(cache_key)
+        if infra is not None:
+            print("cached")
+            return Response(infra)
+        infra = railjson_serialize_infra(self.get_object())
+        cache.set(cache_key, infra, timeout=settings.CACHE_TIMEOUT)
+        return Response(infra)
+
 
     @action(detail=True, methods=["post"])
     def edit(self, request, pk=None):
