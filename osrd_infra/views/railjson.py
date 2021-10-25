@@ -1,8 +1,6 @@
 import json
 from typing import Dict, Tuple, List
 
-from rest_framework.response import Response
-
 from osrd_infra.utils import Benchmarker
 from osrd_infra.models import (
     ApplicableDirection,

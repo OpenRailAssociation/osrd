@@ -48,7 +48,6 @@ class InfraView(
         cache.set(cache_key, infra, timeout=settings.CACHE_TIMEOUT)
         return Response(infra)
 
-
     @action(detail=True, methods=["post"])
     def edit(self, request, pk=None):
         return edit_infra(self.get_object(), request.data)
