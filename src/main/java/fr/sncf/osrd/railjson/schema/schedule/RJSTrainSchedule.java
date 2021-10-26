@@ -5,6 +5,7 @@ import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
+import java.util.List;
 
 public class RJSTrainSchedule implements Identified {
     /** The identifier of this train */
@@ -50,6 +51,21 @@ public class RJSTrainSchedule implements Identified {
     @Json(name = "train_transition_delay")
     public double trainTransitionDelay;
 
+    /** Optional list of expected times at positions.
+     * It is used to determine how late the train is at any time */
+    @Json(name = "reference_times")
+    public List<RJSTimePoint> referenceTimes;
+
+    public static class RJSTimePoint {
+        public double position;
+        public double time;
+
+        public RJSTimePoint(double position, double time) {
+            this.position = position;
+            this.time = time;
+        }
+    }
+
     /** Create a new train schedule */
     public RJSTrainSchedule(
             String id,
@@ -63,7 +79,8 @@ public class RJSTrainSchedule implements Identified {
             RJSTrainStop[] stops,
             ID<RJSRoute>[] routes,
             String previousTrainId,
-            double trainTransitionDelay
+            double trainTransitionDelay,
+            List<RJSTimePoint> referenceTimes
     ) {
         this.id = id;
         this.rollingStock = rollingStock;
@@ -77,13 +94,14 @@ public class RJSTrainSchedule implements Identified {
         this.routes = routes;
         this.previousTrainId = previousTrainId;
         this.trainTransitionDelay = trainTransitionDelay;
+        this.referenceTimes = referenceTimes;
     }
 
     /** Copy constructor */
     public RJSTrainSchedule(RJSTrainSchedule other) {
         this(other.id, other.rollingStock, other.departureTime, other.initialHeadLocation, other.initialSpeed,
                 other.phases, other.trainControlMethod, other.allowances, other.stops, other.routes,
-                other.previousTrainId, other.trainTransitionDelay);
+                other.previousTrainId, other.trainTransitionDelay, other.referenceTimes);
     }
 
     @Override

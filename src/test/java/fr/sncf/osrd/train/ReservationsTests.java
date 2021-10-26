@@ -50,7 +50,8 @@ public class ReservationsTests {
                 firstSchedule.stops,
                 firstSchedule.routes,
                 null,
-                0
+                0,
+                null
         ));
         var prepared = config.prepare();
         var error = assertThrows(SimulationError.class, prepared::runWithExceptions);
