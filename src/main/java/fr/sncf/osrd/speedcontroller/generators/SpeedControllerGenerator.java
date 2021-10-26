@@ -33,12 +33,12 @@ public abstract class SpeedControllerGenerator {
     public static SortedDoubleMap getExpectedTimes(Simulation sim,
                                             TrainSchedule schedule,
                                             Set<SpeedController> controllers,
-                                            double timestep,
+                                            double timeStep,
                                             double begin,
                                             double end,
                                             double initialSpeed) {
         var updatesMap
-                = getIntegrationStepsAtPositions(sim, schedule, controllers, timestep, begin, end, initialSpeed);
+                = getIntegrationStepsAtPositions(sim, schedule, controllers, timeStep, begin, end, initialSpeed);
         var res = new SortedDoubleMap();
 
         assert schedule.departureTime >= 0; // This could fail if there is a bug with train successions
@@ -108,7 +108,7 @@ public abstract class SpeedControllerGenerator {
             Simulation sim,
             TrainSchedule schedule,
             Set<SpeedController> controllers,
-            double timestep,
+            double timeStep,
             double begin,
             double end,
             double initialSpeed
@@ -123,16 +123,16 @@ public abstract class SpeedControllerGenerator {
 
         double speed = initialSpeed;
         do {
-            var step = nextStepFromControllers(
+            int currentStopIndex = stopIndex;
+            var step = nextStep(
                     location,
                     speed,
-                    controllers,
                     schedule.rollingStock,
-                    timestep,
+                    timeStep,
                     totalLength,
-                    stopIndex,
-                    1
-            );
+                    1,
+                    (integrator) -> integrator.computeActionFromControllers(controllers, end, currentStopIndex));
+
             speed = step.finalSpeed;
             location.updatePosition(schedule.rollingStock.length, step.positionDelta);
             res.put(location.getPathPosition(), step);
@@ -141,7 +141,7 @@ public abstract class SpeedControllerGenerator {
                 if (stopIndex >= schedule.stops.size())
                     break;
             }
-        } while (location.getPathPosition() + timestep * speed < totalLength - 1e-5);
+        } while (location.getPathPosition() + timeStep * speed < totalLength - 1e-5);
         return res;
     }
 
@@ -163,7 +163,7 @@ public abstract class SpeedControllerGenerator {
             double speedLimit,
             double endPosition,
             double maxSpeed,
-            double timestep) {
+            double timeStep) {
 
         SortedDoubleMap expectedSpeeds = new SortedDoubleMap();
         var speed = speedLimit;
@@ -174,14 +174,14 @@ public abstract class SpeedControllerGenerator {
         // TODO: max Gamma could have different values depending on the speed like in ERTMS
         var action = Action.brake(Math.abs(schedule.rollingStock.gamma * inertia));
         while (speed < maxSpeed && location.getPathPosition() >= 0.0001) {
-            var step = nextStepFromAction(
+            var step = nextStep(
                     location,
                     speed,
-                    action,
                     schedule.rollingStock,
-                    timestep,
+                    timeStep,
                     location.getPathPosition(),
-                    -1
+                    -1,
+                    (integrator) -> action
             );
             speed = step.finalSpeed;
             expectedSpeeds.put(location.getPathPosition(), speed);

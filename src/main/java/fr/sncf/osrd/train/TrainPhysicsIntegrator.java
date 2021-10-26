@@ -1,14 +1,14 @@
 package fr.sncf.osrd.train;
 
 
-import static java.lang.Math.abs;
 import static fr.sncf.osrd.train.RollingStock.GammaType.CONST;
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedDirective;
 import fr.sncf.osrd.utils.Constants;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * An utility class to help simulate the train, using numerical integration.
@@ -18,33 +18,40 @@ import java.util.Set;
  */
 public class TrainPhysicsIntegrator {
     private final double timeStep;
+    private final TrainPositionTracker currentLocation;
     private final double currentSpeed;
     private final double weightForce;
+    private final RollingStock rollingStock;
     private final double rollingResistance;
     private final double inertia;
+    // an acceleration lower than this value will be considered zero
+    public static final double limitAcceleration = 1E-5;
+    // a speed lower than this value will be considered zero
+    public static final double limitSpeed = 1E-5;
 
     /**
      * The constructor of the class
      * @param timeStep the timeStep of the simulation
      * @param rollingStock the specs of the train
+     * @param currentLocation the current location of the train
      * @param currentSpeed the current speed of the train
-     * @param meanTrainGrade the maximum slope under the train
      */
     public TrainPhysicsIntegrator(
             double timeStep,
             RollingStock rollingStock,
-            double currentSpeed,
-            double meanTrainGrade
+            TrainPositionTracker currentLocation,
+            double currentSpeed
     ) {
         assert timeStep > 0;
+        this.timeStep = timeStep;
+        this.currentLocation = currentLocation;
+        this.currentSpeed = currentSpeed;
         // get an angle from a meter per km elevation difference
         // the curve's radius is taken into account in meanTrainGrade
-        var angle = Math.atan(meanTrainGrade / 1000.0);  // from m/km to m/m
+        var angle = Math.atan(currentLocation.meanTrainGrade() / 1000.0);  // from m/km to m/m
         var weightForce = - rollingStock.mass * Constants.GRAVITY * Math.sin(angle);
-
-        this.timeStep = timeStep;
-        this.currentSpeed = currentSpeed;
         this.weightForce = weightForce;
+        this.rollingStock = rollingStock;
         this.rollingResistance = rollingStock.rollingResistance(currentSpeed);
         assert rollingResistance >= 0.;
         this.inertia = rollingStock.mass * rollingStock.inertiaCoefficient;
@@ -85,6 +92,20 @@ public class TrainPhysicsIntegrator {
         // compute the acceleration on all the integration step. the variable is named this way because we
         // compute the acceleration on only a part of the integration step below
         return (actionTractionForce + weightForce + effectiveOppositeForces) / inertia;
+    }
+
+    /**
+     * Computes the action of the train, given a set of speedControllers
+     * @param controllers the set of speedControllers we're gonna get the action from
+     * @param end end position of the route
+     * @param stopIndex number of stops in the route
+     * @return the action of the train
+     */
+    public Action computeActionFromControllers(Set<SpeedController> controllers, double end, int stopIndex) {
+        var currentPosition = currentLocation.getPathPosition();
+        final var finalNextPosition = min(currentPosition, end);
+        var directive = SpeedController.getDirective(controllers, finalNextPosition, stopIndex);
+        return actionToTargetSpeed(directive, rollingStock);
     }
 
     /** Get the max braking force if it exists or the average time table braking force. */
@@ -147,8 +168,11 @@ public class TrainPhysicsIntegrator {
 
     private static double computeTimeDelta(double currentSpeed, double acceleration, double positionDelta) {
         // Solve: acceleration / 2 * t^2 + currentSpeed * t - positionDelta = 0
-        if (abs(acceleration) < 0.00001)
+        if (abs(acceleration) < limitAcceleration) {
+            if (abs(currentSpeed) < limitSpeed)
+                return 0.0;
             return positionDelta / currentSpeed;
+        }
         var numerator = -currentSpeed + Math.sqrt(currentSpeed * currentSpeed + 2 * positionDelta * acceleration);
         return numerator / acceleration;
     }
@@ -165,6 +189,7 @@ public class TrainPhysicsIntegrator {
                 computeAcceleration(action),
                 action.tractionForce(),
                 maxDistance,
+                false,
                 directionSign
         );
     }
@@ -175,17 +200,27 @@ public class TrainPhysicsIntegrator {
      * @param acceleration the acceleration of the train during that step
      * @param tractionForce the traction force of the train during that step
      * @param maxDistance the maximum distance the train can go
+     * @param isRKStep true if that step is one of the 4 small intermediate steps inside of runge-kutta method
+     *                 false if it is a full integration step, with runge-kutta mean acceleration
      * @param directionSign +1 if forward circulation, -1 if backwards
      * @return the new speed of the train
      */
-    public IntegrationStep stepFromAcceleration(double acceleration, double tractionForce,
-                                                              double maxDistance, double directionSign) {
+    public IntegrationStep stepFromAcceleration(double acceleration, double tractionForce, double maxDistance,
+                                                boolean isRKStep, double directionSign) {
 
         var newSpeed = currentSpeed + directionSign * acceleration * timeStep;
         var timeDelta = timeStep;
 
-        // if the speed change sign or is very low we integrate only the step at which the speed is zero
-        if (currentSpeed != 0.0 && (Math.signum(newSpeed) != Math.signum(currentSpeed) || abs(newSpeed) < 1E-10)) {
+        // TODO improve this long condition by stopping differenciation between
+        //  RKSteps and full steps and getting rid of the boolean
+        // 2 possibilities :
+        // - the step is one of the 4 small steps of runge-kutta method :
+        //   in that case, check that the speed never becomes negative
+        // - the step is a full integration step
+        //   in that case check if the speed changes sign or becomes too low
+        if (isRKStep && (newSpeed < 0.0 || abs(newSpeed) < limitSpeed)
+                || !isRKStep && currentSpeed != 0.0
+                && (Math.signum(newSpeed) != Math.signum(currentSpeed) || abs(newSpeed) < limitSpeed)) {
             timeDelta = -currentSpeed / (directionSign * acceleration);
             newSpeed = 0.;
         }
@@ -197,87 +232,102 @@ public class TrainPhysicsIntegrator {
 
         timeDelta = computeTimeDelta(currentSpeed, acceleration, maxDistance);
         assert timeDelta < timeStep && timeDelta >= 0;
-        newSpeed = currentSpeed + acceleration * timeDelta;
-        return  new IntegrationStep(timeDelta, maxDistance, newSpeed, acceleration, tractionForce);
+        newSpeed = currentSpeed + directionSign * acceleration * timeDelta;
+        return new IntegrationStep(timeDelta, maxDistance, newSpeed, acceleration, tractionForce);
     }
 
-    // region NEXT_STEP_HELPERS
+    /**
+     * Compute the next integration step with runge-kutta 4 method
+     * @param initialLocation the location at the beginning of the step
+     * @param initialSpeed the speed at the beginning of the step
+     * @param rollingStock the rolling stock used for the step
+     * @param timeStep the time step used for the step
+     * @param end the end of the train's path
+     * @param directionSign +1 if forward circulation, -1 if backwards
+     * @param makeAction a function that returns an action given an integrator
+     * @return the new speed of the train
+     */
+    public static IntegrationStep nextStep(TrainPositionTracker initialLocation,
+                                           double initialSpeed,
+                                           RollingStock rollingStock,
+                                           double timeStep,
+                                           double end,
+                                           int directionSign,
+                                           Function<TrainPhysicsIntegrator, Action> makeAction) {
+        var halfIntegrator = new TrainPhysicsIntegrator(
+                timeStep / 2,
+                rollingStock,
+                initialLocation,
+                initialSpeed
+        );
+        var fullIntegrator = new TrainPhysicsIntegrator(
+                timeStep,
+                rollingStock,
+                initialLocation,
+                initialSpeed
+        );
+        var maxDistance = end - initialLocation.getPathPosition();
 
-    /** Computes the next step of the integration method, based on location, speed, and a directive. */
-    public static IntegrationStep nextStepFromDirective(TrainPositionTracker currentLocation,
-                                                        double currentSpeed,
-                                                        SpeedDirective directive,
-                                                        RollingStock rollingStock,
-                                                        double timeStep,
-                                                        double distanceLeft,
-                                                        int directionSign) {
+        var step1 = makeRKStep(halfIntegrator, 0, initialSpeed,
+                makeAction, directionSign, maxDistance);
+
+        var step2 = makeRKStep(halfIntegrator,  step1.positionDelta, step1.finalSpeed,
+                makeAction, directionSign, maxDistance);
+
+        var step3 = makeRKStep(fullIntegrator, step2.positionDelta, step2.finalSpeed,
+                makeAction, directionSign, maxDistance);
+
+        var step4 = makeRKStep(fullIntegrator, step3.positionDelta, step3.finalSpeed,
+                makeAction, directionSign, maxDistance);
+
+        var meanAcceleration = (1. / 6.) * (step1.acceleration + 2 * step2.acceleration
+                + 2 * step3.acceleration + step4.acceleration);
+        var meanTractionForce = (1. / 6.) * (step1.tractionForce + 2 * step2.tractionForce
+                + 2 * step3.tractionForce + step4.tractionForce);
 
         var integrator = new TrainPhysicsIntegrator(
                 timeStep,
                 rollingStock,
-                currentSpeed,
-                currentLocation.meanTrainGrade());
-        var action = integrator.actionToTargetSpeed(directive, rollingStock, directionSign);
-        assert action != null;
-        assert action.type != Action.ActionType.EMERGENCY_BRAKING;
-        return integrator.stepFromAction(
-                action,
-                distanceLeft,
-                directionSign
+                initialLocation,
+                initialSpeed
         );
+        return integrator.stepFromAcceleration(meanAcceleration, meanTractionForce, maxDistance, false, directionSign);
     }
 
-    /** Computes the next step of the integration method, based on location, speed, and a specified action. */
-    public static IntegrationStep nextStepFromAction(TrainPositionTracker currentLocation,
-                                                            double currentSpeed,
-                                                            Action action,
-                                                            RollingStock rollingStock,
-                                                            double timeStep,
-                                                            double end,
-                                                            int directionSign) {
+    /**
+     * Computes next runge-kutta intermediate step.
+     * This step is then used to memorize the acceleration and calculate the runge-kutta 4 mean acceleration.
+     * @param initialIntegrator the integrator with the initial speed and initial position of the step
+     * @param positionDelta the position delta of that runge-kutta intermediate step
+     * @param intermediateSpeed the speed of that runge-kutta intermediate step
+     * @param makeAction the action method
+     * @param directionSign +1 if forward circulation, -1 if backwards
+     * @param maxDistance the maximum distance the train can travel
+     * @return the next runge-kutta intermediate step
+     */
+    private static IntegrationStep makeRKStep(TrainPhysicsIntegrator initialIntegrator,
+                                              double positionDelta,
+                                              double intermediateSpeed,
+                                              Function<TrainPhysicsIntegrator, Action> makeAction,
+                                              int directionSign,
+                                              double maxDistance) {
+        var initialLocation = initialIntegrator.currentLocation;
+        var rollingStock = initialIntegrator.rollingStock;
+        var timeStep = initialIntegrator.timeStep;
 
+        var intermediateLocation = initialLocation.clone();
+        intermediateLocation.updatePosition(rollingStock.length, positionDelta);
         var integrator = new TrainPhysicsIntegrator(
                 timeStep,
                 rollingStock,
-                currentSpeed,
-                currentLocation.meanTrainGrade());
-        var distanceLeft = end - currentLocation.getPathPosition();
-        assert action != null;
-        assert action.type != Action.ActionType.EMERGENCY_BRAKING;
-        return integrator.stepFromAction(
-                action,
-                distanceLeft,
-                directionSign
+                intermediateLocation,
+                intermediateSpeed
         );
-    }
+        var action = makeAction.apply(integrator);
+        // the acceleration and traction force evaluated at this intermediate runge-kutta step
+        var acceleration = integrator.computeAcceleration(action);
+        var tractionForce = action.tractionForce();
 
-    /** Computes the next step of the integration method, based on location, speed, and a set of controllers. */
-    public static IntegrationStep nextStepFromControllers(TrainPositionTracker currentLocation,
-                                                                 double currentSpeed,
-                                                                 Set<SpeedController> controllers,
-                                                                 RollingStock rollingStock,
-                                                                 double timeStep,
-                                                                 double end,
-                                                                 int stopIndex,
-                                                                 int directionSign) {
-        var integrator = new TrainPhysicsIntegrator(
-                timeStep,
-                rollingStock,
-                currentSpeed,
-                currentLocation.meanTrainGrade());
-        var nextPosition = currentLocation.getPathPosition() + currentSpeed * timeStep;
-        final var finalNextPosition = min(nextPosition, end);
-        var directive = SpeedController.getDirective(controllers, finalNextPosition, stopIndex);
-        var action = integrator.actionToTargetSpeed(directive, rollingStock);
-        var distanceLeft = end - finalNextPosition;
-        assert action != null;
-        assert action.type != Action.ActionType.EMERGENCY_BRAKING;
-        return integrator.stepFromAction(
-                action,
-                distanceLeft,
-                directionSign
-        );
+        return initialIntegrator.stepFromAcceleration(acceleration, tractionForce, maxDistance, true, directionSign);
     }
-
-    // endregion
 }

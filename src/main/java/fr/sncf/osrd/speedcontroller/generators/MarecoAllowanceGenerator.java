@@ -1,8 +1,7 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
-import static fr.sncf.osrd.train.TrainPhysicsIntegrator.nextStepFromAction;
+import static fr.sncf.osrd.train.TrainPhysicsIntegrator.nextStep;
 import static java.util.Collections.max;
-import static java.util.Collections.min;
 
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
@@ -209,7 +208,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             var location = convertPosition(schedule, sim, position);
             double speed = element.getValue();
             var integrator =
-                    new TrainPhysicsIntegrator(TIME_STEP, rollingStock, speed, location.meanTrainGrade());
+                    new TrainPhysicsIntegrator(TIME_STEP, rollingStock, location, speed);
             var naturalAcceleration = integrator.computeAcceleration(Action.coast());
             if (speed < vf || speed > previousSpeed) { // if v < vf or the train is accelerating, just update variables
                 previousAcceleration = naturalAcceleration;
@@ -246,14 +245,14 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         location.ignoreInfraState = true;
 
         do {
-            var step = nextStepFromAction(
+            var step = nextStep(
                     location,
                     speed,
-                    Action.coast(),
                     schedule.rollingStock,
                     TIME_STEP,
                     location.getPathPosition(),
-                    -1
+                    -1,
+                    (integrator) -> Action.coast()
             );
             speed = step.finalSpeed;
             if (speed == 0)
