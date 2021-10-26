@@ -272,7 +272,7 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         remainingDist -= edgeMovement;
 
         // add edges to the current edges queue as the train moves backwards
-        while (remainingDist > 1e-10) {
+        while (remainingDist > TrainPhysicsIntegrator.limitPositionDelta) {
             var previousPos = previousTrackSectionPosition(remainingDist);
             if (previousPos == null)
                 break;
