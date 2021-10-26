@@ -28,6 +28,8 @@ public class TrainPhysicsIntegrator {
     public static final double limitAcceleration = 1E-5;
     // a speed lower than this value will be considered zero
     public static final double limitSpeed = 1E-5;
+    // a position delta lower than this value will be considered zero
+    public static final double limitPositionDelta = 1E-6;
 
     /**
      * The constructor of the class
@@ -163,7 +165,10 @@ public class TrainPhysicsIntegrator {
                                                double timeStep, double directionSign) {
         // dx = currentSpeed * dt + 1/2 * acceleration * dt * dt
         var positionDelta = currentSpeed * timeStep + 0.5 * acceleration * timeStep * timeStep;
-        return directionSign * positionDelta;
+        var delta = directionSign * positionDelta;
+        if (abs(delta) < limitPositionDelta)
+            delta = 0;
+        return delta;
     }
 
     private static double computeTimeDelta(double currentSpeed, double acceleration, double positionDelta) {
@@ -221,7 +226,7 @@ public class TrainPhysicsIntegrator {
         if (isRKStep && (newSpeed < 0.0 || abs(newSpeed) < limitSpeed)
                 || !isRKStep && currentSpeed != 0.0
                 && (Math.signum(newSpeed) != Math.signum(currentSpeed) || abs(newSpeed) < limitSpeed)) {
-            if (abs(acceleration) < 1e-5)
+            if (abs(acceleration) < limitAcceleration)
                 timeDelta = 0;
             else
                 timeDelta = -currentSpeed / (directionSign * acceleration);
@@ -230,8 +235,6 @@ public class TrainPhysicsIntegrator {
         }
 
         var newPositionDelta = computePositionDelta(currentSpeed, acceleration, timeDelta, directionSign);
-        if (abs(newPositionDelta) < 1e-6)
-            newPositionDelta = 0;
 
         if (abs(newPositionDelta) <= abs(maxDistance) || signum(newPositionDelta) != signum(maxDistance))
             return new IntegrationStep(timeDelta, newPositionDelta, newSpeed, acceleration, tractionForce);
