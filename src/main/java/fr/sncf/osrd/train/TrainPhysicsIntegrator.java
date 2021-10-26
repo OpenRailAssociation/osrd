@@ -127,7 +127,7 @@ public class TrainPhysicsIntegrator {
         assert currentSpeed >= 0;
 
         // if the train is supposed to coast, make sure there's not a more restraining speedController active
-        if (speedDirective.isCoasting && currentSpeed <= speedDirective.allowedSpeed) {
+        if (speedDirective.isCoasting && currentSpeed <= speedDirective.allowedSpeed && currentSpeed != 0) {
             return Action.coast();
         }
 
@@ -225,6 +225,7 @@ public class TrainPhysicsIntegrator {
                 timeDelta = 0;
             else
                 timeDelta = -currentSpeed / (directionSign * acceleration);
+
             newSpeed = 0.;
         }
 
