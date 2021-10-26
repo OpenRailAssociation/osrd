@@ -125,8 +125,6 @@ public class TrainPhysicsIntegrator {
         // the force we'd need to apply to reach the target speed at the next step
         // a<0 dec force<0
         // a>0 acc force>0
-        // normally the train speed should be positive
-        assert currentSpeed >= 0;
 
         // if the train is supposed to coast, make sure there's not a more restraining speedController active
         if (speedDirective.isCoasting && currentSpeed <= speedDirective.allowedSpeed && currentSpeed != 0) {
@@ -171,15 +169,17 @@ public class TrainPhysicsIntegrator {
         return delta;
     }
 
-    private static double computeTimeDelta(double currentSpeed, double acceleration, double positionDelta) {
-        // Solve: acceleration / 2 * t^2 + currentSpeed * t - positionDelta = 0
+    private static double computeTimeDelta(double currentSpeed, double acceleration, double positionDelta,
+                                           double directionSign) {
+        // Solve: directionSign * ((acceleration / 2) * t^2 + currentSpeed * t) - positionDelta = 0
         if (abs(acceleration) < limitAcceleration) {
             if (abs(currentSpeed) < limitSpeed)
                 return 0.0;
-            return positionDelta / currentSpeed;
+            return positionDelta / (currentSpeed * directionSign);
         }
-        var numerator = -currentSpeed + Math.sqrt(currentSpeed * currentSpeed + 2 * positionDelta * acceleration);
-        return numerator / acceleration;
+        var numerator = -currentSpeed * directionSign
+                + Math.sqrt(currentSpeed * currentSpeed + 2 * positionDelta * acceleration * directionSign);
+        return numerator / (acceleration * directionSign);
     }
 
 
@@ -194,9 +194,16 @@ public class TrainPhysicsIntegrator {
                 computeAcceleration(action),
                 action.tractionForce(),
                 maxDistance,
-                false,
                 directionSign
         );
+    }
+
+
+    /** Stop the step if the speed changes speed, unless we start at 0 */
+    private boolean shouldStopStepAtZeroSpeed(double newSpeed) {
+        var isNewSpeedZero = abs(newSpeed) < limitSpeed;
+        var hasChangedSign = Math.signum(newSpeed) != Math.signum(currentSpeed);
+        return currentSpeed != 0.0 && (isNewSpeedZero || hasChangedSign);
     }
 
 
@@ -205,27 +212,16 @@ public class TrainPhysicsIntegrator {
      * @param acceleration the acceleration of the train during that step
      * @param tractionForce the traction force of the train during that step
      * @param maxDistance the maximum distance the train can go
-     * @param isRKStep true if that step is one of the 4 small intermediate steps inside of runge-kutta method
-     *                 false if it is a full integration step, with runge-kutta mean acceleration
      * @param directionSign +1 if forward circulation, -1 if backwards
      * @return the new speed of the train
      */
     public IntegrationStep stepFromAcceleration(double acceleration, double tractionForce, double maxDistance,
-                                                boolean isRKStep, double directionSign) {
+                                                double directionSign) {
 
         var newSpeed = currentSpeed + directionSign * acceleration * timeStep;
         var timeDelta = timeStep;
 
-        // TODO improve this long condition by stopping differenciation between
-        //  RKSteps and full steps and getting rid of the boolean
-        // 2 possibilities :
-        // - the step is one of the 4 small steps of runge-kutta method :
-        //   in that case, check that the speed never becomes negative
-        // - the step is a full integration step
-        //   in that case check if the speed changes sign or becomes too low
-        if (isRKStep && (newSpeed < 0.0 || abs(newSpeed) < limitSpeed)
-                || !isRKStep && currentSpeed != 0.0
-                && (Math.signum(newSpeed) != Math.signum(currentSpeed) || abs(newSpeed) < limitSpeed)) {
+        if (shouldStopStepAtZeroSpeed(newSpeed)) {
             if (abs(acceleration) < limitAcceleration)
                 timeDelta = 0;
             else
@@ -239,7 +235,7 @@ public class TrainPhysicsIntegrator {
         if (abs(newPositionDelta) <= abs(maxDistance) || signum(newPositionDelta) != signum(maxDistance))
             return new IntegrationStep(timeDelta, newPositionDelta, newSpeed, acceleration, tractionForce);
 
-        timeDelta = computeTimeDelta(currentSpeed, acceleration, maxDistance);
+        timeDelta = computeTimeDelta(currentSpeed, acceleration, maxDistance, directionSign);
         assert timeDelta < timeStep && timeDelta >= 0;
         newSpeed = currentSpeed + directionSign * acceleration * timeDelta;
         return new IntegrationStep(timeDelta, maxDistance, newSpeed, acceleration, tractionForce);
@@ -300,7 +296,7 @@ public class TrainPhysicsIntegrator {
                 initialLocation,
                 initialSpeed
         );
-        return integrator.stepFromAcceleration(meanAcceleration, meanTractionForce, maxDistance, false, directionSign);
+        return integrator.stepFromAcceleration(meanAcceleration, meanTractionForce, maxDistance, directionSign);
     }
 
     /**
@@ -337,6 +333,6 @@ public class TrainPhysicsIntegrator {
         var acceleration = integrator.computeAcceleration(action);
         var tractionForce = action.tractionForce();
 
-        return initialIntegrator.stepFromAcceleration(acceleration, tractionForce, maxDistance, true, directionSign);
+        return initialIntegrator.stepFromAcceleration(acceleration, tractionForce, maxDistance, directionSign);
     }
 }
