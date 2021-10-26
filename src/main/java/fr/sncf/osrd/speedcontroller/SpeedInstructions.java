@@ -29,11 +29,20 @@ public class SpeedInstructions {
      * from a `new MaxSpeedGenerator()`.
      * @param targetSpeedGenerators generators used for target speed controllers. If null, a MaxSpeedGenerator is
      *      used instead. When given several generators, those in a set are computed independently,
-     *      then each set is computed sequentially using the previous one as reference speed. */
-    public SpeedInstructions(List<Set<SpeedControllerGenerator>> targetSpeedGenerators) {
+     *      then each set is computed sequentially using the previous one as reference speed.
+     * @param referenceTimes (optional): points of reference time, to determine how late the train is */
+    public SpeedInstructions(List<Set<SpeedControllerGenerator>> targetSpeedGenerators,
+                             SortedDoubleMap referenceTimes) {
         if (targetSpeedGenerators == null || targetSpeedGenerators.size() == 0)
             targetSpeedGenerators = Collections.singletonList(Collections.singleton(new MaxSpeedGenerator()));
         this.targetSpeedGenerators = targetSpeedGenerators;
+
+        this.expectedTimes = referenceTimes;
+    }
+
+    /** Overload where the reference time isn't specified (set to null) */
+    public SpeedInstructions(List<Set<SpeedControllerGenerator>> targetSpeedGenerators) {
+        this(targetSpeedGenerators, null);
     }
 
     /** Creates an instance from a list of generators. They are evaluated sequentially using the previous
@@ -69,8 +78,10 @@ public class SpeedInstructions {
             targetSpeedControllers.addAll(newControllers);
         }
 
-        expectedTimes = SpeedControllerGenerator.getExpectedTimes(sim, schedule, targetSpeedControllers,
-                SpeedControllerGenerator.TIME_STEP, 0, Double.POSITIVE_INFINITY, schedule.initialSpeed);
+        // If left unspecified, we generate the reference times from a simulation with no interaction
+        if (expectedTimes == null)
+            expectedTimes = SpeedControllerGenerator.getExpectedTimes(sim, schedule, targetSpeedControllers,
+                    SpeedControllerGenerator.TIME_STEP, 0, Double.POSITIVE_INFINITY, schedule.initialSpeed);
     }
 
     /** Returns how late we are compared to the expected time, in seconds. The result may be negative if we are
