@@ -232,7 +232,7 @@ public class TrainPhysicsIntegrator {
         if (abs(newPositionDelta) < 1e-6)
             newPositionDelta = 0;
 
-        if (abs(newPositionDelta) <= abs(maxDistance))
+        if (abs(newPositionDelta) <= abs(maxDistance) || signum(newPositionDelta) != signum(maxDistance))
             return new IntegrationStep(timeDelta, newPositionDelta, newSpeed, acceleration, tractionForce);
 
         timeDelta = computeTimeDelta(currentSpeed, acceleration, maxDistance);
