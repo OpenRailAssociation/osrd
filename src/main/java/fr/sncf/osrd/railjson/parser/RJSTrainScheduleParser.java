@@ -22,6 +22,7 @@ import fr.sncf.osrd.train.decisions.KeyboardInput;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.train.phases.NavigatePhase;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
+import fr.sncf.osrd.utils.SortedDoubleMap;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.*;
@@ -102,7 +103,8 @@ public class RJSTrainScheduleParser {
 
         var targetSpeedGenerators = parseSpeedControllerGenerators(rjsTrainSchedule,
                 expectedPath, infra);
-        var speedInstructions = new SpeedInstructions(targetSpeedGenerators);
+        var refTimes = parseReferenceTimes(rjsTrainSchedule.referenceTimes);
+        var speedInstructions = new SpeedInstructions(targetSpeedGenerators, refTimes);
 
         if (initialDirection == null)
             throw new InvalidSchedule("the initial location isn't on the initial route");
@@ -151,6 +153,16 @@ public class RJSTrainScheduleParser {
             schedule.departureTime = -1;
             schedule.rollingStock = previousTrainSchedule.rollingStock;
         }
+    }
+
+    /** Parses the expected times at each position, if specified */
+    private static SortedDoubleMap parseReferenceTimes(List<RJSTrainSchedule.RJSTimePoint> points) {
+        if (points == null)
+            return null;
+        var res = new SortedDoubleMap();
+        for (var p : points)
+            res.put(p.position, p.time);
+        return res;
     }
 
     private static double[] parseAllowanceBeginEnd(RJSAllowance allowance,
