@@ -74,6 +74,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
 
     /** Runs the dichotomy */
     private Set<SpeedController> binarySearch(Simulation sim, TrainSchedule schedule) {
+
         var lowerBound = getFirstLowEstimate();
         var higherBound = getFirstHighEstimate();
         var firstGuess = getFirstGuess();
@@ -87,9 +88,9 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         var targetTime = getTargetTime(time);
 
         double nextValue = firstGuess;
-        Set<SpeedController> nextSpeedControllers;
+        var nextSpeedControllers = maxSpeedControllers;
         int i = 0;
-        do {
+        while (Math.abs(time - targetTime) > precision) {
             nextSpeedControllers = getSpeedControllers(schedule, nextValue, sectionBegin, sectionEnd);
             time = evalRunTime(sim, schedule, nextSpeedControllers) - totalStopsDuration;
             if (time > targetTime)
@@ -99,7 +100,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
             nextValue = (lowerBound + higherBound) / 2;
             if (i++ > 20)
                 throw new RuntimeException("Did not converge");
-        } while (Math.abs(time - targetTime) > precision);
+        }
         return nextSpeedControllers;
     }
 
