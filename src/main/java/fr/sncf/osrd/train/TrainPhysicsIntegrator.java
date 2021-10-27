@@ -232,13 +232,18 @@ public class TrainPhysicsIntegrator {
 
         var newPositionDelta = computePositionDelta(currentSpeed, acceleration, timeDelta, directionSign);
 
-        if (abs(newPositionDelta) <= abs(maxDistance) || signum(newPositionDelta) != signum(maxDistance))
+        if (newPositionDelta <= maxDistance && currentLocation.getPathPosition() + newPositionDelta >= 0)
             return new IntegrationStep(timeDelta, newPositionDelta, newSpeed, acceleration, tractionForce);
 
-        timeDelta = computeTimeDelta(currentSpeed, acceleration, maxDistance, directionSign);
+        if (newPositionDelta > 0)
+            newPositionDelta = maxDistance;
+        else
+            newPositionDelta = -currentLocation.getPathPosition();
+
+        timeDelta = computeTimeDelta(currentSpeed, acceleration, newPositionDelta, directionSign);
         assert timeDelta < timeStep && timeDelta >= 0;
         newSpeed = currentSpeed + directionSign * acceleration * timeDelta;
-        return new IntegrationStep(timeDelta, maxDistance, newSpeed, acceleration, tractionForce);
+        return new IntegrationStep(timeDelta, newPositionDelta, newSpeed, acceleration, tractionForce);
     }
 
     /**
