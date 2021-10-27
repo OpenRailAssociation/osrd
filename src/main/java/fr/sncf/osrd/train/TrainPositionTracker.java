@@ -346,4 +346,9 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
             }
         }
     }
+
+    @Override
+    public String toString() {
+        return String.format("TrainPositionTracker { position=%s }", pathPosition);
+    }
 }
