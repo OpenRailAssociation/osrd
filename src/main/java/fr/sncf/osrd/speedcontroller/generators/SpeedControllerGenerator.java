@@ -1,6 +1,7 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
 import static fr.sncf.osrd.train.TrainPhysicsIntegrator.*;
+import static java.lang.Math.abs;
 import static java.lang.Math.min;
 
 import fr.sncf.osrd.train.IntegrationStep;
@@ -121,10 +122,8 @@ public abstract class SpeedControllerGenerator {
             double initialSpeed
     ) {
         var location = convertPosition(schedule, sim, begin);
-        var totalLength = 0.;
-        for (var range : schedule.plannedPath.trackSectionPath)
-            totalLength += range.length();
-        totalLength = min(totalLength, end);
+        var totalLength = schedule.plannedPath.length;
+        final var actualEnd = min(end, totalLength);
         var res = new TreeMap<Double, IntegrationStep>();
         var stopIndex = 0;
 
@@ -136,19 +135,21 @@ public abstract class SpeedControllerGenerator {
                     speed,
                     schedule.rollingStock,
                     timeStep,
-                    totalLength,
+                    actualEnd,
                     1,
-                    (integrator) -> integrator.computeActionFromControllers(controllers, end, currentStopIndex));
+                    (integrator) -> integrator.computeActionFromControllers(controllers, actualEnd, currentStopIndex));
 
             speed = step.finalSpeed;
             location.updatePosition(schedule.rollingStock.length, step.positionDelta);
             res.put(location.getPathPosition(), step);
-            if (speed <= 1e-5) {
+            var nextStop = schedule.stops.get(stopIndex);
+            if (location.getPathPosition() > nextStop.position - 1e-2) {
                 stopIndex++;
                 if (stopIndex >= schedule.stops.size())
                     break;
             }
-        } while (location.getPathPosition() + timeStep * speed < totalLength - 1e-5);
+        } while (location.getPathPosition() + timeStep * speed < actualEnd - 1e-5);
+        assert abs(location.getPathPosition() - actualEnd) < timeStep * speed + 1e-2;
         return res;
     }
 
@@ -179,7 +180,7 @@ public abstract class SpeedControllerGenerator {
         var location = convertPosition(schedule, sim, endPosition);
         expectedSpeeds.put(location.getPathPosition(), speed);
         // TODO: max Gamma could have different values depending on the speed like in ERTMS
-        var action = Action.brake(Math.abs(schedule.rollingStock.gamma * inertia));
+        var action = Action.brake(abs(schedule.rollingStock.gamma * inertia));
         while (speed < maxSpeed && location.getPathPosition() >= 0.0001) {
             var step = nextStep(
                     location,
