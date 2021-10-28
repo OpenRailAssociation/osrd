@@ -26,9 +26,14 @@ public class TrainPhysics {
         var track = graph.makeTrackSection(0, 1, "", length, null);
         track.forwardGradients.addRange(0, length, trainGrade);
         track.backwardGradients.addRange(0, length, -trainGrade);
-        var range = new TrackSectionRange(track, EdgeDirection.START_TO_STOP, 0, length);
+        var range = new TrackSectionRange(track, EdgeDirection.START_TO_STOP, 0, 0);
         var ranges = new ArrayDeque<>(Collections.singletonList(range));
-        return new TrainPositionTracker(null, null, ranges, new ArrayList<>());
+        var path = Collections.singletonList(
+                new TrackSectionRange(track, EdgeDirection.START_TO_STOP, 0, length)
+        );
+        var res = new TrainPositionTracker(null, null, ranges, path);
+        res.updatePosition(1, length / 2);
+        return res;
     }
 
     @Test
