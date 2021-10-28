@@ -41,7 +41,7 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
     @Override
     protected double getFirstHighEstimate() {
         var speeds = getExpectedSpeeds(sim, schedule, maxSpeedControllers, TIME_STEP);
-        return max(speeds.values()) * 1.1;
+        return max(speeds.values()) * DICHOTOMY_MARGIN;
     }
 
     @Override
