@@ -118,9 +118,9 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         }
 
         if (Math.abs(newtonsMethod(x, maxSpeed)) <= tolerance) {
-            return x;
+            return x * DICHOTOMY_MARGIN;
         } else {
-            return maxSpeed * 2; // if no value has been found return a high value to have some margin
+            return maxSpeed * DICHOTOMY_MARGIN; // if no value has been found return a high value to have some margin
         }
     }
 
