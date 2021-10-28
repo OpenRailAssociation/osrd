@@ -1,5 +1,5 @@
 # Build APP with node
-FROM node:alpine as build
+FROM node:lts-alpine as build
 
 WORKDIR /app
 COPY . /app
