@@ -28,6 +28,8 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     /** Simulation state given in `generate` parameters */
     protected Simulation sim;
 
+    protected static final double DICHOTOMY_MARGIN = 2;
+
     /** Constructor
      * @param precision how close we need to be to the target time (in seconds) */
     protected DichotomyControllerGenerator(double begin, double end, double precision) {
