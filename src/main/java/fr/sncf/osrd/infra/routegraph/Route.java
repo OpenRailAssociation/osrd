@@ -1,5 +1,6 @@
 package fr.sncf.osrd.infra.routegraph;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.signaling.Signal;
@@ -26,6 +27,10 @@ public class Route extends DirNEdge {
     public final Signal entrySignal;
 
     /** List of all signals on the route, including the entry signal. Used to determine the next signal in railscript */
+    @SuppressFBWarnings(
+            value = {"UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"},
+            justification = "Initialized calling resolveSignals"
+    )
     public List<Signal> signalsWithEntry;
 
     /** Set of signals to be updated on route change */
