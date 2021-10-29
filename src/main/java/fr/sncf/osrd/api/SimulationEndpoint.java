@@ -167,7 +167,7 @@ public class SimulationEndpoint implements Take {
     }
 
 
-    private static final class ArrayResultLog extends ChangeConsumer {
+    public static final class ArrayResultLog extends ChangeConsumer {
         public final SimulationResult result = new SimulationResult();
         public final Infra infra;
         public final HashMap<String, TrainSchedule> trainSchedules = new HashMap<>();
@@ -178,6 +178,7 @@ public class SimulationEndpoint implements Take {
             this.sim = sim;
         }
 
+        /** Returns the train result for a given train */
         public SimulationResultTrain getTrainResult(String trainId) {
             var trainResult = result.trains.get(trainId);
             if (trainResult == null) {
@@ -187,6 +188,7 @@ public class SimulationEndpoint implements Take {
             return trainResult;
         }
 
+        /** Ensures that the results are valid, throws a SimulationError otherwise */
         public void validate() throws SimulationError {
             for (var trainName : result.trains.keySet()) {
                 var trainResult = result.trains.get(trainName);
@@ -264,7 +266,8 @@ public class SimulationEndpoint implements Take {
             );
         }
 
-        public void simplify() {
+        /** Simplifies the results using the Ramer-Douglas-Peucker algorithm */
+        public ArrayResultLog simplify() {
             for (var train : result.trains.values()) {
                 train.headPositions = simplifyPositions((ArrayList<SimulationResultPosition>) train.headPositions);
                 train.tailPositions = simplifyPositions((ArrayList<SimulationResultPosition>) train.tailPositions);
@@ -282,6 +285,7 @@ public class SimulationEndpoint implements Take {
                         }
                 );
             }
+            return this;
         }
     }
 
