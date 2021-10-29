@@ -1,5 +1,6 @@
 package fr.sncf.osrd.interactive;
 
+import fr.sncf.osrd.api.SimulationEndpoint;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.interactive.client_messages.ChangeType;
@@ -19,6 +20,8 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSVirtualPoint;
 import fr.sncf.osrd.railjson.schema.successiontable.RJSTrainSuccessionTable;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
+import fr.sncf.osrd.simulation.changelog.ChangeConsumerMultiplexer;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import java.io.IOException;
@@ -32,6 +35,7 @@ public class InteractiveSimulation {
     public Simulation simulation = null;
     private final ResponseCallback responseCallback;
     public Set<ChangeType> watchedChangeTypes = new HashSet<>();
+    public SimulationEndpoint.ArrayResultLog resultLog = null;
 
     public InteractiveSimulation(ResponseCallback responseCallback) {
         this.responseCallback = responseCallback;
@@ -91,13 +95,20 @@ public class InteractiveSimulation {
 
         var rjsSimulation = new RJSSimulation(rollingStocks, rjsTrainSchedules, rjsSuccessions);
         try {
-            var trainSchedules = RJSSimulationParser.parse(infra, rjsSimulation, extraRollingStocks, virtualPoints);
+            final var trainSchedules = RJSSimulationParser.parse(infra, rjsSimulation,
+                    extraRollingStocks, virtualPoints);
             // load trains successions tables
-            var successions = RJSSimulationParser.parseTrainSuccessionTables(rjsSimulation);
-            // Create stream changes consumer
-            var streamChangesConsumer = new StreamChangesConsumer(this);
+            final var successions = RJSSimulationParser.parseTrainSuccessionTables(rjsSimulation);
+            // Create changes consumers
+            final var streamChangesConsumer = new StreamChangesConsumer(this);
+            final var changeConsumers = new ArrayList<ChangeConsumer>();
+            final var multiplexer = new ChangeConsumerMultiplexer(changeConsumers);
+            // Create the simulation
+            simulation = Simulation.createFromInfraAndSuccessions(infra, successions, 0, multiplexer);
+            resultLog = new SimulationEndpoint.ArrayResultLog(infra, simulation);
+            multiplexer.add(resultLog);
+            multiplexer.add(streamChangesConsumer);
             // insert the train start events into the simulation
-            simulation = Simulation.createFromInfraAndSuccessions(infra, successions, 0, streamChangesConsumer);
             for (var trainSchedule : trainSchedules)
                 TrainCreatedEvent.plan(simulation, trainSchedule);
             state = SessionState.PAUSED;
@@ -133,7 +144,7 @@ public class InteractiveSimulation {
                 }
             }
             state = SessionState.SIMULATION_COMPLETE;
-            sendResponse(new ServerMessage.SimulationComplete());
+            sendResponse(new ServerMessage.SimulationComplete(resultLog.simplify().result));
         } catch (SimulationError e) {
             sendResponse(ServerMessage.Error.withReason("failed to run simulation", e.getMessage()));
         }

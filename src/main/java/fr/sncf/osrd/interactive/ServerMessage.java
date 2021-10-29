@@ -4,6 +4,7 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
+import fr.sncf.osrd.api.SimulationEndpoint;
 import fr.sncf.osrd.interactive.action_point_adapters.SerializedActionPoint;
 import fr.sncf.osrd.interactive.changes_adapters.SerializedChange;
 import fr.sncf.osrd.interactive.events_adapters.*;
@@ -37,7 +38,13 @@ public abstract class ServerMessage {
 
     public static final class SimulationCreated extends ServerMessage {}
 
-    public static final class SimulationComplete extends ServerMessage {}
+    public static final class SimulationComplete extends ServerMessage {
+        public final SimulationEndpoint.SimulationResult result;
+
+        public SimulationComplete(SimulationEndpoint.SimulationResult result) {
+            this.result = result;
+        }
+    }
 
     public static class TrainSuccessionTablesUpdated extends ServerMessage {}
 
