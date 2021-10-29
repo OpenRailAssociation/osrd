@@ -106,12 +106,13 @@ STATE_CHANGE_MESSAGES = {
 
 
 class InteractiveSimulation:
-    __slots__ = ("websocket", "state", "current_event")
+    __slots__ = ("websocket", "state", "current_event", "result")
 
     def __init__(self, websocket):
         self.websocket = websocket
         self.state = SimulationState.UNINITIALIZED
         self.current_event = None
+        self.result = None
 
     @property
     def is_complete(self):
@@ -219,6 +220,8 @@ class InteractiveSimulation:
             message_type = response["message_type"]
             new_state = STATE_CHANGE_MESSAGES.get(message_type)
             if new_state is not None:
+                if new_state == SimulationState.SIMULATION_COMPLETE:
+                    self.result = response["result"]
                 self.state = new_state
                 self.current_event = (
                     response["event"]
