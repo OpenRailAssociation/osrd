@@ -699,7 +699,7 @@ public abstract class RSExpr<T extends RSValue> {
             for (Route route : routeCandidates) {
                 RouteState routeState = state.infraState.getRouteState(route.index);
                 if (routeState.status == RouteStatus.RESERVED) {
-                    if (routeState.route.signalsWithEntry.contains(currentSignal)) {
+                    if (routeState.route.entrySignal == currentSignal) {
                         return new RSOptional<>(routeState);
                     }
                 }
