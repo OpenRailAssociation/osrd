@@ -3,7 +3,7 @@
 from dataclasses import dataclass, asdict
 from enum import IntEnum
 from pathlib import Path
-from typing import List
+from typing import List, Dict, Tuple
 import asyncio
 import json
 import logging
@@ -161,12 +161,17 @@ class InteractiveSimulation:
         return response
 
     async def create_simulation(
-        self, simulation_path, successions_path=None, breakpoints=[]
+        self, simulation_path, successions_path=None, breakpoints=None, reference_times=None
     ):
+        if breakpoints is None:
+            breakpoints = []
         sim = load_json(Path(simulation_path))
         successions = None
         if successions_path is not None:
             successions = load_json(successions_path)
+
+        if reference_times is not None:
+            self._add_reference_times(sim["train_schedules"], reference_times)
 
         await self.send_json(
             {
@@ -231,6 +236,17 @@ class InteractiveSimulation:
                 break
             yield response
 
+    def get_reference_times(self) -> Dict[str, List[Tuple[float, float]]]:
+        """
+        Returns a list of (position, time) for each train over all the simulation, once it has ended
+        """
+        res = {}
+        for train, train_result in self.result["trains"].items():
+            res[train] = []
+            for position in train_result["head_positions"]:
+                res[train].append((position["path_offset"], position["time"]))
+        return res
+
     async def get_tst(self, *switches):
         """
         Get train succession order. Can be call when simulation is paused or complete.
@@ -262,3 +278,18 @@ class InteractiveSimulation:
         response = await self.recv_json()
         check_response_type(response, {"train_succession_tables_updated"})
         return response
+
+    @staticmethod
+    def _add_reference_times(train_schedules, times_by_train: Dict[str, List[Tuple[float, float]]]):
+        """
+        Adds the reference times in each train schedule, left unspecified for trains that are not given
+        """
+        train_schedules_dict = {schedule["id"]: schedule for schedule in train_schedules}
+        for train, times in times_by_train.items():
+            schedule = train_schedules_dict[train]
+            schedule["reference_times"] = []
+            for position, time in times:
+                schedule["reference_times"].append({
+                    "position": position,
+                    "time": time
+                })
