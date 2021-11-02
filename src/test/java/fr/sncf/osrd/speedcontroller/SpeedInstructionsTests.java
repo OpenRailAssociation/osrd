@@ -2,7 +2,9 @@ package fr.sncf.osrd.speedcontroller;
 
 import static fr.sncf.osrd.Helpers.*;
 
+import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.TrainSchedule;
@@ -12,6 +14,7 @@ import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import org.junit.jupiter.api.Test;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -109,6 +112,79 @@ public class SpeedInstructionsTests {
         for (int i = 1; i < 150; i++)
             makeAssertEvent(sim, i, () -> !isLate(sim));
         runSimulation(sim, config);
+    }
+
+    /** Test that the train is never late with reference speeds given from an identical simulation */
+    @Test
+    public void testUseReferenceTimesBasic() {
+        var baseConfig = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var timePerPosition = getTimePerPosition(baseConfig.run());
+
+        var newConfig = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var schedule = newConfig.rjsSimulation.trainSchedules.get(0);
+        schedule.referenceTimes = new ArrayList<>();
+        for (var entry : timePerPosition.entrySet())
+            schedule.referenceTimes.add(new RJSTrainSchedule.RJSTimePoint(entry.getKey(), entry.getValue()));
+
+        var state = newConfig.prepare();
+        var sim = state.sim;
+        for (int i = 1; i < timePerPosition.lastKey(); i += 10)
+            makeAssertEvent(sim, i, () -> !isLate(sim));
+
+        state.run();
+    }
+
+    /** Test that the train is always late if we lower the expected time everywhere */
+    @Test
+    public void testUseReferenceTimesAlwaysLate() {
+        var baseConfig = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var timePerPosition = getTimePerPosition(baseConfig.run());
+
+        var newConfig = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var schedule = newConfig.rjsSimulation.trainSchedules.get(0);
+        schedule.referenceTimes = new ArrayList<>();
+        for (var entry : timePerPosition.entrySet())
+            schedule.referenceTimes.add(new RJSTrainSchedule.RJSTimePoint(entry.getKey(), entry.getValue() - 10));
+
+        var state = newConfig.prepare();
+        var sim = state.sim;
+        for (int i = 1; i < timePerPosition.lastKey(); i += 10)
+            makeAssertEvent(sim, i, () -> isLate(sim));
+
+        state.run();
+    }
+
+    /** We lower the expected time after a certain point,
+     * we expect the train to be considered late from this point on */
+    @Test
+    public void testUseReferenceTimesDelayAfter() {
+        var baseConfig = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var timePerPosition = getTimePerPosition(baseConfig.run());
+
+        final var positionExpectedEarlier = 500;
+
+        var newConfig = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+        var schedule = newConfig.rjsSimulation.trainSchedules.get(0);
+        schedule.referenceTimes = new ArrayList<>();
+        for (var entry : timePerPosition.entrySet()) {
+            if (entry.getKey() < positionExpectedEarlier)
+                schedule.referenceTimes.add(new RJSTrainSchedule.RJSTimePoint(entry.getKey(), entry.getValue()));
+            else
+                schedule.referenceTimes.add(new RJSTrainSchedule.RJSTimePoint(entry.getKey(), entry.getValue() - 10));
+        }
+
+        var state = newConfig.prepare();
+        var sim = state.sim;
+        for (int i = 1; i < timePerPosition.lastKey(); i += 10)
+            makeFunctionEvent(sim, i, () -> {
+                var event = getLastTrainEvent(sim);
+                if (event.pathPosition > positionExpectedEarlier + 10)
+                    assert isLate(sim);
+                else if (event.pathPosition < positionExpectedEarlier - 10)
+                    assert !isLate(sim);
+            });
+
+        state.run();
     }
 
     /** Helper function: returns true if the train is late at the time it is called */
