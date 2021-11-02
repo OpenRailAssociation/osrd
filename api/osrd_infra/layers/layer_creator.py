@@ -46,7 +46,7 @@ class LayerCreator:
 
         for i in range(0, len(payload), self.payload_size):
             response = post(
-                f"{settings.CHARTIS_URL}push/{layer_slug}/insert/?version={self.version}",
+                f"{settings.CHARTIS_URL}/push/{layer_slug}/insert/?version={self.version}",
                 json=payload[i: i + self.payload_size],
                 headers={"Authorization": "Bearer " + settings.CHARTIS_TOKEN},
             )

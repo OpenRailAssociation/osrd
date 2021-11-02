@@ -1,0 +1,84 @@
+name: Test API
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - api/**
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis
+        env:
+          POSTGRES_USER: osrd
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: osrd
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install GDAL
+        run: sudo apt-get install -y gdal-bin
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-in-project: true
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: api/.venv
+          key: venv-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: |
+          cd api
+          poetry install --no-interaction --no-root -E production
+      - name: Run migrations
+        env:
+          DJANGO_SETTINGS_MODULE: config.test
+        run: |
+          cd api
+          source .venv/bin/activate
+          python manage.py migrate
+      - name: Run Tests
+        env:
+          DJANGO_SETTINGS_MODULE: config.test
+        run: |
+          cd api
+          source .venv/bin/activate
+          python manage.py test
+
+  linter:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install flake8
+        run: pip install pyproject-flake8 flake8_formatter_junit_xml
+      - name: Flake8
+        run: pflake8 --config api/pyproject.toml --format junit-xml api > flake8.xml
+      - name: Publish flake8 report
+        uses: mikepenz/action-junit-report@v2
+        if: failure()
+        with:
+          report_paths: flake8.xml

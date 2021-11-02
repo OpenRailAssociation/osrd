@@ -48,7 +48,8 @@ Many of these goals currently aren't _yet_ fulfilled: the simulation is pretty s
 
 You'll need:
  - Java 11
- - gradle 6
+ - Gradle 7
+ - Python >= 3.8 (Only used for tests generation)
 
 ```sh
 gradle shadowJar

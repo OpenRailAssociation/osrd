@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     # osrd apps
     'osrd.apps.MainServiceAppConfig',
     'osrd_infra.apps.OsrdInfraConfig',
-    'matr.apps.MatrConfig',
 ]
 
 MIDDLEWARE = [
@@ -88,15 +87,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# A postgis database is required
+DATABASES = {}
 
 
 # Password validation
@@ -153,6 +145,7 @@ def getenv_bool(var_name, default=False):
 
 OSRD_DEV_SETUP = getenv_bool("OSRD_DEV_SETUP")
 OSRD_DEBUG = getenv_bool("OSRD_DEBUG", default=OSRD_DEV_SETUP)
+OSRD_DEBUG_TOOLBAR = getenv_bool("OSRD_DEBUG_TOOLBAR", default=False)
 OSRD_SKIP_AUTH = getenv_bool("OSRD_SKIP_AUTH", default=OSRD_DEBUG)
 
 
@@ -167,7 +160,7 @@ else:
 DEBUG = OSRD_DEBUG
 
 # enable django debug toolbar if it is installed
-if OSRD_DEBUG and find_spec("debug_toolbar") is not None:
+if OSRD_DEBUG_TOOLBAR and find_spec("debug_toolbar") is not None:
     INSTALLED_APPS += ['debug_toolbar']
     MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
     DEBUG_TOOLBAR_PANELS = [
@@ -224,7 +217,7 @@ LOGGING = {
     'loggers': logging_handlers,
 }
 
-OSRD_BACKEND_URL = os.getenv("OSRD_BACKEND_URL", "http://localhost:8080/")
+OSRD_BACKEND_URL = os.getenv("OSRD_BACKEND_URL", "http://localhost:8080")
 OSRD_BACKEND_TOKEN = os.getenv("OSRD_BACKEND_TOKEN", "")
 
 CACHE_TIMEOUT = 60 * 60 * 48  # 48 hours

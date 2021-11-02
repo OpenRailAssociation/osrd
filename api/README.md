@@ -89,19 +89,3 @@ This is a test endpoint, a cached version is provided by chartis. Any geojson ob
 ```sh
 curl "${BASE}/infra/1/geojson/?query=%7B%0A%22type%22%3A%22Polygon%22%2C%0A%22coordinates%22%3A%5B%0A%5B%0A%5B-27.303581%2C-48.458352%5D%2C%0A%5B106.373722%2C-48.458352%5D%2C%0A%5B106.373722%2C55.776573%5D%2C%0A%5B-27.303581%2C55.776573%5D%2C%0A%5B-27.303581%2C-48.458352%5D%0A%5D%0A%5D%0A%7D"
 ```
-
-## Running osrd on workspace
-
-### Installation
-
-**Please install it at the root of your home**, to do so run the following:
-```shell
-cd ${HOME}
-git clone https://gitlab.com/osrdata/services/osrd
-cd osrd
-./init_workspace.sh
-```
-
-### Usage
-
-To launch osrd go to `Run` >> `Run Configurations` >> `osrd`, then click to `Run` (with the green play button).

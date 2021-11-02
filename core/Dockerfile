@@ -1,4 +1,4 @@
-FROM gradle:6.6.1-jdk11 AS build
+FROM gradle:7.2.0-jdk11 AS build
 
 WORKDIR /home/gradle/src
 COPY --chown=gradle:gradle . .

@@ -1,0 +1,118 @@
+version: '3'
+volumes:
+  psql_data:
+  redis_data:
+services:
+  postgres:
+    image: postgis/postgis
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: "password"
+    volumes:
+      - "psql_data:/var/lib/postgresql/data"
+      - "./init_db.sql:/docker-entrypoint-initdb.d/init.sql"
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      start_period: 4s
+      interval: 5s
+
+  redis:
+    image: redis
+    container_name: redis
+    restart: unless-stopped
+    volumes:
+      - "redis_data:/data"
+    command: "redis-server --save 30 1 --loglevel warning"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      start_period: 4s
+      interval: 5s
+
+  chartos:
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    image: osrd/chartos
+    volumes:
+      - "./api/chartos.yml:/config.yml"
+    container_name: chartos
+    restart: unless-stopped
+    command: "uvicorn --factory chartos:make_app --host 0.0.0.0 --port 80"
+    ports: ["7000:80"]
+    environment:
+      PSQL_DSN: "postgres://chartos:password@postgres/chartos"
+      ROOT_URL: "http://localhost:7000"
+      REDIS_URL: "redis://redis"
+      CONFIG_PATH: "/config.yml"
+    healthcheck:
+      test: ["CMD", "python", "-c", "from urllib.request import urlopen; exit(0 if urlopen('http://localhost/health').status == 200 else 1)"]
+      start_period: 4s
+      interval: 5s
+
+  osrd-api:
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    image: osrd-api
+    restart: unless-stopped
+    build:
+      context: api
+      dockerfile: Dockerfile
+      args:
+        environment: test
+    ports: ["8080:80"]
+    environment:
+      PSQL_HOST: "postgres"
+      DJANGO_SETTINGS_MODULE: "config.test"
+      CHARTIS_URL: "http://chartos"
+      OSRD_BACKEND_URL: "http://osrd-core"
+    command:
+      - /bin/sh
+      - -c
+      - |
+        python3 manage.py migrate
+        exec python3 manage.py runserver 0.0.0.0:80
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health/"]
+      start_period: 4s
+      interval: 5s
+
+  osrd-core:
+    image: osrd-core
+    build:
+      context: core
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports: ["8000:80"]
+    command: "java -ea -jar /app/osrd_core.jar api -p 80"
+    environment:
+      MIDDLEWARE_BASE_URL: "http://osrd-api"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      start_period: 4s
+      interval: 5s
+
+  osrd-front:
+    image: osrd-front
+    build:
+      context: front
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_LOCAL_BACKEND: "True"
+        REACT_APP_API_URL: "http://localhost:8080"
+        REACT_APP_CHARTIS_URL: "http://localhost:7000"
+    restart: unless-stopped
+    ports: ["3000:80"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      start_period: 4s
+      interval: 5s
+
+  wait-healthy:
+    depends_on:
+      osrd-api: {condition: service_healthy}
+      chartos: {condition: service_healthy}
+    restart: "no"
+    image: alpine:latest
+    command: "true"

@@ -69,7 +69,7 @@ def payload_fill_steps(payload, step_stop_times, track_map):
 
 def request_pathfinding(payload):
     response = requests.post(
-        settings.OSRD_BACKEND_URL + "pathfinding/routes",
+        f"{settings.OSRD_BACKEND_URL}/pathfinding/routes",
         headers={"Authorization": "Bearer " + settings.OSRD_BACKEND_TOKEN},
         json=payload,
     )

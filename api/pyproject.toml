@@ -13,7 +13,6 @@ djangorestframework = "3.12.4"
 djangorestframework-gis = "0.17"
 celery = "4.4.7"
 django-redis = "5.0.0"
-service-core = {version = "0.0.27", source = "osrdata-pypi"}
 jsonschema = "3.2.0"
 requests = "2.25.1"
 pillow = "8.3.2"
@@ -25,14 +24,6 @@ uvloop = {version = "0.16.0", optional = true}
 httptools = {version = "0.3.0", optional = true}
 uvicorn = {version = "0.15.0", optional = true}
 
-# airflow
-apache-airflow = {version = "2.1.3", optional = true}
-apache-airflow-providers-amazon = {version = "2.2.0", optional = true}
-airflow-plugins = {version = "0.0.4", optional = true, source = "osrdata-pypi"}
-flower = {version = "0.9.7", optional = true}
-osrdata-railway-utils = {version = "0.0.10", optional = true, source = "osrdata-pypi"}
-intervaltree = {version = "3", optional = true}
-
 [tool.poetry.extras]
 production = [
     "gunicorn",
@@ -40,15 +31,6 @@ production = [
     "uvloop",
     "httptools",
     "uvicorn",
-]
-airflow = [
-    "apache-airflow",
-    "apache-airflow-providers-amazon",
-    "airflow-plugins",
-    "celery",
-    "flower",
-    "osrdata-railway-utils",
-    "intervaltree",
 ]
 
 [tool.poetry.dev-dependencies]
@@ -61,11 +43,6 @@ pyproject-flake8 = "0.0.1a2"
 pytest-django = "4.4.0"
 pytest-env = "0.6.2"
 django-cors-headers = "3.8.0"
-
-[[tool.poetry.source]]
-name = "osrdata-pypi"
-url = "https://gitlab.com/api/v4/groups/8419749/-/packages/pypi/simple"
-secondary = true
 
 [tool.pytest.ini_options]
 minversion = "6.0"

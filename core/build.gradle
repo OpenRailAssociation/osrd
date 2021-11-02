@@ -24,7 +24,7 @@ plugins {
 }
 
 java {
-    sourceCompatibility = 'VERSION_11'
+    sourceCompatibility = JavaVersion.VERSION_11
 }
 
 repositories {
@@ -148,11 +148,11 @@ task printSettings(type: DefaultTask) {
 }
 
 tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
-  reports {
-     html {
-        enabled = true
-     }
-  }
+    if (project.hasProperty("spotbugs_report_xml")) {
+        reports {xml.enabled = true}
+    } else {
+        reports {html.enabled = true}
+    }
 }
 
 tasks.register("genExamples", Exec) {

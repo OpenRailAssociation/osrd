@@ -28,7 +28,16 @@ def track_section_payload(identifier, name, length):
                     "component_type": "identifier",
                     "component": {"database": identifier, "name": name},
                 },
-                {"component_type": "track_section", "component": {"length": length}},
+                {
+                    "component_type": "track_section",
+                    "component": {
+                        "length": length,
+                        "line_code": 42,
+                        "line_name": "line.42",
+                        "track_number": 42,
+                        "track_name": "track.42",
+                    },
+                },
             ],
         }
     ]

@@ -21,7 +21,6 @@ service_urlpatterns = [
     # this app exports multiple features at once,
     # hence the lack of prefix
     path('', include('osrd_infra.urls')),
-    path('matr/', include('matr.urls')),
 ]
 
 

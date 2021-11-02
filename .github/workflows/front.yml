@@ -1,0 +1,33 @@
+name: Build Front
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - front/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - uses: actions/cache@v1
+        id: cached-yarn-build
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: yarn-${{ hashFiles('**/yarn.lock') }}
+      - uses: borales/actions-yarn@v2.3.0
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        with:
+          cmd: --cwd front install
+      - uses: borales/actions-yarn@v2.3.0
+        env:
+          CI: false
+        with:
+          cmd: --cwd front build
+      - uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: --cwd front test

@@ -1,0 +1,33 @@
+name: Test Core
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - core/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: 7.2
+          arguments: -p core -Pspotbugs_report_xml check
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v2
+        if: failure()
+        with:
+          report_paths: |
+            core/build/test-results/test/TEST*.xml
+            core/build/reports/checkstyle/*.xml
+            core/build/reports/spotbugs/*.xml

@@ -5,23 +5,24 @@ environ.setdefault("OSRD_DEV_SETUP", "1")
 environ.setdefault("OSRD_DEBUG", "1")
 environ.setdefault("OSRD_SKIP_AUTH", "1")
 
+
 from config.settings import *  # noqa
+
+
+PSQL_DATABASE = getenv("PSQL_DATABASE", "osrd")
+PSQL_USERNAME = getenv("PSQL_USERNAME", "osrd")
+PSQL_PASSWORD = getenv("PSQL_PASSWORD", "password")
+PSQL_HOST = getenv("PSQL_HOST", "localhost")
+
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'osrd',
-        'USER': 'osrd',
-        'PASSWORD': 'nopasswd',
-        'HOST': 'localhost',
+        'NAME': PSQL_DATABASE,
+        'USER': PSQL_USERNAME,
+        'PASSWORD': PSQL_PASSWORD,
+        'HOST': PSQL_HOST,
     },
-    'gaia': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'gaia',
-        'USER': 'osrd',
-        'PASSWORD': 'nopasswd',
-        'HOST': 'localhost',
-    }
 }
 
 CACHES = {
@@ -34,8 +35,6 @@ CACHES = {
 ROOT_PATH = ''
 
 STATIC_URL = ROOT_PATH + '/static/'
-
-ROOT_URLCONF = 'config.workspace_urls'
 
 INSTALLED_APPS.append("corsheaders")
 MIDDLEWARE.append('corsheaders.middleware.CorsMiddleware')

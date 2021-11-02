@@ -191,7 +191,7 @@ def run_simulation(train_schedule: TrainSchedule, sim_type: SimulationType):
     }
     try:
         response = requests.post(
-            settings.OSRD_BACKEND_URL + "simulation",
+            f"{settings.OSRD_BACKEND_URL}/simulation",
             headers={"Authorization": "Bearer " + settings.OSRD_BACKEND_TOKEN},
             json=payload,
         )

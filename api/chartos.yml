@@ -1,0 +1,319 @@
+name: osrd
+description: "OSRD map cache"
+layers:
+  - name: osrd_track_section
+    description: Track sections layer
+    versioned: true
+    section_name: lines
+    fields:
+      - name: entity_id
+        type: int
+        description: Entity ID
+      - name: geom_sch
+        type: geom
+        description: Schematic geometry of the object
+      - name: geom_geo
+        type: geom
+        description: Geographic geometry of the object
+      - name: components
+        type: json
+        description: List of components of the track section
+    id_field_name: entity_id
+    views:
+      - name: sch
+        on_field: geom_sch
+        exclude_fields:
+          - geom_geo
+          - geom_sch
+      - name: geo
+        exclude_fields:
+          - geom_geo
+          - geom_sch
+        on_field: geom_geo
+  - name: osrd_signal
+    description: Signals layer
+    versioned: true
+    section_name: points
+    fields:
+      - name: entity_id
+        type: int
+        description: Entity ID
+      - name: geom_sch
+        type: geom
+        description: Schematic geometry of the object
+      - name: geom_geo
+        type: geom
+        description: Geographic geometry of the object
+      - name: components
+        type: json
+        description: List of components of the track section
+    id_field_name: entity_id
+    views:
+      - name: sch
+        exclude_fields:
+          - geom_geo
+          - geom_sch
+        on_field: geom_sch
+      - name: geo
+        exclude_fields:
+          - geom_geo
+          - geom_sch
+        on_field: geom_geo
+  - name: osrd_speed_limit
+    description: Speed limit layer
+    versioned: true
+    section_name: line
+    fields:
+      - name: entity_id
+        type: int
+        description: Entity ID
+      - name: speed
+        type: double
+        description: Speed limit (m/s)
+      - name: geom_sch
+        type: geom
+        description: Schematic geometry of the object
+      - name: geom_geo
+        type: geom
+        description: Geographic geometry of the object
+    id_field_name: entity_id
+    views:
+      - name: sch
+        exclude_fields:
+          - geom_geo
+          - geom_sch
+        on_field: geom_sch
+      - name: geo
+        exclude_fields:
+          - geom_geo
+          - geom_sch
+        on_field: geom_geo
+  - name: osrd_signaling_type
+    description: Signaling type layer
+    versioned: true
+    section_name: line
+    fields:
+      - name: component_id
+        type: int
+        description: Component ID
+      - name: signaling_type
+        type: string(max_len=8)
+        description: |
+          Signaling type can take the following values: ["BAL", "BAL_VB", "BAPR_DV", "BAPR_VB", "BM_VU", "BM_VU_SE", "BM_CV", "BM_U", "BM_AMU", "BM_NB", "BM_LU", "BM_LUS", "BM_SEUS", "CAPI", "CT_DV", "CT_VU", "TVM300", "TVM430", "ETCS_1", "ETCS_2", "ETCS_3", "TRMW", "AUTRE"]
+      - name: geom_sch
+        type: geom
+        description: Schematic geometry of the object
+      - name: geom_geo
+        type: geom
+        description: Geographic geometry of the object
+    id_field_name: component_id
+    views:
+      - name: sch
+        exclude_fields:
+          - geom_geo
+          - geom_sch
+        on_field: geom_sch
+      - name: geo
+        exclude_fields:
+          - geom_geo
+          - geom_sch
+        on_field: geom_geo
+  - name: osrd_electrification_type
+    description: Electrification type layer
+    versioned: true
+    section_name: line
+    fields:
+      - name: component_id
+        type: int
+        description: Component ID
+      - name: electrification_type
+        type: int
+        description: |
+          Electrification voltage can take the following values: [750, 800, 850, 1500, 3000, 15000, 25000]
+      - name: geom_sch
+        type: geom
+        description: Schematic geometry of the object
+      - name: geom_geo
+        type: geom
+        description: Geographic geometry of the object
+    id_field_name: component_id
+    views:
+      - name: sch
+        exclude_fields:
+          - geom_geo
+          - geom_sch
+        on_field: geom_sch
+      - name: geo
+        exclude_fields:
+          - geom_geo
+          - geom_sch
+        on_field: geom_geo
+  - name: osrd_operational_point
+    description: Operational point layer
+    versioned: true
+    section_name: point
+    fields:
+      - name: entity_id
+        type: int
+        description: Entity ID
+      - name: geom_sch
+        type: geom
+        description: Schematic geometry of the object
+      - name: geom_geo
+        type: geom
+        description: Geographic geometry of the object
+      - name: name
+        type: string(max_len=256)
+        description: Name of the operational point
+      - name: ci
+        type: int
+        description: Immutable code
+      - name: ch
+        type: string(max_len=2)
+        description: Worksite code
+      - name: ch_short_label
+        type: string(max_len=256)
+        description: Worksite short label
+      - name: ch_long_label
+        type: string(max_len=256)
+        description: Worksite long label
+    id_field_name: entity_id
+    views:
+      - name: sch
+        exclude_fields:
+          - geom_geo
+          - geom_sch
+        on_field: geom_sch
+      - name: geo
+        exclude_fields:
+          - geom_geo
+          - geom_sch
+        on_field: geom_geo
+  - name: osrd_tvd_section
+    description: TVD sections layer
+    versioned: true
+    section_name: lines
+    fields:
+      - name: entity_id
+        type: int
+        description: Entity ID
+      - name: geom_sch
+        type: geom
+        description: Schematic geometry of the object
+      - name: geom_geo
+        type: geom
+        description: Geographic geometry of the object
+    id_field_name: entity_id
+    views:
+      - name: sch
+        exclude_fields:
+          - geom_geo
+          - geom_sch
+        on_field: geom_sch
+      - name: geo
+        exclude_fields:
+          - geom_geo
+          - geom_sch
+        on_field: geom_geo
+  - name: map_midi_signal
+    description: Signaux
+    versioned: true
+    section_name: Objets ponctuels
+    fields:
+      - name: OP_id
+        type: string(max_len=40)
+        nullable: false
+        description: ID de l'objet GAIA signal
+      - name: RA_libelle
+        type: text
+        description: Libellé du signal
+      - name: TIF_mnemo
+        type: text
+        description: Mnémonique du type de signal
+      - name: pk_sncf
+        type: text
+        description: |
+          Le PK du joint de zone, au format SNCF
+          Ce PK est au format SNCF, ce qui signifie que le nombre de kilomètres est séparés du nombre de mètres par "+". Le PK "234m après le PK 1" par exemple sera écrit "1+234". Cette norme varie sur certaines lignes.
+      - name: LP_positionLocalisation
+        type: text
+        description: Position du signal
+      - name: LP_sensLecture
+        type: char(max_len=1)
+        description: |
+          Sens de lecture du signal
+          Peut être "C" si le signal est lisible lorsque la circulation se déplace dans le sens des PKs croissants ou "D" lorsque la circulation se déplace dans le sens des PKs décroissants.
+      - name: RA_libelle_poste
+        type: text
+        description: Le libellé du poste responsable de l'objet
+      - name: RA_libelle_gare
+        type: text
+        description: Le libellé de la gare responsable de l'objet.
+      - name: V_nom
+        type: text
+        description: Le nom de la voie à laquelle appartient le joint de zone.
+      - name: L_code
+        type: text
+        description: Le code de la ligne à laquelle appartient le joint de zone.
+      - name: S_valeur
+        type: text
+        description: Indique la valeur inscrite sur le signal
+      - name: isValidSch
+        type: bool
+        description: Indique si le calcul de la géométrie de schématique a correctement fonctionné.
+      - name: isValidGeo
+        type: bool
+        description: Indique si le calcul de la géométrie de géographie a correctement fonctionné.
+      - name: flagInvalidSch
+        type: string(max_len=20)
+        description: Donne des détails sur les erreurs lors du calcul de la schématique
+      - name: flagInvalidGeo
+        type: string(max_len=20)
+        description: Donne des détails sur les erreurs lors du calcul de la géographie
+      - name: geomSch
+        type: geom
+        description: Géométrie schématique de l'objet
+      - name: geomGeo
+        type: geom
+        description: Géométrie géographique de l'objet
+      - name: angleSch
+        type: double
+        description: Angle d'affichage de l'objet sur la schématique
+      - name: angleGeo
+        type: double
+        description: Angle d'affichage de l'objet sur la géographie
+      - name: distMaxSch
+        type: double
+        description: Distance maximale sur la schématique
+      - name: distMaxGeo
+        type: double
+        description: Distance maximale sur la géographie
+      - name: default_id
+        type: int
+        description: Default id field
+      - name: OP_id_poste_metier
+        type: string(max_len=40)
+        description: ID de l'objet poste \"métier\"
+      - name: RA_libelle_poste_metier
+        type: text
+        description: Le libellé du poste \"métier\"
+    id_field_name: default_id
+    views:
+      - name: sch
+        exclude_fields:
+          - geomGeo
+          - geomSch
+          - flagInvalidGeo
+          - isValidGeo
+          - angleGeo
+          - distMaxGeo
+        on_field: geomSch
+      - name: geo
+        exclude_fields:
+          - geomGeo
+          - geomSch
+          - flagInvalidSch
+          - isValidSch
+          - angleSch
+          - distMaxSch
+        on_field: geomGeo
