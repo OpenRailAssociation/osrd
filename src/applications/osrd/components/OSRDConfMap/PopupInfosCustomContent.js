@@ -8,26 +8,28 @@ export default function PopupInfosCustomContent(props) {
   const { t } = useTranslation(['osrdconf']);
   const { data } = props;
   return (
-    <>
-      <div className="labelvalue w-100 mt-3">
-        <span className="labelvalue-label">ID</span>
-        {data.id}
+    <div className="row">
+      <div className="col-md-4">
+        <div className="labelvalue w-100 mt-3">
+          <span className="labelvalue-label">ID</span>
+          {data.id}
+        </div>
       </div>
-      <div className="d-flex my-1">
-        <button className="btn btn-success flex-fill" type="button" onClick={() => setPointIti('start', data)}>
+      <div className="col-md-8">
+        <button className="btn btn-sm btn-block btn-success" type="button" onClick={() => setPointIti('start', data)}>
           <RiMapPin2Fill />
           <span className="ml-1">{t('origin')}</span>
         </button>
-        <button className="btn btn-info flex-fill mx-1" type="button" onClick={() => setPointIti('via', data)}>
+        <button className="btn btn-sm btn-block btn-info" type="button" onClick={() => setPointIti('via', data)}>
           <RiMapPin3Fill />
           <span className="ml-1">{t('via')}</span>
         </button>
-        <button className="btn btn-warning flex-fill" type="button" onClick={() => setPointIti('end', data)}>
+        <button className="btn btn-sm btn-block btn-warning" type="button" onClick={() => setPointIti('end', data)}>
           <RiMapPin5Fill />
           <span className="ml-1">{t('destination')}</span>
         </button>
       </div>
-    </>
+    </div>
   );
 }
 
