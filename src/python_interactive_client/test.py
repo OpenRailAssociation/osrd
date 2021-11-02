@@ -9,6 +9,7 @@ from osrd_interactive import (
 )
 
 from pathlib import Path
+from typing import List, Dict, Tuple
 import asyncio
 import logging
 
@@ -16,15 +17,32 @@ import logging
 logger = logging.getLogger("test")
 
 
+async def get_reference_times(infra_path: Path, simulation_path: Path, rolling_stocks_path: Path, TSTs = List[TST])\
+        -> Dict[str, List[Tuple[float, float]]]:
+    async with InteractiveSimulation.open_websocket(
+            "ws://localhost:9000/websockets/simulate"
+    ) as simulation:
+        await simulation.init(infra_path, rolling_stocks_path)
+        await simulation.create_simulation(simulation_path)
+        await simulation.update_tst(TSTs)
+
+        while not simulation.is_complete:
+            async for _ in simulation.run(until_events=EventType.all()):
+                pass
+        return simulation.get_reference_times()
+
+
 async def test(infra_path: Path, simulation_path: Path, rolling_stocks_path: Path):
     async with InteractiveSimulation.open_websocket(
         "ws://localhost:9000/websockets/simulate"
     ) as simulation:
+        TSTs = [TST("il.switch_foo", ["Test."])]
+        reference_times = await get_reference_times(infra_path, simulation_path, rolling_stocks_path, TSTs)
         await simulation.init(infra_path, rolling_stocks_path)
         breakpoints = [Breakpoint("my-breakpoint", Location("ne.micro.foo_b", 175))]
-        await simulation.create_simulation(simulation_path, breakpoints=breakpoints)
+        await simulation.create_simulation(simulation_path, breakpoints=breakpoints, reference_times=reference_times)
         await simulation.watch_changes(ChangeType.all())
-        await simulation.update_tst([TST("il.switch_foo", ["Test."])])
+        await simulation.update_tst(TSTs)
 
         while not simulation.is_complete:
             async for _ in simulation.run(until_events=EventType.all()):
