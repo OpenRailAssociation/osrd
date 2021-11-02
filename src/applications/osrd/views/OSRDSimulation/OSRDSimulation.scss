@@ -147,6 +147,17 @@ svg text {
   fill: var(--coolgray7);
 }
 
+/* MARGINS */
+.margin-line {
+  padding: .25rem;
+  border-radius: 4px;
+  margin-bottom: .5rem;
+  transition: .2s;
+  &:hover {
+    background-color: var(--coolgray1);
+  }
+}
+
 /* SPEEDSPACE */
 .speedspace-chart {
   background-color: white;

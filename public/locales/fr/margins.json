@@ -3,6 +3,7 @@
   "from": "De",
   "begin_position": "Début",
   "marginAdded": "Marge ajoutée",
+  "marginDeleted": "Marge supprimée",
   "marginType": "Type de marge",
   "marginTypes": {
     "construction": "Construction",

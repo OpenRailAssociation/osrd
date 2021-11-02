@@ -8,6 +8,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { get, put } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main.ts';
 import { updateSimulation, updateMustRedraw } from 'reducers/osrdsimulation';
+import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 
 const trainscheduleURI = '/train_schedule/';
 
@@ -23,26 +24,32 @@ const marginNewDatas = {
   ratio_distance c'est en metre pour 10km
   Le begin_position et end_position c'est en metres
 */
+const TYPEUNITS = {
+  construction: 's',
+  ratio_time: '%',
+  ratio_distance: 'm/10km',
+};
 
 const EmptyLine = (props) => {
-  const { setMargins, setValues, values } = props;
+  const { margins, setMargins, setUpdateMargins } = props;
+  const [values, setValues] = useState(marginNewDatas);
   const { t } = useTranslation(['margins']);
 
   const marginTypes = [
     {
       id: 'construction',
       label: t('marginTypes.construction'),
-      unit: 's',
+      unit: TYPEUNITS.construction,
     },
     {
       id: 'ratio_time',
       label: t('marginTypes.ratio_time'),
-      unit: '%',
+      unit: TYPEUNITS.ratio_time,
     },
     {
       id: 'ratio_distance',
       label: t('marginTypes.ratio_distance'),
-      unit: 'm/10km',
+      unit: TYPEUNITS.ratio_distance,
     },
   ];
 
@@ -52,6 +59,13 @@ const EmptyLine = (props) => {
       type: type.type,
       value: parseInt(type.value, 10),
     });
+  };
+
+  const addMargins = (margin) => {
+    const newMargins = margins.length > 0
+      ? Array.from(margins).push(margin) : [margin];
+    setMargins(newMargins);
+    setUpdateMargins(true);
   };
 
   return (
@@ -93,7 +107,7 @@ const EmptyLine = (props) => {
         <button
           type="button"
           className="btn btn-success btn-sm"
-          onClick={() => setMargins(values)}
+          onClick={() => addMargins(values)}
         >
           <i className="icons-add" />
         </button>
@@ -103,25 +117,59 @@ const EmptyLine = (props) => {
 };
 
 const Margin = (props) => {
-  const { data } = props;
+  const { data, delMargin, idx } = props;
+  const { t } = useTranslation(['margins']);
   return (
-    <>
-      <div className="">{data.type}</div>
-    </>
+    <div className="margin-line">
+      <div className="row">
+        <div className="col-md-1">
+          <small>{idx + 1}</small>
+        </div>
+        <div className="col-md-2">
+          {data.begin_position}
+          m
+        </div>
+        <div className="col-md-2">
+          {data.end_position}
+          m
+        </div>
+        <div className="col-md-2">
+          {t(`marginTypes.${data.type}`)}
+        </div>
+        <div className="col-md-2">
+          {data.value}
+          {TYPEUNITS[data.type]}
+        </div>
+        <div className="col-md-3 d-flex">
+          <button type="button" className="btn btn-sm btn-only-icon btn-white mr-1 ml-auto">
+            <FaPencilAlt />
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm btn-only-icon btn-white text-danger"
+            onClick={() => delMargin(idx)}
+          >
+            <FaTrash />
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 
 export default function Margins() {
   const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
-  const [values, setValues] = useState(marginNewDatas);
   const [trainDetail, setTrainDetail] = useState(undefined);
+  const [margins, setMargins] = useState([]);
+  const [updateMargins, setUpdateMargins] = useState(false);
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t } = useTranslation(['margins']);
 
   const getMargins = async () => {
     try {
       const result = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`);
       setTrainDetail(result);
+      setMargins(result.margins);
       console.log(result);
     } catch (e) {
       console.log('ERROR', e);
@@ -132,14 +180,8 @@ export default function Margins() {
     }
   };
 
-  const setMargins = async (margin) => {
+  const changeMargins = async (newMargins) => {
     try {
-      const newMargins = trainDetail.margins
-        ? Array.from(trainDetail.margins).push(margin) : [margin];
-    console.log({
-    ...trainDetail,
-    margins: newMargins,
-    });
       await put(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`, {
         ...trainDetail,
         margins: newMargins,
@@ -163,25 +205,64 @@ export default function Margins() {
     }
   };
 
+  const delMargin = (idx) => {
+    const newMargins = Array.from(trainDetail.margins);
+    newMargins.splice(idx, 1);
+    setMargins(newMargins);
+    setUpdateMargins(true);
+  };
+
+  useEffect(() => {
+    if (updateMargins) {
+      changeMargins(margins);
+      setUpdateMargins(false);
+    }
+  }, [margins]);
+
   useEffect(() => {
     getMargins();
   }, [selectedTrain]);
 
   return (
     <div className="osrd-simulation-container">
-      {trainDetail && trainDetail.margins && trainDetail.margins.map((margin) => (
-        <Margin data={margin} key={nextId()} />
+      <div className="row mb-1 small">
+        <div className="col-md-1">
+          n°
+        </div>
+        <div className="col-md-2 text-lowercase">
+          {t('from')}
+        </div>
+        <div className="col-md-2">
+          {t('to')}
+        </div>
+        <div className="col-md-4">
+          {t('marginType')}
+        </div>
+      </div>
+      {trainDetail && trainDetail.margins && trainDetail.margins.map((margin, idx) => (
+        <Margin data={margin} delMargin={delMargin} idx={idx} key={nextId()} />
       ))}
-      <EmptyLine setValues={setValues} values={values} setMargins={setMargins} />
+      <hr className="mt-0" />
+      <EmptyLine
+        setMargins={setMargins}
+        setUpdateMargins={setUpdateMargins}
+        margins={margins}
+      />
     </div>
   );
 }
 
 Margin.propTypes = {
   data: PropTypes.object.isRequired,
+  delMargin: PropTypes.func.isRequired,
+  idx: PropTypes.number.isRequired,
 };
 
 EmptyLine.propTypes = {
-  setValues: PropTypes.func.isRequired,
-  values: PropTypes.object.isRequired,
+  margins: PropTypes.array,
+  setMargins: PropTypes.func.isRequired,
+  setUpdateMargins: PropTypes.func.isRequired,
+};
+EmptyLine.defaultProps = {
+  margins: [],
 };
