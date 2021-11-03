@@ -9,6 +9,7 @@ import { get, put } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main.ts';
 import { updateSimulation, updateMustRedraw } from 'reducers/osrdsimulation';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
+import DotsLoader from 'common/DotsLoader/DotsLoader';
 
 const trainscheduleURI = '/train_schedule/';
 
@@ -27,7 +28,7 @@ const marginNewDatas = {
 const TYPEUNITS = {
   construction: 's',
   ratio_time: '%',
-  ratio_distance: 'm/10km',
+  ratio_distance: 'min/100km',
 };
 
 const EmptyLine = (props) => {
@@ -62,7 +63,7 @@ const EmptyLine = (props) => {
   };
 
   const addMargins = (margin) => {
-    const newMargins = Array.from(margins);
+    const newMargins = (margins !== null) ? Array.from(margins) : [];
     newMargins.push(margin);
     setMargins(newMargins);
     setUpdateMargins(true);
@@ -94,7 +95,7 @@ const EmptyLine = (props) => {
           sm
         />
       </div>
-      <div className="col-md-3">
+      <div className="col-md-4">
         <InputGroupSNCF
           id="marginTypeSelect"
           options={marginTypes}
@@ -162,6 +163,7 @@ export default function Margins() {
   const [trainDetail, setTrainDetail] = useState(undefined);
   const [margins, setMargins] = useState([]);
   const [updateMargins, setUpdateMargins] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const dispatch = useDispatch();
   const { t } = useTranslation(['margins']);
 
@@ -182,6 +184,7 @@ export default function Margins() {
 
   const changeMargins = async (newMargins) => {
     try {
+      setIsUpdating(true);
       await put(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`, {
         ...trainDetail,
         margins: newMargins,
@@ -196,6 +199,7 @@ export default function Margins() {
         title: t('marginModified'),
         text: 'Hop hop hop',
       }));
+      setIsUpdating(false);
     } catch (e) {
       console.log('ERROR', e);
       dispatch(setFailure({
@@ -225,6 +229,11 @@ export default function Margins() {
 
   return (
     <div className="osrd-simulation-container">
+      {isUpdating && (
+        <div className="margins-updating-loader">
+          <DotsLoader />
+        </div>
+      )}
       <div className="row mb-1 small">
         <div className="col-md-1">
           n°

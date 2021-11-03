@@ -3,6 +3,7 @@ svg text {
 }
 
 .osrd-simulation-container {
+  position: relative;
   background-color: white;
   padding: 1rem;
   border-radius: 4px;
@@ -126,6 +127,12 @@ svg text {
     stroke: var(--coolgray3);
     &.selected {
       stroke: var(--cyan);
+      &.margins {
+        stroke: var(--green);
+      }
+      &.eco {
+        stroke: var(--orange);
+      }
     }
     &.pointer {
       fill: var(--cyan);
@@ -151,11 +158,20 @@ svg text {
 .margin-line {
   padding: .25rem;
   border-radius: 4px;
-  margin-bottom: .5rem;
   transition: .2s;
   &:hover {
     background-color: var(--coolgray1);
   }
+}
+.margins-updating-loader {
+  position: absolute;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.75);
+  width: calc(100% - 2rem);
+  height: 100%;
+  z-index: 2;
+  top: 0;
+  font-size: 4rem;
 }
 
 /* SPEEDSPACE */
@@ -177,6 +193,12 @@ svg text {
     stroke-width: 2;
     &.pointer {
       fill: var(--blue);
+    }
+    &.margins {
+      stroke: var(--green);
+    }
+    &.eco {
+      stroke: var(--orange);
     }
   }
 }

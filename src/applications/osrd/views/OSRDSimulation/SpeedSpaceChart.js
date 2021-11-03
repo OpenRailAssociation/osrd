@@ -46,9 +46,22 @@ export default function SpeedSpaceChart() {
 
   // Prepare data
   const dataSimulation = {};
+  console.log('coucou', simulation.trains);
   dataSimulation.speed = simulation.trains[selectedTrain].base.speeds.map(
     (step) => ({ ...step, speed: step.speed * 3.6 }),
   );
+  if (simulation.trains[selectedTrain].margins && !simulation.trains[selectedTrain].margins.error) {
+    dataSimulation.margins = {};
+    dataSimulation.margins.speed = simulation.trains[selectedTrain].margins.speeds.map(
+      (step) => ({ ...step, speed: step.speed * 3.6 }),
+    );
+  }
+  if (simulation.trains[selectedTrain].eco && !simulation.trains[selectedTrain].eco.error) {
+    dataSimulation.eco = {};
+    dataSimulation.eco.speed = simulation.trains[selectedTrain].eco.speeds.map(
+      (step) => ({ ...step, speed: step.speed * 3.6 }),
+    );
+  }
   dataSimulation.areaBlock = mergeDatasArea(dataSimulation.speed, undefined, keyValues);
   /* dataSimulation.emergency = expandAndFormatData(
     dataSimulation.speed, simulation.trains[selectedTrain].emergency,
@@ -87,6 +100,12 @@ export default function SpeedSpaceChart() {
       drawAxisTitle(chartLocal, rotate);
       drawArea(chartLocal, 'area', dataSimulation, dispatch, 'speedSpaceChart', 'curveLinear', keyValues, 'areaBlock', rotate);
       drawCurve(chartLocal, 'speed', dataSimulation.speed, 'speedSpaceChart', 'curveLinear', keyValues, 'speed', rotate);
+      if (dataSimulation.margins) {
+        drawCurve(chartLocal, 'speed margins', dataSimulation.margins.speed, 'speedSpaceChart', 'curveLinear', keyValues, 'margins_speed', rotate);
+      }
+      if (dataSimulation.eco) {
+        drawCurve(chartLocal, 'speed eco', dataSimulation.eco.speed, 'speedSpaceChart', 'curveLinear', keyValues, 'eco_speed', rotate);
+      }
 
       enableInteractivity(
         chartLocal, dataSimulation, dispatch, keyValues,

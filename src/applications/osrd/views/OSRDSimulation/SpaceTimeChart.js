@@ -2,6 +2,7 @@ import React, {
   useState, useEffect, useRef,
 } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import * as d3 from 'd3';
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simulation/consts';
 import {
@@ -21,6 +22,7 @@ import findConflicts from 'applications/osrd/components/Simulation/findConflicts
 import enableInteractivity, { traceVerticalLine } from 'applications/osrd/components/Simulation/enableInteractivity';
 import { sec2time } from 'utils/timeManipulation';
 import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHelpers';
+import { setFailure } from 'reducers/main.ts';
 
 const CHART_ID = 'SpaceTimeChart';
 
@@ -141,13 +143,13 @@ const drawTrain = (
   ));
 
   if (dataSimulation.margins) {
-    dataSimulation.margins.tailPosition.forEach((tailPositionSection) => drawCurve(
-      chart, `${isSelected && 'selected'} tail margin`, tailPositionSection, groupID,
+    dataSimulation.margins.headPosition.forEach((tailPositionSection) => drawCurve(
+      chart, `${isSelected && 'selected'} tail margins`, tailPositionSection, groupID,
       'curveLinear', keyValues, 'tailPosition', rotate, isSelected,
     ));
   }
   if (dataSimulation.eco) {
-    dataSimulation.eco.tailPosition.forEach((tailPositionSection) => drawCurve(
+    dataSimulation.eco.headPosition.forEach((tailPositionSection) => drawCurve(
       chart, `${isSelected && 'selected'} tail eco`, tailPositionSection, groupID,
       'curveLinear', keyValues, 'tailPosition', rotate, isSelected,
     ));
@@ -155,8 +157,7 @@ const drawTrain = (
   drawText(chart, dataSimulation, direction, groupID, isSelected);
 };
 
-const createTrain = (keyValues, simulationTrains) => {
-  console.log(simulationTrains);
+const createTrain = (dispatch, keyValues, simulationTrains, t) => {
   // Prepare data
   const dataSimulation = simulationTrains.map((train, trainNumber) => {
     const dataSimulationTrain = {};
@@ -175,7 +176,7 @@ const createTrain = (keyValues, simulationTrains) => {
       dataSimulationTrain.routeEndOccupancy, dataSimulationTrain.routeBeginOccupancy, keyValues,
     );
     dataSimulationTrain.speed = formatStepsWithTime(train.base.speeds);
-    if (train.margins) {
+    if (train.margins && !train.margins.error) {
       dataSimulationTrain.margins = {};
       dataSimulationTrain.margins.headPosition = formatStepsWithTimeMulti(
         train.margins.head_positions,
@@ -183,8 +184,13 @@ const createTrain = (keyValues, simulationTrains) => {
       dataSimulationTrain.margins.tailPosition = formatStepsWithTimeMulti(
         train.margins.tail_positions,
       );
+    } else if (train.margins && train.margins.error) {
+      dispatch(setFailure({
+        name: t('errors.margins'),
+        message: train.margins.error,
+      }));
     }
-    if (train.eco) {
+    if (train.eco && !train.eco.error) {
       dataSimulationTrain.eco = {};
       dataSimulationTrain.eco.headPosition = formatStepsWithTimeMulti(
         train.eco.head_positions,
@@ -192,6 +198,11 @@ const createTrain = (keyValues, simulationTrains) => {
       dataSimulationTrain.eco.tailPosition = formatStepsWithTimeMulti(
         train.eco.tail_positions,
       );
+    } else if (train.eco && train.eco.error) {
+      dispatch(setFailure({
+        name: t('errors.eco'),
+        message: train.eco.error,
+      }));
     }
     return dataSimulationTrain;
   });
@@ -201,6 +212,7 @@ const createTrain = (keyValues, simulationTrains) => {
 export default function SpaceTimeChart() {
   const ref = useRef();
   const dispatch = useDispatch();
+  const { t } = useTranslation(['margins']);
   const {
     mustRedraw, positionValues, selectedTrain, simulation, timePosition,
   } = useSelector((state) => state.osrdsimulation);
@@ -264,7 +276,7 @@ export default function SpaceTimeChart() {
   };
 
   useEffect(() => {
-    setDataSimulation(createTrain(keyValues, simulation.trains));
+    setDataSimulation(createTrain(dispatch, keyValues, simulation.trains, t));
     setTimeout(() => {
       dispatch(updateMustRedraw(true));
     }, 0);
@@ -286,7 +298,7 @@ export default function SpaceTimeChart() {
   }, [dragEnding]);
 
   useEffect(() => {
-    setDataSimulation(createTrain(keyValues, simulation.trains));
+    setDataSimulation(createTrain(dispatch, keyValues, simulation.trains, t));
     if (dataSimulation) {
       drawAllTrains();
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
