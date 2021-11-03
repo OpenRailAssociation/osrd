@@ -321,7 +321,7 @@ public class MarginTests {
 
     /** Test the linear allowance type DISTANCE */
     @ParameterizedTest
-    @ValueSource(doubles = {0.0, 270})
+    @ValueSource(doubles = {0.0, 5})
     public void testDistanceMargin(double value, TestInfo info) {
         var allowance = new LinearAllowance(LinearAllowance.MarginType.DISTANCE, value);
 
@@ -333,7 +333,7 @@ public class MarginTests {
         var start = schedule.initialLocation;
         var end = schedule.phases.get(0).getEndLocation();
         var distance = convertTrackLocation(end, schedule) - convertTrackLocation(start, schedule);
-        var expectedExtraTime = value * distance / 100000;
+        var expectedExtraTime = value * distance * 60 / 100000;
         var expected = test.baseTime() + expectedExtraTime;
 
         assertEquals(expected, test.testedTime(), expected * 0.01);

@@ -35,8 +35,9 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
             var totalTime = expectedTime.lastEntry().getValue() - expectedTime.firstEntry().getValue();
             var schemaLength = expectedTime.lastEntry().getKey() - expectedTime.firstEntry().getKey();
             var n = schemaLength / 100000;
-            var totalAllowance = n * value;
-            percentage = 100.0 * totalAllowance / totalTime;
+            var totalAllowanceMinutes = n * value;
+            var totalAllowanceSeconds = totalAllowanceMinutes * 60;
+            percentage = 100.0 * totalAllowanceSeconds / totalTime;
         }
         double scaleFactor = 1 / (1 + percentage / 100);
 
