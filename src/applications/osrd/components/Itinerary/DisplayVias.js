@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -9,9 +9,44 @@ import {
   deleteVias,
 } from 'applications/osrd/components/Itinerary/helpers';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { useDebounce } from 'utils/helpers';
+
+const InputStopTime = (props) => {
+  const { index } = props;
+  const osrdconf = useSelector((state) => state.osrdconf);
+  const [stopTime, setStopTime] = useState(
+    osrdconf.vias[index].stoptime ? osrdconf.vias[index].stoptime : 0,
+  );
+  const [firstStart, setFirstStart] = useState(true);
+  const debouncedStopTime = useDebounce(stopTime, 1000);
+
+  useEffect(() => {
+    if (!firstStart) {
+      updateViaStopTime(index, debouncedStopTime);
+      console.log('UPDATE', debouncedStopTime);
+    } else {
+      setFirstStart(false);
+    }
+  }, [debouncedStopTime]);
+
+  return (
+    <InputSNCF
+      type="number"
+      id={`osrd-config-stoptime-via-${index}`}
+      onChange={
+        (e) => setStopTime(e.target.value)
+      }
+      value={stopTime}
+      unit="s"
+      sm
+      noMargin
+    />
+  );
+};
 
 export default function DisplayVias(props) {
   const osrdconf = useSelector((state) => state.osrdconf);
+  const [indexSelected, setIndexSelected] = useState(undefined);
   const { zoomToFeaturePoint } = props;
 
   return (
@@ -48,21 +83,18 @@ export default function DisplayVias(props) {
                         {/* <div className="small text-nowrap ml-3">
                           {`${place.pkSncfDe} • ${place.pkSncfFi}`}</div> */}
                       </div>
-                      <div className="osrd-config-stoptime">
-                        <InputSNCF
-                          type="number"
-                          id={`osrd-config-stoptime-via-${index}`}
-                          onChange={
-                            (e) => updateViaStopTime(index, e.target.value)
-                          }
-                          value={
-                            osrdconf.vias[index] !== undefined
-                            && osrdconf.vias[index].stoptime !== undefined
-                              ? osrdconf.vias[index].stoptime : 0
-                          }
-                          sm
-                          noMargin
-                        />
+                      <div className="osrd-config-stoptime" role="button" tabIndex="-1" onClick={() => setIndexSelected(index)}>
+                        {index === indexSelected
+                          ? (
+                            <InputStopTime
+                              index={index}
+                            />
+                          ) : (
+                            <>
+                              {osrdconf.vias[index].stoptime ? osrdconf.vias[index].stoptime : 0}
+                              <i className="ml-2 icons-pencil" />
+                            </>
+                          )}
                       </div>
                       <button
                         className="btn btn-sm btn-only-icon btn-white ml-auto"
@@ -87,4 +119,12 @@ export default function DisplayVias(props) {
 
 DisplayVias.propTypes = {
   zoomToFeaturePoint: PropTypes.func.isRequired,
+};
+
+InputStopTime.propTypes = {
+  index: PropTypes.number.isRequired,
+  value: PropTypes.number,
+};
+InputStopTime.defaultProps = {
+  value: 0,
 };

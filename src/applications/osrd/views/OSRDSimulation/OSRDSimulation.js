@@ -106,7 +106,7 @@ const OSRDSimulation = () => {
                   <ContextMenu />
                 </div>
               </div>
-              <div className="mb-2">
+              {/* <div className="mb-2">
                 <TimeLine />
               </div>
               {spaceTimeFullWidth ? (
@@ -146,7 +146,7 @@ const OSRDSimulation = () => {
                     ) : null}
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className="mb-2">
                 <Margins />
               </div>

@@ -11,6 +11,7 @@ import { post } from 'common/requests';
 import bbox from '@turf/bbox';
 import { WebMercatorViewport } from 'react-map-gl';
 import { FaLongArrowAltUp, FaLongArrowAltDown } from 'react-icons/fa';
+import { GiPathDistance } from 'react-icons/gi';
 import DisplayItinerary from 'applications/osrd/components/Itinerary/DisplayItinerary';
 
 const itineraryURI = '/pathfinding/';
@@ -75,14 +76,12 @@ const Itinerary = (props) => {
   // Way to ensure marker position on track
   const correctWaypointsGPS = (pathfindingData) => {
     setLaunchPathfinding(false);
-
     dispatch(updateOrigin({
       ...osrdconf.origin, clickLngLat: pathfindingData.steps[0].geographic,
     }));
 
     if (osrdconf.vias.length > 0 || pathfindingData.steps.length > 2) {
       const stepsVias = convertPathfindingVias(pathfindingData.steps);
-      console.log(osrdconf.vias, stepsVias);
       dispatch(replaceVias(stepsVias));
       /* dispatch(replaceVias(osrdconf.vias.map((via, idx) => (
         { ...via, clickLngLat: stepsVias[idx].geographic })))); */
@@ -95,8 +94,24 @@ const Itinerary = (props) => {
     setLaunchPathfinding(true);
   };
 
-  const mapItinerary = async (zoom = true) => {
-    // const geom = (map.mapTrackSources === 'schematic') ? 'sch' : 'geo';
+  const postPathFinding = async (zoom, params) => {
+    try {
+      const itineraryCreated = await post(itineraryURI, params, {}, true);
+      correctWaypointsGPS(itineraryCreated);
+      dispatch(updateItinerary(itineraryCreated.geographic));
+      dispatch(updatePathfindingID(itineraryCreated.id));
+      if (zoom) zoomToFeature(bbox(itineraryCreated.geographic));
+    } catch (e) {
+      dispatch(setFailure({
+        name: t('errorMessages.unableToRetrievePathfinding'),
+        message: `${e.message} : ${e.response.data.detail}`,
+      }));
+      console.log('ERROR', e);
+    }
+  };
+
+  const mapItinerary = (zoom = true) => {
+    setLaunchPathfinding(false);
     dispatch(updateItinerary(undefined));
 
     if (osrdconf.origin !== undefined && osrdconf.destination !== undefined) {
@@ -119,7 +134,7 @@ const Itinerary = (props) => {
       if (osrdconf.vias.length > 0) {
         osrdconf.vias.forEach((via) => {
           params.steps.push({
-            stop_time: via.stoptime === undefined ? 0 : Number(via.stoptime),
+            stop_time: via.stoptime === undefined ? 0 : parseInt(via.stoptime, 10),
             waypoints: [{
               track_section: via.id,
               geo_coordinate: via.clickLngLat,
@@ -137,20 +152,7 @@ const Itinerary = (props) => {
         }],
       });
 
-      try {
-        const itineraryCreated = await post(itineraryURI, params, {}, true);
-        correctWaypointsGPS(itineraryCreated);
-        dispatch(updateItinerary(itineraryCreated.geographic));
-        dispatch(updatePathfindingID(itineraryCreated.id));
-        if (zoom) zoomToFeature(bbox(itineraryCreated.geographic));
-        console.log(itineraryCreated);
-      } catch (e) {
-        dispatch(setFailure({
-          name: t('errorMessages.unableToRetrievePathfinding'),
-          message: `${e.message} : ${e.response.data.detail}`,
-        }));
-        console.log('ERROR', e);
-      }
+      postPathFinding(zoom, params);
     }
   };
 
@@ -165,6 +167,11 @@ const Itinerary = (props) => {
       }
       setLaunchPathfinding(true);
     }
+  };
+
+  const removeAllVias = () => {
+    dispatch(replaceVias([]));
+    setLaunchPathfinding(true);
   };
 
   useEffect(() => {
@@ -193,7 +200,10 @@ const Itinerary = (props) => {
       <div className="osrd-config-item mb-2">
         <div className="osrd-config-item-container">
           <div className="d-flex">
-            <button className="btn btn-only-icon btn-primary btn-sm ml-auto" type="button" onClick={inverseOD} title={t('inverseOD')}>
+            <button className="btn btn-only-icon btn-primary btn-sm ml-auto" type="button" onClick={removeAllVias}>
+              <GiPathDistance />
+            </button>
+            <button className="btn btn-only-icon btn-primary btn-sm ml-1" type="button" onClick={inverseOD} title={t('inverseOD')}>
               <FaLongArrowAltUp />
               <FaLongArrowAltDown />
             </button>
