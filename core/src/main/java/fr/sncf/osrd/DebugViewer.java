@@ -16,7 +16,8 @@ import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
-import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.graph.implementations.AdjacencyListGraph;
+import org.graphstream.graph.implementations.MultiGraph;
 import org.graphstream.ui.geom.Point3;
 import org.graphstream.ui.graphicGraph.GraphicGraph;
 import org.graphstream.ui.layout.Layouts;
@@ -51,7 +52,7 @@ public class DebugViewer extends ChangeConsumer {
     private final double stepPause;
 
     private final SpriteManager spriteManager;
-    private final SingleGraph graph;
+    private final AdjacencyListGraph graph;
     private final Map<String, TrainData> trains = new HashMap<>();
     private final Map<Signal, Sprite> signalSprites = new HashMap<>();
     private double currentTime = Double.NaN;
@@ -90,7 +91,7 @@ public class DebugViewer extends ChangeConsumer {
             Infra infra,
             boolean realTime,
             double stepPause,
-            SingleGraph graph,
+            AdjacencyListGraph graph,
             SpriteManager spriteManager
     ) {
         this.infra = infra;
@@ -107,7 +108,7 @@ public class DebugViewer extends ChangeConsumer {
     public static DebugViewer from(Infra infra, boolean realTime, double stepPause) {
         System.setProperty("org.graphstream.ui", "swing");
 
-        var graph = new SingleGraph("OSRD");
+        var graph = new MultiGraph("OSRD");
         graph.setAttribute("ui.quality");
         graph.setAttribute("ui.antialias");
         var spriteManager = new SpriteManager(graph);
