@@ -55,6 +55,8 @@ public abstract class RJSAllowance {
         @Json(name = "allowance_type")
         public MarginType allowanceType;
 
+        /** If TIME: we add allowanceValue% time
+         * If DISTANCE: we add allowanceValue minute per 100km */
         @Json(name = "allowance_value")
         public double allowanceValue;
 
