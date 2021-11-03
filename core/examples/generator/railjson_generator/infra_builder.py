@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Mapping, Tuple
 
+from railjson_generator.schema.infra.endpoint import Endpoint
 from railjson_generator.schema.infra.infra import Infra
 from railjson_generator.schema.infra.link import Link
 from railjson_generator.schema.infra.operational_point import OperationalPoint
@@ -13,7 +14,7 @@ from railjson_generator.utils import generate_routes
 @dataclass
 class InfraBuilder:
     infra: Infra = field(default_factory=Infra)
-    switches_group_map: Mapping[Tuple[int, int], Tuple[Switch, str]] = field(
+    switches_group_map: Mapping[Tuple[int, Endpoint, int], Tuple[Switch, str]] = field(
         default_factory=dict
     )
 
