@@ -9,7 +9,7 @@ from railjson_generator.schema.location import Location
 from railjson_generator.schema.simulation.simulation import Simulation
 from railjson_generator.schema.simulation.train_schedule import TrainSchedule
 from railjson_generator.schema.simulation.train_succession_table import TST
-from railjson_generator.utils.pathfinding import RoutePathfindingStep, find_route_path
+from railjson_generator.utils.pathfinding import RoutePathfindingStep, find_route_path, PathElement
 
 
 @dataclass
@@ -92,6 +92,8 @@ class SimulationBuilder:
             for range_route in self.track_to_routes[loc_end.track_section.label]:
                 if not range_route.contains(loc_end.offset):
                     continue
+                if self._any_origin_is_before_loc(range_route.route_node.route, origins, loc_end):
+                    continue
                 goals.add(range_route.route_node)
             path = find_route_path(origins, goals)
             if not path:
@@ -120,3 +122,22 @@ class SimulationBuilder:
 
     def build(self) -> Simulation:
         return self.simulation
+
+    @staticmethod
+    def _find_route_offset(route: Route, loc: Location):
+        step: PathElement
+        total_offset = 0
+        for step in route.path_elements:
+            if step.track_section == loc.track_section:
+                return total_offset + abs(step.begin - loc.offset)
+            else:
+                total_offset += abs(step.begin - step.end)
+        return None
+
+    @staticmethod
+    def _any_origin_is_before_loc(route: Route, origins: List[RoutePathfindingStep], destination: Location):
+        offset = SimulationBuilder._find_route_offset(route, destination)
+        for origin in origins:
+            if origin.route_node.route == route and origin.offset > offset:
+                return True
+        return False
