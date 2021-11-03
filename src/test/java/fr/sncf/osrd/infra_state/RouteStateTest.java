@@ -615,7 +615,7 @@ public class RouteStateTest {
 
     @Test
     public void testChangeTST3TrainsInfra() {
-        final var config = TestConfig.readResource("3trains_infra/config.json");
+        final var config = TestConfig.readResource("three_trains/infra.json", "three_trains/simulation.json");
         var simState = config.prepare();
         var sim = simState.sim;
 

@@ -60,27 +60,44 @@ public class TestConfig {
         return read(getResourcePath(resourceConfigPath));
     }
 
+    /** Read the infra and simulation associated files */
+    public static TestConfig readResource(String infraPath, String simulationPath) {
+        return makeConfig(getResourcePath(infraPath), getResourcePath(simulationPath), null);
+    }
+
     /** Read the configuration at the given path, as well as the associated resources */
     public static TestConfig read(Path configPath) {
         try {
             var jsonConfig = MoshiUtils.deserialize(JsonConfig.adapter, configPath);
-
             var baseDirPath = configPath.getParent();
-
             var infraPath = PathUtils.relativeTo(baseDirPath, jsonConfig.infraPath);
-            var infra = parseRailJSONFromFile(jsonConfig.infraType, infraPath.toString());
+            var simulationPath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
 
-            var schedulePath = PathUtils.relativeTo(baseDirPath, jsonConfig.simulationPath);
-            var schedule = MoshiUtils.deserialize(RJSSimulation.adapter, schedulePath);
-
-            var extraRollingStocks = new HashMap<String, RollingStock>();
+            var extraRollingStockDirs = new ArrayList<Path>();
             if (jsonConfig.extraRollingStockDirs != null) {
-                for (var extraRollingStockDir : jsonConfig.extraRollingStockDirs) {
-                    var extraRollingStocksPath = PathUtils.relativeTo(baseDirPath, extraRollingStockDir);
-                    parseExtraRollingStocks(extraRollingStocks, extraRollingStocksPath);
-                }
+                for (var extraRollingStockDir : jsonConfig.extraRollingStockDirs)
+                    extraRollingStockDirs.add(PathUtils.relativeTo(baseDirPath, extraRollingStockDir));
             }
-            return new TestConfig(infra, schedule, extraRollingStocks);
+            return makeConfig(infraPath, simulationPath, extraRollingStockDirs);
+        } catch (RuntimeException e) {
+            fail(e);
+            return null;  // appease the compiler
+        } catch (Exception e) {
+            fail(e);
+            return null;  // appease the compiler
+        }
+    }
+
+    private static TestConfig makeConfig(Path infraPath, Path simulationPath, ArrayList<Path> extraRollingStockDirs) {
+        try {
+            var infra = parseRailJSONFromFile(JsonConfig.InfraType.UNKNOWN, infraPath.toString());
+            var simulation = MoshiUtils.deserialize(RJSSimulation.adapter, simulationPath);
+            var extraRollingStocks = new HashMap<String, RollingStock>();
+            if (extraRollingStockDirs != null) {
+                for (var extraRollingStockDir : extraRollingStockDirs)
+                    parseExtraRollingStocks(extraRollingStocks, extraRollingStockDir);
+            }
+            return new TestConfig(infra, simulation, extraRollingStocks);
         } catch (RuntimeException e) {
             fail(e);
             return null;  // appease the compiler
