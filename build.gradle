@@ -152,3 +152,9 @@ tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
      }
   }
 }
+
+tasks.register("genExamples", Exec) {
+    commandLine 'python.exe', 'examples/generate.py'
+}
+
+test.dependsOn(genExamples)
