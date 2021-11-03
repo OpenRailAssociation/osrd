@@ -8,6 +8,7 @@ from railjson_generator import (
     ApplicableDirection,
     Location,
 )
+from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.endpoint import TrackEndpoint, Endpoint
 from railjson_generator.schema.infra.track_section import TrackSection
 
@@ -38,27 +39,39 @@ def _make_switch(builder: InfraBuilder, a: TrackEndpoint, b: TrackEndpoint, c: T
     print("link :")
     builder.add_switch(a, b, c)
     for endpoint in [a, b, c]:
-        print("    ", endpoint.track_section.label, endpoint.endpoint)
+        print(f"\t{endpoint.track_section.label} {endpoint.endpoint}")
         _add_detector_at(endpoint.track_section, _endpoint_offset(endpoint, 50))
 
 
 def _link_all_tracks(builder: InfraBuilder, tracks: List[TrackSection]):
-    open_endpoints = list()
-    for track in tracks:
-        open_endpoints.append(track.begin())
-        open_endpoints.append(track.end())
-    tracks_not_linked = set(track.label for track in tracks)
-    while True:
+    random.shuffle(tracks)
+    open_endpoints = [tracks[0].begin(), tracks[0].end()]
+    i = 1
+    while i < len(tracks):
+        track = tracks[i]
+        endpoint = _random_endpoint(track)
         random.shuffle(open_endpoints)
-        a, b, c = open_endpoints[:3]
-        if len(set(endpoint.track_section.label for endpoint in [a, b, c])) == 3:
-            _make_switch(builder, a, b, c)
-            open_endpoints = open_endpoints[3:]
-            for endpoint in [a, b, c]:
-                tracks_not_linked.discard(endpoint.track_section.label)
-        if len(tracks_not_linked) == 0:
-            if len(open_endpoints) < 3 or random.randint(0, 3) == 0:
-                break
+        if len(open_endpoints) > 1 and random.randint(0, 2) == 0:
+            a, b = open_endpoints[:2]
+            if len(set(e.track_section.label for e in [a, b])) == 2:
+                _make_switch(builder, endpoint, a, b)
+                open_endpoints = open_endpoints[3:]
+                open_endpoints.append(endpoint.opposite())
+                i += 1
+                continue
+        if i < len(tracks) - 1 and random.randint(0, 1) == 0:
+            connected_endpoint = open_endpoints[0]
+            other_endpoint = _random_endpoint(tracks[i + 1])
+            _make_switch(builder, connected_endpoint, endpoint, other_endpoint)
+            open_endpoints[0] = other_endpoint.opposite()
+            i += 1
+        else:
+            link_to = open_endpoints.pop()
+            builder.add_link(endpoint, link_to)
+            print(f"link:\n\t{endpoint.track_section.label} {endpoint.endpoint}")
+            print(f"\t{link_to.track_section.label} {link_to.endpoint}")
+        open_endpoints.append(endpoint.opposite())
+        i += 1
 
 
 def _add_random_detectors(tracks: List[TrackSection]):
@@ -68,6 +81,24 @@ def _add_random_detectors(tracks: List[TrackSection]):
         if min_position < max_position:
             for _ in range(random.randint(0, 3)):
                 _add_detector_at(track, min_position + random.random() * (max_position - min_position))
+
+
+def _generate_random_schedule(builder: SimulationBuilder, tracks: List[TrackSection], label: str):
+    track = random.choice(tracks)
+    origin = Location(track, random.random() * track.length)
+    direction = Direction.START_TO_STOP if random.randint(0, 1) == 1 else Direction.STOP_TO_START
+    while random.randint(0, 5) != 0:
+        neighbors = track.neighbors(direction)
+        if not neighbors:
+            break
+        next_track_endpoint = random.choice(neighbors)
+        direction = Direction.START_TO_STOP \
+            if next_track_endpoint.endpoint is Endpoint.BEGIN else Direction.STOP_TO_START
+        track = next_track_endpoint.track_section
+    destination = Location(track, random.random() * track.length)
+    builder.add_train_schedule(
+        origin, destination, label=label, departure_time=random.random() * 60
+    )
 
 
 def generate_random_infra(seed, n_tracks, infra_path, sim_path):
@@ -92,11 +123,8 @@ def generate_random_infra(seed, n_tracks, infra_path, sim_path):
     # GENERATE SIMULATION
     builder = SimulationBuilder(infra)
 
-    # TODO: generate random trains
-    first_train = builder.add_train_schedule(
-        Location(tracks[0], 0), Location(tracks[0], tracks[0].length), label="First", departure_time=10
-    )
-    first_train.add_stop(10, position=tracks[0].length)
+    for i in range(15):
+        _generate_random_schedule(builder, tracks, str(i))
 
     # Build simulation
     sim = builder.build()
@@ -106,4 +134,4 @@ def generate_random_infra(seed, n_tracks, infra_path, sim_path):
 
 
 if __name__ == "__main__":
-    generate_random_infra(0, 15, "infra.json", "simulation.json")
+    generate_random_infra(0, 25, "infra.json", "simulation.json")
