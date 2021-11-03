@@ -2,8 +2,7 @@
   "end_position": "Fin",
   "from": "De",
   "begin_position": "Début",
-  "marginAdded": "Marge ajoutée",
-  "marginDeleted": "Marge supprimée",
+  "marginModified": "Marges modifiées",
   "marginType": "Type de marge",
   "marginTypes": {
     "construction": "Construction",

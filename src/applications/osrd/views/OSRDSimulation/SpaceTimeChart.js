@@ -139,10 +139,24 @@ const drawTrain = (
     chart, `${isSelected && 'selected'} head`, headPositionSection, groupID,
     'curveLinear', keyValues, 'headPosition', rotate, isSelected,
   ));
+
+  if (dataSimulation.margins) {
+    dataSimulation.margins.tailPosition.forEach((tailPositionSection) => drawCurve(
+      chart, `${isSelected && 'selected'} tail margin`, tailPositionSection, groupID,
+      'curveLinear', keyValues, 'tailPosition', rotate, isSelected,
+    ));
+  }
+  if (dataSimulation.eco) {
+    dataSimulation.eco.tailPosition.forEach((tailPositionSection) => drawCurve(
+      chart, `${isSelected && 'selected'} tail eco`, tailPositionSection, groupID,
+      'curveLinear', keyValues, 'tailPosition', rotate, isSelected,
+    ));
+  }
   drawText(chart, dataSimulation, direction, groupID, isSelected);
 };
 
 const createTrain = (keyValues, simulationTrains) => {
+  console.log(simulationTrains);
   // Prepare data
   const dataSimulation = simulationTrains.map((train, trainNumber) => {
     const dataSimulationTrain = {};
@@ -161,6 +175,24 @@ const createTrain = (keyValues, simulationTrains) => {
       dataSimulationTrain.routeEndOccupancy, dataSimulationTrain.routeBeginOccupancy, keyValues,
     );
     dataSimulationTrain.speed = formatStepsWithTime(train.base.speeds);
+    if (train.margins) {
+      dataSimulationTrain.margins = {};
+      dataSimulationTrain.margins.headPosition = formatStepsWithTimeMulti(
+        train.margins.head_positions,
+      );
+      dataSimulationTrain.margins.tailPosition = formatStepsWithTimeMulti(
+        train.margins.tail_positions,
+      );
+    }
+    if (train.eco) {
+      dataSimulationTrain.eco = {};
+      dataSimulationTrain.eco.headPosition = formatStepsWithTimeMulti(
+        train.eco.head_positions,
+      );
+      dataSimulationTrain.eco.tailPosition = formatStepsWithTimeMulti(
+        train.eco.tail_positions,
+      );
+    }
     return dataSimulationTrain;
   });
   return dataSimulation;
@@ -178,7 +210,7 @@ export default function SpaceTimeChart() {
   const [chart, setChart] = useState(undefined);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [yPosition, setYPosition] = useState(0);
-  const [dataSimulation, setDataSimulation] = useState(createTrain(keyValues, simulation.trains));
+  const [dataSimulation, setDataSimulation] = useState(undefined);
   const [showModal, setShowModal] = useState('');
   const [dragOffset, setDragOffset] = useState(0);
   const [dragEnding, setDragEnding] = useState(false);
@@ -232,7 +264,10 @@ export default function SpaceTimeChart() {
   };
 
   useEffect(() => {
-    dispatch(updateMustRedraw(true));
+    setDataSimulation(createTrain(keyValues, simulation.trains));
+    setTimeout(() => {
+      dispatch(updateMustRedraw(true));
+    }, 0);
   }, []);
 
   useEffect(() => {
@@ -252,8 +287,10 @@ export default function SpaceTimeChart() {
 
   useEffect(() => {
     setDataSimulation(createTrain(keyValues, simulation.trains));
-    drawAllTrains();
-    handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
+    if (dataSimulation) {
+      drawAllTrains();
+      handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
+    }
   }, [mustRedraw, rotate, selectedTrain, simulation.trains[selectedTrain]]);
 
   useEffect(() => {
@@ -271,10 +308,12 @@ export default function SpaceTimeChart() {
   }, [chart, mustRedraw, timePosition]);
 
   useEffect(() => {
-    traceVerticalLine(
-      chart, dataSimulation[selectedTrain], keyValues,
-      LIST_VALUES_NAME_SPACE_TIME, positionValues, 'headPosition', rotate, timePosition,
-    );
+    if (dataSimulation) {
+      traceVerticalLine(
+        chart, dataSimulation[selectedTrain], keyValues,
+        LIST_VALUES_NAME_SPACE_TIME, positionValues, 'headPosition', rotate, timePosition,
+      );
+    }
   }, [positionValues]);
 
   useEffect(() => {

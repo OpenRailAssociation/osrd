@@ -57,13 +57,13 @@ const EmptyLine = (props) => {
     setValues({
       ...values,
       type: type.type,
-      value: parseInt(type.value, 10),
+      value: type.value === '' ? '' : parseInt(type.value, 10),
     });
   };
 
   const addMargins = (margin) => {
-    const newMargins = margins.length > 0
-      ? Array.from(margins).push(margin) : [margin];
+    const newMargins = Array.from(margins);
+    newMargins.push(margin);
     setMargins(newMargins);
     setUpdateMargins(true);
   };
@@ -99,7 +99,7 @@ const EmptyLine = (props) => {
           id="marginTypeSelect"
           options={marginTypes}
           handleType={handleType}
-          value={parseInt(values.value, 10)}
+          value={values.value === '' ? '' : parseInt(values.value, 10)}
           sm
         />
       </div>
@@ -193,7 +193,7 @@ export default function Margins() {
       dispatch(updateSimulation({ ...simulation, trains: newSimulationTrains }));
       dispatch(updateMustRedraw(true));
       dispatch(setSuccess({
-        title: t('marginAdded'),
+        title: t('marginModified'),
         text: 'Hop hop hop',
       }));
     } catch (e) {
@@ -206,7 +206,7 @@ export default function Margins() {
   };
 
   const delMargin = (idx) => {
-    const newMargins = Array.from(trainDetail.margins);
+    const newMargins = Array.from(margins);
     newMargins.splice(idx, 1);
     setMargins(newMargins);
     setUpdateMargins(true);
