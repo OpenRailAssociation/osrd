@@ -62,7 +62,13 @@ class SimulationBuilder:
             waypoints_to_routes[route.entry_point.label].append(node)
 
         for node in self.route_to_nodes.values():
-            node.neighbors = waypoints_to_routes[node.route.exit_point.label]
+            node.neighbors = []
+            neighbors = waypoints_to_routes[node.route.exit_point.label]
+            for neighbor in neighbors:
+                first_element_next_route = neighbor.route.path_elements[0]
+                last_element_prev_route = node.route.path_elements[-1]
+                if first_element_next_route.direction == last_element_prev_route.direction:
+                    node.neighbors.append(neighbor)
 
         for route in self.infra.routes:
             offset = 0
