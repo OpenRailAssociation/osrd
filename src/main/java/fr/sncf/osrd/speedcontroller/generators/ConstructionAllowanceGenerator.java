@@ -1,6 +1,7 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
 import static fr.sncf.osrd.train.TrainPhysicsIntegrator.*;
+import static java.lang.Math.exp;
 import static java.lang.Math.min;
 import static java.util.Collections.max;
 
@@ -29,7 +30,8 @@ public class ConstructionAllowanceGenerator extends DichotomyControllerGenerator
     }
 
     @Override
-    protected double getTargetTime(double baseTime) {
+    protected double getTargetTime() {
+        var baseTime = evalRunTime(sim, schedule, maxSpeedControllers);
         return baseTime + value;
     }
 
