@@ -1,6 +1,6 @@
 import json
 from dataclasses import dataclass, field
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from railjson_generator.rjs_static import (ASPECTS, SCRIPT_FUNCTIONS,
                                            SWITCH_TYPES)
@@ -20,6 +20,7 @@ class Infra:
     operational_points: List[OperationalPoint] = field(default_factory=list)
     tvd_sections: List[TVDSection] = field(default_factory=list)
     routes: List[Route] = field(default_factory=list)
+    speed_limits: List[Dict] = field(default_factory=list)
 
     VERSION = "1.0"
 
@@ -30,6 +31,9 @@ class Infra:
     def add_route(self, *args, **kwargs):
         self.routes.append(Route(*args, **kwargs))
         return self.routes[-1]
+
+    def add_speed_limit(self, speed_limit):
+        self.speed_limits.append(speed_limit)
 
     def format(self):
         return {
@@ -43,6 +47,7 @@ class Infra:
             "aspects": ASPECTS,
             "switch_types": SWITCH_TYPES,
             "script_functions": SCRIPT_FUNCTIONS,
+            "speed_sections": self.speed_limits
         }
 
     def save(self, path):
