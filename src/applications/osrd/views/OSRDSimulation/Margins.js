@@ -169,10 +169,11 @@ export default function Margins() {
 
   const getMargins = async () => {
     try {
+      setIsUpdating(true);
       const result = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`);
       setTrainDetail(result);
       setMargins(result.margins);
-      console.log(result);
+      setIsUpdating(false);
     } catch (e) {
       console.log('ERROR', e);
       dispatch(setFailure({

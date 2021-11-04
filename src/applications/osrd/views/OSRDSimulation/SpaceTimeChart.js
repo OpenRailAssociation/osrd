@@ -5,24 +5,17 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import * as d3 from 'd3';
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simulation/consts';
-import {
-  defineLinear, defineTime, formatStepsWithTime, formatStepsWithTimeMulti, getDirection,
-  handleWindowResize, interpolateOnTime, makeStairCase, mergeDatasArea, timeShiftTrain,
-} from 'applications/osrd/components/Helpers/ChartHelpers';
+import { handleWindowResize, interpolateOnTime, timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
 import {
   updateChart, updateContextMenu, updateMustRedraw,
-  updatePositionValues, updateSimulation, updateSelectedTrain,
+  updatePositionValues, updateSimulation,
 } from 'reducers/osrdsimulation';
 import ChartModal from 'applications/osrd/components/Simulation/ChartModal';
-import defineChart from 'applications/osrd/components/Simulation/defineChart';
-import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
-import drawArea from 'applications/osrd/components/Simulation/drawArea';
-import drawText from 'applications/osrd/components/Simulation/drawText';
-import findConflicts from 'applications/osrd/components/Simulation/findConflicts';
 import enableInteractivity, { traceVerticalLine } from 'applications/osrd/components/Simulation/enableInteractivity';
-import { sec2time } from 'utils/timeManipulation';
 import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHelpers';
-import { setFailure } from 'reducers/main.ts';
+import createChart from 'applications/osrd/components/Simulation/SpaceTimeChart/createChart';
+import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
+import drawTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/drawTrain';
 
 const CHART_ID = 'SpaceTimeChart';
 
@@ -34,179 +27,6 @@ const drawAxisTitle = (chart, rotate) => {
     .attr('x', rotate ? chart.width - 10 : -10)
     .attr('y', rotate ? chart.height - 10 : 20)
     .text('KM');
-};
-
-const createChart = (chart, dataSimulation, keyValues, ref, rotate) => {
-  d3.select(`#${CHART_ID}`).remove();
-
-  const dataSimulationTime = d3.extent([].concat(...dataSimulation.map(
-    (train) => d3.extent(train.routeBeginOccupancy, (d) => d[keyValues[0]]),
-  )));
-
-  const dataSimulationLinearMax = d3.max([
-    d3.max([].concat(...dataSimulation.map(
-      (train) => d3.max(train.routeEndOccupancy.map((step) => step[keyValues[1]])),
-    ))),
-    d3.max([].concat(...dataSimulation.map(
-      (train) => d3.max(train.routeBeginOccupancy.map((step) => step[keyValues[1]])),
-    ))),
-    /* d3.max([].concat(...dataSimulation.map(
-      (train) => d3.max(train.headPosition.map((step) => step[keyValues[1]])),
-    ))),
-    d3.max([].concat(...dataSimulation.map(
-      (train) => d3.max(train.tailPosition.map((step) => step[keyValues[1]])),
-    ))), */
-  ]);
-
-  const defineX = (chart === undefined)
-    ? defineTime(dataSimulationTime, keyValues[0])
-    : chart.x;
-  const defineY = (chart === undefined)
-    ? defineLinear(dataSimulationLinearMax, 0.05)
-    : chart.y;
-
-  const width = parseInt(d3.select(`#container-${CHART_ID}`).style('width'), 10);
-  const chartLocal = defineChart(width, 400, defineX, defineY, ref, rotate, keyValues, CHART_ID);
-  return (chart === undefined)
-    ? chartLocal
-    : { ...chartLocal, x: chart.x, y: chart.y };
-};
-
-const drawTrain = (
-  chart, dispatch, dataSimulation, isSelected, keyValues,
-  offsetTimeByDragging, rotate, setDragEnding, setDragOffset,
-) => {
-  const groupID = `spaceTime-${dataSimulation.trainNumber}`;
-
-  const initialDrag = rotate
-    ? chart.y.invert(0)
-    : chart.x.invert(0);
-  let dragValue = 0;
-
-  const dragTimeOffset = () => {
-    dragValue += rotate ? d3.event.dy : d3.event.dx;
-    const translation = rotate ? `0,${dragValue}` : `${dragValue},0`;
-    d3.select(`#${groupID}`)
-      .attr('transform', `translate(${translation})`);
-    const value = rotate
-      ? Math.floor((chart.y.invert(d3.event.dy) - initialDrag) / 1000)
-      : Math.floor((chart.x.invert(d3.event.dx) - initialDrag) / 1000);
-    setDragOffset(value);
-  };
-
-  const drag = d3.drag()
-    .on('end', () => {
-      setDragEnding(true);
-      dispatch(updateMustRedraw(true));
-    })
-    .on('start', () => {
-      dispatch(updateSelectedTrain(dataSimulation.trainNumber));
-    })
-    .on('drag', () => {
-      dragTimeOffset();
-    });
-
-  chart.drawZone.append('g')
-    .attr('id', groupID)
-    .attr('class', 'chartTrain')
-    .call(drag)
-    .on('contextmenu', () => {
-      d3.event.preventDefault();
-      dispatch(updateContextMenu({
-        id: dataSimulation.id, xPos: d3.event.pageX, yPos: d3.event.pageY,
-      }));
-      dispatch(updateSelectedTrain(dataSimulation.trainNumber));
-      dispatch(updateMustRedraw(true));
-    });
-
-  // Test direction to avoid displaying block
-  const direction = getDirection(dataSimulation.headPosition);
-
-  if (direction) {
-    drawArea(
-      chart, `${isSelected && 'selected'} area`, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
-      'areaBlock', rotate,
-    );
-    drawCurve(chart, `${isSelected && 'selected'} end-block`, dataSimulation.routeEndOccupancy, groupID,
-      'curveLinear', keyValues, 'routeEndOccupancy', rotate, isSelected);
-    drawCurve(chart, `${isSelected && 'selected'} start-block`, dataSimulation.routeBeginOccupancy, groupID,
-      'curveLinear', keyValues, 'routeBeginOccupancy', rotate, isSelected);
-  }
-
-  dataSimulation.tailPosition.forEach((tailPositionSection) => drawCurve(
-    chart, `${isSelected && 'selected'} tail`, tailPositionSection, groupID,
-    'curveLinear', keyValues, 'tailPosition', rotate, isSelected,
-  ));
-  dataSimulation.headPosition.forEach((headPositionSection) => drawCurve(
-    chart, `${isSelected && 'selected'} head`, headPositionSection, groupID,
-    'curveLinear', keyValues, 'headPosition', rotate, isSelected,
-  ));
-
-  if (dataSimulation.margins) {
-    dataSimulation.margins.headPosition.forEach((tailPositionSection) => drawCurve(
-      chart, `${isSelected && 'selected'} tail margins`, tailPositionSection, groupID,
-      'curveLinear', keyValues, 'tailPosition', rotate, isSelected,
-    ));
-  }
-  if (dataSimulation.eco) {
-    dataSimulation.eco.headPosition.forEach((tailPositionSection) => drawCurve(
-      chart, `${isSelected && 'selected'} tail eco`, tailPositionSection, groupID,
-      'curveLinear', keyValues, 'tailPosition', rotate, isSelected,
-    ));
-  }
-  drawText(chart, dataSimulation, direction, groupID, isSelected);
-};
-
-const createTrain = (dispatch, keyValues, simulationTrains, t) => {
-  // Prepare data
-  const dataSimulation = simulationTrains.map((train, trainNumber) => {
-    const dataSimulationTrain = {};
-    dataSimulationTrain.id = train.id;
-    dataSimulationTrain.name = train.name;
-    dataSimulationTrain.trainNumber = trainNumber;
-    dataSimulationTrain.headPosition = formatStepsWithTimeMulti(train.base.head_positions);
-    dataSimulationTrain.tailPosition = formatStepsWithTimeMulti(train.base.tail_positions);
-    dataSimulationTrain.routeEndOccupancy = formatStepsWithTime(
-      makeStairCase(train.base.route_end_occupancy),
-    );
-    dataSimulationTrain.routeBeginOccupancy = formatStepsWithTime(
-      makeStairCase(train.base.route_begin_occupancy),
-    );
-    dataSimulationTrain.areaBlock = mergeDatasArea(
-      dataSimulationTrain.routeEndOccupancy, dataSimulationTrain.routeBeginOccupancy, keyValues,
-    );
-    dataSimulationTrain.speed = formatStepsWithTime(train.base.speeds);
-    if (train.margins && !train.margins.error) {
-      dataSimulationTrain.margins = {};
-      dataSimulationTrain.margins.headPosition = formatStepsWithTimeMulti(
-        train.margins.head_positions,
-      );
-      dataSimulationTrain.margins.tailPosition = formatStepsWithTimeMulti(
-        train.margins.tail_positions,
-      );
-    } else if (train.margins && train.margins.error) {
-      dispatch(setFailure({
-        name: t('errors.margins'),
-        message: train.margins.error,
-      }));
-    }
-    if (train.eco && !train.eco.error) {
-      dataSimulationTrain.eco = {};
-      dataSimulationTrain.eco.headPosition = formatStepsWithTimeMulti(
-        train.eco.head_positions,
-      );
-      dataSimulationTrain.eco.tailPosition = formatStepsWithTimeMulti(
-        train.eco.tail_positions,
-      );
-    } else if (train.eco && train.eco.error) {
-      dispatch(setFailure({
-        name: t('errors.eco'),
-        message: train.eco.error,
-      }));
-    }
-    return dataSimulationTrain;
-  });
-  return dataSimulation;
 };
 
 export default function SpaceTimeChart() {
@@ -249,7 +69,7 @@ export default function SpaceTimeChart() {
   const drawAllTrains = () => {
     if (mustRedraw) {
       const chartLocal = createChart(
-        chart, dataSimulation, keyValues, ref, rotate,
+        chart, CHART_ID, dataSimulation, keyValues, ref, rotate,
       );
 
       chartLocal.svg.on('click', () => {

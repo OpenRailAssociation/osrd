@@ -127,12 +127,6 @@ svg text {
     stroke: var(--coolgray3);
     &.selected {
       stroke: var(--cyan);
-      &.margins {
-        stroke: var(--green);
-      }
-      &.eco {
-        stroke: var(--orange);
-      }
     }
     &.pointer {
       fill: var(--cyan);
@@ -142,9 +136,21 @@ svg text {
     stroke: var(--coolgray7);
     &.selected {
       stroke: var(--blue);
+      &.margins {
+        stroke: var(--green);
+      }
+      &.eco {
+        stroke: var(--orange);
+      }
     }
     &.pointer {
       fill: var(--blue);
+      &.margins {
+        fill: var(--green);
+      }
+      &.eco {
+        fill: var(--orange);
+      }
     }
   }
 }
@@ -193,6 +199,12 @@ svg text {
     stroke-width: 2;
     &.pointer {
       fill: var(--blue);
+      &.margins {
+        fill: var(--green);
+      }
+      &.eco {
+        fill: var(--orange);
+      }
     }
     &.margins {
       stroke: var(--green);

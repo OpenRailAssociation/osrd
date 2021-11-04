@@ -155,17 +155,23 @@ export const interpolateOnTime = (dataSimulation, keyValues, listValues, timePos
   const positionInterpolated = {};
   listValues.forEach((listValue) => {
     let bisection;
+    // For array of arrays
     if (listValue === 'headPosition'
     || listValue === 'head_positions'
     || listValue === 'tailPosition'
+    || listValue === 'margins_headPosition'
+    || listValue === 'eco_headPosition'
     ) {
-      dataSimulation[listValue].forEach((section) => {
-        const index = bisect(section, timePositionLocal, 1);
-        if (index !== section.length && timePositionLocal >= section[0][keyValues[0]]) {
-          bisection = [section[index - 1], section[index]];
-        }
-      });
-    } else if (timePositionLocal >= dataSimulation[listValue][0][keyValues[0]]) {
+      if (dataSimulation[listValue]) {
+        dataSimulation[listValue].forEach((section) => {
+          const index = bisect(section, timePositionLocal, 1);
+          if (index !== section.length && timePositionLocal >= section[0][keyValues[0]]) {
+            bisection = [section[index - 1], section[index]];
+          }
+        });
+      }
+    } else if (dataSimulation[listValue]
+      && timePositionLocal >= dataSimulation[listValue][0][keyValues[0]]) {
       const index = bisect(dataSimulation[listValue], timePositionLocal, 1);
       bisection = [dataSimulation[listValue][index - 1], dataSimulation[listValue][index]];
     }
