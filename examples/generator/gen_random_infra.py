@@ -101,7 +101,7 @@ def _generate_random_schedule(builder: SimulationBuilder, tracks: List[TrackSect
     )
 
 
-def generate_random_infra(seed, n_tracks, infra_path, sim_path):
+def generate_random_infra(seed, n_tracks, n_trains, infra_path, sim_path):
 
     random.seed(seed)
 
@@ -123,7 +123,7 @@ def generate_random_infra(seed, n_tracks, infra_path, sim_path):
     # GENERATE SIMULATION
     builder = SimulationBuilder(infra)
 
-    for i in range(15):
+    for i in range(n_trains):
         _generate_random_schedule(builder, tracks, str(i))
 
     # Build simulation
@@ -134,4 +134,4 @@ def generate_random_infra(seed, n_tracks, infra_path, sim_path):
 
 
 if __name__ == "__main__":
-    generate_random_infra(0, 25, "infra.json", "simulation.json")
+    generate_random_infra(0, 35, 5, "infra.json", "simulation.json")
