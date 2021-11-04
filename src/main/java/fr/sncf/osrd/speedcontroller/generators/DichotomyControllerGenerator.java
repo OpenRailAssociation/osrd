@@ -1,7 +1,6 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
 
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.train.TrainSchedule;
@@ -96,6 +95,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
             else
                 higherBound = nextValue;
             nextValue = (lowerBound + higherBound) / 2;
+            saveGraph(nextSpeedControllers, sim, schedule, String.format("C:\\Users\\9706809E\\OneDrive - SNCF\\Documents\\Physique\\Affichage_courbes\\graph%d.csv", i));
             if (i++ > 20)
                 throw new RuntimeException("Did not converge");
         }

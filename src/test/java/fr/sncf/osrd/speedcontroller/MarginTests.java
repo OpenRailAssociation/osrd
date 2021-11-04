@@ -19,6 +19,7 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class MarginTests {
     public static class ComparativeTest {
@@ -482,19 +483,20 @@ public class MarginTests {
 
     /** Tests mareco with lots of accelerating slopes */
     @Test
-    public void testEcoMarginLotsSmallSlopes() {
+    public void testEcoMarginLotsShortSlopes() {
         // setup allowances
         double value = 10;
         var marecoAllowance = new MarecoAllowance(MarecoAllowance.MarginType.TIME, value);
 
-        // Creates an infra with lots of ver small slopes
+        // Creates an infra with lots of very short slopes
         var config = TestConfig.readResource("one_line/config.json").clearAllowances();
+        config.rjsSimulation.trainSchedules = Collections.singletonList(config.rjsSimulation.trainSchedules.get(1));
         for (var track : config.rjsInfra.trackSections) {
             track.slopes = new ArrayList<>();
-            for (double begin = 0; begin + 10 < track.length; begin += 40)
-                track.slopes.add(new RJSSlope(begin, begin + 10, 10));
-            for (double begin = 20; begin + 10 < track.length; begin += 40)
-                track.slopes.add(new RJSSlope(begin, begin + 10, -10));
+            for (double begin = 0; begin + 20 < track.length; begin += 40)
+                track.slopes.add(new RJSSlope(begin, begin + 20, -10));
+            for (double begin = 20; begin + 20 < track.length; begin += 40)
+                track.slopes.add(new RJSSlope(begin, begin + 20, 10));
         }
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(marecoAllowance));
 

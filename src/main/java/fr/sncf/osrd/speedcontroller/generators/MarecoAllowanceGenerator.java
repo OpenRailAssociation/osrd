@@ -210,6 +210,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
                 .collect(Collectors.toList());
     }
 
+    @SuppressWarnings({"checkstyle:WhitespaceAfter", "checkstyle:WhitespaceAround"})
     private ArrayList<AcceleratingSlope> findAcceleratingSlopes(
             SortedDoubleMap speeds, RollingStock rollingStock, double vf) {
 
@@ -217,6 +218,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         double previousPosition = 0.0;
         double previousSpeed = 0.0;
         double previousAcceleration = 0.0;
+        int counter = 0;
         var currentAcceleratingSlope = new AcceleratingSlope(0, 0, 0, 0, 0);
         for (var element : speeds.entrySet()) {
             double position = element.getKey();
@@ -232,17 +234,23 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
                 continue;
             }
             // beginning of accelerating slope
-            if (naturalAcceleration > 0 && previousAcceleration < 0) {
-                currentAcceleratingSlope.acceleration = naturalAcceleration;
-                currentAcceleratingSlope.previousAcceleration = previousAcceleration;
-                currentAcceleratingSlope.beginPosition = location.getPathPosition();
+            if (naturalAcceleration > 0) {
+                currentAcceleratingSlope.acceleration += naturalAcceleration;
+                counter += 1;
+                if (previousAcceleration < 0) {
+                    currentAcceleratingSlope.previousAcceleration = previousAcceleration;
+                    currentAcceleratingSlope.beginPosition = location.getPathPosition();
+                }
             } else if (naturalAcceleration < 0
                     && previousAcceleration > 0
                     && currentAcceleratingSlope.acceleration != 0) {
                 // end of accelerating slope
                 currentAcceleratingSlope.endPosition = previousPosition;
                 currentAcceleratingSlope.targetSpeed = speed;
+                currentAcceleratingSlope.acceleration /= counter;
                 res.add(currentAcceleratingSlope);
+                // reset counter and accelerating slope
+                counter = 0;
                 currentAcceleratingSlope = new AcceleratingSlope(0, 0, 0, 0, 0);
             }
             previousAcceleration = naturalAcceleration;
