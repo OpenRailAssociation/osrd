@@ -55,7 +55,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     }
 
     /** Gives the target run time for the phase, given the one if we follow max speeds */
-    protected abstract double getTargetTime(double baseTime);
+    protected abstract double getTargetTime();
 
     /** Returns the first lower bound for the dichotomy */
     protected abstract double getFirstLowEstimate();
@@ -81,20 +81,16 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         var higherBound = getFirstHighEstimate();
         var firstGuess = getFirstGuess();
 
-        var totalStopsDuration = schedule.getStopDuration();
-
         // base run
-        // the binary search condition should be on the total time,
-        // without the total time the train is stopped
-        var time = evalRunTime(sim, schedule, maxSpeedControllers) - totalStopsDuration;
-        var targetTime = getTargetTime(time);
+        var time = evalRunTime(sim, schedule, maxSpeedControllers);
+        var targetTime = getTargetTime();
 
         double nextValue = firstGuess;
         var nextSpeedControllers = maxSpeedControllers;
         int i = 0;
         while (Math.abs(time - targetTime) > precision) {
             nextSpeedControllers = getSpeedControllers(schedule, nextValue, sectionBegin, sectionEnd);
-            time = evalRunTime(sim, schedule, nextSpeedControllers) - totalStopsDuration;
+            time = evalRunTime(sim, schedule, nextSpeedControllers);
             if (time > targetTime)
                 lowerBound = nextValue;
             else
