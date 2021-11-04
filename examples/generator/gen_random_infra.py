@@ -20,6 +20,10 @@ def _random_endpoint(track: TrackSection):
         return track.end()
 
 
+def _rand_range(a, b):
+    return a + random.random() * (b - a)
+
+
 def _add_detector_at(track: TrackSection, position: float):
     detector = track.add_detector(position=position)
     length = track.length
@@ -83,6 +87,40 @@ def _add_random_detectors(tracks: List[TrackSection]):
                 _add_detector_at(track, min_position + random.random() * (max_position - min_position))
 
 
+def _make_random_ranges(n_ranges: int, length: float):
+    points = [0, length]
+    points += [random.random() * length for _ in range(n_ranges - 1)]
+    points.sort()
+    return list(zip(points, points[1:]))
+
+
+def _add_random_curves_slopes(tracks: List[TrackSection]):
+    for track in tracks:
+        length = track.length
+        for begin, end in _make_random_ranges(random.randint(0, 5), length):
+            if random.randint(0, 1) == 0:
+                track.add_curve(begin, end, _rand_range(2000, 10000))
+        for begin, end in _make_random_ranges(random.randint(0, 5), length):
+            if random.randint(0, 1) == 0:
+                track.add_slope(begin, end, _rand_range(-20, 20))
+
+
+def _add_random_speed_limits(tracks: List[TrackSection], n_categories: int):
+    for track in tracks:
+        for begin, end in _make_random_ranges(random.randint(0, 5), track.length):
+            if random.randint(0, 3) == 0:
+                track.add_speed_limit(begin, end, f"speedsection.{random.randint(0, n_categories - 1)}")
+
+
+def _make_speed_limits(infra: InfraBuilder, n_categories: int):
+    for i in range(n_categories):
+        infra.add_speed_limit({
+            "id": f"speedsection.{i}",
+            "is_signalized": True,
+            "speed": _rand_range(5, 50)
+        })
+
+
 def _generate_random_schedule(builder: SimulationBuilder, tracks: List[TrackSection], label: str):
     track = random.choice(tracks)
     origin = Location(track, random.random() * track.length)
@@ -101,8 +139,7 @@ def _generate_random_schedule(builder: SimulationBuilder, tracks: List[TrackSect
     )
 
 
-def generate_random_infra(seed, n_tracks, n_trains, infra_path, sim_path):
-
+def generate_random_infra(seed, n_tracks, n_trains, n_speed_categories, infra_path, sim_path):
     random.seed(seed)
 
     builder = InfraBuilder()
@@ -111,11 +148,13 @@ def generate_random_infra(seed, n_tracks, n_trains, infra_path, sim_path):
     tracks = [builder.add_track_section(length=50 + random.random() * 5000) for _ in range(n_tracks)]
 
     _link_all_tracks(builder, tracks)
-
     _add_random_detectors(tracks)
+    _add_random_curves_slopes(tracks)
+    _add_random_speed_limits(tracks, n_speed_categories)
 
     # Build infra: Generate BufferStops, TVDSections and Routes
     infra = builder.build()
+    _make_speed_limits(infra, n_speed_categories)
 
     # Save railjson
     infra.save(Path(infra_path))
@@ -134,4 +173,4 @@ def generate_random_infra(seed, n_tracks, n_trains, infra_path, sim_path):
 
 
 if __name__ == "__main__":
-    generate_random_infra(0, 35, 5, "infra.json", "simulation.json")
+    generate_random_infra(0, 35, 3, 10, "infra.json", "simulation.json")

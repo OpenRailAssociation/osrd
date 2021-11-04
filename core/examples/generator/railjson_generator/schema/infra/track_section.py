@@ -29,6 +29,9 @@ class TrackSection:
     end_coordinates: Optional[Tuple[float, float]] = field(default=None)
     begining_links: List[TrackEndpoint] = field(default_factory=list, repr=False)
     end_links: List[TrackEndpoint] = field(default_factory=list, repr=False)
+    slopes: List[Tuple[float, float, float]] = field(default_factory=list)
+    curves: List[Tuple[float, float, float]] = field(default_factory=list)
+    speed_limits: List[Tuple[float, float, str]] = field(default_factory=list)
 
     def begin(self):
         return TrackEndpoint(self, Endpoint.BEGIN)
@@ -50,6 +53,15 @@ class TrackSection:
         signal = Signal(*args, **wargs)
         self.signals.append(signal)
         return signal
+
+    def add_slope(self, begin, end, slope):
+        self.slopes.append((begin, end, slope))
+
+    def add_curve(self, begin, end, curve):
+        self.curves.append((begin, end, curve))
+
+    def add_speed_limit(self, begin, end, speed_section_id):
+        self.speed_limits.append((begin, end, speed_section_id))
 
     def sort_waypoints(self):
         self.waypoints.sort(key=lambda w: w.position)
@@ -91,8 +103,21 @@ class TrackSection:
             "signals": [signal.format() for signal in self.signals],
             "operational_points": [op.format() for op in self.operational_points],
             "length": self.length,
-            "slopes": [],
-            "curves": [],
-            "speed_sections": [],
             "endpoints_coords": endpoints_coords,
+            "slopes": [{
+                "begin": begin,
+                "end": end,
+                "gradient": gradient,
+            } for begin, end, gradient in self.slopes],
+            "curves": [{
+                "begin": begin,
+                "end": end,
+                "radius": radius,
+            } for begin, end, radius in self.curves],
+            "speed_sections": [{
+                "begin": begin,
+                "end": end,
+                "ref": section_id,
+                "applicable_direction": "BOTH"
+            } for begin, end, section_id in self.speed_limits],
         }
