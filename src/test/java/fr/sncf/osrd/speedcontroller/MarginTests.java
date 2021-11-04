@@ -1,6 +1,7 @@
 package fr.sncf.osrd.speedcontroller;
 
 import static fr.sncf.osrd.Helpers.*;
+import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.DISTANCE;
 import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.TIME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -72,7 +73,7 @@ public class MarginTests {
     /** Test the linear allowance */
     @ParameterizedTest
     @ValueSource(doubles = {0, 50, 200})
-    public void testLinearAllowance(double value, TestInfo info) {
+    public void testLinearTimeAllowance(double value, TestInfo info) {
         var config = TestConfig.readResource(CONFIG_PATH).clearAllowances();
 
         var allowance = new LinearAllowance(TIME, value);
@@ -80,6 +81,22 @@ public class MarginTests {
 
         test.saveGraphs(info);
         var expected = test.baseTime() * (1 + value / 100);
+        assertEquals(expected, test.testedTime(), expected * 0.01);
+    }
+
+    /** Test the linear allowance */
+    @ParameterizedTest
+    @ValueSource(doubles = {0, 4, 5})
+    public void testLinearDistanceAllowance(double value, TestInfo info) {
+        var config = TestConfig.readResource(CONFIG_PATH).clearAllowances();
+
+        var allowance = new LinearAllowance(DISTANCE, value);
+        var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
+
+        test.saveGraphs(info);
+        var timesBase = getTimePerPosition(test.baseEvents);
+        var schemaLength = timesBase.lastEntry().getKey() - timesBase.firstEntry().getKey();
+        var expected = test.baseTime() + 60 * value * schemaLength / 100000;
         assertEquals(expected, test.testedTime(), expected * 0.01);
     }
 
@@ -206,8 +223,8 @@ public class MarginTests {
         testMarecoOnConstructionMargin(CONFIG_PATH, info);
     }
 
-    /** Tests mareco */
-    public static void testEcoMargin(String configPath, double value, TestInfo info) {
+    /** Tests mareco with margin type TIME*/
+    public static void testEcoMarginTime(String configPath, double value, TestInfo info) {
         // setup allowances
         var marecoAllowance = new MarecoAllowance(MarecoAllowance.MarginType.TIME, value);
 
@@ -221,9 +238,31 @@ public class MarginTests {
     }
 
     @ParameterizedTest
-    @ValueSource(doubles = {0.0, 10, 30, 200})
-    public void testEcoMargin(double value, TestInfo info) {
-        testEcoMargin(CONFIG_PATH, value, info);
+    @ValueSource(doubles = {0.0, 10, 200})
+    public void testEcoMarginTime(double value, TestInfo info) {
+        testEcoMarginTime(CONFIG_PATH, value, info);
+    }
+
+    /** Tests mareco with margin type DISTANCE*/
+    public static void testEcoMarginDistance(String configPath, double value, TestInfo info) {
+        // setup allowances
+        var marecoAllowance = new MarecoAllowance(MarecoAllowance.MarginType.DISTANCE, value);
+
+        // run the baseline and testing simulation
+        var config = TestConfig.readResource(configPath).clearAllowances();
+        var test = ComparativeTest.from(config, () -> config.setAllAllowances(marecoAllowance));
+        test.saveGraphs(info);
+
+        var timesBase = getTimePerPosition(test.baseEvents);
+        var schemaLength = timesBase.lastEntry().getKey() - timesBase.firstEntry().getKey();
+        var expected = test.baseTime() + 60 * value * schemaLength / 100000;
+        assertEquals(expected, test.testedTime(), 6);
+    }
+
+    @ParameterizedTest
+    @ValueSource(doubles = {0.0, 4, 10})
+    public void testEcoMarginDistance(double value, TestInfo info) {
+        testEcoMarginDistance(CONFIG_PATH, value, info);
     }
 
     @ParameterizedTest

@@ -213,7 +213,7 @@ public class NonConstantDecTest {
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 10, 30, 200})
     public void testEcoMargin(double value, TestInfo info) {
-        MarginTests.testEcoMargin(CONFIG_PATH, value, info);
+        MarginTests.testEcoMarginTime(CONFIG_PATH, value, info);
     }
 
     /** Test mareco with different slopes*/
