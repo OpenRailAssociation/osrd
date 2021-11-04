@@ -483,7 +483,7 @@ public class MarginTests {
 
     /** Tests mareco with lots of accelerating slopes */
     @Test
-    public void testEcoMarginLotsShortSlopes() {
+    public void testEcoMarginShortSlopes() {
         // setup allowances
         double value = 10;
         var marecoAllowance = new MarecoAllowance(MarecoAllowance.MarginType.TIME, value);
@@ -493,10 +493,10 @@ public class MarginTests {
         config.rjsSimulation.trainSchedules = Collections.singletonList(config.rjsSimulation.trainSchedules.get(1));
         for (var track : config.rjsInfra.trackSections) {
             track.slopes = new ArrayList<>();
-            for (double begin = 0; begin + 20 < track.length; begin += 40)
-                track.slopes.add(new RJSSlope(begin, begin + 20, -10));
-            for (double begin = 20; begin + 20 < track.length; begin += 40)
-                track.slopes.add(new RJSSlope(begin, begin + 20, 10));
+            for (double begin = 0; begin + 10 < track.length; begin += 40)
+                track.slopes.add(new RJSSlope(begin, begin + 10, -10));
+            for (double begin = 20; begin + 10 < track.length; begin += 40)
+                track.slopes.add(new RJSSlope(begin, begin + 10, 10));
         }
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(marecoAllowance));
 

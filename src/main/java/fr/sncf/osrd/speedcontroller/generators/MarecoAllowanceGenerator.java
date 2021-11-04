@@ -218,14 +218,14 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         double previousPosition = 0.0;
         double previousSpeed = 0.0;
         double previousAcceleration = 0.0;
-        int counter = 0;
+        double meanAcceleration = 0.0;
+        double accelerationLength = 0.0;
         var currentAcceleratingSlope = new AcceleratingSlope(0, 0, 0, 0, 0);
         for (var element : speeds.entrySet()) {
             double position = element.getKey();
             var location = convertPosition(schedule, sim, position);
             double speed = element.getValue();
-            var integrator =
-                    new TrainPhysicsIntegrator(TIME_STEP, rollingStock, location, speed);
+            var integrator = new TrainPhysicsIntegrator(TIME_STEP, rollingStock, location, speed);
             var naturalAcceleration = integrator.computeAcceleration(Action.coast());
             if (speed < vf || speed > previousSpeed) { // if v < vf or the train is accelerating, just update variables
                 previousAcceleration = naturalAcceleration;
@@ -233,30 +233,34 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
                 previousPosition = location.getPathPosition();
                 continue;
             }
-            // beginning of accelerating slope
             if (naturalAcceleration > 0) {
-                currentAcceleratingSlope.acceleration += naturalAcceleration;
-                counter += 1;
+                // beginning of accelerating slope
+                // add acceleration * distance step to the weighted mean acceleration
+                var distanceStep = location.getPathPosition() - previousPosition;
+                meanAcceleration += naturalAcceleration * distanceStep;
+                accelerationLength += distanceStep;
                 if (previousAcceleration < 0) {
                     currentAcceleratingSlope.previousAcceleration = previousAcceleration;
                     currentAcceleratingSlope.beginPosition = location.getPathPosition();
                 }
-            } else if (naturalAcceleration < 0
-                    && previousAcceleration > 0
-                    && currentAcceleratingSlope.acceleration != 0) {
-                // end of accelerating slope
+            } else if (naturalAcceleration < 0 && accelerationLength > 0) {
+                // end the accelerating slope
                 currentAcceleratingSlope.endPosition = previousPosition;
                 currentAcceleratingSlope.targetSpeed = speed;
-                currentAcceleratingSlope.acceleration /= counter;
+                meanAcceleration /= accelerationLength;
+                currentAcceleratingSlope.acceleration = meanAcceleration;
                 res.add(currentAcceleratingSlope);
-                // reset counter and accelerating slope
-                counter = 0;
+                // reset meanAcceleration, accelerationLength, and accelerating slope
+                meanAcceleration = 0;
+                accelerationLength = 0;
                 currentAcceleratingSlope = new AcceleratingSlope(0, 0, 0, 0, 0);
             }
             previousAcceleration = naturalAcceleration;
             previousSpeed = speed;
             previousPosition = location.getPathPosition();
         }
+        if (accelerationLength > 0)
+            res.add(currentAcceleratingSlope);
         return res;
     }
 
