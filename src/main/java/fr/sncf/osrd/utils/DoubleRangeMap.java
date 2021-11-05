@@ -26,7 +26,7 @@ public class DoubleRangeMap extends TreeMap<Double, Double> {
             lastValue = floorEntry.getValue();
 
         for (var entry : subMap(begin, end).entrySet()) {
-            if (entry.getKey() >= begin)
+            if (entry.getKey() <= begin)
                 continue;
             res.put(new Range(begin, entry.getKey()), lastValue);
             begin = entry.getKey();
