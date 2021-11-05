@@ -94,7 +94,7 @@ public class Route extends DirNEdge {
         if (entrySignal != null)
             signalsWithEntry.add(entrySignal);
         for (var actionPoint : getActionPoints())
-            if (actionPoint instanceof Signal) {
+            if (actionPoint instanceof Signal && actionPoint != entrySignal) {
                 var signal = (Signal) actionPoint;
                 signalsWithEntry.add(signal);
             }
