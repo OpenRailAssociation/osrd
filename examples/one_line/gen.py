@@ -22,8 +22,8 @@ for first_track, second_track in zip(tracks[:-1], tracks[1:]):
 # Add detector and signals
 for track in tracks:
     detector = track.add_detector(position=500)
-    track.add_signal(detector.position - 25, ApplicableDirection.NORMAL, detector)
-    track.add_signal(detector.position + 25, ApplicableDirection.REVERSE, detector)
+    track.add_signal(detector.position, ApplicableDirection.NORMAL, detector)
+    track.add_signal(detector.position, ApplicableDirection.REVERSE, detector)
 
 # Build infra
 infra = builder.build()
@@ -35,8 +35,6 @@ infra.save(CURRENT_DIR / "infra.json")
 builder = SimulationBuilder(infra)
 
 first_train = builder.add_train_schedule(Location(tracks[0], 10), Location(tracks[9], 990))
-
-second_train = builder.add_train_schedule(Location(tracks[9], 990), Location(tracks[0], 10))
 
 # Build simulation
 sim = builder.build()

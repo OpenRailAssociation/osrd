@@ -160,4 +160,4 @@ tasks.register("genExamples", Exec) {
     commandLine python, "examples/generate.py"
 }
 
-test.dependsOn(genExamples)
+compileTestJava.dependsOn(genExamples)

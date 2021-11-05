@@ -489,8 +489,7 @@ public class MarginTests {
         var marecoAllowance = new MarecoAllowance(MarecoAllowance.MarginType.TIME, value);
 
         // Creates an infra with lots of very short slopes
-        var config = TestConfig.readResource("one_line/config.json").clearAllowances();
-        config.rjsSimulation.trainSchedules = Collections.singletonList(config.rjsSimulation.trainSchedules.get(1));
+        var config = TestConfig.readResource("one_line/infra.json", "one_line/simulation.json");
         for (var track : config.rjsInfra.trackSections) {
             track.slopes = new ArrayList<>();
             for (double begin = 0; begin + 10 < track.length; begin += 40)
