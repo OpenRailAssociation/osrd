@@ -9,8 +9,7 @@ import { store, persistor } from 'Store';
 import App from 'main/App';
 import Loader from 'common/Loader';
 
-// Styles and translation
-import './i18n';
+// Styles
 import 'config/variables.css';
 import 'main/App/App.scss';
 import 'mapbox-gl/dist/mapbox-gl.css';

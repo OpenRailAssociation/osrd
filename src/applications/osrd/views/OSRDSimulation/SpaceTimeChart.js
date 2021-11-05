@@ -126,7 +126,7 @@ export default function SpaceTimeChart() {
   }, [mustRedraw, rotate, selectedTrain, simulation.trains[selectedTrain]]);
 
   useEffect(() => {
-    if (timePosition && dataSimulation[selectedTrain]) {
+    if (timePosition && dataSimulation && dataSimulation[selectedTrain]) {
       dispatch(updatePositionValues(
         interpolateOnTime(
           dataSimulation[selectedTrain], keyValues, LIST_VALUES_NAME_SPACE_TIME, timePosition,

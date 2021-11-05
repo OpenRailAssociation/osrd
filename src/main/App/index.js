@@ -11,6 +11,7 @@ import HomeEditor from 'applications/editor/Home';
 import { attemptLoginOnLaunch } from 'reducers/user';
 import Home from 'main/Home';
 import history from 'main/history';
+import 'i18n';
 
 export default function App() {
   const user = useSelector((state) => state.user);

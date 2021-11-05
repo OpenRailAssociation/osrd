@@ -37,6 +37,11 @@ export default function createTrain(dispatch, keyValues, simulationTrains, t) {
       dataSimulationTrain.margins_routeBeginOccupancy = formatStepsWithTime(
         makeStairCase(train.margins.route_begin_occupancy),
       );
+      dataSimulationTrain.margins_areaBlock = mergeDatasArea(
+        dataSimulationTrain.margins_routeEndOccupancy,
+        dataSimulationTrain.margins_routeBeginOccupancy,
+        keyValues,
+      );
       dataSimulationTrain.margins_speed = formatStepsWithTime(train.margins.speeds);
     } else if (train.margins && train.margins.error) {
       dispatch(setFailure({
@@ -51,6 +56,17 @@ export default function createTrain(dispatch, keyValues, simulationTrains, t) {
       );
       dataSimulationTrain.eco_tailPosition = formatStepsWithTimeMulti(
         train.eco.tail_positions,
+      );
+      dataSimulationTrain.eco_routeEndOccupancy = formatStepsWithTime(
+        makeStairCase(train.eco.route_end_occupancy),
+      );
+      dataSimulationTrain.eco_routeBeginOccupancy = formatStepsWithTime(
+        makeStairCase(train.eco.route_begin_occupancy),
+      );
+      dataSimulationTrain.eco_areaBlock = mergeDatasArea(
+        dataSimulationTrain.eco_routeEndOccupancy,
+        dataSimulationTrain.eco_routeBeginOccupancy,
+        keyValues,
       );
       dataSimulationTrain.eco_speed = formatStepsWithTime(train.eco.speeds);
     } else if (train.eco && train.eco.error) {
