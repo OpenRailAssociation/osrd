@@ -1,6 +1,7 @@
 package fr.sncf.osrd.train;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.railjson.schema.common.ID;
@@ -28,7 +29,7 @@ public class ReservationsTests {
     @Test
     public void testErrorIfTrainsOverlap() {
         // Forces all signals to green
-        var config = TestConfig.readResource("one_line/config.json");
+        var config = TestConfig.readResource("one_line/infra.json", "one_line/simulation.json");
         for (var track : config.rjsInfra.trackSections) {
             for (var signal : track.signals) {
                 var member = new RJSRSExpr.AspectSet.AspectSetMember(new ID<>("GREEN"), null);
@@ -41,9 +42,9 @@ public class ReservationsTests {
         schedules.add(new RJSTrainSchedule(
                 "Test.2",
                 firstSchedule.rollingStock,
-                500, // The first train is close to the end
+                20, // The first train is close to the end
                 firstSchedule.initialHeadLocation,
-                40,
+                60,
                 firstSchedule.phases,
                 firstSchedule.trainControlMethod,
                 firstSchedule.allowances,
@@ -55,24 +56,6 @@ public class ReservationsTests {
         ));
         var prepared = config.prepare();
         var error = assertThrows(SimulationError.class, prepared::runWithExceptions);
-        assert error.getMessage().contains("already occupied");
-    }
-
-    @Test
-    public void testErrorIfTrainsCollide() {
-        // Forces all signals to green
-        var config = TestConfig.readResource("one_line/config.json");
-        for (var track : config.rjsInfra.trackSections) {
-            for (var signal : track.signals) {
-                var member = new RJSRSExpr.AspectSet.AspectSetMember(new ID<>("GREEN"), null);
-                var members = new RJSRSExpr.AspectSet.AspectSetMember[]{member};
-                signal.expr = new RJSRSExpr.AspectSet(members);
-            }
-        }
-
-        // Checks that an error is thrown when the trains collide
-        var prepared = config.prepare();
-        var error = assertThrows(SimulationError.class, prepared::runWithExceptions);
-        assert error.getMessage().contains("already occupied");
+        assertTrue(error.getMessage().contains("Impossible to reserve"));
     }
 }

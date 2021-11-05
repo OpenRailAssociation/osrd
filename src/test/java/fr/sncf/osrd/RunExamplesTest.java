@@ -76,6 +76,6 @@ public class RunExamplesTest {
     @Test
     public void testLineInfra() throws IOException {
         var testConfig = TestConfig.readResource("one_line/infra.json", "one_line/simulation.json");
-        runGivenConfigInfra(testConfig, 0);
+        runGivenConfigInfra(testConfig, 1);
     }
 }

@@ -623,8 +623,8 @@ public class RouteStateTest {
         newTrainOrderedList.add("train.0");
         newTrainOrderedList.add("train.2");
 
-        var firstTst = sim.infraState.towerState.getTrainSuccessionTable("il.switch.2-0-1");
-        var secondTst = sim.infraState.towerState.getTrainSuccessionTable("il.switch.2-3-6");
+        var firstTst = sim.infraState.towerState.getTrainSuccessionTable("switch.0");
+        var secondTst = sim.infraState.towerState.getTrainSuccessionTable("switch.1");
         makeFunctionEvent(sim, 90, () -> {
             firstTst.changeTrainOrder(sim, newTrainOrderedList);
             secondTst.changeTrainOrder(sim, newTrainOrderedList);
@@ -636,7 +636,7 @@ public class RouteStateTest {
 
         simState.run();
         // Test that the request of the train_0 is accepted and log
-        for (var switchID : Arrays.asList("il.switch.2-0-1", "il.switch.2-3-6")) {
+        for (var switchID : Arrays.asList("switch.0", "switch.1")) {
             var log = sim.infraState.towerState.trainSuccessionLog.get(switchID);
             assertEquals(Arrays.asList("train.1", "train.0", "train.2"), log);
         }
