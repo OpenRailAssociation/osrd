@@ -43,9 +43,9 @@ infra.save(CURRENT_DIR / Path("infra.json"))
 
 # GENERATE SIMULATION
 builder = SimulationBuilder(infra)
-train_0 = builder.add_train_schedule(Location(tracks[5], 900), Location(tracks[0], 200))
-train_1 = builder.add_train_schedule(Location(tracks[0], 200), Location(tracks[6], 900))
-train_2 = builder.add_train_schedule(Location(tracks[1], 200), Location(tracks[3], 900))
+train_0 = builder.add_train_schedule(Location(tracks[5], 900), Location(tracks[0], 200), label="train.0")
+train_1 = builder.add_train_schedule(Location(tracks[0], 200), Location(tracks[6], 900), label="train.1")
+train_2 = builder.add_train_schedule(Location(tracks[1], 200), Location(tracks[3], 900), label="train.2")
 
 # Add train succession tables
 builder.add_tst(switch_0, train_1, train_2, train_0)
