@@ -13,6 +13,8 @@
 //  - GPLv2 with classpath exception
 //  - CC Attribution
 
+import static org.apache.tools.ant.taskdefs.condition.Os.*
+
 plugins {
     id 'java'
     id 'application'
@@ -154,7 +156,8 @@ tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
 }
 
 tasks.register("genExamples", Exec) {
-    commandLine 'python.exe', 'examples/generate.py'
+    def python = isFamily(FAMILY_WINDOWS) ? "python.exe" : "python3"
+    commandLine python, "examples/generate.py"
 }
 
 test.dependsOn(genExamples)
