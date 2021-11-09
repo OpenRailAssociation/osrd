@@ -17,10 +17,22 @@ builder = InfraBuilder()
 # Create track sections
 tracks = [builder.add_track_section(length=1000) for _ in range(7)]
 
+
 # Create switches
-builder.add_switch(tracks[2].begin(), tracks[1].end(), tracks[0].end())
-builder.add_switch(tracks[2].end(), tracks[3].begin(), tracks[4].begin())
-builder.add_switch(tracks[4].end(), tracks[5].begin(), tracks[6].begin())
+switch_0 = builder.add_switch(tracks[2].begin(), tracks[1].end(), tracks[0].end())
+switch_1 = builder.add_switch(tracks[2].end(), tracks[3].begin(), tracks[4].begin())
+switch_2 = builder.add_switch(tracks[4].end(), tracks[5].begin(), tracks[6].begin())
+
+# Set coordinates (optional)
+
+tracks[0].begin().set_coords(0, 250)
+tracks[1].begin().set_coords(0, -250)
+tracks[3].end().set_coords(3030, 250)
+tracks[5].end().set_coords(4030, -500)
+tracks[6].end().set_coords(4030, 0)
+switch_0.set_coords(1000, 0)
+switch_1.set_coords(2030, 0)
+switch_2.set_coords(3030, -250)
 
 # Add Buffer Stops (Optional: buffer stops are auto generated when building infra)
 tracks[0].add_buffer_stop(position=100, label="Custom Buffer Stop")

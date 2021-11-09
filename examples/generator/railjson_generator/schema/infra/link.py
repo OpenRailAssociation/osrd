@@ -20,6 +20,10 @@ class Link:
     def get_key(self):
         return Link.format_link_key(self.begin.track_section, self.end.track_section)
 
+    def set_coords(self, x: float, y: float):
+        for endpoint in (self.begin, self.end):
+            endpoint.set_coords(x, y)
+
     @staticmethod
     def format_link_key(tiv_a: "TrackSection", tiv_b: "TrackSection"):
         if tiv_a.index < tiv_b.index:

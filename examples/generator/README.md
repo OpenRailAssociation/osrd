@@ -17,6 +17,10 @@
 - `add_buffer_stop(self, position, label="buffer_stop.X", applicable_direction=ApplicableDirection.BOTH) -> BufferStop`: Add a buffer_stop.
 - `add_signal(self, position, applicable_direction, linked_detector, label="signal.X", sight_distance=400) -> Signal`: Add a signal.
 
+### Switch / Link / TrackEndpoint 
+
+- `set_coords(self, x, y)`: Set a geometry coordinates of the point
+
 ### Operation point 
 
 - `set_position(self, track, offset)`: Link an operational point to a position.

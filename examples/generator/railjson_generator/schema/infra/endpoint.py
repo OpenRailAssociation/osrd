@@ -28,3 +28,9 @@ class TrackEndpoint:
             "endpoint": self.endpoint.name,
             "section": self.track_section.label,
         }
+
+    def set_coords(self, x: float, y: float):
+        if self.endpoint == Endpoint.BEGIN:
+            self.track_section.begin_coordinates = (x, y)
+        else:
+            self.track_section.end_coordinates = (x, y)
