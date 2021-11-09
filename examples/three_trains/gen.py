@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from pathlib import Path
 
 from railjson_generator import (
@@ -22,6 +20,17 @@ switch_0 = builder.add_switch(tracks[2].begin(), tracks[1].end(), tracks[0].end(
 switch_1 = builder.add_switch(tracks[2].end(), tracks[3].begin(), tracks[4].begin())
 switch_2 = builder.add_switch(tracks[4].end(), tracks[5].begin(), tracks[6].begin())
 
+# Set coordinates
+
+tracks[0].begin().set_coords(0, 250)
+tracks[1].begin().set_coords(0, -250)
+tracks[3].end().set_coords(3030, 250)
+tracks[5].end().set_coords(4030, -500)
+tracks[6].end().set_coords(4030, 0)
+switch_0.set_coords(1000, 0)
+switch_1.set_coords(2030, 0)
+switch_2.set_coords(3030, -250)
+
 # Add detector and signals
 for i in (2, 3, 4, 5, 6):
     track = tracks[i]
@@ -43,9 +52,15 @@ infra.save(CURRENT_DIR / Path("infra.json"))
 
 # GENERATE SIMULATION
 builder = SimulationBuilder(infra)
-train_0 = builder.add_train_schedule(Location(tracks[5], 900), Location(tracks[0], 200), label="train.0")
-train_1 = builder.add_train_schedule(Location(tracks[0], 200), Location(tracks[6], 900), label="train.1")
-train_2 = builder.add_train_schedule(Location(tracks[1], 200), Location(tracks[3], 900), label="train.2")
+train_0 = builder.add_train_schedule(
+    Location(tracks[5], 900), Location(tracks[0], 200), label="train.0"
+)
+train_1 = builder.add_train_schedule(
+    Location(tracks[0], 200), Location(tracks[6], 900), label="train.1"
+)
+train_2 = builder.add_train_schedule(
+    Location(tracks[1], 200), Location(tracks[3], 900), label="train.2"
+)
 
 # Add train succession tables
 builder.add_tst(switch_0, train_1, train_2, train_0)

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional, Tuple
 
 from railjson_generator.schema.infra.direction import ApplicableDirection, Direction
 from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
@@ -25,6 +25,8 @@ class TrackSection:
     signals: List[Signal] = field(default_factory=list)
     operational_points: List[OperationalPointPart] = field(default_factory=list)
     index: int = field(default=-1, repr=False)
+    begin_coordinates: Optional[Tuple[float, float]] = field(default=None)
+    end_coordinates: Optional[Tuple[float, float]] = field(default=None)
     begining_links: List[TrackEndpoint] = field(default_factory=list, repr=False)
     end_links: List[TrackEndpoint] = field(default_factory=list, repr=False)
 
@@ -74,6 +76,15 @@ class TrackSection:
         return self.begining_links
 
     def format(self):
+        if (self.begin_coordinates is None) != (
+            self.end_coordinates is None
+        ):
+            raise RuntimeError(
+                f"Track section: '{self.label}', has only one endpoint coordinates specified"
+            )
+        endpoints_coords = None
+        if self.begin_coordinates is not None:
+            endpoints_coords = [list(self.begin_coordinates), list(self.end_coordinates)]
         return {
             "id": self.label,
             "route_waypoints": [waypoint.format() for waypoint in self.waypoints],
@@ -83,4 +94,5 @@ class TrackSection:
             "slopes": [],
             "curves": [],
             "speed_sections": [],
+            "endpoints_coords": endpoints_coords,
         }

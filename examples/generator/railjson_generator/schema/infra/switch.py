@@ -19,6 +19,10 @@ class Switch:
 
     _INDEX = 0
 
+    def set_coords(self, x: float, y: float):
+        for endpoint in (self.base, self.left, self.right):
+            endpoint.set_coords(x, y)
+
     def format(self):
         return {
             "id": self.label,
