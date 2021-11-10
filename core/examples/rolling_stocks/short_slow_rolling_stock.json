@@ -1,0 +1,86 @@
+{
+    "version": "2.0",
+    "id": "short_slow_rolling_stock",
+    "length": 15,
+    "max_speed": 10,
+    "startup_time": 10,
+    "startup_acceleration": 0.05,
+    "comfort_acceleration": 0.25,
+    "gamma": 0.5,
+    "gamma_type": "CONST",
+    "inertia_coefficient": 1.05,
+    "features": [
+        "TVM300",
+        "TVM430",
+        "ETCS1",
+        "ETCS2",
+        "KVB"
+    ],
+    "source": "short_slow_rolling_stock",
+    "verbose_name": "short_slow_rolling_stock",
+    "type": null,
+    "sub_type": null,
+    "series": null,
+    "sub_series": null,
+    "variant": null,
+    "units_count": 1,
+    "effort_curves": {
+        "default_curve": [
+            [0, 441666.6666666667],
+            [5, 439473.6842105263],
+            [10, 435714.28571428574],
+            [15, 427777.77777777775],
+            [20, 400000.0],
+            [22, 350971.5388299929],
+            [27, 347206.93642395496],
+            [32, 346938.7385068534],
+            [37, 344395.0325320009],
+            [42, 334314.2138640166],
+            [47, 313589.8108101956],
+            [52, 283584.5657113532],
+            [57, 250604.14937613969],
+            [62, 222698.71360301683],
+            [67, 204685.35097358702],
+            [72, 195984.55717992093],
+            [77, 192916.7642524637]
+        ]
+    },
+    "effort_curve_profiles": {
+        "default_curve_profile": [
+            {
+                "condition": null,
+                "effort_curve": "default_curve"
+            }
+        ]
+    },
+    "rolling_resistance_profiles": {
+        "default_resistance_profile": [
+            {
+                "id": "normal",
+                "condition": null,
+                "resistance": {
+                    "type": "davis",
+                    "A": 5400.0,
+                    "B": 200.0,
+                    "C": 12.0
+                }
+            }
+        ]
+    },
+    "liveries": [],
+    "power_class": 5,
+    "masses": [
+        {
+            "id": "default_mass",
+            "load_state": "NORMAL_LOAD",
+            "mass": 900000
+        }
+    ],
+    "modes": [
+        {
+            "type": "diesel",
+            "rolling_resistance_profile": "default_resistance_profile",
+            "effort_curve_profile": "default_curve_profile"
+        }
+    ]
+}

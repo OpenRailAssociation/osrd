@@ -1,0 +1,26 @@
+.gradle
+gradle
+.idea
+build
+gradlew*
+*.iml
+*.jar
+.jqwik-database
+__pycache__/
+.classpath
+.project
+.settings/
+bin
+
+# vscode
+.project
+.settings
+.vscode
+bin
+.classpath
+
+# avoid mistakenly adding proprietary files
+*.rsl
+*.xml
+*.railml
+*.railml3

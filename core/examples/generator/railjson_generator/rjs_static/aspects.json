@@ -1,0 +1,43 @@
+[
+    {
+        "id": "GREEN",
+        "color": "#2a850c",
+        "constraints": []
+    },
+    {
+        "id": "YELLOW",
+        "color": "#f08a05",
+        "constraints": [
+            {
+                "type": "speed_limit",
+                "speed": 8.33333333333333,
+                "applies_at": {
+                    "element": "NEXT_SIGNAL",
+                    "offset": -100
+                },
+                "until": {
+                    "element": "NEXT_SIGNAL",
+                    "offset": 0
+                }
+            }
+        ]
+    },
+    {
+        "id": "RED",
+        "color": "#db0c04",
+        "constraints": [
+            {
+                "type": "speed_limit",
+                "speed": 0,
+                "applies_at": {
+                    "element": "CURRENT_SIGNAL",
+                    "offset": -5
+                },
+                "until": {
+                    "element": "END",
+                    "offset": 0
+                }
+            }
+        ]
+    }
+]
