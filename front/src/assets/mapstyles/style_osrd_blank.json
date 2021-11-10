@@ -1,0 +1,18 @@
+{
+  "version": 8,
+  "name": "Blank",
+  "sources": { },
+  "sprite": "https://static.osm.osrd.fr/sprites/sprites",
+  "glyphs": "https://static.osm.osrd.fr/fonts/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint":
+      {
+        "background-color": "rgba(255,255,255,1)"
+      }
+    }
+  ],
+  "id": "blank"
+}

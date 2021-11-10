@@ -1,0 +1,126 @@
+/* COMMON */
+
+.btn-transparent {
+  &:hover, &:focus {
+    color: #585eea;
+  }
+}
+
+.osrd-simulation-container {
+  background-color: var(--coolgray15);
+}
+
+.spacetime-chart, .speedspace-chart, .timeline {
+  background-color: var(--gray);
+  padding: 1rem;
+  border-radius: 4px;
+  .tick {
+    color: var(--coolgray3);
+  }
+  .domain {
+    opacity: .2;
+    stroke: var(--coolgray3);
+  }
+  .grid .tick line {
+    stroke: var(--coolgray3);
+  }
+  .guideLines {
+    stroke: var(--coolgray3);
+  }
+}
+
+/* SPACETIME CHART */
+.spacetime-chart {
+  .area {
+    fill: url(#hatchPatternDarkGray);
+    &.selected {
+      fill: rgba(88, 94, 235, 0.2);
+    }
+  }
+  .start-block {
+    stroke: var(--coolgray9);
+    stroke-width: 2;
+    &.selected {
+      stroke: var(--yellow);
+    }
+    &.pointer {
+      fill: var(--yellow);
+    }
+  }
+  .end-block {
+    stroke: var(--coolgray11);
+    stroke-width: 2;
+    &.selected {
+      stroke: var(--red);
+    }
+    &.pointer {
+      fill: var(--red);
+    }
+  }
+  .tail {
+    stroke: var(--coolgray5);
+    &.selected {
+      stroke: var(--cyan);
+    }
+    &.pointer {
+      fill: var(--cyan);
+    }
+  }
+  .head {
+    stroke: var(--coolgray7);
+    &.selected {
+      stroke: #585eea;
+    }
+    &.pointer {
+      fill: #585eea;
+    }
+  }
+}
+
+/* SPEEDSPACE */
+.speedspace-chart {
+  .area {
+    fill: rgba(88, 94, 235, 0.2);
+  }
+  .speed {
+    stroke: #585eea;
+    &.pointer {
+      fill: #585eea;
+    }
+  }
+}
+
+/* TIMELINE */
+.timeline {
+  background-color: var(--gray);
+  padding: 1rem;
+  border-radius: 4px;
+  .tick {
+    color: var(--coolgray3);
+  }
+  .domain {
+    opacity: .5;
+    stroke: var(--coolgray3);
+  }
+  .grid .tick line {
+    stroke: var(--coolgray3);
+  }
+  .timeline-train {
+    &.selected {
+      stroke: #585eea;
+    }
+  }
+}
+
+#rectZoomTimeLine {
+  stroke: var(--coolgray3);
+}
+.timeline-cursor {
+  line {
+    stroke: var(--coolgray5);
+  }
+  path {
+    stroke: var(--coolgray5);
+    fill: var(--coolgray5);
+  }
+}

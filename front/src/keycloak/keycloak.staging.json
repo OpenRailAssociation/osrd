@@ -1,0 +1,9 @@
+{
+  "realm": "staging",
+  "url": "https://keycloak.shared.dgexsol.fr/auth/",
+  "ssl-required": "external",
+  "resource": "gateway",
+  "public-client": true,
+  "confidential-port": 0,
+  "clientId": "gateway"
+}

@@ -1,0 +1,23 @@
+.notifications {
+  position: fixed;
+  bottom: 1em;
+  right: 1em;
+  z-index: 3;
+
+  .toast {
+    width: 300px;
+
+    &.success i {
+      color: green;
+    }
+    &.infos i {
+      color: blue;
+    }
+    &.warning i {
+      color: orange;
+    }
+    &.error i {
+      color: red;
+    }
+  }
+}

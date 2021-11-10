@@ -1,0 +1,17 @@
+{
+  "end_position": "Fin",
+  "errors": {
+    "margins": "Erreur de tracé de marge",
+    "eco": "Erreur de tracé de marge ECO"
+  },
+  "from": "De",
+  "begin_position": "Début",
+  "marginModified": "Marges modifiées",
+  "marginType": "Type de marge",
+  "marginTypes": {
+    "construction": "Construction",
+    "ratio_time": "Régularité (temps)",
+    "ratio_distance": "Régularité (distance)"
+  },
+  "to": "à"
+}

@@ -1,0 +1,28 @@
+.loader {
+  &.top-right,
+  &.top-left,
+  &.bottom-right,
+  &.bottom-left {
+    position: absolute;
+    margin-top: auto;
+    transform: none;
+    z-index: 3;
+  }
+
+  &.top-right {
+    top: 5em;
+    right: 1em;
+  }
+  &.top-left {
+    top: 5em;
+    left: 1em;
+  }
+  &.bottom-right {
+    bottom: 1em;
+    right: 1em;
+  }
+  &.bottom-left {
+    bottom: 1em;
+    left: 1em;
+  }
+}

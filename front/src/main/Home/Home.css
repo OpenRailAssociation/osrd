@@ -1,0 +1,17 @@
+.mastcontainer-no-mastnav {
+  padding-left: 0 !important;
+}
+.cardscontainer {
+  margin: 2rem;
+}
+.card {
+  cursor: pointer;
+  transition: .2s ease-in-out;
+}
+.card:hover {
+  opacity: .5;
+}
+
+.disabled-link {
+  pointer-events: none;
+}

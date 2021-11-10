@@ -1,0 +1,161 @@
+{
+  "common": {
+    "asc": "Ascendant",
+    "cancel": "Annuler",
+    "change": "Changer",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "description": "Description",
+    "dsc": "Descendant",
+    "erase": "Effacer",
+    "error": "Une erreur est survenue",
+    "filter": "Filtrer",
+    "itinerary": "Itinéraire",
+    "loading": "Chargement...",
+    "search": "Rechercher",
+    "settings": "Paramètres",
+    "sort": "Tri",
+    "train(s)": "train(s)"
+  },
+  "Editor": {
+    "title": "Éditeur",
+    "tool-help": "Voir la description de l'outil actif",
+    "nav": {
+      "recenter": "Recentrer la carte",
+      "toggle-layers": "[TODO] Choisir les couches à afficher",
+      "zoom-in": "Zoomer",
+      "zoom-out": "Dézoomer"
+    },
+    "errors": {
+      "infra-not-found": "L'infrastructure {{id}} non trouvée",
+      "no-infra-available": "Votre compte n'est lié à aucune infrastructure",
+      "technical": "Une erreur technique est survenue : {{msg}}"
+    },
+    "tools": {
+      "create-line": {
+        "actions": {
+          "cancel-last-point": {
+            "label": "Annuler le dernier point saisi"
+          },
+          "cancel-line": {
+            "label": "Annuler toute la ligne saisie"
+          },
+          "toggle-anchoring": {
+            "label": "Permettre d'ancrer les points sur les lignes existantes"
+          },
+          "validate-line": {
+            "label": "Valider la ligne"
+          }
+        },
+        "description-1": "1er clic : Début de la création de la ligne",
+        "description-2": "Clics suivants : Ajout de points dans le chemin de la ligne",
+        "description-3": "Double-click : Ajout du dernier point de la ligne, validation du chemin",
+        "description-4": "Touch Échap : Annulation du dernier point",
+        "description-5": "Touch Entrée : Validation du chemin",
+        "label": "Création d'une nouvelle ligne",
+        "properties": "Propriétés"
+      },
+      "select-items": {
+        "actions": {
+          "delete-selection": {
+            "label": "[TODO] Supprimer les éléments sélectionnés"
+          },
+          "edit-info": {
+            "label": "Modifier les métadonnées de l'élément sélectionné"
+          },
+          "polygon": {
+            "label": "Sélection Polygône"
+          },
+          "rectangle": {
+            "label": "Sélection Rectangle"
+          },
+          "select-all": {
+            "label": "Tout sélectionner"
+          },
+          "delete-selection": {
+            "label": "Supprimer les éléments sélectionnés",
+            "confirmation": "Êtes-vous sur de vouloir supprimer les éléments de la selection ?"
+          }
+        },
+        "description-1": "Clic sur un élément : Affichage de ses propriétés",
+        "edit-line": "Édition des métadonnées d'un élément",
+        "focus": "Focus sur un élément",
+        "label": "Sélection d'un élément",
+        "no-selection": "Aucun élément sélectionné",
+        "selection": "{{count}} élément sélectionné",
+        "selection_plural": "{{count}} éléments sélectionnés"
+      },
+      "select-zone": {
+        "actions": {
+          "cancel-last-point": {
+            "label": "Annuler le dernier point saisi"
+          },
+          "cancel-polygon": {
+            "label": "Annuler le polygône"
+          },
+          "polygon": {
+            "label": "Sélection Polygône"
+          },
+          "rectangle": {
+            "label": "Sélection Rectangle"
+          },
+          "unselect": {
+            "label": "Désélectionner la zone d'édition"
+          },
+          "validate-polygon": {
+            "label": "Valider le polygône d'édition"
+          }
+        },
+        "description-1": "1er clic : Début de la sélection",
+        "description-2": "2nd clic : Fin de la sélection",
+        "description-3": "Touch Échap : Annulation de la sélection en cours",
+        "label": "Sélection de la zone d'édition"
+      }
+    },
+    "entities": {
+      "track_section": "Track section",
+      "track_section-length": "Taille"
+    }
+  },
+  "Home": {
+    "map": "Cartographie",
+    "editor": "Éditeur d'infrastructure",
+    "timetable": "Grilles horaires"
+  },
+  "Login": {
+    "connect": "Se connecter",
+    "englishFlag": "drapeau anglais",
+    "frenchFlag": "drapeau français",
+    "password": "Mot de passe",
+    "passwordErrorMsg": "Le mot de passe est probablement incorrect.",
+    "pleaseconnect": "Veuillez vous connecter",
+    "serverError": "Erreur de connexion au serveur",
+    "trying": "Tentative de reconnexion...",
+    "username": "Nom d'utilisateur",
+    "usernameErrorMsg": "Le nom d'utilisateur est probalement incorrect."
+  },
+  "nav": {
+    "about": "A propos",
+    "administration": "Administration",
+    "chart": "Graphiques",
+    "contact": "Contact",
+    "events": "Incidents",
+    "home": "Accueil",
+    "library": "Bibliothèque",
+    "logs": "Zones de travail et Historique",
+    "map": "Cartographie",
+    "traincompo": "Matériel"
+  },
+  "NavBar": {
+    "disconnect": "Déconnexion"
+  },
+  "osrd": {
+    "nav": {
+      "about": "A propos",
+      "contact": "Contact",
+      "home": "Accueil",
+      "simulation": "Simulation",
+      "traincompo": "Matériel"
+    }
+  }
+}

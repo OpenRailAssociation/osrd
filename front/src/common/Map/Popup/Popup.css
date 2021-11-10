@@ -1,0 +1,24 @@
+.mapboxgl-hover-custom-popup .mapboxgl-popup-content {
+  padding: 0;
+  border-radius: var(--border-radius);
+}
+.mapboxgl-hover-custom-popup .mapboxgl-popup-close-button {
+  display: none;
+}
+.mapboxgl-popup-title {
+  padding: 5px 10px;
+  /* background-color: var(--cyan); */
+  color: var(--white);
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+.mapboxgl-popup-container {
+  padding: 5px 10px;
+}
+.labelvalue {
+  font-size: .8em;
+}
+.labelvalue-label {
+  font-size: .8em;
+  font-weight: bold;
+  margin-right: 1em;
+}

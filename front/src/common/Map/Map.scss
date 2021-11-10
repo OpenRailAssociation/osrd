@@ -1,0 +1,135 @@
+
+.no-mastnav .fullscreen {
+  padding-top: 0 !important;
+}
+.btn-map-container {
+  position: absolute;
+  z-index: 2;
+  right: 1rem;
+  top: 5rem;
+  button {
+    display: block;
+    font-size: 1.5rem;
+    margin-bottom: .5rem;
+  }
+
+  .btn-map-search {
+  }
+  .btn-map-settings {
+  }
+  .btn-map-resetviewport {
+  }
+  .btn-fullscreen {
+  }
+}
+.attribution-control {
+  bottom: 0;
+  right: 0;
+  font-size: 0.8em;
+}
+
+/* Map Settings */
+.map-modal {
+  position: absolute;
+  z-index: 0;
+  min-height: 5rem;
+  top: 4rem;
+  right: 3.5rem;
+  opacity: 0;
+  padding: 1rem;
+  background-color: #fff;
+  width: calc(100% - 5.5rem);
+  transition: .4s;
+  margin: 1rem;
+  border-radius: 4px;
+  border: 1px solid #d7d7d7;
+  &.active {
+    z-index: 1;
+    opacity: 1;
+  }
+  @media screen and (min-width: 640px) {
+    max-width: 50%;
+  }
+  button.mapstyle-style-select {
+    border: none;
+    background-color: #f2f2f2;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    text-align: left;
+    border-radius: 8px;
+    margin-right: 1rem;
+    padding-right: .5rem;
+    img {
+      width: 5rem;
+      border-radius: 8px 0 0 8px;
+      margin-right: .5rem;
+    }
+    font-size: .9rem;
+    &:hover, &.active {
+      background-color: #333;
+      color: #fff;
+    }
+  }
+
+  .actionbar {
+    position: relative;
+    top: 0;
+    padding: 0;
+    margin: 0 0 1rem;
+    height: auto;
+  }
+  .search-results-label {
+    cursor: pointer;
+  }
+  .search-results {
+    background-color: #f2f2f2;
+    padding: 1rem;
+    border-radius: 4px;
+    margin: .5rem .5rem 0 0;
+    max-height: 50vh;
+    overflow: auto;
+    cursor: pointer;
+    .search-result-item {
+      display: block;
+      background-color: inherit;
+      border: none;
+      width: 100%;
+      text-align: left;
+      &:hover {
+        color: #0088ce;
+      }
+      div {
+        vertical-align: baseline;
+      }
+    }
+    .search-result-table-item {
+      border-radius: 4px;
+      td {
+        cursor: pointer;
+        vertical-align: middle;
+        padding: 0.25rem;
+      }
+      font-size: .9rem;
+      img {
+        height: 2rem;
+      }
+      &:hover {
+        background-color: #d7d7d7;
+      }
+    }
+  }
+}
+.map-search-marker {
+  /* Circle center */
+  margin-left: -16px;
+  margin-top: -16px;
+  .map-search-marker-title {
+    font-weight: bold;
+    border-radius: 4px;
+    padding: 0 .5rem;
+  }
+  .map-search-marker-subtitle {
+    font-size: .9rem;
+  }
+}

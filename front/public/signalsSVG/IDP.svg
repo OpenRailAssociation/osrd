@@ -1,0 +1,1429 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg2"
+   version="1.1"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   width="64"
+   height="64"
+   sodipodi:docname="IDP.svg">
+  <metadata
+     id="metadata8">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs6" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1024"
+     id="namedview4"
+     showgrid="true"
+     inkscape:snap-bbox="true"
+     inkscape:bbox-paths="true"
+     inkscape:bbox-nodes="true"
+     inkscape:snap-bbox-edge-midpoints="true"
+     inkscape:snap-bbox-midpoints="true"
+     inkscape:object-paths="true"
+     inkscape:object-nodes="true"
+     inkscape:snap-intersection-paths="true"
+     inkscape:snap-smooth-nodes="true"
+     inkscape:snap-midpoints="true"
+     inkscape:snap-object-midpoints="true"
+     inkscape:snap-center="true"
+     inkscape:snap-page="true"
+     inkscape:zoom="9.3465346"
+     inkscape:cx="9.771109"
+     inkscape:cy="18.301244"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g3769"
+     inkscape:document-rotation="0">
+    <inkscape:grid
+       type="xygrid"
+       id="grid848" />
+  </sodipodi:namedview>
+  <g
+     id="g3769"
+     transform="translate(-107.73191,-4.8418837)">
+    <rect
+       y="4.8418837"
+       x="107.73191"
+       height="64"
+       width="64"
+       id="rect2987"
+       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.636824" />
+    <circle
+       r="1.5"
+       cy="8.8418837"
+       cx="111.73191"
+       id="path857"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5491"
+       cx="115.73191"
+       cy="8.8418837"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="8.8418837"
+       cx="119.73191"
+       id="circle5493"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5495"
+       cx="111.73191"
+       cy="12.841884"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="12.841884"
+       cx="115.73191"
+       id="circle5497"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5499"
+       cx="119.73191"
+       cy="12.841884"
+       r="1.5" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5501"
+       cx="111.73191"
+       cy="16.841883"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="16.841883"
+       cx="115.73191"
+       id="circle5503"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5505"
+       cx="119.73191"
+       cy="16.841883"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="20.841885"
+       cx="111.73191"
+       id="circle5507"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5509"
+       cx="115.73191"
+       cy="20.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="20.841885"
+       cx="119.73191"
+       id="circle5511"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5513"
+       cx="111.73191"
+       cy="24.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="24.841885"
+       cx="115.73191"
+       id="circle5515"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5517"
+       cx="119.73191"
+       cy="24.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="28.841885"
+       cx="111.73191"
+       id="circle5519"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5521"
+       cx="115.73191"
+       cy="28.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="28.841885"
+       cx="119.73191"
+       id="circle5523"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       r="1.5"
+       cy="32.841885"
+       cx="111.73191"
+       id="circle5525"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5527"
+       cx="115.73191"
+       cy="32.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="32.841885"
+       cx="119.73191"
+       id="circle5529"
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5531"
+       cx="111.73191"
+       cy="36.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="36.841885"
+       cx="115.73191"
+       id="circle5533"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5535"
+       cx="119.73191"
+       cy="36.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="40.841885"
+       cx="111.73191"
+       id="circle5537"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5539"
+       cx="115.73191"
+       cy="40.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="40.841885"
+       cx="119.73191"
+       id="circle5541"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5543"
+       cx="111.73191"
+       cy="44.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="44.841885"
+       cx="115.73191"
+       id="circle5545"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5547"
+       cx="119.73191"
+       cy="44.841885"
+       r="1.5" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5549"
+       cx="111.73191"
+       cy="48.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="48.841885"
+       cx="115.73191"
+       id="circle5551"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5553"
+       cx="119.73191"
+       cy="48.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="52.841885"
+       cx="111.73191"
+       id="circle5555"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5557"
+       cx="115.73191"
+       cy="52.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="52.841885"
+       cx="119.73191"
+       id="circle5559"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5561"
+       cx="111.73191"
+       cy="56.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="56.841885"
+       cx="115.73191"
+       id="circle5563"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5565"
+       cx="119.73191"
+       cy="56.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="60.841885"
+       cx="111.73191"
+       id="circle5567"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5569"
+       cx="115.73191"
+       cy="60.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="60.841885"
+       cx="119.73191"
+       id="circle5571"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       r="1.5"
+       cy="64.841881"
+       cx="111.73191"
+       id="circle5573"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5575"
+       cx="115.73191"
+       cy="64.841881"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="64.841881"
+       cx="119.73191"
+       id="circle5577"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5585"
+       cx="123.73191"
+       cy="8.8418837"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="8.8418837"
+       cx="127.73191"
+       id="circle5587"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5589"
+       cx="131.7319"
+       cy="8.8418837"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="12.841884"
+       cx="123.73191"
+       id="circle5591"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5593"
+       cx="127.73191"
+       cy="12.841884"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="12.841884"
+       cx="131.7319"
+       id="circle5595"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       r="1.5"
+       cy="16.841883"
+       cx="123.73191"
+       id="circle5597"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5599"
+       cx="127.73191"
+       cy="16.841883"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="16.841883"
+       cx="131.7319"
+       id="circle5601"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5603"
+       cx="123.73191"
+       cy="20.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="20.841885"
+       cx="127.73191"
+       id="circle5605"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5607"
+       cx="131.7319"
+       cy="20.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="24.841885"
+       cx="123.73191"
+       id="circle5609"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5611"
+       cx="127.73191"
+       cy="24.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="24.841885"
+       cx="131.7319"
+       id="circle5613"
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5615"
+       cx="123.73191"
+       cy="28.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="28.841885"
+       cx="127.73191"
+       id="circle5617"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5619"
+       cx="131.7319"
+       cy="28.841885"
+       r="1.5" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5621"
+       cx="123.73191"
+       cy="32.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="32.841885"
+       cx="127.73191"
+       id="circle5623"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5625"
+       cx="131.7319"
+       cy="32.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="36.841885"
+       cx="123.73191"
+       id="circle5627"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5629"
+       cx="127.73191"
+       cy="36.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="36.841885"
+       cx="131.7319"
+       id="circle5631"
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5633"
+       cx="123.73191"
+       cy="40.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="40.841885"
+       cx="127.73191"
+       id="circle5635"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5637"
+       cx="131.7319"
+       cy="40.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="44.841885"
+       cx="123.73191"
+       id="circle5639"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5641"
+       cx="127.73191"
+       cy="44.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="44.841885"
+       cx="131.7319"
+       id="circle5643"
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       r="1.5"
+       cy="48.841885"
+       cx="123.73191"
+       id="circle5645"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5647"
+       cx="127.73191"
+       cy="48.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="48.841885"
+       cx="131.7319"
+       id="circle5649"
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5651"
+       cx="123.73191"
+       cy="52.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="52.841885"
+       cx="127.73191"
+       id="circle5653"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5655"
+       cx="131.7319"
+       cy="52.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="56.841885"
+       cx="123.73191"
+       id="circle5657"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5659"
+       cx="127.73191"
+       cy="56.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="56.841885"
+       cx="131.7319"
+       id="circle5661"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5663"
+       cx="123.73191"
+       cy="60.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="60.841885"
+       cx="127.73191"
+       id="circle5665"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5667"
+       cx="131.7319"
+       cy="60.841885"
+       r="1.5" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5669"
+       cx="123.73191"
+       cy="64.841881"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="64.841881"
+       cx="127.73191"
+       id="circle5671"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5673"
+       cx="131.7319"
+       cy="64.841881"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="8.8418837"
+       cx="135.7319"
+       id="circle5681"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5683"
+       cx="139.7319"
+       cy="8.8418837"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="8.8418837"
+       cx="143.7319"
+       id="circle5685"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5687"
+       cx="135.7319"
+       cy="12.841884"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="12.841884"
+       cx="139.7319"
+       id="circle5689"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5691"
+       cx="143.7319"
+       cy="12.841884"
+       r="1.5" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5693"
+       cx="135.7319"
+       cy="16.841883"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="16.841883"
+       cx="139.7319"
+       id="circle5695"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5697"
+       cx="143.7319"
+       cy="16.841883"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="20.841885"
+       cx="135.7319"
+       id="circle5699"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5701"
+       cx="139.7319"
+       cy="20.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="20.841885"
+       cx="143.7319"
+       id="circle5703"
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5705"
+       cx="135.7319"
+       cy="24.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="24.841885"
+       cx="139.7319"
+       id="circle5707"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5709"
+       cx="143.7319"
+       cy="24.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="28.841885"
+       cx="135.7319"
+       id="circle5711"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5713"
+       cx="139.7319"
+       cy="28.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="28.841885"
+       cx="143.7319"
+       id="circle5715"
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       r="1.5"
+       cy="32.841885"
+       cx="135.7319"
+       id="circle5717"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5719"
+       cx="139.7319"
+       cy="32.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="32.841885"
+       cx="143.7319"
+       id="circle5721"
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5723"
+       cx="135.7319"
+       cy="36.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="36.841885"
+       cx="139.7319"
+       id="circle5725"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5727"
+       cx="143.7319"
+       cy="36.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="40.841885"
+       cx="135.7319"
+       id="circle5729"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5731"
+       cx="139.7319"
+       cy="40.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="40.841885"
+       cx="143.7319"
+       id="circle5733"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5735"
+       cx="135.7319"
+       cy="44.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="44.841885"
+       cx="139.7319"
+       id="circle5737"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5739"
+       cx="143.7319"
+       cy="44.841885"
+       r="1.5" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5741"
+       cx="135.7319"
+       cy="48.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="48.841885"
+       cx="139.7319"
+       id="circle5743"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5745"
+       cx="143.7319"
+       cy="48.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="52.841885"
+       cx="135.7319"
+       id="circle5747"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5749"
+       cx="139.7319"
+       cy="52.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="52.841885"
+       cx="143.7319"
+       id="circle5751"
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5753"
+       cx="135.7319"
+       cy="56.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="56.841885"
+       cx="139.7319"
+       id="circle5755"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5757"
+       cx="143.7319"
+       cy="56.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="60.841885"
+       cx="135.7319"
+       id="circle5759"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5761"
+       cx="139.7319"
+       cy="60.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="60.841885"
+       cx="143.7319"
+       id="circle5763"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       r="1.5"
+       cy="64.841881"
+       cx="135.7319"
+       id="circle5765"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5767"
+       cx="139.7319"
+       cy="64.841881"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="64.841881"
+       cx="143.7319"
+       id="circle5769"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5777"
+       cx="147.7319"
+       cy="8.8418837"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="8.8418837"
+       cx="151.7319"
+       id="circle5779"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5781"
+       cx="155.7319"
+       cy="8.8418837"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="12.841884"
+       cx="147.7319"
+       id="circle5783"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5785"
+       cx="151.7319"
+       cy="12.841884"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="12.841884"
+       cx="155.7319"
+       id="circle5787"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       r="1.5"
+       cy="16.841883"
+       cx="147.7319"
+       id="circle5789"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5791"
+       cx="151.7319"
+       cy="16.841883"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="16.841883"
+       cx="155.7319"
+       id="circle5793"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5795"
+       cx="147.7319"
+       cy="20.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="20.841885"
+       cx="151.7319"
+       id="circle5797"
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5799"
+       cx="155.7319"
+       cy="20.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="24.841885"
+       cx="147.7319"
+       id="circle5801"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5803"
+       cx="151.7319"
+       cy="24.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="24.841885"
+       cx="155.7319"
+       id="circle5805"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5807"
+       cx="147.7319"
+       cy="28.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="28.841885"
+       cx="151.7319"
+       id="circle5809"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5811"
+       cx="155.7319"
+       cy="28.841885"
+       r="1.5" />
+    <circle
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5813"
+       cx="147.7319"
+       cy="32.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="32.841885"
+       cx="151.7319"
+       id="circle5815"
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5817"
+       cx="155.7319"
+       cy="32.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="36.841885"
+       cx="147.7319"
+       id="circle5819"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5821"
+       cx="151.7319"
+       cy="36.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="36.841885"
+       cx="155.7319"
+       id="circle5823"
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5825"
+       cx="147.7319"
+       cy="40.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="40.841885"
+       cx="151.7319"
+       id="circle5827"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5829"
+       cx="155.7319"
+       cy="40.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="44.841885"
+       cx="147.7319"
+       id="circle5831"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5833"
+       cx="151.7319"
+       cy="44.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="44.841885"
+       cx="155.7319"
+       id="circle5835"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       r="1.5"
+       cy="48.841885"
+       cx="147.7319"
+       id="circle5837"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5839"
+       cx="151.7319"
+       cy="48.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="48.841885"
+       cx="155.7319"
+       id="circle5841"
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5843"
+       cx="147.7319"
+       cy="52.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="52.841885"
+       cx="151.7319"
+       id="circle5845"
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5847"
+       cx="155.7319"
+       cy="52.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="56.841885"
+       cx="147.7319"
+       id="circle5849"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5851"
+       cx="151.7319"
+       cy="56.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="56.841885"
+       cx="155.7319"
+       id="circle5853"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5855"
+       cx="147.7319"
+       cy="60.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="60.841885"
+       cx="151.7319"
+       id="circle5857"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5859"
+       cx="155.7319"
+       cy="60.841885"
+       r="1.5" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5861"
+       cx="147.7319"
+       cy="64.841881"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="64.841881"
+       cx="151.7319"
+       id="circle5863"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5865"
+       cx="155.7319"
+       cy="64.841881"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="8.8418837"
+       cx="159.7319"
+       id="circle5873"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5875"
+       cx="163.7319"
+       cy="8.8418837"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="8.8418837"
+       cx="167.7319"
+       id="circle5877"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5879"
+       cx="159.7319"
+       cy="12.841884"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="12.841884"
+       cx="163.7319"
+       id="circle5881"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5883"
+       cx="167.7319"
+       cy="12.841884"
+       r="1.5" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5885"
+       cx="159.7319"
+       cy="16.841883"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="16.841883"
+       cx="163.7319"
+       id="circle5887"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5889"
+       cx="167.7319"
+       cy="16.841883"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="20.841885"
+       cx="159.7319"
+       id="circle5891"
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5893"
+       cx="163.7319"
+       cy="20.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="20.841885"
+       cx="167.7319"
+       id="circle5895"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5897"
+       cx="159.7319"
+       cy="24.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="24.841885"
+       cx="163.7319"
+       id="circle5899"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5901"
+       cx="167.7319"
+       cy="24.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="28.841885"
+       cx="159.7319"
+       id="circle5903"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5905"
+       cx="163.7319"
+       cy="28.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="28.841885"
+       cx="167.7319"
+       id="circle5907"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       r="1.5"
+       cy="32.841885"
+       cx="159.7319"
+       id="circle5909"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5911"
+       cx="163.7319"
+       cy="32.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="32.841885"
+       cx="167.7319"
+       id="circle5913"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5915"
+       cx="159.7319"
+       cy="36.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="36.841885"
+       cx="163.7319"
+       id="circle5917"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5919"
+       cx="167.7319"
+       cy="36.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="40.841885"
+       cx="159.7319"
+       id="circle5921"
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5923"
+       cx="163.7319"
+       cy="40.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="40.841885"
+       cx="167.7319"
+       id="circle5925"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#ff6600;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5927"
+       cx="159.7319"
+       cy="44.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="44.841885"
+       cx="163.7319"
+       id="circle5929"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5931"
+       cx="167.7319"
+       cy="44.841885"
+       r="1.5" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5933"
+       cx="159.7319"
+       cy="48.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="48.841885"
+       cx="163.7319"
+       id="circle5935"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5937"
+       cx="167.7319"
+       cy="48.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="52.841885"
+       cx="159.7319"
+       id="circle5939"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5941"
+       cx="163.7319"
+       cy="52.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="52.841885"
+       cx="167.7319"
+       id="circle5943"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5945"
+       cx="159.7319"
+       cy="56.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="56.841885"
+       cx="163.7319"
+       id="circle5947"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5949"
+       cx="167.7319"
+       cy="56.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="60.841885"
+       cx="159.7319"
+       id="circle5951"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5953"
+       cx="163.7319"
+       cy="60.841885"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="60.841885"
+       cx="167.7319"
+       id="circle5955"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       r="1.5"
+       cy="64.841881"
+       cx="159.7319"
+       id="circle5957"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+    <circle
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000"
+       id="circle5959"
+       cx="163.7319"
+       cy="64.841881"
+       r="1.5" />
+    <circle
+       r="1.5"
+       cy="64.841881"
+       cx="167.7319"
+       id="circle5961"
+       style="fill:#333333;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill;stop-color:#000000" />
+  </g>
+</svg>

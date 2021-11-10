@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   sodipodi:docname="pan_gare.svg"
+   height="64"
+   width="64"
+   inkscape:version="1.1-dev (ccb98c3c56, 2020-01-19)"
+   version="1.1"
+   id="svg2">
+  <metadata
+     id="metadata8">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs6" />
+  <sodipodi:namedview
+     inkscape:document-rotation="0"
+     inkscape:current-layer="g3769"
+     inkscape:window-maximized="1"
+     inkscape:window-y="28"
+     inkscape:window-x="0"
+     inkscape:cy="43.113769"
+     inkscape:cx="17.80359"
+     inkscape:zoom="4.6732673"
+     inkscape:snap-page="true"
+     inkscape:snap-center="true"
+     inkscape:snap-object-midpoints="true"
+     inkscape:snap-midpoints="true"
+     inkscape:snap-smooth-nodes="true"
+     inkscape:snap-intersection-paths="true"
+     inkscape:object-nodes="true"
+     inkscape:object-paths="true"
+     inkscape:snap-bbox-midpoints="true"
+     inkscape:snap-bbox-edge-midpoints="true"
+     inkscape:bbox-nodes="true"
+     inkscape:bbox-paths="true"
+     inkscape:snap-bbox="true"
+     showgrid="false"
+     id="namedview4"
+     inkscape:window-height="1024"
+     inkscape:window-width="1920"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff">
+    <inkscape:grid
+       id="grid865"
+       type="xygrid" />
+  </sodipodi:namedview>
+  <g
+     transform="translate(-107.73191,-4.8418837)"
+     id="g3769">
+    <g
+       transform="translate(150,10)"
+       id="g854">
+      <rect
+         style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.636824"
+         id="rect2987-3"
+         width="64"
+         height="64"
+         x="-42.268089"
+         y="-5.1581163" />
+      <rect
+         style="fill:none;stroke:#000000;stroke-width:3.97394;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="rect2989-6"
+         width="58.026062"
+         height="58.026058"
+         x="-39.28112"
+         y="-2.1711454" />
+    </g>
+    <g
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:1.25;font-family:Roboto;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:2"
+       id="text846"
+       aria-label="GARE">
+      <path
+         id="path848"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:PoliceSNCF;stroke-width:2"
+         d="m 121.90408,40.04501 h 1.92188 q 0,0.359375 -0.17188,0.6875 -0.15625,0.359375 -0.42187,0.625 -0.28125,0.28125 -0.625,0.4375 -0.35938,0.15625 -0.70313,0.171875 -0.35937,0 -0.6875,-0.171875 -0.35937,-0.15625 -0.625,-0.4375 -0.28125,-0.265625 -0.45312,-0.625 -0.15625,-0.34375 -0.15625,-0.6875 v -6.40625 q 0,-0.359375 0.15625,-0.703125 0.15625,-0.34375 0.45312,-0.625 0.26563,-0.265625 0.625,-0.421875 0.34375,-0.15625 0.6875,-0.171875 0.35938,0 0.70313,0.171875 0.34375,0.15625 0.625,0.421875 0.26562,0.28125 0.42187,0.625 0.15625,0.359375 0.17188,0.703125 h 2.875 q 0,-0.875 -0.40625,-1.734375 -0.40625,-0.859375 -1.07813,-1.578125 -0.70312,-0.6875 -1.57812,-1.078125 -0.85938,-0.40625 -1.73438,-0.40625 -0.875,0 -1.75,0.40625 -0.85937,0.40625 -1.54687,1.078125 -0.70313,0.703125 -1.10938,1.578125 -0.40625,0.859375 -0.39062,1.734375 v 6.40625 q 0,0.875 0.39062,1.734375 0.40625,0.859375 1.10938,1.5625 0.6875,0.703125 1.54687,1.09375 0.85938,0.40625 1.75,0.40625 0.875,0 1.73438,-0.40625 0.85937,-0.40625 1.57812,-1.09375 0.6875,-0.6875 1.07813,-1.5625 0.40625,-0.859375 0.40625,-1.734375 v -2.890625 h -4.79688 z" />
+      <path
+         id="path850"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:PoliceSNCF;stroke-width:2"
+         d="m 133.32596,36.29501 0.6875,2.78125 h -1.3125 z m 1.375,5.671875 0.71875,2.875 h 2.71875 l -3.35938,-16 h -2.89062 l -3.35938,16 h 2.89063 l 0.625,-2.875 z" />
+      <path
+         id="path852"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:PoliceSNCF;stroke-width:2"
+         d="m 150.12283,33.623135 q 0,-0.875 -0.40625,-1.734375 -0.40625,-0.84375 -1.07812,-1.5625 -0.70313,-0.6875 -1.57813,-1.078125 -0.85937,-0.40625 -1.73437,-0.40625 h -4.8125 v 16 h 2.89062 v -6.40625 h 1.92188 q 0.35937,0 0.70312,0.171875 0.34375,0.15625 0.625,0.421875 0.26563,0.28125 0.42188,0.625 0.15625,0.359375 0.15625,0.703125 v 4.484375 h 2.89062 V 40.35751 q 0,-0.828125 -0.1875,-1.453125 -0.20312,-0.625 -0.48437,-1.015625 -0.28125,-0.40625 -0.51563,-0.59375 -0.23437,-0.171875 -0.40625,-0.296875 l 0.0312,-0.03125 q 0.1875,-0.1875 0.42188,-0.4375 0.21875,-0.25 0.5,-0.703125 0.25,-0.4375 0.45312,-1 0.1875,-0.5625 0.1875,-1.203125 z m -4.79687,1.9375 h -1.92188 v -3.84375 h 1.92188 q 0.35937,0 0.70312,0.171875 0.34375,0.15625 0.625,0.421875 0.26563,0.28125 0.42188,0.625 0.15625,0.359375 0.15625,0.703125 0,0.359375 -0.15625,0.6875 -0.15625,0.359375 -0.42188,0.625 -0.28125,0.28125 -0.625,0.453125 -0.34375,0.15625 -0.70312,0.15625 z" />
+      <path
+         id="path854"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:PoliceSNCF;stroke-width:2"
+         d="m 155.63846,35.35751 v -3.640625 h 6.71875 v -2.875 h -9.60938 v 16 h 9.60938 v -2.875 h -6.71875 V 38.23251 h 2.875 v -2.875 z" />
+    </g>
+  </g>
+</svg>
