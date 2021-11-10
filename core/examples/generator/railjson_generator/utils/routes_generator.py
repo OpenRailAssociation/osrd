@@ -27,6 +27,8 @@ def create_route_from_path(builder, path):
     entry_point, entry_direction = waypoint_list[0]
     exit_point, _ = waypoint_list[-1]
 
+    path[0].begin = entry_point.position
+
     tvd_sections = []
     for waypoint, direction in waypoint_list[:-1]:
         tvd = waypoint.right_tvd

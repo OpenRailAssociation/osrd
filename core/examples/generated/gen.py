@@ -41,10 +41,8 @@ def _endpoint_offset(endpoint: TrackEndpoint, offset: float):
 
 
 def _make_switch(builder: InfraBuilder, a: TrackEndpoint, b: TrackEndpoint, c: TrackEndpoint):
-    print("link :")
     builder.add_switch(a, b, c)
     for endpoint in [a, b, c]:
-        print(f"\t{endpoint.track_section.label} {endpoint.endpoint}")
         _add_detector_at(endpoint.track_section, _endpoint_offset(endpoint, 50))
 
 
@@ -73,8 +71,6 @@ def _link_all_tracks(builder: InfraBuilder, tracks: List[TrackSection]):
         else:
             link_to = open_endpoints.pop()
             builder.add_link(endpoint, link_to)
-            print(f"link:\n\t{endpoint.track_section.label} {endpoint.endpoint}")
-            print(f"\t{link_to.track_section.label} {link_to.endpoint}")
         open_endpoints.append(endpoint.opposite())
         i += 1
 
@@ -110,16 +106,7 @@ def _add_random_speed_limits(tracks: List[TrackSection], n_categories: int):
     for track in tracks:
         for begin, end in _make_random_ranges(random.randint(0, 5), track.length):
             if random.randint(0, 3) == 0:
-                track.add_speed_limit(begin, end, f"speedsection.{random.randint(0, n_categories - 1)}")
-
-
-def _make_speed_limits(infra: InfraBuilder, n_categories: int):
-    for i in range(n_categories):
-        infra.add_speed_limit({
-            "id": f"speedsection.{i}",
-            "is_signalized": True,
-            "speed": _rand_range(5, 50)
-        })
+                track.add_speed_limit(begin, end, _rand_range(5, 50))
 
 
 def _generate_random_schedule(builder: SimulationBuilder, tracks: List[TrackSection], label: str):
@@ -155,7 +142,6 @@ def generate_random_infra(seed, n_tracks, n_trains, n_speed_categories, infra_pa
 
     # Build infra: Generate BufferStops, TVDSections and Routes
     infra = builder.build()
-    _make_speed_limits(infra, n_speed_categories)
 
     # Save railjson
     infra.save(Path(infra_path))
@@ -177,4 +163,4 @@ CURRENT_DIR = Path(__file__).parent
 for i in range(10):
     root = (CURRENT_DIR / str(i)).resolve()
     root.mkdir(exist_ok=True, parents=True)
-    generate_random_infra(0, 35, 3, 10, root / "infra.json", root / "simulation.json")
+    generate_random_infra(i, 35, 3, 10, root / "infra.json", root / "simulation.json")
