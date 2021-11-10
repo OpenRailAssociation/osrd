@@ -20,7 +20,6 @@ class Infra:
     operational_points: List[OperationalPoint] = field(default_factory=list)
     tvd_sections: List[TVDSection] = field(default_factory=list)
     routes: List[Route] = field(default_factory=list)
-    speed_limits: List[Dict] = field(default_factory=list)
 
     VERSION = "1.0"
 
@@ -32,8 +31,21 @@ class Infra:
         self.routes.append(Route(*args, **kwargs))
         return self.routes[-1]
 
-    def add_speed_limit(self, speed_limit):
-        self.speed_limits.append(speed_limit)
+    def _format_speed_limits(self):
+        res = []
+        seen_limits = set()
+        for track in self.track_sections:
+            for limit in track.speed_limits:
+                speed = limit.max_speed
+                if speed in seen_limits:
+                    continue
+                seen_limits.add(speed)
+                res.append({
+                    "id": str(speed),
+                    "is_signalized": True,
+                    "speed": speed
+                })
+        return res
 
     def format(self):
         return {
@@ -47,7 +59,7 @@ class Infra:
             "aspects": ASPECTS,
             "switch_types": SWITCH_TYPES,
             "script_functions": SCRIPT_FUNCTIONS,
-            "speed_sections": self.speed_limits
+            "speed_sections": self._format_speed_limits()
         }
 
     def save(self, path):
