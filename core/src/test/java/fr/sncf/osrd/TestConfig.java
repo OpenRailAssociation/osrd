@@ -128,6 +128,13 @@ public class TestConfig {
         return this;
     }
 
+    /** Remove all signalization constraints from the given configuration */
+    public TestConfig clearSignalizationConstraints() {
+        for (var aspect : rjsInfra.aspects)
+            aspect.constraints = Collections.emptyList();
+        return this;
+    }
+
     /** Remove all trains except the first */
     public TestConfig singleTrain() {
         rjsSimulation.trainSchedules = Collections.singletonList(rjsSimulation.trainSchedules.get(0));
