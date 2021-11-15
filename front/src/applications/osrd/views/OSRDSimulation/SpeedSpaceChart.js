@@ -94,21 +94,23 @@ export default function SpeedSpaceChart() {
     const operationalPointsZone = chartLocal.drawZone.append('g').attr('id', 'gev-operationalPointsZone');
     simulation.trains[selectedTrain].base.stops.forEach((stop) => {
       operationalPointsZone.append('line')
+        .datum(stop.position)
         .attr('id', `op-${stop.id}`)
         .attr('class', 'op-line')
-        .attr('x1', chartLocal.x(stop.position))
-        .attr('y1', chartLocal.height)
-        .attr('x2', chartLocal.x(stop.position))
-        .attr('y2', 0);
+        .attr('x1', rotate ? 0 : (d) => chartLocal.x(d))
+        .attr('y1', rotate ? (d) => chartLocal.y(d) : chartLocal.height)
+        .attr('x2', rotate ? chartLocal.width : (d) => chartLocal.x(d))
+        .attr('y2', rotate ? (d) => chartLocal.y(d) : 0);
       operationalPointsZone.append('text')
+        .datum(stop.position)
         .attr('class', 'op-text')
         .text(`${stop.name}`)
-        .attr('x', chartLocal.x(stop.position))
-        .attr('y', chartLocal.height)
+        .attr('x', rotate ? 0 : (d) => chartLocal.x(d))
+        .attr('y', rotate ? (d) => chartLocal.y(d) : chartLocal.height)
         .attr('text-anchor', 'center')
         .attr('transform', `rotate(0 ${chartLocal.x(stop.position)}, ${chartLocal.height})`)
         .attr('dx', 5)
-        .attr('dy', 15 - chartLocal.height);
+        .attr('dy', rotate ? -5 : 15 - chartLocal.height);
     });
   };
 
