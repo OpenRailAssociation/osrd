@@ -70,17 +70,19 @@ export default function SpaceTimeChart() {
     const operationalPointsZone = chartLocal.drawZone.append('g').attr('id', 'get-operationalPointsZone');
     simulation.trains[selectedTrain].base.stops.forEach((stop) => {
       operationalPointsZone.append('line')
+        .datum(stop.position)
         .attr('id', `op-${stop.id}`)
         .attr('class', 'op-line')
         .attr('x1', 0)
-        .attr('y1', chartLocal.y(stop.position))
+        .attr('y1', (d) => chartLocal.y(d))
         .attr('x2', chartLocal.width)
-        .attr('y2', chartLocal.y(stop.position));
+        .attr('y2', (d) => chartLocal.y(d));
       operationalPointsZone.append('text')
+        .datum(stop.position)
         .attr('class', 'op-text')
         .text(`${stop.name}`)
         .attr('x', 0)
-        .attr('y', chartLocal.y(stop.position))
+        .attr('y', (d) => chartLocal.y(d))
         .attr('text-anchor', 'center')
         .attr('dx', 5)
         .attr('dy', -5);

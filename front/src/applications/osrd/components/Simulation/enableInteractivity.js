@@ -65,6 +65,22 @@ const updateChart = (chart, keyValues, rotate) => {
         .y0((d) => newY(d.value0))
         .y1((d) => newY(d.value1))));
 
+  // OPERATIONNAL POINTS
+  chart.drawZone
+    .selectAll('#get-operationalPointsZone .op-line')
+    .attr('y1', (d) => newY(d))
+    .attr('y2', (d) => newY(d));
+  chart.drawZone
+    .selectAll('#get-operationalPointsZone .op-text')
+    .attr('y', (d) => newY(d));
+  chart.drawZone
+    .selectAll('#gev-operationalPointsZone .op-line')
+    .attr('x1', (d) => newX(d))
+    .attr('x2', (d) => newX(d));
+  chart.drawZone
+    .selectAll('#gev-operationalPointsZone .op-text')
+    .attr('x', (d) => newX(d));
+
   chart.drawZone
     .selectAll('.curve-label')
     .attr('transform', d3.event.transform);
