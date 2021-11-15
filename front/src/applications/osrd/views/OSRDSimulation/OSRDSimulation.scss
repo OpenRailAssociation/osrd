@@ -74,7 +74,7 @@ svg text {
 }
 
 .guideLines {
-  stroke: #333;
+  stroke: var(--primary);
   stroke-width: 0.5;
   opacity: 0.5;
   pointer-events: none;
@@ -222,8 +222,8 @@ svg text {
   stroke-dasharray: 4, 4;
 }
 .op-text {
-  fill: var(--coolgray9);
-  font-size: .75rem;
+  fill: var(--coolgray11);
+  font-size: .65rem;
 }
 
 /* TABLE OVERRIDE */

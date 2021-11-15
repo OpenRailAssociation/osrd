@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
+import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
+import OPModal from 'applications/osrd/components/Simulation/Margins/OPModal';
 import { useSelector, useDispatch } from 'react-redux';
 import { get, put } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main.ts';
@@ -29,6 +32,7 @@ const TYPEUNITS = {
 const EmptyLine = (props) => {
   const { margins, setMargins, setUpdateMargins } = props;
   const [values, setValues] = useState(marginNewDatas);
+  const [fromTo, setFromTo] = useState('from');
   const { t } = useTranslation(['margins']);
 
   const marginTypes = [
@@ -58,57 +62,91 @@ const EmptyLine = (props) => {
   };
 
   const addMargins = (margin) => {
-    const newMargins = (margins !== null) ? Array.from(margins) : [];
-    newMargins.push(margin);
-    setMargins(newMargins);
-    setUpdateMargins(true);
+    if (values.begin_position < values.end_position && values.value > 0) {
+      const newMargins = (margins !== null) ? Array.from(margins) : [];
+      newMargins.push(margin);
+      setMargins(newMargins);
+      setUpdateMargins(true);
+    }
   };
 
   return (
-    <div className="row">
-      <div className="col-md-2 d-flex align-items-center">
-        <span className="mr-1">{t('from')}</span>
-        <InputSNCF
-          type="number"
-          onChange={(e) => setValues({ ...values, begin_position: parseInt(e.target.value, 10) })}
-          value={values.begin_position}
-          placeholder={t('begin_position')}
-          unit="m"
-          noMargin
-          sm
-        />
+    <>
+      <div className="row">
+        <div className="col-md-3 d-flex align-items-center">
+          <span className="mr-1">{t('from')}</span>
+          <InputSNCF
+            type="number"
+            onChange={(e) => setValues({ ...values, begin_position: parseInt(e.target.value, 10) })}
+            value={values.begin_position}
+            placeholder={t('begin_position')}
+            unit="m"
+            noMargin
+            sm
+          />
+          <button
+            type="button"
+            className="ml-1 btn-sm btn-primary text-uppercase"
+            data-toggle="modal"
+            data-target="#op-input-modal"
+            onClick={() => setFromTo('begin_position')}
+          >
+            <small>{t('op')}</small>
+          </button>
+        </div>
+        <div className="col-md-3 d-flex align-items-center">
+          <span className="mr-1">{t('to')}</span>
+          <InputSNCF
+            type="number"
+            onChange={(e) => setValues({ ...values, end_position: parseInt(e.target.value, 10) })}
+            value={values.end_position}
+            placeholder={t('end_position')}
+            unit="m"
+            noMargin
+            sm
+          />
+          <button
+            type="button"
+            className="ml-1 btn-sm btn-primary text-uppercase"
+            data-toggle="modal"
+            data-target="#op-input-modal"
+            onClick={() => setFromTo('end_position')}
+          >
+            <small>{t('op')}</small>
+          </button>
+        </div>
+        <div className="col-md-4">
+          <InputGroupSNCF
+            id="marginTypeSelect"
+            options={marginTypes}
+            handleType={handleType}
+            value={values.value === '' ? '' : parseInt(values.value, 10)}
+            sm
+          />
+        </div>
+        <div className="col-md-2">
+          <button
+            type="button"
+            onClick={() => addMargins(values)}
+            className={`btn btn-success btn-sm ${(
+              values.begin_position >= values.end_position
+              || values.value === 0 ? 'disabled' : null
+            )}`}
+          >
+            <i className="icons-add" />
+          </button>
+        </div>
       </div>
-      <div className="col-md-2 d-flex align-items-center">
-        <span className="mr-1">{t('to')}</span>
-        <InputSNCF
-          type="number"
-          onChange={(e) => setValues({ ...values, end_position: parseInt(e.target.value, 10) })}
-          value={values.end_position}
-          placeholder={t('end_position')}
-          unit="m"
-          noMargin
-          sm
-        />
-      </div>
-      <div className="col-md-4">
-        <InputGroupSNCF
-          id="marginTypeSelect"
-          options={marginTypes}
-          handleType={handleType}
-          value={values.value === '' ? '' : parseInt(values.value, 10)}
-          sm
-        />
-      </div>
-      <div className="col-md-3">
-        <button
-          type="button"
-          className="btn btn-success btn-sm"
-          onClick={() => addMargins(values)}
-        >
-          <i className="icons-add" />
-        </button>
-      </div>
-    </div>
+      <ModalSNCF htmlID="op-input-modal">
+        <ModalBodySNCF>
+          <OPModal
+            fromTo={fromTo}
+            setValues={setValues}
+            values={values}
+          />
+        </ModalBodySNCF>
+      </ModalSNCF>
+    </>
   );
 };
 

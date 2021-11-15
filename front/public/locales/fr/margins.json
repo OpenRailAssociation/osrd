@@ -17,6 +17,7 @@
     "ratio_time": "Régularité (temps)",
     "ratio_distance": "Régularité (distance)"
   },
+  "op": "pr",
   "to": "à",
   "trainSchedules": "Type de marche"
 }
