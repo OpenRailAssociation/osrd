@@ -87,11 +87,11 @@ export default function MapSearchSignal(props) {
   const formatSearchResults = () => {
     let searchResultsContent = searchResults.results.filter((result) => result.name !== null);
     searchResultsContent = searchResultsContent.sort((a, b) => {
-      if (!a[sortFilter.name]) { return sortFilter.order === 0 ? -1 : 1; } // To avoid null values
-      if (!b[sortFilter.name]) { return sortFilter.order === 0 ? 1 : -1; }
+      if (!a.[sortFilter.name]) { return sortFilter.order === 0 ? -1 : 1; } // To avoid null values
+      if (!b.[sortFilter.name]) { return sortFilter.order === 0 ? 1 : -1; }
       return sortFilter.order === 0
-        ? a[sortFilter.name].localeCompare(b[sortFilter.name])
-        : b[sortFilter.name].localeCompare(a[sortFilter.name]);
+        ? a.[sortFilter.name].localeCompare(b.[sortFilter.name])
+        : b.[sortFilter.name].localeCompare(a.[sortFilter.name]);
     });
     return searchResultsContent.map((result) => (
       <div
