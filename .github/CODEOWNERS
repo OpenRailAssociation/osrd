@@ -1,4 +1,6 @@
 CODEOWNERS   @DGEXSolutions/osrd-backend-maintainers
+/front       @DGEXSolutions/osrd-front-maintainers
+
 
 /core/specifications   @flomonster @DGEXSolutions/osrd-backend-maintainers
 
