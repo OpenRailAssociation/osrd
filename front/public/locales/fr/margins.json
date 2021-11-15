@@ -1,4 +1,7 @@
 {
+  "baseTrainSchedule": "Base",
+  "blocks": "Blocks",
+  "ecoTrainSchedule": "Économique",
   "end_position": "Fin",
   "errors": {
     "margins": "Erreur de tracé de marge",
@@ -6,6 +9,7 @@
   },
   "from": "De",
   "begin_position": "Début",
+  "margedTrainSchedule": "Avec marges",
   "marginModified": "Marges modifiées",
   "marginType": "Type de marge",
   "marginTypes": {
@@ -13,5 +17,6 @@
     "ratio_time": "Régularité (temps)",
     "ratio_distance": "Régularité (distance)"
   },
-  "to": "à"
+  "to": "à",
+  "trainSchedules": "Type de marche"
 }
