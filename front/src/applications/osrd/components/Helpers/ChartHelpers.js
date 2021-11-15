@@ -94,6 +94,54 @@ export const timeShiftTrain = (train, value) => ({
       (stop) => ({ ...stop, time: offsetSeconds(stop.time + value) }),
     ),
   },
+  margins: train.margins ? ({
+    head_positions: train.margins.head_positions.map(
+      (section) => section.map(
+        (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+      ),
+    ),
+    tail_positions: train.margins.tail_positions.map(
+      (section) => section.map(
+        (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+      ),
+    ),
+    route_end_occupancy: train.margins.route_end_occupancy.map(
+      (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+    ),
+    route_begin_occupancy: train.margins.route_begin_occupancy.map(
+      (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+    ),
+    speeds: train.margins.speeds.map(
+      (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+    ),
+    stops: train.margins.stops.map(
+      (stop) => ({ ...stop, time: offsetSeconds(stop.time + value) }),
+    ),
+  }) : null,
+  eco: train.eco ? ({
+    head_positions: train.eco.head_positions.map(
+      (section) => section.map(
+        (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+      ),
+    ),
+    tail_positions: train.eco.tail_positions.map(
+      (section) => section.map(
+        (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+      ),
+    ),
+    route_end_occupancy: train.eco.route_end_occupancy.map(
+      (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+    ),
+    route_begin_occupancy: train.eco.route_begin_occupancy.map(
+      (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+    ),
+    speeds: train.eco.speeds.map(
+      (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+    ),
+    stops: train.eco.stops.map(
+      (stop) => ({ ...stop, time: offsetSeconds(stop.time + value) }),
+    ),
+  }) : null,
 });
 
 // Merge two curves for creating area between

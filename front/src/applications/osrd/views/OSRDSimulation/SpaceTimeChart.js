@@ -34,7 +34,7 @@ export default function SpaceTimeChart() {
   const dispatch = useDispatch();
   const { t } = useTranslation(['margins']);
   const {
-    mustRedraw, positionValues, selectedTrain, simulation, timePosition,
+    marginsSettings, mustRedraw, positionValues, selectedTrain, simulation, timePosition,
   } = useSelector((state) => state.osrdsimulation);
   const keyValues = ['time', 'position'];
   const [rotate, setRotate] = useState(false);
@@ -66,6 +66,27 @@ export default function SpaceTimeChart() {
     dispatch(updateMustRedraw(true));
   };
 
+  const drawOPs = (chartLocal) => {
+    const operationalPointsZone = chartLocal.drawZone.append('g').attr('id', 'get-operationalPointsZone');
+    simulation.trains[selectedTrain].base.stops.forEach((stop) => {
+      operationalPointsZone.append('line')
+        .attr('id', `op-${stop.id}`)
+        .attr('class', 'op-line')
+        .attr('x1', 0)
+        .attr('y1', chartLocal.y(stop.position))
+        .attr('x2', chartLocal.width)
+        .attr('y2', chartLocal.y(stop.position));
+      operationalPointsZone.append('text')
+        .attr('class', 'op-text')
+        .text(`${stop.name}`)
+        .attr('x', 0)
+        .attr('y', chartLocal.y(stop.position))
+        .attr('text-anchor', 'center')
+        .attr('dx', 5)
+        .attr('dy', -5);
+    });
+  };
+
   const drawAllTrains = () => {
     if (mustRedraw) {
       const chartLocal = createChart(
@@ -76,11 +97,13 @@ export default function SpaceTimeChart() {
         dispatch(updateContextMenu(undefined));
       });
 
+      drawOPs(chartLocal);
+
       drawAxisTitle(chartLocal, rotate);
       dataSimulation.forEach((train, idx) => {
         drawTrain(
-          chartLocal, dispatch, train, (idx === selectedTrain),
-          keyValues, offsetTimeByDragging, rotate, setDragEnding, setDragOffset,
+          chartLocal, dispatch, train, (idx === selectedTrain), keyValues, marginsSettings,
+          offsetTimeByDragging, rotate, setDragEnding, setDragOffset,
         );
       });
       enableInteractivity(

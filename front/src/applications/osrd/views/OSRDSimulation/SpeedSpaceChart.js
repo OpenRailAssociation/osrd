@@ -90,6 +90,28 @@ export default function SpeedSpaceChart() {
     return defineChart(width, 250, defineX, defineY, ref, rotate, keyValues, CHART_ID);
   };
 
+  const drawOPs = (chartLocal) => {
+    const operationalPointsZone = chartLocal.drawZone.append('g').attr('id', 'gev-operationalPointsZone');
+    simulation.trains[selectedTrain].base.stops.forEach((stop) => {
+      operationalPointsZone.append('line')
+        .attr('id', `op-${stop.id}`)
+        .attr('class', 'op-line')
+        .attr('x1', chartLocal.x(stop.position))
+        .attr('y1', chartLocal.height)
+        .attr('x2', chartLocal.x(stop.position))
+        .attr('y2', 0);
+      operationalPointsZone.append('text')
+        .attr('class', 'op-text')
+        .text(`${stop.name}`)
+        .attr('x', chartLocal.x(stop.position))
+        .attr('y', chartLocal.height)
+        .attr('text-anchor', 'center')
+        .attr('transform', `rotate(0 ${chartLocal.x(stop.position)}, ${chartLocal.height})`)
+        .attr('dx', 5)
+        .attr('dy', 15 - chartLocal.height);
+    });
+  };
+
   const drawTrain = () => {
     if (mustRedraw) {
       const chartLocal = createChart();
@@ -103,6 +125,9 @@ export default function SpeedSpaceChart() {
       if (dataSimulation.eco_speed) {
         drawCurve(chartLocal, 'speed eco', dataSimulation.eco_speed, 'speedSpaceChart', 'curveLinear', keyValues, 'eco_speed', rotate);
       }
+
+      // Operational points
+      drawOPs(chartLocal);
 
       enableInteractivity(
         chartLocal, dataSimulation, dispatch, keyValues,

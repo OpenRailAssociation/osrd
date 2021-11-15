@@ -1,5 +1,4 @@
 import * as d3 from 'd3';
-import { updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation';
 
 const drawArea = (
   chart, classes, dataSimulation, dispatch, groupID, interpolation,

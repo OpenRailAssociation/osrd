@@ -20,11 +20,6 @@ const marginNewDatas = {
   value: 0,
 };
 
-/* Alors construction c'est juste un temps em s.
-  ratio_time c'est un ratio donc un pourcentage.
-  ratio_distance c'est en metre pour 10km
-  Le begin_position et end_position c'est en metres
-*/
 const TYPEUNITS = {
   construction: 's',
   ratio_time: '%',
@@ -39,7 +34,7 @@ const EmptyLine = (props) => {
   const marginTypes = [
     {
       id: 'construction',
-      label: t('marginTypes.construction'),
+      label: 'Construction', // t('marginTypes.construction'),
       unit: TYPEUNITS.construction,
     },
     {

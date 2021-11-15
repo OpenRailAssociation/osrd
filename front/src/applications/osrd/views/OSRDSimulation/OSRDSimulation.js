@@ -18,7 +18,7 @@ import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
 import TimeLine from 'applications/osrd/components/TimeLine/TimeLine';
 import { updateViewport } from 'reducers/map';
 import {
-  updateMustRedraw, updateSelectedTrain, updateSimulation,
+  updateMarginsSettings, updateMustRedraw, updateSelectedTrain, updateSimulation,
 } from 'reducers/osrdsimulation';
 import './OSRDSimulation.scss';
 import { sec2time } from 'utils/timeManipulation';
@@ -33,7 +33,9 @@ const OSRDSimulation = () => {
   const [isEmpty, setIsEmpty] = useState(true);
   const [spaceTimeFullWidth, setSpaceTimeFullWidth] = useState(true);
   const { timetableID } = useSelector((state) => state.osrdconf);
-  const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
+  const {
+    marginsSettings, selectedTrain, simulation,
+  } = useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();
 
   if (darkmode) {
@@ -61,6 +63,21 @@ const OSRDSimulation = () => {
         );
         simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);
         dispatch(updateSimulation({ trains: simulationLocal }));
+        // Create margins settings for each train if not set
+        const newMarginsSettings = { ...marginsSettings };
+        simulationLocal.forEach((train) => {
+          if (!newMarginsSettings[train.id]) {
+            newMarginsSettings[train.id] = {
+              base: true,
+              baseBlocks: false,
+              margins: true,
+              marginsBlocks: true,
+              eco: true,
+              ecoBlocks: false,
+            };
+          }
+        });
+        dispatch(updateMarginsSettings(newMarginsSettings));
       } catch (e) {
         dispatch(setFailure({
           name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
@@ -98,15 +115,7 @@ const OSRDSimulation = () => {
         {simulation.trains.length === 0
           ? <div className="pt-5 mt-5"><WaitingLoader /></div> : (
             <div className="m-0 p-3">
-              <div className="osrd-simulation-container d-flex mb-2">
-                <div className="spacetimechart-container">
-                  {simulation.trains.length > 0 ? (
-                    <SpaceTimeChart />
-                  ) : null}
-                  <ContextMenu />
-                </div>
-              </div>
-              {/* <div className="mb-2">
+              <div className="mb-2">
                 <TimeLine />
               </div>
               {spaceTimeFullWidth ? (
@@ -135,6 +144,14 @@ const OSRDSimulation = () => {
                   </div>
                 </div>
               )}
+              <div className="osrd-simulation-container d-flex mb-2">
+                <div className="spacetimechart-container">
+                  {simulation.trains.length > 0 ? (
+                    <SpaceTimeChart />
+                  ) : null}
+                  <ContextMenu />
+                </div>
+              </div>
               <div className="osrd-simulation-container mb-2">
                 <div className="row">
                   <div className="col-xl-4">
@@ -146,7 +163,7 @@ const OSRDSimulation = () => {
                     ) : null}
                   </div>
                 </div>
-              </div> */}
+              </div>
               <div className="mb-2">
                 <Margins />
               </div>

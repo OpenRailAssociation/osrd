@@ -8,7 +8,7 @@ import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import drawText from 'applications/osrd/components/Simulation/drawText';
 
 export default function drawTrain(
-  chart, dispatch, dataSimulation, isSelected, keyValues,
+  chart, dispatch, dataSimulation, isSelected, keyValues, marginsSettings,
   offsetTimeByDragging, rotate, setDragEnding, setDragOffset,
 ) {
   const groupID = `spaceTime-${dataSimulation.trainNumber}`;
@@ -48,7 +48,7 @@ export default function drawTrain(
     .on('contextmenu', () => {
       d3.event.preventDefault();
       dispatch(updateContextMenu({
-        id: dataSimulation.id, xPos: d3.event.pageX, yPos: d3.event.pageY,
+        id: dataSimulation.id, xPos: d3.event.layerX, yPos: d3.event.layerY,
       }));
       dispatch(updateSelectedTrain(dataSimulation.trainNumber));
       dispatch(updateMustRedraw(true));
@@ -58,32 +58,59 @@ export default function drawTrain(
   const direction = getDirection(dataSimulation.headPosition);
 
   if (direction) {
-    drawArea(
-      chart, `${isSelected && 'selected'} area`, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
-      'areaBlock', rotate,
-    );
-    drawCurve(chart, `${isSelected && 'selected'} end-block`, dataSimulation.routeEndOccupancy, groupID,
-      'curveLinear', keyValues, 'routeEndOccupancy', rotate, isSelected);
-    drawCurve(chart, `${isSelected && 'selected'} start-block`, dataSimulation.routeBeginOccupancy, groupID,
-      'curveLinear', keyValues, 'routeBeginOccupancy', rotate, isSelected);
+    if (marginsSettings[dataSimulation.id].baseBlocks
+      || (!dataSimulation.margins_routeBeginOccupancy && !dataSimulation.eco_routeBeginOccupancy)) {
+      drawArea(
+        chart, `${isSelected && 'selected'} area`, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
+        'areaBlock', rotate,
+      );
+      drawCurve(chart, `${isSelected && 'selected'} end-block`, dataSimulation.routeEndOccupancy, groupID,
+        'curveLinear', keyValues, 'routeEndOccupancy', rotate, isSelected);
+      drawCurve(chart, `${isSelected && 'selected'} start-block`, dataSimulation.routeBeginOccupancy, groupID,
+        'curveLinear', keyValues, 'routeBeginOccupancy', rotate, isSelected);
+    }
+    if (dataSimulation.margins_routeEndOccupancy
+      && marginsSettings[dataSimulation.id].marginsBlocks) {
+      drawArea(
+        chart, `${isSelected && 'selected'} area`, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
+        'margins_areaBlock', rotate,
+      );
+      drawCurve(chart, `${isSelected && 'selected'} end-block`, dataSimulation.margins_routeEndOccupancy, groupID,
+        'curveLinear', keyValues, 'margins_routeEndOccupancy', rotate, isSelected);
+      drawCurve(chart, `${isSelected && 'selected'} start-block`, dataSimulation.margins_routeBeginOccupancy, groupID,
+        'curveLinear', keyValues, 'margins_routeBeginOccupancy', rotate, isSelected);
+    }
+    if (dataSimulation.eco_routeEndOccupancy
+      && marginsSettings[dataSimulation.id].ecoBlocks) {
+      drawArea(
+        chart, `${isSelected && 'selected'} area`, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
+        'eco_areaBlock', rotate,
+      );
+      drawCurve(chart, `${isSelected && 'selected'} end-block`, dataSimulation.eco_routeEndOccupancy, groupID,
+        'curveLinear', keyValues, 'eco_routeEndOccupancy', rotate, isSelected);
+      drawCurve(chart, `${isSelected && 'selected'} start-block`, dataSimulation.eco_routeBeginOccupancy, groupID,
+        'curveLinear', keyValues, 'eco_routeBeginOccupancy', rotate, isSelected);
+    }
   }
 
-  dataSimulation.tailPosition.forEach((tailPositionSection) => drawCurve(
-    chart, `${isSelected && 'selected'} tail`, tailPositionSection, groupID,
-    'curveLinear', keyValues, 'tailPosition', rotate, isSelected,
-  ));
-  dataSimulation.headPosition.forEach((headPositionSection) => drawCurve(
-    chart, `${isSelected && 'selected'} head`, headPositionSection, groupID,
-    'curveLinear', keyValues, 'headPosition', rotate, isSelected,
-  ));
+  if (marginsSettings[dataSimulation.id].base) {
+    dataSimulation.tailPosition.forEach((tailPositionSection) => drawCurve(
+      chart, `${isSelected && 'selected'} tail`, tailPositionSection, groupID,
+      'curveLinear', keyValues, 'tailPosition', rotate, isSelected,
+    ));
+    dataSimulation.headPosition.forEach((headPositionSection) => drawCurve(
+      chart, `${isSelected && 'selected'} head`, headPositionSection, groupID,
+      'curveLinear', keyValues, 'headPosition', rotate, isSelected,
+    ));
+  }
 
-  if (dataSimulation.margins_headPosition) {
+  if (dataSimulation.margins_headPosition && marginsSettings[dataSimulation.id].margins) {
     dataSimulation.margins_headPosition.forEach((tailPositionSection) => drawCurve(
       chart, `${isSelected && 'selected'} head margins`, tailPositionSection, groupID,
       'curveLinear', keyValues, 'margins_headPosition', rotate, isSelected,
     ));
   }
-  if (dataSimulation.eco_headPosition) {
+  if (dataSimulation.eco_headPosition && marginsSettings[dataSimulation.id].eco) {
     dataSimulation.eco_headPosition.forEach((tailPositionSection) => drawCurve(
       chart, `${isSelected && 'selected'} head eco`, tailPositionSection, groupID,
       'curveLinear', keyValues, 'eco_headPosition', rotate, isSelected,
