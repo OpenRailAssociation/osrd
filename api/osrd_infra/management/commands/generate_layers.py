@@ -20,7 +20,7 @@ class Command(BaseCommand):
     help = "Generates map layers"
 
     def add_arguments(self, parser):
-        parser.add_argument('infra_ids', type=int, nargs="+")
+        parser.add_argument('infra_ids', type=int, nargs="*")
 
     def handle(self, *args, **options):
         infras = get_infras(options["infra_ids"])
@@ -28,6 +28,7 @@ class Command(BaseCommand):
             try:
                 generate_layers(infra)
             except Exception as e:
+                print(e)
                 raise CommandError(
                     f"Error while generating layers for infra `{infra.name}' (#{infra.pk})"
                 ) from e
