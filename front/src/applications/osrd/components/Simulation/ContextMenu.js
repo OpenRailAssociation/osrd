@@ -159,84 +159,98 @@ export default function ContextMenu() {
       }}
     >
       <div className="dropdown-menu show">
-        {simulation.trains[selectedTrain].margins || simulation.trains[selectedTrain].eco ? (
-          <div className="">
-            {t('margins:blocks')}
-            &nbsp;
-            {t('margins:trainSchedules')}
-            <div className="d-flex">
-              <CheckboxRadioSNCF
-                id="occupation-base-blocks"
-                name="occupation-blocks"
-                type="radio"
-                label="&nbsp;"
-                onChange={() => changeMarginsSettingsRadio('baseBlocks')}
-                checked={
-                  marginsSettings[simulation.trains[selectedTrain].id].baseBlocks
-                }
-              />
-              <CheckboxRadioSNCF
-                id="occupation-base"
-                name="occupation-base"
-                type="checkbox"
-                onChange={() => changeMarginsSettings('base')}
-                label={t('margins:baseTrainSchedule')}
-                checked={
-                  marginsSettings[simulation.trains[selectedTrain].id].base
-                }
-              />
+        {simulation.trains[selectedTrain].margins
+          || simulation.trains[selectedTrain].eco ? (
+            <div className="row">
+              <div className="col-3">
+                {t('margins:blocks')}
+              </div>
+              <div className="col-9">
+                {t('margins:trainSchedules')}
+              </div>
+              <div className="col-3">
+                <CheckboxRadioSNCF
+                  id="occupation-base-blocks"
+                  name="occupation-blocks"
+                  type="radio"
+                  label="&nbsp;"
+                  onChange={() => changeMarginsSettingsRadio('baseBlocks')}
+                  checked={
+                    marginsSettings[simulation.trains[selectedTrain].id].baseBlocks
+                  }
+                />
+              </div>
+              <div className="col-9">
+                <CheckboxRadioSNCF
+                  id="occupation-base"
+                  name="occupation-base"
+                  type="checkbox"
+                  onChange={() => changeMarginsSettings('base')}
+                  label={t('margins:baseTrainSchedule')}
+                  checked={
+                    marginsSettings[simulation.trains[selectedTrain].id].base
+                  }
+                />
+              </div>
+              {simulation.trains[selectedTrain].margins && (
+                <>
+                  <div className="col-3">
+                    <CheckboxRadioSNCF
+                      id="occupation-margins-blocks"
+                      name="occupation-blocks"
+                      type="radio"
+                      label="&nbsp;"
+                      onChange={() => changeMarginsSettingsRadio('marginsBlocks')}
+                      checked={
+                        marginsSettings[simulation.trains[selectedTrain].id].marginsBlocks
+                      }
+                    />
+                  </div>
+                  <div className="col-9">
+                    <CheckboxRadioSNCF
+                      id="occupation-margins"
+                      name="occupation-margins"
+                      type="checkbox"
+                      onChange={() => changeMarginsSettings('margins')}
+                      label={t('margins:margedTrainSchedule')}
+                      checked={
+                        marginsSettings[simulation.trains[selectedTrain].id].margins
+                      }
+                    />
+                  </div>
+                </>
+              )}
+              {simulation.trains[selectedTrain].eco && (
+                <>
+                  <div className="col-3">
+                    <CheckboxRadioSNCF
+                      id="occupation-eco-blocks"
+                      name="occupation-blocks"
+                      type="radio"
+                      label="&nbsp;"
+                      onChange={() => changeMarginsSettingsRadio('ecoBlocks')}
+                      checked={
+                        marginsSettings[simulation.trains[selectedTrain].id].ecoBlocks
+                      }
+                    />
+                  </div>
+                  <div className="col-9">
+                    <CheckboxRadioSNCF
+                      id="occupation-eco"
+                      name="occupation-eco"
+                      type="checkbox"
+                      onChange={() => changeMarginsSettings('eco')}
+                      label={t('margins:ecoTrainSchedule')}
+                      checked={
+                        marginsSettings[simulation.trains[selectedTrain].id].eco
+                      }
+                    />
+                  </div>
+                </>
+              )}
+              <hr />
             </div>
-            {simulation.trains[selectedTrain].margins && (
-              <div className="d-flex">
-                <CheckboxRadioSNCF
-                  id="occupation-margins-blocks"
-                  name="occupation-blocks"
-                  type="radio"
-                  label="&nbsp;"
-                  onChange={() => changeMarginsSettingsRadio('marginsBlocks')}
-                  checked={
-                    marginsSettings[simulation.trains[selectedTrain].id].marginsBlocks
-                  }
-                />
-                <CheckboxRadioSNCF
-                  id="occupation-margins"
-                  name="occupation-margins"
-                  type="checkbox"
-                  onChange={() => changeMarginsSettings('margins')}
-                  label={t('margins:margedTrainSchedule')}
-                  checked={
-                    marginsSettings[simulation.trains[selectedTrain].id].margins
-                  }
-                />
-              </div>
-            )}
-            {simulation.trains[selectedTrain].eco && (
-              <div className="d-flex">
-                <CheckboxRadioSNCF
-                  id="occupation-eco-blocks"
-                  name="occupation-blocks"
-                  type="radio"
-                  label="&nbsp;"
-                  onChange={() => changeMarginsSettingsRadio('ecoBlocks')}
-                  checked={
-                    marginsSettings[simulation.trains[selectedTrain].id].ecoBlocks
-                  }
-                />
-                <CheckboxRadioSNCF
-                  id="occupation-eco"
-                  name="occupation-eco"
-                  type="checkbox"
-                  onChange={() => changeMarginsSettings('eco')}
-                  label={t('margins:ecoTrainSchedule')}
-                  checked={
-                    marginsSettings[simulation.trains[selectedTrain].id].eco
-                  }
-                />
-              </div>
-            )}
-            <hr />
-          </div>
-        ) : null}
+          ) : null}
         <div className="d-flex mb-3">
           <span className="mr-2 flex-grow-1">
             <InputSNCF
