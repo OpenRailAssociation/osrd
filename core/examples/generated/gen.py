@@ -113,14 +113,18 @@ def _generate_random_schedule(builder: SimulationBuilder, tracks: List[TrackSect
     track = random.choice(tracks)
     origin = Location(track, random.random() * track.length)
     direction = Direction.START_TO_STOP if random.randint(0, 1) == 1 else Direction.STOP_TO_START
+    seen = {track.label}
     while random.randint(0, 5) != 0:
         neighbors = track.neighbors(direction)
         if not neighbors:
             break
         next_track_endpoint = random.choice(neighbors)
+        if next_track_endpoint.track_section.label in seen:
+            break
         direction = Direction.START_TO_STOP \
             if next_track_endpoint.endpoint is Endpoint.BEGIN else Direction.STOP_TO_START
         track = next_track_endpoint.track_section
+        seen.add(track.label)
     destination = Location(track, random.random() * track.length)
     builder.add_train_schedule(
         origin, destination, label=label, departure_time=random.random() * 60
