@@ -83,7 +83,7 @@ export default function SpeedSpaceChart() {
       : chart.x;
     const defineY = (chart === undefined)
       ? defineLinear(d3.max(Object.values(dataSimulation),
-        (data) => d3.max(data, (d) => d[(rotate ? keyValues[0] : keyValues[1])] + 10)))
+        (data) => d3.max(data, (d) => d[(rotate ? keyValues[0] : keyValues[1])] + 50)))
       : chart.y;
 
     const width = parseInt(d3.select(`#container-${CHART_ID}`).style('width'), 10);
