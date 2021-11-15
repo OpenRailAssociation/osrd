@@ -18,7 +18,7 @@ public class AllowanceTestsOnAllInfras {
                 rootPath + "/infra.json",
                 rootPath + "/simulation.json",
                 Collections.singletonList("rolling_stocks"));
-        return config.singleTrain().clearAllowances();
+        return config.singleTrain().clearAllowances().clearSignalizationConstraints();
     }
 
     /** Runs simple linear allowance tests */
@@ -34,7 +34,7 @@ public class AllowanceTestsOnAllInfras {
 
         var start = config.rjsSimulation.trainSchedules.get(0).departureTime;
         var expected = start + (test.baseTime() - start) * (1 + value / 100);
-        assertEquals(expected, test.testedTime(), expected * 0.01);
+        assertEquals(expected, test.testedTime(), expected * 0.02);
     }
 
     /** Runs simple distance linear allowance tests */
