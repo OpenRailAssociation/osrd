@@ -50,7 +50,7 @@ class CheckboxRadioSNCF extends React.Component {
     } = this.props;
     return (
       <div className="custom-control custom-checkbox">
-        <input type="checkbox" id={id} name={name} className="custom-control-input" defaultChecked={checked} onChange={onChange} />
+        <input type="checkbox" id={id} name={name} className="custom-control-input" checked={checked} onChange={onChange} />
         <label className="custom-control-label" htmlFor={id}>{label}</label>
       </div>
     );
@@ -66,7 +66,7 @@ class CheckboxRadioSNCF extends React.Component {
     } = this.props;
     return (
       <div className="custom-control custom-radio">
-        <input type="radio" id={id} name={name} className="custom-control-input" defaultChecked={checked} onChange={onChange} />
+        <input type="radio" id={id} name={name} className="custom-control-input" checked={checked} onChange={onChange} />
         <label className="custom-control-label font-weight-medium" htmlFor={id}>{label}</label>
       </div>
     );

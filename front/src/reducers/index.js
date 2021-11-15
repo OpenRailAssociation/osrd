@@ -36,6 +36,10 @@ const mainWhiteList = [
   'darkmode',
 ];
 
+const simulationWhiteList = [
+  'marginsSettings',
+];
+
 const saveMapFilter = createFilter(
   'map',
   mapWhiteList,
@@ -51,6 +55,11 @@ const saveMainFilter = createFilter(
   mainWhiteList,
 );
 
+const saveSimulationFilter = createFilter(
+  'osrdsimulation',
+  simulationWhiteList,
+);
+
 // Useful to only blacklist a sub-propertie of osrdconf
 const osrdconfPersistConfig = {
   key: 'osrdconf',
@@ -61,9 +70,9 @@ const osrdconfPersistConfig = {
 const persistConfig = {
   key: 'root',
   storage,
-  transforms: [compressor, saveMapFilter, saveUserFilter, saveMainFilter],
+  transforms: [compressor, saveMapFilter, saveUserFilter, saveMainFilter, saveSimulationFilter],
   blacklist: ['osrdconf'],
-  whitelist: ['user', 'map', 'main'],
+  whitelist: ['user', 'map', 'main', 'simulation'],
 };
 
 const rootReducer = {

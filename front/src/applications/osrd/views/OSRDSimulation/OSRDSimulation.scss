@@ -21,7 +21,8 @@ svg text {
 }
 
 .spacetimechart-container {
-  display: flex;
+  display: block;
+  position: relative;
   width: 100%;
   transition: .2s;
   .dropdown .dropdown-menu:not(.dropdown-menu-right)::before {
@@ -76,7 +77,6 @@ svg text {
   stroke: #333;
   stroke-width: 0.5;
   opacity: 0.5;
-  stroke-dasharray: 3;
   pointer-events: none;
 }
 
@@ -213,6 +213,17 @@ svg text {
       stroke: var(--orange);
     }
   }
+}
+
+/* OPERATIONAL POINTS */
+.op-line {
+  stroke: var(--coolgray7);
+  stroke-width: 1;
+  stroke-dasharray: 4, 4;
+}
+.op-text {
+  fill: var(--coolgray9);
+  font-size: .75rem;
 }
 
 /* TABLE OVERRIDE */
