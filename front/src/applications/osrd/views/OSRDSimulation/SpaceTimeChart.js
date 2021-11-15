@@ -80,7 +80,7 @@ export default function SpaceTimeChart() {
       operationalPointsZone.append('text')
         .datum(stop.position)
         .attr('class', 'op-text')
-        .text(`${stop.name} ${stop.position / 1000}`)
+        .text(`${stop.name} ${Math.round(stop.position) / 1000}`)
         .attr('x', rotate ? (d) => chartLocal.x(d) : 0)
         .attr('y', rotate ? 0 : (d) => chartLocal.y(d))
         .attr('text-anchor', 'center')
