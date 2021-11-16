@@ -135,9 +135,12 @@ def parse_steps_input(steps):
                     f"Track section '{waypoint['track_section']}' doesn't exists"
                 )
 
-            geo = geo_transform(track.geo_line_location.geographic)
-            offset = geo.project_normalized(Point(waypoint["geo_coordinate"]))
-            offset = offset * track.track_section.length
+            if "offset" in waypoint:
+                offset = waypoint["offset"]
+            else:
+                geo = geo_transform(track.geo_line_location.geographic)
+                offset = geo.project_normalized(Point(waypoint["geo_coordinate"]))
+                offset = offset * track.track_section.length
             parsed_waypoint = {
                 "track_section": format_track_section_id(track.pk),
                 "offset": offset,
