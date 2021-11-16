@@ -2,7 +2,7 @@ import subprocess
 import json
 
 
-def run():
+def run(*args, **kwargs):
     result = subprocess.run(["curl", "http://localhost:8080/"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
