@@ -1,6 +1,6 @@
 import json
 from dataclasses import dataclass, field
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from railjson_generator.rjs_static import (ASPECTS, SCRIPT_FUNCTIONS,
                                            SWITCH_TYPES)
@@ -31,6 +31,22 @@ class Infra:
         self.routes.append(Route(*args, **kwargs))
         return self.routes[-1]
 
+    def _format_speed_limits(self):
+        res = []
+        seen_limits = set()
+        for track in self.track_sections:
+            for limit in track.speed_limits:
+                speed = limit.max_speed
+                if speed in seen_limits:
+                    continue
+                seen_limits.add(speed)
+                res.append({
+                    "id": str(speed),
+                    "is_signalized": True,
+                    "speed": speed
+                })
+        return res
+
     def format(self):
         return {
             "version": self.VERSION,
@@ -43,6 +59,7 @@ class Infra:
             "aspects": ASPECTS,
             "switch_types": SWITCH_TYPES,
             "script_functions": SCRIPT_FUNCTIONS,
+            "speed_sections": self._format_speed_limits()
         }
 
     def save(self, path):

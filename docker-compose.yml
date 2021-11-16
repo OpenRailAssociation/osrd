@@ -33,7 +33,7 @@ services:
     depends_on:
       postgres: {condition: service_healthy}
       redis: {condition: service_healthy}
-    image: osrd/chartos
+    image: osrd/chartos:v1.0.5
     volumes:
       - "./api/chartos.yml:/config.yml"
     container_name: chartos
@@ -54,6 +54,7 @@ services:
     depends_on:
       postgres: {condition: service_healthy}
       redis: {condition: service_healthy}
+    container_name: osrd-api
     image: osrd-api
     restart: unless-stopped
     build:
@@ -83,6 +84,7 @@ services:
     build:
       context: core
       dockerfile: Dockerfile
+    container_name: osrd-core
     restart: unless-stopped
     ports: ["8000:80"]
     command: "java -ea -jar /app/osrd_core.jar api -p 80"
@@ -102,6 +104,7 @@ services:
         REACT_APP_LOCAL_BACKEND: "True"
         REACT_APP_API_URL: "http://localhost:8080"
         REACT_APP_CHARTIS_URL: "http://localhost:7000"
+    container_name: osrd-front
     restart: unless-stopped
     ports: ["3000:80"]
     healthcheck:

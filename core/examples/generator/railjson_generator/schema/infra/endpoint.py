@@ -6,6 +6,11 @@ class Endpoint(IntEnum):
     BEGIN = 0
     END = 1
 
+    def opposite(self):
+        if self == Endpoint.BEGIN:
+            return Endpoint.END
+        return Endpoint.BEGIN
+
 
 @dataclass
 class TrackEndpoint:
@@ -28,6 +33,10 @@ class TrackEndpoint:
             "endpoint": self.endpoint.name,
             "section": self.track_section.label,
         }
+
+    def opposite(self):
+        return TrackEndpoint(track_section=self.track_section,
+                             endpoint=self.endpoint.opposite())
 
     def set_coords(self, x: float, y: float):
         if self.endpoint == Endpoint.BEGIN:

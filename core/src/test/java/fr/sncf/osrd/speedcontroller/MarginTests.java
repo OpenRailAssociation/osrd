@@ -56,8 +56,13 @@ public class MarginTests {
         public void saveGraphs(TestInfo testInfo) {
             var testName = testInfo.getTestMethod().orElseThrow().getName();
 
-            saveGraph(baseEvents, "..\\" + testName + "-base.csv");
-            saveGraph(testedEvents, "..\\" + testName + "-tested.csv");
+            saveGraphs("..\\" + testName);
+        }
+
+        /** Save the event logs are CSV using directly a filename */
+        public void saveGraphs(String path) {
+            saveGraph(baseEvents, path + "-base.csv");
+            saveGraph(testedEvents, path + "-tested.csv");
         }
 
         public double baseTime() {
@@ -448,15 +453,9 @@ public class MarginTests {
     }
 
 
-    private double convertTrackLocation(TrackSectionLocation location, TrainSchedule schedule) {
-        double sumPreviousSections = 0;
-        for (var edge : schedule.plannedPath.trackSectionPath) {
-            if (edge.containsLocation(location)) {
-                return sumPreviousSections + location.offset;
-            }
-            sumPreviousSections += edge.getEndPosition() - edge.getBeginPosition();
-        }
-        throw new RuntimeException("Can't find location in path");
+    /** Converts the track location into a position */
+    public static double convertTrackLocation(TrackSectionLocation location, TrainSchedule schedule) {
+        return schedule.plannedPath.convertTrackLocation(location);
     }
 
     @Test

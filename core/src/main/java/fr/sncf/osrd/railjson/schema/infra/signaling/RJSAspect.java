@@ -9,7 +9,7 @@ public class RJSAspect implements Identified {
     /** An HTML color */
     public String color;
 
-    public final List<RJSAspectConstraint> constraints;
+    public List<RJSAspectConstraint> constraints;
 
     /** Create an RJSAspect */
     public RJSAspect(String id, String color, List<RJSAspectConstraint> constraints) {

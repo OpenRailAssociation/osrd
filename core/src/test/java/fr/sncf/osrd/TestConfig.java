@@ -29,8 +29,10 @@ import fr.sncf.osrd.utils.PathUtils;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class TestConfig {
@@ -62,7 +64,19 @@ public class TestConfig {
 
     /** Read the infra and simulation associated files */
     public static TestConfig readResource(String infraPath, String simulationPath) {
-        return makeConfig(getResourcePath(infraPath), getResourcePath(simulationPath), null);
+        return readResource(infraPath, simulationPath, new ArrayList<>());
+    }
+
+    /** Read the infra and simulation associated files */
+    public static TestConfig readResource(String infraPath,
+                                          String simulationPath,
+                                          List<String> rollingStockDirs) {
+        var rollingStockDirPaths = rollingStockDirs.stream()
+                .map(Helpers::getResourcePath)
+                .collect(Collectors.toList());
+        return makeConfig(getResourcePath(infraPath),
+                getResourcePath(simulationPath),
+                rollingStockDirPaths);
     }
 
     /** Read the configuration at the given path, as well as the associated resources */
@@ -88,7 +102,7 @@ public class TestConfig {
         }
     }
 
-    private static TestConfig makeConfig(Path infraPath, Path simulationPath, ArrayList<Path> extraRollingStockDirs) {
+    private static TestConfig makeConfig(Path infraPath, Path simulationPath, List<Path> extraRollingStockDirs) {
         try {
             var infra = parseRailJSONFromFile(JsonConfig.InfraType.UNKNOWN, infraPath.toString());
             var simulation = MoshiUtils.deserialize(RJSSimulation.adapter, simulationPath);
@@ -111,6 +125,20 @@ public class TestConfig {
     public TestConfig clearAllowances() {
         for (var schedule : rjsSimulation.trainSchedules)
             schedule.allowances = new RJSAllowance[][] {};
+        return this;
+    }
+
+    /** Remove all signalization constraints from the given configuration */
+    public TestConfig clearSignalizationConstraints() {
+        for (var aspect : rjsInfra.aspects)
+            aspect.constraints = Collections.emptyList();
+        return this;
+    }
+
+    /** Remove all trains except the first */
+    public TestConfig singleTrain() {
+        rjsSimulation.trainSchedules = Collections.singletonList(rjsSimulation.trainSchedules.get(0));
+        rjsSimulation.trainSuccessionTables = Collections.emptyList();
         return this;
     }
 

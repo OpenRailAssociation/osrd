@@ -5,6 +5,7 @@ from railjson_generator.schema.infra.direction import ApplicableDirection, Direc
 from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
 from railjson_generator.schema.infra.link import Link
 from railjson_generator.schema.infra.operational_point import OperationalPointPart
+from railjson_generator.schema.infra.range_elements import Slope, Curve, SpeedSection
 from railjson_generator.schema.infra.signal import Signal
 from railjson_generator.schema.infra.waypoint import BufferStop, Detector, Waypoint
 
@@ -29,6 +30,9 @@ class TrackSection:
     end_coordinates: Optional[Tuple[float, float]] = field(default=None)
     begining_links: List[TrackEndpoint] = field(default_factory=list, repr=False)
     end_links: List[TrackEndpoint] = field(default_factory=list, repr=False)
+    slopes: List[Slope] = field(default_factory=list)
+    curves: List[Curve] = field(default_factory=list)
+    speed_limits: List[SpeedSection] = field(default_factory=list)
 
     def begin(self):
         return TrackEndpoint(self, Endpoint.BEGIN)
@@ -50,6 +54,15 @@ class TrackSection:
         signal = Signal(*args, **wargs)
         self.signals.append(signal)
         return signal
+
+    def add_slope(self, begin, end, slope):
+        self.slopes.append(Slope(begin, end, slope))
+
+    def add_curve(self, begin, end, curve):
+        self.curves.append(Curve(begin, end, curve))
+
+    def add_speed_limit(self, begin, end, speed):
+        self.speed_limits.append(SpeedSection(begin, end, speed))
 
     def sort_waypoints(self):
         self.waypoints.sort(key=lambda w: w.position)
@@ -91,8 +104,8 @@ class TrackSection:
             "signals": [signal.format() for signal in self.signals],
             "operational_points": [op.format() for op in self.operational_points],
             "length": self.length,
-            "slopes": [],
-            "curves": [],
-            "speed_sections": [],
             "endpoints_coords": endpoints_coords,
+            "slopes": [slope.format() for slope in self.slopes],
+            "curves": [curve.format() for curve in self.curves],
+            "speed_sections": [speed_section.format() for speed_section in self.speed_limits],
         }
