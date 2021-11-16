@@ -121,7 +121,8 @@ class PathInputSerializer(Serializer):
     class StepInputSerializer(Serializer):
         class WaypointInputSerializer(Serializer):
             track_section = serializers.IntegerField(min_value=0)
-            geo_coordinate = serializers.JSONField()
+            geo_coordinate = serializers.JSONField(required=False)
+            offset = serializers.FloatField(required=False)
 
         stop_time = serializers.FloatField()
         waypoints = serializers.ListField(child=WaypointInputSerializer(), allow_empty=False)

@@ -5,17 +5,20 @@ from pathlib import Path
 
 
 def setup():
-    subprocess.check_call(["docker", "exec", "osrd-api", "python", "manage.py", "setup_dummy_db"])
+    result = subprocess.run(
+        ["docker", "exec", "osrd-api", "python", "manage.py", "setup_dummy_db"],
+        stdout=subprocess.PIPE
+    )
+    if result.returncode != 0:
+        raise RuntimeError("setup failed")
+    return int(result.stdout)
 
 
 # noinspection PyBroadException
-def run_single_test(module):
-    try:
-        passed, error = module.run()
-        if not passed:
-            return False, error
-    except Exception as e:
-        return False, e
+def run_single_test(module, infra_id):
+    passed, error = module.run(infra_id=infra_id)
+    if not passed:
+        return False, error
     return True, ""
 
 
@@ -28,11 +31,11 @@ def find_test_modules():
 
 
 def run_all():
-    #setup()
+    infra_id = setup()
     n_total = 0
     n_passed = 0
     for module, name in find_test_modules():
-        passed, error = run_single_test(module)
+        passed, error = run_single_test(module, infra_id)
         print(f"{name}: ", end="")
         if passed:
             print("PASS")
@@ -43,7 +46,6 @@ def run_all():
 
     print(f"{n_passed} / {n_total}")
     return 1 if n_passed < n_total else 0
-
 
 
 if __name__ == "__main__":
