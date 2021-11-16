@@ -204,8 +204,11 @@ class RollingStock(models.Model):
             startup_acceleration=rjs["startup_acceleration"],
             comfort_acceleration=rjs["comfort_acceleration"],
             timetable_gamma=rjs["gamma"],
-            rolling_resistance=rjs["rolling_resistance_profiles"]["default_resistance_profile"][0],
-            tractive_effort_curves=rjs["effort_curve_profiles"]["default_curve_profile"][0],
+            rolling_resistance=rjs["rolling_resistance_profiles"]["default_resistance_profile"][0]["resistance"],
+            tractive_effort_curves={"SC": [
+                {"speed": speed, "max_effort": max_effort}
+                for speed, max_effort in rjs["effort_curves"]["default_curve"]
+            ]},
             power_class=rjs["power_class"],
         )
         res.save()
