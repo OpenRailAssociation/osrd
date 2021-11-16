@@ -81,6 +81,7 @@ const EmptyLine = (props) => {
             value={values.begin_position}
             placeholder={t('begin_position')}
             unit="m"
+            isInvalid={values.begin_position >= values.end_position}
             noMargin
             sm
           />
@@ -102,6 +103,7 @@ const EmptyLine = (props) => {
             value={values.end_position}
             placeholder={t('end_position')}
             unit="m"
+            isInvalid={values.begin_position >= values.end_position}
             noMargin
             sm
           />

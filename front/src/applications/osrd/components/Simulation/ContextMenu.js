@@ -3,6 +3,7 @@ import * as d3 from 'd3';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { MdContentCopy, MdDelete } from 'react-icons/md';
+import { GiPathDistance } from 'react-icons/gi';
 import { get, post, deleteRequest } from 'common/requests';
 import {
   updateContextMenu, updateMarginsSettings, updateSimulation, updateSelectedTrain, updateMustRedraw,
@@ -28,6 +29,10 @@ export default function ContextMenu() {
   const [trainCount, setTrainCount] = useState(1);
   const [trainStep, setTrainStep] = useState(2);
   const [trainDelta, setTrainDelta] = useState(20);
+
+  const choosePath = () => {
+    console.log('youpi');
+  };
 
   const deleteTrain = () => {
     setGoUpdate(true);
@@ -162,10 +167,10 @@ export default function ContextMenu() {
         {simulation.trains[selectedTrain].margins
           || simulation.trains[selectedTrain].eco ? (
             <div className="row">
-              <div className="col-3">
+              <div className="col-3 font-weight-medium mb-1">
                 {t('margins:blocks')}
               </div>
-              <div className="col-9">
+              <div className="col-9 font-weight-medium mb-1">
                 {t('margins:trainSchedules')}
               </div>
               <div className="col-3">
@@ -248,7 +253,6 @@ export default function ContextMenu() {
                   </div>
                 </>
               )}
-              <hr />
             </div>
           ) : null}
         <div className="d-flex mb-3">
@@ -310,6 +314,10 @@ export default function ContextMenu() {
             <span className="ml-1">{t('simulation:duplicate')}</span>
           </button>
         )}
+        <button type="button" className="btn btn-info btn-block btn-sm" onClick={choosePath}>
+          <GiPathDistance />
+          <span className="ml-1">{t('simulation:choosePath')}</span>
+        </button>
         <button type="button" className="btn btn-danger btn-block btn-sm" onClick={deleteTrain}>
           <MdDelete />
           <span className="ml-1">{t('simulation:delete')}</span>
