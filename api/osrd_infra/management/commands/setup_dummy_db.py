@@ -28,15 +28,14 @@ from utils.entity_creator import EntityCreator
 class Command(BaseCommand):
     help = "Generates a basic DB setup for unit tests"
 
-    def add_arguments(self, parser):
-        parser.add_argument('rolling_stock_path', type=str)
-
     def handle(self, *args, **options):
-        if RollingStock.objects.count() == 0:
-            rolling_stock_path = options["rolling_stock_path"]
-            for rolling_stock in Path(rolling_stock_path).iterdir():
-                with open(rolling_stock, "r") as f:
-                    RollingStock.from_railjson(json.load(f))
+        existing = RollingStock.objects.filter(name="fast_rolling_stock").first()
+        if existing is not None:
+            existing.delete()
+        if RollingStock.objects.count() == 0 or True:
+            rolling_stock_path = Path(__file__).parents[3] / "static" / "example_rolling_stock.json"
+            with open(rolling_stock_path.resolve(), "r") as f:
+                RollingStock.from_railjson(json.load(f))
 
         if Infra.objects.count() == 0:
             infra_namespace = EntityNamespace.objects.create()
