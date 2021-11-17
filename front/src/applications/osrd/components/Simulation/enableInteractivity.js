@@ -29,11 +29,17 @@ export const updatePointers = (
 };
 
 const updateChart = (chart, keyValues, rotate) => {
+  // (chart.y.domain()[0] >= -100 || d3.event.transform.y >= 0 || d3.event.transform.k !== 1)
   // recover the new scale
-  const newX = d3.event.sourceEvent.shiftKey && rotate
-    ? chart.x : d3.event.transform.rescaleX(chart.x);
-  const newY = d3.event.sourceEvent.shiftKey && !rotate
-    ? chart.y : d3.event.transform.rescaleY(chart.y);
+  console.log(chart.x.domain()[0], d3.event.transform.x);
+  const newX = (d3.event.sourceEvent.shiftKey && rotate)
+    || ((chart.x.domain()[0] - d3.event.transform.x) < 0 && d3.event.transform.k === 1 && rotate)
+    ? chart.x
+    : d3.event.transform.rescaleX(chart.x);
+  const newY = (d3.event.sourceEvent.shiftKey && !rotate)
+    || ((chart.y.domain()[0] + d3.event.transform.y) < 0 && d3.event.transform.k === 1 && !rotate)
+    ? chart.y
+    : d3.event.transform.rescaleY(chart.y);
 
   // update axes with these new boundaries
   const axisBottomX = !rotate && keyValues[0] === 'time'
@@ -117,12 +123,10 @@ export const traceVerticalLine = (
     && d3.event === null) {
     displayGuide(chart, 1);
     if (rotate) {
-      // chart.svg.selectAll('#vertical-line').style('opacity', 0);
       chart.svg.selectAll('#horizontal-line')
         .attr('y1', chart.y(keyValues[0] !== 'time' && positionValues.speed ? positionValues.speed.position : timePosition))
         .attr('y2', chart.y(keyValues[0] !== 'time' && positionValues.speed ? positionValues.speed.position : timePosition));
     } else {
-      // chart.svg.selectAll('#horizontal-line').style('opacity', 0);
       chart.svg.selectAll('#vertical-line')
         .attr('x1', chart.x(keyValues[0] !== 'time' && positionValues.speed ? positionValues.speed.position : timePosition))
         .attr('x2', chart.x(keyValues[0] !== 'time' && positionValues.speed ? positionValues.speed.position : timePosition));
