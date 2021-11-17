@@ -88,8 +88,8 @@ def get_allowances_payload(margins, sim_type: SimulationType):
         linear_margins.append(
             {
                 "allowance_value": margin["value"],
-                "begin_position": margin["begin_position"],
-                "end_position": margin["end_position"],
+                "begin_position": margin.get("begin_position"),
+                "end_position": margin.get("end_position"),
                 "type": "eco",
                 "allowance_type": allowance_type,
             }
@@ -107,8 +107,8 @@ def get_allowances_payload(margins, sim_type: SimulationType):
                 {
                     "type": "construction",
                     "allowance_value": margin["value"],
-                    "begin_position": margin["begin_position"],
-                    "end_position": margin["end_position"],
+                    "begin_position": margin.get("begin_position", None),
+                    "end_position": margin.get("end_position", None),
                 }
             ]
         )
