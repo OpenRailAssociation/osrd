@@ -76,6 +76,7 @@ const EmptyLine = (props) => {
         <div className="col-md-3 d-flex align-items-center">
           <span className="mr-1">{t('from')}</span>
           <InputSNCF
+            id="input-margins-begin_position"
             type="number"
             onChange={(e) => setValues({ ...values, begin_position: parseInt(e.target.value, 10) })}
             value={values.begin_position}
@@ -98,6 +99,7 @@ const EmptyLine = (props) => {
         <div className="col-md-3 d-flex align-items-center">
           <span className="mr-1">{t('to')}</span>
           <InputSNCF
+            id="input-margins-end_position"
             type="number"
             onChange={(e) => setValues({ ...values, end_position: parseInt(e.target.value, 10) })}
             value={values.end_position}
@@ -200,7 +202,8 @@ const Margin = (props) => {
   );
 };
 
-export default function Margins() {
+export default function Margins(props) {
+  const { toggleMarginsDisplay } = props;
   const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
   const [trainDetail, setTrainDetail] = useState(undefined);
   const [margins, setMargins] = useState([]);
@@ -279,6 +282,16 @@ export default function Margins() {
       )}
       {trainDetail && trainDetail.margins && (
         <>
+          <div className="h2 d-flex">
+            {t('simulation:margins')}
+            <button
+              type="button"
+              className="ml-auto btn btn-primary btn-only-icon btn-sm"
+              onClick={toggleMarginsDisplay}
+            >
+              <i className="icons-arrow-up" />
+            </button>
+          </div>
           <div className="row mb-1 small">
             <div className="col-md-1">
               n°
@@ -307,6 +320,10 @@ export default function Margins() {
     </div>
   );
 }
+
+Margins.propTypes = {
+  toggleMarginsDisplay: PropTypes.func.isRequired,
+};
 
 Margin.propTypes = {
   data: PropTypes.object.isRequired,
