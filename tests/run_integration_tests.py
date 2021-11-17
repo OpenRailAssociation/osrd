@@ -3,6 +3,11 @@ import importlib
 import sys
 from pathlib import Path
 
+import requests
+
+
+URL = "http://127.0.0.1:8080/"
+
 
 def setup():
     result = subprocess.run(
@@ -14,9 +19,15 @@ def setup():
     return int(result.stdout)
 
 
+def clean(base_url, infra_id):
+    response = requests.delete(base_url + f"infra/{infra_id}/")
+    if response.status_code // 100 != 2:
+        raise RuntimeError(f"Cleanup failed, code {response.status_code}: {response.content}")
+
+
 # noinspection PyBroadException
 def run_single_test(module, infra_id):
-    passed, error = module.run(infra_id=infra_id)
+    passed, error = module.run(infra_id=infra_id, url=URL)
     if not passed:
         return False, error
     return True, ""
@@ -45,6 +56,7 @@ def run_all():
         n_total += 1
 
     print(f"{n_passed} / {n_total}")
+    clean(URL, infra_id)
     return 1 if n_passed < n_total else 0
 
 

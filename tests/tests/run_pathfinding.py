@@ -10,7 +10,7 @@ def get_track_section(base_url, infra_id):
 
 
 def run(*args, **kwargs):
-    base_url = "http://127.0.0.1:8080/"
+    base_url = kwargs["url"]
     infra_id = kwargs["infra_id"]
     track_id = get_track_section(base_url, infra_id)
     path_payload = {
