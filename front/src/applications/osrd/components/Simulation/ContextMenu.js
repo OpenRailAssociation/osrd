@@ -151,7 +151,6 @@ export default function ContextMenu() {
 
   useEffect(() => {
     setTrainName(simulation.trains[selectedTrain].name);
-    console.log(marginsSettings);
   }, [selectedTrain]);
 
   return contextMenu ? (

@@ -25,6 +25,14 @@
   "timetable": "Tableau horaire",
   "train": "Train",
   "trainDeleted": "Train supprimé",
+  "trainDetails": {
+    "headPosition": "Tête",
+    "tailPosition": "Queue",
+    "routeEndOccupancy": "Fin canton",
+    "routeBeginOccupancy": "Début canton",
+    "routeSizeOccupancy": "Taille canton",
+    "speed": "Vitesse"
+  },
   "trainList": "Liste des trains",
   "waiting": "Chargement en cours..."
 }
