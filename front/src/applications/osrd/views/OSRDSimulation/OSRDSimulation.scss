@@ -2,6 +2,32 @@ svg text {
   font-family: Avenir,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
 }
 
+.osrd-simulation-sticky-bar {
+  position: fixed;
+  background: var(--primary);
+  width: calc(100% - 6rem);
+  z-index: 100;
+  bottom: 0;
+  left: 6rem;
+  padding: .5rem 1rem;
+  .train-detail {
+    min-width: 4.5rem;
+    max-height: 2rem;
+    padding: .1rem;
+    line-height: .8rem;
+  }
+}
+.osrd-simulation-sticky-bar-mini {
+  position: fixed;
+  background: var(--primary);
+  display: flex;
+  bottom: 0;
+  z-index: 100;
+  padding: .5rem .5rem;
+  right: 0;
+  border-radius: 4px 0 0 4px;
+}
+
 .osrd-simulation-container {
   position: relative;
   background-color: white;

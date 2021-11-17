@@ -16,7 +16,7 @@ const factor2ms = (factor) => {
 
 export default function TimeButtons() {
   const dispatch = useDispatch();
-  const { timePosition, simulation, selectedTrain } = useSelector((state) => state.osrdsimulation);
+  const { timePosition, simulation, selectedTrain, stickyBar } = useSelector((state) => state.osrdsimulation);
   const [playInterval, setPlayInterval] = useState(undefined);
   const [playReverse, setPlayReverse] = useState(false);
   const [simulationSpeed, setSimulationSpeed] = useState(1);
@@ -76,47 +76,53 @@ export default function TimeButtons() {
           id="simulation-time"
           value={timePosition ? datetime2time(timePosition) : ''}
           onChange={changeTimePosition}
+          sm
         />
       </span>
-      <button
-        type="button"
-        className="btn btn-only-icon mr-1 btn-danger"
-        onClick={stop}
-      >
-        <FaStop />
-      </button>
-      <button
-        type="button"
-        className={`btn btn-only-icon mr-1 ${playReverse ? 'btn-primary' : 'btn-white'}`}
-        onClick={changeReverse}
-      >
-        <FaBackward />
-      </button>
-      {playInterval ? (
-        <button
-          type="button"
-          className="btn btn-only-icon btn-warning mr-1"
-          onClick={pause}
-        >
-          <FaPause />
-        </button>
-      ) : (
-        <button
-          type="button"
-          className="btn btn-only-icon btn-success mr-1"
-          onClick={() => play(playReverse)}
-        >
-          <FaPlay />
-        </button>
+      {stickyBar && (
+        <>
+          <button
+            type="button"
+            className="btn btn-sm btn-only-icon mr-1 btn-danger"
+            onClick={stop}
+          >
+            <FaStop />
+          </button>
+          <button
+            type="button"
+            className={`btn btn-sm btn-only-icon mr-1 ${playReverse ? 'btn-primary' : 'btn-white'}`}
+            onClick={changeReverse}
+          >
+            <FaBackward />
+          </button>
+          {playInterval ? (
+            <button
+              type="button"
+              className="btn btn-sm btn-only-icon btn-warning mr-1"
+              onClick={pause}
+            >
+              <FaPause />
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn btn-sm btn-only-icon btn-success mr-1"
+              onClick={() => play(playReverse)}
+            >
+              <FaPlay />
+            </button>
+          )}
+          <InputSNCF
+            noMargin
+            type="number"
+            id="simulation-speed"
+            value={simulationSpeed}
+            onChange={(e) => changeSimulationSpeed(e.target.value)}
+            seconds
+            sm
+          />
+        </>
       )}
-      <InputSNCF
-        noMargin
-        type="number"
-        id="simulation-speed"
-        value={simulationSpeed}
-        onChange={(e) => changeSimulationSpeed(e.target.value)}
-        seconds
-      />
     </div>
   );
 }
