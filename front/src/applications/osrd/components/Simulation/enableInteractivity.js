@@ -29,8 +29,7 @@ export const updatePointers = (
 };
 
 const updateChart = (chart, keyValues, rotate) => {
-  // (chart.y.domain()[0] >= -100 || d3.event.transform.y >= 0 || d3.event.transform.k !== 1)
-  // recover the new scale
+  // recover the new scale & test if movement under 0
   console.log(chart.x.domain()[0], d3.event.transform.x);
   const newX = (d3.event.sourceEvent.shiftKey && rotate)
     || ((chart.x.domain()[0] - d3.event.transform.x) < 0 && d3.event.transform.k === 1 && rotate)
