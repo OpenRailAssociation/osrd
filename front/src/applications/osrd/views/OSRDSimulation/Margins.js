@@ -155,19 +155,26 @@ const EmptyLine = (props) => {
 const Margin = (props) => {
   const { data, delMargin, idx } = props;
   const { t } = useTranslation(['margins']);
+  const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
+
+  const position2name = (position) => {
+    const place = simulation.trains[selectedTrain].base.stops.find(
+      (element) => element.position === position,
+    );
+    return place && place.name !== 'Unknown' ? `${place.name} (${position}m)` : `${position}m`;
+  };
+
   return (
     <div className="margin-line">
       <div className="row">
         <div className="col-md-1">
           <small>{idx + 1}</small>
         </div>
-        <div className="col-md-2">
-          {data.begin_position}
-          m
+        <div className="col-md-3">
+          {position2name(data.begin_position)}
         </div>
-        <div className="col-md-2">
-          {data.end_position}
-          m
+        <div className="col-md-3">
+          {position2name(data.end_position)}
         </div>
         <div className="col-md-2">
           {t(`marginTypes.${data.type}`)}
@@ -176,7 +183,7 @@ const Margin = (props) => {
           {data.value}
           {TYPEUNITS[data.type]}
         </div>
-        <div className="col-md-3 d-flex">
+        <div className="col-md-1 d-flex">
           <button type="button" className="btn btn-sm btn-only-icon btn-white mr-1 ml-auto">
             <FaPencilAlt />
           </button>
@@ -274,10 +281,10 @@ export default function Margins() {
         <div className="col-md-1">
           n°
         </div>
-        <div className="col-md-2 text-lowercase">
+        <div className="col-md-3 text-lowercase">
           {t('from')}
         </div>
-        <div className="col-md-2">
+        <div className="col-md-3">
           {t('to')}
         </div>
         <div className="col-md-4">
