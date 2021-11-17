@@ -18,7 +18,7 @@ import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
 import TimeLine from 'applications/osrd/components/TimeLine/TimeLine';
 import { updateViewport } from 'reducers/map';
 import {
-  updateMarginsSettings, updateMustRedraw, updateSelectedTrain, updateSimulation,
+  updateMarginsSettings, updateMustRedraw, updateSelectedTrain, updateSimulation, updateStickyBar,
 } from 'reducers/osrdsimulation';
 import './OSRDSimulation.scss';
 import { sec2time } from 'utils/timeManipulation';
@@ -34,7 +34,7 @@ const OSRDSimulation = () => {
   const [spaceTimeFullWidth, setSpaceTimeFullWidth] = useState(true);
   const { timetableID } = useSelector((state) => state.osrdconf);
   const {
-    marginsSettings, selectedTrain, simulation,
+    marginsSettings, selectedTrain, simulation, stickyBar,
   } = useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();
 
@@ -152,25 +152,38 @@ const OSRDSimulation = () => {
                   <ContextMenu />
                 </div>
               </div>
-              <div className="osrd-simulation-container mb-2">
-                <div className="row">
-                  <div className="col-xl-4">
-                    <TimeButtons />
-                  </div>
-                  <div className="col-xl-8">
-                    {simulation.trains.length > 0 ? (
-                      <TrainDetails />
-                    ) : null}
+              {stickyBar ? (
+                <div className="osrd-simulation-sticky-bar">
+                  <div className="row">
+                    <div className="col-lg-4">
+                      <TimeButtons />
+                    </div>
+                    <div className="col-lg-8">
+                      {simulation.trains.length > 0 ? (
+                        <TrainDetails />
+                      ) : null}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="mb-2">
-                <Margins />
-              </div>
+              ) : (
+                <div className="osrd-simulation-sticky-bar-mini">
+                  <button
+                    className="btn btn-sm btn-only-icon btn-primary ml-auto mr-1"
+                    type="button"
+                    onClick={() => dispatch(updateStickyBar(true))}
+                  >
+                    <i className="icons-arrow-prev" />
+                  </button>
+                  <TimeButtons />
+                </div>
+              )}
               <div className="mb-2">
                 {simulation.trains.length > 0 ? (
                   <SpeedSpaceChart />
                 ) : null}
+              </div>
+              <div className="mb-2">
+                <Margins />
               </div>
               <div className="row">
                 <div className="col-md-6">

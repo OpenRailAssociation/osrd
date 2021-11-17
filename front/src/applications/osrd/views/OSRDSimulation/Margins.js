@@ -277,24 +277,28 @@ export default function Margins() {
           <DotsLoader />
         </div>
       )}
-      <div className="row mb-1 small">
-        <div className="col-md-1">
-          n°
-        </div>
-        <div className="col-md-3 text-lowercase">
-          {t('from')}
-        </div>
-        <div className="col-md-3">
-          {t('to')}
-        </div>
-        <div className="col-md-4">
-          {t('marginType')}
-        </div>
-      </div>
-      {trainDetail && trainDetail.margins && trainDetail.margins.map((margin, idx) => (
-        <Margin data={margin} delMargin={delMargin} idx={idx} key={nextId()} />
-      ))}
-      <hr className="mt-0" />
+      {trainDetail && trainDetail.margins && (
+        <>
+          <div className="row mb-1 small">
+            <div className="col-md-1">
+              n°
+            </div>
+            <div className="col-md-3 text-lowercase">
+              {t('from')}
+            </div>
+            <div className="col-md-3">
+              {t('to')}
+            </div>
+            <div className="col-md-4">
+              {t('marginType')}
+            </div>
+          </div>
+          {trainDetail.margins.map((margin, idx) => (
+            <Margin data={margin} delMargin={delMargin} idx={idx} key={nextId()} />
+          ))}
+          <hr className="mt-0" />
+        </>
+      )}
       <EmptyLine
         setMargins={setMargins}
         setUpdateMargins={setUpdateMargins}
