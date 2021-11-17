@@ -1,6 +1,8 @@
+import json
 import subprocess
 import importlib
 import sys
+import traceback
 from pathlib import Path
 
 import requests
@@ -15,8 +17,21 @@ def setup():
         stdout=subprocess.PIPE
     )
     if result.returncode != 0:
-        raise RuntimeError("setup failed")
-    return int(result.stdout)
+        raise RuntimeError("Initial setup failed")
+    infra_id = int(result.stdout)
+    create_schedule(infra_id)
+    return infra_id
+
+
+def create_schedule(infra_id):
+    timetable_payload = {
+        "name": "foo",
+        "infra": infra_id
+    }
+    r = requests.post(URL + "timetable/", json=timetable_payload)
+    if r.status_code // 100 != 2:
+        err = f"Error creating schedule {r.status_code}: {r.content}, payload={json.dumps(timetable_payload)}"
+        raise RuntimeError(err)
 
 
 def clean(base_url, infra_id):
@@ -27,9 +42,12 @@ def clean(base_url, infra_id):
 
 # noinspection PyBroadException
 def run_single_test(module, infra_id):
-    passed, error = module.run(infra_id=infra_id, url=URL)
-    if not passed:
-        return False, error
+    try:
+        passed, error = module.run(infra_id=infra_id, url=URL)
+        if not passed:
+            return False, error
+    except Exception:
+        return False, traceback.format_exc()
     return True, ""
 
 
@@ -52,7 +70,7 @@ def run_all():
             print("PASS")
             n_passed += 1
         else:
-            print("FAIL", error)
+            print("FAIL", error[:1024])
         n_total += 1
 
     print(f"{n_passed} / {n_total}")

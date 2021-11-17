@@ -9,9 +9,7 @@ def get_track_section(base_url, infra_id):
     return int(track_id.split(".")[1])
 
 
-def run(*args, **kwargs):
-    base_url = kwargs["url"]
-    infra_id = kwargs["infra_id"]
+def run_pathfinding(base_url, infra_id):
     track_id = get_track_section(base_url, infra_id)
     path_payload = {
         "infra": infra_id,
@@ -40,5 +38,12 @@ def run(*args, **kwargs):
     }
     r = requests.post(base_url + "pathfinding/", json=path_payload)
     if r.status_code // 100 != 2:
-        return False, f"Pathfinding error {r.status_code}: {r.content}, payload={json.dumps(path_payload)}"
+        raise RuntimeError(f"Pathfinding error {r.status_code}: {r.content}, payload={json.dumps(path_payload)}")
+    return r.json()["id"]
+
+
+def run(*args, **kwargs):
+    base_url = kwargs["url"]
+    infra_id = kwargs["infra_id"]
+    run_pathfinding(base_url, infra_id)
     return True, ""
