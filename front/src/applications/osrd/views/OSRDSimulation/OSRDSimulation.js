@@ -31,7 +31,8 @@ const OSRDSimulation = () => {
   const { fullscreen, darkmode } = useSelector((state) => state.main);
   const [extViewport, setExtViewport] = useState(undefined);
   const [isEmpty, setIsEmpty] = useState(true);
-  const [spaceTimeFullWidth, setSpaceTimeFullWidth] = useState(true);
+  const [displayTrainList, setDisplayTrainList] = useState(false);
+  const [displayMargins, setDisplayMargins] = useState(false);
   const { timetableID } = useSelector((state) => state.osrdconf);
   const {
     marginsSettings, selectedTrain, simulation, stickyBar,
@@ -91,8 +92,12 @@ const OSRDSimulation = () => {
   };
 
   const toggleTrainList = () => {
-    setSpaceTimeFullWidth(!spaceTimeFullWidth);
+    setDisplayTrainList(!displayTrainList);
     setTimeout(() => dispatch(updateMustRedraw(true)), 200);
+  };
+
+  const toggleMarginsDisplay = () => {
+    setDisplayMargins(!displayMargins);
   };
 
   useEffect(() => {
@@ -118,7 +123,13 @@ const OSRDSimulation = () => {
               <div className="mb-2">
                 <TimeLine />
               </div>
-              {spaceTimeFullWidth ? (
+              {displayTrainList ? (
+                <div className="osrd-simulation-container mb-2">
+                  <div className="flex-fill">
+                    <TrainList toggleTrainList={toggleTrainList} />
+                  </div>
+                </div>
+              ) : (
                 <div
                   role="button"
                   tabIndex="-1"
@@ -126,7 +137,8 @@ const OSRDSimulation = () => {
                   onClick={toggleTrainList}
                 >
                   <div className="mr-2">
-                    {simulation.trains[selectedTrain].name}
+                    {t('simulation:train')}
+                    <span className="ml-2">{simulation.trains[selectedTrain].name}</span>
                   </div>
                   <div className="small mr-1">
                     {sec2time(simulation.trains[selectedTrain].base.stops[0].time)}
@@ -135,12 +147,9 @@ const OSRDSimulation = () => {
                     {sec2time(simulation.trains[selectedTrain]
                       .base.stops[simulation.trains[selectedTrain].base.stops.length - 1].time)}
                   </div>
-                  <i className="ml-1 icons-arrow-down ml-auto" />
-                </div>
-              ) : (
-                <div className="osrd-simulation-container mb-2">
-                  <div className="flex-fill">
-                    <TrainList toggleTrainList={toggleTrainList} />
+                  <div className="ml-auto d-flex align-items-center">
+                    {t('simulation:trainList')}
+                    <i className="ml-2 icons-arrow-down" />
                   </div>
                 </div>
               )}
@@ -182,9 +191,21 @@ const OSRDSimulation = () => {
                   <SpeedSpaceChart />
                 ) : null}
               </div>
-              <div className="mb-2">
-                <Margins />
-              </div>
+              {displayMargins ? (
+                <div className="mb-2">
+                  <Margins toggleMarginsDisplay={toggleMarginsDisplay} />
+                </div>
+              ) : (
+                <div
+                  role="button"
+                  tabIndex="-1"
+                  className="btn-selected-train d-flex align-items-center mb-2"
+                  onClick={toggleMarginsDisplay}
+                >
+                  {t('simulation:margins')}
+                  <i className="icons-arrow-down ml-auto" />
+                </div>
+              )}
               <div className="row">
                 <div className="col-md-6">
                   <div className="osrd-simulation-container mb-2">
