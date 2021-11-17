@@ -9,7 +9,7 @@ MARGINS_SCHEMA = {
     "type": "array",
     "items": {
         "type": "object",
-        "required": ["type", "value", "begin_position", "end_position"],
+        "required": ["type", "value"],
         "additionalProperties": False,
         "properties": {
             "type": {"enum": ["construction", "ratio_time", "ratio_distance"]},
