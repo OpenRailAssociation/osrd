@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import { LIST_VALUES_NAME_SPEED_SPACE } from 'applications/osrd/components/Simulation/consts';
@@ -10,6 +11,7 @@ import defineChart from 'applications/osrd/components/Simulation/defineChart';
 import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
 import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import enableInteractivity, { traceVerticalLine } from 'applications/osrd/components/Simulation/enableInteractivity';
+import { CgLoadbar } from 'react-icons/cg';
 
 const CHART_ID = 'SpeedSpaceChart';
 
@@ -31,7 +33,8 @@ const drawAxisTitle = (chart, rotate) => {
     .text('M');
 };
 
-export default function SpeedSpaceChart() {
+export default function SpeedSpaceChart(props) {
+  const { heightOfSpeedSpaceChart } = props;
   const dispatch = useDispatch();
   const {
     mustRedraw, positionValues, selectedTrain, simulation, timePosition,
@@ -87,7 +90,9 @@ export default function SpeedSpaceChart() {
       : chart.y;
 
     const width = parseInt(d3.select(`#container-${CHART_ID}`).style('width'), 10);
-    return defineChart(width, 250, defineX, defineY, ref, rotate, keyValues, CHART_ID);
+    return defineChart(
+      width, heightOfSpeedSpaceChart, defineX, defineY, ref, rotate, keyValues, CHART_ID,
+    );
   };
 
   const drawOPs = (chartLocal) => {
@@ -154,8 +159,8 @@ export default function SpeedSpaceChart() {
   }, [chart, mustRedraw, positionValues, timePosition]);
 
   return (
-    <div id={`container-${CHART_ID}`} className="speedspace-chart w-100">
-      <div ref={ref} style={{ width: '100%', height: '100%' }} />
+    <div id={`container-${CHART_ID}`} className="speedspace-chart w-100" style={{ height: `${heightOfSpeedSpaceChart}px` }}>
+      <div ref={ref} />
       <button
         type="button"
         className="btn-rounded btn-rounded-white box-shadow btn-rotate"
@@ -163,6 +168,13 @@ export default function SpeedSpaceChart() {
       >
         <i className="icons-refresh" />
       </button>
+      <div className="handle-tab-resize">
+        <CgLoadbar />
+      </div>
     </div>
   );
 }
+
+SpeedSpaceChart.propTypes = {
+  heightOfSpeedSpaceChart: PropTypes.number.isRequired,
+};
