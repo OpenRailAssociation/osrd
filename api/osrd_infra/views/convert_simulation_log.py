@@ -1,6 +1,7 @@
+from dataclasses import asdict, dataclass
+from typing import Dict, Iterator, List, Union
+
 from osrd_infra.views.projection import Projection
-from dataclasses import dataclass, asdict
-from typing import List, Iterator, Union, Dict
 
 
 def convert_simulation_logs(train_schedule, projection_path):
@@ -16,20 +17,17 @@ def convert_simulation_logs(train_schedule, projection_path):
         "name": train_schedule.train_name,
         "base": base,
     }
+
+    # Check if train schedule has margins
+    if train_schedule.eco_simulation_log is None:
+        return res
+
     # Add margins and eco results if available
-    if train_schedule.margins_simulation_log:
-        for margin_type in ("margins", "eco"):
-            attr_name = f"{margin_type}_simulation_log"
-            sim_log = getattr(train_schedule, attr_name)
-            if "error" not in sim_log:
-                res[margin_type] = convert_simulation_log(
-                    sim_log,
-                    train_path,
-                    projection,
-                    projection_path,
-                )
-            else:
-                res[margin_type] = sim_log
+    sim_log = train_schedule.eco_simulation_log
+    if "error" not in sim_log:
+        res["eco"] = convert_simulation_log(sim_log, train_path, projection, projection_path)
+    else:
+        res["eco"] = sim_log
     return res
 
 
