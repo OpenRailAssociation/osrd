@@ -149,9 +149,10 @@ const enableInteractivity = (
     .on('zoom', () => {
       dispatch(updateContextMenu(undefined));
       // Permit zoom if shift pressed, if only move or if factor > .5
-      if (d3.event.sourceEvent.shiftKey
+      if (d3.event.sourceEvent.ctrlKey && (d3.event.sourceEvent.shiftKey
         || d3.event.transform.k >= 1
-        || zoomLevel >= 0.25) {
+        || zoomLevel >= 0.25)) {
+        d3.event.sourceEvent.preventDefault();
         // (chart.y.domain()[0] >= -100 || d3.event.transform.y >= 0 || d3.event.transform.k !== 1)
         setZoomLevel(zoomLevel * d3.event.transform.k);
         setYPosition(yPosition + d3.event.transform.y);
@@ -160,7 +161,7 @@ const enableInteractivity = (
         setChart(newChart);
       }
     })
-    .filter(() => d3.event.button === 0 || d3.event.button === 1)
+    .filter(() => (d3.event.button === 0 || d3.event.button === 1) && d3.event.ctrlKey)
     .on('end', () => dispatch(updateMustRedraw(true)));
 
   const mousemove = () => {
