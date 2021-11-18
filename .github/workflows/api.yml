@@ -49,6 +49,11 @@ jobs:
         run: |
           cd api
           poetry install --no-interaction --no-root -E production
+      - name: Check migrations
+        run: |
+          cd api
+          source .venv/bin/activate
+          python manage.py makemigrations --check
       - name: Run migrations
         env:
           DJANGO_SETTINGS_MODULE: config.test
