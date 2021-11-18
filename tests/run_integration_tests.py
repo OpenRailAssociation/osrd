@@ -17,13 +17,10 @@ def setup() -> int:
     Setups the test environment with a minimal DB
     :return: new infra ID
     """
-    result = subprocess.run(
+    result = subprocess.check_output(
         ["docker", "exec", "osrd-api", "python", "manage.py", "setup_dummy_db"],
-        stdout=subprocess.PIPE
     )
-    if result.returncode != 0:
-        raise RuntimeError("Initial setup failed")
-    infra_id = int(result.stdout)
+    infra_id = int(result)
     _create_schedule(infra_id)
     return infra_id
 
