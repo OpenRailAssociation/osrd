@@ -1,6 +1,7 @@
 import React, {
   useState, useEffect, useRef,
 } from 'react';
+import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import * as d3 from 'd3';
@@ -16,6 +17,7 @@ import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHel
 import createChart from 'applications/osrd/components/Simulation/SpaceTimeChart/createChart';
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
 import drawTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/drawTrain';
+import { CgLoadbar } from 'react-icons/cg';
 
 const CHART_ID = 'SpaceTimeChart';
 
@@ -29,7 +31,8 @@ const drawAxisTitle = (chart, rotate) => {
     .text('KM');
 };
 
-export default function SpaceTimeChart() {
+export default function SpaceTimeChart(props) {
+  const { heightOfSpaceTimeChart } = props;
   const ref = useRef();
   const dispatch = useDispatch();
   const { t } = useTranslation(['margins']);
@@ -92,7 +95,7 @@ export default function SpaceTimeChart() {
   const drawAllTrains = () => {
     if (mustRedraw) {
       const chartLocal = createChart(
-        chart, CHART_ID, dataSimulation, keyValues, ref, rotate,
+        chart, CHART_ID, dataSimulation, heightOfSpaceTimeChart, keyValues, ref, rotate,
       );
 
       chartLocal.svg.on('click', () => {
@@ -181,7 +184,7 @@ export default function SpaceTimeChart() {
   }, []);
 
   return (
-    <div id={`container-${CHART_ID}`} className="spacetime-chart w-100">
+    <div id={`container-${CHART_ID}`} className="spacetime-chart w-100" style={{ height: `${heightOfSpaceTimeChart}px` }}>
       {showModal !== ''
         ? (
           <ChartModal
@@ -200,6 +203,13 @@ export default function SpaceTimeChart() {
       >
         <i className="icons-refresh" />
       </button>
+      <div className="handle-tab-resize">
+        <CgLoadbar />
+      </div>
     </div>
   );
 }
+
+SpaceTimeChart.propTypes = {
+  heightOfSpaceTimeChart: PropTypes.number.isRequired,
+};
