@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { Rnd } from 'react-rnd';
 import { useTranslation } from 'react-i18next';
 import { get } from 'common/requests';
 import { setFailure } from 'reducers/main.ts';
@@ -33,6 +34,14 @@ const OSRDSimulation = () => {
   const [isEmpty, setIsEmpty] = useState(true);
   const [displayTrainList, setDisplayTrainList] = useState(false);
   const [displayMargins, setDisplayMargins] = useState(false);
+  const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(400);
+  const [
+    initialHeightOfSpaceTimeChart, setInitialHeightOfSpaceTimeChart,
+  ] = useState(heightOfSpaceTimeChart);
+  const [heightOfSpeedSpaceChart, setHeightOfSpeedSpaceChart] = useState(250);
+  const [
+    initialHeightOfSpeedSpaceChart, setInitialHeightOfSpeedSpaceChart,
+  ] = useState(heightOfSpeedSpaceChart);
   const { timetableID } = useSelector((state) => state.osrdconf);
   const {
     marginsSettings, selectedTrain, simulation, stickyBar,
@@ -154,42 +163,75 @@ const OSRDSimulation = () => {
                 </div>
               )}
               <div className="osrd-simulation-container d-flex mb-2">
-                <div className="spacetimechart-container">
-                  {simulation.trains.length > 0 ? (
-                    <SpaceTimeChart />
-                  ) : null}
+                <div className="spacetimechart-container" style={{ height: `${heightOfSpaceTimeChart}px` }}>
+                  {simulation.trains.length > 0 && (
+                    <Rnd
+                      default={{
+                        x: 0,
+                        y: 0,
+                        width: '100%',
+                        height: `${heightOfSpaceTimeChart}px`,
+                      }}
+                      disableDragging
+                      enableResizing={{
+                        top: false,
+                        right: false,
+                        bottom: true,
+                        left: false,
+                        topRight: false,
+                        bottomRight: false,
+                        bottomLeft: false,
+                        topLeft: false,
+                      }}
+                      onResizeStart={() => setInitialHeightOfSpaceTimeChart(heightOfSpaceTimeChart)}
+                      onResize={(e, dir, refToElement, delta) => {
+                        setHeightOfSpaceTimeChart(initialHeightOfSpaceTimeChart + delta.height);
+                      }}
+                      onResizeStop={() => {
+                        dispatch(updateMustRedraw(true));
+                      }}
+                    >
+                      <SpaceTimeChart heightOfSpaceTimeChart={heightOfSpaceTimeChart} />
+                    </Rnd>
+                  )}
                   <ContextMenu />
                 </div>
               </div>
-              {stickyBar ? (
-                <div className="osrd-simulation-sticky-bar">
-                  <div className="row">
-                    <div className="col-lg-4">
-                      <TimeButtons />
-                    </div>
-                    <div className="col-lg-8">
-                      {simulation.trains.length > 0 ? (
-                        <TrainDetails />
-                      ) : null}
-                    </div>
-                  </div>
+              <div className="osrd-simulation-container d-flex mb-2">
+                <div className="speedspacechart-container" style={{ height: `${heightOfSpeedSpaceChart}px` }}>
+                  {simulation.trains.length > 0 && (
+                    <Rnd
+                      default={{
+                        x: 0,
+                        y: 0,
+                        width: '100%',
+                        height: `${heightOfSpeedSpaceChart}px`,
+                      }}
+                      disableDragging
+                      enableResizing={{
+                        top: false,
+                        right: false,
+                        bottom: true,
+                        left: false,
+                        topRight: false,
+                        bottomRight: false,
+                        bottomLeft: false,
+                        topLeft: false,
+                      }}
+                      onResizeStart={
+                        () => setInitialHeightOfSpeedSpaceChart(heightOfSpeedSpaceChart)
+                      }
+                      onResize={(e, dir, refToElement, delta) => {
+                        setHeightOfSpeedSpaceChart(initialHeightOfSpeedSpaceChart + delta.height);
+                      }}
+                      onResizeStop={() => {
+                        dispatch(updateMustRedraw(true));
+                      }}
+                    >
+                      <SpeedSpaceChart heightOfSpeedSpaceChart={heightOfSpeedSpaceChart} />
+                    </Rnd>
+                  )}
                 </div>
-              ) : (
-                <div className="osrd-simulation-sticky-bar-mini">
-                  <button
-                    className="btn btn-sm btn-only-icon btn-primary ml-auto mr-1"
-                    type="button"
-                    onClick={() => dispatch(updateStickyBar(true))}
-                  >
-                    <i className="icons-arrow-prev" />
-                  </button>
-                  <TimeButtons />
-                </div>
-              )}
-              <div className="mb-2">
-                {simulation.trains.length > 0 ? (
-                  <SpeedSpaceChart />
-                ) : null}
               </div>
               {displayMargins ? (
                 <div className="mb-2">
@@ -220,6 +262,31 @@ const OSRDSimulation = () => {
                   </div>
                 </div>
               </div>
+              {stickyBar ? (
+                <div className="osrd-simulation-sticky-bar">
+                  <div className="row">
+                    <div className="col-lg-4">
+                      <TimeButtons />
+                    </div>
+                    <div className="col-lg-8">
+                      {simulation.trains.length > 0 ? (
+                        <TrainDetails />
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="osrd-simulation-sticky-bar-mini">
+                  <button
+                    className="btn btn-sm btn-only-icon btn-primary ml-auto mr-1"
+                    type="button"
+                    onClick={() => dispatch(updateStickyBar(true))}
+                  >
+                    <i className="icons-arrow-prev" />
+                  </button>
+                  <TimeButtons />
+                </div>
+              )}
               <ButtonFullscreen />
             </div>
           )}
