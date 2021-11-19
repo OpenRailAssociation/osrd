@@ -28,7 +28,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     /** Constructor */
     public MarecoAllowanceGenerator(double begin, double end,
                                     double allowanceValue, MarginType allowanceType) {
-        super(begin, end, 5);
+        super(begin, end, 10 * TIME_STEP);
         this.allowanceType = allowanceType;
         this.value = allowanceValue;
     }
@@ -56,17 +56,16 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     }
 
     @Override
-    protected double getTargetTime() {
+    protected double getTargetTime(double baseTime, double totalDistance) {
         var totalStopsDuration = schedule.getStopDuration();
-        var expectedTime = getExpectedTimes(schedule, maxSpeedControllers, TIME_STEP);
-        var baseTime = expectedTime.lastEntry().getValue() - expectedTime.firstEntry().getValue();
         if (allowanceType.equals(RJSAllowance.MarecoAllowance.MarginType.TIME))
+            return baseTime + value;
+        else if (allowanceType.equals(RJSAllowance.MarecoAllowance.MarginType.PERCENTAGE))
             // the margin percentage should not be applied on the stop duration
             // so it is excluded, then re-added after the percentage had been applied
             return (baseTime - totalStopsDuration) * (1 + value / 100) + totalStopsDuration;
         else {
-            var schemaLength = expectedTime.lastEntry().getKey() - expectedTime.firstEntry().getKey();
-            var n = schemaLength / 100000; // number of portions of 100km in the train journey
+            var n = totalDistance / 100000; // number of portions of 100km in the train journey
             var totalAllowance = value * n * 60;
             return baseTime + totalAllowance;
         }

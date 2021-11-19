@@ -5,8 +5,7 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.MapSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.train.TrainSchedule;
-import fr.sncf.osrd.utils.SortedDoubleMap;
-import java.util.ArrayList;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,7 +27,7 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
                                          Set<SpeedController> maxSpeeds) {
         // find the percentage of the allowance to add to the whole path
         double percentage;
-        if (allowanceType.equals(MarginType.TIME))
+        if (allowanceType.equals(MarginType.PERCENTAGE))
             percentage = value;
         else { // allowanceType = DISTANCE
             var totalStopsDuration = schedule.getStopDuration();
