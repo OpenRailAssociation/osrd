@@ -20,6 +20,7 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
     /** The path of the train */
     public final List<TrackSectionRange> trackSectionPath;
 
+    /** Keys are positions in the paths, values are the sum of the slopes (per meter) before that point */
     private final SortedDoubleMap integratedTrainGrade;
 
     /**
