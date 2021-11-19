@@ -80,7 +80,7 @@ public class SpeedInstructions {
 
         // If left unspecified, we generate the reference times from a simulation with no interaction
         if (expectedTimes == null)
-            expectedTimes = SpeedControllerGenerator.getExpectedTimes(sim, schedule, targetSpeedControllers,
+            expectedTimes = SpeedControllerGenerator.getExpectedTimes(schedule, targetSpeedControllers,
                     SpeedControllerGenerator.TIME_STEP, 0, Double.POSITIVE_INFINITY, schedule.initialSpeed);
     }
 

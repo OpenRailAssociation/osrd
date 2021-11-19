@@ -58,7 +58,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     @Override
     protected double getTargetTime() {
         var totalStopsDuration = schedule.getStopDuration();
-        var expectedTime = getExpectedTimes(sim, schedule, maxSpeedControllers, TIME_STEP);
+        var expectedTime = getExpectedTimes(schedule, maxSpeedControllers, TIME_STEP);
         var baseTime = expectedTime.lastEntry().getValue() - expectedTime.firstEntry().getValue();
         if (allowanceType.equals(RJSAllowance.MarecoAllowance.MarginType.TIME))
             // the margin percentage should not be applied on the stop duration
@@ -114,7 +114,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     // get the high boundary for the binary search, corresponding to vf = max
     @Override
     protected double getFirstHighEstimate() {
-        var speeds = getExpectedSpeeds(sim, schedule, maxSpeedControllers, TIME_STEP);
+        var speeds = getExpectedSpeeds(schedule, maxSpeedControllers, TIME_STEP);
         double maxSpeed = max(speeds.values());
 
         double tolerance = .00001; // Stop if you're close enough
@@ -223,7 +223,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         var currentAcceleratingSlope = new AcceleratingSlope(0, 0, 0, 0, 0);
         for (var element : speeds.entrySet()) {
             double position = element.getKey();
-            var location = convertPosition(schedule, sim, position);
+            var location = convertPosition(schedule, position);
             double speed = element.getValue();
             var integrator = new TrainPhysicsIntegrator(TIME_STEP, rollingStock, location, speed);
             var naturalAcceleration = integrator.computeAcceleration(Action.coast());
@@ -268,8 +268,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
                                                                               double endLocation) {
         double speed = speeds.interpolate(endLocation);
 
-        var location = convertPosition(schedule, sim, endLocation);
-        location.ignoreInfraState = true;
+        var location = convertPosition(schedule, endLocation);
 
         do {
             var step = nextStep(
@@ -315,7 +314,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
                                                        double endLocation) {
         var currentSpeedControllers = new HashSet<>(maxSpeedControllers);
         currentSpeedControllers.add(new MaxSpeedController(v1, startLocation, endLocation));
-        var expectedSpeeds = getExpectedSpeeds(sim, schedule, currentSpeedControllers, TIME_STEP);
+        var expectedSpeeds = getExpectedSpeeds(schedule, currentSpeedControllers, TIME_STEP);
         var endOfCoastingPositions = findEndOfCoastingPositions(expectedSpeeds, v1);
         for (var location : endOfCoastingPositions) {
             var controller = generateCoastingSpeedControllerAtPosition(expectedSpeeds, location);
@@ -334,7 +333,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         if (schedule.rollingStock.gammaType == RollingStock.GammaType.CONST)
             return (initialSpeed * initialSpeed - targetSpeed * targetSpeed) / (2 * schedule.rollingStock.gamma);
 
-        var res = getExpectedSpeedsBackwards(sim, schedule, targetSpeed, endPosition, initialSpeed, TIME_STEP);
+        var res = getExpectedSpeedsBackwards(schedule, targetSpeed, endPosition, initialSpeed, TIME_STEP);
         return res.lastKey() - res.firstKey();
     }
 }

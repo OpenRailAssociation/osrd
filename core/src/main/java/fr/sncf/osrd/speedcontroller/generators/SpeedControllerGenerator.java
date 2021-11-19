@@ -31,15 +31,14 @@ public abstract class SpeedControllerGenerator {
                                                   Set<SpeedController> maxSpeeds);
 
     /** Generates a map of location -> expected time if we follow the given controllers. */
-    public static SortedDoubleMap getExpectedTimes(Simulation sim,
-                                            TrainSchedule schedule,
+    public static SortedDoubleMap getExpectedTimes(TrainSchedule schedule,
                                             Set<SpeedController> controllers,
                                             double timeStep,
                                             double begin,
                                             double end,
                                             double initialSpeed) {
         var updatesMap
-                = getIntegrationStepsAtPositions(sim, schedule, controllers, timeStep, begin, end, initialSpeed);
+                = getIntegrationStepsAtPositions(schedule, controllers, timeStep, begin, end, initialSpeed);
         var res = new SortedDoubleMap();
 
         assert schedule.departureTime >= 0; // This could fail if there is a bug with train successions
@@ -67,35 +66,32 @@ public abstract class SpeedControllerGenerator {
     }
 
     /** Generates a map of location -> expected time if we follow the given controllers. */
-    public SortedDoubleMap getExpectedTimes(Simulation sim,
-                                            TrainSchedule schedule,
+    public SortedDoubleMap getExpectedTimes(TrainSchedule schedule,
                                             Set<SpeedController> controllers,
                                             double timestep) {
-        var initialSpeed = findInitialSpeed(sim, schedule, controllers, timestep);
-        return getExpectedTimes(sim, schedule, controllers, timestep,
+        var initialSpeed = findInitialSpeed(schedule, controllers, timestep);
+        return getExpectedTimes(schedule, controllers, timestep,
                 sectionBegin, sectionEnd, initialSpeed);
     }
 
     /** Generates a map of location -> expected speed if we follow the given controllers. */
-    public SortedDoubleMap getExpectedSpeeds(Simulation sim,
-                                             TrainSchedule schedule,
+    public SortedDoubleMap getExpectedSpeeds(TrainSchedule schedule,
                                              Set<SpeedController> controllers,
                                              double timestep) {
-        var initialSpeed = findInitialSpeed(sim, schedule, controllers, timestep);
-        return getExpectedSpeeds(sim, schedule, controllers, timestep,
+        var initialSpeed = findInitialSpeed(schedule, controllers, timestep);
+        return getExpectedSpeeds(schedule, controllers, timestep,
                 sectionBegin, sectionEnd, initialSpeed);
     }
 
     /** Generates a map of location -> expected speed if we follow the given controllers */
-    public static SortedDoubleMap getExpectedSpeeds(Simulation sim,
-                                             TrainSchedule schedule,
+    public static SortedDoubleMap getExpectedSpeeds(TrainSchedule schedule,
                                              Set<SpeedController> controllers,
                                              double timestep,
                                              double begin,
                                              double end,
                                              double initialSpeed) {
         var updatesMap
-                = getIntegrationStepsAtPositions(sim, schedule, controllers, timestep, begin, end, initialSpeed);
+                = getIntegrationStepsAtPositions(schedule, controllers, timestep, begin, end, initialSpeed);
         var res = new SortedDoubleMap();
         for (var k : updatesMap.keySet()) {
             res.put(k, updatesMap.get(k).finalSpeed);
@@ -104,16 +100,14 @@ public abstract class SpeedControllerGenerator {
     }
 
     /** used to convert the double position into a TrainPositionTracker*/
-    public static TrainPositionTracker convertPosition(TrainSchedule schedule, Simulation sim, double position) {
-        var location = Train.getInitialLocation(schedule, sim);
-        location.ignoreInfraState = true;
+    public static TrainPositionTracker convertPosition(TrainSchedule schedule, double position) {
+        var location = Train.getInitialLocation(schedule);
         location.updatePosition(schedule.rollingStock.length, position);
         return location;
     }
 
     /** Generates a map of location -> updates if we follow the given controllers. */
     public static NavigableMap<Double, IntegrationStep> getIntegrationStepsAtPositions(
-            Simulation sim,
             TrainSchedule schedule,
             Set<SpeedController> controllers,
             double timeStep,
@@ -121,7 +115,7 @@ public abstract class SpeedControllerGenerator {
             double end,
             double initialSpeed
     ) {
-        var location = convertPosition(schedule, sim, begin);
+        var location = convertPosition(schedule, begin);
         var totalLength = schedule.plannedPath.length;
         final var actualEnd = min(end, totalLength);
         var res = new TreeMap<Double, IntegrationStep>();
@@ -154,11 +148,11 @@ public abstract class SpeedControllerGenerator {
     }
 
     /** Finds the position (as a double) corresponding to the beginning of the allowance */
-    protected double findInitialSpeed(Simulation sim, TrainSchedule schedule, Set<SpeedController> maxSpeed,
+    protected double findInitialSpeed(TrainSchedule schedule, Set<SpeedController> maxSpeed,
                                       double timeStep) {
         if (sectionBegin <= 0)
             return schedule.initialSpeed;
-        var speeds = getExpectedSpeeds(sim, schedule, maxSpeed, timeStep,
+        var speeds = getExpectedSpeeds(schedule, maxSpeed, timeStep,
                 0, sectionBegin, schedule.initialSpeed);
         return speeds.lastEntry().getValue();
     }
@@ -166,7 +160,6 @@ public abstract class SpeedControllerGenerator {
     /** Generates a map of location -> expected speed starting from (endPosition, speedLimit)
      * and going backwards till maxSpeed */
     public SortedDoubleMap getExpectedSpeedsBackwards(
-            Simulation sim,
             TrainSchedule schedule,
             double speedLimit,
             double endPosition,
@@ -177,7 +170,7 @@ public abstract class SpeedControllerGenerator {
         var speed = speedLimit;
         var inertia = schedule.rollingStock.mass * schedule.rollingStock.inertiaCoefficient;
         // It starts from the endPosition going backwards
-        var location = convertPosition(schedule, sim, endPosition);
+        var location = convertPosition(schedule, endPosition);
         expectedSpeeds.put(location.getPathPosition(), speed);
         // TODO: max Gamma could have different values depending on the speed like in ERTMS
         var action = Action.brake(abs(schedule.rollingStock.gamma * inertia));
@@ -194,7 +187,7 @@ public abstract class SpeedControllerGenerator {
             speed = step.finalSpeed;
             expectedSpeeds.put(location.getPathPosition(), speed);
             if (location.getPathPosition() + step.positionDelta < 0) break;
-            location = convertPosition(schedule, sim, location.getPathPosition() + step.positionDelta);
+            location = convertPosition(schedule, location.getPathPosition() + step.positionDelta);
         }
 
         return expectedSpeeds;

@@ -24,6 +24,14 @@ public class Range implements Comparable<Range> {
         this.end = end;
     }
 
+    public double getBeginPosition() {
+        return begin;
+    }
+
+    public double getEndPosition() {
+        return end;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(begin, end);

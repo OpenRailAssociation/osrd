@@ -87,7 +87,7 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
                                 begin,
                                 rollingStock.gamma));
                 } else {
-                    var expectedSpeeds = getExpectedSpeedsBackwards(sim,
+                    var expectedSpeeds = getExpectedSpeedsBackwards(
                             schedule,
                             speedSection.speedLimit,
                             begin,
