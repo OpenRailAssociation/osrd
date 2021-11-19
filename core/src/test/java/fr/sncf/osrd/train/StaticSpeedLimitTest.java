@@ -116,7 +116,6 @@ public class StaticSpeedLimitTest {
                 FAST_NO_FRICTION_TRAIN,
                 0,
                 startLocation,
-                EdgeDirection.START_TO_STOP,
                 route,
                 0,
                 phases,
