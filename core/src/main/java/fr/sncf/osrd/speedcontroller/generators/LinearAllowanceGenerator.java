@@ -32,7 +32,7 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
             percentage = value;
         else { // allowanceType = DISTANCE
             var totalStopsDuration = schedule.getStopDuration();
-            var expectedTime = getExpectedTimes(sim, schedule, maxSpeeds, TIME_STEP);
+            var expectedTime = getExpectedTimes(schedule, maxSpeeds, TIME_STEP);
             var totalTime = expectedTime.lastEntry().getValue() - expectedTime.firstEntry().getValue();
             var schemaLength = expectedTime.lastEntry().getKey() - expectedTime.firstEntry().getKey();
             var n = schemaLength / 100000; // number of portions of 100km in the train journey
@@ -44,7 +44,7 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
         }
         double scaleFactor = 1 / (1 + percentage / 100);
 
-        var expectedSpeeds = getExpectedSpeeds(sim, schedule, maxSpeeds, TIME_STEP);
+        var expectedSpeeds = getExpectedSpeeds(schedule, maxSpeeds, TIME_STEP);
         var speedController = new MapSpeedController(expectedSpeeds, sectionBegin, sectionEnd);
         return addSpeedController(maxSpeeds, speedController.scaled(scaleFactor));
     }

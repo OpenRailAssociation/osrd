@@ -49,7 +49,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
 
     /** Evaluates the run time of the phase if we follow the given speed controllers */
     protected double evalRunTime(Simulation sim, TrainSchedule schedule, Set<SpeedController> speedControllers) {
-        expectedTimes = getExpectedTimes(sim, schedule, speedControllers, TIME_STEP);
+        expectedTimes = getExpectedTimes(schedule, speedControllers, TIME_STEP);
         return expectedTimes.lastEntry().getValue() - expectedTimes.firstEntry().getValue();
     }
 
@@ -106,7 +106,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         try {
             PrintWriter writer = new PrintWriter(path, "UTF-8");
             writer.println("position;speed");
-            var expectedSpeeds = getExpectedSpeeds(sim, schedule, speedControllers, TIME_STEP);
+            var expectedSpeeds = getExpectedSpeeds(schedule, speedControllers, TIME_STEP);
             for (var entry : expectedSpeeds.entrySet()) {
                 writer.println(String.format("%f;%f", entry.getKey(), entry.getValue()));
             }

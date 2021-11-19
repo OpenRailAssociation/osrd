@@ -163,6 +163,12 @@ public class TrainPath {
     /** Find location on track given a distance from the start.
      * If the path position is higher than the fullPath length the function return null. */
     public TrackSectionLocation findLocation(double pathPosition) {
+        return findLocation(pathPosition, trackSectionPath);
+    }
+
+    /** Find location on track given a distance from the start.
+     * If the path position is higher than the fullPath length the function return null. */
+    public static TrackSectionLocation findLocation(double pathPosition, List<TrackSectionRange> trackSectionPath) {
         for (var track : trackSectionPath) {
             if (pathPosition > track.length()) {
                 pathPosition -= track.length();
@@ -179,7 +185,7 @@ public class TrainPath {
 
         // We might reach this point with an epsilon left when looking for the end because of float inaccuracies
         if (pathPosition < 1e-3)
-            return getEndLocation();
+            return trackSectionPath.get(trackSectionPath.size() - 1).getEndLocation();
 
         return null;
     }

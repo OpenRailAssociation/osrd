@@ -130,14 +130,6 @@ public final class TrackSectionRange extends Range implements DeepComparable<Tra
         return begin - edge.length;
     }
 
-    public double getBeginPosition() {
-        return begin;
-    }
-
-    public double getEndPosition() {
-        return end;
-    }
-
     public TrackSectionLocation getBeginLocation() {
         return new TrackSectionLocation(edge, begin);
     }

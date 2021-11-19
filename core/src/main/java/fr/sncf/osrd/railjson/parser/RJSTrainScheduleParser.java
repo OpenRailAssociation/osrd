@@ -114,7 +114,6 @@ public class RJSTrainScheduleParser {
                 rollingStock,
                 rjsTrainSchedule.departureTime,
                 initialLocation,
-                initialDirection,
                 initialRoute,
                 initialSpeed,
                 phases,

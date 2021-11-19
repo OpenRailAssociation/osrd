@@ -579,7 +579,7 @@ public class RouteStateTest {
         var sim = simState.sim;
         var secondTrain = sim.trains.get("Second");
         var finalPosition = secondTrain.getLastState().location.getPathPosition();
-        var initialPosition = Train.getInitialLocation(secondTrain.schedule, sim).getPathPosition();
+        var initialPosition = Train.getInitialLocation(secondTrain.schedule).getPathPosition();
 
         // Check that the second train moves
         assertNotEquals(initialPosition, finalPosition);

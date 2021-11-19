@@ -17,7 +17,6 @@ public final class TrainSchedule {
     public double departureTime;
 
     public final TrackSectionLocation initialLocation;
-    public final EdgeDirection initialDirection;
     public final Route initialRoute;
     public final double initialSpeed;
 
@@ -41,7 +40,7 @@ public final class TrainSchedule {
             RollingStock rollingStock,
             double departureTime,
             TrackSectionLocation initialLocation,
-            EdgeDirection initialDirection, Route initialRoute,
+            Route initialRoute,
             double initialSpeed,
             ArrayList<NavigatePhase> phases,
             TrainDecisionMaker trainDecisionMaker,
@@ -52,7 +51,6 @@ public final class TrainSchedule {
         this.rollingStock = rollingStock;
         this.departureTime = departureTime;
         this.initialLocation = initialLocation;
-        this.initialDirection = initialDirection;
         this.initialRoute = initialRoute;
         this.initialSpeed = initialSpeed;
         this.phases = phases;

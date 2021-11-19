@@ -60,13 +60,13 @@ public class ActivateRoute {
         routeState.initialReserve(sim, trainState);
 
         // Reserve the tvdSection where the train is created
-        var trainPosition = trainState.location.trackSectionRanges.getFirst();
+        var trainLocation = trainState.location.getHeadLocation();
 
         for (var i = 0; i < route.tvdSectionsPaths.size(); i++) {
             var currentTvdSectionPath = route.tvdSectionsPaths.get(i);
             occupyTvdSectionPath(sim, currentTvdSectionPath);
             for (var trackSection : currentTvdSectionPath.trackSections)
-                if (trainPosition.intersect(trackSection))
+                if (trackSection.containsLocation(trainLocation))
                     return;
             freeTvdSectionPath(sim, currentTvdSectionPath);
         }
