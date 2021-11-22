@@ -83,6 +83,7 @@ const Itinerary = (props) => {
     if (osrdconf.vias.length > 0 || pathfindingData.steps.length > 2) {
       const stepsVias = convertPathfindingVias(pathfindingData.steps);
       dispatch(replaceVias(stepsVias));
+      console.log(stepsVias);
       /* dispatch(replaceVias(osrdconf.vias.map((via, idx) => (
         { ...via, clickLngLat: stepsVias[idx].geographic })))); */
     }

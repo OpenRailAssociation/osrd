@@ -163,7 +163,7 @@ const Margin = (props) => {
     const place = simulation.trains[selectedTrain].base.stops.find(
       (element) => element.position === position,
     );
-    return place && place.name !== 'Unknown' ? `${place.name} (${position}m)` : `${position}m`;
+    return place && place.name !== 'Unknown' ? `${place.name} (${Math.round(position)}m)` : `${position}m`;
   };
 
   return (
