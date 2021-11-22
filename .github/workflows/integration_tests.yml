@@ -35,4 +35,4 @@ jobs:
           COMPOSE_DOCKER_CLI_BUILD: 1
 
       - name: Run tests
-        run: "curl http://localhost:8080/ | python3 -m json.tool"
+        run: "python3 tests/run_integration_tests.py"

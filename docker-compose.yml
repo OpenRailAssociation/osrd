@@ -6,6 +6,7 @@ services:
   postgres:
     image: postgis/postgis
     container_name: postgres
+    user: postgres
     restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: "password"

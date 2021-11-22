@@ -1,15 +1,15 @@
 from django.contrib.gis.db import models
-from osrd_infra.models.infra import Infra
-from osrd_infra.models.rolling_stock import RollingStock
-from osrd_infra.models.pathfinding import Path
-from osrd_infra.utils import JSONSchemaValidator
 
+from osrd_infra.models.infra import Infra
+from osrd_infra.models.pathfinding import Path
+from osrd_infra.models.rolling_stock import RollingStock
+from osrd_infra.utils import JSONSchemaValidator
 
 MARGINS_SCHEMA = {
     "type": "array",
     "items": {
         "type": "object",
-        "required": ["type", "value", "begin_position", "end_position"],
+        "required": ["type", "value"],
         "additionalProperties": False,
         "properties": {
             "type": {"enum": ["construction", "ratio_time", "ratio_distance"]},
@@ -28,19 +28,14 @@ class Timetable(models.Model):
 
 class TrainSchedule(models.Model):
     train_name = models.CharField(max_length=128)
-    timetable = models.ForeignKey(
-        Timetable, on_delete=models.CASCADE, related_name="train_schedules"
-    )
+    timetable = models.ForeignKey(Timetable, on_delete=models.CASCADE, related_name="train_schedules")
     rolling_stock = models.ForeignKey(RollingStock, on_delete=models.CASCADE)
     departure_time = models.FloatField()
     path = models.ForeignKey(Path, on_delete=models.CASCADE)
     initial_speed = models.FloatField()
     labels = models.ManyToManyField("TrainScheduleLabel", blank=True)
-    margins = models.JSONField(
-        null=True, validators=[JSONSchemaValidator(limit_value=MARGINS_SCHEMA)]
-    )
+    margins = models.JSONField(null=True, validators=[JSONSchemaValidator(limit_value=MARGINS_SCHEMA)])
     base_simulation_log = models.JSONField(null=True)
-    margins_simulation_log = models.JSONField(null=True)
     eco_simulation_log = models.JSONField(null=True)
 
 

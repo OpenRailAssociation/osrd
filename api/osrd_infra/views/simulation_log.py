@@ -1,10 +1,12 @@
+from enum import IntEnum
+
 import requests
 from django.conf import settings
+from rest_framework.exceptions import APIException
+
+from osrd_infra.models import TrainSchedule
 from osrd_infra.utils import reverse_format
 from osrd_infra.views.railjson import format_route_id, format_track_section_id
-from rest_framework.exceptions import APIException
-from osrd_infra.models import TrainSchedule
-from enum import IntEnum
 
 
 class ServiceUnavailable(APIException):
@@ -21,8 +23,7 @@ class SimulationError(APIException):
 
 class SimulationType(IntEnum):
     BASE = 0
-    MARGIN = 1
-    ECO = 2
+    ECO_MARGIN = 1
 
 
 def get_train_phases(path):
@@ -80,7 +81,6 @@ def get_allowances_payload(margins, sim_type: SimulationType):
 
     # Add linear margins
     linear_margins = []
-    sim_type = "linear" if sim_type == SimulationType.MARGIN else "eco"
     for margin in margins:
         if margin["type"] == "construction":
             continue
@@ -88,9 +88,9 @@ def get_allowances_payload(margins, sim_type: SimulationType):
         linear_margins.append(
             {
                 "allowance_value": margin["value"],
-                "begin_position": margin["begin_position"],
-                "end_position": margin["end_position"],
-                "type": sim_type,
+                "begin_position": margin.get("begin_position"),
+                "end_position": margin.get("end_position"),
+                "type": "eco",
                 "allowance_type": allowance_type,
             }
         )
@@ -107,8 +107,8 @@ def get_allowances_payload(margins, sim_type: SimulationType):
                 {
                     "type": "construction",
                     "allowance_value": margin["value"],
-                    "begin_position": margin["begin_position"],
-                    "end_position": margin["end_position"],
+                    "begin_position": margin.get("begin_position", None),
+                    "end_position": margin.get("end_position", None),
                 }
             ]
         )
@@ -215,10 +215,8 @@ def generate_simulation_logs(train_schedule):
 
     # Check margins is not None and not empty
     if train_schedule.margins:
-        for attr_name, sim_type in [("eco", SimulationType.ECO), ("margins", SimulationType.MARGIN)]:
-            attr_name = f"{attr_name}_simulation_log"
-            try:
-                setattr(train_schedule, attr_name, run_simulation(train_schedule, sim_type))
-            except SimulationError as e:
-                setattr(train_schedule, attr_name, {"error": str(e)})
+        try:
+            train_schedule.eco_simulation_log = run_simulation(train_schedule, SimulationType.ECO_MARGIN)
+        except SimulationError as e:
+            train_schedule.eco_simulation_log = {"error": str(e)}
     train_schedule.save()

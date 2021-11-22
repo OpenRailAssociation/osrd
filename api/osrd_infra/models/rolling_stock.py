@@ -190,3 +190,26 @@ class RollingStock(models.Model):
             "gamma_type": "CONST",
             "tractive_effort_curve": next(iter(self.tractive_effort_curves.values())),
         })
+
+    @staticmethod
+    def from_railjson(rjs):
+        res = RollingStock(
+            name=rjs["id"],
+            length=rjs["length"],
+            mass=rjs["masses"][0]["mass"],
+            inertia_coefficient=rjs["inertia_coefficient"],
+            capabilities=rjs["features"],
+            max_speed=rjs["max_speed"],
+            startup_time=rjs["startup_time"],
+            startup_acceleration=rjs["startup_acceleration"],
+            comfort_acceleration=rjs["comfort_acceleration"],
+            timetable_gamma=rjs["gamma"],
+            rolling_resistance=rjs["rolling_resistance_profiles"]["default_resistance_profile"][0]["resistance"],
+            tractive_effort_curves={"SC": [
+                {"speed": speed, "max_effort": max_effort}
+                for speed, max_effort in rjs["effort_curves"]["default_curve"]
+            ]},
+            power_class=rjs["power_class"],
+        )
+        res.save()
+        return res

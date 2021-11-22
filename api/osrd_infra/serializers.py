@@ -1,44 +1,34 @@
 from rest_framework import serializers
 from rest_framework.serializers import (
-    Serializer,
     Field,
     ModelSerializer,
+    Serializer,
     SerializerMethodField,
 )
+from rest_framework_gis.fields import GeometryField
 
 from osrd_infra.models import (
-    Infra,
-    # enums
-    Endpoint,
-    ApplicableDirection,
-    # explicitly declared serializers
-    TrackSectionLinkComponent,
-    ApplicableDirectionComponent,
-    # ecs
-    Component,
-    get_entity_meta,
-    get_component_meta,
     ALL_COMPONENT_TYPES,
     ALL_ENTITY_TYPES,
-    # rolling stock
-    RollingStock,
-    # pathfinding
+    ApplicableDirection,
+    ApplicableDirectionComponent,
+    Component,
+    Endpoint,
+    Infra,
     Path,
-    # Simulation
+    RollingStock,
     Timetable,
+    TrackSectionLinkComponent,
     TrainSchedule,
     TrainScheduleLabel,
+    get_component_meta,
+    get_entity_meta,
 )
-
 from osrd_infra.models.common import EnumSerializer
 
 
 # monkey patch rest_framework_gis so that it properly converts
 # geojson geometries when serializing
-
-from rest_framework_gis.fields import GeometryField
-
-
 def wrap_to_representation(original_to_representation):
     def _wrapper(self, value):
         if value is None or isinstance(value, dict):
@@ -50,9 +40,7 @@ def wrap_to_representation(original_to_representation):
     return _wrapper
 
 
-GeometryField.to_representation = wrap_to_representation(
-    GeometryField.to_representation
-)
+GeometryField.to_representation = wrap_to_representation(GeometryField.to_representation)
 
 
 class ComponentSerializer(ModelSerializer):
@@ -88,10 +76,7 @@ def serialize_components(entity):
         if comp_meta.unique:
             serialized = comp_serializer(field, omit_entity_id=True).data
         else:
-            serialized = [
-                comp_serializer(related, omit_entity_id=True).data
-                for related in field.all()
-            ]
+            serialized = [comp_serializer(related, omit_entity_id=True).data for related in field.all()]
         res[comp_meta.name] = serialized
     return res
 
@@ -136,12 +121,11 @@ class PathInputSerializer(Serializer):
     class StepInputSerializer(Serializer):
         class WaypointInputSerializer(Serializer):
             track_section = serializers.IntegerField(min_value=0)
-            geo_coordinate = serializers.JSONField()
+            geo_coordinate = serializers.JSONField(required=False)
+            offset = serializers.FloatField(required=False)
 
         stop_time = serializers.FloatField()
-        waypoints = serializers.ListField(
-            child=WaypointInputSerializer(), allow_empty=False
-        )
+        waypoints = serializers.ListField(child=WaypointInputSerializer(), allow_empty=False)
 
     infra = serializers.PrimaryKeyRelatedField(queryset=Infra.objects.all())
     name = serializers.CharField(max_length=256)
@@ -171,10 +155,7 @@ class LabelsField(Field):
         return [label.label for label in value.all()]
 
     def to_internal_value(self, data):
-        return [
-            TrainScheduleLabel.objects.get_or_create(label=label)[0].pk
-            for label in data
-        ]
+        return [TrainScheduleLabel.objects.get_or_create(label=label)[0].pk for label in data]
 
 
 class TrainScheduleSerializer(ModelSerializer):
@@ -184,7 +165,6 @@ class TrainScheduleSerializer(ModelSerializer):
         model = TrainSchedule
         exclude = [
             "base_simulation_log",
-            "margins_simulation_log",
             "eco_simulation_log",
         ]
 
@@ -226,9 +206,7 @@ def generate_serializer(model, parent_class, extra_meta={}):
 for component_type in ALL_COMPONENT_TYPES.values():
     if component_type in ComponentSerializer.registry:
         continue
-    serializer = generate_serializer(
-        component_type, ComponentSerializer, {"fields": "__all__"}
-    )
+    serializer = generate_serializer(component_type, ComponentSerializer, {"fields": "__all__"})
     globals()[serializer.__name__] = serializer
 
 
@@ -237,8 +215,6 @@ for component_type in ALL_COMPONENT_TYPES.values():
 ALL_ENTITY_SERIALIZERS = []
 
 for entity_type in ALL_ENTITY_TYPES.values():
-    serializer = generate_serializer(
-        entity_type, EntitySerializer, {"fields": ["entity_id", "components"]}
-    )
+    serializer = generate_serializer(entity_type, EntitySerializer, {"fields": ["entity_id", "components"]})
     ALL_ENTITY_SERIALIZERS.append(serializer)
     globals()[serializer.__name__] = serializer
