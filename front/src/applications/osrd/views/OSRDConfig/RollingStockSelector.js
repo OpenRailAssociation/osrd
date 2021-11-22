@@ -12,7 +12,7 @@ const ROLLINGSTOCK_URL = '/rolling_stock';
 
 export default function RollingStockSelector() {
   const { rollingStockID } = useSelector((state) => state.osrdconf);
-  const { t } = useTranslation(['translation', 'osrdconf']);
+  const { t } = useTranslation(['translation', 'osrdconf', 'rollingstock']);
   const [rollingStockSelected, setRollingStockSelected] = useState(undefined);
 
   const getRollingStock = async () => {
@@ -45,7 +45,7 @@ export default function RollingStockSelector() {
               rollingStockSelected.name
             ) : (
               <span className="mr-2 text-muted text-italic">
-                {t('osrdconf:noRollingStock')}
+                {t('rollingstock:noRollingStock')}
               </span>
             )}
           </div>

@@ -10,8 +10,7 @@ import {
 } from 'react-icons/ri';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import DisplayVias from 'applications/osrd/components/Itinerary/DisplayVias';
-import { updateOriginTime } from 'applications/osrd/components/Itinerary/helpers';
-import { updateOrigin, updateOriginSpeed, updateDestination } from 'reducers/osrdconf';
+import { updateOrigin, updateOriginTime, updateOriginSpeed, updateDestination } from 'reducers/osrdconf';
 
 export default function DisplayItinerary(props) {
   const osrdconf = useSelector((state) => state.osrdconf);
@@ -52,7 +51,7 @@ export default function DisplayItinerary(props) {
                 <InputSNCF
                   type="time"
                   id="osrd-config-time-origin"
-                  onChange={(e) => updateOriginTime(e.target.value)}
+                  onChange={(e) => dispatch(updateOriginTime(e.target.value))}
                   value={osrdconf.originTime}
                   sm
                   noMargin

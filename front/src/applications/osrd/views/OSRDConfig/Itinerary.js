@@ -83,9 +83,6 @@ const Itinerary = (props) => {
     if (osrdconf.vias.length > 0 || pathfindingData.steps.length > 2) {
       const stepsVias = convertPathfindingVias(pathfindingData.steps);
       dispatch(replaceVias(stepsVias));
-      console.log(stepsVias);
-      /* dispatch(replaceVias(osrdconf.vias.map((via, idx) => (
-        { ...via, clickLngLat: stepsVias[idx].geographic })))); */
     }
 
     dispatch(updateDestination({
@@ -112,7 +109,6 @@ const Itinerary = (props) => {
   };
 
   const mapItinerary = (zoom = true) => {
-    setLaunchPathfinding(false);
     dispatch(updateItinerary(undefined));
 
     if (osrdconf.origin !== undefined && osrdconf.destination !== undefined) {
@@ -135,7 +131,7 @@ const Itinerary = (props) => {
       if (osrdconf.vias.length > 0) {
         osrdconf.vias.forEach((via) => {
           params.steps.push({
-            stop_time: via.stoptime === undefined ? 0 : parseInt(via.stoptime, 10),
+            stop_time: via.stop_time === undefined ? 0 : parseInt(via.stop_time, 10),
             waypoints: [{
               track_section: via.id,
               geo_coordinate: via.clickLngLat,
