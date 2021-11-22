@@ -37,6 +37,7 @@ import java.util.TreeMap;
  */
 public final class Simulation implements DeepComparable<Simulation> {
     static final Logger logger = LoggerFactory.getLogger(Simulation.class);
+    public static final double timeStep = 0.4;
 
     public final Infra infra;
     public final InfraState infraState;
