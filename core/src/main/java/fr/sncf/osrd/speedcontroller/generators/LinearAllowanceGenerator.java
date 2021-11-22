@@ -5,7 +5,6 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.MapSpeedController;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.train.TrainSchedule;
-
 import java.util.HashSet;
 import java.util.Set;
 

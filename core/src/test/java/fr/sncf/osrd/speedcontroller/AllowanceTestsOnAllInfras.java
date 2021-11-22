@@ -77,7 +77,8 @@ public class AllowanceTestsOnAllInfras {
             @ForAll("secondsMarginValues") double value
     ) {
         // setup allowances
-        var marecoAllowance = new RJSAllowance.MarecoAllowance(RJSAllowance.MarecoAllowance.MarginType.PERCENTAGE, value);
+        var marecoAllowance =
+                new RJSAllowance.MarecoAllowance(RJSAllowance.MarecoAllowance.MarginType.PERCENTAGE, value);
 
         // run the baseline and testing simulation
         var config = readConfig(rootPath);

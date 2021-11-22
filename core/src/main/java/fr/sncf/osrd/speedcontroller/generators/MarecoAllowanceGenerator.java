@@ -3,6 +3,7 @@ package fr.sncf.osrd.speedcontroller.generators;
 import static fr.sncf.osrd.train.TrainPhysicsIntegrator.nextStep;
 import static java.util.Collections.max;
 
+import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarecoAllowance.MarginType;
@@ -310,7 +311,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
                                                        double v1,
                                                        double startLocation,
-                                                       double endLocation) {
+                                                       double endLocation) throws SimulationError {
         var currentSpeedControllers = new HashSet<>(maxSpeedControllers);
         currentSpeedControllers.add(new MaxSpeedController(v1, startLocation, endLocation));
         var expectedSpeeds = getExpectedSpeeds(schedule, currentSpeedControllers, TIME_STEP);

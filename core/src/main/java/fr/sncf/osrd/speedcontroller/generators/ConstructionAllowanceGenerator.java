@@ -6,6 +6,7 @@ import static java.lang.Math.min;
 import static java.util.Collections.max;
 
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.IntegrationStep;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.simulation.Simulation;
@@ -22,12 +23,9 @@ import java.util.TreeMap;
  * The allowanceValue is in seconds, added over the whole phase */
 public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
 
-    public final double value;
-
     public ConstructionAllowanceGenerator(double begin, double end,
                                           double allowanceValue) {
         super(begin, end, allowanceValue, RJSAllowance.MarecoAllowance.MarginType.TIME);
-        this.value = allowanceValue;
     }
 
     @Override
@@ -56,7 +54,7 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
     protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
                                                        double targetSpeed,
                                                        double initialPosition,
-                                                       double endPosition) {
+                                                       double endPosition) throws SimulationError {
         var currentSpeedControllers = new HashSet<>(maxSpeedControllers);
 
         // running calculation to get the initial speed and final speed of the Region Of Interest (ROI)
@@ -65,6 +63,7 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
         var initialSpeed = expectedSpeeds.interpolate(initialPosition);
         var res = new HashSet<>(maxSpeedControllers);
 
+        // coasting phase
         var speed = initialSpeed;
         var location = convertPosition(schedule, initialPosition);
         var coastingPhase = new SortedDoubleMap();
@@ -83,6 +82,7 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
         }
         coastingPhase.put(location.getPathPosition(), targetSpeed);
 
+        // acceleration phase
         speed = expectedSpeeds.interpolate(endPosition);
         location = convertPosition(schedule, endPosition);
         var acceleratingPhase = new SortedDoubleMap();
@@ -104,20 +104,18 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
             acceleratingPhase.put(location.getPathPosition(), stepSpeed);
         }
 
+        var coastingLastPosition = coastingPhase.lastKey();
         var accelerationFirstPosition = location.getPathPosition();
-        if (speed <= targetSpeed) {
-            var coastingLastPosition = initialPosition;
-            if (!coastingPhase.isEmpty()) {
-                coastingLastPosition = coastingPhase.lastKey();
-                res.add(new CoastingSpeedController(initialPosition, coastingLastPosition));
-            }
-            for (SpeedController speedController :
-                    super.getSpeedControllers(schedule, targetSpeed, coastingLastPosition, accelerationFirstPosition)) {
-                res.add(speedController);
-            }
-            return res;
+        if (accelerationFirstPosition == coastingLastPosition)
+            throw new SimulationError("Construction margin value too high for such short distance");
+        if (coastingPhase.size() > 1) {
+            res.add(new CoastingSpeedController(initialPosition, coastingLastPosition));
         }
-        res.add(new CoastingSpeedController(initialPosition, location.getPathPosition()));
+        var marecoSpeedControllers =
+                super.getSpeedControllers(schedule, targetSpeed, coastingLastPosition, accelerationFirstPosition);
+        for (SpeedController speedController : marecoSpeedControllers) {
+            res.add(speedController);
+        }
         return res;
     }
 

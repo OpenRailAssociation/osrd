@@ -4,6 +4,7 @@ import static fr.sncf.osrd.Helpers.*;
 import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.DISTANCE;
 import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.PERCENTAGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope;
@@ -125,9 +126,9 @@ public class MarginTests {
 
     /** Test the construction margin on a small segment */
     public static void testConstructionMarginsOnSegment(String configPath, double value, TestInfo info) {
-        final double begin = 4000;
+        final double begin = 3000;
         final double end = 5000;
-        final double tolerance = 0.01; // percentage
+        final double tolerance = 0.02; // percentage
 
         var allowance = new ConstructionAllowance(value);
         allowance.beginPosition = begin;
@@ -168,10 +169,32 @@ public class MarginTests {
     }
 
     @ParameterizedTest
-    //@ValueSource(doubles = {0.0, 30, 100})
-    @ValueSource(doubles = {30})
+    @ValueSource(doubles = {0.0, 30, 100})
     public void testConstructionMarginsOnSegment(double value, TestInfo info) {
         testConstructionMarginsOnSegment(CONFIG_PATH, value, info);
+    }
+
+    /** Test the construction margin on a small segment */
+    public static void testImpossibleConstructionMargin(String configPath, double value, TestInfo info) {
+        final double begin = 4000;
+        final double end = 5000;
+        final double tolerance = 0.02; // percentage
+
+        var allowance = new ConstructionAllowance(value);
+        allowance.beginPosition = begin;
+        allowance.endPosition = end;
+
+        var config = TestConfig.readResource(configPath).clearAllowances();
+
+        assertThrows(Exception.class, () -> {
+            ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
+        });
+    }
+
+    @ParameterizedTest
+    @ValueSource(doubles = {100})
+    public void testImpossibleConstructionMargin(double value, TestInfo info) {
+        testImpossibleConstructionMargin(CONFIG_PATH, value, info);
     }
 
     /** Tests stacking construction and linear margins */

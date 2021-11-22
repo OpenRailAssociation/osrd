@@ -239,7 +239,7 @@ public class StopTests {
         var durationStopShort = 10;
         var durationStopLong = 100;
         double value = 30;
-        final double begin = 4000;
+        final double begin = 3000;
         final double end = 5000;
 
         var allowance = new RJSAllowance.ConstructionAllowance(value);

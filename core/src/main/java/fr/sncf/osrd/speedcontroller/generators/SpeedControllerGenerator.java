@@ -4,6 +4,7 @@ import static fr.sncf.osrd.train.TrainPhysicsIntegrator.*;
 import static java.lang.Math.abs;
 import static java.lang.Math.min;
 
+import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.IntegrationStep;
 import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.simulation.Simulation;
@@ -28,7 +29,7 @@ public abstract class SpeedControllerGenerator {
 
     /** Generates the set of SpeedController */
     public abstract Set<SpeedController> generate(Simulation sim, TrainSchedule schedule,
-                                                  Set<SpeedController> maxSpeeds);
+                                                  Set<SpeedController> maxSpeeds) throws SimulationError;
 
     /** Generates a map of location -> expected time if we follow the given controllers. */
     public static SortedDoubleMap getExpectedTimes(TrainSchedule schedule,
