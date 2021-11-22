@@ -41,7 +41,6 @@ export const initialState = {
 };
 
 export default function reducer(state = initialState, action) {
-  console.log(action.type);
   return produce(state, (draft) => {
     switch (action.type) {
       case UPDATE_NAME:
@@ -214,7 +213,7 @@ export function permuteVias(vias, from, to) {
 }
 export function updateViaStopTime(vias, index, value) {
   const newVias = Array.from(vias); // Copy of vias to permit modification
-  newVias[index] = { ...newVias[index], stoptime: value };
+  newVias[index] = { ...newVias[index], stop_time: value };
   return (dispatch) => {
     dispatch({
       type: UPDATE_VIA_STOPTIME,
