@@ -12,6 +12,7 @@ export const updateOriginTime = (value) => {
 
 export const updateViaStopTime = (index, value) => {
   const { osrdconf } = store.getState();
+  console.log(osrdconf.vias, index, value);
   store.dispatch(updateViaStopTimeRedux(osrdconf.vias, index, value));
 };
 
