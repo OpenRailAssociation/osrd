@@ -18,12 +18,12 @@ import java.util.function.Function;
  */
 public class TrainPhysicsIntegrator {
     private final double timeStep;
-    private final TrainPositionTracker currentLocation;
     private final double currentSpeed;
     private final double weightForce;
     private final RollingStock rollingStock;
     private final double rollingResistance;
     private final double inertia;
+    public final TrainPositionTracker currentLocation;
     // an acceleration lower than this value will be considered zero
     public static final double limitAcceleration = 1E-5;
     // a speed lower than this value will be considered zero

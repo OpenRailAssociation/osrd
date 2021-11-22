@@ -211,7 +211,6 @@ public class TestConfig {
 
             var trainSchedules = RJSSimulationParser.parse(infra, rjsSimulation, extraRollingStocks);
             var config = new Config(
-                    timeStep,
                     infra,
                     trainSchedules,
                     null,
