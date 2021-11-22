@@ -42,9 +42,9 @@ public class TrainLocationTrackerTests {
         var path = getPath();
         var pathLength = path.stream().mapToDouble(Range::length).sum();
 
-        var tracker = new TrainPositionTracker(path);
+        var tracker = TrainPositionTracker.from(path);
         tracker.updatePosition(10, 100);
-        var invertedTracker = new TrainPositionTracker(invertPath(path));
+        var invertedTracker = TrainPositionTracker.from(invertPath(path));
         invertedTracker.updatePosition(10, pathLength - 90);
 
         while (tracker.getPathPosition() < pathLength - 100) {
@@ -60,7 +60,7 @@ public class TrainLocationTrackerTests {
         var path = getPath();
         var pathLength = path.stream().mapToDouble(Range::length).sum();
 
-        var tracker = new TrainPositionTracker(path);
+        var tracker = TrainPositionTracker.from(path);
         tracker.updatePosition(10, 100);
 
         var minSlope = -50;

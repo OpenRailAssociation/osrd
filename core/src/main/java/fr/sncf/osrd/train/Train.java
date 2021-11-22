@@ -49,7 +49,7 @@ public class Train {
     ) throws SimulationError {
         schedule.speedInstructions.generate(sim, schedule);
         var phaseState = schedule.phases.get(0).getState(sim, schedule);
-        var location = getInitialLocation(schedule);
+        var location = TrainPositionTracker.from(schedule.plannedPath);
         var initialState = new TrainState(
                 sim.getTime(),
                 location,
@@ -70,12 +70,6 @@ public class Train {
         sim.publishChange(trainCreatedChange);
         train.scheduleStateChange(sim);
         return train;
-    }
-
-    /** Generates the initial location object of a train given its schedule */
-    public static TrainPositionTracker getInitialLocation(TrainSchedule schedule) {
-        var trackSectionPath = schedule.plannedPath.trackSectionPath;
-        return new TrainPositionTracker(trackSectionPath);
     }
 
     /** Returns the last TrainState */
