@@ -2,11 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { useSelector, useDispatch } from 'react-redux';
-import {
-  permuteVias,
-  deleteVias,
-} from 'applications/osrd/components/Itinerary/helpers';
-import { updateViaStopTime } from 'reducers/osrdconf';
+import { deleteVias, permuteVias, updateViaStopTime } from 'reducers/osrdconf';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
 
@@ -15,14 +11,17 @@ const InputStopTime = (props) => {
   const osrdconf = useSelector((state) => state.osrdconf);
   const dispatch = useDispatch();
   const [stopTime, setStopTime] = useState(
-    osrdconf.vias[index].stoptime ? osrdconf.vias[index].stoptime : 0,
+    osrdconf.vias[index].stop_time ? osrdconf.vias[index].stop_time : 0,
   );
   const [firstStart, setFirstStart] = useState(true);
   const debouncedStopTime = useDebounce(stopTime, 1000);
 
   useEffect(() => {
-    dispatch(updateViaStopTime(osrdconf.vias, index, debouncedStopTime));
-    console.log('UPDATE', debouncedStopTime);
+    if (!firstStart) {
+      dispatch(updateViaStopTime(osrdconf.vias, index, debouncedStopTime));
+    } else {
+      setFirstStart(false);
+    }
   }, [debouncedStopTime]);
 
   return (
@@ -42,11 +41,14 @@ const InputStopTime = (props) => {
 
 export default function DisplayVias(props) {
   const osrdconf = useSelector((state) => state.osrdconf);
+  const dispatch = useDispatch();
   const [indexSelected, setIndexSelected] = useState(undefined);
   const { zoomToFeaturePoint } = props;
 
   return (
-    <DragDropContext onDragEnd={(e) => permuteVias(e.source.index, e.destination.index)}>
+    <DragDropContext
+      onDragEnd={(e) => dispatch(permuteVias(osrdconf.vias, e.source.index, e.destination.index))}
+    >
       <Droppable droppableId="droppableVias">
         {(provided) => (
           <div
@@ -87,7 +89,7 @@ export default function DisplayVias(props) {
                             />
                           ) : (
                             <>
-                              {osrdconf.vias[index].stoptime ? osrdconf.vias[index].stoptime : -1}
+                              {osrdconf.vias[index].stop_time ? osrdconf.vias[index].stop_time : -1}
                               <i className="ml-2 icons-pencil" />
                             </>
                           )}
@@ -95,7 +97,7 @@ export default function DisplayVias(props) {
                       <button
                         className="btn btn-sm btn-only-icon btn-white ml-auto"
                         type="button"
-                        onClick={() => deleteVias(index)}
+                        onClick={() => dispatch(deleteVias(index))}
                       >
                         <i className="icons-circle-delete" />
                         <span className="sr-only" aria-hidden="true">Delete</span>
