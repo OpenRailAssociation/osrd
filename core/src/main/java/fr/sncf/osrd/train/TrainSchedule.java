@@ -5,7 +5,6 @@ import fr.sncf.osrd.speedcontroller.SpeedInstructions;
 import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.train.phases.NavigatePhase;
 import fr.sncf.osrd.utils.TrackSectionLocation;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

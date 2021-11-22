@@ -101,7 +101,7 @@ public abstract class SpeedControllerGenerator {
 
     /** used to convert the double position into a TrainPositionTracker*/
     public static TrainPositionTracker convertPosition(TrainSchedule schedule, double position) {
-        var location = Train.getInitialLocation(schedule);
+        var location = TrainPositionTracker.from(schedule.plannedPath);
         location.updatePosition(schedule.rollingStock.length, position);
         return location;
     }

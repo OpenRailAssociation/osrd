@@ -27,10 +27,15 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
      * Create a new position tracker on some given infrastructure and path.
      */
     public TrainPositionTracker(
-            List<TrackSectionRange> trackSectionPath
+            double headPathPosition,
+            double tailPathPosition,
+            List<TrackSectionRange> trackSectionPath,
+            SortedDoubleMap integratedTrainGrade
     ) {
         this.trackSectionPath = trackSectionPath;
-        this.integratedTrainGrade = initIntegralGrade(trackSectionPath);
+        this.integratedTrainGrade = integratedTrainGrade;
+        this.headPathPosition = headPathPosition;
+        this.tailPathPosition = tailPathPosition;
     }
 
     private TrainPositionTracker(TrainPositionTracker tracker) {
@@ -38,6 +43,21 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         this.headPathPosition = tracker.headPathPosition;
         this.tailPathPosition = tracker.tailPathPosition;
         this.trackSectionPath = tracker.trackSectionPath;
+    }
+
+    /** Creates a location from a path (placed at its beginning) */
+    public static TrainPositionTracker from(TrainPath path) {
+        if (path.cachedIntegratedGrade == null)
+            path.cachedIntegratedGrade = initIntegralGrade(path.trackSectionPath);
+        return new TrainPositionTracker(0, 0,
+                path.trackSectionPath, path.cachedIntegratedGrade);
+    }
+
+    /** Creates a location from a list of track ranges */
+    public static TrainPositionTracker from(List<TrackSectionRange> tracks) {
+        var integratedGrade = initIntegralGrade(tracks);
+        return new TrainPositionTracker(0, 0,
+                tracks, integratedGrade);
     }
 
     // region STD_OVERRIDES
@@ -63,7 +83,14 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
     }
     // endregion
 
-    private SortedDoubleMap initIntegralGrade(List<TrackSectionRange> trackSectionPath) {
+    /** Resets the position tracker, but keeps the pre-computed data */
+    public TrainPositionTracker reset() {
+        headPathPosition = 0;
+        tailPathPosition = 0;
+        return this;
+    }
+
+    private static SortedDoubleMap initIntegralGrade(List<TrackSectionRange> trackSectionPath) {
         var res = new SortedDoubleMap();
         var sumPreviousRangeLengths = 0.;
         var sumSlope = 0.;
