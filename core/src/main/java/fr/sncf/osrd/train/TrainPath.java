@@ -5,6 +5,7 @@ import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra.TVDSectionPath;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
+import fr.sncf.osrd.utils.SortedDoubleMap;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.ArrayList;
@@ -26,6 +27,8 @@ public class TrainPath {
 
     /** Path length in meters */
     public final double length;
+
+    public SortedDoubleMap cachedIntegratedGrade = null;
 
     /** Constructor */
     public TrainPath(List<Route> routePath,

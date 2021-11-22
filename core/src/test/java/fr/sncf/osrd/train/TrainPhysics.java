@@ -29,7 +29,7 @@ public class TrainPhysics {
         var path = Collections.singletonList(
                 new TrackSectionRange(track, EdgeDirection.START_TO_STOP, 0, length)
         );
-        var res = new TrainPositionTracker(path);
+        var res = TrainPositionTracker.from(path);
         res.updatePosition(1, length / 2);
         return res;
     }
