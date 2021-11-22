@@ -1,5 +1,5 @@
 CODEOWNERS   @DGEXSolutions/osrd-backend-maintainers
-/front       @DGEXSolutions/osrd-front-maintainers
+/front       @nicolaswurtz
 
 
 /core/specifications   @flomonster @DGEXSolutions/osrd-backend-maintainers
