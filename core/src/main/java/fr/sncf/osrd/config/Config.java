@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class Config {
-    public final float simulationTimeStep;
     public final Infra infra;
     public final List<TrainSchedule> trainSchedules;
     public final List<TrainSuccessionTable> switchSuccessions;
@@ -38,7 +37,6 @@ public class Config {
 
     /** Creates a new configuration */
     public Config(
-            float simulationTimeStep,
             Infra infra,
             List<TrainSchedule> trainSchedules,
             List<TrainSuccessionTable> switchSuccessions,
@@ -47,7 +45,6 @@ public class Config {
             boolean realTimeViewer,
             boolean changeReplayCheck
     ) {
-        this.simulationTimeStep = simulationTimeStep;
         this.infra = infra;
         this.trainSchedules = trainSchedules;
         this.switchSuccessions = switchSuccessions;
@@ -112,7 +109,6 @@ public class Config {
         var trainSuccessionTables = RJSSimulationParser.parseTrainSuccessionTables(rjsSimulation);
 
         return new Config(
-                jsonConfig.simulationTimeStep,
                 infra,
                 trainSchedules,
                 trainSuccessionTables,

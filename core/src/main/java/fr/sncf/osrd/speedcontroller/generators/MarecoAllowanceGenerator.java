@@ -29,7 +29,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     /** Constructor */
     public MarecoAllowanceGenerator(double begin, double end,
                                     double allowanceValue, MarginType allowanceType) {
-        super(begin, end, 10 * TIME_STEP);
+        super(begin, end, 5 * TIME_STEP);
         this.allowanceType = allowanceType;
         this.value = allowanceValue;
     }
