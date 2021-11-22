@@ -89,7 +89,11 @@ export default function DisplayVias(props) {
                             />
                           ) : (
                             <>
+<<<<<<< HEAD
                               {osrdconf.vias[index].stop_time ? osrdconf.vias[index].stop_time : -1}
+=======
+                              {osrdconf.vias[index].stop_time ? osrdconf.vias[index].stop_time : 0}
+>>>>>>> 5d10ef14 (front: debugging vias OK !)
                               <i className="ml-2 icons-pencil" />
                             </>
                           )}
