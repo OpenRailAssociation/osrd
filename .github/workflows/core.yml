@@ -2,6 +2,9 @@ name: Test Core
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - core/**
   push:
     paths:
       - core/**
@@ -31,3 +34,4 @@ jobs:
             core/build/test-results/test/TEST*.xml
             core/build/reports/checkstyle/*.xml
             core/build/reports/spotbugs/*.xml
+          require_tests: true
