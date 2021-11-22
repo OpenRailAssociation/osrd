@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import nextId from 'react-id-generator';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import {
-  updateViaStopTime,
   permuteVias,
   deleteVias,
 } from 'applications/osrd/components/Itinerary/helpers';
+import { updateViaStopTime } from 'reducers/osrdconf';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
 
 const InputStopTime = (props) => {
   const { index } = props;
   const osrdconf = useSelector((state) => state.osrdconf);
+  const dispatch = useDispatch();
   const [stopTime, setStopTime] = useState(
     osrdconf.vias[index].stoptime ? osrdconf.vias[index].stoptime : 0,
   );
@@ -21,12 +21,8 @@ const InputStopTime = (props) => {
   const debouncedStopTime = useDebounce(stopTime, 1000);
 
   useEffect(() => {
-    if (!firstStart) {
-      updateViaStopTime(index, debouncedStopTime);
-      console.log('UPDATE', debouncedStopTime);
-    } else {
-      setFirstStart(false);
-    }
+    dispatch(updateViaStopTime(osrdconf.vias, index, debouncedStopTime));
+    console.log('UPDATE', debouncedStopTime);
   }, [debouncedStopTime]);
 
   return (
@@ -91,7 +87,7 @@ export default function DisplayVias(props) {
                             />
                           ) : (
                             <>
-                              {osrdconf.vias[index].stoptime ? osrdconf.vias[index].stoptime : 0}
+                              {osrdconf.vias[index].stoptime ? osrdconf.vias[index].stoptime : -1}
                               <i className="ml-2 icons-pencil" />
                             </>
                           )}
