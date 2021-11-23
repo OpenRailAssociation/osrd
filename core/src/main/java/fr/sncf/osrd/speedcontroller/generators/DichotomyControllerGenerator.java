@@ -2,6 +2,7 @@ package fr.sncf.osrd.speedcontroller.generators;
 
 
 import fr.sncf.osrd.simulation.Simulation;
+import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.speedcontroller.SpeedController;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.utils.SortedDoubleMap;
@@ -39,7 +40,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     /** Generates a set of speed controller using dichotomy */
     @Override
     public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule,
-                                         Set<SpeedController> maxSpeeds) {
+                                         Set<SpeedController> maxSpeeds) throws SimulationError {
         sectionEnd = Double.min(sectionEnd, schedule.plannedPath.length);
         this.sim = sim;
         this.schedule = schedule;
@@ -54,7 +55,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     }
 
     /** Gives the target run time for the phase, given the one if we follow max speeds */
-    protected abstract double getTargetTime();
+    protected abstract double getTargetTime(double baseTime, double totalDistance);
 
     /** Returns the first lower bound for the dichotomy */
     protected abstract double getFirstLowEstimate();
@@ -67,22 +68,26 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
 
     /** Generates a set of speed controllers given the dichotomy value */
     protected abstract Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
-                                                                double value, double begin, double end);
+                                                                double value,
+                                                                double begin,
+                                                                double end) throws SimulationError;
 
     /** compute the braking distance from initialSpeed to a given target speed */
     protected abstract double computeBrakingDistance(double initialPosition, double endPosition,
                                          double initialSpeed, double targetSpeed, TrainSchedule schedule);
 
     /** Runs the dichotomy */
-    private Set<SpeedController> binarySearch(Simulation sim, TrainSchedule schedule) {
+    private Set<SpeedController> binarySearch(Simulation sim, TrainSchedule schedule) throws SimulationError {
 
         var lowerBound = getFirstLowEstimate();
         var higherBound = getFirstHighEstimate();
         var firstGuess = getFirstGuess();
 
         // base run
-        var time = evalRunTime(sim, schedule, maxSpeedControllers);
-        var targetTime = getTargetTime();
+        var times = getExpectedTimes(schedule, maxSpeedControllers, TIME_STEP);
+        var time = times.lastEntry().getValue() - times.firstEntry().getValue();
+        var distance = times.lastEntry().getKey() - times.firstEntry().getKey();
+        var targetTime = getTargetTime(time, distance);
 
         double nextValue = firstGuess;
         var nextSpeedControllers = maxSpeedControllers;

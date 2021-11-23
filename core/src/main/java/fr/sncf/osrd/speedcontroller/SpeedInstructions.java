@@ -1,5 +1,6 @@
 package fr.sncf.osrd.speedcontroller;
 
+import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.speedcontroller.generators.MaxSpeedGenerator;
@@ -67,7 +68,7 @@ public class SpeedInstructions {
     }
 
     /** Generates all the instructions, expected to be called when the train is created in the simulation */
-    public void generate(Simulation sim, TrainSchedule schedule) {
+    public void generate(Simulation sim, TrainSchedule schedule) throws SimulationError {
         maxSpeedControllers = new MaxSpeedGenerator().generate(sim, schedule, null);
         targetSpeedControllers = new HashSet<>(maxSpeedControllers);
         for (var generatorSet : targetSpeedGenerators) {

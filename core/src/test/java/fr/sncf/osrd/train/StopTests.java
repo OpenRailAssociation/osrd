@@ -1,7 +1,7 @@
 package fr.sncf.osrd.train;
 
 import static fr.sncf.osrd.Helpers.*;
-import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.TIME;
+import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.PERCENTAGE;
 import static fr.sncf.osrd.speedcontroller.SpeedInstructionsTests.isLate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -181,7 +181,7 @@ public class StopTests {
         var durationStopShort = 10;
         var durationStopLong = 100;
         double value = 10;
-        var allowance = new RJSAllowance.LinearAllowance(TIME, value);
+        var allowance = new RJSAllowance.LinearAllowance(PERCENTAGE, value);
 
         final var configWithShortStop =
                 TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
@@ -239,7 +239,7 @@ public class StopTests {
         var durationStopShort = 10;
         var durationStopLong = 100;
         double value = 30;
-        final double begin = 4000;
+        final double begin = 3000;
         final double end = 5000;
 
         var allowance = new RJSAllowance.ConstructionAllowance(value);
@@ -291,7 +291,7 @@ public class StopTests {
         var durationStopShort = 10;
         var durationStopLong = 100;
         double value = 10;
-        var allowance = new RJSAllowance.MarecoAllowance(RJSAllowance.MarecoAllowance.MarginType.TIME, value);
+        var allowance = new RJSAllowance.MarecoAllowance(RJSAllowance.MarecoAllowance.MarginType.PERCENTAGE, value);
 
         final var configWithShortStop = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
 
