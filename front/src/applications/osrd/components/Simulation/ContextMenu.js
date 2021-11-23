@@ -88,6 +88,7 @@ export default function ContextMenu() {
   const duplicateTrain = async () => {
     setGoUpdate(true);
     const trains = Array.from(simulation.trains);
+    const newMarginsSettings = { ...marginsSettings };
     let actualTrainCount = 1;
     for (let nb = 1; nb <= trainCount; nb += 1) {
       const newTrainDelta = (60 * trainDelta * nb);
@@ -102,6 +103,15 @@ export default function ContextMenu() {
       );
       if (newTrain.id) {
         trains.splice(selectedTrain + nb, 0, newTrain);
+        // Create margins settings for each train if not set
+        newMarginsSettings[newTrain.id] = {
+          base: true,
+          baseBlocks: false,
+          margins: true,
+          marginsBlocks: false,
+          eco: true,
+          ecoBlocks: true,
+        };
         dispatch(setSuccess({
           title: t('osrdconf:trainAdded'),
           text: `${trainName}: ${sec2time(newOriginTime)}`,
@@ -109,6 +119,7 @@ export default function ContextMenu() {
       }
       actualTrainCount += trainStep;
     }
+    dispatch(updateMarginsSettings(newMarginsSettings));
     dispatch(updateSimulation({ ...simulation, trains }));
     dispatch(updateSelectedTrain(selectedTrain + 1));
     dispatch(updateContextMenu(undefined));

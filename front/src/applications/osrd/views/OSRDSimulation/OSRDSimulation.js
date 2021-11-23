@@ -81,9 +81,9 @@ const OSRDSimulation = () => {
               base: true,
               baseBlocks: false,
               margins: true,
-              marginsBlocks: true,
+              marginsBlocks: false,
               eco: true,
-              ecoBlocks: false,
+              ecoBlocks: true,
             };
           }
         });
