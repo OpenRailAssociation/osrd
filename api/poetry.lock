@@ -762,8 +762,8 @@ production = ["gunicorn", "sentry-sdk", "uvloop", "httptools", "uvicorn"]
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.9"
-content-hash = "9d356a1176dea9d395f509a639a8dd42eb94863e5e8726a0ba8c02bdb0afdd5f"
+python-versions = ">=3.8,<4"
+content-hash = "11f395f8c59d05f6f897a1938ad803ddf5ae8189de54803233bd50b1d066aef2"
 
 [metadata.files]
 amqp = [
