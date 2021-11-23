@@ -153,6 +153,28 @@ export const mergeDatasArea = (data1, data2, keyValues) => data1.map(
   }),
 );
 
+export const mergeDatasArea2 = (data1, data2, keyValues) => {
+  const points = [];
+  data1.forEach((step, i) => {
+    points.push({
+      [keyValues[0]]: step[keyValues[0]],
+      value0: step[keyValues[1]],
+      value1: (data2 !== undefined) ? data2[i][keyValues[1]] : 0,
+    });
+    points.push({
+      [keyValues[0]]: (data2 !== undefined) ? data2[i][keyValues[0]] : 0,
+      value0: step[keyValues[1]],
+      value1: (data2 !== undefined) ? data2[i][keyValues[1]] : 0,
+    });
+    points.push({
+      [keyValues[0]]: (data2 !== undefined) ? data2[i][keyValues[0]] : 0,
+      value0: (data2 !== undefined) ? data2[i][keyValues[1]] : 0,
+      value1: step[keyValues[1]],
+    });
+  });
+  return points;
+};
+
 // Transform little arrays of data (staircases values like emergency or indication)
 // along all steps values
 export const expandAndFormatData = (reference, dataToExpand) => reference.map((step) => {

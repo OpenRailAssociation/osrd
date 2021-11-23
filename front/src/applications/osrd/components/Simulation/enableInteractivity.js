@@ -64,10 +64,12 @@ const updateChart = (chart, keyValues, rotate) => {
         .y((d) => newY(d[keyValues[0]]))
         .x0((d) => newX(d.value0))
         .x1((d) => newX(d.value1))
+        .curve(keyValues[0] === 'time' ? d3.curveStepAfter : d3.curveLinear)
       : d3.area()
         .x((d) => newX(d[keyValues[0]]))
         .y0((d) => newY(d.value0))
-        .y1((d) => newY(d.value1))));
+        .y1((d) => newY(d.value1))
+        .curve(keyValues[0] === 'time' ? d3.curveStepAfter : d3.curveLinear)));
 
   // OPERATIONNAL POINTS
   if (rotate) {
