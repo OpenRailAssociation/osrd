@@ -254,6 +254,9 @@ svg text {
       &.eco {
         stroke: var(--orange);
       }
+      &.vmax {
+        stroke: var(--purple);
+      }
     }
   }
   .handle-tab-resize {

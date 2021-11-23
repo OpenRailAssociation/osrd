@@ -63,12 +63,9 @@ export default function SpeedSpaceChart(props) {
     );
   }
   dataSimulation.areaBlock = mergeDatasArea(dataSimulation.speed, undefined, keyValues);
-  /* dataSimulation.emergency = expandAndFormatData(
-    dataSimulation.speed, simulation.trains[selectedTrain].emergency,
+  dataSimulation.vmax = simulation.trains[selectedTrain].vmax.map(
+    (step) => ({ speed: step.speed * 3.6, position: step.position }),
   );
-  dataSimulation.indication = expandAndFormatData(
-    dataSimulation.speed, simulation.trains[selectedTrain].indication,
-  ); */
 
   const toggleRotation = () => {
     d3.select(`#${CHART_ID}`).remove();
@@ -131,6 +128,9 @@ export default function SpeedSpaceChart(props) {
       }
       if (dataSimulation.eco_speed) {
         drawCurve(chartLocal, 'speed eco', dataSimulation.eco_speed, 'speedSpaceChart', 'curveLinear', keyValues, 'eco_speed', rotate);
+      }
+      if (dataSimulation.vmax) {
+        drawCurve(chartLocal, 'speed vmax', dataSimulation.vmax, 'speedSpaceChart', 'curveLinear', keyValues, 'vmax', rotate);
       }
 
       // Operational points
