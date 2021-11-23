@@ -1,6 +1,6 @@
 import {
   formatStepsWithTime, formatStepsWithTimeMulti,
-  makeStairCase, mergeDatasArea,
+  makeStairCase, mergeDatasArea, mergeDatasArea2,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
 import { setFailure } from 'reducers/main.ts';
 
@@ -19,7 +19,7 @@ export default function createTrain(dispatch, keyValues, simulationTrains, t) {
     dataSimulationTrain.routeBeginOccupancy = formatStepsWithTime(
       makeStairCase(train.base.route_begin_occupancy),
     );
-    dataSimulationTrain.areaBlock = mergeDatasArea(
+    dataSimulationTrain.areaBlock = mergeDatasArea2(
       dataSimulationTrain.routeEndOccupancy, dataSimulationTrain.routeBeginOccupancy, keyValues,
     );
     dataSimulationTrain.speed = formatStepsWithTime(train.base.speeds);
