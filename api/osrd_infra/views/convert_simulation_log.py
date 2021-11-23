@@ -1,6 +1,7 @@
 from dataclasses import asdict, dataclass
 from typing import Dict, Iterator, List, Union
 
+from osrd_infra.models import Path, TrainSchedule
 from osrd_infra.views.projection import Projection
 
 
@@ -10,11 +11,13 @@ def convert_simulation_logs(train_schedule, projection_path):
     projection = Projection(projection_path)
 
     base = convert_simulation_log(train_schedule.base_simulation_log, train_path, projection, projection_path)
+    vmax = convert_vmax(train_path, train_schedule)
     res = {
         "id": train_schedule.pk,
         "labels": [label.label for label in train_schedule.labels.all()],
         "path": train_schedule.path_id,
         "name": train_schedule.train_name,
+        "vmax": vmax,
         "base": base,
     }
 
@@ -49,6 +52,16 @@ def convert_simulation_log(simulation_result, train_path, projection, projection
         "signals": simulation_result["signals"],
         "stops": simulation_result["stops"],
     }
+
+
+def convert_vmax(path: Path, train_schedule: TrainSchedule):
+    vmax = path.vmax
+    rolling_stock_vmax = train_schedule.rolling_stock.max_speed
+    # Replace -1 speeds (no vmax) to the rolling stock max speed
+    for point in vmax:
+        if point["speed"] == -1:
+            point["speed"] = rolling_stock_vmax
+    return vmax
 
 
 def interpolate_locations(loc_a, loc_b, path_position):
