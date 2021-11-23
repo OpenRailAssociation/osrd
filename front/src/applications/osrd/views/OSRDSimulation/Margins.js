@@ -16,13 +16,6 @@ import DotsLoader from 'common/DotsLoader/DotsLoader';
 
 const trainscheduleURI = '/train_schedule/';
 
-const marginNewDatas = {
-  type: 'construction',
-  begin_position: 0,
-  end_position: 0,
-  value: 0,
-};
-
 const TYPEUNITS = {
   construction: 's',
   ratio_time: '%',
@@ -31,6 +24,14 @@ const TYPEUNITS = {
 
 const EmptyLine = (props) => {
   const { margins, setMargins, setUpdateMargins } = props;
+  const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
+  const marginNewDatas = {
+    type: 'construction',
+    begin_position: 0,
+    end_position: simulation.trains[selectedTrain].base.stops[
+      simulation.trains[selectedTrain].base.stops.length - 1].position,
+    value: 0,
+  };
   const [values, setValues] = useState(marginNewDatas);
   const [fromTo, setFromTo] = useState('from');
   const { t } = useTranslation(['margins']);
