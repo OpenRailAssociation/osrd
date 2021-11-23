@@ -16,6 +16,7 @@ django-redis = "5.0.0"
 jsonschema = "3.2.0"
 requests = "2.25.1"
 pillow = "8.3.2"
+intervaltree = "3.1.0"
 
 # production
 gunicorn = {version = "20.1.0", optional = true}

@@ -1,20 +1,19 @@
-from django.contrib.gis.geos import LineString, Point
-from rest_framework.generics import get_object_or_404
-from rest_framework.viewsets import GenericViewSet
-from rest_framework import mixins
-from rest_framework.exceptions import ParseError
+from collections import defaultdict
+
 import requests
 from django.conf import settings
-from osrd_infra.views.railjson import format_track_section_id
+from django.contrib.gis.geos import LineString, Point
+from intervaltree import IntervalTree
+from rest_framework import mixins
+from rest_framework.exceptions import ParseError
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from osrd_infra.utils import geo_transform, reverse_format, line_string_slice_points
+from rest_framework.viewsets import GenericViewSet
 
-from osrd_infra.serializers import (
-    PathSerializer,
-    PathInputSerializer,
-)
-
-from osrd_infra.models import Path, TrackSectionEntity, OperationalPointEntity
+from osrd_infra.models import OperationalPointEntity, Path, TrackSectionEntity
+from osrd_infra.serializers import PathInputSerializer, PathSerializer
+from osrd_infra.utils import geo_transform, line_string_slice_points, reverse_format
+from osrd_infra.views.railjson import format_track_section_id
 
 
 def status_missing_field_keyerror(key_error: KeyError):
@@ -35,9 +34,7 @@ def payload_reverse_format(payload):
         for track in route["track_sections"]:
             track["track_section"] = reverse_format(track["track_section"])
     for step in payload["steps"]:
-        step["position"]["track_section"] = reverse_format(
-            step["position"]["track_section"]
-        )
+        step["position"]["track_section"] = reverse_format(step["position"]["track_section"])
     return payload
 
 
@@ -80,10 +77,8 @@ def request_pathfinding(payload):
 
 def fetch_track_sections(ids):
 
-    related_names = ["geo_line_location", "track_section"]
-    tracks = TrackSectionEntity.objects.prefetch_related(*related_names).filter(
-        pk__in=ids
-    )
+    related_names = ["geo_line_location", "track_section", "range_objects"]
+    tracks = TrackSectionEntity.objects.prefetch_related(*related_names).filter(pk__in=ids)
 
     return {track.pk: track for track in tracks}
 
@@ -131,9 +126,7 @@ def parse_steps_input(steps):
             try:
                 track = track_map[waypoint["track_section"]]
             except KeyError:
-                raise ParseError(
-                    f"Track section '{waypoint['track_section']}' doesn't exists"
-                )
+                raise ParseError(f"Track section '{waypoint['track_section']}' doesn't exists")
 
             if "offset" in waypoint:
                 offset = waypoint["offset"]
@@ -151,6 +144,45 @@ def parse_steps_input(steps):
         waypoints.append(step_result)
 
     return waypoints, step_stop_times
+
+
+def add_vmax_result(result, position, speed):
+    struct = {"position": position, "speed": speed}
+    if len(result) < 2 or result[-2]["speed"] != result[-1]["speed"] or result[-1]["speed"] != speed:
+        result.append(struct)
+    else:
+        result[-1] = struct
+
+
+def compute_vmax(payload, track_map):
+    track_vmax = defaultdict(IntervalTree)
+    for track_id, track in track_map.items():
+        # Set a default vmax of -1 (need to be override by the rolling stock max speed)
+        track_vmax[track_id].addi(0, track.track_section.length, -1)
+        for range_component in track.range_objects.all():
+            start = range_component.start_offset
+            end = range_component.end_offset
+            speed = range_component.entity.speed_section_part.speed_section.speed_section.speed
+            track_vmax[track.entity_id].chop(start, end)
+            track_vmax[track.entity_id].addi(start, end, speed)
+    result = []
+    offset = 0
+    for route in payload["path"]:
+        for track_range in route["track_sections"]:
+            begin = track_range["begin"]
+            end = track_range["end"]
+            tree = track_vmax[track_range["track_section"]]
+            if begin < end:
+                for interval in tree.overlap(begin, end):
+                    add_vmax_result(result, offset, interval.data)
+                    offset += abs(max(begin, interval.begin) - min(end, interval.end))
+                    add_vmax_result(result, offset, interval.data)
+            else:
+                for interval in reversed(list(tree.overlap(end, begin))):
+                    add_vmax_result(result, offset, interval.data)
+                    offset += abs(max(end, interval.begin) - min(begin, interval.end))
+                    add_vmax_result(result, offset, interval.data)
+    return result
 
 
 def compute_path(path, data, owner):
@@ -171,6 +203,7 @@ def compute_path(path, data, owner):
     path.payload = payload
     path.geographic = geographic
     path.schematic = schematic
+    path.vmax = compute_vmax(payload, track_map)
 
     path.save()
 
