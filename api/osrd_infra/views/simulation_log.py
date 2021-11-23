@@ -84,7 +84,7 @@ def get_allowances_payload(margins, sim_type: SimulationType):
     for margin in margins:
         if margin["type"] == "construction":
             continue
-        allowance_type = "TIME" if margin["type"] == "ratio_time" else "DISTANCE"
+        allowance_type = "PERCENTAGE" if margin["type"] == "ratio_time" else "DISTANCE"
         linear_margins.append(
             {
                 "allowance_value": margin["value"],
