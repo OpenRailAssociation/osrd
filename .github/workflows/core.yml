@@ -22,16 +22,37 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: 11
+      - uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
+
       - uses: gradle/gradle-build-action@v2
         with:
           gradle-version: 7.2
-          arguments: -p core -Pspotbugs_report_xml check
-      - name: Publish Test Report
+          arguments: -p core -Pspotbugs_report_xml --continue check
+
+      - name: Report JUnit failures
         uses: mikepenz/action-junit-report@v2
         if: failure()
         with:
-          report_paths: |
-            core/build/test-results/test/TEST*.xml
-            core/build/reports/checkstyle/*.xml
-            core/build/reports/spotbugs/*.xml
+          report_paths: "core/build/test-results/test/TEST-*.xml"
           require_tests: true
+
+      - name: Report checkstyle lints
+        if: failure()
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          for report_path in core/build/reports/checkstyle/*.xml; do
+              report="${report_path##*/}"
+              sourceset_name="${report%.xml}"
+              report_name="Checkstyle ${sourceset_name}"
+              echo "Uploading ${report_name}"
+              reviewdog -name "${report_name}" -reporter=github-pr-check -f=checkstyle < "${report_path}"
+          done
+
+      - name: Report spotbugs lints
+        if: failure()
+        uses: jwgmeligmeyling/spotbugs-github-action@v1.2
+        with:
+          path: "core/build/reports/spotbugs/*.xml"
