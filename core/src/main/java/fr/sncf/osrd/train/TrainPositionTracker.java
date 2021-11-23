@@ -20,8 +20,15 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
     /** The path of the train */
     public final List<TrackSectionRange> trackSectionPath;
 
-    /** Keys are positions in the paths, values are the sum of the slopes (per meter) before that point */
-    private final SortedDoubleMap integratedTrainGrade;
+    /** Keys are positions in the paths, values are the sum of the slopes (per meter) before that point
+     * See: https://en.wikipedia.org/wiki/Prefix_sum
+     * To get the average train grade between two points, get the difference and divide by the length (m) */
+    private final SortedDoubleMap prefixSumTrainGrade;
+
+    /** Cache to avoid recomputing the prefix sum
+     * Keys are lists of track section ranges, values are precomputed position trackers at their start positions */
+    private static HashMap<List<TrackSectionRange>, TrainPositionTracker> cachedPositionTrackers
+            = new HashMap<>();
 
     /**
      * Create a new position tracker on some given infrastructure and path.
@@ -30,16 +37,16 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
             double headPathPosition,
             double tailPathPosition,
             List<TrackSectionRange> trackSectionPath,
-            SortedDoubleMap integratedTrainGrade
+            SortedDoubleMap prefixSumTrainGrade
     ) {
         this.trackSectionPath = trackSectionPath;
-        this.integratedTrainGrade = integratedTrainGrade;
+        this.prefixSumTrainGrade = prefixSumTrainGrade;
         this.headPathPosition = headPathPosition;
         this.tailPathPosition = tailPathPosition;
     }
 
     private TrainPositionTracker(TrainPositionTracker tracker) {
-        this.integratedTrainGrade = tracker.integratedTrainGrade;
+        this.prefixSumTrainGrade = tracker.prefixSumTrainGrade;
         this.headPathPosition = tracker.headPathPosition;
         this.tailPathPosition = tracker.tailPathPosition;
         this.trackSectionPath = tracker.trackSectionPath;
@@ -47,17 +54,17 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
 
     /** Creates a location from a path (placed at its beginning) */
     public static TrainPositionTracker from(TrainPath path) {
-        if (path.cachedIntegratedGrade == null)
-            path.cachedIntegratedGrade = initIntegralGrade(path.trackSectionPath);
-        return new TrainPositionTracker(0, 0,
-                path.trackSectionPath, path.cachedIntegratedGrade);
+        return from(path.trackSectionPath);
     }
 
     /** Creates a location from a list of track ranges */
     public static TrainPositionTracker from(List<TrackSectionRange> tracks) {
-        var integratedGrade = initIntegralGrade(tracks);
-        return new TrainPositionTracker(0, 0,
-                tracks, integratedGrade);
+        var cachedTracker = cachedPositionTrackers.computeIfAbsent(tracks, (key) -> {
+            var prefixSumGrade = initPrefixSumGrade(key);
+            return new TrainPositionTracker(0, 0,
+                    key, prefixSumGrade);
+        });
+        return cachedTracker.clone();
     }
 
     // region STD_OVERRIDES
@@ -90,7 +97,7 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
         return this;
     }
 
-    private static SortedDoubleMap initIntegralGrade(List<TrackSectionRange> trackSectionPath) {
+    private static SortedDoubleMap initPrefixSumGrade(List<TrackSectionRange> trackSectionPath) {
         var res = new SortedDoubleMap();
         var sumPreviousRangeLengths = 0.;
         var sumSlope = 0.;
@@ -148,8 +155,8 @@ public final class TrainPositionTracker implements Cloneable, DeepComparable<Tra
 
     /** Computes the average grade (slope) under the train. */
     public double meanTrainGrade() {
-        var sum = integratedTrainGrade.interpolate(headPathPosition)
-                - integratedTrainGrade.interpolate(tailPathPosition);
+        var sum = prefixSumTrainGrade.interpolate(headPathPosition)
+                - prefixSumTrainGrade.interpolate(tailPathPosition);
         return sum / (headPathPosition - tailPathPosition);
     }
 

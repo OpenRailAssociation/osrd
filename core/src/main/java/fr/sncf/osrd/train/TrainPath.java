@@ -28,8 +28,6 @@ public class TrainPath {
     /** Path length in meters */
     public final double length;
 
-    public SortedDoubleMap cachedIntegratedGrade = null;
-
     /** Constructor */
     public TrainPath(List<Route> routePath,
                      TrackSectionLocation startLocation,
