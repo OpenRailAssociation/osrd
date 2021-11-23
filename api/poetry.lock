@@ -187,7 +187,7 @@ dev = ["tox", "bump2version (<1)", "sphinx (<2)", "importlib-metadata (<3)", "im
 
 [[package]]
 name = "django"
-version = "3.1.6"
+version = "3.1.13"
 description = "A high-level Python Web framework that encourages rapid development and clean, pragmatic design."
 category = "main"
 optional = false
@@ -763,7 +763,7 @@ production = ["gunicorn", "sentry-sdk", "uvloop", "httptools", "uvicorn"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "9d356a1176dea9d395f509a639a8dd42eb94863e5e8726a0ba8c02bdb0afdd5f"
+content-hash = "95b4d8c489bd233bb6da1f793f875ffddaf5827fbdf697bf431fdc7050ab563e"
 
 [metadata.files]
 amqp = [
@@ -869,8 +869,8 @@ deprecated = [
     {file = "Deprecated-1.2.13.tar.gz", hash = "sha256:43ac5335da90c31c24ba028af536a91d41d53f9e6901ddb021bcc572ce44e38d"},
 ]
 django = [
-    {file = "Django-3.1.6-py3-none-any.whl", hash = "sha256:169e2e7b4839a7910b393eec127fd7cbae62e80fa55f89c6510426abf673fe5f"},
-    {file = "Django-3.1.6.tar.gz", hash = "sha256:c6c0462b8b361f8691171af1fb87eceb4442da28477e12200c40420176206ba7"},
+    {file = "Django-3.1.13-py3-none-any.whl", hash = "sha256:a6e0d1ff11095b7394c079ade7094c73b2dc3df4a7a373c9b58ed73b77a97feb"},
+    {file = "Django-3.1.13.tar.gz", hash = "sha256:9f8be75646f62204320b195062b1d696ba28aa3d45ee72fb7c888ffaebc5bdb2"},
 ]
 django-cors-headers = [
     {file = "django-cors-headers-3.8.0.tar.gz", hash = "sha256:4b8e13bf8d3df50ac4b986bd87085c3073dd56402ede109222ea34a774f9ec1b"},
