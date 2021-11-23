@@ -1,7 +1,7 @@
-from django.contrib.gis.db import models
-from osrd_infra.models import EntityNamespace
 from django.conf import settings
+from django.contrib.gis.db import models
 
+from osrd_infra.models import EntityNamespace
 from osrd_infra.utils import JSONSchemaValidator
 
 PAYLOAD_SCHEMA = {
@@ -70,6 +70,20 @@ PAYLOAD_SCHEMA = {
     },
 }
 
+VMAX_SCHEMA = {
+    "type": "array",
+    "minItems": 2,
+    "items": {
+        "type": "object",
+        "required": ["position", "speed"],
+        "additionalProperties": False,
+        "properties": {
+            "position": {"type": "number"},
+            "speed": {"type": "number"},
+        },
+    },
+}
+
 
 def format_track_section_id(entity_id: int) -> str:
     return f"track_section.{entity_id}"
@@ -77,14 +91,11 @@ def format_track_section_id(entity_id: int) -> str:
 
 class Path(models.Model):
     name = models.CharField(max_length=128, blank=False)
-    owner = models.UUIDField(
-        editable=False, default="00000000-0000-0000-0000-000000000000"
-    )
+    owner = models.UUIDField(editable=False, default="00000000-0000-0000-0000-000000000000")
     namespace = models.ForeignKey(EntityNamespace, on_delete=models.CASCADE)
     created = models.DateTimeField(editable=False, auto_now_add=True)
-    payload = models.JSONField(
-        validators=[JSONSchemaValidator(limit_value=PAYLOAD_SCHEMA)]
-    )
+    payload = models.JSONField(validators=[JSONSchemaValidator(limit_value=PAYLOAD_SCHEMA)])
+    vmax = models.JSONField(validators=[JSONSchemaValidator(limit_value=VMAX_SCHEMA)])
     geographic = models.LineStringField(srid=settings.OSRD_INFRA_SRID)
     schematic = models.LineStringField(srid=settings.OSRD_INFRA_SRID)
 
