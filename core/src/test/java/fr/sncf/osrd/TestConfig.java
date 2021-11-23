@@ -24,9 +24,12 @@ import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.train.RollingStock;
+import fr.sncf.osrd.train.TrackSectionRange;
+import fr.sncf.osrd.train.TrainPositionTracker;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.utils.PathUtils;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
+import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -189,9 +192,21 @@ public class TestConfig {
         }
     }
 
+    /** Resets the tracker cache, avoids tests interfering with each other */
+    private static void resetPositionCache() {
+        try {
+            Field field = TrainPositionTracker.class.getDeclaredField("cachedPositionTrackers");
+            field.setAccessible(true);
+            field.set(null, new HashMap<List<TrackSectionRange>, TrainPositionTracker>());
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            fail(e);
+        }
+    }
+
     /** Parse the configuration, and return a package that is ready for execution */
     public TestSimulationState prepare() {
         try {
+            resetPositionCache();
             var infra = RailJSONParser.parse(rjsInfra);
 
             var trainSchedules = RJSSimulationParser.parse(infra, rjsSimulation, extraRollingStocks);

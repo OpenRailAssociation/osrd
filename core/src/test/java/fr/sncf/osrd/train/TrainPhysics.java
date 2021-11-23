@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Collections;
 
 
@@ -23,7 +21,8 @@ public class TrainPhysics {
     public static TrainPositionTracker makeDummyTracker(double trainGrade) {
         var graph = new TrackGraph();
         double length = 100000;
-        var track = graph.makeTrackSection(0, 1, "", length, null);
+        var track = graph.makeTrackSection(0, 1,
+                String.valueOf(trainGrade), length, null);
         track.forwardGradients.addRange(0, length, trainGrade);
         track.backwardGradients.addRange(0, length, -trainGrade);
         var path = Collections.singletonList(
