@@ -8,6 +8,7 @@ services:
     container_name: postgres
     user: postgres
     restart: unless-stopped
+    ports: ["5432:5432"]
     environment:
       POSTGRES_PASSWORD: "password"
     volumes:
@@ -63,7 +64,7 @@ services:
       dockerfile: Dockerfile
       args:
         environment: test
-    ports: ["8080:80"]
+    ports: ["8000:80"]
     environment:
       PSQL_HOST: "postgres"
       DJANGO_SETTINGS_MODULE: "config.test"
@@ -87,7 +88,7 @@ services:
       dockerfile: Dockerfile
     container_name: osrd-core
     restart: unless-stopped
-    ports: ["8000:80"]
+    ports: ["8080:80"]
     command: "java -ea -jar /app/osrd_core.jar api -p 80"
     environment:
       MIDDLEWARE_BASE_URL: "http://osrd-api"
@@ -104,7 +105,7 @@ services:
       args:
         NGINX_CONFIG: "nginx-dev.conf"
         REACT_APP_LOCAL_BACKEND: "True"
-        REACT_APP_API_URL: "http://localhost:8080"
+        REACT_APP_API_URL: "http://localhost:8000"
         REACT_APP_CHARTIS_URL: "http://localhost:7000"
     container_name: osrd-front
     restart: unless-stopped
