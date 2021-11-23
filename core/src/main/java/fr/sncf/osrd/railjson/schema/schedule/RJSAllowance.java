@@ -42,6 +42,7 @@ public abstract class RJSAllowance {
 
         public enum MarginType {
             TIME,
+            PERCENTAGE,
             DISTANCE,
         }
     }
@@ -62,6 +63,7 @@ public abstract class RJSAllowance {
 
         public enum MarginType {
             TIME,
+            PERCENTAGE,
             DISTANCE,
         }
     }

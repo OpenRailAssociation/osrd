@@ -2,7 +2,7 @@ package fr.sncf.osrd.speedcontroller;
 
 import static fr.sncf.osrd.Helpers.getTimePerPosition;
 import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.DISTANCE;
-import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.TIME;
+import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.PERCENTAGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.TestConfig;
@@ -29,7 +29,7 @@ public class AllowanceTestsOnAllInfras {
     ) {
         var config = readConfig(rootPath);
 
-        var allowance = new RJSAllowance.LinearAllowance(TIME, value);
+        var allowance = new RJSAllowance.LinearAllowance(PERCENTAGE, value);
         var test = MarginTests.ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
 
         var start = config.rjsSimulation.trainSchedules.get(0).departureTime;
@@ -77,7 +77,8 @@ public class AllowanceTestsOnAllInfras {
             @ForAll("secondsMarginValues") double value
     ) {
         // setup allowances
-        var marecoAllowance = new RJSAllowance.MarecoAllowance(RJSAllowance.MarecoAllowance.MarginType.TIME, value);
+        var marecoAllowance =
+                new RJSAllowance.MarecoAllowance(RJSAllowance.MarecoAllowance.MarginType.PERCENTAGE, value);
 
         // run the baseline and testing simulation
         var config = readConfig(rootPath);
