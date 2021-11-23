@@ -238,7 +238,7 @@ svg text {
     }
     .speed {
       stroke: var(--blue);
-      stroke-width: 2;
+      stroke-width: 1;
       &.pointer {
         fill: var(--blue);
         &.margins {
@@ -255,6 +255,7 @@ svg text {
         stroke: var(--orange);
       }
       &.vmax {
+        stroke-width: 2;
         stroke: var(--purple);
       }
     }
