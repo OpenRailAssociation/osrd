@@ -83,6 +83,8 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
         coastingPhase.put(location.getPathPosition(), targetSpeed);
 
         // acceleration phase
+        // it is computed in order to get its beginning position
+        // later, this phase will be used in case the user asks for a high margin in a short distance
         speed = expectedSpeeds.interpolate(endPosition);
         location = convertPosition(schedule, endPosition);
         var acceleratingPhase = new SortedDoubleMap();
@@ -105,17 +107,15 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
         }
 
         var coastingLastPosition = coastingPhase.lastKey();
-        var accelerationFirstPosition = location.getPathPosition();
-        if (accelerationFirstPosition == coastingLastPosition)
+        var accelerationFirstPosition = acceleratingPhase.firstKey();
+        if (accelerationFirstPosition.equals(coastingLastPosition))
             throw new SimulationError("Construction margin value too high for such short distance");
         if (coastingPhase.size() > 1) {
             res.add(new CoastingSpeedController(initialPosition, coastingLastPosition));
         }
         var marecoSpeedControllers =
                 super.getSpeedControllers(schedule, targetSpeed, coastingLastPosition, accelerationFirstPosition);
-        for (SpeedController speedController : marecoSpeedControllers) {
-            res.add(speedController);
-        }
+        res.addAll(marecoSpeedControllers);
         return res;
     }
 

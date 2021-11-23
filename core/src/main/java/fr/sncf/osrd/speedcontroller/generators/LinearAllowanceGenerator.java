@@ -28,17 +28,21 @@ public class LinearAllowanceGenerator extends SpeedControllerGenerator {
         double percentage;
         if (allowanceType.equals(MarginType.PERCENTAGE))
             percentage = value;
-        else { // allowanceType = DISTANCE
+        else {
             var totalStopsDuration = schedule.getStopDuration();
             var expectedTime = getExpectedTimes(schedule, maxSpeeds, TIME_STEP);
             var totalTime = expectedTime.lastEntry().getValue() - expectedTime.firstEntry().getValue();
-            var schemaLength = expectedTime.lastEntry().getKey() - expectedTime.firstEntry().getKey();
-            var n = schemaLength / 100000; // number of portions of 100km in the train journey
-            var totalAllowanceMinutes = n * value; // margin value is in minutes per 100km
-            var totalAllowanceSeconds = totalAllowanceMinutes * 60;
-            // the margin should not affect the stop durations,
-            // so the percentage is calculated without the total stop duration
-            percentage = 100.0 * totalAllowanceSeconds / (totalTime - totalStopsDuration);
+            if (allowanceType.equals(MarginType.DISTANCE)) {
+                var schemaLength = expectedTime.lastEntry().getKey() - expectedTime.firstEntry().getKey();
+                var n = schemaLength / 100000; // number of portions of 100km in the train journey
+                var totalAllowanceMinutes = n * value; // margin value is in minutes per 100km
+                var totalAllowanceSeconds = totalAllowanceMinutes * 60;
+                // the margin should not affect the stop durations,
+                // so the percentage is calculated without the total stop duration
+                percentage = 100.0 * totalAllowanceSeconds / (totalTime - totalStopsDuration);
+            } else { // TIME
+                percentage = 100 * value / (totalTime - totalStopsDuration);
+            }
         }
         double scaleFactor = 1 / (1 + percentage / 100);
 

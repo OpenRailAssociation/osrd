@@ -84,7 +84,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         var firstGuess = getFirstGuess();
 
         // base run
-        var times = getExpectedTimes(sim, schedule, maxSpeedControllers, TIME_STEP);
+        var times = getExpectedTimes(schedule, maxSpeedControllers, TIME_STEP);
         var time = times.lastEntry().getValue() - times.firstEntry().getValue();
         var distance = times.lastEntry().getKey() - times.firstEntry().getKey();
         var targetTime = getTargetTime(time, distance);
