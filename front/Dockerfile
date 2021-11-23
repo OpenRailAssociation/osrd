@@ -24,9 +24,10 @@ RUN REACT_APP_LOCAL_BACKEND=$REACT_APP_LOCAL_BACKEND \
 # Copy & serve app
 FROM nginx:alpine
 
+ARG NGINX_CONFIG=nginx.conf
 COPY --from=build /app/build /usr/share/nginx/html
 RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx/nginx.conf /etc/nginx/conf.d
+COPY nginx/$NGINX_CONFIG /etc/nginx/conf.d
 
 EXPOSE 80
 
