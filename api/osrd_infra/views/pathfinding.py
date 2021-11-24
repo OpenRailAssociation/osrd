@@ -173,12 +173,12 @@ def compute_vmax(payload, track_map):
             end = track_range["end"]
             tree = track_vmax[track_range["track_section"]]
             if begin < end:
-                for interval in tree.overlap(begin, end):
+                for interval in sorted(tree.overlap(begin, end)):
                     add_vmax_result(result, offset, interval.data)
                     offset += abs(max(begin, interval.begin) - min(end, interval.end))
                     add_vmax_result(result, offset, interval.data)
             else:
-                for interval in reversed(list(tree.overlap(end, begin))):
+                for interval in reversed(sorted(tree.overlap(end, begin))):
                     add_vmax_result(result, offset, interval.data)
                     offset += abs(max(end, interval.begin) - min(begin, interval.end))
                     add_vmax_result(result, offset, interval.data)
