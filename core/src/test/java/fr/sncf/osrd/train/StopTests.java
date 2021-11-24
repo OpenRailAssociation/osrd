@@ -8,11 +8,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.infra.StopActionPoint;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
 import fr.sncf.osrd.simulation.TimelineEvent;
+import fr.sncf.osrd.speedcontroller.CoastingSpeedController;
 import fr.sncf.osrd.speedcontroller.MarginTests;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public class StopTests {
 
@@ -176,6 +182,7 @@ public class StopTests {
         assertEquals(6, nStops);
     }
 
+    @Disabled
     @Test
     public void testStopWithLinearMargin() {
         var durationStopShort = 10;
@@ -342,4 +349,49 @@ public class StopTests {
                 timeLongStopWithMargin,
                 expectedTimeLongStopWithMargin * 0.01);
     }
+
+    @Test
+    public void testMultipleStopsWithMareco(TestInfo info) {
+        var durationStop = 10;
+        double value = 10;
+        final var allowance =
+                new RJSAllowance.MarecoAllowance(RJSAllowance.MarecoAllowance.MarginType.PERCENTAGE, value);
+
+        final var config = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
+
+        //flatten the infra to get clear coasting phases
+        var slopes = new ArrayList<RJSSlope>();
+        slopes.add(new RJSSlope(0, 10000, 0));
+        for (var trackSection : config.rjsInfra.trackSections) {
+            if ("ne.micro.foo_to_bar".equals(trackSection.id))
+                trackSection.slopes = slopes;
+        }
+        //set the max speed to 80 everywhere
+        for (var speedSection : config.rjsInfra.speedSections)
+            speedSection.speed = 80;
+
+        for (var schedule : config.rjsSimulation.trainSchedules)
+            schedule.stops = new RJSTrainStop[]{
+                    new RJSTrainStop(2000., null, durationStop),
+                    new RJSTrainStop(3000., null, durationStop),
+                    new RJSTrainStop(4000., null, durationStop),
+                    new RJSTrainStop(5000., null, durationStop),
+                    new RJSTrainStop(7000., null, durationStop),
+                    new RJSTrainStop(-1., null, 1)
+            };
+
+        var test = MarginTests.ComparativeTest.from(
+                        config, () -> config.setAllAllowances(allowance)
+                );
+        test.saveGraphs(info);
+
+        var schedule = test.testedState.schedules.get(0);
+        var coastingSpeedControllers = schedule.speedInstructions.targetSpeedControllers.stream()
+                    .filter(sc -> sc instanceof CoastingSpeedController)
+                    .collect(Collectors.toSet());
+        var nCoastingSpeedControllers = coastingSpeedControllers.size();
+        // make sure 6 coastingSpeedControllers are generated, one for each stop
+        assertEquals(6, nCoastingSpeedControllers);
+    }
 }
+
