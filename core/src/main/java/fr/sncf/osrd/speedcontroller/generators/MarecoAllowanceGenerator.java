@@ -130,16 +130,19 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         // coasting before deceleration phases
         var limitAnnounceSpeedControllers = findLimitSpeedAnnouncers(maxSpeedControllers);
         for (var announcer : limitAnnounceSpeedControllers) {
+            double targetSpeed = announcer.targetSpeedLimit;
             // if that LimitAnnounceSpeedController is above v1 that means it will not have an impact here
-            if (announcer.targetSpeedLimit > v1)
+            if (targetSpeed > v1)
                 continue;
             // deceleration phases that are entirely above vf
-            if (announcer.targetSpeedLimit > vf) {
+            //TODO : same as below, find a way to make sure this targetSpeed is actually reached
+            // because in some cases this announcer does not even have an impact
+            // for example if there is another one more constraining before/below
+            if (targetSpeed > vf && abs(speeds.interpolate(announcer.endPosition) - targetSpeed) < 1) {
                 res.add(announcer.endPosition);
                 continue;
             }
             // deceleration phases that cross vf
-            double targetSpeed = announcer.targetSpeedLimit;
             // From vf to targetSpeedLimit
             double requiredBrakingDistance = Double.max(0,
                     vf * vf - targetSpeed * targetSpeed) / (2 * schedule.rollingStock.gamma);
