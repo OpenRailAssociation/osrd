@@ -17,7 +17,10 @@ import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSuccession;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
+import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
+import fr.sncf.osrd.railjson.schema.infra.RJSSpeedSection;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSectionPart;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -25,6 +28,7 @@ import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
 import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.utils.PathUtils;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
@@ -162,6 +166,23 @@ public class TestConfig {
     public TestConfig setAllAllowances(RJSAllowance[][] allowances) {
         for (var trainSchedule : rjsSimulation.trainSchedules)
             trainSchedule.allowances = allowances;
+        return this;
+    }
+
+    /** Set a global speed limit on all the train path */
+    public TestConfig setGlobalSpeedLimit(double speed) {
+        ID<RJSSpeedSection> id = null;
+
+        for (var speedSection : rjsInfra.speedSections) {
+            id = ID.from(speedSection);
+            speedSection.speed = speed;
+        }
+
+        for (var trackSection : rjsInfra.trackSections)
+            trackSection.speedSections =
+                    Collections.singletonList(
+                            new RJSSpeedSectionPart(id, ApplicableDirection.BOTH, 0, trackSection.length)
+                    );
         return this;
     }
 

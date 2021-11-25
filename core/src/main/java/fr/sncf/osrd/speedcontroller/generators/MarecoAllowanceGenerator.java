@@ -145,7 +145,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             // deceleration phases that cross vf
             // From vf to targetSpeedLimit
             double requiredBrakingDistance = Double.max(0,
-                    vf * vf - targetSpeed * targetSpeed) / (2 * schedule.rollingStock.gamma);
+                    computeBrakingDistance(announcer.beginPosition, announcer.endPosition, vf, targetSpeed, schedule));
             //TODO : modifiy this once the envelopes are implemented
             // we need to take into accounts positions that are still on the deceleration phase
             // to avoid the case where vf is high and then requiredBrakingDistance is very high

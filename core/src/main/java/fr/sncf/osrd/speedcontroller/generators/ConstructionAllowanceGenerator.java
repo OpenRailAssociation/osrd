@@ -117,20 +117,19 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
 
     /** compute the braking distance from (initialPosition,initialSpeed) to a given target speed */
     @Override
-    protected double computeBrakingDistance(double initialPosition, double endPosition,
-                                         double initialSpeed, double targetSpeed, TrainSchedule schedule) {
+    protected double computeBrakingDistance(double initialPosition, double endPosition, double initialSpeed,
+                                            double targetSpeed, TrainSchedule schedule) {
 
         if (schedule.rollingStock.gammaType == RollingStock.GammaType.CONST)
             return (initialSpeed * initialSpeed - targetSpeed * targetSpeed) / (2 * schedule.rollingStock.gamma);
 
-        var res = getStepsAtPositionsToTarget(sim, schedule,
+        var res = getStepsAtPositionsToTarget(schedule,
                 initialPosition, initialSpeed, endPosition, targetSpeed);
         return res.lastKey() - res.firstKey();
     }
 
     /** compute the running time calculation from (initialPosition,initialSpeed) to a given target speed */
-    private NavigableMap<Double, IntegrationStep> getStepsAtPositionsToTarget(Simulation sim,
-                                                                              TrainSchedule schedule,
+    private NavigableMap<Double, IntegrationStep> getStepsAtPositionsToTarget(TrainSchedule schedule,
                                                                               double initialPosition,
                                                                               double initialSpeed,
                                                                               double endPosition,
