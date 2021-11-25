@@ -1,0 +1,41 @@
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build_push_core:
+    uses: ./.github/actions/docker-build-push@dev
+    with:
+      context: core
+      image_name: osrd/osrd-core
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  build_push_api:
+    uses: ./.github/actions/docker-build-push@dev
+    with:
+      context: api
+      image_name: osrd/osrd-api
+    build-args: |
+      environment=test
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  build_push_front:
+    uses: ./.github/actions/docker-build-push@dev
+    with:
+      context: front
+      image_name: osrd/osrd-front
+    build-args: |
+      NGINX_CONFIG=nginx-dev.conf
+      REACT_APP_LOCAL_BACKEND=True
+      REACT_APP_API_URL=http://localhost:8000
+      REACT_APP_CHARTIS_URL=http://localhost:7000
+
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
