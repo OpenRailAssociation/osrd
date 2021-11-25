@@ -4,8 +4,7 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { sec2time } from 'utils/timeManipulation';
 
-function formatStops(stop) {
-  const departureTime = (stop.stop_time > 0) ? stop.time + stop.stop_time : '';
+function formatStops(stop, idx, train) {
   return (
     <tr key={nextId()}>
       <td>
@@ -14,10 +13,22 @@ function formatStops(stop) {
         </div>
       </td>
       <td><div className="cell-inner">{sec2time(stop.time)}</div></td>
-      <td><div className="cell-inner">{sec2time(departureTime)}</div></td>
+      <td><div className="cell-inner">{stop.stop_time > 0 && sec2time(stop.time + stop.stop_time)}</div></td>
       <td>
         <div className="cell-inner">
           {stop.stop_time > 0 ? `${stop.stop_time}s` : null}
+        </div>
+      </td>
+      <td>
+        <div className="cell-inner">
+          {train.eco
+          && sec2time(train.eco.stops[idx].time)}
+        </div>
+      </td>
+      <td>
+        <div className="cell-inner">
+          {train.eco && train.eco.stops[idx].stop_time > 0
+            && sec2time(train.eco.stops[idx].time + train.eco.stops[idx].stop_time)}
         </div>
       </td>
     </tr>
@@ -41,10 +52,12 @@ export default function TimeTable() {
                 <th scope="col"><div className="cell-inner">{t('simulation:stopTime')}</div></th>
                 <th scope="col"><div className="cell-inner">{t('simulation:departureTime')}</div></th>
                 <th scope="col"><div className="cell-inner">{t('simulation:stopStopTime')}</div></th>
+                <th scope="col"><div className="cell-inner">{`${t('simulation:stopTime')} ECO`}</div></th>
+                <th scope="col"><div className="cell-inner">{`${t('simulation:departureTime')} ECO`}</div></th>
               </tr>
             </thead>
             <tbody>
-              {data.map((stop) => formatStops(stop))}
+              {data.map((stop, idx) => formatStops(stop, idx, simulation.trains[selectedTrain]))}
             </tbody>
           </table>
         </div>
