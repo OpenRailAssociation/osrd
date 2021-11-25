@@ -159,16 +159,16 @@ export const mergeDatasArea2 = (data1, data2, keyValues) => {
     points.push({
       [keyValues[0]]: step[keyValues[0]],
       value0: step[keyValues[1]],
-      value1: (data2 !== undefined) ? data2[i][keyValues[1]] : 0,
+      value1: (data2 && data2[i]) ? data2[i][keyValues[1]] : 0,
     });
     points.push({
-      [keyValues[0]]: (data2 !== undefined) ? data2[i][keyValues[0]] : 0,
+      [keyValues[0]]: data2 && data2[i] ? data2[i][keyValues[0]] : 0,
       value0: step[keyValues[1]],
-      value1: (data2 !== undefined) ? data2[i][keyValues[1]] : 0,
+      value1: data2 && data2[i] ? data2[i][keyValues[1]] : 0,
     });
     points.push({
-      [keyValues[0]]: (data2 !== undefined) ? data2[i][keyValues[0]] : 0,
-      value0: (data2 !== undefined) ? data2[i][keyValues[1]] : 0,
+      [keyValues[0]]: data2 && data2[i] ? data2[i][keyValues[0]] : 0,
+      value0: data2 && data2[i] ? data2[i][keyValues[1]] : 0,
       value1: step[keyValues[1]],
     });
   });

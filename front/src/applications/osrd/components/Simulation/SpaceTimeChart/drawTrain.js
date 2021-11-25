@@ -72,7 +72,7 @@ export default function drawTrain(
     if (dataSimulation.margins_routeEndOccupancy
       && marginsSettings[dataSimulation.id].marginsBlocks) {
       drawArea(
-        chart, `${isSelected && 'selected'} area`, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
+        chart, `${isSelected && 'selected'} area margins`, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
         'margins_areaBlock', rotate,
       );
       drawCurve(chart, `${isSelected && 'selected'} end-block`, dataSimulation.margins_routeEndOccupancy, groupID,
@@ -83,7 +83,7 @@ export default function drawTrain(
     if (dataSimulation.eco_routeEndOccupancy
       && marginsSettings[dataSimulation.id].ecoBlocks) {
       drawArea(
-        chart, `${isSelected && 'selected'} area`, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
+        chart, `${isSelected && 'selected'} area eco`, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
         'eco_areaBlock', rotate,
       );
       drawCurve(chart, `${isSelected && 'selected'} end-block`, dataSimulation.eco_routeEndOccupancy, groupID,

@@ -27,21 +27,21 @@ export default function TrainDetails() {
           </div>
           <div className="rounded px-1 train-detail small bg-yellow text-black text-nowrap mr-1">
             <div className="font-weight-bold text-uppercase">{t('trainDetails.routeBeginOccupancy')}</div>
-            {Math.round(
+            {positionValues.routeBeginOccupancy && Math.round(
               positionValues.routeBeginOccupancy.position,
             ) / 1000}
             km
           </div>
           <div className="rounded px-1 train-detail small bg-red text-white text-nowrap mr-1">
             <div className="font-weight-bold text-uppercase">{t('trainDetails.routeEndOccupancy')}</div>
-            {Math.round(
+            {positionValues.routeEndOccupancy && Math.round(
               positionValues.routeEndOccupancy.position,
             ) / 1000}
             km
           </div>
           <div className="rounded px-1 train-detail small bg-secondary text-white text-nowrap mr-1">
             <div className="font-weight-bold text-uppercase">{t('trainDetails.routeSizeOccupancy')}</div>
-            {Math.round(
+            {positionValues.routeEndOccupancy && positionValues.routeBeginOccupancy && Math.round(
               positionValues.routeEndOccupancy.position
               - positionValues.routeBeginOccupancy.position,
             ) / 1000}

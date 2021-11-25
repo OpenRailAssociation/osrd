@@ -139,6 +139,9 @@ svg text {
     fill: url(#hatchPatternGray);
     &.selected {
       fill: rgba(48, 51, 131, 0.2);
+      &.eco {
+        fill: rgba(130, 190, 0, 0.2);
+      }
     }
   }
   .start-block {
@@ -175,19 +178,19 @@ svg text {
     &.selected {
       stroke: var(--blue);
       &.margins {
-        stroke: var(--green);
+        stroke: var(--orange);
       }
       &.eco {
-        stroke: var(--orange);
+        stroke: var(--green);
       }
     }
     &.pointer {
       fill: var(--blue);
       &.margins {
-        fill: var(--green);
+        fill: var(--orange);
       }
       &.eco {
-        fill: var(--orange);
+        fill: var(--green);
       }
     }
   }
@@ -242,17 +245,17 @@ svg text {
       &.pointer {
         fill: var(--blue);
         &.margins {
-          fill: var(--green);
+          fill: var(--orange);
         }
         &.eco {
-          fill: var(--orange);
+          fill: var(--green);
         }
       }
       &.margins {
-        stroke: var(--green);
+        stroke: var(--orange);
       }
       &.eco {
-        stroke: var(--orange);
+        stroke: var(--green);
       }
       &.vmax {
         stroke-width: 2;
