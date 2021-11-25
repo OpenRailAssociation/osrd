@@ -51,8 +51,7 @@ public class TrainPhysicsIntegrator {
         // get an angle from a meter per km elevation difference
         // the curve's radius is taken into account in meanTrainGrade
         var angle = Math.atan(currentLocation.meanTrainGrade() / 1000.0);  // from m/km to m/m
-        var weightForce = - rollingStock.mass * Constants.GRAVITY * Math.sin(angle);
-        this.weightForce = weightForce;
+        this.weightForce = - rollingStock.mass * Constants.GRAVITY * Math.sin(angle);
         this.rollingStock = rollingStock;
         this.rollingResistance = rollingStock.rollingResistance(currentSpeed);
         assert rollingResistance >= 0.;
@@ -73,27 +72,15 @@ public class TrainPhysicsIntegrator {
 
         // the sum of forces that always go the direction opposite to the train's movement
         double oppositeForce = rollingResistance + actionBrakingForce;
-
         // as the oppositeForces is a reaction force, it needs to be adjusted to be opposed to the other forces
-        double effectiveOppositeForces;
-        if (currentSpeed == 0.0) {
-            var totalOtherForce = actionTractionForce + weightForce;
-            // if the train is stopped and the rolling resistance is greater in amplitude than the other forces,
-            // the train won't move
-            if (abs(totalOtherForce) < oppositeForce)
-                return 0.0;
-            // if the sum of other forces isn't sufficient to keep the train still, the rolling resistance
-            // will be opposed to the movement direction (which is the direction of the other forces)
-            effectiveOppositeForces = Math.copySign(oppositeForce, -totalOtherForce);
+        if (currentSpeed >= 0.0) {
+            // if the train is moving forward or still, the opposite forces are negative
+            return (actionTractionForce + weightForce - oppositeForce) / inertia;
         } else {
-            // if the train is moving, the rolling resistance if opposed to the movement
-            effectiveOppositeForces = Math.copySign(oppositeForce, -currentSpeed);
+            // if the train is moving backwards, the opposite forces are positive
+            return (actionTractionForce + weightForce + oppositeForce) / inertia;
         }
 
-        // general case: compute the acceleration and new position
-        // compute the acceleration on all the integration step. the variable is named this way because we
-        // compute the acceleration on only a part of the integration step below
-        return (actionTractionForce + weightForce + effectiveOppositeForces) / inertia;
     }
 
     /**
@@ -162,24 +149,23 @@ public class TrainPhysicsIntegrator {
     private static double computePositionDelta(double currentSpeed, double acceleration,
                                                double timeStep, double directionSign) {
         // dx = currentSpeed * dt + 1/2 * acceleration * dt * dt
-        var positionDelta = currentSpeed * timeStep + 0.5 * acceleration * timeStep * timeStep;
-        var delta = directionSign * positionDelta;
-        if (abs(delta) < limitPositionDelta)
-            delta = 0;
-        return delta;
+        var positionDelta = directionSign * currentSpeed * timeStep + 0.5 * acceleration * timeStep * timeStep;
+        if (abs(positionDelta) < limitPositionDelta)
+            positionDelta = 0;
+        return positionDelta;
     }
 
     private static double computeTimeDelta(double currentSpeed, double acceleration, double positionDelta,
                                            double directionSign) {
-        // Solve: directionSign * ((acceleration / 2) * t^2 + currentSpeed * t) - positionDelta = 0
+        // Solve: (acceleration / 2) * t^2 + currentSpeed * t = directionSing * positionDelta
         if (abs(acceleration) < limitAcceleration) {
             if (abs(currentSpeed) < limitSpeed)
                 return 0.0;
-            return positionDelta / (currentSpeed * directionSign);
+            return directionSign * positionDelta / currentSpeed;
         }
-        var numerator = -currentSpeed * directionSign
+        var numerator = -currentSpeed
                 + Math.sqrt(currentSpeed * currentSpeed + 2 * positionDelta * acceleration * directionSign);
-        return numerator / (acceleration * directionSign);
+        return numerator / acceleration;
     }
 
 
