@@ -5,8 +5,7 @@ import static java.lang.Math.exp;
 import static java.lang.Math.min;
 import static java.util.Collections.max;
 
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarecoAllowance.MarginType;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarginType;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.IntegrationStep;
 import fr.sncf.osrd.train.RollingStock;
