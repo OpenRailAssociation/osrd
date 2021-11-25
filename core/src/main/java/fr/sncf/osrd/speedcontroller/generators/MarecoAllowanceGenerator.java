@@ -1,6 +1,8 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
+import static fr.sncf.osrd.train.TrainPhysicsIntegrator.limitSpeed;
 import static fr.sncf.osrd.train.TrainPhysicsIntegrator.nextStep;
+import static java.lang.Math.abs;
 import static java.util.Collections.max;
 
 import fr.sncf.osrd.simulation.SimulationError;
@@ -29,7 +31,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     /** Constructor */
     public MarecoAllowanceGenerator(double begin, double end,
                                     double allowanceValue, MarginType allowanceType) {
-        super(begin, end, 10 * TIME_STEP);
+        super(begin, end, 5 * TIME_STEP);
         this.allowanceType = allowanceType;
         this.value = allowanceValue;
     }
@@ -123,13 +125,13 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
         for (int count = 1;
                 //Carry on till we're close, or we've run it 200 times.
-                (Math.abs(newtonsMethod(x, maxSpeed)) > tolerance) && (count < maxCount);
+                (abs(newtonsMethod(x, maxSpeed)) > tolerance) && (count < maxCount);
                 count++)  {
 
             x = x - newtonsMethod(x, maxSpeed) / newtonsMethodDerivative(x, maxSpeed);  //Newtons method.
         }
 
-        if (Math.abs(newtonsMethod(x, maxSpeed)) <= tolerance) {
+        if (abs(newtonsMethod(x, maxSpeed)) <= tolerance) {
             return x * DICHOTOMY_MARGIN;
         } else {
             return maxSpeed * DICHOTOMY_MARGIN; // if no value has been found return a high value to have some margin
@@ -167,7 +169,12 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             // From vf to targetSpeedLimit
             double requiredBrakingDistance = Double.max(0,
                     vf * vf - targetSpeed * targetSpeed) / (2 * schedule.rollingStock.gamma);
-            res.add(announcer.endPosition - requiredBrakingDistance);
+            //TODO : modifiy this once the envelopes are implemented
+            // we need to take into accounts positions that are still on the deceleration phase
+            // to avoid the case where vf is high and then requiredBrakingDistance is very high
+            var speedSupposedToBeVf = speeds.interpolate(announcer.endPosition - requiredBrakingDistance);
+            if (abs(speedSupposedToBeVf - vf) < 1)
+                res.add(announcer.endPosition - requiredBrakingDistance);
         }
 
         var brakingSpeedControllers = findBrakingSpeedControllers(maxSpeedControllers);

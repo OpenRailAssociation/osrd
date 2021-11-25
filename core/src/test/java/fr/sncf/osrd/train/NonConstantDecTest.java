@@ -205,7 +205,7 @@ public class NonConstantDecTest {
 
     @Test
     public void testMarecoOnConstructionMargin(TestInfo info) {
-        MarginTests.testMarecoOnConstructionMargin(CONFIG_PATH, info);
+        MarginTests.testConstructionMarginOnMareco(CONFIG_PATH, info);
     }
 
     /** Test mareco */

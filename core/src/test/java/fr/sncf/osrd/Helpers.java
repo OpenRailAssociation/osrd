@@ -1,5 +1,6 @@
 package fr.sncf.osrd;
 
+import static fr.sncf.osrd.simulation.Simulation.timeStep;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.squareup.moshi.JsonAdapter;
@@ -361,7 +362,7 @@ public class Helpers {
         for (double t = begin; t < end; t += 1) {
             var expected = expectedSpeedPerPosition.interpolate(t) * expectedScale;
             var result = speedPerPosition.interpolate(t);
-            assertEquals(expected, result, 0.2 + expected * 0.02);
+            assertEquals(expected, result, 2 * timeStep + expected * 0.02);
         }
     }
 
@@ -378,7 +379,7 @@ public class Helpers {
         for (double d = begin; d < end; d += 1) {
             var base = baseSpeedPerPosition.interpolate(d);
             var result = speedPerPosition.interpolate(d);
-            assert result - base <= 1E-2;
+            assert result - base <= 2 * timeStep;
         }
     }
 

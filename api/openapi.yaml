@@ -927,6 +927,14 @@ components:
         path:
           type: integer
           description: id of the path used for projection
+        vmax:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            properties:
+              position: { type: number }
+              speed: { type: number }
         base:
           $ref: "#/components/schemas/TrainScheduleResultData"
         eco:

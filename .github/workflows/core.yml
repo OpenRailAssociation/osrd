@@ -5,9 +5,6 @@ on:
   pull_request:
     paths:
       - core/**
-  push:
-    paths:
-      - core/**
 
 jobs:
   build:
@@ -30,6 +27,15 @@ jobs:
         with:
           gradle-version: 7.2
           arguments: -p core -Pspotbugs_report_xml --continue check
+
+      - name: Check tests coverage
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.2
+        with:
+          paths: core/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 70
+          min-coverage-changed-files: 80
 
       - name: Report JUnit failures
         uses: mikepenz/action-junit-report@v2

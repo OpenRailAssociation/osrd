@@ -20,7 +20,7 @@ public abstract class SpeedControllerGenerator {
     protected double sectionBegin;
     protected double sectionEnd;
 
-    public static final double TIME_STEP = 0.1;
+    public static final double TIME_STEP = 0.4;
 
     protected SpeedControllerGenerator(double begin, double end) {
         this.sectionBegin = begin;

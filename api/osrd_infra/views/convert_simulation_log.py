@@ -1,6 +1,7 @@
 from dataclasses import asdict, dataclass
 from typing import Dict, Iterator, List, Union
 
+from osrd_infra.models import Path, TrainSchedule
 from osrd_infra.views.projection import Projection
 
 
@@ -10,11 +11,13 @@ def convert_simulation_logs(train_schedule, projection_path):
     projection = Projection(projection_path)
 
     base = convert_simulation_log(train_schedule.base_simulation_log, train_path, projection, projection_path)
+    vmax = convert_vmax(train_path, train_schedule)
     res = {
         "id": train_schedule.pk,
         "labels": [label.label for label in train_schedule.labels.all()],
         "path": train_schedule.path_id,
         "name": train_schedule.train_name,
+        "vmax": vmax,
         "base": base,
     }
 
@@ -49,6 +52,16 @@ def convert_simulation_log(simulation_result, train_path, projection, projection
         "signals": simulation_result["signals"],
         "stops": simulation_result["stops"],
     }
+
+
+def convert_vmax(path: Path, train_schedule: TrainSchedule):
+    vmax = path.vmax
+    rolling_stock_vmax = train_schedule.rolling_stock.max_speed
+    # Replace -1 speeds (no vmax) to the rolling stock max speed
+    for point in vmax:
+        if point["speed"] == -1:
+            point["speed"] = rolling_stock_vmax
+    return vmax
 
 
 def interpolate_locations(loc_a, loc_b, path_position):
@@ -174,15 +187,15 @@ def convert_route_occupancy(route_status_log, projection_path, projection, end_t
 
     occupied_routes: Dict[str, OccupancyStart] = {}
 
-    def update_occupancy_lists(event_time, force_add=False):
+    def update_occupancy_lists(event_time):
         if not occupied_routes:
             return
         min_occ = min(occ.start_pos for occ in occupied_routes.values())
         max_occ = max(occ.end_pos for occ in occupied_routes.values())
 
-        if force_add or not route_begin_occupancy or route_begin_occupancy[-1].position != min_occ:
+        if not route_begin_occupancy or route_begin_occupancy[-1].position != min_occ:
             route_begin_occupancy.append(OccupancyPoint(event_time, min_occ))
-        if force_add or not route_end_occupancy or route_end_occupancy[-1].position != max_occ:
+        if not route_end_occupancy or route_end_occupancy[-1].position != max_occ:
             route_end_occupancy.append(OccupancyPoint(event_time, max_occ))
 
     for occupancy_event in extract_occupancy_events(route_status_log, projection_path, projection):
@@ -192,8 +205,9 @@ def convert_route_occupancy(route_status_log, projection_path, projection, end_t
             occupied_routes.pop(occupancy_event.route_id)
         update_occupancy_lists(occupancy_event.time)
 
-    if occupied_routes:
-        update_occupancy_lists(end_time, force_add=True)
+    # Add last point of route occupancy
+    route_begin_occupancy.append(OccupancyPoint(end_time, route_begin_occupancy[-1].position))
+    route_end_occupancy.append(OccupancyPoint(end_time, route_end_occupancy[-1].position))
 
     return (
         [asdict(e) for e in route_begin_occupancy],
