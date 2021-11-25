@@ -1,15 +1,12 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
-import static fr.sncf.osrd.train.TrainPhysicsIntegrator.limitSpeed;
 import static fr.sncf.osrd.train.TrainPhysicsIntegrator.nextStep;
 import static java.lang.Math.abs;
 import static java.util.Collections.max;
 
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.RollingStock;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarecoAllowance.MarginType;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.speedcontroller.*;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.train.Action;
@@ -23,17 +20,10 @@ import java.util.stream.Collectors;
 
 public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
-    // TODO use this parameter
-    @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public final RJSAllowance.MarecoAllowance.MarginType allowanceType;
-    public final double value;
-
     /** Constructor */
     public MarecoAllowanceGenerator(double begin, double end,
                                     double allowanceValue, MarginType allowanceType) {
-        super(begin, end, 5 * TIME_STEP);
-        this.allowanceType = allowanceType;
-        this.value = allowanceValue;
+        super(begin, end, 5 * TIME_STEP, allowanceType, allowanceValue);
     }
 
     private static class AcceleratingSlope {
@@ -55,22 +45,6 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
             this.acceleration = acceleration;
             this.previousAcceleration = previousAcceleration;
             this.targetSpeed = targetSpeed;
-        }
-    }
-
-    @Override
-    protected double getTargetTime(double baseTime, double totalDistance) {
-        var totalStopsDuration = schedule.getStopDuration();
-        if (allowanceType.equals(RJSAllowance.MarecoAllowance.MarginType.TIME))
-            return baseTime + value;
-        else if (allowanceType.equals(RJSAllowance.MarecoAllowance.MarginType.PERCENTAGE))
-            // the margin percentage should not be applied on the stop duration
-            // so it is excluded, then re-added after the percentage had been applied
-            return (baseTime - totalStopsDuration) * (1 + value / 100) + totalStopsDuration;
-        else {
-            var n = totalDistance / 100000; // number of portions of 100km in the train journey
-            var totalAllowance = value * n * 60;
-            return baseTime + totalAllowance;
         }
     }
 

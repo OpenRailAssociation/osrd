@@ -6,6 +6,7 @@ import static java.lang.Math.min;
 import static java.util.Collections.max;
 
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarecoAllowance.MarginType;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.IntegrationStep;
 import fr.sncf.osrd.train.RollingStock;
@@ -25,12 +26,7 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
 
     public ConstructionAllowanceGenerator(double begin, double end,
                                           double allowanceValue) {
-        super(begin, end, allowanceValue, RJSAllowance.MarecoAllowance.MarginType.TIME);
-    }
-
-    @Override
-    protected double getTargetTime(double baseTime, double totalDistance) {
-        return baseTime + value;
+        super(begin, end, allowanceValue, MarginType.TIME);
     }
 
     @Override
