@@ -15,10 +15,10 @@ It's free and open-source forever!
 
 ## WARNING
 
-OSRD is still in the _very_ early stages of development.
+OSRD is still in the early stages of development.
 APIs can and will change (now is the time to make suggestions!).
 Important features are missing. Documentation is sparse.
-Please don't build any serious projects with OSRD unless you are prepared to be broken by API changes constantly.
+Please don't build any serious projects with OSRD unless you are prepared to be broken by API changes.
 
 ## Getting Started
 
