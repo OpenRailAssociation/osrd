@@ -365,7 +365,7 @@ public class StopTests {
     }
 
     @Test
-    public void testMultipleStopsWithMareco(TestInfo info) {
+    public void testMarecoMultipleStops(TestInfo info) {
         var durationStop = 10;
         double value = 10;
         final var allowance =
@@ -373,11 +373,8 @@ public class StopTests {
 
         final var config = TestConfig.readResource("tiny_infra/config_railjson.json")
                 .clearAllowances()
-                .clearSlopes();
-
-        //set the max speed to 80 everywhere
-        for (var speedSection : config.rjsInfra.speedSections)
-            speedSection.speed = 80;
+                .clearSlopes()
+                .setGlobalSpeedLimit(15);
 
         for (var schedule : config.rjsSimulation.trainSchedules)
             schedule.stops = new RJSTrainStop[]{
@@ -414,10 +411,6 @@ public class StopTests {
         final var config = TestConfig.readResource("tiny_infra/config_railjson.json")
                 .clearAllowances()
                 .clearSlopes();
-
-        //set the max speed to 80 everywhere
-        for (var speedSection : config.rjsInfra.speedSections)
-            speedSection.speed = 80;
 
         for (var schedule : config.rjsSimulation.trainSchedules)
             schedule.stops = new RJSTrainStop[]{

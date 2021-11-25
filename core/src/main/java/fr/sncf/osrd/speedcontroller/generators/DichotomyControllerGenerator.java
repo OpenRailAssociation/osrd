@@ -27,9 +27,6 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     /** Expected times from previous evaluation */
     protected SortedDoubleMap expectedTimes;
 
-    /** Simulation state given in `generate` parameters */
-    protected Simulation sim;
-
     protected static final double DICHOTOMY_MARGIN = 2;
 
     public final MarginType allowanceType;
@@ -51,7 +48,6 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     public Set<SpeedController> generate(Simulation sim, TrainSchedule schedule,
                                          Set<SpeedController> maxSpeeds) throws SimulationError {
         sectionEnd = Double.min(sectionEnd, schedule.plannedPath.length);
-        this.sim = sim;
         this.schedule = schedule;
         this.maxSpeedControllers = maxSpeeds;
         return binarySearch(sim, schedule);
@@ -92,8 +88,9 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
                                                                 double end) throws SimulationError;
 
     /** compute the braking distance from initialSpeed to a given target speed */
-    protected abstract double computeBrakingDistance(double initialPosition, double endPosition,
-                                         double initialSpeed, double targetSpeed, TrainSchedule schedule);
+    protected abstract double computeBrakingDistance(double initialPosition,
+                                                     double endPosition, double initialSpeed, double targetSpeed,
+                                                     TrainSchedule schedule);
 
     /** Runs the dichotomy */
     private Set<SpeedController> binarySearch(Simulation sim, TrainSchedule schedule) throws SimulationError {
