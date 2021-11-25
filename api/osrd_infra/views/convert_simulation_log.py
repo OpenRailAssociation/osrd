@@ -137,7 +137,7 @@ class OccupancyEnd:
 OccupancyEvent = Union[OccupancyStart, OccupancyEnd]
 
 
-OCCUPIED_STATUSES = {"OCCUPIED", "CONFLICT", "CBTC_OCCUPIED"}
+OCCUPIED_STATUSES = {"OCCUPIED", "CBTC_OCCUPIED"}
 
 
 def extract_occupancy_events(route_status_log, projection_path, projection) -> Iterator[OccupancyEvent]:
@@ -202,7 +202,7 @@ def convert_route_occupancy(route_status_log, projection_path, projection, end_t
         if isinstance(occupancy_event, OccupancyStart):
             occupied_routes[occupancy_event.route_id] = occupancy_event
         else:
-            occupied_routes.pop(occupancy_event.route_id)
+            occupied_routes.pop(occupancy_event.route_id, None)
         update_occupancy_lists(occupancy_event.time)
 
     # Add last point of route occupancy
