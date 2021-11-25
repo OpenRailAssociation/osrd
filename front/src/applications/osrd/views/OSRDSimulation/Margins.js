@@ -10,7 +10,7 @@ import OPModal from 'applications/osrd/components/Simulation/Margins/OPModal';
 import { useSelector, useDispatch } from 'react-redux';
 import { get, put } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main.ts';
-import { updateSimulation, updateMustRedraw } from 'reducers/osrdsimulation';
+import { updateMarginsSettings, updateSimulation, updateMustRedraw } from 'reducers/osrdsimulation';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 
@@ -205,7 +205,9 @@ const Margin = (props) => {
 
 export default function Margins(props) {
   const { toggleMarginsDisplay } = props;
-  const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
+  const {
+    marginsSettings, selectedTrain, simulation,
+  } = useSelector((state) => state.osrdsimulation);
   const [trainDetail, setTrainDetail] = useState(undefined);
   const [margins, setMargins] = useState([]);
   const [updateMargins, setUpdateMargins] = useState(false);
@@ -259,6 +261,17 @@ export default function Margins(props) {
   const delMargin = (idx) => {
     const newMargins = Array.from(margins);
     newMargins.splice(idx, 1);
+    if (newMargins.length === 0) {
+      const newMarginsSettings = { ...marginsSettings };
+      dispatch(updateMarginsSettings({
+        ...newMarginsSettings,
+        [simulation.trains[selectedTrain].id]: {
+          ...newMarginsSettings[simulation.trains[selectedTrain].id],
+          ecoBlocks: false,
+          baseBlocks: true,
+        },
+      }));
+    }
     setMargins(newMargins);
     setUpdateMargins(true);
   };
