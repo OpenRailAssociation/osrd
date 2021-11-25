@@ -1,6 +1,8 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
 
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarecoAllowance.MarginType;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.speedcontroller.SpeedController;
@@ -30,11 +32,18 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
 
     protected static final double DICHOTOMY_MARGIN = 2;
 
+    public final MarginType allowanceType;
+    public final double value;
+
     /** Constructor
-     * @param precision how close we need to be to the target time (in seconds) */
-    protected DichotomyControllerGenerator(double begin, double end, double precision) {
+     * @param precision how close we need to be to the target time (in seconds)
+     */
+    protected DichotomyControllerGenerator(double begin, double end, double precision,
+                                           MarginType allowanceType, double value) {
         super(begin, end);
         this.precision = precision;
+        this.allowanceType = allowanceType;
+        this.value = value;
     }
 
     /** Generates a set of speed controller using dichotomy */
@@ -55,7 +64,17 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     }
 
     /** Gives the target run time for the phase, given the one if we follow max speeds */
-    protected abstract double getTargetTime(double baseTime, double totalDistance);
+    protected final double getTargetTime(double baseTime, double totalDistance) {
+        if (allowanceType.equals(MarginType.TIME))
+            return baseTime + value;
+        else if (allowanceType.equals(MarginType.PERCENTAGE))
+            return baseTime * (1 + value / 100);
+        else {
+            var n = totalDistance / 100000; // number of portions of 100km in the train journey
+            var totalAllowance = value * n * 60;
+            return baseTime + totalAllowance;
+        }
+    }
 
     /** Returns the first lower bound for the dichotomy */
     protected abstract double getFirstLowEstimate();

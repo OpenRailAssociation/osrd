@@ -23,10 +23,7 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.simulation.changelog.ChangeConsumer;
-import fr.sncf.osrd.train.RollingStock;
-import fr.sncf.osrd.train.TrackSectionRange;
-import fr.sncf.osrd.train.TrainPositionTracker;
-import fr.sncf.osrd.train.TrainSchedule;
+import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.utils.PathUtils;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import java.lang.reflect.Field;
@@ -130,6 +127,13 @@ public class TestConfig {
         return this;
     }
 
+    /** Remove all slopes from the given configuration */
+    public TestConfig clearSlopes() {
+        for (var track : rjsInfra.trackSections)
+            track.slopes = Collections.emptyList();
+        return this;
+    }
+
     /** Remove all signalization constraints from the given configuration */
     public TestConfig clearSignalizationConstraints() {
         for (var aspect : rjsInfra.aspects)
@@ -188,6 +192,10 @@ public class TestConfig {
         public ArrayList<TimelineEvent> run() {
             events = runSimulation(sim, config);
             return events;
+        }
+
+        public List<Train> getTrains() {
+            return new ArrayList<>(sim.trains.values());
         }
     }
 

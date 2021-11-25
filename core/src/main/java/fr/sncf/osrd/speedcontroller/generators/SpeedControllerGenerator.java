@@ -27,6 +27,16 @@ public abstract class SpeedControllerGenerator {
         this.sectionEnd = end;
     }
 
+    /** Get the beginning position */
+    public double getBegin() {
+        return sectionBegin;
+    }
+
+    /** Get the end position */
+    public double getEnd() {
+        return sectionEnd;
+    }
+
     /** Generates the set of SpeedController */
     public abstract Set<SpeedController> generate(Simulation sim, TrainSchedule schedule,
                                                   Set<SpeedController> maxSpeeds) throws SimulationError;
