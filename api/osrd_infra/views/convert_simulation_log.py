@@ -206,8 +206,9 @@ def convert_route_occupancy(route_status_log, projection_path, projection, end_t
         update_occupancy_lists(occupancy_event.time)
 
     # Add last point of route occupancy
-    route_begin_occupancy.append(OccupancyPoint(end_time, route_begin_occupancy[-1].position))
-    route_end_occupancy.append(OccupancyPoint(end_time, route_end_occupancy[-1].position))
+    if route_begin_occupancy:
+        route_begin_occupancy.append(OccupancyPoint(end_time, route_begin_occupancy[-1].position))
+        route_end_occupancy.append(OccupancyPoint(end_time, route_end_occupancy[-1].position))
 
     return (
         [asdict(e) for e in route_begin_occupancy],
