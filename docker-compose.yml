@@ -77,6 +77,9 @@ services:
       - |
         python3 manage.py migrate
         exec python3 manage.py runserver 0.0.0.0:80
+    # bind the code inside the container
+    volumes:
+      - ./api:/home/service
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health/"]
       start_period: 4s
