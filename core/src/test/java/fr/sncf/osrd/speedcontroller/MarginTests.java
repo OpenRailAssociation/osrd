@@ -1,8 +1,7 @@
 package fr.sncf.osrd.speedcontroller;
 
 import static fr.sncf.osrd.Helpers.*;
-import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.DISTANCE;
-import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance.MarginType.PERCENTAGE;
+import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarginType.*;
 import static fr.sncf.osrd.simulation.Simulation.timeStep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

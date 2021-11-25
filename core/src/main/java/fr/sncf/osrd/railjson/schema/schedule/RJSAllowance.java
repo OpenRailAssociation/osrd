@@ -28,6 +28,12 @@ public abstract class RJSAllowance {
     @Json(name = "end_position")
     public Double endPosition = null;
 
+    public enum MarginType {
+        TIME,
+        PERCENTAGE,
+        DISTANCE,
+    }
+
     public static final class MarecoAllowance extends RJSAllowance {
         public MarecoAllowance(MarginType type, double value) {
             this.allowanceValue = value;
@@ -35,16 +41,10 @@ public abstract class RJSAllowance {
         }
 
         @Json(name = "allowance_type")
-        public MarecoAllowance.MarginType allowanceType;
+        public MarginType allowanceType;
 
         @Json(name = "allowance_value")
         public double allowanceValue;
-
-        public enum MarginType {
-            TIME,
-            PERCENTAGE,
-            DISTANCE,
-        }
     }
 
     public static final class LinearAllowance extends RJSAllowance {
@@ -60,12 +60,6 @@ public abstract class RJSAllowance {
          * If DISTANCE: we add allowanceValue minute per 100km */
         @Json(name = "allowance_value")
         public double allowanceValue;
-
-        public enum MarginType {
-            TIME,
-            PERCENTAGE,
-            DISTANCE,
-        }
     }
 
     public static final class ConstructionAllowance extends RJSAllowance {
