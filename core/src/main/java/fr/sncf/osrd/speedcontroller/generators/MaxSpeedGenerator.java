@@ -58,15 +58,14 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
         var offset = 0;
         for (var trackSectionRange : trainPath) {
             var edge = trackSectionRange.edge;
-            var absBegin = Double.min(trackSectionRange.getBeginPosition(), trackSectionRange.getEndPosition());
-            var absEnd = Double.max(trackSectionRange.getBeginPosition(), trackSectionRange.getEndPosition());
+            var rangeBegin = trackSectionRange.getBeginPosition();
             for (var speedRange : TrackSection.getSpeedSections(edge, trackSectionRange.direction)) {
                 var speedSection = speedRange.value;
                 var speedTrackRange = new TrackSectionRange(
                         edge,
                         EdgeDirection.START_TO_STOP,
-                        Double.max(speedRange.begin, absBegin),
-                        Double.min(speedRange.end, absEnd)
+                        Math.abs(speedRange.begin - rangeBegin),
+                        Math.abs(speedRange.end - rangeBegin)
                 );
                 if (trackSectionRange.direction == EdgeDirection.STOP_TO_START)
                     speedTrackRange = speedTrackRange.opposite();
@@ -76,7 +75,7 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
                     continue;
 
                 // compute where this limit is active from and to
-                var begin = offset + speedTrackRange.getBeginPosition() - trackSectionRange.getBeginPosition();
+                var begin = offset + speedTrackRange.getBeginPosition();
                 var end = begin + speedTrackRange.length();
 
                 // Add the speed controller corresponding to the approach to the restricted speed section
