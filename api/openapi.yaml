@@ -935,6 +935,22 @@ components:
             properties:
               position: { type: number }
               speed: { type: number }
+        slopes:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            properties:
+              position: { type: number }
+              gradient: { type: number }
+        curves:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            properties:
+              position: { type: number }
+              radius: { type: number }
         base:
           $ref: "#/components/schemas/TrainScheduleResultData"
         eco:
