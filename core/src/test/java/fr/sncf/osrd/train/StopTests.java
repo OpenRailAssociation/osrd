@@ -157,8 +157,8 @@ public class StopTests {
         var lastPositionNoStop = lastTrainPosition(eventsNoStop);
         var timeNoStop = preparedConfigNoStops.sim.getTime();
 
-        assertEquals(lastPositionNoStop, lastPositionWithStop, 0.1);
-        assertEquals(timeWithStops, timeNoStop, 0.2);
+        assertEquals(lastPositionNoStop, lastPositionWithStop, timeStep * 2 + lastPositionNoStop * 0.01);
+        assertEquals(timeWithStops, timeNoStop, timeStep * 2 + timeWithStops * 0.01);
     }
 
     @Test
@@ -402,7 +402,7 @@ public class StopTests {
 
     @Test
     public void testMarecoDistributionMultipleStops(TestInfo info) {
-        var durationStop = 10;
+        var durationStop = 1000;
         double value = 10;
 
         final var allowance =

@@ -43,11 +43,12 @@ public abstract class SpeedControllerGenerator {
 
     /** Generates a map of location -> expected time if we follow the given controllers. */
     public static SortedDoubleMap getExpectedTimes(TrainSchedule schedule,
-                                            Set<SpeedController> controllers,
-                                            double timeStep,
-                                            double begin,
-                                            double end,
-                                            double initialSpeed) {
+                                                   Set<SpeedController> controllers,
+                                                   double timeStep,
+                                                   double begin,
+                                                   double end,
+                                                   double initialSpeed,
+                                                   boolean includeStops) {
         var updatesMap
                 = getIntegrationStepsAtPositions(schedule, controllers, timeStep, begin, end, initialSpeed);
         var res = new SortedDoubleMap();
@@ -59,9 +60,8 @@ public abstract class SpeedControllerGenerator {
         for (var k : updatesMap.keySet()) {
             time += updatesMap.get(k).timeDelta;
             if (stopIndex < schedule.stops.size() && schedule.stops.get(stopIndex).position <= k) {
-                var duration = schedule.stops.get(stopIndex).stopDuration;
-                if (duration > 0)
-                    time += duration;
+                if (includeStops)
+                    time += schedule.stops.get(stopIndex).stopDuration;
                 stopIndex++;
             }
             res.put(k, time);
@@ -79,10 +79,11 @@ public abstract class SpeedControllerGenerator {
     /** Generates a map of location -> expected time if we follow the given controllers. */
     public SortedDoubleMap getExpectedTimes(TrainSchedule schedule,
                                             Set<SpeedController> controllers,
-                                            double timestep) {
+                                            double timestep,
+                                            boolean includeStops) {
         var initialSpeed = findInitialSpeed(schedule, controllers, timestep);
         return getExpectedTimes(schedule, controllers, timestep,
-                sectionBegin, sectionEnd, initialSpeed);
+                sectionBegin, sectionEnd, initialSpeed, includeStops);
     }
 
     /** Generates a map of location -> expected speed if we follow the given controllers. */
