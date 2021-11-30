@@ -55,22 +55,12 @@ public final class EnvelopeBuilder {
         }
     }
 
-    private static final class Point {
-        public final double x;
-        public final double y;
-
-        private Point(double x, double y) {
-            this.x = x;
-            this.y = y;
-        }
-    }
-
     /** Add an envelope part to the envelope */
     public void addPart(EnvelopePart part) {
-        changes.add(new EnvelopeChange(part.getBegin(), part, BEGIN));
-        for (int i = 1; i < part.size() - 1; i++)
+        changes.add(new EnvelopeChange(part.getBeginPos(), part, BEGIN));
+        for (int i = 1; i < part.stepCount(); i++)
             changes.add(new EnvelopeChange(part.positions[i], part, INTERMEDIATE));
-        changes.add(new EnvelopeChange(part.getEnd(), part, END));
+        changes.add(new EnvelopeChange(part.getEndPos(), part, END));
     }
 
     private void flushResultPart() {
@@ -82,9 +72,14 @@ public final class EnvelopeBuilder {
         currentPartBuilder = null;
     }
 
-    private void newResultPart(EnvelopePart newMinPart) {
+    private void newResultPart(EnvelopePart newMinPart, double initialPosition, double initialSpeed) {
         flushResultPart();
-        currentPartBuilder = new EnvelopePartBuilder(newMinPart.type, newMinPart.isCoasting);
+        currentPartBuilder = new EnvelopePartBuilder(
+                newMinPart.meta,
+                newMinPart.physicallyAccurate,
+                initialPosition,
+                initialSpeed
+        );
     }
 
     private void updateMinPoint(double position) {
@@ -102,22 +97,6 @@ public final class EnvelopeBuilder {
             currentMinSpeed = envSpeed;
             currentMinPart = env;
         }
-    }
-
-    private static Point intersectEnvelopePart(EnvelopePart ep1, EnvelopePart ep2, double position) {
-        var indexEp1 = ep1.getPosIndex(position);
-        var indexEp2 = ep2.getPosIndex(position);
-        // Compute intersection between two vectors
-        var a = new Point(ep1.positions[indexEp1], ep1.speeds[indexEp1]);
-        var aDir = new Point(ep1.positions[indexEp1 + 1] - a.x, ep1.speeds[indexEp1 + 1] - a.y);
-        var b = new Point(ep2.positions[indexEp2], ep2.speeds[indexEp2]);
-        var bDir = new Point(ep2.positions[indexEp2 + 1] - b.x, ep2.speeds[indexEp2 + 1] - b.y);
-
-        var div = aDir.x * bDir.y - aDir.y * bDir.x;
-        // Check vectors aren't parallel
-        assert div != 0.;
-        var k = (bDir.x * a.y - bDir.x * b.y - bDir.y * a.x + bDir.y * b.x) / div;
-        return new Point(a.x + k * aDir.x, a.y + k * aDir.y);
     }
 
     /** Build the envelope from all the given parts. This function should be call only once. */
@@ -157,8 +136,7 @@ public final class EnvelopeBuilder {
             processCurveStarts(currentPosition);
             updateDiscontinuousStart(currentPosition);
         }
-
-        return new Envelope(buildResult);
+        return Envelope.make(buildResult.toArray(new EnvelopePart[0]));
     }
 
     private void updateDiscontinuousStart(double currentPosition) {
@@ -176,9 +154,8 @@ public final class EnvelopeBuilder {
          *        ^
          */
         if (oldMinPart != null)
-            currentPartBuilder.add(currentPosition, oldMinSpeed);
-        newResultPart(currentMinPart);
-        currentPartBuilder.add(currentPosition, currentMinSpeed);
+            currentPartBuilder.addStep(currentPosition, oldMinSpeed);
+        newResultPart(currentMinPart, currentPosition, currentMinSpeed);
     }
 
     private void processCurveStarts(double currentPosition) {
@@ -199,7 +176,7 @@ public final class EnvelopeBuilder {
 
             // if there's an intermediate point on the minimum curve, add it
             if (change.part == currentMinPart)
-                currentPartBuilder.add(currentPosition, currentMinSpeed);
+                currentPartBuilder.addStep(currentPosition, currentMinSpeed);
             changeIndex++;
         }
     }
@@ -213,7 +190,8 @@ public final class EnvelopeBuilder {
 
             // if the current min part ends, finalize it in the output as well
             if (change.part == currentMinPart) {
-                currentPartBuilder.add(currentPosition, currentMinSpeed);
+                assert currentMinPart != null;
+                currentPartBuilder.addStep(currentPosition, currentMinSpeed);
                 flushResultPart();
                 currentMinPart = null;
             }
@@ -239,9 +217,8 @@ public final class EnvelopeBuilder {
          *         D
          *         ^
          */
-        var intersection = intersectEnvelopePart(currentMinPart, oldMinPart, position);
-        currentPartBuilder.add(intersection.x, intersection.y);
-        newResultPart(currentMinPart);
-        currentPartBuilder.add(intersection.x, intersection.y);
+        var intersection = EnvelopePhysics.intersectSteps(currentMinPart, oldMinPart, position);
+        currentPartBuilder.addStep(intersection.position, intersection.speed);
+        newResultPart(currentMinPart, intersection.position, intersection.speed);
     }
 }

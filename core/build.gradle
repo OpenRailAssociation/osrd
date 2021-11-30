@@ -83,6 +83,9 @@ dependencies {
     testImplementation 'org.mockito:mockito-inline:4.0.0'  // MIT
     testImplementation 'org.mockito:mockito-junit-jupiter:4.0.0'  // MIT
 
+    // Only needed to run tests in a version of IntelliJ IDEA that bundles older versions
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.8.2'  // EPL 2.0
+
     // for linter annotations
     compileOnly 'net.jcip:jcip-annotations:1.0'  // CC Attribution
     compileOnly 'com.github.spotbugs:spotbugs-annotations:4.5.0'  // LGPLv2.1
