@@ -1,6 +1,7 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
 import static fr.sncf.osrd.train.RollingStock.GammaType.CONST;
+import static java.lang.Math.*;
 
 import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
@@ -58,25 +59,24 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
         var offset = 0;
         for (var trackSectionRange : trainPath) {
             var edge = trackSectionRange.edge;
-            var rangeBegin = trackSectionRange.getBeginPosition();
             for (var speedRange : TrackSection.getSpeedSections(edge, trackSectionRange.direction)) {
-                var speedSection = speedRange.value;
-                var speedTrackRange = new TrackSectionRange(
-                        edge,
-                        EdgeDirection.START_TO_STOP,
-                        Math.abs(speedRange.begin - rangeBegin),
-                        Math.abs(speedRange.end - rangeBegin)
-                );
-                if (trackSectionRange.direction == EdgeDirection.STOP_TO_START)
-                    speedTrackRange = speedTrackRange.opposite();
-
                 // ignore the speed limit if it doesn't apply to our train
+                var speedSection = speedRange.value;
                 if (!speedSection.isValidFor(rollingStock))
                     continue;
 
+                var speedRangeBegin = min(speedRange.begin, speedRange.end);
+                var speedRangeEnd = max(speedRange.begin, speedRange.end);
+                var beginOnRange = 0.;
+                if (trackSectionRange.direction == EdgeDirection.START_TO_STOP)
+                    beginOnRange = speedRangeBegin - trackSectionRange.getBeginPosition();
+                else
+                    beginOnRange = trackSectionRange.getBeginPosition() - speedRangeEnd;
+                var endOnRange = beginOnRange + speedRangeEnd - speedRangeBegin;
+
                 // compute where this limit is active from and to
-                var begin = offset + speedTrackRange.getBeginPosition();
-                var end = begin + speedTrackRange.length();
+                var begin = offset + beginOnRange;
+                var end = offset + endOnRange;
 
                 // Add the speed controller corresponding to the approach to the restricted speed section
                 var isBrakingValueConstant = rollingStock.gammaType == CONST;
