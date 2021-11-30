@@ -1,8 +1,6 @@
 package fr.sncf.osrd.train;
 
 import static fr.sncf.osrd.simulation.Simulation.timeStep;
-import static fr.sncf.osrd.train.TrainPhysicsIntegrator.nextStep;
-import static java.lang.Math.abs;
 
 import java.util.*;
 import fr.sncf.osrd.simulation.*;
@@ -204,7 +202,7 @@ public final class TrainState implements Cloneable, DeepComparable<TrainState> {
         if (timeStep <= 0 || distanceStep <= 0)
             return;
 
-        var step = nextStep(
+        var step = TrainPhysicsIntegrator.nextStep(
                 location,
                 speed,
                 trainSchedule.rollingStock,
