@@ -1,5 +1,3 @@
-from collections import defaultdict
-
 import requests
 from django.conf import settings
 from django.contrib.gis.geos import LineString, Point
@@ -146,53 +144,79 @@ def parse_steps_input(steps):
     return waypoints, step_stop_times
 
 
-def add_vmax_result(result, position, speed):
-    struct = {"position": position, "speed": speed}
-    if len(result) < 2 or result[-2]["speed"] != result[-1]["speed"] or result[-1]["speed"] != speed:
+def add_chart_point(result, position, value, field_name):
+    struct = {"position": position, field_name: value}
+    if len(result) < 2 or result[-2][field_name] != result[-1][field_name] or result[-1][field_name] != value:
         result.append(struct)
     else:
         result[-1] = struct
 
 
-def compute_vmax(payload, track_map):
-    track_vmax = defaultdict(IntervalTree)
-    for track_id, track in track_map.items():
-        # Set a default vmax of -1 (need to be override by the rolling stock max speed)
-        track_vmax[track_id].addi(0, track.track_section.length, -1)
-        for range_component in track.range_objects.all():
-            start = range_component.start_offset
-            end = range_component.end_offset
-            speed = range_component.entity.speed_section_part.speed_section.speed_section.speed
-            track_vmax[track.entity_id].chop(start, end)
-            track_vmax[track.entity_id].addi(start, end, speed)
+def create_chart(path_payload, track_to_tree, field_name):
     result = []
     offset = 0
-    for route in payload["path"]:
+    for route in path_payload:
         for track_range in route["track_sections"]:
             begin = track_range["begin"]
             end = track_range["end"]
-            tree = track_vmax[track_range["track_section"]]
+            tree = track_to_tree[track_range["track_section"]]
             if begin < end:
                 for interval in sorted(tree.overlap(begin, end)):
-                    add_vmax_result(result, offset, interval.data)
+                    add_chart_point(result, offset, interval.data, field_name)
                     offset += abs(max(begin, interval.begin) - min(end, interval.end))
-                    add_vmax_result(result, offset, interval.data)
+                    add_chart_point(result, offset, interval.data, field_name)
             else:
                 for interval in reversed(sorted(tree.overlap(end, begin))):
-                    add_vmax_result(result, offset, interval.data)
+                    add_chart_point(result, offset, interval.data, field_name)
                     offset += abs(max(end, interval.begin) - min(begin, interval.end))
-                    add_vmax_result(result, offset, interval.data)
+                    add_chart_point(result, offset, interval.data, field_name)
     return result
 
 
+def create_tree_from_ranges(range_components, length, get_data, default_value=0):
+    tree = IntervalTree()
+    tree.addi(0, length, default_value)
+    for range_component in range_components:
+        start = range_component.start_offset
+        end = range_component.end_offset
+        data = get_data(range_component)
+        tree.chop(start, end)
+        tree.addi(start, end, data)
+    return tree
+
+
+def compute_vmax(payload, track_map):
+    tree_vmax = {}
+    for track_id, track in track_map.items():
+        tree_vmax[track.entity_id] = create_tree_from_ranges(
+            track.range_objects.all(),
+            track.track_section.length,
+            lambda component: component.entity.speed_section_part.speed_section.speed_section.speed,
+            -1,
+        )
+    return create_chart(payload["path"], tree_vmax, "speed")
+
+
 def compute_slopes(payload, track_map):
-    # TODO
-    return []
+    tree_slopes = {}
+    for track_id, track in track_map.items():
+        tree_slopes[track.entity_id] = create_tree_from_ranges(
+            track.slope_set.all(),
+            track.track_section.length,
+            lambda component: component.gradient,
+        )
+    return create_chart(payload["path"], tree_slopes, "gradient")
 
 
 def compute_curves(payload, track_map):
-    # TODO
-    return []
+    tree_curves = {}
+    for track_id, track in track_map.items():
+        tree_curves[track.entity_id] = create_tree_from_ranges(
+            track.curve_set.all(),
+            track.track_section.length,
+            lambda component: component.radius,
+        )
+    return create_chart(payload["path"], tree_curves, "radius")
 
 
 def compute_path(path, data, owner):

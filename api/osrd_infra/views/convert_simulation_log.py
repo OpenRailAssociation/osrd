@@ -18,6 +18,8 @@ def convert_simulation_logs(train_schedule, projection_path):
         "path": train_schedule.path_id,
         "name": train_schedule.train_name,
         "vmax": vmax,
+        "slopes": train_path.slopes,
+        "curves": train_path.curves,
         "base": base,
     }
 
