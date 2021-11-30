@@ -84,6 +84,34 @@ VMAX_SCHEMA = {
     },
 }
 
+SLOPES_SCHEMA = {
+    "type": "array",
+    "minItems": 2,
+    "items": {
+        "type": "object",
+        "required": ["position", "gradient"],
+        "additionalProperties": False,
+        "properties": {
+            "position": {"type": "number"},
+            "gradient": {"type": "number"},
+        },
+    },
+}
+
+CURVES_SCHEMA = {
+    "type": "array",
+    "minItems": 2,
+    "items": {
+        "type": "object",
+        "required": ["position", "radius"],
+        "additionalProperties": False,
+        "properties": {
+            "position": {"type": "number"},
+            "radius": {"type": "number"},
+        },
+    },
+}
+
 
 def format_track_section_id(entity_id: int) -> str:
     return f"track_section.{entity_id}"
@@ -96,6 +124,8 @@ class Path(models.Model):
     created = models.DateTimeField(editable=False, auto_now_add=True)
     payload = models.JSONField(validators=[JSONSchemaValidator(limit_value=PAYLOAD_SCHEMA)])
     vmax = models.JSONField(validators=[JSONSchemaValidator(limit_value=VMAX_SCHEMA)])
+    slopes = models.JSONField(validators=[JSONSchemaValidator(limit_value=SLOPES_SCHEMA)])
+    curves = models.JSONField(validators=[JSONSchemaValidator(limit_value=CURVES_SCHEMA)])
     geographic = models.LineStringField(srid=settings.OSRD_INFRA_SRID)
     schematic = models.LineStringField(srid=settings.OSRD_INFRA_SRID)
 

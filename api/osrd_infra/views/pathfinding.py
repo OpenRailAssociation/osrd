@@ -185,6 +185,16 @@ def compute_vmax(payload, track_map):
     return result
 
 
+def compute_slopes(payload, track_map):
+    # TODO
+    return []
+
+
+def compute_curves(payload, track_map):
+    # TODO
+    return []
+
+
 def compute_path(path, data, owner):
     infra = data["infra"]
 
@@ -204,6 +214,8 @@ def compute_path(path, data, owner):
     path.geographic = geographic
     path.schematic = schematic
     path.vmax = compute_vmax(payload, track_map)
+    path.curves = compute_curves(payload, track_map)
+    path.slopes = compute_slopes(payload, track_map)
 
     path.save()
 
