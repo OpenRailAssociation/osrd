@@ -90,7 +90,8 @@ public class SpeedInstructions {
         // If left unspecified, we generate the reference times from a simulation with no interaction
         if (expectedTimes == null)
             expectedTimes = SpeedControllerGenerator.getExpectedTimes(schedule, targetSpeedControllers,
-                    SpeedControllerGenerator.TIME_STEP, 0, Double.POSITIVE_INFINITY, schedule.initialSpeed);
+                    SpeedControllerGenerator.TIME_STEP, 0, Double.POSITIVE_INFINITY, schedule.initialSpeed,
+                    true);
     }
 
     /** Split a mareco allowance into several ones separated by each stop */
