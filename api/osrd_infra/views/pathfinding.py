@@ -165,7 +165,7 @@ def create_chart(path_payload, track_to_tree, field_name):
                     add_chart_point(result, offset, interval.data, field_name)
                     offset += abs(max(begin, interval.begin) - min(end, interval.end))
                     add_chart_point(result, offset, interval.data, field_name)
-            elif begin > end:
+            else:
                 for interval in reversed(sorted(tree.overlap(end, begin))):
                     add_chart_point(result, offset, interval.data, field_name)
                     offset += abs(max(end, interval.begin) - min(begin, interval.end))
@@ -179,9 +179,10 @@ def create_tree_from_ranges(range_components, length, get_data, default_value=0)
     for range_component in range_components:
         start = range_component.start_offset
         end = range_component.end_offset
-        data = get_data(range_component)
-        tree.chop(start, end)
-        tree.addi(start, end, data)
+        if start < end:
+            data = get_data(range_component)
+            tree.chop(start, end)
+            tree.addi(start, end, data)
     return tree
 
 
