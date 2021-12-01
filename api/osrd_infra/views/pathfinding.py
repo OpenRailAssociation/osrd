@@ -8,10 +8,9 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from osrd_infra.models import OperationalPointEntity, Path, TrackSectionEntity
+from osrd_infra.models import Path
 from osrd_infra.serializers import PathInputSerializer, PathSerializer
 from osrd_infra.utils import geo_transform, line_string_slice_points, reverse_format
-from osrd_infra.views.railjson import format_track_section_id
 
 
 def status_missing_field_keyerror(key_error: KeyError):
@@ -47,8 +46,10 @@ def payload_fill_steps(payload, step_stop_times, track_map):
 
         if "id" in step:
             step["id"] = reverse_format(step["id"])
+            """TODO: Fix for new models
             op = OperationalPointEntity.objects.get(entity_id=step["id"])
             step["name"] = op.operational_point.name
+            """
 
         track = track_map[step["position"]["track_section"]]
         offset = step["position"]["offset"] / track.track_section.length
@@ -75,10 +76,13 @@ def request_pathfinding(payload):
 
 def fetch_track_sections(ids):
 
+    """TODO: Fix when new model implemented
     related_names = ["geo_line_location", "track_section", "range_objects"]
     tracks = TrackSectionEntity.objects.prefetch_related(*related_names).filter(pk__in=ids)
 
     return {track.pk: track for track in tracks}
+    """
+    return {}
 
 
 def fetch_track_sections_from_payload(payload):
@@ -133,7 +137,7 @@ def parse_steps_input(steps):
                 offset = geo.project_normalized(Point(waypoint["geo_coordinate"]))
                 offset = offset * track.track_section.length
             parsed_waypoint = {
-                "track_section": format_track_section_id(track.pk),
+                "track_section": f"track.{track.pk}",
                 "offset": offset,
             }
             # Allow both direction

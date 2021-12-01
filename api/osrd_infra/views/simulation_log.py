@@ -6,7 +6,6 @@ from rest_framework.exceptions import APIException
 
 from osrd_infra.models import TrainSchedule
 from osrd_infra.utils import reverse_format
-from osrd_infra.views.railjson import format_route_id, format_track_section_id
 
 
 class ServiceUnavailable(APIException):
@@ -34,7 +33,7 @@ def get_train_phases(path):
             "type": "navigate",
             "driver_sight_distance": 400,
             "end_location": {
-                "track_section": format_track_section_id(step_track),
+                "track_section": f"track.{step_track.pk}",
                 "offset": steps[-1]["position"]["offset"],
             },
         }
@@ -49,7 +48,7 @@ def get_train_stops(path):
         stops.append(
             {
                 "location": {
-                    "track_section": format_track_section_id(step_track),
+                    "track_section": f"track.{step_track.pk}",
                     "offset": steps[step_index]["position"]["offset"],
                 },
                 "duration": steps[step_index]["stop_time"],
@@ -64,7 +63,7 @@ def convert_route_list_for_simulation(path):
     """
     res = []
     for route in path.payload["path"]:
-        route_str = format_route_id(route["route"])
+        route_str = f"route.{route['route']}"
         # We need to drop duplicates because the path is split at each step,
         # making it possible to have an input such as :
         # [{route: 1, track_sections: [1, 2]}, {route: 1, track_sections: [2, 3, 4]}]
@@ -124,7 +123,7 @@ def get_train_schedule_payload(train_schedule: TrainSchedule, sim_type: Simulati
         "rolling_stock": f"rolling_stock.{train_schedule.rolling_stock_id}",
         "departure_time": train_schedule.departure_time,
         "initial_head_location": path.get_initial_location(),
-        "initial_route": format_route_id(path.get_initial_route()),
+        "initial_route": f"route.{path.get_initial_route().pk}",
         "initial_speed": train_schedule.initial_speed,
         "phases": get_train_phases(path),
         "routes": convert_route_list_for_simulation(path),
