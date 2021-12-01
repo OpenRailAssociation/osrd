@@ -82,7 +82,7 @@ public class Helpers {
         return sim;
     }
 
-    private static final boolean saveCSVFiles = false;
+    private static final boolean saveCSVFiles = true;
 
     public static final class TestEvent extends TimelineEvent {
         public final String data;

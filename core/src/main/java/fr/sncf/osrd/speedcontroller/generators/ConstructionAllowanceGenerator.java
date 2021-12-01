@@ -56,9 +56,32 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
         var initialSpeed = expectedSpeeds.interpolate(initialPosition);
         var res = new HashSet<>(maxSpeedControllers);
 
+        // acceleration phase
+        // it is computed in order to get its beginning position
+        // later, this phase will be used in case the user asks for a high margin in a short distance
+        var speed = expectedSpeeds.interpolate(endPosition);
+        var location = convertPosition(schedule, endPosition);
+        var acceleratingPhase = new SortedDoubleMap();
+        acceleratingPhase.put(location.getPathPosition(), speed);
+        while (speed > targetSpeed && location.getPathPosition() > initialPosition) {
+            var stepSpeed = speed;
+            var directive = new SpeedDirective(targetSpeed);
+            var step = nextStep(
+                    location,
+                    speed,
+                    schedule.rollingStock,
+                    TIME_STEP,
+                    location.getPathPosition(),
+                    -1,
+                    (integrator) -> integrator.actionToTargetSpeed(directive, schedule.rollingStock, -1));
+            speed = step.finalSpeed;
+            location.updatePosition(schedule.rollingStock.length, step.positionDelta);
+            acceleratingPhase.put(location.getPathPosition(), stepSpeed);
+        }
+
         // coasting phase
-        var speed = initialSpeed;
-        var location = convertPosition(schedule, initialPosition);
+        speed = initialSpeed;
+        location = convertPosition(schedule, initialPosition);
         var coastingPhase = new SortedDoubleMap();
         while (speed > targetSpeed && location.getPathPosition() < endPosition) {
             var step = nextStep(
@@ -75,40 +98,63 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
         }
         coastingPhase.put(location.getPathPosition(), targetSpeed);
 
-        // acceleration phase
-        // it is computed in order to get its beginning position
-        // later, this phase will be used in case the user asks for a high margin in a short distance
-        speed = expectedSpeeds.interpolate(endPosition);
-        location = convertPosition(schedule, endPosition);
-        var acceleratingPhase = new SortedDoubleMap();
-        acceleratingPhase.put(location.getPathPosition(), speed);
-        while (speed > coastingPhase.interpolate(location.getPathPosition())
-                && speed > targetSpeed && location.getPathPosition() > initialPosition) {
-            var stepSpeed = speed;
-            var directive = new SpeedDirective(coastingPhase.interpolate(location.getPathPosition()));
-            var step = nextStep(
-                    location,
-                    speed,
-                    schedule.rollingStock,
-                    TIME_STEP,
-                    location.getPathPosition(),
-                    -1,
-                    (integrator) -> integrator.actionToTargetSpeed(directive, schedule.rollingStock, -1));
-            speed = step.finalSpeed;
-            location.updatePosition(schedule.rollingStock.length, step.positionDelta);
-            acceleratingPhase.put(location.getPathPosition(), stepSpeed);
-        }
-
         var coastingLastPosition = coastingPhase.lastKey();
         var accelerationFirstPosition = acceleratingPhase.firstKey();
-        if (accelerationFirstPosition.equals(coastingLastPosition))
-            throw new SimulationError("Construction margin value too high for such short distance");
-        if (coastingPhase.size() > 1) {
-            res.add(new CoastingSpeedController(initialPosition, coastingLastPosition));
+        // if the coasting phase does not intersect the accelerating one,
+        // that means there is at least a small interval with a MARECO-like behavior
+        if (coastingLastPosition <= accelerationFirstPosition) {
+            //throw new SimulationError("Construction margin value too high for such short distance");
+            if (coastingPhase.size() > 1) {
+                res.add(new CoastingSpeedController(initialPosition, coastingLastPosition));
+            }
+            var marecoSpeedControllers =
+                    super.getSpeedControllers(schedule, targetSpeed, coastingLastPosition, accelerationFirstPosition);
+            res.addAll(marecoSpeedControllers);
+        } else {
+            // otherwise, that means the margin asked by the user is too high for a simple coasting phase
+            // in which case the train needs to brake before coasting
+            speed = initialSpeed;
+            location = convertPosition(schedule, initialPosition);
+            var brakingPhase = new SortedDoubleMap();
+            while (location.getPathPosition() < endPosition) {
+                var step = nextStep(
+                        location,
+                        speed,
+                        schedule.rollingStock,
+                        TIME_STEP,
+                        endPosition,
+                        1,
+                        (integrator) -> Action.brake(
+                                schedule.rollingStock.gamma * schedule.rollingStock.inertiaCoefficient
+                        ));
+                brakingPhase.put(location.getPathPosition(), speed);
+                speed = step.finalSpeed;
+                location.updatePosition(schedule.rollingStock.length, step.positionDelta);
+            }
+            brakingPhase.put(location.getPathPosition(), targetSpeed);
+            // re-calculate the new coasting phase
+            speed = targetSpeed;
+            location = convertPosition(schedule, accelerationFirstPosition);
+            var newCoastingPhase = new SortedDoubleMap();
+            while (speed > brakingPhase.interpolate(location.getPathPosition())
+                    && location.getPathPosition() < endPosition) {
+                var step = nextStep(
+                        location,
+                        speed,
+                        schedule.rollingStock,
+                        TIME_STEP,
+                        endPosition,
+                        -1,
+                        (integrator) -> Action.coast());
+                newCoastingPhase.put(location.getPathPosition(), speed);
+                speed = step.finalSpeed;
+                location.updatePosition(schedule.rollingStock.length, step.positionDelta);
+            }
+            newCoastingPhase.put(location.getPathPosition(), targetSpeed);
+            res.add(LimitAnnounceSpeedController.create(
+                    initialSpeed, speed, location.getPathPosition(), schedule.rollingStock.gamma));
+            res.add(new CoastingSpeedController(location.getPathPosition(), accelerationFirstPosition));
         }
-        var marecoSpeedControllers =
-                super.getSpeedControllers(schedule, targetSpeed, coastingLastPosition, accelerationFirstPosition);
-        res.addAll(marecoSpeedControllers);
         return res;
     }
 

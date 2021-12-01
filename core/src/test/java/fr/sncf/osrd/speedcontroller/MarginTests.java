@@ -172,8 +172,7 @@ public class MarginTests {
     }
 
     @ParameterizedTest
-    //@ValueSource(doubles = {0.0, 30, 100})
-    @ValueSource(doubles = {100})
+    @ValueSource(doubles = {0.0, 30, 100, 150})
     public void testConstructionMarginsOnSegment(double value, TestInfo info) {
         testConstructionMarginsOnSegment(CONFIG_PATH, value, info);
     }
