@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.gis.db import models
 
-from osrd_infra.models import EntityNamespace
+from osrd_infra.models import Infra
 from osrd_infra.utils import JSONSchemaValidator
 
 PAYLOAD_SCHEMA = {
@@ -120,7 +120,7 @@ def format_track_section_id(entity_id: int) -> str:
 class Path(models.Model):
     name = models.CharField(max_length=128, blank=False)
     owner = models.UUIDField(editable=False, default="00000000-0000-0000-0000-000000000000")
-    namespace = models.ForeignKey(EntityNamespace, on_delete=models.CASCADE)
+    infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     created = models.DateTimeField(editable=False, auto_now_add=True)
     payload = models.JSONField(validators=[JSONSchemaValidator(limit_value=PAYLOAD_SCHEMA)])
     vmax = models.JSONField(validators=[JSONSchemaValidator(limit_value=VMAX_SCHEMA)])

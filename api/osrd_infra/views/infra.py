@@ -1,18 +1,14 @@
 from django.conf import settings
+from django.contrib.gis.geos import GEOSGeometry
 from django.core.cache import cache
-from rest_framework.response import Response
-
-from osrd_infra.serializers import InfraSerializer
-from osrd_infra.models import Infra
-from rest_framework.viewsets import GenericViewSet
 from rest_framework import mixins
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError
-from django.contrib.gis.geos import GEOSGeometry
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
-from osrd_infra.views.geojson import geojson_query_infra
-from osrd_infra.views.railjson import railjson_serialize_infra
-from osrd_infra.views.edit import edit_infra
+from osrd_infra.models import Infra
+from osrd_infra.serializers import InfraSerializer
 
 
 class InfraView(
@@ -28,15 +24,7 @@ class InfraView(
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user.sub)
 
-    @action(detail=True, methods=["get"])
-    def geojson(self, request, pk=None):
-        query_string = request.query_params.get("query")
-        if query_string is None:
-            raise ParseError("missing query parameter")
-        query = GEOSGeometry(query_string)
-
-        return geojson_query_infra(self.get_object(), query)
-
+    """TODO: Fix with new models
     @action(detail=True, methods=["get"])
     def railjson(self, request, pk=None):
         cache_key = f"osrd.infra.{pk}"
@@ -46,7 +34,10 @@ class InfraView(
         infra = railjson_serialize_infra(self.get_object())
         cache.set(cache_key, infra, timeout=settings.CACHE_TIMEOUT)
         return Response(infra)
+    """
 
+    """TODO: Fix with new models
     @action(detail=True, methods=["post"])
     def edit(self, request, pk=None):
         return edit_infra(self.get_object(), request.data)
+    """
