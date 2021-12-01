@@ -165,7 +165,7 @@ def create_chart(path_payload, track_to_tree, field_name):
                     add_chart_point(result, offset, interval.data, field_name)
                     offset += abs(max(begin, interval.begin) - min(end, interval.end))
                     add_chart_point(result, offset, interval.data, field_name)
-            else:
+            elif begin > end:
                 for interval in reversed(sorted(tree.overlap(end, begin))):
                     add_chart_point(result, offset, interval.data, field_name)
                     offset += abs(max(end, interval.begin) - min(begin, interval.end))
