@@ -1,6 +1,7 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
 import static fr.sncf.osrd.train.TrainPhysicsIntegrator.*;
+import static java.lang.Math.abs;
 import static java.lang.Math.min;
 import static java.util.Collections.max;
 
@@ -58,7 +59,6 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
 
         // acceleration phase
         // it is computed in order to get its beginning position
-        // later, this phase will be used in case the user asks for a high margin in a short distance
         var speed = expectedSpeeds.interpolate(endPosition);
         var location = convertPosition(schedule, endPosition);
         var acceleratingPhase = new SortedDoubleMap();
@@ -103,7 +103,6 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
         // if the coasting phase does not intersect the accelerating one,
         // that means there is at least a small interval with a MARECO-like behavior
         if (coastingLastPosition <= accelerationFirstPosition) {
-            //throw new SimulationError("Construction margin value too high for such short distance");
             if (coastingPhase.size() > 1) {
                 res.add(new CoastingSpeedController(initialPosition, coastingLastPosition));
             }
@@ -116,7 +115,7 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
             speed = initialSpeed;
             location = convertPosition(schedule, initialPosition);
             var brakingPhase = new SortedDoubleMap();
-            while (location.getPathPosition() < endPosition) {
+            while (location.getPathPosition() < endPosition && speed > 0.0) {
                 var step = nextStep(
                         location,
                         speed,
@@ -125,19 +124,27 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
                         endPosition,
                         1,
                         (integrator) -> Action.brake(
-                                schedule.rollingStock.gamma * schedule.rollingStock.inertiaCoefficient
+                                schedule.rollingStock.gamma
+                                * schedule.rollingStock.mass
+                                * schedule.rollingStock.inertiaCoefficient
                         ));
                 brakingPhase.put(location.getPathPosition(), speed);
                 speed = step.finalSpeed;
                 location.updatePosition(schedule.rollingStock.length, step.positionDelta);
             }
-            brakingPhase.put(location.getPathPosition(), targetSpeed);
+            brakingPhase.put(location.getPathPosition(), speed);
+            // if the braking curve intersects with the acceleration one,
+            // or the targetSpeed is too close to zero
+            // that means the user asked a margin that is physically impossible to respect
+            if (brakingPhase.interpolate(accelerationFirstPosition) > acceleratingPhase.firstEntry().getValue()
+            || abs(targetSpeed) < 1E-1)
+                throw new SimulationError("Construction margin value too high for such short distance");
             // re-calculate the new coasting phase
             speed = targetSpeed;
             location = convertPosition(schedule, accelerationFirstPosition);
             var newCoastingPhase = new SortedDoubleMap();
             while (speed > brakingPhase.interpolate(location.getPathPosition())
-                    && location.getPathPosition() < endPosition) {
+                    && location.getPathPosition() > initialPosition) {
                 var step = nextStep(
                         location,
                         speed,
@@ -150,7 +157,7 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
                 speed = step.finalSpeed;
                 location.updatePosition(schedule.rollingStock.length, step.positionDelta);
             }
-            newCoastingPhase.put(location.getPathPosition(), targetSpeed);
+            newCoastingPhase.put(location.getPathPosition(), speed);
             res.add(LimitAnnounceSpeedController.create(
                     initialSpeed, speed, location.getPathPosition(), schedule.rollingStock.gamma));
             res.add(new CoastingSpeedController(location.getPathPosition(), accelerationFirstPosition));
