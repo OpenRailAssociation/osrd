@@ -1,3 +1,4 @@
+import schemas
 import heapq
 from dataclasses import dataclass, field
 from typing import List, Optional, Set
@@ -25,6 +26,13 @@ class PathElement:
     def length(self):
         return abs(self.begin - self.end)
 
+    def to_rjs(self):
+        return schemas.DirectionalTrackRange(
+            track=self.track_section.make_rjs_ref(),
+            begin=self.begin,
+            end=self.end,
+            direction=schemas.Direction[self.direction.name]
+        )
 
 Path = List[PathElement]
 
@@ -72,7 +80,7 @@ def search_signal(candidate) -> bool:
     if candidate.direction == Direction.STOP_TO_START:
         signals = list(reversed(signals))
     for signal in signals:
-        if candidate.direction != signal.applicable_direction:
+        if candidate.direction != signal.direction:
             continue
         if (
             candidate.direction == Direction.START_TO_STOP
