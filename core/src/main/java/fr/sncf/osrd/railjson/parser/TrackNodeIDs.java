@@ -2,6 +2,7 @@ package fr.sncf.osrd.railjson.parser;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSectionLink;
 import fr.sncf.osrd.utils.UnionFind;
@@ -14,13 +15,13 @@ public class TrackNodeIDs {
     public final int numberOfNodes;
 
     /** A map from a track section endpoint to a unique endpoint ID */
-    private final Map<RJSTrackSection.EndpointID, Integer> endpointIDs;
+    private final Map<RJSTrackEndpoint, Integer> endpointIDs;
 
     /** A map from endpoint IDs to  */
     private final ArrayList<Integer> endpointToNodeID;
 
     private TrackNodeIDs(int numberOfNodes,
-                         Map<RJSTrackSection.EndpointID, Integer> endpointIDs,
+                         Map<RJSTrackEndpoint, Integer> endpointIDs,
                          ArrayList<Integer> endpointToNodeID
     ) {
         this.numberOfNodes = numberOfNodes;
@@ -34,7 +35,7 @@ public class TrackNodeIDs {
             Iterable<RJSTrackSection> trackSections
     ) throws InvalidInfraException {
         var uf = new UnionFind();
-        var endpointIDs = new HashMap<RJSTrackSection.EndpointID, Integer>();
+        var endpointIDs = new HashMap<RJSTrackEndpoint, Integer>();
 
         // create an union find group for all known track section endpoints
         for (var trackSection : trackSections) {
@@ -46,13 +47,13 @@ public class TrackNodeIDs {
 
         // link endpoint IDs together
         for (var link : links) {
-            int groupA = endpointIDs.getOrDefault(link.begin, -1);
+            int groupA = endpointIDs.getOrDefault(link.src, -1);
             if (groupA == -1)
-                throw new InvalidInfraException(String.format("unknown track section: %s", link.begin.section.id));
+                throw new InvalidInfraException(String.format("unknown track section: %s", link.src.track.id.id));
 
-            int groupB = endpointIDs.getOrDefault(link.end, -1);
+            int groupB = endpointIDs.getOrDefault(link.dst, -1);
             if (groupB == -1)
-                throw new InvalidInfraException(String.format("unknown track section: %s", link.end.section.id));
+                throw new InvalidInfraException(String.format("unknown track section: %s", link.dst.track.id.id));
 
             uf.union(groupA, groupB);
         }
@@ -64,7 +65,7 @@ public class TrackNodeIDs {
     }
 
     /** Get the unique node identifier this endpoint is connected to. */
-    public int get(RJSTrackSection.EndpointID endpoint) throws InvalidInfraException {
+    public int get(RJSTrackEndpoint endpoint) throws InvalidInfraException {
         Integer index = endpointIDs.get(endpoint);
 
         if (index == null)
