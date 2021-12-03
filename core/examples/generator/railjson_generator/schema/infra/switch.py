@@ -1,6 +1,8 @@
+import schemas
 from dataclasses import dataclass, field
 
 from railjson_generator.schema.infra.endpoint import TrackEndpoint
+from railjson_generator.schema.infra.placeholders import placeholder_geo_points
 
 
 def _switch_id():
@@ -23,12 +25,11 @@ class Switch:
         for endpoint in (self.base, self.left, self.right):
             endpoint.set_coords(x, y)
 
-    def format(self):
-        return {
-            "id": self.label,
-            "switch_type": "classic_switch",
-            "group_change_delay": self.delay,
-            "ports": {
-                port: getattr(self, port).format() for port in ("base", "left", "right")
-            },
-        }
+    def to_rjs(self):
+        return schemas.Switch(
+            id=self.label,
+            switch_type=schemas.ObjectReference(id="classic_switch", type="switch_type"),
+            group_change_delay=self.delay,
+            ports={port: getattr(self, port).to_rjs() for port in ("base", "left", "right")},
+            **placeholder_geo_points()
+        )

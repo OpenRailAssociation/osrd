@@ -1,7 +1,9 @@
+import schemas
 from dataclasses import dataclass, field
 from typing import Dict, List, Mapping
 
 from railjson_generator.schema.infra.direction import Direction
+from railjson_generator.schema.infra.placeholders import placeholder_geo_lines
 from railjson_generator.schema.infra.tvd_section import TVDSection
 from railjson_generator.schema.infra.waypoint import Waypoint
 
@@ -24,18 +26,18 @@ class Route:
 
     _INDEX = 0
 
-    def format(self) -> Dict:
-        return {
-            "id": self.label,
-            "entry_point": self.entry_point.label,
-            "exit_point": self.exit_point.label,
-            "entry_direction": self.entry_direction.name,
-            "switches_group": self.switches_group,
-            "release_groups": [[tvd.label] for tvd in self.tvd_sections],
-        }
-
     def __hash__(self):
         return hash(self.label)
 
     def __eq__(self, other):
         return self.label == other.label
+
+    def to_rjs(self):
+        return schemas.Route(
+            id=self.label,
+            entry_point=self.entry_point.make_rjs_ref(),
+            exit_point=self.exit_point.make_rjs_ref(),
+            path=[element.to_rjs() for element in self.path_elements],
+            release_groups=[[tvd.make_rjs_ref()] for tvd in self.tvd_sections],
+            **placeholder_geo_lines()
+        )
