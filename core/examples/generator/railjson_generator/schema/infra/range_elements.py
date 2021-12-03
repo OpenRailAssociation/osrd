@@ -1,3 +1,4 @@
+import schemas
 from dataclasses import dataclass
 
 
@@ -18,12 +19,12 @@ class Slope(RangeElement):
         super().__init__(begin, end)
         self.gradient = gradient
 
-    def format(self):
-        return {
-            "begin": self.begin,
-            "end": self.end,
-            "gradient": self.gradient
-        }
+    def to_rjs(self):
+        return schemas.Slope(
+            gradient=self.gradient,
+            begin=self.begin,
+            end=self.end
+        )
 
 
 class Curve(RangeElement):
@@ -33,12 +34,12 @@ class Curve(RangeElement):
         super().__init__(begin, end)
         self.radius = radius
 
-    def format(self):
-        return {
-            "begin": self.begin,
-            "end": self.end,
-            "radius": self.radius
-        }
+    def to_rjs(self):
+        return schemas.Curve(
+            radius=self.radius,
+            begin=self.begin,
+            end=self.end
+        )
 
 
 class SpeedSection(RangeElement):
@@ -48,10 +49,10 @@ class SpeedSection(RangeElement):
         super().__init__(begin, end)
         self.max_speed = max_speed
 
-    def format(self):
-        return {
-            "begin": self.begin,
-            "end": self.end,
-            "ref": str(self.max_speed),
-            "applicable_direction": "BOTH"
-        }
+    def to_rjs(self):
+        return schemas.SpeedSection(
+            speed=self.max_speed,
+            begin=self.begin,
+            end=self.end,
+            applicable_directions=schemas.ApplicableDirections.BOTH
+        )

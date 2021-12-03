@@ -1,3 +1,4 @@
+import schemas
 from dataclasses import dataclass, field
 from typing import List
 
@@ -26,10 +27,15 @@ class TVDSection:
             else:
                 self.buffer_stops.append(waypoint)
 
-    def format(self):
-        return {
-            "id": self.label,
-            "is_berthing_track": self.is_berthing_track,
-            "buffer_stops": [bs.label for bs in self.buffer_stops],
-            "train_detectors": [detector.label for detector in self.detectors],
-        }
+    def to_rjs(self):
+        return schemas.TVDSection(
+            id=self.label,
+            detectors=[schemas.ObjectReference(type="detector", id=detector.label) for detector in self.detectors],
+            buffer_stops=[schemas.ObjectReference(type="buffer_stop", id=bs.label) for bs in self.buffer_stops],
+        )
+
+    def make_rjs_ref(self):
+        return schemas.ObjectReference(
+            id=self.label,
+            type="tvd_section"
+        )
