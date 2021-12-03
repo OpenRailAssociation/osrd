@@ -1,65 +1,66 @@
 package fr.sncf.osrd.railjson.schema.infra;
 
 import com.squareup.moshi.Json;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
-import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
-import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSOperationalPointPart;
+import fr.sncf.osrd.railjson.schema.common.ObjectRef;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCurve;
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSectionPart;
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenarySectionPart;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenarySection;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class RJSTrackSection implements Identified {
+    public ApplicableDirection navigability;
     public String id;
     public double length;
+
+    @Json(name = "line_code")
+    public int lineCode;
+    @Json(name = "line_name")
+    public String lineName;
+    @Json(name = "track_number")
+    public int trackNumber;
+    @Json(name = "track_name")
+    public String trackName;
 
     public List<RJSSlope> slopes;
     public List<RJSCurve> curves;
 
-    /** List of waypoints (detectors and buffer stops) on the track section */
-    @Json(name = "route_waypoints")
-    public List<RJSRouteWaypoint> routeWaypoints;
-
-    /** List of signals on the track section */
-    public List<RJSSignal> signals;
-
-    /** List of operational points on the track section */
-    @Json(name = "operational_points")
-    public List<RJSOperationalPointPart> operationalPoints;
-
     /** List of speed sections on the track section */
     @Json(name = "speed_sections")
-    public List<RJSSpeedSectionPart> speedSections;
+    public List<RJSSpeedSection> speedSections;
 
     /** List of the catenaries on the track section */
     @Json(name = "catenary_sections")
-    public List<RJSCatenarySectionPart> catenarySections;
-
-    @Json(name = "endpoints_coords")
-    public List<List<Double>> endpointCoords;
+    public List<RJSCatenarySection> catenarySections;
 
     /** Creates a new track section */
     public RJSTrackSection(
             String id,
             double length,
-            List<RJSRouteWaypoint> routeWaypoints,
-            List<RJSSignal> signals,
-            List<RJSOperationalPointPart> operationalPoints,
-            List<RJSSpeedSectionPart> speedSections,
-            List<RJSCatenarySectionPart> catenarySections
+            List<RJSSpeedSection> speedSections,
+            List<RJSCatenarySection> catenarySections,
+            int lineCode,
+            String lineName,
+            int trackNumber,
+            String trackName,
+            ApplicableDirection navigability,
+            List<RJSSlope> slopes,
+            List<RJSCurve> curves
     ) {
         this.id = id;
         this.length = length;
-        this.routeWaypoints = routeWaypoints;
-        this.signals = signals;
-        this.operationalPoints = operationalPoints;
+        this.lineName = lineName;
+        this.lineCode = lineCode;
+        this.trackNumber = trackNumber;
+        this.trackName = trackName;
+        this.navigability = navigability;
+        this.slopes = slopes;
+        this.curves = curves;
         this.speedSections = speedSections;
         this.catenarySections = catenarySections;
     }
@@ -68,7 +69,8 @@ public class RJSTrackSection implements Identified {
             String id,
             double length
     ) {
-        this(id, length, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        this(id, length, new ArrayList<>(), new ArrayList<>(), 0, "", 0, "",
+                ApplicableDirection.BOTH, new ArrayList<>(), new ArrayList<>());
     }
 
     @Override
@@ -76,45 +78,12 @@ public class RJSTrackSection implements Identified {
         return id;
     }
 
-    public EndpointID beginEndpoint() {
-        return new EndpointID(ID.from(this), EdgeEndpoint.BEGIN);
+    public RJSTrackEndpoint beginEndpoint() {
+        return new RJSTrackEndpoint(new ObjectRef<>(ID.from(this), "track_section"), EdgeEndpoint.BEGIN);
     }
 
-    public EndpointID endEndpoint() {
-        return new EndpointID(ID.from(this), EdgeEndpoint.END);
+    public RJSTrackEndpoint endEndpoint() {
+        return new RJSTrackEndpoint(new ObjectRef<>(ID.from(this), "track_section"), EdgeEndpoint.END);
     }
 
-    /** An identifier for a side of a specific track section */
-    public static final class EndpointID {
-        public ID<RJSTrackSection> section;
-        public EdgeEndpoint endpoint;
-
-        public EndpointID(ID<RJSTrackSection> section, EdgeEndpoint endpoint) {
-            this.section = section;
-            this.endpoint = endpoint;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(section, endpoint);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null)
-                return false;
-            if (obj.getClass() != EndpointID.class)
-                return false;
-            var o = (EndpointID) obj;
-            return section.equals(o.section) && endpoint.equals(o.endpoint);
-        }
-
-        @Override
-        public String toString() {
-            return String.format(
-                    "RJSTrackSection.EndpointID { section=%s, endpoint=%s }",
-                    section.id, endpoint.toString()
-            );
-        }
-    }
 }

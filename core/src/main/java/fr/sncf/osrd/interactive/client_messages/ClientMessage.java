@@ -28,7 +28,6 @@ public abstract class ClientMessage {
                 // for RJSInfra
                 .add(ID.Adapter.FACTORY)
                 .add(RJSRSExpr.adapter)
-                .add(RJSRouteWaypoint.adapter)
                 .add(RJSAspectConstraint.adapter)
                 // for RJSRollingStock
                 .add(RJSRollingResistance.adapter)

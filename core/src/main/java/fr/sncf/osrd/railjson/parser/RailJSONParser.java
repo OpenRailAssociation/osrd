@@ -14,21 +14,18 @@ import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.signaling.AspectConstraint;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.*;
-import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
-import fr.sncf.osrd.railjson.schema.infra.RJSTVDSection;
-import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
-import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
-import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
+import fr.sncf.osrd.railjson.schema.common.Identified;
+import fr.sncf.osrd.railjson.schema.common.ObjectRef;
+import fr.sncf.osrd.railjson.schema.infra.*;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSTrackRange;
+import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.DoubleRangeMap;
 import fr.sncf.osrd.utils.RangeValue;
 import fr.sncf.osrd.utils.SortedArraySet;
-import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import okio.BufferedSource;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @SuppressFBWarnings({"NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"})
 public class RailJSONParser {
@@ -63,12 +60,6 @@ public class RailJSONParser {
 
         var trackGraph = new TrackGraph();
 
-        // register operational points
-        for (var operationalPoint : railJSON.operationalPoints) {
-            var op = new OperationalPoint(operationalPoint.id);
-            trackGraph.operationalPoints.put(op.id, op);
-        }
-
         // create a unique identifier for all track intersection nodes
         var nodeIDs = TrackNodeIDs.from(railJSON.trackSectionLinks, railJSON.trackSections);
         trackGraph.resizeNodes(nodeIDs.numberOfNodes);
@@ -86,12 +77,12 @@ public class RailJSONParser {
             switchNames.put(
                     rjsSwitch.id,
                     trackGraph.makeSwitchNode(
-                        index,
-                        rjsSwitch.id,
-                        switchIndex++,
-                        rjsSwitch.groupChangeDelay,
-                        new ArrayList<>(),
-                        new HashMap<>()
+                            index,
+                            rjsSwitch.id,
+                            switchIndex++,
+                            rjsSwitch.groupChangeDelay,
+                            new ArrayList<>(),
+                            new HashMap<>()
                     )
             );
         }
@@ -101,6 +92,26 @@ public class RailJSONParser {
         for (int i = 0; i < nodeIDs.numberOfNodes; i++)
             if (trackGraph.getNode(i) == null)
                 trackGraph.makePlaceholderNode(i, String.valueOf(i));
+
+        // parse tracks
+        var infraTrackSections = new HashMap<String, TrackSection>();
+        var infraTrackBuilders = new HashMap<String, TrackBuilder>();
+        for (var trackSection : railJSON.trackSections) {
+            var track = parseTrackSection(trackGraph, nodeIDs, trackSection);
+            infraTrackSections.put(trackSection.id, track);
+            infraTrackBuilders.put(trackSection.id, new TrackBuilder(track));
+        }
+
+        // register operational points
+        for (var operationalPoint : railJSON.operationalPoints) {
+            for (var part : operationalPoint.parts) {
+                var op = new OperationalPoint(operationalPoint.getID());
+                trackGraph.operationalPoints.put(op.id, op);
+                var track = parseRef(part.track, infraTrackSections);
+                var trackBuilder = parseRef(part.track, infraTrackBuilders);
+                op.addRef(track, part.position, trackBuilder.opBuilder);
+            }
+        }
 
         // parse aspects
         int aspectIndex = 0;
@@ -121,171 +132,60 @@ public class RailJSONParser {
             scriptFunctions.put(scriptFunction.functionName, scriptFunction);
         }
 
-        // parse speed sections
-        var speedSections = new HashMap<String, SpeedSection>();
-        for (var rjsSpeedSection : railJSON.speedSections) {
-            var speedSection = new SpeedSection(rjsSpeedSection.isSignalized, rjsSpeedSection.speed);
-            speedSections.put(rjsSpeedSection.id, speedSection);
-        }
-
-        // parse electrical profile types
-        var catenaryTypes = new HashMap<String, CatenaryType>();
-        for (var rjsCatenaryType : railJSON.catenaryTypes) {
-            var catenaryType = new CatenaryType(rjsCatenaryType.type, rjsCatenaryType.voltage);
-            catenaryTypes.put(rjsCatenaryType.id, catenaryType);
-        }
 
         var waypointsMap = new HashMap<String, Waypoint>();
+        int waypointIndex = 0;
         var detectorIdToSignalNormalMap = new HashMap<String, Signal>();
         var detectorIdToSignalReverseMap = new HashMap<String, Signal>();
 
-        // create track sections
-        var infraTrackSections = new HashMap<String, TrackSection>();
-        var signals = new ArrayList<Signal>();
-        // Need a unique index for waypoint graph
-        int waypointIndex = 0;
-        for (var trackSection : railJSON.trackSections) {
-            var beginID = nodeIDs.get(trackSection.beginEndpoint());
-            var endID = nodeIDs.get(trackSection.endEndpoint());
-            var infraTrackSection = trackGraph.makeTrackSection(beginID, endID, trackSection.id,
-                    trackSection.length, trackSection.endpointCoords);
-            infraTrackSections.put(trackSection.id, infraTrackSection);
-
-            // Parse operational points
-            if (trackSection.operationalPoints == null)
-                trackSection.operationalPoints = new ArrayList<>();
-            var opBuilder = infraTrackSection.operationalPoints.builder();
-            for (var rjsOp : trackSection.operationalPoints) {
-                var op = trackGraph.operationalPoints.get(rjsOp.ref.id);
-                // add the reference from the OperationalPoint to the TrackSection,
-                // add from the TrackSection to the OperationalPoint
-                op.addRef(infraTrackSection, rjsOp.position, opBuilder);
-            }
-            opBuilder.build();
-
-            // Parse speed limits
-            if (trackSection.speedSections == null)
-                trackSection.speedSections = new ArrayList<>();
-            for (var rjsSpeedLimits : trackSection.speedSections) {
-                var speedSection = speedSections.get(rjsSpeedLimits.ref.id);
-                var rangeSpeedLimit = new RangeValue<>(rjsSpeedLimits.begin, rjsSpeedLimits.end, speedSection);
-                if (rjsSpeedLimits.applicableDirection.appliesToNormal())
-                    infraTrackSection.forwardSpeedSections.add(rangeSpeedLimit);
-                if (rjsSpeedLimits.applicableDirection.appliesToReverse())
-                    infraTrackSection.backwardSpeedSections.add(rangeSpeedLimit);
-            }
-
-            // Parser the type of electrical profile in the TrackSection
-            if (trackSection.catenarySections == null)
-                trackSection.catenarySections = new ArrayList<>();
-            for (var rjsCatenarySections : trackSection.catenarySections) {
-                var catenarySection = catenaryTypes.get(rjsCatenarySections.ref.id);
-                var rangeCatenarySection = new RangeValue<>(
-                        rjsCatenarySections.begin,
-                        rjsCatenarySections.end,
-                        catenarySection
-                );
-                if (rjsCatenarySections.applicableDirection.appliesToNormal())
-                    infraTrackSection.forwardCatenarySections.add(rangeCatenarySection);
-                if (rjsCatenarySections.applicableDirection.appliesToReverse())
-                    infraTrackSection.backwardCatenarySections.add(rangeCatenarySection);
-            }
-
-            // Parse waypoints
-            var waypointsBuilder = infraTrackSection.waypoints.builder();
-            if (trackSection.routeWaypoints == null)
-                trackSection.routeWaypoints = new ArrayList<>();
-            for (var rjsRouteWaypoint : trackSection.routeWaypoints) {
-                if (rjsRouteWaypoint.getClass() == RJSTrainDetector.class) {
-                    var detector = new Detector(waypointIndex, rjsRouteWaypoint.id);
-                    waypointsMap.put(detector.id, detector);
-                    waypointsBuilder.add(rjsRouteWaypoint.position, detector);
-                } else if (rjsRouteWaypoint.getClass() == RJSBufferStop.class) {
-                    var bufferStop = new BufferStop(waypointIndex, rjsRouteWaypoint.id);
-                    waypointsMap.put(bufferStop.id, bufferStop);
-                    waypointsBuilder.add(rjsRouteWaypoint.position, bufferStop);
-                }
-                waypointIndex++;
-            }
-
-            waypointsBuilder.buildUnique((duplicates) -> {
-                var ids = duplicates.stream().map(e -> e.id).collect(Collectors.joining(", "));
-                throw new InvalidInfraException("duplicate waypoints " + ids);
-            });
-
-            // Parse signals
-            var signalsBuilder = infraTrackSection.signals.builder();
-            if (trackSection.signals == null)
-                trackSection.signals = new ArrayList<>();
-
-            for (var rjsSignal : trackSection.signals) {
-
-                if (rjsSignal.applicableDirection == ApplicableDirection.BOTH) {
-                    throw new InvalidInfraException("A signal cannot be applicable in both directions.");
-                }
-
-                EdgeDirection direction = null;
-                if (rjsSignal.applicableDirection == ApplicableDirection.NORMAL) {
-                    direction = EdgeDirection.START_TO_STOP;
-                } else {
-                    direction = EdgeDirection.STOP_TO_START;
-                }
-
-                var expr = RailScriptExprParser.parseStatefulSignalExpr(aspectsMap, scriptFunctions, rjsSignal.expr);
-
-                // get linked detector
-                Detector linkedDetector = null;
-                if (rjsSignal.linkedDetector != null)
-                    linkedDetector = (Detector) waypointsMap.get(rjsSignal.linkedDetector.id);
-
-                var signal = new Signal(
-                        signals.size(),
-                        rjsSignal.id,
-                        expr,
-                        direction,
-                        rjsSignal.sightDistance,
-                        linkedDetector
-                );
-                signalsBuilder.add(rjsSignal.position, signal);
-                signals.add(signal);
-                if (rjsSignal.linkedDetector != null) {
-                    if (rjsSignal.applicableDirection == ApplicableDirection.NORMAL)
-                        detectorIdToSignalNormalMap.put(rjsSignal.linkedDetector.id, signal);
-                    else if (rjsSignal.applicableDirection == ApplicableDirection.REVERSE)
-                        detectorIdToSignalReverseMap.put(rjsSignal.linkedDetector.id, signal);
-                }
-            }
-            signalsBuilder.build();
-
-            // Parse slopes and curves
-            if (trackSection.slopes == null)
-                trackSection.slopes = new ArrayList<>();
-            if (trackSection.curves == null)
-                trackSection.curves = new ArrayList<>();
-            if (RJSTrackRange.isOverlaping(trackSection.slopes)) {
-                throw new InvalidInfraException(
-                        String.format("Track section '%s' has overlapping slopes", trackSection.id));
-            } else if (RJSTrackRange.isOverlaping(trackSection.curves)) {
-                throw new InvalidInfraException(
-                        String.format("Track section '%s' has overlapping curves", trackSection.id));
-            }
-
-            // Add an initial flat gradient slope
-            infraTrackSection.forwardGradients.addRange(0., infraTrackSection.length, 0.);
-            infraTrackSection.backwardGradients.addRange(0., infraTrackSection.length, 0.);
-
-            // Insert railjson slopes
-            for (var rjsSlope : trackSection.slopes) {
-                if (rjsSlope.gradient != 0.) {
-                    infraTrackSection.forwardGradients.addRange(rjsSlope.begin, rjsSlope.end, rjsSlope.gradient);
-                    infraTrackSection.backwardGradients.addRange(rjsSlope.begin, rjsSlope.end, -rjsSlope.gradient);
-                }
-            }
-            addCurvesToGradients(infraTrackSection.forwardGradients, trackSection);
-            addCurvesToGradients(infraTrackSection.backwardGradients, trackSection);
+        // Parse waypoints
+        for (var rjsDetector : railJSON.detectors) {
+            var detector = new Detector(waypointIndex, rjsDetector.getID());
+            waypointsMap.put(detector.id, detector);
+            var track = parseRef(rjsDetector.track, infraTrackBuilders);
+            track.waypointsBuilder.add(rjsDetector.position, detector);
+            waypointIndex++;
+        }
+        for (var rjsDetector : railJSON.bufferStops) {
+            var bufferStop = new BufferStop(waypointIndex, rjsDetector.getID());
+            waypointsMap.put(bufferStop.id, bufferStop);
+            var track = parseRef(rjsDetector.track, infraTrackBuilders);
+            track.waypointsBuilder.add(rjsDetector.position, bufferStop);
+            waypointIndex++;
         }
 
-        // Fill switch ports (ie connected track section endpoints)
+        var signals = new ArrayList<Signal>();
+        for (var rjsSignal : railJSON.signals) {
+            var expr = RailScriptExprParser.parseStatefulSignalExpr(aspectsMap, scriptFunctions, rjsSignal.expr);
+
+            // get linked detector
+            Detector linkedDetector = null;
+            if (rjsSignal.linkedDetector != null)
+                linkedDetector = (Detector) waypointsMap.get(rjsSignal.linkedDetector.id);
+
+            var signal = new Signal(
+                    signals.size(),
+                    rjsSignal.id,
+                    expr,
+                    rjsSignal.direction,
+                    rjsSignal.sightDistance,
+                    linkedDetector
+            );
+            var trackBuilder = parseRef(rjsSignal.track, infraTrackBuilders);
+            trackBuilder.signalsBuilder.add(rjsSignal.position, signal);
+            signals.add(signal);
+            if (rjsSignal.linkedDetector != null) {
+                if (rjsSignal.direction == EdgeDirection.START_TO_STOP)
+                    detectorIdToSignalNormalMap.put(rjsSignal.linkedDetector.id.id, signal);
+                else
+                    detectorIdToSignalReverseMap.put(rjsSignal.linkedDetector.id.id, signal);
+            }
+        }
+
+        for (var trackBuilder : infraTrackBuilders.values())
+            trackBuilder.build();
+
+
         for (var rjsSwitch : railJSON.switches) {
             if (!switchNames.containsKey(rjsSwitch.id)) {
                 throw new InvalidInfraException("The switch was not properly added in the map switchName");
@@ -296,11 +196,16 @@ public class RailJSONParser {
                 var port = entry.getValue();
                 switchRef.ports.add(new Switch.Port(
                         portName,
-                        infraTrackSections.get(port.section.id),
+                        infraTrackSections.get(port.track.id),
                         port.endpoint
                 ));
             }
         }
+
+        // Create switch type map
+        var switchTypeMap = new HashMap<String, RJSSwitchType>();
+        for (var rjsSwitchType : railJSON.switchTypes)
+            switchTypeMap.put(rjsSwitchType.id, rjsSwitchType);
 
         // Fill switch groups
         for (var rjsSwitch : railJSON.switches) {
@@ -312,13 +217,13 @@ public class RailJSONParser {
                 portMap.put(
                         portName,
                         new Switch.Port(
-                            portName,
-                            infraTrackSections.get(port.section.id),
-                            port.endpoint
+                                portName,
+                                infraTrackSections.get(port.track.id),
+                                port.endpoint
                         )
                 );
             }
-            for (var entry : railJSON.switchTypes.get(rjsSwitch.switchType).groups.entrySet()) {
+            for (var entry : parseRef(rjsSwitch.switchType, switchTypeMap).groups.entrySet()) {
                 var group = entry.getKey();
                 var edges = new ArrayList<Switch.PortEdge>();
                 for (var e : entry.getValue()) {
@@ -335,13 +240,14 @@ public class RailJSONParser {
 
         // link track sections together
         for (var trackSectionLink : railJSON.trackSectionLinks) {
-            var begin = trackSectionLink.begin;
-            var end = trackSectionLink.end;
-            var beginEdge = infraTrackSections.get(begin.section.id);
-            var endEdge = infraTrackSections.get(end.section.id);
+            var begin = trackSectionLink.src;
+            var end = trackSectionLink.dst;
+            var beginEdge = parseRef(begin.track, infraTrackSections);
+            var endEdge = parseRef(end.track, infraTrackSections);
             var direction = trackSectionLink.navigability;
             linkEdges(beginEdge, begin.endpoint, endEdge, end.endpoint, direction);
         }
+
 
         // build name maps to prepare resolving names in expressions
         var signalNames = new HashMap<String, Signal>();
@@ -357,53 +263,10 @@ public class RailJSONParser {
         // Build route Graph
         var routeGraphBuilder = new RouteGraph.Builder(trackGraph, waypointsMap.size());
 
-        for (var rjsRoute : railJSON.routes) {
-            // Parse release groups
-            var releaseGroups = new ArrayList<SortedArraySet<TVDSection>>();
-            var routeTvdSections = new SortedArraySet<TVDSection>();
-            for (var rjsReleaseGroup : rjsRoute.releaseGroups) {
-                var releaseGroup = new SortedArraySet<TVDSection>();
-                for (var rjsTvdSection : rjsReleaseGroup) {
-                    var tvdSection = tvdSectionsMap.get(rjsTvdSection.id);
-                    routeTvdSections.add(tvdSection);
-                    if (tvdSection == null)
-                        throw new InvalidInfraException(String.format(
-                                "A release group contains an unknown tvd section (%s)",
-                                rjsTvdSection.id
-                        ));
-                    releaseGroup.add(tvdSection);
-                }
-                releaseGroups.add(releaseGroup);
-            }
+        for (var rjsRoute : railJSON.routes)
+            parseRoute(routeGraphBuilder, tvdSectionsMap, infraTrackSections, trackGraph,
+                    waypointsMap, detectorIdToSignalNormalMap, detectorIdToSignalReverseMap, rjsRoute);
 
-            var switchesGroup = new HashMap<Switch, String>();
-            for (var switchGrp : rjsRoute.switchesGroup.entrySet()) {
-                var switchRef = switchNames.get(switchGrp.getKey().id);
-                var group = switchGrp.getValue();
-                if (!switchRef.groups.containsKey(group)) {
-                    throw new InvalidInfraException("This group is not compatible with this switch");
-                }
-                switchesGroup.put(switchRef, group);
-            }
-
-            var entryPoint = waypointsMap.get(rjsRoute.entryPoint.id);
-            var exitPoint = waypointsMap.get(rjsRoute.exitPoint.id);
-
-            var entrySignal = detectorIdToSignalNormalMap.getOrDefault(entryPoint.id, null);
-            if (rjsRoute.entryDirection == EdgeDirection.STOP_TO_START)
-                entrySignal = detectorIdToSignalReverseMap.getOrDefault(entryPoint.id, null);
-
-            routeGraphBuilder.makeRoute(
-                    rjsRoute.id,
-                    routeTvdSections,
-                    releaseGroups,
-                    switchesGroup,
-                    entryPoint,
-                    exitPoint,
-                    entrySignal,
-                    rjsRoute.entryDirection
-            );
-        }
 
         var routeGraph = routeGraphBuilder.build();
 
@@ -449,9 +312,9 @@ public class RailJSONParser {
         for (var rjsTVD : rjstvdSections) {
             var indexKeys = new ArrayList<Integer>();
             for (var rjsDetector : rjsTVD.trainDetectors)
-                indexKeys.add(waypointMap.get(rjsDetector.id).index);
+                indexKeys.add(parseRef(rjsDetector, waypointMap).index);
             for (var rjsBufferStop : rjsTVD.bufferStops)
-                indexKeys.add(waypointMap.get(rjsBufferStop.id).index);
+                indexKeys.add(parseRef(rjsBufferStop, waypointMap).index);
             Collections.sort(indexKeys);
             waypointsToRJSTvd.put(indexKeys, rjsTVD);
         }
@@ -489,5 +352,149 @@ public class RailJSONParser {
             for (var slopeEntry : gradients.subMap(rjsCurve.begin, rjsCurve.end).entrySet())
                 gradients.put(slopeEntry.getKey(), slopeEntry.getValue() + 800. / rjsCurve.radius);
         }
+    }
+
+    private static TrackSection parseTrackSection(
+            TrackGraph trackGraph,
+            TrackNodeIDs nodeIDs,
+            RJSTrackSection trackSection
+    )
+            throws InvalidInfraException {
+        var beginID = nodeIDs.get(trackSection.beginEndpoint());
+        var endID = nodeIDs.get(trackSection.endEndpoint());
+        var infraTrackSection = trackGraph.makeTrackSection(beginID, endID, trackSection.id,
+                trackSection.length, null); // TODO set coords
+
+        // Parse speed limits
+        for (var rjsSpeedLimits : trackSection.speedSections) {
+            var speedSection = new SpeedSection(true, rjsSpeedLimits.speed); // TODO figure out if we keep this
+            var rangeSpeedLimit = new RangeValue<>(rjsSpeedLimits.begin, rjsSpeedLimits.end, speedSection);
+            if (rjsSpeedLimits.applicableDirection.appliesToNormal())
+                infraTrackSection.forwardSpeedSections.add(rangeSpeedLimit);
+            if (rjsSpeedLimits.applicableDirection.appliesToReverse())
+                infraTrackSection.backwardSpeedSections.add(rangeSpeedLimit);
+        }
+
+        // Parse slopes and curves
+        if (trackSection.slopes == null)
+            trackSection.slopes = new ArrayList<>();
+        if (trackSection.curves == null)
+            trackSection.curves = new ArrayList<>();
+        if (RJSTrackRange.isOverlaping(trackSection.slopes)) {
+            throw new InvalidInfraException(
+                    String.format("Track section '%s' has overlapping slopes", trackSection.id));
+        } else if (RJSTrackRange.isOverlaping(trackSection.curves)) {
+            throw new InvalidInfraException(
+                    String.format("Track section '%s' has overlapping curves", trackSection.id));
+        }
+
+        // Add an initial flat gradient slope
+        infraTrackSection.forwardGradients.addRange(0., infraTrackSection.length, 0.);
+        infraTrackSection.backwardGradients.addRange(0., infraTrackSection.length, 0.);
+
+        // Insert railjson slopes
+        for (var rjsSlope : trackSection.slopes) {
+            if (rjsSlope.gradient != 0.) {
+                infraTrackSection.forwardGradients.addRange(rjsSlope.begin, rjsSlope.end, rjsSlope.gradient);
+                infraTrackSection.backwardGradients.addRange(rjsSlope.begin, rjsSlope.end, -rjsSlope.gradient);
+            }
+        }
+        addCurvesToGradients(infraTrackSection.forwardGradients, trackSection);
+        addCurvesToGradients(infraTrackSection.backwardGradients, trackSection);
+        // TODO add catenaries
+        return infraTrackSection;
+    }
+
+    private static void parseRoute(
+            RouteGraph.Builder routeGraphBuilder,
+            HashMap<String, TVDSection> tvdSectionsMap,
+            HashMap<String, TrackSection> infraTrackSections,
+            TrackGraph trackGraph, HashMap<String, Waypoint> waypointsMap,
+            HashMap<String, Signal> detectorIdToSignalNormalMap,
+            HashMap<String, Signal> detectorIdToSignalReverseMap,
+            RJSRoute rjsRoute
+    ) throws InvalidInfraException {
+        // Parse release groups
+        var releaseGroups = new ArrayList<SortedArraySet<TVDSection>>();
+        var routeTvdSections = new SortedArraySet<TVDSection>();
+        for (var rjsReleaseGroup : rjsRoute.releaseGroups) {
+            var releaseGroup = new SortedArraySet<TVDSection>();
+            for (var rjsTvdSection : rjsReleaseGroup) {
+                var tvdSection = parseRef(rjsTvdSection, tvdSectionsMap);
+                routeTvdSections.add(tvdSection);
+                if (tvdSection == null)
+                    throw new InvalidInfraException(String.format(
+                            "A release group contains an unknown tvd section (%s)",
+                            rjsTvdSection.id
+                    ));
+                releaseGroup.add(tvdSection);
+            }
+            releaseGroups.add(releaseGroup);
+        }
+
+        var path = new ArrayList<TrackSectionRange>();
+        for (var step : rjsRoute.path) {
+            var track = parseRef(step.track, infraTrackSections);
+            path.add(new TrackSectionRange(track, step.direction, step.begin, step.end));
+        }
+
+        // Find switch positions
+        var switchesGroup = new HashMap<Switch, String>();
+        for (int i = 1; i < path.size(); i++) {
+            var prev = path.get(i - 1);
+            var next = path.get(i);
+            addSwitchPosition(prev, next, trackGraph, switchesGroup);
+        }
+
+        var entryPoint = parseRef(rjsRoute.entryPoint, waypointsMap);
+        var exitPoint = parseRef(rjsRoute.exitPoint, waypointsMap);
+
+        var entrySignal = detectorIdToSignalNormalMap.getOrDefault(entryPoint.id, null);
+        if (path.get(0).direction == EdgeDirection.STOP_TO_START)
+            entrySignal = detectorIdToSignalReverseMap.getOrDefault(entryPoint.id, null);
+
+        // TODO simplify makeRoute with the new parameters we have (path)
+        routeGraphBuilder.makeRoute(
+                rjsRoute.id,
+                routeTvdSections,
+                releaseGroups,
+                switchesGroup,
+                entryPoint,
+                exitPoint,
+                entrySignal,
+                path.get(0).direction
+        );
+    }
+
+    private static void addSwitchPosition(TrackSectionRange prev, TrackSectionRange next,
+                                          TrackGraph trackGraph, HashMap<Switch, String> switchesGroup)
+            throws InvalidInfraException {
+        if (prev.edge.id.equals(next.edge.id))
+            return;
+        var nodeId = prev.edge.getEndNode(prev.direction);
+        var node = trackGraph.getNode(nodeId);
+        if (node.getClass() != Switch.class)
+            return;
+        var switchNode = (Switch) node;
+        for (var entry : switchNode.groups.entrySet()) {
+            for (var port : entry.getValue()) {
+                if ((port.src.trackSection.id.equals(prev.edge.id)
+                        && port.dst.trackSection.id.equals(next.edge.id))
+                        || (port.dst.trackSection.id.equals(prev.edge.id)
+                        && port.src.trackSection.id.equals(next.edge.id))) {
+                    switchesGroup.put(switchNode, entry.getKey());
+                    return;
+                }
+            }
+        }
+        throw new InvalidInfraException("There isn't any switch configuration fitting for the route");
+    }
+
+    private static <T extends Identified, U> U parseRef(
+            ObjectRef<T> ref,
+            Map<String, U> cachedObjects
+    ) {
+        // TODO check typing + presence
+        return cachedObjects.get(ref.id.id);
     }
 }

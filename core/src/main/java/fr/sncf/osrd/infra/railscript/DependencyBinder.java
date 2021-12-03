@@ -235,11 +235,9 @@ public class DependencyBinder extends RSExprVisitor {
         for (var val : possibleSignals) {
             assert val instanceof Signal;
             var signal = (Signal) val;
-            for (var route : signal.linkedDetector.getIncomingRouteNeighbors(
+            possibleValues.addAll(signal.linkedDetector.getIncomingRouteNeighbors(
                     signal.direction
-                )) {
-                possibleValues.add(route);
-            }
+            ));
         }
         lastExprPossibleValues = possibleValues;
     }
