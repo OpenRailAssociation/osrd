@@ -1,3 +1,4 @@
+import schemas
 from dataclasses import dataclass
 from enum import IntEnum
 
@@ -28,12 +29,6 @@ class TrackEndpoint:
             return self.track_section.begining_links
         return self.track_section.end_links
 
-    def format(self):
-        return {
-            "endpoint": self.endpoint.name,
-            "section": self.track_section.label,
-        }
-
     def opposite(self):
         return TrackEndpoint(track_section=self.track_section,
                              endpoint=self.endpoint.opposite())
@@ -43,3 +38,12 @@ class TrackEndpoint:
             self.track_section.begin_coordinates = (x, y)
         else:
             self.track_section.end_coordinates = (x, y)
+
+    def to_rjs(self):
+        return schemas.TrackEndpoint(
+            endpoint=schemas.Endpoint[self.endpoint.name],
+            track=schemas.ObjectReference(
+                id=self.track_section.label,
+                type="track_section"
+            )
+        )

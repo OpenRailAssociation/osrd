@@ -61,7 +61,7 @@ def create_route_from_path(builder, path):
 def generate_routes(builder):
     for track in builder.infra.track_sections:
         for signal in track.signals:
-            direction = Direction(signal.applicable_direction)
+            direction = Direction(signal.direction)
             origin = PathfindingStep(track, signal.position, direction)
             for path in explore_paths(origin):
                 create_route_from_path(builder, path)

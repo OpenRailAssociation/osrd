@@ -1,3 +1,4 @@
+import schemas
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
@@ -5,6 +6,7 @@ from railjson_generator.schema.infra.direction import ApplicableDirection, Direc
 from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
 from railjson_generator.schema.infra.link import Link
 from railjson_generator.schema.infra.operational_point import OperationalPointPart
+from railjson_generator.schema.infra.placeholders import placeholder_geo_lines
 from railjson_generator.schema.infra.range_elements import Slope, Curve, SpeedSection
 from railjson_generator.schema.infra.signal import Signal
 from railjson_generator.schema.infra.waypoint import BufferStop, Detector, Waypoint
@@ -88,24 +90,25 @@ class TrackSection:
             return self.end_links
         return self.begining_links
 
-    def format(self):
-        if (self.begin_coordinates is None) != (
-            self.end_coordinates is None
-        ):
-            raise RuntimeError(
-                f"Track section: '{self.label}', has only one endpoint coordinates specified"
-            )
-        endpoints_coords = None
-        if self.begin_coordinates is not None:
-            endpoints_coords = [list(self.begin_coordinates), list(self.end_coordinates)]
-        return {
-            "id": self.label,
-            "route_waypoints": [waypoint.format() for waypoint in self.waypoints],
-            "signals": [signal.format() for signal in self.signals],
-            "operational_points": [op.format() for op in self.operational_points],
-            "length": self.length,
-            "endpoints_coords": endpoints_coords,
-            "slopes": [slope.format() for slope in self.slopes],
-            "curves": [curve.format() for curve in self.curves],
-            "speed_sections": [speed_section.format() for speed_section in self.speed_limits],
-        }
+    def to_rjs(self):
+        return schemas.TrackSection(
+            id=self.label,
+            length=self.length,
+            line_code=0,
+            track_number=0,
+            line_name="placeholder_line",
+            track_name="placeholder_track",
+            navigability=schemas.ApplicableDirections[ApplicableDirection.BOTH.name],
+            slopes=[slope.to_rjs() for slope in self.slopes],
+            curves=[curve.to_rjs() for curve in self.curves],
+            speed_sections=[speed_limit.to_rjs() for speed_limit in self.speed_limits],
+            catenary_sections=[],
+            signaling_sections=[],
+            **placeholder_geo_lines()
+        )
+
+    def make_rjs_ref(self):
+        return schemas.ObjectReference(
+            id=self.label,
+            type="track_section"
+        )
