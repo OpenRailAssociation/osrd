@@ -152,7 +152,7 @@ def add_chart_point(result, position, value, field_name):
         result[-1] = struct
 
 
-def create_chart(path_payload, track_to_tree, field_name):
+def create_chart(path_payload, track_to_tree, field_name, direction_sensitive=False):
     result = []
     offset = 0
     for route in path_payload:
@@ -167,9 +167,10 @@ def create_chart(path_payload, track_to_tree, field_name):
                     add_chart_point(result, offset, interval.data, field_name)
             else:
                 for interval in reversed(sorted(tree.overlap(end, begin))):
-                    add_chart_point(result, offset, interval.data, field_name)
+                    value = -interval.data if direction_sensitive else interval.data
+                    add_chart_point(result, offset, value, field_name)
                     offset += abs(max(end, interval.begin) - min(begin, interval.end))
-                    add_chart_point(result, offset, interval.data, field_name)
+                    add_chart_point(result, offset, value, field_name)
     return result
 
 
@@ -206,7 +207,7 @@ def compute_slopes(payload, track_map):
             track.track_section.length,
             lambda component: component.gradient,
         )
-    return create_chart(payload["path"], tree_slopes, "gradient")
+    return create_chart(payload["path"], tree_slopes, "gradient", direction_sensitive=True)
 
 
 def compute_curves(payload, track_map):
@@ -217,7 +218,7 @@ def compute_curves(payload, track_map):
             track.track_section.length,
             lambda component: component.radius,
         )
-    return create_chart(payload["path"], tree_curves, "radius")
+    return create_chart(payload["path"], tree_curves, "radius", direction_sensitive=True)
 
 
 def compute_path(path, data, owner):

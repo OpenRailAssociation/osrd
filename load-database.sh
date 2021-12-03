@@ -8,7 +8,7 @@ if [ $# -ne 1 ]; then
   exit 2
 fi
 
-docker cp "$1" postgres:/backup
+docker cp "$1" osrd-postgres:/backup
 # restoring the backend can partialy fail, and that's sometimes ok
-docker exec -u postgres postgres pg_restore -d osrd -x -c /backup || true
+docker exec osrd-postgres pg_restore -d osrd -x -c /backup || true
 docker exec osrd-api python manage.py generate_layers
