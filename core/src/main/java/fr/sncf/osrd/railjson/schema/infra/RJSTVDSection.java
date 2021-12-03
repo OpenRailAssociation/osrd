@@ -1,8 +1,8 @@
 package fr.sncf.osrd.railjson.schema.infra;
 
 import com.squareup.moshi.Json;
-import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
+import fr.sncf.osrd.railjson.schema.common.ObjectRef;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
 import java.util.ArrayList;
@@ -18,12 +18,12 @@ public class RJSTVDSection implements Identified {
     public boolean isBerthingTrack;
 
     /** List of train detectors in the tvd section */
-    @Json(name = "train_detectors")
-    public Collection<ID<RJSTrainDetector>> trainDetectors;
+    @Json(name = "detectors")
+    public Collection<ObjectRef<RJSTrainDetector>> trainDetectors;
 
     /** List of buffer stops in the tvd section */
     @Json(name = "buffer_stops")
-    public Collection<ID<RJSBufferStop>> bufferStops;
+    public Collection<ObjectRef<RJSBufferStop>> bufferStops;
 
     /**
      * Create a serialized tvd section
@@ -31,8 +31,8 @@ public class RJSTVDSection implements Identified {
      * @param bufferStops buffer stops in the section
      * @param trainDetectors train detectors in the section
      */
-    public RJSTVDSection(String id, boolean isBerthingTrack, HashSet<ID<RJSTrainDetector>> trainDetectors,
-                         ArrayList<ID<RJSBufferStop>> bufferStops) {
+    public RJSTVDSection(String id, boolean isBerthingTrack, HashSet<ObjectRef<RJSTrainDetector>> trainDetectors,
+                         ArrayList<ObjectRef<RJSBufferStop>> bufferStops) {
         this.id = id;
         this.isBerthingTrack = isBerthingTrack;
         this.trainDetectors = trainDetectors;

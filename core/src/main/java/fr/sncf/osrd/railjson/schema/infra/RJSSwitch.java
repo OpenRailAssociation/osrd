@@ -3,6 +3,8 @@ package fr.sncf.osrd.railjson.schema.infra;
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.Identified;
+import fr.sncf.osrd.railjson.schema.common.ObjectRef;
+
 import java.util.Map;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
@@ -11,11 +13,10 @@ public class RJSSwitch implements Identified {
 
     /** The type of the switch */
     @Json(name = "switch_type")
-    public String switchType;
+    public ObjectRef<RJSSwitchType> switchType;
 
     /** The track sections connected to the ports of the switch */
-    @Json(name = "ports")
-    public Map<String, RJSTrackSection.EndpointID> ports;
+    public Map<String, RJSTrackEndpoint> ports;
 
     @Json(name = "group_change_delay")
     public double groupChangeDelay;
@@ -29,8 +30,8 @@ public class RJSSwitch implements Identified {
      */
     public RJSSwitch(
             String id,
-            String switchType,
-            Map<String, RJSTrackSection.EndpointID> ports,
+            ObjectRef<RJSSwitchType> switchType,
+            Map<String, RJSTrackEndpoint> ports,
             double groupChangeDelay
     ) {
         this.id = id;

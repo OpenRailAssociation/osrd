@@ -1,14 +1,17 @@
 package fr.sncf.osrd.railjson.schema.infra.trackranges;
 
 import com.squareup.moshi.Json;
+import fr.sncf.osrd.railjson.schema.common.ObjectRef;
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
 
 public class DirectionalRJSTrackRange extends RJSTrackRange {
     @Json(name = "applicable_direction")
     public ApplicableDirection applicableDirection;
 
-    DirectionalRJSTrackRange(ApplicableDirection applicableDirection, double begin, double end) {
-        super(begin, end);
+    DirectionalRJSTrackRange(ObjectRef<RJSTrackSection> track,
+                             ApplicableDirection applicableDirection, double begin, double end) {
+        super(track, begin, end);
         this.applicableDirection = applicableDirection;
     }
 
