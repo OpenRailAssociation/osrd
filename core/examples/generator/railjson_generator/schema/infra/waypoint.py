@@ -1,7 +1,9 @@
+import schemas
 from dataclasses import dataclass, field
 from typing import Optional
 
 from railjson_generator.schema.infra.direction import ApplicableDirection
+from railjson_generator.schema.infra.placeholders import placeholder_geo_points
 
 
 @dataclass
@@ -13,13 +15,21 @@ class Waypoint:
     left_tvd: Optional["TVDSection"] = field(default=None, repr=False)
     right_tvd: Optional["TVDSection"] = field(default=None, repr=False)
 
-    def format(self):
-        return {
-            "type": self.waypoint_type,
-            "id": self.label,
-            "position": self.position,
-            "applicable_direction": self.applicable_direction.name,
-        }
+    def make_rjs_ref(self):
+        return schemas.ObjectReference(
+            id=self.label,
+            type="waypoint"
+        )
+
+    def to_rjs(self, track_reference):
+        rjs_type = schemas.BufferStop if self.waypoint_type == "buffer_stop" else schemas.Detector
+        return rjs_type(
+            id=self.label,
+            track=track_reference,
+            position=self.position,
+            applicable_directions=schemas.ApplicableDirections[self.applicable_direction.name],
+            **placeholder_geo_points()
+        )
 
 
 def _buffer_stop_id():

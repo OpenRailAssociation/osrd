@@ -1,5 +1,6 @@
-{
-    "classic_switch": {
+[
+    {
+        "id": "classic_switch",
         "ports": [
             "base",
             "left",
@@ -22,4 +23,4 @@
             ]
         }
     }
-}
+]
