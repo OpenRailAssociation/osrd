@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, List, Literal, Mapping, NewType, Optional
 
-from geojson_pydantic import LineString, Point
+from geojson_pydantic import LineString, MultiLineString, Point
 from pydantic import BaseModel, constr
 
 RailScript = NewType("RailScript", Any)
@@ -72,6 +72,11 @@ class TrackLocationTrait(BaseModel):
 class GeometryLineTrait(BaseModel):
     geo: LineString
     sch: LineString
+
+
+class GeometryMultiLineTrait(BaseModel):
+    geo: MultiLineString
+    sch: MultiLineString
 
 
 class GeometryPointTrait(BaseModel):
@@ -183,7 +188,7 @@ class TrackSection(BaseObjectTrait, GeometryLineTrait):
 class Signal(BaseObjectTrait, TrackLocationTrait, GeometryPointTrait):
     direction: Direction
     sight_distance: float
-    linked_detector: ObjectReference
+    linked_detector: Optional[ObjectReference]
     angle: float
     expr: RailScript
 
@@ -196,7 +201,7 @@ class Detector(BaseObjectTrait, TrackLocationTrait, GeometryPointTrait):
     applicable_directions: ApplicableDirections
 
 
-class TVDSection(BaseObjectTrait):
+class TVDSection(BaseObjectTrait, GeometryMultiLineTrait):
     detectors: List[ObjectReference]
     buffer_stops: List[ObjectReference]
 
