@@ -1,17 +1,14 @@
 package fr.sncf.osrd.railjson.schema.infra.trackranges;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.railjson.schema.common.ID;
-import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPoint;
-import fr.sncf.osrd.railjson.schema.infra.trackobjects.BiDirectionalRJSTrackObject;
+import fr.sncf.osrd.railjson.schema.common.ObjectRef;
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrackObject;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public class RJSOperationalPointPart extends BiDirectionalRJSTrackObject {
-    /** The identifier of the operational point this belongs to. */
-    public ID<RJSOperationalPoint> ref;
+public class RJSOperationalPointPart extends RJSTrackObject {
 
-    public RJSOperationalPointPart(ID<RJSOperationalPoint> ref, double position) {
-        super(position);
-        this.ref = ref;
+    public RJSOperationalPointPart(ObjectRef<RJSTrackSection> track, double position) {
+        super(track, position);
     }
 }

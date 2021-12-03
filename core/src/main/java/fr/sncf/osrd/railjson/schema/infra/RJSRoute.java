@@ -1,51 +1,44 @@
 package fr.sncf.osrd.railjson.schema.infra;
 
 import com.squareup.moshi.Json;
-import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
+import fr.sncf.osrd.railjson.schema.common.ObjectRef;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.SingleDirectionalRJSTrackRange;
+
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public class RJSRoute implements Identified {
     public String id;
 
-    /** List of the switches and their position through which the route transits */
-    @Json(name = "switches_group")
-    public Map<ID<RJSSwitch>, String> switchesGroup;
+    /** List of the track ranges on the route */
+    public List<SingleDirectionalRJSTrackRange> path;
 
     @Json(name = "release_groups")
-    public List<Set<ID<RJSTVDSection>>> releaseGroups;
+    public List<Set<ObjectRef<RJSTVDSection>>> releaseGroups;
 
     /** Waypoint placed just before the route, either a buffer stop or a detector attached to a signal */
     @Json(name = "entry_point")
-    public ID<RJSRouteWaypoint> entryPoint;
+    public ObjectRef<RJSRouteWaypoint> entryPoint;
 
     /** The last waypoint of the route, either a buffer stop or a detector */
     @Json(name = "exit_point")
-    public ID<RJSRouteWaypoint> exitPoint;
-
-    /** The edge direction at the first waypoint */
-    @Json(name = "entry_direction")
-    public EdgeDirection entryDirection;
+    public ObjectRef<RJSRouteWaypoint> exitPoint;
 
     /** Routes are described as a list of TVD Sections, Switches in specific positions, and an entry point */
     public RJSRoute(
             String id,
-            Map<ID<RJSSwitch>, String> switchesGroup,
-            List<Set<ID<RJSTVDSection>>> releaseGroups,
-            ID<RJSRouteWaypoint> entryPoint,
-            ID<RJSRouteWaypoint> exitPoint,
-            EdgeDirection entryDirection
+            List<SingleDirectionalRJSTrackRange> path,
+            List<Set<ObjectRef<RJSTVDSection>>> releaseGroups,
+            ObjectRef<RJSRouteWaypoint> entryPoint,
+            ObjectRef<RJSRouteWaypoint> exitPoint
     ) {
         this.id = id;
-        this.switchesGroup = switchesGroup;
+        this.path = path;
         this.releaseGroups = releaseGroups;
         this.entryPoint = entryPoint;
         this.exitPoint = exitPoint;
-        this.entryDirection = entryDirection;
     }
 
     @Override

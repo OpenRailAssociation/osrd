@@ -5,7 +5,6 @@ import static fr.sncf.osrd.utils.graph.EdgeEndpoint.END;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.schema.common.ID;
-import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection.EndpointID;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSectionLink;
 import fr.sncf.osrd.railml.DescriptionLevel;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
