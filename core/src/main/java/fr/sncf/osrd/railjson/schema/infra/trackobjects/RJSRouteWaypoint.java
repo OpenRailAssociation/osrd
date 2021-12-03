@@ -1,23 +1,22 @@
 package fr.sncf.osrd.railjson.schema.infra.trackobjects;
 
-import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 import fr.sncf.osrd.railjson.schema.common.Identified;
+import fr.sncf.osrd.railjson.schema.common.ObjectRef;
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.utils.graph.IPointValue;
 
-public abstract class RJSRouteWaypoint
-        extends DirectionalRJSTrackObject
-        implements Identified, IPointValue<RJSRouteWaypoint> {
+public class RJSRouteWaypoint extends RJSTrackObject implements Identified, IPointValue<RJSRouteWaypoint> {
     public String id;
+    public ApplicableDirection direction;
 
-    public static final PolymorphicJsonAdapterFactory<RJSRouteWaypoint> adapter =
-            PolymorphicJsonAdapterFactory.of(RJSRouteWaypoint.class, "type")
-                    .withSubtype(RJSTrainDetector.class, "detector")
-                    .withSubtype(RJSBufferStop.class, "buffer_stop");
-
-    RJSRouteWaypoint(String id, ApplicableDirection applicableDirection, double position) {
-        super(applicableDirection, position);
+    RJSRouteWaypoint(String id, ApplicableDirection applicableDirection,
+                     double position, ObjectRef<RJSTrackSection> track) {
+        super(track, position);
         this.id = id;
+        this.track = track;
+        this.position = position;
+        this.direction = applicableDirection;
     }
 
     @Override

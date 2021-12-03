@@ -1,6 +1,8 @@
 package fr.sncf.osrd.railjson.schema.infra.trackranges;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.railjson.schema.common.ObjectRef;
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import java.util.Comparator;
 import java.util.List;
@@ -11,10 +13,13 @@ public abstract class RJSTrackRange {
     public double begin;
     public double end;
 
+    public ObjectRef<RJSTrackSection> track;
+
     /** What sides the object can be approached from */
     public abstract ApplicableDirection getNavigability();
 
-    RJSTrackRange(double begin, double end) {
+    RJSTrackRange(ObjectRef<RJSTrackSection> track, double begin, double end) {
+        this.track = track;
         this.begin = begin;
         this.end = end;
     }

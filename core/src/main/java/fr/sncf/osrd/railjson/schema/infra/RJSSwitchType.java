@@ -1,18 +1,19 @@
 package fr.sncf.osrd.railjson.schema.infra;
 
 import com.squareup.moshi.Json;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.railjson.schema.common.Identified;
+import fr.sncf.osrd.railjson.schema.common.ObjectRef;
+
 import java.util.List;
 import java.util.Map;
 
-public class RJSSwitchType {
+public class RJSSwitchType implements Identified {
 
-    @Json(name = "ports")
-    @SuppressFBWarnings(value = {"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"}, justification = "useful for parsing check")
+    public String id;
+
     public List<String> ports;
 
-    @Json(name = "groups")
-    public Map<String, List<PortEdge>> groups;
+    public Map<String, List<SwitchPortConnection>> groups;
 
     /**
      * Create a new switch type
@@ -20,14 +21,21 @@ public class RJSSwitchType {
      * @param groups the groups of simultaneously activable edges between ports
      */
     public RJSSwitchType(
+            String id,
             List<String> ports,
-            Map<String, List<PortEdge>> groups
+            Map<String, List<SwitchPortConnection>> groups
     ) {
+        this.id = id;
         this.ports = ports;
         this.groups = groups;
     }
 
-    public static class PortEdge {
+    @Override
+    public String getID() {
+        return id;
+    }
+
+    public static class SwitchPortConnection {
 
         @Json(name = "src")
         public String src;
@@ -44,7 +52,7 @@ public class RJSSwitchType {
          * @param dst the name of the destination port
          * @param bidirectional true iff the arc is bidirectional
          */
-        public PortEdge(String src, String dst, boolean bidirectional) {
+        public SwitchPortConnection(String src, String dst, boolean bidirectional) {
             this.src = src;
             this.dst = dst;
             this.bidirectional = bidirectional;
@@ -54,10 +62,11 @@ public class RJSSwitchType {
     public static final String CLASSIC_NAME = "CLASSIC_SWITCH";
 
     public static final RJSSwitchType CLASSIC_TYPE = new RJSSwitchType(
+            CLASSIC_NAME,
             List.of("base", "left", "right"),
             Map.of(
-                "LEFT", List.of(new PortEdge("base", "left", true)),
-                "RIGHT", List.of(new PortEdge("base", "right", true))
+                "LEFT", List.of(new SwitchPortConnection("base", "left", true)),
+                "RIGHT", List.of(new SwitchPortConnection("base", "right", true))
             )
         );
 
@@ -72,13 +81,13 @@ public class RJSSwitchType {
      */
     public static RJSSwitch makeClassic(
             String id,
-            RJSTrackSection.EndpointID base,
-            RJSTrackSection.EndpointID left,
-            RJSTrackSection.EndpointID right,
+            RJSTrackEndpoint base,
+            RJSTrackEndpoint left,
+            RJSTrackEndpoint right,
             double positionChangeDelay) {
         return new RJSSwitch(
             id,
-            CLASSIC_NAME,
+            new ObjectRef<>(CLASSIC_NAME, "switch_type"),
             Map.of("base", base, "left", left, "right", right),
             positionChangeDelay
         );
