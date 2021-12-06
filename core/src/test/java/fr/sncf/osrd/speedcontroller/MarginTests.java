@@ -21,6 +21,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.opentest4j.AssertionFailedError;
+
 import java.util.ArrayList;
 
 public class MarginTests {
@@ -130,7 +132,7 @@ public class MarginTests {
 
     /** Test the construction margin on a small segment */
     public static void testConstructionMarginsOnSegment(String configPath, double value, TestInfo info) {
-        final double begin = 4000;
+        final double begin = 3000;
         final double end = 5000;
         final double tolerance = 0.02; // percentage
 
@@ -173,7 +175,7 @@ public class MarginTests {
     }
 
     @ParameterizedTest
-    @ValueSource(doubles = {0.0, 30, 100, 150})
+    @ValueSource(doubles = {0.0, 30, 100})
     public void testConstructionMarginsOnSegment(double value, TestInfo info) {
         testConstructionMarginsOnSegment(CONFIG_PATH, value, info);
     }
@@ -189,9 +191,12 @@ public class MarginTests {
 
         var config = TestConfig.readResource(configPath).clearAllowances();
 
-        assertThrows(SimulationError.class, () -> {
+        AssertionFailedError thrown = assertThrows(AssertionFailedError.class, () -> {
             ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
         });
+
+        assertEquals("Margin asked by the user is too high for such short distance.",
+                thrown.getCause().getMessage());
     }
 
     @ParameterizedTest

@@ -1,6 +1,8 @@
 package fr.sncf.osrd.speedcontroller.generators;
 
 import static fr.sncf.osrd.train.TrainPhysicsIntegrator.*;
+import static java.lang.Double.NaN;
+import static java.lang.Double.isNaN;
 import static java.lang.Math.abs;
 import static java.lang.Math.min;
 import static java.util.Collections.max;
@@ -13,6 +15,8 @@ import fr.sncf.osrd.speedcontroller.*;
 import fr.sncf.osrd.train.Action;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.utils.SortedDoubleMap;
+import org.apache.commons.lang3.Range;
+
 import java.util.HashSet;
 import java.util.NavigableMap;
 import java.util.Set;
@@ -49,21 +53,37 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
                                                        double targetSpeed,
                                                        double initialPosition,
                                                        double endPosition) throws SimulationError {
+
+        double capacitySpeedLimit = 30 / 3.6;
+
         var currentSpeedControllers = new HashSet<>(maxSpeedControllers);
 
         // running calculation to get the initial speed and final speed of the Region Of Interest (ROI)
         var expectedSpeeds = getExpectedSpeeds(schedule, currentSpeedControllers, TIME_STEP,
                 0, endPosition, schedule.initialSpeed);
         var initialSpeed = expectedSpeeds.interpolate(initialPosition);
+        var endSpeed = expectedSpeeds.interpolate(endPosition);
         var res = new HashSet<>(maxSpeedControllers);
+
+        // if the target speed is above the initial and final speed of the region of interest
+        // only apply mareco between these two points, with one LimitAnnounceSpeedController at the end
+        if (targetSpeed >= initialSpeed && targetSpeed >= endSpeed) {
+            res.add(LimitAnnounceSpeedController.create(
+                    targetSpeed, endSpeed, endPosition, schedule.rollingStock.gamma));
+            var marecoSpeedControllers =
+                    super.getSpeedControllers(schedule, targetSpeed, initialPosition, endPosition);
+            res.addAll(marecoSpeedControllers);
+            return res;
+        }
 
         // acceleration phase
         // it is computed in order to get its beginning position
-        var speed = expectedSpeeds.interpolate(endPosition);
+        var speed = endSpeed;
         var location = convertPosition(schedule, endPosition);
         var acceleratingPhase = new SortedDoubleMap();
+        double accelerationFirstPosition = endPosition;
         acceleratingPhase.put(location.getPathPosition(), speed);
-        while (speed > targetSpeed && location.getPathPosition() > initialPosition) {
+        while (speed > 0.0 && location.getPathPosition() > initialPosition) {
             var stepSpeed = speed;
             var directive = new SpeedDirective(targetSpeed);
             var step = nextStep(
@@ -74,6 +94,10 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
                     location.getPathPosition(),
                     -1,
                     (integrator) -> integrator.actionToTargetSpeed(directive, schedule.rollingStock, -1));
+            // memorize the position where the accelerating curve crosses targetSpeed, if there is one
+            var stepSpeedRange = Range.between(speed, step.finalSpeed);
+            if (stepSpeedRange.contains(targetSpeed) && accelerationFirstPosition == endPosition)
+                accelerationFirstPosition = location.getPathPosition();
             speed = step.finalSpeed;
             location.updatePosition(schedule.rollingStock.length, step.positionDelta);
             acceleratingPhase.put(location.getPathPosition(), stepSpeed);
@@ -99,7 +123,6 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
         coastingPhase.put(location.getPathPosition(), targetSpeed);
 
         var coastingLastPosition = coastingPhase.lastKey();
-        var accelerationFirstPosition = acceleratingPhase.firstKey();
         // if the coasting phase does not intersect the accelerating one,
         // that means there is at least a small interval with a MARECO-like behavior
         if (coastingLastPosition <= accelerationFirstPosition) {
@@ -115,6 +138,7 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
             speed = initialSpeed;
             location = convertPosition(schedule, initialPosition);
             var brakingPhase = new SortedDoubleMap();
+            double brakingLastPosition = initialPosition;
             while (location.getPathPosition() < endPosition && speed > 0.0) {
                 var step = nextStep(
                         location,
@@ -128,22 +152,27 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
                                 * schedule.rollingStock.mass
                                 * schedule.rollingStock.inertiaCoefficient
                         ));
+                // memorize the position where the braking curve crosses targetSpeed, if there is one
+                var stepSpeedRange = Range.between(speed, step.finalSpeed);
+                if (stepSpeedRange.contains(targetSpeed) && brakingLastPosition == initialPosition)
+                    brakingLastPosition = location.getPathPosition();
                 brakingPhase.put(location.getPathPosition(), speed);
                 speed = step.finalSpeed;
                 location.updatePosition(schedule.rollingStock.length, step.positionDelta);
+
             }
             brakingPhase.put(location.getPathPosition(), speed);
-            // if the braking curve intersects with the acceleration one,
-            // or the targetSpeed is too close to zero
-            // that means the user asked a margin that is physically impossible to respect
-            if (brakingPhase.interpolate(accelerationFirstPosition) > acceleratingPhase.firstEntry().getValue()
-            || abs(targetSpeed) < 1E-1)
-                throw new SimulationError("Construction margin value too high for such short distance");
+
+            if (brakingLastPosition > accelerationFirstPosition
+            || targetSpeed < 1)
+                throw new SimulationError("Margin asked by the user is too high for such short distance.");
+
             // re-calculate the new coasting phase
             speed = targetSpeed;
             location = convertPosition(schedule, accelerationFirstPosition);
             var newCoastingPhase = new SortedDoubleMap();
             while (speed > brakingPhase.interpolate(location.getPathPosition())
+                    && speed > 0
                     && location.getPathPosition() > initialPosition) {
                 var step = nextStep(
                         location,

@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import net.jqwik.api.*;
+import org.junit.jupiter.api.TestInfo;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
