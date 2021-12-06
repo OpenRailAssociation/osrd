@@ -61,6 +61,8 @@ public class RJSSwitchType implements Identified {
 
     public static final String CLASSIC_NAME = "CLASSIC_SWITCH";
 
+    public static final ObjectRef<RJSSwitchType> CLASSIC_REF = new ObjectRef<>("CLASSIC_SWITCH", "switch_type");
+
     public static final RJSSwitchType CLASSIC_TYPE = new RJSSwitchType(
             CLASSIC_NAME,
             List.of("base", "left", "right"),

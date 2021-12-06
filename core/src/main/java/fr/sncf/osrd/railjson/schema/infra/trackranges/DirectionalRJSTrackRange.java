@@ -9,9 +9,8 @@ public class DirectionalRJSTrackRange extends RJSTrackRange {
     @Json(name = "applicable_direction")
     public ApplicableDirection applicableDirection;
 
-    DirectionalRJSTrackRange(ObjectRef<RJSTrackSection> track,
-                             ApplicableDirection applicableDirection, double begin, double end) {
-        super(track, begin, end);
+    DirectionalRJSTrackRange(ApplicableDirection applicableDirection, double begin, double end) {
+        super(begin, end);
         this.applicableDirection = applicableDirection;
     }
 

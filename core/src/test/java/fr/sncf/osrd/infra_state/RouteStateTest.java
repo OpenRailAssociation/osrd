@@ -122,11 +122,11 @@ public class RouteStateTest {
         testConfig.rjsSimulation.trainSchedules.clear();
         var rjsInfra = testConfig.rjsInfra;
 
-        rjsInfra.switchTypes.put(RJSSwitchType.CLASSIC_NAME, RJSSwitchType.CLASSIC_TYPE);
+        rjsInfra.switchTypes.add(RJSSwitchType.CLASSIC_TYPE);
         var oldSwitch = rjsInfra.switches.iterator().next();
         var newSwitch = new RJSSwitch(
                 "switch-foo-42",
-                RJSSwitchType.CLASSIC_NAME,
+                RJSSwitchType.CLASSIC_REF,
                 Map.of(
                     "base", oldSwitch.ports.get("base"),
                     "left", oldSwitch.ports.get("left"),
@@ -135,15 +135,21 @@ public class RouteStateTest {
                 42
         );
         rjsInfra.switches.add(newSwitch);
-        for (var route : rjsInfra.routes) {
-            if (route.id.equals("rt.C3-S7") || "rt.C6-buffer_stop_b".equals(route.id))
-                route.switchesGroup.put(new ID<>(newSwitch.id), "LEFT");
-            else if ("rt.C6-buffer_stop_a".equals(route.id))
-                route.switchesGroup.put(new ID<>(newSwitch.id), "RIGHT");
-        }
 
         var simState = testConfig.prepare();
         var sim = simState.sim;
+
+        var aSwitch = sim.infra.switches.stream().filter(s -> s.id.equals(newSwitch.id)).findFirst();
+        assert aSwitch.isPresent();
+
+        for (var entry : sim.infra.routeGraph.routeMap.entrySet()) {
+            var id = entry.getKey();
+            var route = entry.getValue();
+            if (id.equals("rt.C3-S7") || "rt.C6-buffer_stop_b".equals(id))
+                route.switchesGroup.put(aSwitch.get(), "LEFT");
+            else if ("rt.C6-buffer_stop_a".equals(id))
+                route.switchesGroup.put(aSwitch.get(), "RIGHT");
+        }
 
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
         sim.infraState.getSwitchState(1).setGroup(sim, "RIGHT");
@@ -168,11 +174,11 @@ public class RouteStateTest {
         var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json");
         testConfig.rjsSimulation.trainSchedules.clear();
         var rjsInfra = testConfig.rjsInfra;
-        rjsInfra.switchTypes.put(RJSSwitchType.CLASSIC_NAME, RJSSwitchType.CLASSIC_TYPE);
+        rjsInfra.switchTypes.add(RJSSwitchType.CLASSIC_TYPE);
         var oldSwitch = rjsInfra.switches.iterator().next();
         var newSwitch = new RJSSwitch(
                 "switch-foo-42",
-                RJSSwitchType.CLASSIC_NAME,
+                RJSSwitchType.CLASSIC_REF,
                 Map.of(
                         "base", oldSwitch.ports.get("base"),
                         "left", oldSwitch.ports.get("left"),
@@ -181,15 +187,19 @@ public class RouteStateTest {
                 42
         );
         rjsInfra.switches.add(newSwitch);
-        for (var route : rjsInfra.routes) {
-            if (route.id.equals("rt.C3-S7") || "rt.C6-buffer_stop_b".equals(route.id))
-                route.switchesGroup.put(new ID<>(newSwitch.id), "LEFT");
-            else if ("rt.C6-buffer_stop_a".equals(route.id))
-                route.switchesGroup.put(new ID<>(newSwitch.id), "RIGHT");
-        }
 
         var simState = testConfig.prepare();
         var sim = simState.sim;
+
+        var aSwitch = sim.infra.switches.stream().filter(s -> s.id.equals(newSwitch.id)).findFirst();
+        assert aSwitch.isPresent();
+
+        for (var route : sim.infra.routeGraph.routeMap.values()) {
+            if (route.id.equals("rt.C3-S7") || "rt.C6-buffer_stop_b".equals(route.id))
+                route.switchesGroup.put(aSwitch.get(), "LEFT");
+            else if ("rt.C6-buffer_stop_a".equals(route.id))
+                route.switchesGroup.put(aSwitch.get(), "RIGHT");
+        }
 
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
         sim.infraState.getSwitchState(1).setGroup(sim, "RIGHT");
