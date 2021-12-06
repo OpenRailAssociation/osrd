@@ -11,6 +11,7 @@ import fr.sncf.osrd.config.Config;
 import fr.sncf.osrd.config.JsonConfig;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.railjson.parser.RJSSimulationParser;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
@@ -18,7 +19,9 @@ import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSuccession;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import fr.sncf.osrd.railjson.schema.common.ID;
+import fr.sncf.osrd.railjson.schema.common.ObjectRef;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.simulation.Simulation;
@@ -170,18 +173,12 @@ public class TestConfig {
 
     /** Set a global speed limit on all the train path */
     public TestConfig setGlobalSpeedLimit(double speed) {
-        ID<fr.sncf.osrd.railjson.schema.infra.RJSSpeedSection> id = null;
-
-        for (var speedSection : rjsInfra.speedSections) {
-            id = ID.from(speedSection);
-            speedSection.speed = speed;
-        }
-
-        for (var trackSection : rjsInfra.trackSections)
+        for (var trackSection : rjsInfra.trackSections) {
             trackSection.speedSections =
                     Collections.singletonList(
-                            new RJSSpeedSection(id, ApplicableDirection.BOTH, 0, trackSection.length)
+                            new RJSSpeedSection(ApplicableDirection.BOTH, 0, trackSection.length, speed)
                     );
+        }
         return this;
     }
 

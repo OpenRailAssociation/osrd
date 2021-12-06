@@ -13,13 +13,10 @@ public abstract class RJSTrackRange {
     public double begin;
     public double end;
 
-    public ObjectRef<RJSTrackSection> track;
-
     /** What sides the object can be approached from */
     public abstract ApplicableDirection getNavigability();
 
-    RJSTrackRange(ObjectRef<RJSTrackSection> track, double begin, double end) {
-        this.track = track;
+    RJSTrackRange(double begin, double end) {
         this.begin = begin;
         this.end = end;
     }

@@ -7,10 +7,12 @@ import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 public class SingleDirectionalRJSTrackRange extends RJSTrackRange {
     public EdgeDirection direction;
+    public ObjectRef<RJSTrackSection> track;
 
     SingleDirectionalRJSTrackRange(ObjectRef<RJSTrackSection> track,
                              EdgeDirection direction, double begin, double end) {
-        super(track, begin, end);
+        super(begin, end);
+        this.track = track;
         this.direction = direction;
     }
 

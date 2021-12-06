@@ -11,13 +11,12 @@ public class RJSCatenarySection extends DirectionalRJSTrackRange {
     public double voltage;
 
     public RJSCatenarySection(
-            ObjectRef<RJSTrackSection> track,
             ApplicableDirection applicableDirection,
             double begin,
             double end,
             double voltage
     ) {
-        super(track, applicableDirection, begin, end);
+        super(applicableDirection, begin, end);
         this.voltage = voltage;
     }
 }
