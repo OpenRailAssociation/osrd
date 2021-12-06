@@ -52,7 +52,7 @@ public class InfraManager {
         public final transient Response response;
 
         UnexpectedHttpResponse(Response response) {
-            super("unexpected http response");
+            super(String.format("unexpected http response %d", response.code()));
             this.response = response;
         }
 
