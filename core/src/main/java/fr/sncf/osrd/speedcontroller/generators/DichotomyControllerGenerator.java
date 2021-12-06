@@ -110,7 +110,6 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         while (Math.abs(time - targetTime) > precision) {
             nextSpeedControllers = getSpeedControllers(schedule, nextValue, sectionBegin, sectionEnd);
             time = evalRunTime(schedule, nextSpeedControllers);
-            saveGraph(nextSpeedControllers, sim, schedule, String.format("C:\\Users\\9706809E\\OneDrive - SNCF\\Documents\\Physique\\Affichage_courbes\\graph%d.csv",i));
             if (time > targetTime)
                 lowerBound = nextValue;
             else
