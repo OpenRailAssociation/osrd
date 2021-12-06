@@ -30,12 +30,10 @@ public class ReservationsTests {
     public void testErrorIfTrainsOverlap() {
         // Forces all signals to green
         var config = TestConfig.readResource("one_line/infra.json", "one_line/simulation.json");
-        for (var track : config.rjsInfra.trackSections) {
-            for (var signal : track.signals) {
-                var member = new RJSRSExpr.AspectSet.AspectSetMember(new ID<>("GREEN"), null);
-                var members = new RJSRSExpr.AspectSet.AspectSetMember[]{member};
-                signal.expr = new RJSRSExpr.AspectSet(members);
-            }
+        for (var signal : config.rjsInfra.signals) {
+            var member = new RJSRSExpr.AspectSet.AspectSetMember(new ID<>("GREEN"), null);
+            var members = new RJSRSExpr.AspectSet.AspectSetMember[]{member};
+            signal.expr = new RJSRSExpr.AspectSet(members);
         }
         var schedules = config.rjsSimulation.trainSchedules;
         var firstSchedule = schedules.get(0);

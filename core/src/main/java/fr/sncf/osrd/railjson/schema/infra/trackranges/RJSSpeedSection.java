@@ -10,13 +10,12 @@ public class RJSSpeedSection extends DirectionalRJSTrackRange {
     public double speed;
 
     public RJSSpeedSection(
-            ObjectRef<RJSTrackSection> track,
             ApplicableDirection applicableDirection,
             double begin,
             double end,
             double speed
     ) {
-        super(track, applicableDirection, begin, end);
+        super(applicableDirection, begin, end);
         this.speed = speed;
     }
 }
