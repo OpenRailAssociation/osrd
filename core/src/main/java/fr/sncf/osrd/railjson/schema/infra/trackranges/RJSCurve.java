@@ -8,13 +8,11 @@ public class RJSCurve extends BiDirectionalRJSTrackRange {
     // Radius (m).
     public double radius;
 
-    RJSCurve(
-            ObjectRef<RJSTrackSection> track,
-            double begin,
+    RJSCurve(double begin,
             double end,
             double radius
     ) {
-        super(track, begin, end);
+        super(begin, end);
         this.radius = radius;
     }
 }
