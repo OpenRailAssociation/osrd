@@ -8,12 +8,6 @@ from railjson_generator.schema.infra.tvd_section import TVDSection
 from railjson_generator.schema.infra.waypoint import Waypoint
 
 
-def _route_id():
-    res = f"route.{Route._INDEX}"
-    Route._INDEX += 1
-    return res
-
-
 @dataclass
 class Route:
     entry_point: Waypoint
@@ -21,7 +15,7 @@ class Route:
     entry_direction: Direction
     switches_group: Mapping[str, str] = field(default_factory=dict)
     tvd_sections: List[TVDSection] = field(default_factory=list)
-    label: str = field(default_factory=_route_id)
+    label: str = field(default=None)
     path_elements: List["PathElement"] = field(default_factory=list)
 
     _INDEX = 0
@@ -33,6 +27,8 @@ class Route:
         return self.label == other.label
 
     def to_rjs(self):
+        if self.label is None:
+            self.label = f"rt.{self.entry_point.label}->{self.exit_point.label}"
         return schemas.Route(
             id=self.label,
             entry_point=self.entry_point.make_rjs_ref(),

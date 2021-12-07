@@ -161,7 +161,7 @@ public class RailJSONParser {
             // get linked detector
             Detector linkedDetector = null;
             if (rjsSignal.linkedDetector != null)
-                linkedDetector = (Detector) waypointsMap.get(rjsSignal.linkedDetector.id);
+                linkedDetector = (Detector) parseRef(rjsSignal.linkedDetector, waypointsMap);
 
             var signal = new Signal(
                     signals.size(),
@@ -196,7 +196,7 @@ public class RailJSONParser {
                 var port = entry.getValue();
                 switchRef.ports.add(new Switch.Port(
                         portName,
-                        infraTrackSections.get(port.track.id),
+                        parseRef(port.track, infraTrackSections),
                         port.endpoint
                 ));
             }
@@ -218,7 +218,7 @@ public class RailJSONParser {
                         portName,
                         new Switch.Port(
                                 portName,
-                                infraTrackSections.get(port.track.id),
+                                parseRef(port.track, infraTrackSections),
                                 port.endpoint
                         )
                 );
@@ -369,9 +369,9 @@ public class RailJSONParser {
         for (var rjsSpeedLimits : trackSection.speedSections) {
             var speedSection = new SpeedSection(true, rjsSpeedLimits.speed); // TODO figure out if we keep this
             var rangeSpeedLimit = new RangeValue<>(rjsSpeedLimits.begin, rjsSpeedLimits.end, speedSection);
-            if (rjsSpeedLimits.applicableDirection.appliesToNormal())
+            if (rjsSpeedLimits.applicableDirections.appliesToNormal())
                 infraTrackSection.forwardSpeedSections.add(rangeSpeedLimit);
-            if (rjsSpeedLimits.applicableDirection.appliesToReverse())
+            if (rjsSpeedLimits.applicableDirections.appliesToReverse())
                 infraTrackSection.backwardSpeedSections.add(rangeSpeedLimit);
         }
 
