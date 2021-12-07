@@ -31,7 +31,6 @@ public final class JsonConfig {
     public double simulationStepPause;
 
     public enum InfraType {
-        RAILML,
         RAILJSON,
         UNKNOWN,
     }

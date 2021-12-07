@@ -13,7 +13,6 @@ public class App {
     public static void main(String[] args) {
         var commands = new HashMap<String, CliCommand>();
         commands.put("simulate", new SimulateCommand());
-        commands.put("convert", new ConvertCommand());
         commands.put("pretty-print-signals", new PrettyPrintCommand());
         commands.put("api", new ApiServerCommand());
         commands.put("interactive", new InteractiveCommand());

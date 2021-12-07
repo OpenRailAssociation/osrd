@@ -12,7 +12,6 @@ import fr.sncf.osrd.infra.trackgraph.TrackGraph;
 import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
-import fr.sncf.osrd.railml.RailMLParser;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import okio.Okio;
 import java.io.IOException;
@@ -195,16 +194,11 @@ public final class Infra {
         if (infraType == null || infraType == JsonConfig.InfraType.UNKNOWN) {
             if (path.endsWith(".json"))
                 infraType = JsonConfig.InfraType.RAILJSON;
-            else if (path.endsWith(".xml"))
-                infraType = JsonConfig.InfraType.RAILML;
             else
                 infraType = JsonConfig.InfraType.UNKNOWN;
         }
 
         switch (infraType) {
-            case RAILML: {
-                return RailMLParser.parse(path);
-            }
             case RAILJSON:
                 try (
                         var fileSource = Okio.source(Path.of(path));
