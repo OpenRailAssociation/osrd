@@ -1,10 +1,12 @@
+from dataclasses import dataclass, field
+from time import perf_counter
+from typing import List, Optional, Tuple
+
 import jsonschema
-from django.contrib.gis.geos import LineString, Point
+import numpy as np
+from django.contrib.gis.geos import LineString
 from django.core.validators import BaseValidator
 from rest_framework.exceptions import ValidationError
-from time import perf_counter
-from typing import Optional, List, Tuple
-from dataclasses import dataclass, field
 
 
 class JSONSchemaValidator(BaseValidator):
@@ -31,16 +33,28 @@ def line_string_slice_points(line_string, begin_normalized, end_normalized):
         res.reverse()
         return res
 
-    positions = [begin_normalized]
-    for point in line_string.tuple:
-        projection = line_string.project_normalized(Point(point))
-        if projection <= begin_normalized:
-            continue
-        elif projection >= end_normalized:
-            break
-        positions.append(projection)
-    positions.append(end_normalized)
-    return [line_string.interpolate_normalized(pos) for pos in positions]
+    points = line_string.array
+    length = line_string.length
+    norm_distance = 0
+    i = 0
+
+    # Add first point
+    positions = [line_string.interpolate_normalized(begin_normalized)]
+
+    # Skip first points
+    while norm_distance <= begin_normalized and i + 1 < len(points):
+        norm_distance += np.linalg.norm(points[i] - points[i + 1]) / length
+        i += 1
+
+    # Add intermediate points
+    while norm_distance < end_normalized and i + 1 < len(points):
+        positions.append(list(points[i]))
+        norm_distance += np.linalg.norm(points[i] - points[i + 1]) / length
+        i += 1
+
+    # Add last point
+    positions.append(line_string.interpolate_normalized(end_normalized))
+    return positions
 
 
 def line_string_slice(line_string, begin_normalized, end_normalized):
