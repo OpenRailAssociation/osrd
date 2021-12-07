@@ -62,12 +62,9 @@ def line_string_slice(line_string, begin_normalized, end_normalized):
     return LineString(points)
 
 
-def track_section_range_geom(track_section, start_offset, end_offset):
-    length = track_section.track_section.length
+def track_section_range_geom(length, geo, sch, start_offset, end_offset):
     begin_normalized = start_offset / length
     end_normalized = end_offset / length
-    geo = track_section.geo_line_location.geographic
-    sch = track_section.geo_line_location.schematic
     res = []
     for geom in (geo, sch):
         sliced = line_string_slice(geo, begin_normalized, end_normalized)
