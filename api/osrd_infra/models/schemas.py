@@ -8,6 +8,7 @@ RailScript = NewType("RailScript", Any)
 Aspect = NewType("Aspect", Any)
 
 ALL_OBJECT_TYPES = []
+RAILJSON_VERSION = "2.0.0"
 
 
 class Direction(str, Enum):
@@ -207,7 +208,7 @@ class TVDSection(BaseObjectTrait, GeometryMultiLineTrait):
 
 
 class RailJsonInfra(BaseModel):
-    version: Literal["2.0.0"]
+    version: Literal[RAILJSON_VERSION]
     operational_points: List[OperationalPoint]
     routes: List[Route]
     switch_types: List[SwitchType]
