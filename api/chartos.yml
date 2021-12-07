@@ -1,169 +1,243 @@
 name: osrd
 description: "OSRD map cache"
 layers:
-  - name: osrd_track_section
+  - name: track_sections
     description: Track sections layer
     versioned: true
-    section_name: lines
     fields:
-      - name: entity_id
+      - name: id
+        type: string(max_len=255)
+        description: Track section ID
+      - name: sch
+        type: geom
+        description: Schematic geometry
+      - name: geo
+        type: geom
+        description: Geographic geometry
+      - name: length
+        type: double
+        description: Length
+      - name: line_code
         type: int
-        description: Entity ID
-      - name: geom_sch
-        type: geom
-        description: Schematic geometry of the object
-      - name: geom_geo
-        type: geom
-        description: Geographic geometry of the object
-      - name: components
-        type: json
-        description: List of components of the track section
-    id_field_name: entity_id
+        description: Line code
+      - name: line_name
+        type: string(max_len=255)
+        description: Name of the line
+      - name: track_number
+        type: int
+        description: Track number
+      - name: track_name
+        type: string(max_len=255)
+        description: Track name
+      - name: navigability
+        type: string(max_len=255)
+        description: navigability possible values [START_TO_STOP, STOP_TO_START, BOTH]
+      - name: slopes
+        type: array(of=json)
+        description: List of slopes
+      - name: curves
+        type: array(of=json)
+        description: List of curves
+      - name: speed_sections
+        type: array(of=json)
+        description: List of speed sections
+      - name: catenary_sections
+        type: array(of=json)
+        description: List of catenary sections
+      - name: signaling_sections
+        type: array(of=json)
+        description: List of catenary sections
+    id_field_name: id
     views:
       - name: sch
-        on_field: geom_sch
+        on_field: sch
         exclude_fields:
-          - geom_geo
-          - geom_sch
+          - sch
+          - geo
       - name: geo
+        on_field: geo
         exclude_fields:
-          - geom_geo
-          - geom_sch
-        on_field: geom_geo
-  - name: osrd_signal
+          - geo
+          - sch
+  - name: signals
     description: Signals layer
     versioned: true
-    section_name: points
     fields:
-      - name: entity_id
-        type: int
-        description: Entity ID
-      - name: geom_sch
+      - name: id
+        type: string(max_len=255)
+        description: Signal ID
+      - name: sch
         type: geom
-        description: Schematic geometry of the object
-      - name: geom_geo
+        description: Schematic geometry
+      - name: geo
         type: geom
-        description: Geographic geometry of the object
-      - name: components
+        description: Geographic geometry
+      - name: direction
+        type: string(max_len=15)
+        description: Direction can be [START_TO_STOP, STOP_TO_START]
+      - name: sight_distance
+        type: double
+        description: Sight distance
+      - name: linked_detector
         type: json
-        description: List of components of the track section
-    id_field_name: entity_id
+        description: Linked detector reference (can be null)
+      - name: angle
+        type: double
+        description: Signal angle
+      - name: expr
+        type: json
+        description: Railscript expression
+      - name: track
+        type: json
+        description: Track section reference location
+      - name: position
+        type: double
+        description: Track section location position
+    id_field_name: id
     views:
       - name: sch
         exclude_fields:
-          - geom_geo
-          - geom_sch
-        on_field: geom_sch
+          - sch
+          - geo
+        on_field: sch
       - name: geo
         exclude_fields:
-          - geom_geo
-          - geom_sch
-        on_field: geom_geo
-  - name: osrd_speed_limit
-    description: Speed limit layer
+          - geo
+          - sch
+        on_field: geo
+  - name: speed_sections
+    description: Speed section layer
     versioned: true
-    section_name: line
     fields:
-      - name: entity_id
-        type: int
-        description: Entity ID
+      - name: id
+        type: string(max_len=255)
+        description: Speed section ID
+      - name: sch
+        type: geom
+        description: Schematic geometry
+      - name: geo
+        type: geom
+        description: Geographic geometry
       - name: speed
         type: double
         description: Speed limit (m/s)
-      - name: geom_sch
-        type: geom
-        description: Schematic geometry of the object
-      - name: geom_geo
-        type: geom
-        description: Geographic geometry of the object
-    id_field_name: entity_id
+      - name: begin
+        type: double
+        description: Begin offset of the track
+      - name: end
+        type: double
+        description: End offset of the track
+      - name: applicable_directions
+        type: string(max_len=15)
+        description: applicable directions possible values [START_TO_STOP, STOP_TO_START, BOTH]
+      - name: track
+        type: json
+        description: Track section reference
+    id_field_name: id
     views:
       - name: sch
         exclude_fields:
-          - geom_geo
-          - geom_sch
-        on_field: geom_sch
+          - geo
+          - sch
+        on_field: sch
       - name: geo
         exclude_fields:
-          - geom_geo
-          - geom_sch
-        on_field: geom_geo
-  - name: osrd_signaling_type
-    description: Signaling type layer
+          - geo
+          - sch
+        on_field: geo
+  - name: signaling_sections
+    description: Signaling section layer
     versioned: true
-    section_name: line
     fields:
-      - name: component_id
-        type: int
-        description: Component ID
+      - name: id
+        type: string(max_len=255)
+        description: Signaling section id
+      - name: sch
+        type: geom
+        description: Schematic geometry
+      - name: geo
+        type: geom
+        description: Geographic geometry
       - name: signaling_type
         type: string(max_len=8)
         description: |
           Signaling type can take the following values: ["BAL", "BAL_VB", "BAPR_DV", "BAPR_VB", "BM_VU", "BM_VU_SE", "BM_CV", "BM_U", "BM_AMU", "BM_NB", "BM_LU", "BM_LUS", "BM_SEUS", "CAPI", "CT_DV", "CT_VU", "TVM300", "TVM430", "ETCS_1", "ETCS_2", "ETCS_3", "TRMW", "AUTRE"]
-      - name: geom_sch
-        type: geom
-        description: Schematic geometry of the object
-      - name: geom_geo
-        type: geom
-        description: Geographic geometry of the object
-    id_field_name: component_id
+      - name: begin
+        type: double
+        description: Begin offset of the track
+      - name: end
+        type: double
+        description: End offset of the track
+      - name: track
+        type: json
+        description: Track section reference
+    id_field_name: id
     views:
       - name: sch
         exclude_fields:
-          - geom_geo
-          - geom_sch
-        on_field: geom_sch
+          - geo
+          - sch
+        on_field: sch
       - name: geo
         exclude_fields:
-          - geom_geo
-          - geom_sch
-        on_field: geom_geo
-  - name: osrd_electrification_type
-    description: Electrification type layer
+          - geo
+          - sch
+        on_field: geo
+  - name: catenary_sections
+    description: Catenary section layer
     versioned: true
-    section_name: line
     fields:
-      - name: component_id
-        type: int
-        description: Component ID
-      - name: electrification_type
-        type: int
-        description: |
-          Electrification voltage can take the following values: [750, 800, 850, 1500, 3000, 15000, 25000]
-      - name: geom_sch
+      - name: id
+        type: string(max_len=255)
+        description: Catenary section id
+      - name: sch
         type: geom
-        description: Schematic geometry of the object
-      - name: geom_geo
+        description: Schematic geometry
+      - name: geo
         type: geom
-        description: Geographic geometry of the object
-    id_field_name: component_id
+        description: Geographic geometry
+      - name: voltage
+        type: double
+        description: Voltage of the catenary
+      - name: begin
+        type: double
+        description: Begin offset of the track
+      - name: end
+        type: double
+        description: End offset of the track
+      - name: applicable_directions
+        type: string(max_len=15)
+        description: applicable directions possible values [START_TO_STOP, STOP_TO_START, BOTH]
+      - name: track
+        type: json
+        description: Track section reference
+    id_field_name: id
     views:
       - name: sch
         exclude_fields:
-          - geom_geo
-          - geom_sch
-        on_field: geom_sch
+          - geo
+          - sch
+        on_field: sch
       - name: geo
         exclude_fields:
-          - geom_geo
-          - geom_sch
-        on_field: geom_geo
-  - name: osrd_operational_point
+          - geo
+          - sch
+        on_field: geo
+  - name: operational_points
     description: Operational point layer
     versioned: true
-    section_name: point
     fields:
-      - name: entity_id
-        type: int
-        description: Entity ID
-      - name: geom_sch
+      - name: id
+        type: string(max_len=255)
+        description: Operational point ID
+      - name: sch
         type: geom
-        description: Schematic geometry of the object
-      - name: geom_geo
+        description: Schematic geometry of the operational point part
+      - name: geo
         type: geom
-        description: Geographic geometry of the object
+        description: Geographic geometry of the operational point part
       - name: name
-        type: string(max_len=256)
+        type: string(max_len=255)
         description: Name of the operational point
       - name: ci
         type: int
@@ -172,53 +246,63 @@ layers:
         type: string(max_len=2)
         description: Worksite code
       - name: ch_short_label
-        type: string(max_len=256)
+        type: string(max_len=255)
         description: Worksite short label
       - name: ch_long_label
-        type: string(max_len=256)
+        type: string(max_len=255)
         description: Worksite long label
-    id_field_name: entity_id
+      - name: track
+        type: json
+        description: Track section reference
+      - name: position
+        type: double
+        description: Track position
+    id_field_name: id
     views:
       - name: sch
         exclude_fields:
-          - geom_geo
-          - geom_sch
-        on_field: geom_sch
+          - geo
+          - sch
+        on_field: sch
       - name: geo
         exclude_fields:
-          - geom_geo
-          - geom_sch
-        on_field: geom_geo
-  - name: osrd_tvd_section
+          - geo
+          - sch
+        on_field: geo
+  - name: tvd_sections
     description: TVD sections layer
     versioned: true
-    section_name: lines
     fields:
-      - name: entity_id
-        type: int
-        description: Entity ID
-      - name: geom_sch
+      - name: id
+        type: string(max_len=255)
+        description: TVD section ID
+      - name: sch
         type: geom
-        description: Schematic geometry of the object
-      - name: geom_geo
+        description: Schematic geometry
+      - name: geo
         type: geom
-        description: Geographic geometry of the object
-    id_field_name: entity_id
+        description: Geographic geometry
+      - name: detectors
+        type: array(of=json)
+        description: List of detector references
+      - name: buffer_stops
+        type: array(of=json)
+        description: List of buffer stop references
+    id_field_name: id
     views:
       - name: sch
         exclude_fields:
-          - geom_geo
-          - geom_sch
-        on_field: geom_sch
+          - sch
+          - geo
+        on_field: sch
       - name: geo
         exclude_fields:
-          - geom_geo
-          - geom_sch
-        on_field: geom_geo
+          - geo
+          - sch
+        on_field: geo
   - name: map_midi_signal
     description: Signaux
     versioned: true
-    section_name: Objets ponctuels
     fields:
       - name: OP_id
         type: string(max_len=40)
