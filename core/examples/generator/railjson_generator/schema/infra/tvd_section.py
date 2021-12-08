@@ -2,6 +2,7 @@ import schemas
 from dataclasses import dataclass, field
 from typing import List
 
+from railjson_generator.schema.infra.make_geo_data import make_geo_multilines
 from railjson_generator.schema.infra.waypoint import BufferStop, Detector
 
 
@@ -32,6 +33,7 @@ class TVDSection:
             id=self.label,
             detectors=[schemas.ObjectReference(type="detector", id=detector.label) for detector in self.detectors],
             buffer_stops=[schemas.ObjectReference(type="buffer_stop", id=bs.label) for bs in self.buffer_stops],
+            **make_geo_multilines([[(0, 0), (0, 0)]])
         )
 
     def make_rjs_ref(self):
