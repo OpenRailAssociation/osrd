@@ -2,7 +2,7 @@ package fr.sncf.osrd.railjson.schema.common;
 
 import java.util.Objects;
 
-public class ObjectRef<T extends Identified> {
+public final class ObjectRef<T extends Identified> {
     public ID<T> id;
     public String type;
 
