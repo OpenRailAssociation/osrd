@@ -1,74 +1,58 @@
-from django.core.management.base import BaseCommand, CommandError
-from django.contrib.gis.geos import LineString
-from osrd_infra.models import SwitchEntity, fetch_entities, Endpoint, TrackSectionLinkEntity
-from pathlib import Path
 import csv
+from dataclasses import dataclass
+from pathlib import Path
+
+from django.contrib.gis.geos import GEOSGeometry, LineString, Point
+from django.core.management.base import BaseCommand, CommandError
 
 from osrd_infra.models import (
+    BufferStopModel,
+    DetectorModel,
     Infra,
-    TrackSectionEntity,
-    WaypointEntity,
-    SignalEntity,
-    TVDSectionEntity,
-    OperationalPointPartEntity,
+    OperationalPointModel,
+    SignalModel,
+    SwitchModel,
+    TrackSectionLinkModel,
+    TrackSectionModel,
+    TVDSectionModel,
 )
+from osrd_infra.models.schemas import Endpoint
 
 
-def formatter(name, prefetch=None):
+@dataclass
+class CustomOperationalPointPart:
+    geo: Point
+    sch: Point
+    name: str
+    id: str
+
+
+def formatter(name):
     def _wrapper(f):
-        nonlocal prefetch
         f.name = name
-        if prefetch is None:
-            prefetch = []
-        elif isinstance(prefetch, str):
-            prefetch = [prefetch]
-        f.prefetch = prefetch
         return f
 
     return _wrapper
 
 
 @formatter("osrd_id")
-def format_osrd_id(entity):
-    return str(entity.entity_id)
+def format_osrd_id(obj):
+    return obj.id
 
 
-@formatter("point_geo", prefetch="geo_point_location")
-def format_point_geo(entity):
-    return str(entity.geo_point_location.geographic)
+@formatter("name")
+def format_name(obj):
+    return obj.name
 
 
-@formatter("point_sch", prefetch="geo_point_location")
-def format_point_sch(entity):
-    return str(entity.geo_point_location.schematic)
+@formatter("geo")
+def format_geo(obj):
+    return GEOSGeometry(obj.geo.json()).ewkt
 
 
-@formatter("line_geo", prefetch="geo_line_location")
-def format_line_geo(entity):
-    return str(entity.geo_line_location.geographic)
-
-
-@formatter("line_sch", prefetch="geo_line_location")
-def format_line_sch(entity):
-    return str(entity.geo_line_location.schematic)
-
-
-@formatter("lines_geo", prefetch="geo_lines_location")
-def format_lines_geo(entity):
-    return str(entity.geo_lines_location.geographic)
-
-
-@formatter("lines_sch", prefetch="geo_lines_location")
-def format_lines_sch(entity):
-    return str(entity.geo_lines_location.schematic)
-
-
-@formatter("identifiers", prefetch="identifier_set")
-def format_identifiers(entity):
-    return ",".join(
-        f"{identifier.database}:{identifier.name}"
-        for identifier in entity.identifier_set.all()
-    )
+@formatter("sch")
+def format_sch(obj):
+    return GEOSGeometry(obj.sch.json()).ewkt
 
 
 @formatter("op_name")
@@ -77,62 +61,61 @@ def format_operational_point(entity):
     return op.operational_point.name
 
 
-def dump_entities(writer, entities, formatters):
-    prefetch = []
-    for formatter in formatters:
-        prefetch.extend(formatter.prefetch)
-
+def dump_entities(writer, objects, formatters):
     writer.writerow((f.name for f in formatters))
-    for entity in entities.prefetch_related(*prefetch):
-        writer.writerow((f(entity) for f in formatters))
+    for obj in objects:
+        writer.writerow((f(obj) for f in formatters))
 
 
-def get_geo_point_near_endpoint(track_id, endpoint, cached_track_sections):
-    track_entity = cached_track_sections[track_id]
-    length = track_entity.track_section.length
-    endpoint = Endpoint(endpoint)
+def get_geo_point_near_endpoint(track, endpoint):
+    length = track.length
     offset = min(0.5, 5 / length) if length > 0 else 0
     if endpoint == Endpoint.END:
         offset = 1 - offset
-    geo_line = track_entity.geo_line_location.geographic
+    geo_line = GEOSGeometry(track.geo.json())
     return geo_line.interpolate_normalized(offset)
 
 
-def make_link(cached_track_sections, src_track, src_endpoint, dst_track, dst_endpoint):
-    origin = get_geo_point_near_endpoint(src_track, src_endpoint, cached_track_sections)
-    destination = get_geo_point_near_endpoint(dst_track, dst_endpoint, cached_track_sections)
+def compute_link_geom(src_track, src_endpoint, dst_track, dst_endpoint):
+    origin = get_geo_point_near_endpoint(src_track, src_endpoint)
+    destination = get_geo_point_near_endpoint(dst_track, dst_endpoint)
     line = LineString(origin, destination)
     return line
 
 
-def export_track_section_links(fp, namespace, cached_track_sections):
+def export_track_section_links(fp, infra, track_sections):
     writer = csv.writer(fp)
-    writer.writerow(["id", "track_section_link"])
-    for track_section_link_entity in TrackSectionLinkEntity.objects.filter(namespace=namespace):
-        link = track_section_link_entity.track_section_link
-        line = make_link(
-            cached_track_sections,
-            link.begin_track_section_id,
-            link.begin_endpoint,
-            link.end_track_section_id,
-            link.end_endpoint,
+    writer.writerow(["id", "geo"])
+    for link in TrackSectionLinkModel.objects.filter(infra=infra):
+        link = link.into_obj()
+        line = compute_link_geom(
+            track_sections[link.src.track.id],
+            link.src.endpoint,
+            track_sections[link.dst.track.id],
+            link.dst.endpoint,
         )
-        writer.writerow([track_section_link_entity.entity_id, line])
+        writer.writerow((link.id, line.ewkt))
 
 
-def export_switches(fp, namespace, cached_track_sections):
+def export_switches(fp, infra, track_sections):
     writer = csv.writer(fp)
     writer.writerow(["id", "switch_link"])
-    for switch_entity in SwitchEntity.objects.filter(namespace=namespace):
-        for link in switch_entity.switch.links:
-            line = make_link(
-                cached_track_sections,
-                link["origin"]["track_section"],
-                link["origin"]["endpoint"],
-                link["destination"]["track_section"],
-                link["destination"]["endpoint"]
-            )
-            writer.writerow([switch_entity.entity_id, line])
+    for switch in SwitchModel.objects.filter(infra=infra):
+        switch = switch.into_obj()
+        line = compute_link_geom(
+            track_sections[switch.ports["BASE"].track.id],
+            switch.ports["BASE"].endpoint,
+            track_sections[switch.ports["LEFT"].track.id],
+            switch.ports["LEFT"].endpoint,
+        )
+        writer.writerow([switch.id, line.ewkt])
+        line = compute_link_geom(
+            track_sections[switch.ports["BASE"].track.id],
+            switch.ports["BASE"].endpoint,
+            track_sections[switch.ports["RIGHT"].track.id],
+            switch.ports["RIGHT"].endpoint,
+        )
+        writer.writerow([switch.id, line.ewkt])
 
 
 class Command(BaseCommand):
@@ -149,72 +132,70 @@ class Command(BaseCommand):
             infra = Infra.objects.get(pk=infra_id)
         except Infra.DoesNotExist:
             raise CommandError('Infra "%s" does not exist' % infra_id)
-        infra_namespace = infra.namespace_id
-
-        query = fetch_entities(TrackSectionEntity, namespace=infra_namespace)
-        cached_track_sections = {entity.entity_id: entity for entity in query}
 
         # make the output directory
         out_dir = Path(options["out_dir"])
         out_dir.mkdir(parents=True, exist_ok=True)
 
-        with (out_dir / "track_section_links.csv").open("w") as fp:
-            export_track_section_links(fp, infra_namespace, cached_track_sections)
-
-        with (out_dir / "switches.csv").open("w") as fp:
-            export_switches(fp, infra_namespace, cached_track_sections)
+        track_sections = {}
+        for track in TrackSectionModel.objects.filter(infra=infra):
+            track = track.into_obj()
+            track_sections[track.id] = track
 
         with (out_dir / "track_sections.csv").open("w") as fp:
             dump_entities(
                 csv.writer(fp),
-                TrackSectionEntity.objects.filter(namespace=infra_namespace),
-                [format_osrd_id, format_line_geo, format_line_sch, format_identifiers],
+                track_sections.values(),
+                [format_osrd_id, format_geo, format_sch],
             )
 
-        with (out_dir / "waypoints.csv").open("w") as fp:
+        buffer_stops = [w.into_obj() for w in DetectorModel.objects.filter(infra=infra)]
+        with (out_dir / "detectors.csv").open("w") as fp:
             dump_entities(
                 csv.writer(fp),
-                WaypointEntity.objects.filter(namespace=infra_namespace),
-                [
-                    format_osrd_id,
-                    format_point_geo,
-                    format_point_sch,
-                    format_identifiers,
-                ],
+                buffer_stops,
+                [format_osrd_id, format_geo, format_sch],
             )
 
+        buffer_stops = [w.into_obj() for w in BufferStopModel.objects.filter(infra=infra)]
+        with (out_dir / "buffer_stops.csv").open("w") as fp:
+            dump_entities(
+                csv.writer(fp),
+                buffer_stops,
+                [format_osrd_id, format_geo, format_sch],
+            )
+
+        signals = [w.into_obj() for w in SignalModel.objects.filter(infra=infra)]
         with (out_dir / "signals.csv").open("w") as fp:
             dump_entities(
                 csv.writer(fp),
-                SignalEntity.objects.filter(namespace=infra_namespace),
-                [
-                    format_osrd_id,
-                    format_point_geo,
-                    format_point_sch,
-                    format_identifiers,
-                ],
+                signals,
+                [format_osrd_id, format_geo, format_sch],
             )
 
+        tvd_sections = [tvd.into_obj() for tvd in TVDSectionModel.objects.filter(infra=infra)]
         with (out_dir / "tvd_sections.csv").open("w") as fp:
             dump_entities(
                 csv.writer(fp),
-                TVDSectionEntity.objects.filter(namespace=infra_namespace),
-                [
-                    format_osrd_id,
-                    format_lines_geo,
-                    format_lines_sch,
-                    format_identifiers,
-                ],
+                tvd_sections,
+                [format_osrd_id, format_geo, format_sch],
             )
+
+        operational_points = []
+        for op in OperationalPointModel.objects.filter(infra=infra):
+            op = op.into_obj()
+            for part in op.parts:
+                operational_points.append(CustomOperationalPointPart(part.geo, part.sch, op.name, op.id))
 
         with (out_dir / "operational_points.csv").open("w") as fp:
             dump_entities(
                 csv.writer(fp),
-                OperationalPointPartEntity.objects.filter(namespace=infra_namespace),
-                [
-                    format_osrd_id,
-                    format_point_geo,
-                    format_point_sch,
-                    format_operational_point,
-                ],
+                operational_points,
+                [format_osrd_id, format_geo, format_sch, format_name],
             )
+
+        with (out_dir / "track_section_links.csv").open("w") as fp:
+            export_track_section_links(fp, infra, track_sections)
+
+        with (out_dir / "switches.csv").open("w") as fp:
+            export_switches(fp, infra, track_sections)
