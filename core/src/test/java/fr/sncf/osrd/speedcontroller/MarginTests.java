@@ -11,6 +11,7 @@ import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.ConstructionAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarecoAllowance;
+import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.opentest4j.AssertionFailedError;
 import java.util.ArrayList;
 
 public class MarginTests {
@@ -172,8 +174,7 @@ public class MarginTests {
     }
 
     @ParameterizedTest
-    //@ValueSource(doubles = {0.0, 30, 100})
-    @ValueSource(doubles = {100})
+    @ValueSource(doubles = {0.0, 30, 100})
     public void testConstructionMarginsOnSegment(double value, TestInfo info) {
         testConstructionMarginsOnSegment(CONFIG_PATH, value, info);
     }
@@ -182,7 +183,6 @@ public class MarginTests {
     public static void testImpossibleConstructionMargin(String configPath, double value, TestInfo info) {
         final double begin = 4000;
         final double end = 5000;
-        final double tolerance = 0.02; // percentage
 
         var allowance = new ConstructionAllowance(value);
         allowance.beginPosition = begin;
@@ -190,13 +190,16 @@ public class MarginTests {
 
         var config = TestConfig.readResource(configPath).clearAllowances();
 
-        assertThrows(Exception.class, () -> {
+        AssertionFailedError thrown = assertThrows(AssertionFailedError.class, () -> {
             ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
         });
+
+        assertEquals("Margin asked by the user is too high for such short distance.",
+                thrown.getCause().getMessage());
     }
 
     @ParameterizedTest
-    @ValueSource(doubles = {100})
+    @ValueSource(doubles = {200})
     public void testImpossibleConstructionMargin(double value, TestInfo info) {
         testImpossibleConstructionMargin(CONFIG_PATH, value, info);
     }
