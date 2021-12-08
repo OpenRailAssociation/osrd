@@ -1,10 +1,13 @@
 package fr.sncf.osrd.speedcontroller;
 
 import static fr.sncf.osrd.Helpers.*;
+import static java.lang.Math.abs;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainSchedule;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.TrainSchedule;
@@ -43,7 +46,7 @@ public class SpeedInstructionsTests {
         @Override
         public boolean deepEquals(SpeedController other) {
             if (other instanceof StaticSpeedController)
-                return Math.abs(((StaticSpeedController) other).speed - speed) < 1e-5;
+                return abs(((StaticSpeedController) other).speed - speed) < 1e-5;
             return false;
         }
     }
@@ -185,6 +188,24 @@ public class SpeedInstructionsTests {
             });
 
         state.run();
+    }
+
+    @Test
+    public void testDelayDuringStops() {
+        final var config = TestConfig.readResource("tiny_infra/config_railjson.json");
+        for (var train : config.rjsSimulation.trainSchedules)
+            train.stops = new RJSTrainStop[]{
+                    new RJSTrainStop(10., null, 120),
+                    new RJSTrainStop(-1., null, 1)
+            };
+
+        var prepared = config.prepare();
+        var sim = prepared.sim;
+        for (var t = 1.; t < 300; t += 5) {
+            final var finalT = t;
+            makeAssertEvent(sim, t, () -> abs(sim.trains.get("Test.").getDelay(finalT)) <= 1);
+        }
+        prepared.run();
     }
 
     /** Helper function: returns true if the train is late at the time it is called */

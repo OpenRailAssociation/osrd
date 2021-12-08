@@ -60,8 +60,10 @@ public abstract class SpeedControllerGenerator {
         for (var k : updatesMap.keySet()) {
             time += updatesMap.get(k).timeDelta;
             if (stopIndex < schedule.stops.size() && schedule.stops.get(stopIndex).position <= k) {
-                if (includeStops)
+                if (includeStops) {
+                    res.put(k - 1e-10, time); // prevents any problem when interpolating near a stop
                     time += schedule.stops.get(stopIndex).stopDuration;
+                }
                 stopIndex++;
             }
             res.put(k, time);
