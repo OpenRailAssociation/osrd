@@ -17,7 +17,7 @@ public class SwitchStateTest {
 
         var preparedConfig = testConfig.prepare();
         var sim = preparedConfig.sim;
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = sim.infraState.getRouteState(2);
         makeAssertEvent(sim, 21, () -> routeState.status == RouteStatus.RESERVED);
         var events = preparedConfig.run();
 
@@ -36,7 +36,7 @@ public class SwitchStateTest {
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         SwitchState switchState = sim.infraState.getSwitchState(0);
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = sim.infraState.getRouteState(2);
         double requestTime = 42;
         makeFunctionEvent(sim, requestTime, () -> routeState.reserve(sim));
         makeAssertEvent(sim, requestTime + 1, () -> switchState.getGroup() == null);
@@ -57,7 +57,7 @@ public class SwitchStateTest {
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         SwitchState switchState = sim.infraState.getSwitchState(0);
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = sim.infraState.getRouteState(2);
         makeAssertEvent(sim, 0, () -> switchState.getGroup().equals("RIGHT"));
         makeAssertEvent(sim, 2, () -> switchState.getGroup() == null);
         makeAssertEvent(sim, 2, () -> routeState.status == RouteStatus.REQUESTED);
@@ -78,7 +78,7 @@ public class SwitchStateTest {
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
         SwitchState switchState = sim.infraState.getSwitchState(0);
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = sim.infraState.getRouteState(2);
         makeAssertEvent(sim, 0, () -> switchState.getGroup().equals("RIGHT"));
         makeAssertEvent(sim, 41, () -> switchState.getGroup() == null);
         makeAssertEvent(sim, 41, () -> routeState.status == RouteStatus.REQUESTED);

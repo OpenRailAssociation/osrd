@@ -1,45 +1,36 @@
 {
-  "rolling_stocks": [],
-  "train_schedules": [
-    {
-      "id": "Test.",
-      "rolling_stock": "fast_rolling_stock_high_gamma",
-      "departure_time": 0,
-      "initial_head_location": {
-        "track_section": "ne.micro.foo_b",
-        "offset": 100
-      },
-      "initial_speed": 0,
-      "allowances": [
-        [
-          {
-            "type": "linear",
-            "allowance_type": "TIME",
-            "allowance_value": 5
-          }
-        ]
-      ],
-      "routes": [
-        "rt.buffer_stop_b-C3",
-        "rt.C3-S7",
-        "rt.S7-buffer_stop_c"
-      ],
-      "phases": [
+    "train_schedules": [
         {
-          "driver_sight_distance": 400,
-          "end_location": {
-            "track_section": "ne.micro.bar_a",
-            "offset": 100
-          },
-          "type": "navigate"
+            "id": "Test.",
+            "rolling_stock": "fast_rolling_stock_high_gamma",
+            "departure_time": 0.0,
+            "initial_head_location": {
+                "track_section": "ne.micro.foo_b",
+                "offset": 100
+            },
+            "initial_speed": 0.0,
+            "phases": [
+                {
+                    "driver_sight_distance": 400,
+                    "end_location": {
+                        "track_section": "ne.micro.bar_a",
+                        "offset": 100
+                    },
+                    "type": "navigate"
+                }
+            ],
+            "stops": [
+                {
+                    "duration": 1,
+                    "position": -1
+                }
+            ],
+            "routes": [
+                "rt.buffer_stop_b->tde.foo_b-switch_foo",
+                "rt.tde.foo_b-switch_foo->buffer_stop_c"
+            ]
         }
-      ],
-      "stops": [
-        {
-          "duration": 1,
-          "position": -1
-        }
-      ]
-    }
-  ]
+    ],
+    "train_succession_tables": [],
+    "rolling_stocks": []
 }
