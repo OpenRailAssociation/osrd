@@ -1,9 +1,9 @@
 package fr.sncf.osrd.train;
 
 import static fr.sncf.osrd.infra.signaling.AspectConstraint.ConstraintPosition.Element.CURRENT_SIGNAL;
+import static java.lang.Math.min;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.signaling.AspectConstraint;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Detector;
@@ -39,7 +39,11 @@ public class Train {
     /** Returns the delay of the train, in seconds, compared to its scheduled trip */
     public double getDelay(double time) {
         double position = lastScheduledEvent.interpolatePosition(lastState, time);
-        return schedule.speedInstructions.secondsLate(position, time);
+
+        // We only compare up to the end of the event: the delay doesn't change when the train is stopped
+        var t = min(time, lastScheduledEvent.eventId.scheduledTime);
+
+        return schedule.speedInstructions.secondsLate(position, t);
     }
 
     /** Create a train */
@@ -264,6 +268,8 @@ public class Train {
             var lastUpdate = findLastSpeedUpdate(time);
             if (lastUpdate == null)
                 return null;
+            if (lastUpdate == positionUpdates.get(positionUpdates.size() - 1))
+                return lastUpdate.pathPosition; // Avoids extrapolation
             return lastUpdate.interpolatePosition(time);
         }
 
