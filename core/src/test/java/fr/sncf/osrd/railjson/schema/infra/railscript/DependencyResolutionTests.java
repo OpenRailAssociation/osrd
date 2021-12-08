@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import org.junit.jupiter.api.Test;
-
 import java.util.*;
 import java.util.stream.Collectors;
 

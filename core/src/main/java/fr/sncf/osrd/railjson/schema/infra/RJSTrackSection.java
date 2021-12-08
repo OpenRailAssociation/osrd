@@ -1,6 +1,7 @@
 package fr.sncf.osrd.railjson.schema.infra;
 
 import com.squareup.moshi.Json;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.common.ObjectRef;
@@ -13,6 +14,7 @@ import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
 public class RJSTrackSection implements Identified {
     public ApplicableDirection navigability;
     public String id;

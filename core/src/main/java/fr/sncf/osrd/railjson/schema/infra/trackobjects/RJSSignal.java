@@ -1,6 +1,7 @@
 package fr.sncf.osrd.railjson.schema.infra.trackobjects;
 
 import com.squareup.moshi.Json;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.common.ObjectRef;
@@ -26,6 +27,7 @@ public class RJSSignal extends RJSTrackObject implements Identified {
     @Json(name = "linked_detector")
     public ObjectRef<RJSTrainDetector> linkedDetector;
 
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public double angle;
 
     /** Instantiate RJSSignal */
