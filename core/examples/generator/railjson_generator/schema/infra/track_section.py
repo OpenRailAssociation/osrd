@@ -6,10 +6,10 @@ from railjson_generator.schema.infra.direction import ApplicableDirection, Direc
 from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
 from railjson_generator.schema.infra.link import Link
 from railjson_generator.schema.infra.operational_point import OperationalPointPart
-from railjson_generator.schema.infra.placeholders import placeholder_geo_lines
 from railjson_generator.schema.infra.range_elements import Slope, Curve, SpeedSection
 from railjson_generator.schema.infra.signal import Signal
 from railjson_generator.schema.infra.waypoint import BufferStop, Detector, Waypoint
+from railjson_generator.schema.infra.make_geo_data import make_geo_points, make_geo_lines
 
 
 def _track_id():
@@ -91,6 +91,10 @@ class TrackSection:
         return self.begining_links
 
     def to_rjs(self):
+        if self.begin_coordinates is None or self.end_coordinates is None:
+            geo_data = make_geo_lines((0, 0), (0, 0))
+        else:
+            geo_data = make_geo_lines(self.begin_coordinates, self.end_coordinates)
         return schemas.TrackSection(
             id=self.label,
             length=self.length,
@@ -104,7 +108,7 @@ class TrackSection:
             speed_sections=[speed_limit.to_rjs() for speed_limit in self.speed_limits],
             catenary_sections=[],
             signaling_sections=[],
-            **placeholder_geo_lines()
+            **geo_data
         )
 
     def make_rjs_ref(self):
@@ -112,3 +116,15 @@ class TrackSection:
             id=self.label,
             type="track_section"
         )
+
+    def get_coordinates_at_offset(self, offset):
+        if self.begin_coordinates is None or self.end_coordinates is None:
+            return 0, 0
+        x_begin, x_end = self.begin_coordinates
+        y_begin, y_end = self.end_coordinates
+        x = x_begin + (x_end - x_begin) * (offset / self.length)
+        y = y_begin + (y_end - y_begin) * (offset / self.length)
+        return x, y
+
+    def geo_from_track_offset(self, offset):
+        return make_geo_points(*self.get_coordinates_at_offset(offset))

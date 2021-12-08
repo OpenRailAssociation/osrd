@@ -33,6 +33,12 @@ class TrackEndpoint:
         return TrackEndpoint(track_section=self.track_section,
                              endpoint=self.endpoint.opposite())
 
+    def get_coords(self):
+        if self.endpoint == Endpoint.BEGIN:
+            return self.track_section.begin_coordinates or (0, 0)
+        else:
+            return self.track_section.end_coordinates or (0, 0)
+
     def set_coords(self, x: float, y: float):
         if self.endpoint == Endpoint.BEGIN:
             self.track_section.begin_coordinates = (x, y)
