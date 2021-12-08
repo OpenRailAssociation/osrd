@@ -132,7 +132,6 @@ public class RailJSONParser {
             scriptFunctions.put(scriptFunction.functionName, scriptFunction);
         }
 
-
         var waypointsMap = new HashMap<String, Waypoint>();
         int waypointIndex = 0;
         var detectorIdToSignalNormalMap = new HashMap<String, Signal>();
@@ -185,7 +184,6 @@ public class RailJSONParser {
         for (var trackBuilder : infraTrackBuilders.values())
             trackBuilder.build();
 
-
         for (var rjsSwitch : railJSON.switches) {
             if (!switchNames.containsKey(rjsSwitch.id)) {
                 throw new InvalidInfraException("The switch was not properly added in the map switchName");
@@ -209,33 +207,7 @@ public class RailJSONParser {
 
         // Fill switch groups
         for (var rjsSwitch : railJSON.switches) {
-            var switchRef = switchNames.get(rjsSwitch.id);
-            var portMap = new HashMap<String, Switch.Port>();
-            for (var entry : rjsSwitch.ports.entrySet()) {
-                var portName = entry.getKey();
-                var port = entry.getValue();
-                portMap.put(
-                        portName,
-                        new Switch.Port(
-                                portName,
-                                parseRef(port.track, infraTrackSections),
-                                port.endpoint
-                        )
-                );
-            }
-            for (var entry : parseRef(rjsSwitch.switchType, switchTypeMap).groups.entrySet()) {
-                var group = entry.getKey();
-                var edges = new ArrayList<Switch.PortEdge>();
-                for (var e : entry.getValue()) {
-                    var src = portMap.get(e.src);
-                    var dst = portMap.get(e.dst);
-                    edges.add(new Switch.PortEdge(src, dst));
-                    if (e.bidirectional) {
-                        edges.add(new Switch.PortEdge(dst, src));
-                    }
-                }
-                switchRef.groups.put(group, edges);
-            }
+            parseSwitch(rjsSwitch, switchNames, infraTrackSections, switchTypeMap);
         }
 
         // link track sections together
@@ -247,7 +219,6 @@ public class RailJSONParser {
             var direction = trackSectionLink.navigability;
             linkEdges(beginEdge, begin.endpoint, endEdge, end.endpoint, direction);
         }
-
 
         // build name maps to prepare resolving names in expressions
         var signalNames = new HashMap<String, Signal>();
@@ -267,14 +238,25 @@ public class RailJSONParser {
             parseRoute(routeGraphBuilder, tvdSectionsMap, infraTrackSections, trackGraph,
                     waypointsMap, detectorIdToSignalNormalMap, detectorIdToSignalReverseMap, rjsRoute);
 
-
         var routeGraph = routeGraphBuilder.build();
 
+        resolveRailscript(signalNames, switchNames, scriptFunctions, signals, routeGraph);
+
+        return Infra.build(trackGraph, routeGraphBuilder.build(),
+                tvdSectionsMap, aspectsMap, signals, switches);
+    }
+
+    /** Resolves name of routes and signals*/
+    private static void resolveRailscript(
+            HashMap<String, Signal> signalNames,
+            HashMap<String, Switch> switchNames,
+            HashMap<String, RSFunction<?>> scriptFunctions,
+            ArrayList<Signal> signals,
+            RouteGraph routeGraph
+    ) throws InvalidInfraException {
         var routeNames = new HashMap<String, Route>();
         for (var route : routeGraph.iterEdges())
             routeNames.put(route.id, route);
-
-        // resolve names of routes and signals
         var nameResolver = new RSExprVisitor() {
             @Override
             public void visit(RSExpr.SignalRef expr) throws InvalidInfraException {
@@ -296,8 +278,6 @@ public class RailJSONParser {
         for (var signal : signals)
             signal.expr.accept(nameResolver);
 
-        return Infra.build(trackGraph, routeGraphBuilder.build(),
-                tvdSectionsMap, aspectsMap, signals, switches);
     }
 
     private static HashMap<String, TVDSection> finalizeTvdSection(
@@ -488,6 +468,50 @@ public class RailJSONParser {
             }
         }
         throw new InvalidInfraException("There isn't any switch configuration fitting for the route");
+    }
+
+    /** Parse a given RJS switch */
+    private static void parseSwitch(
+            RJSSwitch rjsSwitch,
+            HashMap<String, Switch> switchNames,
+            HashMap<String, TrackSection> infraTrackSections,
+            HashMap<String, RJSSwitchType> switchTypeMap
+    ) throws InvalidInfraException {
+        var switchRef = switchNames.get(rjsSwitch.id);
+        var portMap = new HashMap<String, Switch.Port>();
+        for (var entry : rjsSwitch.ports.entrySet()) {
+            var portName = entry.getKey();
+            var port = entry.getValue();
+            portMap.put(
+                    portName,
+                    new Switch.Port(
+                            portName,
+                            parseRef(port.track, infraTrackSections),
+                            port.endpoint
+                    )
+            );
+        }
+        var switchType = parseRef(rjsSwitch.switchType, switchTypeMap);
+        for (var entry : switchType.groups.entrySet()) {
+            var group = entry.getKey();
+            var edges = new ArrayList<Switch.PortEdge>();
+            for (var e : entry.getValue()) {
+                var src = portMap.get(e.src);
+                var dst = portMap.get(e.dst);
+                edges.add(new Switch.PortEdge(src, dst));
+                if (e.bidirectional) {
+                    edges.add(new Switch.PortEdge(dst, src));
+                }
+            }
+            switchRef.groups.put(group, edges);
+        }
+        var switchTypePorts = new HashSet<>(switchType.ports);
+        var switchPorts = rjsSwitch.ports.keySet();
+        if (!switchTypePorts.equals(switchPorts))
+            throw new InvalidInfraException(String.format(
+                    "Switch %s doesn't have the right ports for type %s (expected %s, got %s)",
+                    rjsSwitch.id, switchType.id, switchTypePorts, switchPorts
+            ));
     }
 
     private static <T extends Identified, U> U parseRef(
