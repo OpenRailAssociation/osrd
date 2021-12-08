@@ -3,7 +3,6 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from railjson_generator.schema.infra.direction import ApplicableDirection
-from railjson_generator.schema.infra.placeholders import placeholder_geo_points
 
 
 @dataclass
@@ -21,14 +20,14 @@ class Waypoint:
             type="waypoint"
         )
 
-    def to_rjs(self, track_reference):
+    def to_rjs(self, track):
         rjs_type = schemas.BufferStop if self.waypoint_type == "buffer_stop" else schemas.Detector
         return rjs_type(
             id=self.label,
-            track=track_reference,
+            track=track.make_rjs_ref(),
             position=self.position,
             applicable_directions=schemas.ApplicableDirections[self.applicable_direction.name],
-            **placeholder_geo_points()
+            **track.geo_from_track_offset(self.position)
         )
 
 

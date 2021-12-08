@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import List
 
 import schemas
-from railjson_generator.schema.infra.placeholders import placeholder_geo_points
 
 
 @dataclass
@@ -25,9 +24,9 @@ class OperationalPointPart:
     operarational_point: OperationalPoint
     position: float
 
-    def to_rjs(self, track_reference):
+    def to_rjs(self, track):
         return schemas.OperationalPointPart(
-            track=track_reference,
+            track=track.make_rjs_ref(),
             position=self.position,
-            **placeholder_geo_points()
+            **track.geo_from_track_offset(self.position)
         )

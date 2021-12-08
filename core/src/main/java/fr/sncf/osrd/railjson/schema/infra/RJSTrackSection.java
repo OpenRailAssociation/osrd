@@ -40,6 +40,8 @@ public class RJSTrackSection implements Identified {
     @Json(name = "catenary_sections")
     public List<RJSCatenarySection> catenarySections;
 
+    public GeoData sch;
+
     /** Creates a new track section */
     public RJSTrackSection(
             String id,
@@ -52,7 +54,8 @@ public class RJSTrackSection implements Identified {
             String trackName,
             ApplicableDirection navigability,
             List<RJSSlope> slopes,
-            List<RJSCurve> curves
+            List<RJSCurve> curves,
+            GeoData sch
     ) {
         this.id = id;
         this.length = length;
@@ -65,6 +68,7 @@ public class RJSTrackSection implements Identified {
         this.curves = curves;
         this.speedSections = speedSections;
         this.catenarySections = catenarySections;
+        this.sch = sch;
     }
 
     public RJSTrackSection(
@@ -72,7 +76,7 @@ public class RJSTrackSection implements Identified {
             double length
     ) {
         this(id, length, new ArrayList<>(), new ArrayList<>(), 0, "", 0, "",
-                ApplicableDirection.BOTH, new ArrayList<>(), new ArrayList<>());
+                ApplicableDirection.BOTH, new ArrayList<>(), new ArrayList<>(), new GeoData());
     }
 
     @Override
