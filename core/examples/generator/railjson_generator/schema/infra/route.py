@@ -1,11 +1,11 @@
 import schemas
 from dataclasses import dataclass, field
-from typing import Dict, List, Mapping
+from typing import List, Mapping
 
 from railjson_generator.schema.infra.direction import Direction
-from railjson_generator.schema.infra.placeholders import placeholder_geo_lines
 from railjson_generator.schema.infra.tvd_section import TVDSection
 from railjson_generator.schema.infra.waypoint import Waypoint
+from railjson_generator.schema.infra.make_geo_data import make_geo_lines
 
 
 @dataclass
@@ -35,5 +35,13 @@ class Route:
             exit_point=self.exit_point.make_rjs_ref(),
             path=[element.to_rjs() for element in self.path_elements],
             release_groups=[[tvd.make_rjs_ref()] for tvd in self.tvd_sections],
-            **placeholder_geo_lines()
+            **self._make_geo_lines()
         )
+
+    def _make_geo_lines(self):
+        coordinates = []
+        for element in self.path_elements:
+            coordinates.append(element.track_section.get_coordinates_at_offset(element.begin))
+        last_element = self.path_elements[-1]
+        coordinates.append(last_element.track_section.get_coordinates_at_offset(last_element.end))
+        return make_geo_lines(*coordinates)

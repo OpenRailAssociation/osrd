@@ -4,7 +4,6 @@ from dataclasses import dataclass, field
 
 from railjson_generator.rjs_static import SIGNAL_EXPR
 from railjson_generator.schema.infra.direction import ApplicableDirection, Direction
-from railjson_generator.schema.infra.placeholders import placeholder_geo_points
 from railjson_generator.schema.infra.waypoint import Detector
 
 
@@ -24,7 +23,7 @@ class Signal:
 
     _INDEX = 0
 
-    def to_rjs(self, track_reference):
+    def to_rjs(self, track):
         expr = deepcopy(SIGNAL_EXPR)
         expr["arguments"][0]["signal"] = self.label
         if self.direction == ApplicableDirection.NORMAL:
@@ -38,7 +37,7 @@ class Signal:
             linked_detector=self.linked_detector.make_rjs_ref(),
             angle=0,
             expr=expr,
-            track=track_reference,
+            track=track.make_rjs_ref(),
             position=self.position,
-            **placeholder_geo_points()
+            **track.geo_from_track_offset(self.position)
         )
