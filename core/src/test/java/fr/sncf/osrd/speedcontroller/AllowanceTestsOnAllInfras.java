@@ -95,7 +95,6 @@ public class AllowanceTestsOnAllInfras {
     Arbitrary<String> infraRootPaths() {
         var infras = new ArrayList<String>();
         infras.add("tiny_infra");
-        infras.add("bug_convergences");
         infras.add("one_line");
         for (int i = 0; i < 10; i++)
             infras.add(String.format("generated/%s", i));
