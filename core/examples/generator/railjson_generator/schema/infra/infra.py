@@ -84,5 +84,5 @@ class Infra:
                 parts=parts_per_op[op.label],
                 ci=0,
                 ch="aa",
-                name="placeholder name"
+                name=op.label
             )

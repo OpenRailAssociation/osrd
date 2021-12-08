@@ -56,24 +56,6 @@ public class RunExamplesTest {
     }
 
     @Test
-    public void testSlowMaxSpeedInfra() throws IOException {
-        var testConfig = TestConfig.readResource("bug_slow_max_speed/config.json");
-        runGivenConfigInfra(testConfig, 2);
-    }
-
-    @Test
-    public void testConvergencesDelayed() throws IOException {
-        var testConfig = TestConfig.readResource("bug_convergences/config_delayed.json");
-        runGivenConfigInfra(testConfig, 3);
-    }
-
-    @Test
-    public void testConvergences() throws IOException {
-        var testConfig = TestConfig.readResource("bug_convergences/config.json");
-        runGivenConfigInfra(testConfig, 3);
-    }
-
-    @Test
     public void testLineInfra() throws IOException {
         var testConfig = TestConfig.readResource("one_line/infra.json", "one_line/simulation.json");
         runGivenConfigInfra(testConfig, 1);

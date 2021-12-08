@@ -4,10 +4,13 @@ import static fr.sncf.osrd.Helpers.*;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import fr.sncf.osrd.TestConfig;
+import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra_state.routes.RouteStatus;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import org.junit.jupiter.api.Test;
+
+import java.util.stream.Collectors;
 
 public class TVDSectionStateTest {
     @Test
@@ -20,24 +23,26 @@ public class TVDSectionStateTest {
         var preparedSim = testConfig.prepare();
         var sim = preparedSim.sim;
 
-        var tvd1 = sim.infra.tvdSections.get("tvd.switch_foo");
-        var tvd2 = sim.infra.tvdSections.get("tvd.track");
-        var tvdState1 = sim.infraState.getTvdSectionState(tvd1.index);
-        var tvdState2 = sim.infraState.getTvdSectionState(tvd2.index);
+        var route = sim.infra.routeGraph.routeMap.values().stream()
+                .filter(Route::isControlled).findFirst().get();
 
-        makeFunctionEvent(sim, 1, () -> tvdState1.reserve(sim));
-        makeFunctionEvent(sim, 1, () -> tvdState2.reserve(sim));
-        makeFunctionEvent(sim, 2, () -> tvdState1.free(sim));
-        makeFunctionEvent(sim, 2, () -> tvdState2.free(sim));
+        var tvdStates = route.tvdSectionsPaths.stream()
+                .map(tvdPath -> tvdPath.tvdSection)
+                .map(section -> sim.infraState.getTvdSectionState(section.index))
+                .collect(Collectors.toList());
 
-        var route = sim.infra.routeGraph.routeMap.get("rt.C1-S7");
+        for (var tvd : tvdStates) {
+            makeFunctionEvent(sim, 1, () -> tvd.reserve(sim));
+            makeFunctionEvent(sim, 2, () -> tvd.free(sim));
+        }
+
         var routeState = sim.infraState.getRouteState(route.index);
         makeAssertEvent(sim, 1.1, () -> routeState.status == RouteStatus.CONFLICT);
-        makeAssertEvent(sim, 1.1, tvdState1::isReserved);
-        makeAssertEvent(sim, 1.1, tvdState2::isReserved);
         makeAssertEvent(sim, 2.1, () -> routeState.status == RouteStatus.FREE);
-        makeAssertEvent(sim, 2.1, () -> !tvdState1.isReserved());
-        makeAssertEvent(sim, 2.1, () -> !tvdState2.isReserved());
+        for (var tvd : tvdStates) {
+            makeAssertEvent(sim, 1.1, tvd::isReserved);
+            makeAssertEvent(sim, 2.1, () -> !tvd.isReserved());
+        }
 
         preparedSim.run();
     }
@@ -52,19 +57,20 @@ public class TVDSectionStateTest {
         var preparedSim = testConfig.prepare();
         var sim = preparedSim.sim;
 
-        var tvd1 = sim.infra.tvdSections.get("tvd.switch_foo");
-        var tvd2 = sim.infra.tvdSections.get("tvd.track");
-        var tvdState1 = sim.infraState.getTvdSectionState(tvd1.index);
-        var tvdState2 = sim.infraState.getTvdSectionState(tvd2.index);
-        var route = sim.infra.routeGraph.routeMap.get("rt.C1-S7");
+        var route = sim.infra.routeGraph.routeMap.values().stream()
+                .filter(Route::isControlled).findFirst().get();
         var routeState = sim.infraState.getRouteState(route.index);
-
         routeState.reserve(sim);
 
-        makeFunctionEvent(sim, 1, () -> tvdState1.occupy(sim));
-        makeFunctionEvent(sim, 1, () -> tvdState2.occupy(sim));
-        makeFunctionEvent(sim, 2, () -> tvdState1.unoccupy(sim));
-        makeFunctionEvent(sim, 2, () -> tvdState2.unoccupy(sim));
+        var tvdStates = route.tvdSectionsPaths.stream()
+                .map(tvdPath -> tvdPath.tvdSection)
+                .map(section -> sim.infraState.getTvdSectionState(section.index))
+                .collect(Collectors.toList());
+
+        for (var tvd : tvdStates) {
+            makeFunctionEvent(sim, 1, () -> tvd.occupy(sim));
+            makeFunctionEvent(sim, 2, () -> tvd.unoccupy(sim));
+        }
 
         makeAssertEvent(sim, 1.1, () -> routeState.status == RouteStatus.OCCUPIED);
         makeAssertEvent(sim, 2.1, () -> routeState.status == RouteStatus.FREE);
