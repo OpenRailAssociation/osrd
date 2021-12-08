@@ -1,5 +1,6 @@
 package fr.sncf.osrd.railjson.schema.infra.trackobjects;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.common.ObjectRef;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
@@ -8,6 +9,8 @@ import fr.sncf.osrd.utils.graph.IPointValue;
 
 public class RJSRouteWaypoint extends RJSTrackObject implements Identified, IPointValue<RJSRouteWaypoint> {
     public String id;
+
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public ApplicableDirection direction;
 
     RJSRouteWaypoint(String id, ApplicableDirection applicableDirection,

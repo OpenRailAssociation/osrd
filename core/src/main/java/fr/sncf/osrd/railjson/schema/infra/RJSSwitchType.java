@@ -3,7 +3,6 @@ package fr.sncf.osrd.railjson.schema.infra;
 import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.common.ObjectRef;
-
 import java.util.List;
 import java.util.Map;
 

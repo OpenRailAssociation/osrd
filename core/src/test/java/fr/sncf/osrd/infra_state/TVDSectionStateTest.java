@@ -1,7 +1,6 @@
 package fr.sncf.osrd.infra_state;
 
 import static fr.sncf.osrd.Helpers.*;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.infra.routegraph.Route;
@@ -9,7 +8,6 @@ import fr.sncf.osrd.infra_state.routes.RouteStatus;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 import org.junit.jupiter.api.Test;
-
 import java.util.stream.Collectors;
 
 public class TVDSectionStateTest {

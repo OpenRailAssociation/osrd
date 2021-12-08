@@ -45,8 +45,10 @@ public class RouteStateTest {
         RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
         makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.RESERVED);
-        makeAssertEvent(sim, 11, () -> getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c").status == RouteStatus.CONFLICT);
-        makeAssertEvent(sim, 11, () -> getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_a").status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () ->
+                getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c").status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () ->
+                getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_a").status == RouteStatus.CONFLICT);
         simState.run();
     }
 
@@ -65,8 +67,10 @@ public class RouteStateTest {
         makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
         makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.RESERVED);
         makeAssertEvent(sim, 11, routeState::hasCBTCStatus);
-        makeAssertEvent(sim, 11, () -> getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c").status == RouteStatus.CONFLICT);
-        makeAssertEvent(sim, 11, () -> getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_a").status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, ()
+                -> getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c").status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, ()
+                -> getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_a").status == RouteStatus.CONFLICT);
         simState.run();
     }
 
@@ -87,7 +91,8 @@ public class RouteStateTest {
 
         RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
-        makeAssertEvent(sim, 11, () -> getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c").status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () ->
+                getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c").status == RouteStatus.CONFLICT);
         makeAssertEvent(sim, 19, () -> routeState.status == RouteStatus.REQUESTED);
         makeAssertEvent(sim, 21, () -> routeState.status == RouteStatus.RESERVED);
         simState.run();
@@ -111,7 +116,8 @@ public class RouteStateTest {
 
         RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
-        makeAssertEvent(sim, 11, () -> getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c").status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () ->
+                getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c").status == RouteStatus.CONFLICT);
         makeAssertEvent(sim, 19, () -> routeState.status == RouteStatus.REQUESTED);
         makeAssertEvent(sim, 19, routeState::hasCBTCStatus);
         makeAssertEvent(sim, 21, () -> routeState.status == RouteStatus.RESERVED);
@@ -300,11 +306,15 @@ public class RouteStateTest {
                 .collect(Collectors.toSet());
 
         var expectedChanges = Stream.of(
-                    new RouteState.RouteStatusChange(sim, getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c"), RouteStatus.CONFLICT),
-                    new RouteState.RouteStatusChange(sim, getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_a"), RouteStatus.CONFLICT),
-                    new RouteState.RouteStatusChange(sim, getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_b"), RouteStatus.CONFLICT),
+                    new RouteState.RouteStatusChange(sim,
+                            getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c"), RouteStatus.CONFLICT),
+                    new RouteState.RouteStatusChange(sim,
+                            getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_a"), RouteStatus.CONFLICT),
+                    new RouteState.RouteStatusChange(sim, getRouteByName(sim,
+                            "rt.tde.switch_foo-track->buffer_stop_b"), RouteStatus.CONFLICT),
     
-                    new RouteState.RouteStatusChange(sim, getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c"), RouteStatus.RESERVED)
+                    new RouteState.RouteStatusChange(sim, getRouteByName(sim,
+                            "rt.tde.foo_b-switch_foo->buffer_stop_c"), RouteStatus.RESERVED)
             )
                     .map(Object::toString)
                     .collect(Collectors.toSet());
@@ -333,11 +343,15 @@ public class RouteStateTest {
                 .map(Object::toString).collect(Collectors.toSet());
 
         var expectedChanges = Stream.of(
-                new RouteState.RouteStatusChange(sim, getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c"), RouteStatus.CONFLICT),
-                new RouteState.RouteStatusChange(sim, getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_a"), RouteStatus.CONFLICT),
-                new RouteState.RouteStatusChange(sim, getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_b"), RouteStatus.CONFLICT),
+                new RouteState.RouteStatusChange(sim, getRouteByName(sim,
+                        "rt.tde.foo_a-switch_foo->buffer_stop_c"), RouteStatus.CONFLICT),
+                new RouteState.RouteStatusChange(sim, getRouteByName(sim,
+                        "rt.tde.switch_foo-track->buffer_stop_a"), RouteStatus.CONFLICT),
+                new RouteState.RouteStatusChange(sim, getRouteByName(sim,
+                        "rt.tde.switch_foo-track->buffer_stop_b"), RouteStatus.CONFLICT),
 
-                new RouteState.RouteStatusChange(sim, getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c"), RouteStatus.RESERVED))
+                new RouteState.RouteStatusChange(sim, getRouteByName(sim,
+                        "rt.tde.foo_b-switch_foo->buffer_stop_c"), RouteStatus.RESERVED))
                 .map(Object::toString).collect(Collectors.toSet());
         assertEquals(expectedChanges, changesSet);
     }
@@ -421,13 +435,17 @@ public class RouteStateTest {
         // We reserve the route a first time
         makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
         makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.RESERVED);
-        makeAssertEvent(sim, 11, () -> getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c").status == RouteStatus.CONFLICT);
-        makeAssertEvent(sim, 11, () -> getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_a").status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () -> getRouteByName(sim,
+                "rt.tde.foo_a-switch_foo->buffer_stop_c").status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () -> getRouteByName(sim,
+                "rt.tde.switch_foo-track->buffer_stop_a").status == RouteStatus.CONFLICT);
         // We reserve the route a second time
         makeFunctionEvent(sim, 12, () -> routeState.cbtcReserve(sim));
         makeAssertEvent(sim, 13, () -> routeState.status == RouteStatus.RESERVED);
-        makeAssertEvent(sim, 13, () -> getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c").status == RouteStatus.CONFLICT);
-        makeAssertEvent(sim, 13, () -> getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_a").status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 13, () -> getRouteByName(sim,
+                "rt.tde.foo_a-switch_foo->buffer_stop_c").status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 13, () -> getRouteByName(sim,
+                "rt.tde.switch_foo-track->buffer_stop_a").status == RouteStatus.CONFLICT);
         // The first train enters the route
         makeFunctionEvent(sim, 14, () -> routeState.onTvdSectionOccupied(sim, tvd));
         makeAssertEvent(sim, 14, () -> routeState.status == RouteStatus.OCCUPIED);
@@ -630,7 +648,10 @@ public class RouteStateTest {
 
     @Test
     public void testChangeTST3TrainsInfra() {
-        final var config = TestConfig.readResource("three_trains/infra.json", "three_trains/simulation.json");
+        final var config = TestConfig.readResource(
+                "three_trains/infra.json",
+                "three_trains/simulation.json"
+        );
         var simState = config.prepare();
         var sim = simState.sim;
 
