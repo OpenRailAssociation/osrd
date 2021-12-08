@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.railjson.schema.successiontable.RJSTrainSuccessionTable;
+import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.infra_state.routes.RouteState;
 import fr.sncf.osrd.infra_state.routes.RouteStatus;
@@ -24,6 +25,12 @@ import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.changelog.ArrayChangeLog;
 
 public class RouteStateTest {
+
+    private static RouteState getRouteByName(Simulation sim, String name) {
+        var index = sim.infra.routeGraph.routeMap.get(name).index;
+        return sim.infraState.getRouteState(index);
+    }
+
     /**
      * Test if a simple reservation work
      */
@@ -35,11 +42,11 @@ public class RouteStateTest {
         var simState = testConfig.prepare();
         var sim = simState.sim;
 
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
         makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.RESERVED);
-        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
-        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(7).status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () -> getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c").status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () -> getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_a").status == RouteStatus.CONFLICT);
         simState.run();
     }
 
@@ -54,12 +61,12 @@ public class RouteStateTest {
         var simState = testConfig.prepare();
         var sim = simState.sim;
 
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
         makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.RESERVED);
         makeAssertEvent(sim, 11, routeState::hasCBTCStatus);
-        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
-        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(7).status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () -> getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c").status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () -> getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_a").status == RouteStatus.CONFLICT);
         simState.run();
     }
 
@@ -78,9 +85,9 @@ public class RouteStateTest {
         var sim = simState.sim;
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
-        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () -> getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c").status == RouteStatus.CONFLICT);
         makeAssertEvent(sim, 19, () -> routeState.status == RouteStatus.REQUESTED);
         makeAssertEvent(sim, 21, () -> routeState.status == RouteStatus.RESERVED);
         simState.run();
@@ -102,9 +109,9 @@ public class RouteStateTest {
         var sim = simState.sim;
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
-        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () -> getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c").status == RouteStatus.CONFLICT);
         makeAssertEvent(sim, 19, () -> routeState.status == RouteStatus.REQUESTED);
         makeAssertEvent(sim, 19, routeState::hasCBTCStatus);
         makeAssertEvent(sim, 21, () -> routeState.status == RouteStatus.RESERVED);
@@ -154,7 +161,7 @@ public class RouteStateTest {
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
         sim.infraState.getSwitchState(1).setGroup(sim, "RIGHT");
 
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
 
         makeFunctionEvent(sim, 0, () -> routeState.reserve(sim));
         // at t=41, one switch is done moving but not the other
@@ -204,7 +211,7 @@ public class RouteStateTest {
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
         sim.infraState.getSwitchState(1).setGroup(sim, "RIGHT");
 
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         makeFunctionEvent(sim, 0, () -> routeState.cbtcReserve(sim));
 
         // at t=41, one switch is done moving but not the other
@@ -227,7 +234,7 @@ public class RouteStateTest {
         var simState = testConfig.prepare();
         var sim = simState.sim;
 
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         var tvd = routeState.route.tvdSectionsPaths.get(0).tvdSection;
         makeFunctionEvent(sim, 10, () -> routeState.reserve(sim));
         makeAssertEvent(sim, 10, () -> routeState.status == RouteStatus.RESERVED);
@@ -254,7 +261,7 @@ public class RouteStateTest {
         var simState = testConfig.prepare();
         var sim = simState.sim;
 
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         var tvd = routeState.route.tvdSectionsPaths.get(0).tvdSection;
         makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
         makeAssertEvent(sim, 10, () -> routeState.status == RouteStatus.RESERVED);
@@ -282,7 +289,7 @@ public class RouteStateTest {
         var simState = testConfig.prepare();
         var sim = simState.sim;
 
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         routeState.reserve(sim);
 
         simState.run();
@@ -293,11 +300,11 @@ public class RouteStateTest {
                 .collect(Collectors.toSet());
 
         var expectedChanges = Stream.of(
-                    new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(2), RouteStatus.CONFLICT),
-                    new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(7), RouteStatus.CONFLICT),
-                    new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(8), RouteStatus.CONFLICT),
+                    new RouteState.RouteStatusChange(sim, getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c"), RouteStatus.CONFLICT),
+                    new RouteState.RouteStatusChange(sim, getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_a"), RouteStatus.CONFLICT),
+                    new RouteState.RouteStatusChange(sim, getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_b"), RouteStatus.CONFLICT),
     
-                    new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(3), RouteStatus.RESERVED)
+                    new RouteState.RouteStatusChange(sim, getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c"), RouteStatus.RESERVED)
             )
                     .map(Object::toString)
                     .collect(Collectors.toSet());
@@ -317,7 +324,7 @@ public class RouteStateTest {
         var simState = testConfig.prepare();
         var sim = simState.sim;
 
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         routeState.cbtcReserve(sim);
 
         simState.run();
@@ -326,11 +333,11 @@ public class RouteStateTest {
                 .map(Object::toString).collect(Collectors.toSet());
 
         var expectedChanges = Stream.of(
-                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(2), RouteStatus.CONFLICT),
-                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(7), RouteStatus.CONFLICT),
-                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(8), RouteStatus.CONFLICT),
+                new RouteState.RouteStatusChange(sim, getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c"), RouteStatus.CONFLICT),
+                new RouteState.RouteStatusChange(sim, getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_a"), RouteStatus.CONFLICT),
+                new RouteState.RouteStatusChange(sim, getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_b"), RouteStatus.CONFLICT),
 
-                new RouteState.RouteStatusChange(sim, sim.infraState.getRouteState(3), RouteStatus.RESERVED))
+                new RouteState.RouteStatusChange(sim, getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c"), RouteStatus.RESERVED))
                 .map(Object::toString).collect(Collectors.toSet());
         assertEquals(expectedChanges, changesSet);
     }
@@ -346,7 +353,7 @@ public class RouteStateTest {
         var simState = testConfig.prepare();
         var sim = simState.sim;
 
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c");
         routeState.reserve(sim);
         assertThrows(SimulationError.class, () -> routeState.reserve(sim));
     }
@@ -362,7 +369,7 @@ public class RouteStateTest {
         var simState = testConfig.prepare();
         var sim = simState.sim;
 
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         routeState.cbtcReserve(sim);
         assertThrows(SimulationError.class, () -> routeState.reserve(sim));
     }
@@ -378,7 +385,7 @@ public class RouteStateTest {
         var simState = testConfig.prepare();
         var sim = simState.sim;
 
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         routeState.reserve(sim);
         assertThrows(SimulationError.class, () -> routeState.cbtcReserve(sim));
     }
@@ -394,7 +401,7 @@ public class RouteStateTest {
         var simState = testConfig.prepare();
         var sim = simState.sim;
 
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         var tvd = routeState.route.tvdSectionsPaths.get(0).tvdSection;
         assertThrows(SimulationError.class, () -> routeState.onTvdSectionOccupied(sim, tvd));
     }
@@ -409,18 +416,18 @@ public class RouteStateTest {
         var simState = testConfig.prepare();
         var sim = simState.sim;
 
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         final var tvd = routeState.route.tvdSectionsPaths.get(0).tvdSection;
         // We reserve the route a first time
         makeFunctionEvent(sim, 10, () -> routeState.cbtcReserve(sim));
         makeAssertEvent(sim, 11, () -> routeState.status == RouteStatus.RESERVED);
-        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
-        makeAssertEvent(sim, 11, () -> sim.infraState.getRouteState(7).status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () -> getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c").status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 11, () -> getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_a").status == RouteStatus.CONFLICT);
         // We reserve the route a second time
         makeFunctionEvent(sim, 12, () -> routeState.cbtcReserve(sim));
         makeAssertEvent(sim, 13, () -> routeState.status == RouteStatus.RESERVED);
-        makeAssertEvent(sim, 13, () -> sim.infraState.getRouteState(2).status == RouteStatus.CONFLICT);
-        makeAssertEvent(sim, 13, () -> sim.infraState.getRouteState(7).status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 13, () -> getRouteByName(sim, "rt.tde.foo_a-switch_foo->buffer_stop_c").status == RouteStatus.CONFLICT);
+        makeAssertEvent(sim, 13, () -> getRouteByName(sim, "rt.tde.switch_foo-track->buffer_stop_a").status == RouteStatus.CONFLICT);
         // The first train enters the route
         makeFunctionEvent(sim, 14, () -> routeState.onTvdSectionOccupied(sim, tvd));
         makeAssertEvent(sim, 14, () -> routeState.status == RouteStatus.OCCUPIED);
@@ -458,7 +465,7 @@ public class RouteStateTest {
 
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         routeState.reserve(sim);
         assert routeState.status == RouteStatus.REQUESTED;
         assertThrows(SimulationError.class, () -> routeState.reserve(sim));
@@ -479,7 +486,7 @@ public class RouteStateTest {
 
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         routeState.reserve(sim);
         assert routeState.status == RouteStatus.REQUESTED;
         assertThrows(SimulationError.class, () -> routeState.cbtcReserve(sim));
@@ -499,7 +506,7 @@ public class RouteStateTest {
         var sim = simState.sim;
         sim.infraState.getSwitchState(0).setGroup(sim, "RIGHT");
 
-        RouteState routeState = sim.infraState.getRouteState(3);
+        RouteState routeState = getRouteByName(sim, "rt.tde.foo_b-switch_foo->buffer_stop_c");
         routeState.cbtcReserve(sim);
         assert routeState.status == RouteStatus.REQUESTED;
         assert routeState.hasCBTCStatus();
@@ -513,8 +520,7 @@ public class RouteStateTest {
 
         testConfig.rjsSimulation.trainSchedules.forEach(s -> {
             s.routes = (ID<RJSRoute>[]) new ID[]{
-                    new ID<RJSRoute>("rt.C3-S7"),
-                    new ID<RJSRoute>("rt.S7-buffer_stop_c"),
+                    new ID<RJSRoute>("rt.tde.foo_b-switch_foo->buffer_stop_c"),
             };
             s.initialHeadLocation.trackSection = new ID<>("ne.micro.foo_to_bar");
             s.initialHeadLocation.offset = 10;
@@ -530,8 +536,7 @@ public class RouteStateTest {
 
         testConfig.rjsSimulation.trainSchedules.forEach(s -> {
             s.routes = (ID<RJSRoute>[]) new ID[]{
-                    new ID<RJSRoute>("rt.C3-S7"),
-                    new ID<RJSRoute>("rt.S7-buffer_stop_c"),
+                    new ID<RJSRoute>("rt.tde.foo_b-switch_foo->buffer_stop_c"),
             };
             s.initialHeadLocation.trackSection = new ID<>("ne.micro.foo_to_bar");
             s.initialHeadLocation.offset = 100;
@@ -666,31 +671,12 @@ public class RouteStateTest {
         var rjsTrainSchedule = config.rjsSimulation.trainSchedules.get(0);
         rjsTrainSchedule.initialHeadLocation.offset = 180;
         rjsTrainSchedule.routes = (ID<RJSRoute>[]) new ID<?>[] {
-                new ID<RJSRoute>("rt.C3-S7"),
-                new ID<RJSRoute>("rt.S7-buffer_stop_c")
+                new ID<RJSRoute>("rt.tde.foo_b-switch_foo->buffer_stop_c"),
         };
 
         var simState = config.prepare();
         simState.run();
         var towerState = simState.sim.infraState.towerState;
         assertTrue(towerState.trainSuccessionLog.get("il.switch_foo").contains("Test."));
-    }
-
-
-    @Test
-    @Disabled("Fixing this requires changes in the API and middle/front end, it will be done later")
-    public void testCircularInfraRouteIndexes() {
-        var changelog = new ArrayChangeLog();
-        var config = TestConfig.readResource("circular_infra/config.json")
-                .withChangeConsumer(changelog);
-
-        var simState = config.prepare();
-        simState.run();
-
-        for (var train : simState.sim.trains.values()) {
-            var trainState = train.getLastState();
-            var path = train.schedule.plannedPath;
-            assertEquals(path.routePath.size() - 1, trainState.routeIndex);
-        }
     }
 }

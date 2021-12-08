@@ -49,10 +49,6 @@ ne_micro_foo_to_bar = builder.add_track_section(length=10000, label="ne.micro.fo
 ne_micro_foo_to_bar.add_slope(0, 5000, 10)
 ne_micro_foo_to_bar.add_slope(5000, 10000, -10)
 tde_switch_foo_track = ne_micro_foo_to_bar.add_detector(label="tde.switch_foo-track", position=25)
-tde_w4 = ne_micro_foo_to_bar.add_detector(label="tde.W4", position=1000)
-tde_w5 = ne_micro_foo_to_bar.add_detector(label="tde.W5", position=9000)
-ne_micro_foo_to_bar.add_signal(label="il.sig.W4", position=1025, direction=Direction.STOP_TO_START, linked_detector=tde_w4)
-ne_micro_foo_to_bar.add_signal(label="il.sig.W5", position=8975, direction=Direction.START_TO_STOP, linked_detector=tde_w5)
 ne_micro_foo_to_bar.add_signal(label="il.sig.C6", position=50, direction=Direction.STOP_TO_START,
                                linked_detector=tde_switch_foo_track)
 ne_micro_foo_to_bar.add_speed_limit(2000, 6000, 16.666666666666668)
@@ -61,7 +57,7 @@ ne_micro_foo_to_bar.add_speed_limit(2000, 6000, 16.666666666666668)
 
 # Add links
 builder.add_link(ne_micro_foo_to_bar.end(), ne_micro_bar_a.begin(), ApplicableDirection.BOTH)
-builder.add_switch(ne_micro_foo_to_bar.begin(), ne_micro_foo_a.end(), ne_micro_foo_b.end(),
+builder.add_switch(ne_micro_foo_to_bar.begin(), ne_micro_foo_b.end(), ne_micro_foo_a.end(),
                    label="il.switch_foo")
 
 # Build infra
@@ -72,12 +68,19 @@ infra.save(CURRENT_DIR / "infra.json")
 
 # GENERATE SIMULATION
 builder = SimulationBuilder(infra)
-train_0 = builder.add_train_schedule(
+builder.add_train_schedule(
     Location(ne_micro_foo_b, 100), Location(ne_micro_bar_a, 100), label="Test."
 )
-
-# Build simulation
 sim = builder.build()
-
-# Save railjson
 sim.save(CURRENT_DIR / Path("simulation.json"))
+
+# Simulation with 2 trains
+builder_2trains = SimulationBuilder(infra)
+builder_2trains.add_train_schedule(
+    Location(ne_micro_foo_b, 100), Location(ne_micro_bar_a, 100), label="First"
+)
+builder_2trains.add_train_schedule(
+    Location(ne_micro_foo_a, 100), Location(ne_micro_bar_a, 100), label="Second"
+)
+sim2 = builder_2trains.build()
+sim2.save(CURRENT_DIR / Path("simulation_2trains.json"))
