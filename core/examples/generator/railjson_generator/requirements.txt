@@ -1,0 +1,1 @@
+geojson-pydantic==0.3.1
