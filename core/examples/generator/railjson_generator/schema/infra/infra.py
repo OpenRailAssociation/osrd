@@ -1,9 +1,8 @@
-import json
 from collections import defaultdict
 
 import schemas
 from dataclasses import dataclass, field
-from typing import List, Tuple, Dict
+from typing import List
 
 from railjson_generator.rjs_static import (ASPECTS, SCRIPT_FUNCTIONS,
                                            SWITCH_TYPES)
@@ -58,26 +57,25 @@ class Infra:
     def make_rjs_signals(self):
         for track in self.track_sections:
             for signal in track.signals:
-                yield signal.to_rjs(track.make_rjs_ref())
+                yield signal.to_rjs(track)
 
     def make_rjs_buffer_stops(self):
         for track in self.track_sections:
             for waypoint in track.waypoints:
                 if waypoint.waypoint_type == "buffer_stop":
-                    yield waypoint.to_rjs(track.make_rjs_ref())
+                    yield waypoint.to_rjs(track)
 
     def make_rjs_detectors(self):
         for track in self.track_sections:
             for waypoint in track.waypoints:
                 if waypoint.waypoint_type == "detector":
-                    yield waypoint.to_rjs(track.make_rjs_ref())
+                    yield waypoint.to_rjs(track)
 
     def make_rjs_operational_points(self):
         parts_per_op = defaultdict(list)
         for track in self.track_sections:
-            ref = track.make_rjs_ref()
             for op_part in track.operational_points:
-                parts_per_op[op_part.operarational_point.label].append(op_part.to_rjs(ref))
+                parts_per_op[op_part.operarational_point.label].append(op_part.to_rjs(track))
         for op in self.operational_points:
             yield schemas.OperationalPoint(
                 id=op.label,

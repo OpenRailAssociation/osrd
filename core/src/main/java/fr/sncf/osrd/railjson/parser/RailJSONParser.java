@@ -343,7 +343,7 @@ public class RailJSONParser {
         var beginID = nodeIDs.get(trackSection.beginEndpoint());
         var endID = nodeIDs.get(trackSection.endEndpoint());
         var infraTrackSection = trackGraph.makeTrackSection(beginID, endID, trackSection.id,
-                trackSection.length, null); // TODO set coords
+                trackSection.length, trackSection.sch.getLine());
 
         // Parse speed limits
         for (var rjsSpeedLimits : trackSection.speedSections) {
