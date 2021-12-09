@@ -14,8 +14,6 @@ import fr.sncf.osrd.infra.signaling.Aspect;
 import fr.sncf.osrd.infra.signaling.AspectConstraint;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.*;
-import fr.sncf.osrd.railjson.schema.common.Identified;
-import fr.sncf.osrd.railjson.schema.common.ObjectRef;
 import fr.sncf.osrd.railjson.schema.infra.*;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSTrackRange;
 import fr.sncf.osrd.train.TrackSectionRange;
@@ -107,8 +105,8 @@ public class RailJSONParser {
             for (var part : operationalPoint.parts) {
                 var op = new OperationalPoint(operationalPoint.getID());
                 trackGraph.operationalPoints.put(op.id, op);
-                var track = parseRef(part.track, infraTrackSections);
-                var trackBuilder = parseRef(part.track, infraTrackBuilders);
+                var track = part.track.getTrack(infraTrackSections);
+                var trackBuilder = part.track.getTrackBuilder(infraTrackBuilders);
                 op.addRef(track, part.position, trackBuilder.opBuilder);
             }
         }
@@ -141,14 +139,14 @@ public class RailJSONParser {
         for (var rjsDetector : railJSON.detectors) {
             var detector = new Detector(waypointIndex, rjsDetector.getID());
             waypointsMap.put(detector.id, detector);
-            var track = parseRef(rjsDetector.track, infraTrackBuilders);
+            var track = rjsDetector.track.getTrackBuilder(infraTrackBuilders);
             track.waypointsBuilder.add(rjsDetector.position, detector);
             waypointIndex++;
         }
         for (var rjsDetector : railJSON.bufferStops) {
             var bufferStop = new BufferStop(waypointIndex, rjsDetector.getID());
             waypointsMap.put(bufferStop.id, bufferStop);
-            var track = parseRef(rjsDetector.track, infraTrackBuilders);
+            var track = rjsDetector.track.getTrackBuilder(infraTrackBuilders);
             track.waypointsBuilder.add(rjsDetector.position, bufferStop);
             waypointIndex++;
         }
@@ -160,7 +158,7 @@ public class RailJSONParser {
             // get linked detector
             Detector linkedDetector = null;
             if (rjsSignal.linkedDetector != null)
-                linkedDetector = (Detector) parseRef(rjsSignal.linkedDetector, waypointsMap);
+                linkedDetector = rjsSignal.linkedDetector.getDetector(waypointsMap);
 
             var signal = new Signal(
                     signals.size(),
@@ -170,7 +168,7 @@ public class RailJSONParser {
                     rjsSignal.sightDistance,
                     linkedDetector
             );
-            var trackBuilder = parseRef(rjsSignal.track, infraTrackBuilders);
+            var trackBuilder = rjsSignal.track.getTrackBuilder(infraTrackBuilders);
             trackBuilder.signalsBuilder.add(rjsSignal.position, signal);
             signals.add(signal);
             if (rjsSignal.linkedDetector != null) {
@@ -194,7 +192,7 @@ public class RailJSONParser {
                 var port = entry.getValue();
                 switchRef.ports.add(new Switch.Port(
                         portName,
-                        parseRef(port.track, infraTrackSections),
+                        port.track.getTrack(infraTrackSections),
                         port.endpoint
                 ));
             }
@@ -214,8 +212,8 @@ public class RailJSONParser {
         for (var trackSectionLink : railJSON.trackSectionLinks) {
             var begin = trackSectionLink.src;
             var end = trackSectionLink.dst;
-            var beginEdge = parseRef(begin.track, infraTrackSections);
-            var endEdge = parseRef(end.track, infraTrackSections);
+            var beginEdge = begin.track.getTrack(infraTrackSections);
+            var endEdge = end.track.getTrack(infraTrackSections);
             var direction = trackSectionLink.navigability;
             linkEdges(beginEdge, begin.endpoint, endEdge, end.endpoint, direction);
         }
@@ -292,9 +290,9 @@ public class RailJSONParser {
         for (var rjsTVD : rjstvdSections) {
             var indexKeys = new ArrayList<Integer>();
             for (var rjsDetector : rjsTVD.trainDetectors)
-                indexKeys.add(parseRef(rjsDetector, waypointMap).index);
+                indexKeys.add(rjsDetector.getDetector(waypointMap).index);
             for (var rjsBufferStop : rjsTVD.bufferStops)
-                indexKeys.add(parseRef(rjsBufferStop, waypointMap).index);
+                indexKeys.add(rjsBufferStop.getBufferStop(waypointMap).index);
             Collections.sort(indexKeys);
             waypointsToRJSTvd.put(indexKeys, rjsTVD);
         }
@@ -400,7 +398,7 @@ public class RailJSONParser {
         for (var rjsReleaseGroup : rjsRoute.releaseGroups) {
             var releaseGroup = new SortedArraySet<TVDSection>();
             for (var rjsTvdSection : rjsReleaseGroup) {
-                var tvdSection = parseRef(rjsTvdSection, tvdSectionsMap);
+                var tvdSection = rjsTvdSection.getTVDSection(tvdSectionsMap);
                 routeTvdSections.add(tvdSection);
                 if (tvdSection == null)
                     throw new InvalidInfraException(String.format(
@@ -414,7 +412,7 @@ public class RailJSONParser {
 
         var path = new ArrayList<TrackSectionRange>();
         for (var step : rjsRoute.path) {
-            var track = parseRef(step.track, infraTrackSections);
+            var track = step.track.getTrack(infraTrackSections);
             path.add(new TrackSectionRange(track, step.direction, step.begin, step.end));
         }
 
@@ -426,8 +424,8 @@ public class RailJSONParser {
             addSwitchPosition(prev, next, trackGraph, switchesGroup);
         }
 
-        var entryPoint = parseRef(rjsRoute.entryPoint, waypointsMap);
-        var exitPoint = parseRef(rjsRoute.exitPoint, waypointsMap);
+        var entryPoint = rjsRoute.entryPoint.getWaypoint(waypointsMap);
+        var exitPoint = rjsRoute.exitPoint.getWaypoint(waypointsMap);
 
         var entrySignal = detectorIdToSignalNormalMap.getOrDefault(entryPoint.id, null);
         if (path.get(0).direction == EdgeDirection.STOP_TO_START)
@@ -486,12 +484,12 @@ public class RailJSONParser {
                     portName,
                     new Switch.Port(
                             portName,
-                            parseRef(port.track, infraTrackSections),
+                            port.track.getTrack(infraTrackSections),
                             port.endpoint
                     )
             );
         }
-        var switchType = parseRef(rjsSwitch.switchType, switchTypeMap);
+        var switchType = rjsSwitch.switchType.getSwitchType(switchTypeMap);
         for (var entry : switchType.groups.entrySet()) {
             var group = entry.getKey();
             var edges = new ArrayList<Switch.PortEdge>();
@@ -512,13 +510,5 @@ public class RailJSONParser {
                     "Switch %s doesn't have the right ports for type %s (expected %s, got %s)",
                     rjsSwitch.id, switchType.id, switchTypePorts, switchPorts
             ));
-    }
-
-    private static <T extends Identified, U> U parseRef(
-            ObjectRef<T> ref,
-            Map<String, U> cachedObjects
-    ) {
-        // TODO check typing + presence
-        return cachedObjects.get(ref.id.id);
     }
 }
