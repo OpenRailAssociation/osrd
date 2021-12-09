@@ -2,7 +2,7 @@ package fr.sncf.osrd.railjson.schema.infra;
 
 import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.common.Identified;
-import fr.sncf.osrd.railjson.schema.common.ObjectRef;
+import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import java.util.List;
 import java.util.Map;
 
@@ -60,7 +60,7 @@ public class RJSSwitchType implements Identified {
 
     public static final String CLASSIC_NAME = "CLASSIC_SWITCH";
 
-    public static final ObjectRef<RJSSwitchType> CLASSIC_REF = new ObjectRef<>("CLASSIC_SWITCH", "switch_type");
+    public static final RJSObjectRef<RJSSwitchType> CLASSIC_REF = new RJSObjectRef<>("CLASSIC_SWITCH", "switch_type");
 
     public static final RJSSwitchType CLASSIC_TYPE = new RJSSwitchType(
             CLASSIC_NAME,
@@ -88,7 +88,7 @@ public class RJSSwitchType implements Identified {
             double positionChangeDelay) {
         return new RJSSwitch(
             id,
-            new ObjectRef<>(CLASSIC_NAME, "switch_type"),
+            new RJSObjectRef<>(CLASSIC_NAME, "switch_type"),
             Map.of("base", base, "left", left, "right", right),
             positionChangeDelay
         );
