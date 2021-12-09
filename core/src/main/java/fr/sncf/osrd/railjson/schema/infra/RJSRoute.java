@@ -2,7 +2,7 @@ package fr.sncf.osrd.railjson.schema.infra;
 
 import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.common.Identified;
-import fr.sncf.osrd.railjson.schema.common.ObjectRef;
+import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.SingleDirectionalRJSTrackRange;
 import java.util.List;
@@ -15,23 +15,23 @@ public class RJSRoute implements Identified {
     public List<SingleDirectionalRJSTrackRange> path;
 
     @Json(name = "release_groups")
-    public List<Set<ObjectRef<RJSTVDSection>>> releaseGroups;
+    public List<Set<RJSObjectRef<RJSTVDSection>>> releaseGroups;
 
     /** Waypoint placed just before the route, either a buffer stop or a detector attached to a signal */
     @Json(name = "entry_point")
-    public ObjectRef<RJSRouteWaypoint> entryPoint;
+    public RJSObjectRef<RJSRouteWaypoint> entryPoint;
 
     /** The last waypoint of the route, either a buffer stop or a detector */
     @Json(name = "exit_point")
-    public ObjectRef<RJSRouteWaypoint> exitPoint;
+    public RJSObjectRef<RJSRouteWaypoint> exitPoint;
 
     /** Routes are described as a list of TVD Sections, Switches in specific positions, and an entry point */
     public RJSRoute(
             String id,
             List<SingleDirectionalRJSTrackRange> path,
-            List<Set<ObjectRef<RJSTVDSection>>> releaseGroups,
-            ObjectRef<RJSRouteWaypoint> entryPoint,
-            ObjectRef<RJSRouteWaypoint> exitPoint
+            List<Set<RJSObjectRef<RJSTVDSection>>> releaseGroups,
+            RJSObjectRef<RJSRouteWaypoint> entryPoint,
+            RJSObjectRef<RJSRouteWaypoint> exitPoint
     ) {
         this.id = id;
         this.path = path;
