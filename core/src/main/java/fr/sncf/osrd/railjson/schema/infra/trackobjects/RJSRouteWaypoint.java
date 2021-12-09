@@ -2,7 +2,7 @@ package fr.sncf.osrd.railjson.schema.infra.trackobjects;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.Identified;
-import fr.sncf.osrd.railjson.schema.common.ObjectRef;
+import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.utils.graph.IPointValue;
@@ -14,7 +14,7 @@ public class RJSRouteWaypoint extends RJSTrackObject implements Identified, IPoi
     public ApplicableDirection direction;
 
     RJSRouteWaypoint(String id, ApplicableDirection applicableDirection,
-                     double position, ObjectRef<RJSTrackSection> track) {
+                     double position, RJSObjectRef<RJSTrackSection> track) {
         super(track, position);
         this.id = id;
         this.track = track;
