@@ -86,12 +86,25 @@ public class SpeedInstructions {
             }
             targetSpeedControllers.addAll(newControllers);
         }
+        initExpectedTimes(schedule);
+    }
 
+    private void initExpectedTimes(TrainSchedule schedule) {
         // If left unspecified, we generate the reference times from a simulation with no interaction
         if (expectedTimes == null)
             expectedTimes = SpeedControllerGenerator.getExpectedTimes(schedule, targetSpeedControllers,
                     SpeedControllerGenerator.TIME_STEP, 0, Double.POSITIVE_INFINITY, schedule.initialSpeed,
                     true);
+
+        // We need to add more details near stops
+        for (var stop : schedule.stops) {
+            var entryBefore = expectedTimes.floorEntry(stop.position);
+            var entryAfter = expectedTimes.ceilingEntry(stop.position);
+            if (entryBefore == null || entryAfter == null)
+                continue;
+            expectedTimes.put(stop.position, entryBefore.getValue());
+            expectedTimes.put(stop.position + 1e-8, entryAfter.getValue());
+        }
     }
 
     /** Split a mareco allowance into several ones separated by each stop */

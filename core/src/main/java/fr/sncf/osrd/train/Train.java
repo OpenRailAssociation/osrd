@@ -260,8 +260,7 @@ public class Train {
                     return null;
 
                 if (positionUpdates.isEmpty() || time < positionUpdates.get(0).time) {
-                    double position = previousState.location.getPathPosition();
-                    return SpeedUpdate.interpolatePosition(position, previousState.time, previousState.speed, time);
+                    return previousState.location.getPathPosition();
                 }
             }
 
