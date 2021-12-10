@@ -26,9 +26,6 @@ public class RJSSignal extends RJSTrackObject implements Identified {
     @Json(name = "linked_detector")
     public RJSObjectRef<RJSTrainDetector> linkedDetector;
 
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
-    public double angle;
-
     /** Instantiate RJSSignal */
     public RJSSignal(
             String id,
@@ -36,15 +33,13 @@ public class RJSSignal extends RJSTrackObject implements Identified {
             EdgeDirection direction,
             double position,
             double sightDistance,
-            RJSRSExpr expr,
-            double angle
+            RJSRSExpr expr
     ) {
         super(track, position);
         this.id = id;
         this.sightDistance = sightDistance;
         this.expr = expr;
         this.direction = direction;
-        this.angle = angle;
     }
 
     @Override
