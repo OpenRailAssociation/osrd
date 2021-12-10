@@ -18,9 +18,10 @@ import java.util.Set;
 
 /** Adds a construction margin to the given speed limits
  * The allowanceValue is in seconds, added over the whole phase */
-public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
+public final class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
 
     static final double capacitySpeedLimit = 30 / 3.6;
+    private SortedDoubleMap physicalLimits = null;
 
     public ConstructionAllowanceGenerator(double begin, double end, double allowanceValue) {
         super(begin, end, allowanceValue, MarginType.TIME);
@@ -37,6 +38,11 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
     }
 
     @Override
+    protected void initializeBinarySearch(TrainSchedule schedule, SortedDoubleMap speeds) {
+        physicalLimits = generatePhysicalLimits(schedule, speeds);
+    }
+
+    @Override
     protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
                                                        SortedDoubleMap speeds,
                                                        double targetSpeed) throws SimulationError {
@@ -49,13 +55,6 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
                                                        double targetSpeed,
                                                        double begin,
                                                        double end) throws SimulationError {
-
-        // compute the physical limits on the Region of Interest (RoI)
-        // these limits are a composed of a braking curve at the beginning, an accelerating curve at the end,
-        // with a 30km/h limit in between if it exists
-        // TODO: move this somewhere so that it is only calculated once per dichotomy
-        final SortedDoubleMap physicalLimits =
-                generatePhysicalLimits(schedule, sectionBegin, sectionEnd, speeds, capacitySpeedLimit);
 
         // initial speed and final speed of the RoI
         var initialSpeed = speeds.interpolate(sectionBegin);
@@ -297,19 +296,18 @@ public class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
         return res;
     }
 
-
+    /** compute the physical limits on the Region of Interest (RoI)
+     * these limits are a composed of a braking curve at the beginning, an accelerating curve at the end,
+     * with a 30km/h limit in between if it exists */
     private SortedDoubleMap generatePhysicalLimits(TrainSchedule schedule,
-                                                  double initialPosition,
-                                                  double finalPosition,
-                                                  SortedDoubleMap speeds,
-                                                  double speedLimit) {
+                                                     SortedDoubleMap speeds) {
         var res = new SortedDoubleMap();
-        var initialSpeed = speeds.interpolate(initialPosition);
-        var finalSpeed = speeds.interpolate(finalPosition);
+        var initialSpeed = speeds.interpolate(sectionBegin);
+        var finalSpeed = speeds.interpolate(sectionEnd);
         var brakingCurve =
-                generateBrakingCurve(schedule, initialPosition, initialSpeed, finalPosition, speedLimit);
+                generateBrakingCurve(schedule, sectionBegin, initialSpeed, sectionEnd, capacitySpeedLimit);
         var acceleratingCurve =
-                generateAcceleratingCurveBackwards(schedule, initialPosition, finalSpeed, finalPosition, speedLimit);
+                generateAcceleratingCurveBackwards(schedule, sectionBegin, finalSpeed, sectionEnd, capacitySpeedLimit);
         var brakingLastPosition = brakingCurve.lastKey();
         var accelerationFirstPosition = acceleratingCurve.firstKey();
 

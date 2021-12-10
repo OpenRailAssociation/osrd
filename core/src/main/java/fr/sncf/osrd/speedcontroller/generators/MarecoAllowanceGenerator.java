@@ -316,6 +316,9 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     }
 
     @Override
+    protected void initializeBinarySearch(TrainSchedule schedule, SortedDoubleMap speeds) { }
+
+    @Override
     protected double computeBrakingDistance(double initialPosition,
                                             double endPosition,
                                             double initialSpeed,

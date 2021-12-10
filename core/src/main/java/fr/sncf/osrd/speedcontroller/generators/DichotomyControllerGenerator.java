@@ -93,6 +93,10 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
                                                                 double begin,
                                                                 double end) throws SimulationError;
 
+    /** initialize some variables before running the dichotomy process */
+    protected abstract void initializeBinarySearch(TrainSchedule schedule,
+                                                              SortedDoubleMap speeds);
+
     /** compute the braking distance from initialSpeed to a given target speed */
     protected abstract double computeBrakingDistance(double initialPosition,
                                                      double endPosition, double initialSpeed, double targetSpeed,
@@ -105,6 +109,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         var lowerBound = getFirstLowEstimate();
         var higherBound = getFirstHighEstimate(speeds);
         var firstGuess = getFirstGuess(speeds);
+        initializeBinarySearch(schedule, speeds);
 
         // base run
         var times = getExpectedTimes(schedule, maxSpeedControllers, TIME_STEP, false);
