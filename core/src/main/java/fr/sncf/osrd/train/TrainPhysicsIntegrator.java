@@ -64,7 +64,7 @@ public class TrainPhysicsIntegrator {
      * @param action the action of the train
      * @return the acceleration of the train
      */
-    public double computeAcceleration(Action action) {
+    public double computeAcceleration(Action action, double directionSign) {
 
         double actionTractionForce = action.tractionForce();
         double actionBrakingForce = action.brakingForce();
@@ -73,6 +73,11 @@ public class TrainPhysicsIntegrator {
         // the sum of forces that always go the direction opposite to the train's movement
         double oppositeForce = rollingResistance + actionBrakingForce;
         // as the oppositeForces is a reaction force, it needs to be adjusted to be opposed to the other forces
+        if (currentSpeed == 0 && directionSign > 0) {
+            var totalOtherForce = actionTractionForce + weightForce;
+            if (abs(totalOtherForce) < oppositeForce)
+                return 0.0;
+        }
         if (currentSpeed >= 0.0) {
             // if the train is moving forward or still, the opposite forces are negative
             return (actionTractionForce + weightForce - oppositeForce) / inertia;
@@ -177,7 +182,7 @@ public class TrainPhysicsIntegrator {
      */
     public IntegrationStep stepFromAction(Action action, double maxDistance, double directionSign) {
         return stepFromAcceleration(
-                computeAcceleration(action),
+                computeAcceleration(action, directionSign),
                 action.tractionForce(),
                 maxDistance,
                 directionSign
@@ -321,7 +326,7 @@ public class TrainPhysicsIntegrator {
         );
         var action = makeAction.apply(integrator);
         // the acceleration and traction force evaluated at this intermediate runge-kutta step
-        var acceleration = integrator.computeAcceleration(action);
+        var acceleration = integrator.computeAcceleration(action, directionSign);
         var tractionForce = action.tractionForce();
 
         return initialIntegrator.stepFromAcceleration(acceleration, tractionForce, maxDistance, directionSign);
