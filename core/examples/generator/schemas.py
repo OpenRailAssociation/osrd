@@ -1,1 +1,0 @@
-../../../api/osrd_infra/models/schemas.py
