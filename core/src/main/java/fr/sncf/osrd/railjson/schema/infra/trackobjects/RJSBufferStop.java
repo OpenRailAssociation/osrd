@@ -5,8 +5,8 @@ import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
 
 public class RJSBufferStop extends RJSRouteWaypoint {
-    public RJSBufferStop(String id, ApplicableDirection applicableDirection, double position,
+    public RJSBufferStop(String id, double position,
                          RJSObjectRef<RJSTrackSection> track) {
-        super(id, applicableDirection, position, track);
+        super(id, position, track);
     }
 }

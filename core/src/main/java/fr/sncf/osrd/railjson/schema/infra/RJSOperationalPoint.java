@@ -8,25 +8,17 @@ import java.util.List;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", "UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSOperationalPoint implements Identified {
-    public String name;
-    public int ci;
-    public String ch;
-
-    @Json(name = "ch_short_label")
-    public String chShortLabel;
-
-    @Json(name = "ch_long_label")
-    public String chLongLabel;
+    public String id;
 
     public List<RJSOperationalPointPart> parts;
 
-    public RJSOperationalPoint(String name, List<RJSOperationalPointPart> parts) {
-        this.name = name;
+    public RJSOperationalPoint(String id, List<RJSOperationalPointPart> parts) {
+        this.id = id;
         this.parts = parts;
     }
 
     @Override
     public String getID() {
-        return name;
+        return id;
     }
 }
