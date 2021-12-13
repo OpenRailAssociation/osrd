@@ -11,6 +11,7 @@ export const UPDATE_MUST_REDRAW = 'osrdsimu/UPDATE_MUST_REDRAW';
 export const UPDATE_POSITION_VALUES = 'osrdsimu/UPDATE_POSITION_VALUES';
 export const UPDATE_SELECTED_TRAIN = 'osrdsimu/UPDATE_SELECTED_TRAIN';
 export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
+export const UPDATE_SPEEDSPACE_SETTINGS = 'osrdsimu/UPDATE_SPEEDSPACE_SETTINGS';
 export const UPDATE_STICKYBAR = 'osrdsimu/UPDATE_STICKYBAR';
 export const UPDATE_TIME_POSITION = 'osrdsimu/UPDATE_TIME_POSITION';
 
@@ -32,6 +33,7 @@ export const initialState = {
   simulation: {
     trains: [],
   },
+  speedSpaceSettings: undefined,
   stickyBar: true,
   timePosition: undefined,
 };
@@ -65,6 +67,9 @@ export default function reducer(state = initialState, action) {
         break;
       case UPDATE_SIMULATION:
         draft.simulation = action.simulation;
+        break;
+      case UPDATE_SPEEDSPACE_SETTINGS:
+        draft.speedSpaceSettings = action.speedSpaceSettings;
         break;
       case UPDATE_STICKYBAR:
         draft.stickyBar = action.stickyBar;
@@ -146,6 +151,14 @@ export function updateSimulation(simulation) {
     dispatch({
       type: UPDATE_SIMULATION,
       simulation,
+    });
+  };
+}
+export function updateSpeedSpaceSettings(speedSpaceSettings) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_SPEEDSPACE_SETTINGS,
+      speedSpaceSettings,
     });
   };
 }

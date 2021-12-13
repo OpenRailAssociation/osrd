@@ -71,6 +71,7 @@ const OSRDSimulation = () => {
           `${trainscheduleURI}results/`,
           { train_ids: trainSchedulesIDs.join(',') },
         );
+        console.log(simulationLocal);
         simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);
         dispatch(updateSimulation({ trains: simulationLocal }));
         // Create margins settings for each train if not set
