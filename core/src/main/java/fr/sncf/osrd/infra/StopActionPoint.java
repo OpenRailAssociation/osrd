@@ -35,7 +35,7 @@ public class StopActionPoint implements ActionPoint {
         var time = sim.getTime();
         if (duration > 0)
             time += duration;
-        RestartTrainEvent.plan(sim, time, train, stopIndex);
+        train.stopUntil(sim, time, stopIndex);
     }
 
     public static class RestartTrainEvent extends TimelineEvent {
