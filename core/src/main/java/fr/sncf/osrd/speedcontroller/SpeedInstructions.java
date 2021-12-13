@@ -99,7 +99,7 @@ public class SpeedInstructions {
         // We need to add more details near stops
         for (var stop : schedule.stops) {
             var entryBefore = expectedTimes.floorEntry(stop.position);
-            var entryAfter = expectedTimes.ceilingEntry(stop.position);
+            var entryAfter = expectedTimes.higherEntry(stop.position);
             if (entryBefore == null || entryAfter == null)
                 continue;
             expectedTimes.put(stop.position, entryBefore.getValue());

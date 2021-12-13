@@ -4,6 +4,7 @@ import static fr.sncf.osrd.infra.signaling.AspectConstraint.ConstraintPosition.E
 import static java.lang.Math.min;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.StopActionPoint;
 import fr.sncf.osrd.infra.signaling.AspectConstraint;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Detector;
@@ -37,13 +38,23 @@ public class Train {
     }
 
     /** Returns the delay of the train, in seconds, compared to its scheduled trip */
+    @SuppressFBWarnings("FE_FLOATING_POINT_EQUALITY")
     public double getDelay(double time) {
         double position = lastScheduledEvent.interpolatePosition(lastState, time);
 
-        // We only compare up to the end of the event: the delay doesn't change when the train is stopped
-        var t = min(time, lastScheduledEvent.eventId.scheduledTime);
+        // We compare up to the end of the event: the delay doesn't change when the train has reached its destination
+        time = min(time, lastScheduledEvent.eventId.scheduledTime);
 
-        return schedule.speedInstructions.secondsLate(position, t);
+        // The train is stopped, we consider the delay it had when stopping
+        // then add any extra delay if it should have restarted
+        if (position == lastState.lastStopPosition) {
+            var delay = lastState.delayWhenStopped;
+            if (lastState.nextDepartureTime < time)
+                delay += time - lastState.nextDepartureTime;
+            return delay;
+        }
+
+        return schedule.speedInstructions.secondsLate(position, time);
     }
 
     /** Create a train */
@@ -64,6 +75,9 @@ public class Train {
                 phaseState,
                 new ArrayDeque<>(),
                 new TrainPath(schedule.plannedPath),
+                0,
+                0,
+                -1,
                 0,
                 0
         );
@@ -211,9 +225,51 @@ public class Train {
         // Schedule the next train state
         scheduleStateChange(sim);
     }
+
+    /** Stops the train until the given time */
+    public void stopUntil(Simulation sim, double time, int stopIndex) {
+        var change = new TrainStopChange(sim, this, time, stopIndex);
+        change.apply(sim);
+        sim.publishChange(change);
+    }
     // endregion
 
     // region CHANGES
+
+    /** A change corresponding to a train stopping */
+    public static final class TrainStopChange extends SimChange<Void> {
+        final Train train;
+        final int stopIndex;
+        final double time;
+
+        /** A change corresponding to a train stopping */
+        public TrainStopChange(
+                Simulation sim,
+                Train train,
+                double time,
+                int stopIndex
+        ) {
+            super(sim);
+            this.train = train;
+            this.time = time;
+            this.stopIndex = stopIndex;
+        }
+
+        @Override
+        public Void apply(Simulation sim) {
+            StopActionPoint.RestartTrainEvent.plan(sim, time, train, stopIndex);
+            var lastState = train.lastState;
+            lastState.delayWhenStopped = train.getDelay(sim.getTime());
+            lastState.lastStopPosition = lastState.location.getPathPosition();
+            lastState.nextDepartureTime = time;
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("TrainStopChange { train name=%s, stopIndex=%d }", train.getID(), stopIndex);
+        }
+    }
 
     public static final class TrainCreatedChange extends SimChange<Train> {
         public final TrainSchedule schedule;
