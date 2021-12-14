@@ -9,8 +9,10 @@ export const UPDATE_IS_PLAYING = 'osrdsimu/UPDATE_IS_PLAYING';
 export const UPDATE_MARGINS_SETTINGS = 'osrdsimu/UPDATE_MARGINS_SETTINGS';
 export const UPDATE_MUST_REDRAW = 'osrdsimu/UPDATE_MUST_REDRAW';
 export const UPDATE_POSITION_VALUES = 'osrdsimu/UPDATE_POSITION_VALUES';
+export const UPDATE_SELECTED_PROJECTION = 'osrdsimu/UPDATE_SELECTED_PROJECTION';
 export const UPDATE_SELECTED_TRAIN = 'osrdsimu/UPDATE_SELECTED_TRAIN';
 export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
+export const UPDATE_SPEEDSPACE_SETTINGS = 'osrdsimu/UPDATE_SPEEDSPACE_SETTINGS';
 export const UPDATE_STICKYBAR = 'osrdsimu/UPDATE_STICKYBAR';
 export const UPDATE_TIME_POSITION = 'osrdsimu/UPDATE_TIME_POSITION';
 
@@ -28,10 +30,12 @@ export const initialState = {
     routeEndOccupancy: 0,
     routeBeginOccupancy: 0,
   },
+  selectedProjection: undefined,
   selectedTrain: 0,
   simulation: {
     trains: [],
   },
+  speedSpaceSettings: undefined,
   stickyBar: true,
   timePosition: undefined,
 };
@@ -60,11 +64,17 @@ export default function reducer(state = initialState, action) {
       case UPDATE_POSITION_VALUES:
         draft.positionValues = action.positionValues;
         break;
+      case UPDATE_SELECTED_PROJECTION:
+        draft.selectedProjection = action.selectedProjection;
+        break;
       case UPDATE_SELECTED_TRAIN:
         draft.selectedTrain = action.selectedTrain;
         break;
       case UPDATE_SIMULATION:
         draft.simulation = action.simulation;
+        break;
+      case UPDATE_SPEEDSPACE_SETTINGS:
+        draft.speedSpaceSettings = action.speedSpaceSettings;
         break;
       case UPDATE_STICKYBAR:
         draft.stickyBar = action.stickyBar;
@@ -133,6 +143,14 @@ export function updatePositionValues(positionValues) {
     });
   };
 }
+export function updateSelectedProjection(selectedProjection) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_SELECTED_PROJECTION,
+      selectedProjection,
+    });
+  };
+}
 export function updateSelectedTrain(selectedTrain) {
   return (dispatch) => {
     dispatch({
@@ -146,6 +164,14 @@ export function updateSimulation(simulation) {
     dispatch({
       type: UPDATE_SIMULATION,
       simulation,
+    });
+  };
+}
+export function updateSpeedSpaceSettings(speedSpaceSettings) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_SPEEDSPACE_SETTINGS,
+      speedSpaceSettings,
     });
   };
 }

@@ -261,6 +261,14 @@ svg text {
         stroke-width: 2;
         stroke: var(--purple);
       }
+      &.slopes {
+        stroke-width: 2;
+        stroke: var(--cyan);
+      }
+      &.slopesHistogram {
+        stroke-width: 1;
+        stroke: var(--cyan);
+      }
     }
   }
   .handle-tab-resize {

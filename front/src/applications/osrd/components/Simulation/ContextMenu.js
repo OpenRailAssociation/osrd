@@ -6,7 +6,8 @@ import { MdContentCopy, MdDelete } from 'react-icons/md';
 import { GiPathDistance } from 'react-icons/gi';
 import { get, post, deleteRequest } from 'common/requests';
 import {
-  updateContextMenu, updateMarginsSettings, updateSimulation, updateSelectedTrain, updateMustRedraw,
+  updateContextMenu, updateMarginsSettings, updateSimulation, updateSelectedProjection,
+  updateSelectedTrain, updateMustRedraw,
 } from 'reducers/osrdsimulation';
 import { setSuccess, setFailure } from 'reducers/main.ts';
 import { timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
@@ -30,8 +31,13 @@ export default function ContextMenu() {
   const [trainStep, setTrainStep] = useState(2);
   const [trainDelta, setTrainDelta] = useState(20);
 
-  const choosePath = () => {
-    console.log('youpi');
+  const choosePath = async () => {
+    const train = await get(`${TRAINSCHEDULE_URI}${simulation.trains[selectedTrain].id}/`);
+    dispatch(updateSelectedProjection({
+      id: simulation.trains[selectedTrain].id,
+      path: train.path,
+    }));
+    dispatch(updateContextMenu(undefined));
   };
 
   const deleteTrain = () => {

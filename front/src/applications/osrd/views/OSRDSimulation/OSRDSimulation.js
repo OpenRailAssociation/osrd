@@ -19,7 +19,8 @@ import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
 import TimeLine from 'applications/osrd/components/TimeLine/TimeLine';
 import { updateViewport } from 'reducers/map';
 import {
-  updateMarginsSettings, updateMustRedraw, updateSelectedTrain, updateSimulation, updateStickyBar,
+  updateMarginsSettings, updateMustRedraw, updateSelectedProjection,
+  updateSelectedTrain, updateSimulation, updateStickyBar,
 } from 'reducers/osrdsimulation';
 import './OSRDSimulation.scss';
 import { sec2time } from 'utils/timeManipulation';
@@ -44,7 +45,7 @@ const OSRDSimulation = () => {
   ] = useState(heightOfSpeedSpaceChart);
   const { timetableID } = useSelector((state) => state.osrdconf);
   const {
-    marginsSettings, selectedTrain, simulation, stickyBar,
+    marginsSettings, selectedProjection, selectedTrain, simulation, stickyBar,
   } = useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();
 
@@ -61,15 +62,27 @@ const OSRDSimulation = () => {
 
   const getTimetable = async () => {
     try {
-      dispatch(updateSelectedTrain(0));
+      if (!simulation.trains[selectedTrain]) {
+        dispatch(updateSelectedTrain(0));
+      }
       dispatch(updateSimulation({ trains: [] }));
       const timetable = await get(`${timetableURI}${timetableID}/`);
       if (timetable.train_schedules.length > 0) { setIsEmpty(false); }
       const trainSchedulesIDs = timetable.train_schedules.map((train) => train.id);
+      if (!selectedProjection) {
+        const firstTrain = await get(`${trainscheduleURI}${trainSchedulesIDs[0]}/`);
+        dispatch(updateSelectedProjection({
+          id: trainSchedulesIDs[0],
+          path: firstTrain.path,
+        }));
+      }
       try {
         const simulationLocal = await get(
           `${trainscheduleURI}results/`,
-          { train_ids: trainSchedulesIDs.join(',') },
+          {
+            train_ids: trainSchedulesIDs.join(','),
+            path: selectedProjection.path,
+          },
         );
         simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);
         dispatch(updateSimulation({ trains: simulationLocal }));
@@ -111,7 +124,7 @@ const OSRDSimulation = () => {
 
   useEffect(() => {
     getTimetable();
-  }, []);
+  }, [selectedProjection]);
 
   useEffect(() => {
     if (extViewport !== undefined) {
