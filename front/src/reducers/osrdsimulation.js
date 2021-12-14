@@ -9,6 +9,7 @@ export const UPDATE_IS_PLAYING = 'osrdsimu/UPDATE_IS_PLAYING';
 export const UPDATE_MARGINS_SETTINGS = 'osrdsimu/UPDATE_MARGINS_SETTINGS';
 export const UPDATE_MUST_REDRAW = 'osrdsimu/UPDATE_MUST_REDRAW';
 export const UPDATE_POSITION_VALUES = 'osrdsimu/UPDATE_POSITION_VALUES';
+export const UPDATE_SELECTED_PROJECTION = 'osrdsimu/UPDATE_SELECTED_PROJECTION';
 export const UPDATE_SELECTED_TRAIN = 'osrdsimu/UPDATE_SELECTED_TRAIN';
 export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
 export const UPDATE_SPEEDSPACE_SETTINGS = 'osrdsimu/UPDATE_SPEEDSPACE_SETTINGS';
@@ -29,6 +30,7 @@ export const initialState = {
     routeEndOccupancy: 0,
     routeBeginOccupancy: 0,
   },
+  selectedProjection: undefined,
   selectedTrain: 0,
   simulation: {
     trains: [],
@@ -61,6 +63,9 @@ export default function reducer(state = initialState, action) {
         break;
       case UPDATE_POSITION_VALUES:
         draft.positionValues = action.positionValues;
+        break;
+      case UPDATE_SELECTED_PROJECTION:
+        draft.selectedProjection = action.selectedProjection;
         break;
       case UPDATE_SELECTED_TRAIN:
         draft.selectedTrain = action.selectedTrain;
@@ -135,6 +140,14 @@ export function updatePositionValues(positionValues) {
     dispatch({
       type: UPDATE_POSITION_VALUES,
       positionValues,
+    });
+  };
+}
+export function updateSelectedProjection(selectedProjection) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_SELECTED_PROJECTION,
+      selectedProjection,
     });
   };
 }
