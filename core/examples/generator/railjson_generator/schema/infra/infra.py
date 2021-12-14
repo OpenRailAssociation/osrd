@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-import schemas
+import infra
 from dataclasses import dataclass, field
 from typing import List
 
@@ -33,8 +33,8 @@ class Infra:
         self.routes.append(Route(*args, **kwargs))
         return self.routes[-1]
 
-    def to_rjs(self) -> schemas.RailJsonInfra:
-        return schemas.RailJsonInfra(
+    def to_rjs(self) -> infra.RailJsonInfra:
+        return infra.RailJsonInfra(
             version=self.VERSION,
             track_sections=[track.to_rjs() for track in self.track_sections],
             switches=[switch.to_rjs() for switch in self.switches],
@@ -77,7 +77,7 @@ class Infra:
             for op_part in track.operational_points:
                 parts_per_op[op_part.operarational_point.label].append(op_part.to_rjs(track))
         for op in self.operational_points:
-            yield schemas.OperationalPoint(
+            yield infra.OperationalPoint(
                 id=op.label,
                 parts=parts_per_op[op.label],
                 ci=0,

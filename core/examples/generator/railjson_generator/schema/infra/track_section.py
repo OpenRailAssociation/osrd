@@ -1,4 +1,4 @@
-import schemas
+import infra
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
@@ -95,14 +95,14 @@ class TrackSection:
             geo_data = make_geo_lines((0, 0), (0, 0))
         else:
             geo_data = make_geo_lines(self.begin_coordinates, self.end_coordinates)
-        return schemas.TrackSection(
+        return infra.TrackSection(
             id=self.label,
             length=self.length,
             line_code=0,
             track_number=0,
             line_name="placeholder_line",
             track_name="placeholder_track",
-            navigability=schemas.ApplicableDirections[ApplicableDirection.BOTH.name],
+            navigability=infra.ApplicableDirections[ApplicableDirection.BOTH.name],
             slopes=[slope.to_rjs() for slope in self.slopes],
             curves=[curve.to_rjs() for curve in self.curves],
             speed_sections=[speed_limit.to_rjs() for speed_limit in self.speed_limits],
@@ -112,7 +112,7 @@ class TrackSection:
         )
 
     def make_rjs_ref(self):
-        return schemas.ObjectReference(
+        return infra.ObjectReference(
             id=self.label,
             type="track_section"
         )

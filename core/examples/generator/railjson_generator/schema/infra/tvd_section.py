@@ -1,4 +1,4 @@
-import schemas
+import infra
 from dataclasses import dataclass, field
 from typing import List
 
@@ -29,15 +29,15 @@ class TVDSection:
                 self.buffer_stops.append(waypoint)
 
     def to_rjs(self):
-        return schemas.TVDSection(
+        return infra.TVDSection(
             id=self.label,
-            detectors=[schemas.ObjectReference(type="detector", id=detector.label) for detector in self.detectors],
-            buffer_stops=[schemas.ObjectReference(type="buffer_stop", id=bs.label) for bs in self.buffer_stops],
+            detectors=[infra.ObjectReference(type="detector", id=detector.label) for detector in self.detectors],
+            buffer_stops=[infra.ObjectReference(type="buffer_stop", id=bs.label) for bs in self.buffer_stops],
             **make_geo_multilines([[(0, 0), (0, 0)]])
         )
 
     def make_rjs_ref(self):
-        return schemas.ObjectReference(
+        return infra.ObjectReference(
             id=self.label,
             type="tvd_section"
         )
