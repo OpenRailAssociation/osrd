@@ -1,4 +1,4 @@
-import schemas
+import infra
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -15,18 +15,18 @@ class Waypoint:
     right_tvd: Optional["TVDSection"] = field(default=None, repr=False)
 
     def make_rjs_ref(self):
-        return schemas.ObjectReference(
+        return infra.ObjectReference(
             id=self.label,
             type=self.waypoint_type
         )
 
     def to_rjs(self, track):
-        rjs_type = schemas.BufferStop if self.waypoint_type == "buffer_stop" else schemas.Detector
+        rjs_type = infra.BufferStop if self.waypoint_type == "buffer_stop" else infra.Detector
         return rjs_type(
             id=self.label,
             track=track.make_rjs_ref(),
             position=self.position,
-            applicable_directions=schemas.ApplicableDirections[self.applicable_direction.name],
+            applicable_directions=infra.ApplicableDirections[self.applicable_direction.name],
             **track.geo_from_track_offset(self.position)
         )
 

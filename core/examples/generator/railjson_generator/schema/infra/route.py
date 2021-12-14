@@ -1,4 +1,4 @@
-import schemas
+import infra
 from dataclasses import dataclass, field
 from typing import List, Mapping
 
@@ -29,7 +29,7 @@ class Route:
     def to_rjs(self):
         if self.label is None:
             self.label = f"rt.{self.entry_point.label}->{self.exit_point.label}"
-        return schemas.Route(
+        return infra.Route(
             id=self.label,
             entry_point=self.entry_point.make_rjs_ref(),
             exit_point=self.exit_point.make_rjs_ref(),

@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-schema_path = Path(__file__).parents[4] / "api" / "osrd_infra" / "models"
+schema_path = Path(__file__).parents[4] / "api" / "osrd_infra" / "schemas"
 sys.path.append(str(schema_path))
 
 from railjson_generator.infra_builder import InfraBuilder  # noqa

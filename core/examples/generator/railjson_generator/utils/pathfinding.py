@@ -1,4 +1,4 @@
-import schemas
+import infra
 import heapq
 from dataclasses import dataclass, field
 from typing import List, Optional, Set
@@ -27,11 +27,11 @@ class PathElement:
         return abs(self.begin - self.end)
 
     def to_rjs(self):
-        return schemas.DirectionalTrackRange(
+        return infra.DirectionalTrackRange(
             track=self.track_section.make_rjs_ref(),
             begin=self.begin,
             end=self.end,
-            direction=schemas.Direction[self.direction.name]
+            direction=infra.Direction[self.direction.name]
         )
 
 Path = List[PathElement]

@@ -1,4 +1,4 @@
-import schemas
+import infra
 from dataclasses import dataclass
 
 
@@ -20,7 +20,7 @@ class Slope(RangeElement):
         self.gradient = gradient
 
     def to_rjs(self):
-        return schemas.Slope(
+        return infra.Slope(
             gradient=self.gradient,
             begin=self.begin,
             end=self.end
@@ -35,7 +35,7 @@ class Curve(RangeElement):
         self.radius = radius
 
     def to_rjs(self):
-        return schemas.Curve(
+        return infra.Curve(
             radius=self.radius,
             begin=self.begin,
             end=self.end
@@ -50,9 +50,9 @@ class SpeedSection(RangeElement):
         self.max_speed = max_speed
 
     def to_rjs(self):
-        return schemas.SpeedSection(
+        return infra.SpeedSection(
             speed=self.max_speed,
             begin=self.begin,
             end=self.end,
-            applicable_directions=schemas.ApplicableDirections.BOTH
+            applicable_directions=infra.ApplicableDirections.BOTH
         )

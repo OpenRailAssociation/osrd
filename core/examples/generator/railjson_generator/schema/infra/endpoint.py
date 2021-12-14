@@ -1,4 +1,4 @@
-import schemas
+import infra
 from dataclasses import dataclass
 from enum import IntEnum
 
@@ -46,9 +46,9 @@ class TrackEndpoint:
             self.track_section.end_coordinates = (x, y)
 
     def to_rjs(self):
-        return schemas.TrackEndpoint(
-            endpoint=schemas.Endpoint[self.endpoint.name],
-            track=schemas.ObjectReference(
+        return infra.TrackEndpoint(
+            endpoint=infra.Endpoint[self.endpoint.name],
+            track=infra.ObjectReference(
                 id=self.track_section.label,
                 type="track_section"
             )
