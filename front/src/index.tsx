@@ -16,6 +16,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 // Sentry
 import * as Sentry from '@sentry/browser';
+import { Integrations } from '@sentry/tracing';
 
 import { version } from '../package.json';
 
