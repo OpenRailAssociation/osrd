@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-import schemas
+import infra
 
 
 @dataclass
@@ -25,7 +25,7 @@ class OperationalPointPart:
     position: float
 
     def to_rjs(self, track):
-        return schemas.OperationalPointPart(
+        return infra.OperationalPointPart(
             track=track.make_rjs_ref(),
             position=self.position,
             **track.geo_from_track_offset(self.position)

@@ -1,4 +1,4 @@
-import schemas
+import infra
 from copy import deepcopy
 from dataclasses import dataclass, field
 
@@ -30,9 +30,9 @@ class Signal:
             self.direction = Direction.START_TO_STOP
         elif self.direction == ApplicableDirection.REVERSE:
             self.direction = Direction.STOP_TO_START
-        return schemas.Signal(
+        return infra.Signal(
             id=self.label,
-            direction=schemas.Direction[self.direction.name],
+            direction=infra.Direction[self.direction.name],
             sight_distance=self.sight_distance,
             linked_detector=self.linked_detector.make_rjs_ref(),
             angle=0,
