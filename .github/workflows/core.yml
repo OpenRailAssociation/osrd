@@ -28,14 +28,17 @@ jobs:
           gradle-version: 7.2
           arguments: -p core -Pspotbugs_report_xml --continue check
 
-      - name: Check tests coverage
-        id: jacoco
-        uses: madrapps/jacoco-report@v1.2
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
         with:
-          paths: core/build/reports/jacoco/test/jacocoTestReport.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 70
-          min-coverage-changed-files: 80
+          name: codecov
+          flags: unittests,core
+          directory: ./core/build/reports/jacoco/test
+          files: jacocoTestReport.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          path_to_write_report: ./coverage/codecov_report.txt
+          fail_ci_if_error: true
+          verbose: true
 
       - name: Report JUnit failures
         uses: mikepenz/action-junit-report@v2
