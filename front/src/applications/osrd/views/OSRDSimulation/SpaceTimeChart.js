@@ -37,7 +37,8 @@ export default function SpaceTimeChart(props) {
   const dispatch = useDispatch();
   const { t } = useTranslation(['margins']);
   const {
-    marginsSettings, mustRedraw, positionValues, selectedTrain, simulation, timePosition,
+    marginsSettings, mustRedraw, positionValues, selectedProjection,
+    selectedTrain, simulation, timePosition,
   } = useSelector((state) => state.osrdsimulation);
   const keyValues = ['time', 'position'];
   const [rotate, setRotate] = useState(false);
@@ -107,7 +108,9 @@ export default function SpaceTimeChart(props) {
       drawAxisTitle(chartLocal, rotate);
       dataSimulation.forEach((train, idx) => {
         drawTrain(
-          chartLocal, dispatch, train, (idx === selectedTrain), keyValues, marginsSettings,
+          chartLocal, dispatch, train,
+          (train.id === selectedProjection.id),
+          (idx === selectedTrain), keyValues, marginsSettings,
           offsetTimeByDragging, rotate, setDragEnding, setDragOffset,
         );
       });

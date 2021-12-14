@@ -1,3 +1,4 @@
+import React from 'react';
 import * as d3 from 'd3';
 import { getDirection } from 'applications/osrd/components/Helpers/ChartHelpers';
 import {
@@ -8,7 +9,7 @@ import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import drawText from 'applications/osrd/components/Simulation/drawText';
 
 export default function drawTrain(
-  chart, dispatch, dataSimulation, isSelected, keyValues, marginsSettings,
+  chart, dispatch, dataSimulation, isPathSelected, isSelected, keyValues, marginsSettings,
   offsetTimeByDragging, rotate, setDragEnding, setDragOffset,
 ) {
   const groupID = `spaceTime-${dataSimulation.trainNumber}`;
@@ -116,5 +117,10 @@ export default function drawTrain(
       'curveLinear', keyValues, 'eco_headPosition', rotate, isSelected,
     ));
   }
-  drawText(chart, dataSimulation, direction, groupID, isSelected);
+  drawText(
+    chart, direction, groupID, isSelected,
+    `${isPathSelected ? '🎢' : ''} ${dataSimulation.name}`, // text
+    dataSimulation.headPosition[0][0].time, // x
+    dataSimulation.headPosition[0][0].position, // y
+  );
 }
