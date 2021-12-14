@@ -20,8 +20,10 @@ import java.util.Set;
  * The allowanceValue is in seconds, added over the whole phase */
 public final class ConstructionAllowanceGenerator extends MarecoAllowanceGenerator {
 
+    // speed limit of 30km/h under which the train would use too much capacity
     static final double capacitySpeedLimit = 30 / 3.6;
     private SortedDoubleMap physicalLimits = null;
+    private SortedDoubleMap speeds = null;
 
     public ConstructionAllowanceGenerator(double begin, double end, double allowanceValue) {
         super(begin, end, allowanceValue, MarginType.TIME);
@@ -40,18 +42,11 @@ public final class ConstructionAllowanceGenerator extends MarecoAllowanceGenerat
     @Override
     protected void initializeBinarySearch(TrainSchedule schedule, SortedDoubleMap speeds) {
         physicalLimits = generatePhysicalLimits(schedule, speeds);
+        this.speeds = speeds;
     }
 
     @Override
     protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
-                                                       SortedDoubleMap speeds,
-                                                       double targetSpeed) throws SimulationError {
-        return getSpeedControllers(schedule, speeds, targetSpeed, sectionBegin, sectionEnd);
-    }
-
-    @Override
-    protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
-                                                       SortedDoubleMap speeds,
                                                        double targetSpeed,
                                                        double begin,
                                                        double end) throws SimulationError {
@@ -61,37 +56,146 @@ public final class ConstructionAllowanceGenerator extends MarecoAllowanceGenerat
         var endSpeed = speeds.interpolate(sectionEnd);
 
         // initialize the beginning of the acceleration phase and the res variable
-        double accelerationBeginPosition = sectionEnd;
-        var res = new HashSet<>(maxSpeedControllers);
+        double accelerationBeginPosition = getAccelerationBeginPosition(targetSpeed, endSpeed);
 
-        if (targetSpeed < endSpeed) {
-            // if the target speed is under the final speed of the Region of Interest (RoI)
-            // that means there will be an acceleration phase at the end of the RoI to catch up with endSpeed
-            var acceleratingCurve = generateAcceleratingCurveBackwards(
-                    schedule, sectionBegin, endSpeed, sectionEnd, capacitySpeedLimit);
-            // memorize the position where the accelerating curve crosses targetSpeed, if there is one
-            for (var element : acceleratingCurve.entrySet()) {
-                if (element.getValue() >= targetSpeed) {
-                    accelerationBeginPosition = element.getKey();
+        if (targetSpeed >= initialSpeed) {
+            // if the target speed is above the initial speed, that means no coasting or braking is necessary
+            // at the beginning of the Region of Interest (RoI)
+            return super.getSpeedControllers(schedule, targetSpeed, sectionBegin, accelerationBeginPosition);
+        }
+
+        // compute a coasting curve starting at the beginning of the RoI
+        // and ending either when is crosses the physical limits, or reaches regionEnd
+        var coastingBeginPosition = sectionBegin;
+        var coastingCurve = generateCoastingCurve(coastingBeginPosition, initialSpeed);
+        var coastingFinalPosition = coastingCurve.lastKey();
+        var coastingLowestSpeed = Collections.min(coastingCurve.values());
+
+        // if the coasting curve reaches the physical limits and crosses targetSpeed
+        // that means there is at least a small interval with a MARECO-like behavior
+        if (coastingFinalPosition < sectionEnd && coastingLowestSpeed <= targetSpeed) {
+            return makeResultWithoutBraking(coastingCurve, targetSpeed, accelerationBeginPosition);
+        }
+
+        // otherwise, that means the margin asked by the user is too high for a simple coasting phase followed by
+        // an acceleration, in which case the train needs to brake before coasting
+
+        // re-calculate the new coasting phase, that will start on the braking curve at coastingBeginSpeed
+        // and end when it crosses the physical limits (if it does so)
+        coastingBeginPosition = computeCoastingBeginPosition(initialSpeed, targetSpeed);
+        var coastingBeginSpeed = physicalLimits.interpolate(coastingBeginPosition);
+        var newCoastingCurve = generateCoastingCurve(coastingBeginPosition, coastingBeginSpeed);
+
+        // if the generated coasting curve reaches the physical limits
+        // create a LimitAnnounceSpeedController until the coasting begin position
+        // and a CoastingSpeedController right after, until the accelerating begin position
+        if (coastingFinalPosition < sectionEnd) {
+            return makeResultWithBraking(newCoastingCurve, coastingBeginSpeed, accelerationBeginPosition);
+        }
+
+        // if not, that means no solution has been found including a coasting phase
+        // so simply return the physical limits as set of speed controllers
+        return makeResultWithPhysicalLimits(initialSpeed, endSpeed);
+    }
+
+    /** return the physical limits as a set of speedControllers */
+    private Set<SpeedController> makeResultWithPhysicalLimits(double initialSpeed, double endSpeed) {
+        var brakingCurve =
+                generateBrakingCurve(schedule, sectionBegin, initialSpeed, sectionEnd, capacitySpeedLimit);
+        var acceleratingCurve =
+                generateAcceleratingCurveBackwards(schedule, sectionBegin, endSpeed, sectionEnd, capacitySpeedLimit);
+        var brakingLastPosition = brakingCurve.lastKey();
+        var accelerationBeginPosition = acceleratingCurve.firstKey();
+
+        // manage the case where the barking curve intersects with the accelerating one
+        if (brakingLastPosition >= accelerationBeginPosition) {
+            for (double position : brakingCurve.keySet()) {
+                if (brakingCurve.interpolate(position) <= acceleratingCurve.interpolate(position)) {
+                    brakingLastPosition = position;
+                    accelerationBeginPosition = position;
                     break;
                 }
             }
         }
 
-        if (targetSpeed >= initialSpeed) {
-            // if the target speed is above the initial speed, that means no coasting or braking is necessary
-            // at the beginning of the Region of Interest (RoI)
-            var marecoSpeedControllers = super.getSpeedControllers(
-                    schedule, speeds, targetSpeed, sectionBegin, accelerationBeginPosition);
-            res.addAll(marecoSpeedControllers);
-            return res;
-        }
+        var res = new HashSet<>(maxSpeedControllers);
+        res.add(LimitAnnounceSpeedController.createFromInitialPosition(
+                initialSpeed, capacitySpeedLimit, sectionBegin, schedule.rollingStock.gamma));
+        res.add(new MaxSpeedController(capacitySpeedLimit, brakingLastPosition, accelerationBeginPosition));
+        return res;
+    }
 
-        // compute a coasting phase starting at the beginning of the RoI
-        // and ending either when is crosses the physical limits, or reaches regionEnd
+    /** return a construction margin space-speed curve starting with a braking phase,
+     *  and a coasting phase if that is possible */
+    private Set<SpeedController> makeResultWithBraking(SortedDoubleMap coastingCurve,
+                                                       double coastingBeginSpeed,
+                                                       double accelerationBeginPosition) throws SimulationError {
+        var res = new HashSet<>(maxSpeedControllers);
+        var coastingBeginPosition = coastingCurve.firstKey();
+        var initialSpeed = speeds.interpolate(sectionBegin);
+        var coastingFinalPosition = coastingCurve.lastKey();
+        if (coastingFinalPosition < sectionEnd) {
+            // if a possible coasting curve has been found, add a CoastingSpeedController
+            res.add(new CoastingSpeedController(coastingBeginPosition, coastingFinalPosition));
+        } else {
+            // manage the case where coasting doesn't work (accelerating slope for example)
+            coastingFinalPosition = coastingBeginPosition;
+        }
+        res.add(LimitAnnounceSpeedController.create(
+                initialSpeed, coastingBeginSpeed, coastingBeginPosition, schedule.rollingStock.gamma));
+        var marecoSpeedControllers = super.getSpeedControllers(
+                schedule, capacitySpeedLimit, coastingFinalPosition, accelerationBeginPosition
+        );
+        res.addAll(marecoSpeedControllers);
+        return res;
+    }
+
+    /** return a construction margin space-speed curve starting with a simple coasting phase */
+    private Set<SpeedController> makeResultWithoutBraking(SortedDoubleMap coastingCurve,
+                                                          double targetSpeed,
+                                                          double accelerationBeginPosition) throws SimulationError {
+
+        var res = new HashSet<>(maxSpeedControllers);
         var coastingBeginPosition = sectionBegin;
+        var coastingFinalPosition = coastingCurve.lastKey();
+
+        // memorize the position where the coasting phase crosses targetSpeed
+        for (var element : coastingCurve.entrySet()) {
+            if (element.getValue() <= targetSpeed) {
+                coastingFinalPosition = element.getKey();
+                break;
+            }
+        }
+        res.add(new CoastingSpeedController(coastingBeginPosition, coastingFinalPosition));
+        var marecoSpeedControllers = super.getSpeedControllers(
+                schedule, targetSpeed, coastingFinalPosition, accelerationBeginPosition
+        );
+        res.addAll(marecoSpeedControllers);
+        return res;
+    }
+
+    /** compute where the coasting phase is supposed to start, given the initial and target speed */
+    private double computeCoastingBeginPosition(double initialSpeed, double targetSpeed) {
+        var coastingBeginSpeed = initialSpeed;
+        // transform the target speed into a coasting begin speed, located between initialSpeed and capacitySpeedLimit
+        if (targetSpeed < capacitySpeedLimit)
+            coastingBeginSpeed = targetSpeed * (initialSpeed / capacitySpeedLimit - 1) + capacitySpeedLimit;
+
+        // memorize the position where the physical limit (i.e. the braking curve) crosses this coasting begin speed
+        for (var element : physicalLimits.entrySet()) {
+            if (element.getValue() <= coastingBeginSpeed) {
+                // TODO: replace this by an interpolated position to avoid discretization issues
+                return element.getKey();
+            }
+        }
+        return sectionBegin;
+    }
+
+    /** generate a space-speed curve corresponding to a coasting starting at (initialPosition, initialSpeed)
+     *  and ending when it intersects with the physical limits curve */
+    private SortedDoubleMap generateCoastingCurve(double initialPosition, double initialSpeed) {
         var speed = initialSpeed;
-        var pos = coastingBeginPosition;
+        var pos = initialPosition;
         var location = convertPosition(schedule, pos);
         var coastingPhase = new SortedDoubleMap();
         coastingPhase.put(pos, speed);
@@ -107,107 +211,27 @@ public final class ConstructionAllowanceGenerator extends MarecoAllowanceGenerat
             speed = step.finalSpeed;
             location.updatePosition(schedule.rollingStock.length, step.positionDelta);
             pos = location.getPathPosition();
-            coastingPhase.put(location.getPathPosition(), speed);
+            coastingPhase.put(pos, speed);
         } while (speed > physicalLimits.interpolate(pos) && pos < sectionEnd);
+        return coastingPhase;
+    }
 
-        var coastingFinalPosition = coastingPhase.lastKey();
-        var coastingLowestSpeed = Collections.min(coastingPhase.values());
-
-        // if the coasting curve reaches the physical limits and crosses targetSpeed
-        // that means there is at least a small interval with a MARECO-like behavior
-        if (coastingFinalPosition < sectionEnd && coastingLowestSpeed <= targetSpeed) {
-            // memorize the position where the coasting phase crosses targetSpeed
-            for (var element : coastingPhase.entrySet()) {
-                if (element.getValue() <= targetSpeed) {
-                    coastingFinalPosition = element.getKey();
-                    break;
-                }
-            }
-            res.add(new CoastingSpeedController(coastingBeginPosition, coastingFinalPosition));
-            var marecoSpeedControllers = super.getSpeedControllers(
-                    schedule, speeds, targetSpeed, coastingFinalPosition, accelerationBeginPosition
-            );
-            res.addAll(marecoSpeedControllers);
-            return res;
-        }
-
-        // otherwise, that means the margin asked by the user is too high for a simple coasting phase followed by
-        // an acceleration, in which case the train needs to brake before coasting
-
-        var coastingBeginSpeed = initialSpeed;
-        // transform the target speed into a coasting begin speed, located between initialSpeed and capacitySpeedLimit
-        if (targetSpeed < capacitySpeedLimit)
-            coastingBeginSpeed = targetSpeed * (initialSpeed / capacitySpeedLimit - 1) + capacitySpeedLimit;
-
-        // memorize the position where the physical limit (i.e. the braking curve) crosses this coasting begin speed
-        for (var element : physicalLimits.entrySet()) {
-            if (element.getValue() <= coastingBeginSpeed) {
-                coastingBeginPosition = element.getKey();
-                break;
+    /** compute the position where the train should re-accelerate to catch up with endSpeed at sectionEnd */
+    private double getAccelerationBeginPosition(double targetSpeed, double endSpeed) {
+        if (targetSpeed >= endSpeed)
+            return sectionEnd;
+        // if the target speed is under the final speed of the Region of Interest (RoI)
+        // that means there will be an acceleration phase at the end of the RoI to catch up with endSpeed
+        var acceleratingCurve = generateAcceleratingCurveBackwards(
+                schedule, sectionBegin, endSpeed, sectionEnd, capacitySpeedLimit);
+        // memorize the position where the accelerating curve crosses targetSpeed, if there is one
+        for (var element : acceleratingCurve.entrySet()) {
+            if (element.getValue() >= targetSpeed) {
+                // TODO: replace this by an interpolated position to avoid discretization issues
+                return element.getKey();
             }
         }
-
-        // re-calculate the new coasting phase, that will start on the braking curve at coastingBeginSpeed
-        // and end when it crosses the physical limits (if it does so)
-        speed = coastingBeginSpeed;
-        pos = coastingBeginPosition;
-        location = convertPosition(schedule, pos);
-        var newCoastingPhase = new SortedDoubleMap();
-        newCoastingPhase.put(location.getPathPosition(), speed);
-        do {
-            var step = nextStep(
-                    location,
-                    speed,
-                    schedule.rollingStock,
-                    TIME_STEP,
-                    sectionEnd,
-                    1,
-                    (integrator) -> Action.coast());
-            speed = step.finalSpeed;
-            location.updatePosition(schedule.rollingStock.length, step.positionDelta);
-            pos = location.getPathPosition();
-            newCoastingPhase.put(location.getPathPosition(), speed);
-        } while (speed > physicalLimits.interpolate(pos) && pos < sectionEnd);
-
-        // if the generated coasting curve reaches the physical limits
-        // create a LimitAnnounceSpeedController until the coasting begin position
-        // and a CoastingSpeedController right after, until the accelerating begin position
-        if (coastingBeginPosition < sectionEnd) {
-            coastingFinalPosition = location.getPathPosition();
-            res.add(LimitAnnounceSpeedController.create(
-                    initialSpeed, coastingBeginSpeed, coastingBeginPosition, schedule.rollingStock.gamma));
-            res.add(new CoastingSpeedController(coastingBeginPosition, coastingFinalPosition));
-            var marecoSpeedControllers = super.getSpeedControllers(
-                    schedule, speeds, capacitySpeedLimit, coastingFinalPosition, accelerationBeginPosition
-            );
-            res.addAll(marecoSpeedControllers);
-            return res;
-        }
-
-        // if not, that means no solution has been found including a coasting phase
-        // so simply return the physical limits as set of speed controllers
-        var brakingCurve =
-                generateBrakingCurve(schedule, sectionBegin, initialSpeed, sectionEnd, capacitySpeedLimit);
-        var acceleratingCurve =
-                generateAcceleratingCurveBackwards(schedule, sectionBegin, endSpeed, sectionEnd, capacitySpeedLimit);
-        var brakingLastPosition = brakingCurve.lastKey();
-        accelerationBeginPosition = acceleratingCurve.firstKey();
-
-        // manage the case where the barking curve intersects with the accelerating one
-        if (brakingLastPosition >= accelerationBeginPosition) {
-            for (double position : brakingCurve.keySet()) {
-                if (brakingCurve.interpolate(position) <= acceleratingCurve.interpolate(position)) {
-                    brakingLastPosition = position;
-                    accelerationBeginPosition = position;
-                    break;
-                }
-            }
-        }
-
-        res.add(LimitAnnounceSpeedController.createFromInitialPosition(
-                initialSpeed, capacitySpeedLimit, sectionBegin, schedule.rollingStock.gamma));
-        res.add(new MaxSpeedController(capacitySpeedLimit, brakingLastPosition, accelerationBeginPosition));
-        return res;
+        return sectionEnd;
     }
 
     /** compute the braking distance from (initialPosition,initialSpeed) to a given target speed */

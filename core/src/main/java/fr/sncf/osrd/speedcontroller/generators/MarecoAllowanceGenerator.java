@@ -292,14 +292,12 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
     @Override
     protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
-                                                       SortedDoubleMap speeds,
                                                        double v1) throws SimulationError {
-        return getSpeedControllers(schedule, speeds, v1, sectionBegin, sectionEnd);
+        return getSpeedControllers(schedule, v1, sectionBegin, sectionEnd);
     }
 
     @Override
     protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
-                                                       SortedDoubleMap speeds,
                                                        double v1,
                                                        double begin,
                                                        double end) throws SimulationError {

@@ -82,13 +82,11 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
 
     /** Generates a set of speed controllers given the dichotomy value */
     protected abstract Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
-                                                                SortedDoubleMap speeds,
                                                                 double value) throws SimulationError;
 
     /** Generates a set of speed controllers given the dichotomy value,
      *  with specified begin and end position */
     protected abstract Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
-                                                                SortedDoubleMap speeds,
                                                                 double value,
                                                                 double begin,
                                                                 double end) throws SimulationError;
@@ -121,7 +119,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         var nextSpeedControllers = maxSpeedControllers;
         int i = 0;
         while (Math.abs(time - targetTime) > precision) {
-            nextSpeedControllers = getSpeedControllers(schedule, speeds, nextValue);
+            nextSpeedControllers = getSpeedControllers(schedule, nextValue);
             time = evalRunTime(schedule, nextSpeedControllers);
             if (time > targetTime)
                 lowerBound = nextValue;

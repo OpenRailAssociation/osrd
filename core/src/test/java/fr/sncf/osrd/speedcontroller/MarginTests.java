@@ -165,8 +165,8 @@ public class MarginTests {
         var speedSecondPoint = speeds.interpolate(end);
 
         // make sure begin and end have the same speed before and after margin
-        assertEquals(speedFirstPointBase, speedFirstPoint, speedFirstPointBase * tolerance);
-        assertEquals(speedSecondPointBase, speedSecondPoint, speedSecondPointBase * tolerance);
+        assertEquals(speedFirstPointBase, speedFirstPoint, 2 * timeStep + speedFirstPointBase * tolerance);
+        assertEquals(speedSecondPointBase, speedSecondPoint, 2 * timeStep + speedSecondPointBase * tolerance);
 
         var expectedTotalTime = test.baseTime() + value;
 
