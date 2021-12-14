@@ -23,8 +23,12 @@ import { version } from '../package.json';
 require('@sncf/bootstrap-sncf.metier.reseau');
 
 Sentry.init({
-  dsn: 'https://6797a40408f64fc5a38f1d894cf29a50@sentry.shared.dgexsol.fr/4',
+  dsn: 'https://c810d004df0446b7b7a5bbfee21541cc@sentry-testing.shared.dgexsol.fr/36',
   environment: 'dev',
+  autoSessionTracking: true,
+  integrations: [
+    new Integrations.BrowserTracing(),
+  ],
 });
 
 export default function Container() {
