@@ -1,6 +1,18 @@
 from django.contrib.gis.db import models
 
-from osrd_infra.models import schemas
+from osrd_infra.schemas.infra import (
+    ALL_OBJECT_TYPES,
+    BufferStop,
+    Detector,
+    OperationalPoint,
+    Route,
+    Signal,
+    Switch,
+    SwitchType,
+    TrackSection,
+    TrackSectionLink,
+    TVDSection,
+)
 from osrd_infra.utils import JSONSchemaValidator
 
 MODEL_TO_OBJ = {}
@@ -20,7 +32,7 @@ class Infra(models.Model):
 class OperationalPointModel(models.Model):
     infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     obj_id = models.CharField(max_length=255)
-    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=schemas.OperationalPoint.schema())])
+    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=OperationalPoint.schema())])
 
     class Meta:
         verbose_name_plural = "operational points"
@@ -30,7 +42,7 @@ class OperationalPointModel(models.Model):
 class RouteModel(models.Model):
     infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     obj_id = models.CharField(max_length=255)
-    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=schemas.Route.schema())])
+    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=Route.schema())])
 
     class Meta:
         verbose_name_plural = "routes"
@@ -40,7 +52,7 @@ class RouteModel(models.Model):
 class SwitchTypeModel(models.Model):
     infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     obj_id = models.CharField(max_length=255)
-    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=schemas.SwitchType.schema())])
+    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=SwitchType.schema())])
 
     class Meta:
         verbose_name_plural = "switch types"
@@ -50,7 +62,7 @@ class SwitchTypeModel(models.Model):
 class SwitchModel(models.Model):
     infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     obj_id = models.CharField(max_length=255)
-    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=schemas.Switch.schema())])
+    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=Switch.schema())])
 
     class Meta:
         verbose_name_plural = "switches"
@@ -60,7 +72,7 @@ class SwitchModel(models.Model):
 class TrackSectionLinkModel(models.Model):
     infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     obj_id = models.CharField(max_length=255)
-    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=schemas.TrackSectionLink.schema())])
+    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=TrackSectionLink.schema())])
 
     class Meta:
         verbose_name_plural = "track section links"
@@ -70,7 +82,7 @@ class TrackSectionLinkModel(models.Model):
 class TrackSectionModel(models.Model):
     infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     obj_id = models.CharField(max_length=255)
-    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=schemas.TrackSection.schema())])
+    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=TrackSection.schema())])
 
     class Meta:
         verbose_name_plural = "track sections"
@@ -80,7 +92,7 @@ class TrackSectionModel(models.Model):
 class SignalModel(models.Model):
     infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     obj_id = models.CharField(max_length=255)
-    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=schemas.Signal.schema())])
+    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=Signal.schema())])
 
     class Meta:
         verbose_name_plural = "signals"
@@ -90,7 +102,7 @@ class SignalModel(models.Model):
 class BufferStopModel(models.Model):
     infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     obj_id = models.CharField(max_length=255)
-    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=schemas.BufferStop.schema())])
+    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=BufferStop.schema())])
 
     class Meta:
         verbose_name_plural = "buffer stops"
@@ -100,7 +112,7 @@ class BufferStopModel(models.Model):
 class DetectorModel(models.Model):
     infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     obj_id = models.CharField(max_length=255)
-    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=schemas.Detector.schema())])
+    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=Detector.schema())])
 
     class Meta:
         verbose_name_plural = "detectors"
@@ -110,7 +122,7 @@ class DetectorModel(models.Model):
 class TVDSectionModel(models.Model):
     infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     obj_id = models.CharField(max_length=255)
-    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=schemas.TVDSection.schema())])
+    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=TVDSection.schema())])
 
     class Meta:
         verbose_name_plural = "tvd sections"
@@ -152,7 +164,7 @@ def _into_obj(model):
 
 
 ALL_MODELS = {m.__name__: m for m in models.Model.__subclasses__()}
-for obj in schemas.ALL_OBJECT_TYPES:
+for obj in ALL_OBJECT_TYPES:
     obj_name = obj.__name__
     model_name = f"{obj_name}Model"
     if model_name not in ALL_MODELS:

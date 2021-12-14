@@ -963,8 +963,6 @@ components:
       properties:
         infra:
           type: integer
-        name:
-          type: string
         steps:
           type: array
           minItems: 2
@@ -990,8 +988,6 @@ components:
       properties:
         id:
           type: integer
-        name:
-          type: string
         owner:
           type: string
           format: uuid
@@ -1009,25 +1005,25 @@ components:
           items:
             type: object
             properties:
-              id: { type: string }
               name: { type: string }
-              position:
+              suggestion: { type: boolean }
+              stop_time: { type: number, format: float }
+              track:
                 type: object
                 properties:
-                  offset: { type: number, format: float }
-                  track_section: { type: integer }
-              schematic:
+                  id: { type: string }
+                  type: { enum: ["TrackSection"] }
+              position: { type: number, format: float }
+              sch:
                 type: array
                 items: { type: number, format: float }
                 minItems: 2
                 maxItems: 2
-              geographic:
+              geo:
                 type: array
                 items: { type: number, format: float }
                 minItems: 2
                 maxItems: 2
-              stop_time: { type: number, format: float }
-              suggestion: { type: boolean }
     RollingStock:
       properties:
         id:
