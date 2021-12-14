@@ -89,12 +89,12 @@ export default function SpeedSpaceChart(props) {
     },
   );
   const maxSpeed = d3.max(dataSimulation.speed.map((step) => step.speed));
+  const minHeight = d3.min(slopesCurve.map((step) => step.height));
   const maxHeight = d3.max(slopesCurve.map((step) => step.height));
   dataSimulation.slopesCurve = slopesCurve.map((step) => ({
     ...step,
-    height: (step.height * maxSpeed) / maxHeight,
+    height: (((step.height + (minHeight * -1)) * maxSpeed) / (maxHeight + (minHeight * -1))),
   }));
-  console.log('');
 
   const toggleRotation = () => {
     d3.select(`#${CHART_ID}`).remove();
