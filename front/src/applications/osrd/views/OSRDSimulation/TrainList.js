@@ -133,7 +133,7 @@ export default function TrainsList(props) {
             </td>
             <td className="td-button">
               <div
-                className="cell-inner cell-inner-button h-100"
+                className="cell-inner cell-inner-button"
                 role="button"
                 onClick={() => changeSelectedTrain(idx, 'name', train.name, sec2time(train.base.stops[0].time))}
                 tabIndex={0}
