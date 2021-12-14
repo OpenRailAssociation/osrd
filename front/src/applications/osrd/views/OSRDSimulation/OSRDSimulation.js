@@ -71,14 +71,17 @@ const OSRDSimulation = () => {
       const trainSchedulesIDs = timetable.train_schedules.map((train) => train.id);
       if (!selectedProjection) {
         const firstTrain = await get(`${trainscheduleURI}${trainSchedulesIDs[0]}/`);
-        dispatch(updateSelectedProjection(firstTrain.path));
+        dispatch(updateSelectedProjection({
+          id: trainSchedulesIDs[0],
+          path: firstTrain.path,
+        }));
       }
       try {
         const simulationLocal = await get(
           `${trainscheduleURI}results/`,
           {
             train_ids: trainSchedulesIDs.join(','),
-            path: selectedProjection,
+            path: selectedProjection.path,
           },
         );
         simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);

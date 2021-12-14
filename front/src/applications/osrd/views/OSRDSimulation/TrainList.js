@@ -63,12 +63,11 @@ const InputTime = (props) => {
 export default function TrainsList(props) {
   const { toggleTrainList } = props;
   const {
-    selectedTrain, simulation,
+    selectedProjection, selectedTrain, simulation,
   } = useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();
   const [formattedList, setFormattedList] = useState(null);
   const [filter, setFilter] = useState('');
-  const [trainIDX, setTrainIDX] = useState(undefined);
   const [trainNameClickedIDX, setTrainNameClickedIDX] = useState(undefined);
   const [typeOfInputFocused, setTypeOfInputFocused] = useState(undefined);
   const [inputName, setInputName] = useState(undefined);
@@ -127,9 +126,14 @@ export default function TrainsList(props) {
                 </div>
               </div>
             </td>
+            <td>
+              <div className="cell-inner">
+                {train.id === selectedProjection.id && '🎢'}
+              </div>
+            </td>
             <td className="td-button">
               <div
-                className="cell-inner cell-inner-button"
+                className="cell-inner cell-inner-button h-100"
                 role="button"
                 onClick={() => changeSelectedTrain(idx, 'name', train.name, sec2time(train.base.stops[0].time))}
                 tabIndex={0}
@@ -170,7 +174,6 @@ export default function TrainsList(props) {
                   data-toggle="modal"
                   data-target="#trainlist-modal"
                   className="btn btn-only-icon btn-transparent btn-color-gray pl-0"
-                  onClick={() => setTrainIDX(idx)}
                 >
                   <i className="icons-pencil" />
                 </button>
@@ -262,7 +265,7 @@ export default function TrainsList(props) {
                     </div>
                   </div>
                 </th>
-                <th scope="col"><div className="cell-inner">{t('simulation:name')}</div></th>
+                <th scope="col" colSpan="2"><div className="cell-inner">{t('simulation:name')}</div></th>
                 <th scope="col"><div className="cell-inner">{t('simulation:start')}</div></th>
                 <th scope="col"><div className="cell-inner">{t('simulation:stop')}</div></th>
                 <th scope="col"><div className="cell-inner">{t('simulation:labels')}</div></th>

@@ -32,8 +32,11 @@ export default function ContextMenu() {
   const [trainDelta, setTrainDelta] = useState(20);
 
   const choosePath = async () => {
-    const firstTrain = await get(`${TRAINSCHEDULE_URI}${simulation.trains[selectedTrain].id}/`);
-    dispatch(updateSelectedProjection(firstTrain.path));
+    const train = await get(`${TRAINSCHEDULE_URI}${simulation.trains[selectedTrain].id}/`);
+    dispatch(updateSelectedProjection({
+      id: simulation.trains[selectedTrain].id,
+      path: train.path,
+    }));
     dispatch(updateContextMenu(undefined));
   };
 
