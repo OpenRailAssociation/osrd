@@ -12,7 +12,7 @@ from osrd_infra.views.simulation_log import generate_simulation_logs
 
 from osrd_infra.models import (
     TrainSchedule,
-    Path,
+    PathModel,
 )
 
 
@@ -45,7 +45,7 @@ class TrainScheduleView(
         cache_simulation_logs(train_schedule)
 
         path_id = request.query_params.get("path", train_schedule.path_id)
-        path = get_object_or_404(Path, pk=path_id)
+        path = get_object_or_404(PathModel, pk=path_id)
         res = convert_simulation_logs(train_schedule, path)
         return Response(res)
 
@@ -71,13 +71,11 @@ class TrainScheduleView(
         schedules_map = {schedule.id: schedule for schedule in schedules}
         missing_schedules = train_ids_set.difference(schedules_map.keys())
         if missing_schedules:
-            raise Http404(
-                f"Invalid schedule IDs: {', '.join(map(str, missing_schedules))}"
-            )
+            raise Http404(f"Invalid schedule IDs: {', '.join(map(str, missing_schedules))}")
 
         # if there's no path argument, use the path of the first train
         if path_id is not None:
-            path = get_object_or_404(Path, pk=path_id)
+            path = get_object_or_404(PathModel, pk=path_id)
         else:
             path = schedules_map[train_ids[0]].path
 

@@ -1,8 +1,6 @@
 from django.contrib.gis.db import models
 
-from osrd_infra.models.infra import Infra
-from osrd_infra.models.pathfinding import Path
-from osrd_infra.models.rolling_stock import RollingStock
+from osrd_infra.models import Infra, PathModel, RollingStock
 from osrd_infra.utils import JSONSchemaValidator
 
 MARGINS_SCHEMA = {
@@ -31,7 +29,7 @@ class TrainSchedule(models.Model):
     timetable = models.ForeignKey(Timetable, on_delete=models.CASCADE, related_name="train_schedules")
     rolling_stock = models.ForeignKey(RollingStock, on_delete=models.CASCADE)
     departure_time = models.FloatField()
-    path = models.ForeignKey(Path, on_delete=models.CASCADE)
+    path = models.ForeignKey(PathModel, on_delete=models.CASCADE)
     initial_speed = models.FloatField()
     labels = models.ManyToManyField("TrainScheduleLabel", blank=True)
     margins = models.JSONField(null=True, validators=[JSONSchemaValidator(limit_value=MARGINS_SCHEMA)])

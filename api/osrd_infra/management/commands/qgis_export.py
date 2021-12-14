@@ -16,7 +16,7 @@ from osrd_infra.models import (
     TrackSectionModel,
     TVDSectionModel,
 )
-from osrd_infra.models.schemas import Endpoint
+from osrd_infra.schemas.infra import Endpoint
 
 
 @dataclass

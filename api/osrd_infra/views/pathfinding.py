@@ -1,6 +1,6 @@
 import requests
 from django.conf import settings
-from django.contrib.gis.geos import LineString, Point
+from django.contrib.gis.geos import GEOSGeometry, LineString, Point
 from intervaltree import IntervalTree
 from rest_framework import mixins
 from rest_framework.exceptions import ParseError
@@ -8,7 +8,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from osrd_infra.models import Path
+from osrd_infra.models import PathModel, TrackSectionModel
 from osrd_infra.serializers import PathInputSerializer, PathSerializer
 from osrd_infra.utils import geo_transform, line_string_slice_points, reverse_format
 
@@ -74,15 +74,9 @@ def request_pathfinding(payload):
     return response.json()
 
 
-def fetch_track_sections(ids):
-
-    """TODO: Fix when new model implemented
-    related_names = ["geo_line_location", "track_section", "range_objects"]
-    tracks = TrackSectionEntity.objects.prefetch_related(*related_names).filter(pk__in=ids)
-
-    return {track.pk: track for track in tracks}
-    """
-    return {}
+def fetch_track_sections(ids, infra):
+    tracks = TrackSectionModel.objects.filter(obj_id__in=ids, infra=infra)
+    return {track.obj_id: track.into_obj() for track in tracks}
 
 
 def fetch_track_sections_from_payload(payload):
@@ -114,11 +108,11 @@ def get_geojson_path(payload, track_map):
     return LineString(geographic).json, LineString(schematic).json
 
 
-def parse_steps_input(steps):
+def parse_steps_input(steps, infra):
     track_ids = []
     for step in steps:
         [track_ids.append(waypoint["track_section"]) for waypoint in step["waypoints"]]
-    track_map = fetch_track_sections(track_ids)
+    track_map = fetch_track_sections(track_ids, infra)
     waypoints = []
     step_stop_times = []
     for step in steps:
@@ -130,14 +124,11 @@ def parse_steps_input(steps):
             except KeyError:
                 raise ParseError(f"Track section '{waypoint['track_section']}' doesn't exists")
 
-            if "offset" in waypoint:
-                offset = waypoint["offset"]
-            else:
-                geo = geo_transform(track.geo_line_location.geographic)
-                offset = geo.project_normalized(Point(waypoint["geo_coordinate"]))
-                offset = offset * track.track_section.length
+            geo = GEOSGeometry(track.geo.json())
+            offset = geo.project_normalized(Point(waypoint["geo_coordinate"]))
+            offset = offset * track.length
             parsed_waypoint = {
-                "track_section": f"track.{track.pk}",
+                "track_section": track.id,
                 "offset": offset,
             }
             # Allow both direction
@@ -228,7 +219,7 @@ def compute_curves(payload, track_map):
 def compute_path(path, data, owner):
     infra = data["infra"]
 
-    waypoints, step_stop_times = parse_steps_input(data["steps"])
+    waypoints, step_stop_times = parse_steps_input(data["steps"], infra)
     payload = request_pathfinding({"infra": infra.pk, "waypoints": waypoints})
 
     # Post treatment
@@ -258,7 +249,7 @@ class PathfindingView(
     GenericViewSet,
 ):
     serializer_class = PathSerializer
-    queryset = Path.objects.order_by("-created")
+    queryset = PathModel.objects.order_by("-created")
 
     def format_response(self, path):
         serializer = self.serializer_class(path)
@@ -286,6 +277,6 @@ class PathfindingView(
         input_serializer.is_valid(raise_exception=True)
         data = input_serializer.validated_data
 
-        path = Path()
+        path = PathModel()
         compute_path(path, data, self.request.user.sub)
         return Response(self.format_response(path), status=201)
