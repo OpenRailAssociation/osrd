@@ -1,22 +1,15 @@
 from rest_framework import serializers
-from rest_framework.serializers import (
-    Field,
-    ModelSerializer,
-    Serializer,
-    SerializerMethodField,
-)
+from rest_framework.serializers import Field, ModelSerializer, Serializer
 from rest_framework_gis.fields import GeometryField
 
 from osrd_infra.models import (
     Infra,
-    Path,
+    PathModel,
     RollingStock,
     Timetable,
     TrainSchedule,
     TrainScheduleLabel,
 )
-from osrd_infra.models.common import EnumSerializer
-from osrd_infra.models.schemas import ApplicableDirections, Endpoint
 
 
 # monkey patch rest_framework_gis so that it properly converts
@@ -59,7 +52,7 @@ class LightRollingStockSerializer(ModelSerializer):
 class PathInputSerializer(Serializer):
     class StepInputSerializer(Serializer):
         class WaypointInputSerializer(Serializer):
-            track_section = serializers.IntegerField(min_value=0)
+            track_section = serializers.CharField(max_length=255)
             geo_coordinate = serializers.JSONField(required=False)
             offset = serializers.FloatField(required=False)
 
@@ -67,7 +60,6 @@ class PathInputSerializer(Serializer):
         waypoints = serializers.ListField(child=WaypointInputSerializer(), allow_empty=False)
 
     infra = serializers.PrimaryKeyRelatedField(queryset=Infra.objects.all())
-    name = serializers.CharField(max_length=256)
     steps = serializers.ListField(
         min_length=2,
         child=StepInputSerializer(),
@@ -76,8 +68,8 @@ class PathInputSerializer(Serializer):
 
 class PathSerializer(ModelSerializer):
     class Meta:
-        model = Path
-        exclude = ["namespace", "payload"]
+        model = PathModel
+        exclude = ["infra", "payload", "vmax", "slopes", "curves"]
 
 
 # TIMETABLE
