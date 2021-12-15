@@ -2,7 +2,7 @@ WITH infra AS (
 	SELECT %s AS id
 ),
 routes AS (
-	SELECT jsonb_agg(x.data - 'geo' - 'sch')
+	SELECT coalesce(json_agg(x.data - 'geo' - 'sch'), '[]'::json) AS railjson
 	FROM (
 			SELECT *
 			FROM public.osrd_infra_routemodel
@@ -11,7 +11,7 @@ routes AS (
 	WHERE x.infra_id = infra.id
 ),
 operational_points AS (
-	SELECT jsonb_agg(x.data)
+	SELECT coalesce(json_agg(x.data), '[]'::json) AS railjson
 	FROM (
 			SELECT *
 			FROM public.osrd_infra_operationalpointmodel
@@ -20,7 +20,7 @@ operational_points AS (
 	WHERE x.infra_id = infra.id
 ),
 switch_types AS (
-	SELECT jsonb_agg(x.data)
+	SELECT coalesce(json_agg(x.data), '[]'::json) AS railjson
 	FROM (
 			SELECT *
 			FROM public.osrd_infra_switchtypemodel
@@ -29,7 +29,7 @@ switch_types AS (
 	WHERE x.infra_id = infra.id
 ),
 switches AS (
-	SELECT jsonb_agg(x.data - 'geo' - 'sch')
+	SELECT coalesce(json_agg(x.data - 'geo' - 'sch'), '[]'::json) AS railjson
 	FROM (
 			SELECT *
 			FROM public.osrd_infra_switchmodel
@@ -38,7 +38,7 @@ switches AS (
 	WHERE x.infra_id = infra.id
 ),
 track_sections AS (
-	SELECT jsonb_agg(x.data - 'geo' - 'sch')
+	SELECT coalesce(json_agg(x.data - 'geo' - 'sch'), '[]'::json) AS railjson
 	FROM (
 			SELECT *
 			FROM public.osrd_infra_tracksectionmodel
@@ -47,7 +47,7 @@ track_sections AS (
 	WHERE x.infra_id = infra.id
 ),
 track_section_links AS (
-	SELECT jsonb_agg(x.data)
+	SELECT coalesce(json_agg(x.data), '[]'::json) AS railjson
 	FROM (
 			SELECT *
 			FROM public.osrd_infra_tracksectionlinkmodel
@@ -56,7 +56,7 @@ track_section_links AS (
 	WHERE x.infra_id = infra.id
 ),
 signals AS (
-	SELECT jsonb_agg(x.data - 'geo' - 'sch')
+	SELECT coalesce(json_agg(x.data - 'geo' - 'sch'), '[]'::json) AS railjson
 	FROM (
 			SELECT *
 			FROM public.osrd_infra_signalmodel
@@ -65,7 +65,7 @@ signals AS (
 	WHERE x.infra_id = infra.id
 ),
 buffer_stops AS (
-	SELECT jsonb_agg(x.data - 'geo' - 'sch')
+	SELECT coalesce(json_agg(x.data - 'geo' - 'sch'), '[]'::json) AS railjson
 	FROM (
 			SELECT *
 			FROM public.osrd_infra_bufferstopmodel
@@ -74,7 +74,7 @@ buffer_stops AS (
 	WHERE x.infra_id = infra.id
 ),
 detectors AS (
-	SELECT jsonb_agg(x.data - 'geo' - 'sch')
+	SELECT coalesce(json_agg(x.data - 'geo' - 'sch'), '[]'::json) AS railjson
 	FROM (
 			SELECT *
 			FROM public.osrd_infra_detectormodel
@@ -83,7 +83,7 @@ detectors AS (
 	WHERE x.infra_id = infra.id
 ),
 tvd_sections AS (
-	SELECT jsonb_agg(x.data - 'geo' - 'sch')
+	SELECT coalesce(json_agg(x.data - 'geo' - 'sch'), '[]'::json) AS railjson
 	FROM (
 			SELECT *
 			FROM public.osrd_infra_tvdsectionmodel
@@ -92,7 +92,7 @@ tvd_sections AS (
 	WHERE x.infra_id = infra.id
 ),
 script_functions AS (
-	SELECT jsonb_agg(x.data)
+	SELECT coalesce(json_agg(x.data), '[]'::json) AS railjson
 	FROM (
 			SELECT *
 			FROM public.osrd_infra_railscriptfunctionmodel
@@ -101,7 +101,7 @@ script_functions AS (
 	WHERE x.infra_id = infra.id
 ),
 aspects AS (
-	SELECT jsonb_agg(x.data)
+	SELECT coalesce(json_agg(x.data), '[]'::json) AS railjson
 	FROM (
 			SELECT *
 			FROM public.osrd_infra_aspectmodel
@@ -113,29 +113,29 @@ SELECT json_build_object(
 		'version',
 		'2.0.0',
 		'operational_points',
-		operational_points.jsonb_agg,
+		operational_points.railjson,
 		'routes',
-		routes.jsonb_agg,
+		routes.railjson,
 		'switch_types',
-		switch_types.jsonb_agg,
+		switch_types.railjson,
 		'switches',
-		switches.jsonb_agg,
+		switches.railjson,
 		'track_section_links',
-		track_section_links.jsonb_agg,
+		track_section_links.railjson,
 		'track_sections',
-		track_sections.jsonb_agg,
+		track_sections.railjson,
 		'signals',
-		signals.jsonb_agg,
+		signals.railjson,
 		'buffer_stops',
-		buffer_stops.jsonb_agg,
+		buffer_stops.railjson,
 		'detectors',
-		detectors.jsonb_agg,
+		detectors.railjson,
 		'tvd_sections',
-		tvd_sections.jsonb_agg,
+		tvd_sections.railjson,
 		'script_functions',
-		script_functions.jsonb_agg,
+		script_functions.railjson,
 		'aspects',
-		aspects.jsonb_agg
+		aspects.railjson
 	)::TEXT
 FROM routes
 	CROSS JOIN switch_types
