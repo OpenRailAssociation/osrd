@@ -47,20 +47,20 @@ public class EnvelopePhysics {
      * The acceleration is assumed to be constant over <b>time</b> inside a step.
      * Interpolation thus needs to be done on a parabola, as envelopes are over <b>space</b>.
      */
-    public static EnvelopePoint intersectSteps(EnvelopePart ep1, int indexEp1, EnvelopePart ep2, int indexEp2) {
+    public static EnvelopePoint intersectSteps(EnvelopePart a, int stepIndexA, EnvelopePart b, int stepIndexB) {
         return intersectSteps(
-                ep1.positions[indexEp1], ep1.speeds[indexEp1],
-                ep1.positions[indexEp1 + 1], ep1.speeds[indexEp1 + 1],
-                ep2.positions[indexEp2], ep2.speeds[indexEp2],
-                ep2.positions[indexEp2 + 1], ep2.speeds[indexEp2 + 1]
+                a.getBeginPos(stepIndexA), a.getBeginSpeed(stepIndexA),
+                a.getEndPos(stepIndexA), a.getEndSpeed(stepIndexA),
+                b.getBeginPos(stepIndexB), b.getBeginSpeed(stepIndexB),
+                b.getEndPos(stepIndexB), b.getEndSpeed(stepIndexB)
         );
     }
 
     /** @see #intersectSteps(EnvelopePart, int, EnvelopePart, int) */
-    public static EnvelopePoint intersectSteps(EnvelopePart ep1, EnvelopePart ep2, double position) {
-        var indexEp1 = ep1.findStep(position);
-        var indexEp2 = ep2.findStep(position);
-        return intersectSteps(ep1, indexEp1, ep2, indexEp2);
+    public static EnvelopePoint intersectSteps(EnvelopePart a, EnvelopePart b, double position) {
+        var stepIndexA = a.findStep(position);
+        var stepIndexB = b.findStep(position);
+        return intersectSteps(a, stepIndexA, b, stepIndexB);
     }
 
     /** @see #intersectSteps(EnvelopePart, int, EnvelopePart, int) */

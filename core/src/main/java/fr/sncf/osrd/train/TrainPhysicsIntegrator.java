@@ -54,9 +54,20 @@ public class TrainPhysicsIntegrator {
         var weightForce = - rollingStock.mass * Constants.GRAVITY * Math.sin(angle);
         this.weightForce = weightForce;
         this.rollingStock = rollingStock;
-        this.rollingResistance = rollingStock.rollingResistance(currentSpeed);
+        this.rollingResistance = getRollingResistance(rollingStock, currentSpeed);
         assert rollingResistance >= 0.;
         this.inertia = rollingStock.mass * rollingStock.inertiaCoefficient;
+    }
+
+    /**
+     * Gets the rolling resistance at a given speed, which is a force that always goes
+     * opposite to the train's movement direction
+     */
+    public static double getRollingResistance(RollingStock rollingStock, double speed) {
+        speed = Math.abs(speed);
+        // this formula is called the Davis equation.
+        // it's completely empirical, and models the drag and friction forces
+        return rollingStock.A + rollingStock.B * speed + rollingStock.C * speed * speed;
     }
 
     /**

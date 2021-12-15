@@ -59,7 +59,7 @@ public final class EnvelopeBuilder {
     public void addPart(EnvelopePart part) {
         changes.add(new EnvelopeChange(part.getBeginPos(), part, BEGIN));
         for (int i = 1; i < part.stepCount(); i++)
-            changes.add(new EnvelopeChange(part.positions[i], part, INTERMEDIATE));
+            changes.add(new EnvelopeChange(part.getPointPos(i), part, INTERMEDIATE));
         changes.add(new EnvelopeChange(part.getEndPos(), part, END));
     }
 
