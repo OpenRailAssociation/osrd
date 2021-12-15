@@ -34,6 +34,10 @@ public class RJSSwitchType implements Identified {
         return id;
     }
 
+    public RJSObjectRef<RJSSwitchType> getRef() {
+        return new RJSObjectRef<>(this.id, "SwitchType");
+    }
+
     public static class SwitchPortConnection {
 
         @Json(name = "src")
@@ -58,12 +62,8 @@ public class RJSSwitchType implements Identified {
         }
     }
 
-    public static final String CLASSIC_NAME = "CLASSIC_SWITCH";
-
-    public static final RJSObjectRef<RJSSwitchType> CLASSIC_REF = new RJSObjectRef<>("CLASSIC_SWITCH", "switch_type");
-
     public static final RJSSwitchType CLASSIC_TYPE = new RJSSwitchType(
-            CLASSIC_NAME,
+            "classic_switch",
             List.of("base", "left", "right"),
             Map.of(
                 "LEFT", List.of(new SwitchPortConnection("base", "left", true)),
@@ -88,7 +88,7 @@ public class RJSSwitchType implements Identified {
             double positionChangeDelay) {
         return new RJSSwitch(
             id,
-            new RJSObjectRef<>(CLASSIC_NAME, "switch_type"),
+            CLASSIC_TYPE.getRef(),
             Map.of("base", base, "left", left, "right", right),
             positionChangeDelay
         );
