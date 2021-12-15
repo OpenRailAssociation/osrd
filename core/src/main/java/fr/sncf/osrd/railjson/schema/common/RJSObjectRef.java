@@ -61,30 +61,30 @@ public final class RJSObjectRef<T extends Identified> {
     }
 
     public TrackSection getTrack(Map<String, TrackSection> tracks) throws InvalidInfraException {
-        return parseRef(tracks, "track_section");
+        return parseRef(tracks, "TrackSection");
     }
 
     public TrackBuilder getTrackBuilder(Map<String, TrackBuilder> tracks) throws InvalidInfraException {
-        return parseRef(tracks, "track_section");
+        return parseRef(tracks, "TrackSection");
     }
 
     public Detector getDetector(HashMap<String, Waypoint> waypoints) throws InvalidInfraException {
-        return (Detector) parseRef(waypoints, "detector");
+        return (Detector) parseRef(waypoints, "Detector");
     }
 
     public BufferStop getBufferStop(HashMap<String, Waypoint> waypoints) throws InvalidInfraException {
-        return (BufferStop) parseRef(waypoints, "buffer_stop");
+        return (BufferStop) parseRef(waypoints, "BufferStop");
     }
 
     public Waypoint getWaypoint(HashMap<String, Waypoint> waypoints) throws InvalidInfraException {
-        return parseRef(waypoints, Set.of("detector", "buffer_stop"));
+        return parseRef(waypoints, Set.of("Detector", "BufferStop"));
     }
 
     public TVDSection getTVDSection(HashMap<String, TVDSection> tvdSectionsMap) throws InvalidInfraException {
-        return parseRef(tvdSectionsMap, "tvd_section");
+        return parseRef(tvdSectionsMap, "TVDSection");
     }
 
     public RJSSwitchType getSwitchType(HashMap<String, RJSSwitchType> switchTypeMap) throws InvalidInfraException {
-        return parseRef(switchTypeMap, "switch_type");
+        return parseRef(switchTypeMap, "SwitchType");
     }
 }

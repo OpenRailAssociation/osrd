@@ -3,7 +3,6 @@ from django.core.cache import cache
 from django.http import HttpResponse
 from rest_framework import mixins
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from osrd_infra.models import Infra
