@@ -284,14 +284,13 @@ public abstract class EnvelopeOverlayBuilder implements StepConsumer {
 
     private void startOverlay(
             EnvelopePartMeta meta,
-            boolean physicallyAccurate,
             double startPosition,
             double startSpeed
     ) {
         assert mode == Mode.SCANNING;
         assert overlayPartBuilder == null;
         mode = Mode.OVERLAYING;
-        overlayPartBuilder = new EnvelopePartBuilder(meta, physicallyAccurate, startPosition, startSpeed);
+        overlayPartBuilder = new EnvelopePartBuilder(meta, startPosition, startSpeed);
         lastOverlayPos = startPosition;
         lastOverlaySpeed = startSpeed;
     }
@@ -299,7 +298,6 @@ public abstract class EnvelopeOverlayBuilder implements StepConsumer {
     /** Starts an overlay at the given position, keeping the envelope continuous */
     public void startContinuousOverlay(
             EnvelopePartMeta meta,
-            boolean physicallyAccurate,
             double startPosition
     ) {
         if (!scanUntil(startPosition))
@@ -310,7 +308,7 @@ public abstract class EnvelopeOverlayBuilder implements StepConsumer {
             startSpeed = part.interpolateSpeed(stepIndex, startPosition);
         else
             startSpeed = basePartSlice.getEndSpeed();
-        startOverlay(meta, physicallyAccurate, startPosition, startSpeed);
+        startOverlay(meta, startPosition, startSpeed);
     }
 
     private void completeOverlay() {

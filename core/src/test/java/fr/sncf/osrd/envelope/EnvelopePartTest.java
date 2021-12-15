@@ -9,7 +9,7 @@ class EnvelopePartTest {
     @Test
     void interpolateSpeedTest() {
         var ep = EnvelopePart.generateTimes(
-                null, false,
+                null,
                 new double[] {1.5, 5},
                 new double[] {3, 4}
         );
@@ -21,7 +21,7 @@ class EnvelopePartTest {
     @Test
     void getRangeIndex() {
         var ep = EnvelopePart.generateTimes(
-                null, false,
+                null,
                 new double[] {1.5, 3, 5},
                 new double[] {3, 4, 4}
         );
@@ -36,17 +36,17 @@ class EnvelopePartTest {
     @Test
     void testEquals() {
         var ep1 = EnvelopePart.generateTimes(
-                null, false,
+                null,
                 new double[] {1.5, 3, 5},
                 new double[] {3, 4, 4}
         );
         var ep2 = EnvelopePart.generateTimes(
-                null, false,
+                null,
                 new double[] {1.5, 3, 5},
                 new double[] {3, 4, 4}
         );
         var ep3 = EnvelopePart.generateTimes(
-                new EnvelopeTestMeta(), false,
+                new EnvelopeTestMeta(),
                 new double[] {1.5, 3, 5},
                 new double[] {3, 4, 4}
         );
