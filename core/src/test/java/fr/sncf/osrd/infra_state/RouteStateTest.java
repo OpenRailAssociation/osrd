@@ -139,7 +139,7 @@ public class RouteStateTest {
         var oldSwitch = rjsInfra.switches.iterator().next();
         var newSwitch = new RJSSwitch(
                 "switch-foo-42",
-                RJSSwitchType.CLASSIC_REF,
+                RJSSwitchType.CLASSIC_TYPE.getRef(),
                 Map.of(
                     "base", oldSwitch.ports.get("base"),
                     "left", oldSwitch.ports.get("left"),
@@ -191,7 +191,7 @@ public class RouteStateTest {
         var oldSwitch = rjsInfra.switches.iterator().next();
         var newSwitch = new RJSSwitch(
                 "switch-foo-42",
-                RJSSwitchType.CLASSIC_REF,
+                RJSSwitchType.CLASSIC_TYPE.getRef(),
                 Map.of(
                         "base", oldSwitch.ports.get("base"),
                         "left", oldSwitch.ports.get("left"),
