@@ -6,6 +6,7 @@
 [![Core](https://github.com/DGEXSolutions/osrd/actions/workflows/core.yml/badge.svg)](https://github.com/DGEXSolutions/osrd/actions/workflows/core.yml)
 [![API](https://github.com/DGEXSolutions/osrd/actions/workflows/api.yml/badge.svg)](https://github.com/DGEXSolutions/osrd/actions/workflows/api.yml)
 [![Front](https://github.com/DGEXSolutions/osrd/actions/workflows/front.yml/badge.svg)](https://github.com/DGEXSolutions/osrd/actions/workflows/front.yml)
+[![codecov](https://codecov.io/gh/DGEXSolutions/osrd/branch/dev/graph/badge.svg?token=O3NAHQ01NO)](https://codecov.io/gh/DGEXSolutions/osrd)
 
 ## What is OSRD?
 

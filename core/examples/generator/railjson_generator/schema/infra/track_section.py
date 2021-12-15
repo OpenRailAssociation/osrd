@@ -1,15 +1,16 @@
-import infra
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
 from railjson_generator.schema.infra.direction import ApplicableDirection, Direction
 from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
 from railjson_generator.schema.infra.link import Link
+from railjson_generator.schema.infra.make_geo_data import make_geo_lines, make_geo_points
 from railjson_generator.schema.infra.operational_point import OperationalPointPart
-from railjson_generator.schema.infra.range_elements import Slope, Curve, SpeedSection
+from railjson_generator.schema.infra.range_elements import Curve, Slope, SpeedSection
 from railjson_generator.schema.infra.signal import Signal
 from railjson_generator.schema.infra.waypoint import BufferStop, Detector, Waypoint
-from railjson_generator.schema.infra.make_geo_data import make_geo_points, make_geo_lines
+
+import infra
 
 
 def _track_id():
@@ -108,14 +109,11 @@ class TrackSection:
             speed_sections=[speed_limit.to_rjs() for speed_limit in self.speed_limits],
             catenary_sections=[],
             signaling_sections=[],
-            **geo_data
+            **geo_data,
         )
 
     def make_rjs_ref(self):
-        return infra.ObjectReference(
-            id=self.label,
-            type="track_section"
-        )
+        return infra.ObjectReference(id=self.label, type=type(self).__name__)
 
     def get_coordinates_at_offset(self, offset):
         if self.begin_coordinates is None or self.end_coordinates is None:
