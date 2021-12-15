@@ -340,8 +340,9 @@ public class RailJSONParser {
             throws InvalidInfraException {
         var beginID = nodeIDs.get(trackSection.beginEndpoint());
         var endID = nodeIDs.get(trackSection.endEndpoint());
+        var trackLine = trackSection.sch == null ? null : trackSection.sch.getLine();
         var infraTrackSection = trackGraph.makeTrackSection(beginID, endID, trackSection.id,
-                trackSection.length, trackSection.sch.getLine());
+                trackSection.length, trackLine);
 
         // Parse speed limits
         for (var rjsSpeedLimits : trackSection.speedSections) {
