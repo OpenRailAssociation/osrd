@@ -15,13 +15,15 @@ public final class EnvelopePart {
     /** Metadata about his envelope part */
     public final EnvelopePartMeta meta;
 
+    /* !!! These arrays must stay private, as even public final arrays are mutable !!! */
+
     /** A list of N spacial offsets */
-    public final double[] positions;
+    private final double[] positions;
     /** A list of N speeds, one per position */
-    public final double[] speeds;
+    private final double[] speeds;
 
     /** A list of N - 1 time deltas between positions */
-    public final double[] times;
+    private final double[] times;
 
     /** Creates an EnvelopePart */
     @SuppressFBWarnings({"EI_EXPOSE_REP2"})
@@ -136,6 +138,30 @@ public final class EnvelopePart {
 
     public double getEndSpeed() {
         return getEndSpeed(stepCount() - 1);
+    }
+
+    public double getPointPos(int pointIndex) {
+        return positions[pointIndex];
+    }
+
+    public double getPointSpeed(int pointIndex) {
+        return speeds[pointIndex];
+    }
+
+    // endregion
+
+    // region CLONE
+
+    public double[] clonePositions() {
+        return positions.clone();
+    }
+
+    public double[] cloneSpeeds() {
+        return speeds.clone();
+    }
+
+    public double[] cloneTimes() {
+        return times.clone();
     }
 
     // endregion
@@ -310,6 +336,10 @@ public final class EnvelopePart {
             sliced.times[0] = interpolatedTime;
         }
         return sliced;
+    }
+
+    public EnvelopePart slice(EnvelopePartPosition begin, EnvelopePartPosition end) {
+        return slice(begin.getStepIndex(), begin.getPosition(), end.getStepIndex(), end.getPosition());
     }
 
     /**

@@ -2,6 +2,7 @@ package fr.sncf.osrd.train;
 
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 
 
 /**
@@ -9,14 +10,19 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * There must be a RollingStock instance per train on the network.
  */
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public class RollingStock {
+public class RollingStock implements PhysicsRollingStock {
     public final String id;
 
     public final double A; // in newtons
     public final double B; // in newtons / (m/s)
     public final double C; // in newtons / (m/s^2)
 
+    /** the kind of deceleration input of the train. It can be:
+     * a constant value
+     * the maximum possible deceleration value */
     public final RollingStock.GammaType gammaType;
+
+    /** the deceleration of the train, in m/s^2 */
     public final double gamma;
 
     public final String source;
@@ -45,6 +51,9 @@ public class RollingStock {
     /** The mass of the train, in kilograms. */
     public final double mass;
 
+    /** Defined as mass * inertiaCoefficient */
+    public final double inertia;
+
     /**
      * Inertia coefficient.
      * The mass alone isn't sufficient to compute accelerations, as the wheels and internals
@@ -61,15 +70,42 @@ public class RollingStock {
      */
     public final TractiveEffortPoint[] tractiveEffortCurve;
 
+    @Override
+    public double getMass() {
+        return mass;
+    }
+
+    @Override
+    public double getInertia() {
+        return inertia;
+    }
+
+    @Override
+    public double getLength() {
+        return length;
+    }
+
+
     /**
      * Gets the rolling resistance at a given speed, which is a force that always goes
      * opposite to the train's movement direction
      */
-    public double rollingResistance(double speed) {
+    @Override
+    public double getRollingResistance(double speed) {
         speed = Math.abs(speed);
         // this formula is called the Davis equation.
         // it's completely empirical, and models the drag and friction forces
         return A + B * speed + C * speed * speed;
+    }
+
+    @Override
+    public double getMaxBrakingForce(double speed) {
+        return gamma * inertia;
+    }
+
+    @Override
+    public GammaType getGammaType() {
+        return gammaType;
     }
 
     public enum GammaType {
@@ -87,6 +123,11 @@ public class RollingStock {
         }
     }
 
+    /** Returns Gamma */
+    public double getDeceleration() {
+        return - gamma;
+    }
+
     /**
      * Returns the max tractive effort at a given speed.
      * @param speed the speed to compute the max tractive effort for
@@ -95,7 +136,7 @@ public class RollingStock {
     public double getMaxEffort(double speed) {
         double maxEffort = 0.0;
         for (var dataPoint : tractiveEffortCurve) {
-            if (dataPoint.speed > speed)
+            if (dataPoint.speed > Math.abs(speed))
                 break;
             maxEffort = dataPoint.maxEffort;
         }
@@ -141,5 +182,6 @@ public class RollingStock {
         this.inertiaCoefficient = inertiaCoefficient;
         this.features = features;
         this.tractiveEffortCurve = tractiveEffortCurve;
+        this.inertia = mass * inertiaCoefficient;
     }
 }
