@@ -15,12 +15,14 @@ public class EnvelopeTestUtils {
     ) {
         var lastIndex = positions.length - 1;
         if (!isBackward) {
-            builder.startContinuousOverlay(meta, positions[0]);
+            builder.cursor.findPosition(positions[0]);
+            builder.startContinuousOverlay(meta);
             for (int i = 1; i < positions.length - 1; i++)
                 assertFalse(builder.addStep(positions[i], speeds[i]));
             assertTrue(builder.addStep(positions[lastIndex], speeds[lastIndex]));
         } else {
-            builder.startContinuousOverlay(meta, positions[lastIndex]);
+            builder.cursor.findPosition(positions[lastIndex]);
+            builder.startContinuousOverlay(meta);
             for (int i = lastIndex - 1; i > 0; i--)
                 assertFalse(builder.addStep(positions[i], speeds[i]));
             assertTrue(builder.addStep(positions[0], speeds[0]));
@@ -34,9 +36,9 @@ public class EnvelopeTestUtils {
     static void assertEquals(EnvelopePart expected, EnvelopePart actual, double delta) {
         Assertions.assertSame(expected.meta, actual.meta);
 
-        Assertions.assertArrayEquals(expected.positions, actual.positions, delta);
-        Assertions.assertArrayEquals(expected.speeds, actual.speeds, delta);
-        Assertions.assertArrayEquals(expected.times, actual.times, delta);
+        Assertions.assertArrayEquals(expected.clonePositions(), actual.clonePositions(), delta);
+        Assertions.assertArrayEquals(expected.cloneSpeeds(), actual.cloneSpeeds(), delta);
+        Assertions.assertArrayEquals(expected.cloneTimes(), actual.cloneTimes(), delta);
     }
 
     static void assertEquals(Envelope expected, Envelope actual) {

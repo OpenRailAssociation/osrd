@@ -62,6 +62,7 @@ dependencies {
     // for debug UI
     implementation 'org.graphstream:gs-core:2.0'  // LGLPv3
     implementation 'org.graphstream:gs-ui-swing:2.0'  // LGLPv3
+    implementation 'com.github.yannrichet:JMathPlot:1.0.1' // BSD
 
     // the logging API stub
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'  // MIT

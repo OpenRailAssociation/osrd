@@ -35,16 +35,16 @@ class EnvelopeBuilderTest {
         assertEquals(3, envelope.size());
         assertEquals(meta1, envelope.get(0).meta);
         assertEquals(4, envelope.get(0).pointCount());
-        assertEquals(3, envelope.get(0).positions[3], 0.2);
-        assertEquals(3.5, envelope.get(0).speeds[3], 0.2);
+        assertEquals(3, envelope.get(0).getPointPos(3), 0.2);
+        assertEquals(3.5, envelope.get(0).getPointSpeed(3), 0.2);
 
         assertEquals(meta2, envelope.get(1).meta);
         assertEquals(2, envelope.get(1).pointCount());
 
         assertEquals(meta1, envelope.get(2).meta);
         assertEquals(3, envelope.get(2).pointCount());
-        assertEquals(9.5, envelope.get(2).positions[0], 0.2);
-        assertEquals(3.5, envelope.get(2).speeds[0], 0.2);
+        assertEquals(9.5, envelope.get(2).getPointPos(0), 0.2);
+        assertEquals(3.5, envelope.get(2).getPointSpeed(0), 0.2);
     }
 
     @Test
