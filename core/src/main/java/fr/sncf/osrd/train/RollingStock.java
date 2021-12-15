@@ -45,6 +45,9 @@ public class RollingStock {
     /** The mass of the train, in kilograms. */
     public final double mass;
 
+    /** Defined as mass * inertiaCoefficient */
+    public final double inertia;
+
     /**
      * Inertia coefficient.
      * The mass alone isn't sufficient to compute accelerations, as the wheels and internals
@@ -141,5 +144,6 @@ public class RollingStock {
         this.inertiaCoefficient = inertiaCoefficient;
         this.features = features;
         this.tractiveEffortCurve = tractiveEffortCurve;
+        this.inertia = mass * inertiaCoefficient;
     }
 }
