@@ -7,29 +7,20 @@ public final class Envelope  {
     private final EnvelopePart[] parts;
     public final boolean spaceContinuous;
     public final boolean continuous;
-    public final boolean physicallyAccurate;
 
-    public int size() {
-        return parts.length;
-    }
+    // region CONSTRUCTORS
 
-    public EnvelopePart get(int i) {
-        return parts[i];
-    }
-
-    private Envelope(EnvelopePart[] parts, boolean spaceContinuous, boolean continuous, boolean physicallyAccurate) {
+    private Envelope(EnvelopePart[] parts, boolean spaceContinuous, boolean continuous) {
         this.parts = parts;
         this.spaceContinuous = spaceContinuous;
         this.continuous = continuous;
-        this.physicallyAccurate = physicallyAccurate;
     }
 
     /** Create a new Envelope */
     public static Envelope make(EnvelopePart... parts) {
         boolean spaceContinuous = arePartsSpaceContinuous(parts);
         boolean continuous = spaceContinuous && arePartsSpeedContinuous(parts);
-        boolean physicallyAccurate = continuous && arePartsPhysicallyAccurate(parts);
-        return new Envelope(parts, spaceContinuous, continuous, physicallyAccurate);
+        return new Envelope(parts, spaceContinuous, continuous);
     }
 
     private static boolean arePartsSpaceContinuous(EnvelopePart[] parts) {
@@ -46,10 +37,17 @@ public final class Envelope  {
         return true;
     }
 
-    private static boolean arePartsPhysicallyAccurate(EnvelopePart[] parts) {
-        for (var part : parts)
-            if (!part.physicallyAccurate)
-                return false;
-        return true;
+    // endregion
+
+    // region GETTERS
+
+    public int size() {
+        return parts.length;
     }
+
+    public EnvelopePart get(int i) {
+        return parts[i];
+    }
+
+    // endregion
 }
