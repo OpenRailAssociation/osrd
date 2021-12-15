@@ -76,7 +76,6 @@ public final class EnvelopeBuilder {
         flushResultPart();
         currentPartBuilder = new EnvelopePartBuilder(
                 newMinPart.meta,
-                newMinPart.physicallyAccurate,
                 initialPosition,
                 initialSpeed
         );

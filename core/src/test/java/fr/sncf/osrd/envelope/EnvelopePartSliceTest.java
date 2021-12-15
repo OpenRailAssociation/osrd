@@ -12,12 +12,12 @@ public class EnvelopePartSliceTest {
     void sliceIndex() {
         var testMeta = new EnvelopeTestMeta();
         var ep1 = EnvelopePart.generateTimes(
-                testMeta, false,
+                testMeta,
                 new double[] {1.5, 3, 5},
                 new double[] {3, 4, 4}
         );
         var ep2 = EnvelopePart.generateTimes(
-                testMeta, false,
+                testMeta,
                 new double[] {1.5, 3},
                 new double[] {3, 4}
         );
@@ -30,7 +30,7 @@ public class EnvelopePartSliceTest {
     void sliceIndexFull() {
         var testMeta = new EnvelopeTestMeta();
         var ep1 = EnvelopePart.generateTimes(
-                testMeta, false,
+                testMeta,
                 new double[] {1.5, 3, 5},
                 new double[] {3, 3, 4}
         );
@@ -43,7 +43,7 @@ public class EnvelopePartSliceTest {
     void sliceIndexEmpty() {
         var testMeta = new EnvelopeTestMeta();
         var ep1 = EnvelopePart.generateTimes(
-                testMeta, false,
+                testMeta,
                 new double[] {1.5, 3, 5},
                 new double[] {3, 3, 4}
         );
@@ -55,7 +55,7 @@ public class EnvelopePartSliceTest {
     void sliceOffsetEmpty() {
         var testMeta = new EnvelopeTestMeta();
         var ep1 = EnvelopePart.generateTimes(
-                testMeta, false,
+                testMeta,
                 new double[] {1.5, 3, 5},
                 new double[] {3, 3, 4}
         );
@@ -67,7 +67,7 @@ public class EnvelopePartSliceTest {
     void sliceOffsetFull() {
         var testMeta = new EnvelopeTestMeta();
         var ep1 = EnvelopePart.generateTimes(
-                testMeta, false,
+                testMeta,
                 new double[] {1.5, 3, 5},
                 new double[] {3, 3, 4}
         );
@@ -79,13 +79,13 @@ public class EnvelopePartSliceTest {
     void sliceOffsetInterpolate() {
         var testMeta = new EnvelopeTestMeta();
         var ep1 = EnvelopePart.generateTimes(
-                testMeta, false,
+                testMeta,
                 new double[] {0, 3},
                 new double[] {3.46, 0}
         );
         var slice = ep1.slice(Double.NEGATIVE_INFINITY, 2);
         var expectedSlice = new EnvelopePart(
-                testMeta, false,
+                testMeta,
                 new double[] {0, 2},
                 new double[] {3.46, 2},
                 new double[] {0.73}

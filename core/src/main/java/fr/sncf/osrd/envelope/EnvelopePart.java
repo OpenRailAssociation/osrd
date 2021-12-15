@@ -15,9 +15,6 @@ public final class EnvelopePart {
     /** Metadata about his envelope part */
     public final EnvelopePartMeta meta;
 
-    /** Whether the train can actually follow this envelope part */
-    public final boolean physicallyAccurate;
-
     /** A list of N spacial offsets */
     public final double[] positions;
     /** A list of N speeds, one per position */
@@ -30,7 +27,6 @@ public final class EnvelopePart {
     @SuppressFBWarnings({"EI_EXPOSE_REP2"})
     public EnvelopePart(
             EnvelopePartMeta meta,
-            boolean physicallyAccurate,
             double[] positions,
             double[] speeds,
             double[] times
@@ -42,7 +38,6 @@ public final class EnvelopePart {
         assert checkNaNFree(speeds) && checkPositive(speeds);
         assert checkNaNFree(times) && checkPositive(times) && checkNonZero(times);
         this.meta = meta;
-        this.physicallyAccurate = physicallyAccurate;
 
         this.positions = positions;
         this.speeds = speeds;
@@ -52,13 +47,11 @@ public final class EnvelopePart {
     /** Creates an envelope part by generating step times from speeds and positions */
     public static EnvelopePart generateTimes(
             EnvelopePartMeta meta,
-            boolean physicallyAccurate,
             double[] positions,
             double[] speeds
     ) {
         return new EnvelopePart(
                 meta,
-                physicallyAccurate,
                 positions,
                 speeds,
                 computeTimes(positions, speeds)
@@ -237,7 +230,6 @@ public final class EnvelopePart {
         var sliceTimes = Arrays.copyOfRange(times, beginStepIndex, endStepIndex);
         return new EnvelopePart(
                 meta,
-                physicallyAccurate,
                 slicePos,
                 sliceSpeeds,
                 sliceTimes
@@ -347,7 +339,6 @@ public final class EnvelopePart {
         if (o == null || getClass() != o.getClass()) return false;
         EnvelopePart that = (EnvelopePart) o;
         return (meta == that.meta
-                && physicallyAccurate == that.physicallyAccurate
                 && Arrays.equals(positions, that.positions)
                 && Arrays.equals(speeds, that.speeds)
                 && Arrays.equals(times, that.times));
@@ -356,7 +347,6 @@ public final class EnvelopePart {
     @Override
     public int hashCode() {
         int result = System.identityHashCode(meta);
-        result = 31 * result + Boolean.hashCode(physicallyAccurate);
         result = 31 * result + Arrays.hashCode(positions);
         result = 31 * result + Arrays.hashCode(speeds);
         result = 31 * result + Arrays.hashCode(times);

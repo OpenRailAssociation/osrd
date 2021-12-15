@@ -17,12 +17,12 @@ class EnvelopeBuilderTest {
          *    /             \
          */
         var ep1 = EnvelopePart.generateTimes(
-                meta1, false,
+                meta1,
                 new double[]{0, 1, 2, 4, 8, 11, 12},
                 new double[]{0, 2, 3, 4, 4, 3, 0}
         );
         var ep2 = EnvelopePart.generateTimes(
-                meta2, false,
+                meta2,
                 new double[]{0, 12},
                 new double[]{3.5, 3.5}
         );
@@ -50,12 +50,12 @@ class EnvelopeBuilderTest {
     @Test
     void disjointEnvelopePartsSameOutput() {
         var ep1 = EnvelopePart.generateTimes(
-                meta1, false,
+                meta1,
                 new double[]{0, 1},
                 new double[]{3, 2}
         );
         var ep2 = EnvelopePart.generateTimes(
-                meta1, false,
+                meta1,
                 new double[]{4, 6},
                 new double[]{0, 2}
         );
@@ -81,12 +81,12 @@ class EnvelopeBuilderTest {
          */
 
         var ep1 = EnvelopePart.generateTimes(
-                meta1, false,
+                meta1,
                 new double[]{0, 2},
                 new double[]{3, 0}
         );
         var ep2 = EnvelopePart.generateTimes(
-                meta2, false,
+                meta2,
                 new double[]{0, 8},
                 new double[]{4, 4}
         );
@@ -100,7 +100,7 @@ class EnvelopeBuilderTest {
         assertEquals(ep1, envelope.get(0));
 
         var part2Expected = EnvelopePart.generateTimes(
-                meta2, false,
+                meta2,
                 new double[]{2, 8},
                 new double[]{4, 4}
         );
@@ -117,12 +117,12 @@ class EnvelopeBuilderTest {
          */
 
         var ep1 = EnvelopePart.generateTimes(
-                meta1, false,
+                meta1,
                 new double[]{0, 1, 3},
                 new double[]{0, 1, 2}
         );
         var ep2 = EnvelopePart.generateTimes(
-                meta2, false,
+                meta2,
                 new double[]{0, 1, 3},
                 new double[]{1, 1, 1}
         );
@@ -149,12 +149,12 @@ class EnvelopeBuilderTest {
          */
 
         var ep1 = EnvelopePart.generateTimes(
-                meta1, false,
+                meta1,
                 new double[]{1, 2.5},
                 new double[]{0.5, 2}
         );
         var ep2 = EnvelopePart.generateTimes(
-                meta2, false,
+                meta2,
                 new double[]{0, 5},
                 new double[]{1, 1}
         );
@@ -167,17 +167,17 @@ class EnvelopeBuilderTest {
         assertEquals(3, envelope.size());
 
         var exectedEp1 = EnvelopePart.generateTimes(
-                meta2, false,
+                meta2,
                 new double[]{0, 1},
                 new double[]{1, 1}
         );
         var exectedEp2 = EnvelopePart.generateTimes(
-                meta1, false,
+                meta1,
                 new double[]{1, 1.5},
                 new double[]{0.5, 1}
         );
         var exectedEp3 = EnvelopePart.generateTimes(
-                meta2, false,
+                meta2,
                 new double[]{1.5, 5},
                 new double[]{1, 1}
         );

@@ -7,16 +7,13 @@ public final class EnvelopePartBuilder implements StepConsumer {
     private final DoubleArrayList speeds;
     private final DoubleArrayList times;
     private final EnvelopePartMeta meta;
-    private final boolean physicallyAccurate;
 
     /** Prepares an envelope builder */
     public EnvelopePartBuilder(
             EnvelopePartMeta meta,
-            boolean physicallyAccurate,
             double initialPosition,
             double initialSpeed) {
         this.meta = meta;
-        this.physicallyAccurate = physicallyAccurate;
         var positions = new DoubleArrayList();
         var speeds = new DoubleArrayList();
         positions.add(initialPosition);
@@ -76,9 +73,6 @@ public final class EnvelopePartBuilder implements StepConsumer {
 
     /** Creates an envelope part */
     public EnvelopePart build() {
-        return new EnvelopePart(
-                meta, physicallyAccurate,
-                positions.toArray(), speeds.toArray(), times.toArray()
-        );
+        return new EnvelopePart(meta, positions.toArray(), speeds.toArray(), times.toArray());
     }
 }
