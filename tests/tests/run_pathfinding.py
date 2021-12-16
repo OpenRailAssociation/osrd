@@ -5,15 +5,13 @@ import requests
 def get_track_section(base_url, infra_id):
     response = requests.get(base_url + f"infra/{infra_id}/railjson/")
     infra = response.json()
-    track_id = infra["track_sections"][0]["id"]
-    return int(track_id.split(".")[1])
+    return infra["track_sections"][0]["id"]
 
 
 def run_pathfinding(base_url, infra_id):
     track_id = get_track_section(base_url, infra_id)
     path_payload = {
         "infra": infra_id,
-        "name": "foo",
         "steps": [
             {
                 "stop_time": 0,

@@ -1,6 +1,10 @@
+import json
+from collections import defaultdict
+from typing import Mapping
+
 import requests
 from django.conf import settings
-from django.contrib.gis.geos import GEOSGeometry, LineString, Point
+from django.contrib.gis.geos import LineString, Point
 from intervaltree import IntervalTree
 from rest_framework import mixins
 from rest_framework.exceptions import ParseError
@@ -8,9 +12,11 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from osrd_infra.models import PathModel, TrackSectionModel
+from osrd_infra.models import OperationalPointModel, PathModel, TrackSectionModel
+from osrd_infra.schemas.infra import Direction, TrackSection
+from osrd_infra.schemas.path import PathPayload
 from osrd_infra.serializers import PathInputSerializer, PathSerializer
-from osrd_infra.utils import geo_transform, line_string_slice_points, reverse_format
+from osrd_infra.utils import line_string_slice_points
 
 
 def status_missing_field_keyerror(key_error: KeyError):
@@ -25,42 +31,31 @@ def try_get_field(manifest, field):
         return status_missing_field_keyerror(e)
 
 
-def payload_reverse_format(payload):
-    for route in payload["path"]:
-        route["route"] = reverse_format(route["route"])
-        for track in route["track_sections"]:
-            track["track_section"] = reverse_format(track["track_section"])
-    for step in payload["steps"]:
-        step["position"]["track_section"] = reverse_format(step["position"]["track_section"])
-    return payload
-
-
-def payload_fill_steps(payload, step_stop_times, track_map):
+def compute_path_payload(infra, back_payload, step_stop_times, track_map) -> PathPayload:
+    # Adapt steps from back format to middle
     stop_time_index = 0
-    for step in payload["steps"]:
+    for step in back_payload["steps"]:
+        # Add stop time
         if not step["suggestion"]:
             step["stop_time"] = step_stop_times[stop_time_index]
             stop_time_index += 1
         else:
             step["stop_time"] = 0
 
-        if "id" in step:
-            step["id"] = reverse_format(step["id"])
-            """TODO: Fix for new models
-            op = OperationalPointEntity.objects.get(entity_id=step["id"])
-            step["name"] = op.operational_point.name
-            """
+        # Retrieve name from operation point ID
+        op_id = step.pop("id", None)
+        if op_id is not None:
+            op = OperationalPointModel.objects.get(infra=infra, obj_id=op_id).into_obj()
+            step["name"] = op.name
 
-        track = track_map[step["position"]["track_section"]]
-        offset = step["position"]["offset"] / track.track_section.length
+        # Add geometry
+        track = track_map[step["track"]["id"]]
+        norm_offset = step["position"] / track["length"]
 
-        geo = geo_transform(track.geo_line_location.geographic)
-        step["geographic"] = geo.interpolate_normalized(offset).coords
+        step["geo"] = json.loads(track["geo"].interpolate_normalized(norm_offset).json)
+        step["sch"] = json.loads(track["sch"].interpolate_normalized(norm_offset).json)
 
-        schema = geo_transform(track.geo_line_location.schematic)
-        step["schematic"] = schema.interpolate_normalized(offset).coords
-
-    return payload
+    return PathPayload.parse_obj(back_payload)
 
 
 def request_pathfinding(payload):
@@ -74,45 +69,49 @@ def request_pathfinding(payload):
     return response.json()
 
 
-def fetch_track_sections(ids, infra):
+def fetch_track_sections(infra, ids):
     tracks = TrackSectionModel.objects.filter(obj_id__in=ids, infra=infra)
-    return {track.obj_id: track.into_obj() for track in tracks}
+    res = {}
+    for track in tracks:
+        # Avoid recompute line string each time
+        track.data["geo"] = LineString(track.data["geo"]["coordinates"])
+        track.data["sch"] = LineString(track.data["sch"]["coordinates"])
+        res[track.obj_id] = track.data
+    return res
 
 
-def fetch_track_sections_from_payload(payload):
+def fetch_track_sections_from_payload(infra, payload):
     ids = []
     for route in payload["path"]:
         for track in route["track_sections"]:
-            ids.append(track["track_section"])
-    return fetch_track_sections(ids)
+            ids.append(track["track"]["id"])
+    return fetch_track_sections(infra, ids)
 
 
-def get_geojson_path(payload, track_map):
+def get_geojson_path(payload: PathPayload, track_map: Mapping[str, TrackSection]):
     geographic, schematic = [], []
 
-    for route in payload["path"]:
-        for track in route["track_sections"]:
-            track_entity = track_map[track["track_section"]]
-            geo = geo_transform(track_entity.geo_line_location.geographic)
-            schema = geo_transform(track_entity.geo_line_location.schematic)
-            track_length = track_entity.track_section.length
+    for path_step in payload.path:
+        for track_range in path_step.track_sections:
+            track = track_map[track_range.track.id]
 
             # normalize positions
-            begin = track["begin"] / track_length
-            end = track["end"] / track_length
-            assert begin >= 0.0 and begin <= 1.0
-            assert end >= 0.0 and end <= 1.0
+            norm_begin = track_range.begin / track["length"]
+            norm_end = track_range.end / track["length"]
+            assert norm_begin >= 0.0 and norm_begin <= 1.0
+            assert norm_end >= 0.0 and norm_end <= 1.0
 
-            geographic += line_string_slice_points(geo, begin, end)
-            schematic += line_string_slice_points(schema, begin, end)
-    return LineString(geographic).json, LineString(schematic).json
+            geographic += line_string_slice_points(track["geo"], norm_begin, norm_end)
+            schematic += line_string_slice_points(track["sch"], norm_begin, norm_end)
+    res = LineString(geographic).json, LineString(schematic).json
+    return res
 
 
 def parse_steps_input(steps, infra):
     track_ids = []
     for step in steps:
         [track_ids.append(waypoint["track_section"]) for waypoint in step["waypoints"]]
-    track_map = fetch_track_sections(track_ids, infra)
+    track_map = fetch_track_sections(infra, track_ids)
     waypoints = []
     step_stop_times = []
     for step in steps:
@@ -123,12 +122,15 @@ def parse_steps_input(steps, infra):
                 track = track_map[waypoint["track_section"]]
             except KeyError:
                 raise ParseError(f"Track section '{waypoint['track_section']}' doesn't exists")
-
-            geo = GEOSGeometry(track.geo.json())
-            offset = geo.project_normalized(Point(waypoint["geo_coordinate"]))
-            offset = offset * track.length
+            if "geo_coordinate" in waypoint:
+                offset = track["geo"].project_normalized(Point(waypoint["geo_coordinate"]))
+                offset = offset * track["length"]
+            elif "offset" in waypoint:
+                offset = waypoint["offset"]
+            else:
+                raise ParseError("waypoint missing offset or geo_coordinate")
             parsed_waypoint = {
-                "track_section": track.id,
+                "track_section": track["id"],
                 "offset": offset,
             }
             # Allow both direction
@@ -140,98 +142,80 @@ def parse_steps_input(steps, infra):
 
 
 def add_chart_point(result, position, value, field_name):
-    struct = {"position": position, field_name: value}
+    point = {"position": position, field_name: value}
     if len(result) < 2 or result[-2][field_name] != result[-1][field_name] or result[-1][field_name] != value:
-        result.append(struct)
+        result.append(point)
     else:
-        result[-1] = struct
+        result[-1] = point
 
 
-def create_chart(path_payload, track_to_tree, field_name, direction_sensitive=False):
+def create_chart(path_steps, track_to_tree, field_name, direction_sensitive=False):
     result = []
     offset = 0
-    for route in path_payload:
-        for track_range in route["track_sections"]:
-            begin = track_range["begin"]
-            end = track_range["end"]
-            tree = track_to_tree[track_range["track_section"]]
-            if begin < end:
-                for interval in sorted(tree.overlap(begin, end)):
+    for route in path_steps:
+        for track_range in route.track_sections:
+            tree = track_to_tree[track_range.track.id]
+            if track_range.direction == Direction.START_TO_STOP:
+                for interval in sorted(tree.overlap(track_range.begin, track_range.end)):
                     add_chart_point(result, offset, interval.data, field_name)
-                    offset += abs(max(begin, interval.begin) - min(end, interval.end))
+                    offset += abs(max(track_range.begin, interval.begin) - min(track_range.end, interval.end))
                     add_chart_point(result, offset, interval.data, field_name)
             else:
-                for interval in reversed(sorted(tree.overlap(end, begin))):
+                for interval in reversed(sorted(tree.overlap(track_range.end, track_range.begin))):
                     value = -interval.data if direction_sensitive else interval.data
                     add_chart_point(result, offset, value, field_name)
-                    offset += abs(max(end, interval.begin) - min(begin, interval.end))
+                    offset += abs(max(track_range.end, interval.begin) - min(track_range.begin, interval.end))
                     add_chart_point(result, offset, value, field_name)
     return result
 
 
-def create_tree_from_ranges(range_components, length, get_data, default_value=0):
-    tree = IntervalTree()
-    tree.addi(0, length, default_value)
-    for range_component in range_components:
-        start = range_component.start_offset
-        end = range_component.end_offset
-        if start < end:
-            data = get_data(range_component)
-            tree.chop(start, end)
-            tree.addi(start, end, data)
-    return tree
-
-
-def compute_vmax(payload, track_map):
-    tree_vmax = {}
+def compute_vmax(payload: PathPayload, track_map: Mapping[str, TrackSection]):
+    trees = defaultdict(IntervalTree)
     for track_id, track in track_map.items():
-        tree_vmax[track.entity_id] = create_tree_from_ranges(
-            track.range_objects.all(),
-            track.track_section.length,
-            lambda component: component.entity.speed_section_part.speed_section.speed_section.speed,
-            -1,
-        )
-    return create_chart(payload["path"], tree_vmax, "speed")
+        trees[track_id].addi(0, track["length"], -1)
+        for speed_section in track["speed_sections"]:
+            assert speed_section["begin"] < speed_section["end"]
+            trees[track_id].chop(speed_section["begin"], speed_section["end"])
+            trees[track_id].addi(speed_section["begin"], speed_section["end"], speed_section["speed"])
+    return create_chart(payload.path, trees, "speed")
 
 
-def compute_slopes(payload, track_map):
-    tree_slopes = {}
+def compute_slopes(payload: PathPayload, track_map: Mapping[str, TrackSection]):
+    trees = defaultdict(IntervalTree)
     for track_id, track in track_map.items():
-        tree_slopes[track.entity_id] = create_tree_from_ranges(
-            track.slope_set.all(),
-            track.track_section.length,
-            lambda component: component.gradient,
-        )
-    return create_chart(payload["path"], tree_slopes, "gradient", direction_sensitive=True)
+        trees[track_id].addi(0, track["length"], 0)
+        for slope_section in track["slopes"]:
+            assert slope_section["begin"] < slope_section["end"]
+            trees[track_id].chop(slope_section["begin"], slope_section["end"])
+            trees[track_id].addi(slope_section["begin"], slope_section["end"], slope_section["gradient"])
+    return create_chart(payload.path, trees, "gradient", direction_sensitive=True)
 
 
-def compute_curves(payload, track_map):
-    tree_curves = {}
+def compute_curves(payload: PathPayload, track_map: Mapping[str, TrackSection]):
+    trees = defaultdict(IntervalTree)
     for track_id, track in track_map.items():
-        tree_curves[track.entity_id] = create_tree_from_ranges(
-            track.curve_set.all(),
-            track.track_section.length,
-            lambda component: component.radius,
-        )
-    return create_chart(payload["path"], tree_curves, "radius", direction_sensitive=True)
+        trees[track_id].addi(0, track["length"], 0)
+        for curve_section in track["curves"]:
+            assert curve_section["begin"] < curve_section["end"]
+            trees[track_id].chop(curve_section["begin"], curve_section["end"])
+            trees[track_id].addi(curve_section["begin"], curve_section["end"], curve_section["radius"])
+    return create_chart(payload.path, trees, "radius", direction_sensitive=True)
 
 
-def compute_path(path, data, owner):
-    infra = data["infra"]
+def compute_path(path, request_data, owner):
+    infra = request_data["infra"]
 
-    waypoints, step_stop_times = parse_steps_input(data["steps"], infra)
+    waypoints, step_stop_times = parse_steps_input(request_data["steps"], infra)
     payload = request_pathfinding({"infra": infra.pk, "waypoints": waypoints})
 
     # Post treatment
-    payload = payload_reverse_format(payload)
-    track_map = fetch_track_sections_from_payload(payload)
-    payload = payload_fill_steps(payload, step_stop_times, track_map)
+    track_map = fetch_track_sections_from_payload(infra, payload)
+    payload = compute_path_payload(infra, payload, step_stop_times, track_map)
     geographic, schematic = get_geojson_path(payload, track_map)
 
-    path.name = data["name"]
     path.owner = owner
-    path.namespace = infra.namespace
-    path.payload = payload
+    path.infra = infra
+    path.payload = payload.dict()
     path.geographic = geographic
     path.schematic = schematic
     path.vmax = compute_vmax(payload, track_map)
@@ -275,8 +259,8 @@ class PathfindingView(
     def create(self, request):
         input_serializer = PathInputSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
-        data = input_serializer.validated_data
+        request_data = input_serializer.validated_data
 
         path = PathModel()
-        compute_path(path, data, self.request.user.sub)
+        compute_path(path, request_data, self.request.user.sub)
         return Response(self.format_response(path), status=201)

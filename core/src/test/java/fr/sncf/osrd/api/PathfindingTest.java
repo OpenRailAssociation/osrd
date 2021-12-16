@@ -1,20 +1,13 @@
 package fr.sncf.osrd.api;
 
-import static fr.sncf.osrd.Helpers.getBaseInfra;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.api.PathfindingEndpoint.PathfindingWaypoint;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.takes.rq.RqFake;
 import org.takes.rs.RsPrint;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Random;
-import java.util.stream.IntStream;
 
 public class PathfindingTest extends ApiTest {
     private static PathfindingWaypoint[] makeBidirectionalEndPoint(PathfindingWaypoint point) {
@@ -52,8 +45,8 @@ public class PathfindingTest extends ApiTest {
         assert response != null;
 
         assertEquals(2, response.path.size());
-        assertEquals("rt.buffer_stop_b->tde.foo_b-switch_foo", response.path.get(0).route);
-        assertEquals("rt.tde.foo_b-switch_foo->buffer_stop_c", response.path.get(1).route);
+        assertEquals("rt.buffer_stop_b->tde.foo_b-switch_foo", response.path.get(0).route.id.id);
+        assertEquals("rt.tde.foo_b-switch_foo->buffer_stop_c", response.path.get(1).route.id.id);
 
         assertEquals(2, response.steps.size());
         assertEquals("op.station_foo", response.steps.get(0).id);

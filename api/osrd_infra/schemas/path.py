@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -16,7 +16,7 @@ class PathStep(BaseModel):
 
 
 class Step(GeometryPointTrait, TrackLocationTrait):
-    name: str
+    name: Optional[str]
     suggestion: bool
     stop_time: float
 
@@ -40,7 +40,7 @@ class SlopePoint(BaseModel):
     gradient: float
 
 
-class Slope(BaseModel):
+class Slopes(BaseModel):
     __root__: List[SlopePoint]
 
 
@@ -49,5 +49,5 @@ class CurvePoint(BaseModel):
     radius: float
 
 
-class Curve(BaseModel):
+class Curves(BaseModel):
     __root__: List[CurvePoint]
