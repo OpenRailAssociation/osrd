@@ -6,6 +6,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.api.InfraManager.InfraLoadException;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.utils.graph.BiDijkstra;
 import fr.sncf.osrd.utils.graph.DistCostFunction;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -22,10 +23,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class PathfindingTracksEndpoint extends PathfindingEndpoint {
-    public static final JsonAdapter<TrackSectionRangeResult[][]> adapterResult = new Moshi
+    public static final JsonAdapter<DirectionalTrackRangeResult[][]> adapterResult = new Moshi
             .Builder()
+            .add(ID.Adapter.FACTORY)
             .build()
-            .adapter(TrackSectionRangeResult[][].class)
+            .adapter(DirectionalTrackRangeResult[][].class)
             .failOnUnknown();
 
 
@@ -115,7 +117,7 @@ public class PathfindingTracksEndpoint extends PathfindingEndpoint {
                 candidatePaths.add(newCandidate);
             }
 
-            var result = new TrackSectionRangeResult[reqWaypoints.length - 1][];
+            var result = new DirectionalTrackRangeResult[reqWaypoints.length - 1][];
 
             for (int i = 0; i < pathsToGoal.size(); i++) {
                 var path = FullPathArray.from(pathsToGoal.get(i));
@@ -129,21 +131,21 @@ public class PathfindingTracksEndpoint extends PathfindingEndpoint {
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-    private TrackSectionRangeResult[] fullPathToTrackSectionRange(
+    private DirectionalTrackRangeResult[] fullPathToTrackSectionRange(
             FullPathArray<TrackSection, BasicDirPathNode<TrackSection>> path
     ) {
-        var result = new ArrayList<TrackSectionRangeResult>();
+        var result = new ArrayList<DirectionalTrackRangeResult>();
         for (int i = 0; i < path.pathNodes.size() - 2; i++) {
             var node = path.pathNodes.get(i);
             if (node.direction == EdgeDirection.START_TO_STOP)
-                result.add(new TrackSectionRangeResult(node.edge.id, node.position, node.edge.length));
+                result.add(new DirectionalTrackRangeResult(node.edge.id, node.position, node.edge.length));
             else
-                result.add(new TrackSectionRangeResult(node.edge.id, node.position, 0));
+                result.add(new DirectionalTrackRangeResult(node.edge.id, node.position, 0));
         }
         var lastNode = path.pathNodes.get(path.pathNodes.size() - 1);
         var secondLastNode = path.pathNodes.get(path.pathNodes.size() - 2);
         assert lastNode.edge == secondLastNode.edge;
-        result.add(new TrackSectionRangeResult(lastNode.edge.id, secondLastNode.position, lastNode.position));
-        return result.toArray(new TrackSectionRangeResult[result.size()]);
+        result.add(new DirectionalTrackRangeResult(lastNode.edge.id, secondLastNode.position, lastNode.position));
+        return result.toArray(new DirectionalTrackRangeResult[result.size()]);
     }
 }

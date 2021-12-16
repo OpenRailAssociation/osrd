@@ -4,6 +4,9 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.takes.Take;
 
@@ -49,16 +52,18 @@ public abstract class PathfindingEndpoint implements Take {
     }
 
     @SuppressFBWarnings({"URF_UNREAD_FIELD"})
-    protected static class TrackSectionRangeResult {
-        @Json(name = "track_section")
-        private final String trackSection;
+    protected static class DirectionalTrackRangeResult {
+        @Json(name = "track")
+        private final RJSObjectRef<RJSTrackSection> trackSection;
         private final double begin;
         private final double end;
+        private final EdgeDirection direction;
 
-        protected TrackSectionRangeResult(String trackSection, double beginPosition, double endPosition) {
-            this.trackSection = trackSection;
-            this.begin = beginPosition;
-            this.end = endPosition;
+        protected DirectionalTrackRangeResult(String trackSectionID, double begin, double end) {
+            this.trackSection = new RJSObjectRef<RJSTrackSection>(trackSectionID, "TrackSection");
+            this.begin = begin;
+            this.end = end;
+            this.direction = begin < end ? EdgeDirection.START_TO_STOP : EdgeDirection.STOP_TO_START;
         }
     }
 }

@@ -1,4 +1,3 @@
-from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from osrd_infra.views import (
@@ -21,8 +20,3 @@ router.register("timetable", TimetableView, basename="timetable")
 router.register("train_schedule", TrainScheduleView, basename="train_schedule")
 
 urlpatterns = router.urls
-"""TODO: Fix
-urlpatterns = router.urls + [
-    path("schema/", SchemaView.as_view()),
-]
-"""
