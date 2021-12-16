@@ -87,47 +87,11 @@ public final class TrackSectionRange extends Range implements DeepComparable<Tra
         );
     }
 
-    /** Build a track section range given a direction and a desired length. */
-    public static TrackSectionRange makeNext(
-            TrackSection edge,
-            EdgeDirection direction,
-            double desiredLength
-    ) {
-        if (direction == EdgeDirection.START_TO_STOP)
-            return new TrackSectionRange(edge, direction, 0, Double.min(desiredLength, edge.length));
-        return new TrackSectionRange(edge, direction, edge.length, Double.max(edge.length - desiredLength, 0));
-    }
-
-    /** Build a track section range given a direction and a desired length. */
-    public static TrackSectionRange makePrev(
-            TrackSection edge,
-            EdgeDirection direction,
-            double desiredLength
-    ) {
-        if (direction == EdgeDirection.START_TO_STOP)
-            return new TrackSectionRange(edge, direction, Double.max(edge.length - desiredLength, 0), edge.length);
-        return new TrackSectionRange(edge, direction, Double.min(desiredLength, edge.length), 0);
-    }
-
     /** Check if a location is contained in the track section range */
     public boolean containsLocation(TrackSectionLocation location) {
         if (location.edge != edge)
             return false;
         return containsPosition(location.offset);
-    }
-
-    /** Get the available forward space of the edge */
-    public double forwardSpace() {
-        if (direction == EdgeDirection.START_TO_STOP)
-            return edge.length - end;
-        return end;
-    }
-
-    /** Get the available backwards space of the edge */
-    public double backwardsSpace() {
-        if (direction == EdgeDirection.START_TO_STOP)
-            return begin;
-        return begin - edge.length;
     }
 
     public TrackSectionLocation getBeginLocation() {
@@ -138,27 +102,6 @@ public final class TrackSectionRange extends Range implements DeepComparable<Tra
         return new TrackSectionLocation(edge, end);
     }
 
-    /** Expand the range of the track section by following its direction */
-    public void expandForward(double delta) {
-        if (direction == EdgeDirection.START_TO_STOP) {
-            end += delta;
-            assert end <= edge.length;
-            return;
-        }
-        end -= delta;
-        assert end >= 0.;
-    }
-
-    /** Expand the range of the track section backwards by following its direction */
-    public void expandBackwards(double delta) {
-        if (direction == EdgeDirection.START_TO_STOP) {
-            end -= delta;
-            assert end >= 0.;
-            return;
-        }
-        end += delta;
-        assert end <= edge.length;
-    }
 
     /** Shrink the range of the track section by following its direction */
     public void shrinkForward(double delta) {
@@ -168,17 +111,6 @@ public final class TrackSectionRange extends Range implements DeepComparable<Tra
             return;
         }
         begin -= delta;
-        assert begin >= end;
-    }
-
-    /** Shrink the range of the track section backwards by following its direction */
-    public void shrinkBackwards(double delta) {
-        if (direction == EdgeDirection.START_TO_STOP) {
-            begin -= delta;
-            assert begin <= end;
-            return;
-        }
-        begin += delta;
         assert begin >= end;
     }
 
@@ -197,13 +129,6 @@ public final class TrackSectionRange extends Range implements DeepComparable<Tra
                 left.direction,
                 Double.max(left.begin, right.begin),
                 Double.min(left.end, right.end));
-    }
-
-    /** Returns whether there is a common point between two ranges */
-    public boolean intersect(TrackSectionRange other) {
-        if (other.edge != edge)
-            return false;
-        return other.containsPosition(begin) || other.containsPosition(end);
     }
 
     @Override

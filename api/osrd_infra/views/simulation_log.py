@@ -5,7 +5,6 @@ from django.conf import settings
 from rest_framework.exceptions import APIException
 
 from osrd_infra.models import TrainSchedule
-from osrd_infra.utils import reverse_format
 
 
 class ServiceUnavailable(APIException):
@@ -159,18 +158,6 @@ def preprocess_stops(stop_reaches, train_schedule):
 def preprocess_response(response, train_schedule):
     assert len(response["trains"]) == 1
     train = next(iter(response["trains"].values()))
-
-    # Reformat objects id
-    for position in train["head_positions"]:
-        position["track_section"] = reverse_format(position["track_section"])
-    for position in train["tail_positions"]:
-        position["track_section"] = reverse_format(position["track_section"])
-    for route in response["routes_status"]:
-        route["route_id"] = reverse_format(route["route_id"])
-        route["start_track_section"] = reverse_format(route["start_track_section"])
-        route["end_track_section"] = reverse_format(route["end_track_section"])
-    for signal in response["signal_changes"]:
-        signal["signal_id"] = reverse_format(signal["signal_id"])
 
     return {
         "speeds": train["speeds"],
