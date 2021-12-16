@@ -11,7 +11,7 @@ from osrd_infra.models import (
     TrackSectionModel,
     TVDSectionModel,
 )
-from osrd_infra.models.schemas import TrackSection
+from osrd_infra.schemas.infra import TrackSection
 from osrd_infra.utils import track_section_range_geom
 
 from .layer_creator import LayerCreator
