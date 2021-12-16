@@ -10,6 +10,10 @@ import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteLocation;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.railjson.schema.common.ID;
+import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
+import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.PointValue;
 import fr.sncf.osrd.utils.TrackSectionLocation;
@@ -18,8 +22,6 @@ import fr.sncf.osrd.utils.graph.DistCostFunction;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.path.BasicPathNode;
 import fr.sncf.osrd.utils.graph.path.FullPathArray;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.rq.RqPrint;
@@ -31,10 +33,9 @@ import java.io.IOException;
 import java.util.*;
 
 public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
-    static final Logger logger = LoggerFactory.getLogger(PathfindingRoutesEndpoint.class);
-
     public static final JsonAdapter<PathfindingResult> adapterResult = new Moshi
             .Builder()
+            .add(ID.Adapter.FACTORY)
             .build()
             .adapter(PathfindingResult.class)
             .failOnUnknown();
@@ -258,7 +259,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
 
     @SuppressFBWarnings({"URF_UNREAD_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static class PathfindingResult {
-        public final List<RouteResult> path;
+        public final List<PathStepResult> path;
         public final List<StepResult> steps;
 
         private PathfindingResult() {
@@ -267,11 +268,15 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
         }
 
         void add(Route route, List<TrackSectionRange> trackSections) {
-            var routeResult = new RouteResult();
-            routeResult.route = route.id;
+            var routeResult = new PathStepResult();
+            routeResult.route = new RJSObjectRef<>(route.id, "Route");
             routeResult.trackSections = new ArrayList<>();
             for (var trackSection : trackSections) {
-                var trackSectionResult = new TrackSectionRangeResult(trackSection.edge.id,
+                if (trackSection.getBeginPosition() < trackSection.getEndPosition())
+                    assert trackSection.direction == EdgeDirection.START_TO_STOP;
+                else
+                    assert trackSection.direction == EdgeDirection.STOP_TO_START;
+                var trackSectionResult = new DirectionalTrackRangeResult(trackSection.edge.id,
                         trackSection.getBeginPosition(),
                         trackSection.getEndPosition());
                 routeResult.trackSections.add(trackSectionResult);
@@ -299,35 +304,38 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             steps.add(newStep);
         }
 
-        public static class RouteResult {
-            public String route;
+        public static class PathStepResult {
+            public RJSObjectRef<RJSRoute> route;
             @Json(name = "track_sections")
-            public List<TrackSectionRangeResult> trackSections;
+            public List<DirectionalTrackRangeResult> trackSections;
         }
 
         public static class StepResult {
             public String id;
-            public PositionResult position;
             public boolean suggestion;
+            public RJSObjectRef<RJSTrackSection> track;
+            public double position;
 
             /** Suggested operational points */
             StepResult(PointValue<OperationalPoint> op, TrackSection trackSection) {
                 this.id = op.value.id;
-                this.position = new PositionResult(trackSection.id, op.position);
                 this.suggestion = true;
+                this.track = new RJSObjectRef<>(trackSection.id, "TrackSection");
+                this.position = op.position;
             }
 
             /** Given step */
-            StepResult(TrackSection trackSection, double offset) {
-                this.position = new PositionResult(trackSection.id, offset);
+            StepResult(TrackSection trackSection, double position) {
                 this.suggestion = false;
+                this.track = new RJSObjectRef<>(trackSection.id, "TrackSection");
+                this.position = position;
             }
 
             /** Check if two step result are at the same location */
             public boolean isDuplicate(StepResult other) {
-                if (!position.trackSection.equals(other.position.trackSection))
+                if (!track.equals(other.track))
                     return false;
-                return Math.abs(position.offset - other.position.offset) < 0.001;
+                return Math.abs(position - other.position) < 0.001;
             }
 
             /** Merge a suggested with a give step */
@@ -337,18 +345,6 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                     return;
                 position = other.position;
                 id = other.id;
-            }
-        }
-
-        public static class PositionResult {
-            @Json(name = "track_section")
-            public String trackSection;
-
-            public double offset;
-
-            public PositionResult(String trackSection, double offset) {
-                this.offset = offset;
-                this.trackSection = trackSection;
             }
         }
     }

@@ -9,10 +9,9 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-from pathlib import Path
-from importlib.util import find_spec
 import os
-
+from importlib.util import find_spec
+from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'BeZPeRmxngJAbJECmraxvpvLQebOYPNACjqGwujizGcIGHuEIz'
 
 
-OSRD_INFRA_SRID = 3857
+OSRD_INFRA_SRID = 4326
 
 
 # Application definition

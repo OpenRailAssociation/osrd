@@ -17,15 +17,6 @@ class JSONSchemaValidator(BaseValidator):
             raise ValidationError(e.message, code="invalid")
 
 
-def geo_transform(gis_object):
-    gis_object.transform(4326)
-    return gis_object
-
-
-def reverse_format(object_id):
-    return int(object_id.split(".")[1])
-
-
 def line_string_slice_points(line_string, begin_normalized, end_normalized):
     if begin_normalized > end_normalized:
         # Compute the line string from end to start then reverse the result
