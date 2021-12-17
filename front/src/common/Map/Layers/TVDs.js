@@ -11,7 +11,7 @@ export default function TVDs(props) {
 
   const layerdef = {
     type: 'line',
-    'source-layer': 'osrd_tvd_section',
+    'source-layer': 'tvd_sections',
     minzoom: 6,
     maxzoom: 24,
     layout: {
@@ -26,7 +26,7 @@ export default function TVDs(props) {
     <Source
       id={`osrd_tvd_section_${geomType}`}
       type="vector"
-      url={`${MAP_URL}/layer/osrd_tvd_section/mvt/${geomType}/?version=${infraID}`}
+      url={`${MAP_URL}/layer/tvd_sections/mvt/${geomType}/?version=${infraID}`}
     >
       <Layer
         {...layerdef}
@@ -41,7 +41,7 @@ export default function TVDs(props) {
             'line-width': 4,
             'line-opacity': 1,
           }}
-          filter={['==', 'entity_id', idHover]}
+          filter={['==', 'id', idHover]}
           id={`chartis/osrd_tvd_section_visible/${geomType}`}
           beforeId={`chartis/tracks-${geomType}/main`}
         />

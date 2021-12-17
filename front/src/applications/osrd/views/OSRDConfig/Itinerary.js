@@ -24,8 +24,8 @@ const convertPathfindingVias = (steps) => {
     if (idx !== 0 && idx !== count) {
       vias.push({
         ...step,
-        id: step.position.track_section,
-        clickLngLat: [step.geographic[0], step.geographic[1]],
+        id: step.track.id,
+        clickLngLat: [step.geo.coordinates[0], step.geo.coordinates[1]],
       });
     }
   });
@@ -77,7 +77,7 @@ const Itinerary = (props) => {
   const correctWaypointsGPS = (pathfindingData) => {
     setLaunchPathfinding(false);
     dispatch(updateOrigin({
-      ...osrdconf.origin, clickLngLat: pathfindingData.steps[0].geographic,
+      ...osrdconf.origin, clickLngLat: pathfindingData.steps[0].geo.coordinates,
     }));
 
     if (osrdconf.vias.length > 0 || pathfindingData.steps.length > 2) {
@@ -87,7 +87,7 @@ const Itinerary = (props) => {
 
     dispatch(updateDestination({
       ...osrdconf.destination,
-      clickLngLat: pathfindingData.steps[pathfindingData.steps.length - 1].geographic,
+      clickLngLat: pathfindingData.steps[pathfindingData.steps.length - 1].geo.coordinates,
     }));
     setLaunchPathfinding(true);
   };
@@ -114,7 +114,6 @@ const Itinerary = (props) => {
     if (osrdconf.origin !== undefined && osrdconf.destination !== undefined) {
       const params = {
         infra: osrdconf.infraID,
-        name: 'Test path',
         steps: [],
       };
 
