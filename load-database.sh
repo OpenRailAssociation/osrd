@@ -11,4 +11,4 @@ fi
 docker cp "$1" osrd-postgres:/backup
 # restoring the backend can partialy fail, and that's sometimes ok
 docker exec osrd-postgres pg_restore -d osrd -x -c /backup || true
-docker exec osrd-api python manage.py generate_layers 24 27 28 29
+docker exec osrd-api python manage.py generate_layers
