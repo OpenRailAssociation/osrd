@@ -32,7 +32,7 @@ services:
       interval: 5s
 
   chartos:
-    image: osrd/chartos:v1.0.5
+    image: osrd/chartos:v2.0.0
     container_name: osrd-chartos
     depends_on:
       postgres: {condition: service_healthy}
