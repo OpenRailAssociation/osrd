@@ -1,20 +1,7 @@
-from rest_framework.exceptions import ParseError
 from dataclasses import dataclass
+from typing import List
 
-
-def validate_path(path):
-    if type(path) is not list:
-        raise ParseError(f"path: expected list got {type(path)}")
-    for track_range in path:
-        if type(track_range) is not dict:
-            raise ParseError(
-                f"tracksection range: expected dict got {type(track_range)}"
-            )
-        for key in ("track_section", "begin", "end"):
-            if key not in track_range:
-                raise ParseError(f"tracksection range: doesn't contain '{key}' key")
-            if not isinstance(track_range[key], (int, float)):
-                raise ParseError(f"tracksection range: '{key}' expected a number")
+from osrd_infra.schemas.path import DirectionalTrackRange, PathPayload
 
 
 @dataclass
@@ -31,27 +18,28 @@ class PathRange:
 
 
 class Projection:
-    def __init__(self, path):
-        tracks = self._path_to_tracks(path)
-        validate_path(tracks)
-        self._init_tracks(tracks)
+    __slots__ = "tracks", "length"
+
+    def __init__(self, path_payload: PathPayload):
+        dir_track_ranges = self._path_to_tracks(path_payload)
+        self._init_tracks(dir_track_ranges)
 
     @staticmethod
-    def _path_to_tracks(path):
+    def _path_to_tracks(path_payload: PathPayload):
         tracks = []
-        for route in path.payload["path"]:
-            tracks += route["track_sections"]
+        for path_step in path_payload.path:
+            tracks += path_step.track_sections
         return tracks
 
-    def _init_tracks(self, path):
+    def _init_tracks(self, dir_track_ranges: List[DirectionalTrackRange]):
         self.tracks = {}
         self.length = 0
         offset = 0
-        for track_range in path:
-            begin = track_range["begin"]
-            end = track_range["end"]
+        for dir_track_range in dir_track_ranges:
+            begin = dir_track_range.begin
+            end = dir_track_range.end
             self.length += abs(end - begin)
-            track_id = track_range["track_section"]
+            track_id = dir_track_range.track.id
             if track_id in self.tracks:
                 (p_begin, _, p_offset) = self.tracks[track_id]
                 self.tracks[track_id] = (p_begin, end, p_offset)
@@ -74,7 +62,7 @@ class Projection:
 
         return abs(pos - begin) + offset
 
-    def intersections(self, path):
+    def intersections(self, path_payload: PathPayload):
         """
         Intersect a given path to the projected path and return a list of PathRange
         """
@@ -82,11 +70,11 @@ class Projection:
         range_begin = None
         path_offset = 0
         next_path_offset = 0
-        tracks = self._path_to_tracks(path)
-        for index, track_range in enumerate(tracks):
-            track_id = track_range["track_section"]
-            a_begin = track_range["begin"]
-            a_end = track_range["end"]
+        dir_track_ranges = self._path_to_tracks(path_payload)
+        for index, dir_track_range in enumerate(dir_track_ranges):
+            track_id = dir_track_range.track.id
+            a_begin = dir_track_range.begin
+            a_end = dir_track_range.end
             a_length = abs(a_begin - a_end)
             path_offset = next_path_offset
             next_path_offset += a_length
@@ -110,10 +98,7 @@ class Projection:
                     range_begin.path_offset += a_begin - b_end
 
             # Check end of intersection, if so we add it to the list
-            if (
-                index + 1 >= len(tracks)
-                or tracks[index + 1]["track_section"] not in self.tracks
-            ):
+            if index + 1 >= len(dir_track_ranges) or dir_track_ranges[index + 1].track.id not in self.tracks:
                 range_end = PathLocation(track_id, a_end, next_path_offset)
                 if a_end < b_begin:
                     range_end.offset = b_begin
