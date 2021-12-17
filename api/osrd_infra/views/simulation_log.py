@@ -25,15 +25,14 @@ class SimulationType(IntEnum):
 
 
 def get_train_phases(path):
-    steps = path.payload["steps"]
-    step_track = steps[-1]["position"]["track_section"]
+    last_step = path.payload["steps"][-1]
     return [
         {
             "type": "navigate",
             "driver_sight_distance": 400,
             "end_location": {
-                "track_section": f"track.{step_track.pk}",
-                "offset": steps[-1]["position"]["offset"],
+                "track_section": last_step["track"]["id"],
+                "offset": last_step["position"],
             },
         }
     ]
@@ -42,15 +41,14 @@ def get_train_phases(path):
 def get_train_stops(path):
     stops = []
     steps = path.payload["steps"]
-    for step_index in range(1, len(steps)):
-        step_track = steps[step_index]["position"]["track_section"]
+    for step_index, step in enumerate(steps[1:]):
         stops.append(
             {
                 "location": {
-                    "track_section": f"track.{step_track.pk}",
-                    "offset": steps[step_index]["position"]["offset"],
+                    "track_section": step["track"]["id"],
+                    "offset": step["position"],
                 },
-                "duration": steps[step_index]["stop_time"],
+                "duration": step["stop_time"],
             }
         )
     return stops
@@ -61,8 +59,8 @@ def convert_route_list_for_simulation(path):
     Generates a list of route for the simulation using the path data
     """
     res = []
-    for route in path.payload["path"]:
-        route_str = f"route.{route['route']}"
+    for path_step in path.payload["path"]:
+        route_str = path_step["route"]["id"]
         # We need to drop duplicates because the path is split at each step,
         # making it possible to have an input such as :
         # [{route: 1, track_sections: [1, 2]}, {route: 1, track_sections: [2, 3, 4]}]
@@ -122,7 +120,7 @@ def get_train_schedule_payload(train_schedule: TrainSchedule, sim_type: Simulati
         "rolling_stock": f"rolling_stock.{train_schedule.rolling_stock_id}",
         "departure_time": train_schedule.departure_time,
         "initial_head_location": path.get_initial_location(),
-        "initial_route": f"route.{path.get_initial_route().pk}",
+        "initial_route": path.get_initial_route(),
         "initial_speed": train_schedule.initial_speed,
         "phases": get_train_phases(path),
         "routes": convert_route_list_for_simulation(path),
