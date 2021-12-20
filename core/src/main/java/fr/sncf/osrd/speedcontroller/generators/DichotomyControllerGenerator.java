@@ -75,16 +75,25 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     protected abstract double getFirstLowEstimate();
 
     /** Returns the first higher bound for the dichotomy */
-    protected abstract double getFirstHighEstimate();
+    protected abstract double getFirstHighEstimate(SortedDoubleMap speeds);
 
     /** Returns the first guess for the dichotomy */
-    protected abstract double getFirstGuess();
+    protected abstract double getFirstGuess(SortedDoubleMap speeds);
 
     /** Generates a set of speed controllers given the dichotomy value */
+    protected abstract Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
+                                                                double value) throws SimulationError;
+
+    /** Generates a set of speed controllers given the dichotomy value,
+     *  with specified begin and end position */
     protected abstract Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
                                                                 double value,
                                                                 double begin,
                                                                 double end) throws SimulationError;
+
+    /** initialize some variables before running the dichotomy process */
+    protected abstract void initializeBinarySearch(TrainSchedule schedule,
+                                                              SortedDoubleMap speeds);
 
     /** compute the braking distance from initialSpeed to a given target speed */
     protected abstract double computeBrakingDistance(double initialPosition,
@@ -94,9 +103,11 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
     /** Runs the dichotomy */
     private Set<SpeedController> binarySearch(Simulation sim, TrainSchedule schedule) throws SimulationError {
 
+        var speeds = getExpectedSpeeds(schedule, maxSpeedControllers, TIME_STEP);
         var lowerBound = getFirstLowEstimate();
-        var higherBound = getFirstHighEstimate();
-        var firstGuess = getFirstGuess();
+        var higherBound = getFirstHighEstimate(speeds);
+        var firstGuess = getFirstGuess(speeds);
+        initializeBinarySearch(schedule, speeds);
 
         // base run
         var times = getExpectedTimes(schedule, maxSpeedControllers, TIME_STEP, false);
@@ -108,7 +119,7 @@ public abstract class DichotomyControllerGenerator extends SpeedControllerGenera
         var nextSpeedControllers = maxSpeedControllers;
         int i = 0;
         while (Math.abs(time - targetTime) > precision) {
-            nextSpeedControllers = getSpeedControllers(schedule, nextValue, sectionBegin, sectionEnd);
+            nextSpeedControllers = getSpeedControllers(schedule, nextValue);
             time = evalRunTime(schedule, nextSpeedControllers);
             if (time > targetTime)
                 lowerBound = nextValue;

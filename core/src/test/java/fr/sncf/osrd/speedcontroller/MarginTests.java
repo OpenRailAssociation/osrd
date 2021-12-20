@@ -165,8 +165,8 @@ public class MarginTests {
         var speedSecondPoint = speeds.interpolate(end);
 
         // make sure begin and end have the same speed before and after margin
-        assertEquals(speedFirstPointBase, speedFirstPoint, speedFirstPointBase * tolerance);
-        assertEquals(speedSecondPointBase, speedSecondPoint, speedSecondPointBase * tolerance);
+        assertEquals(speedFirstPointBase, speedFirstPoint, 2 * timeStep + speedFirstPointBase * tolerance);
+        assertEquals(speedSecondPointBase, speedSecondPoint, 2 * timeStep + speedSecondPointBase * tolerance);
 
         var expectedTotalTime = test.baseTime() + value;
 
@@ -174,12 +174,12 @@ public class MarginTests {
     }
 
     @ParameterizedTest
-    @ValueSource(doubles = {0.0, 30, 100})
+    @ValueSource(doubles = {0, 30, 75})
     public void testConstructionMarginsOnSegment(double value, TestInfo info) {
         testConstructionMarginsOnSegment(CONFIG_PATH, value, info);
     }
 
-    /** Test the construction margin on a small segment */
+    /** Test the construction margin with a high value on a small segment, expecting to get an error */
     public static void testImpossibleConstructionMargin(String configPath, double value, TestInfo info) {
         final double begin = 4000;
         final double end = 5000;
@@ -190,12 +190,11 @@ public class MarginTests {
 
         var config = TestConfig.readResource(configPath).clearAllowances();
 
-        AssertionFailedError thrown = assertThrows(AssertionFailedError.class, () -> {
+        var thrown = assertThrows(RuntimeException.class, () -> {
             ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
         });
 
-        assertEquals("Margin asked by the user is too high for such short distance.",
-                thrown.getCause().getMessage());
+        assertEquals("Did not converge", thrown.getMessage());
     }
 
     @ParameterizedTest
