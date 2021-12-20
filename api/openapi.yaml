@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: OSRD
   description: OSRD middleware api documentation
-  version: 1.0.0
+  version: 2.0.0
 tags:
   - name: infra
     description: Infra
@@ -90,6 +90,41 @@ paths:
       responses:
         204:
           description: No content
+  /infra/railjson/:
+    post:
+      tags:
+        - infra
+      summary: Import an infra from railjson
+      requestBody:
+        description: Railjson infra
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                version: 2.0.0
+                operational_points: []
+                routes: []
+                switch_types: []
+                switches: []
+                track_section_links: []
+                track_sections: []
+                signals: []
+                buffer_stops: []
+                detectors: []
+                tvd_sections: []
+                script_functions: []
+                aspects: []
+        required: true
+      responses:
+        201:
+          description: The imported infra id
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string }
   /infra/{id}/railjson/:
     get:
       tags:
@@ -111,15 +146,18 @@ paths:
                 type: object
                 description: Follows railjson format
                 example:
-                  version: 1
-                  track_sections: []
-                  track_section_links: []
-                  switches: []
-                  script_functions: []
+                  version: 2.0.0
                   operational_points: []
-                  speed_sections: []
-                  tvd_sections: []
                   routes: []
+                  switch_types: []
+                  switches: []
+                  track_section_links: []
+                  track_sections: []
+                  signals: []
+                  buffer_stops: []
+                  detectors: []
+                  tvd_sections: []
+                  script_functions: []
                   aspects: []
   /infra/{id}/geojson/:
     get:
