@@ -89,8 +89,7 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
     // get the high boundary for the binary search, corresponding to vf = max
     @Override
-    protected double getFirstHighEstimate() {
-        var speeds = getExpectedSpeeds(schedule, maxSpeedControllers, TIME_STEP);
+    protected double getFirstHighEstimate(SortedDoubleMap speeds) {
         double maxSpeed = max(speeds.values());
 
         double tolerance = .00001; // Stop if you're close enough
@@ -113,8 +112,8 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
     }
 
     @Override
-    protected double getFirstGuess() {
-        return (this.getFirstHighEstimate() + this.getFirstLowEstimate()) / 2;
+    protected double getFirstGuess(SortedDoubleMap speeds) {
+        return (this.getFirstHighEstimate(speeds) + this.getFirstLowEstimate()) / 2;
     }
 
     /** Finds the end position of the coasting phases, that will then be generated backwards
@@ -293,11 +292,17 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
     @Override
     protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
+                                                       double v1) throws SimulationError {
+        return getSpeedControllers(schedule, v1, sectionBegin, sectionEnd);
+    }
+
+    @Override
+    protected Set<SpeedController> getSpeedControllers(TrainSchedule schedule,
                                                        double v1,
-                                                       double startLocation,
-                                                       double endLocation) throws SimulationError {
+                                                       double begin,
+                                                       double end) throws SimulationError {
         var currentSpeedControllers = new HashSet<>(maxSpeedControllers);
-        currentSpeedControllers.add(new MaxSpeedController(v1, startLocation, endLocation));
+        currentSpeedControllers.add(new MaxSpeedController(v1, begin, end));
         var expectedSpeeds = getExpectedSpeeds(schedule, currentSpeedControllers, TIME_STEP);
         var endOfCoastingPositions = findEndOfCoastingPositions(expectedSpeeds, v1);
         for (var location : endOfCoastingPositions) {
@@ -307,6 +312,9 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
         }
         return currentSpeedControllers;
     }
+
+    @Override
+    protected void initializeBinarySearch(TrainSchedule schedule, SortedDoubleMap speeds) { }
 
     @Override
     protected double computeBrakingDistance(double initialPosition,
