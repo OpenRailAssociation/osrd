@@ -272,10 +272,10 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             routeResult.route = new RJSObjectRef<>(route.id, "Route");
             routeResult.trackSections = new ArrayList<>();
             for (var trackSection : trackSections) {
-                if (trackSection.getBeginPosition() < trackSection.getEndPosition())
-                    assert trackSection.direction == EdgeDirection.START_TO_STOP;
+                if (trackSection.direction == EdgeDirection.START_TO_STOP)
+                    assert trackSection.getBeginPosition() <= trackSection.getEndPosition();
                 else
-                    assert trackSection.direction == EdgeDirection.STOP_TO_START;
+                    assert trackSection.getBeginPosition() >= trackSection.getEndPosition();
                 var trackSectionResult = new DirectionalTrackRangeResult(trackSection.edge.id,
                         trackSection.getBeginPosition(),
                         trackSection.getEndPosition());

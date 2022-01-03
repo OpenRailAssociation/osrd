@@ -178,10 +178,10 @@ export const SelectItems: Tool<SelectItemsState> = {
 
     let { selection } = toolState;
     const isAlreadySelected = selection.find(
-      (item) => item.entity_id === feature.properties.entity_id,
+      (item) => item.entity_id === feature.properties.id,
     );
     const current: EntityModel | undefined = editorState.editorEntities.find(
-      (item) => item.entity_id === feature.properties.entity_id,
+      (item) => item.entity_id === feature.properties.id,
     );
     console.log('current', current, editorState.editorEntities, feature);
     if (current) {
@@ -192,7 +192,7 @@ export const SelectItems: Tool<SelectItemsState> = {
           selection = [current];
         }
       } else if (e.srcEvent.ctrlKey) {
-        selection = selection.filter((item) => item.entity_id !== feature.properties.entity_id);
+        selection = selection.filter((item) => item.entity_id !== feature.properties.id);
       } else if (selection.length === 1) {
         selection = [];
       } else {
