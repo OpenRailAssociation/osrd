@@ -10,7 +10,7 @@ export default function SignalingType(props) {
   const { geomType } = props;
   const layerdef = {
     type: 'symbol',
-    'source-layer': 'osrd_signaling_type',
+    'source-layer': 'signaling_sections',
     layout: {
       'text-font': [
         'Roboto Condensed',
@@ -32,7 +32,7 @@ export default function SignalingType(props) {
     <Source
       id={`osrd_signaling_type_${geomType}`}
       type="vector"
-      url={`${MAP_URL}/layer/osrd_signaling_type/mvt/${geomType}/?version=${infraID}`}
+      url={`${MAP_URL}/layer/signaling_sections/mvt/${geomType}/?version=${infraID}`}
     >
       <Layer {...layerdef} id={`chartis/osrd_signaling_type/${geomType}`} />
     </Source>

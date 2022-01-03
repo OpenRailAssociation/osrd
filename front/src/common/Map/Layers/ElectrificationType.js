@@ -10,7 +10,7 @@ export default function ElectrificationType(props) {
   const { geomType, colors } = props;
   const electrificationParams = {
     type: 'line',
-    'source-layer': 'osrd_electrification_type',
+    'source-layer': 'catenary_sections',
     minzoom: 5,
     maxzoom: 24,
     layout: {
@@ -19,12 +19,12 @@ export default function ElectrificationType(props) {
     },
     paint: {
       'line-color': ['case',
-        ['==', ['get', 'electrification_type'], '15000'], colors.powerline.color15000V1623,
-        ['==', ['get', 'electrification_type'], '3000'], colors.powerline.color3000V,
-        ['==', ['get', 'electrification_type'], '1500'], colors.powerline.color1500V,
-        ['==', ['get', 'electrification_type'], '850'], colors.powerline.color850V,
-        ['==', ['get', 'electrification_type'], '800'], colors.powerline.color800V,
-        ['==', ['get', 'electrification_type'], '750'], colors.powerline.color750V,
+        ['==', ['get', 'voltage'], '15000'], colors.powerline.color15000V1623,
+        ['==', ['get', 'voltage'], '3000'], colors.powerline.color3000V,
+        ['==', ['get', 'voltage'], '1500'], colors.powerline.color1500V,
+        ['==', ['get', 'voltage'], '850'], colors.powerline.color850V,
+        ['==', ['get', 'voltage'], '800'], colors.powerline.color800V,
+        ['==', ['get', 'voltage'], '750'], colors.powerline.color750V,
         colors.powerline.color25000V,
       ],
       'line-width': 6,
@@ -36,14 +36,14 @@ export default function ElectrificationType(props) {
 
   const electrificationTextParams = {
     type: 'symbol',
-    'source-layer': 'osrd_electrification_type',
+    'source-layer': 'catenary_sections',
     minzoom: 5,
     maxzoom: 24,
     layout: {
       visibility: 'visible',
       'text-font': ['Roboto Medium'],
       'symbol-placement': 'line-center',
-      'text-field': '{electrification_type}V',
+      'text-field': '{voltage}V',
       'text-offset': [0, 1],
       'text-size': {
         stops: [[10, 9], [14, 10]],
@@ -57,12 +57,12 @@ export default function ElectrificationType(props) {
     },
     paint: {
       'text-color': ['case',
-        ['==', ['get', 'electrification_type'], '15000'], colors.powerline.color15000V1623,
-        ['==', ['get', 'electrification_type'], '3000'], colors.powerline.color3000V,
-        ['==', ['get', 'electrification_type'], '1500'], colors.powerline.color1500V,
-        ['==', ['get', 'electrification_type'], '850'], colors.powerline.color850V,
-        ['==', ['get', 'electrification_type'], '800'], colors.powerline.color800V,
-        ['==', ['get', 'electrification_type'], '750'], colors.powerline.color750V,
+        ['==', ['get', 'voltage'], '15000'], colors.powerline.color15000V1623,
+        ['==', ['get', 'voltage'], '3000'], colors.powerline.color3000V,
+        ['==', ['get', 'voltage'], '1500'], colors.powerline.color1500V,
+        ['==', ['get', 'voltage'], '850'], colors.powerline.color850V,
+        ['==', ['get', 'voltage'], '800'], colors.powerline.color800V,
+        ['==', ['get', 'voltage'], '750'], colors.powerline.color750V,
         colors.powerline.color25000V,
       ],
     },
@@ -70,19 +70,19 @@ export default function ElectrificationType(props) {
 
   return layersSettings.electrification && (
     <Source
-      id={`osrd_electrification_type_${geomType}`}
+      id={`catenary_sections_${geomType}`}
       type="vector"
-      url={`${MAP_URL}/layer/osrd_electrification_type/mvt/${geomType}/?version=${infraID}`}
+      url={`${MAP_URL}/layer/catenary_sections/mvt/${geomType}/?version=${infraID}`}
     >
       <Layer
         {...electrificationParams}
         beforeId={`chartis/tracks-${geomType}/main`}
-        id={`chartis/osrd_electrification_type/${geomType}`}
+        id={`chartis/catenary_sections/${geomType}`}
       />
       <Layer
         {...electrificationTextParams}
         beforeId={`chartis/tracks-${geomType}/main`}
-        id={`chartis/osrd_electrification_type_names/${geomType}`}
+        id={`chartis/catenary_sections_names/${geomType}`}
       />
     </Source>
   );

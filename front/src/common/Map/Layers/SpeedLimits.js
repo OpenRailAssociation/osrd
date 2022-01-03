@@ -11,7 +11,7 @@ export default function SpeedLimits(props) {
 
   const speedValuePointParams = {
     type: 'symbol',
-    'source-layer': 'osrd_speed_limit',
+    'source-layer': 'speed_sections',
     minzoom: 9,
     maxzoom: 24,
     layout: {
@@ -36,7 +36,7 @@ export default function SpeedLimits(props) {
 
   const speedValueParams = {
     type: 'symbol',
-    'source-layer': 'osrd_speed_limit',
+    'source-layer': 'speed_sections',
     minzoom: 9,
     maxzoom: 24,
     filter: ['all', ['has', 'speed']],
@@ -62,7 +62,7 @@ export default function SpeedLimits(props) {
     <Source
       id={`osrd_speed_limit_${geomType}`}
       type="vector"
-      url={`${MAP_URL}/layer/osrd_speed_limit/mvt/${geomType}/?version=${infraID}`}
+      url={`${MAP_URL}/layer/speed_sections/mvt/${geomType}/?version=${infraID}`}
     >
       <Layer {...speedValuePointParams} id={`chartis/osrd_speed_limit_points/${geomType}`} />
       <Layer {...speedValueParams} id={`chartis/osrd_speed_limit_value/${geomType}`} />

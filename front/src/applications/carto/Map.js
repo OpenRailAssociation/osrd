@@ -84,7 +84,7 @@ const Map = () => {
 
   const onFeatureHover = (e) => {
     if (e.features[0] !== undefined) {
-      setIdHover(e.features[0].properties.entity_id);
+      setIdHover(e.features[0].properties.id);
     } else {
       setIdHover(undefined);
     }

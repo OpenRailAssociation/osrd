@@ -98,7 +98,7 @@ const Map = () => {
   const onFeatureClick = (e) => {
     if (e.features
       && e.features.length > 0
-      && e.features[0].properties.entity_id !== undefined
+      && e.features[0].properties.id !== undefined
       // && e.features[0].properties.type_voie === 'VP') {
     ) {
       dispatch(updateFeatureInfoClickOSRD({
@@ -116,7 +116,7 @@ const Map = () => {
 
   const getGeoJSONFeature = (e) => {
     if (trackSectionHover === undefined
-      || e.features[0].properties.entity_id !== trackSectionHover.properties.entity_id) {
+      || e.features[0].properties.id !== trackSectionHover.properties.id) {
       setTrackSectionHover(e.features[0]);
     }
 
@@ -135,7 +135,7 @@ const Map = () => {
   const onFeatureHover = (e) => {
     if (e.features !== null && e.features[0] !== undefined) {
       getGeoJSONFeature(e);
-      setIdHover(e.features[0].properties.entity_id);
+      setIdHover(e.features[0].properties.id);
       setLngLatHover(e.lngLat);
     } else {
       setIdHover(undefined);

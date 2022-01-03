@@ -223,7 +223,7 @@ export const initialState: EditorState = {
   // ID of the infrastructure on which we are working
   editorInfrastructure: null,
   // ID of selected layers on which we are working
-  editorLayers: ['osrd_track_section'],
+  editorLayers: ['track_sections'],
   // Edition zone:
   editorZone: null,
   // An array of Entities
