@@ -11,7 +11,7 @@ export default function SpeedLimitsColors(props) {
 
   const speedLineParams = {
     type: 'line',
-    'source-layer': 'osrd_speed_limit',
+    'source-layer': 'speed_sections',
     minzoom: 6,
     maxzoom: 24,
     layout: {
@@ -40,7 +40,7 @@ export default function SpeedLimitsColors(props) {
     <Source
       id={`osrd_speed_limit_${geomType}`}
       type="vector"
-      url={`${MAP_URL}/layer/osrd_speed_limit/mvt/${geomType}/?version=${infraID}`}
+      url={`${MAP_URL}/layer/speed_sections/mvt/${geomType}/?version=${infraID}`}
     >
       <Layer
         {...speedLineParams}

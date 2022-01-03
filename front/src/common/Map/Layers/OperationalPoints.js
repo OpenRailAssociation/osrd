@@ -10,7 +10,7 @@ export default function OperationalPoints(props) {
   const { geomType } = props;
   const layerPoint = {
     type: 'circle',
-    'source-layer': 'osrd_operational_point',
+    'source-layer': 'operational_points',
     paint: {
       'circle-stroke-color': '#82be00',
       'circle-stroke-width': 3,
@@ -21,7 +21,7 @@ export default function OperationalPoints(props) {
 
   const layerName = {
     type: 'symbol',
-    'source-layer': 'osrd_operational_point',
+    'source-layer': 'operational_points',
     layout: {
       'text-field': '{name}',
       'text-font': [
@@ -46,7 +46,7 @@ export default function OperationalPoints(props) {
     <Source
       id={`osrd_operational_point_${geomType}`}
       type="vector"
-      url={`${MAP_URL}/layer/osrd_operational_point/mvt/${geomType}/?version=${infraID}`}
+      url={`${MAP_URL}/layer/operational_points/mvt/${geomType}/?version=${infraID}`}
     >
       <Layer {...layerPoint} id={`chartis/osrd_operational_point/${geomType}`} />
       <Layer {...layerName} id={`chartis/osrd_operational_point_name/${geomType}`} />

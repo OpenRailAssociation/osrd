@@ -225,7 +225,7 @@ const Map = (props) => {
       dispatch(updateTimePosition(timePositionLocal));
     }
     if (e.features[0]) {
-      setIdHover(e.features[0].properties.entity_id);
+      setIdHover(e.features[0].properties.id);
     } else {
       setIdHover(undefined);
     }
