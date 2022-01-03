@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import * as d3 from 'd3';
 import { LIST_VALUES_NAME_SPEED_SPACE } from 'applications/osrd/components/Simulation/consts';
 import {
-  defineLinear, expandAndFormatData, handleWindowResize, mergeDatasArea,
+  defineLinear, handleWindowResize, mergeDatasArea,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
 import { updateMustRedraw } from 'reducers/osrdsimulation';
 import defineChart from 'applications/osrd/components/Simulation/defineChart';
@@ -13,6 +13,7 @@ import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import enableInteractivity, { traceVerticalLine } from 'applications/osrd/components/Simulation/enableInteractivity';
 import { CgLoadbar } from 'react-icons/cg';
 import SpeedSpaceSettings from 'applications/osrd/components/Simulation/SpeedSpaceSettings/SpeedSpaceSettings';
+import createSlopeCurve from 'applications/osrd/components/Simulation/SpeedSpaceChart/createSlopeCurve';
 
 const CHART_ID = 'SpeedSpaceChart';
 
@@ -72,29 +73,15 @@ export default function SpeedSpaceChart(props) {
   dataSimulation.slopesHistogram = simulation.trains[selectedTrain].slopes.map(
     (step) => ({ position: step.position, gradient: step.gradient * 2 }),
   );
-  const slopesCurve = [];
-  simulation.trains[selectedTrain].slopes.forEach(
-    (step, idx) => {
-      if (idx % 2 === 0 && simulation.trains[selectedTrain].slopes[idx + 1]) {
-        if (idx === 0) {
-          slopesCurve.push({ height: 0, position: step.position });
-        } else {
-          const distance = step.position - slopesCurve[
-            slopesCurve.length - 1].position;
-          const height = ((distance * simulation.trains[selectedTrain].slopes[idx - 2].gradient)
-            / 1000) + slopesCurve[slopesCurve.length - 1].height;
-          slopesCurve.push({ height, position: step.position });
-        }
-      }
-    },
+  dataSimulation.slopesCurve = createSlopeCurve(
+    simulation.trains[selectedTrain].slopes, dataSimulation.speed,
   );
-  const maxSpeed = d3.max(dataSimulation.speed.map((step) => step.speed));
-  const minHeight = d3.min(slopesCurve.map((step) => step.height));
-  const maxHeight = d3.max(slopesCurve.map((step) => step.height));
-  dataSimulation.slopesCurve = slopesCurve.map((step) => ({
-    ...step,
-    height: (((step.height + (minHeight * -1)) * maxSpeed) / (maxHeight + (minHeight * -1))),
-  }));
+
+  // Curves
+  dataSimulation.curvesHistogram = simulation.trains[selectedTrain].curves.map(
+    (step) => ({ position: step.position, radius: step.radius }),
+  );
+  console.log(dataSimulation.curvesHistogram);
 
   const toggleRotation = () => {
     d3.select(`#${CHART_ID}`).remove();
@@ -166,6 +153,9 @@ export default function SpeedSpaceChart(props) {
       }
       if (dataSimulation.slopesHistogram) {
         drawCurve(chartLocal, 'speed slopesHistogram', dataSimulation.slopesHistogram, 'speedSpaceChart', 'curveLinear', ['position', 'gradient'], 'slopesHistogram', rotate);
+      }
+      if (dataSimulation.curvesHistogram) {
+        drawCurve(chartLocal, 'speed curvesHistogram', dataSimulation.curvesHistogram, 'speedSpaceChart', 'curveLinear', ['position', 'radius'], 'curvesHistogram', rotate);
       }
 
       // Operational points
