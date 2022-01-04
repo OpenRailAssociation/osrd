@@ -166,7 +166,16 @@ public final class Envelope  {
         for (int i = 0; i < size(); i++) {
             var lineName = String.format("part %d", i);
             var part = get(i);
-            plot.addLinePlot(lineName, part.clonePositions(), part.cloneSpeeds());
+            var positions = part.clonePositions();
+            var speeds = part.cloneSpeeds();
+            // wordaround https://github.com/yannrichet/jmathplot/issues/5
+            if (part.pointCount() == 2) {
+                var newPositions = new double[] { positions[0], speeds[0] };
+                var newSpeeds = new double[] { positions[1], speeds[1] };
+                positions = newPositions;
+                speeds = newSpeeds;
+            }
+            plot.addLinePlot(lineName, positions, speeds);
         }
         return plot;
     }
