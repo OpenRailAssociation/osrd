@@ -10,22 +10,25 @@ public class EnvelopeTestUtils {
     }
 
     static void buildContinuous(
-            EnvelopeOverlayBuilder builder, EnvelopePartMeta meta,
+            OverlayEnvelopeBuilder builder, EnvelopePartMeta meta,
             double[] positions, double[] speeds, boolean isBackward
     ) {
         var lastIndex = positions.length - 1;
         if (!isBackward) {
             builder.cursor.findPosition(positions[0]);
-            builder.startContinuousOverlay(meta);
+
+            var partBuilder = builder.startContinuousOverlay(meta);
             for (int i = 1; i < positions.length - 1; i++)
-                assertFalse(builder.addStep(positions[i], speeds[i]));
-            assertTrue(builder.addStep(positions[lastIndex], speeds[lastIndex]));
+                assertFalse(partBuilder.addStep(positions[i], speeds[i]));
+            assertTrue(partBuilder.addStep(positions[lastIndex], speeds[lastIndex]));
+            builder.addPart(partBuilder);
         } else {
             builder.cursor.findPosition(positions[lastIndex]);
-            builder.startContinuousOverlay(meta);
+            var partBuilder = builder.startContinuousOverlay(meta);
             for (int i = lastIndex - 1; i > 0; i--)
-                assertFalse(builder.addStep(positions[i], speeds[i]));
-            assertTrue(builder.addStep(positions[0], speeds[0]));
+                assertFalse(partBuilder.addStep(positions[i], speeds[i]));
+            assertTrue(partBuilder.addStep(positions[0], speeds[0]));
+            builder.addPart(partBuilder);
         }
     }
 

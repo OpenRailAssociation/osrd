@@ -6,7 +6,6 @@ import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeMaintainSpeed;
 
-
 /** Max effort envelope = Max speed envelope + acceleration curves + check maintain speed
  * It is the max physical speed at any given point, ignoring allowances */
 public class MaxEffortEnvelope {
@@ -28,30 +27,37 @@ public class MaxEffortEnvelope {
                                                  PhysicsPath path,
                                                  Envelope maxSpeedProfile,
                                                  double initialSpeed) {
-        var overlayBuilder = EnvelopeOverlayBuilder.forward(maxSpeedProfile);
-        overlayBuilder.startDiscontinuousOverlay(ACCELERATION, initialSpeed);
-        EnvelopeAcceleration.accelerate(rollingStock, path, 4, 0, initialSpeed, overlayBuilder);
-        while (overlayBuilder.cursor.findPartTransition(MaxSpeedEnvelope::increase)) {
-            var startSpeed = overlayBuilder.startContinuousOverlay(ACCELERATION);
-            var startPosition = overlayBuilder.cursor.getPosition();
-            EnvelopeAcceleration.accelerate(rollingStock, path, 4, startPosition, startSpeed, overlayBuilder);
-            overlayBuilder.cursor.nextPart();
+        var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
+        {
+            var partBuilder = builder.startDiscontinuousOverlay(ACCELERATION, initialSpeed);
+            EnvelopeAcceleration.accelerate(rollingStock, path, 4, 0, initialSpeed, partBuilder);
+            builder.addPart(partBuilder);
         }
-        return overlayBuilder.build();
+        while (builder.cursor.findPartTransition(MaxSpeedEnvelope::increase)) {
+            var partBuilder = builder.startContinuousOverlay(ACCELERATION);
+            var startSpeed = partBuilder.getLastSpeed();
+            var startPosition = builder.cursor.getPosition();
+            EnvelopeAcceleration.accelerate(rollingStock, path, 4, startPosition, startSpeed, partBuilder);
+            builder.addPart(partBuilder);
+            builder.cursor.nextPart();
+        }
+        return builder.build();
     }
 
     /** Generate overlays everywhere the train cannot physically maintain the target speed */
     public static Envelope addMaintainSpeedCurves(PhysicsRollingStock rollingStock,
                                                   PhysicsPath path,
                                                   Envelope maxSpeedProfile) {
-        var overlayBuilder = EnvelopeOverlayBuilder.forward(maxSpeedProfile);
-        while (overlayBuilder.cursor.findPartTransition(MaxEffortEnvelope::maxEffortPlateau)) {
-            var startSpeed = overlayBuilder.startContinuousOverlay(MAINTAIN);
-            var startPosition = overlayBuilder.cursor.getPosition();
-            EnvelopeMaintainSpeed.maintain(rollingStock, path, 4, startPosition, startSpeed, overlayBuilder);
-            overlayBuilder.cursor.nextPart();
+        var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
+        while (builder.cursor.findPartTransition(MaxEffortEnvelope::maxEffortPlateau)) {
+            var partBuilder = builder.startContinuousOverlay(MAINTAIN);
+            var startSpeed = partBuilder.getLastSpeed();
+            var startPosition = builder.cursor.getPosition();
+            EnvelopeMaintainSpeed.maintain(rollingStock, path, 4, startPosition, startSpeed, partBuilder);
+            builder.addPart(partBuilder);
+            builder.cursor.nextPart();
         }
-        return overlayBuilder.build();
+        return builder.build();
     }
 
     /** Generate a max effort envelope given a max speed envelope */

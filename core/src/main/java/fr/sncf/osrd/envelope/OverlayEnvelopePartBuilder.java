@@ -1,106 +1,75 @@
 package fr.sncf.osrd.envelope;
 
-import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.*;
+import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.NEXT_PART;
+import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.NEXT_REACHED_END;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
-/**
- * <p>An envelope overlay takes a continuous envelope as an input,
- * scans it from beginning to end, producing a new one.</p>
- *
- * <p>When a new point is added, the following algorithm runs:</p>
- * <pre>
- *   for all base steps which have an intersecting range with the new step:
- *       if the new step keeps being the minimum for all its length:
- *           continue
- *       inter = intersection between base step and new step
- *       add the intersection point to the overlay part
- *       end the overlay part
- *       switch to the scanning mode
- *       remember the intersection point with the base envelope
- *       return true
- *   add the new point to the curve
- *   returns whether the tip of the new step touches the base curve
- * </pre>
- */
-public final class EnvelopeOverlayBuilder implements StepConsumer {
-    private enum Mode {
-        /** Envelope parts are copied to the result */
-        SCANNING,
-        /** New points are added over the current curve */
-        OVERLAYING,
-    }
-
-    /** Holds the current position inside the envelope */
+/** Creates an envelope part which always keeps a speed lower than a given envelope */
+public class OverlayEnvelopePartBuilder implements StepConsumer {
+    /** This cursor is updated as the overlay is built. It must not be modified elsewhere until build is called */
     public final EnvelopeCursor cursor;
-    /** The expected revision of the cursor */
-    private int cursorRevision;
 
-    /** What the builder is currently up to */
-    private Mode mode = Mode.SCANNING;
+    /** The part index of the starting point of the overlay */
+    public final int initialPartIndex;
+    /** The step index of the starting point of the overlay */
+    public final int initialStepIndex;
+    /** The position of the starting point of the overlay */
+    public final double initialPosition;
 
-    // region OVERLAY_FIELDS
-    /** The currently being built overlay envelope part, if mode == OVERLAYING */
-    private EnvelopePartBuilder overlayPartBuilder = null;
-    private double lastOverlayPos = Double.NaN;
-    private double lastOverlaySpeed = Double.NaN;
-    // endregion
+    /** The position of the last added point */
+    private double lastOverlayPos;
+    /** The speed of the last added point */
+    private double lastOverlaySpeed;
 
-    // region SCAN_FIELDS
-    private int lastOverlayEndPartIndex = -1;
-    private int lastOverlayEndStepIndex = -1;
-    private double lastOverlayEndPosition = Double.NaN;
-    // endregion
+    /** Once an intersection occurred, points cannot be added anymore */
+    private boolean hadIntersection = false;
 
-    /** The result of the build */
-    private final ArrayList<EnvelopePart> resultParts = new ArrayList<>();
+    /** This builder is used until set to null by build() to prevent reuse */
+    private EnvelopePartBuilder partBuilder;
 
-    public EnvelopeOverlayBuilder(EnvelopeCursor cursor) {
+    private OverlayEnvelopePartBuilder(EnvelopeCursor cursor, EnvelopePartMeta meta, double initialSpeed) {
         this.cursor = cursor;
-        this.cursorRevision = cursor.getRevision();
+        this.initialPartIndex = cursor.getPartIndex();
+        this.initialStepIndex = cursor.getStepIndex();
+        this.initialPosition = cursor.getPosition();
+        this.partBuilder = new EnvelopePartBuilder(meta, initialPosition, initialSpeed);
+        this.lastOverlayPos = initialPosition;
+        this.lastOverlaySpeed = initialSpeed;
     }
 
-    public static EnvelopeOverlayBuilder withDirection(Envelope base, boolean reverse) {
-        return new EnvelopeOverlayBuilder(new EnvelopeCursor(base, reverse));
-    }
+    /** Starts an overlay at the given position and speed */
+    public static OverlayEnvelopePartBuilder startDiscontinuousOverlay(
+            EnvelopeCursor cursor,
+            EnvelopePartMeta meta,
+            double initialSpeed
+    ) {
+        var startPosition = cursor.getPosition();
 
-    public static EnvelopeOverlayBuilder forward(Envelope base) {
-        return new EnvelopeOverlayBuilder(new EnvelopeCursor(base, false));
-    }
-
-    public static EnvelopeOverlayBuilder backward(Envelope base) {
-        return new EnvelopeOverlayBuilder(new EnvelopeCursor(base, true));
-    }
-
-    void checkMode(Mode expectedMode) {
-        if (mode == expectedMode)
-            return;
-        throw new RuntimeException("unexpected mode");
-    }
-
-    private void sliceBaseEnvelope() {
-        // cut the base envelope from the end of the last overlay to the current position, which is either
-        // the end of the envelope or the start of another overlay
-        EnvelopePart[] sliced;
-        if (cursor.hasReachedEnd()) {
-            sliced = cursor.smartSlice(
-                    lastOverlayEndPartIndex, lastOverlayEndStepIndex, lastOverlayEndPosition,
-                    -1, -1, Double.NaN
-            );
-        } else {
-            sliced = cursor.smartSlice(
-                    lastOverlayEndPartIndex, lastOverlayEndStepIndex, lastOverlayEndPosition,
-                    cursor.getPartIndex(), cursor.getStepIndex(), cursor.getPosition()
-            );
+        // when an overlay starts on a point, avoid checking for intersection
+        if (cursor.getPosition() == cursor.getStepEndPos()) {
+            var nextRes = cursor.nextStep();
+            assert startPosition == cursor.getPosition();
+            assert nextRes != NEXT_REACHED_END;
         }
 
-        // add these to the result
-        if (cursor.reverse)
-            for (int i = sliced.length - 1; i >= 0; i--)
-                resultParts.add(sliced[i]);
-        else
-            Collections.addAll(resultParts, sliced);
+        assert initialSpeed <= cursor.interpolateSpeed();
+        return new OverlayEnvelopePartBuilder(cursor, meta, initialSpeed);
+    }
+
+    /** Starts an overlay at the given position, keeping the envelope continuous */
+    public static OverlayEnvelopePartBuilder startContinuousOverlay(EnvelopeCursor cursor, EnvelopePartMeta meta) {
+        return startDiscontinuousOverlay(cursor, meta, cursor.interpolateSpeed());
+    }
+
+    public double getLastPos() {
+        return lastOverlayPos;
+    }
+
+    public double getLastSpeed() {
+        return lastOverlaySpeed;
+    }
+
+    public boolean getHadIntersection() {
+        return hadIntersection;
     }
 
     // region INTERSECTION
@@ -167,6 +136,20 @@ public final class EnvelopeOverlayBuilder implements StepConsumer {
         return res;
     }
 
+    /** This is called when the overlay ends without an intersection with the base curve */
+    private void addFinalStep(double position, double speed, double stepTime) {
+        if (!cursor.hasReachedEnd())
+            cursor.findPosition(position);
+        addOverlayStep(position, speed, stepTime);
+    }
+
+    /** This is called when the overlay intersects with the base curve */
+    private void addIntersectionStep(double position, double speed, double stepTime) {
+        cursor.findPosition(position);
+        addOverlayStep(position, speed, stepTime);
+        hadIntersection = true;
+    }
+
     private boolean intersect(double position, double speed, double time) {
         // if the speed ranges do not even intersect, there is no intersection
         var baseMin = Math.min(cursor.getStepEndSpeed(), cursor.getStepBeginSpeed());
@@ -184,8 +167,7 @@ public final class EnvelopeOverlayBuilder implements StepConsumer {
         // if the curves intersect exactly at the next point, use some simplifications
         if (speedDelta == 0.0) {
             if (curveEvent.kind != NextPointKind.BASE_POINT) {
-                internalAddOverlayStep(position, speed, time);
-                completeOverlay();
+                addIntersectionStep(position, speed, time);
                 return true;
             }
             // curveEvent.kind == EventKind.BASE_POINT
@@ -196,8 +178,7 @@ public final class EnvelopeOverlayBuilder implements StepConsumer {
                     curveEvent.pointPosition - lastOverlayPos
             );
             assert interTime != 0.0;
-            internalAddOverlayStep(curveEvent.pointPosition, curveEvent.overlaySpeed, interTime);
-            completeOverlay();
+            addIntersectionStep(curveEvent.pointPosition, curveEvent.overlaySpeed, interTime);
             return true;
         }
 
@@ -211,8 +192,7 @@ public final class EnvelopeOverlayBuilder implements StepConsumer {
                 lastOverlayPos, position, lastOverlaySpeed, speed,
                 inter.position - lastOverlayPos
         );
-        internalAddOverlayStep(inter.position, inter.speed, stepTime);
-        completeOverlay();
+        addIntersectionStep(inter.position, inter.speed, stepTime);
         return true;
     }
 
@@ -220,67 +200,8 @@ public final class EnvelopeOverlayBuilder implements StepConsumer {
 
     // region OVERLAY
 
-    private void startOverlay(EnvelopePartMeta meta, double startPosition, double startSpeed) {
-        checkMode(Mode.SCANNING);
-        assert overlayPartBuilder == null;
-        mode = Mode.OVERLAYING;
-        overlayPartBuilder = new EnvelopePartBuilder(meta, startPosition, startSpeed);
-        lastOverlayPos = startPosition;
-        lastOverlaySpeed = startSpeed;
-    }
-
-    /** Starts an overlay at the given position and speed */
-    public void startDiscontinuousOverlay(EnvelopePartMeta meta, double startSpeed) {
-        checkMode(Mode.SCANNING);
-        sliceBaseEnvelope();
-        startOverlay(meta, cursor.getPosition(), startSpeed);
-    }
-
-    /** Starts an overlay at the given position, keeping the envelope continuous */
-    public double startContinuousOverlay(EnvelopePartMeta meta) {
-        checkMode(Mode.SCANNING);
-
-        sliceBaseEnvelope();
-
-        var startSpeed = cursor.interpolateSpeed();
-        var startPosition = cursor.getPosition();
-
-        // when a continuous overlay starts at a discontinuity, avoid checking for intersection with the last point of
-        // the current part by moving to the next part.
-        if (cursor.startsDiscontinuity()) {
-            cursor.nextPart();
-            // Starting a continuous overlay at a discontinuity only makes sense when the next part starts at a lower
-            // speed than the end of the previous one. Otherwise, the overlay will always immediately hit a wall.
-            assert startSpeed < cursor.interpolateSpeed();
-            assert startPosition == cursor.getPosition();
-        }
-
-        startOverlay(meta, startPosition, startSpeed);
-        return startSpeed;
-    }
-
-    private void completeOverlay() {
-        checkMode(Mode.OVERLAYING);
-
-        // add the overlay part
-        if (cursor.reverse)
-            overlayPartBuilder.reverse();
-        resultParts.add(overlayPartBuilder.build());
-
-        // setup slicing of the next base part
-        lastOverlayEndPartIndex = cursor.getPartIndex();
-        lastOverlayEndStepIndex = cursor.getStepIndex();
-        lastOverlayEndPosition = lastOverlayPos;
-
-        // reset internal state
-        overlayPartBuilder = null;
-        lastOverlayPos = Double.NaN;
-        lastOverlaySpeed = Double.NaN;
-        mode = Mode.SCANNING;
-    }
-
-    private void internalAddOverlayStep(double position, double speed, double time) {
-        overlayPartBuilder.addStep(position, speed, time);
+    private void addOverlayStep(double position, double speed, double time) {
+        partBuilder.addStep(position, speed, time);
         lastOverlaySpeed = speed;
         lastOverlayPos = position;
     }
@@ -303,13 +224,13 @@ public final class EnvelopeOverlayBuilder implements StepConsumer {
                 partStart - lastOverlayPos
         );
 
-        internalAddOverlayStep(partStart, overlaySpeed, interTime);
-        completeOverlay();
+        addFinalStep(partStart, overlaySpeed, interTime);
         return true;
     }
 
     @Override
     public boolean addStep(double position, double speed) {
+        assert !hadIntersection : "called addStep on a complete overlay";
         var time = EnvelopePhysics.interpolateStepTime(
                 lastOverlayPos, position,
                 lastOverlaySpeed, speed,
@@ -323,7 +244,7 @@ public final class EnvelopeOverlayBuilder implements StepConsumer {
      */
     @Override
     public boolean addStep(double position, double speed, double time) {
-        checkMode(Mode.OVERLAYING);
+        assert !hadIntersection : "called addStep on a complete overlay";
         assert cursor.comparePos(lastOverlayPos, cursor.getStepBeginPos()) >= 0
                 && cursor.comparePos(lastOverlayPos, cursor.getStepEndPos()) <= 0;
         assert cursor.comparePos(lastOverlayPos, position) < 0;
@@ -358,35 +279,26 @@ public final class EnvelopeOverlayBuilder implements StepConsumer {
                         lastOverlaySpeed, speed,
                         stepEndPos - lastOverlayPos
                 );
-                internalAddOverlayStep(stepEndPos, interSpeed, interTime);
-                completeOverlay();
+                addFinalStep(stepEndPos, interSpeed, interTime);
                 return true;
             }
         }
 
         // if no intersection with the base curve was found, add the step to the overlay
-        internalAddOverlayStep(position, speed, time);
+        addOverlayStep(position, speed, time);
         return false;
     }
 
     // endregion
 
-    /** Create the envelope */
-    public Envelope build() {
-        checkMode(Mode.SCANNING);
+    /** Create the overlay-ed envelope part, making the builder unusable */
+    public EnvelopePart build() {
+        // add the overlay part
+        if (cursor.reverse)
+            partBuilder.reverse();
 
-        cursor.moveToEnd();
-        sliceBaseEnvelope();
-
-        // build the final envelope
-        EnvelopePart[] parts = resultParts.toArray(new EnvelopePart[0]);
-        if (cursor.reverse) {
-            for (int i = 0; i < parts.length / 2; i++) {
-                var tmp = parts[i];
-                parts[i] = parts[parts.length - i - 1];
-                parts[parts.length - i - 1] = tmp;
-            }
-        }
-        return Envelope.make(parts);
+        var result = partBuilder.build();
+        partBuilder = null;
+        return result;
     }
 }
