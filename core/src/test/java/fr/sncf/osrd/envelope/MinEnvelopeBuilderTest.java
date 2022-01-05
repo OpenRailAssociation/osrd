@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.EnvelopeTestMeta;
 import org.junit.jupiter.api.Test;
 
-class EnvelopeBuilderTest {
+class MinEnvelopeBuilderTest {
     public static final EnvelopePartMeta meta1 = new EnvelopeTestMeta();
     public static final EnvelopePartMeta meta2 = new EnvelopeTestMeta();
 
@@ -27,7 +27,7 @@ class EnvelopeBuilderTest {
                 new double[]{3.5, 3.5}
         );
 
-        var builder = new EnvelopeBuilder();
+        var builder = new MinEnvelopeBuilder();
         builder.addPart(ep1);
         builder.addPart(ep2);
         var envelope = builder.build();
@@ -60,7 +60,7 @@ class EnvelopeBuilderTest {
                 new double[]{0, 2}
         );
 
-        var builder = new EnvelopeBuilder();
+        var builder = new MinEnvelopeBuilder();
         builder.addPart(ep1);
         builder.addPart(ep2);
         var envelope = builder.build();
@@ -91,7 +91,7 @@ class EnvelopeBuilderTest {
                 new double[]{4, 4}
         );
 
-        var builder = new EnvelopeBuilder();
+        var builder = new MinEnvelopeBuilder();
         builder.addPart(ep1);
         builder.addPart(ep2);
         var envelope = builder.build();
@@ -127,7 +127,7 @@ class EnvelopeBuilderTest {
                 new double[]{1, 1, 1}
         );
 
-        var builder = new EnvelopeBuilder();
+        var builder = new MinEnvelopeBuilder();
         builder.addPart(ep1);
         builder.addPart(ep2);
         var envelope = builder.build();
@@ -159,7 +159,7 @@ class EnvelopeBuilderTest {
                 new double[]{1, 1}
         );
 
-        var builder = new EnvelopeBuilder();
+        var builder = new MinEnvelopeBuilder();
         builder.addPart(ep1);
         builder.addPart(ep2);
         var envelope = builder.build();

@@ -53,28 +53,6 @@ public class EnvelopeCursor implements EnvelopePosition {
         return new EnvelopeCursor(envelope, true);
     }
 
-    /** Whether the cursor is just before a discontinuity */
-    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
-    public boolean startsDiscontinuity() {
-        assert !hasReachedEnd();
-
-        if (this.position != getPartEndPos())
-            return false;
-
-        var nextPartIndex = nextIndex(partIndex, envelope.size());
-        // if we're at the end of the last envelope part, there is no discontinuity
-        if (nextPartIndex == -1)
-            return false;
-
-        var nextPart = envelope.get(nextPartIndex);
-        var nextPartStart = firstIndex(nextPart.stepCount());
-        var curPos = getPartEndPos();
-        var curSpeed = getPartEndSpeed();
-        var nextPos = getStepBeginPos(nextPart, nextPartStart);
-        var nextSpeed = getStepBeginPos(nextPart, nextPartStart);
-        return curPos != nextPos || curSpeed != nextSpeed;
-    }
-
     public int getRevision() {
         return revision;
     }
@@ -190,10 +168,6 @@ public class EnvelopeCursor implements EnvelopePosition {
         return getStepEndPos(part, lastIndex(part.stepCount()));
     }
 
-    private double getPartEndSpeed() {
-        return getStepEndSpeed(part, lastIndex(part.stepCount()));
-    }
-
     /** Compares positions in a direction away manner. */
     public double comparePos(double a, double b) {
         if (reverse)
@@ -259,7 +233,7 @@ public class EnvelopeCursor implements EnvelopePosition {
         assert comparePos(newPosition, this.position) >= 0;
 
         // find the EnvelopePart which contains the new position
-        while (comparePos(getPartEndPos(), newPosition) <= 0)
+        while (comparePos(getPartEndPos(), newPosition) < 0)
             if (!nextPart())
                 return false;
 
@@ -267,7 +241,7 @@ public class EnvelopeCursor implements EnvelopePosition {
         assert comparePos(getPartBeginPos(), newPosition) <= 0;
 
         // now that we found the envelope part, find the exact step
-        while (comparePos(getStepEndPos(), newPosition) <= 0)
+        while (comparePos(getStepEndPos(), newPosition) < 0)
             if (nextStep() == NEXT_REACHED_END)
                 return false;
 

@@ -19,7 +19,7 @@ public class EnvelopeOverlayTest {
                 new double[]{1, 1}
         ));
 
-        var builder = EnvelopeOverlayBuilder.withDirection(baseEnvelope, backwardDir);
+        var builder = OverlayEnvelopeBuilder.withDirection(baseEnvelope, backwardDir);
         var newEnvelope = builder.build();
 
         EnvelopeTestUtils.assertEquals(baseEnvelope, newEnvelope);
@@ -43,7 +43,7 @@ public class EnvelopeOverlayTest {
                 )
         );
 
-        var builder = EnvelopeOverlayBuilder.withDirection(baseEnvelope, backwardDir);
+        var builder = OverlayEnvelopeBuilder.withDirection(baseEnvelope, backwardDir);
         var newEnvelope = builder.build();
 
         EnvelopeTestUtils.assertEquals(baseEnvelope, newEnvelope);
@@ -62,11 +62,14 @@ public class EnvelopeOverlayTest {
         );
         var constSpeedEnvelope = Envelope.make(constSpeedPart);
         var cursor = EnvelopeCursor.forward(constSpeedEnvelope);
-        var builder = new EnvelopeOverlayBuilder(cursor);
+        var builder = new OverlayEnvelopeBuilder(cursor);
         cursor.findPosition(3);
-        builder.startContinuousOverlay(null);
-        assertFalse(builder.addStep(4, 1));
-        assertTrue(builder.addStep(5, 4));
+        {
+            var partBuilder = builder.startContinuousOverlay(null);
+            assertFalse(partBuilder.addStep(4, 1));
+            assertTrue(partBuilder.addStep(5, 4));
+            builder.addPart(partBuilder);
+        }
         var envelope = builder.build();
         assertEquals(3, envelope.size());
         assertTrue(envelope.continuous);
@@ -84,15 +87,23 @@ public class EnvelopeOverlayTest {
         );
         var constSpeedEnvelope = Envelope.make(constSpeedPart);
         var cursor = EnvelopeCursor.forward(constSpeedEnvelope);
-        var builder = new EnvelopeOverlayBuilder(cursor);
-        builder.startContinuousOverlay(null);
-        assertFalse(builder.addStep(1, 1));
-        assertTrue(builder.addStep(3, 2));
+        var builder = new OverlayEnvelopeBuilder(cursor);
+
+        {
+            var partBuilder = builder.startContinuousOverlay(null);
+            assertFalse(partBuilder.addStep(1, 1));
+            assertTrue(partBuilder.addStep(3, 2));
+            builder.addPart(partBuilder);
+        }
 
         cursor.findPosition(6);
-        builder.startContinuousOverlay(null);
-        assertFalse(builder.addStep(7, 1));
-        assertTrue(builder.addStep(8, 2));
+
+        {
+            var partBuilder = builder.startContinuousOverlay(null);
+            assertFalse(partBuilder.addStep(7, 1));
+            assertTrue(partBuilder.addStep(8, 2));
+            builder.addPart(partBuilder);
+        }
 
         var envelope = builder.build();
         assertEquals(3, envelope.size());
@@ -109,15 +120,22 @@ public class EnvelopeOverlayTest {
                 new double[]{2, 2}
         );
         var constSpeedEnvelope = Envelope.make(constSpeedPart);
-        var builder = EnvelopeOverlayBuilder.forward(constSpeedEnvelope);
-        builder.startContinuousOverlay(null);
-        assertFalse(builder.addStep(1, 1));
-        assertTrue(builder.addStep(3, 2));
+        var builder = OverlayEnvelopeBuilder.forward(constSpeedEnvelope);
+        {
+            var partBuilder = builder.startContinuousOverlay(null);
+            assertFalse(partBuilder.addStep(1, 1));
+            assertTrue(partBuilder.addStep(3, 2));
+            builder.addPart(partBuilder);
+        }
 
         builder.cursor.findPosition(6);
-        builder.startContinuousOverlay(null);
-        assertFalse(builder.addStep(7, 1));
-        assertTrue(builder.addStep(8, 2));
+
+        {
+            var partBuilder = builder.startContinuousOverlay(null);
+            assertFalse(partBuilder.addStep(7, 1));
+            assertTrue(partBuilder.addStep(8, 2));
+            builder.addPart(partBuilder);
+        }
 
         var envelope = builder.build();
         assertEquals(3, envelope.size());
@@ -137,11 +155,15 @@ public class EnvelopeOverlayTest {
         );
         double[] overlayPoints = backwardDir ? new double[] {5, 4, 3} : new double[] { 3, 4, 5};
         var constSpeedEnvelope = Envelope.make(constSpeedPart);
-        var builder = EnvelopeOverlayBuilder.withDirection(constSpeedEnvelope, backwardDir);
+        var builder = OverlayEnvelopeBuilder.withDirection(constSpeedEnvelope, backwardDir);
         builder.cursor.findPosition(overlayPoints[0]);
-        builder.startContinuousOverlay(testMeta);
-        assertFalse(builder.addStep(overlayPoints[1], 1));
-        assertTrue(builder.addStep(overlayPoints[2], 2));
+        {
+            var partBuilder = builder.startContinuousOverlay(testMeta);
+            assertFalse(partBuilder.addStep(overlayPoints[1], 1));
+            assertTrue(partBuilder.addStep(overlayPoints[2], 2));
+            builder.addPart(partBuilder);
+        }
+
         var envelope = builder.build();
         assertEquals(3, envelope.size());
         assertTrue(envelope.continuous);
@@ -190,7 +212,7 @@ public class EnvelopeOverlayTest {
                 )
         );
 
-        var builder = EnvelopeOverlayBuilder.withDirection(baseEnvelope, isBackward);
+        var builder = OverlayEnvelopeBuilder.withDirection(baseEnvelope, isBackward);
         var positions = new double[] { 3, 4, 6 };
         var speeds = new double[] { 4, 3, 4 };
         EnvelopeTestUtils.buildContinuous(builder, null, positions, speeds, isBackward);
@@ -239,10 +261,15 @@ public class EnvelopeOverlayTest {
         );
 
         var cursor = EnvelopeCursor.forward(baseEnvelope);
-        var builder = new EnvelopeOverlayBuilder(cursor);
+        var builder = new OverlayEnvelopeBuilder(cursor);
         cursor.findPosition(1);
-        builder.startContinuousOverlay(null);
-        assertTrue(builder.addStep(5, 5));
+
+        {
+            var partBuilder = builder.startContinuousOverlay(null);
+            assertTrue(partBuilder.addStep(5, 5));
+            builder.addPart(partBuilder);
+        }
+
         var forwardEnvelope = builder.build();
         assertEquals(6, forwardEnvelope.size());
         assertTrue(forwardEnvelope.spaceContinuous);
@@ -281,7 +308,7 @@ public class EnvelopeOverlayTest {
                 )
         );
 
-        var builder = EnvelopeOverlayBuilder.withDirection(baseEnvelope, reverse);
+        var builder = OverlayEnvelopeBuilder.withDirection(baseEnvelope, reverse);
         var positions = new double[] { 3, 4, 5, 6 };
         var speeds = new double[] { 4, 3, 3, 4 };
         EnvelopeTestUtils.buildContinuous(builder, null, positions, speeds, reverse);
@@ -298,10 +325,13 @@ public class EnvelopeOverlayTest {
                 new double[]{2, 1, 0}
         ));
 
-        var builder = EnvelopeOverlayBuilder.forward(constSpeedEnvelope);
-        builder.startContinuousOverlay(null);
-        assertFalse(builder.addStep(1, 1));
-        assertTrue(builder.addStep(4, 1));
+        var builder = OverlayEnvelopeBuilder.forward(constSpeedEnvelope);
+        {
+            var partBuilder = builder.startContinuousOverlay(null);
+            assertFalse(partBuilder.addStep(1, 1));
+            assertTrue(partBuilder.addStep(4, 1));
+            builder.addPart(partBuilder);
+        }
         var envelope = builder.build();
         assertEquals(2, envelope.size());
         assertTrue(envelope.continuous);
@@ -315,11 +345,14 @@ public class EnvelopeOverlayTest {
                 new double[]{1, 1, 3}
         ));
 
-        var builder = EnvelopeOverlayBuilder.forward(speedEnvelope);
+        var builder = OverlayEnvelopeBuilder.forward(speedEnvelope);
         builder.cursor.findPosition(2);
-        builder.startContinuousOverlay(null);
-        assertFalse(builder.addStep(3, 2));
-        assertTrue(builder.addStep(4, 3));
+        {
+            var partBuilder = builder.startContinuousOverlay(null);
+            assertFalse(partBuilder.addStep(3, 2));
+            assertTrue(partBuilder.addStep(4, 3));
+            builder.addPart(partBuilder);
+        }
         var envelope = builder.build();
         assertEquals(2, envelope.size());
         assertTrue(envelope.continuous);
