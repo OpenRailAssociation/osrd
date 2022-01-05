@@ -13,4 +13,7 @@ export const LIST_VALUES_NAME_SPEED_SPACE = [
   'speed',
   'margins_speed',
   'eco_speed',
-]; // , 'indication', 'emergency'];
+];
+export const LIST_VALUES_NAME_SPACE_CURVES_SLOPES = [
+  'slopesCurve',
+];

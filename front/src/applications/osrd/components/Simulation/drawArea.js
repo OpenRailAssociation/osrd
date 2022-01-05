@@ -1,8 +1,8 @@
 import * as d3 from 'd3';
 
 const drawArea = (
-  chart, classes, dataSimulation, dispatch, groupID, interpolation,
-  keyValues, name, rotate,
+  chart, classes, dataSimulation, groupID,
+  interpolation, keyValues, rotate,
 ) => { // Pattern could be a color or a pattern defined in svgDefs with syntax 'url(#idOfPAttern)'
   const dataDefinition = rotate
     ? d3.area()
@@ -18,7 +18,7 @@ const drawArea = (
 
   chart.drawZone.select(`#${groupID}`).append('path')
     .attr('class', `area zoomable ${classes}`)
-    .datum(dataSimulation[name])
+    .datum(dataSimulation)
     .attr('d', dataDefinition);
 };
 

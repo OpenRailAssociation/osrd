@@ -3,7 +3,7 @@ import { store } from 'Store';
 import drawGuideLines from 'applications/osrd/components/Simulation/drawGuideLines';
 import { gridX, gridY, interpolateOnPosition } from 'applications/osrd/components/Helpers/ChartHelpers';
 import {
-  updateMustRedraw, updateTimePosition, updateContextMenu,
+  updateChartXGEV, updateMustRedraw, updateTimePosition, updateContextMenu,
 } from 'reducers/osrdsimulation';
 
 export const displayGuide = (chart, opacity) => {
@@ -145,6 +145,7 @@ const enableInteractivity = (
 ) => {
   let newHoverPosition;
 
+  let lastChartX;
   const zoom = d3.zoom(newHoverPosition)
     .scaleExtent([0.5, 20]) // This control how much you can unzoom (x0.5) and zoom (x20)
     .extent([[0, 0], [chart.width, chart.height]])
@@ -155,16 +156,21 @@ const enableInteractivity = (
         || d3.event.transform.k >= 1
         || zoomLevel >= 0.25)) {
         d3.event.sourceEvent.preventDefault();
-        // (chart.y.domain()[0] >= -100 || d3.event.transform.y >= 0 || d3.event.transform.k !== 1)
         setZoomLevel(zoomLevel * d3.event.transform.k);
         setYPosition(yPosition + d3.event.transform.y);
         const zoomFunctions = updateChart(chart, keyValues, rotate);
         const newChart = { ...chart, x: zoomFunctions.newX, y: zoomFunctions.newY };
+        lastChartX = zoomFunctions.newX;
         setChart(newChart);
       }
     })
     .filter(() => (d3.event.button === 0 || d3.event.button === 1) && d3.event.ctrlKey)
-    .on('end', () => dispatch(updateMustRedraw(true)));
+    .on('end', () => {
+      if (keyValues[1] === 'speed' || keyValues[1] === 'gradient') {
+        dispatch(updateChartXGEV(lastChartX));
+      }
+      dispatch(updateMustRedraw(true));
+    });
 
   const mousemove = () => {
     // If GET && not playing
