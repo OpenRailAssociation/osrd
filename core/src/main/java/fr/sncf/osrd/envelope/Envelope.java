@@ -1,9 +1,6 @@
 package fr.sncf.osrd.envelope;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.utils.SwingUtils;
-import org.math.plot.Plot2DPanel;
-import javax.swing.JPanel;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -155,34 +152,6 @@ public final class Envelope  {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    /** Creates a plot panel for this envelope */
-    public JPanel plotPanel() {
-        // create your PlotPanel (you can use it as a JPanel)
-        Plot2DPanel plot = new Plot2DPanel();
-
-        // add a line plot to the PlotPanel
-        for (int i = 0; i < size(); i++) {
-            var lineName = String.format("part %d", i);
-            var part = get(i);
-            var positions = part.clonePositions();
-            var speeds = part.cloneSpeeds();
-            // wordaround https://github.com/yannrichet/jmathplot/issues/5
-            if (part.pointCount() == 2) {
-                var newPositions = new double[] { positions[0], speeds[0] };
-                var newSpeeds = new double[] { positions[1], speeds[1] };
-                positions = newPositions;
-                speeds = newSpeeds;
-            }
-            plot.addLinePlot(lineName, positions, speeds);
-        }
-        return plot;
-    }
-
-    /** Shows an interactive plot of the envelope */
-    public void debugPlot() {
-        SwingUtils.debugPanel("Envelope", this::plotPanel);
     }
     // endregion
 }
