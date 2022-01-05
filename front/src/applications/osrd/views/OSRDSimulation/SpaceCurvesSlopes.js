@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import * as d3 from 'd3';
-import { LIST_VALUES_NAME_SPEED_SPACE } from 'applications/osrd/components/Simulation/consts';
+import { LIST_VALUES_NAME_SPACE_CURVES_SLOPES } from 'applications/osrd/components/Simulation/consts';
 import {
   defineLinear, handleWindowResize, mergeDatasAreaConstant,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
@@ -11,12 +11,10 @@ import defineChart from 'applications/osrd/components/Simulation/defineChart';
 import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
 import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import enableInteractivity, { traceVerticalLine } from 'applications/osrd/components/Simulation/enableInteractivity';
-import { CgLoadbar } from 'react-icons/cg';
-import SpeedSpaceSettings from 'applications/osrd/components/Simulation/SpeedSpaceSettings/SpeedSpaceSettings';
 import createSlopeCurve from 'applications/osrd/components/Simulation/SpeedSpaceChart/createSlopeCurve';
-import createCurveCurve from 'applications/osrd/components/Simulation/SpeedSpaceChart/createCurveCurve';
+import { CgLoadbar } from 'react-icons/cg';
 
-const CHART_ID = 'SpeedSpaceChart';
+const CHART_ID = 'SpaceCurvesSlopes';
 
 const drawAxisTitle = (chart, rotate) => {
   chart.drawZone.append('text')
@@ -25,7 +23,7 @@ const drawAxisTitle = (chart, rotate) => {
     .attr('transform', rotate ? 'rotate(0)' : 'rotate(-90)')
     .attr('x', rotate ? chart.width - 10 : -10)
     .attr('y', rotate ? chart.height - 10 : 20)
-    .text('KM/H');
+    .text('M/KM');
 
   chart.drawZone.append('text')
     .attr('class', 'axis-unit')
@@ -36,8 +34,8 @@ const drawAxisTitle = (chart, rotate) => {
     .text('M');
 };
 
-export default function SpeedSpaceChart(props) {
-  const { heightOfSpeedSpaceChart } = props;
+export default function SpaceCurvesSlopes(props) {
+  const { heightOfSpaceCurvesSlopesChart } = props;
   const dispatch = useDispatch();
   const {
     chartXGEV, mustRedraw, positionValues, selectedTrain, simulation, timePosition,
@@ -48,69 +46,48 @@ export default function SpeedSpaceChart(props) {
   const [yPosition, setYPosition] = useState(0);
   const [isResizeActive, setResizeActive] = useState(false);
   const ref = useRef();
-  const keyValues = ['position', 'speed'];
+  const keyValues = ['position', 'gradient'];
 
   // Prepare data
   const dataSimulation = {};
+  // Speeds : reference needed for interpolate position of cursor
   dataSimulation.speed = simulation.trains[selectedTrain].base.speeds.map(
     (step) => ({ ...step, speed: step.speed * 3.6 }),
   );
-  if (simulation.trains[selectedTrain].margins && !simulation.trains[selectedTrain].margins.error) {
-    dataSimulation.margins_speed = simulation.trains[selectedTrain].margins.speeds.map(
-      (step) => ({ ...step, speed: step.speed * 3.6 }),
-    );
-  }
-  if (simulation.trains[selectedTrain].eco && !simulation.trains[selectedTrain].eco.error) {
-    dataSimulation.eco_speed = simulation.trains[selectedTrain].eco.speeds.map(
-      (step) => ({ ...step, speed: step.speed * 3.6 }),
-    );
-  }
-  dataSimulation.areaBlock = mergeDatasAreaConstant(dataSimulation.speed, 0, keyValues);
-  dataSimulation.vmax = simulation.trains[selectedTrain].vmax.map(
-    (step) => ({ speed: step.speed * 3.6, position: step.position }),
-  );
-
   // Slopes
-  dataSimulation.slopesCurve = createSlopeCurve(
-    simulation.trains[selectedTrain].slopes, dataSimulation.speed,
-  );
-  const zeroLineSlope = dataSimulation.slopesCurve[0].height; // Start height of histogram
   dataSimulation.slopesHistogram = simulation.trains[selectedTrain].slopes.map(
     (step) => ({
       position: step.position,
-      gradient: (step.gradient * 4) + zeroLineSlope,
+      gradient: step.gradient,
     }),
   );
-  dataSimulation.areaSlopesHistogram = mergeDatasAreaConstant(dataSimulation.slopesHistogram, zeroLineSlope, ['position', 'gradient']);
-
-  // Curves
-  dataSimulation.curvesHistogram = createCurveCurve(
-    simulation.trains[selectedTrain].curves,
-    dataSimulation.speed,
+  dataSimulation.areaSlopesHistogram = mergeDatasAreaConstant(dataSimulation.slopesHistogram, 0, ['position', 'gradient']);
+  dataSimulation.slopesCurve = createSlopeCurve(
+    simulation.trains[selectedTrain].slopes,
+    dataSimulation.slopesHistogram,
+    'gradient',
   );
-
-  const toggleRotation = () => {
-    d3.select(`#${CHART_ID}`).remove();
-    setChart({ ...chart, x: chart.y, y: chart.x });
-    setRotate(!rotate);
-    dispatch(updateMustRedraw(true));
-  };
-
+  // Curves
+  //dataSimulation.curvesHistogram = { ...simulation.trains[selectedTrain].curves };
   const createChart = () => {
     d3.select(`#${CHART_ID}`).remove();
 
     const defineX = (chart === undefined)
-      ? defineLinear(d3.max(Object.values(dataSimulation),
-        (data) => d3.max(data, (d) => d[(rotate ? keyValues[1] : keyValues[0])] + 100)))
+      ? defineLinear(d3.max(
+        dataSimulation.slopesHistogram, (d) => d[(rotate ? keyValues[1] : keyValues[0])] + 100,
+      ))
       : chart.x;
     const defineY = (chart === undefined)
-      ? defineLinear(d3.max(Object.values(dataSimulation),
-        (data) => d3.max(data, (d) => d[(rotate ? keyValues[0] : keyValues[1])] + 50)))
+      ? defineLinear(d3.max(
+        dataSimulation.slopesHistogram, (d) => d[(rotate ? keyValues[0] : keyValues[1])],
+      ),
+      0,
+      d3.min(dataSimulation.slopesHistogram, (d) => d[(rotate ? keyValues[0] : keyValues[1])]))
       : chart.y;
 
     const width = parseInt(d3.select(`#container-${CHART_ID}`).style('width'), 10);
     return defineChart(
-      width, heightOfSpeedSpaceChart, defineX, defineY, ref, rotate, keyValues, CHART_ID,
+      width, heightOfSpaceCurvesSlopesChart, defineX, defineY, ref, rotate, keyValues, CHART_ID,
     );
   };
 
@@ -141,36 +118,25 @@ export default function SpeedSpaceChart(props) {
   const drawTrain = () => {
     if (mustRedraw) {
       const chartLocal = createChart();
-      chartLocal.drawZone.append('g').attr('id', 'speedSpaceChart').attr('class', 'chartTrain');
+      chartLocal.drawZone.append('g').attr('id', 'curvesSlopesChart').attr('class', 'chartTrain');
       drawAxisTitle(chartLocal, rotate);
-      drawArea(chartLocal, 'area speed', dataSimulation.areaBlock, 'speedSpaceChart', 'curveLinear', keyValues, rotate);
-      drawCurve(chartLocal, 'speed', dataSimulation.speed, 'speedSpaceChart', 'curveLinear', keyValues, 'speed', rotate);
-      if (dataSimulation.margins_speed) {
-        drawCurve(chartLocal, 'speed margins', dataSimulation.margins_speed, 'speedSpaceChart', 'curveLinear', keyValues, 'margins_speed', rotate);
-      }
-      if (dataSimulation.eco_speed) {
-        drawCurve(chartLocal, 'speed eco', dataSimulation.eco_speed, 'speedSpaceChart', 'curveLinear', keyValues, 'eco_speed', rotate);
-      }
-      if (dataSimulation.vmax) {
-        drawCurve(chartLocal, 'speed vmax', dataSimulation.vmax, 'speedSpaceChart', 'curveLinear', keyValues, 'vmax', rotate);
-      }
-    /*  if (dataSimulation.slopesCurve) {
-        drawCurve(chartLocal, 'speed slopes', dataSimulation.slopesCurve, 'speedSpaceChart', 'curveLinear', ['position', 'height'], 'slopes', rotate);
-      }
       if (dataSimulation.slopesHistogram) {
-        drawCurve(chartLocal, 'speed slopesHistogram', dataSimulation.slopesHistogram, 'speedSpaceChart', 'curveMonotoneX', ['position', 'gradient'], 'slopesHistogram', rotate);
-        drawArea(chartLocal, 'area slopes', dataSimulation.areaSlopesHistogram, 'speedSpaceChart', 'curveMonotoneX', ['position', 'gradient'], rotate);
+        drawCurve(chartLocal, 'speed slopesHistogram', dataSimulation.slopesHistogram, 'curvesSlopesChart', 'curveMonotoneX', ['position', 'gradient'], 'slopesHistogram', rotate);
+        drawArea(chartLocal, 'area slopes', dataSimulation.areaSlopesHistogram, 'curvesSlopesChart', 'curveMonotoneX', ['position', 'gradient'], rotate);
       }
       if (dataSimulation.curvesHistogram) {
-        drawCurve(chartLocal, 'speed curvesHistogram', dataSimulation.curvesHistogram, 'speedSpaceChart', 'curveLinear', ['position', 'radius'], 'curvesHistogram', rotate);
-      } */
+        // drawCurve(chartLocal, 'speed curvesHistogram', dataSimulation.curvesHistogram, 'curvesSlopesChart', 'curveLinear', ['position', 'radius'], 'curvesHistogram', rotate);
+      }
+      if (dataSimulation.slopesCurve) {
+        drawCurve(chartLocal, 'speed slopes', dataSimulation.slopesCurve, 'curvesSlopesChart', 'curveLinear', ['position', 'height'], 'slopes', rotate);
+      }
 
       // Operational points
       drawOPs(chartLocal);
 
       enableInteractivity(
         chartLocal, dataSimulation, dispatch, keyValues,
-        LIST_VALUES_NAME_SPEED_SPACE, positionValues, rotate,
+        LIST_VALUES_NAME_SPACE_CURVES_SLOPES, positionValues, rotate,
         setChart, setYPosition, setZoomLevel, yPosition, zoomLevel,
       );
       setChart(chartLocal);
@@ -186,7 +152,7 @@ export default function SpeedSpaceChart(props) {
   useEffect(() => {
     traceVerticalLine(
       chart, dataSimulation, keyValues,
-      LIST_VALUES_NAME_SPEED_SPACE, positionValues, 'speed', rotate, timePosition,
+      LIST_VALUES_NAME_SPACE_CURVES_SLOPES, positionValues, 'slopesCurve', rotate, timePosition,
     );
   }, [chart, mustRedraw, positionValues, timePosition]);
 
@@ -197,16 +163,8 @@ export default function SpeedSpaceChart(props) {
   }, [chartXGEV]);
 
   return (
-    <div id={`container-${CHART_ID}`} className="speedspace-chart w-100" style={{ height: `${heightOfSpeedSpaceChart}px` }}>
-      <SpeedSpaceSettings />
+    <div id={`container-${CHART_ID}`} className="spacecurvesslopes-chart w-100" style={{ height: `${heightOfSpaceCurvesSlopesChart}px` }}>
       <div ref={ref} />
-      <button
-        type="button"
-        className="btn-rounded btn-rounded-white box-shadow btn-rotate"
-        onClick={() => toggleRotation(rotate, setRotate)}
-      >
-        <i className="icons-refresh" />
-      </button>
       <div className="handle-tab-resize">
         <CgLoadbar />
       </div>
@@ -214,6 +172,6 @@ export default function SpeedSpaceChart(props) {
   );
 }
 
-SpeedSpaceChart.propTypes = {
-  heightOfSpeedSpaceChart: PropTypes.number.isRequired,
+SpaceCurvesSlopes.propTypes = {
+  heightOfSpaceCurvesSlopesChart: PropTypes.number.isRequired,
 };

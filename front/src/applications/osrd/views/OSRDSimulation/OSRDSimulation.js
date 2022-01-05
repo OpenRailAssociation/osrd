@@ -11,6 +11,7 @@ import ContextMenu from 'applications/osrd/components/Simulation/ContextMenu';
 import Margins from 'applications/osrd/views/OSRDSimulation/Margins';
 import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
 import SpeedSpaceChart from 'applications/osrd/views/OSRDSimulation/SpeedSpaceChart';
+import SpaceCurvesSlopes from 'applications/osrd/views/OSRDSimulation/SpaceCurvesSlopes';
 import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
 import Map from 'applications/osrd/views/OSRDSimulation/Map';
 import TrainDetails from 'applications/osrd/views/OSRDSimulation/TrainDetails';
@@ -35,14 +36,22 @@ const OSRDSimulation = () => {
   const [isEmpty, setIsEmpty] = useState(true);
   const [displayTrainList, setDisplayTrainList] = useState(false);
   const [displayMargins, setDisplayMargins] = useState(false);
+
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(400);
   const [
     initialHeightOfSpaceTimeChart, setInitialHeightOfSpaceTimeChart,
   ] = useState(heightOfSpaceTimeChart);
+
   const [heightOfSpeedSpaceChart, setHeightOfSpeedSpaceChart] = useState(250);
   const [
     initialHeightOfSpeedSpaceChart, setInitialHeightOfSpeedSpaceChart,
   ] = useState(heightOfSpeedSpaceChart);
+
+  const [heightOfSpaceCurvesSlopesChart, setHeightOfSpaceCurvesSlopesChart] = useState(150);
+  const [
+    initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart,
+  ] = useState(heightOfSpaceCurvesSlopesChart);
+
   const { timetableID } = useSelector((state) => state.osrdconf);
   const {
     marginsSettings, selectedProjection, selectedTrain, simulation, stickyBar,
@@ -242,6 +251,48 @@ const OSRDSimulation = () => {
                       }}
                     >
                       <SpeedSpaceChart heightOfSpeedSpaceChart={heightOfSpeedSpaceChart} />
+                    </Rnd>
+                  )}
+                </div>
+              </div>
+              <div className="osrd-simulation-container d-flex mb-2">
+                <div className="spacecurvesslopes-container" style={{ height: `${heightOfSpaceCurvesSlopesChart}px` }}>
+                  {simulation.trains.length > 0 && (
+                    <Rnd
+                      default={{
+                        x: 0,
+                        y: 0,
+                        width: '100%',
+                        height: `${heightOfSpaceCurvesSlopesChart}px`,
+                      }}
+                      disableDragging
+                      enableResizing={{
+                        top: false,
+                        right: false,
+                        bottom: true,
+                        left: false,
+                        topRight: false,
+                        bottomRight: false,
+                        bottomLeft: false,
+                        topLeft: false,
+                      }}
+                      onResizeStart={
+                        () => setInitialHeightOfSpaceCurvesSlopesChart(
+                          heightOfSpaceCurvesSlopesChart,
+                        )
+                      }
+                      onResize={(e, dir, refToElement, delta) => {
+                        setHeightOfSpaceCurvesSlopesChart(
+                          initialHeightOfSpaceCurvesSlopesChart + delta.height,
+                        );
+                      }}
+                      onResizeStop={() => {
+                        dispatch(updateMustRedraw(true));
+                      }}
+                    >
+                      <SpaceCurvesSlopes
+                        heightOfSpaceCurvesSlopesChart={heightOfSpaceCurvesSlopesChart}
+                      />
                     </Rnd>
                   )}
                 </div>

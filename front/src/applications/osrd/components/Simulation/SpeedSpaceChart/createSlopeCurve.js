@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 
-const createSlopeCurve = (slopes, speeds) => {
+const createSlopeCurve = (slopes, referential, nameOfReferential) => {
   const slopesCurve = [];
   slopes.forEach(
     (step, idx) => {
@@ -17,13 +17,21 @@ const createSlopeCurve = (slopes, speeds) => {
       }
     },
   );
-  const maxSpeed = d3.max(speeds.map((step) => step.speed));
-  const minHeight = d3.min(slopesCurve.map((step) => step.height));
-  const maxHeight = d3.max(slopesCurve.map((step) => step.height));
-  return slopesCurve.map((step) => ({
-    ...step,
-    height: (((step.height + (minHeight * -1)) * maxSpeed) / (maxHeight + (minHeight * -1))),
-  }));
+  if (referential) {
+    const referentialHeight = d3.max(referential.map((step) => step[nameOfReferential]))
+    - d3.min(referential.map((step) => step[nameOfReferential]));
+    const dataHeight = d3.max(slopesCurve.map((step) => step.height))
+    - d3.min(slopesCurve.map((step) => step.height));
+    return slopesCurve.map((step) => ({
+      ...step,
+      height: (step.height * referentialHeight) / dataHeight,
+    }));
+    /* return slopesCurve.map((step) => ({
+      ...step,
+      height: (((step.height + (minHeight * -1)) * maxReferential) / (maxHeight + (minHeight * -1))),
+    })); */
+  }
+  return slopesCurve;
 };
 
 export default createSlopeCurve;

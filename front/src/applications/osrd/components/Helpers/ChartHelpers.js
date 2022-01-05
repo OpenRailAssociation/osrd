@@ -21,8 +21,8 @@ export const getDirection = (data) => data[0][0].position
 export const defineTime = (extent) => d3.scaleTime()
   .domain(extent);
 
-export const defineLinear = (max, pctMarge = 0) => d3.scaleLinear()
-  .domain([0 - (max * pctMarge), max + (max * pctMarge)]);
+export const defineLinear = (max, pctMarge = 0, origin = 0) => d3.scaleLinear()
+  .domain([origin - (max * pctMarge), max + (max * pctMarge)]);
 
 export const formatStepsWithTimeMulti = (data) => data.map(
   (section) => section.map(
@@ -149,10 +149,9 @@ export const mergeDatasArea = (data1, data2, keyValues) => data1.map(
   (step, i) => ({
     [keyValues[0]]: step[keyValues[0]],
     value0: step[keyValues[1]],
-    value1: (data2 !== undefined) ? data2[i][keyValues[1]] : 0,
+    value1: data2[i][keyValues[1]],
   }),
 );
-
 export const mergeDatasArea2 = (data1, data2, keyValues) => {
   const points = [];
   data1.forEach((step, i) => {
@@ -174,6 +173,13 @@ export const mergeDatasArea2 = (data1, data2, keyValues) => {
   });
   return points;
 };
+export const mergeDatasAreaConstant = (data1, data2, keyValues) => data1.map(
+  (step) => ({
+    [keyValues[0]]: step[keyValues[0]],
+    value0: step[keyValues[1]],
+    value1: data2,
+  }),
+);
 
 // Transform little arrays of data (staircases values like emergency or indication)
 // along all steps values

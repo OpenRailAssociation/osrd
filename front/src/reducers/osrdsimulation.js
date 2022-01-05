@@ -3,6 +3,7 @@ import produce from 'immer';
 
 // Action Types
 export const UPDATE_CHART = 'osrdsimu/UPDATE_CHART';
+export const UPDATE_CHARTXGEV = 'osrdsimu/UPDATE_CHARTXGEV';
 export const UPDATE_CONTEXTMENU = 'osrdsimu/UPDATE_CONTEXTMENU';
 export const UPDATE_HOVER_POSITION = 'osrdsimu/UPDATE_HOVER_POSITION';
 export const UPDATE_IS_PLAYING = 'osrdsimu/UPDATE_IS_PLAYING';
@@ -19,6 +20,7 @@ export const UPDATE_TIME_POSITION = 'osrdsimu/UPDATE_TIME_POSITION';
 // Reducer
 export const initialState = {
   chart: undefined,
+  chartXGEV: undefined,
   contextMenu: undefined,
   hoverPosition: undefined,
   isPlaying: false,
@@ -45,6 +47,9 @@ export default function reducer(state = initialState, action) {
     switch (action.type) {
       case UPDATE_CHART:
         draft.chart = action.chart;
+        break;
+      case UPDATE_CHARTXGEV:
+        draft.chartXGEV = action.chartXGEV;
         break;
       case UPDATE_CONTEXTMENU:
         draft.contextMenu = action.contextMenu;
@@ -92,6 +97,14 @@ export function updateChart(chart) {
     dispatch({
       type: UPDATE_CHART,
       chart,
+    });
+  };
+}
+export function updateChartXGEV(chartXGEV) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_CHARTXGEV,
+      chartXGEV,
     });
   };
 }

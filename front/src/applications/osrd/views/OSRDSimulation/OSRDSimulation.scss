@@ -237,7 +237,12 @@ svg text {
       bottom: 2.5rem;
     }
     .area {
-      fill: rgba(48, 51, 131, 0.2);
+      &.speed {
+        fill: rgba(48, 51, 131, 0.2);
+      }
+      &.slopes {
+        fill: var(--cyan);
+      }
     }
     .speed {
       stroke: var(--blue);
@@ -284,6 +289,52 @@ svg text {
     }
   }
 }
+
+/* Curves & Slopes */
+.spacecurvesslopes-container {
+  display: block;
+  position: relative;
+  width: 100%;
+  transition: .2s;
+  .spacecurvesslopes-chart {
+    background-color: white;
+    border-radius: 4px;
+    position: relative;
+    .area {
+      &.speed {
+        fill: rgba(48, 51, 131, 0.2);
+      }
+      &.slopes {
+        fill: var(--cyan);
+      }
+    }
+    .speed {
+      stroke: var(--blue);
+      stroke-width: 1;
+      &.slopes {
+        stroke-width: 2;
+        stroke: var(--orange);
+      }
+      &.slopesHistogram {
+        stroke-width: 1;
+        stroke: var(--cyan);
+      }
+    }
+  }
+  .handle-tab-resize {
+    width: 100%;
+    text-align: center;
+    position: absolute;
+    bottom: -1.25rem;
+    font-size: 2rem;
+    transition: .2s;
+    color: var(--coolgray3);
+    &:hover {
+      color: var(--coolgray9);
+    }
+  }
+}
+
 
 /* OPERATIONAL POINTS */
 .op-line {

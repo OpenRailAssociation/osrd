@@ -62,8 +62,8 @@ export default function drawTrain(
     if (marginsSettings[dataSimulation.id].baseBlocks
       || (!dataSimulation.margins_routeBeginOccupancy && !dataSimulation.eco_routeBeginOccupancy)) {
       drawArea(
-        chart, `${isSelected && 'selected'} area`, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
-        'areaBlock', rotate,
+        chart, `${isSelected && 'selected'} area`, dataSimulation.areaBlock,
+        groupID, 'curveStepAfter', keyValues, rotate,
       );
       drawCurve(chart, `${isSelected && 'selected'} end-block`, dataSimulation.routeEndOccupancy, groupID,
         'curveLinear', keyValues, 'routeEndOccupancy', rotate, isSelected);
@@ -73,8 +73,8 @@ export default function drawTrain(
     if (dataSimulation.margins_routeEndOccupancy
       && marginsSettings[dataSimulation.id].marginsBlocks) {
       drawArea(
-        chart, `${isSelected && 'selected'} area margins`, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
-        'margins_areaBlock', rotate,
+        chart, `${isSelected && 'selected'} area margins`, dataSimulation.margins_areaBlock,
+        groupID, 'curveStepAfter', keyValues, rotate,
       );
       drawCurve(chart, `${isSelected && 'selected'} end-block`, dataSimulation.margins_routeEndOccupancy, groupID,
         'curveLinear', keyValues, 'margins_routeEndOccupancy', rotate, isSelected);
@@ -84,8 +84,8 @@ export default function drawTrain(
     if (dataSimulation.eco_routeEndOccupancy
       && marginsSettings[dataSimulation.id].ecoBlocks) {
       drawArea(
-        chart, `${isSelected && 'selected'} area eco`, dataSimulation, dispatch, groupID, 'curveStepAfter', keyValues,
-        'eco_areaBlock', rotate,
+        chart, `${isSelected && 'selected'} area eco`, dataSimulation.eco_areaBlock,
+        groupID, 'curveStepAfter', keyValues, rotate,
       );
       drawCurve(chart, `${isSelected && 'selected'} end-block`, dataSimulation.eco_routeEndOccupancy, groupID,
         'curveLinear', keyValues, 'eco_routeEndOccupancy', rotate, isSelected);
