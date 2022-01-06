@@ -1,4 +1,5 @@
 [![OSRD](assets/branding/osrd_small.svg)](https://github.com/DGEXSolutions/osrd)
+[![public money, public code](assets/PMPC_badge.svg)](https://publiccode.eu/)
 
 [![license](https://img.shields.io/badge/license-LGPL-blue.svg)](https://github.com/DGEXSolutions/osrd/blob/dev/LICENSE)
 [![Integration](https://github.com/DGEXSolutions/osrd/actions/workflows/integration_tests.yml/badge.svg)](https://github.com/DGEXSolutions/osrd/actions/workflows/integration_tests.yml)
