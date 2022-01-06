@@ -175,13 +175,13 @@ public class MarecoAllowanceGenerator extends DichotomyControllerGenerator {
 
         // coasting before accelerating slopes
         var acceleratingSlopes = findAcceleratingSlopes(speeds, rollingStock, vf);
-        double wle = TrainPhysicsIntegrator.getRollingResistance(rollingStock, v1) * v1 * vf / (v1 - vf);
+        double wle = rollingStock.getRollingResistance(v1) * v1 * vf / (v1 - vf);
         for (var slope : acceleratingSlopes) {
             // formulas given my MARECO
             // giving the optimized speed v the train should have when entering the accelerating slope
             // this speed v might not be reached if the slope is not long enough, then we just enter the slope with
             // the lowest possible speed that will catch up with target speed at the end
-            double v = 1 / (TrainPhysicsIntegrator.getRollingResistance(rollingStock, v1)
+            double v = 1 / (rollingStock.getRollingResistance(v1)
                     / (wle * (1 - slope.previousAcceleration / slope.acceleration)) + 1 / v1);
             double target = slope.targetSpeed;
             double requiredAcceleratingDistance = Math.max((target * target - v * v) / (2 * slope.acceleration), 0);

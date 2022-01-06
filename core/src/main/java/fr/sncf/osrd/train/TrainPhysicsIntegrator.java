@@ -51,23 +51,12 @@ public class TrainPhysicsIntegrator {
         // get an angle from a meter per km elevation difference
         // the curve's radius is taken into account in meanTrainGrade
         var angle = Math.atan(currentLocation.meanTrainGrade() / 1000.0);  // from m/km to m/m
-        var weightForce = - rollingStock.mass * Constants.GRAVITY * Math.sin(angle);
+        var weightForce = -rollingStock.mass * Constants.GRAVITY * Math.sin(angle);
         this.weightForce = weightForce;
         this.rollingStock = rollingStock;
-        this.rollingResistance = getRollingResistance(rollingStock, currentSpeed);
+        this.rollingResistance = rollingStock.getRollingResistance(currentSpeed);
         assert rollingResistance >= 0.;
         this.inertia = rollingStock.mass * rollingStock.inertiaCoefficient;
-    }
-
-    /**
-     * Gets the rolling resistance at a given speed, which is a force that always goes
-     * opposite to the train's movement direction
-     */
-    public static double getRollingResistance(RollingStock rollingStock, double speed) {
-        speed = Math.abs(speed);
-        // this formula is called the Davis equation.
-        // it's completely empirical, and models the drag and friction forces
-        return rollingStock.A + rollingStock.B * speed + rollingStock.C * speed * speed;
     }
 
     /**
@@ -292,7 +281,7 @@ public class TrainPhysicsIntegrator {
         var step1 = makeRKStep(halfIntegrator, 0, initialSpeed,
                 makeAction, directionSign, maxDistance);
 
-        var step2 = makeRKStep(halfIntegrator,  step1.positionDelta, step1.finalSpeed,
+        var step2 = makeRKStep(halfIntegrator, step1.positionDelta, step1.finalSpeed,
                 makeAction, directionSign, maxDistance);
 
         var step3 = makeRKStep(fullIntegrator, step2.positionDelta, step2.finalSpeed,
