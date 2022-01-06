@@ -3,6 +3,7 @@ package fr.sncf.osrd.speedcontroller.generators;
 import static fr.sncf.osrd.train.TrainPhysicsIntegrator.nextStep;
 import static java.lang.Math.abs;
 import static java.util.Collections.max;
+
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarginType;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.RollingStock;
