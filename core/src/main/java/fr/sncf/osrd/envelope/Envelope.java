@@ -1,13 +1,12 @@
 package fr.sncf.osrd.envelope;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.Locale;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public final class Envelope  {
+public final class Envelope implements Iterable<EnvelopePart> {
     private final EnvelopePart[] parts;
     public final boolean spaceContinuous;
     public final boolean continuous;
@@ -135,23 +134,22 @@ public final class Envelope  {
         return slice(beginPartIndex, beginStepIndex, beginPosition, endPartIndex, endStepIndex, endPosition);
     }
 
-    // region OTHER
+    @Override
+    public Iterator<EnvelopePart> iterator() {
+        return new Iterator<>() {
+            private int i = 0;
 
-    /** Export envelope as csv.
-     * NOTE: This function is used for debug purpose. */
-    public void saveCSV(String path) {
-        try {
-            PrintWriter writer = new PrintWriter(path, StandardCharsets.UTF_8);
-            writer.println("position,speed");
-            for (var part : parts) {
-                for (int i = 0; i < part.pointCount(); i++) {
-                    writer.println(String.format(Locale.US, "%f,%f", part.getPointPos(i), part.getPointSpeed(i)));
-                }
+            @Override
+            public boolean hasNext() {
+                return i < parts.length;
             }
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+            @Override
+            public EnvelopePart next() {
+                if (!hasNext())
+                    throw new NoSuchElementException();
+                return parts[i++];
+            }
+        };
     }
-    // endregion
 }

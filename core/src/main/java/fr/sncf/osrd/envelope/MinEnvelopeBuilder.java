@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Collections;
 
+/** Given a set of overlapping envelope parts, this structure finds the minimum speed envelope. */
 public final class MinEnvelopeBuilder {
     // Input
     private final ArrayList<EnvelopeChange> changes = new ArrayList<>();

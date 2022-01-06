@@ -3,8 +3,28 @@ package fr.sncf.osrd.envelope;
 import fr.sncf.osrd.utils.SwingUtils;
 import org.math.plot.Plot2DPanel;
 import javax.swing.JPanel;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 public class EnvelopeDebug {
+    /** Export envelope as csv. */
+    public void saveCSV(Envelope envelope, String path) {
+        try {
+            PrintWriter writer = new PrintWriter(path, StandardCharsets.UTF_8);
+            writer.println("position,speed");
+            for (var part : envelope) {
+                for (int i = 0; i < part.pointCount(); i++) {
+                    writer.println(String.format(Locale.US, "%f,%f", part.getPointPos(i), part.getPointSpeed(i)));
+                }
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /** Creates a plot panel for this envelope */
     public static JPanel plotPanel(Envelope envelope) {
         // create your PlotPanel (you can use it as a JPanel)
