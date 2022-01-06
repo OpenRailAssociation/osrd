@@ -37,7 +37,12 @@ export const initialState = {
   simulation: {
     trains: [],
   },
-  speedSpaceSettings: undefined,
+  speedSpaceSettings: {
+    altitude: false,
+    curves: false,
+    maxSpeed: true,
+    slopes: false,
+  },
   stickyBar: true,
   timePosition: undefined,
 };

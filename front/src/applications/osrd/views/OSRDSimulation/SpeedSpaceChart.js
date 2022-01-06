@@ -40,8 +40,10 @@ export default function SpeedSpaceChart(props) {
   const { heightOfSpeedSpaceChart } = props;
   const dispatch = useDispatch();
   const {
-    chartXGEV, mustRedraw, positionValues, selectedTrain, simulation, timePosition,
+    chartXGEV, mustRedraw, positionValues, selectedTrain,
+    simulation, speedSpaceSettings, timePosition,
   } = useSelector((state) => state.osrdsimulation);
+  const [showSettings, setShowSettings] = useState(false);
   const [rotate, setRotate] = useState(false);
   const [chart, setChart] = useState(undefined);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -72,7 +74,7 @@ export default function SpeedSpaceChart(props) {
 
   // Slopes
   dataSimulation.slopesCurve = createSlopeCurve(
-    simulation.trains[selectedTrain].slopes, dataSimulation.speed,
+    simulation.trains[selectedTrain].slopes, dataSimulation.speed, 'speed',
   );
   const zeroLineSlope = dataSimulation.slopesCurve[0].height; // Start height of histogram
   dataSimulation.slopesHistogram = simulation.trains[selectedTrain].slopes.map(
@@ -87,6 +89,7 @@ export default function SpeedSpaceChart(props) {
   dataSimulation.curvesHistogram = createCurveCurve(
     simulation.trains[selectedTrain].curves,
     dataSimulation.speed,
+    'speed',
   );
 
   const toggleRotation = () => {
@@ -151,19 +154,20 @@ export default function SpeedSpaceChart(props) {
       if (dataSimulation.eco_speed) {
         drawCurve(chartLocal, 'speed eco', dataSimulation.eco_speed, 'speedSpaceChart', 'curveLinear', keyValues, 'eco_speed', rotate);
       }
-      if (dataSimulation.vmax) {
+      if (dataSimulation.vmax && speedSpaceSettings.maxSpeed) {
         drawCurve(chartLocal, 'speed vmax', dataSimulation.vmax, 'speedSpaceChart', 'curveLinear', keyValues, 'vmax', rotate);
       }
-    /*  if (dataSimulation.slopesCurve) {
+      if (dataSimulation.slopesCurve && speedSpaceSettings.altitude) {
+        console.log(dataSimulation.slopesCurve)
         drawCurve(chartLocal, 'speed slopes', dataSimulation.slopesCurve, 'speedSpaceChart', 'curveLinear', ['position', 'height'], 'slopes', rotate);
       }
-      if (dataSimulation.slopesHistogram) {
+      if (dataSimulation.slopesHistogram && speedSpaceSettings.slopes) {
         drawCurve(chartLocal, 'speed slopesHistogram', dataSimulation.slopesHistogram, 'speedSpaceChart', 'curveMonotoneX', ['position', 'gradient'], 'slopesHistogram', rotate);
         drawArea(chartLocal, 'area slopes', dataSimulation.areaSlopesHistogram, 'speedSpaceChart', 'curveMonotoneX', ['position', 'gradient'], rotate);
       }
-      if (dataSimulation.curvesHistogram) {
+      if (dataSimulation.curvesHistogram && speedSpaceSettings.curves) {
         drawCurve(chartLocal, 'speed curvesHistogram', dataSimulation.curvesHistogram, 'speedSpaceChart', 'curveLinear', ['position', 'radius'], 'curvesHistogram', rotate);
-      } */
+      }
 
       // Operational points
       drawOPs(chartLocal);
@@ -197,8 +201,12 @@ export default function SpeedSpaceChart(props) {
   }, [chartXGEV]);
 
   return (
-    <div id={`container-${CHART_ID}`} className="speedspace-chart w-100" style={{ height: `${heightOfSpeedSpaceChart}px` }}>
-      <SpeedSpaceSettings />
+    <div
+      id={`container-${CHART_ID}`}
+      className="speedspace-chart w-100"
+      style={{ height: `${heightOfSpeedSpaceChart}px` }}
+    >
+      {showSettings && <SpeedSpaceSettings setShowSettings={setShowSettings} />}
       <div ref={ref} />
       <button
         type="button"

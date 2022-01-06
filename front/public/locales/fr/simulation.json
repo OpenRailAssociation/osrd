@@ -18,6 +18,13 @@
   "null": "Lieu non renseigné",
   "placeholderlabel": "Filtrer les étiquettes",
   "simplify": "Simplification des données",
+  "speedSpaceSettings": {
+    "display": "Affichage",
+    "altitude": "Altitude",
+    "curves": "Courbes",
+    "maxSpeed": "Vitesse ligne",
+    "slopes": "Déclivités"
+  },
   "start": "Départ",
   "stop": "Arrivée",
   "stopPlace": "Lieu",

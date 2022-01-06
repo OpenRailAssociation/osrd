@@ -12,6 +12,7 @@ import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
 import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import enableInteractivity, { traceVerticalLine } from 'applications/osrd/components/Simulation/enableInteractivity';
 import createSlopeCurve from 'applications/osrd/components/Simulation/SpeedSpaceChart/createSlopeCurve';
+import createCurveCurve from 'applications/osrd/components/Simulation/SpeedSpaceChart/createCurveCurve';
 import { CgLoadbar } from 'react-icons/cg';
 
 const CHART_ID = 'SpaceCurvesSlopes';
@@ -68,7 +69,12 @@ export default function SpaceCurvesSlopes(props) {
     'gradient',
   );
   // Curves
-  //dataSimulation.curvesHistogram = { ...simulation.trains[selectedTrain].curves };
+  dataSimulation.curvesHistogram = createCurveCurve(
+    simulation.trains[selectedTrain].curves,
+    dataSimulation.slopesHistogram,
+    'gradient',
+  );
+
   const createChart = () => {
     d3.select(`#${CHART_ID}`).remove();
 
@@ -125,7 +131,7 @@ export default function SpaceCurvesSlopes(props) {
         drawArea(chartLocal, 'area slopes', dataSimulation.areaSlopesHistogram, 'curvesSlopesChart', 'curveMonotoneX', ['position', 'gradient'], rotate);
       }
       if (dataSimulation.curvesHistogram) {
-        // drawCurve(chartLocal, 'speed curvesHistogram', dataSimulation.curvesHistogram, 'curvesSlopesChart', 'curveLinear', ['position', 'radius'], 'curvesHistogram', rotate);
+        drawCurve(chartLocal, 'speed curvesHistogram', dataSimulation.curvesHistogram, 'curvesSlopesChart', 'curveLinear', ['position', 'radius'], 'curvesHistogram', rotate);
       }
       if (dataSimulation.slopesCurve) {
         drawCurve(chartLocal, 'speed slopes', dataSimulation.slopesCurve, 'curvesSlopesChart', 'curveLinear', ['position', 'height'], 'slopes', rotate);
