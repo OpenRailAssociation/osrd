@@ -132,7 +132,7 @@ svg text {
   position: relative;
   .btn-rotate {
     position: absolute;
-    right: 3rem;
+    right: 2rem;
     bottom: 2.5rem;
   }
   .area {
@@ -227,13 +227,21 @@ svg text {
   position: relative;
   width: 100%;
   transition: .2s;
+  .unSetShowSettings {
+    display: inline-block;
+    border: none;
+    background: none;
+    cursor: pointer;
+    height: 100%;
+  }
   .speedspace-chart {
+    display: flex;
     background-color: white;
     border-radius: 4px;
     position: relative;
     .btn-rotate {
       position: absolute;
-      right: 4.5rem;
+      right: 2rem;
       bottom: 2.5rem;
     }
     .area {
