@@ -40,7 +40,6 @@ jobs:
           directory: ./core/build/reports/jacoco/test
           files: jacocoTestReport.xml
           token: ${{ secrets.CODECOV_TOKEN }}
-          path_to_write_report: ./coverage/codecov_report.txt
           fail_ci_if_error: true
           verbose: true
 
