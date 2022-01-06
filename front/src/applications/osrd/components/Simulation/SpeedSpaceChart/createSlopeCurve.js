@@ -26,10 +26,6 @@ const createSlopeCurve = (slopes, referential, nameOfReferential) => {
       ...step,
       height: (step.height * referentialHeight) / dataHeight,
     }));
-    /* return slopesCurve.map((step) => ({
-      ...step,
-      height: (((step.height + (minHeight * -1)) * maxReferential) / (maxHeight + (minHeight * -1))),
-    })); */
   }
   return slopesCurve;
 };
