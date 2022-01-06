@@ -2,6 +2,7 @@ package fr.sncf.osrd.envelope;
 
 import java.util.ArrayList;
 
+/** Creates an envelope by concatenating envelope parts. Envelope parts must not overlap. */
 public final class EnvelopeBuilder {
     private ArrayList<EnvelopePart> parts = new ArrayList<>();
 

@@ -75,6 +75,10 @@ public final class OverlayEnvelopeBuilder {
                 builder.addPart(part);
     }
 
+    /** Slices the base envelope from the end of the previous overlay to the beginning of current new one,
+     * and adds the resulting envelope parts to the result.
+     * If beginPartIndex is -1, the base envelope is sliced until the end.
+     */
     private void sliceBaseEnvelope(int beginPartIndex, int beginStepIndex, double beginPosition) {
         addParts(cursor.smartSlice(
                 lastOverlayEndPartIndex, lastOverlayEndStepIndex, lastOverlayEndPosition,
@@ -82,7 +86,7 @@ public final class OverlayEnvelopeBuilder {
         ));
     }
 
-    /** Builds an overlay envelope part and adds it to the envelope */
+    /** Takes an overlay envelope part builder, builds it and adds it to the envelope */
     public void addPart(OverlayEnvelopePartBuilder partBuilder) {
         assert partBuilder.cursor == cursor;
 
