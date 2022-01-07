@@ -206,7 +206,14 @@ export default function SpeedSpaceChart(props) {
       className="speedspace-chart w-100"
       style={{ height: `${heightOfSpeedSpaceChart}px` }}
     >
-      {showSettings && <SpeedSpaceSettings setShowSettings={setShowSettings} />}
+      <button
+        type="button"
+        className="showSettingsButton"
+        onClick={() => setShowSettings(!showSettings)}
+      >
+        <i className={showSettings ? 'icons-arrow-prev' : 'icons-arrow-next'} />
+      </button>
+      <SpeedSpaceSettings showSettings={showSettings} />
       <div ref={ref} />
       <button
         type="button"
