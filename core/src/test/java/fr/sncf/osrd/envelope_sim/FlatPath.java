@@ -18,4 +18,11 @@ public class FlatPath implements PhysicsPath {
     public double getAverageGrade(double begin, double end) {
         return slope;
     }
+
+    @Override
+    public double findHighGradePosition(double position, double endPos, double length, double gradeThreshold) {
+        if (slope > gradeThreshold)
+            return position;
+        return endPos;
+    }
 }
