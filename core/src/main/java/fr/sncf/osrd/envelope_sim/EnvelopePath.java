@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope_sim;
 
 import java.util.Arrays;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class EnvelopePath implements PhysicsPath {
     public final double length;
@@ -12,6 +13,13 @@ public class EnvelopePath implements PhysicsPath {
     /** The cumulative sum of the gradient at each grade position */
     private final double[] gradeCumSum;
 
+    /**
+     * Creates a new envelope path, which can be used to perform envelope simulations.
+     * @param length the length of the path
+     * @param gradePositions the points at which the grade (slope) changes
+     * @param gradeValues the values between consecutive pairs of grande positions
+     */
+    @SuppressFBWarnings({"EI_EXPOSE_REP2"})
     public EnvelopePath(double length, double[] gradePositions, double[] gradeValues) {
         assert gradePositions.length == gradeValues.length + 1;
         assert gradePositions[0] == 0.0;
@@ -56,17 +64,19 @@ public class EnvelopePath implements PhysicsPath {
 
     @Override
     public double getAverageGrade(double begin, double end) {
+        if (begin == end)
+            return getCumGrade(begin);
         return (getCumGrade(end) - getCumGrade(begin)) / (end - begin);
     }
 
     @Override
     public double findHighGradePosition(double position, double endPos, double length, double gradeThreshold) {
-        var pos = position;
-        while (pos <= endPos) {
-            var grade = getAverageGrade(pos - length, pos);
+        // TODO: skip sections which don't have high enough slopes
+        while (position <= endPos) {
+            var grade = getAverageGrade(position - length, position);
             if (grade >= gradeThreshold)
-                return pos;
-            pos++;
+                return position;
+            position += 1.0;
         }
         return endPos;
     }

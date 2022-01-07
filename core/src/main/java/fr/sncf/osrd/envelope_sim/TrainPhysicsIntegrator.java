@@ -69,24 +69,9 @@ public final class TrainPhysicsIntegrator {
         if (action == Action.BRAKE)
             brakingForce = rollingStock.getMaxBrakingForce(speed);
 
-        if (action == Action.MAINTAIN) {
-            if (canMaintainSpeed(rollingResistance, weightForce, speed, maxTractionForce))
-                return newtonStep(timeStep, speed, 0.0, directionSign);
-            tractionForce = maxTractionForce;
-        }
-
         double acceleration = computeAcceleration(rollingStock, rollingResistance,
                 weightForce, speed, tractionForce, brakingForce, directionSign);
         return newtonStep(timeStep, speed, acceleration, directionSign);
-    }
-
-    private boolean canMaintainSpeed(double rollingResistance,
-                                     double weightForce,
-                                     double speed,
-                                     double maxTractionForce) {
-        var testAcceleration = computeAcceleration(rollingStock, rollingResistance,
-                weightForce, speed, maxTractionForce, 0, directionSign);
-        return testAcceleration >= 0;
     }
 
     private static double getWeightForce(PhysicsRollingStock rollingStock, PhysicsPath path, double headLocation) {
