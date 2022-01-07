@@ -384,14 +384,31 @@ public final class EnvelopePart {
         return null;
     }
 
+    /** Given a speed return a position. The envelopePart must be bijective in order for this method to work*/
     public Double interpolatePosition(double speed) {
         return interpolatePosition(0, speed);
     }
 
-    private static boolean isBetween(double speed, double speed1, double speed2) {
-        var minSpeed = Math.min(speed1, speed2);
-        var maxSpeed = Math.max(speed1, speed2);
-        return minSpeed <= speed && speed <= maxSpeed;
+    /** Given a position return the interpolated acceleration. */
+    public double interpolateAcceleration(double position) {
+        var stepIndex = findStep(position);
+        return interpolateAcceleration(stepIndex, position);
+    }
+
+    /** Given a position and a step index return the interpolated acceleration. */
+    public double interpolateAcceleration(int stepIndex, double position) {
+        assert checkPosition(stepIndex, position);
+        return EnvelopePhysics.stepAcceleration(
+                positions[stepIndex], positions[stepIndex + 1],
+                speeds[stepIndex], speeds[stepIndex + 1]
+        );
+    }
+
+    /** Check if a is in the interval [b, c] or [c, b]*/
+    private static boolean isBetween(double a, double b, double c) {
+        var min = Math.min(b, c);
+        var max = Math.max(b, c);
+        return min <= a && a <= max;
     }
 
     // endregion
@@ -432,9 +449,13 @@ public final class EnvelopePart {
      */
     public EnvelopePart slice(double beginPosition, double endPosition) {
         int beginIndex = 0;
+        if (beginPosition <= getBeginPos())
+            beginPosition = Double.NEGATIVE_INFINITY;
         if (beginPosition != Double.NEGATIVE_INFINITY)
             beginIndex = findStep(beginPosition);
         int endIndex = stepCount() - 1;
+        if (endPosition >= getEndPos())
+            endPosition = Double.POSITIVE_INFINITY;
         if (endPosition != Double.POSITIVE_INFINITY)
             endIndex = findStep(endPosition);
         return slice(beginIndex, beginPosition, endIndex, endPosition);

@@ -30,7 +30,7 @@
  * <h2>Features</h2>
  * <ul>
  *     <li>An envelope can be built from a set of overlapping envelope parts, which are interpreted as a set of
- *     constraints: {@link fr.sncf.osrd.envelope.MinEnvelopeBuilder}</li>
+ *     constraints: {@link fr.sncf.osrd.envelope.MRSPEnvelopeBuilder}</li>
  *     <li>An envelope can be be overlayed with a new envelope part:
  *     {@link fr.sncf.osrd.envelope.OverlayEnvelopeBuilder}</li>
  *     <li>Each envelope part can store arbitrary metadata:

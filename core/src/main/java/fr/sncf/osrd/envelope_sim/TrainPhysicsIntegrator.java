@@ -11,6 +11,8 @@ import fr.sncf.osrd.train.RollingStock;
 public final class TrainPhysicsIntegrator {
     // a position delta lower than this value will be considered zero
     public static final double POSITION_EPSILON = 1E-6;
+    // a speed lower than this value will be considered zero
+    public static final double SPEED_EPSILON = 1E-6;
 
     private final PhysicsRollingStock rollingStock;
     private final PhysicsPath path;
@@ -129,6 +131,8 @@ public final class TrainPhysicsIntegrator {
             double directionSign
     ) {
         var newSpeed = currentSpeed + directionSign * acceleration * timeStep;
+        if (Math.abs(newSpeed) < SPEED_EPSILON)
+            newSpeed = 0;
 
         // dx = currentSpeed * dt + 1/2 * acceleration * dt * dt
         var positionDelta = currentSpeed * timeStep + 0.5 * acceleration * timeStep * timeStep;

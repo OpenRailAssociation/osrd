@@ -207,6 +207,7 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
         }
     }
 
+
     /** Return whether this step had an intersection */
     private boolean addOverlayStep(double position, double speed, double time, StepKind kind) {
         if (hasSpeedThreshold() && CmpOperator.compare(speed, speedThresholdOperator, speedThreshold)) {
@@ -316,6 +317,7 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
         // if no intersection with the base curve was found, add the step to the overlay
         return addOverlayStep(position, speed, time, StepKind.INTERMEDIATE);
     }
+
 
     /**
      * Maintains the current speed until an intersection or the end of the curve is found
