@@ -1,6 +1,6 @@
 package fr.sncf.osrd.envelope_sim;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static fr.sncf.osrd.envelope_sim.EnvelopeShape.*;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopePart;
@@ -20,7 +20,8 @@ public class MaxSpeedEnvelopeTest {
                         EnvelopePart.generateTimes(null, new double[] { 0, 10000 }, new double[] { 44.4, 44.4})
                 );
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(testRollingStock, testPath, stops, flatMRSP);
-        assertTrue(maxSpeedEnvelope.spaceContinuous);
-
+        EnvelopeShape.check(maxSpeedEnvelope, CONSTANT, DECREASING, CONSTANT);
+        EnvelopeTransitions.checkPositions(maxSpeedEnvelope, 1.0, 6698, 8500);
+        EnvelopeTransitions.checkContinuity(maxSpeedEnvelope, true, false);
     }
 }
