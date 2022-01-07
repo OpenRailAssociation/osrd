@@ -192,6 +192,7 @@ class Signal(BaseObjectTrait, TrackLocationTrait, GeometryPointTrait):
     linked_detector: Optional[ObjectReference]
     angle: float
     expr: RailScript
+    aspects: Optional[List[str]]
 
 
 class BufferStop(BaseObjectTrait, TrackLocationTrait, GeometryPointTrait):
