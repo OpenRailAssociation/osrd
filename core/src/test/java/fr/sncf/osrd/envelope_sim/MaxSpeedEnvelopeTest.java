@@ -17,8 +17,8 @@ public class MaxSpeedEnvelopeTest {
         var stops = new double[] { 8500 };
 
         var flatMRSP = Envelope.make(
-                        EnvelopePart.generateTimes(null, new double[] { 0, 10000 }, new double[] { 44.4, 44.4})
-                );
+                EnvelopePart.generateTimes(null, new double[] { 0, 10000 }, new double[] { 44.4, 44.4})
+        );
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(testRollingStock, testPath, stops, flatMRSP);
         EnvelopeShape.check(maxSpeedEnvelope, CONSTANT, DECREASING, CONSTANT);
         EnvelopeTransitions.checkPositions(maxSpeedEnvelope, 1.0, 6698, 8500);

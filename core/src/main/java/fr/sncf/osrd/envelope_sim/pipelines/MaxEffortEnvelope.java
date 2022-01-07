@@ -4,7 +4,6 @@ import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
-import fr.sncf.osrd.envelope_sim.overlays.EnvelopeMaintainSpeed;
 
 /** Max effort envelope = Max speed envelope + acceleration curves + check maintain speed
  * It is the max physical speed at any given point, ignoring allowances */
@@ -18,8 +17,10 @@ public class MaxEffortEnvelope {
     public static final EnvelopePartMeta ACCELERATION = new AccelerationMeta();
     public static final EnvelopePartMeta MAINTAIN = new MaintainMeta();
 
-    static boolean maxEffortPlateau(double prevPos, double prevSpeed, double nextPos, double nextSpeed) {
-        return prevSpeed == nextSpeed;
+    static boolean maxEffortPlateau(EnvelopePart part) {
+        if (part.stepCount() != 1)
+            return false;
+        return part.getBeginSpeed() == part.getEndSpeed();
     }
 
     /** Generate acceleration curves overlay everywhere the max speed envelope increase with a discontinuity */
@@ -49,12 +50,25 @@ public class MaxEffortEnvelope {
                                                   PhysicsPath path,
                                                   Envelope maxSpeedProfile) {
         var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
-        while (builder.cursor.findPartTransition(MaxEffortEnvelope::maxEffortPlateau)) {
-            var partBuilder = builder.startContinuousOverlay(MAINTAIN);
-            var startSpeed = partBuilder.getLastSpeed();
-            var startPosition = builder.cursor.getPosition();
-            EnvelopeMaintainSpeed.maintain(rollingStock, path, 4, startPosition, startSpeed, partBuilder);
-            builder.addPart(partBuilder);
+        while (builder.cursor.findPart(MaxEffortEnvelope::maxEffortPlateau)) {
+            double speed = builder.cursor.getStepBeginSpeed();
+            double maxTractionForce = rollingStock.getMaxEffort(speed);
+            double rollingResistance = rollingStock.getRollingResistance(speed);
+            double inertia = rollingStock.getInertia();
+            double worstRamp = Math.asin((maxTractionForce - rollingResistance) / inertia / 9.81) * 1000;
+            var envelopePart = builder.cursor.getPart();
+            while (true) {
+                double highRampPosition = path.findHighGradePosition(
+                        builder.cursor.getPosition(), envelopePart.getEndPos(), rollingStock.getLength(), worstRamp);
+                builder.cursor.findPosition(highRampPosition);
+                if (builder.cursor.getPosition() == envelopePart.getEndPos())
+                    break;
+                var partBuilder = builder.startContinuousOverlay(MAINTAIN);
+                var startPosition = builder.cursor.getPosition();
+                var startSpeed = partBuilder.getLastSpeed();
+                EnvelopeAcceleration.accelerate(rollingStock, path, 4, startPosition, startSpeed, partBuilder);
+                builder.addPart(partBuilder);
+            }
             builder.cursor.nextPart();
         }
         return builder.build();
@@ -68,7 +82,7 @@ public class MaxEffortEnvelope {
             Envelope maxSpeedProfile
     ) {
         var maxEffortEnvelope = addAccelerationCurves(rollingStock, path, maxSpeedProfile, initialSpeed);
-        //maxEffortEnvelope = addMaintainSpeedCurves(rollingStock, path, maxEffortEnvelope);
+        maxEffortEnvelope = addMaintainSpeedCurves(rollingStock, path, maxEffortEnvelope);
         return maxEffortEnvelope;
     }
 }
