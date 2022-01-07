@@ -102,11 +102,12 @@ public class EnvelopePhysics {
         var a1SpeedSquare = a1Speed * a1Speed;
         var b1SpeedSquare = b1Speed * b1Speed;
         point.position = (b1SpeedSquare / 2 - a1SpeedSquare / 2 - accB * b1Pos + accA * a1Pos) / (accA - accB);
-        point.speed = Math.sqrt(
-                (2 * accA * accB * (a1Pos - b1Pos)
-                 + accA * b1SpeedSquare - accB * a1SpeedSquare)
-                / (accA - accB)
-        );
+        // inject the position in the formula of the second parabola.
+        // the fact this is injected into the second parabola and not the first is very important,
+        // as this functions is typically used to intersect the left parabola into the right one,
+        // cutting the left one at just the right point, then interpolating again to cut the right one.
+        // doing it this way guarantees we get the same result
+        point.speed = interpolateStepSpeed(accB, b1Speed, point.position - b1Pos);
     }
 
     public static final class EnvelopePoint {
