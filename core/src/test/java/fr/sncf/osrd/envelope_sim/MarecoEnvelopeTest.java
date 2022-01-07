@@ -19,6 +19,7 @@ public class MarecoEnvelopeTest {
         var length = 10000;
         var testPath = new FlatPath(length, slope);
         var stops = new double[] { 6000, length };
+        var capacitySpeedLimit = 0;
 
         var flatMRSP = Envelope.make(
                 EnvelopePart.generateTimes(null, new double[] { 0, length }, new double[] { 44.4, 44.4})
@@ -32,6 +33,7 @@ public class MarecoEnvelopeTest {
                 TIME_STEP,
                 0,
                 length,
+                capacitySpeedLimit,
                 new AllowanceValue.Percentage(10)
         );
         return allowance.apply(maxEffortEnvelope);

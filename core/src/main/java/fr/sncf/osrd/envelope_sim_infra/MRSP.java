@@ -4,7 +4,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.MinEnvelopeBuilder;
+import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
 import fr.sncf.osrd.envelope.EnvelopePart;
 import fr.sncf.osrd.envelope.EnvelopePartMeta;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
@@ -25,7 +25,7 @@ public class MRSP {
 
     /** Computes the most restricted speed profile */
     public static Envelope from(TrainPath trainPath, RollingStock rollingStock) {
-        var builder = new MinEnvelopeBuilder();
+        var builder = new MRSPEnvelopeBuilder();
 
         // add a limit for the maximum speed the hardware is rated for
         builder.addPart(EnvelopePart.generateTimes(

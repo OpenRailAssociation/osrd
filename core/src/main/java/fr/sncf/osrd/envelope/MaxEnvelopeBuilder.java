@@ -1,19 +1,18 @@
 package fr.sncf.osrd.envelope;
 
-import static fr.sncf.osrd.envelope.MinEnvelopeBuilder.EnvelopeChangeType.*;
+import static fr.sncf.osrd.envelope.MaxEnvelopeBuilder.EnvelopeChangeType.*;
 
-import java.util.ArrayList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.ArrayList;
 import java.util.Collections;
 
-/** Given a set of overlapping envelope parts, this structure finds the minimum speed envelope. */
-public final class MinEnvelopeBuilder {
+public final class MaxEnvelopeBuilder {
     // Input
     private final ArrayList<EnvelopeChange> changes = new ArrayList<>();
 
     // Builder internals
-    private EnvelopePart currentMinPart = null;
-    private double currentMinSpeed = Double.POSITIVE_INFINITY;
+    private EnvelopePart currentMaxPart = null;
+    private double currentMaxSpeed = 0.0;
 
     private final ArrayList<EnvelopePart> buildResult = new ArrayList<>();
     private EnvelopePartBuilder currentPartBuilder = null;
@@ -73,56 +72,75 @@ public final class MinEnvelopeBuilder {
         currentPartBuilder = null;
     }
 
-    private void newResultPart(EnvelopePart newMinPart, double initialPosition, double initialSpeed) {
+    private void newResultPart(EnvelopePart newMaxPart, double initialPosition, double initialSpeed) {
         flushResultPart();
         currentPartBuilder = new EnvelopePartBuilder(
-                newMinPart.meta,
+                newMaxPart.meta,
                 initialPosition,
                 initialSpeed
         );
     }
 
-    private void updateMinPoint(double position) {
+    private void updateMaxPoint(double position) {
         if (activeParts.isEmpty()) {
-            assert currentMinPart == null;
+            assert currentMaxPart == null;
             return;
         }
 
-        currentMinSpeed = Double.POSITIVE_INFINITY;
-        for (var env : activeParts) {
-            var envSpeed = env.interpolateSpeed(position);
-            if (envSpeed >= currentMinSpeed)
+        var oldMaxPart = currentMaxPart;
+        currentMaxSpeed = Double.NEGATIVE_INFINITY;
+        var currentMaxAcceleration = Double.NEGATIVE_INFINITY;
+        // compute the max speed of all active parts at this position
+        for (var part : activeParts) {
+            var speed = part.interpolateSpeed(position);
+            if (speed < currentMaxSpeed)
                 continue;
-
-            currentMinSpeed = envSpeed;
-            currentMinPart = env;
+            currentMaxSpeed = speed;
+        }
+        // if there was an existing oldMaxPart and it is the current maximum speed,
+        // it will remain the max part in case of intersection
+        if (oldMaxPart != null) {
+            var oldMaxSpeed = oldMaxPart.interpolateSpeed(position);
+            if (Math.abs(oldMaxSpeed - currentMaxSpeed) < 1E-6)
+                return;
+        }
+        // in case some parts are equal, decide which one takes over by keeping the one with greatest acceleration
+        for (var part : activeParts) {
+            var speed = part.interpolateSpeed(position);
+            if (Math.abs(speed - currentMaxSpeed) < 1E-6) {
+                var acceleration = part.interpolateAcceleration(position);
+                if (acceleration <= currentMaxAcceleration)
+                    continue;
+                currentMaxAcceleration = acceleration;
+                currentMaxPart = part;
+            }
         }
     }
 
     /** Build the envelope from all the given parts. This function should be call only once. */
     public Envelope build() {
-        // this algorithm tries hard to keep track of what curve is the minimum one at all times.
-        // When a new point is met, is only gets added to the curve if it's part of the minimum curve.
-        // When the minimum curve changes, there are two cases which can add points which didn't exist before:
+        // this algorithm tries hard to keep track of what curve is the maximum one at all times.
+        // When a new point is met, is only gets added to the curve if it's part of the maximum curve.
+        // When the maximum curve changes, there are two cases which can add points which didn't exist before:
         //  - curve intersections
-        //  - a new minimum curve which starts below the old minimum (in a disjoint manner)
+        //  - a new maximum curve which starts above the old maximum (in a disjoint manner)
 
         // here's a short description of the algorithm:
         //  - iterate over all the events by position first, then by (END, INTERMEDIATE, BEGIN), in order
         //  - keep track of all active curves at a given position
         //  LEFT SIDE
-        //  - when a new event arrives, no matter what its type is, we update the min curve, if we already had one:
-        //     - we interpolate on all curves, and if the min curve changes, we terminate the previous output curve with
-        //       the intersection point, which also starts the new min curve
+        //  - when a new event arrives, no matter what its type is, we update the max curve, if we already had one:
+        //     - we interpolate on all curves, and if the max curve changes, we terminate the previous output curve with
+        //       the intersection point, which also starts the new max curve
         //  - process all curve ends events for the current position:
-        //     - if the current min curve ends, finalize it and set the min curve to null
+        //     - if the current max curve ends, finalize it and set the max curve to null
         //  RIGHT SIDE
         //  - process all intermediate changes for the current position:
-        //    - if the change is part of the min curve, add it to the output curve
+        //    - if the change is part of the max curve, add it to the output curve
         //  - process curve starts, adding curves to the active set
-        //  - check if the min curve needs to be updated after adding starts
+        //  - check if the max curve needs to be updated after adding starts
         //
-        // we split the process of keeping track of the minimum in 2:
+        // we split the process of keeping track of the maximum in 2:
 
         assert changeIndex == 0;
 
@@ -130,7 +148,7 @@ public final class MinEnvelopeBuilder {
         while (changeIndex < changes.size()) {
             var currentPosition = changes.get(changeIndex).position;
 
-            updateMinPart(currentPosition);
+            updateMaxPart(currentPosition);
             processCurveEnds(currentPosition);
             processIntermediate(currentPosition);
             processCurveStarts(currentPosition);
@@ -139,23 +157,23 @@ public final class MinEnvelopeBuilder {
         return Envelope.make(buildResult.toArray(new EnvelopePart[0]));
     }
 
-    private void updateDiscontinuousStart(double currentPosition) {
-        var oldMinSpeed = currentMinSpeed;
-        var oldMinPart = currentMinPart;
+    private void updateDiscontinuousStart(double position) {
+        var oldMaxSpeed = currentMaxSpeed;
+        var oldMaxPart = currentMaxPart;
 
-        updateMinPoint(currentPosition);
+        updateMaxPoint(position);
 
-        if (oldMinPart == currentMinPart)
+        if (oldMaxPart == currentMaxPart)
             return;
 
-        /* Terminate the old min part if a new one starts below it
-         *  A ---------- B
+        /* Terminate the old max part if a new one starts above it
          *        C ---------- D
          *        ^
+         *  A ---------- B
          */
-        if (oldMinPart != null)
-            currentPartBuilder.addStep(currentPosition, oldMinSpeed);
-        newResultPart(currentMinPart, currentPosition, currentMinSpeed);
+        if (oldMaxPart != null)
+            currentPartBuilder.addStep(position, oldMaxSpeed);
+        newResultPart(currentMaxPart, position, currentMaxSpeed);
     }
 
     private void processCurveStarts(double currentPosition) {
@@ -174,9 +192,9 @@ public final class MinEnvelopeBuilder {
             if (change.type != INTERMEDIATE || change.position > currentPosition)
                 return;
 
-            // if there's an intermediate point on the minimum curve, add it
-            if (change.part == currentMinPart)
-                currentPartBuilder.addStep(currentPosition, currentMinSpeed);
+            // if there's an intermediate point on the Maximum curve, add it
+            if (change.part == currentMaxPart)
+                currentPartBuilder.addStep(currentPosition, currentMaxSpeed);
             changeIndex++;
         }
     }
@@ -188,37 +206,37 @@ public final class MinEnvelopeBuilder {
                 return;
             activeParts.remove(change.part);
 
-            // if the current min part ends, finalize it in the output as well
-            if (change.part == currentMinPart) {
-                assert currentMinPart != null;
-                currentPartBuilder.addStep(currentPosition, currentMinSpeed);
+            // if the current Max part ends, finalize it in the output as well
+            if (change.part == currentMaxPart) {
+                assert currentMaxPart != null;
+                currentPartBuilder.addStep(currentPosition, currentMaxSpeed);
                 flushResultPart();
-                currentMinPart = null;
+                currentMaxPart = null;
             }
             changeIndex++;
         }
     }
 
-    private void updateMinPart(double position) {
-        if (currentMinPart == null)
+    private void updateMaxPart(double position) {
+        if (currentMaxPart == null)
             return;
 
-        var oldMinPart = currentMinPart;
-        updateMinPoint(position);
+        var oldMaxPart = currentMaxPart;
+        updateMaxPoint(position);
 
-        if (oldMinPart == currentMinPart)
+        if (oldMaxPart == currentMaxPart)
             return;
 
         /* Compute intersection
-         *     C
-         *      \
-         *  A ---+------- B
-         *        \
          *         D
-         *         ^
+         *        /
+         *  A ---+------- B
+         *      /
+         *     C
+         *     ^
          */
-        var intersection = EnvelopePhysics.intersectSteps(currentMinPart, oldMinPart, position);
+        var intersection = EnvelopePhysics.intersectSteps(currentMaxPart, oldMaxPart, position);
         currentPartBuilder.addStep(intersection.position, intersection.speed);
-        newResultPart(currentMinPart, intersection.position, intersection.speed);
+        newResultPart(currentMaxPart, intersection.position, intersection.speed);
     }
 }

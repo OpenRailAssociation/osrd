@@ -207,6 +207,29 @@ public final class Envelope implements Iterable<EnvelopePart> {
 
     // region SLICING
 
+    /** Cuts an envelope, interpolating new points if required.
+     * @return a list of envelope parts spanning from beginPosition to endPosition
+     */
+    public EnvelopePart[] slice(double beginPosition, double endPosition) {
+        int beginIndex = 0;
+        var beginPartIndex = 0;
+        if (beginPosition != Double.NEGATIVE_INFINITY) {
+            beginPartIndex = findEnvelopePartIndex(beginPosition);
+            var beginPart = parts[beginPartIndex];
+            beginIndex = beginPart.findStep(beginPosition);
+        }
+        var endPartIndex = parts.length - 1;
+        var endPart = parts[endPartIndex];
+        int endIndex = endPart.stepCount() - 1;
+        if (endPosition != Double.POSITIVE_INFINITY) {
+            endPartIndex = findEnvelopePartIndex(endPosition);
+            endPart = parts[endPartIndex];
+            endIndex = endPart.findStep(endPosition);
+        }
+        return slice(beginPartIndex, beginIndex, beginPosition, Double.NaN,
+                endPartIndex, endIndex, endPosition, Double.NaN);
+    }
+
     /** Cuts an envelope */
     public EnvelopePart[] slice(
             int beginPartIndex, int beginStepIndex, double beginPosition, double beginSpeed,
