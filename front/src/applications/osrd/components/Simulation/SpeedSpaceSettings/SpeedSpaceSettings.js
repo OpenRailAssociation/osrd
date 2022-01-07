@@ -6,7 +6,7 @@ import { updateMustRedraw, updateSpeedSpaceSettings } from 'reducers/osrdsimulat
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 
 export default function SpeedSpaceSettings(props) {
-  const { setShowSettings } = props;
+  const { showSettings } = props;
   const { t } = useTranslation(['simulation']);
   const dispatch = useDispatch();
   const { speedSpaceSettings } = useSelector((state) => state.osrdsimulation);
@@ -20,15 +20,11 @@ export default function SpeedSpaceSettings(props) {
   };
 
   return (
-    <div>
+    <div
+      className={`${showSettings ? 'ml-5' : ''} showSettings`}
+      style={showSettings ? { width: 'auto' } : { width: 0 }}
+    >
       <div className="h2 d-flex align-items-center">
-        <button
-          type="button"
-          className="btn btn-sm btn-primary btn-only-icon mr-2"
-          onClick={() => setShowSettings(false)}
-        >
-          <i className="icons-arrow-prev" />
-        </button>
         {t('speedSpaceSettings.display')}
       </div>
       <CheckboxRadioSNCF
@@ -64,5 +60,5 @@ export default function SpeedSpaceSettings(props) {
 }
 
 SpeedSpaceSettings.propTypes = {
-  setShowSettings: PropTypes.func.isRequired,
+  showSettings: PropTypes.bool.isRequired,
 };
