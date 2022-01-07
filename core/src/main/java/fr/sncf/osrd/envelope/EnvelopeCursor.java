@@ -2,7 +2,8 @@ package fr.sncf.osrd.envelope;
 
 import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.*;
 
-import fr.sncf.osrd.utils.CompareSign;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.utils.CmpOperator;
 import java.util.function.Predicate;
 
 
@@ -141,6 +142,10 @@ public class EnvelopeCursor {
 
     public double getStepEndPos() {
         return getStepEndPos(part, stepIndex);
+    }
+
+    public double getStepLength() {
+        return getStepEndPos() - getStepBeginPos();
     }
 
     public double getStepBeginSpeed() {
@@ -297,7 +302,12 @@ public class EnvelopeCursor {
     }
 
     /** Set the position / speed and bumps the revision */
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     private void setPosition(double newPosition, double newSpeed) {
+        // when setting newPosition is the same as current and the speed is force-set, avoid overriding the forced value
+        if (newPosition == this.position && !Double.isNaN(speed) && Double.isNaN(newSpeed))
+            return;
+
         assert !Double.isInfinite(newPosition);
         assert Double.isNaN(newPosition) || comparePos(position, newPosition) <= 0;
         assert Double.isNaN(newSpeed) || Math.abs(newSpeed - part.interpolateSpeed(stepIndex, newPosition)) < 0.001;
@@ -354,22 +364,22 @@ public class EnvelopeCursor {
         return false;
     }
 
-    private static double getPartBound(EnvelopePart part, CompareSign operation) {
-        if (operation.expectedSign > 0)
+    private static double getPartBound(EnvelopePart part, CmpOperator operation) {
+        if (operation == CmpOperator.STRICTLY_HIGHER)
             return part.getMaxSpeed();
         return part.getMinSpeed();
     }
 
     /** Find the next point with a speed satisfying a given condition */
-    public boolean findSpeed(double speed, CompareSign operation) {
+    public boolean findSpeed(double speed, CmpOperator operator) {
         if (hasReachedEnd())
             return false;
 
         // this predicate only matches envelope part which contain a speed which matches
         // the search requirement
-        Predicate<EnvelopePart> partPredicate = (part) -> CompareSign.compare(
-                getPartBound(part, operation),
-                speed, operation);
+        Predicate<EnvelopePart> partPredicate = (part) -> CmpOperator.compare(
+                getPartBound(part, operator),
+                operator, speed);
 
         // look for the next envelope part which contains a speed which matches the
         // search requirement. The current envelope part may contain such a point,
@@ -378,8 +388,8 @@ public class EnvelopeCursor {
             return false;
 
         // scan until a step matching the requirement is found
-        while (!CompareSign.compare(getSpeed(), speed, operation)
-                && !CompareSign.compare(getStepEndSpeed(), speed, operation)) {
+        while (!CmpOperator.compare(getSpeed(), operator, speed)
+                && !CmpOperator.compare(getStepEndSpeed(), operator, speed)) {
             var nextStepRes = nextStep();
             if (nextStepRes == NEXT_REACHED_END)
                 return false;
@@ -395,7 +405,7 @@ public class EnvelopeCursor {
 
         // if the start of the step satisfies the condition already, there's a discontinuity
         // return immediately, as the cursor is already at the start of the step.
-        if (CompareSign.compare(getSpeed(), speed, operation))
+        if (CmpOperator.compare(getSpeed(), operator, speed))
             return true;
 
         // otherwise, find the intersecting position inside the step

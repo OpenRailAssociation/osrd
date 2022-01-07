@@ -14,12 +14,15 @@ public class EnvelopeDeceleration {
             double timeStep,
             double startPosition,
             double startSpeed,
-            StepConsumer consumer
+            StepConsumer consumer,
+            double directionSign
     ) {
         double position = startPosition;
         double speed = startSpeed;
         while (true) {
-            var step = TrainPhysicsIntegrator.step(rollingStock, path, timeStep, position, speed, Action.BRAKE, -1);
+            var step = TrainPhysicsIntegrator.step(
+                    rollingStock, path, timeStep, position, speed, Action.BRAKE, directionSign
+            );
             position += step.positionDelta;
             speed = step.endSpeed;
             if (consumer.addStep(position, speed, step.timeDelta))

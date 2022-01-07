@@ -38,14 +38,16 @@ public class MaxSpeedEnvelope {
     private static Envelope addBrakingCurves(
             PhysicsRollingStock rollingStock,
             PhysicsPath path,
-            Envelope mrsp
+            Envelope mrsp,
+            double timeStep
     ) {
         var builder = OverlayEnvelopeBuilder.backward(mrsp);
         while (builder.cursor.findPartTransition(MaxSpeedEnvelope::increase)) {
             var partBuilder = builder.startContinuousOverlay(DECELERATION);
             var startSpeed = partBuilder.getLastSpeed();
             var startPosition = builder.cursor.getPosition();
-            EnvelopeDeceleration.decelerate(rollingStock, path, 4, startPosition, startSpeed, partBuilder);
+            // TODO: link directionSign to cursor boolean reverse
+            EnvelopeDeceleration.decelerate(rollingStock, path, timeStep, startPosition, startSpeed, partBuilder, -1);
             builder.addPart(partBuilder);
             builder.cursor.nextPart();
         }
@@ -57,14 +59,15 @@ public class MaxSpeedEnvelope {
             PhysicsRollingStock rollingStock,
             PhysicsPath path,
             double[] stopPositions,
-            Envelope curveWithDecelerations
+            Envelope curveWithDecelerations,
+            double timeStep
     ) {
         for (int i = 0; i < stopPositions.length; i++) {
             var stopPosition = stopPositions[i];
             var builder = OverlayEnvelopeBuilder.backward(curveWithDecelerations);
             builder.cursor.findPosition(stopPosition);
             var partBuilder = builder.startDiscontinuousOverlay(new StopMeta(i), 0);
-            EnvelopeDeceleration.decelerate(rollingStock, path, 4, stopPosition, 0, partBuilder);
+            EnvelopeDeceleration.decelerate(rollingStock, path, timeStep, stopPosition, 0, partBuilder, -1);
             builder.addPart(partBuilder);
             curveWithDecelerations = builder.build();
         }
@@ -76,10 +79,11 @@ public class MaxSpeedEnvelope {
             PhysicsRollingStock rollingStock,
             PhysicsPath path,
             double[] stopPositions,
-            Envelope mrsp
+            Envelope mrsp,
+            double timeStep
     ) {
-        var maxSpeedEnvelope = addBrakingCurves(rollingStock, path, mrsp);
-        maxSpeedEnvelope = addStopBrakingCurves(rollingStock, path, stopPositions, maxSpeedEnvelope);
+        var maxSpeedEnvelope = addBrakingCurves(rollingStock, path, mrsp, timeStep);
+        maxSpeedEnvelope = addStopBrakingCurves(rollingStock, path, stopPositions, maxSpeedEnvelope, timeStep);
         return maxSpeedEnvelope;
     }
 
@@ -88,13 +92,14 @@ public class MaxSpeedEnvelope {
             PhysicsRollingStock rollingStock,
             PhysicsPath path,
             ArrayList<TrainStop> stops,
-            Envelope mrsp
+            Envelope mrsp,
+            double timeStep
     ) {
         var stopPositions = new DoubleArrayList();
         for (var stop : stops) {
             if (stop.stopDuration > 0)
                 stopPositions.add(stop.position);
         }
-        return from(rollingStock, path, stopPositions.toArray(), mrsp);
+        return from(rollingStock, path, stopPositions.toArray(), mrsp, timeStep);
     }
 }
