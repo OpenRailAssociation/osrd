@@ -227,18 +227,23 @@ svg text {
   position: relative;
   width: 100%;
   transition: .2s;
-  .unSetShowSettings {
-    display: inline-block;
+  .showSettingsButton {
+    position: absolute;
     border: none;
     background: none;
     cursor: pointer;
     height: 100%;
+    color: var(--coolgray7)
   }
   .speedspace-chart {
     display: flex;
     background-color: white;
     border-radius: 4px;
     position: relative;
+    .showSettings {
+      overflow: hidden;
+      transition: .3s;
+    }
     .btn-rotate {
       position: absolute;
       right: 2rem;
