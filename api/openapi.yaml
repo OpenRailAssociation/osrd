@@ -121,6 +121,26 @@ paths:
                   tvd_sections: []
                   routes: []
                   aspects: []
+  /infra/{id}/geojson/:
+    get:
+      tags:
+        - infra
+      summary: Serialize an infra to GeoJson, with an optional region filter
+      parameters:
+        - in: query
+          name: query
+          schema:
+            type: object
+          description: A string containing the GeoJson encoded area to query objects in
+          required: false
+      responses:
+        200:
+          description: The infra in GeoJson format
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A collection of GeoJson encoded objects
   /infra/{id}/edit/:
     post:
       tags:
@@ -290,6 +310,46 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RollingStock"
+  /light_rolling_stock/:
+    get:
+      tags:
+        - rolling_stock
+      summary: List all available rolling stock with a lighter response
+      responses:
+        200:
+          description: The rolling stock list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                  next: {}
+                  previous: {}
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/LightRollingStock"
+  /light_rolling_stock/{id}/:
+    get:
+      tags:
+        - rolling_stock
+      summary: Retrieve a rolling stock's light representation
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Rolling Stock ID
+          required: true
+      responses:
+        200:
+          description: The rolling stock without effort curves nor rolling resistance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LightRollingStock"
   /timetable/:
     get:
       tags:
@@ -454,43 +514,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                train_name:
-                  type: string
-                timetable:
-                  type: integer
-                rolling_stock:
-                  type: integer
-                departure_time:
-                  type: number
-                  format: float
-                path:
-                  type: integer
-                initial_speed:
-                  type: number
-                  format: float
-                labels:
-                  type: array
-                  items:
-                    type: string
-                margins:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                        enum: [construction, ratio_time, ratio_distance]
-                      value:
-                        type: number
-                        format: float
-                      begin_position:
-                        type: number
-                        format: float
-                      end_position:
-                        type: number
-                        format: float
+              $ref: "#/components/schemas/WritableTrainSchedule"
         required: true
       responses:
         201:
@@ -520,45 +544,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  train_name:
-                    type: string
-                  timetable:
-                    type: integer
-                  rolling_stock:
-                    type: integer
-                  departure_time:
-                    type: number
-                    format: float
-                  path:
-                    type: integer
-                  initial_speed:
-                    type: number
-                    format: float
-                  labels:
-                    type: array
-                    items:
-                      type: string
-                  margins:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                          enum: [construction, ratio_time, ratio_distance]
-                        value:
-                          type: number
-                          format: float
-                        begin_position:
-                          type: number
-                          format: float
-                        end_position:
-                          type: number
-                          format: float
+                $ref: "#/components/schemas/TrainSchedule"
     delete:
       tags:
         - train_schedule
@@ -573,7 +559,7 @@ paths:
       responses:
         204:
           description: No content
-    put:
+    patch:
       tags:
         - train_schedule
       summary: Update a train_schedule
@@ -589,43 +575,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                train_name:
-                  type: string
-                timetable:
-                  type: integer
-                rolling_stock:
-                  type: integer
-                departure_time:
-                  type: number
-                  format: float
-                path:
-                  type: integer
-                initial_speed:
-                  type: number
-                  format: float
-                labels:
-                  type: array
-                  items:
-                    type: string
-                margins:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                        enum: [construction, ratio_time, ratio_distance]
-                      value:
-                        type: number
-                        format: float
-                      begin_position:
-                        type: number
-                        format: float
-                      end_position:
-                        type: number
-                        format: float
+              $ref: "#/components/schemas/WritableTrainSchedule"
         required: true
       responses:
         200:
@@ -633,45 +583,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  train_name:
-                    type: string
-                  timetable:
-                    type: integer
-                  rolling_stock:
-                    type: integer
-                  departure_time:
-                    type: number
-                    format: float
-                  path:
-                    type: integer
-                  initial_speed:
-                    type: number
-                    format: float
-                  labels:
-                    type: array
-                    items:
-                      type: string
-                  margins:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                          enum: [construction, ratio_time, ratio_distance]
-                        value:
-                          type: number
-                          format: float
-                        begin_position:
-                          type: number
-                          format: float
-                        end_position:
-                          type: number
-                          format: float
+                $ref: "#/components/schemas/TrainSchedule"
   /train_schedule/{id}/result/:
     get:
       tags:
@@ -1082,3 +994,112 @@ components:
         power_class:
           type: number
         image: {}
+    LightRollingStock:
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        owner:
+          type: string
+        length:
+          type: number
+        mass:
+          type: number
+        inertia_coefficient:
+          type: number
+        capabilities:
+          type: array
+          items:
+            type: string
+        max_speed:
+          type: number
+        startup_time:
+          type: number
+        startup_acceleration:
+          type: number
+        comfort_acceleration:
+          type: number
+        timetable_gamma:
+          type: number
+        traction_mode:
+          type: string
+        power_class:
+          type: number
+        image: {}
+    TrainSchedule:
+      properties:
+        id:
+          type: integer
+        train_name:
+          type: string
+        timetable:
+          type: integer
+        rolling_stock:
+          type: integer
+        departure_time:
+          type: number
+          format: float
+        path:
+          type: integer
+        initial_speed:
+          type: number
+          format: float
+        labels:
+          type: array
+          items:
+            type: string
+        margins:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [construction, ratio_time, ratio_distance]
+              value:
+                type: number
+                format: float
+              begin_position:
+                type: number
+                format: float
+              end_position:
+                type: number
+                format: float
+    WritableTrainSchedule:
+      properties:
+        train_name:
+          type: string
+        timetable:
+          type: integer
+        rolling_stock:
+          type: integer
+        departure_time:
+          type: number
+          format: float
+        path:
+          type: integer
+        initial_speed:
+          type: number
+          format: float
+        labels:
+          type: array
+          items:
+            type: string
+        margins:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [construction, ratio_time, ratio_distance]
+              value:
+                type: number
+                format: float
+              begin_position:
+                type: number
+                format: float
+              end_position:
+                type: number
+                format: float
