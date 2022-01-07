@@ -61,6 +61,11 @@ def format_operational_point(entity):
     return op.operational_point.name
 
 
+@formatter("aspects")
+def format_aspects(signal):
+    return ";".join(signal.aspects)
+
+
 def dump_entities(writer, objects, formatters):
     writer.writerow((f.name for f in formatters))
     for obj in objects:
@@ -170,7 +175,7 @@ class Command(BaseCommand):
             dump_entities(
                 csv.writer(fp),
                 signals,
-                [format_osrd_id, format_geo, format_sch],
+                [format_osrd_id, format_geo, format_sch, format_aspects],
             )
 
         tvd_sections = [tvd.into_obj() for tvd in TVDSectionModel.objects.filter(infra=infra)]
