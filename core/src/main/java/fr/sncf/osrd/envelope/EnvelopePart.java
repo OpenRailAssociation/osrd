@@ -1,6 +1,8 @@
 package fr.sncf.osrd.envelope;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import javafx.scene.effect.Light;
+
 import java.util.Arrays;
 
 /**
@@ -12,6 +14,8 @@ import java.util.Arrays;
  * </ul>
  */
 public final class EnvelopePart {
+    // region DATA FIELDS
+
     /** Metadata about his envelope part */
     public final EnvelopePartMeta meta;
 
@@ -23,7 +27,24 @@ public final class EnvelopePart {
     private final double[] speeds;
 
     /** A list of N - 1 time deltas between positions */
-    private final double[] times;
+    private final double[] timeDeltas;
+
+    // endregion
+
+    // region CACHE FIELDS
+
+    // these two fields could be public, but aren't for the sake of keeping the ability to compute these values lazily
+    /** The highest speed */
+    private final double maxSpeed;
+    /** The smallest speed */
+    private final double minSpeed;
+
+    /** The time from the start of the envelope, in milliseconds. Only read using getTotalTimes. */
+    private long[] totalTimesCache = null;
+
+    // endregion
+
+    // region CONSTRUCTORS
 
     /** Creates an EnvelopePart */
     @SuppressFBWarnings({"EI_EXPOSE_REP2"})
@@ -31,19 +52,31 @@ public final class EnvelopePart {
             EnvelopePartMeta meta,
             double[] positions,
             double[] speeds,
-            double[] times
+            double[] timeDeltas
     ) {
         assert positions.length == speeds.length;
         assert positions.length >= 2;
-        assert times.length == positions.length - 1;
+        assert timeDeltas.length == positions.length - 1;
         assert checkNaNFree(positions) && checkMonotonousIncreasing(positions);
         assert checkNaNFree(speeds) && checkPositive(speeds);
-        assert checkNaNFree(times) && checkPositive(times) && checkNonZero(times);
+        assert checkNaNFree(timeDeltas) && checkPositive(timeDeltas) && checkNonZero(timeDeltas);
         this.meta = meta;
 
         this.positions = positions;
         this.speeds = speeds;
-        this.times = times;
+        this.timeDeltas = timeDeltas;
+
+        var maxSpeed = Double.NEGATIVE_INFINITY;
+        for (var speed : speeds)
+            if (speed > maxSpeed)
+                maxSpeed = speed;
+        this.maxSpeed = maxSpeed;
+
+        var minSpeed = Double.POSITIVE_INFINITY;
+        for (var speed : speeds)
+            if (speed < minSpeed)
+                minSpeed = speed;
+        this.minSpeed = minSpeed;
     }
 
     /** Creates an envelope part by generating step times from speeds and positions */
@@ -59,6 +92,8 @@ public final class EnvelopePart {
                 computeTimes(positions, speeds)
         );
     }
+
+    // endregion
 
     // region SANITY_CHECKS
 
@@ -108,6 +143,16 @@ public final class EnvelopePart {
         return positions.length - 1;
     }
 
+    /** Returns the maximum speed of the envelope part */
+    public double getMaxSpeed() {
+        return maxSpeed;
+    }
+
+    /** Returns the minimum speed of the envelope part */
+    public double getMinSpeed() {
+        return minSpeed;
+    }
+
     public double getBeginPos(int stepIndex) {
         return positions[stepIndex];
     }
@@ -150,6 +195,41 @@ public final class EnvelopePart {
 
     // endregion
 
+    // region CACHING
+
+    /** This method must be private as it returns an array */
+    private long[] getTotalTimes() {
+        if (totalTimesCache != null)
+            return totalTimesCache;
+
+        var totalTimes = new long[positions.length];
+        totalTimes[0] = 0;
+
+        long totalTime = 0;
+        for (int i = 0; i < timeDeltas.length; i++) {
+            totalTime += (long) (timeDeltas[i] * 1000);
+            totalTimes[i + 1] = totalTime;
+        }
+        totalTimesCache = totalTimes;
+        return totalTimes;
+    }
+
+    /** Returns the total time of the envelope part, in milliseconds */
+    public long getTotalTime() {
+        var totalTimes = getTotalTimes();
+        return totalTimes[totalTimes.length - 1];
+    }
+
+
+    /** Returns the total time required to get from the start of the envelope to a given
+     * point of the envelope part, in milliseconds
+     */
+    public long getTotalTime(int pointIndex) {
+        return getTotalTimes()[pointIndex];
+    }
+
+    // endregion
+
     // region CLONE
 
     public double[] clonePositions() {
@@ -161,7 +241,7 @@ public final class EnvelopePart {
     }
 
     public double[] cloneTimes() {
-        return times.clone();
+        return timeDeltas.clone();
     }
 
     // endregion
@@ -210,17 +290,24 @@ public final class EnvelopePart {
     }
 
     /** Given a position return the interpolated deltaTime */
-    public double interpolateTime(int stepIndex, double position) {
+    public double interpolateTimeDelta(int stepIndex, double position) {
         assert checkPosition(stepIndex, position);
         if (position == positions[stepIndex])
             return 0.0;
         if (position == positions[stepIndex + 1])
-            return times[stepIndex];
+            return timeDeltas[stepIndex];
         return EnvelopePhysics.interpolateStepTime(
                 positions[stepIndex], positions[stepIndex + 1],
                 speeds[stepIndex], speeds[stepIndex + 1],
                 position - positions[stepIndex]
         );
+    }
+
+    /** Finds the time required to get from the start of the envelope to the given position, in milliseconds */
+    public long interpolateTotalTime(int stepIndex, double position) {
+        long timeToStepStart = getTotalTime(stepIndex);
+        var interpolatedTime = interpolateTimeDelta(stepIndex, position);
+        return timeToStepStart + (long) (interpolatedTime * 1000);
     }
 
     /** Compute the time deltas between positions */
@@ -253,7 +340,7 @@ public final class EnvelopePart {
 
         var slicePos = Arrays.copyOfRange(positions, beginStepIndex, endStepIndex + 1);
         var sliceSpeeds = Arrays.copyOfRange(speeds, beginStepIndex, endStepIndex + 1);
-        var sliceTimes = Arrays.copyOfRange(times, beginStepIndex, endStepIndex);
+        var sliceTimes = Arrays.copyOfRange(timeDeltas, beginStepIndex, endStepIndex);
         return new EnvelopePart(
                 meta,
                 slicePos,
@@ -323,17 +410,17 @@ public final class EnvelopePart {
         // interpolate if necessary
         if (endPosition != Double.POSITIVE_INFINITY) {
             double interpolatedSpeed = interpolateSpeed(endStepIndex, endPosition);
-            double interpolatedTime = interpolateTime(endStepIndex, endPosition);
+            double interpolatedTime = interpolateTimeDelta(endStepIndex, endPosition);
             sliced.positions[sliced.pointCount() - 1] = endPosition;
             sliced.speeds[sliced.pointCount() - 1] = interpolatedSpeed;
-            sliced.times[sliced.stepCount() - 1] = interpolatedTime;
+            sliced.timeDeltas[sliced.stepCount() - 1] = interpolatedTime;
         }
         if (beginPosition != Double.NEGATIVE_INFINITY) {
             double interpolatedSpeed = interpolateSpeed(beginStepIndex, beginPosition);
-            double interpolatedTime = interpolateTime(beginStepIndex, beginPosition);
+            double interpolatedTime = interpolateTimeDelta(beginStepIndex, beginPosition);
             sliced.positions[0] = beginPosition;
             sliced.speeds[0] = interpolatedSpeed;
-            sliced.times[0] = interpolatedTime;
+            sliced.timeDeltas[0] = interpolatedTime;
         }
         return sliced;
     }
@@ -371,7 +458,7 @@ public final class EnvelopePart {
         return (meta == that.meta
                 && Arrays.equals(positions, that.positions)
                 && Arrays.equals(speeds, that.speeds)
-                && Arrays.equals(times, that.times));
+                && Arrays.equals(timeDeltas, that.timeDeltas));
     }
 
     @Override
@@ -379,7 +466,7 @@ public final class EnvelopePart {
         int result = System.identityHashCode(meta);
         result = 31 * result + Arrays.hashCode(positions);
         result = 31 * result + Arrays.hashCode(speeds);
-        result = 31 * result + Arrays.hashCode(times);
+        result = 31 * result + Arrays.hashCode(timeDeltas);
         return result;
     }
 
