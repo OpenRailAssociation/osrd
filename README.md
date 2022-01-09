@@ -22,13 +22,27 @@ Please don't build any serious projects with OSRD unless you are prepared to be 
 
 ## Getting Started
 
-You'll need:
- - Docker
- - Docker Compose
+### What you'll need
 
+- [Docker Compose](https://github.com/docker/compose)
+
+You can find install process right [here](https://docs.docker.com/compose/install/).
+
+Run this command in root of this project should start the docker :
 ```sh
 docker-compose up
 ```
+
+Note that it may take a little while the first time you run it.
+
+You can now go to [http://localhost:3000](http://localhost:3000/) and should see the main front page.
+
+### Miscellaneous
+
+- [Front](front/README.md)
+- [Api](api/README.md)
+- [Core](core/README.md)
+- [Tests](tests/README.md)
 
 ## Contributing
 
@@ -42,8 +56,8 @@ Code contributions are very welcome, and we'd love to work together to make this
 
 We would like to thank:
 
- - Bjørnar Steinnes Luteberget, who wrote a very interesting thesis on the matter,
-   as well as a [pretty impressive prototype](https://github.com/luteberget/junction)
+- Bjørnar Steinnes Luteberget, who wrote a very interesting thesis on the matter,
+  as well as a [pretty impressive prototype](https://github.com/luteberget/junction)
 
 ## Contact
 
