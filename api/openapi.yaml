@@ -127,6 +127,12 @@ paths:
         - infra
       summary: Serialize an infra to GeoJson, with an optional region filter
       parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra ID
+          required: true
         - in: query
           name: query
           schema:
