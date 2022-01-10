@@ -137,6 +137,12 @@ paths:
             type: integer
           description: Infra ID
           required: true
+        - in: query
+          name: include_geom
+          schema:
+            type: boolean
+            default: false
+          description: Whether the railjson should contain geometry information
       responses:
         200:
           description: The infra in railjson format

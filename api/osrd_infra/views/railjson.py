@@ -7,12 +7,17 @@ from osrd_infra.models import AspectModel, Infra, RailScriptFunctionModel
 from osrd_infra.schemas.infra import BaseObjectTrait, RailJsonInfra
 
 CURRENT_DIR = Path(__file__).parent
-GET_INFRA_SQL = open(CURRENT_DIR / "get_infra.sql").read()
+GET_INFRA_NO_GEOM_SQL = open(CURRENT_DIR / "sql/get_infra_no_geom.sql").read()
+GET_INFRA_WITH_GEOM_SQL = open(CURRENT_DIR / "sql/get_infra_with_geom.sql").read()
 
 
-def serialize_infra(infra: Infra):
+def serialize_infra(infra: Infra, include_geom=False):
+    get_infra_sql = GET_INFRA_NO_GEOM_SQL
+    if include_geom:
+        get_infra_sql = GET_INFRA_WITH_GEOM_SQL
+
     with connection.cursor() as cursor:
-        cursor.execute(GET_INFRA_SQL, [infra.id])
+        cursor.execute(get_infra_sql, [infra.id])
         res = cursor.fetchone()[0]
     return res
 
