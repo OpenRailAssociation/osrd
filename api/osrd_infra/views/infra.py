@@ -26,11 +26,12 @@ class InfraView(
 
     @action(url_path="railjson", detail=True, methods=["get"])
     def get_railjson(self, request, pk=None):
-        cache_key = f"osrd.infra.{pk}"
+        include_geom = request.query_params.get("include_geom", "false").lower() == "true"
+        cache_key = f"osrd.infra.{pk}.{include_geom}"
         railjson = cache.get(cache_key)
         if railjson is not None:
             return HttpResponse(railjson, content_type="application/json")
-        railjson = serialize_infra(self.get_object())
+        railjson = serialize_infra(self.get_object(), include_geom)
         cache.set(cache_key, railjson, timeout=settings.CACHE_TIMEOUT)
         return HttpResponse(railjson, content_type="application/json")
 
