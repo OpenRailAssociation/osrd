@@ -30,7 +30,7 @@ You'll need:
 
 You can find install process right [here](https://docs.docker.com/compose/install/).
 
-Run this command in root of this project should start the docker :
+Run this command in root of this project should start the docker:
 ```sh
 docker-compose up
 ```
