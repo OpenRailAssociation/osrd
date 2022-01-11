@@ -1,8 +1,6 @@
 package fr.sncf.osrd.envelope;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import javafx.scene.effect.Light;
-
 import java.util.Arrays;
 
 /**
@@ -35,9 +33,9 @@ public final class EnvelopePart {
 
     // these two fields could be public, but aren't for the sake of keeping the ability to compute these values lazily
     /** The highest speed */
-    private final double maxSpeed;
+    private double maxSpeed;
     /** The smallest speed */
-    private final double minSpeed;
+    private double minSpeed;
 
     /** The time from the start of the envelope, in milliseconds. Only read using getTotalTimes. */
     private long[] totalTimesCache = null;
@@ -45,6 +43,20 @@ public final class EnvelopePart {
     // endregion
 
     // region CONSTRUCTORS
+
+    private void recomputeCache() {
+        var maxSpeed = Double.NEGATIVE_INFINITY;
+        for (var speed : speeds)
+            if (speed > maxSpeed)
+                maxSpeed = speed;
+        this.maxSpeed = maxSpeed;
+
+        var minSpeed = Double.POSITIVE_INFINITY;
+        for (var speed : speeds)
+            if (speed < minSpeed)
+                minSpeed = speed;
+        this.minSpeed = minSpeed;
+    }
 
     /** Creates an EnvelopePart */
     @SuppressFBWarnings({"EI_EXPOSE_REP2"})
@@ -66,17 +78,7 @@ public final class EnvelopePart {
         this.speeds = speeds;
         this.timeDeltas = timeDeltas;
 
-        var maxSpeed = Double.NEGATIVE_INFINITY;
-        for (var speed : speeds)
-            if (speed > maxSpeed)
-                maxSpeed = speed;
-        this.maxSpeed = maxSpeed;
-
-        var minSpeed = Double.POSITIVE_INFINITY;
-        for (var speed : speeds)
-            if (speed < minSpeed)
-                minSpeed = speed;
-        this.minSpeed = minSpeed;
+        recomputeCache();
     }
 
     /** Creates an envelope part by generating step times from speeds and positions */
@@ -349,12 +351,12 @@ public final class EnvelopePart {
         );
     }
 
-    public EnvelopePart sliceBeginning(int endIndex, double endPosition) {
-        return slice(0, Double.NEGATIVE_INFINITY, endIndex, endPosition);
+    public EnvelopePart sliceBeginning(int endIndex, double endPosition, double endSpeed) {
+        return slice(0, Double.NEGATIVE_INFINITY, Double.NaN, endIndex, endPosition, endSpeed);
     }
 
-    public EnvelopePart sliceEnd(int beginIndex, double beginPosition) {
-        return slice(beginIndex, beginPosition, stepCount() - 1, Double.POSITIVE_INFINITY);
+    public EnvelopePart sliceEnd(int beginIndex, double beginPosition, double beginSpeed) {
+        return slice(beginIndex, beginPosition, beginSpeed, stepCount() - 1, Double.POSITIVE_INFINITY, Double.NaN);
     }
 
     /** Cuts an envelope part, interpolating new points if required.
@@ -380,6 +382,22 @@ public final class EnvelopePart {
     public EnvelopePart slice(
             int beginStepIndex, double beginPosition,
             int endStepIndex, double endPosition
+    ) {
+        return slice(beginStepIndex, beginPosition, Double.NaN, endStepIndex, endPosition, Double.NaN);
+    }
+
+    /** Cuts an envelope part, interpolating new points if required.
+     * @param beginStepIndex the index of a step beginPosition belongs to
+     * @param beginPosition must belong to the step at beginStepIndex
+     * @param beginSpeed the forced start speed of the envelope slice
+     * @param endStepIndex the index of a step endPosition belongs to
+     * @param endPosition must belong to the step at beginStepIndex
+     * @param endSpeed the forced end speed of the envelope slice
+     * @return an EnvelopePart spanning from beginPosition to endPosition
+     */
+    public EnvelopePart slice(
+            int beginStepIndex, double beginPosition, double beginSpeed,
+            int endStepIndex, double endPosition, double endSpeed
     ) {
         assert endStepIndex >= 0 && endStepIndex < stepCount();
         assert beginStepIndex >= 0 && beginStepIndex < stepCount();
@@ -409,41 +427,24 @@ public final class EnvelopePart {
 
         // interpolate if necessary
         if (endPosition != Double.POSITIVE_INFINITY) {
-            double interpolatedSpeed = interpolateSpeed(endStepIndex, endPosition);
+            if (Double.isNaN(endSpeed))
+                endSpeed = interpolateSpeed(endStepIndex, endPosition);
             double interpolatedTime = interpolateTimeDelta(endStepIndex, endPosition);
             sliced.positions[sliced.pointCount() - 1] = endPosition;
-            sliced.speeds[sliced.pointCount() - 1] = interpolatedSpeed;
+            sliced.speeds[sliced.pointCount() - 1] = endSpeed;
             sliced.timeDeltas[sliced.stepCount() - 1] = interpolatedTime;
+            sliced.recomputeCache();
         }
         if (beginPosition != Double.NEGATIVE_INFINITY) {
-            double interpolatedSpeed = interpolateSpeed(beginStepIndex, beginPosition);
+            if (Double.isNaN(beginSpeed))
+                beginSpeed = interpolateSpeed(beginStepIndex, beginPosition);
             double interpolatedTime = interpolateTimeDelta(beginStepIndex, beginPosition);
             sliced.positions[0] = beginPosition;
-            sliced.speeds[0] = interpolatedSpeed;
+            sliced.speeds[0] = beginSpeed;
             sliced.timeDeltas[0] = interpolatedTime;
+            sliced.recomputeCache();
         }
         return sliced;
-    }
-
-    public EnvelopePart slice(EnvelopePartPosition begin, EnvelopePartPosition end) {
-        return slice(begin.getStepIndex(), begin.getPosition(), end.getStepIndex(), end.getPosition());
-    }
-
-    /**
-     * Works just like slice, but interprets -1 as the lack of bound
-     * @see #slice(int, double, int, double)
-     */
-    EnvelopePart smartSlice(
-            int beginStepIndex, double beginPosition,
-            int endStepIndex, double endPosition
-    ) {
-        if (beginStepIndex != -1 && endStepIndex != -1)
-            return slice(beginStepIndex, beginPosition, endStepIndex, endPosition);
-        if (beginStepIndex != -1)
-            return sliceEnd(beginStepIndex, beginPosition);
-        if (endStepIndex != -1)
-            return sliceBeginning(endStepIndex, endPosition);
-        return this;
     }
 
     // endregion

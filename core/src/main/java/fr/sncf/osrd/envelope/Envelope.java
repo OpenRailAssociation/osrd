@@ -96,6 +96,22 @@ public final class Envelope implements Iterable<EnvelopePart> {
         return parts[i];
     }
 
+    public double getBeginPos() {
+        return parts[0].getBeginPos();
+    }
+
+    public double getEndPos() {
+        return parts[parts.length - 1].getEndPos();
+    }
+
+    public double getBeginSpeed() {
+        return parts[0].getBeginSpeed();
+    }
+
+    public double getEndSpeed() {
+        return parts[parts.length - 1].getEndSpeed();
+    }
+
     /** Returns the maximum speed of the envelope */
     public double getMaxSpeed() {
         return maxSpeed;
@@ -180,14 +196,14 @@ public final class Envelope implements Iterable<EnvelopePart> {
 
     /** Cuts an envelope */
     public EnvelopePart[] slice(
-            int beginPartIndex, int beginStepIndex, double beginPosition,
-            int endPartIndex, int endStepIndex, double endPosition
+            int beginPartIndex, int beginStepIndex, double beginPosition, double beginSpeed,
+            int endPartIndex, int endStepIndex, double endPosition, double endSpeed
     ) {
         assert beginPartIndex <= endPartIndex;
 
         if (beginPartIndex == endPartIndex) {
             var part = parts[beginPartIndex];
-            var sliced = part.slice(beginStepIndex, beginPosition, endStepIndex, endPosition);
+            var sliced = part.slice(beginStepIndex, beginPosition, beginSpeed, endStepIndex, endPosition, endSpeed);
             if (sliced == null)
                 return new EnvelopePart[] {};
             return new EnvelopePart[] { sliced };
@@ -195,8 +211,8 @@ public final class Envelope implements Iterable<EnvelopePart> {
 
         var beginPart = parts[beginPartIndex];
         var endPart = parts[endPartIndex];
-        var beginPartSliced = beginPart.sliceEnd(beginStepIndex, beginPosition);
-        var endPartSliced = endPart.sliceBeginning(endStepIndex, endPosition);
+        var beginPartSliced = beginPart.sliceEnd(beginStepIndex, beginPosition, beginSpeed);
+        var endPartSliced = endPart.sliceBeginning(endStepIndex, endPosition, endSpeed);
 
         // compute the number of unchanged envelope parts between sliced parts
         var copySize = endPartIndex - beginPartIndex + 1 - /* sliced endpoints */ 2;
@@ -225,22 +241,27 @@ public final class Envelope implements Iterable<EnvelopePart> {
 
     /** Cuts the envelope */
     public EnvelopePart[] smartSlice(
-            int beginPartIndex, int beginStepIndex, double beginPosition,
-            int endPartIndex, int endStepIndex, double endPosition
+            int beginPartIndex, int beginStepIndex, double beginPosition, double beginSpeed,
+            int endPartIndex, int endStepIndex, double endPosition, double endSpeed
     ) {
         if (beginPartIndex == -1) {
             beginPartIndex = 0;
             var beginPart = parts[beginPartIndex];
             beginStepIndex = 0;
             beginPosition = beginPart.getBeginPos();
+            beginSpeed = beginPart.getBeginSpeed();
         }
         if (endPartIndex == -1) {
             endPartIndex = parts.length - 1;
             var endPart = parts[endPartIndex];
             endStepIndex = endPart.stepCount() - 1;
             endPosition = endPart.getEndPos();
+            endSpeed = endPart.getEndSpeed();
         }
-        return slice(beginPartIndex, beginStepIndex, beginPosition, endPartIndex, endStepIndex, endPosition);
+        return slice(
+                beginPartIndex, beginStepIndex, beginPosition, beginSpeed,
+                endPartIndex, endStepIndex, endPosition, endSpeed
+        );
     }
 
     // endregion

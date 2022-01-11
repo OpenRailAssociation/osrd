@@ -18,9 +18,9 @@ public class EnvelopeTest {
 
     @Test
     void testMinMaxSpeed() {
-        var partA = EnvelopePart.generateTimes(null, new double[] { 0, 2 }, new double[] { 1, 2 });
-        var partB = EnvelopePart.generateTimes(null, new double[] { 2, 4 }, new double[] { 4, 3 });
-        var envelope = Envelope.make(partA, partB);
+        final var partA = EnvelopePart.generateTimes(null, new double[] { 0, 2 }, new double[] { 1, 2 });
+        final var partB = EnvelopePart.generateTimes(null, new double[] { 2, 4 }, new double[] { 4, 3 });
+        final var envelope = Envelope.make(partA, partB);
 
         assertEquals(1, partA.getMinSpeed());
         assertEquals(2, partA.getMaxSpeed());

@@ -2,11 +2,11 @@ package fr.sncf.osrd.envelope;
 
 import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.*;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.utils.CompareSign;
 import java.util.function.Predicate;
 
 
-public class EnvelopeCursor implements EnvelopePosition {
+public class EnvelopeCursor {
     /** The number of times this cursor was moved */
     private int revision;
 
@@ -29,6 +29,8 @@ public class EnvelopeCursor implements EnvelopePosition {
     private int stepIndex;
     /** The position in the envelope, or NaN if the end was reached */
     private double position;
+    /** The speed at the current position, or NaN if it should be interpolated */
+    private double speed;
 
     public boolean hasReachedEnd() {
         return partIndex == -1;
@@ -42,6 +44,7 @@ public class EnvelopeCursor implements EnvelopePosition {
         this.part = envelope.get(this.partIndex);
         this.stepIndex = firstIndex(this.part.stepCount());
         this.position = getStepBeginPos();
+        this.speed = Double.NaN;
         this.revision = 0;
     }
 
@@ -106,17 +109,17 @@ public class EnvelopeCursor implements EnvelopePosition {
 
     /** Cuts the envelope part we're iterating over, taking direction into account */
     public EnvelopePart[] smartSlice(
-            int beginPartIndex, int beginStepIndex, double beginPosition,
-            int endPartIndex, int endStepIndex, double endPosition
+            int beginPartIndex, int beginStepIndex, double beginPosition, double beginSpeed,
+            int endPartIndex, int endStepIndex, double endPosition, double endSpeed
     ) {
         if (reverse)
             return envelope.smartSlice(
-                    endPartIndex, endStepIndex, endPosition,
-                    beginPartIndex, beginStepIndex, beginPosition
+                    endPartIndex, endStepIndex, endPosition, endSpeed,
+                    beginPartIndex, beginStepIndex, beginPosition, beginSpeed
             );
         return envelope.smartSlice(
-                beginPartIndex, beginStepIndex, beginPosition,
-                endPartIndex, endStepIndex, endPosition
+                beginPartIndex, beginStepIndex, beginPosition, beginSpeed,
+                endPartIndex, endStepIndex, endPosition, endSpeed
         );
     }
 
@@ -168,6 +171,32 @@ public class EnvelopeCursor implements EnvelopePosition {
         return getStepEndPos(part, lastIndex(part.stepCount()));
     }
 
+    /** Returns the end position of the envelope */
+    public double getEnvelopeEndPos() {
+        if (reverse)
+            return envelope.getBeginPos();
+        return envelope.getEndPos();
+    }
+
+    /** Returns the speed at the end of the envelope, where "end" depends on cursor direction */
+    public double getEnvelopeEndSpeed() {
+        if (reverse)
+            return envelope.getBeginSpeed();
+        return envelope.getEndSpeed();
+    }
+
+    public int getEnvelopeLastPartIndex() {
+        return lastIndex(envelope.size());
+    }
+
+    public EnvelopePart getEnvelopeLastPart() {
+        return envelope.get(getEnvelopeLastPartIndex());
+    }
+
+    public int getEnvelopeLastStepIndex() {
+        return lastIndex(getEnvelopeLastPart().stepCount());
+    }
+
     /** Compares positions in a direction away manner. */
     public double comparePos(double a, double b) {
         if (reverse)
@@ -203,7 +232,7 @@ public class EnvelopeCursor implements EnvelopePosition {
         return true;
     }
 
-    /** Moves the cursor to the next step */
+    /** Moves the cursor to the beginning of the next step */
     public NextStepResult nextStep() {
         if (hasReachedEnd())
             return NEXT_REACHED_END;
@@ -217,7 +246,10 @@ public class EnvelopeCursor implements EnvelopePosition {
         return NEXT_STEP;
     }
 
-    public double interpolateSpeed() {
+    /** Returns the speed at the location of the cursor */
+    public double getSpeed() {
+        if (!Double.isNaN(speed))
+            return speed;
         return part.interpolateSpeed(stepIndex, position);
     }
 
@@ -264,10 +296,18 @@ public class EnvelopeCursor implements EnvelopePosition {
         return false;
     }
 
+    /** Set the position / speed and bumps the revision */
+    private void setPosition(double newPosition, double newSpeed) {
+        assert !Double.isInfinite(newPosition);
+        assert Double.isNaN(newPosition) || comparePos(position, newPosition) <= 0;
+        position = newPosition;
+        speed = newSpeed;
+        revision++;
+    }
+
     /** Set the position and bumps the revision */
     private void setPosition(double newPosition) {
-        position = newPosition;
-        revision++;
+        setPosition(newPosition, Double.NaN);
     }
 
     /** Attempts to find a transition between envelope parts which matches a predicate */
@@ -311,5 +351,49 @@ public class EnvelopeCursor implements EnvelopePosition {
                 return true;
         } while (nextPart());
         return false;
+    }
+
+    private static double getPartBound(EnvelopePart part, CompareSign operation) {
+        if (operation.expectedSign > 0)
+            return part.getMaxSpeed();
+        return part.getMinSpeed();
+    }
+
+    /** Find the next point with a speed satisfying a given condition */
+    public boolean findSpeed(double speed, CompareSign operation) {
+        if (hasReachedEnd())
+            return false;
+
+        Predicate<EnvelopePart> partPredicate = (part) -> CompareSign.compare(
+                getPartBound(part, operation),
+                speed, operation);
+
+        // find the next envelope part with a speed anywhere inside greater than minSpeed
+        if (!findPart(partPredicate))
+            return false;
+
+        // find the intersecting step
+        while (!CompareSign.compare(getSpeed(), speed, operation)
+                && !CompareSign.compare(getStepEndSpeed(), speed, operation)) {
+            var nextStepRes = nextStep();
+            if (nextStepRes == NEXT_REACHED_END)
+                return false;
+            if (nextStepRes == NEXT_PART) {
+                if (!findPart(partPredicate))
+                    return false;
+            }
+        }
+
+        // if the start of the step satisfies the condition already, there's a discontinuity
+        if (CompareSign.compare(getSpeed(), speed, operation))
+            return true;
+
+        // find the intersecting position inside the step
+        var intersectionPos = EnvelopePhysics.intersectStepWithSpeed(
+                getStepBeginPos(), getStepBeginSpeed(), getStepEndPos(), getStepEndSpeed(),
+                speed
+        );
+        setPosition(intersectionPos, speed);
+        return true;
     }
 }
