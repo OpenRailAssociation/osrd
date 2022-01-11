@@ -24,7 +24,9 @@ Please don't build any serious projects with OSRD unless you are prepared to be 
 
 ### What you'll need
 
-- [Docker Compose](https://github.com/docker/compose)
+You'll need:
+ - [Docker](https://www.docker.com/)
+ - [Docker Compose](https://github.com/docker/compose)
 
 You can find install process right [here](https://docs.docker.com/compose/install/).
 
