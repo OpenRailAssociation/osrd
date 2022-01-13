@@ -154,7 +154,7 @@ def extract_occupancy_events(route_status_log, projection_path_payload, projecti
     """
     Turns a raw simulation log into a clean log of occupation events on a given path
     """
-    projection_routes = {path_step.route.id for path_step in projection_path_payload.path}
+    projection_routes = {path_step.route.id for path_step in projection_path_payload.route_paths}
 
     for event in route_status_log:
         route_id = event["route_id"]

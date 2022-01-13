@@ -25,14 +25,14 @@ class SimulationType(IntEnum):
 
 
 def get_train_phases(path):
-    last_step = path.payload["steps"][-1]
+    last_waypoint = path.payload["path_waypoints"][-1]
     return [
         {
             "type": "navigate",
             "driver_sight_distance": 400,
             "end_location": {
-                "track_section": last_step["track"]["id"],
-                "offset": last_step["position"],
+                "track_section": last_waypoint["track"]["id"],
+                "offset": last_waypoint["position"],
             },
         }
     ]
@@ -40,15 +40,15 @@ def get_train_phases(path):
 
 def get_train_stops(path):
     stops = []
-    steps = path.payload["steps"]
-    for step_index, step in enumerate(steps[1:]):
+    path_waypoints = path.payload["path_waypoints"]
+    for waypoint_index, path_waypoint in enumerate(path_waypoints[1:]):
         stops.append(
             {
                 "location": {
-                    "track_section": step["track"]["id"],
-                    "offset": step["position"],
+                    "track_section": path_waypoint["track"]["id"],
+                    "offset": path_waypoint["position"],
                 },
-                "duration": step["stop_time"],
+                "duration": path_waypoint["stop_time"],
             }
         )
     return stops
@@ -59,8 +59,8 @@ def convert_route_list_for_simulation(path):
     Generates a list of route for the simulation using the path data
     """
     res = []
-    for path_step in path.payload["path"]:
-        route_str = path_step["route"]["id"]
+    for route_path in path.payload["route_paths"]:
+        route_str = route_path["route"]["id"]
         # We need to drop duplicates because the path is split at each step,
         # making it possible to have an input such as :
         # [{route: 1, track_sections: [1, 2]}, {route: 1, track_sections: [2, 3, 4]}]
@@ -131,7 +131,7 @@ def get_train_schedule_payload(train_schedule: TrainSchedule, sim_type: Simulati
 
 def preprocess_stops(stop_reaches, train_schedule):
     path = train_schedule.path.payload
-    assert len(path["steps"]) == len(stop_reaches) + 1
+    assert len(path["path_waypoints"]) == len(stop_reaches) + 1
 
     stop_times = [-1] * (len(stop_reaches) + 1)
     stop_times[0] = train_schedule.departure_time
@@ -140,14 +140,14 @@ def preprocess_stops(stop_reaches, train_schedule):
         stop_times[stop["stop_index"] + 1] = stop["time"]
         stop_positions[stop["stop_index"] + 1] = stop["position"]
     stops = []
-    for phase_index, step in enumerate(path["steps"]):
+    for phase_index, path_waypoint in enumerate(path["path_waypoints"]):
         stops.append(
             {
-                "name": step.get("name", "Unknown"),
-                "id": step.get("id", None),
+                "name": path_waypoint.get("name", "Unknown"),
+                "id": path_waypoint.get("id", None),
                 "time": stop_times[phase_index],
                 "position": stop_positions[phase_index],
-                "stop_time": step["stop_time"],
+                "stop_time": path_waypoint["stop_time"],
             }
         )
     return stops

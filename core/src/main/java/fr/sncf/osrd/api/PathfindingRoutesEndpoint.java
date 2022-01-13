@@ -205,14 +205,14 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                     if (j == 0) {
                         // Add the given origin location to the steps output
                         var firstTrack = trackSections.get(0);
-                        var newStep = new PathfindingResult.StepResult(firstTrack.edge, firstTrack.getBeginPosition());
+                        var newStep = new PathfindingResult.PathWaypointResult(firstTrack.edge, firstTrack.getBeginPosition());
                         res.addStep(newStep);
                     }
                     res.add(route, trackSections);
                     if (j == routes.size() - 1) {
                         // Add the given destination location to the steps output
                         var lastTrack = trackSections.get(trackSections.size() - 1);
-                        var newStep = new PathfindingResult.StepResult(lastTrack.edge, lastTrack.getEndPosition());
+                        var newStep = new PathfindingResult.PathWaypointResult(lastTrack.edge, lastTrack.getEndPosition());
                         res.addStep(newStep);
                     }
                 }
@@ -259,16 +259,18 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
 
     @SuppressFBWarnings({"URF_UNREAD_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static class PathfindingResult {
-        public final List<PathStepResult> path;
-        public final List<StepResult> steps;
+        @Json(name="route_paths")
+        public final List<RoutePathResult> routePaths;
+        @Json(name="path_waypoints")
+        public final List<PathWaypointResult> pathWaypoints;
 
         private PathfindingResult() {
-            path = new ArrayList<>();
-            steps = new ArrayList<>();
+            routePaths = new ArrayList<>();
+            pathWaypoints = new ArrayList<>();
         }
 
         void add(Route route, List<TrackSectionRange> trackSections) {
-            var routeResult = new PathStepResult();
+            var routeResult = new RoutePathResult();
             routeResult.route = new RJSObjectRef<>(route.id, "Route");
             routeResult.trackSections = new ArrayList<>();
             for (var trackSection : trackSections) {
@@ -286,38 +288,38 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                         trackSection.getEndPosition(),
                         null);
                 while (opIterator.hasNext())
-                    addStep(new StepResult(opIterator.next(), trackSection.edge));
+                    addStep(new PathWaypointResult(opIterator.next(), trackSection.edge));
             }
-            path.add(routeResult);
+            routePaths.add(routeResult);
         }
 
-        void addStep(StepResult newStep) {
-            if (steps.isEmpty()) {
-                steps.add(newStep);
+        void addStep(PathWaypointResult newStep) {
+            if (pathWaypoints.isEmpty()) {
+                pathWaypoints.add(newStep);
                 return;
             }
-            var lastStep = steps.get(steps.size() - 1);
+            var lastStep = pathWaypoints.get(pathWaypoints.size() - 1);
             if (lastStep.isDuplicate(newStep)) {
                 lastStep.merge(newStep);
                 return;
             }
-            steps.add(newStep);
+            pathWaypoints.add(newStep);
         }
 
-        public static class PathStepResult {
+        public static class RoutePathResult {
             public RJSObjectRef<RJSRoute> route;
             @Json(name = "track_sections")
             public List<DirectionalTrackRangeResult> trackSections;
         }
 
-        public static class StepResult {
+        public static class PathWaypointResult {
             public String id;
             public boolean suggestion;
             public RJSObjectRef<RJSTrackSection> track;
             public double position;
 
             /** Suggested operational points */
-            StepResult(PointValue<OperationalPoint> op, TrackSection trackSection) {
+            PathWaypointResult(PointValue<OperationalPoint> op, TrackSection trackSection) {
                 this.id = op.value.id;
                 this.suggestion = true;
                 this.track = new RJSObjectRef<>(trackSection.id, "TrackSection");
@@ -325,21 +327,21 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             }
 
             /** Given step */
-            StepResult(TrackSection trackSection, double position) {
+            PathWaypointResult(TrackSection trackSection, double position) {
                 this.suggestion = false;
                 this.track = new RJSObjectRef<>(trackSection.id, "TrackSection");
                 this.position = position;
             }
 
             /** Check if two step result are at the same location */
-            public boolean isDuplicate(StepResult other) {
+            public boolean isDuplicate(PathWaypointResult other) {
                 if (!track.equals(other.track))
                     return false;
                 return Math.abs(position - other.position) < 0.001;
             }
 
             /** Merge a suggested with a give step */
-            public void merge(StepResult other) {
+            public void merge(PathWaypointResult other) {
                 suggestion &= other.suggestion;
                 if (!other.suggestion)
                     return;

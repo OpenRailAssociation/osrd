@@ -44,13 +44,13 @@ public class PathfindingTest extends ApiTest {
         var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
         assert response != null;
 
-        assertEquals(2, response.path.size());
-        assertEquals("rt.buffer_stop_b->tde.foo_b-switch_foo", response.path.get(0).route.id.id);
-        assertEquals("rt.tde.foo_b-switch_foo->buffer_stop_c", response.path.get(1).route.id.id);
+        assertEquals(2, response.routePaths.size());
+        assertEquals("rt.buffer_stop_b->tde.foo_b-switch_foo", response.routePaths.get(0).route.id.id);
+        assertEquals("rt.tde.foo_b-switch_foo->buffer_stop_c", response.routePaths.get(1).route.id.id);
 
-        assertEquals(2, response.steps.size());
-        assertEquals("op.station_foo", response.steps.get(0).id);
-        assertEquals("op.station_bar", response.steps.get(1).id);
+        assertEquals(2, response.pathWaypoints.size());
+        assertEquals("op.station_foo", response.pathWaypoints.get(0).id);
+        assertEquals("op.station_bar", response.pathWaypoints.get(1).id);
     }
 
     @Test

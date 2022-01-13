@@ -27,8 +27,8 @@ class Projection:
     @staticmethod
     def _path_to_tracks(path_payload: PathPayload):
         tracks = []
-        for path_step in path_payload.path:
-            tracks += path_step.track_sections
+        for route_path in path_payload.route_paths:
+            tracks += route_path.track_sections
         return tracks
 
     def _init_tracks(self, dir_track_ranges: List[DirectionalTrackRange]):
