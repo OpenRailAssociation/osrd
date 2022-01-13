@@ -19,8 +19,10 @@ public final class Envelope implements Iterable<EnvelopePart> {
     /** The smallest speed */
     private final double minSpeed;
 
-    /** The time from the start of the envelope, in milliseconds. Only read using getTotalTimes. */
-    private long[] timeToPartEndCache = null;
+    /** The time from the start of the envelope to envelope part transitions, in milliseconds.
+     *  Only read using getTotalTimes.
+     */
+    private long[] cumulativeTimesCache = null;
 
     // endregion
 
@@ -146,13 +148,18 @@ public final class Envelope implements Iterable<EnvelopePart> {
     }
 
     /** Computes the time required to get to a given point of the envelope */
-    public long interpolateTotalTime(double position) {
+    public long interpolateTotalTimeMS(double position) {
         assert continuous : "interpolating times on a non continuous envelope is a risky business";
         var envelopePartIndex = findEnvelopePartIndex(position);
         assert envelopePartIndex != -1;
         var envelopePart = get(envelopePartIndex);
         var stepIndex = envelopePart.findStep(position);
-        return getTimeToPartTransition(envelopePartIndex) + envelopePart.interpolateTotalTime(stepIndex, position);
+        return getCumulativeTimeMS(envelopePartIndex) + envelopePart.interpolateTotalTimeMS(stepIndex, position);
+    }
+
+    /** Computes the time required to get to a given point of the envelope */
+    public double interpolateTotalTime(double position) {
+        return ((double) interpolateTotalTimeMS(position)) / 1000;
     }
 
     // endregion
@@ -160,34 +167,40 @@ public final class Envelope implements Iterable<EnvelopePart> {
     // region CACHING
 
     /** This method must be private as it returns an array */
-    private long[] getTimesToPartTransitions() {
-        if (timeToPartEndCache != null)
-            return timeToPartEndCache;
+    private long[] getCumulativeTimesMS() {
+        if (cumulativeTimesCache != null)
+            return cumulativeTimesCache;
 
         var timesToPartTransitions = new long[parts.length + 1];
         timesToPartTransitions[0] = 0;
 
         long totalTime = 0;
         for (int i = 0; i < parts.length; i++) {
-            totalTime += parts[i].getTotalTime();
+            totalTime += parts[i].getTotalTimeMS();
             timesToPartTransitions[i + 1] = totalTime;
         }
-        timeToPartEndCache = timesToPartTransitions;
+        cumulativeTimesCache = timesToPartTransitions;
         return timesToPartTransitions;
     }
 
     /** Returns the total time of the envelope, in milliseconds */
-    public long getTotalTime() {
-        var timesToPartEnds = getTimesToPartTransitions();
-        return timesToPartEnds[timesToPartEnds.length - 1];
+    public long getTotalTimeMS() {
+        var timesToPartTransitions = getCumulativeTimesMS();
+        return timesToPartTransitions[timesToPartTransitions.length - 1];
+    }
+
+    /** Returns the total time of the envelope */
+    public double getTotalTime() {
+        return ((double) getTotalTimeMS()) / 1000;
     }
 
 
     /** Returns the total time required to get from the start of the envelope to
-     * the end of an envelope part, in milliseconds
+     * the start of an envelope part, in milliseconds
+     * @param transitionIndex either an envelope part index, of the number of parts to get the total time
      */
-    public long getTimeToPartTransition(int transitionIndex) {
-        return getTimesToPartTransitions()[transitionIndex];
+    public long getCumulativeTimeMS(int transitionIndex) {
+        return getCumulativeTimesMS()[transitionIndex];
     }
 
     // endregion

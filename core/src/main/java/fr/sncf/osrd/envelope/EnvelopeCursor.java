@@ -300,6 +300,7 @@ public class EnvelopeCursor {
     private void setPosition(double newPosition, double newSpeed) {
         assert !Double.isInfinite(newPosition);
         assert Double.isNaN(newPosition) || comparePos(position, newPosition) <= 0;
+        assert Double.isNaN(newSpeed) || Math.abs(newSpeed - part.interpolateSpeed(stepIndex, newPosition)) < 0.001;
         position = newPosition;
         speed = newSpeed;
         revision++;
@@ -364,20 +365,28 @@ public class EnvelopeCursor {
         if (hasReachedEnd())
             return false;
 
+        // this predicate only matches envelope part which contain a speed which matches
+        // the search requirement
         Predicate<EnvelopePart> partPredicate = (part) -> CompareSign.compare(
                 getPartBound(part, operation),
                 speed, operation);
 
-        // find the next envelope part with a speed anywhere inside greater than minSpeed
+        // look for the next envelope part which contains a speed which matches the
+        // search requirement. The current envelope part may contain such a point,
+        // but it may be **before the cursor**.
         if (!findPart(partPredicate))
             return false;
 
-        // find the intersecting step
+        // scan until a step matching the requirement is found
         while (!CompareSign.compare(getSpeed(), speed, operation)
                 && !CompareSign.compare(getStepEndSpeed(), speed, operation)) {
             var nextStepRes = nextStep();
             if (nextStepRes == NEXT_REACHED_END)
                 return false;
+            // if the current part was scanned and contains no matching step,
+            // scan for another matching envelope part.
+            // this should only ever happen once, if the findSpeed call starts in a part
+            // which has a matching point, but after this point.
             if (nextStepRes == NEXT_PART) {
                 if (!findPart(partPredicate))
                     return false;
@@ -385,10 +394,11 @@ public class EnvelopeCursor {
         }
 
         // if the start of the step satisfies the condition already, there's a discontinuity
+        // return immediately, as the cursor is already at the start of the step.
         if (CompareSign.compare(getSpeed(), speed, operation))
             return true;
 
-        // find the intersecting position inside the step
+        // otherwise, find the intersecting position inside the step
         var intersectionPos = EnvelopePhysics.intersectStepWithSpeed(
                 getStepBeginPos(), getStepBeginSpeed(), getStepEndPos(), getStepEndSpeed(),
                 speed

@@ -48,10 +48,13 @@ public class EnvelopeTest {
         var partB = EnvelopePart.generateTimes(null, new double[] { 2, 4 }, new double[] { 1, 1 });
         var envelope = Envelope.make(partA, partB);
 
-        assertEquals(1000, envelope.interpolateTotalTime(1));
-        assertEquals(2000, envelope.interpolateTotalTime(2));
-        assertEquals(3000, envelope.interpolateTotalTime(3));
-        assertEquals(3500, envelope.interpolateTotalTime(3.5));
-        assertEquals(4000, envelope.interpolateTotalTime(4));
+        assertEquals(1, partA.interpolateTotalTime(0, 1));
+
+        assertEquals(1, envelope.interpolateTotalTime(1));
+        assertEquals(2, envelope.interpolateTotalTime(2));
+        assertEquals(2, envelope.interpolateTotalTime(2));
+        assertEquals(3, envelope.interpolateTotalTime(3));
+        assertEquals(3.5, envelope.interpolateTotalTime(3.5));
+        assertEquals(4, envelope.interpolateTotalTime(4));
     }
 }

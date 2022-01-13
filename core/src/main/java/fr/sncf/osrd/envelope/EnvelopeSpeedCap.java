@@ -11,7 +11,6 @@ public class EnvelopeSpeedCap {
             var partBuilder = builder.startDiscontinuousOverlay(meta, speedLimit);
             partBuilder.addPlateau();
             builder.addPart(partBuilder);
-            cursor.nextStep();
         }
         return builder.build();
     }

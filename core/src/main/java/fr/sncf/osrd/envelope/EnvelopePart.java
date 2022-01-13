@@ -12,7 +12,7 @@ import java.util.Arrays;
  * </ul>
  */
 public final class EnvelopePart {
-    // region DATA FIELDS
+    // region INTRINSIC DATA FIELDS
 
     /** Metadata about his envelope part */
     public final EnvelopePartMeta meta;
@@ -31,32 +31,21 @@ public final class EnvelopePart {
 
     // region CACHE FIELDS
 
-    // these two fields could be public, but aren't for the sake of keeping the ability to compute these values lazily
+    /* Cache fields must not be public, and must also be lazily computed.
+       This ensures intrinsic data fields can be modified while constructing
+       the envelope part. */
+
     /** The highest speed */
-    private double maxSpeed;
+    private double maxSpeedCache = Double.NaN;
     /** The smallest speed */
-    private double minSpeed;
+    private double minSpeedCache = Double.NaN;
 
     /** The time from the start of the envelope, in milliseconds. Only read using getTotalTimes. */
-    private long[] totalTimesCache = null;
+    private long[] cumulativeMSTimesCache = null;
 
     // endregion
 
     // region CONSTRUCTORS
-
-    private void recomputeCache() {
-        var maxSpeed = Double.NEGATIVE_INFINITY;
-        for (var speed : speeds)
-            if (speed > maxSpeed)
-                maxSpeed = speed;
-        this.maxSpeed = maxSpeed;
-
-        var minSpeed = Double.POSITIVE_INFINITY;
-        for (var speed : speeds)
-            if (speed < minSpeed)
-                minSpeed = speed;
-        this.minSpeed = minSpeed;
-    }
 
     /** Creates an EnvelopePart */
     @SuppressFBWarnings({"EI_EXPOSE_REP2"})
@@ -77,8 +66,6 @@ public final class EnvelopePart {
         this.positions = positions;
         this.speeds = speeds;
         this.timeDeltas = timeDeltas;
-
-        recomputeCache();
     }
 
     /** Creates an envelope part by generating step times from speeds and positions */
@@ -147,11 +134,27 @@ public final class EnvelopePart {
 
     /** Returns the maximum speed of the envelope part */
     public double getMaxSpeed() {
+        if (!Double.isNaN(maxSpeedCache))
+            return maxSpeedCache;
+
+        var maxSpeed = Double.NEGATIVE_INFINITY;
+        for (var speed : speeds)
+            if (speed > maxSpeed)
+                maxSpeed = speed;
+        this.maxSpeedCache = maxSpeed;
         return maxSpeed;
     }
 
     /** Returns the minimum speed of the envelope part */
     public double getMinSpeed() {
+        if (!Double.isNaN(minSpeedCache))
+            return minSpeedCache;
+
+        var minSpeed = Double.POSITIVE_INFINITY;
+        for (var speed : speeds)
+            if (speed < minSpeed)
+                minSpeed = speed;
+        this.minSpeedCache = minSpeed;
         return minSpeed;
     }
 
@@ -199,10 +202,13 @@ public final class EnvelopePart {
 
     // region CACHING
 
-    /** This method must be private as it returns an array */
-    private long[] getTotalTimes() {
-        if (totalTimesCache != null)
-            return totalTimesCache;
+    /** This method must be private as it returns an array (thus mutable cache).
+     * It computes and caches the time in milliseconds the any point of the envelope part,
+     * from the start of the envelope part.
+     */
+    private long[] getTotalTimesMS() {
+        if (cumulativeMSTimesCache != null)
+            return cumulativeMSTimesCache;
 
         var totalTimes = new long[positions.length];
         totalTimes[0] = 0;
@@ -212,22 +218,22 @@ public final class EnvelopePart {
             totalTime += (long) (timeDeltas[i] * 1000);
             totalTimes[i + 1] = totalTime;
         }
-        totalTimesCache = totalTimes;
+        cumulativeMSTimesCache = totalTimes;
         return totalTimes;
     }
 
     /** Returns the total time of the envelope part, in milliseconds */
-    public long getTotalTime() {
-        var totalTimes = getTotalTimes();
+    public long getTotalTimeMS() {
+        var totalTimes = getTotalTimesMS();
         return totalTimes[totalTimes.length - 1];
     }
 
 
-    /** Returns the total time required to get from the start of the envelope to a given
+    /** Returns the total time required to get from the start of the envelope part to a given
      * point of the envelope part, in milliseconds
      */
-    public long getTotalTime(int pointIndex) {
-        return getTotalTimes()[pointIndex];
+    public long getTotalTimeMS(int pointIndex) {
+        return getTotalTimesMS()[pointIndex];
     }
 
     // endregion
@@ -305,11 +311,20 @@ public final class EnvelopePart {
         );
     }
 
-    /** Finds the time required to get from the start of the envelope to the given position, in milliseconds */
-    public long interpolateTotalTime(int stepIndex, double position) {
-        long timeToStepStart = getTotalTime(stepIndex);
+    /** Returns the time required to get from the start of the envelope part
+     * to the given position, in milliseconds.
+     */
+    public long interpolateTotalTimeMS(int stepIndex, double position) {
+        long timeToStepStart = getTotalTimeMS(stepIndex);
         var interpolatedTime = interpolateTimeDelta(stepIndex, position);
         return timeToStepStart + (long) (interpolatedTime * 1000);
+    }
+
+    /** Returns the time required to get from the start of the envelope part
+     * to the given position, in seconds
+     */
+    public double interpolateTotalTime(int stepIndex, double position) {
+        return ((double) interpolateTotalTimeMS(stepIndex, position)) / 1000;
     }
 
     /** Compute the time deltas between positions */
@@ -429,20 +444,18 @@ public final class EnvelopePart {
         if (endPosition != Double.POSITIVE_INFINITY) {
             if (Double.isNaN(endSpeed))
                 endSpeed = interpolateSpeed(endStepIndex, endPosition);
-            double interpolatedTime = interpolateTimeDelta(endStepIndex, endPosition);
+            double interpolatedTimeDelta = interpolateTimeDelta(endStepIndex, endPosition);
             sliced.positions[sliced.pointCount() - 1] = endPosition;
             sliced.speeds[sliced.pointCount() - 1] = endSpeed;
-            sliced.timeDeltas[sliced.stepCount() - 1] = interpolatedTime;
-            sliced.recomputeCache();
+            sliced.timeDeltas[sliced.stepCount() - 1] = interpolatedTimeDelta;
         }
         if (beginPosition != Double.NEGATIVE_INFINITY) {
             if (Double.isNaN(beginSpeed))
                 beginSpeed = interpolateSpeed(beginStepIndex, beginPosition);
-            double interpolatedTime = interpolateTimeDelta(beginStepIndex, beginPosition);
+            double interpolatedTimeDelta = interpolateTimeDelta(beginStepIndex, beginPosition);
             sliced.positions[0] = beginPosition;
             sliced.speeds[0] = beginSpeed;
-            sliced.timeDeltas[0] = interpolatedTime;
-            sliced.recomputeCache();
+            sliced.timeDeltas[0] -= interpolatedTimeDelta; // notice the -= here
         }
         return sliced;
     }

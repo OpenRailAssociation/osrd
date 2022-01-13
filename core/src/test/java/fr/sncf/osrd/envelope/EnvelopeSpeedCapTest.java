@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.Test;
 
 public class EnvelopeSpeedCapTest {
@@ -31,7 +33,13 @@ public class EnvelopeSpeedCapTest {
                         new double[] {1, 0}
                 )
         );
+        assertEquals(inputEnvelope.interpolateSpeed(0.5), expectedEnvelope.interpolateSpeed(0.5));
         EnvelopeTestUtils.assertEquals(expectedEnvelope, cappedEnvelope);
+
+        // add a cap at 1.5, then a cap at 1, and ensure both are the same
+        var doubleCappedEnvelope = EnvelopeSpeedCap.from(inputEnvelope, null, 1.5);
+        doubleCappedEnvelope = EnvelopeSpeedCap.from(doubleCappedEnvelope, null, 1);
+        EnvelopeTestUtils.assertEquals(doubleCappedEnvelope, cappedEnvelope);
     }
 
     @Test
