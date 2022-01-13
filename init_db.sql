@@ -1,5 +1,5 @@
 create user chartos password 'password';
-create user osrd superuser password 'password';
+create user osrd password 'password';
 create database chartos;
 create database osrd;
 

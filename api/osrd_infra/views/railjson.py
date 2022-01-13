@@ -22,8 +22,17 @@ def serialize_infra(infra: Infra, include_geom=False):
     return res
 
 
-def import_objects(objects: List[BaseObjectTrait], infra: Infra):
-    models = [obj.into_model(infra) for obj in objects]
+def import_objects(objects: List[BaseObjectTrait], infra: Infra, max_bulk_size=float("inf")):
+    """
+    Import list of objects converting them to models then using bulk create.
+    """
+    models = []
+    while objects:
+        models.append(objects.pop().into_model(infra))
+        if len(models) > max_bulk_size:
+            model_type = type(models[0])
+            model_type.objects.bulk_create(models)
+            models = []
     if models:
         model_type = type(models[0])
         model_type.objects.bulk_create(models)
@@ -39,14 +48,14 @@ def import_infra(railjson: Mapping, infra_name: str):
 
     # Import base objects
     import_objects(railjson.operational_points, infra)
-    import_objects(railjson.routes, infra)
+    import_objects(railjson.routes, infra, max_bulk_size=10_000)
     import_objects(railjson.switch_types, infra)
     import_objects(railjson.switches, infra)
     import_objects(railjson.track_sections, infra)
     import_objects(railjson.signals, infra)
     import_objects(railjson.buffer_stops, infra)
     import_objects(railjson.detectors, infra)
-    import_objects(railjson.tvd_sections, infra)
+    import_objects(railjson.tvd_sections, infra, max_bulk_size=10_000)
 
     # Import rail script
     script_functions = [RailScriptFunctionModel(infra=infra, data=obj) for obj in railjson.script_functions]

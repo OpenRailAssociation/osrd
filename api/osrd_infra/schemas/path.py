@@ -10,20 +10,20 @@ from osrd_infra.schemas.infra import (
 )
 
 
-class PathStep(BaseModel):
+class RoutePath(BaseModel):
     route: ObjectReference
     track_sections: List[DirectionalTrackRange]
 
 
-class Step(GeometryPointTrait, TrackLocationTrait):
+class PathWaypoint(GeometryPointTrait, TrackLocationTrait):
     name: Optional[str]
     suggestion: bool
     stop_time: float
 
 
 class PathPayload(BaseModel):
-    path: List[PathStep]
-    steps: List[Step]
+    route_paths: List[RoutePath]
+    path_waypoints: List[PathWaypoint]
 
 
 class VmaxPoint(BaseModel):
