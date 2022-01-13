@@ -22,7 +22,7 @@ class PathModel(models.Model):
         verbose_name_plural = "paths"
 
     def get_initial_location(self):
-        path = self.payload["path"]
+        path = self.payload["route_paths"]
         track_range = path[0]["track_sections"][0]
         return {
             "track_section": track_range["track"]["id"],
@@ -30,7 +30,7 @@ class PathModel(models.Model):
         }
 
     def get_end_location(self):
-        path = self.payload["path"]
+        path = self.payload["route_paths"]
         track_range = path[-1]["track_sections"][-1]
         return {
             "track_section": track_range["track"]["id"],
@@ -38,4 +38,4 @@ class PathModel(models.Model):
         }
 
     def get_initial_route(self):
-        return self.payload["path"][0]["route"]["id"]
+        return self.payload["route_paths"][0]["route"]["id"]

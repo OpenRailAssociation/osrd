@@ -34,26 +34,26 @@ def try_get_field(manifest, field):
 def compute_path_payload(infra, back_payload, step_stop_times, track_map) -> PathPayload:
     # Adapt steps from back format to middle
     stop_time_index = 0
-    for step in back_payload["steps"]:
+    for path_waypoint in back_payload["path_waypoints"]:
         # Add stop time
-        if not step["suggestion"]:
-            step["stop_time"] = step_stop_times[stop_time_index]
+        if not path_waypoint["suggestion"]:
+            path_waypoint["stop_time"] = step_stop_times[stop_time_index]
             stop_time_index += 1
         else:
-            step["stop_time"] = 0
+            path_waypoint["stop_time"] = 0
 
         # Retrieve name from operation point ID
-        op_id = step.pop("id", None)
+        op_id = path_waypoint.pop("id", None)
         if op_id is not None:
             op = OperationalPointModel.objects.get(infra=infra, obj_id=op_id).into_obj()
-            step["name"] = op.name
+            path_waypoint["name"] = op.name
 
         # Add geometry
-        track = track_map[step["track"]["id"]]
-        norm_offset = step["position"] / track["length"]
+        track = track_map[path_waypoint["track"]["id"]]
+        norm_offset = path_waypoint["position"] / track["length"]
 
-        step["geo"] = json.loads(track["geo"].interpolate_normalized(norm_offset).json)
-        step["sch"] = json.loads(track["sch"].interpolate_normalized(norm_offset).json)
+        path_waypoint["geo"] = json.loads(track["geo"].interpolate_normalized(norm_offset).json)
+        path_waypoint["sch"] = json.loads(track["sch"].interpolate_normalized(norm_offset).json)
 
     return PathPayload.parse_obj(back_payload)
 
@@ -82,7 +82,7 @@ def fetch_track_sections(infra, ids):
 
 def fetch_track_sections_from_payload(infra, payload):
     ids = []
-    for route in payload["path"]:
+    for route in payload["route_paths"]:
         for track in route["track_sections"]:
             ids.append(track["track"]["id"])
     return fetch_track_sections(infra, ids)
@@ -91,7 +91,7 @@ def fetch_track_sections_from_payload(infra, payload):
 def get_geojson_path(payload: PathPayload, track_map: Mapping[str, TrackSection]):
     geographic, schematic = [], []
 
-    for path_step in payload.path:
+    for path_step in payload.route_paths:
         for track_range in path_step.track_sections:
             track = track_map[track_range.track.id]
 
@@ -177,7 +177,7 @@ def compute_vmax(payload: PathPayload, track_map: Mapping[str, TrackSection]):
             assert speed_section["begin"] < speed_section["end"]
             trees[track_id].chop(speed_section["begin"], speed_section["end"])
             trees[track_id].addi(speed_section["begin"], speed_section["end"], speed_section["speed"])
-    return create_chart(payload.path, trees, "speed")
+    return create_chart(payload.route_paths, trees, "speed")
 
 
 def compute_slopes(payload: PathPayload, track_map: Mapping[str, TrackSection]):
@@ -188,7 +188,7 @@ def compute_slopes(payload: PathPayload, track_map: Mapping[str, TrackSection]):
             assert slope_section["begin"] < slope_section["end"]
             trees[track_id].chop(slope_section["begin"], slope_section["end"])
             trees[track_id].addi(slope_section["begin"], slope_section["end"], slope_section["gradient"])
-    return create_chart(payload.path, trees, "gradient", direction_sensitive=True)
+    return create_chart(payload.route_paths, trees, "gradient", direction_sensitive=True)
 
 
 def compute_curves(payload: PathPayload, track_map: Mapping[str, TrackSection]):
@@ -199,7 +199,7 @@ def compute_curves(payload: PathPayload, track_map: Mapping[str, TrackSection]):
             assert curve_section["begin"] < curve_section["end"]
             trees[track_id].chop(curve_section["begin"], curve_section["end"])
             trees[track_id].addi(curve_section["begin"], curve_section["end"], curve_section["radius"])
-    return create_chart(payload.path, trees, "radius", direction_sensitive=True)
+    return create_chart(payload.route_paths, trees, "radius", direction_sensitive=True)
 
 
 def compute_path(path, request_data, owner):
@@ -239,7 +239,8 @@ class PathfindingView(
         serializer = self.serializer_class(path)
         return {
             **serializer.data,
-            "steps": path.payload["steps"],
+            # TODO: change steps to path_waypoints need front modifications
+            "steps": path.payload["path_waypoints"],
         }
 
     def retrieve(self, request, pk=None):
