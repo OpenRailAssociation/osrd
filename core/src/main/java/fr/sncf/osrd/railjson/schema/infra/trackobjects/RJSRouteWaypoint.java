@@ -1,19 +1,12 @@
 package fr.sncf.osrd.railjson.schema.infra.trackobjects;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.Identified;
-import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
-import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.utils.graph.IPointValue;
 
+@SuppressFBWarnings({"UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSRouteWaypoint extends RJSTrackObject implements Identified, IPointValue<RJSRouteWaypoint> {
     public String id;
-
-    RJSRouteWaypoint(String id, double position, RJSObjectRef<RJSTrackSection> track) {
-        super(track, position);
-        this.id = id;
-        this.track = track;
-        this.position = position;
-    }
 
     @Override
     public String getID() {

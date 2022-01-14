@@ -205,14 +205,16 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                     if (j == 0) {
                         // Add the given origin location to the steps output
                         var firstTrack = trackSections.get(0);
-                        var newStep = new PathfindingResult.PathWaypointResult(firstTrack.edge, firstTrack.getBeginPosition());
+                        var newStep = new PathfindingResult.PathWaypointResult(firstTrack.edge,
+                                firstTrack.getBeginPosition());
                         res.addStep(newStep);
                     }
                     res.add(route, trackSections);
                     if (j == routes.size() - 1) {
                         // Add the given destination location to the steps output
                         var lastTrack = trackSections.get(trackSections.size() - 1);
-                        var newStep = new PathfindingResult.PathWaypointResult(lastTrack.edge, lastTrack.getEndPosition());
+                        var newStep = new PathfindingResult.PathWaypointResult(lastTrack.edge,
+                                lastTrack.getEndPosition());
                         res.addStep(newStep);
                     }
                 }
@@ -259,9 +261,9 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
 
     @SuppressFBWarnings({"URF_UNREAD_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static class PathfindingResult {
-        @Json(name="route_paths")
+        @Json(name = "route_paths")
         public final List<RoutePathResult> routePaths;
-        @Json(name="path_waypoints")
+        @Json(name = "path_waypoints")
         public final List<PathWaypointResult> pathWaypoints;
 
         private PathfindingResult() {
