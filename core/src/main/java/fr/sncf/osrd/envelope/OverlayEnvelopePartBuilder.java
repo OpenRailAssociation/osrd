@@ -3,17 +3,12 @@ package fr.sncf.osrd.envelope;
 import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.NEXT_PART;
 import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.NEXT_REACHED_END;
 
+import fr.sncf.osrd.utils.CompareSign;
+
 /** Creates an envelope part which always keeps a speed lower than a given envelope */
 public class OverlayEnvelopePartBuilder implements StepConsumer {
     /** This cursor is updated as the overlay is built. It must not be modified elsewhere until build is called */
     public final EnvelopeCursor cursor;
-
-    /** The part index of the starting point of the overlay */
-    public final int initialPartIndex;
-    /** The step index of the starting point of the overlay */
-    public final int initialStepIndex;
-    /** The position of the starting point of the overlay */
-    public final double initialPosition;
 
     /** The position of the last added point */
     private double lastOverlayPos;
@@ -28,9 +23,7 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
 
     private OverlayEnvelopePartBuilder(EnvelopeCursor cursor, EnvelopePartMeta meta, double initialSpeed) {
         this.cursor = cursor;
-        this.initialPartIndex = cursor.getPartIndex();
-        this.initialStepIndex = cursor.getStepIndex();
-        this.initialPosition = cursor.getPosition();
+        var initialPosition = cursor.getPosition();
         this.partBuilder = new EnvelopePartBuilder(meta, initialPosition, initialSpeed);
         this.lastOverlayPos = initialPosition;
         this.lastOverlaySpeed = initialSpeed;
@@ -51,13 +44,13 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
             assert nextRes != NEXT_REACHED_END;
         }
 
-        assert initialSpeed <= cursor.interpolateSpeed();
+        assert initialSpeed <= cursor.getSpeed();
         return new OverlayEnvelopePartBuilder(cursor, meta, initialSpeed);
     }
 
     /** Starts an overlay at the given position, keeping the envelope continuous */
     public static OverlayEnvelopePartBuilder startContinuousOverlay(EnvelopeCursor cursor, EnvelopePartMeta meta) {
-        return startDiscontinuousOverlay(cursor, meta, cursor.interpolateSpeed());
+        return startDiscontinuousOverlay(cursor, meta, cursor.getSpeed());
     }
 
     public double getLastPos() {
@@ -287,6 +280,25 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
         // if no intersection with the base curve was found, add the step to the overlay
         addOverlayStep(position, speed, time);
         return false;
+    }
+
+    /** Maintains the current speed until an intersection or the end of the curve is found */
+    public void addPlateau() {
+        assert !hadIntersection : "called addStep on a complete overlay";
+        assert cursor.comparePos(lastOverlayPos, cursor.getStepBeginPos()) >= 0
+                && cursor.comparePos(lastOverlayPos, cursor.getStepEndPos()) <= 0;
+
+        cursor.findSpeed(lastOverlaySpeed, CompareSign.LOWER);
+        double position;
+        if (!cursor.hasReachedEnd())
+            position = cursor.getPosition();
+        else
+            position = cursor.getEnvelopeEndPos();
+
+        var plateauLength = Math.abs(position - lastOverlayPos);
+        var plateauDuration = plateauLength / lastOverlaySpeed;
+        addOverlayStep(position, lastOverlaySpeed, plateauDuration);
+        hadIntersection = true;
     }
 
     // endregion

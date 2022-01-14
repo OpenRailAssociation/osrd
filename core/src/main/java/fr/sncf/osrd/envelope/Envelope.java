@@ -11,6 +11,21 @@ public final class Envelope implements Iterable<EnvelopePart> {
     public final boolean spaceContinuous;
     public final boolean continuous;
 
+    // region CACHE FIELDS
+
+    // these two fields could be public, but aren't for the sake of keeping the ability to compute these values lazily
+    /** The highest speed */
+    private final double maxSpeed;
+    /** The smallest speed */
+    private final double minSpeed;
+
+    /** The time from the start of the envelope to envelope part transitions, in milliseconds.
+     *  Only read using getTotalTimes.
+     */
+    private long[] cumulativeTimesCache = null;
+
+    // endregion
+
     // region CONSTRUCTORS
 
     private Envelope(EnvelopePart[] parts, boolean spaceContinuous, boolean continuous) {
@@ -18,6 +33,22 @@ public final class Envelope implements Iterable<EnvelopePart> {
         this.parts = parts;
         this.spaceContinuous = spaceContinuous;
         this.continuous = continuous;
+
+        var maxSpeed = Double.NEGATIVE_INFINITY;
+        for (var part : parts) {
+            var partMaxSpeed = part.getMaxSpeed();
+            if (partMaxSpeed > maxSpeed)
+                maxSpeed = partMaxSpeed;
+        }
+        this.maxSpeed = maxSpeed;
+
+        var minSpeed = Double.POSITIVE_INFINITY;
+        for (var part : parts) {
+            var partMinSpeed = part.getMinSpeed();
+            if (partMinSpeed < minSpeed)
+                minSpeed = partMinSpeed;
+        }
+        this.minSpeed = minSpeed;
     }
 
     /** Create a new Envelope */
@@ -67,18 +98,125 @@ public final class Envelope implements Iterable<EnvelopePart> {
         return parts[i];
     }
 
+    public double getBeginPos() {
+        return parts[0].getBeginPos();
+    }
+
+    public double getEndPos() {
+        return parts[parts.length - 1].getEndPos();
+    }
+
+    public double getBeginSpeed() {
+        return parts[0].getBeginSpeed();
+    }
+
+    public double getEndSpeed() {
+        return parts[parts.length - 1].getEndSpeed();
+    }
+
+    /** Returns the maximum speed of the envelope */
+    public double getMaxSpeed() {
+        return maxSpeed;
+    }
+
+    /** Returns the minimum speed of the envelope */
+    public double getMinSpeed() {
+        return minSpeed;
+    }
+
     // endregion
+
+
+    /** Returns the first envelope part which contains this position. */
+    public int findEnvelopePartIndex(double position) {
+        for (int i = 0; i < parts.length; i++) {
+            var part = parts[i];
+            if (position >= part.getBeginPos() && position <= part.getEndPos())
+                return i;
+        }
+        return -1;
+    }
+
+    // region INTERPOLATION
+
+    /** Returns the interpolated speed at a given position */
+    public double interpolateSpeed(double position) {
+        assert continuous : "interpolating speeds on a non continuous envelope is a risky business";
+        var envelopePartIndex = findEnvelopePartIndex(position);
+        assert envelopePartIndex != -1;
+        return get(envelopePartIndex).interpolateSpeed(position);
+    }
+
+    /** Computes the time required to get to a given point of the envelope */
+    public long interpolateTotalTimeMS(double position) {
+        assert continuous : "interpolating times on a non continuous envelope is a risky business";
+        var envelopePartIndex = findEnvelopePartIndex(position);
+        assert envelopePartIndex != -1;
+        var envelopePart = get(envelopePartIndex);
+        var stepIndex = envelopePart.findStep(position);
+        return getCumulativeTimeMS(envelopePartIndex) + envelopePart.interpolateTotalTimeMS(stepIndex, position);
+    }
+
+    /** Computes the time required to get to a given point of the envelope */
+    public double interpolateTotalTime(double position) {
+        return ((double) interpolateTotalTimeMS(position)) / 1000;
+    }
+
+    // endregion
+
+    // region CACHING
+
+    /** This method must be private as it returns an array */
+    private long[] getCumulativeTimesMS() {
+        if (cumulativeTimesCache != null)
+            return cumulativeTimesCache;
+
+        var timesToPartTransitions = new long[parts.length + 1];
+        timesToPartTransitions[0] = 0;
+
+        long totalTime = 0;
+        for (int i = 0; i < parts.length; i++) {
+            totalTime += parts[i].getTotalTimeMS();
+            timesToPartTransitions[i + 1] = totalTime;
+        }
+        cumulativeTimesCache = timesToPartTransitions;
+        return timesToPartTransitions;
+    }
+
+    /** Returns the total time of the envelope, in milliseconds */
+    public long getTotalTimeMS() {
+        var timesToPartTransitions = getCumulativeTimesMS();
+        return timesToPartTransitions[timesToPartTransitions.length - 1];
+    }
+
+    /** Returns the total time of the envelope */
+    public double getTotalTime() {
+        return ((double) getTotalTimeMS()) / 1000;
+    }
+
+
+    /** Returns the total time required to get from the start of the envelope to
+     * the start of an envelope part, in milliseconds
+     * @param transitionIndex either an envelope part index, of the number of parts to get the total time
+     */
+    public long getCumulativeTimeMS(int transitionIndex) {
+        return getCumulativeTimesMS()[transitionIndex];
+    }
+
+    // endregion
+
+    // region SLICING
 
     /** Cuts an envelope */
     public EnvelopePart[] slice(
-            int beginPartIndex, int beginStepIndex, double beginPosition,
-            int endPartIndex, int endStepIndex, double endPosition
+            int beginPartIndex, int beginStepIndex, double beginPosition, double beginSpeed,
+            int endPartIndex, int endStepIndex, double endPosition, double endSpeed
     ) {
         assert beginPartIndex <= endPartIndex;
 
         if (beginPartIndex == endPartIndex) {
             var part = parts[beginPartIndex];
-            var sliced = part.slice(beginStepIndex, beginPosition, endStepIndex, endPosition);
+            var sliced = part.slice(beginStepIndex, beginPosition, beginSpeed, endStepIndex, endPosition, endSpeed);
             if (sliced == null)
                 return new EnvelopePart[] {};
             return new EnvelopePart[] { sliced };
@@ -86,8 +224,8 @@ public final class Envelope implements Iterable<EnvelopePart> {
 
         var beginPart = parts[beginPartIndex];
         var endPart = parts[endPartIndex];
-        var beginPartSliced = beginPart.sliceEnd(beginStepIndex, beginPosition);
-        var endPartSliced = endPart.sliceBeginning(endStepIndex, endPosition);
+        var beginPartSliced = beginPart.sliceEnd(beginStepIndex, beginPosition, beginSpeed);
+        var endPartSliced = endPart.sliceBeginning(endStepIndex, endPosition, endSpeed);
 
         // compute the number of unchanged envelope parts between sliced parts
         var copySize = endPartIndex - beginPartIndex + 1 - /* sliced endpoints */ 2;
@@ -116,23 +254,30 @@ public final class Envelope implements Iterable<EnvelopePart> {
 
     /** Cuts the envelope */
     public EnvelopePart[] smartSlice(
-            int beginPartIndex, int beginStepIndex, double beginPosition,
-            int endPartIndex, int endStepIndex, double endPosition
+            int beginPartIndex, int beginStepIndex, double beginPosition, double beginSpeed,
+            int endPartIndex, int endStepIndex, double endPosition, double endSpeed
     ) {
         if (beginPartIndex == -1) {
             beginPartIndex = 0;
             var beginPart = parts[beginPartIndex];
             beginStepIndex = 0;
             beginPosition = beginPart.getBeginPos();
+            beginSpeed = beginPart.getBeginSpeed();
         }
         if (endPartIndex == -1) {
             endPartIndex = parts.length - 1;
             var endPart = parts[endPartIndex];
             endStepIndex = endPart.stepCount() - 1;
             endPosition = endPart.getEndPos();
+            endSpeed = endPart.getEndSpeed();
         }
-        return slice(beginPartIndex, beginStepIndex, beginPosition, endPartIndex, endStepIndex, endPosition);
+        return slice(
+                beginPartIndex, beginStepIndex, beginPosition, beginSpeed,
+                endPartIndex, endStepIndex, endPosition, endSpeed
+        );
     }
+
+    // endregion
 
     @Override
     public Iterator<EnvelopePart> iterator() {

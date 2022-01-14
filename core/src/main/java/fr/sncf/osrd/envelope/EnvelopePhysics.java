@@ -86,14 +86,16 @@ public class EnvelopePhysics {
         double accA = stepAcceleration(a1Pos, a2Pos, a1Speed, a2Speed);
         double accB = stepAcceleration(b1Pos, b2Pos, b1Speed, b2Speed);
 
+        // A is at constant speed
         if (accA == 0) {
-            point.position = (a1Speed * a1Speed - b1Speed * b1Speed + 2 * accB * b1Pos) / 2 / accB;
+            point.position = intersectStepWithSpeed(b1Speed, b1Pos, accB, a1Speed);
             point.speed = a1Speed;
             return;
         }
 
+        // B is at constant speed
         if (accB == 0) {
-            point.position = (b1Speed * b1Speed - a1Speed * a1Speed + 2 * accA * a1Pos) / 2 / accA;
+            point.position = intersectStepWithSpeed(a1Speed, a1Pos, accA, b1Speed);
             point.speed = b1Speed;
             return;
         }
@@ -108,6 +110,22 @@ public class EnvelopePhysics {
         // cutting the left one at just the right point, then interpolating again to cut the right one.
         // doing it this way guarantees we get the same result
         point.speed = interpolateStepSpeed(accB, b1Speed, point.position - b1Pos);
+    }
+
+    /** Returns the position at which a step intersects a speed */
+    public static double intersectStepWithSpeed(double a1Speed, double a1Pos, double accA, double bSpeed) {
+        var res =  (bSpeed * bSpeed - a1Speed * a1Speed + 2 * accA * a1Pos) / 2 / accA;
+        assert !Double.isInfinite(res);
+        return res;
+    }
+
+    /** Returns the position at which a step intersects a speed */
+    public static double intersectStepWithSpeed(
+            double a1Pos, double a1Speed, double a2Pos, double a2Speed,
+            double bSpeed
+    ) {
+        double accA = stepAcceleration(a1Pos, a2Pos, a1Speed, a2Speed);
+        return intersectStepWithSpeed(a1Speed, a1Pos, accA, bSpeed);
     }
 
     public static final class EnvelopePoint {

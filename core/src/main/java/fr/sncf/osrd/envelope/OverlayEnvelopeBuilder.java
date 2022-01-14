@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * <p>Creates an overlay over an envelope by combining slices of the base envelope and overlay envelope parts</p>
  * <pre>
@@ -25,6 +27,8 @@ public final class OverlayEnvelopeBuilder {
     private int lastOverlayEndStepIndex = -1;
     /** @see #lastOverlayEndPartIndex */
     private double lastOverlayEndPosition = Double.NaN;
+    /** @see #lastOverlayEndPartIndex */
+    private double lastOverlayEndSpeed = Double.NaN;
 
     /** The result of the build */
     private EnvelopeBuilder builder;
@@ -53,11 +57,13 @@ public final class OverlayEnvelopeBuilder {
             EnvelopePartMeta meta,
             double initialSpeed
     ) {
+        sliceBaseEnvelope(cursor.getPartIndex(), cursor.getStepIndex(), cursor.getPosition(), cursor.getSpeed());
         return OverlayEnvelopePartBuilder.startDiscontinuousOverlay(cursor, meta, initialSpeed);
     }
 
     /** Starts an overlay at the given position, keeping the envelope continuous */
     public OverlayEnvelopePartBuilder startContinuousOverlay(EnvelopePartMeta meta) {
+        sliceBaseEnvelope(cursor.getPartIndex(), cursor.getStepIndex(), cursor.getPosition(), cursor.getSpeed());
         return OverlayEnvelopePartBuilder.startContinuousOverlay(cursor, meta);
     }
 
@@ -79,32 +85,41 @@ public final class OverlayEnvelopeBuilder {
      * and adds the resulting envelope parts to the result.
      * If beginPartIndex is -1, the base envelope is sliced until the end.
      */
-    private void sliceBaseEnvelope(int beginPartIndex, int beginStepIndex, double beginPosition) {
+    private void sliceBaseEnvelope(int beginPartIndex, int beginStepIndex, double beginPosition, double beginSpeed) {
         addParts(cursor.smartSlice(
-                lastOverlayEndPartIndex, lastOverlayEndStepIndex, lastOverlayEndPosition,
-                beginPartIndex, beginStepIndex, beginPosition
+                lastOverlayEndPartIndex, lastOverlayEndStepIndex, lastOverlayEndPosition, lastOverlayEndSpeed,
+                beginPartIndex, beginStepIndex, beginPosition, beginSpeed
         ));
     }
 
     /** Takes an overlay envelope part builder, builds it and adds it to the envelope */
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     public void addPart(OverlayEnvelopePartBuilder partBuilder) {
         assert partBuilder.cursor == cursor;
 
         // ensure the cursor is at the end of the envelope part we're building
         // this is needed so we can efficiently slice the base envelope
-        assert cursor.getPosition() == partBuilder.getLastPos();
 
-        sliceBaseEnvelope(partBuilder.initialPartIndex, partBuilder.initialStepIndex, partBuilder.initialPosition);
-        lastOverlayEndPartIndex = cursor.getPartIndex();
-        lastOverlayEndStepIndex = cursor.getStepIndex();
-        lastOverlayEndPosition = cursor.getPosition();
+        if (cursor.hasReachedEnd()) {
+            lastOverlayEndPartIndex = cursor.getEnvelopeLastPartIndex();
+            lastOverlayEndStepIndex = cursor.getEnvelopeLastStepIndex();
+            lastOverlayEndPosition = cursor.getEnvelopeEndPos();
+            lastOverlayEndSpeed = cursor.getEnvelopeEndSpeed();
+        } else {
+            lastOverlayEndPartIndex = cursor.getPartIndex();
+            lastOverlayEndStepIndex = cursor.getStepIndex();
+            lastOverlayEndPosition = cursor.getPosition();
+            lastOverlayEndSpeed = cursor.getSpeed();
+        }
+
+        assert lastOverlayEndPosition == partBuilder.getLastPos();
         builder.addPart(partBuilder.build());
     }
 
     /** Create the envelope */
     public Envelope build() {
         cursor.moveToEnd();
-        sliceBaseEnvelope(-1, -1, Double.NaN);
+        sliceBaseEnvelope(-1, -1, Double.NaN, Double.NaN);
 
         // build the final envelope
         if (cursor.reverse)
