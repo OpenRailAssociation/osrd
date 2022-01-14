@@ -7,11 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 public class RJSSwitchType implements Identified {
-
     public String id;
-
     public List<String> ports;
-
     public Map<String, List<SwitchPortConnection>> groups;
 
     /**
@@ -39,14 +36,8 @@ public class RJSSwitchType implements Identified {
     }
 
     public static class SwitchPortConnection {
-
-        @Json(name = "src")
         public String src;
-
-        @Json(name = "dst")
         public String dst;
-
-        @Json(name = "bidirectional")
         public boolean bidirectional;
 
         /**
@@ -70,27 +61,4 @@ public class RJSSwitchType implements Identified {
                 "RIGHT", List.of(new SwitchPortConnection("base", "right", true))
             )
         );
-
-    /**
-     * helper to create a classic switch
-     * @param id the id of the switch
-     * @param base the base track section endpoint
-     * @param left the left track section endpoint
-     * @param right the right track section endpoint
-     * @param positionChangeDelay the position change delay
-     * @return a new corresponding RJSSwitch
-     */
-    public static RJSSwitch makeClassic(
-            String id,
-            RJSTrackEndpoint base,
-            RJSTrackEndpoint left,
-            RJSTrackEndpoint right,
-            double positionChangeDelay) {
-        return new RJSSwitch(
-            id,
-            CLASSIC_TYPE.getRef(),
-            Map.of("base", base, "left", left, "right", right),
-            positionChangeDelay
-        );
-    }
 }
