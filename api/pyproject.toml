@@ -7,7 +7,7 @@ authors = ["DGEX Solutions <contact@dgexsol.fr>"]
 [tool.poetry.dependencies]
 # base
 python = ">=3.8,<3.11"
-django = "3.1.6"
+django = "3.1.14"
 psycopg2-binary = "2.9.1"
 djangorestframework = "3.12.4"
 djangorestframework-gis = "0.17"
