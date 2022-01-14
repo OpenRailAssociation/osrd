@@ -14,11 +14,6 @@ public abstract class RJSTrackRange {
     /** What sides the object can be approached from */
     public abstract ApplicableDirection getNavigability();
 
-    RJSTrackRange(double begin, double end) {
-        this.begin = begin;
-        this.end = end;
-    }
-
     /** Check whether a list of track ranges is overlaping */
     public static boolean isOverlaping(List<? extends RJSTrackRange> ranges) {
         ranges.sort(Comparator.comparing(e -> e.begin));

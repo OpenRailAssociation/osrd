@@ -8,7 +8,8 @@ public class DirectionalRJSTrackRange extends RJSTrackRange {
     public ApplicableDirection applicableDirections;
 
     DirectionalRJSTrackRange(ApplicableDirection applicableDirections, double begin, double end) {
-        super(begin, end);
+        this.begin = begin;
+        this.end = end;
         this.applicableDirections = applicableDirections;
     }
 
