@@ -42,13 +42,21 @@ public class EnvelopeTestUtils {
         Assertions.assertArrayEquals(expected.clonePositions(), actual.clonePositions(), delta);
         Assertions.assertArrayEquals(expected.cloneSpeeds(), actual.cloneSpeeds(), delta);
         Assertions.assertArrayEquals(expected.cloneTimes(), actual.cloneTimes(), delta);
+        Assertions.assertEquals(expected.getMaxSpeed(), actual.getMaxSpeed(), delta);
+        Assertions.assertEquals(expected.getMinSpeed(), actual.getMinSpeed(), delta);
     }
 
-    static void assertEquals(Envelope expected, Envelope actual) {
+    static void assertEquals(Envelope expected, Envelope actual, double delta) {
         Assertions.assertEquals(expected.size(), actual.size());
         Assertions.assertEquals(expected.spaceContinuous, actual.spaceContinuous);
         Assertions.assertEquals(expected.continuous, actual.continuous);
+        Assertions.assertEquals(expected.getMaxSpeed(), actual.getMaxSpeed(), delta);
+        Assertions.assertEquals(expected.getMinSpeed(), actual.getMinSpeed(), delta);
         for (int i = 0; i < expected.size(); i++)
-            assertEquals(expected.get(i), actual.get(i));
+            assertEquals(expected.get(i), actual.get(i), delta);
+    }
+
+    static void assertEquals(Envelope expected, Envelope actual) {
+        assertEquals(expected, actual, 0.01);
     }
 }

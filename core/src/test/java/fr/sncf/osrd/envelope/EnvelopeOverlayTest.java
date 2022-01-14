@@ -74,7 +74,7 @@ public class EnvelopeOverlayTest {
         assertEquals(3, envelope.size());
         assertTrue(envelope.continuous);
 
-        var expectedFirst = constSpeedPart.sliceBeginning(constSpeedPart.findStep(3), 3);
+        var expectedFirst = constSpeedPart.sliceBeginning(constSpeedPart.findStep(3), 3, Double.NaN);
         EnvelopeTestUtils.assertEquals(expectedFirst, envelope.get(0));
     }
 
@@ -168,7 +168,7 @@ public class EnvelopeOverlayTest {
         assertEquals(3, envelope.size());
         assertTrue(envelope.continuous);
 
-        var expectedFirst = constSpeedPart.sliceBeginning(constSpeedPart.findStep(3), 3);
+        var expectedFirst = constSpeedPart.sliceBeginning(constSpeedPart.findStep(3), 3, Double.NaN);
         EnvelopeTestUtils.assertEquals(expectedFirst, envelope.get(0));
         var expectedMid = EnvelopePart.generateTimes(
                 testMeta,
@@ -176,7 +176,7 @@ public class EnvelopeOverlayTest {
                 new double[]{2, 1, 2}
         );
         EnvelopeTestUtils.assertEquals(expectedMid, envelope.get(1));
-        var expectedLast = constSpeedPart.sliceEnd(constSpeedPart.findStep(5), 5);
+        var expectedLast = constSpeedPart.sliceEnd(constSpeedPart.findStep(5), 5, Double.NaN);
         EnvelopeTestUtils.assertEquals(expectedLast, envelope.get(2));
     }
 
