@@ -18,6 +18,7 @@ import createChart from 'applications/osrd/components/Simulation/SpaceTimeChart/
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
 import drawTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/drawTrain';
 import { CgLoadbar } from 'react-icons/cg';
+import { GiResize } from 'react-icons/gi';
 
 const CHART_ID = 'SpaceTimeChart';
 
@@ -44,6 +45,7 @@ export default function SpaceTimeChart(props) {
   const [rotate, setRotate] = useState(false);
   const [isResizeActive, setResizeActive] = useState(false);
   const [chart, setChart] = useState(undefined);
+  const [resetChart, setResetChart] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [yPosition, setYPosition] = useState(0);
   const [dataSimulation, setDataSimulation] = useState(undefined);
@@ -93,10 +95,10 @@ export default function SpaceTimeChart(props) {
     });
   };
 
-  const drawAllTrains = () => {
+  const drawAllTrains = (reset) => {
     if (mustRedraw) {
       const chartLocal = createChart(
-        chart, CHART_ID, dataSimulation, heightOfSpaceTimeChart, keyValues, ref, rotate,
+        chart, CHART_ID, dataSimulation, heightOfSpaceTimeChart, keyValues, ref, reset, rotate,
       );
 
       chartLocal.svg.on('click', () => {
@@ -123,6 +125,7 @@ export default function SpaceTimeChart(props) {
       setChart(chartLocal);
       dispatch(updateChart({ ...chartLocal, rotate }));
       dispatch(updateMustRedraw(false));
+      setResetChart(false);
     }
   };
 
@@ -151,7 +154,7 @@ export default function SpaceTimeChart(props) {
   useEffect(() => {
     setDataSimulation(createTrain(dispatch, keyValues, simulation.trains, t));
     if (dataSimulation) {
-      drawAllTrains();
+      drawAllTrains(resetChart);
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
   }, [mustRedraw, rotate, selectedTrain, simulation.trains[selectedTrain]]);
@@ -205,6 +208,16 @@ export default function SpaceTimeChart(props) {
         onClick={() => toggleRotation(rotate, setRotate)}
       >
         <i className="icons-refresh" />
+      </button>
+      <button
+        type="button"
+        className="btn-rounded btn-rounded-white box-shadow btn-rotate mr-5"
+        onClick={() => {
+          setResetChart(true);
+          dispatch(updateMustRedraw(true));
+        }}
+      >
+        <GiResize />
       </button>
       <div className="handle-tab-resize">
         <CgLoadbar />

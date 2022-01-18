@@ -6,12 +6,13 @@ import { LIST_VALUES_NAME_SPEED_SPACE } from 'applications/osrd/components/Simul
 import {
   defineLinear, handleWindowResize, mergeDatasAreaConstant,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
-import { updateMustRedraw } from 'reducers/osrdsimulation';
+import { updateChartXGEV, updateMustRedraw } from 'reducers/osrdsimulation';
 import defineChart from 'applications/osrd/components/Simulation/defineChart';
 import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
 import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import enableInteractivity, { traceVerticalLine } from 'applications/osrd/components/Simulation/enableInteractivity';
 import { CgLoadbar } from 'react-icons/cg';
+import { GiResize } from 'react-icons/gi';
 import SpeedSpaceSettings from 'applications/osrd/components/Simulation/SpeedSpaceSettings/SpeedSpaceSettings';
 import createSlopeCurve from 'applications/osrd/components/Simulation/SpeedSpaceChart/createSlopeCurve';
 import createCurveCurve from 'applications/osrd/components/Simulation/SpeedSpaceChart/createCurveCurve';
@@ -45,6 +46,7 @@ export default function SpeedSpaceChart(props) {
   } = useSelector((state) => state.osrdsimulation);
   const [showSettings, setShowSettings] = useState(false);
   const [rotate, setRotate] = useState(false);
+  const [resetChart, setResetChart] = useState(false);
   const [chart, setChart] = useState(undefined);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [yPosition, setYPosition] = useState(0);
@@ -102,16 +104,20 @@ export default function SpeedSpaceChart(props) {
   const createChart = () => {
     d3.select(`#${CHART_ID}`).remove();
 
-    const defineX = (chart === undefined)
+    const defineX = (chart === undefined || resetChart)
       ? defineLinear(d3.max(Object.values(dataSimulation),
         (data) => d3.max(data, (d) => d[(rotate ? keyValues[1] : keyValues[0])] + 100)))
       : chart.x;
-    const defineY = (chart === undefined)
+    const defineY = (chart === undefined || resetChart)
       ? defineLinear(d3.max(Object.values(dataSimulation),
         (data) => d3.max(data, (d) => d[(rotate ? keyValues[0] : keyValues[1])] + 50)))
       : chart.y;
 
     const width = parseInt(d3.select(`#container-${CHART_ID}`).style('width'), 10);
+    if (resetChart) {
+      dispatch(updateChartXGEV(defineX));
+    }
+    setResetChart(false);
     return defineChart(
       width, heightOfSpeedSpaceChart, defineX, defineY, ref, rotate, keyValues, CHART_ID,
     );
@@ -214,6 +220,16 @@ export default function SpeedSpaceChart(props) {
       </button>
       <SpeedSpaceSettings showSettings={showSettings} />
       <div ref={ref} />
+      <button
+        type="button"
+        className="btn-rounded btn-rounded-white box-shadow btn-rotate mr-5"
+        onClick={() => {
+          setResetChart(true);
+          dispatch(updateMustRedraw(true));
+        }}
+      >
+        <GiResize />
+      </button>
       <button
         type="button"
         className="btn-rounded btn-rounded-white box-shadow btn-rotate"
