@@ -133,6 +133,17 @@ const OSRDSimulation = () => {
 
   useEffect(() => {
     getTimetable();
+    return function cleanup() {
+      dispatch(updateSelectedProjection(undefined));
+      dispatch(updateSimulation({ trains: [] }));
+    };
+  }, []);
+
+  useEffect(() => {
+    getTimetable();
+    return function cleanup() {
+      dispatch(updateSimulation({ trains: [] }));
+    };
   }, [selectedProjection]);
 
   useEffect(() => {
@@ -148,7 +159,7 @@ const OSRDSimulation = () => {
   return (
     <>
       <main className={`mastcontainer ${fullscreen ? ' fullscreen' : ''}`}>
-        {simulation.trains.length === 0
+        {!simulation || simulation.trains.length === 0
           ? <div className="pt-5 mt-5"><WaitingLoader /></div> : (
             <div className="m-0 p-3">
               <div className="mb-2">
