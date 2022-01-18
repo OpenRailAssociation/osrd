@@ -4,7 +4,7 @@ import importlib
 import sys
 import traceback
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Dict
 
 import requests
 
@@ -12,7 +12,7 @@ import requests
 URL = "http://127.0.0.1:8000/"
 
 
-def setup() -> int:
+def setup() -> Dict[str, int]:
     """
     Setups the test environment with a minimal DB
     :return: new infra ID
@@ -22,7 +22,24 @@ def setup() -> int:
     )
     infra_id = int(result)
     _create_schedule(infra_id)
-    return infra_id
+
+    infras = {}
+    infras["dummy"] = infra_id
+    infras["tiny"] = _load_tiny_infra()
+    return infras
+
+
+def _load_tiny_infra() -> int:
+    examples_path = Path(__file__).parents[1] / "core/examples/"
+    generator = examples_path / "generate.py"
+    tiny_infra = examples_path / "tiny_infra/infra.json"
+    subprocess.check_call(["python3", str(generator)])
+    subprocess.check_call(["docker", "cp", str(tiny_infra), "osrd-api:/infra.json"])
+    result = subprocess.check_output(
+        ["docker", "exec", "osrd-api", "python", "manage.py", "import_railjson", "tiny_infra", "/infra.json"],
+    )
+    id = int(result.split()[-1])
+    return id
 
 
 def _create_schedule(infra_id: int):
@@ -40,18 +57,19 @@ def _create_schedule(infra_id: int):
         raise RuntimeError(err)
 
 
-def clean(infra_id: int):
+def clean(infra_ids: Dict[str, int]):
     """
-    Clean the environment, deletes the new infra
-    :param infra_id: infra id
+    Clean the environment, deletes the new infras
+    :param infra_ids: infra id for each name
     """
-    response = requests.delete(URL + f"infra/{infra_id}/")
-    if response.status_code // 100 != 2:
-        raise RuntimeError(f"Cleanup failed, code {response.status_code}: {response.content}")
+    for infra_id in infra_ids.values():
+        response = requests.delete(URL + f"infra/{infra_id}/")
+        if response.status_code // 100 != 2:
+            raise RuntimeError(f"Cleanup failed, code {response.status_code}: {response.content}")
 
 
 # noinspection PyBroadException
-def run_single_test(module, infra_id) -> Tuple[bool, str]:
+def run_single_test(module, infra_ids) -> Tuple[bool, str]:
     """
     Runs a single test module
     :param module: loaded test module, should contain a function `run(*args, **kwargs)`
@@ -59,7 +77,7 @@ def run_single_test(module, infra_id) -> Tuple[bool, str]:
     :return: (test passed, error message)
     """
     try:
-        passed, error = module.run(infra_id=infra_id, url=URL)
+        passed, error = module.run(infra_id=infra_ids["dummy"], url=URL, all_infras=infra_ids)
         if not passed:
             return False, error
     except Exception:
@@ -84,11 +102,11 @@ def run_all() -> int:
     Runs all the tests present in the tests folder
     :return: 0 if every test passed, 1 otherwise (exit code)
     """
-    infra_id = setup()
+    infra_ids = setup()
     n_total = 0
     n_passed = 0
     for module, name in find_test_modules():
-        passed, error = run_single_test(module, infra_id)
+        passed, error = run_single_test(module, infra_ids)
         print(f"{name}: ", end="")
         if passed:
             print("PASS")
@@ -98,7 +116,7 @@ def run_all() -> int:
         n_total += 1
 
     print(f"{n_passed} / {n_total}")
-    clean(infra_id)
+    clean(infra_ids)
     return 1 if n_passed < n_total else 0
 
 
