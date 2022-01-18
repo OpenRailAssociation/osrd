@@ -30,12 +30,19 @@ export const updatePointers = (
 
 const updateChart = (chart, keyValues, rotate) => {
   // recover the new scale & test if movement under 0
-  const newX = (d3.event.sourceEvent.shiftKey && rotate)
+  /* const newX = (d3.event.sourceEvent.shiftKey && rotate)
     || ((chart.x.domain()[0] - d3.event.transform.x) < 0 && d3.event.transform.k === 1 && rotate)
     ? chart.x
     : d3.event.transform.rescaleX(chart.x);
   const newY = (d3.event.sourceEvent.shiftKey && !rotate)
     || ((chart.y.domain()[0] + d3.event.transform.y) < 0 && d3.event.transform.k === 1 && !rotate)
+    ? chart.y
+    : d3.event.transform.rescaleY(chart.y); */
+
+  const newX = (d3.event.sourceEvent.shiftKey && rotate)
+    ? chart.x
+    : d3.event.transform.rescaleX(chart.x);
+  const newY = (d3.event.sourceEvent.shiftKey && !rotate)
     ? chart.y
     : d3.event.transform.rescaleY(chart.y);
 
@@ -152,9 +159,9 @@ const enableInteractivity = (
     .on('zoom', () => {
       dispatch(updateContextMenu(undefined));
       // Permit zoom if shift pressed, if only move or if factor > .5
-      if (d3.event.sourceEvent.ctrlKey && (d3.event.sourceEvent.shiftKey
-        || d3.event.transform.k >= 1
-        || zoomLevel >= 0.25)) {
+      if (d3.event.sourceEvent.ctrlKey || d3.event.sourceEvent.shiftKey) {
+        /* || d3.event.transform.k >= 1
+        || zoomLevel >= 0.25)) { */
         d3.event.sourceEvent.preventDefault();
         setZoomLevel(zoomLevel * d3.event.transform.k);
         setYPosition(yPosition + d3.event.transform.y);
