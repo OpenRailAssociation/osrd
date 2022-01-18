@@ -1,12 +1,14 @@
-import json
 from collections import defaultdict
-import random
+from pathlib import Path
 from typing import Dict, Tuple, Iterable, List
-
+import json
+import random
 import requests
 import time
 
-from pathlib import Path
+
+URL = "http://127.0.0.1:8000/"
+
 
 """
 Generates random tests, running pathfinding + simulations on random paths.
@@ -97,12 +99,12 @@ def get_random_rolling_stock(base_url: str) -> str:
 def convert_endpoint(endpoint: Dict) -> str:
     """
     Converts and endpoint from a railjson dict to a string
-    Example: {"section": "track_section.42", "endpoint": "END"} -> "42_END"
+    Example: {"track": {"id": "some-id", ...}, "endpoint": "END"} -> "some-id;END"
     :param endpoint: endpoint
     :return: Endpoint encoded as a string
     """
-    section = int(endpoint["section"].split(".")[-1])
-    return f'{section}_{endpoint["endpoint"]}'
+    section = endpoint["track"]["id"]
+    return f'{section};{endpoint["endpoint"]}'
 
 
 def make_graph(base_url: str, infra: int) -> Tuple[Dict, Dict]:
@@ -117,8 +119,8 @@ def make_graph(base_url: str, infra: int) -> Tuple[Dict, Dict]:
     links = defaultdict(lambda: set())
     infra = r.json()
     for link in infra["track_section_links"]:
-        begin = convert_endpoint(link["begin"])
-        end = convert_endpoint(link["end"])
+        begin = convert_endpoint(link["src"])
+        end = convert_endpoint(link["dst"])
         links[begin].add(end)
         links[end].add(begin)
     return infra, dict(links)
@@ -130,11 +132,11 @@ def opposite(endpoint: str) -> str:
     :param endpoint: Endpoint encoded as a string
     :return: Opposite endpoint
     """
-    point_id, end = endpoint.split("_")
+    point_id, end = endpoint.split(";")
     if end == "BEGIN":
-        return f"{point_id}_END"
+        return f"{point_id};END"
     else:
-        return f"{point_id}_BEGIN"
+        return f"{point_id};BEGIN"
 
 
 def random_set_element(s: Iterable):
@@ -151,10 +153,9 @@ def make_steps_on_edge(infra: Dict, point: str) -> Iterable[Tuple[str, float]]:
     :param point: endpoint
     :return: Iterable of (edge id, offset)
     """
-    edge_id, endpoint = point.split("_")
+    edge_id, endpoint = point.split(";")
     edges = infra["track_sections"]
-    edge_id_str = f"track_section.{edge_id}"
-    edge = next(filter(lambda e: e["id"] == edge_id_str, edges))
+    edge = next(filter(lambda e: e["id"] == edge_id, edges))
     length = edge["length"]
     n_stops = random.randint(0, 2)
     offsets = [random.random() * length for _ in range(n_stops)]
@@ -216,10 +217,10 @@ def convert_stop(stop: Tuple[str, float]) -> Dict:
     }
 
 
-def make_payload_path(infra: Dict, path: List[Tuple[str, float]]) -> Dict:
+def make_payload_path(infra: int, path: List[Tuple[str, float]]) -> Dict:
     """
     Makes the pathfinding payload from the given path
-    :param infra: RJS infra
+    :param infra: infra id
     :param path: List of steps
     :return: Dict
     """
@@ -230,6 +231,22 @@ def make_payload_path(infra: Dict, path: List[Tuple[str, float]]) -> Dict:
             convert_stop(stop) for stop in path
         ]
     }
+
+
+def create_schedule(base_url: str, infra_id: int):
+    """
+    Creates a schedule linked to the given infra
+    :param base_url: api url
+    :param infra_id: infra id
+    """
+    timetable_payload = {
+        "name": "foo",
+        "infra": infra_id
+    }
+    r = requests.post(base_url + "timetable/", json=timetable_payload)
+    if r.status_code // 100 != 2:
+        err = f"Error creating schedule {r.status_code}: {r.content}, payload={json.dumps(timetable_payload)}"
+        raise RuntimeError(err)
 
 
 def get_schedule(base_url: str, infra: int) -> str:
@@ -243,8 +260,12 @@ def get_schedule(base_url: str, infra: int) -> str:
     if r.status_code // 100 != 2:
         raise RuntimeError(f"Rolling stock error {r.status_code}: {r.content}")
     schedules = r.json()["results"]
-    schedule = next(filter(lambda s: s["infra"] == infra, schedules))
-    return schedule["id"]
+    for schedule in schedules:
+        if schedule["infra"] == infra:
+            return schedule["id"]
+    # the schedule doesn't exist yet
+    create_schedule(base_url, infra)
+    return get_schedule(base_url, infra)
 
 
 def make_random_margins() -> List[Dict]:
@@ -294,4 +315,4 @@ def make_payload_schedule(base_url: str, infra: int, path: int, rolling_stock: s
 
 
 if __name__ == "__main__":
-    run("http://127.0.0.1:8080/", 27)
+    run(URL, 2)
