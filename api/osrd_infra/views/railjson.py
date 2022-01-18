@@ -55,6 +55,7 @@ def import_infra(railjson: Mapping, infra_name: str):
     import_objects(railjson.signals, infra)
     import_objects(railjson.buffer_stops, infra)
     import_objects(railjson.detectors, infra)
+    import_objects(railjson.track_section_links, infra)
     import_objects(railjson.tvd_sections, infra, max_bulk_size=10_000)
 
     # Import rail script
