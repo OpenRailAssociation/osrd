@@ -1,5 +1,6 @@
 package fr.sncf.osrd.train;
 
+import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Objects;
 
 public class TrainStop {
@@ -12,6 +13,7 @@ public class TrainStop {
     }
 
     @Override
+    @ExcludeFromGeneratedCodeCoverage
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
