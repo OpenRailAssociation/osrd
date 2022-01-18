@@ -263,7 +263,7 @@ const Map = (props) => {
 
   useEffect(() => {
     displayPath();
-  }, [simulation.trains, selectedTrain]);
+  }, [selectedTrain]);
 
   useEffect(() => {
     if (timePosition && geojsonPath) {
