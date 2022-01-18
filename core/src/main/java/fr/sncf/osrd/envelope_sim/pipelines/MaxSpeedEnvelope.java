@@ -1,5 +1,6 @@
 package fr.sncf.osrd.envelope_sim.pipelines;
 
+import com.carrotsearch.hppc.DoubleArrayList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder;
@@ -7,14 +8,15 @@ import fr.sncf.osrd.envelope.EnvelopePartMeta;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
+import fr.sncf.osrd.train.TrainStop;
+import java.util.ArrayList;
 
 /** Max speed envelope = MRSP + braking curves
  * It is the max speed allowed at any given point, ignoring allowances
  */
 public class MaxSpeedEnvelope {
 
-    public static final class DecelerationMeta extends EnvelopePartMeta {
-    }
+    public static final class DecelerationMeta extends EnvelopePartMeta {}
 
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static final class StopMeta extends EnvelopePartMeta {
@@ -33,7 +35,7 @@ public class MaxSpeedEnvelope {
     }
 
     /** Generate braking curves overlay everywhere the mrsp decrease (increase backwards) with a discontinuity */
-    public static Envelope addBrakingCurves(
+    private static Envelope addBrakingCurves(
             PhysicsRollingStock rollingStock,
             PhysicsPath path,
             Envelope mrsp
@@ -46,13 +48,12 @@ public class MaxSpeedEnvelope {
             EnvelopeDeceleration.decelerate(rollingStock, path, 4, startPosition, startSpeed, partBuilder);
             builder.addPart(partBuilder);
             builder.cursor.nextPart();
-
         }
         return builder.build();
     }
 
     /** Generate braking curves overlay at every stop position */
-    public static Envelope addStopBrakingCurves(
+    private static Envelope addStopBrakingCurves(
             PhysicsRollingStock rollingStock,
             PhysicsPath path,
             double[] stopPositions,
@@ -80,5 +81,20 @@ public class MaxSpeedEnvelope {
         var maxSpeedEnvelope = addBrakingCurves(rollingStock, path, mrsp);
         maxSpeedEnvelope = addStopBrakingCurves(rollingStock, path, stopPositions, maxSpeedEnvelope);
         return maxSpeedEnvelope;
+    }
+
+    /** Generate a max speed envelope given a mrsp */
+    public static Envelope from(
+            PhysicsRollingStock rollingStock,
+            PhysicsPath path,
+            ArrayList<TrainStop> stops,
+            Envelope mrsp
+    ) {
+        var stopPositions = new DoubleArrayList();
+        for (var stop : stops) {
+            if (stop.stopDuration > 0)
+                stopPositions.add(stop.position);
+        }
+        return from(rollingStock, path, stopPositions.toArray(), mrsp);
     }
 }
