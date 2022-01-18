@@ -8,6 +8,7 @@ import time
 
 
 URL = "http://127.0.0.1:8000/"
+TIMEOUT = 10
 
 
 """
@@ -26,7 +27,7 @@ def run_test(infra: Dict, links: Dict, base_url: str, infra_id: int):
     """
     path = make_valid_path(infra, links)
     path_payload = make_payload_path(infra_id, path)
-    r = requests.post(base_url + "pathfinding/", json=path_payload)
+    r = requests.post(base_url + "pathfinding/", json=path_payload, timeout=TIMEOUT)
     if r.status_code // 100 != 2:
         if "track section that has no route" in str(r.content):
             print("ignore (track section has no route)")
@@ -41,7 +42,7 @@ def run_test(infra: Dict, links: Dict, base_url: str, infra_id: int):
     rolling_stock = get_random_rolling_stock(base_url)
 
     schedule_payload = make_payload_schedule(base_url, infra_id, path_id, rolling_stock)
-    r = requests.post(base_url + "train_schedule/", json=schedule_payload)
+    r = requests.post(base_url + "train_schedule/", json=schedule_payload, timeout=TIMEOUT)
     if r.status_code // 100 != 2:
         if "TVD" in str(r.content):
             print("ignore (see issue https://github.com/DGEXSolutions/osrd/issues/171)")
@@ -49,7 +50,7 @@ def run_test(infra: Dict, links: Dict, base_url: str, infra_id: int):
         raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(schedule_payload)}")
 
     schedule_id = r.json()["id"]
-    r = requests.get(f"{base_url}train_schedule/{schedule_id}/result/")
+    r = requests.get(f"{base_url}train_schedule/{schedule_id}/result/", timeout=TIMEOUT)
     if r.status_code // 100 != 2:
         raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, id={schedule_id}")
 
@@ -69,15 +70,8 @@ def run(base_url: str, infra_id: int, n_test: int = 1000):
         seed += 1
         print("seed:", seed)
         random.seed(seed)
-        try:
-            run_test(infra, links, base_url, infra_id)
-        except Exception as e:
-            print(e)
-            error_folder = Path(__file__).parent / "errors"
-            error_folder.mkdir(exist_ok=True)
-            with open(str(error_folder / f"{i}.txt"), "w") as f:
-                print(e, file=f)
-        time.sleep(1)
+        run_test(infra, links, base_url, infra_id)
+        time.sleep(0.1)
 
 
 def get_random_rolling_stock(base_url: str) -> str:
@@ -86,7 +80,7 @@ def get_random_rolling_stock(base_url: str) -> str:
     :param base_url: Api url
     :return: ID of a valid rolling stock
     """
-    r = requests.get(base_url + "rolling_stock/")
+    r = requests.get(base_url + "rolling_stock/", timeout=TIMEOUT)
     if r.status_code // 100 != 2:
         raise RuntimeError(f"Rolling stock error {r.status_code}: {r.content}")
     stocks = r.json()["results"]
@@ -115,7 +109,7 @@ def make_graph(base_url: str, infra: int) -> Tuple[Dict, Dict]:
     :param infra: infra id
     """
     url = base_url + f"infra/{infra}/railjson/"
-    r = requests.get(url)
+    r = requests.get(url, timeout=TIMEOUT)
     links = defaultdict(lambda: set())
     infra = r.json()
     for link in infra["track_section_links"]:
@@ -167,6 +161,20 @@ def make_steps_on_edge(infra: Dict, point: str) -> Iterable[Tuple[str, float]]:
         yield edge_id, offset
 
 
+def get_any_endpoint(infra: Dict) -> str:
+    """
+    Returns a random endpoint of a random track
+    :param infra: infra
+    :return: formatted endpoint
+    """
+    track = random.choice(infra["track_sections"])
+    if (random.randint(0, 1)) == 0:
+        endpoint = "BEGINNING"
+    else:
+        endpoint = "END"
+    return f"{track['id']};{endpoint}"
+
+
 def make_path(infra: Dict, links: Dict) -> List[Tuple[str, float]]:
     """
     Generates a path in the infra following links. The path may only have a single element
@@ -175,7 +183,7 @@ def make_path(infra: Dict, links: Dict) -> List[Tuple[str, float]]:
     :return: List of (edge id, offset)
     """
     res = []
-    p = random_set_element(links)
+    p = get_any_endpoint(infra)
     while random.randint(0, 15) != 0:
         res += make_steps_on_edge(infra, p)
         o = opposite(p)
@@ -243,7 +251,7 @@ def create_schedule(base_url: str, infra_id: int):
         "name": "foo",
         "infra": infra_id
     }
-    r = requests.post(base_url + "timetable/", json=timetable_payload)
+    r = requests.post(base_url + "timetable/", json=timetable_payload, timeout=TIMEOUT)
     if r.status_code // 100 != 2:
         err = f"Error creating schedule {r.status_code}: {r.content}, payload={json.dumps(timetable_payload)}"
         raise RuntimeError(err)
@@ -256,7 +264,7 @@ def get_schedule(base_url: str, infra: int) -> str:
     :param infra: infra id
     :return: schedule id
     """
-    r = requests.get(base_url + "timetable/")
+    r = requests.get(base_url + "timetable/", timeout=TIMEOUT)
     if r.status_code // 100 != 2:
         raise RuntimeError(f"Rolling stock error {r.status_code}: {r.content}")
     schedules = r.json()["results"]
