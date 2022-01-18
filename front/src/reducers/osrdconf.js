@@ -15,6 +15,7 @@ export const REPLACE_VIAS = 'osrdconf/REPLACE_VIAS';
 export const UPDATE_VIAS = 'osrdconf/UPDATE_VIAS';
 export const UPDATE_VIA_STOPTIME = 'osrdconf/UPDATE_VIA_STOPTIME';
 export const PERMUTE_VIAS = 'osrdconf/PERMUTE_VIAS';
+export const UPDATE_SUGGERED_VIAS = 'osrdconf/UPDATE_SUGGERED_VIAS';
 export const DELETE_VIAS = 'osrdconf/DELETE_VIAS';
 export const DELETE_ITINERARY = 'osrdconfDELETE_ITINERARY';
 export const UPDATE_DESTINATION = 'osrdconf/UPDATE_DESTINATION';
@@ -35,6 +36,7 @@ export const initialState = {
   originTime: undefined,
   destination: undefined,
   vias: [],
+  suggeredVias: [],
   trainCompo: undefined,
   geojson: undefined,
   featureInfoClick: { displayPopup: false },
@@ -81,6 +83,9 @@ export default function reducer(state = initialState, action) {
         break;
       case PERMUTE_VIAS:
         draft.vias = action.vias;
+        break;
+      case UPDATE_SUGGERED_VIAS:
+        draft.suggeredVias = action.suggeredVias;
         break;
       case DELETE_VIAS:
         draft.vias.splice(action.index, 1);
@@ -208,6 +213,14 @@ export function permuteVias(vias, from, to) {
     dispatch({
       type: PERMUTE_VIAS,
       vias: newVias,
+    });
+  };
+}
+export function updateSuggeredVias(suggeredVias) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_SUGGERED_VIAS,
+      suggeredVias,
     });
   };
 }

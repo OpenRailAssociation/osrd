@@ -158,7 +158,6 @@ export default function SpeedSpaceChart(props) {
         drawCurve(chartLocal, 'speed vmax', dataSimulation.vmax, 'speedSpaceChart', 'curveLinear', keyValues, 'vmax', rotate);
       }
       if (dataSimulation.slopesCurve && speedSpaceSettings.altitude) {
-        console.log(dataSimulation.slopesCurve)
         drawCurve(chartLocal, 'speed slopes', dataSimulation.slopesCurve, 'speedSpaceChart', 'curveLinear', ['position', 'height'], 'slopes', rotate);
       }
       if (dataSimulation.slopesHistogram && speedSpaceSettings.slopes) {
