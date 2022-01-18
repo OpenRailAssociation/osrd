@@ -10,7 +10,10 @@ import {
 } from 'react-icons/ri';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import DisplayVias from 'applications/osrd/components/Itinerary/DisplayVias';
-import { updateOrigin, updateOriginTime, updateOriginSpeed, updateDestination } from 'reducers/osrdconf';
+import {
+  updateOrigin, updateOriginTime, updateOriginSpeed, updateDestination,
+} from 'reducers/osrdconf';
+import { GiPathDistance } from 'react-icons/gi';
 
 export default function DisplayItinerary(props) {
   const osrdconf = useSelector((state) => state.osrdconf);
@@ -84,6 +87,9 @@ export default function DisplayItinerary(props) {
       <h2 className="d-flex align-items-center mb-0 ml-4">
         <span className="mr-1 h2 text-info"><RiMapPin3Fill /></span>
         <span>{t('osrdconf:vias')}</span>
+        <button className="btn btn-info btn-only-icon btn-sm ml-1" type="button" data-toggle="modal" data-target="#suggeredViasModal">
+          <GiPathDistance />
+        </button>
       </h2>
       <div className="mb-3">
         {osrdconf.vias.length > 0 ? (

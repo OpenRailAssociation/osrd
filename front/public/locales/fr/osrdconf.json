@@ -3,6 +3,7 @@
   "blocktype": "Type de block",
   "chooseOnMap": "Choisir sur la carte",
   "composition": "Composition",
+  "deleteVias": "Supprimer les étapes",
   "destination": "Destination",
   "errorMessages": {
     "noDestination": "La destination n'est pas définie",
@@ -24,6 +25,7 @@
   "infrastructure": "Infrastructure",
   "inverseOD": "Inverser origine/destination",
   "launchSimulation": "Démarrer",
+  "manageVias": "Gestion des étapes",
   "noTimetable": "Aucune",
   "noplacechosen": "Aucun point défini",
   "noTrainCompo": "Aucun matériel défini...",

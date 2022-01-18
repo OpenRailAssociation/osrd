@@ -4,24 +4,24 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { setFailure } from 'reducers/main.ts';
 import {
-  updateItinerary, updatePathfindingID, updateOrigin, updateDestination, replaceVias,
+  updateItinerary, updatePathfindingID, updateOrigin,
+  updateDestination, replaceVias, updateSuggeredVias,
 } from 'reducers/osrdconf';
 import { updateFeatureInfoClick } from 'reducers/map';
 import { post } from 'common/requests';
 import bbox from '@turf/bbox';
 import { WebMercatorViewport } from 'react-map-gl';
-import { FaLongArrowAltUp, FaLongArrowAltDown } from 'react-icons/fa';
-import { GiPathDistance } from 'react-icons/gi';
 import DisplayItinerary from 'applications/osrd/components/Itinerary/DisplayItinerary';
+import ModalSugerredVias from 'applications/osrd/components/Itinerary/ModalSuggeredVias';
 
 const itineraryURI = '/pathfinding/';
 
 // Obtain only asked vias
-const convertPathfindingVias = (steps) => {
+const convertPathfindingVias = (steps, dispatch, idxToAdd) => {
   const count = steps.length - 1;
   const vias = [];
   steps.forEach((step, idx) => {
-    if (idx !== 0 && idx !== count) {
+    if (idx !== 0 && idx !== count && (!step.suggestion || idxToAdd === idx)) {
       vias.push({
         ...step,
         id: step.track.id,
@@ -29,11 +29,13 @@ const convertPathfindingVias = (steps) => {
       });
     }
   });
-  return vias;
+  dispatch(replaceVias(vias));
+  dispatch(updateSuggeredVias(steps));
 };
 
 const Itinerary = (props) => {
   const [launchPathfinding, setLaunchPathfinding] = useState(false);
+  const [pathfindingInProgress, setPathfindingInProgress] = useState(false);
   const { updateExtViewport } = props;
   const dispatch = useDispatch();
   const map = useSelector((state) => state.map);
@@ -81,8 +83,7 @@ const Itinerary = (props) => {
     }));
 
     if (osrdconf.vias.length > 0 || pathfindingData.steps.length > 2) {
-      const stepsVias = convertPathfindingVias(pathfindingData.steps);
-      dispatch(replaceVias(stepsVias));
+      convertPathfindingVias(pathfindingData.steps, dispatch);
     }
 
     dispatch(updateDestination({
@@ -94,15 +95,17 @@ const Itinerary = (props) => {
 
   const postPathFinding = async (zoom, params) => {
     try {
+      setPathfindingInProgress(true);
       const itineraryCreated = await post(itineraryURI, params, {}, true);
       correctWaypointsGPS(itineraryCreated);
       dispatch(updateItinerary(itineraryCreated.geographic));
       dispatch(updatePathfindingID(itineraryCreated.id));
       if (zoom) zoomToFeature(bbox(itineraryCreated.geographic));
+      setPathfindingInProgress(false);
     } catch (e) {
       dispatch(setFailure({
         name: t('errorMessages.unableToRetrievePathfinding'),
-        message: `${e.message} : ${e.response.data.detail}`,
+        message: `${e.message} : ${e.response && e.response.data.detail}`,
       }));
       console.log('ERROR', e);
     }
@@ -195,18 +198,15 @@ const Itinerary = (props) => {
     <>
       <div className="osrd-config-item mb-2">
         <div className="osrd-config-item-container">
-          <div className="d-flex">
-            <button className="btn btn-only-icon btn-primary btn-sm ml-auto" type="button" onClick={removeAllVias}>
-              <GiPathDistance />
-            </button>
-            <button className="btn btn-only-icon btn-primary btn-sm ml-1" type="button" onClick={inverseOD} title={t('inverseOD')}>
-              <FaLongArrowAltUp />
-              <FaLongArrowAltDown />
-            </button>
-          </div>
           <DisplayItinerary zoomToFeaturePoint={zoomToFeaturePoint} />
         </div>
       </div>
+      <ModalSugerredVias
+        convertPathfindingVias={convertPathfindingVias}
+        inverseOD={inverseOD}
+        removeAllVias={removeAllVias}
+        pathfindingInProgress={pathfindingInProgress}
+      />
     </>
   );
 };
