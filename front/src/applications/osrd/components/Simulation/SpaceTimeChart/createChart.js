@@ -3,7 +3,7 @@ import { defineLinear, defineTime } from 'applications/osrd/components/Helpers/C
 import defineChart from 'applications/osrd/components/Simulation/defineChart';
 
 export default function createChart(
-  chart, chartID, dataSimulation, heightOfSpaceTimeChart, keyValues, ref, rotate,
+  chart, chartID, dataSimulation, heightOfSpaceTimeChart, keyValues, ref, reset, rotate,
 ) {
   d3.select(`#${chartID}`).remove();
 
@@ -26,10 +26,10 @@ export default function createChart(
     ))), */
   ]);
 
-  const defineX = (chart === undefined)
+  const defineX = (chart === undefined || reset)
     ? defineTime(dataSimulationTime, keyValues[0])
     : chart.x;
-  const defineY = (chart === undefined)
+  const defineY = (chart === undefined || reset)
     ? defineLinear(dataSimulationLinearMax, 0.05)
     : chart.y;
 
@@ -37,7 +37,7 @@ export default function createChart(
   const chartLocal = defineChart(
     width, heightOfSpaceTimeChart, defineX, defineY, ref, rotate, keyValues, chartID,
   );
-  return (chart === undefined)
+  return (chart === undefined || reset)
     ? chartLocal
     : { ...chartLocal, x: chart.x, y: chart.y };
 }
