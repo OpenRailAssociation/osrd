@@ -174,9 +174,9 @@ def compute_vmax(payload: PathPayload, track_map: Mapping[str, TrackSection]):
     for track_id, track in track_map.items():
         trees[track_id].addi(0, track["length"], -1)
         for speed_section in track["speed_sections"]:
-            assert speed_section["begin"] < speed_section["end"]
-            trees[track_id].chop(speed_section["begin"], speed_section["end"])
-            trees[track_id].addi(speed_section["begin"], speed_section["end"], speed_section["speed"])
+            if speed_section["begin"] < speed_section["end"]:
+                trees[track_id].chop(speed_section["begin"], speed_section["end"])
+                trees[track_id].addi(speed_section["begin"], speed_section["end"], speed_section["speed"])
     return create_chart(payload.route_paths, trees, "speed")
 
 
