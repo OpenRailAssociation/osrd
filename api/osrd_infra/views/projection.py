@@ -58,6 +58,10 @@ class Projection:
 
         (begin, end, offset) = self.tracks[track_id]
         if (pos < begin and pos < end) or (pos > begin and pos > end):
+            if abs(pos - begin) < 1e-8:
+                return offset
+            if abs(pos - end) < 1e-8:
+                return offset + abs(end - begin)
             return None
 
         return abs(pos - begin) + offset
