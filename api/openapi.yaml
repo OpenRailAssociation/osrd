@@ -480,17 +480,17 @@ paths:
                     type: string
                   infra:
                     type: number
-  /train_schedule/:
+  /train_schedule/standalone_simulation/:
     post:
       tags:
         - train_schedule
-      summary: Create a train schedule
+      summary: Create a batch of train schedule
       requestBody:
-        description: Train schedule fields
+        description: Standalone simulation parameters
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/WritableTrainSchedule"
+              $ref: "#/components/schemas/StandaloneSimulationParameters"
         required: true
       responses:
         201:
@@ -500,8 +500,12 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
-                    type: integer
+                  ids:
+                    type: array
+                    minItems: 1
+                    items:
+                      type: number
+                      format: integer
   /train_schedule/{id}/:
     get:
       tags:
@@ -781,7 +785,7 @@ components:
                 description: Can be 'Unknown' if it's not an operational point
               time: { type: number, format: float }
               position: { type: number, format: float }
-              stop_time: { type: number, format: float }
+              duration: { type: number, format: float }
         signals:
           type: array
           items:
@@ -857,7 +861,7 @@ components:
           items:
             type: object
             properties:
-              stop_time:
+              duration:
                 type: number
                 format: float
               waypoints:
@@ -895,7 +899,7 @@ components:
             properties:
               name: { type: string }
               suggestion: { type: boolean }
-              stop_time: { type: number, format: float }
+              duration: { type: number, format: float }
               track:
                 type: object
                 properties:
@@ -1038,6 +1042,49 @@ components:
               end_position:
                 type: number
                 format: float
+    StandaloneSimulationParameters:
+      properties:
+        timetable:
+          type: integer
+        path:
+          type: integer
+        schedules:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            properties:
+              train_name:
+                type: string
+              rolling_stock:
+                type: integer
+              departure_time:
+                type: number
+                format: float
+              initial_speed:
+                type: number
+                format: float
+              labels:
+                type: array
+                items:
+                  type: string
+              margins:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      enum: [construction, ratio_time, ratio_distance]
+                    value:
+                      type: number
+                      format: float
+                    begin_position:
+                      type: number
+                      format: float
+                    end_position:
+                      type: number
+                      format: float
     WritableTrainSchedule:
       properties:
         train_name:

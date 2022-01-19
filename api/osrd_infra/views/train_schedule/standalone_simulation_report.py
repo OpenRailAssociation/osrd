@@ -6,7 +6,7 @@ from osrd_infra.schemas.path import PathPayload
 from osrd_infra.views.projection import Projection
 
 
-def convert_simulation_logs(train_schedule, projection_path):
+def create_simulation_report(train_schedule: TrainSchedule, projection_path: PathModel):
     train_path = train_schedule.path
     train_path_payload = PathPayload.parse_obj(train_schedule.path.payload)
 
@@ -14,13 +14,17 @@ def convert_simulation_logs(train_schedule, projection_path):
     projection_path_payload = PathPayload.parse_obj(projection_path.payload)
     projection = Projection(projection_path_payload)
 
-    base = convert_simulation_log(
-        train_schedule.base_simulation_log, train_path_payload, projection, projection_path_payload
+    base = convert_simulation_results(
+        train_schedule.base_simulation,
+        train_path_payload,
+        projection,
+        projection_path_payload,
+        train_schedule.departure_time,
     )
     vmax = convert_vmax(train_path, train_schedule)
     res = {
         "id": train_schedule.pk,
-        "labels": [label.label for label in train_schedule.labels.all()],
+        "labels": train_schedule.labels,
         "path": train_schedule.path_id,
         "name": train_schedule.train_name,
         "vmax": vmax,
@@ -30,37 +34,52 @@ def convert_simulation_logs(train_schedule, projection_path):
     }
 
     # Check if train schedule has margins
-    if train_schedule.eco_simulation_log is None:
+    if train_schedule.eco_simulation is None:
         return res
 
     # Add margins and eco results if available
-    sim_log = train_schedule.eco_simulation_log
-    if "error" not in sim_log:
-        res["eco"] = convert_simulation_log(sim_log, train_path_payload, projection, projection_path_payload)
-    else:
-        res["eco"] = sim_log
+    sim_log = train_schedule.eco_simulation
+    res["eco"] = convert_simulation_results(
+        sim_log,
+        train_path_payload,
+        projection,
+        projection_path_payload,
+        train_schedule.departure_time,
+    )
     return res
 
 
-def convert_simulation_log(
-    simulation_result, train_path_payload: PathPayload, projection, projection_path_payload: PathPayload
+def convert_simulation_results(
+    simulation_result, train_path_payload: PathPayload, projection, projection_path_payload: PathPayload, departure_time
 ):
     # Format data for charts
-    head_positions = convert_positions(simulation_result["head_positions"], projection, train_path_payload)
-    tail_positions = convert_positions(simulation_result["tail_positions"], projection, train_path_payload)
-    end_time = simulation_result["head_positions"][-1]["time"]
+    head_positions = convert_positions(
+        simulation_result["head_positions"], projection, train_path_payload, departure_time
+    )
+    tail_positions = convert_positions(
+        simulation_result["tail_positions"], projection, train_path_payload, departure_time
+    )
+
+    end_time = simulation_result["head_positions"][-1]["time"] + departure_time
+    end_pos = simulation_result["head_positions"][-1]["path_offset"]
+    route_begin_occupancy = [{"time": departure_time, "position": 0}, {"time": end_time, "position": end_pos}]
+    route_end_occupancy = route_begin_occupancy
+    """ TODO
     route_begin_occupancy, route_end_occupancy = convert_route_occupancy(
         simulation_result["routes_status"], projection_path_payload, projection, end_time
     )
+    """
+
+    speeds = [{**speed, "time": speed["time"] + departure_time} for speed in simulation_result["speeds"]]
+    stops = [{**stop, "time": stop["time"] + departure_time} for stop in simulation_result["stops"]]
 
     return {
         "head_positions": head_positions,
         "tail_positions": tail_positions,
         "route_begin_occupancy": route_begin_occupancy,
         "route_end_occupancy": route_end_occupancy,
-        "speeds": simulation_result["speeds"],
-        "signals": simulation_result["signals"],
-        "stops": simulation_result["stops"],
+        "speeds": speeds,
+        "stops": stops,
     }
 
 
@@ -83,7 +102,7 @@ def interpolate_locations(loc_a, loc_b, path_position):
     return loc_a["time"] + (path_position - loc_a["path_offset"]) * coef
 
 
-def convert_positions(train_locations, projection, train_path_payload: PathPayload):
+def convert_positions(train_locations, projection, train_path_payload: PathPayload, departure_time: float):
     results = []
     loc_index = 0
     intersections = projection.intersections(train_path_payload)
@@ -102,7 +121,7 @@ def convert_positions(train_locations, projection, train_path_payload: PathPaylo
         )
         begin_position = projection.track_position(begin_loc.track, begin_loc.offset)
         assert begin_position is not None
-        current_curve.append({"time": begin_time, "position": begin_position})
+        current_curve.append({"time": begin_time + departure_time, "position": begin_position})
 
         # Add intermediate points
         end_loc = path_range.end
@@ -113,7 +132,7 @@ def convert_positions(train_locations, projection, train_path_payload: PathPaylo
             loc = train_locations[loc_index]
             position = projection.track_position(loc["track_section"], loc["offset"])
             assert position is not None
-            current_curve.append({"time": loc["time"], "position": position})
+            current_curve.append({"time": loc["time"] + departure_time, "position": position})
 
         if loc_index + 1 < len(train_locations):
             # Add end points
@@ -124,7 +143,7 @@ def convert_positions(train_locations, projection, train_path_payload: PathPaylo
             )
             end_position = projection.track_position(end_loc.track, end_loc.offset)
             assert end_position is not None
-            current_curve.append({"time": end_time, "position": end_position})
+            current_curve.append({"time": end_time + departure_time, "position": end_position})
 
         results.append(current_curve)
     return results

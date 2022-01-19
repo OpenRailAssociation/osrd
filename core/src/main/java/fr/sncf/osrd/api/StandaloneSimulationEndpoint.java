@@ -97,7 +97,7 @@ public class StandaloneSimulationEndpoint implements Take {
                     cache.put(trainSchedule, simResultTrain);
                 }
 
-                result.trains.put(rjsTrainSchedule.id, cache.get(trainSchedule));
+                result.baseSimulations.add(cache.get(trainSchedule));
             }
 
             return new RsJson(new RsWithBody(adapterResult.toJson(result)));
@@ -181,7 +181,8 @@ public class StandaloneSimulationEndpoint implements Take {
 
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class StandaloneSimulationResult {
-        public Map<String, SimulationResultTrain> trains = new HashMap<>();
+        @Json(name = "base_simulations")
+        public List<SimulationResultTrain> baseSimulations = new ArrayList<>();
     }
 
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
@@ -191,8 +192,7 @@ public class StandaloneSimulationEndpoint implements Take {
         public Collection<SimulationResultPosition> headPositions = new ArrayList<>();
         @Json(name = "tail_positions")
         public Collection<SimulationResultPosition> tailPositions = new ArrayList<>();
-        @Json(name = "stop_reaches")
-        public Collection<SimulationResultStopReach> stopReaches = new ArrayList<>();
+        public Collection<SimulationResultStops> stops = new ArrayList<>();
 
         static SimulationResultTrain from(
                 Envelope envelope,
@@ -210,7 +210,7 @@ public class StandaloneSimulationEndpoint implements Take {
                     result.speeds.add(new SimulationResultSpeed(time, speed, pos));
                     result.headPositions.add(new SimulationResultPosition(time, pos, trainPath));
                     var tailPos = Math.max(pos - length, 0);
-                    result.headPositions.add(new SimulationResultPosition(time, tailPos, trainPath));
+                    result.tailPositions.add(new SimulationResultPosition(time, tailPos, trainPath));
                     if (i < part.stepCount())
                         time += part.getStepTime(i);
                 }
@@ -218,7 +218,7 @@ public class StandaloneSimulationEndpoint implements Take {
 
             for (var stop : schedule.stops) {
                 var stopTime = envelope.interpolateTotalTime(stop.position);
-                result.stopReaches.add(new SimulationResultStopReach(stopTime, stop.position));
+                result.stops.add(new SimulationResultStops(stopTime, stop.position, stop.duration));
             }
 
             result.simplify();
@@ -265,13 +265,15 @@ public class StandaloneSimulationEndpoint implements Take {
     }
 
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
-    public static class SimulationResultStopReach {
+    public static class SimulationResultStops {
         public final double time;
         public final double position;
+        public final double duration;
 
-        SimulationResultStopReach(double time, double position) {
+        SimulationResultStops(double time, double position, double duration) {
             this.time = time;
             this.position = position;
+            this.duration = duration;
         }
     }
 }

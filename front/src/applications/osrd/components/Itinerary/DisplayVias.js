@@ -11,7 +11,7 @@ const InputStopTime = (props) => {
   const osrdconf = useSelector((state) => state.osrdconf);
   const dispatch = useDispatch();
   const [stopTime, setStopTime] = useState(
-    osrdconf.vias[index].stop_time ? osrdconf.vias[index].stop_time : 0,
+    osrdconf.vias[index].duration ? osrdconf.vias[index].duration : 0,
   );
   const [firstStart, setFirstStart] = useState(true);
   const debouncedStopTime = useDebounce(stopTime, 1000);
@@ -89,7 +89,7 @@ export default function DisplayVias(props) {
                             />
                           ) : (
                             <>
-                              {osrdconf.vias[index].stop_time ? osrdconf.vias[index].stop_time : 0}
+                              {osrdconf.vias[index].duration ? osrdconf.vias[index].duration : 0}
                               <i className="ml-2 icons-pencil" />
                             </>
                           )}
