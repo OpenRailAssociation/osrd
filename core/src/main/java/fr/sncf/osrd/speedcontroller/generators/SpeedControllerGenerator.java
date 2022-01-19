@@ -61,7 +61,7 @@ public abstract class SpeedControllerGenerator {
             time += updatesMap.get(k).timeDelta;
             if (stopIndex < schedule.stops.size() && schedule.stops.get(stopIndex).position <= k) {
                 if (includeStops)
-                    time += schedule.stops.get(stopIndex).stopDuration;
+                    time += schedule.stops.get(stopIndex).duration;
                 stopIndex++;
             }
             res.put(k, time);
@@ -70,7 +70,7 @@ public abstract class SpeedControllerGenerator {
         // Adds the duration of the last stop(s) which may not have been reached
         var lastEntry = res.lastEntry();
         while (stopIndex < schedule.stops.size()) {
-            res.put(lastEntry.getKey(), lastEntry.getValue() + schedule.stops.get(stopIndex).stopDuration);
+            res.put(lastEntry.getKey(), lastEntry.getValue() + schedule.stops.get(stopIndex).duration);
             stopIndex++;
         }
         return res;

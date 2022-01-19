@@ -27,6 +27,6 @@ public class RJSStandaloneTrainScheduleParser {
         if (Double.isNaN(initialSpeed) || initialSpeed < 0)
             throw new InvalidSchedule("invalid initial speed");
 
-        return new StandaloneTrainSchedule(rjsTrainSchedule.id, rollingStock, initialSpeed, stops);
+        return new StandaloneTrainSchedule(rollingStock, initialSpeed, stops);
     }
 }

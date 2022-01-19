@@ -42,7 +42,7 @@ public abstract class NavigatePhase {
                 interactions.add(new Interaction(
                         InteractionType.HEAD,
                         stop.position,
-                        new StopActionPoint(i, stop.stopDuration)));
+                        new StopActionPoint(i, stop.duration)));
             }
         }
         interactions.sort(Comparator.comparingDouble(x -> x.position));

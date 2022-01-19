@@ -5,11 +5,11 @@ import java.util.Objects;
 
 public class TrainStop {
     public double position;
-    public double stopDuration;
+    public double duration;
 
-    public TrainStop(double position, double stopDuration) {
+    public TrainStop(double position, double duration) {
         this.position = position;
-        this.stopDuration = stopDuration;
+        this.duration = duration;
     }
 
     @Override
@@ -19,11 +19,11 @@ public class TrainStop {
         if (o == null || getClass() != o.getClass()) return false;
         TrainStop trainStop = (TrainStop) o;
         return Double.compare(trainStop.position, position) == 0
-                && Double.compare(trainStop.stopDuration, stopDuration) == 0;
+                && Double.compare(trainStop.duration, duration) == 0;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(position, stopDuration);
+        return Objects.hash(position, duration);
     }
 }

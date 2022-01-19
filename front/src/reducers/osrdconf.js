@@ -226,7 +226,7 @@ export function updateSuggeredVias(suggeredVias) {
 }
 export function updateViaStopTime(vias, index, value) {
   const newVias = Array.from(vias); // Copy of vias to permit modification
-  newVias[index] = { ...newVias[index], stop_time: value };
+  newVias[index] = { ...newVias[index], duration: value };
   return (dispatch) => {
     dispatch({
       type: UPDATE_VIA_STOPTIME,

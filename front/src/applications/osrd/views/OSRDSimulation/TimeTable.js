@@ -9,14 +9,14 @@ function formatStops(stop, idx, train) {
     <tr key={nextId()}>
       <td>
         <div className="cell-inner font-weight-bold">
-          {stop.name}
+          {stop.name || 'Unknown'}
         </div>
       </td>
       <td><div className="cell-inner">{sec2time(stop.time)}</div></td>
-      <td><div className="cell-inner">{stop.stop_time > 0 && sec2time(stop.time + stop.stop_time)}</div></td>
+      <td><div className="cell-inner">{stop.duration > 0 && sec2time(stop.time + stop.duration)}</div></td>
       <td>
         <div className="cell-inner">
-          {stop.stop_time > 0 ? `${stop.stop_time}s` : null}
+          {stop.duration > 0 ? `${stop.duration}s` : null}
         </div>
       </td>
       <td>
@@ -27,8 +27,8 @@ function formatStops(stop, idx, train) {
       </td>
       <td>
         <div className="cell-inner">
-          {train.eco && train.eco.stops[idx].stop_time > 0
-            && sec2time(train.eco.stops[idx].time + train.eco.stops[idx].stop_time)}
+          {train.eco && train.eco.stops[idx].duration > 0
+            && sec2time(train.eco.stops[idx].time + train.eco.stops[idx].duration)}
         </div>
       </td>
     </tr>
