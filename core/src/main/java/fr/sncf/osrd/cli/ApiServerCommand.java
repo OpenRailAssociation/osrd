@@ -2,11 +2,7 @@ package fr.sncf.osrd.cli;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import fr.sncf.osrd.api.InfraCacheStatusEndpoint;
-import fr.sncf.osrd.api.InfraManager;
-import fr.sncf.osrd.api.PathfindingRoutesEndpoint;
-import fr.sncf.osrd.api.PathfindingTracksEndpoint;
-import fr.sncf.osrd.api.SimulationEndpoint;
+import fr.sncf.osrd.api.*;
 import io.sentry.Sentry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +66,7 @@ public final class ApiServerCommand implements CliCommand {
                     new FkRegex("/pathfinding/routes", new PathfindingRoutesEndpoint(infraManager)),
                     new FkRegex("/pathfinding/tracks", new PathfindingTracksEndpoint(infraManager)),
                     new FkRegex("/simulation", new SimulationEndpoint(infraManager)),
+                    new FkRegex("/standalone_simulation", new StandaloneSimulationEndpoint(infraManager)),
                     new FkRegex("/cache_status", new InfraCacheStatusEndpoint(infraManager))
             );
 

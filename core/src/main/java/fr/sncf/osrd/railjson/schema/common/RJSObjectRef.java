@@ -2,6 +2,7 @@ package fr.sncf.osrd.railjson.schema.common;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.TVDSection;
+import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.trackgraph.BufferStop;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
@@ -62,6 +63,10 @@ public final class RJSObjectRef<T extends Identified> {
 
     public TrackSection getTrack(Map<String, TrackSection> tracks) throws InvalidInfraException {
         return parseRef(tracks, "TrackSection");
+    }
+
+    public Route getRoute(Map<String, Route> routes) throws InvalidInfraException {
+        return parseRef(routes, "Route");
     }
 
     public TrackBuilder getTrackBuilder(Map<String, TrackBuilder> tracks) throws InvalidInfraException {
