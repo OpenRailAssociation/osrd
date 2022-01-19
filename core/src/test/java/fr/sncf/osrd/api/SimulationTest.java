@@ -2,6 +2,7 @@ package fr.sncf.osrd.api;
 
 import static fr.sncf.osrd.Helpers.loadExampleSimulationResource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.Test;
 import org.takes.rq.RqFake;
@@ -21,7 +22,7 @@ public class SimulationTest extends ApiTest {
         ).printBody();
 
         var simResult =  SimulationEndpoint.adapterResult.fromJson(result);
-        assert simResult != null;
+        assertNotNull(simResult);
         var trainResult = simResult.trains.get("Test.");
         var positions = trainResult.headPositions.toArray(new SimulationEndpoint.SimulationResultPosition[0]);
         for (int i = 1; i < positions.length; i++)
