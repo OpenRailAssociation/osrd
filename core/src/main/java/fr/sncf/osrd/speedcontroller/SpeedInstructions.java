@@ -114,7 +114,7 @@ public class SpeedInstructions {
         var begin = mareco.getBegin();
         var end = Math.min(mareco.getEnd(), schedule.plannedPath.length);
         var stopPositions = schedule.stops.stream()
-                .filter(stop -> stop.stopDuration > 0)
+                .filter(stop -> stop.duration > 0)
                 .map(stop -> stop.position)
                 .filter(position -> position >= begin)
                 .filter(position -> position <= end)

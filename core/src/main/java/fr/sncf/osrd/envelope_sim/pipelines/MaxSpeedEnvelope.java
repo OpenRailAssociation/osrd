@@ -97,7 +97,7 @@ public class MaxSpeedEnvelope {
     ) {
         var stopPositions = new DoubleArrayList();
         for (var stop : stops) {
-            if (stop.stopDuration > 0)
+            if (stop.duration > 0)
                 stopPositions.add(stop.position);
         }
         return from(rollingStock, path, stopPositions.toArray(), mrsp, timeStep);

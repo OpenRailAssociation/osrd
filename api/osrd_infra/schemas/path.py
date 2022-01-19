@@ -18,7 +18,7 @@ class RoutePath(BaseModel):
 class PathWaypoint(GeometryPointTrait, TrackLocationTrait):
     name: Optional[str]
     suggestion: bool
-    stop_time: float
+    duration: float
 
 
 class PathPayload(BaseModel):

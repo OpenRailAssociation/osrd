@@ -31,16 +31,16 @@ def try_get_field(manifest, field):
         return status_missing_field_keyerror(e)
 
 
-def compute_path_payload(infra, back_payload, step_stop_times, track_map) -> PathPayload:
+def compute_path_payload(infra, back_payload, step_durations, track_map) -> PathPayload:
     # Adapt steps from back format to middle
-    stop_time_index = 0
+    duration_index = 0
     for path_waypoint in back_payload["path_waypoints"]:
         # Add stop time
         if not path_waypoint["suggestion"]:
-            path_waypoint["stop_time"] = step_stop_times[stop_time_index]
-            stop_time_index += 1
+            path_waypoint["duration"] = step_durations[duration_index]
+            duration_index += 1
         else:
-            path_waypoint["stop_time"] = 0
+            path_waypoint["duration"] = 0
 
         # Retrieve name from operation point ID
         op_id = path_waypoint.pop("id", None)
@@ -113,10 +113,10 @@ def parse_steps_input(steps, infra):
         [track_ids.append(waypoint["track_section"]) for waypoint in step["waypoints"]]
     track_map = fetch_track_sections(infra, track_ids)
     waypoints = []
-    step_stop_times = []
+    step_durations = []
     for step in steps:
         step_result = []
-        step_stop_times.append(step["stop_time"])
+        step_durations.append(step["duration"])
         for waypoint in step["waypoints"]:
             try:
                 track = track_map[waypoint["track_section"]]
@@ -138,7 +138,7 @@ def parse_steps_input(steps, infra):
             step_result.append({**parsed_waypoint, "direction": "STOP_TO_START"})
         waypoints.append(step_result)
 
-    return waypoints, step_stop_times
+    return waypoints, step_durations
 
 
 def add_chart_point(result, position, value, field_name):
@@ -205,12 +205,12 @@ def compute_curves(payload: PathPayload, track_map: Mapping[str, TrackSection]):
 def compute_path(path, request_data, owner):
     infra = request_data["infra"]
 
-    waypoints, step_stop_times = parse_steps_input(request_data["steps"], infra)
+    waypoints, step_durations = parse_steps_input(request_data["steps"], infra)
     payload = request_pathfinding({"infra": infra.pk, "waypoints": waypoints})
 
     # Post treatment
     track_map = fetch_track_sections_from_payload(infra, payload)
-    payload = compute_path_payload(infra, payload, step_stop_times, track_map)
+    payload = compute_path_payload(infra, payload, step_durations, track_map)
     geographic, schematic = get_geojson_path(payload, track_map)
 
     path.owner = owner

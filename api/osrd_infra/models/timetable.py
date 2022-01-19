@@ -1,4 +1,7 @@
+from typing import List
+
 from django.contrib.gis.db import models
+from pydantic import BaseModel, constr
 
 from osrd_infra.models import Infra, PathModel, RollingStock
 from osrd_infra.utils import JSONSchemaValidator
@@ -24,6 +27,10 @@ class Timetable(models.Model):
     name = models.CharField(max_length=128)
 
 
+class TrainScheduleLabels(BaseModel):
+    __root__: List[constr(max_length=128)]
+
+
 class TrainSchedule(models.Model):
     train_name = models.CharField(max_length=128)
     timetable = models.ForeignKey(Timetable, on_delete=models.CASCADE, related_name="train_schedules")
@@ -31,10 +38,10 @@ class TrainSchedule(models.Model):
     departure_time = models.FloatField()
     path = models.ForeignKey(PathModel, on_delete=models.CASCADE)
     initial_speed = models.FloatField()
-    labels = models.ManyToManyField("TrainScheduleLabel", blank=True)
-    margins = models.JSONField(null=True, validators=[JSONSchemaValidator(limit_value=MARGINS_SCHEMA)])
-    base_simulation_log = models.JSONField(null=True)
-    eco_simulation_log = models.JSONField(null=True)
+    labels = models.JSONField(default=[], validators=[JSONSchemaValidator(limit_value=TrainScheduleLabels.schema())])
+    margins = models.JSONField(default=[], validators=[JSONSchemaValidator(limit_value=MARGINS_SCHEMA)])
+    base_simulation = models.JSONField()
+    eco_simulation = models.JSONField(null=True)
 
 
 class Simulation(models.Model):
@@ -42,7 +49,3 @@ class Simulation(models.Model):
     timetable = models.ForeignKey(Timetable, on_delete=models.DO_NOTHING)
     start_time = models.DateTimeField(auto_now_add=True)
     started_by = models.UUIDField()
-
-
-class TrainScheduleLabel(models.Model):
-    label = models.CharField(max_length=128, unique=True)
