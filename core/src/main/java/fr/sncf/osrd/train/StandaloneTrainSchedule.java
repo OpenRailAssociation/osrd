@@ -5,15 +5,14 @@ import java.util.Objects;
 
 public class StandaloneTrainSchedule {
     /** The identifier of the rolling stock for this train */
-    public RollingStock rollingStock;
+    public final RollingStock rollingStock;
 
-    public double initialSpeed;
+    public final double initialSpeed;
 
-    public ArrayList<TrainStop> stops;
+    public final ArrayList<TrainStop> stops;
 
     /** Standalone Train Schedule constructor */
     public StandaloneTrainSchedule(
-            String id,
             RollingStock rollingStock,
             double initialSpeed,
             ArrayList<TrainStop> stops

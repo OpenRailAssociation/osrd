@@ -1,15 +1,8 @@
 from rest_framework import serializers
-from rest_framework.serializers import Field, ModelSerializer, Serializer
+from rest_framework.serializers import ModelSerializer, Serializer
 from rest_framework_gis.fields import GeometryField
 
-from osrd_infra.models import (
-    Infra,
-    PathModel,
-    RollingStock,
-    Timetable,
-    TrainSchedule,
-    TrainScheduleLabel,
-)
+from osrd_infra.models import Infra, PathModel, RollingStock, Timetable, TrainSchedule
 
 
 # monkey patch rest_framework_gis so that it properly converts
@@ -56,7 +49,7 @@ class PathInputSerializer(Serializer):
             geo_coordinate = serializers.JSONField(required=False)
             offset = serializers.FloatField(required=False)
 
-        stop_time = serializers.FloatField()
+        duration = serializers.FloatField()
         waypoints = serializers.ListField(child=WaypointInputSerializer(), allow_empty=False)
 
     infra = serializers.PrimaryKeyRelatedField(queryset=Infra.objects.all())
@@ -72,7 +65,7 @@ class PathSerializer(ModelSerializer):
         exclude = ["infra", "payload", "vmax", "slopes", "curves"]
 
 
-# TIMETABLE
+# TIMETABLE / SIMULATION
 
 
 class TimetableSerializer(ModelSerializer):
@@ -81,20 +74,41 @@ class TimetableSerializer(ModelSerializer):
         fields = "__all__"
 
 
-class LabelsField(Field):
-    def to_representation(self, value):
-        return [label.label for label in value.all()]
-
-    def to_internal_value(self, data):
-        return [TrainScheduleLabel.objects.get_or_create(label=label)[0].pk for label in data]
-
-
 class TrainScheduleSerializer(ModelSerializer):
-    labels = LabelsField(default=[])
-
     class Meta:
         model = TrainSchedule
         exclude = [
-            "base_simulation_log",
-            "eco_simulation_log",
+            "base_simulation",
+            "eco_simulation",
         ]
+
+
+class StandaloneSimulationSerializer(Serializer):
+    class Schedule(ModelSerializer):
+        class Meta:
+            model = TrainSchedule
+            exclude = [
+                "timetable",
+                "path",
+                "base_simulation",
+                "eco_simulation",
+            ]
+
+    timetable = serializers.PrimaryKeyRelatedField(queryset=Timetable.objects.all())
+    path = serializers.PrimaryKeyRelatedField(queryset=PathModel.objects.all())
+    schedules = serializers.ListField(min_length=1, child=Schedule())
+
+    def validate(self, data):
+        path = data["path"]
+        timetable = data["timetable"]
+        if path.infra != timetable.infra:
+            raise serializers.ValidationError("path and timteable doesn't have the same infra")
+        return data
+
+    def create(self, validated_data):
+        schedules = []
+        timetable = validated_data["timetable"]
+        path = validated_data["path"]
+        for schedule in validated_data["schedules"]:
+            schedules.append(TrainSchedule(timetable=timetable, path=path, **schedule))
+        return schedules

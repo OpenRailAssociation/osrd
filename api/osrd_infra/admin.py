@@ -10,7 +10,6 @@ from osrd_infra.models import (  # misc; timetable
     Simulation,
     Timetable,
     TrainSchedule,
-    TrainScheduleLabel,
 )
 
 
@@ -29,7 +28,6 @@ admin.site.register(
         Timetable,
         TrainSchedule,
         Simulation,
-        TrainScheduleLabel,
         RailScriptFunctionModel,
         AspectModel,
     ]
