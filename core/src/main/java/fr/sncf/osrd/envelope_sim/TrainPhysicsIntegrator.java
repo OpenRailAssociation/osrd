@@ -75,8 +75,8 @@ public final class TrainPhysicsIntegrator {
     }
 
     private static double getWeightForce(PhysicsRollingStock rollingStock, PhysicsPath path, double headLocation) {
-        headLocation = Math.min(Math.max(0, headLocation), path.getLength());
         var tailLocation = Math.min(Math.max(0, headLocation - rollingStock.getLength()), path.getLength());
+        headLocation = Math.min(Math.max(0, headLocation), path.getLength());
         var averageGrade = path.getAverageGrade(tailLocation, headLocation);
         // get an angle from a meter per km elevation difference
         // the curve's radius is taken into account in meanTrainGrade
