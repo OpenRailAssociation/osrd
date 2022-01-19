@@ -38,7 +38,7 @@ public class MaxSpeedGenerator extends SpeedControllerGenerator {
 
         for (int i = 0; i < schedule.stops.size(); i++) {
             var stop = schedule.stops.get(i);
-            var stopDuration = stop.stopDuration;
+            var stopDuration = stop.duration;
             if (stopDuration <= 0) // The train doesn't stop
                 continue;
             var targetPosition = stop.position;

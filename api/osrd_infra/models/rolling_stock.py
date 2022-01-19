@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from osrd_infra.utils import JSONSchemaValidator
@@ -69,28 +69,19 @@ def migrate_v1_to_v2(old):
     new["units_count"] = 1
 
     new["effort_curves"] = {
-        "default_curve": [
-            (point["speed"], point["max_effort"])
-            for point in old["tractive_effort_curve"]
-        ]
+        "default_curve": [(point["speed"], point["max_effort"]) for point in old["tractive_effort_curve"]]
     }
 
-    new["effort_curve_profiles"] = {
-        "default_curve_profile": [{"condition": None, "effort_curve": "default_curve"}]
-    }
+    new["effort_curve_profiles"] = {"default_curve_profile": [{"condition": None, "effort_curve": "default_curve"}]}
 
     new["rolling_resistance_profiles"] = {
-        "default_resistance_profile": [
-            {"id": "normal", "condition": None, "resistance": old["rolling_resistance"]}
-        ]
+        "default_resistance_profile": [{"id": "normal", "condition": None, "resistance": old["rolling_resistance"]}]
     }
 
     new["liveries"] = []
     new["power_class"] = 5
 
-    new["masses"] = [
-        {"id": "default_mass", "load_state": "NORMAL_LOAD", "mass": old["mass"]}
-    ]
+    new["masses"] = [{"id": "default_mass", "load_state": "NORMAL_LOAD", "mass": old["mass"]}]
 
     new["modes"] = [
         {
@@ -109,9 +100,7 @@ class RollingStock(models.Model):
         help_text=_("A unique identifier for this rolling stock"),
     )
 
-    owner = models.UUIDField(
-        editable=False, default="00000000-0000-0000-0000-000000000000"
-    )
+    owner = models.UUIDField(editable=False, default="00000000-0000-0000-0000-000000000000")
 
     length = models.FloatField(
         help_text=_("The length of the train, in meters"),
@@ -121,8 +110,7 @@ class RollingStock(models.Model):
 
     inertia_coefficient = models.FloatField(
         help_text=_(
-            "The inertia coefficient. It will be multiplied with the mass "
-            "of the train to get its effective mass"
+            "The inertia coefficient. It will be multiplied with the mass of the train to get its effective mass"
         ),
     )
 
@@ -153,15 +141,11 @@ class RollingStock(models.Model):
     )
 
     timetable_gamma = models.FloatField(
-        help_text=_(
-            "The maximum braking coefficient, for timetabling purposes, in m/s^2"
-        ),
+        help_text=_("The maximum braking coefficient, for timetabling purposes, in m/s^2"),
     )
 
     tractive_effort_curves = models.JSONField(
-        help_text=_(
-            "A set of curves mapping speed (in m/s) to maximum traction (in newtons)"
-        ),
+        help_text=_("A set of curves mapping speed (in m/s) to maximum traction (in newtons)"),
         validators=[JSONSchemaValidator(limit_value=EFFORT_CURVE_MAP_SCHEMA)],
     )
 
@@ -174,22 +158,28 @@ class RollingStock(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def railjson_id(self):
+        return f"rolling_stock.{self.id}"
+
     def to_railjson(self):
-        return migrate_v1_to_v2({
-            "id": f"rolling_stock.{self.id}",
-            "length": self.length,
-            "mass": self.mass,
-            "inertia_coefficient": self.inertia_coefficient,
-            "rolling_resistance": self.rolling_resistance,
-            "features": self.capabilities,
-            "max_speed": self.max_speed,
-            "startup_time": self.startup_time,
-            "startup_acceleration": self.startup_acceleration,
-            "comfort_acceleration": self.comfort_acceleration,
-            "gamma": self.timetable_gamma,
-            "gamma_type": "CONST",
-            "tractive_effort_curve": next(iter(self.tractive_effort_curves.values())),
-        })
+        return migrate_v1_to_v2(
+            {
+                "id": self.railjson_id,
+                "length": self.length,
+                "mass": self.mass,
+                "inertia_coefficient": self.inertia_coefficient,
+                "rolling_resistance": self.rolling_resistance,
+                "features": self.capabilities,
+                "max_speed": self.max_speed,
+                "startup_time": self.startup_time,
+                "startup_acceleration": self.startup_acceleration,
+                "comfort_acceleration": self.comfort_acceleration,
+                "gamma": self.timetable_gamma,
+                "gamma_type": "CONST",
+                "tractive_effort_curve": next(iter(self.tractive_effort_curves.values())),
+            }
+        )
 
     @staticmethod
     def from_railjson(rjs):
@@ -205,10 +195,12 @@ class RollingStock(models.Model):
             comfort_acceleration=rjs["comfort_acceleration"],
             timetable_gamma=rjs["gamma"],
             rolling_resistance=rjs["rolling_resistance_profiles"]["default_resistance_profile"][0]["resistance"],
-            tractive_effort_curves={"SC": [
-                {"speed": speed, "max_effort": max_effort}
-                for speed, max_effort in rjs["effort_curves"]["default_curve"]
-            ]},
+            tractive_effort_curves={
+                "SC": [
+                    {"speed": speed, "max_effort": max_effort}
+                    for speed, max_effort in rjs["effort_curves"]["default_curve"]
+                ]
+            },
             power_class=rjs["power_class"],
         )
         res.save()
