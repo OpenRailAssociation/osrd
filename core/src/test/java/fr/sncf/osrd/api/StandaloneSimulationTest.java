@@ -7,16 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import fr.sncf.osrd.railjson.schema.schedule.RJSStandaloneTrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
-import fr.sncf.osrd.train.StandaloneTrainSchedule;
-import fr.sncf.osrd.train.Train;
-import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.takes.rq.RqFake;
 import org.takes.rs.RsPrint;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 
@@ -64,7 +58,7 @@ class StandaloneSimulationTest extends ApiTest {
 
         var simResult =  StandaloneSimulationEndpoint.adapterResult.fromJson(result);
         assert simResult != null;
-        var trainResult = simResult.trains.get("Test.");
+        var trainResult = simResult.baseSimulations.get(0);
         var positions = trainResult.headPositions.toArray(new StandaloneSimulationEndpoint.SimulationResultPosition[0]);
         for (int i = 1; i < positions.length; i++)
             assert positions[i - 1].time <= positions[i].time;
@@ -103,6 +97,6 @@ class StandaloneSimulationTest extends ApiTest {
 
         var simResult =  StandaloneSimulationEndpoint.adapterResult.fromJson(result);
         assertNotNull(simResult);
-        assertEquals(10, simResult.trains.size());
+        assertEquals(10, simResult.baseSimulations.size());
     }
 }

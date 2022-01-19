@@ -122,7 +122,7 @@ const Itinerary = (props) => {
 
       // Adding start point
       params.steps.push({
-        stop_time: 0,
+        duration: 0,
         waypoints: [{
           track_section: osrdconf.origin.id,
           geo_coordinate: osrdconf.origin.clickLngLat,
@@ -133,7 +133,7 @@ const Itinerary = (props) => {
       if (osrdconf.vias.length > 0) {
         osrdconf.vias.forEach((via) => {
           params.steps.push({
-            stop_time: via.stop_time === undefined ? 0 : parseInt(via.stop_time, 10),
+            duration: via.duration === undefined ? 0 : parseInt(via.duration, 10),
             waypoints: [{
               track_section: via.id,
               geo_coordinate: via.clickLngLat,
@@ -144,7 +144,7 @@ const Itinerary = (props) => {
 
       // Adding end point
       params.steps.push({
-        stop_time: 1,
+        duration: 1,
         waypoints: [{
           track_section: osrdconf.destination.id,
           geo_coordinate: osrdconf.destination.clickLngLat,
