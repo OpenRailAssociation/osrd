@@ -1,11 +1,13 @@
 package fr.sncf.osrd.train;
 
+import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.infra.TVDSectionPath;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
-import fr.sncf.osrd.utils.SortedDoubleMap;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.ArrayList;
@@ -29,19 +31,57 @@ public class TrainPath {
     public final double length;
 
     /** Constructor */
-    public TrainPath(List<Route> routePath,
-                     TrackSectionLocation startLocation,
-                     TrackSectionLocation endLocation) throws InvalidSchedule {
+    private TrainPath(
+            List<Route> routePath,
+            ArrayList<TrackSectionRange> trackSectionPath,
+            ArrayList<TVDSectionPath> tvdSectionPaths,
+            double length
+    ) {
         this.routePath = routePath;
-        tvdSectionPaths = new ArrayList<>();
-        initTVD(routePath);
+        this.trackSectionPath = trackSectionPath;
+        this.tvdSectionPaths = tvdSectionPaths;
+        this.length = length;
+    }
+
+    /** Build Train Path from routes, a starting and ending location */
+    public static TrainPath from(
+            List<Route> routePath,
+            TrackSectionLocation startLocation,
+            TrackSectionLocation endLocation
+    ) throws InvalidSchedule {
+        ArrayList<TrackSectionRange> trackSectionPath = null;
         try {
             trackSectionPath = Route.routesToTrackSectionRange(routePath, startLocation, endLocation);
         } catch (RuntimeException e) {
             throw new InvalidSchedule(e.getMessage());
         }
-        length = convertTrackLocation(endLocation);
-        validate();
+        var tvdSectionPaths = createTVDSectionPaths(routePath);
+        var length = convertTrackLocation(endLocation, trackSectionPath);
+        var trainPath = new TrainPath(routePath, trackSectionPath, tvdSectionPaths, length);
+        trainPath.validate();
+        return trainPath;
+    }
+
+    /** Build Train Path from an RailJSON train path */
+    public static TrainPath from(Infra infra, RJSTrainPath rjsTrainPath) throws InvalidSchedule {
+        try {
+            var routePath = new ArrayList<Route>();
+            for (var rjsRoutePath : rjsTrainPath.routePath)
+                routePath.add(rjsRoutePath.route.getRoute(infra.routeGraph.routeMap));
+
+            var rjsStartTrackRange = rjsTrainPath.routePath.get(0).trackSections.get(0);
+            var startLocation = new TrackSectionLocation(
+                    rjsStartTrackRange.track.getTrack(infra.trackGraph.trackSectionMap), rjsStartTrackRange.begin);
+
+            var rjsEndRoutePath = rjsTrainPath.routePath.get(rjsTrainPath.routePath.size() - 1);
+            var rjsEndTrackRange = rjsEndRoutePath.trackSections.get(rjsEndRoutePath.trackSections.size() - 1);
+            var endLocation = new TrackSectionLocation(
+                    rjsEndTrackRange.track.getTrack(infra.trackGraph.trackSectionMap), rjsEndTrackRange.end);
+
+            return from(routePath, startLocation, endLocation);
+        } catch (InvalidInfraException e) {
+            throw new InvalidSchedule(e.getMessage());
+        }
     }
 
     /** Copy constructor */
@@ -53,10 +93,11 @@ public class TrainPath {
     }
 
     /** Initializes the lists of tvd sections and directions */
-    private void initTVD(List<Route> routePath) {
+    private static ArrayList<TVDSectionPath> createTVDSectionPaths(List<Route> routePath) {
+        var tvdSectionPaths = new ArrayList<TVDSectionPath>();
         for (var route : routePath)
-            for (int i = 0; i < route.tvdSectionsPaths.size(); i++)
-                tvdSectionPaths.add(route.tvdSectionsPaths.get(i));
+            tvdSectionPaths.addAll(route.tvdSectionsPaths);
+        return tvdSectionPaths;
     }
 
     private void validate() throws InvalidSchedule {
@@ -106,8 +147,7 @@ public class TrainPath {
     /** Finds the tvd section after the given waypoint */
     public TVDSection findForwardTVDSection(Waypoint waypoint) {
         // TODO: Find a faster and smarter way to do it
-        for (var j = 0; j < tvdSectionPaths.size(); j++) {
-            var tvdSectionPath = tvdSectionPaths.get(j);
+        for (var tvdSectionPath : tvdSectionPaths) {
             if (tvdSectionPath.startWaypoint == waypoint)
                 return tvdSectionPath.tvdSection;
         }
@@ -118,8 +158,7 @@ public class TrainPath {
     /** Finds the tvd section before the given waypoint */
     public TVDSection findBackwardTVDSection(Waypoint waypoint) {
         // TODO: Find a faster and smarter way to do it
-        for (var j = 0; j < tvdSectionPaths.size(); j++) {
-            var tvdSectionPath = tvdSectionPaths.get(j);
+        for (var tvdSectionPath : tvdSectionPaths) {
             if (tvdSectionPath.endWaypoint == waypoint)
                 return tvdSectionPath.tvdSection;
         }
@@ -139,7 +178,6 @@ public class TrainPath {
         throw new RuntimeException("Can't find location in path");
     }
 
-    /** Converts a TrackSectionLocation into a position on the track (double) */
     public double convertTrackLocation(TrackSectionLocation location) {
         return convertTrackLocation(location, trackSectionPath);
     }

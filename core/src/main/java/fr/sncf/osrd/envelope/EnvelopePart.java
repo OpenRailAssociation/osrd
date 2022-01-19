@@ -198,6 +198,10 @@ public final class EnvelopePart {
         return speeds[pointIndex];
     }
 
+    public double getStepTime(int stepIndex) {
+        return timeDeltas[stepIndex];
+    }
+
     // endregion
 
     // region CACHING

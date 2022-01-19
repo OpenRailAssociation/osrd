@@ -12,8 +12,6 @@ import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.parser.exceptions.UnknownRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.UnknownRoute;
-import fr.sncf.osrd.railjson.parser.exceptions.UnknownTrackSection;
-import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
 import fr.sncf.osrd.speedcontroller.generators.*;
 import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.train.TrainStop;
@@ -58,11 +56,11 @@ public class RJSTrainScheduleParser {
                             rjsTrainSchedule.id));
         }
 
-        var initialLocation = parseLocation(infra, rjsTrainSchedule.initialHeadLocation);
+        var initialLocation = RJSTrackLocationParser.parse(infra, rjsTrainSchedule.initialHeadLocation);
 
         var expectedPath = parsePath(infra, rjsTrainSchedule.phases, rjsTrainSchedule.routes, initialLocation);
 
-        var stops = parseStops(rjsTrainSchedule.stops, infra, expectedPath);
+        var stops = RJSStopsParser.parse(rjsTrainSchedule.stops, infra, expectedPath);
 
         var virtualPoints = parseVirtualPoints(rjsVirtualPoints, infra, expectedPath);
 
@@ -91,8 +89,7 @@ public class RJSTrainScheduleParser {
         var tvdSectionPaths = initialRoute.tvdSectionsPaths;
 
         trackSectionLoop:
-        for (int i = 0; i < tvdSectionPaths.size(); i++) {
-            var tvdSectionPath = tvdSectionPaths.get(i);
+        for (var tvdSectionPath : tvdSectionPaths) {
             for (var trackSectionRange : tvdSectionPath.trackSections) {
                 if (trackSectionRange.containsLocation(initialLocation)) {
                     initialDirection = trackSectionRange.direction;
@@ -176,12 +173,12 @@ public class RJSTrainScheduleParser {
         double end = Double.POSITIVE_INFINITY;
 
         if (allowance.beginLocation != null)
-            begin = path.convertTrackLocation(parseLocation(infra, allowance.beginLocation));
+            begin = path.convertTrackLocation(RJSTrackLocationParser.parse(infra, allowance.beginLocation));
         else if (allowance.beginPosition != null)
             begin = allowance.beginPosition;
 
         if (allowance.endLocation != null)
-            end = path.convertTrackLocation(parseLocation(infra, allowance.endLocation));
+            end = path.convertTrackLocation(RJSTrackLocationParser.parse(infra, allowance.endLocation));
         else if (allowance.endPosition != null)
             end = allowance.endPosition;
 
@@ -250,7 +247,7 @@ public class RJSTrainScheduleParser {
             List<TrainStop> stops,
             List<VirtualPoint> virtualPoints
     ) throws InvalidSchedule {
-        var endLocation = parseLocation(infra, rjsPhase.endLocation);
+        var endLocation = RJSTrackLocationParser.parse(infra, rjsPhase.endLocation);
         var driverSightDistance = rjsPhase.driverSightDistance;
 
         if (Double.isNaN(driverSightDistance) || driverSightDistance < 0)
@@ -279,41 +276,7 @@ public class RJSTrainScheduleParser {
         }
 
         var rjsEndLocation = phases[phases.length - 1].endLocation;
-        return new TrainPath(routes, start, parseLocation(infra, rjsEndLocation));
-    }
-
-    private static TrackSectionLocation parseLocation(Infra infra, RJSTrackLocation location) throws InvalidSchedule {
-        var trackSectionID = location.trackSection.id;
-        var trackSection = infra.trackGraph.trackSectionMap.get(trackSectionID);
-        if (trackSection == null)
-            throw new UnknownTrackSection("unknown section", trackSectionID);
-        var offset = location.offset;
-        if (offset < 0 || offset > trackSection.length)
-            throw new InvalidSchedule("invalid track section offset");
-        return new TrackSectionLocation(trackSection, offset);
-    }
-
-    private static List<TrainStop> parseStops(RJSTrainStop[] stops, Infra infra, TrainPath path)
-            throws InvalidSchedule {
-        var res = new ArrayList<TrainStop>();
-        if (stops == null) {
-            throw new InvalidSchedule("The train schedule must have at least one train stop");
-        }
-        for (var stop : stops) {
-            if ((stop.position == null) == (stop.location == null))
-                throw new InvalidSchedule("Train stop must specify exactly one of position or location");
-            double position;
-            if (stop.position != null)
-                position = stop.position;
-            else
-                position = path.convertTrackLocation(parseLocation(infra, stop.location));
-            res.add(new TrainStop(position, stop.duration));
-        }
-        for (var stop : res)
-            if (stop.position < 0)
-                stop.position = path.length - 1e-3;
-        res.sort(Comparator.comparingDouble(stop -> stop.position));
-        return res;
+        return TrainPath.from(routes, start, RJSTrackLocationParser.parse(infra, rjsEndLocation));
     }
 
     private static List<VirtualPoint> parseVirtualPoints(
@@ -326,7 +289,7 @@ public class RJSTrainScheduleParser {
             return res;
 
         for (var rjsVirtualPoint : rjsVirtualPoints) {
-            var location = parseLocation(infra, rjsVirtualPoint.location);
+            var location = RJSTrackLocationParser.parse(infra, rjsVirtualPoint.location);
             // Skip the virtual point if not part of the path
             if (!path.containsTrackLocation(location))
                 continue;

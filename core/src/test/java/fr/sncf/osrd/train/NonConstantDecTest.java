@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.*;
+import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
 import fr.sncf.osrd.infra.trackgraph.BufferStop;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
@@ -105,7 +106,7 @@ public class NonConstantDecTest {
         var sim = Simulation.createFromInfraAndEmptySuccessions(infra, 0, changelog);
 
         var startLocation = new TrackSectionLocation(edge, 0);
-        var path = new TrainPath(Collections.singletonList(route),
+        var path = TrainPath.from(Collections.singletonList(route),
                 startLocation,
                 new TrackSectionLocation(edge, 10000));
         var phases = new ArrayList<NavigatePhase>();

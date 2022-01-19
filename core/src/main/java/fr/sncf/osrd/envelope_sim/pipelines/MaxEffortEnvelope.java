@@ -1,5 +1,6 @@
 package fr.sncf.osrd.envelope_sim.pipelines;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
@@ -8,11 +9,9 @@ import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
 /** Max effort envelope = Max speed envelope + acceleration curves + check maintain speed
  * It is the max physical speed at any given point, ignoring allowances */
 public class MaxEffortEnvelope {
-    public static final class AccelerationMeta extends EnvelopePartMeta {
-    }
+    public static final class AccelerationMeta extends EnvelopePartMeta {}
 
-    public static final class MaintainMeta extends EnvelopePartMeta {
-    }
+    public static final class MaintainMeta extends EnvelopePartMeta {}
 
     public static final EnvelopePartMeta ACCELERATION = new AccelerationMeta();
     public static final EnvelopePartMeta MAINTAIN = new MaintainMeta();
@@ -24,7 +23,7 @@ public class MaxEffortEnvelope {
     }
 
     /** Generate acceleration curves overlay everywhere the max speed envelope increase with a discontinuity */
-    public static Envelope addAccelerationCurves(PhysicsRollingStock rollingStock,
+    private static Envelope addAccelerationCurves(PhysicsRollingStock rollingStock,
                                                  PhysicsPath path,
                                                  Envelope maxSpeedProfile,
                                                  double initialSpeed) {
@@ -46,7 +45,8 @@ public class MaxEffortEnvelope {
     }
 
     /** Generate overlays everywhere the train cannot physically maintain the target speed */
-    public static Envelope addMaintainSpeedCurves(PhysicsRollingStock rollingStock,
+    @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
+    private static Envelope addMaintainSpeedCurves(PhysicsRollingStock rollingStock,
                                                   PhysicsPath path,
                                                   Envelope maxSpeedProfile) {
         var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
