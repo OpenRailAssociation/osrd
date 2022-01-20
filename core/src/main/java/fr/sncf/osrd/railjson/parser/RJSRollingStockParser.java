@@ -26,6 +26,8 @@ public class RJSRollingStockParser {
             var curvePoints = new RollingStock.TractiveEffortPoint[rjsCurvePoints.length];
             for (int i = 0; i < rjsCurvePoints.length; i++)
                 curvePoints[i] = parseTractiveEffortPoint(rjsCurvePoints[i]);
+            for (int i = 0; i < curvePoints.length - 1; i++)
+                assert curvePoints[i].speed < curvePoints[i + 1].speed;
             tractiveEffortCurves.put(curveName, curvePoints);
         }
 
