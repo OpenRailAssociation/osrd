@@ -1004,44 +1004,12 @@ components:
           type: number
         image: {}
     TrainSchedule:
-      properties:
-        id:
-          type: integer
-        train_name:
-          type: string
-        timetable:
-          type: integer
-        rolling_stock:
-          type: integer
-        departure_time:
-          type: number
-          format: float
-        path:
-          type: integer
-        initial_speed:
-          type: number
-          format: float
-        labels:
-          type: array
-          items:
-            type: string
-        margins:
-          type: array
-          items:
-            type: object
-            properties:
-              type:
-                type: string
-                enum: [construction, ratio_time, ratio_distance]
-              value:
-                type: number
-                format: float
-              begin_position:
-                type: number
-                format: float
-              end_position:
-                type: number
-                format: float
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: integer
+        - $ref: "#components/schemas/WritableTrainSchedule"
     StandaloneSimulationParameters:
       properties:
         timetable:
@@ -1068,23 +1036,10 @@ components:
                 type: array
                 items:
                   type: string
-              margins:
+              allowances:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    type:
-                      type: string
-                      enum: [construction, ratio_time, ratio_distance]
-                    value:
-                      type: number
-                      format: float
-                    begin_position:
-                      type: number
-                      format: float
-                    end_position:
-                      type: number
-                      format: float
+                  $ref: "#/components/schemas/Allowance"
     WritableTrainSchedule:
       properties:
         train_name:
@@ -1105,20 +1060,73 @@ components:
           type: array
           items:
             type: string
-        margins:
+        allowances:
           type: array
           items:
-            type: object
-            properties:
-              type:
-                type: string
-                enum: [construction, ratio_time, ratio_distance]
-              value:
-                type: number
-                format: float
-              begin_position:
-                type: number
-                format: float
-              end_position:
-                type: number
-                format: float
+            $ref: "#/components/schemas/Allowance"
+    Allowance:
+      oneOf:
+        - $ref: "#/components/schemas/ConstructionAllowance"
+        - $ref: "#/components/schemas/MarecoAllowance"
+      discriminator:
+        propertyName: allowance_type
+    MarecoAllowance:
+      properties:
+        allowance_type:
+          type: string
+          enum: ["mareco"]
+        default_value:
+          $ref: "#/components/schemas/AllowanceValue"
+        ranges:
+          type: array
+          items:
+            $ref: "#/components/schemas/RangeAllowance"
+    ConstructionAllowance:
+      allOf:
+        - type: object
+          properties:
+            allowance_type:
+              type: string
+              enum: ["construction"]
+        - $ref: "#/components/schemas/RangeAllowance"
+    RangeAllowance:
+      properties:
+        begin_position:
+          type: number
+        end_position:
+          type: number
+          example: 1000.0
+        value:
+          $ref: "#/components/schemas/AllowanceValue"
+    AllowanceValue:
+      oneOf:
+        - $ref: "#/components/schemas/AllowanceTimePerDistanceValue"
+        - $ref: "#/components/schemas/AllowanceTimeValue"
+        - $ref: "#/components/schemas/AllowancePercentValue"
+      discriminator:
+        propertyName: value_type
+    AllowanceTimePerDistanceValue:
+      properties:
+        value_type:
+          type: string
+          enum: ["time_per_distance"]
+        minutes:
+          type: number
+          example: 5.0
+          description: Minutes per 100k
+    AllowanceTimeValue:
+      properties:
+        value_type:
+          type: string
+          enum: ["time"]
+        seconds:
+          type: number
+          example: 180.0
+    AllowancePercentValue:
+      properties:
+        value_type:
+          type: string
+          enum: ["percentage"]
+        percentage:
+          type: number
+          example: 15.0

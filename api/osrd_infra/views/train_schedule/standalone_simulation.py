@@ -4,7 +4,7 @@ import requests
 from django.conf import settings
 from rest_framework.exceptions import APIException
 
-from osrd_infra.models import TrainSchedule
+from osrd_infra.models import TrainScheduleModel
 
 
 class ServiceUnavailable(APIException):
@@ -19,7 +19,7 @@ class SimulationError(APIException):
     default_code = "simulation_error"
 
 
-def create_backend_request_payload(train_schedules: List[TrainSchedule]):
+def create_backend_request_payload(train_schedules: List[TrainScheduleModel]):
     rolling_stocks = set(schedule.rolling_stock for schedule in train_schedules)
 
     path_payload = train_schedules[0].path.payload
@@ -37,9 +37,10 @@ def create_backend_request_payload(train_schedules: List[TrainSchedule]):
         schedules_payload.append(
             {
                 "id": schedule.train_name,
+                "stops": stops,
                 "rolling_stock": schedule.rolling_stock.railjson_id,
                 "initial_speed": schedule.initial_speed,
-                "stops": stops,
+                "allowances": schedule.allowances,
             }
         )
 
