@@ -91,6 +91,9 @@ class DirectionalTrackRange(BaseModel):
     end: float
     direction: Direction
 
+    def length(self):
+        return abs(self.begin - self.end)
+
 
 class OperationalPointPart(TrackLocationTrait, GeometryPointTrait):
     pass

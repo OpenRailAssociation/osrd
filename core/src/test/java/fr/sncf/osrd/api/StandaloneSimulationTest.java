@@ -1,8 +1,7 @@
 package fr.sncf.osrd.api;
 
 import static fr.sncf.osrd.Helpers.loadExampleSimulationResource;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.railjson.schema.schedule.RJSStandaloneTrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
@@ -57,17 +56,18 @@ class StandaloneSimulationTest extends ApiTest {
         ).printBody();
 
         var simResult =  StandaloneSimulationEndpoint.adapterResult.fromJson(result);
-        assert simResult != null;
+        assertNotNull(simResult);
         var trainResult = simResult.baseSimulations.get(0);
         var positions = trainResult.headPositions.toArray(new StandaloneSimulationEndpoint.SimulationResultPosition[0]);
         for (int i = 1; i < positions.length; i++)
-            assert positions[i - 1].time <= positions[i].time;
+            assertTrue(positions[i - 1].time <= positions[i].time);
         positions = trainResult.tailPositions.toArray(new StandaloneSimulationEndpoint.SimulationResultPosition[0]);
         for (int i = 1; i < positions.length; i++)
-            assert positions[i - 1].time <= positions[i].time;
+            assertTrue(positions[i - 1].time <= positions[i].time);
         var speeds = trainResult.speeds.toArray(new StandaloneSimulationEndpoint.SimulationResultSpeed[0]);
         for (int i = 1; i < speeds.length; i++)
-            assert speeds[i - 1].position <= speeds[i].position;
+            assertTrue(speeds[i - 1].position <= speeds[i].position);
+        assertEquals(2, trainResult.routeOccupancies.size());
     }
 
     @Test
