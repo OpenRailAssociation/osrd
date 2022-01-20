@@ -7,9 +7,8 @@ from osrd_infra.models import (  # misc; timetable
     PathModel,
     RailScriptFunctionModel,
     RollingStock,
-    Simulation,
     Timetable,
-    TrainSchedule,
+    TrainScheduleModel,
 )
 
 
@@ -26,8 +25,7 @@ admin.site.register(
         RollingStock,
         # timetable
         Timetable,
-        TrainSchedule,
-        Simulation,
+        TrainScheduleModel,
         RailScriptFunctionModel,
         AspectModel,
     ]
