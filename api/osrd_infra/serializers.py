@@ -2,7 +2,13 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, Serializer
 from rest_framework_gis.fields import GeometryField
 
-from osrd_infra.models import Infra, PathModel, RollingStock, Timetable, TrainSchedule
+from osrd_infra.models import (
+    Infra,
+    PathModel,
+    RollingStock,
+    Timetable,
+    TrainScheduleModel,
+)
 
 
 # monkey patch rest_framework_gis so that it properly converts
@@ -76,7 +82,7 @@ class TimetableSerializer(ModelSerializer):
 
 class TrainScheduleSerializer(ModelSerializer):
     class Meta:
-        model = TrainSchedule
+        model = TrainScheduleModel
         exclude = [
             "base_simulation",
             "eco_simulation",
@@ -86,7 +92,7 @@ class TrainScheduleSerializer(ModelSerializer):
 class StandaloneSimulationSerializer(Serializer):
     class Schedule(ModelSerializer):
         class Meta:
-            model = TrainSchedule
+            model = TrainScheduleModel
             exclude = [
                 "timetable",
                 "path",
@@ -110,5 +116,5 @@ class StandaloneSimulationSerializer(Serializer):
         timetable = validated_data["timetable"]
         path = validated_data["path"]
         for schedule in validated_data["schedules"]:
-            schedules.append(TrainSchedule(timetable=timetable, path=path, **schedule))
+            schedules.append(TrainScheduleModel(timetable=timetable, path=path, **schedule))
         return schedules
