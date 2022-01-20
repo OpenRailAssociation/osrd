@@ -93,7 +93,8 @@ public class StandaloneSimulationEndpoint implements Take {
 
                 if (!cache.containsKey(trainSchedule)) {
                     var envelope = computeEnvelope(trainsPath, trainSchedule);
-                    var simResultTrain = SimulationResultTrain.from(envelope, trainsPath, trainSchedule);
+                    var simResultTrain =
+                            SimulationResultTrain.from(envelope, trainsPath, request.trainsPath, trainSchedule);
                     cache.put(trainSchedule, simResultTrain);
                 }
 
@@ -146,7 +147,6 @@ public class StandaloneSimulationEndpoint implements Take {
         }
     }
 
-
     @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
     private static ArrayList<SimulationResultPosition> simplifyPositions(
             ArrayList<SimulationResultPosition> positions) {
@@ -164,8 +164,7 @@ public class StandaloneSimulationEndpoint implements Take {
     }
 
     @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-    private static ArrayList<SimulationResultSpeed> simplifySpeeds(
-            ArrayList<SimulationResultSpeed> speeds) {
+    private static ArrayList<SimulationResultSpeed> simplifySpeeds(ArrayList<SimulationResultSpeed> speeds) {
         return CurveSimplification.rdp(
                 speeds,
                 0.2,
@@ -187,49 +186,82 @@ public class StandaloneSimulationEndpoint implements Take {
 
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class SimulationResultTrain {
-        public Collection<SimulationResultSpeed> speeds = new ArrayList<>();
+        public final Collection<SimulationResultSpeed> speeds;
         @Json(name = "head_positions")
-        public Collection<SimulationResultPosition> headPositions = new ArrayList<>();
+        public final Collection<SimulationResultPosition> headPositions;
         @Json(name = "tail_positions")
-        public Collection<SimulationResultPosition> tailPositions = new ArrayList<>();
-        public Collection<SimulationResultStops> stops = new ArrayList<>();
+        public final Collection<SimulationResultPosition> tailPositions;
+        public final Collection<SimulationResultStops> stops;
+        @Json(name = "route_occupancies")
+        public final Map<String, SimulationResultRouteOccupancy> routeOccupancies;
+
+        SimulationResultTrain(
+                Collection<SimulationResultSpeed> speeds,
+                Collection<SimulationResultPosition> headPositions,
+                Collection<SimulationResultPosition> tailPositions,
+                Collection<SimulationResultStops> stops, Map<String,
+                SimulationResultRouteOccupancy> routeOccupancies
+        ) {
+            this.speeds = speeds;
+            this.headPositions = headPositions;
+            this.tailPositions = tailPositions;
+            this.stops = stops;
+            this.routeOccupancies = routeOccupancies;
+        }
 
         static SimulationResultTrain from(
                 Envelope envelope,
                 TrainPath trainPath,
+                RJSTrainPath rjsTrainPath,
                 StandaloneTrainSchedule schedule
         ) {
             assert envelope.continuous;
-            var result = new SimulationResultTrain();
-            var length = schedule.rollingStock.length;
+            // Compute speeds, head and tail positions
+            var trainLength = schedule.rollingStock.length;
+            var speeds = new ArrayList<SimulationResultSpeed>();
+            var headPositions = new ArrayList<SimulationResultPosition>();
+            var tailPositions = new ArrayList<SimulationResultPosition>();
             double time = 0;
             for (var part : envelope) {
                 for (int i = 0; i < part.pointCount(); i++) {
                     var pos = part.getPointPos(i);
                     var speed = part.getPointSpeed(i);
-                    result.speeds.add(new SimulationResultSpeed(time, speed, pos));
-                    result.headPositions.add(new SimulationResultPosition(time, pos, trainPath));
-                    var tailPos = Math.max(pos - length, 0);
-                    result.tailPositions.add(new SimulationResultPosition(time, tailPos, trainPath));
+                    speeds.add(new SimulationResultSpeed(time, speed, pos));
+                    headPositions.add(new SimulationResultPosition(time, pos, trainPath));
+                    var tailPos = Math.max(pos - trainLength, 0);
+                    tailPositions.add(new SimulationResultPosition(time, tailPos, trainPath));
                     if (i < part.stepCount())
                         time += part.getStepTime(i);
                 }
             }
 
+            // Simplify data
+            speeds = simplifySpeeds(speeds);
+            headPositions = simplifyPositions(headPositions);
+            tailPositions = simplifyPositions(tailPositions);
+
+            // Compute stops
+            var stops = new ArrayList<SimulationResultStops>();
             for (var stop : schedule.stops) {
                 var stopTime = envelope.interpolateTotalTime(stop.position);
-                result.stops.add(new SimulationResultStops(stopTime, stop.position, stop.duration));
+                stops.add(new SimulationResultStops(stopTime, stop.position, stop.duration));
             }
 
-            result.simplify();
-            return result;
-        }
-
-        @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-        private void simplify() {
-            this.speeds = simplifySpeeds((ArrayList<SimulationResultSpeed>) speeds);
-            this.headPositions = simplifyPositions((ArrayList<SimulationResultPosition>) headPositions);
-            this.tailPositions = simplifyPositions((ArrayList<SimulationResultPosition>) tailPositions);
+            // Compute routeOccupancy
+            var routeOccupancies = new HashMap<String, SimulationResultRouteOccupancy>();
+            double lastPosition = 0;
+            for (var routePath : rjsTrainPath.routePath) {
+                var routeId = routePath.route.id.id;
+                var newPosition = lastPosition;
+                for (var trackRange : routePath.trackSections)
+                    newPosition += Math.abs(trackRange.end - trackRange.begin);
+                var routeOccupancy =
+                        SimulationResultRouteOccupancy.from(lastPosition, newPosition, envelope, trainLength);
+                assert !routeOccupancies.containsKey(routeId);
+                routeOccupancies.put(routeId, routeOccupancy);
+                lastPosition = newPosition;
+            }
+            return new SimulationResultTrain(speeds, headPositions, tailPositions, stops, routeOccupancies);
         }
     }
 
@@ -274,6 +306,47 @@ public class StandaloneSimulationEndpoint implements Take {
             this.time = time;
             this.position = position;
             this.duration = duration;
+        }
+    }
+
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+    public static class SimulationResultRouteOccupancy {
+        @Json(name = "time_head_occupy")
+        public final double timeHeadOccupy;
+        @Json(name = "time_head_free")
+        public final double timeHeadFree;
+        @Json(name = "time_tail_occupy")
+        public final double timeTailOccupy;
+        @Json(name = "time_tail_free")
+        public final double timeTailFree;
+
+        SimulationResultRouteOccupancy(
+                double timeHeadOccupy,
+                double timeHeadFree,
+                double timeTailOccupy,
+                double timeTailFree
+        ) {
+            this.timeHeadOccupy = timeHeadOccupy;
+            this.timeHeadFree = timeHeadFree;
+            this.timeTailOccupy = timeTailOccupy;
+            this.timeTailFree = timeTailFree;
+        }
+
+        static SimulationResultRouteOccupancy from(
+                double startPosition,
+                double endPosition,
+                Envelope envelope,
+                double trainLength
+        ) {
+            var timeHeadFree = envelope.interpolateTotalTime(endPosition);
+            var timeHeadOccupy = envelope.interpolateTotalTime(startPosition);
+            var pathLength = envelope.getEndPos();
+            var timeTailFree = envelope.interpolateTotalTime(Math.min(pathLength, endPosition + trainLength));
+            double timeTailOccupy = 0;
+            // Special case for first route
+            if (startPosition > 0)
+                timeTailOccupy = envelope.interpolateTotalTime(Math.min(pathLength, startPosition + trainLength));
+            return new SimulationResultRouteOccupancy(timeHeadOccupy, timeHeadFree, timeTailOccupy, timeTailFree);
         }
     }
 }
