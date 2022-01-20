@@ -1,6 +1,3 @@
-from dataclasses import asdict, dataclass
-from typing import Dict, Iterator, List, Union
-
 from osrd_infra.models import PathModel, TrainScheduleModel
 from osrd_infra.schemas.path import PathPayload
 from osrd_infra.views.projection import Projection
@@ -60,15 +57,9 @@ def convert_simulation_results(
         simulation_result["tail_positions"], projection, train_path_payload, departure_time
     )
 
-    end_time = simulation_result["head_positions"][-1]["time"] + departure_time
-    end_pos = simulation_result["head_positions"][-1]["path_offset"]
-    route_begin_occupancy = [{"time": departure_time, "position": 0}, {"time": end_time, "position": end_pos}]
-    route_end_occupancy = route_begin_occupancy
-    """ TODO
-    route_begin_occupancy, route_end_occupancy = convert_route_occupancy(
-        simulation_result["routes_status"], projection_path_payload, projection, end_time
+    route_begin_occupancy, route_end_occupancy = convert_route_occupancies(
+        simulation_result["route_occupancies"], projection_path_payload, departure_time
     )
-    """
 
     speeds = [{**speed, "time": speed["time"] + departure_time} for speed in simulation_result["speeds"]]
     stops = [{**stop, "time": stop["time"] + departure_time} for stop in simulation_result["stops"]]
@@ -149,97 +140,49 @@ def convert_positions(train_locations, projection, train_path_payload: PathPaylo
     return results
 
 
-@dataclass
-class OccupancyStart:
-    time: float
-    route_id: str
-    start_pos: float
-    end_pos: float
+def convert_route_occupancies(route_occupancies, projection_path_payload: PathPayload, departure_time):
+    begin_occupancies = []
+    end_occupancies = []
+    current_begin_curve = []
+    current_end_curve = []
+    start_pos = 0
+    for route_path in projection_path_payload.route_paths:
+        route_id = route_path.route.id
 
+        end_pos = start_pos
+        for track_range in route_path.track_sections:
+            end_pos += track_range.length()
 
-@dataclass
-class OccupancyEnd:
-    time: float
-    route_id: str
+        if route_id not in route_occupancies:
+            start_pos = end_pos
 
+            if not current_begin_curve:
+                continue
 
-OccupancyEvent = Union[OccupancyStart, OccupancyEnd]
-
-
-OCCUPIED_STATUSES = {"OCCUPIED", "CBTC_OCCUPIED"}
-
-
-def extract_occupancy_events(route_status_log, projection_path_payload, projection) -> Iterator[OccupancyEvent]:
-    """
-    Turns a raw simulation log into a clean log of occupation events on a given path
-    """
-    projection_routes = {path_step.route.id for path_step in projection_path_payload.route_paths}
-
-    for event in route_status_log:
-        route_id = event["route_id"]
-        if route_id not in projection_routes:
+            begin_occupancies.append(current_begin_curve)
+            end_occupancies.append(current_end_curve)
+            current_begin_curve = []
+            current_end_curve = []
+            start_pos = end_pos
             continue
 
-        status = event["status"]
-        if status in OCCUPIED_STATUSES:
-            start_track = event["start_track_section"]
-            start_offset = event["start_offset"]
-            start_position = projection.track_position(start_track, start_offset)
-            if start_position is None:
-                start_position = 0
-
-            end_track = event["end_track_section"]
-            end_offset = event["end_offset"]
-            end_position = projection.track_position(end_track, end_offset)
-            if end_position is None:
-                end_position = projection.end()
-
-            yield OccupancyStart(
-                event["time"],
-                route_id,
-                start_position,
-                end_position,
+        route_occupancy = route_occupancies[route_id]
+        if not current_begin_curve or current_begin_curve[-1]["position"] < start_pos:
+            current_begin_curve.append(
+                {"time": route_occupancy["time_head_occupy"] + departure_time, "position": start_pos}
             )
-        elif status == "FREE":
-            yield OccupancyEnd(event["time"], route_id)
+            current_end_curve.append(
+                {"time": route_occupancy["time_tail_occupy"] + departure_time, "position": start_pos}
+            )
 
+        current_begin_curve.append({"time": route_occupancy["time_head_occupy"] + departure_time, "position": end_pos})
+        current_begin_curve.append({"time": route_occupancy["time_head_free"] + departure_time, "position": end_pos})
+        current_end_curve.append({"time": route_occupancy["time_tail_free"] + departure_time, "position": start_pos})
+        current_end_curve.append({"time": route_occupancy["time_tail_free"] + departure_time, "position": end_pos})
+        start_pos = end_pos
 
-@dataclass
-class OccupancyPoint:
-    time: float
-    position: float
+    if current_begin_curve:
+        begin_occupancies.append(current_begin_curve)
+        end_occupancies.append(current_end_curve)
 
-
-def convert_route_occupancy(route_status_log, projection_path_payload: PathPayload, projection, end_time):
-    route_begin_occupancy: List[OccupancyPoint] = []
-    route_end_occupancy: List[OccupancyPoint] = []
-
-    occupied_routes: Dict[str, OccupancyStart] = {}
-
-    def update_occupancy_lists(event_time):
-        if not occupied_routes:
-            return
-        min_occ = min(occ.start_pos for occ in occupied_routes.values())
-        max_occ = max(occ.end_pos for occ in occupied_routes.values())
-
-        if not route_begin_occupancy or route_begin_occupancy[-1].position != min_occ:
-            route_begin_occupancy.append(OccupancyPoint(event_time, min_occ))
-        if not route_end_occupancy or route_end_occupancy[-1].position != max_occ:
-            route_end_occupancy.append(OccupancyPoint(event_time, max_occ))
-
-    for occupancy_event in extract_occupancy_events(route_status_log, projection_path_payload, projection):
-        if isinstance(occupancy_event, OccupancyStart):
-            occupied_routes[occupancy_event.route_id] = occupancy_event
-        else:
-            occupied_routes.pop(occupancy_event.route_id, None)
-        update_occupancy_lists(occupancy_event.time)
-
-    # Add last point of route occupancy
-    if route_begin_occupancy:
-        route_begin_occupancy.append(OccupancyPoint(end_time, route_begin_occupancy[-1].position))
-        route_end_occupancy.append(OccupancyPoint(end_time, route_end_occupancy[-1].position))
-
-    return (
-        [asdict(e) for e in route_begin_occupancy],
-        [asdict(e) for e in route_end_occupancy],
-    )
+    return begin_occupancies, end_occupancies

@@ -760,18 +760,24 @@ components:
           type: array
           minItems: 1
           items:
-            type: object
-            properties:
-              time: { type: number, format: float }
-              position: { type: number, format: float }
+            type: array
+            minItems: 1
+            items:
+              type: object
+              properties:
+                time: { type: number, format: float }
+                position: { type: number, format: float }
         route_end_occupancy:
           type: array
           minItems: 1
           items:
-            type: object
-            properties:
-              time: { type: number, format: float }
-              position: { type: number, format: float }
+            type: array
+            minItems: 1
+            items:
+              type: object
+              properties:
+                time: { type: number, format: float }
+                position: { type: number, format: float }
         stops:
           type: array
           items:
