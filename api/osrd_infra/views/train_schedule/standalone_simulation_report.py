@@ -1,12 +1,12 @@
 from dataclasses import asdict, dataclass
 from typing import Dict, Iterator, List, Union
 
-from osrd_infra.models import PathModel, TrainSchedule
+from osrd_infra.models import PathModel, TrainScheduleModel
 from osrd_infra.schemas.path import PathPayload
 from osrd_infra.views.projection import Projection
 
 
-def create_simulation_report(train_schedule: TrainSchedule, projection_path: PathModel):
+def create_simulation_report(train_schedule: TrainScheduleModel, projection_path: PathModel):
     train_path = train_schedule.path
     train_path_payload = PathPayload.parse_obj(train_schedule.path.payload)
 
@@ -83,7 +83,7 @@ def convert_simulation_results(
     }
 
 
-def convert_vmax(path: PathModel, train_schedule: TrainSchedule):
+def convert_vmax(path: PathModel, train_schedule: TrainScheduleModel):
     vmax = path.vmax
     rolling_stock_vmax = train_schedule.rolling_stock.max_speed
     # Replace -1 speeds (no vmax) to the rolling stock max speed

@@ -6,7 +6,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from osrd_infra.models import PathModel, TrainSchedule
+from osrd_infra.models import PathModel, TrainScheduleModel
 from osrd_infra.serializers import (
     StandaloneSimulationSerializer,
     TrainScheduleSerializer,
@@ -26,11 +26,11 @@ class TrainScheduleView(
     mixins.DestroyModelMixin,
     GenericViewSet,
 ):
-    queryset = TrainSchedule.objects.all()
+    queryset = TrainScheduleModel.objects.all()
     serializer_class = TrainScheduleSerializer
 
     def update(self, request, *args, **kwargs):
-        train_schedule: TrainSchedule = self.get_object()
+        train_schedule: TrainScheduleModel = self.get_object()
         serializer = self.get_serializer(train_schedule, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 
@@ -42,6 +42,8 @@ class TrainScheduleView(
         elif "path" in data and data["path"] != train_schedule.path.pk:
             simulation_needed = True
         elif "initial_speed" in data and data["initial_speed"] != train_schedule.initial_speed:
+            simulation_needed = True
+        elif "allowances" in data and data["allowances"] != train_schedule.allowances:
             simulation_needed = True
 
         serializer.save()
@@ -82,7 +84,7 @@ class TrainScheduleView(
             raise ParseError("duplicate train_ids")
 
         # get the schedules from database
-        schedules = TrainSchedule.objects.filter(pk__in=train_ids)
+        schedules = TrainScheduleModel.objects.filter(pk__in=train_ids)
 
         # if some schedules were not found, raise an error
         schedules_map = {schedule.id: schedule for schedule in schedules}
@@ -122,5 +124,5 @@ class TrainScheduleView(
         process_simulation_response(train_schedules, response_payload)
 
         # Save results
-        TrainSchedule.objects.bulk_create(train_schedules)
+        TrainScheduleModel.objects.bulk_create(train_schedules)
         return Response({"ids": [schedule.id for schedule in train_schedules]}, status=201)
