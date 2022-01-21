@@ -219,7 +219,10 @@ public class RailScriptExprParser {
             var nextSignalExpr = (RJSRSExpr.NextSignal) expr;
             var signalExpr = parseSignalExpr(nextSignalExpr.signal);
             var routeExpr = parseRouteExpr(nextSignalExpr.route);
-            return new RSExpr.NextSignal(signalExpr, routeExpr);
+            RSExpr<RSAspectSet> withAspects = null;
+            if (nextSignalExpr.withAspects != null)
+                withAspects = parseAspectSetExpr(nextSignalExpr.withAspects);
+            return new RSExpr.NextSignal(signalExpr, routeExpr, withAspects);
         }
         if (type == RJSRSExpr.PreviousReservedRoute.class) {
             var previousReservedRouteExpr = (RJSRSExpr.PreviousReservedRoute) expr;
