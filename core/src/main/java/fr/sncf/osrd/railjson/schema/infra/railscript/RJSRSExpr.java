@@ -405,9 +405,17 @@ public abstract class RJSRSExpr {
          */
         public RJSRSExpr route;
 
-        public NextSignal(RJSRSExpr signal, RJSRSExpr route) {
+        /**
+         * If specified, search the next signal that can present at least one of the specified aspects (optional)
+         * */
+        @Json(name = "with_aspects")
+        public RJSRSExpr withAspects;
+
+        /** Constructor */
+        public NextSignal(RJSRSExpr signal, RJSRSExpr route, RJSRSExpr withAspects) {
             this.signal = signal;
             this.route = route;
+            this.withAspects = withAspects;
         }
     }
 

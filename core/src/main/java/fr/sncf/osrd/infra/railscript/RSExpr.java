@@ -726,22 +726,37 @@ public abstract class RSExpr<T extends RSValue> {
     public static final class NextSignal extends RSExpr<RSOptional<SignalState>> {
         public final RSExpr<SignalState> signal;
         public final RSExpr<RouteState> route;
+        public final RSExpr<RSAspectSet> withAspects;
 
-        public NextSignal(RSExpr<SignalState> signal, RSExpr<RouteState> route) {
+        /** Constructor */
+        public NextSignal(RSExpr<SignalState> signal, RSExpr<RouteState> route, RSExpr<RSAspectSet> withAspects) {
             this.signal = signal;
             this.route = route;
+            this.withAspects = withAspects;
+        }
+
+        private boolean isSignalEligible(Signal signal, RSExprState<?> state) {
+            if (withAspects == null)
+                return true;
+            var aspects = withAspects.evaluate(state);
+            for (int i = 0; i < aspects.size(); i++)
+                if (signal.aspects.contains(aspects.get(i).id))
+                    return true;
+            return false;
         }
 
         @Override
         public RSOptional<SignalState> evaluate(RSExprState<?> state) {
             var currentRoute = route.evaluate(state).route;
             var currentSignal = signal.evaluate(state).signal;
-            for (int i = 0; i < currentRoute.signalsWithEntry.size() - 1; i++) {
-                if (currentRoute.signalsWithEntry.get(i).equals(currentSignal)) {
-                    var resSignal = currentRoute.signalsWithEntry.get(i + 1);
-                    var resSignalState = state.infraState.getSignalState(resSignal.index);
-                    return new RSOptional<>(resSignalState);
-
+            var indexCurrentSignal = currentRoute.signalsWithEntry.indexOf(currentSignal);
+            if (indexCurrentSignal >= 0) {
+                for (int i = indexCurrentSignal + 1; i < currentRoute.signalsWithEntry.size(); i++) {
+                    if (isSignalEligible(currentRoute.signalsWithEntry.get(i), state)) {
+                        var resSignal = currentRoute.signalsWithEntry.get(i);
+                        var resSignalState = state.infraState.getSignalState(resSignal.index);
+                        return new RSOptional<>(resSignalState);
+                    }
                 }
             }
             return new RSOptional<>(null);

@@ -6,6 +6,7 @@ import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
+import java.util.List;
 
 @SuppressFBWarnings({"UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSSignal extends RJSTrackObject implements Identified {
@@ -24,6 +25,9 @@ public class RJSSignal extends RJSTrackObject implements Identified {
     /** Detector linked with the signal, may be empty if the signal doesn't protect a route */
     @Json(name = "linked_detector")
     public RJSObjectRef<RJSTrainDetector> linkedDetector;
+
+    /** List of possible aspects on the signal (optional) */
+    public List<String> aspects;
 
     @Override
     public String getID() {

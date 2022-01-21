@@ -11,6 +11,7 @@ import fr.sncf.osrd.train.InteractionTypeSet;
 import fr.sncf.osrd.train.Train;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.ArrayList;
+import java.util.List;
 
 public final class Signal implements ActionPoint {
     public final int index;
@@ -19,6 +20,9 @@ public final class Signal implements ActionPoint {
     public final RSStatefulExpr<RSAspectSet> expr;
     public final ArrayList<Signal> signalSubscribers = new ArrayList<>();
     public final EdgeDirection direction;
+
+    /** List of possible aspects on the signal (optional) */
+    public final List<String> aspects;
 
     /** If it exists, the detector linked to the signal, else null */
     public final Detector linkedDetector;
@@ -34,14 +38,15 @@ public final class Signal implements ActionPoint {
             RSStatefulExpr<RSAspectSet> expr,
             EdgeDirection direction,
             double sightDistance,
-            Detector linkedDetector
-    ) {
+            Detector linkedDetector,
+            List<String> aspects) {
         this.index = index;
         this.id = id;
         this.expr = expr;
         this.direction = direction;
         this.sightDistance = sightDistance;
-        this.linkedDetector = linkedDetector; 
+        this.linkedDetector = linkedDetector;
+        this.aspects = aspects;
     }
 
     /** First evaluatoin of the signal aspects */

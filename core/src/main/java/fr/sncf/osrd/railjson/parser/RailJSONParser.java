@@ -166,7 +166,8 @@ public class RailJSONParser {
                     expr,
                     rjsSignal.direction,
                     rjsSignal.sightDistance,
-                    linkedDetector
+                    linkedDetector,
+                    rjsSignal.aspects
             );
             var trackBuilder = rjsSignal.track.getTrackBuilder(infraTrackBuilders);
             trackBuilder.signalsBuilder.add(rjsSignal.position, signal);
