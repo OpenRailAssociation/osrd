@@ -28,7 +28,6 @@ import fr.sncf.osrd.utils.graph.FloydWarshall;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -98,7 +97,7 @@ public final class TestInfraCommand implements CliCommand {
         var lastRoute = longestPath.get(longestPath.size() - 1);
         var lastTVDPath = lastRoute.tvdSectionsPaths.get(lastRoute.tvdSectionsPaths.size() - 1);
         var endLocation = lastTVDPath.trackSections[lastTVDPath.trackSections.length - 1].getEndLocation();
-        var path = new TrainPath(longestPath, startLocation, endLocation);
+        var path = TrainPath.from(longestPath, startLocation, endLocation);
 
         // Get rolling stock
         var rjsRollingStock = MoshiUtils.deserialize(RJSRollingStock.adapter, rollingStock);

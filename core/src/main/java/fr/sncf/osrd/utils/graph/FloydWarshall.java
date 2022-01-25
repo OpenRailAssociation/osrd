@@ -1,10 +1,11 @@
 package fr.sncf.osrd.utils.graph;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.*;
 
 /** Computes the shortest paths between each pair of nodes
- *
- * Note: pathfinding is made using edges and `graph.getNeighbors`, to work with the route graph, ids are edge id */
+ * Note: pathfinding is made using edges and `graph.getNeighbors` to work with the route graph, ids are edge id */
+@SuppressFBWarnings({"BC_UNCONFIRMED_CAST"}) // false positive
 public class FloydWarshall<EdgeT extends DirNEdge, NodeT extends Node>  {
 
     private final List<List<Double>> distances;
@@ -21,7 +22,7 @@ public class FloydWarshall<EdgeT extends DirNEdge, NodeT extends Node>  {
 
     /** Creates a FloydWarshall object from a graph */
     public static <EdgeT extends DirNEdge, NodeT extends Node>
-    FloydWarshall<EdgeT, NodeT> from(DirNGraph<EdgeT, NodeT> graph) {
+                FloydWarshall<EdgeT, NodeT> from(DirNGraph<EdgeT, NodeT> graph) {
         // Init arrays
         var size = graph.getEdgeCount();
         var distances = new ArrayList<List<Double>>(size);
@@ -74,7 +75,7 @@ public class FloydWarshall<EdgeT extends DirNEdge, NodeT extends Node>  {
         var res = new ArrayList<EdgeT>();
         res.add(graph.getEdge(from));
         var node = from;
-        while (node != to){
+        while (node != to) {
             node = next.get(node).get(to);
             res.add(graph.getEdge(node));
         }
