@@ -2,10 +2,12 @@ package fr.sncf.osrd.infra.railscript;
 
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.infra.railscript.value.RSAspectSet;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /** This visitor evaluates all the possible return values of the (non-boolean) expressions
  * For now it is used for dependency resolution that works with primitives like NextSignal,
@@ -205,6 +207,11 @@ public class DependencyBinder extends RSExprVisitor {
         var possibleSignals = lastExprPossibleValues;
         nextSignal.route.accept(this);
         var possibleRoutes = lastExprPossibleValues;
+        var aspectSet = nextSignal.withAspects;
+        assert aspectSet instanceof RSExpr.AspectSet;
+        var aspects = Arrays.stream(((RSExpr.AspectSet) aspectSet).aspects)
+                .map(aspect -> aspect.id)
+                .collect(Collectors.toSet());
         for (var currentRouteState : possibleRoutes) {
             assert currentRouteState instanceof Route;
             var currentRoute = (Route) currentRouteState;
@@ -213,12 +220,10 @@ public class DependencyBinder extends RSExprVisitor {
                 assert currentSignalState instanceof Signal;
                 var currentSignal = (Signal) currentSignalState;
 
-                for (int i = 0; i < currentRoute.signalsWithEntry.size() - 1; i++) {
-                    if (currentRoute.signalsWithEntry.get(i).equals(currentSignal)) {
-                        var resSignal = currentRoute.signalsWithEntry.get(i + 1);
-                        possibleValues.add(resSignal);
-                        routeDependencies.add(currentRoute);
-                    }
+                var nextSignalInRoute = nextSignal.findSignal(currentRoute, currentSignal, aspects);
+                if (nextSignalInRoute != null) {
+                    possibleValues.add(nextSignalInRoute);
+                    routeDependencies.add(currentRoute);
                 }
             }
         }

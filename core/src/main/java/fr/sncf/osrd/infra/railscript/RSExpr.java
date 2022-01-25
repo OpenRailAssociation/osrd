@@ -13,6 +13,8 @@ import fr.sncf.osrd.infra_state.SwitchState;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public abstract class RSExpr<T extends RSValue> {
     /**
@@ -735,31 +737,39 @@ public abstract class RSExpr<T extends RSValue> {
             this.withAspects = withAspects;
         }
 
-        private boolean isSignalEligible(Signal signal, RSExprState<?> state) {
+        private boolean isSignalEligible(Signal signal, Set<String> aspects) {
             if (withAspects == null)
                 return true;
-            var aspects = withAspects.evaluate(state);
-            for (int i = 0; i < aspects.size(); i++)
-                if (signal.aspects.contains(aspects.get(i).id))
+            for (var aspect : aspects)
+                if (signal.aspects.contains(aspect))
                     return true;
             return false;
+        }
+
+        public Signal findSignal(Route route, Signal signal, Set<String> aspects) {
+            var indexCurrentSignal = route.signalsWithEntry.indexOf(signal);
+            if (indexCurrentSignal >= 0) {
+                for (int i = indexCurrentSignal + 1; i < route.signalsWithEntry.size(); i++) {
+                    if (isSignalEligible(route.signalsWithEntry.get(i), aspects)) {
+                        return route.signalsWithEntry.get(i);
+                    }
+                }
+            }
+            return null;
         }
 
         @Override
         public RSOptional<SignalState> evaluate(RSExprState<?> state) {
             var currentRoute = route.evaluate(state).route;
             var currentSignal = signal.evaluate(state).signal;
-            var indexCurrentSignal = currentRoute.signalsWithEntry.indexOf(currentSignal);
-            if (indexCurrentSignal >= 0) {
-                for (int i = indexCurrentSignal + 1; i < currentRoute.signalsWithEntry.size(); i++) {
-                    if (isSignalEligible(currentRoute.signalsWithEntry.get(i), state)) {
-                        var resSignal = currentRoute.signalsWithEntry.get(i);
-                        var resSignalState = state.infraState.getSignalState(resSignal.index);
-                        return new RSOptional<>(resSignalState);
-                    }
-                }
-            }
-            return new RSOptional<>(null);
+            var aspects = withAspects.evaluate(state).stream()
+                    .map(aspect -> aspect.id)
+                    .collect(Collectors.toSet());
+            var resSignal = findSignal(currentRoute, currentSignal, aspects);
+            if (resSignal == null)
+                return new RSOptional<>(null);
+            var resSignalState = state.infraState.getSignalState(resSignal.index);
+            return new RSOptional<>(resSignalState);
         }
 
         @Override
