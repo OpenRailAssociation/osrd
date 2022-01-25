@@ -36,10 +36,9 @@ import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 // caused by the temporary opRef.begin == opRef.end
 @SuppressFBWarnings({"SIC_INNER_SHOULD_BE_STATIC_ANON"})
@@ -158,10 +157,33 @@ public class DebugViewer extends ChangeConsumer {
                 var signalRefID = encodeSpriteId(signal.value.id + "@" + edge.id);
                 var sprite = spriteManager.addSprite(signalRefID);
                 sprite.attachToEdge(edge.id);
-                sprite.setPosition(pos);;
+                sprite.setPosition(pos);
                 sprite.setAttribute("ui.label", signal.value.id);
                 viewer.signalSprites.put(signal.value, sprite);
                 viewer.updateSignal(signal.value, signal.value.getInitialAspects());
+
+                var aspects = signal.value.aspects;
+                if (aspects != null && aspects.size() > 0) {
+                    var colors = spriteManager.addSprite(signalRefID + "colors");
+                    colors.attachToEdge(edge.id);
+                    var offset = signal.value.direction == EdgeDirection.STOP_TO_START ? 20 : -20;
+                    var newPosition = Double.min(1, Double.max(0, (signal.position + offset) / edge.length));
+                    colors.setPosition(newPosition);
+                    var aspectColors = aspects.stream()
+                            .map(infra.aspects::get)
+                            .map(aspect -> aspect.color)
+                            .collect(Collectors.joining(","));
+                    var colorsCSS = String.format(
+                            "shape: pie-chart; size: 15px; fill-color: %s;",
+                            String.join(",", aspectColors)
+                    );
+
+                    colors.setAttribute("ui.style", colorsCSS);
+                    var values = new Double[aspects.size()];
+                    for (int i = 0; i < aspects.size(); i++)
+                        values[i] = 1. / aspects.size();
+                    colors.setAttribute("ui.pie-values", (Object) values);
+                }
             }
         }
 
