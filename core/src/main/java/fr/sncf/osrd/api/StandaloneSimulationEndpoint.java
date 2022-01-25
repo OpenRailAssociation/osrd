@@ -112,8 +112,8 @@ public class StandaloneSimulationEndpoint implements Take {
         var rollingStock = schedule.rollingStock;
         var mrsp = MRSP.from(trainsPath, rollingStock);
         var infraPathGrade = EnvelopeTrainPath.from(trainsPath);
-        var maxSpeedEnvelope = MaxSpeedEnvelope.from(rollingStock, infraPathGrade, schedule.stops, mrsp);
-        return MaxEffortEnvelope.from(rollingStock, infraPathGrade, schedule.initialSpeed, maxSpeedEnvelope);
+        var maxSpeedEnvelope = MaxSpeedEnvelope.from(rollingStock, infraPathGrade, schedule.stops, mrsp, 2);
+        return MaxEffortEnvelope.from(rollingStock, infraPathGrade, schedule.initialSpeed, maxSpeedEnvelope, 2);
     }
 
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")

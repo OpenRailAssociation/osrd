@@ -27,5 +27,6 @@ public class EnvelopeCoasting {
             if (consumer.addStep(position, speed, step.timeDelta))
                 break;
         }
+        assert speed >= 0;
     }
 }

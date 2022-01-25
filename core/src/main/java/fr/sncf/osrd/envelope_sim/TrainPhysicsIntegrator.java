@@ -55,13 +55,13 @@ public final class TrainPhysicsIntegrator {
         return newtonStep(timeStep, initialSpeed, meanAcceleration, directionSign);
     }
 
-    private IntegrationStep step(double timeStep, double location, double speed) {
+    private IntegrationStep step(double timeStep, double position, double speed) {
 
         double tractionForce = 0;
         double brakingForce = 0;
         double maxTractionForce = rollingStock.getMaxEffort(speed);
         double rollingResistance = rollingStock.getRollingResistance(speed);
-        double weightForce = getWeightForce(rollingStock, path, location);
+        double weightForce = getWeightForce(rollingStock, path, position);
 
         if (action == Action.ACCELERATE)
             tractionForce = maxTractionForce;
@@ -74,17 +74,19 @@ public final class TrainPhysicsIntegrator {
         return newtonStep(timeStep, speed, acceleration, directionSign);
     }
 
-    private static double getWeightForce(PhysicsRollingStock rollingStock, PhysicsPath path, double headLocation) {
-        var tailLocation = Math.min(Math.max(0, headLocation - rollingStock.getLength()), path.getLength());
-        headLocation = Math.min(Math.max(0, headLocation), path.getLength());
-        var averageGrade = path.getAverageGrade(tailLocation, headLocation);
+    /** Compute the weight force of a rolling stock at a given position on a given path */
+    public static double getWeightForce(PhysicsRollingStock rollingStock, PhysicsPath path, double headPosition) {
+        var tailPosition = Math.min(Math.max(0, headPosition - rollingStock.getLength()), path.getLength());
+        headPosition = Math.min(Math.max(0, headPosition), path.getLength());
+        var averageGrade = path.getAverageGrade(tailPosition, headPosition);
         // get an angle from a meter per km elevation difference
         // the curve's radius is taken into account in meanTrainGrade
         var angle = Math.atan(averageGrade / 1000.0);  // from m/km to m/m
         return -rollingStock.getMass() * 9.81 * Math.sin(angle);
     }
 
-    private static double computeAcceleration(
+    /** Compute the acceleration given a rolling stock, different forces, a speed, and a direction */
+    public static double computeAcceleration(
             PhysicsRollingStock rollingStock,
             double rollingResistance,
             double weightForce,
@@ -136,6 +138,10 @@ public final class TrainPhysicsIntegrator {
 
         if (Math.abs(positionDelta) < POSITION_EPSILON)
             positionDelta = 0;
-        return new IntegrationStep(timeStep, positionDelta, newSpeed, acceleration);
+        return IntegrationStep.fromNaiveStep(
+                timeStep, positionDelta,
+                currentSpeed, newSpeed,
+                acceleration, directionSign
+        );
     }
 }

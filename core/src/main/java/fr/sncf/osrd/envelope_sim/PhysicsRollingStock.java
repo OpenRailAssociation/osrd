@@ -18,6 +18,12 @@ public interface PhysicsRollingStock {
     /** The resistance to movement at a given speed, in newtons */
     double getRollingResistance(double speed);
 
+    /** The first derivative of the resistance to movement at a given speed, in kg/s */
+    double getRollingResistanceDeriv(double speed);
+
+    /** The second derivative of the resistance to movement at a given speed, in kg/m */
+    double getRollingResistanceSecDeriv(double speed);
+
     /** The maximum traction effort which can be deployed at a given speed, in newtons */
     double getMaxEffort(double speed);
 

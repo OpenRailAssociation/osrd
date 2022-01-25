@@ -319,13 +319,13 @@ public class EnvelopeOverlayTest {
 
     @Test
     void testUnlikelyIntersection() {
-        var constSpeedEnvelope = Envelope.make(EnvelopePart.generateTimes(
+        var inputEnvelope = Envelope.make(EnvelopePart.generateTimes(
                 null,
                 new double[]{0, 3, 4},
                 new double[]{2, 1, 0}
         ));
 
-        var builder = OverlayEnvelopeBuilder.forward(constSpeedEnvelope);
+        var builder = OverlayEnvelopeBuilder.forward(inputEnvelope);
         {
             var partBuilder = builder.startContinuousOverlay(null);
             assertFalse(partBuilder.addStep(1, 1));
@@ -339,13 +339,13 @@ public class EnvelopeOverlayTest {
 
     @Test
     void testIncreasingContinuousOverlay() {
-        var speedEnvelope = Envelope.make(EnvelopePart.generateTimes(
+        var inputEnvelope = Envelope.make(EnvelopePart.generateTimes(
                 null,
                 new double[]{0, 2, 4},
                 new double[]{1, 1, 3}
         ));
 
-        var builder = OverlayEnvelopeBuilder.forward(speedEnvelope);
+        var builder = OverlayEnvelopeBuilder.forward(inputEnvelope);
         builder.cursor.findPosition(2);
         {
             var partBuilder = builder.startContinuousOverlay(null);

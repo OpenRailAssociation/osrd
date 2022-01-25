@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope;
 
+import static fr.sncf.osrd.envelope.EnvelopePhysics.intersectStepWithSpeed;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Arrays;
 
@@ -31,6 +33,11 @@ public final class EnvelopePart {
 
     // region CACHE FIELDS
 
+    /** This property is required for inverse lookups on speeds
+     * https://en.wikipedia.org/wiki/Monotonic_function#Inverse_of_function
+     */
+    private final boolean strictlyMonotonicSpeeds;
+
     /* Cache fields must not be public, and must also be lazily computed.
        This ensures intrinsic data fields can be modified while constructing
        the envelope part. */
@@ -55,17 +62,21 @@ public final class EnvelopePart {
             double[] speeds,
             double[] timeDeltas
     ) {
-        assert positions.length == speeds.length;
-        assert positions.length >= 2;
-        assert timeDeltas.length == positions.length - 1;
-        assert checkNaNFree(positions) && checkMonotonousIncreasing(positions);
-        assert checkNaNFree(speeds) && checkPositive(speeds);
-        assert checkNaNFree(timeDeltas) && checkPositive(timeDeltas) && checkNonZero(timeDeltas);
+        assert positions.length >= 2 : "attempted to create a single point EnvelopePart";
+        assert positions.length == speeds.length : "there must be the same number of point and speeds";
+        assert timeDeltas.length == positions.length - 1 : "there must be as many timeDeltas as gaps between points";
+        assert checkNaNFree(positions) : "NaNs in positions";
+        assert checkNaNFree(speeds) : "NaNs in speeds";
+        assert checkNaNFree(timeDeltas) : "NaNs in timeDeltas";
+        assert checkStrictlyMonotonicIncreasing(positions) : "non monotonously increasing positions";
+        assert checkPositive(speeds) : "negative speeds";
+        assert checkPositive(timeDeltas) : "negative timeDeltas";
+        assert checkNonZero(timeDeltas) : "zero timeDeltas";
         this.meta = meta;
-
         this.positions = positions;
         this.speeds = speeds;
         this.timeDeltas = timeDeltas;
+        this.strictlyMonotonicSpeeds = checkStrictlyMonotonic(speeds);
     }
 
     /** Creates an envelope part by generating step times from speeds and positions */
@@ -107,11 +118,22 @@ public final class EnvelopePart {
         return true;
     }
 
-    private static boolean checkMonotonousIncreasing(double[] values) {
+    private static boolean checkStrictlyMonotonicIncreasing(double[] values) {
         for (int i = 0; i < values.length - 1; i++)
             if (values[i] >= values[i + 1])
                 return false;
         return true;
+    }
+
+    private static boolean checkStrictlyMonotonicDecreasing(double[] values) {
+        for (int i = 0; i < values.length - 1; i++)
+            if (values[i] <= values[i + 1])
+                return false;
+        return true;
+    }
+
+    private static boolean checkStrictlyMonotonic(double[] values) {
+        return checkStrictlyMonotonicIncreasing(values) || checkStrictlyMonotonicDecreasing(values);
     }
 
     private boolean checkPosition(int stepIndex, double position) {
@@ -345,6 +367,33 @@ public final class EnvelopePart {
         return timeDeltas;
     }
 
+    /** Given a speed return a position. The envelopePart must be bijective in order for this method to work*/
+    public Double interpolatePosition(int startIndex, double speed) {
+        assert strictlyMonotonicSpeeds;
+        assert isBetween(speed, getMinSpeed(), getMaxSpeed());
+
+        for (int i = startIndex; i < positions.length - 1; i++) {
+            var stepBegin = positions[i];
+            var stepEnd = positions[i + 1];
+            var speedBegin = speeds[i];
+            var speedEnd = speeds[i + 1];
+            assert speedBegin != speedEnd;
+            if (isBetween(speed, speedBegin, speedEnd))
+                return intersectStepWithSpeed(stepBegin, speedBegin, stepEnd, speedEnd, speed);
+        }
+        return null;
+    }
+
+    public Double interpolatePosition(double speed) {
+        return interpolatePosition(0, speed);
+    }
+
+    private static boolean isBetween(double speed, double speed1, double speed2) {
+        var minSpeed = Math.min(speed1, speed2);
+        var maxSpeed = Math.max(speed1, speed2);
+        return minSpeed <= speed && speed <= maxSpeed;
+    }
+
     // endregion
 
     // region SLICING
@@ -487,6 +536,5 @@ public final class EnvelopePart {
         result = 31 * result + Arrays.hashCode(timeDeltas);
         return result;
     }
-
     // endregion
 }

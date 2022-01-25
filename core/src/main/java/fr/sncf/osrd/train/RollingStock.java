@@ -99,6 +99,17 @@ public class RollingStock implements PhysicsRollingStock {
     }
 
     @Override
+    public double getRollingResistanceDeriv(double speed) {
+        speed = Math.abs(speed);
+        return B + 2 * C * speed;
+    }
+
+    @Override
+    public double getRollingResistanceSecDeriv(double speed) {
+        return 2 * C;
+    }
+
+    @Override
     public double getMaxBrakingForce(double speed) {
         return gamma * inertia;
     }
