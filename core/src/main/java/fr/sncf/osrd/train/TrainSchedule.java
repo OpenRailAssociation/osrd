@@ -19,7 +19,7 @@ public final class TrainSchedule {
     public final Route initialRoute;
     public final double initialSpeed;
 
-    public final ArrayList<NavigatePhase> phases;
+    public final List<NavigatePhase> phases;
 
     public final TrainDecisionMaker trainDecisionMaker;
 
@@ -41,7 +41,7 @@ public final class TrainSchedule {
             TrackSectionLocation initialLocation,
             Route initialRoute,
             double initialSpeed,
-            ArrayList<NavigatePhase> phases,
+            List<NavigatePhase> phases,
             TrainDecisionMaker trainDecisionMaker,
             TrainPath plannedPath,
             SpeedInstructions speedInstructions,
