@@ -2,13 +2,20 @@ package fr.sncf.osrd.envelope;
 
 import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.NEXT_PART;
 import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.NEXT_REACHED_END;
+import static fr.sncf.osrd.envelope.EnvelopePhysics.interpolateStepTime;
+import static fr.sncf.osrd.envelope.EnvelopePhysics.intersectStepWithSpeed;
 
-import fr.sncf.osrd.utils.CompareSign;
+import fr.sncf.osrd.utils.CmpOperator;
 
 /** Creates an envelope part which always keeps a speed lower than a given envelope */
 public class OverlayEnvelopePartBuilder implements StepConsumer {
     /** This cursor is updated as the overlay is built. It must not be modified elsewhere until build is called */
     public final EnvelopeCursor cursor;
+
+    /** The maximum / minimum speed allowed for this overlay, or NaN. */
+    private double speedThreshold = Double.NaN;
+    /** How to compare the overlay speed to the threshold speed. */
+    private CmpOperator speedThresholdOperator = null;
 
     /** The position of the last added point */
     private double lastOverlayPos;
@@ -129,20 +136,11 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
         return res;
     }
 
-    /** This is called when the overlay ends without an intersection with the base curve */
-    private void addFinalStep(double position, double speed, double stepTime) {
-        if (!cursor.hasReachedEnd())
-            cursor.findPosition(position);
-        addOverlayStep(position, speed, stepTime);
-    }
-
-    /** This is called when the overlay intersects with the base curve */
-    private void addIntersectionStep(double position, double speed, double stepTime) {
-        cursor.findPosition(position);
-        addOverlayStep(position, speed, stepTime);
-        hadIntersection = true;
-    }
-
+    /**
+     * Intersects the base curve with the overlay curve.
+     * It takes the overlay step data, and adds the intersection point if any.
+     * @return Whether an intersection occurred
+     */
     private boolean intersect(double position, double speed, double time) {
         // if the speed ranges do not even intersect, there is no intersection
         var baseMin = Math.min(cursor.getStepEndSpeed(), cursor.getStepBeginSpeed());
@@ -159,20 +157,22 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
 
         // if the curves intersect exactly at the next point, use some simplifications
         if (speedDelta == 0.0) {
-            if (curveEvent.kind != NextPointKind.BASE_POINT) {
-                addIntersectionStep(position, speed, time);
-                return true;
-            }
+            if (curveEvent.kind != NextPointKind.BASE_POINT)
+                return addOverlayStep(position, speed, time, StepKind.BASE_INTERSECTION);
             // curveEvent.kind == EventKind.BASE_POINT
             // if the curves intersect at a point from the base curve, the step time needs recalculating
-            var interTime = EnvelopePhysics.interpolateStepTime(
+            var interTime = interpolateStepTime(
                     lastOverlayPos, position,
                     lastOverlaySpeed, speed,
                     curveEvent.pointPosition - lastOverlayPos
             );
             assert interTime != 0.0;
-            addIntersectionStep(curveEvent.pointPosition, curveEvent.overlaySpeed, interTime);
-            return true;
+            return addOverlayStep(
+                    curveEvent.pointPosition,
+                    curveEvent.overlaySpeed,
+                    interTime,
+                    StepKind.BASE_INTERSECTION
+            );
         }
 
         // otherwise, find the intersection point the hard way
@@ -181,22 +181,50 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
                 cursor.getStepBeginPos(), cursor.getStepBeginSpeed(),
                 cursor.getStepEndPos(), cursor.getStepEndSpeed()
         );
-        var stepTime = EnvelopePhysics.interpolateStepTime(
+        var stepTime = interpolateStepTime(
                 lastOverlayPos, position, lastOverlaySpeed, speed,
                 inter.position - lastOverlayPos
         );
-        addIntersectionStep(inter.position, inter.speed, stepTime);
-        return true;
+        return addOverlayStep(inter.position, inter.speed, stepTime, StepKind.BASE_INTERSECTION);
     }
 
     // endregion
 
     // region OVERLAY
 
-    private void addOverlayStep(double position, double speed, double time) {
+    private enum StepKind {
+        INTERMEDIATE(false, false),
+        BASE_INTERSECTION(true, true),
+        THRESHOLD_INTERSECTION(true, true),
+        FINAL(false, true);
+
+        public final boolean isIntersection;
+        public final boolean isLastPoint;
+
+        StepKind(boolean isIntersection, boolean isLastPoint) {
+            this.isIntersection = isIntersection;
+            this.isLastPoint = isLastPoint;
+        }
+    }
+
+    /** Return whether this step had an intersection */
+    private boolean addOverlayStep(double position, double speed, double time, StepKind kind) {
+        if (hasSpeedThreshold() && CmpOperator.compare(speed, speedThresholdOperator, speedThreshold)) {
+            position = intersectStepWithSpeed(lastOverlayPos, lastOverlaySpeed, position, speed, speedThreshold);
+            speed = speedThreshold;
+            time = interpolateStepTime(lastOverlayPos, position, lastOverlaySpeed, speed);
+            kind = StepKind.THRESHOLD_INTERSECTION;
+        }
+
         partBuilder.addStep(position, speed, time);
         lastOverlaySpeed = speed;
         lastOverlayPos = position;
+
+        hadIntersection = kind.isIntersection;
+
+        if (kind.isLastPoint && !cursor.hasReachedEnd())
+            cursor.findPosition(position);
+        return kind.isLastPoint;
     }
 
     private boolean handleNewPart(double position, double speed) {
@@ -211,23 +239,32 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
         if (partStartSpeed > overlaySpeed)
             return false;
 
-        var interTime = EnvelopePhysics.interpolateStepTime(
+        var interTime = interpolateStepTime(
                 lastOverlayPos, position,
                 lastOverlaySpeed, speed,
                 partStart - lastOverlayPos
         );
 
-        addFinalStep(partStart, overlaySpeed, interTime);
-        return true;
+        return addOverlayStep(partStart, overlaySpeed, interTime, StepKind.FINAL);
+    }
+
+    public boolean hasSpeedThreshold() {
+        return !Double.isNaN(speedThreshold);
+    }
+
+    /** Adds a speed threshold which stops the overlay */
+    public void addSpeedThreshold(double speed, CmpOperator operator) {
+        assert !operator.strict;
+        this.speedThreshold = speed;
+        this.speedThresholdOperator = operator;
     }
 
     @Override
     public boolean addStep(double position, double speed) {
         assert !hadIntersection : "called addStep on a complete overlay";
-        var time = EnvelopePhysics.interpolateStepTime(
+        var time = interpolateStepTime(
                 lastOverlayPos, position,
-                lastOverlaySpeed, speed,
-                position - lastOverlayPos
+                lastOverlaySpeed, speed
         );
         return addStep(position, speed, time);
     }
@@ -267,38 +304,40 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
                         lastOverlaySpeed, speed,
                         stepEndPos - lastOverlayPos
                 );
-                var interTime = EnvelopePhysics.interpolateStepTime(
+                var interTime = interpolateStepTime(
                         lastOverlayPos, position,
                         lastOverlaySpeed, speed,
                         stepEndPos - lastOverlayPos
                 );
-                addFinalStep(stepEndPos, interSpeed, interTime);
-                return true;
+                return addOverlayStep(stepEndPos, interSpeed, interTime, StepKind.FINAL);
             }
         }
 
         // if no intersection with the base curve was found, add the step to the overlay
-        addOverlayStep(position, speed, time);
-        return false;
+        return addOverlayStep(position, speed, time, StepKind.INTERMEDIATE);
     }
 
-    /** Maintains the current speed until an intersection or the end of the curve is found */
-    public void addPlateau() {
+    /**
+     * Maintains the current speed until an intersection or the end of the curve is found
+     * @return Whether an intersection occurred. If not, the end of the envelope was reached.
+     */
+    public boolean addPlateau() {
         assert !hadIntersection : "called addStep on a complete overlay";
         assert cursor.comparePos(lastOverlayPos, cursor.getStepBeginPos()) >= 0
                 && cursor.comparePos(lastOverlayPos, cursor.getStepEndPos()) <= 0;
 
-        cursor.findSpeed(lastOverlaySpeed, CompareSign.LOWER);
+        var hasNotReachedEnd = cursor.findSpeed(lastOverlaySpeed, CmpOperator.STRICTLY_LOWER);
+        assert hasNotReachedEnd != cursor.hasReachedEnd();
         double position;
-        if (!cursor.hasReachedEnd())
+        if (hasNotReachedEnd)
             position = cursor.getPosition();
         else
             position = cursor.getEnvelopeEndPos();
 
         var plateauLength = Math.abs(position - lastOverlayPos);
         var plateauDuration = plateauLength / lastOverlaySpeed;
-        addOverlayStep(position, lastOverlaySpeed, plateauDuration);
-        hadIntersection = true;
+        var stepKind = hasNotReachedEnd ? StepKind.BASE_INTERSECTION : StepKind.FINAL;
+        return addOverlayStep(position, lastOverlaySpeed, plateauDuration, stepKind);
     }
 
     // endregion

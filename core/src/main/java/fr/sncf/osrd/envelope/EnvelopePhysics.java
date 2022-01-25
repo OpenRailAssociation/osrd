@@ -42,6 +42,18 @@ public class EnvelopePhysics {
         return Math.abs((interpolatedSpeed - lastSpeed) / acceleration);
     }
 
+    /** Compute the time required to go from lastPos to nextPos */
+    public static double interpolateStepTime(
+            double lastPos, double nextPos,
+            double lastSpeed, double nextSpeed
+    ) {
+        var positionDelta = nextPos - lastPos;
+        var acceleration = stepAcceleration(lastPos, nextPos, lastSpeed, nextSpeed);
+        if (acceleration == 0.0)
+            return Math.abs(positionDelta / lastSpeed);
+        return Math.abs((nextSpeed - lastSpeed) / acceleration);
+    }
+
     /**
      * Computes the intersection of two envelope steps.
      * The acceleration is assumed to be constant over <b>time</b> inside a step.
@@ -125,7 +137,15 @@ public class EnvelopePhysics {
             double bSpeed
     ) {
         double accA = stepAcceleration(a1Pos, a2Pos, a1Speed, a2Speed);
-        return intersectStepWithSpeed(a1Speed, a1Pos, accA, bSpeed);
+        var interpolatedPosition = intersectStepWithSpeed(a1Speed, a1Pos, accA, bSpeed);
+        var minPos = Math.min(a1Pos, a2Pos);
+        var maxPos = Math.max(a1Pos, a2Pos);
+        assert minPos - 0.0001 <= interpolatedPosition && interpolatedPosition <= maxPos + 0.0001;
+        if (interpolatedPosition > maxPos)
+            interpolatedPosition = maxPos;
+        if (interpolatedPosition < minPos)
+            interpolatedPosition = minPos;
+        return interpolatedPosition;
     }
 
     public static final class EnvelopePoint {

@@ -112,7 +112,7 @@ public final class MinEnvelopeBuilder {
         //  - keep track of all active curves at a given position
         //  LEFT SIDE
         //  - when a new event arrives, no matter what its type is, we update the min curve, if we already had one:
-        //     - we interpolate on all curves, and if the min curve change, we terminate the previous output curve with
+        //     - we interpolate on all curves, and if the min curve changes, we terminate the previous output curve with
         //       the intersection point, which also starts the new min curve
         //  - process all curve ends events for the current position:
         //     - if the current min curve ends, finalize it and set the min curve to null

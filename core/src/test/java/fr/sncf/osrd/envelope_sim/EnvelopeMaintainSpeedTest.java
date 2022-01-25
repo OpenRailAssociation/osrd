@@ -1,10 +1,12 @@
 package fr.sncf.osrd.envelope_sim;
 
-import static fr.sncf.osrd.envelope_sim.EnvelopeShape.*;
+import static fr.sncf.osrd.envelope.EnvelopeShape.*;
+import static fr.sncf.osrd.envelope_sim.MaxSpeedEnvelopeTest.TIME_STEP;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopePart;
+import fr.sncf.osrd.envelope.EnvelopeShape;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.train.TestTrains;
@@ -24,8 +26,9 @@ public class EnvelopeMaintainSpeedTest {
         var flatMRSP = Envelope.make(
                 EnvelopePart.generateTimes(null, new double[] { 0, 10000 }, new double[] { 44.4, 44.4})
         );
-        var maxSpeedEnvelope = MaxSpeedEnvelope.from(testRollingStock, envelopePath, stops, flatMRSP);
-        var maxEffortEnvelope = MaxEffortEnvelope.from(testRollingStock, envelopePath, 0, maxSpeedEnvelope);
+        var maxSpeedEnvelope = MaxSpeedEnvelope.from(testRollingStock, envelopePath, stops, flatMRSP, TIME_STEP);
+        var maxEffortEnvelope =
+                MaxEffortEnvelope.from(testRollingStock, envelopePath, 0, maxSpeedEnvelope, TIME_STEP);
         EnvelopeShape.check(maxEffortEnvelope, new EnvelopeShape[][] {
                 {INCREASING}, {CONSTANT},
                 {DECREASING, INCREASING}, {CONSTANT},

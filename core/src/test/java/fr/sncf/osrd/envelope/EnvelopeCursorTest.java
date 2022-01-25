@@ -30,6 +30,7 @@ public class EnvelopeCursorTest {
         assertEquals(1, cursor.getPosition());
         assertEquals(0, cursor.getPartIndex());
         assertEquals(0, cursor.getStepIndex());
+        assertEquals(2, cursor.getStepLength());
         var lastRevision = cursor.getRevision();
 
         assertTrue(cursor.findPosition(2.0));
