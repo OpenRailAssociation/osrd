@@ -208,10 +208,13 @@ public class DependencyBinder extends RSExprVisitor {
         nextSignal.route.accept(this);
         var possibleRoutes = lastExprPossibleValues;
         var aspectSet = nextSignal.withAspects;
-        assert aspectSet instanceof RSExpr.AspectSet;
-        var aspects = Arrays.stream(((RSExpr.AspectSet) aspectSet).aspects)
-                .map(aspect -> aspect.id)
-                .collect(Collectors.toSet());
+        Set<String> aspects = Collections.emptySet();
+        if (aspectSet != null) {
+            assert aspectSet instanceof RSExpr.AspectSet;
+            aspects = Arrays.stream(((RSExpr.AspectSet) aspectSet).aspects)
+                    .map(aspect -> aspect.id)
+                    .collect(Collectors.toSet());
+        }
         for (var currentRouteState : possibleRoutes) {
             assert currentRouteState instanceof Route;
             var currentRoute = (Route) currentRouteState;

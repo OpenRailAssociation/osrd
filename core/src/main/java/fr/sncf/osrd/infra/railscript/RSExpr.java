@@ -10,10 +10,7 @@ import fr.sncf.osrd.infra_state.routes.RouteState;
 import fr.sncf.osrd.infra_state.routes.RouteStatus;
 import fr.sncf.osrd.infra_state.SignalState;
 import fr.sncf.osrd.infra_state.SwitchState;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class RSExpr<T extends RSValue> {
@@ -746,6 +743,7 @@ public abstract class RSExpr<T extends RSValue> {
             return false;
         }
 
+        /** Find the next signal in the given route that can present at least one of the given aspects */
         public Signal findSignal(Route route, Signal signal, Set<String> aspects) {
             var indexCurrentSignal = route.signalsWithEntry.indexOf(signal);
             if (indexCurrentSignal >= 0) {
@@ -762,9 +760,11 @@ public abstract class RSExpr<T extends RSValue> {
         public RSOptional<SignalState> evaluate(RSExprState<?> state) {
             var currentRoute = route.evaluate(state).route;
             var currentSignal = signal.evaluate(state).signal;
-            var aspects = withAspects.evaluate(state).stream()
-                    .map(aspect -> aspect.id)
-                    .collect(Collectors.toSet());
+            Set<String> aspects = Collections.emptySet();
+            if (withAspects != null)
+                    aspects = withAspects.evaluate(state).stream()
+                        .map(aspect -> aspect.id)
+                        .collect(Collectors.toSet());
             var resSignal = findSignal(currentRoute, currentSignal, aspects);
             if (resSignal == null)
                 return new RSOptional<>(null);
