@@ -4,7 +4,7 @@ export const MAIN_API = {
     : 'https://gateway.dev.dgexsol.fr/osrd',
   proxy_chartis: process.env.REACT_APP_CHARTIS_URL
     ? `${process.env.REACT_APP_CHARTIS_URL}`
-    : 'https://gateway.dev.dgexsol.fr/chartis',
+    : 'https://gateway.dev.dgexsol.fr/chartos',
   version: '0.0.1.20200408.1',
   editor: {
     component_identifier: { database: 'gaia', name: 'Test' },
