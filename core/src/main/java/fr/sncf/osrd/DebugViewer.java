@@ -14,6 +14,7 @@ import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.TrackSectionLocation;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.AdjacencyListGraph;
@@ -259,10 +260,12 @@ public class DebugViewer extends ChangeConsumer {
     private void updateSignal(Signal signal, RSAspectSet aspects) {
         if (!aspects.isEmpty()) {
             var sprite = signalSprites.get(signal);
+            var direction = signal.direction == EdgeDirection.START_TO_STOP ? "to" : "from";
 
             var signalCSS = String.format(
-                    "text-alignment: under; shape: circle; size: 20px; fill-color: %s;",
-                    aspects.iterator().next().color
+                    "text-alignment: under; shape: arrow; size: 20px; fill-color: %s;sprite-orientation: %s;",
+                    aspects.iterator().next().color,
+                    direction
             );
 
             sprite.setAttribute("ui.style", signalCSS);
