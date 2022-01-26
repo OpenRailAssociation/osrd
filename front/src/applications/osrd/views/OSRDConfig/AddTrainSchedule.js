@@ -12,7 +12,7 @@ import { time2sec, sec2time } from 'utils/timeManipulation';
 import formatConf from 'applications/osrd/components/AddTrainSchedule/formatConf';
 import trainNameWithNum from 'applications/osrd/components/AddTrainSchedule/trainNameHelper';
 
-const scheduleURL = '/train_schedule/';
+const scheduleURL = '/train_schedule/standalone_simulation/';
 
 export default function AddTrainSchedule(props) {
   const { mustUpdateTimetable, setMustUpdateTimetable } = props;
@@ -30,28 +30,36 @@ export default function AddTrainSchedule(props) {
     if (osrdConfig) {
       setIsWorking(true);
       const originTime = time2sec(osrdconf.originTime);
+      const schedules = [];
       let actualTrainCount = 1;
+      for (let nb = 1; nb <= trainCount; nb += 1) {
+        const newOriginTime = originTime + (60 * trainDelta * (nb - 1));
+        const trainName = trainNameWithNum(osrdconf.name, actualTrainCount, trainCount);
+        /* eslint no-await-in-loop: 0 */
+        schedules.push(
+          formatConf(
+            dispatch, setFailure, t,
+            { ...osrdconf, name: trainName },
+            newOriginTime,
+          ),
+        );
+        actualTrainCount += trainStep;
+      }
       try {
-        for (let nb = 1; nb <= trainCount; nb += 1) {
-          const newOriginTime = originTime + (60 * trainDelta * (nb - 1));
-          const trainName = trainNameWithNum(osrdconf.name, actualTrainCount, trainCount);
-          /* eslint no-await-in-loop: 0 */
-          await post(
-            scheduleURL,
-            formatConf(
-              dispatch, setFailure, t,
-              { ...osrdconf, name: trainName },
-              newOriginTime,
-            ),
-            {},
-          );
-          setIsWorking(false);
-          dispatch(setSuccess({
-            title: t('osrdconf:trainAdded'),
-            text: `${trainName}: ${sec2time(newOriginTime)}`,
-          }));
-          actualTrainCount += trainStep;
-        }
+        await post(
+          scheduleURL,
+          {
+            timetable: osrdconf.timetableID,
+            path: osrdconf.pathfindingID,
+            schedules,
+          },
+          {},
+        );
+        dispatch(setSuccess({
+          title: t('osrdconf:trainAdded'),
+          text: `${osrdconf.name}: ${sec2time(originTime)}`,
+        }));
+        setIsWorking(false);
       } catch (e) {
         setIsWorking(false);
         dispatch(setFailure({
