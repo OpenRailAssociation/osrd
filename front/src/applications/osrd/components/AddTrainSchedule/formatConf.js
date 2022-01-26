@@ -48,11 +48,8 @@ export default function formatConf(dispatch, setFailure, t, osrdconf, originTime
       train_name: osrdconf.name,
       labels: osrdconf.labels,
       departure_time: originTime,
-      phases: [],
       initial_speed: Math.abs(osrdconf.originSpeed / 3.6),
-      timetable: osrdconf.timetableID,
       rolling_stock: osrdconf.rollingStockID,
-      path: osrdconf.pathfindingID,
     };
     return osrdConfSchedule;
   }
