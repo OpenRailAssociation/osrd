@@ -8,22 +8,22 @@ export default function createChart(
   d3.select(`#${chartID}`).remove();
 
   const dataSimulationTime = d3.extent([].concat(...dataSimulation.map(
-    (train) => d3.extent(train.routeBeginOccupancy, (d) => d[keyValues[0]]),
+    (train) => d3.extent([].concat(...train.routeBeginOccupancy.map(
+      (section) => d3.extent(section, (step) => step[keyValues[0]]),
+    ))),
   )));
 
   const dataSimulationLinearMax = d3.max([
     d3.max([].concat(...dataSimulation.map(
-      (train) => d3.max(train.routeEndOccupancy.map((step) => step[keyValues[1]])),
+      (train) => d3.max(train.routeEndOccupancy.map(
+        (section) => d3.max(section.map((step) => step[keyValues[1]])),
+      )),
     ))),
     d3.max([].concat(...dataSimulation.map(
-      (train) => d3.max(train.routeBeginOccupancy.map((step) => step[keyValues[1]])),
+      (train) => d3.max(train.routeBeginOccupancy.map(
+        (section) => d3.max(section.map((step) => step[keyValues[1]])),
+      )),
     ))),
-    /* d3.max([].concat(...dataSimulation.map(
-      (train) => d3.max(train.headPosition.map((step) => step[keyValues[1]])),
-    ))),
-    d3.max([].concat(...dataSimulation.map(
-      (train) => d3.max(train.tailPosition.map((step) => step[keyValues[1]])),
-    ))), */
   ]);
 
   const defineX = (chart === undefined || reset)

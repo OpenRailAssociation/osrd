@@ -61,14 +61,24 @@ export default function drawTrain(
   if (direction) {
     if (marginsSettings[dataSimulation.id].baseBlocks
       || (!dataSimulation.margins_routeBeginOccupancy && !dataSimulation.eco_routeBeginOccupancy)) {
-      drawArea(
-        chart, `${isSelected && 'selected'} area`, dataSimulation.areaBlock,
-        groupID, 'curveStepAfter', keyValues, rotate,
+      dataSimulation.areaBlock.forEach(
+        (dataSimulationAreaBlockSection) => drawArea(
+          chart, `${isSelected && 'selected'} area`, dataSimulationAreaBlockSection,
+          groupID, 'curveStepAfter', keyValues, rotate,
+        ),
       );
-      drawCurve(chart, `${isSelected && 'selected'} end-block`, dataSimulation.routeEndOccupancy, groupID,
-        'curveLinear', keyValues, 'routeEndOccupancy', rotate, isSelected);
-      drawCurve(chart, `${isSelected && 'selected'} start-block`, dataSimulation.routeBeginOccupancy, groupID,
-        'curveLinear', keyValues, 'routeBeginOccupancy', rotate, isSelected);
+      dataSimulation.routeEndOccupancy.forEach(
+        (routeEndOccupancySection) => drawCurve(
+          chart, `${isSelected && 'selected'} end-block`, routeEndOccupancySection, groupID,
+          'curveLinear', keyValues, 'routeEndOccupancy', rotate, isSelected,
+        ),
+      );
+      dataSimulation.routeBeginOccupancy.forEach(
+        (routeBeginOccupancySection) => drawCurve(
+          chart, `${isSelected && 'selected'} start-block`, routeBeginOccupancySection, groupID,
+          'curveLinear', keyValues, 'routeBeginOccupancy', rotate, isSelected,
+        ),
+      );
     }
     if (dataSimulation.margins_routeEndOccupancy
       && marginsSettings[dataSimulation.id].marginsBlocks) {
