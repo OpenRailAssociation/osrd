@@ -24,6 +24,9 @@ export const defineTime = (extent) => d3.scaleTime()
 export const defineLinear = (max, pctMarge = 0, origin = 0) => d3.scaleLinear()
   .domain([origin - (max * pctMarge), max + (max * pctMarge)]);
 
+export const formatStepsWithTime = (data) => data
+  .map((step) => ({ ...step, time: sec2d3datetime(step.time) }));
+
 export const formatStepsWithTimeMulti = (data) => data.map(
   (section) => section.map(
     (step) => ({ time: sec2d3datetime(step.time), position: step.position }),
@@ -44,10 +47,6 @@ export const makeStairCase = (data) => {
   });
   return newData;
 };
-
-export const formatStepsWithTime = (data) => data
-  .map((step) => ({ ...step, time: sec2d3datetime(step.time) }));
-
 export const handleWindowResize = (
   chartID, dispatch, drawTrain, isResizeActive, setResizeActive,
 ) => {
@@ -82,10 +81,14 @@ export const timeShiftTrain = (train, value) => ({
       ),
     ),
     route_end_occupancy: train.base.route_end_occupancy.map(
-      (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+      (section) => section.map(
+        (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+      ),
     ),
     route_begin_occupancy: train.base.route_begin_occupancy.map(
-      (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+      (section) => section.map(
+        (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+      ),
     ),
     speeds: train.base.speeds.map(
       (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
@@ -106,10 +109,14 @@ export const timeShiftTrain = (train, value) => ({
       ),
     ),
     route_end_occupancy: train.margins.route_end_occupancy.map(
-      (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+      (section) => section.map(
+        (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+      ),
     ),
     route_begin_occupancy: train.margins.route_begin_occupancy.map(
-      (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+      (section) => section.map(
+        (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+      ),
     ),
     speeds: train.margins.speeds.map(
       (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
@@ -130,10 +137,14 @@ export const timeShiftTrain = (train, value) => ({
       ),
     ),
     route_end_occupancy: train.eco.route_end_occupancy.map(
-      (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+      (section) => section.map(
+        (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+      ),
     ),
     route_begin_occupancy: train.eco.route_begin_occupancy.map(
-      (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+      (section) => section.map(
+        (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
+      ),
     ),
     speeds: train.eco.speeds.map(
       (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
@@ -145,33 +156,38 @@ export const timeShiftTrain = (train, value) => ({
 });
 
 // Merge two curves for creating area between
-export const mergeDatasArea = (data1, data2, keyValues) => data1.map(
-  (step, i) => ({
-    [keyValues[0]]: step[keyValues[0]],
-    value0: step[keyValues[1]],
-    value1: data2[i][keyValues[1]],
-  }),
-);
-export const mergeDatasArea2 = (data1, data2, keyValues) => {
-  const points = [];
-  data1.forEach((step, i) => {
-    points.push({
-      [keyValues[0]]: step[keyValues[0]],
-      value0: step[keyValues[1]],
-      value1: (data2 && data2[i]) ? data2[i][keyValues[1]] : 0,
-    });
-    points.push({
-      [keyValues[0]]: data2 && data2[i] ? data2[i][keyValues[0]] : 0,
-      value0: step[keyValues[1]],
-      value1: data2 && data2[i] ? data2[i][keyValues[1]] : 0,
-    });
-    points.push({
-      [keyValues[0]]: data2 && data2[i] ? data2[i][keyValues[0]] : 0,
-      value0: data2 && data2[i] ? data2[i][keyValues[1]] : 0,
-      value1: step[keyValues[1]],
-    });
+export const mergeDatasArea = (data1, data2, keyValues) => {
+  const areas = data1.map((data1Section, sectionIdx) => {
+    const points = [];
+    for (let i = 0; i <= data1Section.length; i += 2) {
+      points.push({
+        [keyValues[0]]: data1Section[i][keyValues[0]],
+        value0: data1Section[i][keyValues[1]],
+        value1: data2[sectionIdx][i][keyValues[1]],
+      });
+      if (data1Section[i + 1] && data2[sectionIdx][i + 1]) {
+        points.push({
+          [keyValues[0]]: data2[sectionIdx][i + 1][keyValues[0]],
+          value0: data1Section[i + 1][keyValues[1]],
+          value1: data2[sectionIdx][i + 1][keyValues[1]],
+        });
+      }
+      if (data1Section[i + 2] && data2[sectionIdx][i + 2]) {
+        points.push({
+          [keyValues[0]]: data2[sectionIdx][i + 1][keyValues[0]],
+          value0: data1Section[i + 1][keyValues[1]],
+          value1: data2[sectionIdx][i + 2][keyValues[1]],
+        });
+        points.push({
+          [keyValues[0]]: data1Section[i + 1][keyValues[0]],
+          value0: data1Section[i + 1][keyValues[1]],
+          value1: data2[sectionIdx][i + 2][keyValues[1]],
+        });
+      }
+    }
+    return points;
   });
-  return points;
+  return areas;
 };
 export const mergeDatasAreaConstant = (data1, data2, keyValues) => data1.map(
   (step) => ({
