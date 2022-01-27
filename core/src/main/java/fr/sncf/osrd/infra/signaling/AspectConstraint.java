@@ -2,6 +2,7 @@ package fr.sncf.osrd.infra.signaling;
 
 import fr.sncf.osrd.train.Interaction;
 import fr.sncf.osrd.train.InteractionType;
+import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.train.TrainState;
 import fr.sncf.osrd.train.phases.NavigatePhaseState;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -16,6 +17,7 @@ public abstract class AspectConstraint {
         public enum Element {
             CURRENT_SIGNAL,
             NEXT_SIGNAL,
+            NEXT_SWITCH,
             END
         }
 
@@ -28,25 +30,42 @@ public abstract class AspectConstraint {
         public double convert(NavigatePhaseState navigatePhase, TrainState trainState) {
             Predicate<Interaction> isSignal = interaction -> interaction.interactionType == InteractionType.HEAD
                     && interaction.actionPoint.getClass() == Signal.class;
-            Interaction interactionElement = null;
+            double interactionPosition = Double.POSITIVE_INFINITY;
             if (element == Element.NEXT_SIGNAL) {
                 AtomicBoolean isNext = new AtomicBoolean(false);
-                interactionElement = navigatePhase.findFirstInteractions(trainState, interaction -> {
-                    if (!isSignal.test(interaction))
-                        return false;
-                    if (isNext.get())
-                        return true;
-                    isNext.set(true);
-                    return false;
-                });
+                interactionPosition = interactionToPosition(
+                        navigatePhase.findFirstInteractions(trainState, interaction -> {
+                            if (!isSignal.test(interaction))
+                                return false;
+                            if (isNext.get())
+                                return true;
+                            isNext.set(true);
+                            return false;
+                        }));
             } else if (element == Element.CURRENT_SIGNAL) {
-                interactionElement = navigatePhase.findFirstInteractions(trainState, isSignal);
-            }
+                interactionPosition = interactionToPosition(navigatePhase.findFirstInteractions(trainState, isSignal));
+            } else if (element == Element.NEXT_SWITCH)
+                interactionPosition = getNextSwitchPosition(
+                        navigatePhase.phase.expectedPath,
+                        trainState.location.getPathPosition()
+                );
 
-            if (interactionElement == null)
+            return interactionPosition + offset;
+        }
+
+        /** Returns the interaction position, or positive infinity if null */
+        private static double interactionToPosition(Interaction interaction) {
+            if (interaction == null)
                 return Double.POSITIVE_INFINITY;
+            return interaction.position;
+        }
 
-            return interactionElement.position + offset;
+        /** Returns the next switch position in the given path */
+        private static double getNextSwitchPosition(TrainPath path, double position) {
+            return path.switchPosition.stream()
+                    .filter(p -> p >= position)
+                    .findFirst()
+                    .orElse(Double.POSITIVE_INFINITY);
         }
     }
 

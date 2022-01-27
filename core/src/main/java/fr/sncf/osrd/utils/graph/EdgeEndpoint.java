@@ -17,4 +17,9 @@ public enum EdgeEndpoint {
             return BEGIN;
         return END;
     }
+
+    /** Return the last met endpoint along the edge in the given direction */
+    public static EdgeEndpoint endEndpoint(EdgeDirection dir) {
+        return startEndpoint(dir.opposite());
+    }
 }
