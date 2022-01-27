@@ -10,6 +10,7 @@ import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
+import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -32,17 +33,21 @@ public class TrainPath {
     /** Path length in meters */
     public final double length;
 
+    /** Positions of the switches on the path */
+    public final ArrayList<Double> switchPosition;
+
     /** Constructor */
     private TrainPath(
             List<Route> routePath,
             ArrayList<TrackSectionRange> trackSectionPath,
             ArrayList<TVDSectionPath> tvdSectionPaths,
-            double length
-    ) {
+            double length,
+            ArrayList<Double> switchPosition) {
         this.routePath = routePath;
         this.trackSectionPath = trackSectionPath;
         this.tvdSectionPaths = tvdSectionPaths;
         this.length = length;
+        this.switchPosition = switchPosition;
     }
 
     /** Build Train Path from routes, a starting and ending location */
@@ -59,7 +64,13 @@ public class TrainPath {
         }
         var tvdSectionPaths = createTVDSectionPaths(routePath);
         var length = convertTrackLocation(endLocation, trackSectionPath);
-        var trainPath = new TrainPath(routePath, trackSectionPath, tvdSectionPaths, length);
+        var trainPath = new TrainPath(
+                routePath,
+                trackSectionPath,
+                tvdSectionPaths,
+                length,
+                makeSwitchPosition(trackSectionPath)
+        );
         trainPath.validate();
         return trainPath;
     }
@@ -92,6 +103,7 @@ public class TrainPath {
         this.tvdSectionPaths = new ArrayList<>(other.tvdSectionPaths);
         this.trackSectionPath = new ArrayList<>(other.trackSectionPath);
         this.length = other.length;
+        this.switchPosition = other.switchPosition;
     }
 
     /** Initializes the lists of tvd sections and directions */
@@ -100,6 +112,24 @@ public class TrainPath {
         for (var route : routePath)
             tvdSectionPaths.addAll(route.tvdSectionsPaths);
         return tvdSectionPaths;
+    }
+
+    /** Lists the positions of all switches on the path */
+    private static ArrayList<Double> makeSwitchPosition(List<TrackSectionRange> tracks) {
+        double position = 0;
+        var res = new ArrayList<Double>();
+        for (int i = 1; i < tracks.size(); i++) {
+            var track = tracks.get(i - 1);
+            var nextTrack = tracks.get(i);
+            position += track.length();
+            if (!track.edge.id.equals(nextTrack.edge.id)) {
+                var nextNeighbors = track.edge.getNeighbors(EdgeEndpoint.endEndpoint(track.direction));
+                var prevNeighbors = nextTrack.edge.getNeighbors(EdgeEndpoint.startEndpoint(nextTrack.direction));
+                if (prevNeighbors.size() > 1 || nextNeighbors.size() > 1)
+                    res.add(position);
+            }
+        }
+        return res;
     }
 
     private void validate() throws InvalidSchedule {
