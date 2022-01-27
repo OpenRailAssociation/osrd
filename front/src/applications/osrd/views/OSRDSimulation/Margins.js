@@ -180,11 +180,11 @@ const Margin = (props) => {
           {position2name(data.end_position)}
         </div>
         <div className="col-md-2">
-          {t(`marginTypes.${data.type}`)}
+          {t(`marginTypes.${data.allowance_type}`)}
         </div>
         <div className="col-md-2">
           {data.value}
-          {TYPEUNITS[data.type]}
+          {TYPEUNITS[data.allowance_type]}
         </div>
         <div className="col-md-1 d-flex">
           <button type="button" className="btn btn-sm btn-only-icon btn-white mr-1 ml-auto">
@@ -294,7 +294,7 @@ export default function Margins(props) {
           <DotsLoader />
         </div>
       )}
-      {trainDetail && trainDetail.margins && (
+      {trainDetail && trainDetail.allowances && (
         <>
           <div className="h2 d-flex">
             {t('simulation:margins')}
@@ -320,7 +320,7 @@ export default function Margins(props) {
               {t('marginType')}
             </div>
           </div>
-          {trainDetail.margins.map((margin, idx) => (
+          {trainDetail.allowances.map((margin, idx) => (
             <Margin data={margin} delMargin={delMargin} idx={idx} key={nextId()} />
           ))}
           <hr className="mt-0" />
