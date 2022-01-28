@@ -14,7 +14,7 @@ def run_pathfinding(base_url, infra_id):
         "infra": infra_id,
         "steps": [
             {
-                "stop_time": 0,
+                "duration": 0,
                 "waypoints": [
                     {
                         "track_section": track_id,
@@ -23,7 +23,7 @@ def run_pathfinding(base_url, infra_id):
                 ]
             },
             {
-                "stop_time": 0,
+                "duration": 0,
                 "waypoints": [
                     {
                         "track_section": track_id,
