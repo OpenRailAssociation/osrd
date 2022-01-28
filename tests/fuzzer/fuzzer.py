@@ -1,12 +1,11 @@
-from collections import defaultdict
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Dict, Tuple, Iterable, List, Set
 import json
 import random
-import requests
 import time
+from collections import defaultdict
 
+import requests
 
 URL = "http://127.0.0.1:8000/"
 TIMEOUT = 10
@@ -32,21 +31,20 @@ def run_test(infra: InfraGraph, base_url: str, infra_id: int):
     :param base_url: Api url
     :param infra_id: Infra id
     """
-    path = make_valid_path(infra)
+    path, path_length = make_valid_path(infra)
     path_payload = make_payload_path(infra_id, path)
     r = requests.post(base_url + "pathfinding/", json=path_payload, timeout=TIMEOUT)
     if r.status_code // 100 != 2:
         raise RuntimeError(f"Pathfinding error {r.status_code}: {r.content}, payload={json.dumps(path_payload)}")
     path_id = r.json()["id"]
-
     rolling_stock = get_random_rolling_stock(base_url)
 
-    schedule_payload = make_payload_schedule(base_url, infra_id, path_id, rolling_stock)
-    r = requests.post(base_url + "train_schedule/", json=schedule_payload, timeout=TIMEOUT)
+    schedule_payload = make_payload_schedule(base_url, infra_id, path_id, rolling_stock, path_length)
+    r = requests.post(base_url + "train_schedule/standalone_simulation/", json=schedule_payload, timeout=TIMEOUT)
     if r.status_code // 100 != 2:
         raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(schedule_payload)}")
 
-    schedule_id = r.json()["id"]
+    schedule_id = r.json()["ids"][0]
     r = requests.get(f"{base_url}train_schedule/{schedule_id}/result/", timeout=TIMEOUT)
     if r.status_code // 100 != 2:
         raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, id={schedule_id}")
@@ -122,19 +120,6 @@ def random_set_element(s: Iterable):
     return random.choice(list(s))
 
 
-def make_steps_on_route(route: Dict) -> Iterable[Tuple[str, float]]:
-    """
-    Generates a random list of steps on a route
-    :return: Iterable of (edge id, offset)
-    """
-    for track_range in route["path"]:
-        if random.randint(0, 5) == 0:
-            begin = track_range["begin"]
-            end = track_range["end"]
-            offset = begin + random.random() * (end - begin)
-            yield track_range["track"]["id"], offset
-
-
 def check_tracks_are_unseen(seen_track_sections: Set[str], route: Dict):
     """
     Checks all tracks in the route, returns true if a track is already part of the path, adds them otherwise
@@ -149,7 +134,21 @@ def check_tracks_are_unseen(seen_track_sections: Set[str], route: Dict):
     return True
 
 
-def make_path(infra: InfraGraph) -> List[Tuple[str, float]]:
+def make_steps_on_route(route: Dict, distance_from_start: [float]) -> Iterable[Tuple[str, float]]:
+    """
+    Generates a random list of steps on a route
+    :return: Iterable of (edge id, edge offset, offset from the start)
+    """
+    for track_range in route["path"]:
+        if random.randint(0, 5) == 0:
+            begin = track_range["begin"]
+            end = track_range["end"]
+            offset = begin + random.random() * (end - begin)
+            yield track_range["track"]["id"], offset, distance_from_start[0] + abs(offset - begin)
+            distance_from_start[0] += abs(end - begin)
+
+
+def make_path(infra: InfraGraph) -> Tuple[List[Tuple[str, float]], float]:
     """
     Generates a path in the infra following the route graph. The path may only have a single element
     :param infra: infra
@@ -158,28 +157,35 @@ def make_path(infra: InfraGraph) -> List[Tuple[str, float]]:
     res = []
     seen_track_sections = set()
     route_id = random_set_element(infra.routes.keys())
+    distance_from_start = [0]
+    step_offsets = []
     while random.randint(0, 15) != 0:
         route = infra.routes[route_id]
         if not check_tracks_are_unseen(seen_track_sections, route):
             break
-        res += make_steps_on_route(route)
+        for edge, edge_offset, path_offset in make_steps_on_route(route, distance_from_start):
+            res.append((edge, edge_offset))
+            step_offsets.append(path_offset)
         exit_point = route["exit_point"]["id"]
         if exit_point not in infra.routes_per_entry_point:
             break
         route_id = random_set_element(infra.routes_per_entry_point[exit_point])
-    return res
+    total_path_length = 0
+    if len(step_offsets) > 1:
+        total_path_length = step_offsets[-1] - step_offsets[0]
+    return res, total_path_length
 
 
-def make_valid_path(infra: InfraGraph) -> List[Tuple[str, float]]:
+def make_valid_path(infra: InfraGraph) -> Tuple[List[Tuple[str, float]], float]:
     """
     Generates a path with at least two steps
-    :param infra: infra
-    :return: List of (edge id, offset)
+    :param infra: infra graph
+    :return: List of (edge id, offset) and path_length
     """
     while True:
-        path = make_path(infra)
+        path, path_length = make_path(infra)
         if len(path) > 1:
-            return path
+            return path, path_length
 
 
 def convert_stop(stop: Tuple[str, float]) -> Dict:
@@ -188,14 +194,8 @@ def convert_stop(stop: Tuple[str, float]) -> Dict:
     :param stop: (track, offset)
     """
     track_section, offset = stop
-    stop_time = 0 if random.randint(0, 1) == 0 else random.random() * 1000
-    return {
-        "stop_time": stop_time,
-        "waypoints": [{
-            "track_section": track_section,
-            "offset": offset
-        }]
-    }
+    duration = 0 if random.randint(0, 1) == 0 else random.random() * 1000
+    return {"duration": duration, "waypoints": [{"track_section": track_section, "offset": offset}]}
 
 
 def make_payload_path(infra: int, path: List[Tuple[str, float]]) -> Dict:
@@ -205,13 +205,9 @@ def make_payload_path(infra: int, path: List[Tuple[str, float]]) -> Dict:
     :param path: List of steps
     :return: Dict
     """
-    return {
-        "infra": infra,
-        "name": "foo",
-        "steps": [
-            convert_stop(stop) for stop in path
-        ]
-    }
+    path_payload = {"infra": infra, "name": "foo", "steps": [convert_stop(stop) for stop in path]}
+    path_payload["steps"][-1]["duration"] = 1
+    return path_payload
 
 
 def create_schedule(base_url: str, infra_id: int):
@@ -220,10 +216,7 @@ def create_schedule(base_url: str, infra_id: int):
     :param base_url: api url
     :param infra_id: infra id
     """
-    timetable_payload = {
-        "name": "foo",
-        "infra": infra_id
-    }
+    timetable_payload = {"name": "foo", "infra": infra_id}
     r = requests.post(base_url + "timetable/", json=timetable_payload, timeout=TIMEOUT)
     if r.status_code // 100 != 2:
         err = f"Error creating schedule {r.status_code}: {r.content}, payload={json.dumps(timetable_payload)}"
@@ -249,51 +242,77 @@ def get_schedule(base_url: str, infra: int) -> str:
     return get_schedule(base_url, infra)
 
 
-def make_random_margins() -> List[Dict]:
+def make_random_allowances_value() -> Dict:
+    if random.randint(0, 3) == 0:
+        return {
+            "value_type": "percentage",
+            "percentage": random.randint(3, 10) + random.random(),
+        }
+    if random.randint(0, 3) == 0:
+        return {
+            "value_type": "time_per_distance",
+            "minutes": random.randint(3, 10) + random.random(),
+        }
+    return {
+        "value_type": "time",
+        "seconds": random.randint(10, 40) + random.random(),
+    }
+
+
+def make_random_allowances(path_length: float) -> List[Dict]:
     """
     Makes a random allowance config
+    :param path_length: the path length
     """
     res = []
     if random.randint(0, 3) == 0:
-        res.append({
-            "type": "construction",
-            "value": random.random() * 10 + 3
-        })
-    if random.randint(0, 3) == 0:
-        res.append({
-                "type": "ratio_time",
-                "value": random.random() * 50 + 10
-            })
-    if random.randint(0, 3) == 0:
-        res.append({
-            "type": "ratio_distance",
-            "value": random.random() * 50 + 10
-        })
-    random.shuffle(res)
+        res.append(
+            {
+                "allowance_type": "mareco",
+                "default_value": make_random_allowances_value(),
+                "ranges": [],
+            }
+        )
+    for _ in range(3):
+        if random.randint(0, 3) != 0:
+            continue
+        positions = [random.random() * path_length for _ in range(2)]
+        res.append(
+            {
+                "allowance_type": "construction",
+                "begin_position": min(positions),
+                "end_position": max(positions),
+                "value": make_random_allowances_value(),
+            }
+        )
     return res
 
 
-def make_payload_schedule(base_url: str, infra: int, path: int, rolling_stock: str) -> Dict:
+def make_payload_schedule(base_url: str, infra: int, path: int, rolling_stock: str, path_length: float) -> Dict:
     """
     Makes the payload for the simulation
     :param base_url: Api URL
     :param infra: infra id
     :param path: path id
     :param rolling_stock: rolling stock id
+    :param path_length: the path length
     :return: payload
     """
     return {
-        "train_name": "foo",
-        "labels": [],
-        "departure_time": 0,
-        "phases": [],
-        "margins": make_random_margins(),
-        "initial_speed": 0,
         "timetable": get_schedule(base_url, infra),
-        "rolling_stock": rolling_stock,
-        "path": path
+        "path": path,
+        "schedules": [
+            {
+                "train_name": "foo",
+                "labels": [],
+                "departure_time": 0,
+                "allowances": make_random_allowances(path_length),
+                "initial_speed": 0,
+                "rolling_stock": rolling_stock,
+            }
+        ],
     }
 
 
 if __name__ == "__main__":
-    run(URL, 2)
+    run(URL, 1)
