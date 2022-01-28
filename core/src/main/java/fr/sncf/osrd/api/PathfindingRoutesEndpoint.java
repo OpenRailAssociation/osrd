@@ -292,7 +292,8 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                 while (opIterator.hasNext())
                     addStep(new PathWaypointResult(opIterator.next(), trackSection.edge));
             }
-            routePaths.add(routeResult);
+            if (routePaths.isEmpty() || !routePaths.get(routePaths.size() - 1).route.id.equals(routeResult.route.id))
+                routePaths.add(routeResult);
         }
 
         void addStep(PathWaypointResult newStep) {
