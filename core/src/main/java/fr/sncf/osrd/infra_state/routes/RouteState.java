@@ -60,8 +60,6 @@ public abstract class RouteState implements RSMatchable {
             change.apply(sim, this);
             sim.publishChange(change);
             updateStatus(sim, FREE);
-            // Notify Tower State that the route is free
-            sim.infraState.towerState.notifyRouteFreed(sim, route);
         }
     }
 

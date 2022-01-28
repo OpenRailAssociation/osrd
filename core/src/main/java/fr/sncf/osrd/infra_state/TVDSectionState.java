@@ -2,8 +2,6 @@ package fr.sncf.osrd.infra_state;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.TVDSection;
-import fr.sncf.osrd.infra.routegraph.Route;
-import fr.sncf.osrd.infra_state.routes.RouteState;
 import fr.sncf.osrd.simulation.EntityChange;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
@@ -52,6 +50,7 @@ public class TVDSectionState implements DeepComparable<TVDSectionState> {
             var routeState = sim.infraState.getRouteState(route.index);
             routeState.onTvdSectionFreed(sim);
         }
+        sim.infraState.towerState.checkForTVDUpdates(sim, tvdSection);
     }
 
     /**
