@@ -1,5 +1,6 @@
 package fr.sncf.osrd.infra_state.regulator;
 
+import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra_state.routes.RouteStatus;
 import fr.sncf.osrd.simulation.EntityChange;
@@ -98,8 +99,15 @@ public class TowerState {
         request.getRouteState(sim).reserve(sim);
     }
 
-    /** Notify the towerState that a TVDSection is released and that he can try to process some waiting requests */
-    public void notifyRouteFreed(Simulation sim, Route route) throws SimulationError {
+    /** Checks for updates after a tvd section has been freed */
+    public void checkForTVDUpdates(Simulation sim, TVDSection tvd) throws SimulationError {
+        for (var route : tvd.routeSubscribers)
+            checkForRouteUpdates(sim, route);
+    }
+
+    /** Checks if the route has been freed and if new requests can be processed
+     * To be called once a tvd section has been freed, after all the route updates have been processed */
+    private void checkForRouteUpdates(Simulation sim, Route route) throws SimulationError {
         for (var switchRef : route.switchesGroup.keySet()) {
             if (checkWaitingList(sim, switchRef.id))
                 return;
