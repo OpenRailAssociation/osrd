@@ -43,7 +43,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: api/.venv
-          key: venv-${{ hashFiles('**/poetry.lock') }}
+          key: osrd-api-venv-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
