@@ -64,6 +64,9 @@ public class MaxSpeedEnvelope {
     ) {
         for (int i = 0; i < stopPositions.length; i++) {
             var stopPosition = stopPositions[i];
+            // if the stopPosition is zero, no need to build a deceleration curve
+            if (stopPosition == 0.0)
+                continue;
             var builder = OverlayEnvelopeBuilder.backward(curveWithDecelerations);
             builder.cursor.findPosition(stopPosition);
             var partBuilder = builder.startDiscontinuousOverlay(new StopMeta(i), 0);
