@@ -30,4 +30,18 @@ public class MaxSpeedEnvelopeTest {
         EnvelopeTransitions.checkPositions(maxSpeedEnvelope, 1.0, 6698, 8500);
         EnvelopeTransitions.checkContinuity(maxSpeedEnvelope, true, false);
     }
+
+    @Test
+    public void testInitialStop() {
+        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        var length = 10000;
+        var testPath = new FlatPath(length, 0);
+        var stops = new double[] { 0 };
+
+        var flatMRSP = Envelope.make(
+                EnvelopePart.generateTimes(null, new double[] { 0, length}, new double[] { 44.4, 44.4})
+        );
+        var maxSpeedEnvelope = MaxSpeedEnvelope.from(testRollingStock, testPath, stops, flatMRSP, TIME_STEP);
+        EnvelopeShape.check(maxSpeedEnvelope, CONSTANT);
+    }
 }
