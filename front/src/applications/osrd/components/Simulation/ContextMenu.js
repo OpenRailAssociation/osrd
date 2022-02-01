@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import * as d3 from 'd3';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -19,7 +20,8 @@ import DotsLoader from 'common/DotsLoader/DotsLoader';
 
 const TRAINSCHEDULE_URI = '/train_schedule/';
 
-export default function ContextMenu() {
+export default function ContextMenu(props) {
+  const { getTimetable } = props;
   const {
     contextMenu, marginsSettings, selectedTrain, simulation,
   } = useSelector((state) => state.osrdsimulation);
@@ -66,21 +68,38 @@ export default function ContextMenu() {
     }
   };
 
-  const getAndDuplicateTrain = async (id, newOriginTime, newTrainName) => {
-    try {
-      const trainDetail = await get(`${TRAINSCHEDULE_URI}${id}/`);
-      const params = {
+  const duplicateTrain = async () => {
+    setGoUpdate(true);
+    const trains = Array.from(simulation.trains);
+    const trainDetail = await get(`${TRAINSCHEDULE_URI}${simulation.trains[selectedTrain].id}/`);
+    const params = {
+      timetable: trainDetail.timetable,
+      path: trainDetail.path,
+      schedules: [],
+    };
+    let actualTrainCount = 1;
+    for (let nb = 1; nb <= trainCount; nb += 1) {
+      const newTrainDelta = (60 * trainDelta * nb);
+      const newOriginTime = simulation.trains[selectedTrain].base.stops[0].time + newTrainDelta;
+      const newTrainName = trainNameWithNum(trainName, actualTrainCount, trainCount);
+      params.schedules.push({
         departure_time: newOriginTime,
         initial_speed: trainDetail.initial_speed,
         labels: trainDetail.labels,
-        path: trainDetail.path,
         rolling_stock: trainDetail.rolling_stock,
-        timetable: trainDetail.timetable,
         train_name: newTrainName,
-        margins: trainDetail.margins,
-      };
-      const result = await post(TRAINSCHEDULE_URI, params);
-      return result.id;
+        allowances: trainDetail.allowances,
+      });
+      actualTrainCount += trainStep;
+    }
+    try {
+      await post(`${TRAINSCHEDULE_URI}standalone_simulation/`, params);
+      getTimetable();
+      dispatch(updateContextMenu(undefined));
+      dispatch(setSuccess({
+        title: t('osrdconf:trainAdded'),
+        text: `${trainName}`,
+      }));
     } catch (e) {
       console.log('ERROR', e);
       dispatch(setFailure({
@@ -88,47 +107,6 @@ export default function ContextMenu() {
         message: e.message,
       }));
     }
-    return false;
-  };
-
-  const duplicateTrain = async () => {
-    setGoUpdate(true);
-    const trains = Array.from(simulation.trains);
-    const newMarginsSettings = { ...marginsSettings };
-    let actualTrainCount = 1;
-    for (let nb = 1; nb <= trainCount; nb += 1) {
-      const newTrainDelta = (60 * trainDelta * nb);
-      const newOriginTime = simulation.trains[selectedTrain].base.stops[0].time + newTrainDelta;
-      const newTrainName = trainNameWithNum(trainName, actualTrainCount, trainCount);
-      const newTrain = {
-        ...timeShiftTrain(trains[selectedTrain], newTrainDelta),
-        name: newTrainName,
-      };
-      newTrain.id = await getAndDuplicateTrain(
-        simulation.trains[selectedTrain].id, newOriginTime, newTrainName,
-      );
-      if (newTrain.id) {
-        trains.splice(selectedTrain + nb, 0, newTrain);
-        // Create margins settings for each train if not set
-        newMarginsSettings[newTrain.id] = {
-          base: true,
-          baseBlocks: false,
-          margins: true,
-          marginsBlocks: false,
-          eco: true,
-          ecoBlocks: true,
-        };
-        dispatch(setSuccess({
-          title: t('osrdconf:trainAdded'),
-          text: `${trainName}: ${sec2time(newOriginTime)}`,
-        }));
-      }
-      actualTrainCount += trainStep;
-    }
-    dispatch(updateMarginsSettings(newMarginsSettings));
-    dispatch(updateSimulation({ ...simulation, trains }));
-    dispatch(updateSelectedTrain(selectedTrain + 1));
-    dispatch(updateContextMenu(undefined));
   };
 
   const closeContextMenu = () => {
@@ -345,3 +323,7 @@ export default function ContextMenu() {
     </div>
   ) : null;
 }
+
+ContextMenu.propTypes = {
+  getTimetable: PropTypes.func.isRequired,
+};
