@@ -6,6 +6,7 @@ import fr.sncf.osrd.infra_state.regulator.Request;
 import fr.sncf.osrd.infra_state.routes.RouteStatus;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.utils.TrackSectionLocation;
 
 public class ActivateRoute {
     /**
@@ -61,7 +62,13 @@ public class ActivateRoute {
 
         // Reserve the tvdSection where the train is created
         var trainLocation = trainState.location.getHeadLocation();
+        occupyAndFreeUpTo(sim, route, trainLocation);
+        reserveRoutes(sim, sim.trains.get(trainState.trainSchedule.trainID));
+    }
 
+    /** Occupy all the tvd sections up to the train start location, then free them if they are behind */
+    private static void occupyAndFreeUpTo(Simulation sim, Route route, TrackSectionLocation trainLocation)
+            throws SimulationError {
         for (var i = 0; i < route.tvdSectionsPaths.size(); i++) {
             var currentTvdSectionPath = route.tvdSectionsPaths.get(i);
             occupyTvdSectionPath(sim, currentTvdSectionPath);
@@ -70,7 +77,6 @@ public class ActivateRoute {
                     return;
             freeTvdSectionPath(sim, currentTvdSectionPath);
         }
-        reserveRoutes(sim, sim.trains.get(trainState.trainSchedule.trainID));
     }
 
     private static void occupyTvdSectionPath(Simulation sim, TVDSectionPath tvdSectionPath) throws SimulationError {
