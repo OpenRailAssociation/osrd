@@ -157,7 +157,7 @@ public class InteractiveSimulation {
 
     /** Sends back to the client the list of delays for all requested trains */
     public void sendTrainDelays(Collection<String> trains) throws IOException {
-        if (expectState(SessionState.PAUSED))
+        if (expectState(SessionState.PAUSED, SessionState.SIMULATION_COMPLETE))
             return;
 
         var curTime = simulation.getTime();
