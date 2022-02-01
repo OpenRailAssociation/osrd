@@ -227,7 +227,7 @@ const OSRDSimulation = () => {
                       <SpaceTimeChart heightOfSpaceTimeChart={heightOfSpaceTimeChart} />
                     </Rnd>
                   )}
-                  <ContextMenu />
+                  <ContextMenu getTimetable={getTimetable} />
                 </div>
               </div>
               <div className="osrd-simulation-container d-flex mb-2">
