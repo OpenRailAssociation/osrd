@@ -42,8 +42,8 @@ export default function TrainDetails() {
           <div className="rounded px-1 train-detail small bg-secondary text-white text-nowrap mr-1">
             <div className="font-weight-bold text-uppercase">{t('trainDetails.routeSizeOccupancy')}</div>
             {positionValues.routeEndOccupancy && positionValues.routeBeginOccupancy && Math.round(
-              positionValues.routeEndOccupancy.position
-              - positionValues.routeBeginOccupancy.position,
+              positionValues.routeBeginOccupancy.position
+              - positionValues.routeEndOccupancy.position,
             ) / 1000}
             km
           </div>
