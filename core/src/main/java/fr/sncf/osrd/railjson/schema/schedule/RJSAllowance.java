@@ -2,72 +2,36 @@ package fr.sncf.osrd.railjson.schema.schedule;
 
 import com.squareup.moshi.Json;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
-import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-public abstract class RJSAllowance {
+public class RJSAllowance {
     public static final PolymorphicJsonAdapterFactory<RJSAllowance> adapter = (
-            PolymorphicJsonAdapterFactory.of(RJSAllowance.class, "type")
-                    .withSubtype(MarecoAllowance.class, "eco")
-                    .withSubtype(ConstructionAllowance.class, "construction")
-                    .withSubtype(LinearAllowance.class, "linear")
+            PolymorphicJsonAdapterFactory.of(RJSAllowance.class, "allowance_type")
+                    .withSubtype(Construction.class, "construction")
+                    .withSubtype(Mareco.class, "mareco")
     );
 
-    /** Beginning of the allowance as a track location, defaults to beginning of the path */
-    @Json(name = "begin_location")
-    public RJSTrackLocation beginLocation = null;
-
-    /** End of the allowance as a track location, defaults to end of the path */
-    @Json(name = "end_location")
-    public RJSTrackLocation endLocation = null;
-
-    /** Beginning of the allowance as a position of the path, cannot be used with beginLocation */
-    @Json(name = "begin_position")
-    public Double beginPosition = null;
-
-    /** End of the allowance as a position of the path, cannot be used with beginLocation */
-    @Json(name = "end_position")
-    public Double endPosition = null;
-
-    public enum MarginType {
-        TIME,
-        PERCENTAGE,
-        DISTANCE,
+    public static final class Construction extends RJSAllowance {
+        @Json(name = "begin_position")
+        public double beginPosition = Double.NaN;
+        @Json(name = "end_position")
+        public double endPosition = Double.NaN;
+        public RJSAllowanceValue value = null;
     }
 
-    public static final class MarecoAllowance extends RJSAllowance {
-        public MarecoAllowance(MarginType type, double value) {
-            this.allowanceValue = value;
-            this.allowanceType = type;
-        }
+    public static final class Mareco extends RJSAllowance {
+        @Json(name = "default_value")
+        public RJSAllowanceValue defaultValue = null;
 
-        @Json(name = "allowance_type")
-        public MarginType allowanceType;
-
-        @Json(name = "allowance_value")
-        public double allowanceValue;
+        public RJSRangeAllowance[] ranges = null;
     }
 
-    public static final class LinearAllowance extends RJSAllowance {
-        public LinearAllowance(MarginType type, double value) {
-            this.allowanceType = type;
-            this.allowanceValue = value;
-        }
-
-        @Json(name = "allowance_type")
-        public MarginType allowanceType;
-
-        /** If TIME: we add allowanceValue% time
-         * If DISTANCE: we add allowanceValue minute per 100km */
-        @Json(name = "allowance_value")
-        public double allowanceValue;
-    }
-
-    public static final class ConstructionAllowance extends RJSAllowance {
-        @Json(name = "allowance_value")
-        public double allowanceValue;
-
-        public ConstructionAllowance(double value) {
-            this.allowanceValue = value;
-        }
+    @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
+    public static final class RJSRangeAllowance {
+        @Json(name = "begin_position")
+        public double beginPosition = Double.NaN;
+        @Json(name = "end_position")
+        public double endPosition = Double.NaN;
+        public RJSAllowanceValue value = null;
     }
 }

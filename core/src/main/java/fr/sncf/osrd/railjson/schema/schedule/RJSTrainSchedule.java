@@ -36,7 +36,7 @@ public class RJSTrainSchedule implements Identified {
      * The double array should be seen as a list of set, each element
      * in one set is applied independently, then each set is applied one after
      * the other with the result of the previous one used as base speed. */
-    public RJSAllowance[][] allowances;
+    public RJSLegacyAllowance[][] allowances;
 
     /** List of stops */
     public RJSTrainStop[] stops;
@@ -75,7 +75,7 @@ public class RJSTrainSchedule implements Identified {
             double initialSpeed,
             RJSTrainPhase[] phases,
             String trainControlMethod,
-            RJSAllowance[][] allowances,
+            RJSLegacyAllowance[][] allowances,
             RJSTrainStop[] stops,
             ID<RJSRoute>[] routes,
             String previousTrainId,

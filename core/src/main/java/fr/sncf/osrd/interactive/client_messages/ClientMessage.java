@@ -7,10 +7,9 @@ import fr.sncf.osrd.interactive.InteractiveSimulation;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr;
 import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspectConstraint;
-import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSLegacyAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPhase;
 import java.io.IOException;
 
@@ -34,7 +33,7 @@ public abstract class ClientMessage {
                 .add(RJSRollingStock.RJSMode.adapter)
                 // for RJSTrainSchedule
                 .add(RJSTrainPhase.adapter)
-                .add(RJSAllowance.adapter)
+                .add(RJSLegacyAllowance.adapter)
                 .build()
                 .adapter(ClientMessage.class);
 

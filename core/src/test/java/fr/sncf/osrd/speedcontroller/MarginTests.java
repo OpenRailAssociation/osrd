@@ -1,27 +1,25 @@
 package fr.sncf.osrd.speedcontroller;
 
 import static fr.sncf.osrd.Helpers.*;
-import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarginType.*;
+import static fr.sncf.osrd.railjson.schema.schedule.RJSLegacyAllowance.MarginType.*;
 import static fr.sncf.osrd.simulation.Simulation.timeStep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.ConstructionAllowance;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.LinearAllowance;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarecoAllowance;
-import fr.sncf.osrd.simulation.SimulationError;
+import fr.sncf.osrd.railjson.schema.schedule.RJSLegacyAllowance.Construction;
+import fr.sncf.osrd.railjson.schema.schedule.RJSLegacyAllowance.Linear;
+import fr.sncf.osrd.railjson.schema.schedule.RJSLegacyAllowance.Mareco;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.train.TrainSchedule;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSLegacyAllowance;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.opentest4j.AssertionFailedError;
 import java.util.ArrayList;
 
 public class MarginTests {
@@ -86,7 +84,7 @@ public class MarginTests {
     public void testLinearTimeAllowance(double value, TestInfo info) {
         var config = TestConfig.readResource(CONFIG_PATH).clearAllowances();
 
-        var allowance = new LinearAllowance(PERCENTAGE, value);
+        var allowance = new Linear(PERCENTAGE, value);
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
 
         test.saveGraphs(info);
@@ -101,7 +99,7 @@ public class MarginTests {
     public void testLinearDistanceAllowance(double value, TestInfo info) {
         var config = TestConfig.readResource(CONFIG_PATH).clearAllowances();
 
-        var allowance = new LinearAllowance(DISTANCE, value);
+        var allowance = new Linear(DISTANCE, value);
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
 
         test.saveGraphs(info);
@@ -113,7 +111,7 @@ public class MarginTests {
 
     /** Test the construction margin */
     public static void testConstructionMargins(String configPath, double value, TestInfo info) {
-        var allowance = new ConstructionAllowance(value);
+        var allowance = new Construction(value);
 
         var config = TestConfig.readResource(configPath).clearAllowances();
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
@@ -135,7 +133,7 @@ public class MarginTests {
         final double end = 5000;
         final double tolerance = 0.02; // percentage
 
-        var allowance = new ConstructionAllowance(value);
+        var allowance = new Construction(value);
         allowance.beginPosition = begin;
         allowance.endPosition = end;
 
@@ -184,7 +182,7 @@ public class MarginTests {
         final double begin = 4000;
         final double end = 5000;
 
-        var allowance = new ConstructionAllowance(value);
+        var allowance = new Construction(value);
         allowance.beginPosition = begin;
         allowance.endPosition = end;
 
@@ -206,9 +204,9 @@ public class MarginTests {
     /** Tests stacking construction and linear margins */
     public static void testConstructionOnLinearMargin(String configPath, TestInfo info) {
         // setup allowances
-        var linearAllowance = new LinearAllowance(PERCENTAGE, 10);
-        var constructionAllowance = new ConstructionAllowance(15);
-        var allowances = new RJSAllowance[][] {
+        var linearAllowance = new Linear(PERCENTAGE, 10);
+        var constructionAllowance = new Construction(15);
+        var allowances = new RJSLegacyAllowance[][] {
                 { linearAllowance },
                 { constructionAllowance },
         };
@@ -235,11 +233,11 @@ public class MarginTests {
     /** Tests stacking mareco and construction margins */
     public static void testConstructionMarginOnMareco(String configPath, TestInfo info) {
         // setup allowances
-        var marecoAllowance = new MarecoAllowance(MarecoAllowance.MarginType.PERCENTAGE, 10);
-        var constructionAllowance = new ConstructionAllowance(30);
+        var marecoAllowance = new Mareco(Mareco.MarginType.PERCENTAGE, 10);
+        var constructionAllowance = new Construction(30);
         constructionAllowance.beginPosition = 3000.;
         constructionAllowance.endPosition = 5000.;
-        var allowances = new RJSAllowance[][] { { marecoAllowance }, { constructionAllowance } };
+        var allowances = new RJSLegacyAllowance[][] { { marecoAllowance }, { constructionAllowance } };
 
         // run the baseline and testing simulation
         var config = TestConfig.readResource(configPath).clearAllowances();
@@ -261,7 +259,7 @@ public class MarginTests {
     /** Tests mareco with margin type TIME*/
     public static void testEcoMarginTime(String configPath, double value, TestInfo info) {
         // setup allowances
-        var marecoAllowance = new MarecoAllowance(MarecoAllowance.MarginType.PERCENTAGE, value);
+        var marecoAllowance = new Mareco(Mareco.MarginType.PERCENTAGE, value);
 
         // run the baseline and testing simulation
         var config = TestConfig.readResource(configPath).clearAllowances();
@@ -281,7 +279,7 @@ public class MarginTests {
     /** Tests mareco with margin type DISTANCE*/
     public static void testEcoMarginDistance(String configPath, double value, TestInfo info) {
         // setup allowances
-        var marecoAllowance = new MarecoAllowance(MarecoAllowance.MarginType.DISTANCE, value);
+        var marecoAllowance = new Mareco(Mareco.MarginType.DISTANCE, value);
 
         // run the baseline and testing simulation
         var config = TestConfig.readResource(configPath).clearAllowances();
@@ -352,7 +350,7 @@ public class MarginTests {
                 throw new RuntimeException("Unable to handle this parameter in testDifferentSlopes");
         }
 
-        var marecoAllowance = new MarecoAllowance(MarecoAllowance.MarginType.PERCENTAGE, margin);
+        var marecoAllowance = new Mareco(Mareco.MarginType.PERCENTAGE, margin);
 
         // build sims
         var config = TestConfig.readResource(configPath).clearAllowances();
@@ -380,15 +378,15 @@ public class MarginTests {
     @Disabled
     @Test
     public void testSameSpeedLimits(TestInfo info) {
-        final var globalAllowance = new LinearAllowance(PERCENTAGE, 50);
+        final var globalAllowance = new Linear(PERCENTAGE, 50);
 
         double marginChangeLocation = 5000;
-        var startMargin = new LinearAllowance(PERCENTAGE, 50);
+        var startMargin = new Linear(PERCENTAGE, 50);
         startMargin.beginPosition = 0.;
         startMargin.endPosition = marginChangeLocation;
-        var endMargin = new LinearAllowance(PERCENTAGE, 50);
+        var endMargin = new Linear(PERCENTAGE, 50);
         endMargin.beginPosition = marginChangeLocation;
-        var splitAllowances = new RJSAllowance[][] { { startMargin, endMargin } };
+        var splitAllowances = new RJSLegacyAllowance[][] { { startMargin, endMargin } };
 
         var config = TestConfig.readResource(CONFIG_PATH)
                 .clearAllowances()
@@ -403,12 +401,12 @@ public class MarginTests {
     @Test
     public void testDifferentMargins(TestInfo info) {
         double marginChangeLocation = 5000;
-        var startMargin = new MarecoAllowance(MarecoAllowance.MarginType.PERCENTAGE, 10);
+        var startMargin = new Mareco(Mareco.MarginType.PERCENTAGE, 10);
         startMargin.beginPosition = 0.;
         startMargin.endPosition = marginChangeLocation;
-        var endMargin = new MarecoAllowance(MarecoAllowance.MarginType.PERCENTAGE, 50);
+        var endMargin = new Mareco(Mareco.MarginType.PERCENTAGE, 50);
         endMargin.beginPosition = marginChangeLocation;
-        var allowances = new RJSAllowance[][] { { startMargin }, { endMargin } };
+        var allowances = new RJSLegacyAllowance[][] { { startMargin }, { endMargin } };
 
         var config = TestConfig.readResource(CONFIG_PATH).clearAllowances();
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowances));
@@ -425,12 +423,12 @@ public class MarginTests {
     /** Test stacking multiple construction margins */
     public static void testSeveralConstructionMargins(String configPath, TestInfo info) {
         double marginChangeLocation = 5000;
-        var startMargin = new ConstructionAllowance(15);
+        var startMargin = new Construction(15);
         startMargin.beginPosition = 0.;
         startMargin.endPosition = marginChangeLocation;
-        var endMargin = new ConstructionAllowance(30);
+        var endMargin = new Construction(30);
         endMargin.beginPosition = marginChangeLocation;
-        var allowances = new RJSAllowance[][] { { startMargin }, { endMargin } };
+        var allowances = new RJSLegacyAllowance[][] { { startMargin }, { endMargin } };
 
         var config = TestConfig.readResource(configPath).clearAllowances();
         var test = ComparativeTest.from(config, () -> config.setAllAllowances(allowances));
@@ -457,7 +455,7 @@ public class MarginTests {
     public void testEcoMarginShortSlopes() {
         // setup allowances
         double value = 10;
-        var marecoAllowance = new MarecoAllowance(MarecoAllowance.MarginType.PERCENTAGE, value);
+        var marecoAllowance = new Mareco(Mareco.MarginType.PERCENTAGE, value);
 
         // Creates an infra with lots of very short slopes
         var config = TestConfig.readResource("one_line/infra.json", "one_line/simulation.json");
