@@ -38,20 +38,6 @@ export function getCursor(isHovering) {
 export const getSignalLayerId = (type) => `signal_${type.toLowerCase().replace(/ |\./g, '_')}`;
 
 /**
- * Norme les variables bruts des layers en variables normées
- * @param {object} data - les données à convertir venant du layer
- */
-
-export const convertLayerVariables = (data) => {
-  const dataConverted = {};
-  Object.entries(data).forEach(([key, value]) => {
-    const newKey = LAYER_VARIABLES[key] ? LAYER_VARIABLES[key] : key;
-    dataConverted[newKey] = value;
-  });
-  return dataConverted;
-};
-
-/**
  * Donne la propriété en string de la visibilité d'un layer
  * @param {boolean} isVisible - Si le layer doit être visible ou non
  * @returns 'visible' si le layer doit être visible, 'none' sinon
