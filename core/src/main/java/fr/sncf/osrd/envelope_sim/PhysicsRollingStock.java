@@ -12,6 +12,9 @@ public interface PhysicsRollingStock {
     /** The length of the train, in meters */
     double getLength();
 
+    /** The maximum speed the train can reach, in m/s */
+    double getMaxSpeed();
+
     /** The type of gamma input of the train */
     RollingStock.GammaType getGammaType();
 
