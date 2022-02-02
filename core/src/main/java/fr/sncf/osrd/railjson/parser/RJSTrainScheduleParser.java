@@ -161,7 +161,7 @@ public class RJSTrainScheduleParser {
         return res;
     }
 
-    private static double[] parseAllowanceBeginEnd(RJSAllowance allowance,
+    private static double[] parseAllowanceBeginEnd(RJSLegacyAllowance allowance,
                                                    TrainPath path,
                                                    Infra infra) throws InvalidSchedule {
         if (allowance.beginLocation != null && allowance.beginPosition != null)
@@ -185,7 +185,7 @@ public class RJSTrainScheduleParser {
         return new double[]{begin, end};
     }
 
-    private static SpeedControllerGenerator parseSpeedControllerGenerator(RJSAllowance allowance,
+    private static SpeedControllerGenerator parseSpeedControllerGenerator(RJSLegacyAllowance allowance,
                                                                           TrainPath path,
                                                                           Infra infra)
             throws InvalidSchedule {
@@ -196,16 +196,16 @@ public class RJSTrainScheduleParser {
         var begin = beginAndEnd[0];
         var end = beginAndEnd[1];
 
-        if (allowance instanceof RJSAllowance.LinearAllowance) {
-            var linearAllowance = (RJSAllowance.LinearAllowance) allowance;
+        if (allowance instanceof RJSLegacyAllowance.Linear) {
+            var linearAllowance = (RJSLegacyAllowance.Linear) allowance;
             return new LinearAllowanceGenerator(begin, end,
                     linearAllowance.allowanceValue, linearAllowance.allowanceType);
-        } else if (allowance instanceof RJSAllowance.ConstructionAllowance) {
-            var constructionAllowance = (RJSAllowance.ConstructionAllowance) allowance;
+        } else if (allowance instanceof RJSLegacyAllowance.Construction) {
+            var constructionAllowance = (RJSLegacyAllowance.Construction) allowance;
             return new ConstructionAllowanceGenerator(begin, end,
                     constructionAllowance.allowanceValue);
-        } else if (allowance instanceof RJSAllowance.MarecoAllowance) {
-            var marecoAllowance = (RJSAllowance.MarecoAllowance) allowance;
+        } else if (allowance instanceof RJSLegacyAllowance.Mareco) {
+            var marecoAllowance = (RJSLegacyAllowance.Mareco) allowance;
             return new MarecoAllowanceGenerator(begin, end,
                     marecoAllowance.allowanceValue, marecoAllowance.allowanceType);
         } else {
