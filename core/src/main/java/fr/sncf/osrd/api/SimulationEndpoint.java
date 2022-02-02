@@ -5,6 +5,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.StopActionPoint.RestartTrainEvent.RestartTrainPlanned;
+import fr.sncf.osrd.railjson.schema.schedule.RJSLegacyAllowance;
 import fr.sncf.osrd.train.TrainSchedule;
 import fr.sncf.osrd.api.InfraManager.InfraLoadException;
 import fr.sncf.osrd.infra.Infra;
@@ -52,6 +53,7 @@ public class SimulationEndpoint implements Take {
             .add(RJSRollingResistance.adapter)
             .add(RJSTrainPhase.adapter)
             .add(RJSAllowance.adapter)
+            .add(RJSLegacyAllowance.adapter)
             .build()
             .adapter(SimulationRequest.class);
 

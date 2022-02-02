@@ -12,15 +12,12 @@ public class RJSStandaloneTrainSchedule implements Identified {
     @Json(name = "rolling_stock")
     public String rollingStock;
 
+    /** The speed the train starts the journey with */
     @Json(name = "initial_speed")
     public double initialSpeed;
 
-    /* What allowance to apply on the train schedule.
-     * The double array should be seen as a list of set, each element
-     * in one set is applied independently, then each set is applied one after
-     * the other with the result of the previous one used as base speed. */
-    // TODO: Create a new allowance model
-    // public RJSAllowance[][] allowances;
+    /** A list of allowances, which are applied (stacked) in order. */
+    public RJSAllowance[] allowances;
 
     /** List of stops */
     public RJSTrainStop[] stops;
@@ -30,11 +27,13 @@ public class RJSStandaloneTrainSchedule implements Identified {
             String id,
             String rollingStock,
             double initialSpeed,
+            RJSAllowance[] allowances,
             RJSTrainStop[] stops
     ) {
         this.id = id;
         this.rollingStock = rollingStock;
         this.initialSpeed = initialSpeed;
+        this.allowances = allowances;
         this.stops = stops;
     }
 

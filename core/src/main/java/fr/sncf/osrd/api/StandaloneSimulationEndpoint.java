@@ -6,6 +6,7 @@ import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.api.InfraManager.InfraLoadException;
 import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope_sim.EnvelopePath;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
@@ -41,6 +42,8 @@ public class StandaloneSimulationEndpoint implements Take {
             .Builder()
             .add(ID.Adapter.FACTORY)
             .add(RJSRollingResistance.adapter)
+            .add(RJSAllowance.adapter)
+            .add(RJSAllowanceValue.adapter)
             .build()
             .adapter(StandaloneSimulationRequest.class);
 
@@ -83,16 +86,17 @@ public class StandaloneSimulationEndpoint implements Take {
 
             // Parse trainsPath
             var trainsPath = TrainPath.from(infra, request.trainsPath);
+            var envelopePath = EnvelopeTrainPath.from(trainsPath);
 
             // Compute envelopes
             var result = new StandaloneSimulationResult();
             var cache = new HashMap<StandaloneTrainSchedule, SimulationResultTrain>();
             for (var rjsTrainSchedule : request.trainSchedules) {
                 var trainSchedule = RJSStandaloneTrainScheduleParser.parse(
-                        infra, rollingStocks::get, rjsTrainSchedule, trainsPath);
+                        infra, request.timeStep, rollingStocks::get, rjsTrainSchedule, trainsPath, envelopePath);
 
                 if (!cache.containsKey(trainSchedule)) {
-                    var envelope = computeEnvelope(trainsPath, trainSchedule);
+                    var envelope = computeEnvelope(request.timeStep, trainsPath, envelopePath, trainSchedule);
                     var simResultTrain =
                             SimulationResultTrain.from(envelope, trainsPath, request.trainsPath, trainSchedule);
                     cache.put(trainSchedule, simResultTrain);
@@ -108,39 +112,59 @@ public class StandaloneSimulationEndpoint implements Take {
         }
     }
 
-    private static Envelope computeEnvelope(TrainPath trainsPath, StandaloneTrainSchedule schedule) {
+    private static Envelope computeEnvelope(
+            double timeStep,
+            TrainPath trainsPath,
+            EnvelopePath envelopePath,
+            StandaloneTrainSchedule schedule
+    ) {
         var rollingStock = schedule.rollingStock;
         var mrsp = MRSP.from(trainsPath, rollingStock);
-        var infraPathGrade = EnvelopeTrainPath.from(trainsPath);
-        var maxSpeedEnvelope = MaxSpeedEnvelope.from(rollingStock, infraPathGrade, schedule.stops, mrsp, 2);
-        return MaxEffortEnvelope.from(rollingStock, infraPathGrade, schedule.initialSpeed, maxSpeedEnvelope, 2);
+        var maxSpeedEnvelope = MaxSpeedEnvelope.from(rollingStock, envelopePath, schedule.stops, mrsp, timeStep);
+        var result = MaxEffortEnvelope.from(
+                rollingStock,
+                envelopePath,
+                schedule.initialSpeed,
+                maxSpeedEnvelope,
+                timeStep
+        );
+
+        for (var allowance : schedule.allowances)
+            result = allowance.apply(result);
+        return result;
     }
 
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static final class StandaloneSimulationRequest {
         /** Infra id */
-        public final String infra;
+        public String infra = null;
+
+        /** The time step which shall be used for all simulations */
+        @Json(name = "time_step")
+        public double timeStep = 2;
 
         /** A list of rolling stocks involved in this simulation */
         @Json(name = "rolling_stocks")
-        public List<RJSRollingStock> rollingStocks;
+        public List<RJSRollingStock> rollingStocks = null;
 
         /** A list of trains plannings */
         @Json(name = "train_schedules")
-        public List<RJSStandaloneTrainSchedule> trainSchedules;
+        public List<RJSStandaloneTrainSchedule> trainSchedules = null;
 
         /** The path used by trains */
         @Json(name = "trains_path")
-        public RJSTrainPath trainsPath;
+        public RJSTrainPath trainsPath = null;
 
         /** Create SimulationRequest */
         public StandaloneSimulationRequest(
                 String infra,
+                double timeStep,
                 List<RJSRollingStock> rollingStocks,
                 List<RJSStandaloneTrainSchedule> trainSchedules,
                 RJSTrainPath trainsPath
         ) {
             this.infra = infra;
+            this.timeStep = timeStep;
             this.rollingStocks = rollingStocks;
             this.trainSchedules = trainSchedules;
             this.trainsPath = trainsPath;
