@@ -19,7 +19,7 @@ import fr.sncf.osrd.railjson.parser.exceptions.InvalidSuccession;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSLegacyAllowance;
 import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
@@ -125,7 +125,7 @@ public class TestConfig {
     /** Remove all allowances from the given configuration */
     public TestConfig clearAllowances() {
         for (var schedule : rjsSimulation.trainSchedules)
-            schedule.allowances = new RJSAllowance[][] {};
+            schedule.allowances = new RJSLegacyAllowance[][] {};
         return this;
     }
 
@@ -156,12 +156,12 @@ public class TestConfig {
         return this;
     }
 
-    public TestConfig setAllAllowances(RJSAllowance allowance) {
-        return setAllAllowances(new RJSAllowance[][] { { allowance } });
+    public TestConfig setAllAllowances(RJSLegacyAllowance allowance) {
+        return setAllAllowances(new RJSLegacyAllowance[][] { { allowance } });
     }
 
     /** Set the allowances of all trains to the given specification */
-    public TestConfig setAllAllowances(RJSAllowance[][] allowances) {
+    public TestConfig setAllAllowances(RJSLegacyAllowance[][] allowances) {
         for (var trainSchedule : rjsSimulation.trainSchedules)
             trainSchedule.allowances = allowances;
         return this;

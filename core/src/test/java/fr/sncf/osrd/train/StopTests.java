@@ -1,7 +1,7 @@
 package fr.sncf.osrd.train;
 
 import static fr.sncf.osrd.Helpers.*;
-import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarginType.PERCENTAGE;
+import static fr.sncf.osrd.railjson.schema.schedule.RJSLegacyAllowance.MarginType.PERCENTAGE;
 import static fr.sncf.osrd.simulation.Simulation.timeStep;
 import static fr.sncf.osrd.speedcontroller.SpeedInstructionsTests.isLate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.TestConfig;
 import fr.sncf.osrd.infra.StopActionPoint;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSLegacyAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.speedcontroller.CoastingSpeedController;
@@ -187,7 +187,7 @@ public class StopTests {
         var durationStopShort = 10;
         var durationStopLong = 100;
         double value = 10;
-        var allowance = new RJSAllowance.LinearAllowance(PERCENTAGE, value);
+        var allowance = new RJSLegacyAllowance.Linear(PERCENTAGE, value);
 
         final var configWithShortStop =
                 TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
@@ -248,7 +248,7 @@ public class StopTests {
         final double begin = 3000;
         final double end = 5000;
 
-        var allowance = new RJSAllowance.ConstructionAllowance(value);
+        var allowance = new RJSLegacyAllowance.Construction(value);
         allowance.beginPosition = begin;
         allowance.endPosition = end;
 
@@ -297,7 +297,7 @@ public class StopTests {
         var durationStopShort = 10;
         var durationStopLong = 100;
         double value = 10;
-        final var allowance = new RJSAllowance.MarecoAllowance(PERCENTAGE, value);
+        final var allowance = new RJSLegacyAllowance.Mareco(PERCENTAGE, value);
 
         final var baseConfig = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
         for (var schedule : baseConfig.rjsSimulation.trainSchedules)
@@ -369,7 +369,7 @@ public class StopTests {
         var durationStop = 10;
         double value = 10;
         final var allowance =
-                new RJSAllowance.MarecoAllowance(PERCENTAGE, value);
+                new RJSLegacyAllowance.Mareco(PERCENTAGE, value);
 
         final var config = TestConfig.readResource("tiny_infra/config_railjson.json")
                 .clearAllowances()
@@ -406,7 +406,7 @@ public class StopTests {
         double value = 10;
 
         final var allowance =
-                new RJSAllowance.MarecoAllowance(PERCENTAGE, value);
+                new RJSLegacyAllowance.Mareco(PERCENTAGE, value);
 
         final var config = TestConfig.readResource("tiny_infra/config_railjson.json")
                 .clearAllowances()

@@ -1,12 +1,14 @@
 package fr.sncf.osrd.speedcontroller;
 
 import static fr.sncf.osrd.Helpers.getTimePerPosition;
-import static fr.sncf.osrd.railjson.schema.schedule.RJSAllowance.MarginType.*;
+import static fr.sncf.osrd.railjson.schema.schedule.RJSLegacyAllowance.MarginType.*;
 import static fr.sncf.osrd.simulation.Simulation.timeStep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.TestConfig;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSLegacyAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSLegacyAllowance.Mareco;
+import fr.sncf.osrd.railjson.schema.schedule.RJSLegacyAllowance.MarginType;
 import net.jqwik.api.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,7 +32,7 @@ public class AllowanceTestsOnAllInfras {
     ) {
         var config = readConfig(rootPath);
 
-        var allowance = new RJSAllowance.LinearAllowance(PERCENTAGE, value);
+        var allowance = new RJSLegacyAllowance.Linear(PERCENTAGE, value);
         var test = MarginTests.ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
 
         var start = config.rjsSimulation.trainSchedules.get(0).departureTime;
@@ -47,7 +49,7 @@ public class AllowanceTestsOnAllInfras {
     ) {
         var config = readConfig(rootPath);
 
-        var allowance = new RJSAllowance.LinearAllowance(DISTANCE, value);
+        var allowance = new RJSLegacyAllowance.Linear(DISTANCE, value);
         var test = MarginTests.ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
 
         var timesBase = getTimePerPosition(test.baseEvents);
@@ -62,7 +64,7 @@ public class AllowanceTestsOnAllInfras {
             @ForAll("infraRootPaths") String rootPath,
             @ForAll("secondsMarginValues") double value
     ) {
-        var allowance = new RJSAllowance.ConstructionAllowance(value);
+        var allowance = new RJSLegacyAllowance.Construction(value);
 
         var config = readConfig(rootPath);
         var test = MarginTests.ComparativeTest.from(config, () -> config.setAllAllowances(allowance));
@@ -79,8 +81,7 @@ public class AllowanceTestsOnAllInfras {
             @ForAll("secondsMarginValues") double value
     ) {
         // setup allowances
-        var marecoAllowance =
-                new RJSAllowance.MarecoAllowance(RJSAllowance.MarecoAllowance.MarginType.PERCENTAGE, value);
+        var marecoAllowance = new Mareco(MarginType.PERCENTAGE, value);
 
         // run the baseline and testing simulation
         var config = readConfig(rootPath);
