@@ -79,11 +79,11 @@ public final class Envelope implements Iterable<EnvelopePart> {
     }
 
     public static boolean areSpaceContinuous(double prevPos, double prevSpeed, double nextPos, double nextSpeed) {
-        return prevPos == nextPos;
+        return Math.abs(prevPos - nextPos) < 1E-10;
     }
 
     public static boolean areSpeedContinuous(double prevPos, double prevSpeed, double nextPos, double nextSpeed) {
-        return prevSpeed == nextSpeed;
+        return Math.abs(prevSpeed - nextSpeed) < 1E-10;
     }
 
     // endregion
