@@ -34,7 +34,7 @@ const TracksGeographic = (props) => {
           ...trackNameLayer(colors),
           layout: {
             ...trackNameLayer(colors).layout,
-            'text-field': '{V_nom}',
+            'text-field': '{track_name}',
             'text-size': 11,
           },
         }}
@@ -47,7 +47,7 @@ const TracksGeographic = (props) => {
           ...trackNameLayer(colors),
           layout: {
             ...trackNameLayer(colors).layout,
-            'text-field': '{V_nom}',
+            'text-field': '{track_name}',
             'text-size': 10,
           },
         }}
@@ -60,7 +60,7 @@ const TracksGeographic = (props) => {
           ...lineNumberLayer(colors),
           layout: {
             ...lineNumberLayer(colors).layout,
-            'text-field': '{L_code}',
+            'text-field': '{line_code}',
           },
         }}
         id="chartis/tracks-geo/number"

@@ -25,9 +25,9 @@ export const lineNameLayer = (colors) => ({
       'Roboto Condensed',
     ],
     'symbol-placement': 'line',
-    'text-field': '{RA_libelle_ligne}',
+    'text-field': '{line_name}',
     'text-size': 10,
-    'text-offset': [0, 0.5],
+    'text-offset': [0, 1],
   },
   paint: {
     'text-color': colors.linename.text,

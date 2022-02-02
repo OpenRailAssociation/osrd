@@ -1,6 +1,5 @@
 import config from 'config/config';
 
-export { LAYER_VARIABLES } from 'common/Map/Consts/LayerVariables';
 export * from 'common/Map/Consts/SignalsNames';
 
 // Map constants

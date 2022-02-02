@@ -13,9 +13,9 @@ export default function OperationalPoints(props) {
     'source-layer': 'operational_points',
     paint: {
       'circle-stroke-color': '#82be00',
-      'circle-stroke-width': 3,
+      'circle-stroke-width': 2,
       'circle-color': 'rgba(255, 255, 255, 0)',
-      'circle-radius': 5,
+      'circle-radius': 4,
     },
   };
 
