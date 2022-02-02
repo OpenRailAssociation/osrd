@@ -431,9 +431,8 @@ public class MarecoAllowance implements Allowance {
         logger.debug("total time {}, trying to get to {}", baseTime, targetTime);
 
         Envelope curEnvelope = base;
-        var errorMargin = 5.0 * timeStep;
         var initialHighBound = getFirstHighEstimate(base) * 1.05;
-        var search = new DoubleBinarySearch(0, initialHighBound, targetTime, errorMargin, true);
+        var search = new DoubleBinarySearch(0, initialHighBound, targetTime, timeStep, true);
         for (int i = 1; i < 21 && !search.complete(); i++) {
             var input = search.getInput();
             logger.debug("starting attempt {} with v1 = {}", i, input);
