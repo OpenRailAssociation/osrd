@@ -1,39 +1,26 @@
 import React from 'react';
 import { Popup } from 'react-map-gl';
 import { useSelector } from 'react-redux';
-import bbox from '@turf/bbox';
 import PopupInfos from 'common/Map/Popup/PopupInfos';
 import PopupInfosCustomContent from 'applications/osrd/components/OSRDConfMap/PopupInfosCustomContent';
 import PopupInfosCustomTitle from 'applications/osrd/components/OSRDConfMap/PopupInfosCustomTitle';
-import convertLayerVariables from 'applications/osrd/components/Helpers/convertLayerVariables';
 
 export default function RenderPopup() {
   const { featureInfoClick } = useSelector((state) => state.osrdconf);
+  console.log(featureInfoClick);
   if (featureInfoClick.displayPopup) {
-    const properties = convertLayerVariables(featureInfoClick.feature.properties);
-    if (!properties.longueur) {
-      properties.longueur = properties.pkLigneF - properties.pkLigneD;
-    }
     let backgroundColor;
-    switch (properties.typeVoie) {
+    switch (featureInfoClick.feature.properties.typeVoie) {
       case 'VP':
-        backgroundColor = properties.categVoie === 'VS' ? 'bg-danger' : 'bg-primary';
+        backgroundColor = featureInfoClick.feature.properties.categVoie === 'VS' ? 'bg-danger' : 'bg-primary';
         break;
       default:
         backgroundColor = 'bg-secondary';
         break;
     }
 
-    properties.source = featureInfoClick.feature.source;
-    properties.clickLngLat = featureInfoClick.lngLat;
-    /* properties.boundingBox = bbox(featureInfoClick.feature);
-      eslint prefer-destructuring: ["error", {AssignmentExpression: {array: false}}] */
-    /* eslint no-underscore-dangle: ["error", { "allow": ["_geometry"] }] */
-    /* properties.startLonLat = featureInfoClick.feature._geometry.coordinates[0];
-    properties.endLonLat =
-      featureInfoClick.feature._geometry.coordinates[
-        featureInfoClick.feature._geometry.coordinates.length - 1
-      ]; */
+    featureInfoClick.feature.properties.source = featureInfoClick.feature.source;
+    featureInfoClick.feature.properties.clickLngLat = featureInfoClick.lngLat;
 
     return (
       <Popup
@@ -43,8 +30,8 @@ export default function RenderPopup() {
         className="mapboxgl-hover-custom-popup"
       >
         <PopupInfos
-          title={<PopupInfosCustomTitle properties={properties} />}
-          content={<PopupInfosCustomContent data={properties} />}
+          title={<PopupInfosCustomTitle properties={featureInfoClick.feature.properties} />}
+          content={<PopupInfosCustomContent data={featureInfoClick.feature.properties} />}
           backgroundColor={backgroundColor}
         />
       </Popup>
