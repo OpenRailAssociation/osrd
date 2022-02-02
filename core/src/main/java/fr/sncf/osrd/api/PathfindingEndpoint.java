@@ -51,16 +51,16 @@ public abstract class PathfindingEndpoint implements Take {
         }
     }
 
-    @SuppressFBWarnings({"URF_UNREAD_FIELD"})
+    @SuppressFBWarnings("URF_UNREAD_FIELD")
     protected static class DirectionalTrackRangeResult {
         @Json(name = "track")
-        private final RJSObjectRef<RJSTrackSection> trackSection;
-        private final double begin;
-        private final double end;
+        public final RJSObjectRef<RJSTrackSection> trackSection;
+        public final double begin;
+        public final double end;
         private final EdgeDirection direction;
 
         protected DirectionalTrackRangeResult(String trackSectionID, double begin, double end) {
-            this.trackSection = new RJSObjectRef<RJSTrackSection>(trackSectionID, "TrackSection");
+            this.trackSection = new RJSObjectRef<>(trackSectionID, "TrackSection");
             this.begin = begin;
             this.end = end;
             this.direction = begin < end ? EdgeDirection.START_TO_STOP : EdgeDirection.STOP_TO_START;
