@@ -48,7 +48,7 @@ def run_test(infra: Dict, links: Dict, base_url: str, infra_id: int):
             return
         raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(schedule_payload)}")
 
-    schedule_id = r.json()["id"]
+    schedule_id = r.json()["ids"][0]
     r = requests.get(f"{base_url}train_schedule/{schedule_id}/result/", timeout=TIMEOUT)
     if r.status_code // 100 != 2:
         raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, id={schedule_id}")

@@ -1,6 +1,6 @@
 package fr.sncf.osrd.api;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.api.PathfindingEndpoint.PathfindingWaypoint;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -9,10 +9,28 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.takes.rq.RqFake;
 import org.takes.rs.RsPrint;
 
+
 public class PathfindingTest extends ApiTest {
     private static PathfindingWaypoint[] makeBidirectionalEndPoint(PathfindingWaypoint point) {
         var waypointInverted = new PathfindingWaypoint(point.trackSection, point.offset, point.direction.opposite());
         return new PathfindingWaypoint[]{point, waypointInverted};
+    }
+
+    private static void expectWaypointInPathResult(
+            PathfindingRoutesEndpoint.PathfindingResult result,
+            PathfindingWaypoint waypoint
+    ) {
+        for (var route : result.routePaths) {
+            for (var track : route.trackSections) {
+                if (!track.trackSection.id.id.equals(waypoint.trackSection))
+                    continue;
+                final var begin = Math.min(track.begin, track.end);
+                final var end = Math.max(track.begin, track.end);
+                if (begin <= waypoint.offset && end >= waypoint.offset)
+                    return;
+            }
+        }
+        fail("Expected path result to contain a location but not found");
     }
 
     @Test
@@ -39,7 +57,6 @@ public class PathfindingTest extends ApiTest {
                 new PathfindingRoutesEndpoint(infraHandlerMock).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody))
         ).printBody();
-        System.out.println(result);
 
         var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
         assert response != null;
@@ -80,6 +97,8 @@ public class PathfindingTest extends ApiTest {
 
         var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
         assert response != null;
+        expectWaypointInPathResult(response, waypointStart);
+        expectWaypointInPathResult(response, waypointEnd);
     }
 
     /** Tests that we find a route path between two points on the same edge */
@@ -116,6 +135,8 @@ public class PathfindingTest extends ApiTest {
 
         var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
         assert response != null;
+        expectWaypointInPathResult(response, waypointStart);
+        expectWaypointInPathResult(response, waypointEnd);
     }
 
     @Test
