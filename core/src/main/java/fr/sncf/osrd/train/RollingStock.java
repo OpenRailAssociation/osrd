@@ -149,13 +149,17 @@ public class RollingStock implements PhysicsRollingStock {
      * @return the max tractive effort
      */
     public double getMaxEffort(double speed) {
-        double maxEffort = 0.0;
+        double previousEffort = 0.0;
+        double previousSpeed = 0.0;
         for (var dataPoint : tractiveEffortCurve) {
-            if (dataPoint.speed > Math.abs(speed))
-                break;
-            maxEffort = dataPoint.maxEffort;
+            if (previousSpeed <= Math.abs(speed) && Math.abs(speed) < dataPoint.speed) {
+                var coeff = (previousEffort - dataPoint.maxEffort) / (previousSpeed - dataPoint.speed);
+                return previousEffort + coeff * (Math.abs(speed) - previousSpeed);
+            }
+            previousEffort = dataPoint.maxEffort;
+            previousSpeed = dataPoint.speed;
         }
-        return maxEffort;
+        return previousEffort;
     }
 
     // TODO masses
