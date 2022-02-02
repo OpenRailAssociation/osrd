@@ -41,7 +41,6 @@ public class MaxEffortEnvelope {
             var startPosition = builder.cursor.getPosition();
             EnvelopeAcceleration.accelerate(rollingStock, path, timeStep, startPosition, startSpeed, partBuilder, 1);
             builder.addPart(partBuilder);
-            builder.cursor.nextPart();
         }
         return builder.build();
     }
@@ -91,6 +90,7 @@ public class MaxEffortEnvelope {
         var maxEffortEnvelope =
                 addAccelerationCurves(rollingStock, path, maxSpeedProfile, timeStep, initialSpeed);
         maxEffortEnvelope = addMaintainSpeedCurves(rollingStock, path, maxEffortEnvelope, timeStep);
+        assert maxEffortEnvelope.continuous;
         return maxEffortEnvelope;
     }
 }

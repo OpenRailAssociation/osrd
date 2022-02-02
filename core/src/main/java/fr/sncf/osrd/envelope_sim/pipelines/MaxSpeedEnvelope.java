@@ -8,6 +8,7 @@ import fr.sncf.osrd.envelope.EnvelopePartMeta;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
+import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrainStop;
 import java.util.ArrayList;
 
@@ -49,7 +50,6 @@ public class MaxSpeedEnvelope {
             // TODO: link directionSign to cursor boolean reverse
             EnvelopeDeceleration.decelerate(rollingStock, path, timeStep, startPosition, startSpeed, partBuilder, -1);
             builder.addPart(partBuilder);
-            builder.cursor.nextPart();
         }
         return builder.build();
     }
