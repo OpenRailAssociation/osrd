@@ -1,6 +1,6 @@
 package fr.sncf.osrd.speedcontroller;
 
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSLegacyAllowance;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.speedcontroller.generators.MarecoAllowanceGenerator;
 import fr.sncf.osrd.train.TrainSchedule;
@@ -109,7 +109,7 @@ public class SpeedInstructions {
 
     /** Split a mareco allowance into several ones separated by each stop */
     private Set<SpeedControllerGenerator> splitMareco(MarecoAllowanceGenerator mareco, TrainSchedule schedule) {
-        assert mareco.allowanceType != RJSAllowance.MarecoAllowance.MarginType.TIME;
+        assert mareco.allowanceType != RJSLegacyAllowance.Mareco.MarginType.TIME;
         var res = new HashSet<SpeedControllerGenerator>();
         var begin = mareco.getBegin();
         var end = Math.min(mareco.getEnd(), schedule.plannedPath.length);

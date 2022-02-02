@@ -3,6 +3,7 @@ package fr.sncf.osrd.api;
 import static fr.sncf.osrd.Helpers.loadExampleSimulationResource;
 import static org.junit.jupiter.api.Assertions.*;
 
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSStandaloneTrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
@@ -40,11 +41,13 @@ class StandaloneSimulationTest extends ApiTest {
 
         var trainSchedules = new ArrayList<RJSStandaloneTrainSchedule>();
         trainSchedules.add(new RJSStandaloneTrainSchedule("Test.", "fast_rolling_stock", 0,
+                new RJSAllowance[0],
                 new RJSTrainStop[] { new RJSTrainStop(-1., null, 0.1) }));
 
         var requestBody = StandaloneSimulationEndpoint.adapterRequest.toJson(
                 new StandaloneSimulationEndpoint.StandaloneSimulationRequest(
                         "tiny_infra/infra.json",
+                             2,
                              rjsSimulation.rollingStocks,
                              trainSchedules,
                              rjsTrainPath
@@ -79,12 +82,14 @@ class StandaloneSimulationTest extends ApiTest {
         for (int i = 0; i < 10; i++) {
             var trainID = String.format("Test.%d", i);
             trainSchedules.add(new RJSStandaloneTrainSchedule(trainID, "fast_rolling_stock", 0,
+                    new RJSAllowance[0],
                     new RJSTrainStop[]{new RJSTrainStop(-1., null, 0.1)}));
         }
 
         var requestBody = StandaloneSimulationEndpoint.adapterRequest.toJson(
                 new StandaloneSimulationEndpoint.StandaloneSimulationRequest(
                         "tiny_infra/infra.json",
+                        2,
                         rjsSimulation.rollingStocks,
                         trainSchedules,
                         rjsTrainPath
