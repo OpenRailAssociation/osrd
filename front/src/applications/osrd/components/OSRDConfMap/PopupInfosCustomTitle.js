@@ -5,36 +5,24 @@ import kmORm from 'common/distances';
 export default function PopupInfosCustomTitle(props) {
   const { properties } = props;
   const {
-    nomVoie, codeLigne, longueur, pkSncfDe, pkSncfFi, libelle, pk, libelleLigne,
+    name, track_name, line_code, length, line_name, libelleLigne,
   } = properties;
-  const distance = kmORm(longueur);
+  const distance = kmORm(length);
   let title = '';
-  if (libelle !== undefined && libelle.length !== 0) {
-    title = libelle;
-  } else if (codeLigne !== undefined && codeLigne.length !== 0) {
-    title = `${codeLigne} ${nomVoie}`;
+  if (line_code !== undefined && line_code.length !== 0) {
+    title = `${line_code} ${track_name}`;
+  } else if (name) {
+    title = properties.name;
   }
   return (
     <>
       <strong className="mr-2">{title}</strong>
-      <small className="mr-2">{libelleLigne}</small>
-      {distance && (
+      {length && (
         <small className="mr-2">
           {distance.value}
           <small className="text-uppercase">{distance.unit}</small>
         </small>
       )}
-      <small>
-        {pkSncfDe !== ''
-        && (
-          <>
-            {pkSncfDe}
-            <strong> &bull; </strong>
-            {pkSncfFi}
-          </>
-        )}
-        {pk !== '' && (pk)}
-      </small>
     </>
   );
 }
