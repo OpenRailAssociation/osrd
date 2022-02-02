@@ -85,6 +85,10 @@ public class RollingStock implements PhysicsRollingStock {
         return length;
     }
 
+    @Override
+    public double getMaxSpeed() {
+        return maxSpeed;
+    }
 
     /**
      * Gets the rolling resistance at a given speed, which is a force that always goes
