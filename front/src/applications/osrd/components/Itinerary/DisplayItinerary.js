@@ -47,7 +47,7 @@ export default function DisplayItinerary(props) {
                 tabIndex={0}
               >
                 <strong className="mr-1 text-nowrap">
-                  {osrdconf.origin.id}
+                  {osrdconf.origin.name ? osrdconf.origin.name : osrdconf.origin.id.split('-')[0]}
                 </strong>
               </div>
               <div className="ml-auto osrd-config-time mr-1">
@@ -120,7 +120,7 @@ export default function DisplayItinerary(props) {
                 className="flex-grow-1"
               >
                 <strong className="mr-1 text-nowrap">
-                  {osrdconf.destination.id}
+                  {osrdconf.destination.name ? osrdconf.destination.name : osrdconf.destination.id.split('-')[0]}
                 </strong>
               </div>
               <button className="btn btn-sm btn-only-icon btn-white" type="button" onClick={() => store.dispatch(updateDestination(undefined))}>

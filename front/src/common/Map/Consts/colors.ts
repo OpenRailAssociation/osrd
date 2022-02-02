@@ -23,13 +23,13 @@ const colors: Record<string, Theme> = {
     },
     line: {
       color: '#555555',
-      halo: '#f9f5f5',
+      halo: '#eee',
       off: '#888888',
       text: '#0088ce',
     },
     linename: {
       text: '#555555',
-      halo: '#f9f5f5',
+      halo: '#eee',
     },
     mapmarker: {
       text: '#0088ce',
@@ -99,7 +99,7 @@ const colors: Record<string, Theme> = {
     },
     trackname: {
       text: '#555555',
-      halo: '#f9f5f5',
+      halo: '#eee',
     },
     tunnel: {
       color: '#4b4b4b',

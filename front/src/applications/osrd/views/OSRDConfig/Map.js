@@ -147,6 +147,9 @@ const Map = () => {
     const interactiveLayersLocal = [];
     if (mapTrackSources === 'geographic') {
       interactiveLayersLocal.push('chartis/tracks-geo/main');
+      if (layersSettings.operationalpoints) {
+        interactiveLayersLocal.push('chartis/osrd_operational_point/geo');
+      }
     } else {
       interactiveLayersLocal.push('schematicMainLayer');
     }
