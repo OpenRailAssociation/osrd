@@ -292,8 +292,12 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                 while (opIterator.hasNext())
                     addStep(new PathWaypointResult(opIterator.next(), trackSection.edge));
             }
-            if (routePaths.isEmpty() || !routePaths.get(routePaths.size() - 1).route.id.equals(routeResult.route.id))
+
+            if (!routePaths.isEmpty() && routePaths.get(routePaths.size() - 1).route.id.equals(routeResult.route.id)) {
+                routePaths.get(routePaths.size() - 1).addTrackSections(routeResult.trackSections);
+            } else {
                 routePaths.add(routeResult);
+            }
         }
 
         void addStep(PathWaypointResult newStep) {
@@ -312,7 +316,36 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
         public static class RoutePathResult {
             public RJSObjectRef<RJSRoute> route;
             @Json(name = "track_sections")
-            public List<DirectionalTrackRangeResult> trackSections;
+            public List<DirectionalTrackRangeResult> trackSections = new ArrayList<>();
+
+            /** This function adds trackSectionRanges by concatenating them to the existing ones */
+            public void addTrackSections(List<DirectionalTrackRangeResult> newTracks) {
+                if (trackSections.isEmpty()) {
+                    trackSections = newTracks;
+                    return;
+                }
+
+                var lastTrack = trackSections.get(trackSections.size() - 1);
+                var firstNewTrack = newTracks.get(0);
+
+                // If no intersection we simply add all new tracks
+                if (!lastTrack.trackSection.id.equals(firstNewTrack.trackSection.id)) {
+                    trackSections.addAll(newTracks);
+                    return;
+                }
+
+                // If same track we must merge the last track with the first new one
+                trackSections.remove(trackSections.size() - 1);
+                trackSections.add(new DirectionalTrackRangeResult(
+                        lastTrack.trackSection.id.id,
+                        lastTrack.begin,
+                        firstNewTrack.end)
+                );
+
+                // Add the rest of them
+                for (int i = 1; i < newTracks.size(); i++)
+                    trackSections.add(newTracks.get(i));
+            }
         }
 
         public static class PathWaypointResult {
