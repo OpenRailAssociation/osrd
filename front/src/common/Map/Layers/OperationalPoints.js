@@ -7,7 +7,7 @@ import { MAP_URL } from 'common/Map/const';
 export default function OperationalPoints(props) {
   const { layersSettings } = useSelector((state) => state.map);
   const { infraID } = useSelector((state) => state.osrdconf);
-  const { geomType } = props;
+  const { geomType, colors } = props;
   const layerPoint = {
     type: 'circle',
     'source-layer': 'operational_points',
@@ -35,9 +35,9 @@ export default function OperationalPoints(props) {
       visibility: 'visible',
     },
     paint: {
-      'text-color': '#202258',
+      'text-color': colors.op.text,
       'text-halo-width': 2,
-      'text-halo-color': 'rgba(255,255,255,0.75)',
+      'text-halo-color': colors.op.halo,
       'text-halo-blur': 1,
     },
   };
@@ -56,4 +56,5 @@ export default function OperationalPoints(props) {
 
 OperationalPoints.propTypes = {
   geomType: PropTypes.string.isRequired,
+  colors: PropTypes.object.isRequired,
 };
