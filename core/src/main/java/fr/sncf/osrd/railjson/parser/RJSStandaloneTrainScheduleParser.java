@@ -71,7 +71,7 @@ public class RJSStandaloneTrainScheduleParser {
             return new MarecoAllowance(
                     rollingStock, envelopePath, timeStep,
                     0, envelopePath.getLength(),
-                    0,
+                    30 / 3.6,
                     parseAllowanceValue(rjsMareco.defaultValue)
             );
         }
