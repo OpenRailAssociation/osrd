@@ -24,7 +24,7 @@ export const lineNameLayer = (colors) => ({
     'text-font': [
       'Roboto Condensed',
     ],
-    'symbol-placement': 'line',
+    'symbol-placement': 'line-center',
     'text-field': '{line_name}',
     'text-size': 10,
     'text-offset': [0, 1],
@@ -44,8 +44,9 @@ export const lineNumberLayer = (colors) => ({
     'text-font': [
       'Roboto Condensed',
     ],
-    'symbol-placement': 'line-center',
+    'symbol-placement': 'line',
     'text-size': 10,
+    'text-offset': [0, 1],
   },
   paint: {
     'text-color': colors.line.text,
