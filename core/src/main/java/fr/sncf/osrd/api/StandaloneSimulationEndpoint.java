@@ -210,20 +210,20 @@ public class StandaloneSimulationEndpoint implements Take {
 
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class SimulationResultTrain {
-        public final Collection<SimulationResultSpeed> speeds;
+        public final List<SimulationResultSpeed> speeds;
         @Json(name = "head_positions")
-        public final Collection<SimulationResultPosition> headPositions;
+        public final List<SimulationResultPosition> headPositions;
         @Json(name = "tail_positions")
-        public final Collection<SimulationResultPosition> tailPositions;
-        public final Collection<SimulationResultStops> stops;
+        public final List<SimulationResultPosition> tailPositions;
+        public final List<SimulationResultStops> stops;
         @Json(name = "route_occupancies")
         public final Map<String, SimulationResultRouteOccupancy> routeOccupancies;
 
         SimulationResultTrain(
-                Collection<SimulationResultSpeed> speeds,
-                Collection<SimulationResultPosition> headPositions,
-                Collection<SimulationResultPosition> tailPositions,
-                Collection<SimulationResultStops> stops, Map<String,
+                List<SimulationResultSpeed> speeds,
+                List<SimulationResultPosition> headPositions,
+                List<SimulationResultPosition> tailPositions,
+                List<SimulationResultStops> stops, Map<String,
                 SimulationResultRouteOccupancy> routeOccupancies
         ) {
             this.speeds = speeds;

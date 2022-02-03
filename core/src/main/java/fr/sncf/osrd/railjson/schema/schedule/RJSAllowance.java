@@ -24,6 +24,16 @@ public class RJSAllowance {
         public RJSAllowanceValue defaultValue = null;
 
         public RJSRangeAllowance[] ranges = null;
+
+        public Mareco(RJSAllowanceValue defaultValue) {
+            this.defaultValue = defaultValue;
+            this.ranges = null;
+        }
+
+        public Mareco() {
+            this.defaultValue = null;
+            this.ranges = null;
+        }
     }
 
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})

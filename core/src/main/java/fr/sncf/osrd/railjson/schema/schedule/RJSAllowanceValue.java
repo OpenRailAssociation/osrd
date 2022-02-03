@@ -11,14 +11,38 @@ public class RJSAllowanceValue {
     );
 
     public static final class TimePerDistance extends RJSAllowanceValue {
-        public double minutes = Double.NaN;
+        public double minutes;
+
+        public TimePerDistance() {
+            this(Double.NaN);
+        }
+
+        public TimePerDistance(double minutes) {
+            this.minutes = minutes;
+        }
     }
 
     public static final class Time extends RJSAllowanceValue {
-        public double seconds = Double.NaN;
+        public double seconds;
+
+        public Time() {
+            this(Double.NaN);
+        }
+
+        public Time(double seconds) {
+            this.seconds = seconds;
+        }
     }
 
     public static final class Percent extends RJSAllowanceValue {
-        public double percentage = Double.NaN;
+        public double percentage;
+
+        public Percent() {
+            this(Double.NaN);
+        }
+
+        public Percent(double percentage) {
+            this.percentage = percentage;
+        }
     }
 }

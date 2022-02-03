@@ -3,14 +3,18 @@ package fr.sncf.osrd.api;
 import static fr.sncf.osrd.Helpers.loadExampleSimulationResource;
 import static org.junit.jupiter.api.Assertions.*;
 
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
-import fr.sncf.osrd.railjson.schema.schedule.RJSStandaloneTrainSchedule;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
+import fr.sncf.osrd.api.StandaloneSimulationEndpoint.StandaloneSimulationRequest;
+import fr.sncf.osrd.api.StandaloneSimulationEndpoint.StandaloneSimulationResult;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidSuccession;
+import fr.sncf.osrd.railjson.schema.schedule.*;
+import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
 import org.takes.rq.RqFake;
 import org.takes.rs.RsPrint;
+import java.io.IOException;
 import java.util.ArrayList;
 
 
@@ -34,39 +38,54 @@ class StandaloneSimulationTest extends ApiTest {
         return trainPath;
     }
 
+    public static StandaloneSimulationResult runStandaloneSimulation(StandaloneSimulationRequest request) throws
+            InvalidRollingStock, InvalidSuccession, InvalidSchedule, IOException, SimulationError {
+        // serialize the request
+        var requestBody = StandaloneSimulationEndpoint.adapterRequest.toJson(request);
+
+        // process it
+        var rawResponse = new RsPrint(new StandaloneSimulationEndpoint(infraHandlerMock)
+                .act(new RqFake("POST", "/standalone_simulation", requestBody))
+        ).printBody();
+
+        // parse the response
+        var response =  StandaloneSimulationEndpoint.adapterResult.fromJson(rawResponse);
+        assertNotNull(response);
+        return response;
+    }
+
     @Test
     public void simple() throws Exception {
+        // load the example infrastructure and build a test path
         final var rjsSimulation = loadExampleSimulationResource(getClass(), "tiny_infra/simulation.json");
         final var rjsTrainPath = tinyInfraTrainPath();
 
+        // build the simulation request
         var trainSchedules = new ArrayList<RJSStandaloneTrainSchedule>();
         trainSchedules.add(new RJSStandaloneTrainSchedule("Test.", "fast_rolling_stock", 0,
                 new RJSAllowance[0],
                 new RJSTrainStop[] { new RJSTrainStop(-1., null, 0.1) }));
-
-        var requestBody = StandaloneSimulationEndpoint.adapterRequest.toJson(
-                new StandaloneSimulationEndpoint.StandaloneSimulationRequest(
-                        "tiny_infra/infra.json",
-                             2,
-                             rjsSimulation.rollingStocks,
-                             trainSchedules,
-                             rjsTrainPath
-                )
+        var query = new StandaloneSimulationRequest(
+                "tiny_infra/infra.json",
+                2,
+                rjsSimulation.rollingStocks,
+                trainSchedules,
+                rjsTrainPath
         );
 
-        var result = new RsPrint(new StandaloneSimulationEndpoint(infraHandlerMock)
-                .act(new RqFake("POST", "/standalone_simulation", requestBody))
-        ).printBody();
-
-        var simResult =  StandaloneSimulationEndpoint.adapterResult.fromJson(result);
-        assertNotNull(simResult);
+        // parse back the simulation result
+        var simResult = runStandaloneSimulation(query);
         var trainResult = simResult.baseSimulations.get(0);
+
+        // ensure the position of the head and the tail of the train are always increasing
         var positions = trainResult.headPositions.toArray(new StandaloneSimulationEndpoint.SimulationResultPosition[0]);
         for (int i = 1; i < positions.length; i++)
             assertTrue(positions[i - 1].time <= positions[i].time);
         positions = trainResult.tailPositions.toArray(new StandaloneSimulationEndpoint.SimulationResultPosition[0]);
         for (int i = 1; i < positions.length; i++)
             assertTrue(positions[i - 1].time <= positions[i].time);
+
+        // ensure the speed is always increasing
         var speeds = trainResult.speeds.toArray(new StandaloneSimulationEndpoint.SimulationResultSpeed[0]);
         for (int i = 1; i < speeds.length; i++)
             assertTrue(speeds[i - 1].position <= speeds[i].position);
@@ -86,22 +105,53 @@ class StandaloneSimulationTest extends ApiTest {
                     new RJSTrainStop[]{new RJSTrainStop(-1., null, 0.1)}));
         }
 
-        var requestBody = StandaloneSimulationEndpoint.adapterRequest.toJson(
-                new StandaloneSimulationEndpoint.StandaloneSimulationRequest(
-                        "tiny_infra/infra.json",
-                        2,
-                        rjsSimulation.rollingStocks,
-                        trainSchedules,
-                        rjsTrainPath
-                )
+        var query = new StandaloneSimulationRequest(
+                "tiny_infra/infra.json",
+                2,
+                rjsSimulation.rollingStocks,
+                trainSchedules,
+                rjsTrainPath
         );
 
-        var result = new RsPrint(new StandaloneSimulationEndpoint(infraHandlerMock)
-                .act(new RqFake("POST", "/standalone_simulation", requestBody))
-        ).printBody();
-
-        var simResult =  StandaloneSimulationEndpoint.adapterResult.fromJson(result);
-        assertNotNull(simResult);
+        var simResult = runStandaloneSimulation(query);
         assertEquals(10, simResult.baseSimulations.size());
+    }
+
+    @Test
+    public void withAllowance() throws Exception {
+        // load the example infrastructure and build a test path
+        final var rjsSimulation = loadExampleSimulationResource(getClass(), "tiny_infra/simulation.json");
+        final var rjsTrainPath = tinyInfraTrainPath();
+
+        // build the simulation request
+        var stops = new RJSTrainStop[] {
+                // -1 is a special value which encodes the end of the path
+                new RJSTrainStop(-1., null, 0.1),
+        };
+        var allowance = new RJSAllowance[] {
+                new RJSAllowance.Mareco(new RJSAllowanceValue.Percent(5)),
+        };
+        var trains = new ArrayList<RJSStandaloneTrainSchedule>();
+        trains.add(new RJSStandaloneTrainSchedule("no_allowance", "fast_rolling_stock",
+                0, null, stops));
+        trains.add(new RJSStandaloneTrainSchedule("allowance", "fast_rolling_stock",
+                0, allowance, stops));
+
+        var query = new StandaloneSimulationRequest(
+                "tiny_infra/infra.json",
+                2,
+                rjsSimulation.rollingStocks,
+                trains,
+                rjsTrainPath
+        );
+
+        // parse back the simulation result
+        var simResult = runStandaloneSimulation(query);
+
+        var noAllowanceResult = simResult.baseSimulations.get(0);
+        var noAllowanceTime = noAllowanceResult.headPositions.get(noAllowanceResult.headPositions.size() - 1).time;
+        var marecoResult = simResult.baseSimulations.get(1);
+        var marecoTime = marecoResult.headPositions.get(marecoResult.headPositions.size() - 1).time;
+        assertEquals(marecoTime, noAllowanceTime * 1.05, noAllowanceTime * 0.001);
     }
 }
