@@ -75,4 +75,9 @@ public final class EnvelopePartBuilder implements StepConsumer {
     public EnvelopePart build() {
         return new EnvelopePart(meta, positions.toArray(), speeds.toArray(), times.toArray());
     }
+
+    /** Return the number of steps currently in the envelope part builder*/
+    public int stepCount() {
+        return times.size();
+    }
 }

@@ -354,4 +354,9 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
         partBuilder = null;
         return result;
     }
+
+    /** Return the number of steps added to the overlay envelope part builder */
+    public int stepCount() {
+        return partBuilder.stepCount();
+    }
 }
