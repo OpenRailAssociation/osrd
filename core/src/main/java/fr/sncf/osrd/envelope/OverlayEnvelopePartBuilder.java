@@ -28,6 +28,16 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
     /** This builder is used until set to null by build() to prevent reuse */
     private EnvelopePartBuilder partBuilder;
 
+    /** The position of the cursor at the start of the overlay */
+    public final int startPartIndex;
+    /** @see #startPartIndex */
+    public final int startStepIndex;
+    /** @see #startPartIndex */
+    public final double startPosition;
+    /** @see #startPartIndex */
+    public final double startSpeed;
+
+
     /** Encodes the kind of step which was last performed */
     public enum StepKind {
         INTERMEDIATE(false, false),
@@ -50,6 +60,10 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
         this.partBuilder = new EnvelopePartBuilder(meta, initialPosition, initialSpeed);
         this.lastOverlayPos = initialPosition;
         this.lastOverlaySpeed = initialSpeed;
+        this.startPartIndex = cursor.getPartIndex();
+        this.startStepIndex = cursor.getStepIndex();
+        this.startPosition = cursor.getPosition();
+        this.startSpeed = cursor.getSpeed();
     }
 
     /** Starts an overlay at the given position and speed */
