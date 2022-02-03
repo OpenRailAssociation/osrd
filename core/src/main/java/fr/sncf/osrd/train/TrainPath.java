@@ -11,7 +11,9 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /** Describes the planned path for a train
@@ -141,6 +143,25 @@ public class TrainPath {
                         prevRoute.id, nextRoute.id, conflict
                 ));
             }
+        }
+
+        assertUnique(trackSectionPath, "track section", track -> track.edge.id);
+        assertUnique(routePath, "route", route -> route.id);
+    }
+
+
+    private <T> void assertUnique(List<T> elements, String type, Function<T, String> toId) throws InvalidSchedule {
+        var seen = new HashSet<String>();
+        for (var element : elements) {
+            var str = toId.apply(element);
+            if (seen.contains(str)) {
+                throw new InvalidSchedule(String.format(
+                        "Train goes over the same %s several times (id: %s)",
+                        type,
+                        str
+                ));
+            }
+            seen.add(str);
         }
     }
 
