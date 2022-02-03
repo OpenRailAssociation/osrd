@@ -6,6 +6,7 @@ import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.api.InfraManager.InfraLoadException;
 import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope.EnvelopeDebug;
 import fr.sncf.osrd.envelope_sim.EnvelopePath;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
@@ -137,23 +138,32 @@ public class StandaloneSimulationEndpoint implements Take {
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static final class StandaloneSimulationRequest {
         /** Infra id */
-        public String infra = null;
+        public String infra;
 
         /** The time step which shall be used for all simulations */
         @Json(name = "time_step")
-        public double timeStep = 2;
+        public double timeStep;
 
         /** A list of rolling stocks involved in this simulation */
         @Json(name = "rolling_stocks")
-        public List<RJSRollingStock> rollingStocks = null;
+        public List<RJSRollingStock> rollingStocks;
 
         /** A list of trains plannings */
         @Json(name = "train_schedules")
-        public List<RJSStandaloneTrainSchedule> trainSchedules = null;
+        public List<RJSStandaloneTrainSchedule> trainSchedules;
 
         /** The path used by trains */
         @Json(name = "trains_path")
-        public RJSTrainPath trainsPath = null;
+        public RJSTrainPath trainsPath;
+
+        /** Create a default SimulationRequest */
+        public StandaloneSimulationRequest() {
+            infra = null;
+            timeStep = 2.0;
+            rollingStocks = null;
+            trainSchedules = null;
+            trainsPath = null;
+        }
 
         /** Create SimulationRequest */
         public StandaloneSimulationRequest(
