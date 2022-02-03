@@ -57,13 +57,11 @@ public final class OverlayEnvelopeBuilder {
             EnvelopePartMeta meta,
             double initialSpeed
     ) {
-        sliceBaseEnvelope(cursor.getPartIndex(), cursor.getStepIndex(), cursor.getPosition(), cursor.getSpeed());
         return OverlayEnvelopePartBuilder.startDiscontinuousOverlay(cursor, meta, initialSpeed);
     }
 
     /** Starts an overlay at the given position, keeping the envelope continuous */
     public OverlayEnvelopePartBuilder startContinuousOverlay(EnvelopePartMeta meta) {
-        sliceBaseEnvelope(cursor.getPartIndex(), cursor.getStepIndex(), cursor.getPosition(), cursor.getSpeed());
         return OverlayEnvelopePartBuilder.startContinuousOverlay(cursor, meta);
     }
 
@@ -96,6 +94,11 @@ public final class OverlayEnvelopeBuilder {
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     public void addPart(OverlayEnvelopePartBuilder partBuilder) {
         assert partBuilder.cursor == cursor;
+
+        sliceBaseEnvelope(
+                partBuilder.startPartIndex, partBuilder.startStepIndex,
+                partBuilder.startPosition, partBuilder.startSpeed
+        );
 
         // ensure the cursor is at the end of the envelope part we're building
         // this is needed so we can efficiently slice the base envelope
