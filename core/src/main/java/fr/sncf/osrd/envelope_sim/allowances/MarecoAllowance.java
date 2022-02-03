@@ -1,7 +1,6 @@
 package fr.sncf.osrd.envelope_sim.allowances;
 
 import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration.accelerate;
-import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting.coast;
 import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration.decelerate;
 import static fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope.ACCELERATION;
 import static fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope.*;
@@ -170,12 +169,12 @@ public class MarecoAllowance implements Allowance {
                                                                 PhysicsRollingStock rollingStock,
                                                                 double vf) {
         var res = new ArrayList<AcceleratingSlope>();
-        double previousPosition = 0.0;
+        double previousPosition = envelope.getBeginPos();
         double previousAcceleration = 0.0;
         double meanAcceleration = 0.0;
         double accelerationLength = 0.0;
         var currentAcceleratingSlope =
-                new AcceleratingSlope(0, 0, 0, 0, 0);
+                new AcceleratingSlope(previousPosition, 0, 0, 0, 0);
         var cursor = EnvelopeCursor.forward(envelope);
         // scan until maintain speed envelope parts
         while (cursor.findPart(MaxEffortEnvelope::maxEffortPlateau)) {
@@ -221,9 +220,7 @@ public class MarecoAllowance implements Allowance {
                     meanAcceleration = 0;
                     accelerationLength = 0;
                     currentAcceleratingSlope =
-                            new AcceleratingSlope(
-                                    0, 0, 0, 0, 0
-                            );
+                            new AcceleratingSlope(previousPosition, 0, 0, 0, 0);
                 }
                 previousAcceleration = naturalAcceleration;
                 previousPosition = position;
@@ -246,7 +243,7 @@ public class MarecoAllowance implements Allowance {
                 meanAcceleration = 0;
                 accelerationLength = 0;
                 currentAcceleratingSlope =
-                        new AcceleratingSlope(0, 0, 0, 0, 0);
+                        new AcceleratingSlope(previousPosition, 0, 0, 0, 0);
             }
         }
         return res;
@@ -323,7 +320,10 @@ public class MarecoAllowance implements Allowance {
             res.add(accelerationPart);
         }
         if (capacitySpeedLimit > 0) {
-            var baseCapped = EnvelopeSpeedCap.from(base, null, capacitySpeedLimit);
+            var begin = Math.max(sectionBegin, base.getBeginPos());
+            var end = Math.min(sectionEnd, base.getEndPos());
+            var baseSliced = Envelope.make(base.slice(begin, end));
+            var baseCapped = EnvelopeSpeedCap.from(baseSliced, null, capacitySpeedLimit);
             for (var i = 0; i < baseCapped.size(); i++)
                 res.add(baseCapped.get(i));
         }
