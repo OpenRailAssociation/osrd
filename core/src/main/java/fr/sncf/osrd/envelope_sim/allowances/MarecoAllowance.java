@@ -358,8 +358,9 @@ public class MarecoAllowance implements Allowance {
             res.add(accelerationPart);
         }
         if (capacitySpeedLimit > 0) {
-            var maintainPart = generateMaintainPart(capacitySpeedLimit);
-            res.add(maintainPart);
+            var baseCapped = EnvelopeSpeedCap.from(base, null, capacitySpeedLimit);
+            for (var i = 0; i < baseCapped.size(); i++)
+                res.add(baseCapped.get(i));
         }
         return res;
     }
@@ -383,14 +384,6 @@ public class MarecoAllowance implements Allowance {
         coast(rollingStock, path, TIME_STEP, initialPosition, initialSpeed, partBuilder, 1);
         var coastingPart = partBuilder.build();
         return coastingPart.slice(sectionBegin, sectionEnd);
-    }
-
-    private EnvelopePart generateMaintainPart(double speed) {
-        return EnvelopePart.generateTimes(
-                MAINTAIN,
-                new double[]{sectionBegin, sectionEnd},
-                new double[]{speed, speed}
-        );
     }
 
     private EnvelopePart generateAccelerationPart(Envelope base, double finalSpeed) {
@@ -433,7 +426,11 @@ public class MarecoAllowance implements Allowance {
     public Envelope apply(Envelope base) {
         var baseTime = getMarginTime(base);
         var distance = sectionEnd - sectionBegin;
-        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, distance);
+        var allowanceAddedTime = allowanceValue.getAllowanceTime(baseTime, distance);
+        // if no time is added, just return the base envelope without performing binary search
+        if (allowanceAddedTime == 0.0)
+            return base;
+        var targetTime = baseTime + allowanceAddedTime;
 
         var physicalLimits = generatePhysicalLimits(base);
 
