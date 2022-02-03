@@ -13,9 +13,9 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
     public final EnvelopeCursor cursor;
 
     /** The maximum / minimum speed allowed for this overlay, or NaN. */
-    private double speedThreshold = Double.NaN;
+    private double speedThreshold = 0;
     /** How to compare the overlay speed to the threshold speed. */
-    private CmpOperator speedThresholdOperator = null;
+    private CmpOperator speedThresholdOperator = CmpOperator.LOWER;
 
     /** The position of the last added point */
     private double lastOverlayPos;
@@ -23,10 +23,26 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
     private double lastOverlaySpeed;
 
     /** Once an intersection occurred, points cannot be added anymore */
-    private boolean hadIntersection = false;
+    private StepKind lastStepKind = null;
 
     /** This builder is used until set to null by build() to prevent reuse */
     private EnvelopePartBuilder partBuilder;
+
+    /** Encodes the kind of step which was last performed */
+    public enum StepKind {
+        INTERMEDIATE(false, false),
+        BASE_INTERSECTION(true, true),
+        THRESHOLD_INTERSECTION(true, true),
+        FINAL(false, true);
+
+        public final boolean isIntersection;
+        public final boolean isLastPoint;
+
+        StepKind(boolean isIntersection, boolean isLastPoint) {
+            this.isIntersection = isIntersection;
+            this.isLastPoint = isLastPoint;
+        }
+    }
 
     private OverlayEnvelopePartBuilder(EnvelopeCursor cursor, EnvelopePartMeta meta, double initialSpeed) {
         this.cursor = cursor;
@@ -69,7 +85,11 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
     }
 
     public boolean getHadIntersection() {
-        return hadIntersection;
+        return lastStepKind != null && lastStepKind.isIntersection;
+    }
+
+    public StepKind getLastStepKind() {
+        return lastStepKind;
     }
 
     // region INTERSECTION
@@ -192,21 +212,6 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
 
     // region OVERLAY
 
-    private enum StepKind {
-        INTERMEDIATE(false, false),
-        BASE_INTERSECTION(true, true),
-        THRESHOLD_INTERSECTION(true, true),
-        FINAL(false, true);
-
-        public final boolean isIntersection;
-        public final boolean isLastPoint;
-
-        StepKind(boolean isIntersection, boolean isLastPoint) {
-            this.isIntersection = isIntersection;
-            this.isLastPoint = isLastPoint;
-        }
-    }
-
 
     /** Return whether this step had an intersection */
     private boolean addOverlayStep(double position, double speed, double time, StepKind kind) {
@@ -221,7 +226,7 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
         lastOverlaySpeed = speed;
         lastOverlayPos = position;
 
-        hadIntersection = kind.isIntersection;
+        lastStepKind = kind;
 
         if (kind.isLastPoint && !cursor.hasReachedEnd())
             cursor.findPosition(position);
@@ -262,7 +267,7 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
 
     @Override
     public boolean addStep(double position, double speed) {
-        assert !hadIntersection : "called addStep on a complete overlay";
+        assert !getHadIntersection() : "called addStep on a complete overlay";
         var time = interpolateStepTime(
                 lastOverlayPos, position,
                 lastOverlaySpeed, speed
@@ -275,7 +280,7 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
      */
     @Override
     public boolean addStep(double position, double speed, double time) {
-        assert !hadIntersection : "called addStep on a complete overlay";
+        assert !getHadIntersection() : "called addStep on a complete overlay";
         assert cursor.comparePos(lastOverlayPos, cursor.getStepBeginPos()) >= 0
                 && cursor.comparePos(lastOverlayPos, cursor.getStepEndPos()) <= 0;
         assert cursor.comparePos(lastOverlayPos, position) < 0;
@@ -324,7 +329,7 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
      * @return Whether an intersection occurred. If not, the end of the envelope was reached.
      */
     public boolean addPlateau() {
-        assert !hadIntersection : "called addStep on a complete overlay";
+        assert !getHadIntersection() : "called addStep on a complete overlay";
         assert cursor.comparePos(lastOverlayPos, cursor.getStepBeginPos()) >= 0
                 && cursor.comparePos(lastOverlayPos, cursor.getStepEndPos()) <= 0;
 
