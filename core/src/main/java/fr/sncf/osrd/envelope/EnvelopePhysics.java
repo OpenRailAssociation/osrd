@@ -54,10 +54,38 @@ public class EnvelopePhysics {
         return Math.abs((nextSpeed - lastSpeed) / acceleration);
     }
 
+    private static double clamp(double val, double min, double max) {
+        assert min <= max;
+        if (val < min)
+            val = min;
+        if (val > max)
+            val = max;
+        return val;
+    }
+
+    /** a and b are two 1D segments, and val is clamped to their intersections */
+    private static double clamp1D(double val, double a1, double a2, double b1, double b2) {
+        var minA = Math.min(a1, a2);
+        var minB = Math.min(b1, b2);
+        var maxA = Math.max(a1, a2);
+        var maxB = Math.max(b1, b2);
+        return clamp(val, Math.max(minA, minB), Math.min(maxA, maxB));
+    }
+
+    /** Clamps a point to the intersection coordinate range of two 2D segments */
+    private static void clamp2DPoint(
+            EnvelopePoint point, double a1Pos, double a1Speed, double a2Pos, double a2Speed,
+            double b1Pos, double b1Speed, double b2Pos, double b2Speed
+    ) {
+        point.position = clamp1D(point.position, a1Pos, a2Pos, b1Pos, b2Pos);
+        point.speed = clamp1D(point.speed, a1Speed, a2Speed, b1Speed, b2Speed);
+    }
+
     /**
      * Computes the intersection of two envelope steps.
      * The acceleration is assumed to be constant over <b>time</b> inside a step.
      * Interpolation thus needs to be done on a parabola, as envelopes are over <b>space</b>.
+     * The intersection is guaranteed to be within the bounds of both segments.
      */
     public static EnvelopePoint intersectSteps(EnvelopePart a, int stepIndexA, EnvelopePart b, int stepIndexB) {
         return intersectSteps(
@@ -102,6 +130,7 @@ public class EnvelopePhysics {
         if (accA == 0) {
             point.position = intersectStepWithSpeed(b1Speed, b1Pos, accB, a1Speed);
             point.speed = a1Speed;
+            clamp2DPoint(point, a1Pos, a1Speed, a2Pos, a2Speed, b1Pos, b1Speed, b2Pos, b2Speed);
             return;
         }
 
@@ -109,6 +138,7 @@ public class EnvelopePhysics {
         if (accB == 0) {
             point.position = intersectStepWithSpeed(a1Speed, a1Pos, accA, b1Speed);
             point.speed = b1Speed;
+            clamp2DPoint(point, a1Pos, a1Speed, a2Pos, a2Speed, b1Pos, b1Speed, b2Pos, b2Speed);
             return;
         }
 
@@ -122,10 +152,13 @@ public class EnvelopePhysics {
         // cutting the left one at just the right point, then interpolating again to cut the right one.
         // doing it this way guarantees we get the same result
         point.speed = interpolateStepSpeed(accB, b1Speed, point.position - b1Pos);
+        clamp2DPoint(point, a1Pos, a1Speed, a2Pos, a2Speed, b1Pos, b1Speed, b2Pos, b2Speed);
     }
 
     /** Returns the position at which a step intersects a speed */
     public static double intersectStepWithSpeed(double a1Speed, double a1Pos, double accA, double bSpeed) {
+        if (a1Speed == bSpeed)
+            return a1Pos;
         var res =  (bSpeed * bSpeed - a1Speed * a1Speed + 2 * accA * a1Pos) / 2 / accA;
         assert !Double.isInfinite(res);
         return res;
