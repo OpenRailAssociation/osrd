@@ -72,7 +72,10 @@ public class MaxEffortEnvelope {
                 EnvelopeAcceleration.accelerate(
                         rollingStock, path, timeStep, startPosition, startSpeed, partBuilder, 1
                 );
-                builder.addPart(partBuilder);
+
+                // Check that the high grade position can't be maintained
+                if (partBuilder.stepCount() > 1)
+                    builder.addPart(partBuilder);
             }
             builder.cursor.nextPart();
         }
