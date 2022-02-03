@@ -254,7 +254,7 @@ public class MarecoAllowance implements Allowance {
     }
 
     /** Generate coasting overlay at a specific position */
-    public Envelope addCoastingCurvesAtPosition(
+    public Envelope addCoastingCurvesAtPositions(
             Envelope envelope,
             List<Double> endOfCoastingPositions
     ) {
@@ -264,6 +264,15 @@ public class MarecoAllowance implements Allowance {
             var speed = envelope.interpolateSpeed(position);
             var partBuilder = builder.startContinuousOverlay(COASTING);
             EnvelopeCoasting.coast(rollingStock, path, timeStep, position, speed, partBuilder, -1);
+
+            // skip anything that's not an intersection with the base curve
+            if (partBuilder.getLastStepKind() != OverlayEnvelopePartBuilder.StepKind.BASE_INTERSECTION)
+                continue;
+
+            // if coasting immediately intersected with the base curve, stop right away
+            if (partBuilder.stepCount() == 0)
+                continue;
+
             builder.addPart(partBuilder);
             envelope = builder.build();
         }
@@ -287,7 +296,7 @@ public class MarecoAllowance implements Allowance {
         var baseRoIEnvelope = Envelope.make(base.slice(sectionBegin, sectionEnd));
         var envelopeCapped = EnvelopeSpeedCap.from(baseRoIEnvelope, null, v1);
         var endOfCoastingPositions = findEndOfCoastingPositions(envelopeCapped, v1);
-        var marecoEnvelope = addCoastingCurvesAtPosition(envelopeCapped, endOfCoastingPositions);
+        var marecoEnvelope = addCoastingCurvesAtPositions(envelopeCapped, endOfCoastingPositions);
         var builder = new MaxEnvelopeBuilder();
         physicalLimits.iterator().forEachRemaining(builder::addPart);
         marecoEnvelope.iterator().forEachRemaining(builder::addPart);
