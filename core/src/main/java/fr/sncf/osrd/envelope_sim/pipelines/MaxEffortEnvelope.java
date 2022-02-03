@@ -53,21 +53,22 @@ public class MaxEffortEnvelope {
             double timeStep
     ) {
         var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
-        while (builder.cursor.findPart(MaxEffortEnvelope::maxEffortPlateau)) {
-            double speed = builder.cursor.getStepBeginSpeed();
+        var cursor = builder.cursor;
+        while (cursor.findPart(MaxEffortEnvelope::maxEffortPlateau)) {
+            double speed = cursor.getStepBeginSpeed();
             double maxTractionForce = rollingStock.getMaxEffort(speed);
             double rollingResistance = rollingStock.getRollingResistance(speed);
             double inertia = rollingStock.getInertia();
             double worstRamp = Math.asin((maxTractionForce - rollingResistance) / inertia / 9.81) * 1000;
-            var envelopePart = builder.cursor.getPart();
-            while (true) {
+            var envelopePart = cursor.getPart();
+            while (cursor.getPart() == envelopePart) {
                 double highRampPosition = path.findHighGradePosition(
-                        builder.cursor.getPosition(), envelopePart.getEndPos(), rollingStock.getLength(), worstRamp);
-                builder.cursor.findPosition(highRampPosition);
-                if (builder.cursor.getPosition() == envelopePart.getEndPos())
+                        cursor.getPosition(), envelopePart.getEndPos(), rollingStock.getLength(), worstRamp);
+                cursor.findPosition(highRampPosition);
+                if (cursor.getPosition() == envelopePart.getEndPos())
                     break;
                 var partBuilder = builder.startContinuousOverlay(MAINTAIN);
-                var startPosition = builder.cursor.getPosition();
+                var startPosition = cursor.getPosition();
                 var startSpeed = partBuilder.getLastSpeed();
                 EnvelopeAcceleration.accelerate(
                         rollingStock, path, timeStep, startPosition, startSpeed, partBuilder, 1
@@ -77,7 +78,7 @@ public class MaxEffortEnvelope {
                 if (partBuilder.stepCount() > 1)
                     builder.addPart(partBuilder);
             }
-            builder.cursor.nextPart();
+            cursor.nextPart();
         }
         return builder.build();
     }
