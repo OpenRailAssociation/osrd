@@ -93,6 +93,9 @@ layers:
       - name: position
         type: double
         description: Track section location position
+      - name: aspects
+        type: json
+        description: List of aspects
     id_field_name: id
     views:
       - name: sch
