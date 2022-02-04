@@ -77,6 +77,8 @@ public class MaxEffortEnvelope {
                 // Check that the high grade position can't be maintained
                 if (partBuilder.stepCount() > 1)
                     builder.addPart(partBuilder);
+                else
+                    cursor.findPosition(cursor.getPosition()  + 1);
             }
             cursor.nextPart();
         }
