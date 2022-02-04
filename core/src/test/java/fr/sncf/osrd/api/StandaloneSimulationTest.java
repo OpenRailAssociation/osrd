@@ -150,8 +150,9 @@ class StandaloneSimulationTest extends ApiTest {
 
         var noAllowanceResult = simResult.baseSimulations.get(0);
         var noAllowanceTime = noAllowanceResult.headPositions.get(noAllowanceResult.headPositions.size() - 1).time;
-        var marecoResult = simResult.baseSimulations.get(1);
+        var marecoResult = simResult.ecoSimulations.get(1);
         var marecoTime = marecoResult.headPositions.get(marecoResult.headPositions.size() - 1).time;
-        assertEquals(marecoTime, noAllowanceTime * 1.05, noAllowanceTime * 0.001);
+        assertEquals(noAllowanceTime * 1.05, marecoTime, noAllowanceTime * 0.001);
+        assertNull(simResult.ecoSimulations.get(0));
     }
 }

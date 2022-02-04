@@ -1,5 +1,6 @@
 package fr.sncf.osrd.envelope_sim.allowances;
 
+import static fr.sncf.osrd.envelope.EnvelopeDebug.plot;
 import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration.accelerate;
 import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting.coast;
 import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration.decelerate;
@@ -321,6 +322,7 @@ public class MarecoAllowance implements Allowance {
         for (var part : partsAfter)
             totalBuilder.addPart(part);
         var result = totalBuilder.build();
+        assert result.spaceContinuous : "Envelope with allowance is not space continuous";
         assert result.continuous : "Envelope with allowance is not continuous";
         return result;
     }
@@ -360,7 +362,8 @@ public class MarecoAllowance implements Allowance {
             res.add(accelerationPart);
         }
         if (capacitySpeedLimit > 0) {
-            var baseCapped = EnvelopeSpeedCap.from(base, null, capacitySpeedLimit);
+            var baseSliced = Envelope.make(base.slice(sectionBegin, sectionEnd));
+            var baseCapped = EnvelopeSpeedCap.from(baseSliced, null, capacitySpeedLimit);
             for (var i = 0; i < baseCapped.size(); i++)
                 res.add(baseCapped.get(i));
         }
