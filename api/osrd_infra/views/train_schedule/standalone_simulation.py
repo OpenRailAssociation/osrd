@@ -73,6 +73,7 @@ def process_simulation_response(train_schedules, response_payload):
     """
     base_simulations = response_payload["base_simulations"]
     assert len(train_schedules) == len(base_simulations)
+    eco_simulations = response_payload["eco_simulations"]
 
     stops_update = []
     for stop in train_schedules[0].path.payload["path_waypoints"]:
@@ -84,3 +85,13 @@ def process_simulation_response(train_schedules, response_payload):
             stop.update(stop_update)
 
         train_schedule.base_simulation = base_simulations[i]
+
+        # Skip if no eco simulation is available
+        if not eco_simulations[i]:
+            continue
+
+        # Update stops (adding id and name when available)
+        for stop, stop_update in zip(eco_simulations[i]["stops"], stops_update):
+            stop.update(stop_update)
+
+        train_schedule.eco_simulation = eco_simulations[i]
