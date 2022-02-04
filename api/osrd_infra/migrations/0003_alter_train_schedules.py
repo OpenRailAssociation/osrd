@@ -8,7 +8,7 @@ import osrd_infra.utils
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osrd_infra', '0001_initial'),
+        ('osrd_infra', '0002_add_signal_aspects'),
     ]
 
     operations = [
