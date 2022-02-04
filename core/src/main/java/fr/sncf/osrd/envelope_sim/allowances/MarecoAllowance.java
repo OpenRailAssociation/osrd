@@ -320,7 +320,9 @@ public class MarecoAllowance implements Allowance {
             totalBuilder.addPart(roiEnvelope.get(i));
         for (var part : partsAfter)
             totalBuilder.addPart(part);
-        return totalBuilder.build();
+        var result = totalBuilder.build();
+        assert result.continuous : "Envelope with allowance is not continuous";
+        return result;
     }
 
     /** compute where the coasting phase is supposed to start, given the initial and target speed */
