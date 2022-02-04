@@ -37,6 +37,12 @@ public class EnvelopeTrainPath {
             for (var interval : keys) {
                 var begin = length + Math.abs(range.getBeginPosition() - interval.getBeginPosition());
                 var end = length + Math.abs(range.getBeginPosition() - interval.getEndPosition());
+                if (range.direction == EdgeDirection.STOP_TO_START) {
+                    // Swap begin and end
+                    var tmp = begin;
+                    begin = end;
+                    end = tmp;
+                }
                 var gradeValue = grades.get(interval);
                 if (gradePositions.get(gradePositions.size() - 1) < begin) {
                     gradePositions.add(begin);
@@ -53,6 +59,9 @@ public class EnvelopeTrainPath {
             gradePositions.add(length);
             gradeValues.add(0);
         }
+
+        for (int i = 0; i < gradePositions.size() - 1; i++)
+            assert gradePositions.get(i) < gradePositions.get(i + 1);
 
         return new EnvelopePath(length, gradePositions.toArray(), gradeValues.toArray());
     }
