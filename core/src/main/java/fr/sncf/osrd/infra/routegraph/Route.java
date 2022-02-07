@@ -87,6 +87,15 @@ public class Route extends DirNEdge {
         return res;
     }
 
+    /** Return a HashSet with all routes which share a TVDSection */
+    public HashSet<Route> getConflictedRoutes() {
+        var conflictedRoutes = new HashSet<Route>();
+        for (var tvdSectionPath : tvdSectionsPaths)
+            conflictedRoutes.addAll(tvdSectionPath.tvdSection.routeSubscribers);
+
+        return conflictedRoutes;
+    }
+
     /** Builds the list of signals present on the route.
      * This cannot be done in the constructor because the track sections are empty, it has to be done later. */
     public void resolveSignals() {
