@@ -248,7 +248,7 @@ export const interpolateOnTime = (dataSimulation, keyValues, listValues, timePos
   listValues.forEach((listValue) => {
     let bisection;
     // If not array of array
-    if (listValue === 'speed') {
+    if (listValue === 'speed' || listValue === 'speeds') {
       if (dataSimulation[listValue] && dataSimulation[listValue][0]
         && timePositionLocal >= dataSimulation[listValue][0][keyValues[0]]) {
         const index = bisect(dataSimulation[listValue], timePositionLocal, 1);
