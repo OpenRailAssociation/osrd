@@ -1,2 +1,6 @@
 *.nix
 dump/
+osrd_2022-01-31_new_rolling_stocks.backup
+front/yarn.lock
+front/tsconfig.json
+front/launch_local_front.sh
