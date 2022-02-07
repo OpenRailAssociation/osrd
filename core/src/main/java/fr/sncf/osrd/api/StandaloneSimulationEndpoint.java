@@ -13,6 +13,7 @@ import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
@@ -63,7 +64,8 @@ public class StandaloneSimulationEndpoint implements Take {
             InvalidRollingStock,
             InvalidSchedule,
             InvalidSuccession,
-            SimulationError {
+            SimulationError,
+            InvalidInfraException {
         try {
             // Parse request input
             var body = new RqPrint(req).printBody();
@@ -100,14 +102,22 @@ public class StandaloneSimulationEndpoint implements Take {
                 if (!cacheMaxEffort.containsKey(trainSchedule)) {
                     // Base
                     var envelope = computeEnvelope(request.timeStep, trainsPath, envelopePath, trainSchedule);
-                    var simResultTrain =
-                            SimulationResultTrain.from(envelope, trainsPath, request.trainsPath, trainSchedule);
+                    var simResultTrain = SimulationResultTrain.from(
+                            envelope,
+                            trainsPath,
+                            request.trainsPath,
+                            trainSchedule,
+                            infra);
                     cacheMaxEffort.put(trainSchedule, simResultTrain);
                     // Eco
                     if (!trainSchedule.allowances.isEmpty()) {
                         var ecoEnvelope = applyAllowances(envelope, trainSchedule);
-                        var simEcoResultTrain =
-                                SimulationResultTrain.from(ecoEnvelope, trainsPath, request.trainsPath, trainSchedule);
+                        var simEcoResultTrain = SimulationResultTrain.from(
+                                ecoEnvelope,
+                                trainsPath,
+                                request.trainsPath,
+                                trainSchedule,
+                                infra);
                         cacheEco.put(trainSchedule, simEcoResultTrain);
                     }
                 }
@@ -265,8 +275,9 @@ public class StandaloneSimulationEndpoint implements Take {
                 Envelope envelope,
                 TrainPath trainPath,
                 RJSTrainPath rjsTrainPath,
-                StandaloneTrainSchedule schedule
-        ) {
+                StandaloneTrainSchedule schedule,
+                Infra infra
+        ) throws InvalidInfraException {
             assert envelope.continuous;
             // Compute speeds, head and tail positions
             var trainLength = schedule.rollingStock.length;
@@ -303,14 +314,29 @@ public class StandaloneSimulationEndpoint implements Take {
             var routeOccupancies = new HashMap<String, SimulationResultRouteOccupancy>();
             double lastPosition = 0;
             for (var routePath : rjsTrainPath.routePath) {
-                var routeId = routePath.route.id.id;
+                var route = routePath.route.getRoute(infra.routeGraph.routeMap);
+                var conflictedRoutes = route.getConflictedRoutes();
                 var newPosition = lastPosition;
                 for (var trackRange : routePath.trackSections)
                     newPosition += Math.abs(trackRange.end - trackRange.begin);
                 var routeOccupancy =
                         SimulationResultRouteOccupancy.from(lastPosition, newPosition, envelope, trainLength);
-                assert !routeOccupancies.containsKey(routeId);
-                routeOccupancies.put(routeId, routeOccupancy);
+
+                for (var conflictedRoute : conflictedRoutes) {
+                    if (!routeOccupancies.containsKey(conflictedRoute.id)) {
+                        routeOccupancies.put(conflictedRoute.id, routeOccupancy);
+                        continue;
+                    }
+                    var oldOccupancy = routeOccupancies.get(conflictedRoute.id);
+                    assert Double.compare(oldOccupancy.timeHeadFree, routeOccupancy.timeHeadOccupy) == 0;
+                    assert Double.compare(oldOccupancy.timeTailFree, routeOccupancy.timeTailOccupy) == 0;
+                    var newOccupancy = new SimulationResultRouteOccupancy(
+                            oldOccupancy.timeHeadOccupy,
+                            routeOccupancy.timeHeadFree,
+                            oldOccupancy.timeTailOccupy,
+                            routeOccupancy.timeTailFree);
+                    routeOccupancies.replace(conflictedRoute.id, newOccupancy);
+                }
                 lastPosition = newPosition;
             }
             return new SimulationResultTrain(speeds, headPositions, tailPositions, stops, routeOccupancies);

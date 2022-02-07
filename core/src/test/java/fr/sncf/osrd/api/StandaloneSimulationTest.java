@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.api.StandaloneSimulationEndpoint.StandaloneSimulationRequest;
 import fr.sncf.osrd.api.StandaloneSimulationEndpoint.StandaloneSimulationResult;
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSuccession;
@@ -39,7 +40,12 @@ class StandaloneSimulationTest extends ApiTest {
     }
 
     public static StandaloneSimulationResult runStandaloneSimulation(StandaloneSimulationRequest request) throws
-            InvalidRollingStock, InvalidSuccession, InvalidSchedule, IOException, SimulationError {
+            InvalidRollingStock,
+            InvalidSuccession,
+            InvalidSchedule,
+            IOException,
+            SimulationError,
+            InvalidInfraException {
         // serialize the request
         var requestBody = StandaloneSimulationEndpoint.adapterRequest.toJson(request);
 
@@ -89,7 +95,7 @@ class StandaloneSimulationTest extends ApiTest {
         var speeds = trainResult.speeds.toArray(new StandaloneSimulationEndpoint.SimulationResultSpeed[0]);
         for (int i = 1; i < speeds.length; i++)
             assertTrue(speeds[i - 1].position <= speeds[i].position);
-        assertEquals(2, trainResult.routeOccupancies.size());
+        assertEquals(8, trainResult.routeOccupancies.size());
     }
 
     @Test
