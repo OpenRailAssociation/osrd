@@ -4,7 +4,7 @@ volumes:
   redis_data:
 services:
   postgres:
-    image: postgis/postgis
+    image: postgis/postgis:13-3.2-alpine
     container_name: osrd-postgres
     network_mode: host
     user: postgres
