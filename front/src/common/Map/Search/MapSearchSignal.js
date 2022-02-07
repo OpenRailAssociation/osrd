@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+// @ts-nocheck
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
 import { FlyToInterpolator } from 'react-map-gl';
-import PropTypes from 'prop-types';
-import { useSelector, useDispatch } from 'react-redux';
-import { updateMapSearchMarker } from 'reducers/map';
-import nextId from 'react-id-generator';
-import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import PropTypes from 'prop-types';
 import { get } from 'common/requests';
+import nextId from 'react-id-generator';
+import { updateMapSearchMarker } from 'reducers/map';
 import { useDebounce } from 'utils/helpers';
+import { useTranslation } from 'react-i18next';
 
 const searchURI = '/gaia/osrd/signal/';
 
@@ -30,6 +32,7 @@ export default function MapSearchSignal(props) {
       const data = await get(searchURI, params);
       setSearchResults(data);
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.log(e);
     }
   };
@@ -40,8 +43,12 @@ export default function MapSearchSignal(props) {
   useEffect(() => {
     if (!dontSearch && (debouncedSearchTerm || debouncedSearchLine)) {
       const params = {};
-      if (searchState !== '') { params.name = searchState; }
-      if (searchLineState !== '') { params.linecode = searchLineState; }
+      if (searchState !== '') {
+        params.name = searchState;
+      }
+      if (searchLineState !== '') {
+        params.linecode = searchLineState;
+      }
       updateSearch(params);
     }
   }, [debouncedSearchTerm, debouncedSearchLine]);
@@ -55,7 +62,8 @@ export default function MapSearchSignal(props) {
   };
 
   const onResultClick = (result) => {
-    const lonlat = map.mapTrackSources === 'schematic' ? result.coordinates.sch : result.coordinates.geo;
+    const lonlat =
+      map.mapTrackSources === 'schematic' ? result.coordinates.sch : result.coordinates.geo;
 
     if (lonlat !== null) {
       const newViewport = {
@@ -67,19 +75,23 @@ export default function MapSearchSignal(props) {
         transitionInterpolator: new FlyToInterpolator(),
       };
       updateExtViewport(newViewport);
-      dispatch(updateMapSearchMarker({
-        title: `${result.type} ${result.name}`,
-        subtitle: result.stationname,
-        lonlat,
-      }));
+      dispatch(
+        updateMapSearchMarker({
+          title: `${result.type} ${result.name}`,
+          subtitle: result.stationname,
+          lonlat,
+        }),
+      );
     }
   };
 
   const orderDisplay = (name) => {
     if (name === sortFilter.name) {
-      return sortFilter.order === 0
-        ? <i className="icons-arrow-down icons-size-x5 ml-1" />
-        : <i className="icons-arrow-up icons-size-x5 ml-1" />;
+      return sortFilter.order === 0 ? (
+        <i className="icons-arrow-down icons-size-x5 ml-1" />
+      ) : (
+        <i className="icons-arrow-up icons-size-x5 ml-1" />
+      );
     }
     return null;
   };
@@ -87,11 +99,15 @@ export default function MapSearchSignal(props) {
   const formatSearchResults = () => {
     let searchResultsContent = searchResults.results.filter((result) => result.name !== null);
     searchResultsContent = searchResultsContent.sort((a, b) => {
-      if (!a.[sortFilter.name]) { return sortFilter.order === 0 ? -1 : 1; } // To avoid null values
-      if (!b.[sortFilter.name]) { return sortFilter.order === 0 ? 1 : -1; }
+      if (!a[sortFilter.name]) {
+        return sortFilter.order === 0 ? -1 : 1;
+      } // To avoid null values
+      if (!b[sortFilter.name]) {
+        return sortFilter.order === 0 ? 1 : -1;
+      }
       return sortFilter.order === 0
-        ? a.[sortFilter.name].localeCompare(b.[sortFilter.name])
-        : b.[sortFilter.name].localeCompare(a.[sortFilter.name]);
+        ? a[sortFilter.name].localeCompare(b[sortFilter.name])
+        : b[sortFilter.name].localeCompare(a[sortFilter.name]);
     });
     return searchResultsContent.map((result) => (
       <div
@@ -101,12 +117,16 @@ export default function MapSearchSignal(props) {
         key={nextId()}
         onClick={() => onResultClick(result)}
       >
-        <div className="col-1"><img src={`/signalsSVG/${result.type.replace(/ /g, '_')}.svg`} alt={result.type} /></div>
+        <div className="col-1">
+          <img src={`/signalsSVG/${result.type.replace(/ /g, '_')}.svg`} alt={result.type} />
+        </div>
         <div className="col-1 small">{result.name}</div>
         <div className="col-3">{result.stationname}</div>
         <div className="col-2">{result.linecode}</div>
         <div className="col-3 small">{result.trackname}</div>
-        <div className="col-2"><small>{result.pk}</small></div>
+        <div className="col-2">
+          <small>{result.pk}</small>
+        </div>
       </div>
     ));
   };
@@ -155,44 +175,69 @@ export default function MapSearchSignal(props) {
         </div>
       </div>
       <div>
-        {searchResults !== undefined && searchResults.results !== undefined
-          ? (
-            <>
-              <div className="row mt-3 px-3 small no-gutters">
-                <div className="col-1 search-results-label" role="button" onClick={() => setSortName('type')} tabIndex={-1}>
-                  {t('map-search:type')}
-                  {orderDisplay('type')}
-                </div>
-                <div className="col-1 search-results-label" role="button" onClick={() => setSortName('name')} tabIndex={-1}>
-                  {t('map-search:name')}
-                  {orderDisplay('name')}
-                </div>
-                <div className="col-3 search-results-label" role="button" onClick={() => setSortName('stationname')} tabIndex={-1}>
-                  {t('map-search:station')}
-                  {orderDisplay('stationname')}
-                </div>
-                <div className="col-2 search-results-label" role="button" onClick={() => setSortName('linecode')} tabIndex={-1}>
-                  {t('map-search:linecode')}
-                  {orderDisplay('linecode')}
-                </div>
-                <div className="col-3 search-results-label" role="button" onClick={() => setSortName('trackname')} tabIndex={-1}>
-                  {t('map-search:trackname')}
-                  {orderDisplay('trackname')}
-                </div>
-                <div className="col-2 search-results-label" role="button" onClick={() => setSortName('pk')} tabIndex={-1}>
-                  {t('map-search:pk')}
-                  {orderDisplay('pk')}
-                </div>
+        {searchResults !== undefined && searchResults.results !== undefined ? (
+          <>
+            <div className="row mt-3 px-3 small no-gutters">
+              <div
+                className="col-1 search-results-label"
+                role="button"
+                onClick={() => setSortName('type')}
+                tabIndex={-1}
+              >
+                {t('map-search:type')}
+                {orderDisplay('type')}
               </div>
-              <div className="search-results">
-                {formatSearchResults()}
+              <div
+                className="col-1 search-results-label"
+                role="button"
+                onClick={() => setSortName('name')}
+                tabIndex={-1}
+              >
+                {t('map-search:name')}
+                {orderDisplay('name')}
               </div>
-            </>
-          ) : (
-            <h2 className="text-center mt-3">
-              {t('map-search:noresult')}
-            </h2>
-          )}
+              <div
+                className="col-3 search-results-label"
+                role="button"
+                onClick={() => setSortName('stationname')}
+                tabIndex={-1}
+              >
+                {t('map-search:station')}
+                {orderDisplay('stationname')}
+              </div>
+              <div
+                className="col-2 search-results-label"
+                role="button"
+                onClick={() => setSortName('linecode')}
+                tabIndex={-1}
+              >
+                {t('map-search:linecode')}
+                {orderDisplay('linecode')}
+              </div>
+              <div
+                className="col-3 search-results-label"
+                role="button"
+                onClick={() => setSortName('trackname')}
+                tabIndex={-1}
+              >
+                {t('map-search:trackname')}
+                {orderDisplay('trackname')}
+              </div>
+              <div
+                className="col-2 search-results-label"
+                role="button"
+                onClick={() => setSortName('pk')}
+                tabIndex={-1}
+              >
+                {t('map-search:pk')}
+                {orderDisplay('pk')}
+              </div>
+            </div>
+            <div className="search-results">{formatSearchResults()}</div>
+          </>
+        ) : (
+          <h2 className="text-center mt-3">{t('map-search:noresult')}</h2>
+        )}
       </div>
     </>
   );
