@@ -17,10 +17,68 @@ import DotsLoader from 'common/DotsLoader/DotsLoader';
 const trainscheduleURI = '/train_schedule/';
 
 const TYPEUNITS = {
-  construction: 's',
-  ratio_time: '%',
-  ratio_distance: 'min/100km',
+  time: 's',
+  percentage: '%',
+  time_per_distance: 'min/100km',
 };
+
+const MarecoGlobal = () => {
+  const { t } = useTranslation();
+  const [values, setValues] = useState(undefined);
+
+  const marginTypes = [
+    {
+      id: 'time',
+      label: t('marginTypes.time'),
+      unit: TYPEUNITS.time,
+    },
+    {
+      id: 'percentage',
+      label: t('marginTypes.percentage'),
+      unit: TYPEUNITS.percentage,
+    },
+    {
+      id: 'time_per_distance',
+      label: t('marginTypes.time_per_distance'),
+      unit: TYPEUNITS.time_per_distance,
+    },
+  ];
+
+  const handleType = (type) => {
+    setValues({
+      ...values,
+      type: type.type,
+      value: type.value === '' ? '' : parseInt(type.value, 10),
+    });
+  };
+
+  return (
+    <>
+      <div className="row">
+        <div className="col-md-6 text-center">
+          MARECO sur parcours complet
+        </div>
+        <div className="col-md-4">
+          <InputGroupSNCF
+            id="marginTypeSelect"
+            options={marginTypes}
+            handleType={handleType}
+            value={values}
+            sm
+          />
+        </div>
+        <div className="col-md-2">
+          <button
+            type="button"
+            onClick={() => addMargins(values)}
+          >
+            <i className="icons-add" />
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
 
 const EmptyLine = (props) => {
   const { margins, setMargins, setUpdateMargins } = props;
@@ -326,6 +384,7 @@ export default function Margins(props) {
           <hr className="mt-0" />
         </>
       )}
+      <MarecoGlobal />
       <EmptyLine
         setMargins={setMargins}
         setUpdateMargins={setUpdateMargins}
