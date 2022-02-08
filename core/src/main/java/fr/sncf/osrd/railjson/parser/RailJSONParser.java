@@ -1,6 +1,7 @@
 package fr.sncf.osrd.railjson.parser;
 
 import static fr.sncf.osrd.infra.trackgraph.TrackSection.linkEdges;
+import static java.lang.Math.abs;
 
 import com.squareup.moshi.JsonReader;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -326,10 +327,10 @@ public class RailJSONParser {
 
             var floorBeginEntry = gradients.floorEntry(rjsCurve.begin);
             if (floorBeginEntry.getKey() < rjsCurve.begin)
-                gradients.put(rjsCurve.begin, floorBeginEntry.getValue() + 800. / rjsCurve.radius);
+                gradients.put(rjsCurve.begin, floorBeginEntry.getValue() + 800. / abs(rjsCurve.radius));
 
             for (var slopeEntry : gradients.subMap(rjsCurve.begin, rjsCurve.end).entrySet())
-                gradients.put(slopeEntry.getKey(), slopeEntry.getValue() + 800. / rjsCurve.radius);
+                gradients.put(slopeEntry.getKey(), slopeEntry.getValue() + 800. / abs(rjsCurve.radius));
         }
     }
 
