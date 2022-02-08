@@ -97,6 +97,7 @@ public class MaxEffortEnvelope {
                 addAccelerationCurves(rollingStock, path, maxSpeedProfile, timeStep, initialSpeed);
         maxEffortEnvelope = addMaintainSpeedCurves(rollingStock, path, maxEffortEnvelope, timeStep);
         assert maxEffortEnvelope.continuous;
+        assert maxEffortEnvelope.getBeginPos() == 0;
         return maxEffortEnvelope;
     }
 }
