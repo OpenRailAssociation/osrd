@@ -22,31 +22,15 @@ const TYPEUNITS = {
   time_per_distance: 'min/100km',
 };
 
-const MarecoGlobal = () => {
-  const { t } = useTranslation();
-  const [values, setValues] = useState(undefined);
-
-  const marginTypes = [
-    {
-      id: 'time',
-      label: t('marginTypes.time'),
-      unit: TYPEUNITS.time,
-    },
-    {
-      id: 'percentage',
-      label: t('marginTypes.percentage'),
-      unit: TYPEUNITS.percentage,
-    },
-    {
-      id: 'time_per_distance',
-      label: t('marginTypes.time_per_distance'),
-      unit: TYPEUNITS.time_per_distance,
-    },
-  ];
+const MarecoGlobal = (props) => {
+  const { marginTypes } = props;
+  const [value, setValue] = useState({
+    type: 'time',
+    value: 0,
+  });
 
   const handleType = (type) => {
-    setValues({
-      ...values,
+    setValue({
       type: type.type,
       value: type.value === '' ? '' : parseInt(type.value, 10),
     });
@@ -63,14 +47,14 @@ const MarecoGlobal = () => {
             id="marginTypeSelect"
             options={marginTypes}
             handleType={handleType}
-            value={values}
+            value={value.value}
             sm
           />
         </div>
         <div className="col-md-2">
           <button
             type="button"
-            onClick={() => addMargins(values)}
+            onClick={() => addMargins(value)}
           >
             <i className="icons-add" />
           </button>
@@ -78,10 +62,12 @@ const MarecoGlobal = () => {
       </div>
     </>
   );
-}
+};
 
 const EmptyLine = (props) => {
-  const { margins, setMargins, setUpdateMargins } = props;
+  const {
+    marginTypes, margins, setMargins, setUpdateMargins,
+  } = props;
   const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
   const marginNewDatas = {
     type: 'construction',
@@ -93,24 +79,6 @@ const EmptyLine = (props) => {
   const [values, setValues] = useState(marginNewDatas);
   const [fromTo, setFromTo] = useState('from');
   const { t } = useTranslation(['margins']);
-
-  const marginTypes = [
-    {
-      id: 'construction',
-      label: 'Construction', // t('marginTypes.construction'),
-      unit: TYPEUNITS.construction,
-    },
-    {
-      id: 'ratio_time',
-      label: t('marginTypes.ratio_time'),
-      unit: TYPEUNITS.ratio_time,
-    },
-    {
-      id: 'ratio_distance',
-      label: t('marginTypes.ratio_distance'),
-      unit: TYPEUNITS.ratio_distance,
-    },
-  ];
 
   const handleType = (type) => {
     setValues({
@@ -273,6 +241,24 @@ export default function Margins(props) {
   const dispatch = useDispatch();
   const { t } = useTranslation(['margins']);
 
+  const marginTypes = [
+    {
+      id: 'time',
+      label: t('marginTypes.time'),
+      unit: TYPEUNITS.time,
+    },
+    {
+      id: 'percentage',
+      label: t('marginTypes.percentage'),
+      unit: TYPEUNITS.percentage,
+    },
+    {
+      id: 'time_per_distance',
+      label: t('marginTypes.time_per_distance'),
+      unit: TYPEUNITS.time_per_distance,
+    },
+  ];
+
   const getMargins = async () => {
     try {
       setIsUpdating(true);
@@ -364,7 +350,8 @@ export default function Margins(props) {
               <i className="icons-arrow-up" />
             </button>
           </div>
-          <div className="row mb-1 small">
+          <MarecoGlobal marginTypes={marginTypes} />
+          <div className="row my-1 small">
             <div className="col-md-1">
               n°
             </div>
@@ -384,11 +371,11 @@ export default function Margins(props) {
           <hr className="mt-0" />
         </>
       )}
-      <MarecoGlobal />
       <EmptyLine
         setMargins={setMargins}
         setUpdateMargins={setUpdateMargins}
         margins={margins}
+        marginTypes={marginTypes}
       />
     </div>
   );
@@ -404,8 +391,13 @@ Margin.propTypes = {
   idx: PropTypes.number.isRequired,
 };
 
+MarecoGlobal.propTypes = {
+  marginTypes: PropTypes.func.isRequired,
+};
+
 EmptyLine.propTypes = {
   margins: PropTypes.array,
+  marginTypes: PropTypes.func.isRequired,
   setMargins: PropTypes.func.isRequired,
   setUpdateMargins: PropTypes.func.isRequired,
 };

@@ -13,9 +13,9 @@
   "marginModified": "Marges modifiées",
   "marginType": "Type de marge",
   "marginTypes": {
-    "construction": "Construction",
-    "ratio_time": "Régularité (temps)",
-    "ratio_distance": "Régularité (distance)"
+    "time": "Temps",
+    "percentage": "Pourcentage",
+    "time_per_distance": "Distance"
   },
   "op": "pr",
   "to": "à",
