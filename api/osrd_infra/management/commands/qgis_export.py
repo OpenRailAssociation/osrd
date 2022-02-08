@@ -63,7 +63,7 @@ def format_operational_point(entity):
 
 @formatter("aspects")
 def format_aspects(signal):
-    return ";".join(signal.aspects)
+    return ";".join(signal.aspects or [])
 
 
 def dump_entities(writer, objects, formatters):
@@ -107,6 +107,8 @@ def export_switches(fp, infra, track_sections):
     writer.writerow(["id", "switch_link"])
     for switch in SwitchModel.objects.filter(infra=infra):
         switch = switch.into_obj()
+        if switch.switch_type.id != "classic":
+            continue
         line = compute_link_geom(
             track_sections[switch.ports["BASE"].track.id],
             switch.ports["BASE"].endpoint,

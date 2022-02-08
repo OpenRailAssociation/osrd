@@ -242,20 +242,20 @@ def get_schedule(base_url: str, infra: int) -> str:
     return get_schedule(base_url, infra)
 
 
-def make_random_allowances_value() -> Dict:
+def make_random_allowances_value(allowance_length) -> Dict:
     if random.randint(0, 3) == 0:
         return {
             "value_type": "percentage",
-            "percentage": random.randint(3, 10) + random.random(),
+            "percentage": random.randint(3, 20) + random.random(),
         }
     if random.randint(0, 3) == 0:
         return {
             "value_type": "time_per_distance",
-            "minutes": random.randint(3, 10) + random.random(),
+            "minutes": random.randint(3, 7) + random.random(),
         }
     return {
         "value_type": "time",
-        "seconds": random.randint(10, 40) + random.random(),
+        "seconds": (random.randint(3, 7) + random.random()) * 60 * allowance_length / 100000,
     }
 
 
@@ -269,7 +269,7 @@ def make_random_allowances(path_length: float) -> List[Dict]:
         res.append(
             {
                 "allowance_type": "mareco",
-                "default_value": make_random_allowances_value(),
+                "default_value": make_random_allowances_value(path_length),
                 "ranges": [],
             }
         )
@@ -282,7 +282,7 @@ def make_random_allowances(path_length: float) -> List[Dict]:
                 "allowance_type": "construction",
                 "begin_position": min(positions),
                 "end_position": max(positions),
-                "value": make_random_allowances_value(),
+                "value": make_random_allowances_value(max(positions) - min(positions)),
             }
         )
     return res

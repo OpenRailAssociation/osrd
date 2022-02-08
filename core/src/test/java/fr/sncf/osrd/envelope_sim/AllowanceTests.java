@@ -1,6 +1,5 @@
 package fr.sncf.osrd.envelope_sim;
 
-import static fr.sncf.osrd.envelope.EnvelopeDebug.plot;
 import static fr.sncf.osrd.envelope.EnvelopeShape.*;
 import static fr.sncf.osrd.envelope.EnvelopeShape.DECREASING;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeTest.makeComplexMaxEffortEnvelope;

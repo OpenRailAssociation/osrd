@@ -328,8 +328,6 @@ public class StandaloneSimulationEndpoint implements Take {
                         continue;
                     }
                     var oldOccupancy = routeOccupancies.get(conflictedRoute.id);
-                    assert Double.compare(oldOccupancy.timeHeadFree, routeOccupancy.timeHeadOccupy) == 0;
-                    assert Double.compare(oldOccupancy.timeTailFree, routeOccupancy.timeTailOccupy) == 0;
                     var newOccupancy = new SimulationResultRouteOccupancy(
                             oldOccupancy.timeHeadOccupy,
                             routeOccupancy.timeHeadFree,

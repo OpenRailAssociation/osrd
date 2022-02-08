@@ -229,7 +229,8 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
 
     /** Return whether this step had an intersection */
     private boolean addOverlayStep(double position, double speed, double time, StepKind kind) {
-        if (hasSpeedThreshold() && CmpOperator.compare(speed, speedThresholdOperator, speedThreshold)) {
+        if (hasSpeedThreshold() && CmpOperator.compare(speed, speedThresholdOperator, speedThreshold)
+                && !CmpOperator.compare(lastOverlaySpeed, speedThresholdOperator, speedThreshold)) {
             position = intersectStepWithSpeed(lastOverlayPos, lastOverlaySpeed, position, speed, speedThreshold);
             speed = speedThreshold;
             time = interpolateStepTime(lastOverlayPos, position, lastOverlaySpeed, speed);
