@@ -1,6 +1,7 @@
 from collections import defaultdict
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Tuple, Iterable, List
+from typing import Dict, Tuple, Iterable, List, Set
 import json
 import random
 import requests
@@ -17,25 +18,24 @@ This requires a running database setup with actual infra data, which can't be pu
 """
 
 
-def run_test(infra: Dict, links: Dict, base_url: str, infra_id: int):
+@dataclass
+class InfraGraph:
+    RJSInfra: Dict
+    routes: Dict[str, Dict]
+    routes_per_entry_point: Dict[str, Set[str]]
+
+
+def run_test(infra: InfraGraph, base_url: str, infra_id: int):
     """
     Runs a single random test
-    :param infra: Infra in railjson format
-    :param links: Dict of adjacent endpoints
+    :param infra: infra graph
     :param base_url: Api url
     :param infra_id: Infra id
     """
-    path = make_valid_path(infra, links)
+    path = make_valid_path(infra)
     path_payload = make_payload_path(infra_id, path)
     r = requests.post(base_url + "pathfinding/", json=path_payload, timeout=TIMEOUT)
     if r.status_code // 100 != 2:
-        if "track section that has no route" in str(r.content):
-            print("ignore (track section has no route)")
-            return
-        if "No path could be found" in str(r.content):
-            #  This sometimes happens when a step is on a track with no route: annoying but not an actual bug
-            print("ignore (no path could be found)")
-            return
         raise RuntimeError(f"Pathfinding error {r.status_code}: {r.content}, payload={json.dumps(path_payload)}")
     path_id = r.json()["id"]
 
@@ -44,9 +44,6 @@ def run_test(infra: Dict, links: Dict, base_url: str, infra_id: int):
     schedule_payload = make_payload_schedule(base_url, infra_id, path_id, rolling_stock)
     r = requests.post(base_url + "train_schedule/", json=schedule_payload, timeout=TIMEOUT)
     if r.status_code // 100 != 2:
-        if "TVD" in str(r.content):
-            print("ignore (see issue https://github.com/DGEXSolutions/osrd/issues/171)")
-            return
         raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(schedule_payload)}")
 
     schedule_id = r.json()["id"]
@@ -65,12 +62,12 @@ def run(base_url: str, infra_id: int, n_test: int = 1000):
     :param n_test: number of tests to run
     """
     seed = 0
-    infra, links = make_graph(base_url, infra_id)
+    infra_graph = make_graph(base_url, infra_id)
     for i in range(n_test):
         seed += 1
         print("seed:", seed)
         random.seed(seed)
-        run_test(infra, links, base_url, infra_id)
+        run_test(infra_graph, base_url, infra_id)
         time.sleep(0.1)
 
 
@@ -90,47 +87,32 @@ def get_random_rolling_stock(base_url: str) -> str:
     return get_random_rolling_stock(base_url)
 
 
-def convert_endpoint(endpoint: Dict) -> str:
+def format_route_node(waypoint_id, direction):
     """
-    Converts and endpoint from a railjson dict to a string
-    Example: {"track": {"id": "some-id", ...}, "endpoint": "END"} -> "some-id;END"
-    :param endpoint: endpoint
-    :return: Endpoint encoded as a string
+    Formats a waypoint + track direction into a string, to be used in dicts
+    :param waypoint_id: waypoint id
+    :param direction: direction on the track section the waypoint is placed on
     """
-    section = endpoint["track"]["id"]
-    return f'{section};{endpoint["endpoint"]}'
+    return f"{waypoint_id};{direction}"
 
 
-def make_graph(base_url: str, infra: int) -> Tuple[Dict, Dict]:
+def make_graph(base_url: str, infra: int) -> InfraGraph:
     """
-    Makes a graph from the infra, returns both links and the RJS infra
-    The links are represented as a dict, keys are endpoints, values are a list of adjacent endpoints
+    Makes a graph from the infra
     :param base_url: infra url
     :param infra: infra id
     """
     url = base_url + f"infra/{infra}/railjson/"
     r = requests.get(url, timeout=TIMEOUT)
-    links = defaultdict(lambda: set())
+    routes = dict()
+    routes_per_entry_point = defaultdict(set)
     infra = r.json()
-    for link in infra["track_section_links"]:
-        begin = convert_endpoint(link["src"])
-        end = convert_endpoint(link["dst"])
-        links[begin].add(end)
-        links[end].add(begin)
-    return infra, dict(links)
-
-
-def opposite(endpoint: str) -> str:
-    """
-    Returns the opposite endpoint
-    :param endpoint: Endpoint encoded as a string
-    :return: Opposite endpoint
-    """
-    point_id, end = endpoint.split(";")
-    if end == "BEGIN":
-        return f"{point_id};END"
-    else:
-        return f"{point_id};BEGIN"
+    for route in infra["routes"]:
+        route_id = route["id"]
+        routes[route_id] = route
+        entry_node = format_route_node(route["entry_point"]["id"], route["path"][0]["direction"])
+        routes_per_entry_point[entry_node].add(route_id)
+    return InfraGraph(infra, routes, dict(routes_per_entry_point))
 
 
 def random_set_element(s: Iterable):
@@ -140,71 +122,62 @@ def random_set_element(s: Iterable):
     return random.choice(list(s))
 
 
-def make_steps_on_edge(infra: Dict, point: str) -> Iterable[Tuple[str, float]]:
+def make_steps_on_route(route: Dict) -> Iterable[Tuple[str, float]]:
     """
-    Generates a random list of steps on an edge
-    :param infra: RJS infra
-    :param point: endpoint
+    Generates a random list of steps on a route
     :return: Iterable of (edge id, offset)
     """
-    edge_id, endpoint = point.split(";")
-    edges = infra["track_sections"]
-    edge = next(filter(lambda e: e["id"] == edge_id, edges))
-    length = edge["length"]
-    n_stops = random.randint(0, 2)
-    offsets = [random.random() * length for _ in range(n_stops)]
-    if endpoint == "BEGIN":
-        offsets.sort()
-    else:
-        offsets.sort(reverse=True)
-    for offset in offsets:
-        yield edge_id, offset
+    for track_range in route["path"]:
+        if random.randint(0, 5) == 0:
+            begin = track_range["begin"]
+            end = track_range["end"]
+            offset = begin + random.random() * (end - begin)
+            yield track_range["track"]["id"], offset
 
 
-def get_any_endpoint(infra: Dict) -> str:
+def check_tracks_are_unseen(seen_track_sections: Set[str], route: Dict):
     """
-    Returns a random endpoint of a random track
+    Checks all tracks in the route, returns true if a track is already part of the path, adds them otherwise
+    :param seen_track_sections: Set of track sections on the path
+    :param route: Route to check
+    """
+    for track_range in route["path"]:
+        track_id = track_range["track"]["id"]
+        if track_id in seen_track_sections:
+            return False
+        seen_track_sections.add(track_id)
+    return True
+
+
+def make_path(infra: InfraGraph) -> List[Tuple[str, float]]:
+    """
+    Generates a path in the infra following the route graph. The path may only have a single element
     :param infra: infra
-    :return: formatted endpoint
-    """
-    track = random.choice(infra["track_sections"])
-    if (random.randint(0, 1)) == 0:
-        endpoint = "BEGINNING"
-    else:
-        endpoint = "END"
-    return f"{track['id']};{endpoint}"
-
-
-def make_path(infra: Dict, links: Dict) -> List[Tuple[str, float]]:
-    """
-    Generates a path in the infra following links. The path may only have a single element
-    :param infra: RJS infra
-    :param links: Dict of adjacent endpoints
     :return: List of (edge id, offset)
     """
     res = []
-    p = get_any_endpoint(infra)
+    seen_track_sections = set()
+    route_id = random_set_element(infra.routes.keys())
     while random.randint(0, 15) != 0:
-        res += make_steps_on_edge(infra, p)
-        o = opposite(p)
-        if o not in links:
-            return res
-        next_points = links[o]
-        if not next_points:
-            return res
-        p = random_set_element(next_points)
+        route = infra.routes[route_id]
+        if not check_tracks_are_unseen(seen_track_sections, route):
+            break
+        res += make_steps_on_route(route)
+        exit_point = route["exit_point"]["id"]
+        if exit_point not in infra.routes_per_entry_point:
+            break
+        route_id = random_set_element(infra.routes_per_entry_point[exit_point])
     return res
 
 
-def make_valid_path(infra: Dict, links: Dict) -> List[Tuple[str, float]]:
+def make_valid_path(infra: InfraGraph) -> List[Tuple[str, float]]:
     """
     Generates a path with at least two steps
-    :param infra: RJS infra
-    :param links: Dict of adjacent endpoints
+    :param infra: infra
     :return: List of (edge id, offset)
     """
     while True:
-        path = make_path(infra, links)
+        path = make_path(infra)
         if len(path) > 1:
             return path
 
