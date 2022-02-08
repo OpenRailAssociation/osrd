@@ -1,11 +1,9 @@
 package fr.sncf.osrd.envelope_sim.allowances;
 
-import static fr.sncf.osrd.envelope.EnvelopeDebug.plot;
 import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration.accelerate;
 import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting.coast;
 import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration.decelerate;
 import static fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope.ACCELERATION;
-import static fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope.MAINTAIN;
 import static fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope.*;
 import static fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator.TIME_STEP;
 import static java.lang.Math.abs;
@@ -301,15 +299,7 @@ public class MarecoAllowance implements Allowance {
         var builder = new MaxEnvelopeBuilder();
         physicalLimits.iterator().forEachRemaining(builder::addPart);
         marecoEnvelope.iterator().forEachRemaining(builder::addPart);
-        // initial speed of the RoI
-        double initialSpeed = base.interpolateSpeed(sectionBegin);
-        if (v1 < initialSpeed) {
-            var coastingBeginSpeed = computeCoastingBeginSpeed(initialSpeed, v1, physicalLimits);
-            var coastingPart = generateCoastingPart(base, sectionBegin, coastingBeginSpeed);
-            assert coastingPart.getEndPos() > coastingPart.getBeginPos();
-            // TODO : find a way to include this coasting part into the final result without bugs
-            // builder.addPart(coastingPart);
-        }
+        // TODO : find a way to include coasting part into the final result without bugs
         var roiEnvelope = builder.build();
 
         var partsBefore = base.slice(Double.NEGATIVE_INFINITY, sectionBegin);
@@ -353,11 +343,11 @@ public class MarecoAllowance implements Allowance {
         double finalSpeed = base.interpolateSpeed(sectionEnd);
 
         var res = new ArrayList<EnvelopePart>();
-        if (initialSpeed > 0) {
+        if (initialSpeed > capacitySpeedLimit) {
             var decelerationPart = generateDecelerationPart(base, initialSpeed);
             res.add(decelerationPart);
         }
-        if (finalSpeed > 0) {
+        if (finalSpeed > capacitySpeedLimit) {
             var accelerationPart = generateAccelerationPart(base, finalSpeed);
             res.add(accelerationPart);
         }

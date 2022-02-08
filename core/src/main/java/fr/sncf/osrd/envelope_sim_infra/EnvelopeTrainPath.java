@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope_sim_infra;
 
+import static fr.sncf.osrd.utils.CustomMath.clamp;
+
 import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope_sim.EnvelopePath;
 import fr.sncf.osrd.train.TrackSectionRange;
@@ -9,7 +11,6 @@ import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeSet;
-
 
 public class EnvelopeTrainPath {
     /** Create EnvelopePath from a TrainPath */
@@ -35,8 +36,13 @@ public class EnvelopeTrainPath {
             }
 
             for (var interval : keys) {
-                var begin = length + Math.abs(range.getBeginPosition() - interval.getBeginPosition());
-                var end = length + Math.abs(range.getBeginPosition() - interval.getEndPosition());
+                var begin = length + clamp(interval.getBeginPosition() - range.getBeginPosition(), 0, range.length());
+                var end = length + clamp(interval.getEndPosition() - range.getBeginPosition(), 0, range.length());
+
+                // Continue if real interval is empty
+                if (Double.compare(begin, end) == 0)
+                    continue;
+
                 if (range.direction == EdgeDirection.STOP_TO_START) {
                     // Swap begin and end
                     var tmp = begin;

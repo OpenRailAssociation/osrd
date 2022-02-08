@@ -32,7 +32,7 @@ public final class EnvelopePartBuilder implements StepConsumer {
     public boolean addStep(double position, double speed) {
         var lastPos = positions.get(positions.size() - 1);
         var lastSpeed = speeds.get(positions.size() - 1);
-        var stepTime = EnvelopePhysics.interpolateStepTime(lastPos, position, lastSpeed, speed, position - lastPos);
+        var stepTime = EnvelopePhysics.interpolateStepTime(lastPos, position, lastSpeed, speed);
         return addStep(position, speed, stepTime);
     }
 

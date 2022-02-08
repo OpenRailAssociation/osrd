@@ -130,15 +130,13 @@ public final class TrainPhysicsIntegrator {
             double acceleration,
             double directionSign
     ) {
-        var newSpeed = currentSpeed + directionSign * acceleration * timeStep;
+        var signedTimeStep = Math.copySign(timeStep, directionSign);
+        var newSpeed = currentSpeed + acceleration * signedTimeStep;
         if (Math.abs(newSpeed) < SPEED_EPSILON)
             newSpeed = 0;
 
         // dx = currentSpeed * dt + 1/2 * acceleration * dt * dt
-        var positionDelta = currentSpeed * timeStep + 0.5 * acceleration * timeStep * timeStep;
-
-        // Used to integrate backwards or forwards, takes the sign of directionSign with the magnitude of positionDelta
-        positionDelta = Math.copySign(positionDelta, directionSign);
+        var positionDelta = currentSpeed * signedTimeStep + 0.5 * acceleration * signedTimeStep * signedTimeStep;
 
         if (Math.abs(positionDelta) < POSITION_EPSILON)
             positionDelta = 0;
