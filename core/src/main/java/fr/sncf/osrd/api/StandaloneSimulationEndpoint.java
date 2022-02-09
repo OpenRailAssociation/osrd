@@ -251,8 +251,6 @@ public class StandaloneSimulationEndpoint implements Take {
         public final List<SimulationResultSpeed> speeds;
         @Json(name = "head_positions")
         public final List<SimulationResultPosition> headPositions;
-        @Json(name = "tail_positions")
-        public final List<SimulationResultPosition> tailPositions;
         public final List<SimulationResultStops> stops;
         @Json(name = "route_occupancies")
         public final Map<String, SimulationResultRouteOccupancy> routeOccupancies;
@@ -260,13 +258,11 @@ public class StandaloneSimulationEndpoint implements Take {
         SimulationResultTrain(
                 List<SimulationResultSpeed> speeds,
                 List<SimulationResultPosition> headPositions,
-                List<SimulationResultPosition> tailPositions,
                 List<SimulationResultStops> stops, Map<String,
                 SimulationResultRouteOccupancy> routeOccupancies
         ) {
             this.speeds = speeds;
             this.headPositions = headPositions;
-            this.tailPositions = tailPositions;
             this.stops = stops;
             this.routeOccupancies = routeOccupancies;
         }
@@ -283,7 +279,6 @@ public class StandaloneSimulationEndpoint implements Take {
             var trainLength = schedule.rollingStock.length;
             var speeds = new ArrayList<SimulationResultSpeed>();
             var headPositions = new ArrayList<SimulationResultPosition>();
-            var tailPositions = new ArrayList<SimulationResultPosition>();
             double time = 0;
             for (var part : envelope) {
                 for (int i = 0; i < part.pointCount(); i++) {
@@ -291,8 +286,6 @@ public class StandaloneSimulationEndpoint implements Take {
                     var speed = part.getPointSpeed(i);
                     speeds.add(new SimulationResultSpeed(time, speed, pos));
                     headPositions.add(new SimulationResultPosition(time, pos, trainPath));
-                    var tailPos = Math.max(pos - trainLength, 0);
-                    tailPositions.add(new SimulationResultPosition(time, tailPos, trainPath));
                     if (i < part.stepCount())
                         time += part.getStepTime(i);
                 }
@@ -301,7 +294,6 @@ public class StandaloneSimulationEndpoint implements Take {
             // Simplify data
             speeds = simplifySpeeds(speeds);
             headPositions = simplifyPositions(headPositions);
-            tailPositions = simplifyPositions(tailPositions);
 
             // Compute stops
             var stops = new ArrayList<SimulationResultStops>();
@@ -337,7 +329,7 @@ public class StandaloneSimulationEndpoint implements Take {
                 }
                 lastPosition = newPosition;
             }
-            return new SimulationResultTrain(speeds, headPositions, tailPositions, stops, routeOccupancies);
+            return new SimulationResultTrain(speeds, headPositions, stops, routeOccupancies);
         }
     }
 

@@ -10,6 +10,7 @@ def create_simulation_report(train_schedule: TrainScheduleModel, projection_path
     # Compute projection object
     projection_path_payload = PathPayload.parse_obj(projection_path.payload)
     projection = Projection(projection_path_payload)
+    train_length = train_schedule.rolling_stock.length
 
     base = convert_simulation_results(
         train_schedule.base_simulation,
@@ -17,6 +18,7 @@ def create_simulation_report(train_schedule: TrainScheduleModel, projection_path
         projection,
         projection_path_payload,
         train_schedule.departure_time,
+        train_length,
     )
     vmax = convert_vmax(train_path, train_schedule)
     res = {
@@ -37,25 +39,23 @@ def create_simulation_report(train_schedule: TrainScheduleModel, projection_path
     # Add margins and eco results if available
     sim_log = train_schedule.eco_simulation
     res["eco"] = convert_simulation_results(
-        sim_log,
-        train_path_payload,
-        projection,
-        projection_path_payload,
-        train_schedule.departure_time,
+        sim_log, train_path_payload, projection, projection_path_payload, train_schedule.departure_time, train_length,
     )
     return res
 
 
 def convert_simulation_results(
-    simulation_result, train_path_payload: PathPayload, projection, projection_path_payload: PathPayload, departure_time
+    simulation_result,
+    train_path_payload: PathPayload,
+    projection,
+    projection_path_payload: PathPayload,
+    departure_time,
+    train_length,
 ):
     # Format data for charts
-    head_positions = convert_positions(
-        simulation_result["head_positions"], projection, train_path_payload, departure_time
-    )
-    tail_positions = convert_positions(
-        simulation_result["tail_positions"], projection, train_path_payload, departure_time
-    )
+    sim_head_positions_results = simulation_result["head_positions"]
+    head_positions = project_head_positions(sim_head_positions_results, projection, train_path_payload, departure_time)
+    tail_positions = compute_tail_positions(head_positions, train_length)
 
     route_begin_occupancy, route_end_occupancy = convert_route_occupancies(
         simulation_result["route_occupancies"], projection_path_payload, departure_time
@@ -93,7 +93,7 @@ def interpolate_locations(loc_a, loc_b, path_position):
     return loc_a["time"] + (path_position - loc_a["path_offset"]) * coef
 
 
-def convert_positions(train_locations, projection, train_path_payload: PathPayload, departure_time: float):
+def project_head_positions(train_locations, projection, train_path_payload: PathPayload, departure_time: float):
     results = []
     loc_index = 0
     intersections = projection.intersections(train_path_payload)
@@ -136,6 +136,17 @@ def convert_positions(train_locations, projection, train_path_payload: PathPaylo
             assert end_position is not None
             current_curve.append({"time": end_time + departure_time, "position": end_position})
 
+        results.append(current_curve)
+    return results
+
+
+def compute_tail_positions(head_positions, train_length: float):
+    results = []
+    for curve in head_positions:
+        min_pos = curve[0]["position"]
+        current_curve = []
+        for point in curve:
+            current_curve.append({**point, "position": max(min_pos, point["position"] - train_length)})
         results.append(current_curve)
     return results
 
