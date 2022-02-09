@@ -250,8 +250,7 @@ public class EnvelopeCursor {
         if (hasReachedEnd())
             return false;
 
-        // the new position can only move the cursor forward
-        assert comparePos(newPosition, this.position) >= 0;
+        assert comparePos(newPosition, this.position) >= 0 : "the new position can only move the cursor forward";
 
         // find the EnvelopePart which contains the new position
         while (comparePos(getPartEndPos(), newPosition) < 0)
@@ -324,8 +323,8 @@ public class EnvelopeCursor {
             // get the coordinates of the last point of this envelope and the first point of the next envelope
             var curPos = getStepEndPos(part, curEndIndex);
             var curSpeed = getStepEndSpeed(part, curEndIndex);
-            var nextPos = getStepEndPos(nextPart, nextStartIndex);
-            var nextSpeed = getStepEndSpeed(nextPart, nextStartIndex);
+            var nextPos = getStepBeginPos(nextPart, nextStartIndex);
+            var nextSpeed = getStepBeginSpeed(nextPart, nextStartIndex);
 
             // move the cursor to the end of the current part
             this.stepIndex = curEndIndex;

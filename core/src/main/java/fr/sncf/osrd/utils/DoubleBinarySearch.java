@@ -26,6 +26,10 @@ public final class DoubleBinarySearch {
     private final double direction;
     /** Whether the search is complete */
     private boolean isComplete;
+    /** Whether we have lowered the high bound at least once */
+    private boolean hasLoweredHighBound;
+    /** Whether we have raised the low bound at least once */
+    private boolean hasRaisedLowBound;
 
     /**
      * Returns a binary search helper.
@@ -49,6 +53,8 @@ public final class DoubleBinarySearch {
         this.direction = decreasing ? -1 : 1;
         this.input = estimateInput(lowBound, highBound);
         this.isComplete = false;
+        this.hasLoweredHighBound = false;
+        this.hasRaisedLowBound = false;
     }
 
     /** Returns an input estimate */
@@ -83,11 +89,24 @@ public final class DoubleBinarySearch {
             return;
         }
 
-        if (SignUtils.conditionalNegate(delta, direction) < 0)
+        if (SignUtils.conditionalNegate(delta, direction) < 0) {
             lowBound = input;
-        else
+            hasRaisedLowBound = true;
+        } else {
             highBound = input;
+            hasLoweredHighBound = true;
+        }
 
         this.input = estimateInput(lowBound, highBound);
+    }
+
+    /** Returns true if we have lowered the high bound at least once */
+    public boolean hasLoweredHighBound() {
+        return hasLoweredHighBound;
+    }
+
+    /** Returns true if we have raised the low bound at least once */
+    public boolean hasRaisedLowBound() {
+        return hasRaisedLowBound;
     }
 }

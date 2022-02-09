@@ -1,8 +1,10 @@
 package fr.sncf.osrd.envelope;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.stream.Stream;
 
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
@@ -157,6 +159,14 @@ public final class Envelope implements Iterable<EnvelopePart> {
         return -1;
     }
 
+    /** Returns the first envelope part which contains this position */
+    public EnvelopePart getEnvelopePartLeft(double position) {
+        var index = findEnvelopePartIndexLeft(position);
+        if (index == -1)
+            return null;
+        return get(index);
+    }
+
     // region INTERPOLATION
 
     /** Returns the interpolated speed at a given position */
@@ -171,7 +181,7 @@ public final class Envelope implements Iterable<EnvelopePart> {
     public long interpolateTotalTimeMS(double position) {
         assert continuous : "interpolating times on a non continuous envelope is a risky business";
         var envelopePartIndex = findEnvelopePartIndex(position);
-        assert envelopePartIndex != -1;
+        assert envelopePartIndex != -1 : "Trying to interpolate time outside of the envelope";
         var envelopePart = get(envelopePartIndex);
         var stepIndex = envelopePart.findStep(position);
         return getCumulativeTimeMS(envelopePartIndex) + envelopePart.interpolateTotalTimeMS(stepIndex, position);
@@ -346,5 +356,10 @@ public final class Envelope implements Iterable<EnvelopePart> {
                 return parts[i++];
             }
         };
+    }
+
+    /** Makes a stream from the parts */
+    public Stream<EnvelopePart> stream() {
+        return Arrays.stream(parts);
     }
 }
