@@ -6,8 +6,7 @@ import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration.decelerate
 import static fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope.ACCELERATION;
 import static fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope.*;
 import static fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator.TIME_STEP;
-import static java.lang.Math.abs;
-import static java.util.Collections.sort;
+import static java.lang.Math.*;
 
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
@@ -15,6 +14,7 @@ import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator;
+import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope.AccelerationMeta;
 import fr.sncf.osrd.utils.CmpOperator;
 import fr.sncf.osrd.utils.DoubleBinarySearch;
 import org.slf4j.Logger;
@@ -151,13 +151,13 @@ public class MarecoAllowance implements Allowance {
             double v = 1 / (rollingStock.getRollingResistance(v1)
                     / (wle * (1 - slope.previousAcceleration / slope.acceleration)) + 1 / v1);
             double target = slope.targetSpeed;
-            double requiredAcceleratingDistance = Math.max((target * target - v * v) / (2 * slope.acceleration), 0);
+            double requiredAcceleratingDistance = max((target * target - v * v) / (2 * slope.acceleration), 0);
             double positionWhereTargetSpeedIsReached = slope.beginPosition + requiredAcceleratingDistance;
-            res.add(Math.min(slope.endPosition, positionWhereTargetSpeedIsReached));
+            res.add(min(slope.endPosition, positionWhereTargetSpeedIsReached));
         }
-        sort(res);
         return res.stream()
                 .filter(position -> position > 0)
+                .sorted()
                 .collect(Collectors.toList());
     }
 
@@ -251,6 +251,9 @@ public class MarecoAllowance implements Allowance {
             List<Double> endOfCoastingPositions
     ) {
         for (var position : endOfCoastingPositions) {
+            var part = envelope.getEnvelopePartLeft(position);
+            if (part == null || (part.meta instanceof AccelerationMeta && part.getBeginPos() < position))
+                continue; // Starting a coasting curve in an acceleration part would stop instantly and trigger asserts
             var cursor = EnvelopeCursor.backward(envelope);
             cursor.findPosition(position);
             var speed = envelope.interpolateSpeed(position);
@@ -274,19 +277,22 @@ public class MarecoAllowance implements Allowance {
     }
 
 
+    /** Returns true if the envelope part is a braking envelope */
+    private static boolean isBraking(EnvelopePart part) {
+        return part.meta instanceof DecelerationMeta || part.meta instanceof StopMeta;
+    }
+
+
     /** Returns all the braking envelopeParts in a given envelope */
     private Set<EnvelopePart> findBrakingEnvelopeParts(Envelope envelope) {
-        var res = new HashSet<EnvelopePart>();
-        for (var part : envelope) {
-            if (part.meta instanceof DecelerationMeta || part.meta instanceof StopMeta)
-                res.add(part);
-        }
-        return res;
+        return envelope.stream()
+                .filter(MarecoAllowance::isBraking)
+                .collect(Collectors.toSet());
     }
 
 
     /** Returns the total envelope after applying an allowance with target speed v1 */
-    public Envelope getEnvelope(Envelope baseRoIEnvelope, ArrayList<EnvelopePart> physicalLimits, double v1) {
+    public Envelope getEnvelope(Envelope baseRoIEnvelope, List<EnvelopePart> physicalLimits, double v1) {
         var envelopeCapped = EnvelopeSpeedCap.from(baseRoIEnvelope, null, v1);
         var endOfCoastingPositions = findEndOfCoastingPositions(envelopeCapped, v1);
         var marecoEnvelope = addCoastingCurvesAtPositions(envelopeCapped, endOfCoastingPositions);
@@ -303,20 +309,9 @@ public class MarecoAllowance implements Allowance {
     /** compute the physical limits on the Region of Interest (RoI)
      * these limits are a composed of a braking curve at the beginning, an accelerating curve at the end,
      * with a 30km/h limit in between if it exists */
-    private ArrayList<EnvelopePart> generatePhysicalLimits(Envelope base) {
-
-        double initialSpeed = base.getBeginSpeed();
-        double finalSpeed = base.getEndSpeed();
-
-        var res = new ArrayList<EnvelopePart>();
-        if (initialSpeed > capacitySpeedLimit) {
-            var decelerationPart = generateDecelerationPart(base, initialSpeed);
-            res.add(decelerationPart);
-        }
-        if (finalSpeed > capacitySpeedLimit) {
-            var accelerationPart = generateAccelerationPart(base, finalSpeed);
-            res.add(accelerationPart);
-        }
+    private List<EnvelopePart> generatePhysicalLimits(Envelope base) {
+        var res = generateDecelerationParts(base);
+        res.addAll(generateAccelerationParts(base));
         if (capacitySpeedLimit > 0) {
             var begin = Math.max(sectionBegin, base.getBeginPos());
             var end = Math.min(sectionEnd, base.getEndPos());
@@ -329,25 +324,71 @@ public class MarecoAllowance implements Allowance {
     }
 
 
-    private EnvelopePart generateDecelerationPart(Envelope base, double initialSpeed) {
-        var cursor = EnvelopeCursor.forward(base);
-        cursor.findPosition(base.getBeginPos());
-        var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(
-                cursor, DECELERATION, capacitySpeedLimit, CmpOperator.LOWER);
-        decelerate(rollingStock, path, TIME_STEP, sectionBegin, initialSpeed, partBuilder, 1);
-        var decelerationPart = partBuilder.build();
-        return decelerationPart.slice(base.getBeginPos(), base.getEndPos());
+    /** Moves the position forward until it's not in a braking section,
+     * returns -1 if it reaches the end of the path*/
+    private double moveForwardUntilNotBraking(Envelope base, double position) {
+        var envelopeIndex = base.findEnvelopePartIndex(position);
+        while (envelopeIndex < base.size() && isBraking(base.get(envelopeIndex)))
+            envelopeIndex++;
+        if (envelopeIndex >= base.size())
+            return -1;
+        return max(position, base.get(envelopeIndex).getBeginPos());
     }
 
-    private EnvelopePart generateAccelerationPart(Envelope base, double finalSpeed) {
+
+    /** Moves the position backwards until it's not in an accelerating section,
+     * returns -1 if it reaches the beginning of the path*/
+    private double moveBackwardsUntilNotAccelerating(Envelope base, double position) {
+        var envelopeIndex = base.findEnvelopePartIndex(position);
+        while (envelopeIndex >= 0 && base.get(envelopeIndex).meta instanceof AccelerationMeta)
+            envelopeIndex--;
+        if (envelopeIndex < 0)
+            return -1;
+        return min(position, base.get(envelopeIndex).getEndPos());
+    }
+
+
+    private List<EnvelopePart> generateDecelerationParts(Envelope base) {
+        var res = new ArrayList<EnvelopePart>();
+        var position = moveForwardUntilNotBraking(base, base.getBeginPos());
+        assert position >= 0 : "We can't lose time in an area where we are always braking";
+        if (position > base.getBeginPos())
+            res.addAll(Arrays.asList(base.slice(base.getBeginPos(), position)));
+        if (position > base.getEndPos())
+            return res;
+        var speed = base.interpolateSpeed(position);
+        if (speed <= capacitySpeedLimit)
+            return res;
+        var cursor = EnvelopeCursor.forward(base);
+        cursor.findPosition(position);
+        var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(
+                cursor, DECELERATION, capacitySpeedLimit, CmpOperator.LOWER);
+
+        decelerate(rollingStock, path, TIME_STEP, position, speed, partBuilder, 1);
+        var decelerationPart = partBuilder.build();
+        res.add(decelerationPart.slice(base.getBeginPos(), base.getEndPos()));
+        return res;
+    }
+
+    private List<EnvelopePart> generateAccelerationParts(Envelope base) {
+        var res = new ArrayList<EnvelopePart>();
+        var position = moveBackwardsUntilNotAccelerating(base, base.getEndPos());
+        assert position >= 0 : "We can't lose time in an area where we are always accelerating";
+        if (position < base.getEndPos())
+            res.addAll(Arrays.asList(base.slice(position, base.getEndPos())));
+        if (position > base.getEndPos())
+            return res;
+        var speed = base.interpolateSpeed(position);
+        if (speed <= capacitySpeedLimit)
+            return res;
         var cursor = EnvelopeCursor.backward(base);
-        cursor.findPosition(base.getEndPos());
+        cursor.findPosition(position);
         var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(
                 cursor, ACCELERATION, capacitySpeedLimit, CmpOperator.LOWER);
-        accelerate(rollingStock, path, TIME_STEP, sectionEnd, finalSpeed, partBuilder, -1);
-
+        accelerate(rollingStock, path, TIME_STEP, position, speed, partBuilder, -1);
         var acceleratingPart = partBuilder.build();
-        return acceleratingPart.slice(base.getBeginPos(), base.getEndPos());
+        res.add(acceleratingPart.slice(base.getBeginPos(), base.getEndPos()));
+        return res;
     }
 
     // get the high boundary for the binary search, corresponding to vf = max
@@ -434,7 +475,7 @@ public class MarecoAllowance implements Allowance {
 
     private Envelope binarySearchLoop(DoubleBinarySearch search,
                                       Envelope base,
-                                      ArrayList<EnvelopePart> physicalLimits) {
+                                      List<EnvelopePart> physicalLimits) {
         Envelope curEnvelope = base;
         for (int i = 1; i < 21 && !search.complete(); i++) {
             var input = search.getInput();
@@ -445,7 +486,19 @@ public class MarecoAllowance implements Allowance {
             search.feedback(output);
         }
         if (!search.complete())
-            throw new RuntimeException("mareco simulation did not converge");
+            throw makeMarecoError(search);
+
         return curEnvelope;
+    }
+
+    private static RuntimeException makeMarecoError(DoubleBinarySearch search) {
+        String error;
+        if (!search.hasRaisedLowBound())
+            error = "we can't lose the requested time in this setting";
+        else if (!search.hasLoweredHighBound())
+            error = "we can't go fast enough in this setting"; // Should not happen in normal settings
+        else
+            error = "discontinuity in the search space"; // Should not happen in normal settings
+        return new RuntimeException(String.format("Mareco simulation did not converge (%s)", error));
     }
 }

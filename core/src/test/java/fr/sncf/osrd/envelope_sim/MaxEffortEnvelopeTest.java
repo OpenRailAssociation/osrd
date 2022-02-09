@@ -11,7 +11,7 @@ import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
 
 public class MaxEffortEnvelopeTest {
-    /** Builds max effort envelope with one stop in the middle, one at the end, on a flat MRSP */
+    /** Builds max effort envelope with the specified stops, on a flat MRSP */
     static Envelope makeSimpleMaxEffortEnvelope(
             PhysicsRollingStock rollingStock,
             PhysicsPath path,
@@ -21,6 +21,12 @@ public class MaxEffortEnvelopeTest {
         var flatMRSP = makeSimpleMRSP(rollingStock, path, speed);
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(rollingStock, path, stops, flatMRSP, TIME_STEP);
         return MaxEffortEnvelope.from(rollingStock, path, 0, maxSpeedEnvelope, TIME_STEP);
+    }
+
+    /** Builds max effort envelope with one stop in the middle, one at the end, on a flat MRSP */
+    static Envelope makeSimpleMaxEffortEnvelope(PhysicsRollingStock rollingStock, PhysicsPath path, double speed) {
+        var stops = new double[] { 6000, path.getLength() };
+        return makeSimpleMaxEffortEnvelope(rollingStock, path, speed, stops);
     }
 
     /** Builds max effort envelope with one stop in the middle, one at the end, on a funky MRSP */
@@ -99,5 +105,13 @@ public class MaxEffortEnvelopeTest {
         EnvelopeShape.check(maxEffortEnvelope, INCREASING, CONSTANT, INCREASING, CONSTANT, DECREASING, CONSTANT,
                 DECREASING, INCREASING, CONSTANT, INCREASING, CONSTANT, INCREASING, DECREASING, CONSTANT, DECREASING);
         assertTrue(maxEffortEnvelope.continuous);
+    }
+
+    @Test
+    public void testAccelerationInShortPart() {
+        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        var testPath = new FlatPath(10000, 0);
+        var stops = new double[] { testPath.getLength() - 1, testPath.getLength() };
+        makeSimpleMaxEffortEnvelope(testRollingStock, testPath, 10000, stops);
     }
 }

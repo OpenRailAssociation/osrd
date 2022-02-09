@@ -35,6 +35,26 @@ public class EnvelopeOverlayThresholdTest {
     }
 
     @Test
+    public void testThresholdIntersectionInPartTransition() {
+        var constSpeedEnvelopes = Envelope.make(
+                EnvelopePart.generateTimes(
+                        null,
+                        new double[]{0, 10},
+                        new double[]{100, 100}
+                ),
+                EnvelopePart.generateTimes(
+                        null,
+                        new double[]{10, 20},
+                        new double[]{100, 100}
+                )
+        );
+        var cursor = EnvelopeCursor.forward(constSpeedEnvelopes);
+        var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(
+                cursor, null, 95, CmpOperator.LOWER);
+        partBuilder.addStep(15, 90);
+    }
+
+    @Test
     public void testSingleStepOnLowerThreshold() {
         // 2 +====+====+===+ <= base
         //         \
